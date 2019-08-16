@@ -130,6 +130,17 @@ custom build configurations look for `.mjs` files!
 We actively welcome pull requests, learn how to
 [contribute](https://github.com/graphql/graphql-js/blob/master/.github/CONTRIBUTING.md).
 
+#### TypeScript
+
+Part of this fork's purpose is to begin a gradual migration of `graphql-js` from Flow to TypeScript. Some parts have already been converted, and some remain to be converted. The steps for converting a file from Flow to TypeScript are as follows:
+
+1. Rename the file, and convert syntax to TypeScript: `Foo.js` becomes `Foo.ts`, and any Flow specific syntax should be transalted.
+2. Create a `Foo.js.flow` type declaration file for the file's exports (`Foo.d.ts`, if present, can be helpful for guiding this process). Make sure you prefix the file with `// @flow`, or else strange things will happen!
+3. Delete the `Foo.d.ts` file, if it exists.
+4. Run `npm run check`, and ensure both `flow` and `tsc` typecheck the project without issue.
+
+Check out 45da517 for an example of this process.
+
 ### Changelog
 
 Changes are tracked as [GitHub releases](https://github.com/graphql/graphql-js/releases).
@@ -137,3 +148,32 @@ Changes are tracked as [GitHub releases](https://github.com/graphql/graphql-js/r
 ### License
 
 GraphQL.js is [MIT-licensed](https://github.com/graphql/graphql-js/blob/master/LICENSE).
+
+### Credits
+
+The `.d.ts` files in this project are, in part, from `@types/graphql`, written by:
+
+- TonyYang https://github.com/TonyPythoneer
+- Caleb Meredith https://github.com/calebmer
+- Dominic Watson https://github.com/intellix
+- Firede https://github.com/firede
+- Kepennar https://github.com/kepennar
+- Mikhail Novikov https://github.com/freiksenet
+- Ivan Goncharov https://github.com/IvanGoncharov
+- Hagai Cohen https://github.com/DxCx
+- Ricardo Portugal https://github.com/rportugal
+- Tim Griesser https://github.com/tgriesser
+- Dylan Stewart https://github.com/dyst5422
+- Alessio Dionisi https://github.com/adnsio
+- Divyendu Singh https://github.com/divyenduz
+- Brad Zacher https://github.com/bradzacher
+- Curtis Layne https://github.com/clayne11
+- Jonathan Cardoso https://github.com/JCMais
+- Pavel Lang https://github.com/langpavel
+- Mark Caudill https://github.com/mc0
+- Martijn Walraven https://github.com/martijnwalraven
+- Jed Mao https://github.com/jedmao
+
+And licensed under the [MIT License](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/LICENSE).
+
+Thanks to all the above contributors!

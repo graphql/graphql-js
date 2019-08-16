@@ -22,10 +22,26 @@ if (require.main === module) {
   copyFile('./LICENSE', './dist/LICENSE');
   copyFile('./README.md', './dist/README.md');
 
+  const tsArtifacts = readdirRecursive('./ts-build', { ignoreDir: /^__.*__$/ });
+  for (const filepath of tsArtifacts) {
+    if (filepath.endsWith('.js')) {
+      buildTSEmittedJSFile(filepath);
+    } else if (filepath.endsWith('.d.ts')) {
+      const srcPath = path.join('./ts-build', filepath);
+      const destPath = path.join('./dist', filepath);
+      copyFile(srcPath, destPath);
+    }
+  }
+  rmdirRecursive('./ts-build');
+
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
   for (const filepath of srcFiles) {
     if (filepath.endsWith('.js')) {
-      buildJSFile(filepath);
+      buildFlowFile(filepath);
+    } else if (filepath.endsWith('.js.flow') || filepath.endsWith('.d.ts')) {
+      const srcPath = path.join('./src', filepath);
+      const destPath = path.join('./dist', filepath);
+      copyFile(srcPath, destPath);
     }
   }
 
@@ -89,11 +105,19 @@ function babelBuild(srcPath, envName) {
   return babel.transformFileSync(srcPath, { envName }).code + '\n';
 }
 
-function buildJSFile(filepath) {
+function buildFlowFile(filepath) {
   const srcPath = path.join('./src', filepath);
   const destPath = path.join('./dist', filepath);
 
   copyFile(srcPath, destPath + '.flow');
+  writeFile(destPath, babelBuild(srcPath, 'cjs'));
+  writeFile(destPath.replace(/\.js$/, '.mjs'), babelBuild(srcPath, 'mjs'));
+}
+
+function buildTSEmittedJSFile(filepath) {
+  const srcPath = path.join('./ts-build', filepath);
+  const destPath = path.join('./dist', filepath);
+
   writeFile(destPath, babelBuild(srcPath, 'cjs'));
   writeFile(destPath.replace(/\.js$/, '.mjs'), babelBuild(srcPath, 'mjs'));
 }
