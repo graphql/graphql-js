@@ -3,6 +3,7 @@
 The JavaScript reference implementation for GraphQL, a query language for APIs created by Facebook.
 
 [![Build Status](https://dev.azure.com/apollographql/graphql-js/_apis/build/status/apollographql.graphql-js?branchName=master)](https://dev.azure.com/apollographql/graphql-js/_build/latest?definitionId=2&branchName=master)
+[![npm version](https://badge.fury.io/js/%40apollo%2Fgraphql.svg)](https://badge.fury.io/js/%40apollo%2Fgraphql)
 
 See more complete documentation at https://graphql.org/ and
 https://graphql.org/graphql-js/.
