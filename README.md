@@ -127,7 +127,7 @@ custom build configurations look for `.mjs` files!
 
 ### Contributing
 
-[Read the Apollo Contributor Guidelines.](https://github.com/graphql/graphql-js/blob/master/.github/CONTRIBUTING.md)
+[Read the Apollo Contributor Guidelines.](https://github.com/apollographql/graphql-js/blob/master/.github/CONTRIBUTING.md)
 
 #### TypeScript
 
