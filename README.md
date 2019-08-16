@@ -127,8 +127,7 @@ custom build configurations look for `.mjs` files!
 
 ### Contributing
 
-We actively welcome pull requests, learn how to
-[contribute](https://github.com/graphql/graphql-js/blob/master/.github/CONTRIBUTING.md).
+[Read the Apollo Contributor Guidelines.](https://github.com/graphql/graphql-js/blob/master/.github/CONTRIBUTING.md)
 
 #### TypeScript
 
@@ -139,7 +138,7 @@ Part of this fork's purpose is to begin a gradual migration of `graphql-js` from
 3. Delete the `Foo.d.ts` file, if it exists.
 4. Run `npm run check`, and ensure both `flow` and `tsc` typecheck the project without issue.
 
-Check out 45da517 for an example of this process.
+Check out [45da517](https://github.com/apollographql/graphql-js/commit/45da517f32e15c0b8c0356fb4c4d95e959e3df91) for an example of this process.
 
 ### Changelog
 
