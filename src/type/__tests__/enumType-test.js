@@ -341,16 +341,16 @@ describe('Type System: Enum Values', () => {
     expect(values).to.have.deep.ordered.members([
       {
         name: 'ONE',
-        value: Complex1,
         description: undefined,
+        value: Complex1,
         isDeprecated: false,
         deprecationReason: undefined,
         astNode: undefined,
       },
       {
         name: 'TWO',
-        value: Complex2,
         description: undefined,
+        value: Complex2,
         isDeprecated: false,
         deprecationReason: undefined,
         astNode: undefined,

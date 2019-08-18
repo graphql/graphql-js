@@ -187,15 +187,15 @@ describe('Type System: Objects', () => {
     });
 
     expect(TypeWithDeprecatedField.getFields().bar).to.deep.equal({
-      type: ScalarType,
-      deprecationReason: 'A terrible reason',
-      isDeprecated: true,
       name: 'bar',
+      description: undefined,
+      type: ScalarType,
       args: [],
-      astNode: undefined,
       resolve: undefined,
       subscribe: undefined,
-      description: undefined,
+      isDeprecated: true,
+      deprecationReason: 'A terrible reason',
+      astNode: undefined,
     });
   });
 
@@ -209,14 +209,14 @@ describe('Type System: Objects', () => {
     expect(objType.getFields()).to.deep.equal({
       f: {
         name: 'f',
+        description: undefined,
         type: ScalarType,
         args: [],
+        resolve: undefined,
+        subscribe: undefined,
         isDeprecated: false,
         deprecationReason: undefined,
         astNode: undefined,
-        resolve: undefined,
-        subscribe: undefined,
-        description: undefined,
       },
     });
   });
@@ -236,22 +236,22 @@ describe('Type System: Objects', () => {
     expect(objType.getFields()).to.deep.equal({
       f: {
         name: 'f',
+        description: undefined,
         type: ScalarType,
         args: [
           {
             name: 'arg',
-            type: ScalarType,
             description: null,
+            type: ScalarType,
             defaultValue: undefined,
             astNode: undefined,
           },
         ],
+        resolve: undefined,
+        subscribe: undefined,
         isDeprecated: false,
         deprecationReason: undefined,
         astNode: undefined,
-        resolve: undefined,
-        subscribe: undefined,
-        description: undefined,
       },
     });
   });
@@ -541,17 +541,17 @@ describe('Type System: Enums', () => {
       {
         name: 'NULL',
         description: undefined,
+        value: null,
         isDeprecated: false,
         deprecationReason: undefined,
-        value: null,
         astNode: undefined,
       },
       {
         name: 'UNDEFINED',
         description: undefined,
+        value: undefined,
         isDeprecated: false,
         deprecationReason: undefined,
-        value: undefined,
         astNode: undefined,
       },
     ]);

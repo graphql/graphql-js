@@ -36,15 +36,15 @@ describe('Type System: Directive', () => {
       args: [
         {
           name: 'foo',
-          type: GraphQLString,
           description: null,
+          type: GraphQLString,
           defaultValue: undefined,
           astNode: undefined,
         },
         {
           name: 'bar',
-          type: GraphQLInt,
           description: null,
+          type: GraphQLInt,
           defaultValue: undefined,
           astNode: undefined,
         },
