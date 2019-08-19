@@ -9,17 +9,12 @@ import invariant from '../../jsutils/invariant';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
-import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { graphqlSync } from '../../graphql';
 
 import { GraphQLSchema } from '../../type/schema';
 import { validateSchema } from '../../type/validate';
-import {
-  assertDirective,
-  GraphQLDirective,
-  specifiedDirectives,
-} from '../../type/directives';
+import { assertDirective } from '../../type/directives';
 import {
   GraphQLID,
   GraphQLInt,
@@ -34,14 +29,7 @@ import {
   assertUnionType,
   assertInterfaceType,
   assertScalarType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
   GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
 } from '../../type/definition';
 
 import { printSchema } from '../schemaPrinter';
@@ -49,105 +37,52 @@ import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
 
 // Test schema.
-const SomeScalarType = new GraphQLScalarType({ name: 'SomeScalar' });
+const testSchema = buildSchema(`
+  scalar SomeScalar
 
-const SomeInterfaceType = new GraphQLInterfaceType({
-  name: 'SomeInterface',
-  fields: () => ({
-    name: { type: GraphQLString },
-    some: { type: SomeInterfaceType },
-  }),
-});
+  interface SomeInterface {
+    name: String
+    some: SomeInterface
+  }
 
-const FooType = new GraphQLObjectType({
-  name: 'Foo',
-  interfaces: [SomeInterfaceType],
-  fields: () => ({
-    name: { type: GraphQLString },
-    some: { type: SomeInterfaceType },
-    tree: { type: GraphQLNonNull(GraphQLList(FooType)) },
-  }),
-});
+  type Foo implements SomeInterface {
+    name: String
+    some: SomeInterface
+    tree: [Foo]!
+  }
 
-const BarType = new GraphQLObjectType({
-  name: 'Bar',
-  interfaces: [SomeInterfaceType],
-  fields: () => ({
-    name: { type: GraphQLString },
-    some: { type: SomeInterfaceType },
-    foo: { type: FooType },
-  }),
-});
+  type Bar implements SomeInterface {
+    name: String
+    some: SomeInterface
+    foo: Foo
+  }
 
-const BizType = new GraphQLObjectType({
-  name: 'Biz',
-  fields: () => ({
-    fizz: { type: GraphQLString },
-  }),
-});
+  type Biz {
+    fizz: String
+  }
 
-const SomeUnionType = new GraphQLUnionType({
-  name: 'SomeUnion',
-  types: [FooType, BizType],
-});
+  union SomeUnion = Foo | Biz
 
-const SomeEnumType = new GraphQLEnumType({
-  name: 'SomeEnum',
-  values: {
-    ONE: { value: 1 },
-    TWO: { value: 2 },
-  },
-});
+  enum SomeEnum {
+    ONE
+    TWO
+  }
 
-const SomeInputType = new GraphQLInputObjectType({
-  name: 'SomeInput',
-  fields: () => ({
-    fooArg: { type: GraphQLString },
-  }),
-});
+  input SomeInput {
+    fooArg: String
+  }
 
-const FooDirective = new GraphQLDirective({
-  name: 'foo',
-  args: {
-    input: { type: SomeInputType },
-  },
-  isRepeatable: true,
-  locations: [
-    DirectiveLocation.SCHEMA,
-    DirectiveLocation.SCALAR,
-    DirectiveLocation.OBJECT,
-    DirectiveLocation.FIELD_DEFINITION,
-    DirectiveLocation.ARGUMENT_DEFINITION,
-    DirectiveLocation.INTERFACE,
-    DirectiveLocation.UNION,
-    DirectiveLocation.ENUM,
-    DirectiveLocation.ENUM_VALUE,
-    DirectiveLocation.INPUT_OBJECT,
-    DirectiveLocation.INPUT_FIELD_DEFINITION,
-  ],
-});
+  directive @foo(input: SomeInput) repeatable on SCHEMA | SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
 
-const testSchema = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: 'Query',
-    fields: () => ({
-      foo: { type: FooType },
-      someScalar: { type: SomeScalarType },
-      someUnion: { type: SomeUnionType },
-      someEnum: { type: SomeEnumType },
-      someInterface: {
-        args: { id: { type: GraphQLNonNull(GraphQLID) } },
-        type: SomeInterfaceType,
-      },
-      someInput: {
-        args: { input: { type: SomeInputType } },
-        type: GraphQLString,
-      },
-    }),
-  }),
-  types: [FooType, BarType],
-  directives: specifiedDirectives.concat([FooDirective]),
-});
+  type Query {
+    foo: Foo
+    someScalar: SomeScalar
+    someUnion: SomeUnion
+    someEnum: SomeEnum
+    someInterface(id: ID!): SomeInterface
+    someInput(input: SomeInput): String
+  }
+`);
 
 function extendTestSchema(sdl, options) {
   const originalPrint = printSchema(testSchema);
@@ -1203,10 +1138,10 @@ describe('extendSchema', () => {
     });
 
     it('adds schema definition missing in the original schema', () => {
-      let schema = new GraphQLSchema({
-        directives: [FooDirective],
-        types: [FooType],
-      });
+      let schema = buildSchema(`
+        directive @foo on SCHEMA
+        type Foo
+      `);
       expect(schema.getQueryType()).to.equal(undefined);
 
       const extensionSDL = dedent`
