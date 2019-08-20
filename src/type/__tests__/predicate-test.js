@@ -578,6 +578,7 @@ describe('Type predicates', () => {
         name: 'someArg',
         description: undefined,
         defaultValue: undefined,
+        extensions: undefined,
         astNode: undefined,
         ...config,
       };
@@ -621,6 +622,7 @@ describe('Type predicates', () => {
         name: 'someInputField',
         description: undefined,
         defaultValue: undefined,
+        extensions: undefined,
         astNode: undefined,
         ...config,
       };

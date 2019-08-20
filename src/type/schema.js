@@ -4,11 +4,16 @@ import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
+import toObjMap from '../jsutils/toObjMap';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
-import { type ObjMap } from '../jsutils/ObjMap';
 import isObjectLike from '../jsutils/isObjectLike';
 import defineToStringTag from '../jsutils/defineToStringTag';
+import {
+  type ObjMap,
+  type ReadOnlyObjMap,
+  type ReadOnlyObjMapLike,
+} from '../jsutils/ObjMap';
 
 import { type GraphQLError } from '../error/GraphQLError';
 import {
@@ -115,6 +120,7 @@ export function assertSchema(schema: mixed): GraphQLSchema {
  *
  */
 export class GraphQLSchema {
+  extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?SchemaDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>;
 
@@ -157,6 +163,7 @@ export class GraphQLSchema {
       );
     }
 
+    this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
 
@@ -263,6 +270,7 @@ export class GraphQLSchema {
     ...GraphQLSchemaConfig,
     types: Array<GraphQLNamedType>,
     directives: Array<GraphQLDirective>,
+    extensions: ?ReadOnlyObjMap<mixed>,
     extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>,
     assumeValid: boolean,
     allowedLegacyNames: $ReadOnlyArray<string>,
@@ -273,6 +281,7 @@ export class GraphQLSchema {
       subscription: this.getSubscriptionType(),
       types: objectValues(this.getTypeMap()),
       directives: this.getDirectives().slice(),
+      extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || [],
       assumeValid: this.__validationErrors !== undefined,
@@ -312,6 +321,7 @@ export type GraphQLSchemaConfig = {|
   subscription?: ?GraphQLObjectType,
   types?: ?Array<GraphQLNamedType>,
   directives?: ?Array<GraphQLDirective>,
+  extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?SchemaDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
   ...GraphQLSchemaValidationOptions,

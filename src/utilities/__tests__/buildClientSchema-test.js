@@ -362,6 +362,7 @@ describe('Type System: build schema from introspection', () => {
         value: 'VEGETABLES',
         isDeprecated: false,
         deprecationReason: null,
+        extensions: undefined,
         astNode: undefined,
       },
       {
@@ -370,6 +371,7 @@ describe('Type System: build schema from introspection', () => {
         value: 'FRUITS',
         isDeprecated: false,
         deprecationReason: null,
+        extensions: undefined,
         astNode: undefined,
       },
       {
@@ -378,6 +380,7 @@ describe('Type System: build schema from introspection', () => {
         value: 'OILS',
         isDeprecated: false,
         deprecationReason: null,
+        extensions: undefined,
         astNode: undefined,
       },
       {
@@ -386,6 +389,7 @@ describe('Type System: build schema from introspection', () => {
         value: 'DAIRY',
         isDeprecated: false,
         deprecationReason: null,
+        extensions: undefined,
         astNode: undefined,
       },
       {
@@ -394,6 +398,7 @@ describe('Type System: build schema from introspection', () => {
         value: 'MEAT',
         isDeprecated: false,
         deprecationReason: null,
+        extensions: undefined,
         astNode: undefined,
       },
     ]);
