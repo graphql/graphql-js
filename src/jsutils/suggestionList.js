@@ -45,8 +45,6 @@ function lexicalDistance(aStr, bStr) {
     return 0;
   }
 
-  let i;
-  let j;
   const d = [];
   const a = aStr.toLowerCase();
   const b = bStr.toLowerCase();
@@ -58,16 +56,16 @@ function lexicalDistance(aStr, bStr) {
     return 1;
   }
 
-  for (i = 0; i <= aLength; i++) {
+  for (let i = 0; i <= aLength; i++) {
     d[i] = [i];
   }
 
-  for (j = 1; j <= bLength; j++) {
+  for (let j = 1; j <= bLength; j++) {
     d[0][j] = j;
   }
 
-  for (i = 1; i <= aLength; i++) {
-    for (j = 1; j <= bLength; j++) {
+  for (let i = 1; i <= aLength; i++) {
+    for (let j = 1; j <= bLength; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
 
       d[i][j] = Math.min(
