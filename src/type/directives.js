@@ -3,11 +3,16 @@
 import objectEntries from '../polyfills/objectEntries';
 
 import inspect from '../jsutils/inspect';
+import toObjMap from '../jsutils/toObjMap';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import defineToJSON from '../jsutils/defineToJSON';
 import isObjectLike from '../jsutils/isObjectLike';
 import defineToStringTag from '../jsutils/defineToStringTag';
+import {
+  type ReadOnlyObjMap,
+  type ReadOnlyObjMapLike,
+} from '../jsutils/ObjMap';
 
 import { type DirectiveDefinitionNode } from '../language/ast';
 import {
@@ -53,6 +58,7 @@ export class GraphQLDirective {
   locations: Array<DirectiveLocationEnum>;
   isRepeatable: boolean;
   args: Array<GraphQLArgument>;
+  extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?DirectiveDefinitionNode;
 
   constructor(config: GraphQLDirectiveConfig): void {
@@ -60,6 +66,7 @@ export class GraphQLDirective {
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
+    this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
 
     devAssert(config.name, 'Directive must be named.');
@@ -79,6 +86,7 @@ export class GraphQLDirective {
       description: arg.description === undefined ? null : arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
+      extensions: arg.extensions,
       astNode: arg.astNode,
     }));
   }
@@ -90,6 +98,7 @@ export class GraphQLDirective {
   toConfig(): {|
     ...GraphQLDirectiveConfig,
     args: GraphQLFieldConfigArgumentMap,
+    extensions: ?ReadOnlyObjMap<mixed>,
     isRepeatable: boolean,
   |} {
     return {
@@ -98,6 +107,7 @@ export class GraphQLDirective {
       locations: this.locations,
       args: argsToArgsConfig(this.args),
       isRepeatable: this.isRepeatable,
+      extensions: this.extensions,
       astNode: this.astNode,
     };
   }
@@ -113,6 +123,7 @@ export type GraphQLDirectiveConfig = {|
   locations: Array<DirectiveLocationEnum>,
   args?: ?GraphQLFieldConfigArgumentMap,
   isRepeatable?: ?boolean,
+  extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?DirectiveDefinitionNode,
 |};
 

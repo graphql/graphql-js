@@ -195,6 +195,7 @@ describe('Type System: Objects', () => {
       subscribe: undefined,
       isDeprecated: true,
       deprecationReason: 'A terrible reason',
+      extensions: undefined,
       astNode: undefined,
     });
   });
@@ -216,6 +217,7 @@ describe('Type System: Objects', () => {
         subscribe: undefined,
         isDeprecated: false,
         deprecationReason: undefined,
+        extensions: undefined,
         astNode: undefined,
       },
     });
@@ -244,6 +246,7 @@ describe('Type System: Objects', () => {
             description: null,
             type: ScalarType,
             defaultValue: undefined,
+            extensions: undefined,
             astNode: undefined,
           },
         ],
@@ -251,6 +254,7 @@ describe('Type System: Objects', () => {
         subscribe: undefined,
         isDeprecated: false,
         deprecationReason: undefined,
+        extensions: undefined,
         astNode: undefined,
       },
     });
@@ -524,6 +528,7 @@ describe('Type System: Enums', () => {
       isDeprecated: true,
       deprecationReason: 'Just because',
       value: 'foo',
+      extensions: undefined,
       astNode: undefined,
     });
   });
@@ -544,6 +549,7 @@ describe('Type System: Enums', () => {
         value: null,
         isDeprecated: false,
         deprecationReason: undefined,
+        extensions: undefined,
         astNode: undefined,
       },
       {
@@ -552,6 +558,7 @@ describe('Type System: Enums', () => {
         value: undefined,
         isDeprecated: false,
         deprecationReason: undefined,
+        extensions: undefined,
         astNode: undefined,
       },
     ]);
@@ -649,6 +656,7 @@ describe('Type System: Input Objects', () => {
           description: undefined,
           type: ScalarType,
           defaultValue: undefined,
+          extensions: undefined,
           astNode: undefined,
         },
       });
@@ -667,6 +675,7 @@ describe('Type System: Input Objects', () => {
           description: undefined,
           type: ScalarType,
           defaultValue: undefined,
+          extensions: undefined,
           astNode: undefined,
         },
       });
