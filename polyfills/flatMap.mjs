@@ -5,8 +5,9 @@ var flatMap = Array.prototype.flatMap ? function (list, fn) {
 } : function (list, fn) {
   var result = [];
 
-  for (var i = 0; i < list.length; i++) {
-    var value = fn(list[i]);
+  for (var _i2 = 0; _i2 < list.length; _i2++) {
+    var _item = list[_i2];
+    var value = fn(_item);
 
     if (Array.isArray(value)) {
       result = result.concat(value);

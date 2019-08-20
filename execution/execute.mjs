@@ -138,8 +138,8 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
   var hasMultipleAssumedOperations = false;
   var fragments = Object.create(null);
 
-  for (var i = 0; i < document.definitions.length; i++) {
-    var definition = document.definitions[i];
+  for (var _i2 = 0, _document$definitions2 = document.definitions; _i2 < _document$definitions2.length; _i2++) {
+    var definition = _document$definitions2[_i2];
 
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
@@ -255,8 +255,8 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
   var results = Object.create(null);
   var containsPromise = false;
 
-  for (var i = 0, keys = Object.keys(fields); i < keys.length; ++i) {
-    var responseName = keys[i];
+  for (var _i4 = 0, _Object$keys2 = Object.keys(fields); _i4 < _Object$keys2.length; _i4++) {
+    var responseName = _Object$keys2[_i4];
     var fieldNodes = fields[responseName];
     var fieldPath = addPath(path, responseName);
     var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
@@ -291,8 +291,8 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
 
 
 export function collectFields(exeContext, runtimeType, selectionSet, fields, visitedFragmentNames) {
-  for (var i = 0; i < selectionSet.selections.length; i++) {
-    var selection = selectionSet.selections[i];
+  for (var _i6 = 0, _selectionSet$selecti2 = selectionSet.selections; _i6 < _selectionSet$selecti2.length; _i6++) {
+    var selection = _selectionSet$selecti2[_i6];
 
     switch (selection.kind) {
       case Kind.FIELD:
@@ -709,11 +709,11 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
   var subFieldNodes = Object.create(null);
   var visitedFragmentNames = Object.create(null);
 
-  for (var i = 0; i < fieldNodes.length; i++) {
-    var selectionSet = fieldNodes[i].selectionSet;
+  for (var _i8 = 0; _i8 < fieldNodes.length; _i8++) {
+    var node = fieldNodes[_i8];
 
-    if (selectionSet) {
-      subFieldNodes = collectFields(exeContext, returnType, selectionSet, subFieldNodes, visitedFragmentNames);
+    if (node.selectionSet) {
+      subFieldNodes = collectFields(exeContext, returnType, node.selectionSet, subFieldNodes, visitedFragmentNames);
     }
   }
 
@@ -757,9 +757,9 @@ export var defaultTypeResolver = function defaultTypeResolver(value, contextValu
 
   if (promisedIsTypeOfResults.length) {
     return Promise.all(promisedIsTypeOfResults).then(function (isTypeOfResults) {
-      for (var _i = 0; _i < isTypeOfResults.length; _i++) {
-        if (isTypeOfResults[_i]) {
-          return possibleTypes[_i];
+      for (var _i9 = 0; _i9 < isTypeOfResults.length; _i9++) {
+        if (isTypeOfResults[_i9]) {
+          return possibleTypes[_i9];
         }
       }
     });

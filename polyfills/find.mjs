@@ -3,8 +3,8 @@
 var find = Array.prototype.find ? function (list, predicate) {
   return Array.prototype.find.call(list, predicate);
 } : function (list, predicate) {
-  for (var i = 0; i < list.length; i++) {
-    var value = list[i];
+  for (var _i2 = 0; _i2 < list.length; _i2++) {
+    var value = list[_i2];
 
     if (predicate(value)) {
       return value;

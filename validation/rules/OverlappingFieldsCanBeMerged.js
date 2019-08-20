@@ -485,8 +485,8 @@ function getReferencedFieldsAndFragmentNames(context, cachedFieldsAndFragmentNam
 }
 
 function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeAndDefs, fragmentNames) {
-  for (var i = 0; i < selectionSet.selections.length; i++) {
-    var selection = selectionSet.selections[i];
+  for (var _i9 = 0, _selectionSet$selecti2 = selectionSet.selections; _i9 < _selectionSet$selecti2.length; _i9++) {
+    var selection = _selectionSet$selecti2[_i9];
 
     switch (selection.kind) {
       case _kinds.Kind.FIELD:

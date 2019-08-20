@@ -747,8 +747,7 @@ function _collectFieldsAndFragmentNames(
   nodeAndDefs,
   fragmentNames,
 ): void {
-  for (let i = 0; i < selectionSet.selections.length; i++) {
-    const selection = selectionSet.selections[i];
+  for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
         const fieldName = selection.name.value;

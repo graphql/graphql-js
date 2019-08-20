@@ -44,8 +44,6 @@ function lexicalDistance(aStr, bStr) {
     return 0;
   }
 
-  var i;
-  var j;
   var d = [];
   var a = aStr.toLowerCase();
   var b = bStr.toLowerCase();
@@ -56,21 +54,21 @@ function lexicalDistance(aStr, bStr) {
     return 1;
   }
 
-  for (i = 0; i <= aLength; i++) {
+  for (var i = 0; i <= aLength; i++) {
     d[i] = [i];
   }
 
-  for (j = 1; j <= bLength; j++) {
+  for (var j = 1; j <= bLength; j++) {
     d[0][j] = j;
   }
 
-  for (i = 1; i <= aLength; i++) {
-    for (j = 1; j <= bLength; j++) {
-      var cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+  for (var _i3 = 1; _i3 <= aLength; _i3++) {
+    for (var _j = 1; _j <= bLength; _j++) {
+      var cost = a[_i3 - 1] === b[_j - 1] ? 0 : 1;
+      d[_i3][_j] = Math.min(d[_i3 - 1][_j] + 1, d[_i3][_j - 1] + 1, d[_i3 - 1][_j - 1] + cost);
 
-      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
-        d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
+      if (_i3 > 1 && _j > 1 && a[_i3 - 1] === b[_j - 2] && a[_i3 - 2] === b[_j - 1]) {
+        d[_i3][_j] = Math.min(d[_i3][_j], d[_i3 - 2][_j - 2] + cost);
       }
     }
   }
