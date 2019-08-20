@@ -1,5 +1,6 @@
 import objectEntries from '../polyfills/objectEntries';
 import inspect from '../jsutils/inspect';
+import toObjMap from '../jsutils/toObjMap';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import defineToJSON from '../jsutils/defineToJSON';
@@ -36,6 +37,7 @@ function () {
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
+    this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     config.name || devAssert(0, 'Directive must be named.');
     Array.isArray(config.locations) || devAssert(0, "@".concat(config.name, " locations must be an Array."));
@@ -49,6 +51,7 @@ function () {
         description: arg.description === undefined ? null : arg.description,
         type: arg.type,
         defaultValue: arg.defaultValue,
+        extensions: arg.extensions,
         astNode: arg.astNode
       };
     });
@@ -67,6 +70,7 @@ function () {
       locations: this.locations,
       args: argsToArgsConfig(this.args),
       isRepeatable: this.isRepeatable,
+      extensions: this.extensions,
       astNode: this.astNode
     };
   };

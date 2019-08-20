@@ -13,6 +13,8 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap"));
+
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
@@ -126,6 +128,7 @@ function () {
       !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || (0, _devAssert.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.allowedLegacyNames), "."));
     }
 
+    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     this.__allowedLegacyNames = config.allowedLegacyNames || [];
@@ -286,6 +289,7 @@ function () {
       subscription: this.getSubscriptionType(),
       types: (0, _objectValues.default)(this.getTypeMap()),
       directives: this.getDirectives().slice(),
+      extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || [],
       assumeValid: this.__validationErrors !== undefined,

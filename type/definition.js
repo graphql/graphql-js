@@ -54,6 +54,8 @@ var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
 
+var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap"));
+
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
@@ -475,6 +477,7 @@ function () {
       return parseValue((0, _valueFromASTUntyped.valueFromASTUntyped)(node));
     };
 
+    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
@@ -494,6 +497,7 @@ function () {
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
+      extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || []
     };
@@ -555,6 +559,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
+    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._fields = defineFieldMap.bind(undefined, config);
@@ -588,6 +593,7 @@ function () {
       interfaces: this.getInterfaces(),
       fields: fieldsToFieldsConfig(this.getFields()),
       isTypeOf: this.isTypeOf,
+      extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || []
     };
@@ -628,6 +634,7 @@ function defineFieldMap(config) {
         description: arg.description === undefined ? null : arg.description,
         type: arg.type,
         defaultValue: arg.defaultValue,
+        extensions: arg.extensions && (0, _toObjMap.default)(arg.extensions),
         astNode: arg.astNode
       };
     });
@@ -640,6 +647,7 @@ function defineFieldMap(config) {
       subscribe: fieldConfig.subscribe,
       isDeprecated: Boolean(fieldConfig.deprecationReason),
       deprecationReason: fieldConfig.deprecationReason,
+      extensions: fieldConfig.extensions && (0, _toObjMap.default)(fieldConfig.extensions),
       astNode: fieldConfig.astNode
     };
   });
@@ -658,6 +666,7 @@ function fieldsToFieldsConfig(fields) {
       resolve: field.resolve,
       subscribe: field.subscribe,
       deprecationReason: field.deprecationReason,
+      extensions: field.extensions,
       astNode: field.astNode
     };
   });
@@ -671,6 +680,7 @@ function argsToArgsConfig(args) {
       description: arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
+      extensions: arg.extensions,
       astNode: arg.astNode
     };
   });
@@ -705,6 +715,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
+    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._fields = defineFieldMap.bind(undefined, config);
@@ -728,6 +739,7 @@ function () {
       description: this.description,
       fields: fieldsToFieldsConfig(this.getFields()),
       resolveType: this.resolveType,
+      extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || []
     };
@@ -775,6 +787,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
+    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._types = defineTypes.bind(undefined, config);
@@ -798,6 +811,7 @@ function () {
       description: this.description,
       types: this.getTypes(),
       resolveType: this.resolveType,
+      extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || []
     };
@@ -850,6 +864,7 @@ function () {
   function GraphQLEnumType(config) {
     this.name = config.name;
     this.description = config.description;
+    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._values = defineEnumValues(this.name, config.values);
@@ -913,6 +928,7 @@ function () {
         description: value.description,
         value: value.value,
         deprecationReason: value.deprecationReason,
+        extensions: value.extensions,
         astNode: value.astNode
       };
     });
@@ -920,6 +936,7 @@ function () {
       name: this.name,
       description: this.description,
       values: values,
+      extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || []
     };
@@ -950,6 +967,7 @@ function defineEnumValues(typeName, valueMap) {
       value: 'value' in value ? value.value : valueName,
       isDeprecated: Boolean(value.deprecationReason),
       deprecationReason: value.deprecationReason,
+      extensions: value.extensions && (0, _toObjMap.default)(value.extensions),
       astNode: value.astNode
     };
   });
@@ -981,6 +999,7 @@ function () {
   function GraphQLInputObjectType(config) {
     this.name = config.name;
     this.description = config.description;
+    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._fields = defineInputFieldMap.bind(undefined, config);
@@ -1003,6 +1022,7 @@ function () {
         description: field.description,
         type: field.type,
         defaultValue: field.defaultValue,
+        extensions: field.extensions,
         astNode: field.astNode
       };
     });
@@ -1010,6 +1030,7 @@ function () {
       name: this.name,
       description: this.description,
       fields: fields,
+      extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || []
     };
@@ -1037,6 +1058,7 @@ function defineInputFieldMap(config) {
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
+      extensions: fieldConfig.extensions && (0, _toObjMap.default)(fieldConfig.extensions),
       astNode: fieldConfig.astNode
     };
   });

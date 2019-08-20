@@ -1,6 +1,7 @@
 import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
+import toObjMap from '../jsutils/toObjMap';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import isObjectLike from '../jsutils/isObjectLike';
@@ -107,6 +108,7 @@ function () {
       !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || devAssert(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat(inspect(config.allowedLegacyNames), "."));
     }
 
+    this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     this.__allowedLegacyNames = config.allowedLegacyNames || [];
@@ -267,6 +269,7 @@ function () {
       subscription: this.getSubscriptionType(),
       types: objectValues(this.getTypeMap()),
       directives: this.getDirectives().slice(),
+      extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || [],
       assumeValid: this.__validationErrors !== undefined,

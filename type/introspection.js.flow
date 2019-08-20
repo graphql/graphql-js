@@ -439,6 +439,7 @@ export const SchemaMetaFieldDef: GraphQLField<mixed, mixed> = {
   args: [],
   resolve: (source, args, context, { schema }) => schema,
   deprecationReason: undefined,
+  extensions: undefined,
   astNode: undefined,
 };
 
@@ -452,11 +453,13 @@ export const TypeMetaFieldDef: GraphQLField<mixed, mixed> = {
       description: undefined,
       type: GraphQLNonNull(GraphQLString),
       defaultValue: undefined,
+      extensions: undefined,
       astNode: undefined,
     },
   ],
   resolve: (source, { name }, context, { schema }) => schema.getType(name),
   deprecationReason: undefined,
+  extensions: undefined,
   astNode: undefined,
 };
 
@@ -467,6 +470,7 @@ export const TypeNameMetaFieldDef: GraphQLField<mixed, mixed> = {
   args: [],
   resolve: (source, args, context, { parentType }) => parentType.name,
   deprecationReason: undefined,
+  extensions: undefined,
   astNode: undefined,
 };
 

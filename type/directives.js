@@ -12,6 +12,8 @@ var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap"));
+
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
@@ -56,6 +58,7 @@ function () {
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
+    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     config.name || (0, _devAssert.default)(0, 'Directive must be named.');
     Array.isArray(config.locations) || (0, _devAssert.default)(0, "@".concat(config.name, " locations must be an Array."));
@@ -69,6 +72,7 @@ function () {
         description: arg.description === undefined ? null : arg.description,
         type: arg.type,
         defaultValue: arg.defaultValue,
+        extensions: arg.extensions,
         astNode: arg.astNode
       };
     });
@@ -87,6 +91,7 @@ function () {
       locations: this.locations,
       args: (0, _definition.argsToArgsConfig)(this.args),
       isRepeatable: this.isRepeatable,
+      extensions: this.extensions,
       astNode: this.astNode
     };
   };

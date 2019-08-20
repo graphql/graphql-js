@@ -464,6 +464,7 @@ export var SchemaMetaFieldDef = {
     return schema;
   },
   deprecationReason: undefined,
+  extensions: undefined,
   astNode: undefined
 };
 export var TypeMetaFieldDef = {
@@ -475,6 +476,7 @@ export var TypeMetaFieldDef = {
     description: undefined,
     type: GraphQLNonNull(GraphQLString),
     defaultValue: undefined,
+    extensions: undefined,
     astNode: undefined
   }],
   resolve: function resolve(source, _ref5, context, _ref6) {
@@ -483,6 +485,7 @@ export var TypeMetaFieldDef = {
     return schema.getType(name);
   },
   deprecationReason: undefined,
+  extensions: undefined,
   astNode: undefined
 };
 export var TypeNameMetaFieldDef = {
@@ -495,6 +498,7 @@ export var TypeNameMetaFieldDef = {
     return parentType.name;
   },
   deprecationReason: undefined,
+  extensions: undefined,
   astNode: undefined
 };
 export var introspectionTypes = Object.freeze([__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind]);

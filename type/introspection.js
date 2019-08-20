@@ -506,6 +506,7 @@ var SchemaMetaFieldDef = {
     return schema;
   },
   deprecationReason: undefined,
+  extensions: undefined,
   astNode: undefined
 };
 exports.SchemaMetaFieldDef = SchemaMetaFieldDef;
@@ -518,6 +519,7 @@ var TypeMetaFieldDef = {
     description: undefined,
     type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLString),
     defaultValue: undefined,
+    extensions: undefined,
     astNode: undefined
   }],
   resolve: function resolve(source, _ref5, context, _ref6) {
@@ -526,6 +528,7 @@ var TypeMetaFieldDef = {
     return schema.getType(name);
   },
   deprecationReason: undefined,
+  extensions: undefined,
   astNode: undefined
 };
 exports.TypeMetaFieldDef = TypeMetaFieldDef;
@@ -539,6 +542,7 @@ var TypeNameMetaFieldDef = {
     return parentType.name;
   },
   deprecationReason: undefined,
+  extensions: undefined,
   astNode: undefined
 };
 exports.TypeNameMetaFieldDef = TypeNameMetaFieldDef;
