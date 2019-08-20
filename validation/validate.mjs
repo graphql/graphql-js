@@ -1,9 +1,11 @@
 import devAssert from '../jsutils/devAssert';
+import { GraphQLError } from '../error/GraphQLError';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
 import { SDLValidationContext, ValidationContext } from './ValidationContext';
+export var ABORT_VALIDATION = Object.freeze({});
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -24,28 +26,49 @@ import { SDLValidationContext, ValidationContext } from './ValidationContext';
 export function validate(schema, documentAST) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedRules;
   var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new TypeInfo(schema);
+  var options = arguments.length > 4 ? arguments[4] : undefined;
   documentAST || devAssert(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
 
   assertValidSchema(schema);
-  var context = new ValidationContext(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,
+  var abortObj = Object.freeze({});
+  var errors = [];
+  var maxErrors = options && options.maxErrors;
+  var context = new ValidationContext(schema, documentAST, typeInfo, function (error) {
+    if (maxErrors != null && errors.length >= maxErrors) {
+      errors.push(new GraphQLError('Too many validation errors, error limit reached. Validation aborted.'));
+      throw abortObj;
+    }
+
+    errors.push(error);
+  }); // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
 
   var visitor = visitInParallel(rules.map(function (rule) {
     return rule(context);
   })); // Visit the whole document with each instance of all provided rules.
 
-  visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
-  return context.getErrors();
+  try {
+    visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
+  } catch (e) {
+    if (e !== abortObj) {
+      throw e;
+    }
+  }
+
+  return errors;
 } // @internal
 
 export function validateSDL(documentAST, schemaToExtend) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedSDLRules;
-  var context = new SDLValidationContext(documentAST, schemaToExtend);
+  var errors = [];
+  var context = new SDLValidationContext(documentAST, schemaToExtend, function (error) {
+    errors.push(error);
+  });
   var visitors = rules.map(function (rule) {
     return rule(context);
   });
   visit(documentAST, visitInParallel(visitors));
-  return context.getErrors();
+  return errors;
 }
 /**
  * Utility function which asserts a SDL document is valid by throwing an error

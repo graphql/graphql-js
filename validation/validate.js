@@ -7,8 +7,11 @@ exports.validate = validate;
 exports.validateSDL = validateSDL;
 exports.assertValidSDL = assertValidSDL;
 exports.assertValidSDLExtension = assertValidSDLExtension;
+exports.ABORT_VALIDATION = void 0;
 
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+
+var _GraphQLError = require("../error/GraphQLError");
 
 var _visitor = require("../language/visitor");
 
@@ -22,6 +25,7 @@ var _ValidationContext = require("./ValidationContext");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var ABORT_VALIDATION = Object.freeze({});
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -38,32 +42,56 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
+
+exports.ABORT_VALIDATION = ABORT_VALIDATION;
+
 function validate(schema, documentAST) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _specifiedRules.specifiedRules;
   var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new _TypeInfo.TypeInfo(schema);
+  var options = arguments.length > 4 ? arguments[4] : undefined;
   documentAST || (0, _devAssert.default)(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);
-  var context = new _ValidationContext.ValidationContext(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,
+  var abortObj = Object.freeze({});
+  var errors = [];
+  var maxErrors = options && options.maxErrors;
+  var context = new _ValidationContext.ValidationContext(schema, documentAST, typeInfo, function (error) {
+    if (maxErrors != null && errors.length >= maxErrors) {
+      errors.push(new _GraphQLError.GraphQLError('Too many validation errors, error limit reached. Validation aborted.'));
+      throw abortObj;
+    }
+
+    errors.push(error);
+  }); // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
 
   var visitor = (0, _visitor.visitInParallel)(rules.map(function (rule) {
     return rule(context);
   })); // Visit the whole document with each instance of all provided rules.
 
-  (0, _visitor.visit)(documentAST, (0, _visitor.visitWithTypeInfo)(typeInfo, visitor));
-  return context.getErrors();
+  try {
+    (0, _visitor.visit)(documentAST, (0, _visitor.visitWithTypeInfo)(typeInfo, visitor));
+  } catch (e) {
+    if (e !== abortObj) {
+      throw e;
+    }
+  }
+
+  return errors;
 } // @internal
 
 
 function validateSDL(documentAST, schemaToExtend) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _specifiedRules.specifiedSDLRules;
-  var context = new _ValidationContext.SDLValidationContext(documentAST, schemaToExtend);
+  var errors = [];
+  var context = new _ValidationContext.SDLValidationContext(documentAST, schemaToExtend, function (error) {
+    errors.push(error);
+  });
   var visitors = rules.map(function (rule) {
     return rule(context);
   });
   (0, _visitor.visit)(documentAST, (0, _visitor.visitInParallel)(visitors));
-  return context.getErrors();
+  return errors;
 }
 /**
  * Utility function which asserts a SDL document is valid by throwing an error

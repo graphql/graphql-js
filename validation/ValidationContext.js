@@ -21,19 +21,25 @@ function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.crea
 var ASTValidationContext =
 /*#__PURE__*/
 function () {
-  function ASTValidationContext(ast) {
+  function ASTValidationContext(ast, onError) {
     this._ast = ast;
     this._errors = [];
     this._fragments = undefined;
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
+    this._onError = onError;
   }
 
   var _proto = ASTValidationContext.prototype;
 
   _proto.reportError = function reportError(error) {
     this._errors.push(error);
-  };
+
+    if (this._onError) {
+      this._onError(error);
+    }
+  } // @deprecated: use onError callback instead - will be removed in v15.
+  ;
 
   _proto.getErrors = function getErrors() {
     return this._errors;
@@ -129,10 +135,10 @@ var SDLValidationContext =
 function (_ASTValidationContext) {
   _inheritsLoose(SDLValidationContext, _ASTValidationContext);
 
-  function SDLValidationContext(ast, schema) {
+  function SDLValidationContext(ast, schema, onError) {
     var _this;
 
-    _this = _ASTValidationContext.call(this, ast) || this;
+    _this = _ASTValidationContext.call(this, ast, onError) || this;
     _this._schema = schema;
     return _this;
   }
@@ -153,10 +159,10 @@ var ValidationContext =
 function (_ASTValidationContext2) {
   _inheritsLoose(ValidationContext, _ASTValidationContext2);
 
-  function ValidationContext(schema, ast, typeInfo) {
+  function ValidationContext(schema, ast, typeInfo, onError) {
     var _this2;
 
-    _this2 = _ASTValidationContext2.call(this, ast) || this;
+    _this2 = _ASTValidationContext2.call(this, ast, onError) || this;
     _this2._schema = schema;
     _this2._typeInfo = typeInfo;
     _this2._variableUsages = new Map();
