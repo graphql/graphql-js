@@ -6,6 +6,7 @@ module.exports = {
     ['@babel/plugin-transform-classes', { loose: true }],
     ['@babel/plugin-transform-destructuring', { loose: true }],
     ['@babel/plugin-transform-spread', { loose: true }],
+    ['@babel/plugin-transform-for-of', { assumeArray: true }],
   ],
   env: {
     cjs: {
