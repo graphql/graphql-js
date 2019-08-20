@@ -30,36 +30,18 @@ export function UniqueEnumValueNames(context) {
 
     if (node.values) {
       var valueNames = knownValueNames[typeName];
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
 
-      try {
-        for (var _iterator = node.values[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var valueDef = _step.value;
-          var valueName = valueDef.name.value;
-          var existingType = existingTypeMap[typeName];
+      for (var _i2 = 0, _node$values2 = node.values; _i2 < _node$values2.length; _i2++) {
+        var valueDef = _node$values2[_i2];
+        var valueName = valueDef.name.value;
+        var existingType = existingTypeMap[typeName];
 
-          if (isEnumType(existingType) && existingType.getValue(valueName)) {
-            context.reportError(new GraphQLError(existedEnumValueNameMessage(typeName, valueName), valueDef.name));
-          } else if (valueNames[valueName]) {
-            context.reportError(new GraphQLError(duplicateEnumValueNameMessage(typeName, valueName), [valueNames[valueName], valueDef.name]));
-          } else {
-            valueNames[valueName] = valueDef.name;
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
+        if (isEnumType(existingType) && existingType.getValue(valueName)) {
+          context.reportError(new GraphQLError(existedEnumValueNameMessage(typeName, valueName), valueDef.name));
+        } else if (valueNames[valueName]) {
+          context.reportError(new GraphQLError(duplicateEnumValueNameMessage(typeName, valueName), [valueNames[valueName], valueDef.name]));
+        } else {
+          valueNames[valueName] = valueDef.name;
         }
       }
     }

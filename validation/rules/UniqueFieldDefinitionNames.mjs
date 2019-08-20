@@ -34,35 +34,17 @@ export function UniqueFieldDefinitionNames(context) {
 
     if (node.fields) {
       var fieldNames = knownFieldNames[typeName];
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
 
-      try {
-        for (var _iterator = node.fields[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var fieldDef = _step.value;
-          var fieldName = fieldDef.name.value;
+      for (var _i2 = 0, _node$fields2 = node.fields; _i2 < _node$fields2.length; _i2++) {
+        var fieldDef = _node$fields2[_i2];
+        var fieldName = fieldDef.name.value;
 
-          if (hasField(existingTypeMap[typeName], fieldName)) {
-            context.reportError(new GraphQLError(existedFieldDefinitionNameMessage(typeName, fieldName), fieldDef.name));
-          } else if (fieldNames[fieldName]) {
-            context.reportError(new GraphQLError(duplicateFieldDefinitionNameMessage(typeName, fieldName), [fieldNames[fieldName], fieldDef.name]));
-          } else {
-            fieldNames[fieldName] = fieldDef.name;
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
+        if (hasField(existingTypeMap[typeName], fieldName)) {
+          context.reportError(new GraphQLError(existedFieldDefinitionNameMessage(typeName, fieldName), fieldDef.name));
+        } else if (fieldNames[fieldName]) {
+          context.reportError(new GraphQLError(duplicateFieldDefinitionNameMessage(typeName, fieldName), [fieldNames[fieldName], fieldDef.name]));
+        } else {
+          fieldNames[fieldName] = fieldDef.name;
         }
       }
     }

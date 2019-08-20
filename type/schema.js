@@ -9,7 +9,7 @@ exports.GraphQLSchema = void 0;
 
 var _find = _interopRequireDefault(require("../polyfills/find"));
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues7 = _interopRequireDefault(require("../polyfills/objectValues"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
@@ -150,60 +150,23 @@ function () {
     this._possibleTypeMap = Object.create(null); // Keep track of all implementations by interface name.
 
     this._implementations = Object.create(null);
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
 
-    try {
-      for (var _iterator = (0, _objectValues.default)(this._typeMap)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var type = _step.value;
+    for (var _i2 = 0, _objectValues2 = (0, _objectValues7.default)(this._typeMap); _i2 < _objectValues2.length; _i2++) {
+      var type = _objectValues2[_i2];
 
-        if ((0, _definition.isObjectType)(type)) {
-          var _iteratorNormalCompletion2 = true;
-          var _didIteratorError2 = false;
-          var _iteratorError2 = undefined;
+      if ((0, _definition.isObjectType)(type)) {
+        for (var _i4 = 0, _type$getInterfaces2 = type.getInterfaces(); _i4 < _type$getInterfaces2.length; _i4++) {
+          var iface = _type$getInterfaces2[_i4];
 
-          try {
-            for (var _iterator2 = type.getInterfaces()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-              var iface = _step2.value;
+          if ((0, _definition.isInterfaceType)(iface)) {
+            var impls = this._implementations[iface.name];
 
-              if ((0, _definition.isInterfaceType)(iface)) {
-                var impls = this._implementations[iface.name];
-
-                if (impls) {
-                  impls.push(type);
-                } else {
-                  this._implementations[iface.name] = [type];
-                }
-              }
-            }
-          } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-                _iterator2.return();
-              }
-            } finally {
-              if (_didIteratorError2) {
-                throw _iteratorError2;
-              }
+            if (impls) {
+              impls.push(type);
+            } else {
+              this._implementations[iface.name] = [type];
             }
           }
-        }
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return != null) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
         }
       }
     }
@@ -242,28 +205,10 @@ function () {
   _proto.isPossibleType = function isPossibleType(abstractType, possibleType) {
     if (this._possibleTypeMap[abstractType.name] == null) {
       var map = Object.create(null);
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
 
-      try {
-        for (var _iterator3 = this.getPossibleTypes(abstractType)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var type = _step3.value;
-          map[type.name] = true;
-        }
-      } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-            _iterator3.return();
-          }
-        } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
-          }
-        }
+      for (var _i6 = 0, _this$getPossibleType2 = this.getPossibleTypes(abstractType); _i6 < _this$getPossibleType2.length; _i6++) {
+        var type = _this$getPossibleType2[_i6];
+        map[type.name] = true;
       }
 
       this._possibleTypeMap[abstractType.name] = map;
@@ -287,7 +232,7 @@ function () {
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
-      types: (0, _objectValues.default)(this.getTypeMap()),
+      types: (0, _objectValues7.default)(this.getTypeMap()),
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
@@ -332,58 +277,20 @@ function typeMapReducer(map, type) {
   }
 
   if ((0, _definition.isObjectType)(namedType) || (0, _definition.isInterfaceType)(namedType)) {
-    var _iteratorNormalCompletion4 = true;
-    var _didIteratorError4 = false;
-    var _iteratorError4 = undefined;
-
-    try {
-      for (var _iterator4 = (0, _objectValues.default)(namedType.getFields())[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-        var field = _step4.value;
-        var fieldArgTypes = field.args.map(function (arg) {
-          return arg.type;
-        });
-        reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
-        reducedMap = typeMapReducer(reducedMap, field.type);
-      }
-    } catch (err) {
-      _didIteratorError4 = true;
-      _iteratorError4 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-          _iterator4.return();
-        }
-      } finally {
-        if (_didIteratorError4) {
-          throw _iteratorError4;
-        }
-      }
+    for (var _i8 = 0, _objectValues4 = (0, _objectValues7.default)(namedType.getFields()); _i8 < _objectValues4.length; _i8++) {
+      var field = _objectValues4[_i8];
+      var fieldArgTypes = field.args.map(function (arg) {
+        return arg.type;
+      });
+      reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
+      reducedMap = typeMapReducer(reducedMap, field.type);
     }
   }
 
   if ((0, _definition.isInputObjectType)(namedType)) {
-    var _iteratorNormalCompletion5 = true;
-    var _didIteratorError5 = false;
-    var _iteratorError5 = undefined;
-
-    try {
-      for (var _iterator5 = (0, _objectValues.default)(namedType.getFields())[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-        var _field = _step5.value;
-        reducedMap = typeMapReducer(reducedMap, _field.type);
-      }
-    } catch (err) {
-      _didIteratorError5 = true;
-      _iteratorError5 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
-          _iterator5.return();
-        }
-      } finally {
-        if (_didIteratorError5) {
-          throw _iteratorError5;
-        }
-      }
+    for (var _i10 = 0, _objectValues6 = (0, _objectValues7.default)(namedType.getFields()); _i10 < _objectValues6.length; _i10++) {
+      var _field = _objectValues6[_i10];
+      reducedMap = typeMapReducer(reducedMap, _field.type);
     }
   }
 

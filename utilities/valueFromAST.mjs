@@ -71,44 +71,26 @@ export function valueFromAST(valueNode, type, variables) {
 
     if (valueNode.kind === Kind.LIST) {
       var coercedValues = [];
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
 
-      try {
-        for (var _iterator = valueNode.values[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var itemNode = _step.value;
+      for (var _i2 = 0, _valueNode$values2 = valueNode.values; _i2 < _valueNode$values2.length; _i2++) {
+        var itemNode = _valueNode$values2[_i2];
 
-          if (isMissingVariable(itemNode, variables)) {
-            // If an array contains a missing variable, it is either coerced to
-            // null or if the item type is non-null, it considered invalid.
-            if (isNonNullType(itemType)) {
-              return; // Invalid: intentionally return no value.
-            }
-
-            coercedValues.push(null);
-          } else {
-            var itemValue = valueFromAST(itemNode, itemType, variables);
-
-            if (isInvalid(itemValue)) {
-              return; // Invalid: intentionally return no value.
-            }
-
-            coercedValues.push(itemValue);
+        if (isMissingVariable(itemNode, variables)) {
+          // If an array contains a missing variable, it is either coerced to
+          // null or if the item type is non-null, it considered invalid.
+          if (isNonNullType(itemType)) {
+            return; // Invalid: intentionally return no value.
           }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
+
+          coercedValues.push(null);
+        } else {
+          var itemValue = valueFromAST(itemNode, itemType, variables);
+
+          if (isInvalid(itemValue)) {
+            return; // Invalid: intentionally return no value.
           }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
+
+          coercedValues.push(itemValue);
         }
       }
 
@@ -133,46 +115,28 @@ export function valueFromAST(valueNode, type, variables) {
     var fieldNodes = keyMap(valueNode.fields, function (field) {
       return field.name.value;
     });
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
 
-    try {
-      for (var _iterator2 = objectValues(type.getFields())[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        var field = _step2.value;
-        var fieldNode = fieldNodes[field.name];
+    for (var _i4 = 0, _objectValues2 = objectValues(type.getFields()); _i4 < _objectValues2.length; _i4++) {
+      var field = _objectValues2[_i4];
+      var fieldNode = fieldNodes[field.name];
 
-        if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
-          if (field.defaultValue !== undefined) {
-            coercedObj[field.name] = field.defaultValue;
-          } else if (isNonNullType(field.type)) {
-            return; // Invalid: intentionally return no value.
-          }
-
-          continue;
-        }
-
-        var fieldValue = valueFromAST(fieldNode.value, field.type, variables);
-
-        if (isInvalid(fieldValue)) {
+      if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
+        if (field.defaultValue !== undefined) {
+          coercedObj[field.name] = field.defaultValue;
+        } else if (isNonNullType(field.type)) {
           return; // Invalid: intentionally return no value.
         }
 
-        coercedObj[field.name] = fieldValue;
+        continue;
       }
-    } catch (err) {
-      _didIteratorError2 = true;
-      _iteratorError2 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-          _iterator2.return();
-        }
-      } finally {
-        if (_didIteratorError2) {
-          throw _iteratorError2;
-        }
+
+      var fieldValue = valueFromAST(fieldNode.value, field.type, variables);
+
+      if (isInvalid(fieldValue)) {
+        return; // Invalid: intentionally return no value.
       }
+
+      coercedObj[field.name] = fieldValue;
     }
 
     return coercedObj;

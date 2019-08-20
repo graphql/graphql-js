@@ -9,7 +9,7 @@ exports.requiredFieldMessage = requiredFieldMessage;
 exports.unknownFieldMessage = unknownFieldMessage;
 exports.ValuesOfCorrectType = ValuesOfCorrectType;
 
-var _objectValues = _interopRequireDefault(require("../../polyfills/objectValues"));
+var _objectValues3 = _interopRequireDefault(require("../../polyfills/objectValues"));
 
 var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
 
@@ -83,32 +83,14 @@ function ValuesOfCorrectType(context) {
       var fieldNodeMap = (0, _keyMap.default)(node.fields, function (field) {
         return field.name.value;
       });
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
 
-      try {
-        for (var _iterator = (0, _objectValues.default)(type.getFields())[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var fieldDef = _step.value;
-          var fieldNode = fieldNodeMap[fieldDef.name];
+      for (var _i2 = 0, _objectValues2 = (0, _objectValues3.default)(type.getFields()); _i2 < _objectValues2.length; _i2++) {
+        var fieldDef = _objectValues2[_i2];
+        var fieldNode = fieldNodeMap[fieldDef.name];
 
-          if (!fieldNode && (0, _definition.isRequiredInputField)(fieldDef)) {
-            var typeStr = (0, _inspect.default)(fieldDef.type);
-            context.reportError(new _GraphQLError.GraphQLError(requiredFieldMessage(type.name, fieldDef.name, typeStr), node));
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
+        if (!fieldNode && (0, _definition.isRequiredInputField)(fieldDef)) {
+          var typeStr = (0, _inspect.default)(fieldDef.type);
+          context.reportError(new _GraphQLError.GraphQLError(requiredFieldMessage(type.name, fieldDef.name, typeStr), node));
         }
       }
     },

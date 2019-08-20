@@ -44,30 +44,12 @@ function extendingDifferentTypeKindMessage(typeName, kind) {
 function PossibleTypeExtensions(context) {
   var schema = context.getSchema();
   var definedTypes = Object.create(null);
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = context.getDocument().definitions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var def = _step.value;
+  for (var _i2 = 0, _context$getDocument$2 = context.getDocument().definitions; _i2 < _context$getDocument$2.length; _i2++) {
+    var def = _context$getDocument$2[_i2];
 
-      if ((0, _predicates.isTypeDefinitionNode)(def)) {
-        definedTypes[def.name.value] = def;
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
+    if ((0, _predicates.isTypeDefinitionNode)(def)) {
+      definedTypes[def.name.value] = def;
     }
   }
 

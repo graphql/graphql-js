@@ -69,76 +69,58 @@ function getVariableValues(schema, varDefNodes, inputs, options) {
 
 function coerceVariableValues(schema, varDefNodes, inputs, onError) {
   var coercedValues = {};
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    var _loop = function _loop() {
-      var varDefNode = _step.value;
-      var varName = varDefNode.variable.name.value;
-      var varType = (0, _typeFromAST.typeFromAST)(schema, varDefNode.type);
+  var _loop = function _loop(_i2) {
+    var varDefNode = varDefNodes[_i2];
+    var varName = varDefNode.variable.name.value;
+    var varType = (0, _typeFromAST.typeFromAST)(schema, varDefNode.type);
 
-      if (!(0, _definition.isInputType)(varType)) {
-        // Must use input types for variables. This should be caught during
-        // validation, however is checked again here for safety.
-        var varTypeStr = (0, _printer.print)(varDefNode.type);
-        onError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" expected value of type \"").concat(varTypeStr, "\" which cannot be used as an input type."), varDefNode.type));
-        return "continue";
-      }
-
-      if (!hasOwnProperty(inputs, varName)) {
-        if (varDefNode.defaultValue) {
-          coercedValues[varName] = (0, _valueFromAST.valueFromAST)(varDefNode.defaultValue, varType);
-        }
-
-        if ((0, _definition.isNonNullType)(varType)) {
-          var _varTypeStr = (0, _inspect.default)(varType);
-
-          onError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of required type \"").concat(_varTypeStr, "\" was not provided."), varDefNode));
-        }
-
-        return "continue";
-      }
-
-      var value = inputs[varName];
-
-      if (value === null && (0, _definition.isNonNullType)(varType)) {
-        var _varTypeStr2 = (0, _inspect.default)(varType);
-
-        onError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of non-null type \"").concat(_varTypeStr2, "\" must not be null."), varDefNode));
-        return "continue";
-      }
-
-      coercedValues[varName] = (0, _coerceInputValue.coerceInputValue)(value, varType, function (path, invalidValue, error) {
-        var prefix = "Variable \"$".concat(varName, "\" got invalid value ") + (0, _inspect.default)(invalidValue);
-
-        if (path.length > 0) {
-          prefix += " at \"".concat(varName).concat((0, _printPathArray.default)(path), "\"");
-        }
-
-        onError(new _GraphQLError.GraphQLError(prefix + '; ' + error.message, varDefNode, undefined, undefined, undefined, error.originalError));
-      });
-    };
-
-    for (var _iterator = varDefNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var _ret = _loop();
-
-      if (_ret === "continue") continue;
+    if (!(0, _definition.isInputType)(varType)) {
+      // Must use input types for variables. This should be caught during
+      // validation, however is checked again here for safety.
+      var varTypeStr = (0, _printer.print)(varDefNode.type);
+      onError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" expected value of type \"").concat(varTypeStr, "\" which cannot be used as an input type."), varDefNode.type));
+      return "continue";
     }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
+
+    if (!hasOwnProperty(inputs, varName)) {
+      if (varDefNode.defaultValue) {
+        coercedValues[varName] = (0, _valueFromAST.valueFromAST)(varDefNode.defaultValue, varType);
       }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
+
+      if ((0, _definition.isNonNullType)(varType)) {
+        var _varTypeStr = (0, _inspect.default)(varType);
+
+        onError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of required type \"").concat(_varTypeStr, "\" was not provided."), varDefNode));
       }
+
+      return "continue";
     }
+
+    var value = inputs[varName];
+
+    if (value === null && (0, _definition.isNonNullType)(varType)) {
+      var _varTypeStr2 = (0, _inspect.default)(varType);
+
+      onError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of non-null type \"").concat(_varTypeStr2, "\" must not be null."), varDefNode));
+      return "continue";
+    }
+
+    coercedValues[varName] = (0, _coerceInputValue.coerceInputValue)(value, varType, function (path, invalidValue, error) {
+      var prefix = "Variable \"$".concat(varName, "\" got invalid value ") + (0, _inspect.default)(invalidValue);
+
+      if (path.length > 0) {
+        prefix += " at \"".concat(varName).concat((0, _printPathArray.default)(path), "\"");
+      }
+
+      onError(new _GraphQLError.GraphQLError(prefix + '; ' + error.message, varDefNode, undefined, undefined, undefined, error.originalError));
+    });
+  };
+
+  for (var _i2 = 0; _i2 < varDefNodes.length; _i2++) {
+    var _ret = _loop(_i2);
+
+    if (_ret === "continue") continue;
   }
 
   return coercedValues;
@@ -158,74 +140,56 @@ function getArgumentValues(def, node, variableValues) {
   var argNodeMap = (0, _keyMap.default)(node.arguments || [], function (arg) {
     return arg.name.value;
   });
-  var _iteratorNormalCompletion2 = true;
-  var _didIteratorError2 = false;
-  var _iteratorError2 = undefined;
 
-  try {
-    for (var _iterator2 = def.args[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-      var argDef = _step2.value;
-      var name = argDef.name;
-      var argType = argDef.type;
-      var argumentNode = argNodeMap[name];
+  for (var _i4 = 0, _def$args2 = def.args; _i4 < _def$args2.length; _i4++) {
+    var argDef = _def$args2[_i4];
+    var name = argDef.name;
+    var argType = argDef.type;
+    var argumentNode = argNodeMap[name];
 
-      if (!argumentNode) {
+    if (!argumentNode) {
+      if (argDef.defaultValue !== undefined) {
+        coercedValues[name] = argDef.defaultValue;
+      } else if ((0, _definition.isNonNullType)(argType)) {
+        throw new _GraphQLError.GraphQLError("Argument \"".concat(name, "\" of required type \"").concat((0, _inspect.default)(argType), "\" ") + 'was not provided.', node);
+      }
+
+      continue;
+    }
+
+    var valueNode = argumentNode.value;
+    var isNull = valueNode.kind === _kinds.Kind.NULL;
+
+    if (valueNode.kind === _kinds.Kind.VARIABLE) {
+      var variableName = valueNode.name.value;
+
+      if (variableValues == null || !hasOwnProperty(variableValues, variableName)) {
         if (argDef.defaultValue !== undefined) {
           coercedValues[name] = argDef.defaultValue;
         } else if ((0, _definition.isNonNullType)(argType)) {
-          throw new _GraphQLError.GraphQLError("Argument \"".concat(name, "\" of required type \"").concat((0, _inspect.default)(argType), "\" ") + 'was not provided.', node);
+          throw new _GraphQLError.GraphQLError("Argument \"".concat(name, "\" of required type \"").concat((0, _inspect.default)(argType), "\" ") + "was provided the variable \"$".concat(variableName, "\" which was not provided a runtime value."), valueNode);
         }
 
         continue;
       }
 
-      var valueNode = argumentNode.value;
-      var isNull = valueNode.kind === _kinds.Kind.NULL;
-
-      if (valueNode.kind === _kinds.Kind.VARIABLE) {
-        var variableName = valueNode.name.value;
-
-        if (variableValues == null || !hasOwnProperty(variableValues, variableName)) {
-          if (argDef.defaultValue !== undefined) {
-            coercedValues[name] = argDef.defaultValue;
-          } else if ((0, _definition.isNonNullType)(argType)) {
-            throw new _GraphQLError.GraphQLError("Argument \"".concat(name, "\" of required type \"").concat((0, _inspect.default)(argType), "\" ") + "was provided the variable \"$".concat(variableName, "\" which was not provided a runtime value."), valueNode);
-          }
-
-          continue;
-        }
-
-        isNull = variableValues[variableName] == null;
-      }
-
-      if (isNull && (0, _definition.isNonNullType)(argType)) {
-        throw new _GraphQLError.GraphQLError("Argument \"".concat(name, "\" of non-null type \"").concat((0, _inspect.default)(argType), "\" ") + 'must not be null.', valueNode);
-      }
-
-      var coercedValue = (0, _valueFromAST.valueFromAST)(valueNode, argType, variableValues);
-
-      if (coercedValue === undefined) {
-        // Note: ValuesOfCorrectType validation should catch this before
-        // execution. This is a runtime check to ensure execution does not
-        // continue with an invalid argument value.
-        throw new _GraphQLError.GraphQLError("Argument \"".concat(name, "\" has invalid value ").concat((0, _printer.print)(valueNode), "."), valueNode);
-      }
-
-      coercedValues[name] = coercedValue;
+      isNull = variableValues[variableName] == null;
     }
-  } catch (err) {
-    _didIteratorError2 = true;
-    _iteratorError2 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-        _iterator2.return();
-      }
-    } finally {
-      if (_didIteratorError2) {
-        throw _iteratorError2;
-      }
+
+    if (isNull && (0, _definition.isNonNullType)(argType)) {
+      throw new _GraphQLError.GraphQLError("Argument \"".concat(name, "\" of non-null type \"").concat((0, _inspect.default)(argType), "\" ") + 'must not be null.', valueNode);
     }
+
+    var coercedValue = (0, _valueFromAST.valueFromAST)(valueNode, argType, variableValues);
+
+    if (coercedValue === undefined) {
+      // Note: ValuesOfCorrectType validation should catch this before
+      // execution. This is a runtime check to ensure execution does not
+      // continue with an invalid argument value.
+      throw new _GraphQLError.GraphQLError("Argument \"".concat(name, "\" has invalid value ").concat((0, _printer.print)(valueNode), "."), valueNode);
+    }
+
+    coercedValues[name] = coercedValue;
   }
 
   return coercedValues;

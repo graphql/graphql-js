@@ -12,32 +12,14 @@ exports.default = suggestionList;
 function suggestionList(input, options) {
   var optionsByDistance = Object.create(null);
   var inputThreshold = input.length / 2;
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = options[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var option = _step.value;
-      var distance = lexicalDistance(input, option);
-      var threshold = Math.max(inputThreshold, option.length / 2, 1);
+  for (var _i2 = 0; _i2 < options.length; _i2++) {
+    var option = options[_i2];
+    var distance = lexicalDistance(input, option);
+    var threshold = Math.max(inputThreshold, option.length / 2, 1);
 
-      if (distance <= threshold) {
-        optionsByDistance[option] = distance;
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
+    if (distance <= threshold) {
+      optionsByDistance[option] = distance;
     }
   }
 

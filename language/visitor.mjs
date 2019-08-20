@@ -167,8 +167,8 @@ export function visit(root, visitor) {
         } else {
           var clone = {};
 
-          for (var _i = 0, _Object$keys = Object.keys(node); _i < _Object$keys.length; _i++) {
-            var k = _Object$keys[_i];
+          for (var _i2 = 0, _Object$keys2 = Object.keys(node); _i2 < _Object$keys2.length; _i2++) {
+            var k = _Object$keys2[_i2];
             clone[k] = node[k];
           }
 

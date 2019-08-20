@@ -48,59 +48,23 @@ export function KnownArgumentNamesOnDirectives(context) {
   var directiveArgs = Object.create(null);
   var schema = context.getSchema();
   var definedDirectives = schema ? schema.getDirectives() : specifiedDirectives;
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = definedDirectives[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var directive = _step.value;
-      directiveArgs[directive.name] = directive.args.map(function (arg) {
-        return arg.name;
-      });
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+  for (var _i2 = 0; _i2 < definedDirectives.length; _i2++) {
+    var directive = definedDirectives[_i2];
+    directiveArgs[directive.name] = directive.args.map(function (arg) {
+      return arg.name;
+    });
   }
 
   var astDefinitions = context.getDocument().definitions;
-  var _iteratorNormalCompletion2 = true;
-  var _didIteratorError2 = false;
-  var _iteratorError2 = undefined;
 
-  try {
-    for (var _iterator2 = astDefinitions[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-      var def = _step2.value;
+  for (var _i4 = 0; _i4 < astDefinitions.length; _i4++) {
+    var def = astDefinitions[_i4];
 
-      if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-        directiveArgs[def.name.value] = def.arguments ? def.arguments.map(function (arg) {
-          return arg.name.value;
-        }) : [];
-      }
-    }
-  } catch (err) {
-    _didIteratorError2 = true;
-    _iteratorError2 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-        _iterator2.return();
-      }
-    } finally {
-      if (_didIteratorError2) {
-        throw _iteratorError2;
-      }
+    if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+      directiveArgs[def.name.value] = def.arguments ? def.arguments.map(function (arg) {
+        return arg.name.value;
+      }) : [];
     }
   }
 
@@ -110,32 +74,13 @@ export function KnownArgumentNamesOnDirectives(context) {
       var knownArgs = directiveArgs[directiveName];
 
       if (directiveNode.arguments && knownArgs) {
-        var _iteratorNormalCompletion3 = true;
-        var _didIteratorError3 = false;
-        var _iteratorError3 = undefined;
+        for (var _i6 = 0, _directiveNode$argume2 = directiveNode.arguments; _i6 < _directiveNode$argume2.length; _i6++) {
+          var argNode = _directiveNode$argume2[_i6];
+          var argName = argNode.name.value;
 
-        try {
-          for (var _iterator3 = directiveNode.arguments[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-            var argNode = _step3.value;
-            var argName = argNode.name.value;
-
-            if (knownArgs.indexOf(argName) === -1) {
-              var suggestions = suggestionList(argName, knownArgs);
-              context.reportError(new GraphQLError(unknownDirectiveArgMessage(argName, directiveName, suggestions), argNode));
-            }
-          }
-        } catch (err) {
-          _didIteratorError3 = true;
-          _iteratorError3 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-              _iterator3.return();
-            }
-          } finally {
-            if (_didIteratorError3) {
-              throw _iteratorError3;
-            }
+          if (knownArgs.indexOf(argName) === -1) {
+            var suggestions = suggestionList(argName, knownArgs);
+            context.reportError(new GraphQLError(unknownDirectiveArgMessage(argName, directiveName, suggestions), argNode));
           }
         }
       }

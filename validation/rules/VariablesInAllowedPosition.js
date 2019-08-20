@@ -37,44 +37,26 @@ function VariablesInAllowedPosition(context) {
       },
       leave: function leave(operation) {
         var usages = context.getRecursiveVariableUsages(operation);
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
 
-        try {
-          for (var _iterator = usages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var _ref2 = _step.value;
-            var node = _ref2.node;
-            var type = _ref2.type;
-            var defaultValue = _ref2.defaultValue;
-            var varName = node.name.value;
-            var varDef = varDefMap[varName];
+        for (var _i2 = 0; _i2 < usages.length; _i2++) {
+          var _ref2 = usages[_i2];
+          var node = _ref2.node;
+          var type = _ref2.type;
+          var defaultValue = _ref2.defaultValue;
+          var varName = node.name.value;
+          var varDef = varDefMap[varName];
 
-            if (varDef && type) {
-              // A var type is allowed if it is the same or more strict (e.g. is
-              // a subtype of) than the expected type. It can be more strict if
-              // the variable type is non-null when the expected type is nullable.
-              // If both are list types, the variable item type can be more strict
-              // than the expected item type (contravariant).
-              var schema = context.getSchema();
-              var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
+          if (varDef && type) {
+            // A var type is allowed if it is the same or more strict (e.g. is
+            // a subtype of) than the expected type. It can be more strict if
+            // the variable type is non-null when the expected type is nullable.
+            // If both are list types, the variable item type can be more strict
+            // than the expected item type (contravariant).
+            var schema = context.getSchema();
+            var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
 
-              if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
-                context.reportError(new _GraphQLError.GraphQLError(badVarPosMessage(varName, (0, _inspect.default)(varType), (0, _inspect.default)(type)), [varDef, node]));
-              }
-            }
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
+            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
+              context.reportError(new _GraphQLError.GraphQLError(badVarPosMessage(varName, (0, _inspect.default)(varType), (0, _inspect.default)(type)), [varDef, node]));
             }
           }
         }

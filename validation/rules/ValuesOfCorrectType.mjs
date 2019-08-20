@@ -57,32 +57,14 @@ export function ValuesOfCorrectType(context) {
       var fieldNodeMap = keyMap(node.fields, function (field) {
         return field.name.value;
       });
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
 
-      try {
-        for (var _iterator = objectValues(type.getFields())[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var fieldDef = _step.value;
-          var fieldNode = fieldNodeMap[fieldDef.name];
+      for (var _i2 = 0, _objectValues2 = objectValues(type.getFields()); _i2 < _objectValues2.length; _i2++) {
+        var fieldDef = _objectValues2[_i2];
+        var fieldNode = fieldNodeMap[fieldDef.name];
 
-          if (!fieldNode && isRequiredInputField(fieldDef)) {
-            var typeStr = inspect(fieldDef.type);
-            context.reportError(new GraphQLError(requiredFieldMessage(type.name, fieldDef.name, typeStr), node));
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
+        if (!fieldNode && isRequiredInputField(fieldDef)) {
+          var typeStr = inspect(fieldDef.type);
+          context.reportError(new GraphQLError(requiredFieldMessage(type.name, fieldDef.name, typeStr), node));
         }
       }
     },

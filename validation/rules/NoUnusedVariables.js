@@ -30,33 +30,15 @@ function NoUnusedVariables(context) {
         var variableNameUsed = Object.create(null);
         var usages = context.getRecursiveVariableUsages(operation);
         var opName = operation.name ? operation.name.value : null;
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
 
-        try {
-          for (var _iterator = usages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var _ref2 = _step.value;
-            var node = _ref2.node;
-            variableNameUsed[node.name.value] = true;
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
-          }
+        for (var _i2 = 0; _i2 < usages.length; _i2++) {
+          var _ref2 = usages[_i2];
+          var node = _ref2.node;
+          variableNameUsed[node.name.value] = true;
         }
 
-        for (var _i = 0, _variableDefs = variableDefs; _i < _variableDefs.length; _i++) {
-          var variableDef = _variableDefs[_i];
+        for (var _i4 = 0, _variableDefs2 = variableDefs; _i4 < _variableDefs2.length; _i4++) {
+          var variableDef = _variableDefs2[_i4];
           var variableName = variableDef.variable.name.value;
 
           if (variableNameUsed[variableName] !== true) {

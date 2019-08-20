@@ -25,35 +25,17 @@ export function NoUnusedFragments(context) {
       leave: function leave() {
         var fragmentNameUsed = Object.create(null);
 
-        for (var _i = 0, _operationDefs = operationDefs; _i < _operationDefs.length; _i++) {
-          var operation = _operationDefs[_i];
-          var _iteratorNormalCompletion = true;
-          var _didIteratorError = false;
-          var _iteratorError = undefined;
+        for (var _i2 = 0; _i2 < operationDefs.length; _i2++) {
+          var operation = operationDefs[_i2];
 
-          try {
-            for (var _iterator = context.getRecursivelyReferencedFragments(operation)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var fragment = _step.value;
-              fragmentNameUsed[fragment.name.value] = true;
-            }
-          } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion && _iterator.return != null) {
-                _iterator.return();
-              }
-            } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
-              }
-            }
+          for (var _i4 = 0, _context$getRecursive2 = context.getRecursivelyReferencedFragments(operation); _i4 < _context$getRecursive2.length; _i4++) {
+            var fragment = _context$getRecursive2[_i4];
+            fragmentNameUsed[fragment.name.value] = true;
           }
         }
 
-        for (var _i2 = 0, _fragmentDefs = fragmentDefs; _i2 < _fragmentDefs.length; _i2++) {
-          var fragmentDef = _fragmentDefs[_i2];
+        for (var _i6 = 0; _i6 < fragmentDefs.length; _i6++) {
+          var fragmentDef = fragmentDefs[_i6];
           var fragName = fragmentDef.name.value;
 
           if (fragmentNameUsed[fragName] !== true) {

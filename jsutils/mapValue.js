@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = mapValue;
 
-var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
+var _objectEntries3 = _interopRequireDefault(require("../polyfills/objectEntries"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -15,30 +15,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function mapValue(map, fn) {
   var result = Object.create(null);
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = (0, _objectEntries.default)(map)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var _ref2 = _step.value;
-      var _key = _ref2[0];
-      var _value = _ref2[1];
-      result[_key] = fn(_value, _key);
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+  for (var _i2 = 0, _objectEntries2 = (0, _objectEntries3.default)(map); _i2 < _objectEntries2.length; _i2++) {
+    var _ref2 = _objectEntries2[_i2];
+    var _key = _ref2[0];
+    var _value = _ref2[1];
+    result[_key] = fn(_value, _key);
   }
 
   return result;

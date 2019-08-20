@@ -159,8 +159,8 @@ function sortObjMap(map, sortValueFn) {
     return x;
   });
 
-  for (var _i = 0, _sortedKeys = sortedKeys; _i < _sortedKeys.length; _i++) {
-    var key = _sortedKeys[_i];
+  for (var _i2 = 0; _i2 < sortedKeys.length; _i2++) {
+    var key = sortedKeys[_i2];
     var value = map[key];
     sortedMap[key] = sortValueFn ? sortValueFn(value) : value;
   }

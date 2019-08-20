@@ -67,65 +67,29 @@ function getSuggestedTypeNames(schema, type, fieldName) {
   if ((0, _definition.isAbstractType)(type)) {
     var suggestedObjectTypes = [];
     var interfaceUsageCount = Object.create(null);
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
 
-    try {
-      for (var _iterator = schema.getPossibleTypes(type)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var possibleType = _step.value;
+    for (var _i2 = 0, _schema$getPossibleTy2 = schema.getPossibleTypes(type); _i2 < _schema$getPossibleTy2.length; _i2++) {
+      var possibleType = _schema$getPossibleTy2[_i2];
 
-        if (!possibleType.getFields()[fieldName]) {
+      if (!possibleType.getFields()[fieldName]) {
+        continue;
+      } // This object type defines this field.
+
+
+      suggestedObjectTypes.push(possibleType.name);
+
+      for (var _i4 = 0, _possibleType$getInte2 = possibleType.getInterfaces(); _i4 < _possibleType$getInte2.length; _i4++) {
+        var possibleInterface = _possibleType$getInte2[_i4];
+
+        if (!possibleInterface.getFields()[fieldName]) {
           continue;
-        } // This object type defines this field.
+        } // This interface type defines this field.
 
 
-        suggestedObjectTypes.push(possibleType.name);
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-          for (var _iterator2 = possibleType.getInterfaces()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var possibleInterface = _step2.value;
-
-            if (!possibleInterface.getFields()[fieldName]) {
-              continue;
-            } // This interface type defines this field.
-
-
-            interfaceUsageCount[possibleInterface.name] = (interfaceUsageCount[possibleInterface.name] || 0) + 1;
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
-            }
-          }
-        }
-      } // Suggest interface types based on how common they are.
-
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return != null) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
+        interfaceUsageCount[possibleInterface.name] = (interfaceUsageCount[possibleInterface.name] || 0) + 1;
       }
-    }
+    } // Suggest interface types based on how common they are.
+
 
     var suggestedInterfaceTypes = Object.keys(interfaceUsageCount).sort(function (a, b) {
       return interfaceUsageCount[b] - interfaceUsageCount[a];

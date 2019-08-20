@@ -80,44 +80,26 @@ function extendSchema(schema, documentAST, options) {
   var schemaDef; // Schema extensions are collected which may add additional operation types.
 
   var schemaExts = [];
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = documentAST.definitions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var def = _step.value;
+  for (var _i2 = 0, _documentAST$definiti2 = documentAST.definitions; _i2 < _documentAST$definiti2.length; _i2++) {
+    var def = _documentAST$definiti2[_i2];
 
-      if (def.kind === _kinds.Kind.SCHEMA_DEFINITION) {
-        schemaDef = def;
-      } else if (def.kind === _kinds.Kind.SCHEMA_EXTENSION) {
-        schemaExts.push(def);
-      } else if ((0, _predicates.isTypeDefinitionNode)(def)) {
-        typeDefs.push(def);
-      } else if ((0, _predicates.isTypeExtensionNode)(def)) {
-        var extendedTypeName = def.name.value;
-        var existingTypeExts = typeExtsMap[extendedTypeName];
-        typeExtsMap[extendedTypeName] = existingTypeExts ? existingTypeExts.concat([def]) : [def];
-      } else if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
-        directiveDefs.push(def);
-      }
-    } // If this document contains no new types, extensions, or directives then
-    // return the same unmodified GraphQLSchema instance.
-
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
+    if (def.kind === _kinds.Kind.SCHEMA_DEFINITION) {
+      schemaDef = def;
+    } else if (def.kind === _kinds.Kind.SCHEMA_EXTENSION) {
+      schemaExts.push(def);
+    } else if ((0, _predicates.isTypeDefinitionNode)(def)) {
+      typeDefs.push(def);
+    } else if ((0, _predicates.isTypeExtensionNode)(def)) {
+      var extendedTypeName = def.name.value;
+      var existingTypeExts = typeExtsMap[extendedTypeName];
+      typeExtsMap[extendedTypeName] = existingTypeExts ? existingTypeExts.concat([def]) : [def];
+    } else if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
+      directiveDefs.push(def);
     }
-  }
+  } // If this document contains no new types, extensions, or directives then
+  // return the same unmodified GraphQLSchema instance.
+
 
   if (Object.keys(typeExtsMap).length === 0 && typeDefs.length === 0 && directiveDefs.length === 0 && schemaExts.length === 0 && !schemaDef) {
     return schema;
@@ -138,30 +120,12 @@ function extendSchema(schema, documentAST, options) {
   }, function (node) {
     return astBuilder.buildType(node);
   });
-  var _iteratorNormalCompletion2 = true;
-  var _didIteratorError2 = false;
-  var _iteratorError2 = undefined;
 
-  try {
-    for (var _iterator2 = schemaConfig.types[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-      var existingType = _step2.value;
-      typeMap[existingType.name] = extendNamedType(existingType);
-    } // Get the extended root operation types.
+  for (var _i4 = 0, _schemaConfig$types2 = schemaConfig.types; _i4 < _schemaConfig$types2.length; _i4++) {
+    var existingType = _schemaConfig$types2[_i4];
+    typeMap[existingType.name] = extendNamedType(existingType);
+  } // Get the extended root operation types.
 
-  } catch (err) {
-    _didIteratorError2 = true;
-    _iteratorError2 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-        _iterator2.return();
-      }
-    } finally {
-      if (_didIteratorError2) {
-        throw _iteratorError2;
-      }
-    }
-  }
 
   var operationTypes = {
     query: schemaConfig.query && schemaConfig.query.name,
@@ -170,62 +134,24 @@ function extendSchema(schema, documentAST, options) {
   };
 
   if (schemaDef) {
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
-
-    try {
-      for (var _iterator3 = schemaDef.operationTypes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        var _ref2 = _step3.value;
-        var operation = _ref2.operation;
-        var type = _ref2.type;
-        operationTypes[operation] = type.name.value;
-      }
-    } catch (err) {
-      _didIteratorError3 = true;
-      _iteratorError3 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-          _iterator3.return();
-        }
-      } finally {
-        if (_didIteratorError3) {
-          throw _iteratorError3;
-        }
-      }
+    for (var _i6 = 0, _schemaDef$operationT2 = schemaDef.operationTypes; _i6 < _schemaDef$operationT2.length; _i6++) {
+      var _ref2 = _schemaDef$operationT2[_i6];
+      var operation = _ref2.operation;
+      var type = _ref2.type;
+      operationTypes[operation] = type.name.value;
     }
   } // Then, incorporate schema definition and all schema extensions.
 
 
-  for (var _i = 0, _schemaExts = schemaExts; _i < _schemaExts.length; _i++) {
-    var schemaExt = _schemaExts[_i];
+  for (var _i8 = 0; _i8 < schemaExts.length; _i8++) {
+    var schemaExt = schemaExts[_i8];
 
     if (schemaExt.operationTypes) {
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
-
-      try {
-        for (var _iterator4 = schemaExt.operationTypes[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var _ref4 = _step4.value;
-          var _operation = _ref4.operation;
-          var _type = _ref4.type;
-          operationTypes[_operation] = _type.name.value;
-        }
-      } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-            _iterator4.return();
-          }
-        } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
-          }
-        }
+      for (var _i10 = 0, _schemaExt$operationT2 = schemaExt.operationTypes; _i10 < _schemaExt$operationT2.length; _i10++) {
+        var _ref4 = _schemaExt$operationT2[_i10];
+        var _operation = _ref4.operation;
+        var _type = _ref4.type;
+        operationTypes[_operation] = _type.name.value;
       }
     }
   } // Support both original legacy names and extended legacy names.

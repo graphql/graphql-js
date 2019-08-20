@@ -67,46 +67,28 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
     var _coercedValue = {};
     var fieldDefs = type.getFields();
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
 
-    try {
-      for (var _iterator = objectValues(fieldDefs)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var field = _step.value;
-        var fieldValue = inputValue[field.name];
+    for (var _i2 = 0, _objectValues2 = objectValues(fieldDefs); _i2 < _objectValues2.length; _i2++) {
+      var field = _objectValues2[_i2];
+      var fieldValue = inputValue[field.name];
 
-        if (fieldValue === undefined) {
-          if (field.defaultValue !== undefined) {
-            _coercedValue[field.name] = field.defaultValue;
-          } else if (isNonNullType(field.type)) {
-            var typeStr = inspect(field.type);
-            onError(pathToArray(path), inputValue, new GraphQLError("Field ".concat(field.name, " of required type ").concat(typeStr, " was not provided.")));
-          }
-
-          continue;
+      if (fieldValue === undefined) {
+        if (field.defaultValue !== undefined) {
+          _coercedValue[field.name] = field.defaultValue;
+        } else if (isNonNullType(field.type)) {
+          var typeStr = inspect(field.type);
+          onError(pathToArray(path), inputValue, new GraphQLError("Field ".concat(field.name, " of required type ").concat(typeStr, " was not provided.")));
         }
 
-        _coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, addPath(path, field.name));
-      } // Ensure every provided field is defined.
-
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return != null) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
+        continue;
       }
-    }
 
-    for (var _i = 0, _Object$keys = Object.keys(inputValue); _i < _Object$keys.length; _i++) {
-      var fieldName = _Object$keys[_i];
+      _coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, addPath(path, field.name));
+    } // Ensure every provided field is defined.
+
+
+    for (var _i4 = 0, _Object$keys2 = Object.keys(inputValue); _i4 < _Object$keys2.length; _i4++) {
+      var fieldName = _Object$keys2[_i4];
 
       if (!fieldDefs[fieldName]) {
         var suggestions = suggestionList(fieldName, Object.keys(type.getFields()));

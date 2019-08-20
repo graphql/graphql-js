@@ -43,8 +43,8 @@ export function OverlappingFieldsCanBeMerged(context) {
     SelectionSet: function SelectionSet(selectionSet) {
       var conflicts = findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, context.getParentType(), selectionSet);
 
-      for (var _i = 0, _conflicts = conflicts; _i < _conflicts.length; _i++) {
-        var _ref3 = _conflicts[_i];
+      for (var _i2 = 0; _i2 < conflicts.length; _i2++) {
+        var _ref3 = conflicts[_i2];
         var _ref2$ = _ref3[0];
         var responseName = _ref2$[0];
         var reason = _ref2$[1];
@@ -262,9 +262,9 @@ function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNa
   // names to each item in the second set of names.
 
 
-  for (var _i2 = 0; _i2 < fragmentNames1.length; _i2++) {
+  for (var _i3 = 0; _i3 < fragmentNames1.length; _i3++) {
     for (var _j = 0; _j < fragmentNames2.length; _j++) {
-      collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentNames1[_i2], fragmentNames2[_j]);
+      collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentNames1[_i3], fragmentNames2[_j]);
     }
   }
 
@@ -277,43 +277,24 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
+  for (var _i5 = 0, _objectEntries2 = objectEntries(fieldMap); _i5 < _objectEntries2.length; _i5++) {
+    var _ref5 = _objectEntries2[_i5];
+    var responseName = _ref5[0];
+    var fields = _ref5[1];
 
-  try {
-    for (var _iterator = objectEntries(fieldMap)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var _ref5 = _step.value;
-      var responseName = _ref5[0];
-      var fields = _ref5[1];
+    // This compares every field in the list to every other field in this list
+    // (except to itself). If the list only has one item, nothing needs to
+    // be compared.
+    if (fields.length > 1) {
+      for (var i = 0; i < fields.length; i++) {
+        for (var j = i + 1; j < fields.length; j++) {
+          var conflict = findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, // within one collection is never mutually exclusive
+          responseName, fields[i], fields[j]);
 
-      // This compares every field in the list to every other field in this list
-      // (except to itself). If the list only has one item, nothing needs to
-      // be compared.
-      if (fields.length > 1) {
-        for (var i = 0; i < fields.length; i++) {
-          for (var j = i + 1; j < fields.length; j++) {
-            var conflict = findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, // within one collection is never mutually exclusive
-            responseName, fields[i], fields[j]);
-
-            if (conflict) {
-              conflicts.push(conflict);
-            }
+          if (conflict) {
+            conflicts.push(conflict);
           }
         }
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
       }
     }
   }
@@ -330,8 +311,8 @@ function collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentName
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (var _i3 = 0, _Object$keys = Object.keys(fieldMap1); _i3 < _Object$keys.length; _i3++) {
-    var responseName = _Object$keys[_i3];
+  for (var _i7 = 0, _Object$keys2 = Object.keys(fieldMap1); _i7 < _Object$keys2.length; _i7++) {
+    var responseName = _Object$keys2[_i7];
     var fields2 = fieldMap2[responseName];
 
     if (fields2) {

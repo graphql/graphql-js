@@ -44,34 +44,16 @@ export function buildASTSchema(documentAST, options) {
   var schemaDef;
   var typeDefs = [];
   var directiveDefs = [];
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = documentAST.definitions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var def = _step.value;
+  for (var _i2 = 0, _documentAST$definiti2 = documentAST.definitions; _i2 < _documentAST$definiti2.length; _i2++) {
+    var def = _documentAST$definiti2[_i2];
 
-      if (def.kind === Kind.SCHEMA_DEFINITION) {
-        schemaDef = def;
-      } else if (isTypeDefinitionNode(def)) {
-        typeDefs.push(def);
-      } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-        directiveDefs.push(def);
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
+    if (def.kind === Kind.SCHEMA_DEFINITION) {
+      schemaDef = def;
+    } else if (isTypeDefinitionNode(def)) {
+      typeDefs.push(def);
+    } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+      directiveDefs.push(def);
     }
   }
 
@@ -130,28 +112,10 @@ export function buildASTSchema(documentAST, options) {
 
   function getOperationTypes(schema) {
     var opTypes = {};
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
 
-    try {
-      for (var _iterator2 = schema.operationTypes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        var operationType = _step2.value;
-        opTypes[operationType.operation] = operationType.type.name.value;
-      }
-    } catch (err) {
-      _didIteratorError2 = true;
-      _iteratorError2 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-          _iterator2.return();
-        }
-      } finally {
-        if (_didIteratorError2) {
-          throw _iteratorError2;
-        }
-      }
+    for (var _i4 = 0, _schema$operationType2 = schema.operationTypes; _i4 < _schema$operationType2.length; _i4++) {
+      var operationType = _schema$operationType2[_i4];
+      opTypes[operationType.operation] = operationType.type.name.value;
     }
 
     return opTypes;

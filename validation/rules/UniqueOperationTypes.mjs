@@ -26,36 +26,17 @@ export function UniqueOperationTypes(context) {
 
   function checkOperationTypes(node) {
     if (node.operationTypes) {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      for (var _i2 = 0, _ref2 = node.operationTypes || []; _i2 < _ref2.length; _i2++) {
+        var operationType = _ref2[_i2];
+        var operation = operationType.operation;
+        var alreadyDefinedOperationType = definedOperationTypes[operation];
 
-      try {
-        for (var _iterator = (node.operationTypes || [])[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var operationType = _step.value;
-          var operation = operationType.operation;
-          var alreadyDefinedOperationType = definedOperationTypes[operation];
-
-          if (existingOperationTypes[operation]) {
-            context.reportError(new GraphQLError(existedOperationTypeMessage(operation), operationType));
-          } else if (alreadyDefinedOperationType) {
-            context.reportError(new GraphQLError(duplicateOperationTypeMessage(operation), [alreadyDefinedOperationType, operationType]));
-          } else {
-            definedOperationTypes[operation] = operationType;
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
+        if (existingOperationTypes[operation]) {
+          context.reportError(new GraphQLError(existedOperationTypeMessage(operation), operationType));
+        } else if (alreadyDefinedOperationType) {
+          context.reportError(new GraphQLError(duplicateOperationTypeMessage(operation), [alreadyDefinedOperationType, operationType]));
+        } else {
+          definedOperationTypes[operation] = operationType;
         }
       }
     }

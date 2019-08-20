@@ -244,32 +244,14 @@ function printDescription(options, def) {
 
 function printDescriptionWithComments(lines, indentation, firstInBlock) {
   var description = indentation && !firstInBlock ? '\n' : '';
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = lines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var line = _step.value;
+  for (var _i2 = 0; _i2 < lines.length; _i2++) {
+    var line = lines[_i2];
 
-      if (line === '') {
-        description += indentation + '#\n';
-      } else {
-        description += indentation + '# ' + line + '\n';
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
+    if (line === '') {
+      description += indentation + '#\n';
+    } else {
+      description += indentation + '# ' + line + '\n';
     }
   }
 

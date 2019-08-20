@@ -7,7 +7,7 @@ exports.astFromValue = astFromValue;
 
 var _iterall = require("iterall");
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
@@ -98,38 +98,20 @@ function astFromValue(value, type) {
     }
 
     var fieldNodes = [];
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
 
-    try {
-      for (var _iterator = (0, _objectValues.default)(type.getFields())[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var field = _step.value;
-        var fieldValue = astFromValue(value[field.name], field.type);
+    for (var _i2 = 0, _objectValues2 = (0, _objectValues3.default)(type.getFields()); _i2 < _objectValues2.length; _i2++) {
+      var field = _objectValues2[_i2];
+      var fieldValue = astFromValue(value[field.name], field.type);
 
-        if (fieldValue) {
-          fieldNodes.push({
-            kind: _kinds.Kind.OBJECT_FIELD,
-            name: {
-              kind: _kinds.Kind.NAME,
-              value: field.name
-            },
-            value: fieldValue
-          });
-        }
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return != null) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
+      if (fieldValue) {
+        fieldNodes.push({
+          kind: _kinds.Kind.OBJECT_FIELD,
+          name: {
+            kind: _kinds.Kind.NAME,
+            value: field.name
+          },
+          value: fieldValue
+        });
       }
     }
 

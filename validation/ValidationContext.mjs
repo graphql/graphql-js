@@ -59,32 +59,14 @@ function () {
 
       while (setsToVisit.length !== 0) {
         var set = setsToVisit.pop();
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
 
-        try {
-          for (var _iterator = set.selections[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var selection = _step.value;
+        for (var _i2 = 0, _set$selections2 = set.selections; _i2 < _set$selections2.length; _i2++) {
+          var selection = _set$selections2[_i2];
 
-            if (selection.kind === Kind.FRAGMENT_SPREAD) {
-              spreads.push(selection);
-            } else if (selection.selectionSet) {
-              setsToVisit.push(selection.selectionSet);
-            }
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
+          if (selection.kind === Kind.FRAGMENT_SPREAD) {
+            spreads.push(selection);
+          } else if (selection.selectionSet) {
+            setsToVisit.push(selection.selectionSet);
           }
         }
       }
@@ -105,36 +87,18 @@ function () {
 
       while (nodesToVisit.length !== 0) {
         var node = nodesToVisit.pop();
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
 
-        try {
-          for (var _iterator2 = this.getFragmentSpreads(node)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var spread = _step2.value;
-            var fragName = spread.name.value;
+        for (var _i4 = 0, _this$getFragmentSpre2 = this.getFragmentSpreads(node); _i4 < _this$getFragmentSpre2.length; _i4++) {
+          var spread = _this$getFragmentSpre2[_i4];
+          var fragName = spread.name.value;
 
-            if (collectedNames[fragName] !== true) {
-              collectedNames[fragName] = true;
-              var fragment = this.getFragment(fragName);
+          if (collectedNames[fragName] !== true) {
+            collectedNames[fragName] = true;
+            var fragment = this.getFragment(fragName);
 
-              if (fragment) {
-                fragments.push(fragment);
-                nodesToVisit.push(fragment.selectionSet);
-              }
-            }
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
+            if (fragment) {
+              fragments.push(fragment);
+              nodesToVisit.push(fragment.selectionSet);
             }
           }
         }
@@ -222,28 +186,10 @@ function (_ASTValidationContext2) {
 
     if (!usages) {
       usages = this.getVariableUsages(operation);
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
 
-      try {
-        for (var _iterator3 = this.getRecursivelyReferencedFragments(operation)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var frag = _step3.value;
-          usages = usages.concat(this.getVariableUsages(frag));
-        }
-      } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-            _iterator3.return();
-          }
-        } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
-          }
-        }
+      for (var _i6 = 0, _this$getRecursivelyR2 = this.getRecursivelyReferencedFragments(operation); _i6 < _this$getRecursivelyR2.length; _i6++) {
+        var frag = _this$getRecursivelyR2[_i6];
+        usages = usages.concat(this.getVariableUsages(frag));
       }
 
       this._recursiveVariableUsages.set(operation, usages);

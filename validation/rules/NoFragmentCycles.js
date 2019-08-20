@@ -47,46 +47,28 @@ function NoFragmentCycles(context) {
     }
 
     spreadPathIndexByName[fragmentName] = spreadPath.length;
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
 
-    try {
-      for (var _iterator = spreadNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var spreadNode = _step.value;
-        var spreadName = spreadNode.name.value;
-        var cycleIndex = spreadPathIndexByName[spreadName];
-        spreadPath.push(spreadNode);
+    for (var _i2 = 0; _i2 < spreadNodes.length; _i2++) {
+      var spreadNode = spreadNodes[_i2];
+      var spreadName = spreadNode.name.value;
+      var cycleIndex = spreadPathIndexByName[spreadName];
+      spreadPath.push(spreadNode);
 
-        if (cycleIndex === undefined) {
-          var spreadFragment = context.getFragment(spreadName);
+      if (cycleIndex === undefined) {
+        var spreadFragment = context.getFragment(spreadName);
 
-          if (spreadFragment) {
-            detectCycleRecursive(spreadFragment);
-          }
-        } else {
-          var cyclePath = spreadPath.slice(cycleIndex);
-          var fragmentNames = cyclePath.slice(0, -1).map(function (s) {
-            return s.name.value;
-          });
-          context.reportError(new _GraphQLError.GraphQLError(cycleErrorMessage(spreadName, fragmentNames), cyclePath));
+        if (spreadFragment) {
+          detectCycleRecursive(spreadFragment);
         }
-
-        spreadPath.pop();
+      } else {
+        var cyclePath = spreadPath.slice(cycleIndex);
+        var fragmentNames = cyclePath.slice(0, -1).map(function (s) {
+          return s.name.value;
+        });
+        context.reportError(new _GraphQLError.GraphQLError(cycleErrorMessage(spreadName, fragmentNames), cyclePath));
       }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return != null) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
-      }
+
+      spreadPath.pop();
     }
 
     spreadPathIndexByName[fragmentName] = undefined;

@@ -54,8 +54,8 @@ function buildClientSchema(introspection, options) {
     return buildType(typeIntrospection);
   });
 
-  for (var _i = 0, _arr = [].concat(_scalars.specifiedScalarTypes, _introspection.introspectionTypes); _i < _arr.length; _i++) {
-    var stdType = _arr[_i];
+  for (var _i2 = 0, _ref2 = [].concat(_scalars.specifiedScalarTypes, _introspection.introspectionTypes); _i2 < _ref2.length; _i2++) {
+    var stdType = _ref2[_i2];
 
     if (typeMap[stdType.name]) {
       typeMap[stdType.name] = stdType;

@@ -18,32 +18,14 @@ export function NoUndefinedVariables(context) {
       },
       leave: function leave(operation) {
         var usages = context.getRecursiveVariableUsages(operation);
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
 
-        try {
-          for (var _iterator = usages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var _ref2 = _step.value;
-            var node = _ref2.node;
-            var varName = node.name.value;
+        for (var _i2 = 0; _i2 < usages.length; _i2++) {
+          var _ref2 = usages[_i2];
+          var node = _ref2.node;
+          var varName = node.name.value;
 
-            if (variableNameDefined[varName] !== true) {
-              context.reportError(new GraphQLError(undefinedVarMessage(varName, operation.name && operation.name.value), [node, operation]));
-            }
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
+          if (variableNameDefined[varName] !== true) {
+            context.reportError(new GraphQLError(undefinedVarMessage(varName, operation.name && operation.name.value), [node, operation]));
           }
         }
       }
