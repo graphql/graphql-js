@@ -281,8 +281,7 @@ export function buildExecutionContext(
   let operation: OperationDefinitionNode | void;
   let hasMultipleAssumedOperations = false;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
-  for (let i = 0; i < document.definitions.length; i++) {
-    const definition = document.definitions[i];
+  for (const definition of document.definitions) {
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
         if (!operationName && operation) {
@@ -434,8 +433,7 @@ function executeFields(
   const results = Object.create(null);
   let containsPromise = false;
 
-  for (let i = 0, keys = Object.keys(fields); i < keys.length; ++i) {
-    const responseName = keys[i];
+  for (const responseName of Object.keys(fields)) {
     const fieldNodes = fields[responseName];
     const fieldPath = addPath(path, responseName);
     const result = resolveField(
@@ -480,8 +478,7 @@ export function collectFields(
   fields: ObjMap<Array<FieldNode>>,
   visitedFragmentNames: ObjMap<boolean>,
 ): ObjMap<Array<FieldNode>> {
-  for (let i = 0; i < selectionSet.selections.length; i++) {
-    const selection = selectionSet.selections[i];
+  for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
         if (!shouldIncludeNode(exeContext, selection)) {
@@ -1108,13 +1105,12 @@ function _collectSubfields(
 ): ObjMap<Array<FieldNode>> {
   let subFieldNodes = Object.create(null);
   const visitedFragmentNames = Object.create(null);
-  for (let i = 0; i < fieldNodes.length; i++) {
-    const selectionSet = fieldNodes[i].selectionSet;
-    if (selectionSet) {
+  for (const node of fieldNodes) {
+    if (node.selectionSet) {
       subFieldNodes = collectFields(
         exeContext,
         returnType,
-        selectionSet,
+        node.selectionSet,
         subFieldNodes,
         visitedFragmentNames,
       );

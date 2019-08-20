@@ -13,8 +13,8 @@ const flatMap = Array.prototype.flatMap
     }
   : function(list, fn) {
       let result = [];
-      for (let i = 0; i < list.length; i++) {
-        const value = fn(list[i]);
+      for (const item of list) {
+        const value = fn(item);
         if (Array.isArray(value)) {
           result = result.concat(value);
         } else {
