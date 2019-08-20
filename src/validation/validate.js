@@ -2,7 +2,7 @@
 
 import devAssert from '../jsutils/devAssert';
 
-import { type GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from '../error/GraphQLError';
 
 import { type DocumentNode } from '../language/ast';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
@@ -19,6 +19,8 @@ import {
   SDLValidationContext,
   ValidationContext,
 } from './ValidationContext';
+
+export const ABORT_VALIDATION = Object.freeze({});
 
 /**
  * Implements the "Validation" section of the spec.
@@ -41,28 +43,45 @@ export function validate(
   documentAST: DocumentNode,
   rules?: $ReadOnlyArray<ValidationRule> = specifiedRules,
   typeInfo?: TypeInfo = new TypeInfo(schema),
-  onError?: (err: Error, ctx: ValidationContext) => void,
+  options?: {| maxErrors?: number |},
 ): $ReadOnlyArray<GraphQLError> {
   devAssert(documentAST, 'Must provide document');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
 
+  const abortObj = Object.freeze({});
+  const errors = [];
+  const maxErrors = options && options.maxErrors;
   const context = new ValidationContext(
     schema,
     documentAST,
     typeInfo,
-    function onErrorWithContext(err) {
-      if (onError) {
-        onError(err, this);
+    error => {
+      if (maxErrors != null && errors.length >= maxErrors) {
+        errors.push(
+          new GraphQLError(
+            'Too many validation errors, error limit reached. Validation aborted.',
+          ),
+        );
+        throw abortObj;
       }
+      errors.push(error);
     },
   );
+
   // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
   const visitor = visitInParallel(rules.map(rule => rule(context)));
+
   // Visit the whole document with each instance of all provided rules.
-  visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
-  return context.getErrors();
+  try {
+    visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
+  } catch (e) {
+    if (e !== abortObj) {
+      throw e;
+    }
+  }
+  return errors;
 }
 
 // @internal
@@ -71,10 +90,18 @@ export function validateSDL(
   schemaToExtend?: ?GraphQLSchema,
   rules?: $ReadOnlyArray<SDLValidationRule> = specifiedSDLRules,
 ): $ReadOnlyArray<GraphQLError> {
-  const context = new SDLValidationContext(documentAST, schemaToExtend);
+  const errors = [];
+  const context = new SDLValidationContext(
+    documentAST,
+    schemaToExtend,
+    error => {
+      errors.push(error);
+    },
+  );
+
   const visitors = rules.map(rule => rule(context));
   visit(documentAST, visitInParallel(visitors));
-  return context.getErrors();
+  return errors;
 }
 
 /**
