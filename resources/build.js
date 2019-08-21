@@ -29,6 +29,16 @@ if (require.main === module) {
     }
   }
 
+  const tsFiles = readdirRecursive('./tstypes', { ignoreDir: /^__.*__$/ });
+  for (const filepath of tsFiles) {
+    if (filepath.endsWith('.d.ts')) {
+      const srcPath = path.join('./tstypes', filepath);
+      const destPath = path.join('./dist', filepath);
+
+      copyFile(srcPath, destPath);
+    }
+  }
+
   const packageJSON = buildPackageJSON();
   assert(
     packageJSON.version === require('../dist/version').version,
