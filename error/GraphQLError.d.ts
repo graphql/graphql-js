@@ -1,8 +1,8 @@
 import Maybe from '../tsutils/Maybe';
-import { getLocation } from '../language';
+
 import { ASTNode } from '../language/ast';
 import { Source } from '../language/source';
-import { SourceLocation } from '../language/location';
+import { SourceLocation, getLocation } from '../language/location';
 
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
@@ -11,6 +11,16 @@ import { SourceLocation } from '../language/location';
  * GraphQL document and/or execution result that correspond to the Error.
  */
 export class GraphQLError extends Error {
+  constructor(
+    message: string,
+    nodes?: ReadonlyArray<ASTNode> | ASTNode | undefined,
+    source?: Maybe<Source>,
+    positions?: Maybe<ReadonlyArray<number>>,
+    path?: Maybe<ReadonlyArray<string | number>>,
+    originalError?: Maybe<Error>,
+    extensions?: Maybe<{ [key: string]: any }>,
+  );
+
   /**
    * A message describing the Error for debugging purposes.
    *
@@ -47,6 +57,9 @@ export class GraphQLError extends Error {
 
   /**
    * The source GraphQL document corresponding to this error.
+   *
+   * Note that if this Error represents more than one node, the source may not
+   * represent nodes after the first node.
    */
   readonly source: Source | undefined;
 
@@ -65,14 +78,10 @@ export class GraphQLError extends Error {
    * Extension fields to add to the formatted error.
    */
   readonly extensions: { [key: string]: any } | undefined;
-
-  constructor(
-    message: string,
-    nodes?: ReadonlyArray<ASTNode> | ASTNode | undefined,
-    source?: Maybe<Source>,
-    positions?: Maybe<ReadonlyArray<number>>,
-    path?: Maybe<ReadonlyArray<string | number>>,
-    originalError?: Maybe<Error>,
-    extensions?: Maybe<{ [key: string]: any }>,
-  );
 }
+
+/**
+ * Prints a GraphQLError to a string, representing useful location information
+ * about the error's position in the source.
+ */
+export function printError(error: GraphQLError): string;

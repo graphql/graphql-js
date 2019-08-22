@@ -21,3 +21,6 @@ export function formatError(error) {
     path: path
   };
 }
+/**
+ * @see https://github.com/graphql/graphql-spec/blob/master/spec/Section%207%20--%20Response.md#errors
+ */
