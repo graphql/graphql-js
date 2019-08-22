@@ -1,11 +1,22 @@
 import Maybe from '../tsutils/Maybe';
-import { GraphQLSchema } from '../type/schema';
 import { DocumentNode } from '../language/ast';
-import { GraphQLFieldResolver } from '../type/definition';
 import {
   ExecutionResult,
   ExecutionResultDataDefault,
 } from '../execution/execute';
+import { GraphQLSchema } from '../type/schema';
+import { GraphQLFieldResolver } from '../type/definition';
+
+export interface SubscriptionArgs {
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  rootValue?: any;
+  contextValue?: any;
+  variableValues?: Maybe<Record<string, any>>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+}
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -27,16 +38,9 @@ import {
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-export function subscribe<TData = ExecutionResultDataDefault>(args: {
-  schema: GraphQLSchema;
-  document: DocumentNode;
-  rootValue?: any;
-  contextValue?: any;
-  variableValues?: Maybe<{ [key: string]: any }>;
-  operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-}): Promise<
+export function subscribe<TData = ExecutionResultDataDefault>(
+  args: SubscriptionArgs,
+): Promise<
   AsyncIterableIterator<ExecutionResult<TData>> | ExecutionResult<TData>
 >;
 
