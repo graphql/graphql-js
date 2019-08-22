@@ -51,8 +51,11 @@ export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
  */
 export type VisitorKeyMap<T> = { [P in keyof T]: ReadonlyArray<keyof T[P]> };
 
+// TODO: Should be `[]`, but that requires TypeScript@3
+type EmptyTuple = never[];
+
 export const QueryDocumentKeys: {
-  Name: [];
+  Name: EmptyTuple;
 
   Document: ['definitions'];
   // Prettier forces trailing commas, but TS pre 3.2 doesn't allow them.
@@ -82,12 +85,12 @@ export const QueryDocumentKeys: {
     'selectionSet'
   ];
 
-  IntValue: [];
-  FloatValue: [];
-  StringValue: [];
-  BooleanValue: [];
-  NullValue: [];
-  EnumValue: [];
+  IntValue: EmptyTuple;
+  FloatValue: EmptyTuple;
+  StringValue: EmptyTuple;
+  BooleanValue: EmptyTuple;
+  NullValue: EmptyTuple;
+  EnumValue: EmptyTuple;
   ListValue: ['values'];
   ObjectValue: ['fields'];
   ObjectField: ['name', 'value'];
