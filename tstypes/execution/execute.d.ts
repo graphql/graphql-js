@@ -1,13 +1,8 @@
 import Maybe from '../tsutils/Maybe';
+import { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import { Path, addPath, pathToArray } from '../jsutils/Path';
+
 import { GraphQLError, locatedError } from '../error';
-import { GraphQLSchema } from '../type/schema';
-import {
-  GraphQLField,
-  GraphQLFieldResolver,
-  ResponsePath,
-  GraphQLObjectType,
-  GraphQLResolveInfo,
-} from '../type/definition';
 import {
   DirectiveNode,
   DocumentNode,
@@ -17,7 +12,14 @@ import {
   InlineFragmentNode,
   FragmentDefinitionNode,
 } from '../language/ast';
-import { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import { GraphQLSchema } from '../type/schema';
+import {
+  GraphQLField,
+  GraphQLFieldResolver,
+  GraphQLResolveInfo,
+  GraphQLTypeResolver,
+  GraphQLObjectType,
+} from '../type/definition';
 
 /**
  * Data that must be available at all points during query execution.
@@ -46,9 +48,10 @@ export interface ExecutionResultDataDefault {
  *   - `errors` is included when any errors occurred as a non-empty array.
  *   - `data` is the result of a successful execution of the query.
  */
+// TS_SPECIFIC: TData and ExecutionResultDataDefault
 export interface ExecutionResult<TData = ExecutionResultDataDefault> {
   errors?: ReadonlyArray<GraphQLError>;
-  data?: TData;
+  data?: TData | null;
 }
 
 export type ExecutionArgs = {
@@ -59,6 +62,7 @@ export type ExecutionArgs = {
   variableValues?: Maybe<{ [key: string]: any }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 };
 
 /**
@@ -84,25 +88,8 @@ export function execute<TData = ExecutionResultDataDefault>(
   variableValues?: Maybe<{ [key: string]: any }>,
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
 ): PromiseOrValue<ExecutionResult<TData>>;
-
-/**
- * Given a ResponsePath (found in the `path` entry in the information provided
- * as the last argument to a field resolver), return an Array of the path keys.
- */
-export function responsePathAsArray(
-  path: ResponsePath,
-): ReadonlyArray<string | number>;
-
-/**
- * Given a ResponsePath and a key, return a new ResponsePath containing the
- * new key.
-
- */
-export function addPath(
-  prev: ResponsePath | undefined,
-  key: string | number,
-): { prev: ResponsePath | undefined; key: string | number };
 
 /**
  * Essential assertions before executing to provide developer feedback for
@@ -128,6 +115,7 @@ export function buildExecutionContext(
   rawVariableValues: Maybe<{ [key: string]: any }>,
   operationName: Maybe<string>,
   fieldResolver: Maybe<GraphQLFieldResolver<any, any>>,
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
 ): ReadonlyArray<GraphQLError> | ExecutionContext;
 
 /**
@@ -151,11 +139,12 @@ export function buildResolveInfo(
   fieldDef: GraphQLField<any, any>,
   fieldNodes: ReadonlyArray<FieldNode>,
   parentType: GraphQLObjectType,
-  path: ResponsePath,
+  path: Path,
 ): GraphQLResolveInfo;
 
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
+// TS_SPECIFIC: TSource
 export function resolveFieldValueOrError<TSource>(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<TSource, any>,
@@ -164,6 +153,18 @@ export function resolveFieldValueOrError<TSource>(
   source: TSource,
   info: GraphQLResolveInfo,
 ): Error | any;
+
+/**
+ * If a resolveType function is not given, then a default resolve behavior is
+ * used which attempts two strategies:
+ *
+ * First, See if the provided value has a `__typename` field defined, if so, use
+ * that value as name of the resolved type.
+ *
+ * Otherwise, test each possible type for the abstract type by calling
+ * isTypeOf for the object being coerced, returning the first type that matches.
+ */
+export const defaultTypeResolver: GraphQLTypeResolver<any, any>;
 
 /**
  * If a resolve function is not given, then a default resolve behavior is used
