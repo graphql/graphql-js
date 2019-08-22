@@ -1,6 +1,15 @@
 import Maybe from '../tsutils/Maybe';
-import { ASTNode, ASTKindToNode } from './ast';
 import { TypeInfo } from '../utilities/TypeInfo';
+import { ASTNode, ASTKindToNode } from './ast';
+
+/**
+ * A visitor is provided to visit, it contains the collection of
+ * relevant functions to be called during the visitor's traversal.
+ */
+export type ASTVisitor = Visitor<ASTKindToNode>;
+export type Visitor<KindToNode, Nodes = KindToNode[keyof KindToNode]> =
+  | EnterLeaveVisitor<KindToNode, Nodes>
+  | ShapeMapVisitor<KindToNode, Nodes>;
 
 interface EnterLeave<T> {
   readonly enter?: T;
@@ -17,27 +26,23 @@ type ShapeMapVisitor<KindToNode, Nodes> = {
     | EnterLeave<VisitFn<Nodes, KindToNode[K]>>;
 };
 
-export type ASTVisitor = Visitor<ASTKindToNode>;
-export type Visitor<KindToNode, Nodes = KindToNode[keyof KindToNode]> =
-  | EnterLeaveVisitor<KindToNode, Nodes>
-  | ShapeMapVisitor<KindToNode, Nodes>;
-
 /**
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
  */
 export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
-  // The current node being visiting.
+  /** The current node being visiting.*/
   node: TVisitedNode,
-  // The index or key to this node from the parent node or Array.
+  /** The index or key to this node from the parent node or Array. */
   key: string | number | undefined,
-  // The parent immediately above this node, which may be an Array.
+  /** The parent immediately above this node, which may be an Array. */
   parent: TAnyNode | ReadonlyArray<TAnyNode> | undefined,
-  // The key path to get to this node from the root node.
+  /** The key path to get to this node from the root node. */
   path: ReadonlyArray<string | number>,
-  // All nodes and Arrays visited before reaching parent of this node.
-  // These correspond to array indices in `path`.
-  // Note: ancestors includes arrays which contain the parent of visited node.
+  /** All nodes and Arrays visited before reaching parent of this node.
+   * These correspond to array indices in `path`.
+   * Note: ancestors includes arrays which contain the parent of visited node.
+   */
   ancestors: ReadonlyArray<TAnyNode | ReadonlyArray<TAnyNode>>,
 ) => any;
 
@@ -46,9 +51,93 @@ export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
  */
 export type VisitorKeyMap<T> = { [P in keyof T]: ReadonlyArray<keyof T[P]> };
 
-export const QueryDocumentKeys: { [key: string]: string[] };
+export const QueryDocumentKeys: {
+  Name: [];
 
-export const BREAK: any;
+  Document: ['definitions'];
+  // Prettier forces trailing commas, but TS pre 3.2 doesn't allow them.
+  // prettier-ignore
+  OperationDefinition: [
+    'name',
+    'variableDefinitions',
+    'directives',
+    'selectionSet'
+  ];
+  VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'];
+  Variable: ['name'];
+  SelectionSet: ['selections'];
+  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'];
+  Argument: ['name', 'value'];
+
+  FragmentSpread: ['name', 'directives'];
+  InlineFragment: ['typeCondition', 'directives', 'selectionSet'];
+  // prettier-ignore
+  FragmentDefinition: [
+    'name',
+    // Note: fragment variable definitions are experimental and may be changed
+    // or removed in the future.
+    'variableDefinitions',
+    'typeCondition',
+    'directives',
+    'selectionSet'
+  ];
+
+  IntValue: [];
+  FloatValue: [];
+  StringValue: [];
+  BooleanValue: [];
+  NullValue: [];
+  EnumValue: [];
+  ListValue: ['values'];
+  ObjectValue: ['fields'];
+  ObjectField: ['name', 'value'];
+
+  Directive: ['name', 'arguments'];
+
+  NamedType: ['name'];
+  ListType: ['type'];
+  NonNullType: ['type'];
+
+  SchemaDefinition: ['directives', 'operationTypes'];
+  OperationTypeDefinition: ['type'];
+
+  ScalarTypeDefinition: ['description', 'name', 'directives'];
+  // prettier-ignore
+  ObjectTypeDefinition: [
+    'description',
+    'name',
+    'interfaces',
+    'directives',
+    'fields'
+  ];
+  FieldDefinition: ['description', 'name', 'arguments', 'type', 'directives'];
+  // prettier-ignore
+  InputValueDefinition: [
+    'description',
+    'name',
+    'type',
+    'defaultValue',
+    'directives'
+  ];
+  InterfaceTypeDefinition: ['description', 'name', 'directives', 'fields'];
+  UnionTypeDefinition: ['description', 'name', 'directives', 'types'];
+  EnumTypeDefinition: ['description', 'name', 'directives', 'values'];
+  EnumValueDefinition: ['description', 'name', 'directives'];
+  InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'];
+
+  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'];
+
+  SchemaExtension: ['directives', 'operationTypes'];
+
+  ScalarTypeExtension: ['name', 'directives'];
+  ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'];
+  InterfaceTypeExtension: ['name', 'directives', 'fields'];
+  UnionTypeExtension: ['name', 'directives', 'types'];
+  EnumTypeExtension: ['name', 'directives', 'values'];
+  InputObjectTypeExtension: ['name', 'directives', 'fields'];
+};
+
+export const BREAK: {};
 
 /**
  * visit() will walk through an AST using a depth first traversal, calling
@@ -149,7 +238,7 @@ export function visit(
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 export function visitInParallel(
-  visitors: Array<Visitor<ASTKindToNode>>,
+  visitors: ReadonlyArray<Visitor<ASTKindToNode>>,
 ): Visitor<ASTKindToNode>;
 
 /**
