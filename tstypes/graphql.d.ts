@@ -1,7 +1,7 @@
 import Maybe from './tsutils/Maybe';
 import { Source } from './language/source';
-import { GraphQLFieldResolver } from './type/definition';
 import { GraphQLSchema } from './type/schema';
+import { GraphQLFieldResolver, GraphQLTypeResolver } from './type/definition';
 import {
   ExecutionResult,
   ExecutionResultDataDefault,
@@ -44,12 +44,13 @@ import {
  */
 export interface GraphQLArgs {
   schema: GraphQLSchema;
-  source: Source | string;
+  source: string | Source;
   rootValue?: any;
   contextValue?: any;
   variableValues?: Maybe<{ [key: string]: any }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 
 export function graphql<TData = ExecutionResultDataDefault>(
@@ -63,6 +64,7 @@ export function graphql<TData = ExecutionResultDataDefault>(
   variableValues?: Maybe<{ [key: string]: any }>,
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
 ): Promise<ExecutionResult<TData>>;
 
 /**
@@ -82,4 +84,5 @@ export function graphqlSync<TData = ExecutionResultDataDefault>(
   variableValues?: Maybe<{ [key: string]: any }>,
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
 ): ExecutionResult<TData>;
