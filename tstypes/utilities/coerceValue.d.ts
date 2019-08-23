@@ -1,3 +1,4 @@
+import { Path } from '../jsutils/Path';
 import { GraphQLError } from '../error/GraphQLError';
 import { ASTNode } from '../language/ast';
 import { GraphQLInputType } from '../type/definition';
@@ -5,11 +6,6 @@ import { GraphQLInputType } from '../type/definition';
 interface CoercedValue {
   readonly errors: ReadonlyArray<GraphQLError> | undefined;
   readonly value: any;
-}
-
-interface Path {
-  readonly prev: Path | undefined;
-  readonly key: string | number;
 }
 
 /**
@@ -20,7 +16,7 @@ interface Path {
  *
  */
 export function coerceValue(
-  value: any,
+  inputValue: any,
   type: GraphQLInputType,
   blameNode?: ASTNode,
   path?: Path,
