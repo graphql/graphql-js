@@ -1,5 +1,5 @@
-import { ValidationContext, SDLValidationContext } from '../ValidationContext';
 import { ASTVisitor } from '../../language/visitor';
+import { ValidationContext, SDLValidationContext } from '../ValidationContext';
 
 export function missingFieldArgMessage(
   fieldName: string,
