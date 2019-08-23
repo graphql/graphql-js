@@ -1,11 +1,6 @@
 import Maybe from '../tsutils/Maybe';
+import { ValueNode } from '../language/ast';
 import { GraphQLInputType } from '../type/definition';
-import {
-  ValueNode,
-  VariableNode,
-  ListValueNode,
-  ObjectValueNode,
-} from '../language/ast';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.

@@ -9,12 +9,16 @@ import {
   FieldDefinitionNode,
   InputValueDefinitionNode,
   EnumValueDefinitionNode,
+  TypeNode,
 } from '../language/ast';
 import {
   GraphQLNamedType,
   GraphQLFieldConfig,
   GraphQLInputField,
   GraphQLEnumValueConfig,
+  GraphQLType,
+  GraphQLArgumentConfig,
+  GraphQLInputFieldConfig,
 } from '../type/definition';
 import { GraphQLDirective } from '../type/directives';
 import { Source } from '../language/source';
@@ -66,25 +70,23 @@ type TypeDefinitionsMap = { [key: string]: TypeDefinitionNode };
 type TypeResolver = (typeRef: NamedTypeNode) => GraphQLNamedType;
 
 export class ASTDefinitionBuilder {
-  constructor(
-    typeDefinitionsMap: TypeDefinitionsMap,
-    options: Maybe<BuildSchemaOptions>,
-    resolveType: TypeResolver,
-  );
+  constructor(options: Maybe<BuildSchemaOptions>, resolveType: TypeResolver);
 
-  buildTypes(
-    nodes: ReadonlyArray<NamedTypeNode | TypeDefinitionNode>,
-  ): Array<GraphQLNamedType>;
+  getNamedType(node: NamedTypeNode): GraphQLNamedType;
 
-  buildType(node: NamedTypeNode | TypeDefinitionNode): GraphQLNamedType;
+  getWrappedType(node: TypeNode): GraphQLType;
 
-  buildDirective(directiveNode: DirectiveDefinitionNode): GraphQLDirective;
+  buildDirective(directive: DirectiveDefinitionNode): GraphQLDirective;
 
   buildField(field: FieldDefinitionNode): GraphQLFieldConfig<any, any>;
 
-  buildInputField(value: InputValueDefinitionNode): GraphQLInputField;
+  buildArg(value: InputValueDefinitionNode): GraphQLArgumentConfig;
+
+  buildInputField(value: InputValueDefinitionNode): GraphQLInputFieldConfig;
 
   buildEnumValue(value: EnumValueDefinitionNode): GraphQLEnumValueConfig;
+
+  buildType(node: NamedTypeNode | TypeDefinitionNode): GraphQLNamedType;
 }
 
 /**
