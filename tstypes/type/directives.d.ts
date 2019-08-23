@@ -18,7 +18,7 @@ export class GraphQLDirective {
   locations: DirectiveLocationEnum[];
   isRepeatable: boolean;
   args: GraphQLArgument[];
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: GraphQLDirectiveConfig);
@@ -27,7 +27,7 @@ export class GraphQLDirective {
 
   toConfig(): GraphQLDirectiveConfig & {
     args: GraphQLFieldConfigArgumentMap;
-    extensions?: Maybe<Record<string, any>>;
+    extensions?: Maybe<Readonly<Record<string, any>>>;
     isRepeatable: boolean;
   };
 }
@@ -38,7 +38,7 @@ export interface GraphQLDirectiveConfig {
   locations: DirectiveLocationEnum[];
   args?: Maybe<GraphQLFieldConfigArgumentMap>;
   isRepeatable?: Maybe<boolean>;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
 

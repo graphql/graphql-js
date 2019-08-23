@@ -288,7 +288,7 @@ export class GraphQLScalarType {
   serialize: GraphQLScalarSerializer<any>;
   parseValue: GraphQLScalarValueParser<any>;
   parseLiteral: GraphQLScalarLiteralParser<any>;
-  extensions: Maybe<Record<string, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
   constructor(config: GraphQLScalarTypeConfig<any, any>);
@@ -297,7 +297,7 @@ export class GraphQLScalarType {
     serialize: GraphQLScalarSerializer<any>;
     parseValue: GraphQLScalarValueParser<any>;
     parseLiteral: GraphQLScalarLiteralParser<any>;
-    extensions: Maybe<Record<string, any>>;
+    extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
   };
 
@@ -326,7 +326,7 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   parseValue?: GraphQLScalarValueParser<TInternal>;
   // Parses an externally provided literal value to use as an input.
   parseLiteral?: GraphQLScalarLiteralParser<TInternal>;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
 }
@@ -376,7 +376,7 @@ export class GraphQLObjectType<
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
-  extensions: Maybe<GraphQLIsTypeOfFn<any, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 
@@ -410,7 +410,7 @@ export interface GraphQLObjectTypeConfig<
   interfaces?: Thunk<Maybe<GraphQLInterfaceType[]>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext, TArgs>>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 }
@@ -469,7 +469,7 @@ export interface GraphQLFieldConfig<
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   deprecationReason?: Maybe<string>;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
@@ -481,7 +481,7 @@ export interface GraphQLArgumentConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: any;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
@@ -507,7 +507,7 @@ export interface GraphQLField<
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   isDeprecated?: boolean;
   deprecationReason?: Maybe<string>;
-  extensions: Maybe<Record<string, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
@@ -516,7 +516,7 @@ export interface GraphQLArgument {
   description: Maybe<string>;
   type: GraphQLInputType;
   defaultValue: any;
-  extensions: Maybe<Record<string, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<InputValueDefinitionNode>;
 }
 
@@ -553,7 +553,7 @@ export class GraphQLInterfaceType {
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
-  extensions: Maybe<Record<string, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<InterfaceTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 
@@ -563,7 +563,7 @@ export class GraphQLInterfaceType {
 
   toConfig(): GraphQLInterfaceTypeConfig<any, any> & {
     fields: GraphQLFieldConfigMap<any, any>;
-    extensions: Maybe<Record<string, any>>;
+    extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
   };
 
@@ -587,7 +587,7 @@ export interface GraphQLInterfaceTypeConfig<
    * Object type.
    */
   resolveType?: Maybe<GraphQLTypeResolver<TSource, TContext, TArgs>>;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<InterfaceTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 }
@@ -619,7 +619,7 @@ export class GraphQLUnionType {
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
-  extensions: Maybe<Record<string, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 
@@ -647,7 +647,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
    * Object type.
    */
   resolveType?: Maybe<GraphQLTypeResolver<TSource, TContext>>;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 }
@@ -676,7 +676,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
 export class GraphQLEnumType {
   name: string;
   description: Maybe<string>;
-  extensions: Maybe<Record<string, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<EnumTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 
@@ -703,7 +703,7 @@ export interface GraphQLEnumTypeConfig {
   name: string;
   description?: Maybe<string>;
   values: GraphQLEnumValueConfigMap;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<EnumTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 }
@@ -716,7 +716,7 @@ export interface GraphQLEnumValueConfig {
   description?: Maybe<string>;
   value?: any;
   deprecationReason?: Maybe<string>;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<EnumValueDefinitionNode>;
 }
 
@@ -726,7 +726,7 @@ export interface GraphQLEnumValue {
   value: any;
   isDeprecated?: boolean;
   deprecationReason: Maybe<string>;
-  extensions: Maybe<Record<string, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<EnumValueDefinitionNode>;
 }
 
@@ -753,7 +753,7 @@ export interface GraphQLEnumValue {
 export class GraphQLInputObjectType {
   name: string;
   description: Maybe<string>;
-  extensions: Maybe<Record<string, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
   constructor(config: GraphQLInputObjectTypeConfig);
@@ -761,7 +761,7 @@ export class GraphQLInputObjectType {
 
   toConfig(): GraphQLInputObjectTypeConfig & {
     fields: GraphQLInputFieldConfigMap;
-    extensions: Maybe<Record<string, any>>;
+    extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
   };
 
@@ -774,7 +774,7 @@ export interface GraphQLInputObjectTypeConfig {
   name: string;
   description?: Maybe<string>;
   fields: Thunk<GraphQLInputFieldConfigMap>;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
 }
@@ -783,7 +783,7 @@ export interface GraphQLInputFieldConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: any;
-  extensions?: Maybe<Record<string, any>>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
@@ -796,7 +796,7 @@ export interface GraphQLInputField {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: any;
-  extensions: Maybe<Record<string, any>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
