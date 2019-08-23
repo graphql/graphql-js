@@ -1,6 +1,6 @@
 import Maybe from '../../tsutils/Maybe';
-import { ASTValidationContext } from '../ValidationContext';
 import { ASTVisitor } from '../../language/visitor';
+import { ASTValidationContext } from '../ValidationContext';
 
 export function singleFieldOnlyMessage(name: Maybe<string>): string;
 
