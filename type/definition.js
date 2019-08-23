@@ -76,8 +76,6 @@ var _valueFromASTUntyped = require("../utilities/valueFromASTUntyped");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// FIXME
-// flowlint deprecated-type:off
 function isType(type) {
   return isScalarType(type) || isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type) || isInputObjectType(type) || isListType(type) || isNonNullType(type);
 }

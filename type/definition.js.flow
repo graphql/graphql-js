@@ -1,8 +1,5 @@
 // @flow strict
 
-// FIXME
-// flowlint deprecated-type:off
-
 import objectEntries from '../polyfills/objectEntries';
 
 import inspect from '../jsutils/inspect';

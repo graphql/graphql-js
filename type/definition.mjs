@@ -1,5 +1,3 @@
-// FIXME
-// flowlint deprecated-type:off
 import objectEntries from '../polyfills/objectEntries';
 import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
