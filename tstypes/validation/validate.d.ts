@@ -3,6 +3,7 @@ import { DocumentNode } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { ValidationRule, SDLValidationRule } from './ValidationContext';
+import Maybe from 'tstypes/tsutils/Maybe';
 
 /**
  * Implements the "Validation" section of the spec.
@@ -25,12 +26,13 @@ export function validate(
   documentAST: DocumentNode,
   rules?: ReadonlyArray<ValidationRule>,
   typeInfo?: TypeInfo,
+  options?: { maxErrors?: number },
 ): ReadonlyArray<GraphQLError>;
 
 // @internal
 export function validateSDL(
   documentAST: DocumentNode,
-  schemaToExtend?: GraphQLSchema | null,
+  schemaToExtend?: Maybe<GraphQLSchema>,
   rules?: ReadonlyArray<SDLValidationRule>,
 ): GraphQLError[];
 

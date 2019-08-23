@@ -1,5 +1,5 @@
-import { SDLValidationContext } from '../ValidationContext';
 import { ASTVisitor } from '../../language/visitor';
+import { SDLValidationContext } from '../ValidationContext';
 
 export function schemaDefinitionNotAloneMessage(): string;
 

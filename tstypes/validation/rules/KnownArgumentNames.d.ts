@@ -5,13 +5,13 @@ export function unknownArgMessage(
   argName: string,
   fieldName: string,
   typeName: string,
-  suggestedArgs: Array<string>,
+  suggestedArgs: ReadonlyArray<string>,
 ): string;
 
 export function unknownDirectiveArgMessage(
   argName: string,
   directiveName: string,
-  suggestedArgs: Array<string>,
+  suggestedArgs: ReadonlyArray<string>,
 ): string;
 
 /**

@@ -1,5 +1,6 @@
 import Maybe from '../tsutils/Maybe';
 import { GraphQLError } from '../error';
+import { ASTVisitor } from '../language/visitor';
 import {
   DocumentNode,
   OperationDefinitionNode,
@@ -9,6 +10,7 @@ import {
   FragmentDefinitionNode,
 } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
+import { GraphQLDirective } from '../type/directives';
 import {
   GraphQLInputType,
   GraphQLOutputType,
@@ -16,9 +18,7 @@ import {
   GraphQLField,
   GraphQLArgument,
 } from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
 import { TypeInfo } from '../utilities/TypeInfo';
-import { ASTVisitor } from '../language/visitor';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 type VariableUsage = {
@@ -40,20 +40,6 @@ export class ASTValidationContext {
   getErrors(): ReadonlyArray<GraphQLError>;
 
   getDocument(): DocumentNode;
-}
-
-export class SDLValidationContext extends ASTValidationContext {
-  constructor(ast: DocumentNode, schema?: Maybe<GraphQLSchema>);
-
-  getSchema(): Maybe<GraphQLSchema>;
-}
-
-export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
-
-export class ValidationContext extends ASTValidationContext {
-  constructor(schema: GraphQLSchema, ast: DocumentNode, typeInfo: TypeInfo);
-
-  getSchema(): GraphQLSchema;
 
   getFragment(name: string): Maybe<FragmentDefinitionNode>;
 
@@ -62,12 +48,35 @@ export class ValidationContext extends ASTValidationContext {
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
   ): ReadonlyArray<FragmentDefinitionNode>;
+}
+
+export class SDLValidationContext extends ASTValidationContext {
+  constructor(
+    ast: DocumentNode,
+    schema: Maybe<GraphQLSchema>,
+    onError?: (err: GraphQLError) => void,
+  );
+
+  getSchema(): Maybe<GraphQLSchema>;
+}
+
+export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
+
+export class ValidationContext extends ASTValidationContext {
+  constructor(
+    schema: GraphQLSchema,
+    ast: DocumentNode,
+    typeInfo: TypeInfo,
+    onError?: (err: GraphQLError) => void,
+  );
+
+  getSchema(): GraphQLSchema;
 
   getVariableUsages(node: NodeWithSelectionSet): ReadonlyArray<VariableUsage>;
 
-  getRecursiveVariableUsages(
+  getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
-  ): ReadonlyArray<VariableUsage>;
+  ): ReadonlyArray<FragmentDefinitionNode>;
 
   getType(): Maybe<GraphQLOutputType>;
 
