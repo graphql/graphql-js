@@ -1,3 +1,9 @@
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 import objectEntries from '../polyfills/objectEntries';
 import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
@@ -530,7 +536,7 @@ function defineFieldMap(config) {
         astNode: arg.astNode
       };
     });
-    return {
+    return _objectSpread({}, fieldConfig, {
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
@@ -541,7 +547,7 @@ function defineFieldMap(config) {
       deprecationReason: fieldConfig.deprecationReason,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode
-    };
+    });
   });
 }
 
@@ -936,14 +942,14 @@ function defineInputFieldMap(config) {
   isPlainObj(fieldMap) || devAssert(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return mapValue(fieldMap, function (fieldConfig, fieldName) {
     !('resolve' in fieldConfig) || devAssert(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but Input Types cannot define resolvers."));
-    return {
+    return _objectSpread({}, fieldConfig, {
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode
-    };
+    });
   });
 }
 
