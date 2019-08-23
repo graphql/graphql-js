@@ -1,3 +1,5 @@
+export { Path as ResponsePath } from '../jsutils/Path';
+
 export {
   // Predicate
   isSchema,

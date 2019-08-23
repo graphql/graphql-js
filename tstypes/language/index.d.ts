@@ -1,5 +1,8 @@
 export { Source } from './source';
 export { getLocation, SourceLocation } from './location';
+
+export { printLocation, printSourceLocation } from './printLocation';
+
 export { Kind, KindEnum } from './kinds';
 export { TokenKind, TokenKindEnum } from './tokenKind';
 export { createLexer, Lexer } from './lexer';
