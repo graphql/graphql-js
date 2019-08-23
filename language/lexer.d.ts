@@ -1,6 +1,6 @@
+import { syntaxError } from '../error';
 import { Token } from './ast';
 import { Source } from './source';
-import { syntaxError } from '../error';
 
 /**
  * Given a Source object, this returns a Lexer for that source.
@@ -55,43 +55,6 @@ export interface Lexer<TOptions> {
 }
 
 /**
- * An exported enum describing the different kinds of tokens that the
- * lexer emits.
+ * @internal
  */
-export const TokenKind: _TokenKind;
-
-// @internal
-type _TokenKind = {
-  SOF: '<SOF>';
-  EOF: '<EOF>';
-  BANG: '!';
-  DOLLAR: '$';
-  AMP: '&';
-  PAREN_L: '(';
-  PAREN_R: ')';
-  SPREAD: '...';
-  COLON: ':';
-  EQUALS: '=';
-  AT: '@';
-  BRACKET_L: '[';
-  BRACKET_R: ']';
-  BRACE_L: '{';
-  PIPE: '|';
-  BRACE_R: '}';
-  NAME: 'Name';
-  INT: 'Int';
-  FLOAT: 'Float';
-  STRING: 'String';
-  BLOCK_STRING: 'BlockString';
-  COMMENT: 'Comment';
-};
-
-/**
- * The enum type representing the token kinds values.
- */
-export type TokenKindEnum = _TokenKind[keyof _TokenKind];
-
-/**
- * A helper function to describe a token as a string for debugging
- */
-export function getTokenDesc(token: Token): string;
+export function isPunctuatorToken(token: Token): boolean;
