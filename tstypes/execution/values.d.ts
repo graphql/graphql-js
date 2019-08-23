@@ -1,22 +1,22 @@
 import Maybe from '../tsutils/Maybe';
 import { GraphQLError } from '../error/GraphQLError';
 import {
-  GraphQLInputType,
-  GraphQLField,
-  GraphQLArgument,
-} from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
-import { GraphQLSchema } from '../type/schema';
-import {
   FieldNode,
   DirectiveNode,
   VariableDefinitionNode,
 } from '../language/ast';
 
-interface CoercedVariableValues {
-  errors: ReadonlyArray<GraphQLError> | undefined;
-  coerced: { [key: string]: any } | undefined;
-}
+import { GraphQLDirective } from '../type/directives';
+import { GraphQLSchema } from '../type/schema';
+import {
+  GraphQLInputType,
+  GraphQLField,
+  GraphQLArgument,
+} from '../type/definition';
+
+type CoercedVariableValues =
+  | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
+  | { errors?: never; coerced: { [key: string]: any } };
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -31,6 +31,7 @@ export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: VariableDefinitionNode[],
   inputs: { [key: string]: any },
+  options: { maxErrors?: number },
 ): CoercedVariableValues;
 
 /**

@@ -1,1 +1,5 @@
-export { subscribe, createSourceEventStream } from './subscribe';
+export {
+  subscribe,
+  createSourceEventStream,
+  SubscriptionArgs,
+} from './subscribe';
