@@ -791,6 +791,7 @@ function defineFieldMap<TSource, TContext>(
     }));
 
     return {
+      ...fieldConfig,
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
@@ -1423,6 +1424,7 @@ function defineInputFieldMap(
     );
 
     return {
+      ...fieldConfig,
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
