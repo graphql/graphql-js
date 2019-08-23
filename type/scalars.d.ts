@@ -8,4 +8,4 @@ export const GraphQLID: GraphQLScalarType;
 
 export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType>;
 
-export function isSpecifiedScalarType(type: GraphQLScalarType): boolean;
+export function isSpecifiedScalarType(type: any): type is GraphQLScalarType;

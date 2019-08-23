@@ -1,17 +1,18 @@
 import Maybe from '../tsutils/Maybe';
-import { GraphQLObjectType } from './definition';
+import { SchemaDefinitionNode, SchemaExtensionNode } from '../language/ast';
+import { GraphQLDirective } from './directives';
 import {
   GraphQLType,
   GraphQLNamedType,
   GraphQLAbstractType,
+  GraphQLObjectType,
 } from './definition';
-import { SchemaDefinitionNode, SchemaExtensionNode } from '../language/ast';
-import { GraphQLDirective } from './directives';
 
 /**
  * Test if the given value is a GraphQL schema.
  */
 export function isSchema(schema: any): schema is GraphQLSchema;
+export function assertSchema(schema: any): GraphQLSchema;
 
 /**
  * Schema Definition
@@ -40,6 +41,7 @@ export function isSchema(schema: any): schema is GraphQLSchema;
  *
  */
 export class GraphQLSchema {
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 
@@ -65,7 +67,10 @@ export class GraphQLSchema {
   toConfig(): GraphQLSchemaConfig & {
     types: GraphQLNamedType[];
     directives: GraphQLDirective[];
+    extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
+    assumeValid: boolean;
+    allowedLegacyNames: ReadonlyArray<string>;
   };
 }
 
@@ -97,6 +102,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   subscription?: Maybe<GraphQLObjectType>;
   types?: Maybe<GraphQLNamedType[]>;
   directives?: Maybe<GraphQLDirective[]>;
+  extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 }
