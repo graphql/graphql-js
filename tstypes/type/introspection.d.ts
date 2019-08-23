@@ -1,14 +1,9 @@
 import {
-  GraphQLScalarType,
   GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
+  GraphQLField,
   GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
+  GraphQLType,
 } from './definition';
-import { GraphQLField } from './definition';
 
 export const __Schema: GraphQLObjectType;
 export const __Directive: GraphQLObjectType;
@@ -40,6 +35,6 @@ export const SchemaMetaFieldDef: GraphQLField<any, any>;
 export const TypeMetaFieldDef: GraphQLField<any, any>;
 export const TypeNameMetaFieldDef: GraphQLField<any, any>;
 
-export const introspectionTypes: ReadonlyArray<any>;
+export const introspectionTypes: ReadonlyArray<GraphQLType>;
 
 export function isIntrospectionType(type: any): boolean;
