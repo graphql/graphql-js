@@ -1,16 +1,16 @@
+export { Source } from './source';
 export { getLocation, SourceLocation } from './location';
 export { Kind, KindEnum } from './kinds';
-export { createLexer, TokenKind, Lexer, TokenKindEnum } from './lexer';
+export { TokenKind, TokenKindEnum } from './tokenKind';
+export { createLexer, Lexer } from './lexer';
 export { parse, parseValue, parseType, ParseOptions } from './parser';
 export { print } from './printer';
-export { Source } from './source';
 export {
   visit,
   visitInParallel,
   visitWithTypeInfo,
   getVisitFn,
   BREAK,
-  // type
   ASTVisitor,
   Visitor,
   VisitFn,

@@ -1,6 +1,6 @@
-import { NamedTypeNode, TypeNode, ValueNode, DocumentNode } from './ast';
 import { Source } from './source';
 import { Lexer } from './lexer';
+import { NamedTypeNode, TypeNode, ValueNode, DocumentNode } from './ast';
 
 /**
  * Configuration options to control parser behavior
@@ -50,17 +50,6 @@ export interface ParseOptions {
    * future.
    */
   experimentalFragmentVariables?: boolean;
-
-  /**
-   * EXPERIMENTAL:
-   *
-   * If enabled, the parser understands directives on variable definitions:
-   *
-   * query Foo($var: String = "abc" @variable_definition_directive) {
-   *   ...
-   * }
-   */
-  experimentalVariableDefinitionDirectives?: boolean;
 }
 
 /**
@@ -98,18 +87,3 @@ export function parseType(
   source: string | Source,
   options?: ParseOptions,
 ): TypeNode;
-
-export function parseConstValue<TOptions>(lexer: Lexer<TOptions>): ValueNode;
-
-/**
- * Type :
- *   - NamedType
- *   - ListType
- *   - NonNullType
- */
-export function parseTypeReference<TOptions>(lexer: Lexer<TOptions>): TypeNode;
-
-/**
- * NamedType : Name
- */
-export function parseNamedType<TOptions>(lexer: Lexer<TOptions>): NamedTypeNode;
