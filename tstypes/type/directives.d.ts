@@ -7,7 +7,7 @@ import { DirectiveLocationEnum } from '../language/directiveLocation';
  * Test if the given value is a GraphQL directive.
  */
 export function isDirective(directive: any): directive is GraphQLDirective;
-
+export function assertDirective(directive: any): GraphQLDirective;
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
@@ -18,12 +18,17 @@ export class GraphQLDirective {
   locations: DirectiveLocationEnum[];
   isRepeatable: boolean;
   args: GraphQLArgument[];
+  extensions?: Maybe<Record<string, any>>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: GraphQLDirectiveConfig);
 
+  toString(): string;
+
   toConfig(): GraphQLDirectiveConfig & {
     args: GraphQLFieldConfigArgumentMap;
+    extensions?: Maybe<Record<string, any>>;
+    isRepeatable: boolean;
   };
 }
 
@@ -33,6 +38,7 @@ export interface GraphQLDirectiveConfig {
   locations: DirectiveLocationEnum[];
   args?: Maybe<GraphQLFieldConfigArgumentMap>;
   isRepeatable?: Maybe<boolean>;
+  extensions?: Maybe<Record<string, any>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
 
@@ -61,4 +67,6 @@ export const GraphQLDeprecatedDirective: GraphQLDirective;
  */
 export const specifiedDirectives: ReadonlyArray<GraphQLDirective>;
 
-export function isSpecifiedDirective(directive: GraphQLDirective): boolean;
+export function isSpecifiedDirective(
+  directive: any,
+): directive is GraphQLDirective;
