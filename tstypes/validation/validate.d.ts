@@ -3,7 +3,7 @@ import { DocumentNode } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { ValidationRule, SDLValidationRule } from './ValidationContext';
-import Maybe from 'tstypes/tsutils/Maybe';
+import Maybe from '../tsutils/Maybe';
 
 /**
  * Implements the "Validation" section of the spec.
