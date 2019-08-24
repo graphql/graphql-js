@@ -8,7 +8,6 @@ node_js:
   - '12'
   - '10'
   - '8'
-  - '6'
 
 script: |
   if [[ "$(node -pe process.version)" == v10.* ]]; then # Is latest LTS?
