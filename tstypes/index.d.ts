@@ -345,8 +345,6 @@ export {
   // Produce the GraphQL query recommended for a full schema introspection.
   // Accepts optional IntrospectionOptions.
   getIntrospectionQuery,
-  // @deprecated: use getIntrospectionQuery - will be removed in v15.
-  introspectionQuery,
   // Gets the target Operation from a Document.
   getOperationAST,
   // Gets the Type for the target Operation AST.
