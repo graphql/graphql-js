@@ -5,8 +5,6 @@ export {
   // Produce the GraphQL query recommended for a full schema introspection.
   // Accepts optional IntrospectionOptions.
   getIntrospectionQuery,
-  // @deprecated, use getIntrospectionQuery() - will be removed in v15.
-  introspectionQuery,
 } from './introspectionQuery';
 
 export type {

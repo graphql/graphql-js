@@ -105,13 +105,6 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   `;
 }
 
-/**
- * Deprecated, call getIntrospectionQuery directly.
- *
- * This function will be removed in v15
- */
-export const introspectionQuery = getIntrospectionQuery();
-
 export type IntrospectionQuery = {|
   +__schema: IntrospectionSchema,
 |};
