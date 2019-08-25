@@ -387,8 +387,6 @@ export {
   coerceInputValue,
   // @deprecated use coerceInputValue - will be removed in v15
   coerceValue,
-  // @deprecated use validation - will be removed in v15
-  isValidLiteralValue,
   // Concatenates multiple AST together.
   concatAST,
   // Separates an AST into an AST per Operation.
