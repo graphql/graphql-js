@@ -50,7 +50,7 @@ import {
   type IntrospectionInputTypeRef,
   type IntrospectionOutputTypeRef,
   type IntrospectionNamedTypeRef,
-} from './introspectionQuery';
+} from './getIntrospectionQuery';
 
 type Options = {|
   ...GraphQLSchemaValidationOptions,
