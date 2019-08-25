@@ -8,7 +8,7 @@ plugins:
   - flowtype
 
 rules:
-  # `eslint-plugin-flowtype` rule list based on `v3.12.x`
+  # `eslint-plugin-flowtype` rule list based on `v4.2.x`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
 
   flowtype/array-style-complex-type: [error, verbose]
@@ -26,6 +26,7 @@ rules:
   flowtype/no-weak-types: [error, { any: false }]
   flowtype/require-compound-type-alias: off
   flowtype/require-exact-type: off # TODO
+  flowtype/require-indexer-name: error
   flowtype/require-inexact-type: off # checked by Flow
   flowtype/require-parameter-type: off
   flowtype/require-readonly-react-props: off
@@ -53,7 +54,7 @@ rules:
   flowtype/union-intersection-spacing: off
 
   ##################################################
-  # ESLint builtin rules list based on `v5.16.x`
+  # ESLint builtin rules list based on `v6.1.x`
   ##################################################
 
   # Possible Errors
