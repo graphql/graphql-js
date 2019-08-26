@@ -133,8 +133,6 @@ export class GraphQLSchema {
   _possibleTypeMap: ObjMap<ObjMap<boolean>>;
   // Used as a cache for validateSchema().
   __validationErrors: ?$ReadOnlyArray<GraphQLError>;
-  // Referenced by validateSchema().
-  __allowedLegacyNames: $ReadOnlyArray<string>;
 
   constructor(config: GraphQLSchemaConfig): void {
     // If this schema was built from a source known to be valid, then it may be
@@ -156,18 +154,12 @@ export class GraphQLSchema {
         '"directives" must be Array if provided but got: ' +
           `${inspect(config.directives)}.`,
       );
-      devAssert(
-        !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames),
-        '"allowedLegacyNames" must be Array if provided but got: ' +
-          `${inspect(config.allowedLegacyNames)}.`,
-      );
     }
 
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
 
-    this.__allowedLegacyNames = config.allowedLegacyNames || [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription;
@@ -273,7 +265,6 @@ export class GraphQLSchema {
     extensions: ?ReadOnlyObjMap<mixed>,
     extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>,
     assumeValid: boolean,
-    allowedLegacyNames: $ReadOnlyArray<string>,
   |} {
     return {
       query: this.getQueryType(),
@@ -285,7 +276,6 @@ export class GraphQLSchema {
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || [],
       assumeValid: this.__validationErrors !== undefined,
-      allowedLegacyNames: this.__allowedLegacyNames,
     };
   }
 }
@@ -304,15 +294,6 @@ export type GraphQLSchemaValidationOptions = {|
    * Default: false
    */
   assumeValid?: boolean,
-
-  /**
-   * If provided, the schema will consider fields or types with names included
-   * in this list valid, even if they do not adhere to the specification's
-   * schema validation rules.
-   *
-   * This option is provided to ease adoption and will be removed in v15.
-   */
-  allowedLegacyNames?: ?$ReadOnlyArray<string>,
 |};
 
 export type GraphQLSchemaConfig = {|

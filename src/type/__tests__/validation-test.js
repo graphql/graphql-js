@@ -463,43 +463,6 @@ describe('Type System: Objects must have fields', () => {
       },
     ]);
   });
-
-  it('accepts an Object type with explicitly allowed legacy named fields', () => {
-    const schemaBad = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: { __badName: { type: GraphQLString } },
-      }),
-    });
-    const schemaOk = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: { __badName: { type: GraphQLString } },
-      }),
-      allowedLegacyNames: ['__badName'],
-    });
-    expect(validateSchema(schemaBad)).to.deep.equal([
-      {
-        message:
-          'Name "__badName" must not begin with "__", which is reserved by GraphQL introspection.',
-      },
-    ]);
-    expect(validateSchema(schemaOk)).to.deep.equal([]);
-  });
-
-  it('throws with bad value for explicitly allowed legacy names', () => {
-    expect(
-      () =>
-        new GraphQLSchema({
-          query: new GraphQLObjectType({
-            name: 'Query',
-            fields: { __badName: { type: GraphQLString } },
-          }),
-          // $DisableFlowOnNegativeTest
-          allowedLegacyNames: true,
-        }),
-    ).to.throw('"allowedLegacyNames" must be Array if provided but got: true.');
-  });
 });
 
 describe('Type System: Fields args must be properly named', () => {

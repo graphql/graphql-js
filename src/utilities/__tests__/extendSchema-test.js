@@ -1087,48 +1087,6 @@ describe('extendSchema', () => {
     );
   });
 
-  it('maintains configuration of the original schema object', () => {
-    const testSchemaWithLegacyNames = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: () => ({
-          id: { type: GraphQLID },
-        }),
-      }),
-      allowedLegacyNames: ['__badName'],
-    });
-    const ast = parse(`
-      extend type Query {
-        __badName: String
-      }
-    `);
-    const schema = extendSchema(testSchemaWithLegacyNames, ast);
-    expect(schema).to.deep.include({ __allowedLegacyNames: ['__badName'] });
-  });
-
-  it('adds to the configuration of the original schema object', () => {
-    const testSchemaWithLegacyNames = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: () => ({
-          __badName: { type: GraphQLString },
-        }),
-      }),
-      allowedLegacyNames: ['__badName'],
-    });
-    const ast = parse(`
-      extend type Query {
-        __anotherBadName: String
-      }
-    `);
-    const schema = extendSchema(testSchemaWithLegacyNames, ast, {
-      allowedLegacyNames: ['__anotherBadName'],
-    });
-    expect(schema).to.deep.include({
-      __allowedLegacyNames: ['__badName', '__anotherBadName'],
-    });
-  });
-
   describe('can add additional root operation types', () => {
     it('does not automatically include common root type names', () => {
       const schema = extendTestSchema(`
