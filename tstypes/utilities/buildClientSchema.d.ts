@@ -1,4 +1,4 @@
-import { IntrospectionQuery } from './introspectionQuery';
+import { IntrospectionQuery } from './getIntrospectionQuery';
 import { GraphQLSchema, GraphQLSchemaValidationOptions } from '../type/schema';
 
 interface Options extends GraphQLSchemaValidationOptions {}
