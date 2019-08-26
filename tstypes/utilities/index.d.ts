@@ -83,9 +83,6 @@ export { coerceInputValue } from './coerceInputValue';
 // Coerces a JavaScript value to a GraphQL type, or produces errors.
 export { coerceValue } from './coerceValue';
 
-// @deprecated use validation - will be removed in v15
-export { isValidLiteralValue } from './isValidLiteralValue';
-
 // Concatenates multiple AST together.
 export { concatAST } from './concatAST';
 
