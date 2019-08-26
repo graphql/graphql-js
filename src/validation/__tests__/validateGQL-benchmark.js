@@ -2,7 +2,7 @@
 
 import { parse } from '../../language/parser';
 import { buildSchema } from '../../utilities/buildASTSchema';
-import { getIntrospectionQuery } from '../../utilities/introspectionQuery';
+import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 
 import { validate } from '../validate';
 
