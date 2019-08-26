@@ -1,7 +1,6 @@
 /* eslint-disable no-redeclare */
 // $FlowFixMe
 var flatMap = Array.prototype.flatMap ? function (list, fn) {
-  // $FlowFixMe
   return Array.prototype.flatMap.call(list, fn);
 } : function (list, fn) {
   var result = [];
