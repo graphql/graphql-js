@@ -1,5 +1,5 @@
 export type Path = {
-  prev: Path | void;
+  prev: Path | undefined;
   key: string | number;
 };
 
