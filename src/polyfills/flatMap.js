@@ -9,7 +9,6 @@ declare function flatMap<T, U>(
 // $FlowFixMe
 const flatMap = Array.prototype.flatMap
   ? function(list, fn) {
-      // $FlowFixMe
       return Array.prototype.flatMap.call(list, fn);
     }
   : function(list, fn) {
