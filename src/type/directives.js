@@ -83,7 +83,7 @@ export class GraphQLDirective {
 
     this.args = objectEntries(args).map(([argName, arg]) => ({
       name: argName,
-      description: arg.description === undefined ? null : arg.description,
+      description: arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
       extensions: arg.extensions,

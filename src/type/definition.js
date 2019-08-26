@@ -783,7 +783,7 @@ function defineFieldMap<TSource, TContext>(
 
     const args = objectEntries(argsConfig).map(([argName, arg]) => ({
       name: argName,
-      description: arg.description === undefined ? null : arg.description,
+      description: arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
       extensions: arg.extensions && toObjMap(arg.extensions),

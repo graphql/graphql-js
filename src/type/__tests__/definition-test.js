@@ -243,7 +243,7 @@ describe('Type System: Objects', () => {
         args: [
           {
             name: 'arg',
-            description: null,
+            description: undefined,
             type: ScalarType,
             defaultValue: undefined,
             extensions: undefined,
