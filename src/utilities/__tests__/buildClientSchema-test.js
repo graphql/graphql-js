@@ -480,24 +480,6 @@ describe('Type System: build schema from introspection', () => {
     expect(printSchema(clientSchema)).to.equal(sdl);
   });
 
-  it('builds a schema with legacy names', () => {
-    const sdl = dedent`
-      type Query {
-        __badName: String
-      }
-    `;
-    const allowedLegacyNames = ['__badName'];
-    const schema = buildSchema(sdl, { allowedLegacyNames });
-
-    const introspection = introspectionFromSchema(schema);
-    const clientSchema = buildClientSchema(introspection, {
-      allowedLegacyNames,
-    });
-
-    expect(schema.__allowedLegacyNames).to.deep.equal(['__badName']);
-    expect(printSchema(clientSchema)).to.equal(sdl);
-  });
-
   it('builds a schema aware of deprecation', () => {
     const sdl = dedent`
       enum Color {

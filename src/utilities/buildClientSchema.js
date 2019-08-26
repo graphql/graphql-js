@@ -121,7 +121,6 @@ export function buildClientSchema(
     types: objectValues(typeMap),
     directives,
     assumeValid: options && options.assumeValid,
-    allowedLegacyNames: options && options.allowedLegacyNames,
   });
 
   // Given a type reference in introspection, return the GraphQLType instance.

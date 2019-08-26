@@ -70,7 +70,6 @@ export class GraphQLSchema {
     extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
     assumeValid: boolean;
-    allowedLegacyNames: ReadonlyArray<string>;
   };
 }
 
@@ -85,15 +84,6 @@ export interface GraphQLSchemaValidationOptions {
    * Default: false
    */
   assumeValid?: boolean;
-
-  /**
-   * If provided, the schema will consider fields or types with names included
-   * in this list valid, even if they do not adhere to the specification's
-   * schema validation rules.
-   *
-   * This option is provided to ease adoption and will be removed in v15.
-   */
-  allowedLegacyNames?: Maybe<ReadonlyArray<string>>;
 }
 
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {

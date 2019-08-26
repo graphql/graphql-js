@@ -190,11 +190,6 @@ export function extendSchema(
     }
   }
 
-  // Support both original legacy names and extended legacy names.
-  const allowedLegacyNames = schemaConfig.allowedLegacyNames.concat(
-    (options && options.allowedLegacyNames) || [],
-  );
-
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
     // Note: While this could make early assertions to get the correctly
@@ -208,7 +203,6 @@ export function extendSchema(
     directives: getMergedDirectives(),
     astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExts),
-    allowedLegacyNames,
   });
 
   // Below are functions used for producing this schema that have closed over

@@ -269,14 +269,6 @@ describe('Type System: Schema', () => {
         ).to.equal(undefined);
       });
 
-      it('configures the schema for allowed legacy names', () => {
-        expect(
-          new GraphQLSchema({
-            allowedLegacyNames: ['__badName'],
-          }).__allowedLegacyNames,
-        ).to.deep.equal(['__badName']);
-      });
-
       it('checks the configuration for mistakes', () => {
         // $DisableFlowOnNegativeTest
         expect(() => new GraphQLSchema(() => null)).to.throw();
@@ -284,8 +276,6 @@ describe('Type System: Schema', () => {
         expect(() => new GraphQLSchema({ types: {} })).to.throw();
         // $DisableFlowOnNegativeTest
         expect(() => new GraphQLSchema({ directives: {} })).to.throw();
-        // $DisableFlowOnNegativeTest
-        expect(() => new GraphQLSchema({ allowedLegacyNames: {} })).to.throw();
       });
     });
 
@@ -342,15 +332,6 @@ describe('Type System: Schema', () => {
         ).to.deep.equal([]);
       });
 
-      it('still configures the schema for allowed legacy names', () => {
-        expect(
-          new GraphQLSchema({
-            assumeValid: true,
-            allowedLegacyNames: ['__badName'],
-          }).__allowedLegacyNames,
-        ).to.deep.equal(['__badName']);
-      });
-
       it('does not check the configuration for mistakes', () => {
         const config = () => null;
         config.assumeValid = true;
@@ -364,7 +345,6 @@ describe('Type System: Schema', () => {
               assumeValid: true,
               types: {},
               directives: { reduce: () => [] },
-              allowedLegacyNames: {},
             }),
         ).to.not.throw();
       });
