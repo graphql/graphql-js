@@ -385,8 +385,6 @@ export {
   TypeInfo,
   // Coerces a JavaScript value to a GraphQL type, or produces errors.
   coerceInputValue,
-  // @deprecated use coerceInputValue - will be removed in v15
-  coerceValue,
   // Concatenates multiple AST together.
   concatAST,
   // Separates an AST into an AST per Operation.
