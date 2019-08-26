@@ -86,9 +86,6 @@ export { coerceInputValue } from './coerceInputValue';
 // @deprecated use coerceInputValue - will be removed in v15.
 export { coerceValue } from './coerceValue';
 
-// @deprecated use coerceInputValue - will be removed in v15.
-export { isValidJSValue } from './isValidJSValue';
-
 // @deprecated use validation - will be removed in v15
 export { isValidLiteralValue } from './isValidLiteralValue';
 
