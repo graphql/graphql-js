@@ -204,11 +204,6 @@ function validateName(
   context: SchemaValidationContext,
   node: { +name: string, +astNode: ?ASTNode, ... },
 ): void {
-  // If a schema explicitly allows some legacy name which is no longer valid,
-  // allow it to be assumed valid.
-  if (context.schema.__allowedLegacyNames.indexOf(node.name) !== -1) {
-    return;
-  }
   // Ensure names are valid, however introspection types opt out.
   const error = isValidNameError(node.name, node.astNode || undefined);
   if (error) {

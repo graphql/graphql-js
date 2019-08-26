@@ -814,17 +814,6 @@ describe('Schema Builder', () => {
     expect(errors).to.have.lengthOf.above(0);
   });
 
-  it('Accepts legacy names', () => {
-    const sdl = `
-      type Query {
-        __badName: String
-      }
-    `;
-    const schema = buildSchema(sdl, { allowedLegacyNames: ['__badName'] });
-    const errors = validateSchema(schema);
-    expect(errors).to.have.lengthOf(0);
-  });
-
   it('Rejects invalid SDL', () => {
     const sdl = `
       type Query {
