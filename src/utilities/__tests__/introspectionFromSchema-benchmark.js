@@ -4,7 +4,7 @@ import { parse } from '../../language/parser';
 import { execute } from '../../execution/execute';
 
 import { buildSchema } from '../buildASTSchema';
-import { getIntrospectionQuery } from '../introspectionQuery';
+import { getIntrospectionQuery } from '../getIntrospectionQuery';
 
 import { bigSchemaSDL } from '../../__fixtures__';
 

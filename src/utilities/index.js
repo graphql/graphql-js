@@ -1,11 +1,8 @@
 // @flow strict
 
-// The GraphQL query recommended for a full schema introspection.
-export {
-  // Produce the GraphQL query recommended for a full schema introspection.
-  // Accepts optional IntrospectionOptions.
-  getIntrospectionQuery,
-} from './introspectionQuery';
+// Produce the GraphQL query recommended for a full schema introspection.
+// Accepts optional IntrospectionOptions.
+export { getIntrospectionQuery } from './getIntrospectionQuery';
 
 export type {
   IntrospectionOptions,
@@ -30,7 +27,7 @@ export type {
   IntrospectionInputValue,
   IntrospectionEnumValue,
   IntrospectionDirective,
-} from './introspectionQuery';
+} from './getIntrospectionQuery';
 
 // Gets the target Operation from a Document.
 export { getOperationAST } from './getOperationAST';
