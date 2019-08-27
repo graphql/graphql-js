@@ -86,7 +86,7 @@ export class GraphQLDirective {
       description: arg.description === undefined ? null : arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
-      extensions: arg.extensions,
+      extensions: arg.extensions && toObjMap(arg.extensions),
       astNode: arg.astNode,
     }));
   }
