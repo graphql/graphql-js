@@ -1,0 +1,18 @@
+// @flow strict
+
+/**
+ * An ES6 string tag that fixes indentation. Also removes leading newlines
+ * and trailing spaces and tabs, but keeps trailing newlines.
+ *
+ * Example usage:
+ * const str = dedent`
+ *   {
+ *     test
+ *   }
+ * `;
+ * str === "{\n  test\n}\n";
+ */
+declare export default function dedent(
+  strings: $ReadOnlyArray<string>,
+  ...values: $ReadOnlyArray<string>
+): string;

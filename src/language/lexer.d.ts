@@ -1,4 +1,4 @@
-import { syntaxError } from '../error';
+import { syntaxError } from '../error/syntaxError';
 import { Token } from './ast';
 import { Source } from './source';
 

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "module": "es6",
+    "outDir": "./ts-build",
+    "rootDir": "./src"
+  }
+}

@@ -1,0 +1,20 @@
+extends:
+  [
+    .eslintrc.base.yml,
+    plugin:@typescript-eslint/eslint-recommended,
+    plugin:@typescript-eslint/recommended,
+    plugin:@typescript-eslint/recommended-requiring-type-checking,
+  ]
+parser: '@typescript-eslint/parser'
+parserOptions:
+  'project': './tsconfig.json'
+plugins: ['@typescript-eslint']
+rules:
+  'no-useless-constructor': 'off'
+  '@typescript-eslint/no-useless-constructor': 'error'
+  '@typescript-eslint/no-explicit-any': 'off'
+
+overrides:
+  - files: '**/*.d.ts'
+    rules:
+      '@typescript-eslint/no-unused-vars': 'off'

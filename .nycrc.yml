@@ -3,6 +3,7 @@ include:
 exclude:
   - 'src/polyfills'
 clean: true
+extends: '@istanbuljs/nyc-config-typescript'
 temp-directory: 'coverage/tests'
 report-dir: 'coverage/tests'
 skip-full: true

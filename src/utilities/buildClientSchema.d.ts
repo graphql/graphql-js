@@ -1,6 +1,7 @@
 import { IntrospectionQuery } from './getIntrospectionQuery';
 import { GraphQLSchema, GraphQLSchemaValidationOptions } from '../type/schema';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Options extends GraphQLSchemaValidationOptions {}
 
 /**

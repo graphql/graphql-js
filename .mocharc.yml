@@ -3,3 +3,4 @@ check-leaks: true
 require:
   - '@babel/register'
   - '@babel/polyfill'
+  - 'ts-node/register'

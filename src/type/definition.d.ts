@@ -172,12 +172,13 @@ interface GraphQLList<T extends GraphQLType> {
   inspect(): string;
 }
 
-interface _GraphQLList<T extends GraphQLType> {
+interface GraphQLList<T extends GraphQLType> {
   (type: T): GraphQLList<T>;
+  // eslint-disable-next-line @typescript-eslint/no-misused-new
   new (type: T): GraphQLList<T>;
 }
 
-export const GraphQLList: _GraphQLList<GraphQLType>;
+export const GraphQLList: GraphQLList<GraphQLType>;
 
 /**
  * Non-Null Modifier
@@ -206,12 +207,13 @@ interface GraphQLNonNull<T extends GraphQLNullableType> {
   inspect(): string;
 }
 
-interface _GraphQLNonNull<T extends GraphQLNullableType> {
+interface GraphQLNonNull<T extends GraphQLNullableType> {
   (type: T): GraphQLNonNull<T>;
+  // eslint-disable-next-line @typescript-eslint/no-misused-new
   new (type: T): GraphQLNonNull<T>;
 }
 
-export const GraphQLNonNull: _GraphQLNonNull<GraphQLNullableType>;
+export const GraphQLNonNull: GraphQLNonNull<GraphQLNullableType>;
 
 export type GraphQLWrappingType = GraphQLList<any> | GraphQLNonNull<any>;
 

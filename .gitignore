@@ -13,3 +13,4 @@ coverage
 dist
 benchmarkDist
 npm
+ts-build
