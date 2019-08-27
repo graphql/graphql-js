@@ -5,11 +5,14 @@ declare function flatMap<T, U>(
   fn: (item: T, index: number) => $ReadOnlyArray<U> | U,
 ): Array<U>;
 
+// Workaround to make older Flow versions happy
+const flatMapMethod = (Array.prototype: any).flatMap;
+
 /* eslint-disable no-redeclare */
 // $FlowFixMe
-const flatMap = Array.prototype.flatMap
+const flatMap = flatMapMethod
   ? function(list, fn) {
-      return Array.prototype.flatMap.call(list, fn);
+      return flatMapMethod.call(list, fn);
     }
   : function(list, fn) {
       let result = [];
