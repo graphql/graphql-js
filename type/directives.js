@@ -72,7 +72,7 @@ function () {
         description: arg.description === undefined ? null : arg.description,
         type: arg.type,
         defaultValue: arg.defaultValue,
-        extensions: arg.extensions,
+        extensions: arg.extensions && (0, _toObjMap.default)(arg.extensions),
         astNode: arg.astNode
       };
     });
