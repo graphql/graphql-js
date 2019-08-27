@@ -1,4 +1,4 @@
-import { GraphQLError } from '../error';
+import { GraphQLError } from '../error/GraphQLError';
 import { DocumentNode } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
 import { TypeInfo } from '../utilities/TypeInfo';
