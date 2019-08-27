@@ -1,7 +1,10 @@
+// Workaround to make older Flow versions happy
+var flatMapMethod = Array.prototype.flatMap;
 /* eslint-disable no-redeclare */
 // $FlowFixMe
-var flatMap = Array.prototype.flatMap ? function (list, fn) {
-  return Array.prototype.flatMap.call(list, fn);
+
+var flatMap = flatMapMethod ? function (list, fn) {
+  return flatMapMethod.call(list, fn);
 } : function (list, fn) {
   var result = [];
 
