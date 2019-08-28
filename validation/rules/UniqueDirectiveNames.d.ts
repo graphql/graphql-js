@@ -1,5 +1,5 @@
 import { ASTVisitor } from '../../language/visitor';
-import { ASTValidationContext } from '../ValidationContext';
+import { SDLValidationContext } from '../ValidationContext';
 
 export function duplicateDirectiveNameMessage(directiveName: string): string;
 

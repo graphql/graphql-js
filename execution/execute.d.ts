@@ -2,7 +2,9 @@ import Maybe from '../tsutils/Maybe';
 import { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { Path, addPath, pathToArray } from '../jsutils/Path';
 
-import { GraphQLError, locatedError } from '../error';
+import { GraphQLError } from '../error/GraphQLError';
+import { locatedError } from '../error/locatedError';
+
 import {
   DirectiveNode,
   DocumentNode,

@@ -3,7 +3,7 @@ import { SDLValidationContext } from '../ValidationContext';
 
 export function extendingUnknownTypeMessage(
   typeName: string,
-  suggestedTypes: $ReadOnlyArray<string>,
+  suggestedTypes: ReadonlyArray<string>,
 ): string;
 
 export function extendingDifferentTypeKindMessage(
