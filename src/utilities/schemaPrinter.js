@@ -79,7 +79,7 @@ function isDefinedType(type: GraphQLNamedType): boolean {
   return !isSpecifiedScalarType(type) && !isIntrospectionType(type);
 }
 
-function printFilteredSchema(
+export function printFilteredSchema(
   schema: GraphQLSchema,
   directiveFilter: (type: GraphQLDirective) => boolean,
   typeFilter: (type: GraphQLNamedType) => boolean,
