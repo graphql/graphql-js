@@ -781,13 +781,13 @@ function defineFieldMap<TSource, TContext>(
       `${config.name}.${fieldName} args must be an object with argument names as keys.`,
     );
 
-    const args = objectEntries(argsConfig).map(([argName, arg]) => ({
+    const args = objectEntries(argsConfig).map(([argName, argConfig]) => ({
       name: argName,
-      description: arg.description,
-      type: arg.type,
-      defaultValue: arg.defaultValue,
-      extensions: arg.extensions && toObjMap(arg.extensions),
-      astNode: arg.astNode,
+      description: argConfig.description,
+      type: argConfig.type,
+      defaultValue: argConfig.defaultValue,
+      extensions: argConfig.extensions && toObjMap(argConfig.extensions),
+      astNode: argConfig.astNode,
     }));
 
     return {
@@ -1277,24 +1277,24 @@ function defineEnumValues(
     isPlainObj(valueMap),
     `${typeName} values must be an object with value names as keys.`,
   );
-  return objectEntries(valueMap).map(([valueName, value]) => {
+  return objectEntries(valueMap).map(([valueName, valueConfig]) => {
     devAssert(
-      isPlainObj(value),
+      isPlainObj(valueConfig),
       `${typeName}.${valueName} must refer to an object with a "value" key ` +
-        `representing an internal value but got: ${inspect(value)}.`,
+        `representing an internal value but got: ${inspect(valueConfig)}.`,
     );
     devAssert(
-      !('isDeprecated' in value),
+      !('isDeprecated' in valueConfig),
       `${typeName}.${valueName} should provide "deprecationReason" instead of "isDeprecated".`,
     );
     return {
       name: valueName,
-      description: value.description,
-      value: 'value' in value ? value.value : valueName,
-      isDeprecated: Boolean(value.deprecationReason),
-      deprecationReason: value.deprecationReason,
-      extensions: value.extensions && toObjMap(value.extensions),
-      astNode: value.astNode,
+      description: valueConfig.description,
+      value: 'value' in valueConfig ? valueConfig.value : valueName,
+      isDeprecated: Boolean(valueConfig.deprecationReason),
+      deprecationReason: valueConfig.deprecationReason,
+      extensions: valueConfig.extensions && toObjMap(valueConfig.extensions),
+      astNode: valueConfig.astNode,
     };
   });
 }
