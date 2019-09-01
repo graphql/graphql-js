@@ -4,6 +4,7 @@ parserOptions:
 env:
   es6: true
   node: true
+reportUnusedDisableDirectives: true
 plugins:
   - flowtype
 
@@ -54,7 +55,7 @@ rules:
   flowtype/union-intersection-spacing: off
 
   ##################################################
-  # ESLint builtin rules list based on `v6.1.x`
+  # ESLint builtin rules list based on `v6.3.x`
   ##################################################
 
   # Possible Errors
@@ -302,6 +303,7 @@ rules:
   dot-location: off
   eol-last: off
   func-call-spacing: off
+  function-call-argument-newline: off
   function-paren-newline: off
   generator-star-spacing: off
   implicit-arrow-linebreak: off
