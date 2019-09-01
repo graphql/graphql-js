@@ -1290,7 +1290,7 @@ function defineEnumValues(
     return {
       name: valueName,
       description: valueConfig.description,
-      value: 'value' in valueConfig ? valueConfig.value : valueName,
+      value: valueConfig.value !== undefined ? valueConfig.value : valueName,
       isDeprecated: Boolean(valueConfig.deprecationReason),
       deprecationReason: valueConfig.deprecationReason,
       extensions: valueConfig.extensions && toObjMap(valueConfig.extensions),
