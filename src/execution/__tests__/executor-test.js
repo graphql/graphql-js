@@ -748,6 +748,24 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('errors if empty string is provided as operation name', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Type',
+        fields: {
+          a: { type: GraphQLString },
+        },
+      }),
+    });
+    const document = parse('{ a }');
+    const operationName = '';
+
+    const result = execute({ schema, document, operationName });
+    expect(result).to.deep.equal({
+      errors: [{ message: 'Unknown operation named "".' }],
+    });
+  });
+
   it('uses the query schema for queries', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
