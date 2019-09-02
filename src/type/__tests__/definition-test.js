@@ -538,7 +538,8 @@ describe('Type System: Enums', () => {
       name: 'EnumWithNullishValue',
       values: {
         NULL: { value: null },
-        UNDEFINED: { value: undefined },
+        NAN: { value: NaN },
+        NO_CUSTOM_VALUE: { value: undefined },
       },
     });
 
@@ -553,9 +554,18 @@ describe('Type System: Enums', () => {
         astNode: undefined,
       },
       {
-        name: 'UNDEFINED',
+        name: 'NAN',
         description: undefined,
-        value: undefined,
+        value: NaN,
+        isDeprecated: false,
+        deprecationReason: undefined,
+        extensions: undefined,
+        astNode: undefined,
+      },
+      {
+        name: 'NO_CUSTOM_VALUE',
+        description: undefined,
+        value: 'NO_CUSTOM_VALUE',
         isDeprecated: false,
         deprecationReason: undefined,
         extensions: undefined,
