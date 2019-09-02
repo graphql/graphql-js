@@ -279,17 +279,20 @@ export function buildExecutionContext(
   typeResolver?: ?GraphQLTypeResolver<mixed, mixed>,
 ): $ReadOnlyArray<GraphQLError> | ExecutionContext {
   let operation: OperationDefinitionNode | void;
-  let hasMultipleAssumedOperations = false;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
-        if (!operationName && operation) {
-          hasMultipleAssumedOperations = true;
-        } else if (
-          !operationName ||
-          (definition.name && definition.name.value === operationName)
-        ) {
+        if (operationName == null) {
+          if (operation !== undefined) {
+            return [
+              new GraphQLError(
+                'Must provide operation name if query contains multiple operations.',
+              ),
+            ];
+          }
+          operation = definition;
+        } else if (definition.name && definition.name.value === operationName) {
           operation = definition;
         }
         break;
@@ -300,18 +303,10 @@ export function buildExecutionContext(
   }
 
   if (!operation) {
-    if (operationName) {
+    if (operationName != null) {
       return [new GraphQLError(`Unknown operation named "${operationName}".`)];
     }
     return [new GraphQLError('Must provide an operation.')];
-  }
-
-  if (hasMultipleAssumedOperations) {
-    return [
-      new GraphQLError(
-        'Must provide operation name if query contains multiple operations.',
-      ),
-    ];
   }
 
   const coercedVariableValues = getVariableValues(
