@@ -921,6 +921,38 @@ describe('findDangerousChanges', () => {
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([]);
   });
 
+  it('should ignore changes in field definitions order', () => {
+    const oldSchema = buildSchema(`
+      input Input1 {
+        a: String
+        b: String
+        c: String
+      }
+
+      type Type1 {
+        field1(
+          arg1: Input1 = { a: "a", b: "b", c: "c" }
+        ): String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      input Input1 {
+        c: String
+        b: String
+        a: String
+      }
+
+      type Type1 {
+        field1(
+          arg1: Input1 = { a: "a", b: "b", c: "c" }
+        ): String
+      }
+    `);
+
+    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([]);
+  });
+
   it('should detect if a value was added to an enum type', () => {
     const oldSchema = buildSchema(`
       enum EnumType1 {
