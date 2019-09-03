@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  LoneAnonymousOperation,
-  anonOperationNotAloneMessage,
-} from '../rules/LoneAnonymousOperation';
+import { LoneAnonymousOperation } from '../rules/LoneAnonymousOperation';
 
 import { expectValidationErrors } from './harness';
 
@@ -15,13 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function anonOperationNotAlone(line, column) {
-  return {
-    message: anonOperationNotAloneMessage(),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: Anonymous operation must be alone', () => {
@@ -73,8 +63,14 @@ describe('Validate: Anonymous operation must be alone', () => {
         fieldB
       }
     `).to.deep.equal([
-      anonOperationNotAlone(2, 7),
-      anonOperationNotAlone(5, 7),
+      {
+        message: 'This anonymous operation must be the only defined operation.',
+        locations: [{ line: 2, column: 7 }],
+      },
+      {
+        message: 'This anonymous operation must be the only defined operation.',
+        locations: [{ line: 5, column: 7 }],
+      },
     ]);
   });
 
@@ -86,7 +82,12 @@ describe('Validate: Anonymous operation must be alone', () => {
       mutation Foo {
         fieldB
       }
-    `).to.deep.equal([anonOperationNotAlone(2, 7)]);
+    `).to.deep.equal([
+      {
+        message: 'This anonymous operation must be the only defined operation.',
+        locations: [{ line: 2, column: 7 }],
+      },
+    ]);
   });
 
   it('anon operation with a subscription', () => {
@@ -97,6 +98,11 @@ describe('Validate: Anonymous operation must be alone', () => {
       subscription Foo {
         fieldB
       }
-    `).to.deep.equal([anonOperationNotAlone(2, 7)]);
+    `).to.deep.equal([
+      {
+        message: 'This anonymous operation must be the only defined operation.',
+        locations: [{ line: 2, column: 7 }],
+      },
+    ]);
   });
 });

@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  VariablesInAllowedPosition,
-  badVarPosMessage,
-} from '../rules/VariablesInAllowedPosition';
+import { VariablesInAllowedPosition } from '../rules/VariablesInAllowedPosition';
 
 import { expectValidationErrors } from './harness';
 
@@ -165,7 +162,8 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `).to.deep.equal([
       {
-        message: badVarPosMessage('intArg', 'Int', 'Int!'),
+        message:
+          'Variable "$intArg" of type "Int" used in position expecting type "Int!".',
         locations: [{ line: 2, column: 19 }, { line: 4, column: 45 }],
       },
     ]);
@@ -184,7 +182,8 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `).to.deep.equal([
       {
-        message: badVarPosMessage('intArg', 'Int', 'Int!'),
+        message:
+          'Variable "$intArg" of type "Int" used in position expecting type "Int!".',
         locations: [{ line: 6, column: 19 }, { line: 3, column: 43 }],
       },
     ]);
@@ -207,7 +206,8 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `).to.deep.equal([
       {
-        message: badVarPosMessage('intArg', 'Int', 'Int!'),
+        message:
+          'Variable "$intArg" of type "Int" used in position expecting type "Int!".',
         locations: [{ line: 10, column: 19 }, { line: 7, column: 43 }],
       },
     ]);
@@ -222,7 +222,8 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `).to.deep.equal([
       {
-        message: badVarPosMessage('stringVar', 'String', 'Boolean'),
+        message:
+          'Variable "$stringVar" of type "String" used in position expecting type "Boolean".',
         locations: [{ line: 2, column: 19 }, { line: 4, column: 39 }],
       },
     ]);
@@ -237,7 +238,8 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `).to.deep.equal([
       {
-        message: badVarPosMessage('stringVar', 'String', '[String]'),
+        message:
+          'Variable "$stringVar" of type "String" used in position expecting type "[String]".',
         locations: [{ line: 2, column: 19 }, { line: 4, column: 45 }],
       },
     ]);
@@ -250,7 +252,8 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `).to.deep.equal([
       {
-        message: badVarPosMessage('boolVar', 'Boolean', 'Boolean!'),
+        message:
+          'Variable "$boolVar" of type "Boolean" used in position expecting type "Boolean!".',
         locations: [{ line: 2, column: 19 }, { line: 3, column: 26 }],
       },
     ]);
@@ -263,7 +266,8 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `).to.deep.equal([
       {
-        message: badVarPosMessage('stringVar', 'String', 'Boolean!'),
+        message:
+          'Variable "$stringVar" of type "String" used in position expecting type "Boolean!".',
         locations: [{ line: 2, column: 19 }, { line: 3, column: 26 }],
       },
     ]);
@@ -279,7 +283,8 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `).to.deep.equal([
       {
-        message: badVarPosMessage('stringListVar', '[String]', '[String!]'),
+        message:
+          'Variable "$stringListVar" of type "[String]" used in position expecting type "[String!]".',
         locations: [{ line: 2, column: 19 }, { line: 5, column: 59 }],
       },
     ]);
@@ -295,7 +300,8 @@ describe('Validate: Variables are in allowed positions', () => {
         }
       `).to.deep.equal([
         {
-          message: badVarPosMessage('intVar', 'Int', 'Int!'),
+          message:
+            'Variable "$intVar" of type "Int" used in position expecting type "Int!".',
           locations: [{ line: 2, column: 21 }, { line: 4, column: 47 }],
         },
       ]);

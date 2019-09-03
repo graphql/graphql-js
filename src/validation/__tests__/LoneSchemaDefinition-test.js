@@ -4,11 +4,7 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import {
-  LoneSchemaDefinition,
-  schemaDefinitionNotAloneMessage,
-  canNotDefineSchemaWithinExtensionMessage,
-} from '../rules/LoneSchemaDefinition';
+import { LoneSchemaDefinition } from '../rules/LoneSchemaDefinition';
 
 import { expectSDLValidationErrors } from './harness';
 
@@ -18,20 +14,6 @@ function expectSDLErrors(sdlStr, schema) {
 
 function expectValidSDL(sdlStr, schema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
-}
-
-function schemaDefinitionNotAlone(line, column) {
-  return {
-    message: schemaDefinitionNotAloneMessage(),
-    locations: [{ line, column }],
-  };
-}
-
-function canNotDefineSchemaWithinExtension(line, column) {
-  return {
-    message: canNotDefineSchemaWithinExtensionMessage(),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: Schema definition should be alone', () => {
@@ -73,8 +55,14 @@ describe('Validate: Schema definition should be alone', () => {
         subscription: Foo
       }
     `).to.deep.equal([
-      schemaDefinitionNotAlone(10, 7),
-      schemaDefinitionNotAlone(14, 7),
+      {
+        message: 'Must provide only one schema definition.',
+        locations: [{ line: 10, column: 7 }],
+      },
+      {
+        message: 'Must provide only one schema definition.',
+        locations: [{ line: 14, column: 7 }],
+      },
     ]);
   });
 
@@ -113,7 +101,12 @@ describe('Validate: Schema definition should be alone', () => {
         }
       `,
       schema,
-    ).to.deep.equal([canNotDefineSchemaWithinExtension(2, 9)]);
+    ).to.deep.equal([
+      {
+        message: 'Cannot define a new schema within a schema extension.',
+        locations: [{ line: 2, column: 9 }],
+      },
+    ]);
   });
 
   it('redefine implicit schema in schema extension', () => {
@@ -134,7 +127,12 @@ describe('Validate: Schema definition should be alone', () => {
         }
       `,
       schema,
-    ).to.deep.equal([canNotDefineSchemaWithinExtension(2, 9)]);
+    ).to.deep.equal([
+      {
+        message: 'Cannot define a new schema within a schema extension.',
+        locations: [{ line: 2, column: 9 }],
+      },
+    ]);
   });
 
   it('extend schema in schema extension', () => {

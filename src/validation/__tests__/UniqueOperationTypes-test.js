@@ -4,11 +4,7 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import {
-  UniqueOperationTypes,
-  existedOperationTypeMessage,
-  duplicateOperationTypeMessage,
-} from '../rules/UniqueOperationTypes';
+import { UniqueOperationTypes } from '../rules/UniqueOperationTypes';
 
 import { expectSDLValidationErrors } from './harness';
 
@@ -18,20 +14,6 @@ function expectSDLErrors(sdlStr, schema) {
 
 function expectValidSDL(sdlStr, schema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
-}
-
-function existedOperationType(operation, l1, c1) {
-  return {
-    message: existedOperationTypeMessage(operation),
-    locations: [{ line: l1, column: c1 }],
-  };
-}
-
-function duplicateOperationType(operation, l1, c1, l2, c2) {
-  return {
-    message: duplicateOperationTypeMessage(operation),
-    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-  };
 }
 
 describe('Validate: Unique operation types', () => {
@@ -101,9 +83,18 @@ describe('Validate: Unique operation types', () => {
         subscription: Foo
       }
     `).to.deep.equal([
-      duplicateOperationType('query', 5, 9, 9, 9),
-      duplicateOperationType('mutation', 6, 9, 10, 9),
-      duplicateOperationType('subscription', 7, 9, 11, 9),
+      {
+        message: 'There can be only one query type in schema.',
+        locations: [{ line: 5, column: 9 }, { line: 9, column: 9 }],
+      },
+      {
+        message: 'There can be only one mutation type in schema.',
+        locations: [{ line: 6, column: 9 }, { line: 10, column: 9 }],
+      },
+      {
+        message: 'There can be only one subscription type in schema.',
+        locations: [{ line: 7, column: 9 }, { line: 11, column: 9 }],
+      },
     ]);
   });
 
@@ -123,9 +114,18 @@ describe('Validate: Unique operation types', () => {
         subscription: Foo
       }
     `).to.deep.equal([
-      duplicateOperationType('query', 5, 9, 11, 9),
-      duplicateOperationType('mutation', 6, 9, 12, 9),
-      duplicateOperationType('subscription', 7, 9, 13, 9),
+      {
+        message: 'There can be only one query type in schema.',
+        locations: [{ line: 5, column: 9 }, { line: 11, column: 9 }],
+      },
+      {
+        message: 'There can be only one mutation type in schema.',
+        locations: [{ line: 6, column: 9 }, { line: 12, column: 9 }],
+      },
+      {
+        message: 'There can be only one subscription type in schema.',
+        locations: [{ line: 7, column: 9 }, { line: 13, column: 9 }],
+      },
     ]);
   });
 
@@ -151,12 +151,30 @@ describe('Validate: Unique operation types', () => {
         subscription: Foo
       }
     `).to.deep.equal([
-      duplicateOperationType('query', 5, 9, 11, 9),
-      duplicateOperationType('mutation', 6, 9, 12, 9),
-      duplicateOperationType('subscription', 7, 9, 13, 9),
-      duplicateOperationType('query', 5, 9, 17, 9),
-      duplicateOperationType('mutation', 6, 9, 18, 9),
-      duplicateOperationType('subscription', 7, 9, 19, 9),
+      {
+        message: 'There can be only one query type in schema.',
+        locations: [{ line: 5, column: 9 }, { line: 11, column: 9 }],
+      },
+      {
+        message: 'There can be only one mutation type in schema.',
+        locations: [{ line: 6, column: 9 }, { line: 12, column: 9 }],
+      },
+      {
+        message: 'There can be only one subscription type in schema.',
+        locations: [{ line: 7, column: 9 }, { line: 13, column: 9 }],
+      },
+      {
+        message: 'There can be only one query type in schema.',
+        locations: [{ line: 5, column: 9 }, { line: 17, column: 9 }],
+      },
+      {
+        message: 'There can be only one mutation type in schema.',
+        locations: [{ line: 6, column: 9 }, { line: 18, column: 9 }],
+      },
+      {
+        message: 'There can be only one subscription type in schema.',
+        locations: [{ line: 7, column: 9 }, { line: 19, column: 9 }],
+      },
     ]);
   });
 
@@ -179,9 +197,18 @@ describe('Validate: Unique operation types', () => {
         subscription: Foo
       }
     `).to.deep.equal([
-      duplicateOperationType('query', 5, 9, 14, 9),
-      duplicateOperationType('mutation', 9, 9, 15, 9),
-      duplicateOperationType('subscription', 10, 9, 16, 9),
+      {
+        message: 'There can be only one query type in schema.',
+        locations: [{ line: 5, column: 9 }, { line: 14, column: 9 }],
+      },
+      {
+        message: 'There can be only one mutation type in schema.',
+        locations: [{ line: 9, column: 9 }, { line: 15, column: 9 }],
+      },
+      {
+        message: 'There can be only one subscription type in schema.',
+        locations: [{ line: 10, column: 9 }, { line: 16, column: 9 }],
+      },
     ]);
   });
 
@@ -237,9 +264,21 @@ describe('Validate: Unique operation types', () => {
     `;
 
     expectSDLErrors(sdl, schema).to.deep.equal([
-      existedOperationType('query', 3, 9),
-      existedOperationType('mutation', 4, 9),
-      existedOperationType('subscription', 5, 9),
+      {
+        message:
+          'Type for query already defined in the schema. It cannot be redefined.',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message:
+          'Type for mutation already defined in the schema. It cannot be redefined.',
+        locations: [{ line: 4, column: 9 }],
+      },
+      {
+        message:
+          'Type for subscription already defined in the schema. It cannot be redefined.',
+        locations: [{ line: 5, column: 9 }],
+      },
     ]);
   });
 
@@ -265,12 +304,36 @@ describe('Validate: Unique operation types', () => {
     `;
 
     expectSDLErrors(sdl, schema).to.deep.equal([
-      existedOperationType('query', 3, 9),
-      existedOperationType('mutation', 4, 9),
-      existedOperationType('subscription', 5, 9),
-      existedOperationType('query', 9, 9),
-      existedOperationType('mutation', 10, 9),
-      existedOperationType('subscription', 11, 9),
+      {
+        message:
+          'Type for query already defined in the schema. It cannot be redefined.',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message:
+          'Type for mutation already defined in the schema. It cannot be redefined.',
+        locations: [{ line: 4, column: 9 }],
+      },
+      {
+        message:
+          'Type for subscription already defined in the schema. It cannot be redefined.',
+        locations: [{ line: 5, column: 9 }],
+      },
+      {
+        message:
+          'Type for query already defined in the schema. It cannot be redefined.',
+        locations: [{ line: 9, column: 9 }],
+      },
+      {
+        message:
+          'Type for mutation already defined in the schema. It cannot be redefined.',
+        locations: [{ line: 10, column: 9 }],
+      },
+      {
+        message:
+          'Type for subscription already defined in the schema. It cannot be redefined.',
+        locations: [{ line: 11, column: 9 }],
+      },
     ]);
   });
 });

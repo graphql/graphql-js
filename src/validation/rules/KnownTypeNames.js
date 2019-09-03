@@ -20,16 +20,6 @@ import {
   type SDLValidationContext,
 } from '../ValidationContext';
 
-export function unknownTypeMessage(
-  typeName: string,
-  suggestedTypes: $ReadOnlyArray<string>,
-): string {
-  return (
-    `Unknown type "${typeName}".` +
-    didYouMean(suggestedTypes.map(x => `"${x}"`))
-  );
-}
-
 /**
  * Known type names
  *
@@ -68,7 +58,11 @@ export function KnownTypeNames(
           isSDL ? specifiedScalarsNames.concat(typeNames) : typeNames,
         );
         context.reportError(
-          new GraphQLError(unknownTypeMessage(typeName, suggestedTypes), node),
+          new GraphQLError(
+            `Unknown type "${typeName}".` +
+              didYouMean(suggestedTypes.map(x => `"${x}"`)),
+            node,
+          ),
         );
       }
     },

@@ -1,8 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ASTValidationContext } from '../ValidationContext';
 
-export function nonExecutableDefinitionMessage(defName: string): string;
-
 /**
  * Executable definitions
  *

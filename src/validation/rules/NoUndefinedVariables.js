@@ -5,12 +5,6 @@ import { type ASTVisitor } from '../../language/visitor';
 
 import { type ValidationContext } from '../ValidationContext';
 
-export function undefinedVarMessage(varName: string, opName: ?string): string {
-  return opName
-    ? `Variable "$${varName}" is not defined by operation "${opName}".`
-    : `Variable "$${varName}" is not defined.`;
-}
-
 /**
  * No undefined variables
  *
@@ -33,10 +27,9 @@ export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
           if (variableNameDefined[varName] !== true) {
             context.reportError(
               new GraphQLError(
-                undefinedVarMessage(
-                  varName,
-                  operation.name && operation.name.value,
-                ),
+                operation.name
+                  ? `Variable "$${varName}" is not defined by operation "${operation.name.value}".`
+                  : `Variable "$${varName}" is not defined.`,
                 [node, operation],
               ),
             );

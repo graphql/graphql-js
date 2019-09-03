@@ -7,10 +7,6 @@ import { type ASTVisitor } from '../../language/visitor';
 
 import { type ASTValidationContext } from '../ValidationContext';
 
-export function anonOperationNotAloneMessage(): string {
-  return 'This anonymous operation must be the only defined operation.';
-}
-
 /**
  * Lone anonymous operation
  *
@@ -30,7 +26,10 @@ export function LoneAnonymousOperation(
     OperationDefinition(node) {
       if (!node.name && operationCount > 1) {
         context.reportError(
-          new GraphQLError(anonOperationNotAloneMessage(), node),
+          new GraphQLError(
+            'This anonymous operation must be the only defined operation.',
+            node,
+          ),
         );
       }
     },

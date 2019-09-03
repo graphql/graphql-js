@@ -28,47 +28,6 @@ import {
 
 import { type ValidationContext } from '../ValidationContext';
 
-export function badValueMessage(
-  typeName: string,
-  valueName: string,
-  message?: string,
-): string {
-  return (
-    `Expected type ${typeName}, found ${valueName}` +
-    (message ? `; ${message}` : '.')
-  );
-}
-
-export function badEnumValueMessage(
-  typeName: string,
-  valueName: string,
-  suggestedValues: $ReadOnlyArray<string>,
-) {
-  return (
-    `Expected type ${typeName}, found ${valueName}.` +
-    didYouMean('the enum value', suggestedValues)
-  );
-}
-
-export function requiredFieldMessage(
-  typeName: string,
-  fieldName: string,
-  fieldTypeName: string,
-): string {
-  return `Field ${typeName}.${fieldName} of required type ${fieldTypeName} was not provided.`;
-}
-
-export function unknownFieldMessage(
-  typeName: string,
-  fieldName: string,
-  suggestedFields: $ReadOnlyArray<string>,
-): string {
-  return (
-    `Field "${fieldName}" is not defined by type ${typeName}.` +
-    didYouMean(suggestedFields)
-  );
-}
-
 /**
  * Value literals of correct type
  *
@@ -100,7 +59,7 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
           const typeStr = inspect(fieldDef.type);
           context.reportError(
             new GraphQLError(
-              requiredFieldMessage(type.name, fieldDef.name, typeStr),
+              `Field ${type.name}.${fieldDef.name} of required type ${typeStr} was not provided.`,
               node,
             ),
           );
@@ -117,7 +76,8 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
         );
         context.reportError(
           new GraphQLError(
-            unknownFieldMessage(parentType.name, node.name.value, suggestions),
+            `Field "${node.name.value}" is not defined by type ${parentType.name}.` +
+              didYouMean(suggestions),
             node,
           ),
         );
@@ -127,7 +87,10 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
       const type = context.getInputType();
       if (isNonNullType(type)) {
         context.reportError(
-          new GraphQLError(badValueMessage(inspect(type), print(node)), node),
+          new GraphQLError(
+            `Expected type ${inspect(type)}, found ${print(node)}.`,
+            node,
+          ),
         );
       }
     },
@@ -154,13 +117,13 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
 
   if (isEnumType(type)) {
     if (node.kind !== Kind.ENUM || !type.getValue(node.value)) {
+      const allNames = type.getValues().map(value => value.name);
+      const suggestedValues = suggestionList(print(node), allNames);
+
       context.reportError(
         new GraphQLError(
-          badEnumValueMessage(
-            type.name,
-            print(node),
-            enumTypeSuggestion(type, node),
-          ),
+          `Expected type ${type.name}, found ${print(node)}.` +
+            didYouMean('the enum value', suggestedValues),
           node,
         ),
       );
@@ -171,7 +134,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   if (!isScalarType(type)) {
     context.reportError(
       new GraphQLError(
-        badValueMessage(inspect(locationType), print(node)),
+        `Expected type ${inspect(locationType)}, found ${print(node)}.`,
         node,
       ),
     );
@@ -185,7 +148,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     if (isInvalid(parseResult)) {
       context.reportError(
         new GraphQLError(
-          badValueMessage(inspect(locationType), print(node)),
+          `Expected type ${inspect(locationType)}, found ${print(node)}.`,
           node,
         ),
       );
@@ -194,7 +157,8 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     // Ensure a reference to the original error is maintained.
     context.reportError(
       new GraphQLError(
-        badValueMessage(inspect(locationType), print(node), error.message),
+        `Expected type ${inspect(locationType)}, found ${print(node)}; ` +
+          error.message,
         node,
         undefined,
         undefined,
@@ -203,9 +167,4 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
       ),
     );
   }
-}
-
-function enumTypeSuggestion(type, node) {
-  const allNames = type.getValues().map(value => value.name);
-  return suggestionList(print(node), allNames);
 }

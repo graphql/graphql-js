@@ -28,10 +28,10 @@ export function UniqueArgumentNames(context: ASTValidationContext): ASTVisitor {
       const argName = node.name.value;
       if (knownArgNames[argName]) {
         context.reportError(
-          new GraphQLError(duplicateArgMessage(argName), [
-            knownArgNames[argName],
-            node.name,
-          ]),
+          new GraphQLError(
+            `There can be only one argument named "${argName}".`,
+            [knownArgNames[argName], node.name],
+          ),
         );
       } else {
         knownArgNames[argName] = node.name;

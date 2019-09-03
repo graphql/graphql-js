@@ -1,17 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ValidationContext } from '../ValidationContext';
 
-export function typeIncompatibleSpreadMessage(
-  fragName: string,
-  parentType: string,
-  fragType: string,
-): string;
-
-export function typeIncompatibleAnonSpreadMessage(
-  parentType: string,
-  fragType: string,
-): string;
-
 /**
  * Possible fragment spread
  *

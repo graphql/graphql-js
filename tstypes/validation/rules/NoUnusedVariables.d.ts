@@ -1,11 +1,5 @@
-import Maybe from '../../tsutils/Maybe';
 import { ASTVisitor } from '../../language/visitor';
 import { ValidationContext } from '../ValidationContext';
-
-export function unusedVariableMessage(
-  varName: string,
-  opName: Maybe<string>,
-): string;
 
 /**
  * No unused variables

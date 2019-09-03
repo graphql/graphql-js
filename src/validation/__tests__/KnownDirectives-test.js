@@ -4,11 +4,7 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import {
-  KnownDirectives,
-  unknownDirectiveMessage,
-  misplacedDirectiveMessage,
-} from '../rules/KnownDirectives';
+import { KnownDirectives } from '../rules/KnownDirectives';
 
 import { expectValidationErrors, expectSDLValidationErrors } from './harness';
 
@@ -26,20 +22,6 @@ function expectSDLErrors(sdlStr, schema) {
 
 function expectValidSDL(sdlStr, schema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
-}
-
-function unknownDirective(directiveName, line, column) {
-  return {
-    message: unknownDirectiveMessage(directiveName),
-    locations: [{ line, column }],
-  };
-}
-
-function misplacedDirective(directiveName, placement, line, column) {
-  return {
-    message: misplacedDirectiveMessage(directiveName, placement),
-    locations: [{ line, column }],
-  };
 }
 
 const schemaWithSDLDirectives = buildSchema(`
@@ -90,7 +72,12 @@ describe('Validate: Known directives', () => {
           name
         }
       }
-    `).to.deep.equal([unknownDirective('unknown', 3, 13)]);
+    `).to.deep.equal([
+      {
+        message: 'Unknown directive "unknown".',
+        locations: [{ line: 3, column: 13 }],
+      },
+    ]);
   });
 
   it('with many unknown directives', () => {
@@ -107,9 +94,18 @@ describe('Validate: Known directives', () => {
         }
       }
     `).to.deep.equal([
-      unknownDirective('unknown', 3, 13),
-      unknownDirective('unknown', 6, 15),
-      unknownDirective('unknown', 8, 16),
+      {
+        message: 'Unknown directive "unknown".',
+        locations: [{ line: 3, column: 13 }],
+      },
+      {
+        message: 'Unknown directive "unknown".',
+        locations: [{ line: 6, column: 15 }],
+      },
+      {
+        message: 'Unknown directive "unknown".',
+        locations: [{ line: 8, column: 16 }],
+      },
     ]);
   });
 
@@ -147,10 +143,22 @@ describe('Validate: Known directives', () => {
         someField
       }
     `).to.deep.equal([
-      misplacedDirective('include', 'QUERY', 2, 32),
-      misplacedDirective('onQuery', 'FIELD', 3, 14),
-      misplacedDirective('onQuery', 'FRAGMENT_SPREAD', 4, 17),
-      misplacedDirective('onQuery', 'MUTATION', 7, 20),
+      {
+        message: 'Directive "include" may not be used on QUERY.',
+        locations: [{ line: 2, column: 32 }],
+      },
+      {
+        message: 'Directive "onQuery" may not be used on FIELD.',
+        locations: [{ line: 3, column: 14 }],
+      },
+      {
+        message: 'Directive "onQuery" may not be used on FRAGMENT_SPREAD.',
+        locations: [{ line: 4, column: 17 }],
+      },
+      {
+        message: 'Directive "onQuery" may not be used on MUTATION.',
+        locations: [{ line: 7, column: 20 }],
+      },
     ]);
   });
 
@@ -160,7 +168,10 @@ describe('Validate: Known directives', () => {
         name
       }
     `).to.deep.equal([
-      misplacedDirective('onField', 'VARIABLE_DEFINITION', 2, 31),
+      {
+        message: 'Directive "onField" may not be used on VARIABLE_DEFINITION.',
+        locations: [{ line: 2, column: 31 }],
+      },
     ]);
   });
 
@@ -235,7 +246,12 @@ describe('Validate: Known directives', () => {
           extend type Query @unknown
         `,
         schema,
-      ).to.deep.equal([unknownDirective('unknown', 2, 29)]);
+      ).to.deep.equal([
+        {
+          message: 'Unknown directive "unknown".',
+          locations: [{ line: 2, column: 29 }],
+        },
+      ]);
     });
 
     it('with well placed directives', () => {
@@ -314,35 +330,67 @@ describe('Validate: Known directives', () => {
         `,
         schemaWithSDLDirectives,
       ).to.deep.equal([
-        misplacedDirective('onInterface', 'OBJECT', 2, 45),
-        misplacedDirective(
-          'onInputFieldDefinition',
-          'ARGUMENT_DEFINITION',
-          3,
-          32,
-        ),
-        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 3, 65),
-        misplacedDirective('onEnum', 'SCALAR', 6, 27),
-        misplacedDirective('onObject', 'INTERFACE', 8, 33),
-        misplacedDirective(
-          'onInputFieldDefinition',
-          'ARGUMENT_DEFINITION',
-          9,
-          32,
-        ),
-        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 9, 65),
-        misplacedDirective('onEnumValue', 'UNION', 12, 25),
-        misplacedDirective('onScalar', 'ENUM', 14, 23),
-        misplacedDirective('onUnion', 'ENUM_VALUE', 15, 22),
-        misplacedDirective('onEnum', 'INPUT_OBJECT', 18, 25),
-        misplacedDirective(
-          'onArgumentDefinition',
-          'INPUT_FIELD_DEFINITION',
-          19,
-          26,
-        ),
-        misplacedDirective('onObject', 'SCHEMA', 22, 18),
-        misplacedDirective('onObject', 'SCHEMA', 26, 25),
+        {
+          message: 'Directive "onInterface" may not be used on OBJECT.',
+          locations: [{ line: 2, column: 45 }],
+        },
+        {
+          message:
+            'Directive "onInputFieldDefinition" may not be used on ARGUMENT_DEFINITION.',
+          locations: [{ line: 3, column: 32 }],
+        },
+        {
+          message:
+            'Directive "onInputFieldDefinition" may not be used on FIELD_DEFINITION.',
+          locations: [{ line: 3, column: 65 }],
+        },
+        {
+          message: 'Directive "onEnum" may not be used on SCALAR.',
+          locations: [{ line: 6, column: 27 }],
+        },
+        {
+          message: 'Directive "onObject" may not be used on INTERFACE.',
+          locations: [{ line: 8, column: 33 }],
+        },
+        {
+          message:
+            'Directive "onInputFieldDefinition" may not be used on ARGUMENT_DEFINITION.',
+          locations: [{ line: 9, column: 32 }],
+        },
+        {
+          message:
+            'Directive "onInputFieldDefinition" may not be used on FIELD_DEFINITION.',
+          locations: [{ line: 9, column: 65 }],
+        },
+        {
+          message: 'Directive "onEnumValue" may not be used on UNION.',
+          locations: [{ line: 12, column: 25 }],
+        },
+        {
+          message: 'Directive "onScalar" may not be used on ENUM.',
+          locations: [{ line: 14, column: 23 }],
+        },
+        {
+          message: 'Directive "onUnion" may not be used on ENUM_VALUE.',
+          locations: [{ line: 15, column: 22 }],
+        },
+        {
+          message: 'Directive "onEnum" may not be used on INPUT_OBJECT.',
+          locations: [{ line: 18, column: 25 }],
+        },
+        {
+          message:
+            'Directive "onArgumentDefinition" may not be used on INPUT_FIELD_DEFINITION.',
+          locations: [{ line: 19, column: 26 }],
+        },
+        {
+          message: 'Directive "onObject" may not be used on SCHEMA.',
+          locations: [{ line: 22, column: 18 }],
+        },
+        {
+          message: 'Directive "onObject" may not be used on SCHEMA.',
+          locations: [{ line: 26, column: 25 }],
+        },
       ]);
     });
   });

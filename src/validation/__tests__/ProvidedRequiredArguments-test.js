@@ -7,8 +7,6 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import {
   ProvidedRequiredArguments,
   ProvidedRequiredArgumentsOnDirectives,
-  missingFieldArgMessage,
-  missingDirectiveArgMessage,
 } from '../rules/ProvidedRequiredArguments';
 
 import { expectValidationErrors, expectSDLValidationErrors } from './harness';
@@ -31,20 +29,6 @@ function expectSDLErrors(sdlStr, schema) {
 
 function expectValidSDL(sdlStr) {
   expectSDLErrors(sdlStr).to.deep.equal([]);
-}
-
-function missingFieldArg(fieldName, argName, typeName, line, column) {
-  return {
-    message: missingFieldArgMessage(fieldName, argName, typeName),
-    locations: [{ line, column }],
-  };
-}
-
-function missingDirectiveArg(directiveName, argName, typeName, line, column) {
-  return {
-    message: missingDirectiveArgMessage(directiveName, argName, typeName),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: Provided required arguments', () => {
@@ -179,7 +163,11 @@ describe('Validate: Provided required arguments', () => {
           }
         }
       `).to.deep.equal([
-        missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13),
+        {
+          message:
+            'Field "multipleReqs" argument "req1" of type "Int!" is required, but it was not provided.',
+          locations: [{ line: 4, column: 13 }],
+        },
       ]);
     });
 
@@ -191,8 +179,16 @@ describe('Validate: Provided required arguments', () => {
           }
         }
       `).to.deep.equal([
-        missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13),
-        missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13),
+        {
+          message:
+            'Field "multipleReqs" argument "req1" of type "Int!" is required, but it was not provided.',
+          locations: [{ line: 4, column: 13 }],
+        },
+        {
+          message:
+            'Field "multipleReqs" argument "req2" of type "Int!" is required, but it was not provided.',
+          locations: [{ line: 4, column: 13 }],
+        },
       ]);
     });
 
@@ -204,7 +200,11 @@ describe('Validate: Provided required arguments', () => {
           }
         }
       `).to.deep.equal([
-        missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13),
+        {
+          message:
+            'Field "multipleReqs" argument "req2" of type "Int!" is required, but it was not provided.',
+          locations: [{ line: 4, column: 13 }],
+        },
       ]);
     });
   });
@@ -239,8 +239,16 @@ describe('Validate: Provided required arguments', () => {
           }
         }
       `).to.deep.equal([
-        missingDirectiveArg('include', 'if', 'Boolean!', 3, 15),
-        missingDirectiveArg('skip', 'if', 'Boolean!', 4, 18),
+        {
+          message:
+            'Directive "@include" argument "if" of type "Boolean!" is required, but it was not provided.',
+          locations: [{ line: 3, column: 15 }],
+        },
+        {
+          message:
+            'Directive "@skip" argument "if" of type "Boolean!" is required, but it was not provided.',
+          locations: [{ line: 4, column: 18 }],
+        },
       ]);
     });
   });
@@ -263,7 +271,13 @@ describe('Validate: Provided required arguments', () => {
         }
 
         directive @test(arg: String!) on FIELD_DEFINITION
-      `).to.deep.equal([missingDirectiveArg('test', 'arg', 'String!', 3, 23)]);
+      `).to.deep.equal([
+        {
+          message:
+            'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
+          locations: [{ line: 3, column: 23 }],
+        },
+      ]);
     });
 
     it('Missing arg on standard directive', () => {
@@ -272,7 +286,11 @@ describe('Validate: Provided required arguments', () => {
           foo: String @include
         }
       `).to.deep.equal([
-        missingDirectiveArg('include', 'if', 'Boolean!', 3, 23),
+        {
+          message:
+            'Directive "@include" argument "if" of type "Boolean!" is required, but it was not provided.',
+          locations: [{ line: 3, column: 23 }],
+        },
       ]);
     });
 
@@ -283,7 +301,11 @@ describe('Validate: Provided required arguments', () => {
         }
         directive @deprecated(reason: String!) on FIELD
       `).to.deep.equal([
-        missingDirectiveArg('deprecated', 'reason', 'String!', 3, 23),
+        {
+          message:
+            'Directive "@deprecated" argument "reason" of type "String!" is required, but it was not provided.',
+          locations: [{ line: 3, column: 23 }],
+        },
       ]);
     });
 
@@ -300,7 +322,13 @@ describe('Validate: Provided required arguments', () => {
           extend type Query  @test
         `,
         schema,
-      ).to.deep.equal([missingDirectiveArg('test', 'arg', 'String!', 4, 30)]);
+      ).to.deep.equal([
+        {
+          message:
+            'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
+          locations: [{ line: 4, column: 30 }],
+        },
+      ]);
     });
 
     it('Missing arg on directive used in schema extension', () => {
@@ -316,7 +344,13 @@ describe('Validate: Provided required arguments', () => {
           extend type Query @test
         `,
         schema,
-      ).to.deep.equal([missingDirectiveArg('test', 'arg', 'String!', 2, 29)]);
+      ).to.deep.equal([
+        {
+          message:
+            'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
+          locations: [{ line: 2, column: 29 }],
+        },
+      ]);
     });
   });
 });

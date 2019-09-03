@@ -4,11 +4,7 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import {
-  UniqueEnumValueNames,
-  duplicateEnumValueNameMessage,
-  existedEnumValueNameMessage,
-} from '../rules/UniqueEnumValueNames';
+import { UniqueEnumValueNames } from '../rules/UniqueEnumValueNames';
 
 import { expectSDLValidationErrors } from './harness';
 
@@ -18,20 +14,6 @@ function expectSDLErrors(sdlStr, schema) {
 
 function expectValidSDL(sdlStr, schema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
-}
-
-function duplicateEnumValuesName(typeName, valueName, l1, c1, l2, c2) {
-  return {
-    message: duplicateEnumValueNameMessage(typeName, valueName),
-    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-  };
-}
-
-function existedEnumValueName(typeName, valueName, l1, c1) {
-  return {
-    message: existedEnumValueNameMessage(typeName, valueName),
-    locations: [{ line: l1, column: c1 }],
-  };
 }
 
 describe('Validate: Unique enum value names', () => {
@@ -65,7 +47,12 @@ describe('Validate: Unique enum value names', () => {
         BAR
         FOO
       }
-    `).to.deep.equal([duplicateEnumValuesName('SomeEnum', 'FOO', 3, 9, 5, 9)]);
+    `).to.deep.equal([
+      {
+        message: 'Enum value "SomeEnum.FOO" can only be defined once.',
+        locations: [{ line: 3, column: 9 }, { line: 5, column: 9 }],
+      },
+    ]);
   });
 
   it('extend enum with new value', () => {
@@ -90,7 +77,12 @@ describe('Validate: Unique enum value names', () => {
       enum SomeEnum {
         FOO
       }
-    `).to.deep.equal([duplicateEnumValuesName('SomeEnum', 'FOO', 3, 9, 6, 9)]);
+    `).to.deep.equal([
+      {
+        message: 'Enum value "SomeEnum.FOO" can only be defined once.',
+        locations: [{ line: 3, column: 9 }, { line: 6, column: 9 }],
+      },
+    ]);
   });
 
   it('duplicate value inside extension', () => {
@@ -101,7 +93,12 @@ describe('Validate: Unique enum value names', () => {
         BAR
         FOO
       }
-    `).to.deep.equal([duplicateEnumValuesName('SomeEnum', 'FOO', 4, 9, 6, 9)]);
+    `).to.deep.equal([
+      {
+        message: 'Enum value "SomeEnum.FOO" can only be defined once.',
+        locations: [{ line: 4, column: 9 }, { line: 6, column: 9 }],
+      },
+    ]);
   });
 
   it('duplicate value inside different extensions', () => {
@@ -113,7 +110,12 @@ describe('Validate: Unique enum value names', () => {
       extend enum SomeEnum {
         FOO
       }
-    `).to.deep.equal([duplicateEnumValuesName('SomeEnum', 'FOO', 4, 9, 7, 9)]);
+    `).to.deep.equal([
+      {
+        message: 'Enum value "SomeEnum.FOO" can only be defined once.',
+        locations: [{ line: 4, column: 9 }, { line: 7, column: 9 }],
+      },
+    ]);
   });
 
   it('adding new value to the type inside existing schema', () => {
@@ -143,8 +145,16 @@ describe('Validate: Unique enum value names', () => {
     `;
 
     expectSDLErrors(sdl, schema).to.deep.equal([
-      existedEnumValueName('SomeEnum', 'FOO', 3, 9),
-      existedEnumValueName('SomeEnum', 'FOO', 6, 9),
+      {
+        message:
+          'Enum value "SomeEnum.FOO" already exists in the schema. It cannot also be defined in this type extension.',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message:
+          'Enum value "SomeEnum.FOO" already exists in the schema. It cannot also be defined in this type extension.',
+        locations: [{ line: 6, column: 9 }],
+      },
     ]);
   });
 
@@ -160,7 +170,10 @@ describe('Validate: Unique enum value names', () => {
     `;
 
     expectSDLErrors(sdl, schema).to.deep.equal([
-      duplicateEnumValuesName('SomeEnum', 'FOO', 3, 9, 6, 9),
+      {
+        message: 'Enum value "SomeEnum.FOO" can only be defined once.',
+        locations: [{ line: 3, column: 9 }, { line: 6, column: 9 }],
+      },
     ]);
   });
 });

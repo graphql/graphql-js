@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  NoUnusedFragments,
-  unusedFragMessage,
-} from '../rules/NoUnusedFragments';
+import { NoUnusedFragments } from '../rules/NoUnusedFragments';
 
 import { expectValidationErrors } from './harness';
 
@@ -15,13 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function unusedFrag(fragName, line, column) {
-  return {
-    message: unusedFragMessage(fragName),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: No unused fragments', () => {
@@ -102,8 +92,14 @@ describe('Validate: No unused fragments', () => {
         name
       }
     `).to.deep.equal([
-      unusedFrag('Unused1', 22, 7),
-      unusedFrag('Unused2', 25, 7),
+      {
+        message: 'Fragment "Unused1" is never used.',
+        locations: [{ line: 22, column: 7 }],
+      },
+      {
+        message: 'Fragment "Unused2" is never used.',
+        locations: [{ line: 25, column: 7 }],
+      },
     ]);
   });
 
@@ -138,8 +134,14 @@ describe('Validate: No unused fragments', () => {
         ...Unused1
       }
     `).to.deep.equal([
-      unusedFrag('Unused1', 22, 7),
-      unusedFrag('Unused2', 26, 7),
+      {
+        message: 'Fragment "Unused1" is never used.',
+        locations: [{ line: 22, column: 7 }],
+      },
+      {
+        message: 'Fragment "Unused2" is never used.',
+        locations: [{ line: 26, column: 7 }],
+      },
     ]);
   });
 
@@ -153,6 +155,11 @@ describe('Validate: No unused fragments', () => {
       fragment foo on Human {
         name
       }
-    `).to.deep.equal([unusedFrag('foo', 7, 7)]);
+    `).to.deep.equal([
+      {
+        message: 'Fragment "foo" is never used.',
+        locations: [{ line: 7, column: 7 }],
+      },
+    ]);
   });
 });

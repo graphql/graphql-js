@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  UniqueVariableNames,
-  duplicateVariableMessage,
-} from '../rules/UniqueVariableNames';
+import { UniqueVariableNames } from '../rules/UniqueVariableNames';
 
 import { expectValidationErrors } from './harness';
 
@@ -15,13 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function duplicateVariable(name, l1, c1, l2, c2) {
-  return {
-    message: duplicateVariableMessage(name),
-    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-  };
 }
 
 describe('Validate: Unique variable names', () => {
@@ -38,10 +28,22 @@ describe('Validate: Unique variable names', () => {
       query B($x: String, $x: Int) { __typename }
       query C($x: Int, $x: Int) { __typename }
     `).to.deep.equal([
-      duplicateVariable('x', 2, 16, 2, 25),
-      duplicateVariable('x', 2, 16, 2, 34),
-      duplicateVariable('x', 3, 16, 3, 28),
-      duplicateVariable('x', 4, 16, 4, 25),
+      {
+        message: 'There can be only one variable named "x".',
+        locations: [{ line: 2, column: 16 }, { line: 2, column: 25 }],
+      },
+      {
+        message: 'There can be only one variable named "x".',
+        locations: [{ line: 2, column: 16 }, { line: 2, column: 34 }],
+      },
+      {
+        message: 'There can be only one variable named "x".',
+        locations: [{ line: 3, column: 16 }, { line: 3, column: 28 }],
+      },
+      {
+        message: 'There can be only one variable named "x".',
+        locations: [{ line: 4, column: 16 }, { line: 4, column: 25 }],
+      },
     ]);
   });
 });
