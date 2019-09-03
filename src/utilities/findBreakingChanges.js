@@ -7,6 +7,7 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 
 import { print } from '../language/printer';
+import { visit } from '../language/visitor';
 
 import { type GraphQLSchema } from '../type/schema';
 import {
@@ -395,6 +396,9 @@ function findArgChanges(
           description: `${oldType.name}.${oldField.name} arg ${oldArg.name} defaultValue was removed.`,
         });
       } else {
+        // Since we looking only for client's observable changes we should
+        // compare default values in the same representation as they are
+        // represented inside introspection.
         const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
         const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
 
@@ -518,7 +522,17 @@ function typeKindName(type: GraphQLNamedType): string {
 function stringifyValue(value: mixed, type: GraphQLInputType): string {
   const ast = astFromValue(value, type);
   invariant(ast != null);
-  return print(ast);
+
+  const sortedAST = visit(ast, {
+    ObjectValue(objectNode) {
+      const fields = [...objectNode.fields].sort((fieldA, fieldB) =>
+        fieldA.name.value.localeCompare(fieldB.name.value),
+      );
+      return { ...objectNode, fields };
+    },
+  });
+
+  return print(sortedAST);
 }
 
 function diff<T: { name: string, ... }>(
