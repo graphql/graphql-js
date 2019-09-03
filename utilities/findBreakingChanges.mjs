@@ -1,8 +1,15 @@
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import { print } from '../language/printer';
+import { visit } from '../language/visitor';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from '../type/definition';
 import { astFromValue } from './astFromValue';
 export var BreakingChangeType = Object.freeze({
@@ -321,6 +328,9 @@ function findArgChanges(oldType, oldField, newField) {
           description: "".concat(oldType.name, ".").concat(oldField.name, " arg ").concat(_oldArg.name, " defaultValue was removed.")
         });
       } else {
+        // Since we looking only for client's observable changes we should
+        // compare default values in the same representation as they are
+        // represented inside introspection.
         var oldValueStr = stringifyValue(_oldArg.defaultValue, _oldArg.type);
         var newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
 
@@ -426,7 +436,17 @@ function stringifyValue(value, type) {
 
   /* istanbul ignore next */
   ast != null || invariant(0);
-  return print(ast);
+  var sortedAST = visit(ast, {
+    ObjectValue: function ObjectValue(objectNode) {
+      var fields = [].concat(objectNode.fields).sort(function (fieldA, fieldB) {
+        return fieldA.name.value.localeCompare(fieldB.name.value);
+      });
+      return _objectSpread({}, objectNode, {
+        fields: fields
+      });
+    }
+  });
+  return print(sortedAST);
 }
 
 function diff(oldArray, newArray) {
