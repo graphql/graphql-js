@@ -322,7 +322,7 @@ describe('Type System: Specified scalar types', () => {
       expect(parseLiteral('0')).to.equal('0');
       expect(parseLiteral('-1')).to.equal('-1');
 
-      // Support arbituary long numbers even if they can't be represented in JS
+      // Support arbitrary long numbers even if they can't be represented in JS
       expect(parseLiteral('90071992547409910')).to.equal('90071992547409910');
       expect(parseLiteral('-90071992547409910')).to.equal('-90071992547409910');
 

@@ -379,7 +379,7 @@ describe('Parser', () => {
     expect(() => parse(document)).to.throw('Syntax Error');
   });
 
-  it('contains location information that only stringifys start/end', () => {
+  it('contains location information that only stringifies start/end', () => {
     const result = parse('{ id }');
 
     expect(JSON.stringify(result.loc)).to.equal('{"start":0,"end":6}');
