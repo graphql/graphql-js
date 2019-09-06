@@ -175,7 +175,7 @@ describe('Validate: Known type names', () => {
       ]);
     });
 
-    it('doesnot consider non-type definitions', () => {
+    it('does not consider non-type definitions', () => {
       expectSDLErrors(`
         query Foo { __typename }
         fragment Foo on Query { __typename }
