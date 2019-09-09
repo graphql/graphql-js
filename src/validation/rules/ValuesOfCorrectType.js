@@ -10,8 +10,9 @@ import suggestionList from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import { type ValueNode } from '../../language/ast';
+import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
+import { type ValueNode } from '../../language/ast';
 import { type ASTVisitor } from '../../language/visitor';
 
 import {
@@ -76,27 +77,19 @@ export function unknownFieldMessage(
  */
 export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
   return {
-    NullValue(node) {
-      const type = context.getInputType();
-      if (isNonNullType(type)) {
-        context.reportError(
-          new GraphQLError(badValueMessage(inspect(type), print(node)), node),
-        );
-      }
-    },
     ListValue(node) {
       // Note: TypeInfo will traverse into a list's item type, so look to the
       // parent input type to check if it is a list.
       const type = getNullableType(context.getParentInputType());
       if (!isListType(type)) {
-        isValidScalar(context, node);
+        isValidValueNode(context, node);
         return false; // Don't traverse further.
       }
     },
     ObjectValue(node) {
       const type = getNamedType(context.getInputType());
       if (!isInputObjectType(type)) {
-        isValidScalar(context, node);
+        isValidValueNode(context, node);
         return false; // Don't traverse further.
       }
       // Ensure every required field exists.
@@ -130,27 +123,19 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
         );
       }
     },
-    EnumValue(node) {
-      const type = getNamedType(context.getInputType());
-      if (!isEnumType(type)) {
-        isValidScalar(context, node);
-      } else if (!type.getValue(node.value)) {
+    NullValue(node) {
+      const type = context.getInputType();
+      if (isNonNullType(type)) {
         context.reportError(
-          new GraphQLError(
-            badEnumValueMessage(
-              type.name,
-              print(node),
-              enumTypeSuggestion(type, node),
-            ),
-            node,
-          ),
+          new GraphQLError(badValueMessage(inspect(type), print(node)), node),
         );
       }
     },
-    IntValue: node => isValidScalar(context, node),
-    FloatValue: node => isValidScalar(context, node),
-    StringValue: node => isValidScalar(context, node),
-    BooleanValue: node => isValidScalar(context, node),
+    EnumValue: node => isValidValueNode(context, node),
+    IntValue: node => isValidValueNode(context, node),
+    FloatValue: node => isValidValueNode(context, node),
+    StringValue: node => isValidValueNode(context, node),
+    BooleanValue: node => isValidValueNode(context, node),
   };
 }
 
@@ -158,7 +143,7 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
  * Any value literal may be a valid representation of a Scalar, depending on
  * that scalar type.
  */
-function isValidScalar(context: ValidationContext, node: ValueNode): void {
+function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   // Report any error at the full type expected by the location.
   const locationType = context.getInputType();
   if (!locationType) {
@@ -167,15 +152,29 @@ function isValidScalar(context: ValidationContext, node: ValueNode): void {
 
   const type = getNamedType(locationType);
 
+  if (isEnumType(type)) {
+    if (node.kind !== Kind.ENUM || !type.getValue(node.value)) {
+      context.reportError(
+        new GraphQLError(
+          badEnumValueMessage(
+            type.name,
+            print(node),
+            enumTypeSuggestion(type, node),
+          ),
+          node,
+        ),
+      );
+    }
+    return;
+  }
+
   if (!isScalarType(type)) {
-    const message = isEnumType(type)
-      ? badEnumValueMessage(
-          inspect(locationType),
-          print(node),
-          enumTypeSuggestion(type, node),
-        )
-      : badValueMessage(inspect(locationType), print(node));
-    context.reportError(new GraphQLError(message, node));
+    context.reportError(
+      new GraphQLError(
+        badValueMessage(inspect(locationType), print(node)),
+        node,
+      ),
+    );
     return;
   }
 
