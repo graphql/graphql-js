@@ -1054,7 +1054,7 @@ describe('extendSchema', () => {
       extend schema @unknown
     `;
     expect(() => extendTestSchema(sdl)).to.throw(
-      'Unknown directive "unknown".',
+      'Unknown directive "@unknown".',
     );
   });
 
@@ -1072,7 +1072,7 @@ describe('extendSchema', () => {
     `;
 
     expect(() => extendTestSchema(sdl)).to.throw(
-      'Directive "include" already exists in the schema. It cannot be redefined.',
+      'Directive "@include" already exists in the schema. It cannot be redefined.',
     );
   });
 

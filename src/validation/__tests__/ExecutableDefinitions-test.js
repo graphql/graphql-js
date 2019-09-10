@@ -57,11 +57,11 @@ describe('Validate: Executable definitions', () => {
       }
     `).to.deep.equal([
       {
-        message: 'The Cow definition is not executable.',
+        message: 'The "Cow" definition is not executable.',
         locations: [{ line: 8, column: 7 }],
       },
       {
-        message: 'The Dog definition is not executable.',
+        message: 'The "Dog" definition is not executable.',
         locations: [{ line: 12, column: 7 }],
       },
     ]);
@@ -84,7 +84,7 @@ describe('Validate: Executable definitions', () => {
         locations: [{ line: 2, column: 7 }],
       },
       {
-        message: 'The Query definition is not executable.',
+        message: 'The "Query" definition is not executable.',
         locations: [{ line: 6, column: 7 }],
       },
       {

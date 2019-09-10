@@ -135,27 +135,27 @@ describe('Validate: Possible type extensions', () => {
       extend scalar FooInputObject @dummy
     `).to.deep.equal([
       {
-        message: 'Cannot extend non-scalar type "FooScalar".',
+        message: 'Cannot extend non-object type "FooScalar".',
         locations: [{ line: 2, column: 7 }, { line: 9, column: 7 }],
       },
       {
-        message: 'Cannot extend non-object type "FooObject".',
+        message: 'Cannot extend non-interface type "FooObject".',
         locations: [{ line: 3, column: 7 }, { line: 10, column: 7 }],
       },
       {
-        message: 'Cannot extend non-interface type "FooInterface".',
+        message: 'Cannot extend non-union type "FooInterface".',
         locations: [{ line: 4, column: 7 }, { line: 11, column: 7 }],
       },
       {
-        message: 'Cannot extend non-union type "FooUnion".',
+        message: 'Cannot extend non-enum type "FooUnion".',
         locations: [{ line: 5, column: 7 }, { line: 12, column: 7 }],
       },
       {
-        message: 'Cannot extend non-enum type "FooEnum".',
+        message: 'Cannot extend non-input object type "FooEnum".',
         locations: [{ line: 6, column: 7 }, { line: 13, column: 7 }],
       },
       {
-        message: 'Cannot extend non-input object type "FooInputObject".',
+        message: 'Cannot extend non-scalar type "FooInputObject".',
         locations: [{ line: 7, column: 7 }, { line: 14, column: 7 }],
       },
     ]);
@@ -225,27 +225,27 @@ describe('Validate: Possible type extensions', () => {
 
     expectSDLErrors(sdl, schema).to.deep.equal([
       {
-        message: 'Cannot extend non-scalar type "FooScalar".',
+        message: 'Cannot extend non-object type "FooScalar".',
         locations: [{ line: 2, column: 7 }],
       },
       {
-        message: 'Cannot extend non-object type "FooObject".',
+        message: 'Cannot extend non-interface type "FooObject".',
         locations: [{ line: 3, column: 7 }],
       },
       {
-        message: 'Cannot extend non-interface type "FooInterface".',
+        message: 'Cannot extend non-union type "FooInterface".',
         locations: [{ line: 4, column: 7 }],
       },
       {
-        message: 'Cannot extend non-union type "FooUnion".',
+        message: 'Cannot extend non-enum type "FooUnion".',
         locations: [{ line: 5, column: 7 }],
       },
       {
-        message: 'Cannot extend non-enum type "FooEnum".',
+        message: 'Cannot extend non-input object type "FooEnum".',
         locations: [{ line: 6, column: 7 }],
       },
       {
-        message: 'Cannot extend non-input object type "FooInputObject".',
+        message: 'Cannot extend non-scalar type "FooInputObject".',
         locations: [{ line: 7, column: 7 }],
       },
     ]);

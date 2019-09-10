@@ -23,7 +23,7 @@ export function UniqueVariableNames(context: ASTValidationContext): ASTVisitor {
       if (knownVariableNames[variableName]) {
         context.reportError(
           new GraphQLError(
-            `There can be only one variable named "${variableName}".`,
+            `There can be only one variable named "$${variableName}".`,
             [knownVariableNames[variableName], node.variable.name],
           ),
         );

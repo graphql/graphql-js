@@ -25,7 +25,7 @@ export function ExecutableDefinitions(
             definition.kind === Kind.SCHEMA_DEFINITION ||
             definition.kind === Kind.SCHEMA_EXTENSION
               ? 'schema'
-              : definition.name.value;
+              : '"' + definition.name.value + '"';
           context.reportError(
             new GraphQLError(
               `The ${defName} definition is not executable.`,

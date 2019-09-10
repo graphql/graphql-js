@@ -29,19 +29,19 @@ describe('Validate: Unique variable names', () => {
       query C($x: Int, $x: Int) { __typename }
     `).to.deep.equal([
       {
-        message: 'There can be only one variable named "x".',
+        message: 'There can be only one variable named "$x".',
         locations: [{ line: 2, column: 16 }, { line: 2, column: 25 }],
       },
       {
-        message: 'There can be only one variable named "x".',
+        message: 'There can be only one variable named "$x".',
         locations: [{ line: 2, column: 16 }, { line: 2, column: 34 }],
       },
       {
-        message: 'There can be only one variable named "x".',
+        message: 'There can be only one variable named "$x".',
         locations: [{ line: 3, column: 16 }, { line: 3, column: 28 }],
       },
       {
-        message: 'There can be only one variable named "x".',
+        message: 'There can be only one variable named "$x".',
         locations: [{ line: 4, column: 16 }, { line: 4, column: 25 }],
       },
     ]);
