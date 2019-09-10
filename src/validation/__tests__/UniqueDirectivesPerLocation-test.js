@@ -5,10 +5,7 @@ import { describe, it } from 'mocha';
 import { parse } from '../../language/parser';
 import { extendSchema } from '../../utilities/extendSchema';
 
-import {
-  UniqueDirectivesPerLocation,
-  duplicateDirectiveMessage,
-} from '../rules/UniqueDirectivesPerLocation';
+import { UniqueDirectivesPerLocation } from '../rules/UniqueDirectivesPerLocation';
 
 import {
   testSchema,
@@ -38,13 +35,6 @@ function expectValid(queryStr) {
 
 function expectSDLErrors(sdlStr, schema) {
   return expectSDLValidationErrors(schema, UniqueDirectivesPerLocation, sdlStr);
-}
-
-function duplicateDirective(directiveName, l1, c1, l2, c2) {
-  return {
-    message: duplicateDirectiveMessage(directiveName),
-    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-  };
 }
 
 describe('Validate: Directives Are Unique Per Location', () => {
@@ -114,7 +104,13 @@ describe('Validate: Directives Are Unique Per Location', () => {
       fragment Test on Type {
         field @directive @directive
       }
-    `).to.deep.equal([duplicateDirective('directive', 3, 15, 3, 26)]);
+    `).to.deep.equal([
+      {
+        message:
+          'The directive "directive" can only be used once at this location.',
+        locations: [{ line: 3, column: 15 }, { line: 3, column: 26 }],
+      },
+    ]);
   });
 
   it('many duplicate directives in one location', () => {
@@ -123,8 +119,16 @@ describe('Validate: Directives Are Unique Per Location', () => {
         field @directive @directive @directive
       }
     `).to.deep.equal([
-      duplicateDirective('directive', 3, 15, 3, 26),
-      duplicateDirective('directive', 3, 15, 3, 37),
+      {
+        message:
+          'The directive "directive" can only be used once at this location.',
+        locations: [{ line: 3, column: 15 }, { line: 3, column: 26 }],
+      },
+      {
+        message:
+          'The directive "directive" can only be used once at this location.',
+        locations: [{ line: 3, column: 15 }, { line: 3, column: 37 }],
+      },
     ]);
   });
 
@@ -134,8 +138,16 @@ describe('Validate: Directives Are Unique Per Location', () => {
         field @directiveA @directiveB @directiveA @directiveB
       }
     `).to.deep.equal([
-      duplicateDirective('directiveA', 3, 15, 3, 39),
-      duplicateDirective('directiveB', 3, 27, 3, 51),
+      {
+        message:
+          'The directive "directiveA" can only be used once at this location.',
+        locations: [{ line: 3, column: 15 }, { line: 3, column: 39 }],
+      },
+      {
+        message:
+          'The directive "directiveB" can only be used once at this location.',
+        locations: [{ line: 3, column: 27 }, { line: 3, column: 51 }],
+      },
     ]);
   });
 
@@ -145,8 +157,16 @@ describe('Validate: Directives Are Unique Per Location', () => {
         field @directive @directive
       }
     `).to.deep.equal([
-      duplicateDirective('directive', 2, 29, 2, 40),
-      duplicateDirective('directive', 3, 15, 3, 26),
+      {
+        message:
+          'The directive "directive" can only be used once at this location.',
+        locations: [{ line: 2, column: 29 }, { line: 2, column: 40 }],
+      },
+      {
+        message:
+          'The directive "directive" can only be used once at this location.',
+        locations: [{ line: 3, column: 15 }, { line: 3, column: 26 }],
+      },
     ]);
   });
 
@@ -173,18 +193,66 @@ describe('Validate: Directives Are Unique Per Location', () => {
       input TestInput @nonRepeatable @nonRepeatable
       extend input TestInput @nonRepeatable @nonRepeatable
     `).to.deep.equal([
-      duplicateDirective('nonRepeatable', 5, 14, 5, 29),
-      duplicateDirective('nonRepeatable', 6, 21, 6, 36),
-      duplicateDirective('nonRepeatable', 8, 25, 8, 40),
-      duplicateDirective('nonRepeatable', 9, 32, 9, 47),
-      duplicateDirective('nonRepeatable', 11, 23, 11, 38),
-      duplicateDirective('nonRepeatable', 12, 30, 12, 45),
-      duplicateDirective('nonRepeatable', 14, 31, 14, 46),
-      duplicateDirective('nonRepeatable', 15, 38, 15, 53),
-      duplicateDirective('nonRepeatable', 17, 23, 17, 38),
-      duplicateDirective('nonRepeatable', 18, 30, 18, 45),
-      duplicateDirective('nonRepeatable', 20, 23, 20, 38),
-      duplicateDirective('nonRepeatable', 21, 30, 21, 45),
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 5, column: 14 }, { line: 5, column: 29 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 6, column: 21 }, { line: 6, column: 36 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 8, column: 25 }, { line: 8, column: 40 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 9, column: 32 }, { line: 9, column: 47 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 11, column: 23 }, { line: 11, column: 38 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 12, column: 30 }, { line: 12, column: 45 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 14, column: 31 }, { line: 14, column: 46 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 15, column: 38 }, { line: 15, column: 53 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 17, column: 23 }, { line: 17, column: 38 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 18, column: 30 }, { line: 18, column: 45 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 20, column: 23 }, { line: 20, column: 38 }],
+      },
+      {
+        message:
+          'The directive "nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 21, column: 30 }, { line: 21, column: 45 }],
+      },
     ]);
   });
 });

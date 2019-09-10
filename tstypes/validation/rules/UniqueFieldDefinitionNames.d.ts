@@ -1,16 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { SDLValidationContext } from '../ValidationContext';
 
-export function duplicateFieldDefinitionNameMessage(
-  typeName: string,
-  fieldName: string,
-): string;
-
-export function existedFieldDefinitionNameMessage(
-  typeName: string,
-  fieldName: string,
-): string;
-
 /**
  * Unique field definition names
  *

@@ -7,8 +7,6 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import {
   KnownArgumentNames,
   KnownArgumentNamesOnDirectives,
-  unknownArgMessage,
-  unknownDirectiveArgMessage,
 } from '../rules/KnownArgumentNames';
 
 import { expectValidationErrors, expectSDLValidationErrors } from './harness';
@@ -31,26 +29,6 @@ function expectSDLErrors(sdlStr, schema) {
 
 function expectValidSDL(sdlStr) {
   expectSDLErrors(sdlStr).to.deep.equal([]);
-}
-
-function unknownArg(argName, fieldName, typeName, suggestedArgs, line, column) {
-  return {
-    message: unknownArgMessage(argName, fieldName, typeName, suggestedArgs),
-    locations: [{ line, column }],
-  };
-}
-
-function unknownDirectiveArg(
-  argName,
-  directiveName,
-  suggestedArgs,
-  line,
-  column,
-) {
-  return {
-    message: unknownDirectiveArgMessage(argName, directiveName, suggestedArgs),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: Known argument names', () => {
@@ -124,7 +102,12 @@ describe('Validate: Known argument names', () => {
       {
         dog @skip(unless: true)
       }
-    `).to.deep.equal([unknownDirectiveArg('unless', 'skip', [], 3, 19)]);
+    `).to.deep.equal([
+      {
+        message: 'Unknown argument "unless" on directive "@skip".',
+        locations: [{ line: 3, column: 19 }],
+      },
+    ]);
   });
 
   it('misspelled directive args are reported', () => {
@@ -132,7 +115,13 @@ describe('Validate: Known argument names', () => {
       {
         dog @skip(iff: true)
       }
-    `).to.deep.equal([unknownDirectiveArg('iff', 'skip', ['if'], 3, 19)]);
+    `).to.deep.equal([
+      {
+        message:
+          'Unknown argument "iff" on directive "@skip". Did you mean "if"?',
+        locations: [{ line: 3, column: 19 }],
+      },
+    ]);
   });
 
   it('invalid arg name', () => {
@@ -141,7 +130,11 @@ describe('Validate: Known argument names', () => {
         doesKnowCommand(unknown: true)
       }
     `).to.deep.equal([
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 25),
+      {
+        message:
+          'Unknown argument "unknown" on field "doesKnowCommand" of type "Dog".',
+        locations: [{ line: 3, column: 25 }],
+      },
     ]);
   });
 
@@ -151,7 +144,11 @@ describe('Validate: Known argument names', () => {
         doesKnowCommand(dogcommand: true)
       }
     `).to.deep.equal([
-      unknownArg('dogcommand', 'doesKnowCommand', 'Dog', ['dogCommand'], 3, 25),
+      {
+        message:
+          'Unknown argument "dogcommand" on field "doesKnowCommand" of type "Dog". Did you mean "dogCommand"?',
+        locations: [{ line: 3, column: 25 }],
+      },
     ]);
   });
 
@@ -161,8 +158,16 @@ describe('Validate: Known argument names', () => {
         doesKnowCommand(whoknows: 1, dogCommand: SIT, unknown: true)
       }
     `).to.deep.equal([
-      unknownArg('whoknows', 'doesKnowCommand', 'Dog', [], 3, 25),
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 55),
+      {
+        message:
+          'Unknown argument "whoknows" on field "doesKnowCommand" of type "Dog".',
+        locations: [{ line: 3, column: 25 }],
+      },
+      {
+        message:
+          'Unknown argument "unknown" on field "doesKnowCommand" of type "Dog".',
+        locations: [{ line: 3, column: 55 }],
+      },
     ]);
   });
 
@@ -181,8 +186,16 @@ describe('Validate: Known argument names', () => {
         }
       }
     `).to.deep.equal([
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 4, 27),
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 9, 31),
+      {
+        message:
+          'Unknown argument "unknown" on field "doesKnowCommand" of type "Dog".',
+        locations: [{ line: 4, column: 27 }],
+      },
+      {
+        message:
+          'Unknown argument "unknown" on field "doesKnowCommand" of type "Dog".',
+        locations: [{ line: 9, column: 31 }],
+      },
     ]);
   });
 
@@ -204,7 +217,12 @@ describe('Validate: Known argument names', () => {
         }
 
         directive @test(arg: String) on FIELD_DEFINITION
-      `).to.deep.equal([unknownDirectiveArg('unknown', 'test', [], 3, 29)]);
+      `).to.deep.equal([
+        {
+          message: 'Unknown argument "unknown" on directive "@test".',
+          locations: [{ line: 3, column: 29 }],
+        },
+      ]);
     });
 
     it('misspelled arg name is reported on directive defined inside SDL', () => {
@@ -214,7 +232,13 @@ describe('Validate: Known argument names', () => {
         }
 
         directive @test(arg: String) on FIELD_DEFINITION
-      `).to.deep.equal([unknownDirectiveArg('agr', 'test', ['arg'], 3, 29)]);
+      `).to.deep.equal([
+        {
+          message:
+            'Unknown argument "agr" on directive "@test". Did you mean "arg"?',
+          locations: [{ line: 3, column: 29 }],
+        },
+      ]);
     });
 
     it('unknown arg on standard directive', () => {
@@ -223,7 +247,10 @@ describe('Validate: Known argument names', () => {
           foo: String @deprecated(unknown: "")
         }
       `).to.deep.equal([
-        unknownDirectiveArg('unknown', 'deprecated', [], 3, 35),
+        {
+          message: 'Unknown argument "unknown" on directive "@deprecated".',
+          locations: [{ line: 3, column: 35 }],
+        },
       ]);
     });
 
@@ -234,7 +261,10 @@ describe('Validate: Known argument names', () => {
         }
         directive @deprecated(arg: String) on FIELD
       `).to.deep.equal([
-        unknownDirectiveArg('reason', 'deprecated', [], 3, 35),
+        {
+          message: 'Unknown argument "reason" on directive "@deprecated".',
+          locations: [{ line: 3, column: 35 }],
+        },
       ]);
     });
 
@@ -251,7 +281,12 @@ describe('Validate: Known argument names', () => {
           extend type Query  @test(unknown: "")
         `,
         schema,
-      ).to.deep.equal([unknownDirectiveArg('unknown', 'test', [], 4, 36)]);
+      ).to.deep.equal([
+        {
+          message: 'Unknown argument "unknown" on directive "@test".',
+          locations: [{ line: 4, column: 36 }],
+        },
+      ]);
     });
 
     it('unknown arg on directive used in schema extension', () => {
@@ -267,7 +302,12 @@ describe('Validate: Known argument names', () => {
           extend type Query @test(unknown: "")
         `,
         schema,
-      ).to.deep.equal([unknownDirectiveArg('unknown', 'test', [], 2, 35)]);
+      ).to.deep.equal([
+        {
+          message: 'Unknown argument "unknown" on directive "@test".',
+          locations: [{ line: 2, column: 35 }],
+        },
+      ]);
     });
   });
 });

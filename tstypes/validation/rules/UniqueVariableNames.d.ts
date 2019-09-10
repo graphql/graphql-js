@@ -1,8 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ASTValidationContext } from '../ValidationContext';
 
-export function duplicateVariableMessage(variableName: string): string;
-
 /**
  * Unique variable names
  *

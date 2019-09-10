@@ -5,10 +5,6 @@ import { type ASTVisitor } from '../../language/visitor';
 
 import { type ASTValidationContext } from '../ValidationContext';
 
-export function unusedFragMessage(fragName: string): string {
-  return `Fragment "${fragName}" is never used.`;
-}
-
 /**
  * No unused fragments
  *
@@ -43,7 +39,10 @@ export function NoUnusedFragments(context: ASTValidationContext): ASTVisitor {
           const fragName = fragmentDef.name.value;
           if (fragmentNameUsed[fragName] !== true) {
             context.reportError(
-              new GraphQLError(unusedFragMessage(fragName), fragmentDef),
+              new GraphQLError(
+                `Fragment "${fragName}" is never used.`,
+                fragmentDef,
+              ),
             );
           }
         }

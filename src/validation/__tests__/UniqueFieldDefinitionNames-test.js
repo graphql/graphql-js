@@ -4,11 +4,7 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import {
-  UniqueFieldDefinitionNames,
-  duplicateFieldDefinitionNameMessage,
-  existedFieldDefinitionNameMessage,
-} from '../rules/UniqueFieldDefinitionNames';
+import { UniqueFieldDefinitionNames } from '../rules/UniqueFieldDefinitionNames';
 
 import { expectSDLValidationErrors } from './harness';
 
@@ -18,20 +14,6 @@ function expectSDLErrors(sdlStr, schema) {
 
 function expectValidSDL(sdlStr, schema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
-}
-
-function duplicateFieldName(typeName, fieldName, l1, c1, l2, c2) {
-  return {
-    message: duplicateFieldDefinitionNameMessage(typeName, fieldName),
-    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-  };
-}
-
-function existedFieldName(typeName, fieldName, l1, c1) {
-  return {
-    message: existedFieldDefinitionNameMessage(typeName, fieldName),
-    locations: [{ line: l1, column: c1 }],
-  };
 }
 
 describe('Validate: Unique field definition names', () => {
@@ -98,9 +80,18 @@ describe('Validate: Unique field definition names', () => {
         foo: String
       }
     `).to.deep.equal([
-      duplicateFieldName('SomeObject', 'foo', 3, 9, 5, 9),
-      duplicateFieldName('SomeInterface', 'foo', 9, 9, 11, 9),
-      duplicateFieldName('SomeInputObject', 'foo', 15, 9, 17, 9),
+      {
+        message: 'Field "SomeObject.foo" can only be defined once.',
+        locations: [{ line: 3, column: 9 }, { line: 5, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInterface.foo" can only be defined once.',
+        locations: [{ line: 9, column: 9 }, { line: 11, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInputObject.foo" can only be defined once.',
+        locations: [{ line: 15, column: 9 }, { line: 17, column: 9 }],
+      },
     ]);
   });
 
@@ -161,9 +152,18 @@ describe('Validate: Unique field definition names', () => {
         foo: String
       }
     `).to.deep.equal([
-      duplicateFieldName('SomeObject', 'foo', 3, 9, 6, 9),
-      duplicateFieldName('SomeInterface', 'foo', 10, 9, 13, 9),
-      duplicateFieldName('SomeInputObject', 'foo', 17, 9, 20, 9),
+      {
+        message: 'Field "SomeObject.foo" can only be defined once.',
+        locations: [{ line: 3, column: 9 }, { line: 6, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInterface.foo" can only be defined once.',
+        locations: [{ line: 10, column: 9 }, { line: 13, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInputObject.foo" can only be defined once.',
+        locations: [{ line: 17, column: 9 }, { line: 20, column: 9 }],
+      },
     ]);
   });
 
@@ -190,9 +190,18 @@ describe('Validate: Unique field definition names', () => {
         foo: String
       }
     `).to.deep.equal([
-      duplicateFieldName('SomeObject', 'foo', 4, 9, 6, 9),
-      duplicateFieldName('SomeInterface', 'foo', 11, 9, 13, 9),
-      duplicateFieldName('SomeInputObject', 'foo', 18, 9, 20, 9),
+      {
+        message: 'Field "SomeObject.foo" can only be defined once.',
+        locations: [{ line: 4, column: 9 }, { line: 6, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInterface.foo" can only be defined once.',
+        locations: [{ line: 11, column: 9 }, { line: 13, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInputObject.foo" can only be defined once.',
+        locations: [{ line: 18, column: 9 }, { line: 20, column: 9 }],
+      },
     ]);
   });
 
@@ -222,9 +231,18 @@ describe('Validate: Unique field definition names', () => {
         foo: String
       }
     `).to.deep.equal([
-      duplicateFieldName('SomeObject', 'foo', 4, 9, 7, 9),
-      duplicateFieldName('SomeInterface', 'foo', 12, 9, 15, 9),
-      duplicateFieldName('SomeInputObject', 'foo', 20, 9, 23, 9),
+      {
+        message: 'Field "SomeObject.foo" can only be defined once.',
+        locations: [{ line: 4, column: 9 }, { line: 7, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInterface.foo" can only be defined once.',
+        locations: [{ line: 12, column: 9 }, { line: 15, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInputObject.foo" can only be defined once.',
+        locations: [{ line: 20, column: 9 }, { line: 23, column: 9 }],
+      },
     ]);
   });
 
@@ -288,13 +306,36 @@ describe('Validate: Unique field definition names', () => {
     `;
 
     expectSDLErrors(sdl, schema).to.deep.equal([
-      existedFieldName('SomeObject', 'foo', 3, 9),
-      existedFieldName('SomeInterface', 'foo', 6, 9),
-      existedFieldName('SomeInputObject', 'foo', 9, 9),
-
-      existedFieldName('SomeObject', 'foo', 13, 9),
-      existedFieldName('SomeInterface', 'foo', 16, 9),
-      existedFieldName('SomeInputObject', 'foo', 19, 9),
+      {
+        message:
+          'Field "SomeObject.foo" already exists in the schema. It cannot also be defined in this type extension.',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message:
+          'Field "SomeInterface.foo" already exists in the schema. It cannot also be defined in this type extension.',
+        locations: [{ line: 6, column: 9 }],
+      },
+      {
+        message:
+          'Field "SomeInputObject.foo" already exists in the schema. It cannot also be defined in this type extension.',
+        locations: [{ line: 9, column: 9 }],
+      },
+      {
+        message:
+          'Field "SomeObject.foo" already exists in the schema. It cannot also be defined in this type extension.',
+        locations: [{ line: 13, column: 9 }],
+      },
+      {
+        message:
+          'Field "SomeInterface.foo" already exists in the schema. It cannot also be defined in this type extension.',
+        locations: [{ line: 16, column: 9 }],
+      },
+      {
+        message:
+          'Field "SomeInputObject.foo" already exists in the schema. It cannot also be defined in this type extension.',
+        locations: [{ line: 19, column: 9 }],
+      },
     ]);
   });
 
@@ -328,9 +369,18 @@ describe('Validate: Unique field definition names', () => {
     `;
 
     expectSDLErrors(sdl, schema).to.deep.equal([
-      duplicateFieldName('SomeObject', 'foo', 3, 9, 6, 9),
-      duplicateFieldName('SomeInterface', 'foo', 10, 9, 13, 9),
-      duplicateFieldName('SomeInputObject', 'foo', 17, 9, 20, 9),
+      {
+        message: 'Field "SomeObject.foo" can only be defined once.',
+        locations: [{ line: 3, column: 9 }, { line: 6, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInterface.foo" can only be defined once.',
+        locations: [{ line: 10, column: 9 }, { line: 13, column: 9 }],
+      },
+      {
+        message: 'Field "SomeInputObject.foo" can only be defined once.',
+        locations: [{ line: 17, column: 9 }, { line: 20, column: 9 }],
+      },
     ]);
   });
 });

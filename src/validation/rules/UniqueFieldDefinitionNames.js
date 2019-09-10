@@ -10,20 +10,6 @@ import {
 
 import { type SDLValidationContext } from '../ValidationContext';
 
-export function duplicateFieldDefinitionNameMessage(
-  typeName: string,
-  fieldName: string,
-): string {
-  return `Field "${typeName}.${fieldName}" can only be defined once.`;
-}
-
-export function existedFieldDefinitionNameMessage(
-  typeName: string,
-  fieldName: string,
-): string {
-  return `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`;
-}
-
 /**
  * Unique field definition names
  *
@@ -61,14 +47,14 @@ export function UniqueFieldDefinitionNames(
         if (hasField(existingTypeMap[typeName], fieldName)) {
           context.reportError(
             new GraphQLError(
-              existedFieldDefinitionNameMessage(typeName, fieldName),
+              `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
               fieldDef.name,
             ),
           );
         } else if (fieldNames[fieldName]) {
           context.reportError(
             new GraphQLError(
-              duplicateFieldDefinitionNameMessage(typeName, fieldName),
+              `Field "${typeName}.${fieldName}" can only be defined once.`,
               [fieldNames[fieldName], fieldDef.name],
             ),
           );

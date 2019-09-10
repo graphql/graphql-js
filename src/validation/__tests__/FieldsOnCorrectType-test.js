@@ -3,10 +3,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import {
-  FieldsOnCorrectType,
-  undefinedFieldMessage,
-} from '../rules/FieldsOnCorrectType';
+import { parse } from '../../language/parser';
+
+import { buildSchema } from '../../utilities/buildASTSchema';
+
+import { validate } from '../validate';
+import { FieldsOnCorrectType } from '../rules/FieldsOnCorrectType';
 
 import { expectValidationErrors } from './harness';
 
@@ -16,25 +18,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function undefinedField(
-  field,
-  type,
-  suggestedTypes,
-  suggestedFields,
-  line,
-  column,
-) {
-  return {
-    message: undefinedFieldMessage(
-      field,
-      type,
-      suggestedTypes,
-      suggestedFields,
-    ),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: Fields on correct type', () => {
@@ -99,8 +82,14 @@ describe('Validate: Fields on correct type', () => {
         }
       }
     `).to.deep.equal([
-      undefinedField('unknown_pet_field', 'Pet', [], [], 3, 9),
-      undefinedField('unknown_cat_field', 'Cat', [], [], 5, 13),
+      {
+        message: 'Cannot query field "unknown_pet_field" on type "Pet".',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message: 'Cannot query field "unknown_cat_field" on type "Cat".',
+        locations: [{ line: 5, column: 13 }],
+      },
     ]);
   });
 
@@ -110,7 +99,11 @@ describe('Validate: Fields on correct type', () => {
         meowVolume
       }
     `).to.deep.equal([
-      undefinedField('meowVolume', 'Dog', [], ['barkVolume'], 3, 9),
+      {
+        message:
+          'Cannot query field "meowVolume" on type "Dog". Did you mean "barkVolume"?',
+        locations: [{ line: 3, column: 9 }],
+      },
     ]);
   });
 
@@ -121,7 +114,12 @@ describe('Validate: Fields on correct type', () => {
           deeper_unknown_field
         }
       }
-    `).to.deep.equal([undefinedField('unknown_field', 'Dog', [], [], 3, 9)]);
+    `).to.deep.equal([
+      {
+        message: 'Cannot query field "unknown_field" on type "Dog".',
+        locations: [{ line: 3, column: 9 }],
+      },
+    ]);
   });
 
   it('Sub-field not defined', () => {
@@ -131,7 +129,12 @@ describe('Validate: Fields on correct type', () => {
           unknown_field
         }
       }
-    `).to.deep.equal([undefinedField('unknown_field', 'Pet', [], [], 4, 11)]);
+    `).to.deep.equal([
+      {
+        message: 'Cannot query field "unknown_field" on type "Pet".',
+        locations: [{ line: 4, column: 11 }],
+      },
+    ]);
   });
 
   it('Field not defined on inline fragment', () => {
@@ -142,7 +145,11 @@ describe('Validate: Fields on correct type', () => {
         }
       }
     `).to.deep.equal([
-      undefinedField('meowVolume', 'Dog', [], ['barkVolume'], 4, 11),
+      {
+        message:
+          'Cannot query field "meowVolume" on type "Dog". Did you mean "barkVolume"?',
+        locations: [{ line: 4, column: 11 }],
+      },
     ]);
   });
 
@@ -152,7 +159,11 @@ describe('Validate: Fields on correct type', () => {
         volume : mooVolume
       }
     `).to.deep.equal([
-      undefinedField('mooVolume', 'Dog', [], ['barkVolume'], 3, 9),
+      {
+        message:
+          'Cannot query field "mooVolume" on type "Dog". Did you mean "barkVolume"?',
+        locations: [{ line: 3, column: 9 }],
+      },
     ]);
   });
 
@@ -162,7 +173,11 @@ describe('Validate: Fields on correct type', () => {
         barkVolume : kawVolume
       }
     `).to.deep.equal([
-      undefinedField('kawVolume', 'Dog', [], ['barkVolume'], 3, 9),
+      {
+        message:
+          'Cannot query field "kawVolume" on type "Dog". Did you mean "barkVolume"?',
+        locations: [{ line: 3, column: 9 }],
+      },
     ]);
   });
 
@@ -171,7 +186,12 @@ describe('Validate: Fields on correct type', () => {
       fragment notDefinedOnInterface on Pet {
         tailLength
       }
-    `).to.deep.equal([undefinedField('tailLength', 'Pet', [], [], 3, 9)]);
+    `).to.deep.equal([
+      {
+        message: 'Cannot query field "tailLength" on type "Pet".',
+        locations: [{ line: 3, column: 9 }],
+      },
+    ]);
   });
 
   it('Defined on implementors but not on interface', () => {
@@ -180,7 +200,11 @@ describe('Validate: Fields on correct type', () => {
         nickname
       }
     `).to.deep.equal([
-      undefinedField('nickname', 'Pet', ['Dog', 'Cat'], ['name'], 3, 9),
+      {
+        message:
+          'Cannot query field "nickname" on type "Pet". Did you mean to use an inline fragment on "Dog" or "Cat"?',
+        locations: [{ line: 3, column: 9 }],
+      },
     ]);
   });
 
@@ -197,7 +221,12 @@ describe('Validate: Fields on correct type', () => {
       fragment directFieldSelectionOnUnion on CatOrDog {
         directField
       }
-    `).to.deep.equal([undefinedField('directField', 'CatOrDog', [], [], 3, 9)]);
+    `).to.deep.equal([
+      {
+        message: 'Cannot query field "directField" on type "CatOrDog".',
+        locations: [{ line: 3, column: 9 }],
+      },
+    ]);
   });
 
   it('Defined on implementors queried on union', () => {
@@ -206,14 +235,11 @@ describe('Validate: Fields on correct type', () => {
         name
       }
     `).to.deep.equal([
-      undefinedField(
-        'name',
-        'CatOrDog',
-        ['Being', 'Pet', 'Canine', 'Dog', 'Cat'],
-        [],
-        3,
-        9,
-      ),
+      {
+        message:
+          'Cannot query field "name" on type "CatOrDog". Did you mean to use an inline fragment on "Being", "Pet", "Canine", "Dog", or "Cat"?',
+        locations: [{ line: 3, column: 9 }],
+      },
     ]);
   });
 
@@ -231,42 +257,110 @@ describe('Validate: Fields on correct type', () => {
   });
 
   describe('Fields on correct type error message', () => {
+    function expectErrorMessage(schema, queryStr) {
+      const errors = validate(schema, parse(queryStr), [FieldsOnCorrectType]);
+      expect(errors.length).to.equal(1);
+      return expect(errors[0].message);
+    }
+
     it('Works with no suggestions', () => {
-      expect(undefinedFieldMessage('f', 'T', [], [])).to.equal(
+      const schema = buildSchema(`
+        type T {
+          fieldWithVeryLongNameThatWillNeverBeSuggested: String
+        }
+        type Query { t: T }
+      `);
+
+      expectErrorMessage(schema, '{ t { f } }').to.equal(
         'Cannot query field "f" on type "T".',
       );
     });
 
     it('Works with no small numbers of type suggestions', () => {
-      expect(undefinedFieldMessage('f', 'T', ['A', 'B'], [])).to.equal(
+      const schema = buildSchema(`
+        union T = A | B
+        type Query { t: T }
+
+        type A { f: String }
+        type B { f: String }
+      `);
+
+      expectErrorMessage(schema, '{ t { f } }').to.equal(
         'Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?',
       );
     });
 
     it('Works with no small numbers of field suggestions', () => {
-      expect(undefinedFieldMessage('f', 'T', [], ['z', 'y'])).to.equal(
+      const schema = buildSchema(`
+        type T {
+          z: String
+          y: String
+        }
+        type Query { t: T }
+      `);
+
+      expectErrorMessage(schema, '{ t { f } }').to.equal(
         'Cannot query field "f" on type "T". Did you mean "z" or "y"?',
       );
     });
 
     it('Only shows one set of suggestions at a time, preferring types', () => {
-      expect(undefinedFieldMessage('f', 'T', ['A', 'B'], ['z', 'y'])).to.equal(
+      const schema = buildSchema(`
+        interface T {
+          z: String
+          y: String
+        }
+        type Query { t: T }
+
+        type A implements T {
+          f: String
+          z: String
+          y: String
+        }
+        type B implements T {
+          f: String
+          z: String
+          y: String
+        }
+      `);
+
+      expectErrorMessage(schema, '{ t { f } }').to.equal(
         'Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?',
       );
     });
 
     it('Limits lots of type suggestions', () => {
-      expect(
-        undefinedFieldMessage('f', 'T', ['A', 'B', 'C', 'D', 'E', 'F'], []),
-      ).to.equal(
+      const schema = buildSchema(`
+        union T = A | B | C | D | E | F
+        type Query { t: T }
+
+        type A { f: String }
+        type B { f: String }
+        type C { f: String }
+        type D { f: String }
+        type E { f: String }
+        type F { f: String }
+      `);
+
+      expectErrorMessage(schema, '{ t { f } }').to.equal(
         'Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A", "B", "C", "D", or "E"?',
       );
     });
 
     it('Limits lots of field suggestions', () => {
-      expect(
-        undefinedFieldMessage('f', 'T', [], ['z', 'y', 'x', 'w', 'v', 'u']),
-      ).to.equal(
+      const schema = buildSchema(`
+        type T {
+          z: String
+          y: String
+          x: String
+          w: String
+          v: String
+          u: String
+        }
+        type Query { t: T }
+      `);
+
+      expectErrorMessage(schema, '{ t { f } }').to.equal(
         'Cannot query field "f" on type "T". Did you mean "z", "y", "x", "w", or "v"?',
       );
     });

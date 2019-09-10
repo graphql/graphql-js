@@ -2,11 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  PossibleFragmentSpreads,
-  typeIncompatibleSpreadMessage,
-  typeIncompatibleAnonSpreadMessage,
-} from '../rules/PossibleFragmentSpreads';
+import { PossibleFragmentSpreads } from '../rules/PossibleFragmentSpreads';
 
 import { expectValidationErrors } from './harness';
 
@@ -16,20 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function error(fragName, parentType, fragType, line, column) {
-  return {
-    message: typeIncompatibleSpreadMessage(fragName, parentType, fragType),
-    locations: [{ line, column }],
-  };
-}
-
-function errorAnon(parentType, fragType, line, column) {
-  return {
-    message: typeIncompatibleAnonSpreadMessage(parentType, fragType),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: Possible fragment spreads', () => {
@@ -119,7 +101,13 @@ describe('Validate: Possible fragment spreads', () => {
     expectErrors(`
       fragment invalidObjectWithinObject on Cat { ...dogFragment }
       fragment dogFragment on Dog { barkVolume }
-    `).to.deep.equal([error('dogFragment', 'Cat', 'Dog', 2, 51)]);
+    `).to.deep.equal([
+      {
+        message:
+          'Fragment "dogFragment" cannot be spread here as objects of type "Cat" can never be of type "Dog".',
+        locations: [{ line: 2, column: 51 }],
+      },
+    ]);
   });
 
   it('different object into object in inline fragment', () => {
@@ -127,28 +115,52 @@ describe('Validate: Possible fragment spreads', () => {
       fragment invalidObjectWithinObjectAnon on Cat {
         ... on Dog { barkVolume }
       }
-    `).to.deep.equal([errorAnon('Cat', 'Dog', 3, 9)]);
+    `).to.deep.equal([
+      {
+        message:
+          'Fragment cannot be spread here as objects of type "Cat" can never be of type "Dog".',
+        locations: [{ line: 3, column: 9 }],
+      },
+    ]);
   });
 
   it('object into not implementing interface', () => {
     expectErrors(`
       fragment invalidObjectWithinInterface on Pet { ...humanFragment }
       fragment humanFragment on Human { pets { name } }
-    `).to.deep.equal([error('humanFragment', 'Pet', 'Human', 2, 54)]);
+    `).to.deep.equal([
+      {
+        message:
+          'Fragment "humanFragment" cannot be spread here as objects of type "Pet" can never be of type "Human".',
+        locations: [{ line: 2, column: 54 }],
+      },
+    ]);
   });
 
   it('object into not containing union', () => {
     expectErrors(`
       fragment invalidObjectWithinUnion on CatOrDog { ...humanFragment }
       fragment humanFragment on Human { pets { name } }
-    `).to.deep.equal([error('humanFragment', 'CatOrDog', 'Human', 2, 55)]);
+    `).to.deep.equal([
+      {
+        message:
+          'Fragment "humanFragment" cannot be spread here as objects of type "CatOrDog" can never be of type "Human".',
+        locations: [{ line: 2, column: 55 }],
+      },
+    ]);
   });
 
   it('union into not contained object', () => {
     expectErrors(`
       fragment invalidUnionWithinObject on Human { ...catOrDogFragment }
       fragment catOrDogFragment on CatOrDog { __typename }
-    `).to.deep.equal([error('catOrDogFragment', 'Human', 'CatOrDog', 2, 52)]);
+    `).to.deep.equal([
+      {
+        message:
+          'Fragment "catOrDogFragment" cannot be spread here as objects of type "Human" can never be of type "CatOrDog".',
+        locations: [{ line: 2, column: 52 }],
+      },
+    ]);
   });
 
   it('union into non overlapping interface', () => {
@@ -156,7 +168,11 @@ describe('Validate: Possible fragment spreads', () => {
       fragment invalidUnionWithinInterface on Pet { ...humanOrAlienFragment }
       fragment humanOrAlienFragment on HumanOrAlien { __typename }
     `).to.deep.equal([
-      error('humanOrAlienFragment', 'Pet', 'HumanOrAlien', 2, 53),
+      {
+        message:
+          'Fragment "humanOrAlienFragment" cannot be spread here as objects of type "Pet" can never be of type "HumanOrAlien".',
+        locations: [{ line: 2, column: 53 }],
+      },
     ]);
   });
 
@@ -165,7 +181,11 @@ describe('Validate: Possible fragment spreads', () => {
       fragment invalidUnionWithinUnion on CatOrDog { ...humanOrAlienFragment }
       fragment humanOrAlienFragment on HumanOrAlien { __typename }
     `).to.deep.equal([
-      error('humanOrAlienFragment', 'CatOrDog', 'HumanOrAlien', 2, 54),
+      {
+        message:
+          'Fragment "humanOrAlienFragment" cannot be spread here as objects of type "CatOrDog" can never be of type "HumanOrAlien".',
+        locations: [{ line: 2, column: 54 }],
+      },
     ]);
   });
 
@@ -174,7 +194,11 @@ describe('Validate: Possible fragment spreads', () => {
       fragment invalidInterfaceWithinObject on Cat { ...intelligentFragment }
       fragment intelligentFragment on Intelligent { iq }
     `).to.deep.equal([
-      error('intelligentFragment', 'Cat', 'Intelligent', 2, 54),
+      {
+        message:
+          'Fragment "intelligentFragment" cannot be spread here as objects of type "Cat" can never be of type "Intelligent".',
+        locations: [{ line: 2, column: 54 }],
+      },
     ]);
   });
 
@@ -185,7 +209,11 @@ describe('Validate: Possible fragment spreads', () => {
       }
       fragment intelligentFragment on Intelligent { iq }
     `).to.deep.equal([
-      error('intelligentFragment', 'Pet', 'Intelligent', 3, 9),
+      {
+        message:
+          'Fragment "intelligentFragment" cannot be spread here as objects of type "Pet" can never be of type "Intelligent".',
+        locations: [{ line: 3, column: 9 }],
+      },
     ]);
   });
 
@@ -194,13 +222,25 @@ describe('Validate: Possible fragment spreads', () => {
       fragment invalidInterfaceWithinInterfaceAnon on Pet {
         ...on Intelligent { iq }
       }
-    `).to.deep.equal([errorAnon('Pet', 'Intelligent', 3, 9)]);
+    `).to.deep.equal([
+      {
+        message:
+          'Fragment cannot be spread here as objects of type "Pet" can never be of type "Intelligent".',
+        locations: [{ line: 3, column: 9 }],
+      },
+    ]);
   });
 
   it('interface into non overlapping union', () => {
     expectErrors(`
       fragment invalidInterfaceWithinUnion on HumanOrAlien { ...petFragment }
       fragment petFragment on Pet { name }
-    `).to.deep.equal([error('petFragment', 'HumanOrAlien', 'Pet', 2, 62)]);
+    `).to.deep.equal([
+      {
+        message:
+          'Fragment "petFragment" cannot be spread here as objects of type "HumanOrAlien" can never be of type "Pet".',
+        locations: [{ line: 2, column: 62 }],
+      },
+    ]);
   });
 });

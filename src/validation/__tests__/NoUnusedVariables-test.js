@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  NoUnusedVariables,
-  unusedVariableMessage,
-} from '../rules/NoUnusedVariables';
+import { NoUnusedVariables } from '../rules/NoUnusedVariables';
 
 import { expectValidationErrors } from './harness';
 
@@ -15,13 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function unusedVar(varName, opName, line, column) {
-  return {
-    message: unusedVariableMessage(varName, opName),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: No unused variables', () => {
@@ -117,7 +107,12 @@ describe('Validate: No unused variables', () => {
       query ($a: String, $b: String, $c: String) {
         field(a: $a, b: $b)
       }
-    `).to.deep.equal([unusedVar('c', null, 2, 38)]);
+    `).to.deep.equal([
+      {
+        message: 'Variable "$c" is never used.',
+        locations: [{ line: 2, column: 38 }],
+      },
+    ]);
   });
 
   it('multiple variables not used', () => {
@@ -126,8 +121,14 @@ describe('Validate: No unused variables', () => {
         field(b: $b)
       }
     `).to.deep.equal([
-      unusedVar('a', 'Foo', 2, 17),
-      unusedVar('c', 'Foo', 2, 41),
+      {
+        message: 'Variable "$a" is never used in operation "Foo".',
+        locations: [{ line: 2, column: 17 }],
+      },
+      {
+        message: 'Variable "$c" is never used in operation "Foo".',
+        locations: [{ line: 2, column: 41 }],
+      },
     ]);
   });
 
@@ -149,7 +150,12 @@ describe('Validate: No unused variables', () => {
       fragment FragC on Type {
         field
       }
-    `).to.deep.equal([unusedVar('c', 'Foo', 2, 41)]);
+    `).to.deep.equal([
+      {
+        message: 'Variable "$c" is never used in operation "Foo".',
+        locations: [{ line: 2, column: 41 }],
+      },
+    ]);
   });
 
   it('multiple variables not used in fragments', () => {
@@ -171,8 +177,14 @@ describe('Validate: No unused variables', () => {
         field
       }
     `).to.deep.equal([
-      unusedVar('a', 'Foo', 2, 17),
-      unusedVar('c', 'Foo', 2, 41),
+      {
+        message: 'Variable "$a" is never used in operation "Foo".',
+        locations: [{ line: 2, column: 17 }],
+      },
+      {
+        message: 'Variable "$c" is never used in operation "Foo".',
+        locations: [{ line: 2, column: 41 }],
+      },
     ]);
   });
 
@@ -187,7 +199,12 @@ describe('Validate: No unused variables', () => {
       fragment FragB on Type {
         field(b: $b)
       }
-    `).to.deep.equal([unusedVar('b', 'Foo', 2, 17)]);
+    `).to.deep.equal([
+      {
+        message: 'Variable "$b" is never used in operation "Foo".',
+        locations: [{ line: 2, column: 17 }],
+      },
+    ]);
   });
 
   it('variable not used by fragment used by other operation', () => {
@@ -205,8 +222,14 @@ describe('Validate: No unused variables', () => {
         field(b: $b)
       }
     `).to.deep.equal([
-      unusedVar('b', 'Foo', 2, 17),
-      unusedVar('a', 'Bar', 5, 17),
+      {
+        message: 'Variable "$b" is never used in operation "Foo".',
+        locations: [{ line: 2, column: 17 }],
+      },
+      {
+        message: 'Variable "$a" is never used in operation "Bar".',
+        locations: [{ line: 5, column: 17 }],
+      },
     ]);
   });
 });

@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { KnownTypeNames, unknownTypeMessage } from '../rules/KnownTypeNames';
+import { KnownTypeNames } from '../rules/KnownTypeNames';
 
 import {
   expectValidationErrors,
@@ -30,13 +30,6 @@ function expectSDLErrors(sdlStr, schema) {
 
 function expectValidSDL(sdlStr, schema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
-}
-
-function unknownType(typeName, suggestedTypes, line, column) {
-  return {
-    message: unknownTypeMessage(typeName, suggestedTypes),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: Known type names', () => {
@@ -65,9 +58,18 @@ describe('Validate: Known type names', () => {
         name
       }
     `).to.deep.equal([
-      unknownType('JumbledUpLetters', [], 2, 23),
-      unknownType('Badger', [], 5, 25),
-      unknownType('Peettt', ['Pet'], 8, 29),
+      {
+        message: 'Unknown type "JumbledUpLetters".',
+        locations: [{ line: 2, column: 23 }],
+      },
+      {
+        message: 'Unknown type "Badger".',
+        locations: [{ line: 5, column: 25 }],
+      },
+      {
+        message: 'Unknown type "Peettt". Did you mean "Pet"?',
+        locations: [{ line: 8, column: 29 }],
+      },
     ]);
   });
 
@@ -79,9 +81,18 @@ describe('Validate: Known type names', () => {
       }
     `;
     expectErrorsWithSchema(schema, query).to.deep.equal([
-      unknownType('ID', [], 2, 19),
-      unknownType('Float', [], 2, 31),
-      unknownType('Int', [], 2, 44),
+      {
+        message: 'Unknown type "ID".',
+        locations: [{ line: 2, column: 19 }],
+      },
+      {
+        message: 'Unknown type "Float".',
+        locations: [{ line: 2, column: 31 }],
+      },
+      {
+        message: 'Unknown type "Int".',
+        locations: [{ line: 2, column: 44 }],
+      },
     ]);
   });
 
@@ -160,18 +171,54 @@ describe('Validate: Known type names', () => {
           subscription: N
         }
       `).to.deep.equal([
-        unknownType('C', ['A', 'B'], 5, 36),
-        unknownType('D', ['ID', 'A', 'B'], 6, 16),
-        unknownType('E', ['A', 'B'], 6, 20),
-        unknownType('F', ['A', 'B'], 9, 27),
-        unknownType('G', ['A', 'B'], 9, 31),
-        unknownType('H', ['A', 'B'], 12, 16),
-        unknownType('I', ['ID', 'A', 'B'], 12, 20),
-        unknownType('J', ['A', 'B'], 16, 14),
-        unknownType('K', ['A', 'B'], 19, 37),
-        unknownType('L', ['A', 'B'], 22, 18),
-        unknownType('M', ['A', 'B'], 23, 21),
-        unknownType('N', ['A', 'B'], 24, 25),
+        {
+          message: 'Unknown type "C". Did you mean "A" or "B"?',
+          locations: [{ line: 5, column: 36 }],
+        },
+        {
+          message: 'Unknown type "D". Did you mean "ID", "A", or "B"?',
+          locations: [{ line: 6, column: 16 }],
+        },
+        {
+          message: 'Unknown type "E". Did you mean "A" or "B"?',
+          locations: [{ line: 6, column: 20 }],
+        },
+        {
+          message: 'Unknown type "F". Did you mean "A" or "B"?',
+          locations: [{ line: 9, column: 27 }],
+        },
+        {
+          message: 'Unknown type "G". Did you mean "A" or "B"?',
+          locations: [{ line: 9, column: 31 }],
+        },
+        {
+          message: 'Unknown type "H". Did you mean "A" or "B"?',
+          locations: [{ line: 12, column: 16 }],
+        },
+        {
+          message: 'Unknown type "I". Did you mean "ID", "A", or "B"?',
+          locations: [{ line: 12, column: 20 }],
+        },
+        {
+          message: 'Unknown type "J". Did you mean "A" or "B"?',
+          locations: [{ line: 16, column: 14 }],
+        },
+        {
+          message: 'Unknown type "K". Did you mean "A" or "B"?',
+          locations: [{ line: 19, column: 37 }],
+        },
+        {
+          message: 'Unknown type "L". Did you mean "A" or "B"?',
+          locations: [{ line: 22, column: 18 }],
+        },
+        {
+          message: 'Unknown type "M". Did you mean "A" or "B"?',
+          locations: [{ line: 23, column: 21 }],
+        },
+        {
+          message: 'Unknown type "N". Did you mean "A" or "B"?',
+          locations: [{ line: 24, column: 25 }],
+        },
       ]);
     });
 
@@ -184,7 +231,12 @@ describe('Validate: Known type names', () => {
         type Query {
           foo: Foo
         }
-      `).to.deep.equal([unknownType('Foo', [], 7, 16)]);
+      `).to.deep.equal([
+        {
+          message: 'Unknown type "Foo".',
+          locations: [{ line: 7, column: 16 }],
+        },
+      ]);
     });
 
     it('reference standard scalars inside extension document', () => {
@@ -249,18 +301,54 @@ describe('Validate: Known type names', () => {
       `;
 
       expectSDLErrors(sdl, schema).to.deep.equal([
-        unknownType('C', ['A', 'B'], 4, 36),
-        unknownType('D', ['ID', 'A', 'B'], 5, 16),
-        unknownType('E', ['A', 'B'], 5, 20),
-        unknownType('F', ['A', 'B'], 8, 27),
-        unknownType('G', ['A', 'B'], 8, 31),
-        unknownType('H', ['A', 'B'], 11, 16),
-        unknownType('I', ['ID', 'A', 'B'], 11, 20),
-        unknownType('J', ['A', 'B'], 15, 14),
-        unknownType('K', ['A', 'B'], 18, 37),
-        unknownType('L', ['A', 'B'], 21, 18),
-        unknownType('M', ['A', 'B'], 22, 21),
-        unknownType('N', ['A', 'B'], 23, 25),
+        {
+          message: 'Unknown type "C". Did you mean "A" or "B"?',
+          locations: [{ line: 4, column: 36 }],
+        },
+        {
+          message: 'Unknown type "D". Did you mean "ID", "A", or "B"?',
+          locations: [{ line: 5, column: 16 }],
+        },
+        {
+          message: 'Unknown type "E". Did you mean "A" or "B"?',
+          locations: [{ line: 5, column: 20 }],
+        },
+        {
+          message: 'Unknown type "F". Did you mean "A" or "B"?',
+          locations: [{ line: 8, column: 27 }],
+        },
+        {
+          message: 'Unknown type "G". Did you mean "A" or "B"?',
+          locations: [{ line: 8, column: 31 }],
+        },
+        {
+          message: 'Unknown type "H". Did you mean "A" or "B"?',
+          locations: [{ line: 11, column: 16 }],
+        },
+        {
+          message: 'Unknown type "I". Did you mean "ID", "A", or "B"?',
+          locations: [{ line: 11, column: 20 }],
+        },
+        {
+          message: 'Unknown type "J". Did you mean "A" or "B"?',
+          locations: [{ line: 15, column: 14 }],
+        },
+        {
+          message: 'Unknown type "K". Did you mean "A" or "B"?',
+          locations: [{ line: 18, column: 37 }],
+        },
+        {
+          message: 'Unknown type "L". Did you mean "A" or "B"?',
+          locations: [{ line: 21, column: 18 }],
+        },
+        {
+          message: 'Unknown type "M". Did you mean "A" or "B"?',
+          locations: [{ line: 22, column: 21 }],
+        },
+        {
+          message: 'Unknown type "N". Did you mean "A" or "B"?',
+          locations: [{ line: 23, column: 25 }],
+        },
       ]);
     });
   });

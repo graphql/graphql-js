@@ -11,17 +11,6 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 
 import { type ValidationContext } from '../ValidationContext';
 
-export function inlineFragmentOnNonCompositeErrorMessage(type: string): string {
-  return `Fragment cannot condition on non composite type "${type}".`;
-}
-
-export function fragmentOnNonCompositeErrorMessage(
-  fragName: string,
-  type: string,
-): string {
-  return `Fragment "${fragName}" cannot condition on non composite type "${type}".`;
-}
-
 /**
  * Fragments on composite type
  *
@@ -38,9 +27,10 @@ export function FragmentsOnCompositeTypes(
       if (typeCondition) {
         const type = typeFromAST(context.getSchema(), typeCondition);
         if (type && !isCompositeType(type)) {
+          const typeStr = print(typeCondition);
           context.reportError(
             new GraphQLError(
-              inlineFragmentOnNonCompositeErrorMessage(print(typeCondition)),
+              `Fragment cannot condition on non composite type "${typeStr}".`,
               typeCondition,
             ),
           );
@@ -50,12 +40,10 @@ export function FragmentsOnCompositeTypes(
     FragmentDefinition(node) {
       const type = typeFromAST(context.getSchema(), node.typeCondition);
       if (type && !isCompositeType(type)) {
+        const typeStr = print(node.typeCondition);
         context.reportError(
           new GraphQLError(
-            fragmentOnNonCompositeErrorMessage(
-              node.name.value,
-              print(node.typeCondition),
-            ),
+            `Fragment "${node.name.value}" cannot condition on non composite type "${typeStr}".`,
             node.typeCondition,
           ),
         );

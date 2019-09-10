@@ -1,8 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ASTValidationContext } from '../ValidationContext';
 
-export function duplicateInputFieldMessage(fieldName: string): string;
-
 /**
  * Unique input field names
  *

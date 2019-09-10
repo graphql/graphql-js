@@ -1,13 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ValidationContext, SDLValidationContext } from '../ValidationContext';
 
-export function unknownDirectiveMessage(directiveName: string): string;
-
-export function misplacedDirectiveMessage(
-  directiveName: string,
-  location: string,
-): string;
-
 /**
  * Known directives
  *

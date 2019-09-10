@@ -4,11 +4,7 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import {
-  PossibleTypeExtensions,
-  extendingUnknownTypeMessage,
-  extendingDifferentTypeKindMessage,
-} from '../rules/PossibleTypeExtensions';
+import { PossibleTypeExtensions } from '../rules/PossibleTypeExtensions';
 
 import { expectSDLValidationErrors } from './harness';
 
@@ -18,23 +14,6 @@ function expectSDLErrors(sdlStr, schema) {
 
 function expectValidSDL(sdlStr, schema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
-}
-
-function extendingUnknownType(typeName, suggestedTypes, line, column) {
-  return {
-    message: extendingUnknownTypeMessage(typeName, suggestedTypes),
-    locations: [{ line, column }],
-  };
-}
-
-function extendingDifferentTypeKind(typeName, kind, l1, c1, l2, c2) {
-  const message = extendingDifferentTypeKindMessage(typeName, kind);
-  const locations = [{ line: l1, column: c1 }];
-
-  if (l2 !== undefined && c2 !== undefined) {
-    locations.push({ line: l2, column: c2 });
-  }
-  return { message, locations };
 }
 
 describe('Validate: Possible type extensions', () => {
@@ -93,6 +72,9 @@ describe('Validate: Possible type extensions', () => {
   });
 
   it('extending unknown type', () => {
+    const message =
+      'Cannot extend type "Unknown" because it is not defined. Did you mean "Known"?';
+
     expectSDLErrors(`
       type Known
 
@@ -103,16 +85,18 @@ describe('Validate: Possible type extensions', () => {
       extend enum Unknown @dummy
       extend input Unknown @dummy
     `).to.deep.equal([
-      extendingUnknownType('Unknown', ['Known'], 4, 21),
-      extendingUnknownType('Unknown', ['Known'], 5, 19),
-      extendingUnknownType('Unknown', ['Known'], 6, 24),
-      extendingUnknownType('Unknown', ['Known'], 7, 20),
-      extendingUnknownType('Unknown', ['Known'], 8, 19),
-      extendingUnknownType('Unknown', ['Known'], 9, 20),
+      { message, locations: [{ line: 4, column: 21 }] },
+      { message, locations: [{ line: 5, column: 19 }] },
+      { message, locations: [{ line: 6, column: 24 }] },
+      { message, locations: [{ line: 7, column: 20 }] },
+      { message, locations: [{ line: 8, column: 19 }] },
+      { message, locations: [{ line: 9, column: 20 }] },
     ]);
   });
 
   it('does not consider non-type definitions', () => {
+    const message = 'Cannot extend type "Foo" because it is not defined.';
+
     expectSDLErrors(`
       query Foo { __typename }
       fragment Foo on Query { __typename }
@@ -125,12 +109,12 @@ describe('Validate: Possible type extensions', () => {
       extend enum Foo @dummy
       extend input Foo @dummy
     `).to.deep.equal([
-      extendingUnknownType('Foo', [], 6, 21),
-      extendingUnknownType('Foo', [], 7, 19),
-      extendingUnknownType('Foo', [], 8, 24),
-      extendingUnknownType('Foo', [], 9, 20),
-      extendingUnknownType('Foo', [], 10, 19),
-      extendingUnknownType('Foo', [], 11, 20),
+      { message, locations: [{ line: 6, column: 21 }] },
+      { message, locations: [{ line: 7, column: 19 }] },
+      { message, locations: [{ line: 8, column: 24 }] },
+      { message, locations: [{ line: 9, column: 20 }] },
+      { message, locations: [{ line: 10, column: 19 }] },
+      { message, locations: [{ line: 11, column: 20 }] },
     ]);
   });
 
@@ -150,12 +134,30 @@ describe('Validate: Possible type extensions', () => {
       extend input FooEnum @dummy
       extend scalar FooInputObject @dummy
     `).to.deep.equal([
-      extendingDifferentTypeKind('FooScalar', 'scalar', 2, 7, 9, 7),
-      extendingDifferentTypeKind('FooObject', 'object', 3, 7, 10, 7),
-      extendingDifferentTypeKind('FooInterface', 'interface', 4, 7, 11, 7),
-      extendingDifferentTypeKind('FooUnion', 'union', 5, 7, 12, 7),
-      extendingDifferentTypeKind('FooEnum', 'enum', 6, 7, 13, 7),
-      extendingDifferentTypeKind('FooInputObject', 'input object', 7, 7, 14, 7),
+      {
+        message: 'Cannot extend non-scalar type "FooScalar".',
+        locations: [{ line: 2, column: 7 }, { line: 9, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-object type "FooObject".',
+        locations: [{ line: 3, column: 7 }, { line: 10, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-interface type "FooInterface".',
+        locations: [{ line: 4, column: 7 }, { line: 11, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-union type "FooUnion".',
+        locations: [{ line: 5, column: 7 }, { line: 12, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-enum type "FooEnum".',
+        locations: [{ line: 6, column: 7 }, { line: 13, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-input object type "FooInputObject".',
+        locations: [{ line: 7, column: 7 }, { line: 14, column: 7 }],
+      },
     ]);
   });
 
@@ -191,13 +193,15 @@ describe('Validate: Possible type extensions', () => {
       extend input Unknown @dummy
     `;
 
+    const message =
+      'Cannot extend type "Unknown" because it is not defined. Did you mean "Known"?';
     expectSDLErrors(sdl, schema).to.deep.equal([
-      extendingUnknownType('Unknown', ['Known'], 2, 21),
-      extendingUnknownType('Unknown', ['Known'], 3, 19),
-      extendingUnknownType('Unknown', ['Known'], 4, 24),
-      extendingUnknownType('Unknown', ['Known'], 5, 20),
-      extendingUnknownType('Unknown', ['Known'], 6, 19),
-      extendingUnknownType('Unknown', ['Known'], 7, 20),
+      { message, locations: [{ line: 2, column: 21 }] },
+      { message, locations: [{ line: 3, column: 19 }] },
+      { message, locations: [{ line: 4, column: 24 }] },
+      { message, locations: [{ line: 5, column: 20 }] },
+      { message, locations: [{ line: 6, column: 19 }] },
+      { message, locations: [{ line: 7, column: 20 }] },
     ]);
   });
 
@@ -220,12 +224,30 @@ describe('Validate: Possible type extensions', () => {
     `;
 
     expectSDLErrors(sdl, schema).to.deep.equal([
-      extendingDifferentTypeKind('FooScalar', 'scalar', 2, 7),
-      extendingDifferentTypeKind('FooObject', 'object', 3, 7),
-      extendingDifferentTypeKind('FooInterface', 'interface', 4, 7),
-      extendingDifferentTypeKind('FooUnion', 'union', 5, 7),
-      extendingDifferentTypeKind('FooEnum', 'enum', 6, 7),
-      extendingDifferentTypeKind('FooInputObject', 'input object', 7, 7),
+      {
+        message: 'Cannot extend non-scalar type "FooScalar".',
+        locations: [{ line: 2, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-object type "FooObject".',
+        locations: [{ line: 3, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-interface type "FooInterface".',
+        locations: [{ line: 4, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-union type "FooUnion".',
+        locations: [{ line: 5, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-enum type "FooEnum".',
+        locations: [{ line: 6, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-input object type "FooInputObject".',
+        locations: [{ line: 7, column: 7 }],
+      },
     ]);
   });
 });

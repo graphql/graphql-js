@@ -1,11 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ValidationContext } from '../ValidationContext';
 
-export function nonInputTypeOnVarMessage(
-  variableName: string,
-  typeName: string,
-): string;
-
 /**
  * Variables are input types
  *
