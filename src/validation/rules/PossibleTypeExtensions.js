@@ -60,7 +60,7 @@ export function PossibleTypeExtensions(
 
     if (expectedKind) {
       if (expectedKind !== node.kind) {
-        const kindStr = extensionKindToTypeName(expectedKind);
+        const kindStr = extensionKindToTypeName(node.kind);
         context.reportError(
           new GraphQLError(
             `Cannot extend non-${kindStr} type "${typeName}".`,

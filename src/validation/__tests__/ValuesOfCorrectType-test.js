@@ -165,7 +165,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type String, found 1.',
+          message: 'Expected value of type "String", found 1.',
           locations: [{ line: 4, column: 39 }],
         },
       ]);
@@ -180,7 +180,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type String, found 1.0.',
+          message: 'Expected value of type "String", found 1.0.',
           locations: [{ line: 4, column: 39 }],
         },
       ]);
@@ -195,7 +195,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type String, found true.',
+          message: 'Expected value of type "String", found true.',
           locations: [{ line: 4, column: 39 }],
         },
       ]);
@@ -210,7 +210,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type String, found BAR.',
+          message: 'Expected value of type "String", found BAR.',
           locations: [{ line: 4, column: 39 }],
         },
       ]);
@@ -227,7 +227,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int, found "3".',
+          message: 'Expected value of type "Int", found "3".',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -242,7 +242,8 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int, found 829384293849283498239482938.',
+          message:
+            'Expected value of type "Int", found 829384293849283498239482938.',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -257,7 +258,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int, found FOO.',
+          message: 'Expected value of type "Int", found FOO.',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -272,7 +273,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int, found 3.0.',
+          message: 'Expected value of type "Int", found 3.0.',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -287,7 +288,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int, found 3.333.',
+          message: 'Expected value of type "Int", found 3.333.',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -304,7 +305,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Float, found "3.333".',
+          message: 'Expected value of type "Float", found "3.333".',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -319,7 +320,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Float, found true.',
+          message: 'Expected value of type "Float", found true.',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -334,7 +335,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Float, found FOO.',
+          message: 'Expected value of type "Float", found FOO.',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -351,7 +352,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Boolean, found 2.',
+          message: 'Expected value of type "Boolean", found 2.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -366,7 +367,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Boolean, found 1.0.',
+          message: 'Expected value of type "Boolean", found 1.0.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -381,7 +382,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Boolean, found "true".',
+          message: 'Expected value of type "Boolean", found "true".',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -396,7 +397,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Boolean, found TRUE.',
+          message: 'Expected value of type "Boolean", found TRUE.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -413,7 +414,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type ID, found 1.0.',
+          message: 'Expected value of type "ID", found 1.0.',
           locations: [{ line: 4, column: 31 }],
         },
       ]);
@@ -428,7 +429,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type ID, found true.',
+          message: 'Expected value of type "ID", found true.',
           locations: [{ line: 4, column: 31 }],
         },
       ]);
@@ -443,7 +444,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type ID, found SOMETHING.',
+          message: 'Expected value of type "ID", found SOMETHING.',
           locations: [{ line: 4, column: 31 }],
         },
       ]);
@@ -460,7 +461,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type DogCommand, found 2.',
+          message: 'Expected value of type "DogCommand", found 2.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -475,7 +476,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type DogCommand, found 1.0.',
+          message: 'Expected value of type "DogCommand", found 1.0.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -491,7 +492,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Expected type DogCommand, found "SIT". Did you mean the enum value SIT?',
+            'Expected value of type "DogCommand", found "SIT". Did you mean the enum value "SIT"?',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -506,7 +507,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type DogCommand, found true.',
+          message: 'Expected value of type "DogCommand", found true.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -521,7 +522,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type DogCommand, found JUGGLE.',
+          message: 'Expected value of type "DogCommand", found JUGGLE.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -537,7 +538,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Expected type DogCommand, found sit. Did you mean the enum value SIT?',
+            'Expected value of type "DogCommand", found sit. Did you mean the enum value "SIT"?',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -596,7 +597,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type String, found 2.',
+          message: 'Expected value of type "String", found 2.',
           locations: [{ line: 4, column: 55 }],
         },
       ]);
@@ -611,7 +612,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type [String], found 1.',
+          message: 'Expected value of type "[String]", found 1.',
           locations: [{ line: 4, column: 47 }],
         },
       ]);
@@ -730,11 +731,11 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int!, found "two".',
+          message: 'Expected value of type "Int!", found "two".',
           locations: [{ line: 4, column: 32 }],
         },
         {
-          message: 'Expected type Int!, found "one".',
+          message: 'Expected value of type "Int!", found "one".',
           locations: [{ line: 4, column: 45 }],
         },
       ]);
@@ -749,7 +750,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int!, found "one".',
+          message: 'Expected value of type "Int!", found "one".',
           locations: [{ line: 4, column: 32 }],
         },
       ]);
@@ -764,7 +765,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int!, found null.',
+          message: 'Expected value of type "Int!", found null.',
           locations: [{ line: 4, column: 32 }],
         },
       ]);
@@ -856,7 +857,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Field ComplexInput.requiredField of required type Boolean! was not provided.',
+            'Field "ComplexInput.requiredField" of required type "Boolean!" was not provided.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -874,7 +875,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type String, found 2.',
+          message: 'Expected value of type "String", found 2.',
           locations: [{ line: 5, column: 40 }],
         },
       ]);
@@ -892,7 +893,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Boolean!, found null.',
+          message: 'Expected value of type "Boolean!", found null.',
           locations: [{ line: 6, column: 29 }],
         },
       ]);
@@ -911,7 +912,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Field "unknownField" is not defined by type ComplexInput. Did you mean nonNullField, intField, or booleanField?',
+            'Field "unknownField" is not defined by type "ComplexInput". Did you mean "nonNullField", "intField", or "booleanField"?',
           locations: [{ line: 6, column: 15 }],
         },
       ]);
@@ -927,7 +928,7 @@ describe('Validate: Values of correct type', () => {
       expectedErrors.to.deep.equal([
         {
           message:
-            'Expected type Invalid, found 123; Invalid scalar is always invalid: 123',
+            'Expected value of type "Invalid", found 123; Invalid scalar is always invalid: 123',
           locations: [{ line: 3, column: 27 }],
         },
       ]);
@@ -973,11 +974,11 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Boolean!, found "yes".',
+          message: 'Expected value of type "Boolean!", found "yes".',
           locations: [{ line: 3, column: 28 }],
         },
         {
-          message: 'Expected type Boolean!, found ENUM.',
+          message: 'Expected value of type "Boolean!", found ENUM.',
           locations: [{ line: 4, column: 28 }],
         },
       ]);
@@ -1021,15 +1022,15 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int!, found null.',
+          message: 'Expected value of type "Int!", found null.',
           locations: [{ line: 3, column: 22 }],
         },
         {
-          message: 'Expected type String!, found null.',
+          message: 'Expected value of type "String!", found null.',
           locations: [{ line: 4, column: 25 }],
         },
         {
-          message: 'Expected type Boolean!, found null.',
+          message: 'Expected value of type "Boolean!", found null.',
           locations: [{ line: 5, column: 47 }],
         },
       ]);
@@ -1046,15 +1047,16 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Int, found "one".',
+          message: 'Expected value of type "Int", found "one".',
           locations: [{ line: 3, column: 21 }],
         },
         {
-          message: 'Expected type String, found 4.',
+          message: 'Expected value of type "String", found 4.',
           locations: [{ line: 4, column: 24 }],
         },
         {
-          message: 'Expected type ComplexInput, found "notverycomplex".',
+          message:
+            'Expected value of type "ComplexInput", found "notverycomplex".',
           locations: [{ line: 5, column: 30 }],
         },
       ]);
@@ -1069,11 +1071,11 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type Boolean!, found 123.',
+          message: 'Expected value of type "Boolean!", found 123.',
           locations: [{ line: 3, column: 47 }],
         },
         {
-          message: 'Expected type Int, found "abc".',
+          message: 'Expected value of type "Int", found "abc".',
           locations: [{ line: 3, column: 62 }],
         },
       ]);
@@ -1087,7 +1089,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Field ComplexInput.requiredField of required type Boolean! was not provided.',
+            'Field "ComplexInput.requiredField" of required type "Boolean!" was not provided.',
           locations: [{ line: 2, column: 55 }],
         },
       ]);
@@ -1100,7 +1102,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected type String, found 2.',
+          message: 'Expected value of type "String", found 2.',
           locations: [{ line: 2, column: 50 }],
         },
       ]);

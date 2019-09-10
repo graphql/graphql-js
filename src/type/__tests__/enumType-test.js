@@ -155,7 +155,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected type Color, found "GREEN". Did you mean the enum value GREEN?',
+            'Expected value of type "Color", found "GREEN". Did you mean the enum value "GREEN"?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -169,7 +169,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected type Color, found GREENISH. Did you mean the enum value GREEN?',
+            'Expected value of type "Color", found GREENISH. Did you mean the enum value "GREEN"?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -183,7 +183,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected type Color, found green. Did you mean the enum value GREEN?',
+            'Expected value of type "Color", found green. Did you mean the enum value "GREEN"?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -211,7 +211,7 @@ describe('Type System: Enum Values', () => {
     expect(result).to.deep.equal({
       errors: [
         {
-          message: 'Expected type Color, found 1.',
+          message: 'Expected value of type "Color", found 1.',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -224,7 +224,7 @@ describe('Type System: Enum Values', () => {
     expect(result).to.deep.equal({
       errors: [
         {
-          message: 'Expected type Int, found GREEN.',
+          message: 'Expected value of type "Int", found GREEN.',
           locations: [{ line: 1, column: 22 }],
         },
       ],

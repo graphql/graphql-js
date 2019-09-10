@@ -820,7 +820,7 @@ describe('Schema Builder', () => {
         foo: String @unknown
       }
     `;
-    expect(() => buildSchema(sdl)).to.throw('Unknown directive "unknown".');
+    expect(() => buildSchema(sdl)).to.throw('Unknown directive "@unknown".');
   });
 
   it('Allows to disable SDL validation', () => {

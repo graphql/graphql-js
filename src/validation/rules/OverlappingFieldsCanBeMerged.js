@@ -584,7 +584,7 @@ function findConflict(
     const name2 = node2.name.value;
     if (name1 !== name2) {
       return [
-        [responseName, `${name1} and ${name2} are different fields`],
+        [responseName, `"${name1}" and "${name2}" are different fields`],
         [node1],
         [node2],
       ];
@@ -604,7 +604,9 @@ function findConflict(
     return [
       [
         responseName,
-        `they return conflicting types ${inspect(type1)} and ${inspect(type2)}`,
+        `they return conflicting types "${inspect(type1)}" and "${inspect(
+          type2,
+        )}"`,
       ],
       [node1],
       [node2],

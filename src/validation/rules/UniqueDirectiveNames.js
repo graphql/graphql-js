@@ -31,7 +31,7 @@ export function UniqueDirectiveNames(
       if (schema && schema.getDirective(directiveName)) {
         context.reportError(
           new GraphQLError(
-            `Directive "${directiveName}" already exists in the schema. It cannot be redefined.`,
+            `Directive "@${directiveName}" already exists in the schema. It cannot be redefined.`,
             node.name,
           ),
         );
@@ -41,7 +41,7 @@ export function UniqueDirectiveNames(
       if (knownDirectiveNames[directiveName]) {
         context.reportError(
           new GraphQLError(
-            `There can be only one directive named "${directiveName}".`,
+            `There can be only one directive named "@${directiveName}".`,
             [knownDirectiveNames[directiveName], node.name],
           ),
         );

@@ -46,7 +46,7 @@ export function KnownDirectives(
 
       if (!locations) {
         context.reportError(
-          new GraphQLError(`Unknown directive "${name}".`, node),
+          new GraphQLError(`Unknown directive "@${name}".`, node),
         );
         return;
       }
@@ -55,7 +55,7 @@ export function KnownDirectives(
       if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
         context.reportError(
           new GraphQLError(
-            `Directive "${name}" may not be used on ${candidateLocation}.`,
+            `Directive "@${name}" may not be used on ${candidateLocation}.`,
             node,
           ),
         );

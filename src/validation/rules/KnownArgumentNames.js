@@ -35,7 +35,7 @@ export function KnownArgumentNames(context: ValidationContext): ASTVisitor {
         const suggestions = suggestionList(argName, knownArgsNames);
         context.reportError(
           new GraphQLError(
-            `Unknown argument "${argName}" on field "${fieldDef.name}" of type "${parentType.name}".` +
+            `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
               didYouMean(suggestions.map(x => `"${x}"`)),
             argNode,
           ),
