@@ -33,7 +33,7 @@ export function findDeprecatedUsages(
             const reason = fieldDef.deprecationReason;
             errors.push(
               new GraphQLError(
-                `The field ${parentType.name}.${fieldDef.name} is deprecated.` +
+                `The field "${parentType.name}.${fieldDef.name}" is deprecated.` +
                   (reason ? ' ' + reason : ''),
                 node,
               ),
@@ -49,7 +49,7 @@ export function findDeprecatedUsages(
             const reason = enumVal.deprecationReason;
             errors.push(
               new GraphQLError(
-                `The enum value ${type.name}.${enumVal.name} is deprecated.` +
+                `The enum value "${type.name}.${enumVal.name}" is deprecated.` +
                   (reason ? ' ' + reason : ''),
                 node,
               ),

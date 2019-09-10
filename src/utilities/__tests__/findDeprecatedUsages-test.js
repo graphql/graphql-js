@@ -39,7 +39,7 @@ describe('findDeprecatedUsages', () => {
     const errorMessages = errors.map(err => err.message);
 
     expect(errorMessages).to.deep.equal([
-      'The field Query.deprecatedField is deprecated. Some field reason.',
+      'The field "Query.deprecatedField" is deprecated. Some field reason.',
     ]);
   });
 
@@ -52,7 +52,7 @@ describe('findDeprecatedUsages', () => {
     const errorMessages = errors.map(err => err.message);
 
     expect(errorMessages).to.deep.equal([
-      'The enum value EnumType.TWO is deprecated. Some enum reason.',
+      'The enum value "EnumType.TWO" is deprecated. Some enum reason.',
     ]);
   });
 });
