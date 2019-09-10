@@ -56,12 +56,15 @@ export function NoFragmentCycles(context: ASTValidationContext): ASTVisitor {
         }
       } else {
         const cyclePath = spreadPath.slice(cycleIndex);
-        const viaNames = cyclePath.slice(0, -1).map(s => s.name.value);
+        const viaPath = cyclePath
+          .slice(0, -1)
+          .map(s => '"' + s.name.value + '"')
+          .join(', ');
 
         context.reportError(
           new GraphQLError(
             `Cannot spread fragment "${spreadName}" within itself` +
-              (viaNames.length > 0 ? ` via ${viaNames.join(', ')}.` : '.'),
+              (viaPath !== '' ? ` via ${viaPath}.` : '.'),
             cyclePath,
           ),
         );

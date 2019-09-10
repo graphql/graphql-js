@@ -59,7 +59,7 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
           const typeStr = inspect(fieldDef.type);
           context.reportError(
             new GraphQLError(
-              `Field ${type.name}.${fieldDef.name} of required type ${typeStr} was not provided.`,
+              `Field "${type.name}.${fieldDef.name}" of required type "${typeStr}" was not provided.`,
               node,
             ),
           );
@@ -76,8 +76,8 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
         );
         context.reportError(
           new GraphQLError(
-            `Field "${node.name.value}" is not defined by type ${parentType.name}.` +
-              didYouMean(suggestions),
+            `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
+              didYouMean(suggestions.map(name => '"' + name + '"')),
             node,
           ),
         );
@@ -88,7 +88,7 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
       if (isNonNullType(type)) {
         context.reportError(
           new GraphQLError(
-            `Expected type ${inspect(type)}, found ${print(node)}.`,
+            `Expected value of type "${inspect(type)}", found ${print(node)}.`,
             node,
           ),
         );
@@ -118,11 +118,13 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   if (isEnumType(type)) {
     if (node.kind !== Kind.ENUM || !type.getValue(node.value)) {
       const allNames = type.getValues().map(value => value.name);
-      const suggestedValues = suggestionList(print(node), allNames);
+      const suggestedValues = suggestionList(print(node), allNames).map(
+        x => '"' + x + '"',
+      );
 
       context.reportError(
         new GraphQLError(
-          `Expected type ${type.name}, found ${print(node)}.` +
+          `Expected value of type "${type.name}", found ${print(node)}.` +
             didYouMean('the enum value', suggestedValues),
           node,
         ),
@@ -132,9 +134,10 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   }
 
   if (!isScalarType(type)) {
+    const typeStr = inspect(locationType);
     context.reportError(
       new GraphQLError(
-        `Expected type ${inspect(locationType)}, found ${print(node)}.`,
+        `Expected value of type "${typeStr}", found ${print(node)}.`,
         node,
       ),
     );
@@ -146,18 +149,20 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   try {
     const parseResult = type.parseLiteral(node, undefined /* variables */);
     if (isInvalid(parseResult)) {
+      const typeStr = inspect(locationType);
       context.reportError(
         new GraphQLError(
-          `Expected type ${inspect(locationType)}, found ${print(node)}.`,
+          `Expected value of type "${typeStr}", found ${print(node)}.`,
           node,
         ),
       );
     }
   } catch (error) {
+    const typeStr = inspect(locationType);
     // Ensure a reference to the original error is maintained.
     context.reportError(
       new GraphQLError(
-        `Expected type ${inspect(locationType)}, found ${print(node)}; ` +
+        `Expected value of type "${typeStr}", found ${print(node)}; ` +
           error.message,
         node,
         undefined,

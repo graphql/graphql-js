@@ -41,7 +41,7 @@ describe('Validate: Supports full validation', () => {
       {
         locations: [{ line: 3, column: 25 }],
         message:
-          'Expected type Invalid, found "bad value"; Invalid scalar is always invalid: "bad value"',
+          'Expected value of type "Invalid", found "bad value"; Invalid scalar is always invalid: "bad value"',
       },
     ]);
   });

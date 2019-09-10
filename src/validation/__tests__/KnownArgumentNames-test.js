@@ -131,8 +131,7 @@ describe('Validate: Known argument names', () => {
       }
     `).to.deep.equal([
       {
-        message:
-          'Unknown argument "unknown" on field "doesKnowCommand" of type "Dog".',
+        message: 'Unknown argument "unknown" on field "Dog.doesKnowCommand".',
         locations: [{ line: 3, column: 25 }],
       },
     ]);
@@ -146,7 +145,7 @@ describe('Validate: Known argument names', () => {
     `).to.deep.equal([
       {
         message:
-          'Unknown argument "dogcommand" on field "doesKnowCommand" of type "Dog". Did you mean "dogCommand"?',
+          'Unknown argument "dogcommand" on field "Dog.doesKnowCommand". Did you mean "dogCommand"?',
         locations: [{ line: 3, column: 25 }],
       },
     ]);
@@ -159,13 +158,11 @@ describe('Validate: Known argument names', () => {
       }
     `).to.deep.equal([
       {
-        message:
-          'Unknown argument "whoknows" on field "doesKnowCommand" of type "Dog".',
+        message: 'Unknown argument "whoknows" on field "Dog.doesKnowCommand".',
         locations: [{ line: 3, column: 25 }],
       },
       {
-        message:
-          'Unknown argument "unknown" on field "doesKnowCommand" of type "Dog".',
+        message: 'Unknown argument "unknown" on field "Dog.doesKnowCommand".',
         locations: [{ line: 3, column: 55 }],
       },
     ]);
@@ -187,13 +184,11 @@ describe('Validate: Known argument names', () => {
       }
     `).to.deep.equal([
       {
-        message:
-          'Unknown argument "unknown" on field "doesKnowCommand" of type "Dog".',
+        message: 'Unknown argument "unknown" on field "Dog.doesKnowCommand".',
         locations: [{ line: 4, column: 27 }],
       },
       {
-        message:
-          'Unknown argument "unknown" on field "doesKnowCommand" of type "Dog".',
+        message: 'Unknown argument "unknown" on field "Dog.doesKnowCommand".',
         locations: [{ line: 9, column: 31 }],
       },
     ]);
