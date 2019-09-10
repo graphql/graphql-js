@@ -1,10 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { SDLValidationContext } from '../ValidationContext';
 
-export function schemaDefinitionNotAloneMessage(): string;
-
-export function canNotDefineSchemaWithinExtensionMessage(): string;
-
 /**
  * Lone Schema definition
  *

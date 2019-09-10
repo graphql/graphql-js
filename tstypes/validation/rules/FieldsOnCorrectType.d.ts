@@ -1,13 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ValidationContext } from '../ValidationContext';
 
-export function undefinedFieldMessage(
-  fieldName: string,
-  type: string,
-  suggestedTypeNames: ReadonlyArray<string>,
-  suggestedFieldNames: ReadonlyArray<string>,
-): string;
-
 /**
  * Fields on correct type
  *

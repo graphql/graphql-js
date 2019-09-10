@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  KnownFragmentNames,
-  unknownFragmentMessage,
-} from '../rules/KnownFragmentNames';
+import { KnownFragmentNames } from '../rules/KnownFragmentNames';
 
 import { expectValidationErrors } from './harness';
 
@@ -15,13 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function unknownFragment(fragName, line, column) {
-  return {
-    message: unknownFragmentMessage(fragName),
-    locations: [{ line, column }],
-  };
 }
 
 describe('Validate: Known fragment names', () => {
@@ -66,9 +56,18 @@ describe('Validate: Known fragment names', () => {
         ...UnknownFragment3
       }
     `).to.deep.equal([
-      unknownFragment('UnknownFragment1', 4, 14),
-      unknownFragment('UnknownFragment2', 6, 16),
-      unknownFragment('UnknownFragment3', 12, 12),
+      {
+        message: 'Unknown fragment "UnknownFragment1".',
+        locations: [{ line: 4, column: 14 }],
+      },
+      {
+        message: 'Unknown fragment "UnknownFragment2".',
+        locations: [{ line: 6, column: 16 }],
+      },
+      {
+        message: 'Unknown fragment "UnknownFragment3".',
+        locations: [{ line: 12, column: 12 }],
+      },
     ]);
   });
 });

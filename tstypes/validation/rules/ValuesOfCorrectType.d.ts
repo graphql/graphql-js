@@ -1,30 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ValidationContext } from '../ValidationContext';
 
-export function badValueMessage(
-  typeName: string,
-  valueName: string,
-  message?: string,
-): string;
-
-export function badEnumValueMessage(
-  typeName: string,
-  valueName: string,
-  suggestedValues: ReadonlyArray<string>,
-): string;
-
-export function requiredFieldMessage(
-  typeName: string,
-  fieldName: string,
-  fieldTypeName: string,
-): string;
-
-export function unknownFieldMessage(
-  typeName: string,
-  fieldName: string,
-  suggestedFields: ReadonlyArray<string>,
-): string;
-
 /**
  * Value literals of correct type
  *

@@ -1,10 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { SDLValidationContext } from '../ValidationContext';
 
-export function duplicateOperationTypeMessage(operation: string): string;
-
-export function existedOperationTypeMessage(operation: string): string;
-
 /**
  * Unique operation types
  *

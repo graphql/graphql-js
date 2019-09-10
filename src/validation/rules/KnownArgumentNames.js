@@ -15,29 +15,6 @@ import {
   type SDLValidationContext,
 } from '../ValidationContext';
 
-export function unknownArgMessage(
-  argName: string,
-  fieldName: string,
-  typeName: string,
-  suggestedArgs: $ReadOnlyArray<string>,
-): string {
-  return (
-    `Unknown argument "${argName}" on field "${fieldName}" of type "${typeName}".` +
-    didYouMean(suggestedArgs.map(x => `"${x}"`))
-  );
-}
-
-export function unknownDirectiveArgMessage(
-  argName: string,
-  directiveName: string,
-  suggestedArgs: $ReadOnlyArray<string>,
-): string {
-  return (
-    `Unknown argument "${argName}" on directive "@${directiveName}".` +
-    didYouMean(suggestedArgs.map(x => `"${x}"`))
-  );
-}
-
 /**
  * Known argument names
  *
@@ -55,14 +32,11 @@ export function KnownArgumentNames(context: ValidationContext): ASTVisitor {
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
         const knownArgsNames = fieldDef.args.map(arg => arg.name);
+        const suggestions = suggestionList(argName, knownArgsNames);
         context.reportError(
           new GraphQLError(
-            unknownArgMessage(
-              argName,
-              fieldDef.name,
-              parentType.name,
-              suggestionList(argName, knownArgsNames),
-            ),
+            `Unknown argument "${argName}" on field "${fieldDef.name}" of type "${parentType.name}".` +
+              didYouMean(suggestions.map(x => `"${x}"`)),
             argNode,
           ),
         );
@@ -106,7 +80,8 @@ export function KnownArgumentNamesOnDirectives(
             const suggestions = suggestionList(argName, knownArgs);
             context.reportError(
               new GraphQLError(
-                unknownDirectiveArgMessage(argName, directiveName, suggestions),
+                `Unknown argument "${argName}" on directive "@${directiveName}".` +
+                  didYouMean(suggestions.map(x => `"${x}"`)),
                 argNode,
               ),
             );

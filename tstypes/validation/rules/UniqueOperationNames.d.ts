@@ -1,8 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ASTValidationContext } from '../ValidationContext';
 
-export function duplicateOperationNameMessage(operationName: string): string;
-
 /**
  * Unique operation names
  *

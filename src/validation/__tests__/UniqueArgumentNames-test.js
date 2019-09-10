@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  UniqueArgumentNames,
-  duplicateArgMessage,
-} from '../rules/UniqueArgumentNames';
+import { UniqueArgumentNames } from '../rules/UniqueArgumentNames';
 
 import { expectValidationErrors } from './harness';
 
@@ -15,13 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function duplicateArg(argName, l1, c1, l2, c2) {
-  return {
-    message: duplicateArgMessage(argName),
-    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-  };
 }
 
 describe('Validate: Unique argument names', () => {
@@ -103,7 +93,12 @@ describe('Validate: Unique argument names', () => {
       {
         field(arg1: "value", arg1: "value")
       }
-    `).to.deep.equal([duplicateArg('arg1', 3, 15, 3, 30)]);
+    `).to.deep.equal([
+      {
+        message: 'There can be only one argument named "arg1".',
+        locations: [{ line: 3, column: 15 }, { line: 3, column: 30 }],
+      },
+    ]);
   });
 
   it('many duplicate field arguments', () => {
@@ -112,8 +107,14 @@ describe('Validate: Unique argument names', () => {
         field(arg1: "value", arg1: "value", arg1: "value")
       }
     `).to.deep.equal([
-      duplicateArg('arg1', 3, 15, 3, 30),
-      duplicateArg('arg1', 3, 15, 3, 45),
+      {
+        message: 'There can be only one argument named "arg1".',
+        locations: [{ line: 3, column: 15 }, { line: 3, column: 30 }],
+      },
+      {
+        message: 'There can be only one argument named "arg1".',
+        locations: [{ line: 3, column: 15 }, { line: 3, column: 45 }],
+      },
     ]);
   });
 
@@ -122,7 +123,12 @@ describe('Validate: Unique argument names', () => {
       {
         field @directive(arg1: "value", arg1: "value")
       }
-    `).to.deep.equal([duplicateArg('arg1', 3, 26, 3, 41)]);
+    `).to.deep.equal([
+      {
+        message: 'There can be only one argument named "arg1".',
+        locations: [{ line: 3, column: 26 }, { line: 3, column: 41 }],
+      },
+    ]);
   });
 
   it('many duplicate directive arguments', () => {
@@ -131,8 +137,14 @@ describe('Validate: Unique argument names', () => {
         field @directive(arg1: "value", arg1: "value", arg1: "value")
       }
     `).to.deep.equal([
-      duplicateArg('arg1', 3, 26, 3, 41),
-      duplicateArg('arg1', 3, 26, 3, 56),
+      {
+        message: 'There can be only one argument named "arg1".',
+        locations: [{ line: 3, column: 26 }, { line: 3, column: 41 }],
+      },
+      {
+        message: 'There can be only one argument named "arg1".',
+        locations: [{ line: 3, column: 26 }, { line: 3, column: 56 }],
+      },
     ]);
   });
 });

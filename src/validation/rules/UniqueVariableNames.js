@@ -7,10 +7,6 @@ import { type VariableDefinitionNode } from '../../language/ast';
 
 import { type ASTValidationContext } from '../ValidationContext';
 
-export function duplicateVariableMessage(variableName: string): string {
-  return `There can be only one variable named "${variableName}".`;
-}
-
 /**
  * Unique variable names
  *
@@ -26,10 +22,10 @@ export function UniqueVariableNames(context: ASTValidationContext): ASTVisitor {
       const variableName = node.variable.name.value;
       if (knownVariableNames[variableName]) {
         context.reportError(
-          new GraphQLError(duplicateVariableMessage(variableName), [
-            knownVariableNames[variableName],
-            node.variable.name,
-          ]),
+          new GraphQLError(
+            `There can be only one variable named "${variableName}".`,
+            [knownVariableNames[variableName], node.variable.name],
+          ),
         );
       } else {
         knownVariableNames[variableName] = node.variable.name;

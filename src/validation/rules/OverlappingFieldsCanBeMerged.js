@@ -35,16 +35,6 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 
 import { type ValidationContext } from '../ValidationContext';
 
-export function fieldsConflictMessage(
-  responseName: string,
-  reason: ConflictReasonMessage,
-): string {
-  return (
-    `Fields "${responseName}" conflict because ${reasonMessage(reason)}. ` +
-    'Use different aliases on the fields to fetch both if this was intentional.'
-  );
-}
-
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
     return reason
@@ -89,9 +79,10 @@ export function OverlappingFieldsCanBeMerged(
         selectionSet,
       );
       for (const [[responseName, reason], fields1, fields2] of conflicts) {
+        const reasonMsg = reasonMessage(reason);
         context.reportError(
           new GraphQLError(
-            fieldsConflictMessage(responseName, reason),
+            `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
             fields1.concat(fields2),
           ),
         );

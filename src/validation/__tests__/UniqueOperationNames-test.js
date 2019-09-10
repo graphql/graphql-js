@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  UniqueOperationNames,
-  duplicateOperationNameMessage,
-} from '../rules/UniqueOperationNames';
+import { UniqueOperationNames } from '../rules/UniqueOperationNames';
 
 import { expectValidationErrors } from './harness';
 
@@ -15,13 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function duplicateOp(opName, l1, c1, l2, c2) {
-  return {
-    message: duplicateOperationNameMessage(opName),
-    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-  };
 }
 
 describe('Validate: Unique operation names', () => {
@@ -96,7 +86,12 @@ describe('Validate: Unique operation names', () => {
       query Foo {
         fieldB
       }
-    `).to.deep.equal([duplicateOp('Foo', 2, 13, 5, 13)]);
+    `).to.deep.equal([
+      {
+        message: 'There can be only one operation named "Foo".',
+        locations: [{ line: 2, column: 13 }, { line: 5, column: 13 }],
+      },
+    ]);
   });
 
   it('multiple ops of same name of different types (mutation)', () => {
@@ -107,7 +102,12 @@ describe('Validate: Unique operation names', () => {
       mutation Foo {
         fieldB
       }
-    `).to.deep.equal([duplicateOp('Foo', 2, 13, 5, 16)]);
+    `).to.deep.equal([
+      {
+        message: 'There can be only one operation named "Foo".',
+        locations: [{ line: 2, column: 13 }, { line: 5, column: 16 }],
+      },
+    ]);
   });
 
   it('multiple ops of same name of different types (subscription)', () => {
@@ -118,6 +118,11 @@ describe('Validate: Unique operation names', () => {
       subscription Foo {
         fieldB
       }
-    `).to.deep.equal([duplicateOp('Foo', 2, 13, 5, 20)]);
+    `).to.deep.equal([
+      {
+        message: 'There can be only one operation named "Foo".',
+        locations: [{ line: 2, column: 13 }, { line: 5, column: 20 }],
+      },
+    ]);
   });
 });

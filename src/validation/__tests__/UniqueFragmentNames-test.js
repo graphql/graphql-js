@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  UniqueFragmentNames,
-  duplicateFragmentNameMessage,
-} from '../rules/UniqueFragmentNames';
+import { UniqueFragmentNames } from '../rules/UniqueFragmentNames';
 
 import { expectValidationErrors } from './harness';
 
@@ -15,13 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function duplicateFrag(fragName, l1, c1, l2, c2) {
-  return {
-    message: duplicateFragmentNameMessage(fragName),
-    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-  };
 }
 
 describe('Validate: Unique fragment names', () => {
@@ -99,7 +89,12 @@ describe('Validate: Unique fragment names', () => {
       fragment fragA on Type {
         fieldB
       }
-    `).to.deep.equal([duplicateFrag('fragA', 5, 16, 8, 16)]);
+    `).to.deep.equal([
+      {
+        message: 'There can be only one fragment named "fragA".',
+        locations: [{ line: 5, column: 16 }, { line: 8, column: 16 }],
+      },
+    ]);
   });
 
   it('fragments named the same without being referenced', () => {
@@ -110,6 +105,11 @@ describe('Validate: Unique fragment names', () => {
       fragment fragA on Type {
         fieldB
       }
-    `).to.deep.equal([duplicateFrag('fragA', 2, 16, 5, 16)]);
+    `).to.deep.equal([
+      {
+        message: 'There can be only one fragment named "fragA".',
+        locations: [{ line: 2, column: 16 }, { line: 5, column: 16 }],
+      },
+    ]);
   });
 });

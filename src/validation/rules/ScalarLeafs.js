@@ -39,17 +39,21 @@ export function ScalarLeafs(context: ValidationContext): ASTVisitor {
       if (type) {
         if (isLeafType(getNamedType(type))) {
           if (selectionSet) {
+            const fieldName = node.name.value;
+            const typeStr = inspect(type);
             context.reportError(
               new GraphQLError(
-                noSubselectionAllowedMessage(node.name.value, inspect(type)),
+                `Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`,
                 selectionSet,
               ),
             );
           }
         } else if (!selectionSet) {
+          const fieldName = node.name.value;
+          const typeStr = inspect(type);
           context.reportError(
             new GraphQLError(
-              requiredSubselectionMessage(node.name.value, inspect(type)),
+              `Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`,
               node,
             ),
           );

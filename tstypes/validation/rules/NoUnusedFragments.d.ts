@@ -1,8 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ValidationContext } from '../ValidationContext';
 
-export function unusedFragMessage(fragName: string): string;
-
 /**
  * No unused fragments
  *

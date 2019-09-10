@@ -7,14 +7,6 @@ import { type FragmentDefinitionNode } from '../../language/ast';
 
 import { type ASTValidationContext } from '../ValidationContext';
 
-export function cycleErrorMessage(
-  fragName: string,
-  spreadNames: $ReadOnlyArray<string>,
-): string {
-  const via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
-  return `Cannot spread fragment "${fragName}" within itself${via}.`;
-}
-
 export function NoFragmentCycles(context: ASTValidationContext): ASTVisitor {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
@@ -64,10 +56,12 @@ export function NoFragmentCycles(context: ASTValidationContext): ASTVisitor {
         }
       } else {
         const cyclePath = spreadPath.slice(cycleIndex);
-        const fragmentNames = cyclePath.slice(0, -1).map(s => s.name.value);
+        const viaNames = cyclePath.slice(0, -1).map(s => s.name.value);
+
         context.reportError(
           new GraphQLError(
-            cycleErrorMessage(spreadName, fragmentNames),
+            `Cannot spread fragment "${spreadName}" within itself` +
+              (viaNames.length > 0 ? ` via ${viaNames.join(', ')}.` : '.'),
             cyclePath,
           ),
         );

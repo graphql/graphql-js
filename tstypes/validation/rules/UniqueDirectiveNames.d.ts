@@ -1,10 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { SDLValidationContext } from '../ValidationContext';
 
-export function duplicateDirectiveNameMessage(directiveName: string): string;
-
-export function existedDirectiveNameMessage(directiveName: string): string;
-
 /**
  * Unique directive names
  *

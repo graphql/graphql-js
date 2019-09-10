@@ -2,10 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import {
-  UniqueInputFieldNames,
-  duplicateInputFieldMessage,
-} from '../rules/UniqueInputFieldNames';
+import { UniqueInputFieldNames } from '../rules/UniqueInputFieldNames';
 
 import { expectValidationErrors } from './harness';
 
@@ -15,13 +12,6 @@ function expectErrors(queryStr) {
 
 function expectValid(queryStr) {
   expectErrors(queryStr).to.deep.equal([]);
-}
-
-function duplicateField(name, l1, c1, l2, c2) {
-  return {
-    message: duplicateInputFieldMessage(name),
-    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-  };
 }
 
 describe('Validate: Unique input field names', () => {
@@ -70,7 +60,12 @@ describe('Validate: Unique input field names', () => {
       {
         field(arg: { f1: "value", f1: "value" })
       }
-    `).to.deep.equal([duplicateField('f1', 3, 22, 3, 35)]);
+    `).to.deep.equal([
+      {
+        message: 'There can be only one input field named "f1".',
+        locations: [{ line: 3, column: 22 }, { line: 3, column: 35 }],
+      },
+    ]);
   });
 
   it('many duplicate input object fields', () => {
@@ -79,8 +74,14 @@ describe('Validate: Unique input field names', () => {
         field(arg: { f1: "value", f1: "value", f1: "value" })
       }
     `).to.deep.equal([
-      duplicateField('f1', 3, 22, 3, 35),
-      duplicateField('f1', 3, 22, 3, 48),
+      {
+        message: 'There can be only one input field named "f1".',
+        locations: [{ line: 3, column: 22 }, { line: 3, column: 35 }],
+      },
+      {
+        message: 'There can be only one input field named "f1".',
+        locations: [{ line: 3, column: 22 }, { line: 3, column: 48 }],
+      },
     ]);
   });
 
@@ -89,6 +90,11 @@ describe('Validate: Unique input field names', () => {
       {
         field(arg: { f1: {f2: "value", f2: "value" }})
       }
-    `).to.deep.equal([duplicateField('f2', 3, 27, 3, 40)]);
+    `).to.deep.equal([
+      {
+        message: 'There can be only one input field named "f2".',
+        locations: [{ line: 3, column: 27 }, { line: 3, column: 40 }],
+      },
+    ]);
   });
 });
