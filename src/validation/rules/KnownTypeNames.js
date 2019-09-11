@@ -59,8 +59,7 @@ export function KnownTypeNames(
         );
         context.reportError(
           new GraphQLError(
-            `Unknown type "${typeName}".` +
-              didYouMean(suggestedTypes.map(x => `"${x}"`)),
+            `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
             node,
           ),
         );

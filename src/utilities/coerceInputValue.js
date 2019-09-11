@@ -149,7 +149,7 @@ function coerceInputValueImpl(
           inputValue,
           new GraphQLError(
             `Field "${fieldName}" is not defined by type "${type.name}".` +
-              didYouMean(suggestions.map(x => `"${x}"`)),
+              didYouMean(suggestions),
           ),
         );
       }
@@ -206,7 +206,7 @@ function coerceInputValueImpl(
       inputValue,
       new GraphQLError(
         `Expected type "${type.name}".` +
-          didYouMean('the enum value', suggestions.map(x => `"${x}"`)),
+          didYouMean('the enum value', suggestions),
       ),
     );
     return;

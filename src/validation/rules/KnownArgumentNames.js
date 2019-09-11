@@ -36,7 +36,7 @@ export function KnownArgumentNames(context: ValidationContext): ASTVisitor {
         context.reportError(
           new GraphQLError(
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
-              didYouMean(suggestions.map(x => `"${x}"`)),
+              didYouMean(suggestions),
             argNode,
           ),
         );
@@ -81,7 +81,7 @@ export function KnownArgumentNamesOnDirectives(
             context.reportError(
               new GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
-                  didYouMean(suggestions.map(x => `"${x}"`)),
+                  didYouMean(suggestions),
                 argNode,
               ),
             );

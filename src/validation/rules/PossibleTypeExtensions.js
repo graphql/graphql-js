@@ -78,7 +78,7 @@ export function PossibleTypeExtensions(
       context.reportError(
         new GraphQLError(
           `Cannot extend type "${typeName}" because it is not defined.` +
-            didYouMean(suggestedTypes.map(x => `"${x}"`)),
+            didYouMean(suggestedTypes),
           node.name,
         ),
       );

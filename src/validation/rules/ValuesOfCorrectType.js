@@ -77,7 +77,7 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
         context.reportError(
           new GraphQLError(
             `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
-              didYouMean(suggestions.map(name => '"' + name + '"')),
+              didYouMean(suggestions),
             node,
           ),
         );
@@ -118,9 +118,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   if (isEnumType(type)) {
     if (node.kind !== Kind.ENUM || !type.getValue(node.value)) {
       const allNames = type.getValues().map(value => value.name);
-      const suggestedValues = suggestionList(print(node), allNames).map(
-        x => '"' + x + '"',
-      );
+      const suggestedValues = suggestionList(print(node), allNames);
 
       context.reportError(
         new GraphQLError(

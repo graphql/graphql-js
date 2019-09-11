@@ -47,13 +47,13 @@ export function FieldsOnCorrectType(context: ValidationContext): ASTVisitor {
               : getSuggestedFieldNames(schema, type, fieldName);
 
           // Report an error, including helpful suggestions.
-          const quotedTypeNames = suggestedTypeNames.map(x => `"${x}"`);
-          const quotedFieldNames = suggestedFieldNames.map(x => `"${x}"`);
           context.reportError(
             new GraphQLError(
               `Cannot query field "${fieldName}" on type "${type.name}".` +
-                (didYouMean('to use an inline fragment on', quotedTypeNames) ||
-                  didYouMean(quotedFieldNames)),
+                (didYouMean(
+                  'to use an inline fragment on',
+                  suggestedTypeNames,
+                ) || didYouMean(suggestedFieldNames)),
               node,
             ),
           );
