@@ -89,7 +89,7 @@ describe('Execute: Accepts any iterable as list value', () => {
       errors: [
         {
           message:
-            'Expected Iterable, but did not find one for field DataType.test.',
+            'Expected Iterable, but did not find one for field "DataType.test".',
           locations: [{ line: 1, column: 10 }],
           path: ['nest', 'test'],
         },
