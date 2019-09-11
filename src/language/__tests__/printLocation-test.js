@@ -73,7 +73,7 @@ describe('printSourceLocation', () => {
       Test:9:1
        9 | *
          | ^
-      10 | 
+      10 |
     `);
   });
 });

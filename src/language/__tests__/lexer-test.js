@@ -111,13 +111,7 @@ describe('Lexer', () => {
   it('errors respect whitespace', () => {
     let caughtError;
     try {
-      lexOne(dedent`
-      
-      
-          ?
-      
-      
-      `);
+      lexOne(['', '', '    ?', ''].join('\n'));
     } catch (error) {
       caughtError = error;
     }
@@ -125,10 +119,10 @@ describe('Lexer', () => {
       Syntax Error: Cannot parse the unexpected character "?".
 
       GraphQL request:3:5
-      2 | 
+      2 |
       3 |     ?
         |     ^
-      4 | 
+      4 |
     `);
   });
 
@@ -145,10 +139,10 @@ describe('Lexer', () => {
       Syntax Error: Cannot parse the unexpected character "?".
 
       foo.js:13:6
-      12 | 
+      12 |
       13 |      ?
          |      ^
-      14 | 
+      14 |
     `);
   });
 
