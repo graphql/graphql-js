@@ -447,8 +447,8 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
     code = body.charCodeAt(position);
   }
 
-  // Numbers cannot be followed by . or e
-  if (code === 46 || code === 69 || code === 101) {
+  // Numbers cannot be followed by . or NameStart
+  if (code === 46 || isNameStart(code)) {
     throw syntaxError(
       source,
       position,
@@ -736,5 +736,12 @@ function readName(source, start, line, col, prev): Token {
     col,
     prev,
     body.slice(start, position),
+  );
+}
+
+// _ A-Z a-z
+function isNameStart(code): boolean {
+  return (
+    code === 95 || (code >= 65 && code <= 90) || (code >= 97 && code <= 122)
   );
 }
