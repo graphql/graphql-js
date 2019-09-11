@@ -53,7 +53,7 @@ function printPrefixedLines(lines) {
   return existingLines.map(function (_ref3) {
     var prefix = _ref3[0],
         line = _ref3[1];
-    return lpad(padLen, prefix) + ' | ' + line;
+    return lpad(padLen, prefix) + (line ? ' | ' + line : ' |');
   }).join('\n');
 }
 

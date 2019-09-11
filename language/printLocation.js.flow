@@ -72,7 +72,9 @@ function printPrefixedLines(lines: $ReadOnlyArray<[string, string]>): string {
 
   const padLen = Math.max(...existingLines.map(([prefix]) => prefix.length));
   return existingLines
-    .map(([prefix, line]) => lpad(padLen, prefix) + ' | ' + line)
+    .map(
+      ([prefix, line]) => lpad(padLen, prefix) + (line ? ' | ' + line : ' |'),
+    )
     .join('\n');
 }
 
