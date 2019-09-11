@@ -267,7 +267,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Variable "$color" got invalid value 2; Expected type Color.',
+            'Variable "$color" got invalid value 2; Expected type "Color".',
           locations: [{ line: 1, column: 8 }],
         },
       ],
