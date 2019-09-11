@@ -509,6 +509,20 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
+  it('builds a schema with empty deprecation reasons', () => {
+    const sdl = dedent`
+      type Query {
+        someField: String @deprecated(reason: "")
+      }
+
+      enum SomeEnum {
+        SOME_VALUE @deprecated(reason: "")
+      }
+    `;
+
+    expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
   it('can use client schema for limited execution', () => {
     const schema = buildSchema(`
       scalar CustomScalar

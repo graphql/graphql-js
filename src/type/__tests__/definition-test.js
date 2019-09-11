@@ -183,20 +183,23 @@ describe('Type System: Objects', () => {
           type: ScalarType,
           deprecationReason: 'A terrible reason',
         },
+        baz: {
+          type: ScalarType,
+          deprecationReason: '',
+        },
       },
     });
 
-    expect(TypeWithDeprecatedField.getFields().bar).to.deep.equal({
+    expect(TypeWithDeprecatedField.getFields().bar).to.include({
       name: 'bar',
-      description: undefined,
-      type: ScalarType,
-      args: [],
-      resolve: undefined,
-      subscribe: undefined,
       isDeprecated: true,
       deprecationReason: 'A terrible reason',
-      extensions: undefined,
-      astNode: undefined,
+    });
+
+    expect(TypeWithDeprecatedField.getFields().baz).to.include({
+      name: 'baz',
+      isDeprecated: true,
+      deprecationReason: '',
     });
   });
 
@@ -519,17 +522,22 @@ describe('Type System: Enums', () => {
   it('defines an enum type with deprecated value', () => {
     const EnumTypeWithDeprecatedValue = new GraphQLEnumType({
       name: 'EnumWithDeprecatedValue',
-      values: { foo: { deprecationReason: 'Just because' } },
+      values: {
+        foo: { deprecationReason: 'Just because' },
+        bar: { deprecationReason: '' },
+      },
     });
 
-    expect(EnumTypeWithDeprecatedValue.getValues()[0]).to.deep.equal({
+    expect(EnumTypeWithDeprecatedValue.getValues()[0]).to.include({
       name: 'foo',
-      description: undefined,
       isDeprecated: true,
       deprecationReason: 'Just because',
-      value: 'foo',
-      extensions: undefined,
-      astNode: undefined,
+    });
+
+    expect(EnumTypeWithDeprecatedValue.getValues()[1]).to.include({
+      name: 'bar',
+      isDeprecated: true,
+      deprecationReason: '',
     });
   });
 
