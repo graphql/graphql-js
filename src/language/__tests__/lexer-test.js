@@ -708,6 +708,41 @@ describe('Lexer', () => {
     );
   });
 
+  it('lex does not allow name-start after a number', () => {
+    expectSyntaxError('0xF1', 'Invalid number, expected digit but got: "x".', {
+      line: 1,
+      column: 2,
+    });
+    expectSyntaxError('0b10', 'Invalid number, expected digit but got: "b".', {
+      line: 1,
+      column: 2,
+    });
+    expectSyntaxError(
+      '123abc',
+      'Invalid number, expected digit but got: "a".',
+      { line: 1, column: 4 },
+    );
+    expectSyntaxError('1_234', 'Invalid number, expected digit but got: "_".', {
+      line: 1,
+      column: 2,
+    });
+    expect(() => lexSecond('1ß')).to.throw(
+      'Syntax Error: Cannot parse the unexpected character "\\u00DF".',
+    );
+    expectSyntaxError('1.23f', 'Invalid number, expected digit but got: "f".', {
+      line: 1,
+      column: 5,
+    });
+    expectSyntaxError(
+      '1.234_5',
+      'Invalid number, expected digit but got: "_".',
+      { line: 1, column: 6 },
+    );
+    expect(() => lexSecond('1.2ß')).to.throw(
+      'Syntax Error: Cannot parse the unexpected character "\\u00DF".',
+    );
+  });
+
   it('lexes punctuation', () => {
     expect(lexOne('!')).to.contain({
       kind: TokenKind.BANG,
