@@ -49,6 +49,65 @@ describe('Lexer', () => {
     });
   });
 
+  it('tracks line breaks', () => {
+    expect(lexOne('foo')).to.contain({
+      kind: TokenKind.NAME,
+      start: 0,
+      end: 3,
+      line: 1,
+      column: 1,
+      value: 'foo',
+    });
+    expect(lexOne('\nfoo')).to.contain({
+      kind: TokenKind.NAME,
+      start: 1,
+      end: 4,
+      line: 2,
+      column: 1,
+      value: 'foo',
+    });
+    expect(lexOne('\rfoo')).to.contain({
+      kind: TokenKind.NAME,
+      start: 1,
+      end: 4,
+      line: 2,
+      column: 1,
+      value: 'foo',
+    });
+    expect(lexOne('\r\nfoo')).to.contain({
+      kind: TokenKind.NAME,
+      start: 2,
+      end: 5,
+      line: 2,
+      column: 1,
+      value: 'foo',
+    });
+    expect(lexOne('\n\rfoo')).to.contain({
+      kind: TokenKind.NAME,
+      start: 2,
+      end: 5,
+      line: 3,
+      column: 1,
+      value: 'foo',
+    });
+    expect(lexOne('\r\r\n\nfoo')).to.contain({
+      kind: TokenKind.NAME,
+      start: 4,
+      end: 7,
+      line: 4,
+      column: 1,
+      value: 'foo',
+    });
+    expect(lexOne('\n\n\r\rfoo')).to.contain({
+      kind: TokenKind.NAME,
+      start: 4,
+      end: 7,
+      line: 5,
+      column: 1,
+      value: 'foo',
+    });
+  });
+
   it('records line and column', () => {
     expect(lexOne('\n \r\n \r  foo\n')).to.contain({
       kind: TokenKind.NAME,
@@ -164,6 +223,13 @@ describe('Lexer', () => {
   });
 
   it('lexes strings', () => {
+    expect(lexOne('""')).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 2,
+      value: '',
+    });
+
     expect(lexOne('"simple"')).to.contain({
       kind: TokenKind.STRING,
       start: 0,
@@ -209,6 +275,10 @@ describe('Lexer', () => {
 
   it('lex reports useful string errors', () => {
     expectSyntaxError('"', 'Unterminated string.', { line: 1, column: 2 });
+
+    expectSyntaxError('"""', 'Unterminated string.', { line: 1, column: 4 });
+
+    expectSyntaxError('""""', 'Unterminated string.', { line: 1, column: 5 });
 
     expectSyntaxError('"no end quote', 'Unterminated string.', {
       line: 1,
@@ -287,6 +357,13 @@ describe('Lexer', () => {
   });
 
   it('lexes block strings', () => {
+    expect(lexOne('""""""')).to.contain({
+      kind: TokenKind.BLOCK_STRING,
+      start: 0,
+      end: 6,
+      value: '',
+    });
+
     expect(lexOne('"""simple"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
@@ -538,12 +615,36 @@ describe('Lexer', () => {
       column: 2,
     });
 
+    expectSyntaxError('01', 'Invalid number, unexpected digit after 0: "1".', {
+      line: 1,
+      column: 2,
+    });
+
+    expectSyntaxError(
+      '01.23',
+      'Invalid number, unexpected digit after 0: "1".',
+      {
+        line: 1,
+        column: 2,
+      },
+    );
+
     expectSyntaxError('+1', 'Cannot parse the unexpected character "+".', {
       line: 1,
       column: 1,
     });
 
     expectSyntaxError('1.', 'Invalid number, expected digit but got: <EOF>.', {
+      line: 1,
+      column: 3,
+    });
+
+    expectSyntaxError('1e', 'Invalid number, expected digit but got: <EOF>.', {
+      line: 1,
+      column: 3,
+    });
+
+    expectSyntaxError('1E', 'Invalid number, expected digit but got: <EOF>.', {
       line: 1,
       column: 3,
     });
@@ -578,6 +679,33 @@ describe('Lexer', () => {
       line: 1,
       column: 5,
     });
+
+    expectSyntaxError(
+      '1.2e3e',
+      'Invalid number, expected digit but got: "e".',
+      {
+        line: 1,
+        column: 6,
+      },
+    );
+
+    expectSyntaxError(
+      '1.2e3.4',
+      'Invalid number, expected digit but got: ".".',
+      {
+        line: 1,
+        column: 6,
+      },
+    );
+
+    expectSyntaxError(
+      '1.23.4',
+      'Invalid number, expected digit but got: ".".',
+      {
+        line: 1,
+        column: 5,
+      },
+    );
   });
 
   it('lexes punctuation', () => {
