@@ -149,11 +149,13 @@ describe('Type System: Extensions', () => {
     });
 
     it('with extensions', () => {
-      const interfaceExtensions = Object.freeze({ SomeObjectExt: 'object' });
+      const interfaceExtensions = Object.freeze({
+        SomeInterfaceExt: 'interface',
+      });
       const fieldExtensions = Object.freeze({ SomeFieldExt: 'field' });
       const argExtensions = Object.freeze({ SomeArgExt: 'arg' });
 
-      const someInterface = new GraphQLObjectType({
+      const someInterface = new GraphQLInterfaceType({
         name: 'SomeInterface',
         fields: {
           someField: {
@@ -200,7 +202,7 @@ describe('Type System: Extensions', () => {
     });
 
     it('with extensions', () => {
-      const unionExtensions = Object.freeze({ SomeScalarExt: 'union' });
+      const unionExtensions = Object.freeze({ SomeUnionExt: 'union' });
 
       const someUnion = new GraphQLUnionType({
         name: 'SomeUnion',
