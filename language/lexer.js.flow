@@ -444,6 +444,16 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
       code = body.charCodeAt(++position);
     }
     position = readDigits(source, position, code);
+    code = body.charCodeAt(position);
+  }
+
+  // Numbers cannot be followed by . or e
+  if (code === 46 || code === 69 || code === 101) {
+    throw syntaxError(
+      source,
+      position,
+      `Invalid number, expected digit but got: ${printCharCode(code)}.`,
+    );
   }
 
   return new Tok(

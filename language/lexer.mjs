@@ -379,6 +379,12 @@ function readNumber(source, start, firstCode, line, col, prev) {
     }
 
     position = readDigits(source, position, code);
+    code = body.charCodeAt(position);
+  } // Numbers cannot be followed by . or e
+
+
+  if (code === 46 || code === 69 || code === 101) {
+    throw syntaxError(source, position, "Invalid number, expected digit but got: ".concat(printCharCode(code), "."));
   }
 
   return new Tok(isFloat ? TokenKind.FLOAT : TokenKind.INT, start, position, line, col, prev, body.slice(start, position));
