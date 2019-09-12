@@ -305,7 +305,7 @@ function printDeprecated(fieldOrEnumVal) {
   }
   const reason = fieldOrEnumVal.deprecationReason;
   const reasonAST = astFromValue(reason, GraphQLString);
-  if (reasonAST && reason !== '' && reason !== DEFAULT_DEPRECATION_REASON) {
+  if (reasonAST && reason !== DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + print(reasonAST) + ')';
   }
   return ' @deprecated';
