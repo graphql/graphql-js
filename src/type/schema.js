@@ -247,7 +247,7 @@ export class GraphQLSchema {
       this._possibleTypeMap[abstractType.name] = map;
     }
 
-    return Boolean(this._possibleTypeMap[abstractType.name][possibleType.name]);
+    return this._possibleTypeMap[abstractType.name][possibleType.name] != null;
   }
 
   getDirectives(): $ReadOnlyArray<GraphQLDirective> {
