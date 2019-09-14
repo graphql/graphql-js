@@ -149,7 +149,7 @@ export class SDLValidationContext extends ASTValidationContext {
   constructor(
     ast: DocumentNode,
     schema: ?GraphQLSchema,
-    onError: (err: GraphQLError) => void,
+    onError?: (err: GraphQLError) => void,
   ): void {
     super(ast, onError);
     this._schema = schema;
