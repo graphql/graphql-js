@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.unknownTypeMessage = unknownTypeMessage;
 exports.KnownTypeNames = KnownTypeNames;
 
 var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
@@ -18,19 +17,12 @@ var _scalars = require("../../type/scalars");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function unknownTypeMessage(typeName, suggestedTypes) {
-  return "Unknown type \"".concat(typeName, "\".") + (0, _didYouMean.default)(suggestedTypes.map(function (x) {
-    return "\"".concat(x, "\"");
-  }));
-}
 /**
  * Known type names
  *
  * A GraphQL document is only valid if referenced types (specifically
  * variable definitions and fragment conditions) are defined by the type schema.
  */
-
-
 function KnownTypeNames(context) {
   var schema = context.getSchema();
   var existingTypesMap = schema ? schema.getTypeMap() : Object.create(null);
@@ -51,14 +43,14 @@ function KnownTypeNames(context) {
 
       if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
         var definitionNode = ancestors[2] || parent;
-        var isSDL = isSDLNode(definitionNode);
+        var isSDL = definitionNode != null && isSDLNode(definitionNode);
 
         if (isSDL && isSpecifiedScalarName(typeName)) {
           return;
         }
 
         var suggestedTypes = (0, _suggestionList.default)(typeName, isSDL ? specifiedScalarsNames.concat(typeNames) : typeNames);
-        context.reportError(new _GraphQLError.GraphQLError(unknownTypeMessage(typeName, suggestedTypes), node));
+        context.reportError(new _GraphQLError.GraphQLError("Unknown type \"".concat(typeName, "\".") + (0, _didYouMean.default)(suggestedTypes), node));
       }
     }
   };
@@ -73,5 +65,5 @@ function isSpecifiedScalarName(typeName) {
 }
 
 function isSDLNode(value) {
-  return Boolean(value && !Array.isArray(value) && ((0, _predicates.isTypeSystemDefinitionNode)(value) || (0, _predicates.isTypeSystemExtensionNode)(value)));
+  return !Array.isArray(value) && ((0, _predicates.isTypeSystemDefinitionNode)(value) || (0, _predicates.isTypeSystemExtensionNode)(value));
 }

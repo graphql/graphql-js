@@ -1,14 +1,11 @@
 import { GraphQLError } from '../../error/GraphQLError';
-export function duplicateInputFieldMessage(fieldName) {
-  return "There can be only one input field named \"".concat(fieldName, "\".");
-}
+
 /**
  * Unique input field names
  *
  * A GraphQL input object value is only valid if all supplied fields are
  * uniquely named.
  */
-
 export function UniqueInputFieldNames(context) {
   var knownNameStack = [];
   var knownNames = Object.create(null);
@@ -26,7 +23,7 @@ export function UniqueInputFieldNames(context) {
       var fieldName = node.name.value;
 
       if (knownNames[fieldName]) {
-        context.reportError(new GraphQLError(duplicateInputFieldMessage(fieldName), [knownNames[fieldName], node.name]));
+        context.reportError(new GraphQLError("There can be only one input field named \"".concat(fieldName, "\"."), [knownNames[fieldName], node.name]));
       } else {
         knownNames[fieldName] = node.name;
       }

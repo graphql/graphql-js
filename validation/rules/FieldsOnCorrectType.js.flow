@@ -18,21 +18,6 @@ import {
 
 import { type ValidationContext } from '../ValidationContext';
 
-export function undefinedFieldMessage(
-  fieldName: string,
-  type: string,
-  suggestedTypeNames: $ReadOnlyArray<string>,
-  suggestedFieldNames: $ReadOnlyArray<string>,
-): string {
-  const quotedTypeNames = suggestedTypeNames.map(x => `"${x}"`);
-  const quotedFieldNames = suggestedFieldNames.map(x => `"${x}"`);
-  return (
-    `Cannot query field "${fieldName}" on type "${type}".` +
-    (didYouMean('to use an inline fragment on', quotedTypeNames) ||
-      didYouMean(quotedFieldNames))
-  );
-}
-
 /**
  * Fields on correct type
  *
@@ -64,12 +49,11 @@ export function FieldsOnCorrectType(context: ValidationContext): ASTVisitor {
           // Report an error, including helpful suggestions.
           context.reportError(
             new GraphQLError(
-              undefinedFieldMessage(
-                fieldName,
-                type.name,
-                suggestedTypeNames,
-                suggestedFieldNames,
-              ),
+              `Cannot query field "${fieldName}" on type "${type.name}".` +
+                (didYouMean(
+                  'to use an inline fragment on',
+                  suggestedTypeNames,
+                ) || didYouMean(suggestedFieldNames)),
               node,
             ),
           );

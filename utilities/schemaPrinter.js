@@ -236,7 +236,7 @@ function printDeprecated(fieldOrEnumVal) {
   var reason = fieldOrEnumVal.deprecationReason;
   var reasonAST = (0, _astFromValue.astFromValue)(reason, _scalars.GraphQLString);
 
-  if (reasonAST && reason !== '' && reason !== _directives.DEFAULT_DEPRECATION_REASON) {
+  if (reasonAST && reason !== _directives.DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + (0, _printer.print)(reasonAST) + ')';
   }
 

@@ -66,7 +66,8 @@ function ProvidedRequiredArguments(context) {
           var argNode = argNodeMap[argDef.name];
 
           if (!argNode && (0, _definition.isRequiredArgument)(argDef)) {
-            context.reportError(new _GraphQLError.GraphQLError(missingFieldArgMessage(fieldDef.name, argDef.name, (0, _inspect.default)(argDef.type)), fieldNode));
+            var argTypeStr = (0, _inspect.default)(argDef.type);
+            context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(fieldDef.name, "\" argument \"").concat(argDef.name, "\" of type \"").concat(argTypeStr, "\" is required, but it was not provided."), fieldNode));
           }
         }
       }
@@ -117,7 +118,8 @@ function ProvidedRequiredArgumentsOnDirectives(context) {
 
             if (!argNodeMap[argName]) {
               var argType = requiredArgs[argName].type;
-              context.reportError(new _GraphQLError.GraphQLError(missingDirectiveArgMessage(directiveName, argName, (0, _definition.isType)(argType) ? (0, _inspect.default)(argType) : (0, _printer.print)(argType)), directiveNode));
+              var argTypeStr = (0, _definition.isType)(argType) ? (0, _inspect.default)(argType) : (0, _printer.print)(argType);
+              context.reportError(new _GraphQLError.GraphQLError("Directive \"@".concat(directiveName, "\" argument \"").concat(argName, "\" of type \"").concat(argTypeStr, "\" is required, but it was not provided."), directiveNode));
             }
           }
         }

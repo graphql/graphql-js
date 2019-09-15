@@ -112,7 +112,6 @@ var GraphQLSchema =
 /*#__PURE__*/
 function () {
   // Used as a cache for validateSchema().
-  // Referenced by validateSchema().
   function GraphQLSchema(config) {
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
@@ -125,13 +124,11 @@ function () {
       (0, _isObjectLike.default)(config) || (0, _devAssert.default)(0, 'Must provide configuration object.');
       !config.types || Array.isArray(config.types) || (0, _devAssert.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), "."));
       !config.directives || Array.isArray(config.directives) || (0, _devAssert.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), "."));
-      !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || (0, _devAssert.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.allowedLegacyNames), "."));
     }
 
     this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
-    this.__allowedLegacyNames = config.allowedLegacyNames || [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
@@ -214,7 +211,7 @@ function () {
       this._possibleTypeMap[abstractType.name] = map;
     }
 
-    return Boolean(this._possibleTypeMap[abstractType.name][possibleType.name]);
+    return this._possibleTypeMap[abstractType.name][possibleType.name] != null;
   };
 
   _proto.getDirectives = function getDirectives() {
@@ -237,8 +234,7 @@ function () {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || [],
-      assumeValid: this.__validationErrors !== undefined,
-      allowedLegacyNames: this.__allowedLegacyNames
+      assumeValid: this.__validationErrors !== undefined
     };
   };
 

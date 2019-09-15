@@ -6,9 +6,6 @@ import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import { getNamedType, isNonNullType, isLeafType, isObjectType, isListType, isInterfaceType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
-export function fieldsConflictMessage(responseName, reason) {
-  return "Fields \"".concat(responseName, "\" conflict because ").concat(reasonMessage(reason), ". ") + 'Use different aliases on the fields to fetch both if this was intentional.';
-}
 
 function reasonMessage(reason) {
   if (Array.isArray(reason)) {
@@ -50,7 +47,8 @@ export function OverlappingFieldsCanBeMerged(context) {
         var reason = _ref2$[1];
         var fields1 = _ref3[1];
         var fields2 = _ref3[2];
-        context.reportError(new GraphQLError(fieldsConflictMessage(responseName, reason), fields1.concat(fields2)));
+        var reasonMsg = reasonMessage(reason);
+        context.reportError(new GraphQLError("Fields \"".concat(responseName, "\" conflict because ").concat(reasonMsg, ". Use different aliases on the fields to fetch both if this was intentional."), fields1.concat(fields2)));
       }
     }
   };
@@ -359,7 +357,7 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
     var name2 = node2.name.value;
 
     if (name1 !== name2) {
-      return [[responseName, "".concat(name1, " and ").concat(name2, " are different fields")], [node1], [node2]];
+      return [[responseName, "\"".concat(name1, "\" and \"").concat(name2, "\" are different fields")], [node1], [node2]];
     } // Two field calls must have the same arguments.
 
 
@@ -369,7 +367,7 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
   }
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [[responseName, "they return conflicting types ".concat(inspect(type1), " and ").concat(inspect(type2))], [node1], [node2]];
+    return [[responseName, "they return conflicting types \"".concat(inspect(type1), "\" and \"").concat(inspect(type2), "\"")], [node1], [node2]];
   } // Collect and compare sub-fields. Use the same "visited fragment names" list
   // for both collections so fields in a fragment reference are never
   // compared to themselves.

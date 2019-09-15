@@ -3,15 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.cycleErrorMessage = cycleErrorMessage;
 exports.NoFragmentCycles = NoFragmentCycles;
 
 var _GraphQLError = require("../../error/GraphQLError");
-
-function cycleErrorMessage(fragName, spreadNames) {
-  var via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
-  return "Cannot spread fragment \"".concat(fragName, "\" within itself").concat(via, ".");
-}
 
 function NoFragmentCycles(context) {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
@@ -62,10 +56,10 @@ function NoFragmentCycles(context) {
         }
       } else {
         var cyclePath = spreadPath.slice(cycleIndex);
-        var fragmentNames = cyclePath.slice(0, -1).map(function (s) {
-          return s.name.value;
-        });
-        context.reportError(new _GraphQLError.GraphQLError(cycleErrorMessage(spreadName, fragmentNames), cyclePath));
+        var viaPath = cyclePath.slice(0, -1).map(function (s) {
+          return '"' + s.name.value + '"';
+        }).join(', ');
+        context.reportError(new _GraphQLError.GraphQLError("Cannot spread fragment \"".concat(spreadName, "\" within itself") + (viaPath !== '' ? " via ".concat(viaPath, ".") : '.'), cyclePath));
       }
 
       spreadPath.pop();

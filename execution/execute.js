@@ -147,7 +147,6 @@ function assertValidExecutionArguments(schema, document, rawVariableValues) {
 
 function buildExecutionContext(schema, document, rootValue, contextValue, rawVariableValues, operationName, fieldResolver, typeResolver) {
   var operation;
-  var hasMultipleAssumedOperations = false;
   var fragments = Object.create(null);
 
   for (var _i2 = 0, _document$definitions2 = document.definitions; _i2 < _document$definitions2.length; _i2++) {
@@ -155,9 +154,13 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
 
     switch (definition.kind) {
       case _kinds.Kind.OPERATION_DEFINITION:
-        if (!operationName && operation) {
-          hasMultipleAssumedOperations = true;
-        } else if (!operationName || definition.name && definition.name.value === operationName) {
+        if (operationName == null) {
+          if (operation !== undefined) {
+            return [new _GraphQLError.GraphQLError('Must provide operation name if query contains multiple operations.')];
+          }
+
+          operation = definition;
+        } else if (definition.name && definition.name.value === operationName) {
           operation = definition;
         }
 
@@ -170,15 +173,11 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
   }
 
   if (!operation) {
-    if (operationName) {
+    if (operationName != null) {
       return [new _GraphQLError.GraphQLError("Unknown operation named \"".concat(operationName, "\"."))];
     }
 
     return [new _GraphQLError.GraphQLError('Must provide an operation.')];
-  }
-
-  if (hasMultipleAssumedOperations) {
-    return [new _GraphQLError.GraphQLError('Must provide operation name if query contains multiple operations.')];
   }
 
   var coercedVariableValues = (0, _values.getVariableValues)(schema, operation.variableDefinitions || [], rawVariableValues || {}, {
@@ -603,7 +602,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
 function completeListValue(exeContext, returnType, fieldNodes, info, path, result) {
   if (!(0, _iterall.isCollection)(result)) {
-    throw new _GraphQLError.GraphQLError("Expected Iterable, but did not find one for field ".concat(info.parentType.name, ".").concat(info.fieldName, "."));
+    throw new _GraphQLError.GraphQLError("Expected Iterable, but did not find one for field \"".concat(info.parentType.name, ".").concat(info.fieldName, "\"."));
   } // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
 
@@ -664,7 +663,7 @@ function ensureValidRuntimeType(runtimeTypeOrName, exeContext, returnType, field
   var runtimeType = typeof runtimeTypeOrName === 'string' ? exeContext.schema.getType(runtimeTypeOrName) : runtimeTypeOrName;
 
   if (!(0, _definition.isObjectType)(runtimeType)) {
-    throw new _GraphQLError.GraphQLError("Abstract type ".concat(returnType.name, " must resolve to an Object type at runtime for field ").concat(info.parentType.name, ".").concat(info.fieldName, " with ") + "value ".concat((0, _inspect.default)(result), ", received \"").concat((0, _inspect.default)(runtimeType), "\". ") + "Either the ".concat(returnType.name, " type should provide a \"resolveType\" function or each possible type should provide an \"isTypeOf\" function."), fieldNodes);
+    throw new _GraphQLError.GraphQLError("Abstract type \"".concat(returnType.name, "\" must resolve to an Object type at runtime for field \"").concat(info.parentType.name, ".").concat(info.fieldName, "\" with ") + "value ".concat((0, _inspect.default)(result), ", received \"").concat((0, _inspect.default)(runtimeType), "\". ") + "Either the \"".concat(returnType.name, "\" type should provide a \"resolveType\" function or each possible type should provide an \"isTypeOf\" function."), fieldNodes);
   }
 
   if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {

@@ -1,11 +1,7 @@
-// The GraphQL query recommended for a full schema introspection.
 export {
+  // Produce the GraphQL query recommended for a full schema introspection.
+  // Accepts optional IntrospectionOptions.
   getIntrospectionQuery,
-  // @deprecated, use getIntrospectionQuery() - will be removed in v15
-  introspectionQuery,
-} from './introspectionQuery';
-
-export {
   IntrospectionOptions,
   IntrospectionQuery,
   IntrospectionSchema,
@@ -28,7 +24,7 @@ export {
   IntrospectionInputValue,
   IntrospectionEnumValue,
   IntrospectionDirective,
-} from './introspectionQuery';
+} from './getIntrospectionQuery';
 
 // Gets the target Operation from a Document
 export { getOperationAST } from './getOperationAST';
@@ -83,15 +79,6 @@ export { TypeInfo } from './TypeInfo';
 
 // Coerces a JavaScript value to a GraphQL type, or produces errors.
 export { coerceInputValue } from './coerceInputValue';
-
-// Coerces a JavaScript value to a GraphQL type, or produces errors.
-export { coerceValue } from './coerceValue';
-
-// @deprecated use coerceValue - will be removed in v15
-export { isValidJSValue } from './isValidJSValue';
-
-// @deprecated use validation - will be removed in v15
-export { isValidLiteralValue } from './isValidLiteralValue';
 
 // Concatenates multiple AST together.
 export { concatAST } from './concatAST';

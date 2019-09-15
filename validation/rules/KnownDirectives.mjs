@@ -2,19 +2,13 @@ import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { DirectiveLocation } from '../../language/directiveLocation';
 import { specifiedDirectives } from '../../type/directives';
-export function unknownDirectiveMessage(directiveName) {
-  return "Unknown directive \"".concat(directiveName, "\".");
-}
-export function misplacedDirectiveMessage(directiveName, location) {
-  return "Directive \"".concat(directiveName, "\" may not be used on ").concat(location, ".");
-}
+
 /**
  * Known directives
  *
  * A GraphQL document is only valid if all `@directives` are known by the
  * schema and legally positioned.
  */
-
 export function KnownDirectives(context) {
   var locationsMap = Object.create(null);
   var schema = context.getSchema();
@@ -43,14 +37,14 @@ export function KnownDirectives(context) {
       var locations = locationsMap[name];
 
       if (!locations) {
-        context.reportError(new GraphQLError(unknownDirectiveMessage(name), node));
+        context.reportError(new GraphQLError("Unknown directive \"@".concat(name, "\"."), node));
         return;
       }
 
       var candidateLocation = getDirectiveLocationForASTPath(ancestors);
 
       if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
-        context.reportError(new GraphQLError(misplacedDirectiveMessage(name, candidateLocation), node));
+        context.reportError(new GraphQLError("Directive \"@".concat(name, "\" may not be used on ").concat(candidateLocation, "."), node));
       }
     }
   };

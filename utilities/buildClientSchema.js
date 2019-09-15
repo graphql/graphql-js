@@ -76,8 +76,7 @@ function buildClientSchema(introspection, options) {
     subscription: subscriptionType,
     types: (0, _objectValues.default)(typeMap),
     directives: directives,
-    assumeValid: options && options.assumeValid,
-    allowedLegacyNames: options && options.allowedLegacyNames
+    assumeValid: options && options.assumeValid
   }); // Given a type reference in introspection, return the GraphQLType instance.
   // preferring cached instances before building new instances.
 

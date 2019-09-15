@@ -13,10 +13,6 @@ import {
   type ValidationContext,
 } from '../ValidationContext';
 
-export function duplicateDirectiveMessage(directiveName: string): string {
-  return `The directive "${directiveName}" can only be used once at this location.`;
-}
-
 /**
  * Unique directive names per location
  *
@@ -59,10 +55,10 @@ export function UniqueDirectivesPerLocation(
           if (uniqueDirectiveMap[directiveName]) {
             if (knownDirectives[directiveName]) {
               context.reportError(
-                new GraphQLError(duplicateDirectiveMessage(directiveName), [
-                  knownDirectives[directiveName],
-                  directive,
-                ]),
+                new GraphQLError(
+                  `The directive "@${directiveName}" can only be used once at this location.`,
+                  [knownDirectives[directiveName], directive],
+                ),
               );
             } else {
               knownDirectives[directiveName] = directive;

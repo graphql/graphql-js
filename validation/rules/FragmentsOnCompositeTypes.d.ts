@@ -1,13 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { ValidationContext } from '../ValidationContext';
 
-export function inlineFragmentOnNonCompositeErrorMessage(type: string): string;
-
-export function fragmentOnNonCompositeErrorMessage(
-  fragName: string,
-  type: string,
-): string;
-
 /**
  * Fragments on composite type
  *

@@ -92,7 +92,6 @@ export var GraphQLSchema =
 /*#__PURE__*/
 function () {
   // Used as a cache for validateSchema().
-  // Referenced by validateSchema().
   function GraphQLSchema(config) {
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
@@ -105,13 +104,11 @@ function () {
       isObjectLike(config) || devAssert(0, 'Must provide configuration object.');
       !config.types || Array.isArray(config.types) || devAssert(0, "\"types\" must be Array if provided but got: ".concat(inspect(config.types), "."));
       !config.directives || Array.isArray(config.directives) || devAssert(0, '"directives" must be Array if provided but got: ' + "".concat(inspect(config.directives), "."));
-      !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || devAssert(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat(inspect(config.allowedLegacyNames), "."));
     }
 
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
-    this.__allowedLegacyNames = config.allowedLegacyNames || [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
@@ -194,7 +191,7 @@ function () {
       this._possibleTypeMap[abstractType.name] = map;
     }
 
-    return Boolean(this._possibleTypeMap[abstractType.name][possibleType.name]);
+    return this._possibleTypeMap[abstractType.name][possibleType.name] != null;
   };
 
   _proto.getDirectives = function getDirectives() {
@@ -217,8 +214,7 @@ function () {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || [],
-      assumeValid: this.__validationErrors !== undefined,
-      allowedLegacyNames: this.__allowedLegacyNames
+      assumeValid: this.__validationErrors !== undefined
     };
   };
 

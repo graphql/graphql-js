@@ -14,7 +14,7 @@ declare function didYouMean(
 
 // eslint-disable-next-line no-redeclare
 export default function didYouMean(firstArg, secondArg) {
-  const [subMessage, suggestions] =
+  const [subMessage, suggestionsArg] =
     typeof firstArg === 'string'
       ? [firstArg, secondArg]
       : [undefined, firstArg];
@@ -24,6 +24,7 @@ export default function didYouMean(firstArg, secondArg) {
     message += subMessage + ' ';
   }
 
+  const suggestions = suggestionsArg.map(x => `"${x}"`);
   switch (suggestions.length) {
     case 0:
       return '';

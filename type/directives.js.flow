@@ -81,13 +81,13 @@ export class GraphQLDirective {
       `@${config.name} args must be an object with argument names as keys.`,
     );
 
-    this.args = objectEntries(args).map(([argName, arg]) => ({
+    this.args = objectEntries(args).map(([argName, argConfig]) => ({
       name: argName,
-      description: arg.description === undefined ? null : arg.description,
-      type: arg.type,
-      defaultValue: arg.defaultValue,
-      extensions: arg.extensions && toObjMap(arg.extensions),
-      astNode: arg.astNode,
+      description: argConfig.description,
+      type: argConfig.type,
+      defaultValue: argConfig.defaultValue,
+      extensions: argConfig.extensions && toObjMap(argConfig.extensions),
+      astNode: argConfig.astNode,
     }));
   }
 

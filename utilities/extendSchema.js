@@ -154,10 +154,8 @@ function extendSchema(schema, documentAST, options) {
         operationTypes[_operation] = _type.name.value;
       }
     }
-  } // Support both original legacy names and extended legacy names.
+  } // Then produce and return a Schema with these types.
 
-
-  var allowedLegacyNames = schemaConfig.allowedLegacyNames.concat(options && options.allowedLegacyNames || []); // Then produce and return a Schema with these types.
 
   return new _schema.GraphQLSchema({
     // Note: While this could make early assertions to get the correctly
@@ -169,8 +167,7 @@ function extendSchema(schema, documentAST, options) {
     types: (0, _objectValues.default)(typeMap),
     directives: getMergedDirectives(),
     astNode: schemaDef || schemaConfig.astNode,
-    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExts),
-    allowedLegacyNames: allowedLegacyNames
+    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExts)
   }); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 

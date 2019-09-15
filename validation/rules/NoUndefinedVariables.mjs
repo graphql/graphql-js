@@ -1,14 +1,11 @@
 import { GraphQLError } from '../../error/GraphQLError';
-export function undefinedVarMessage(varName, opName) {
-  return opName ? "Variable \"$".concat(varName, "\" is not defined by operation \"").concat(opName, "\".") : "Variable \"$".concat(varName, "\" is not defined.");
-}
+
 /**
  * No undefined variables
  *
  * A GraphQL operation is only valid if all variables encountered, both directly
  * and via fragment spreads, are defined by that operation.
  */
-
 export function NoUndefinedVariables(context) {
   var variableNameDefined = Object.create(null);
   return {
@@ -25,7 +22,7 @@ export function NoUndefinedVariables(context) {
           var varName = node.name.value;
 
           if (variableNameDefined[varName] !== true) {
-            context.reportError(new GraphQLError(undefinedVarMessage(varName, operation.name && operation.name.value), [node, operation]));
+            context.reportError(new GraphQLError(operation.name ? "Variable \"$".concat(varName, "\" is not defined by operation \"").concat(operation.name.value, "\".") : "Variable \"$".concat(varName, "\" is not defined."), [node, operation]));
           }
         }
       }

@@ -9,23 +9,13 @@ import suggestionList from '../../jsutils/suggestionList';
 import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { specifiedDirectives } from '../../type/directives';
-export function unknownArgMessage(argName, fieldName, typeName, suggestedArgs) {
-  return "Unknown argument \"".concat(argName, "\" on field \"").concat(fieldName, "\" of type \"").concat(typeName, "\".") + didYouMean(suggestedArgs.map(function (x) {
-    return "\"".concat(x, "\"");
-  }));
-}
-export function unknownDirectiveArgMessage(argName, directiveName, suggestedArgs) {
-  return "Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".") + didYouMean(suggestedArgs.map(function (x) {
-    return "\"".concat(x, "\"");
-  }));
-}
+
 /**
  * Known argument names
  *
  * A GraphQL field is only valid if all supplied arguments are defined by
  * that field.
  */
-
 export function KnownArgumentNames(context) {
   return _objectSpread({}, KnownArgumentNamesOnDirectives(context), {
     Argument: function Argument(argNode) {
@@ -38,7 +28,8 @@ export function KnownArgumentNames(context) {
         var knownArgsNames = fieldDef.args.map(function (arg) {
           return arg.name;
         });
-        context.reportError(new GraphQLError(unknownArgMessage(argName, fieldDef.name, parentType.name, suggestionList(argName, knownArgsNames)), argNode));
+        var suggestions = suggestionList(argName, knownArgsNames);
+        context.reportError(new GraphQLError("Unknown argument \"".concat(argName, "\" on field \"").concat(parentType.name, ".").concat(fieldDef.name, "\".") + didYouMean(suggestions), argNode));
       }
     }
   });
@@ -80,7 +71,7 @@ export function KnownArgumentNamesOnDirectives(context) {
 
           if (knownArgs.indexOf(argName) === -1) {
             var suggestions = suggestionList(argName, knownArgs);
-            context.reportError(new GraphQLError(unknownDirectiveArgMessage(argName, directiveName, suggestions), argNode));
+            context.reportError(new GraphQLError("Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".") + didYouMean(suggestions), argNode));
           }
         }
       }

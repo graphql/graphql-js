@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.duplicateDirectiveMessage = duplicateDirectiveMessage;
 exports.UniqueDirectivesPerLocation = UniqueDirectivesPerLocation;
 
 var _GraphQLError = require("../../error/GraphQLError");
@@ -12,17 +11,12 @@ var _kinds = require("../../language/kinds");
 
 var _directives = require("../../type/directives");
 
-function duplicateDirectiveMessage(directiveName) {
-  return "The directive \"".concat(directiveName, "\" can only be used once at this location.");
-}
 /**
  * Unique directive names per location
  *
  * A GraphQL document is only valid if all non-repeatable directives at
  * a given location are uniquely named.
  */
-
-
 function UniqueDirectivesPerLocation(context) {
   var uniqueDirectiveMap = Object.create(null);
   var schema = context.getSchema();
@@ -61,7 +55,7 @@ function UniqueDirectivesPerLocation(context) {
 
           if (uniqueDirectiveMap[directiveName]) {
             if (knownDirectives[directiveName]) {
-              context.reportError(new _GraphQLError.GraphQLError(duplicateDirectiveMessage(directiveName), [knownDirectives[directiveName], _directive]));
+              context.reportError(new _GraphQLError.GraphQLError("The directive \"@".concat(directiveName, "\" can only be used once at this location."), [knownDirectives[directiveName], _directive]));
             } else {
               knownDirectives[directiveName] = _directive;
             }

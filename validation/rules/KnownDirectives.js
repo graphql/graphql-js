@@ -3,8 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.unknownDirectiveMessage = unknownDirectiveMessage;
-exports.misplacedDirectiveMessage = misplacedDirectiveMessage;
 exports.KnownDirectives = KnownDirectives;
 
 var _GraphQLError = require("../../error/GraphQLError");
@@ -15,21 +13,12 @@ var _directiveLocation = require("../../language/directiveLocation");
 
 var _directives = require("../../type/directives");
 
-function unknownDirectiveMessage(directiveName) {
-  return "Unknown directive \"".concat(directiveName, "\".");
-}
-
-function misplacedDirectiveMessage(directiveName, location) {
-  return "Directive \"".concat(directiveName, "\" may not be used on ").concat(location, ".");
-}
 /**
  * Known directives
  *
  * A GraphQL document is only valid if all `@directives` are known by the
  * schema and legally positioned.
  */
-
-
 function KnownDirectives(context) {
   var locationsMap = Object.create(null);
   var schema = context.getSchema();
@@ -58,14 +47,14 @@ function KnownDirectives(context) {
       var locations = locationsMap[name];
 
       if (!locations) {
-        context.reportError(new _GraphQLError.GraphQLError(unknownDirectiveMessage(name), node));
+        context.reportError(new _GraphQLError.GraphQLError("Unknown directive \"@".concat(name, "\"."), node));
         return;
       }
 
       var candidateLocation = getDirectiveLocationForASTPath(ancestors);
 
       if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
-        context.reportError(new _GraphQLError.GraphQLError(misplacedDirectiveMessage(name, candidateLocation), node));
+        context.reportError(new _GraphQLError.GraphQLError("Directive \"@".concat(name, "\" may not be used on ").concat(candidateLocation, "."), node));
       }
     }
   };

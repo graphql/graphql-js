@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fieldsConflictMessage = fieldsConflictMessage;
 exports.OverlappingFieldsCanBeMerged = OverlappingFieldsCanBeMerged;
 
 var _find = _interopRequireDefault(require("../../polyfills/find"));
@@ -23,10 +22,6 @@ var _definition = require("../../type/definition");
 var _typeFromAST = require("../../utilities/typeFromAST");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function fieldsConflictMessage(responseName, reason) {
-  return "Fields \"".concat(responseName, "\" conflict because ").concat(reasonMessage(reason), ". ") + 'Use different aliases on the fields to fetch both if this was intentional.';
-}
 
 function reasonMessage(reason) {
   if (Array.isArray(reason)) {
@@ -68,7 +63,8 @@ function OverlappingFieldsCanBeMerged(context) {
         var reason = _ref2$[1];
         var fields1 = _ref3[1];
         var fields2 = _ref3[2];
-        context.reportError(new _GraphQLError.GraphQLError(fieldsConflictMessage(responseName, reason), fields1.concat(fields2)));
+        var reasonMsg = reasonMessage(reason);
+        context.reportError(new _GraphQLError.GraphQLError("Fields \"".concat(responseName, "\" conflict because ").concat(reasonMsg, ". Use different aliases on the fields to fetch both if this was intentional."), fields1.concat(fields2)));
       }
     }
   };
@@ -377,7 +373,7 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
     var name2 = node2.name.value;
 
     if (name1 !== name2) {
-      return [[responseName, "".concat(name1, " and ").concat(name2, " are different fields")], [node1], [node2]];
+      return [[responseName, "\"".concat(name1, "\" and \"").concat(name2, "\" are different fields")], [node1], [node2]];
     } // Two field calls must have the same arguments.
 
 
@@ -387,7 +383,7 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
   }
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [[responseName, "they return conflicting types ".concat((0, _inspect.default)(type1), " and ").concat((0, _inspect.default)(type2))], [node1], [node2]];
+    return [[responseName, "they return conflicting types \"".concat((0, _inspect.default)(type1), "\" and \"").concat((0, _inspect.default)(type2), "\"")], [node1], [node2]];
   } // Collect and compare sub-fields. Use the same "visited fragment names" list
   // for both collections so fields in a fragment reference are never
   // compared to themselves.

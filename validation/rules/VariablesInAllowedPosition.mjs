@@ -4,13 +4,10 @@ import { Kind } from '../../language/kinds';
 import { isNonNullType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
-export function badVarPosMessage(varName, varType, expectedType) {
-  return "Variable \"$".concat(varName, "\" of type \"").concat(varType, "\" used in position expecting type \"").concat(expectedType, "\".");
-}
+
 /**
  * Variables passed to field arguments conform to type
  */
-
 export function VariablesInAllowedPosition(context) {
   var varDefMap = Object.create(null);
   return {
@@ -39,7 +36,9 @@ export function VariablesInAllowedPosition(context) {
             var varType = typeFromAST(schema, varDef.type);
 
             if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
-              context.reportError(new GraphQLError(badVarPosMessage(varName, inspect(varType), inspect(type)), [varDef, node]));
+              var varTypeStr = inspect(varType);
+              var typeStr = inspect(type);
+              context.reportError(new GraphQLError("Variable \"$".concat(varName, "\" of type \"").concat(varTypeStr, "\" used in position expecting type \"").concat(typeStr, "\"."), [varDef, node]));
             }
           }
         }

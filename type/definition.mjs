@@ -1,9 +1,3 @@
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 import objectEntries from '../polyfills/objectEntries';
 import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
@@ -526,28 +520,28 @@ function defineFieldMap(config) {
     isPlainObj(argsConfig) || devAssert(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument names as keys."));
     var args = objectEntries(argsConfig).map(function (_ref) {
       var argName = _ref[0],
-          arg = _ref[1];
+          argConfig = _ref[1];
       return {
         name: argName,
-        description: arg.description === undefined ? null : arg.description,
-        type: arg.type,
-        defaultValue: arg.defaultValue,
-        extensions: arg.extensions && toObjMap(arg.extensions),
-        astNode: arg.astNode
+        description: argConfig.description,
+        type: argConfig.type,
+        defaultValue: argConfig.defaultValue,
+        extensions: argConfig.extensions && toObjMap(argConfig.extensions),
+        astNode: argConfig.astNode
       };
     });
-    return _objectSpread({}, fieldConfig, {
+    return {
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
       args: args,
       resolve: fieldConfig.resolve,
       subscribe: fieldConfig.subscribe,
-      isDeprecated: Boolean(fieldConfig.deprecationReason),
+      isDeprecated: fieldConfig.deprecationReason != null,
       deprecationReason: fieldConfig.deprecationReason,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode
-    });
+    };
   });
 }
 
@@ -849,17 +843,17 @@ function defineEnumValues(typeName, valueMap) {
   isPlainObj(valueMap) || devAssert(0, "".concat(typeName, " values must be an object with value names as keys."));
   return objectEntries(valueMap).map(function (_ref2) {
     var valueName = _ref2[0],
-        value = _ref2[1];
-    isPlainObj(value) || devAssert(0, "".concat(typeName, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat(inspect(value), "."));
-    !('isDeprecated' in value) || devAssert(0, "".concat(typeName, ".").concat(valueName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
+        valueConfig = _ref2[1];
+    isPlainObj(valueConfig) || devAssert(0, "".concat(typeName, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat(inspect(valueConfig), "."));
+    !('isDeprecated' in valueConfig) || devAssert(0, "".concat(typeName, ".").concat(valueName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
     return {
       name: valueName,
-      description: value.description,
-      value: 'value' in value ? value.value : valueName,
-      isDeprecated: Boolean(value.deprecationReason),
-      deprecationReason: value.deprecationReason,
-      extensions: value.extensions && toObjMap(value.extensions),
-      astNode: value.astNode
+      description: valueConfig.description,
+      value: valueConfig.value !== undefined ? valueConfig.value : valueName,
+      isDeprecated: valueConfig.deprecationReason != null,
+      deprecationReason: valueConfig.deprecationReason,
+      extensions: valueConfig.extensions && toObjMap(valueConfig.extensions),
+      astNode: valueConfig.astNode
     };
   });
 }
@@ -942,14 +936,14 @@ function defineInputFieldMap(config) {
   isPlainObj(fieldMap) || devAssert(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return mapValue(fieldMap, function (fieldConfig, fieldName) {
     !('resolve' in fieldConfig) || devAssert(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but Input Types cannot define resolvers."));
-    return _objectSpread({}, fieldConfig, {
+    return {
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode
-    });
+    };
   });
 }
 

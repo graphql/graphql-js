@@ -1,17 +1,11 @@
 import { GraphQLError } from '../../error/GraphQLError';
 import { isObjectType, isInterfaceType, isInputObjectType } from '../../type/definition';
-export function duplicateFieldDefinitionNameMessage(typeName, fieldName) {
-  return "Field \"".concat(typeName, ".").concat(fieldName, "\" can only be defined once.");
-}
-export function existedFieldDefinitionNameMessage(typeName, fieldName) {
-  return "Field \"".concat(typeName, ".").concat(fieldName, "\" already exists in the schema. It cannot also be defined in this type extension.");
-}
+
 /**
  * Unique field definition names
  *
  * A GraphQL complex type is only valid if all its fields are uniquely named.
  */
-
 export function UniqueFieldDefinitionNames(context) {
   var schema = context.getSchema();
   var existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
@@ -40,9 +34,9 @@ export function UniqueFieldDefinitionNames(context) {
         var fieldName = fieldDef.name.value;
 
         if (hasField(existingTypeMap[typeName], fieldName)) {
-          context.reportError(new GraphQLError(existedFieldDefinitionNameMessage(typeName, fieldName), fieldDef.name));
+          context.reportError(new GraphQLError("Field \"".concat(typeName, ".").concat(fieldName, "\" already exists in the schema. It cannot also be defined in this type extension."), fieldDef.name));
         } else if (fieldNames[fieldName]) {
-          context.reportError(new GraphQLError(duplicateFieldDefinitionNameMessage(typeName, fieldName), [fieldNames[fieldName], fieldDef.name]));
+          context.reportError(new GraphQLError("Field \"".concat(typeName, ".").concat(fieldName, "\" can only be defined once."), [fieldNames[fieldName], fieldDef.name]));
         } else {
           fieldNames[fieldName] = fieldDef.name;
         }

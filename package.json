@@ -20,7 +20,7 @@
     "graphql-js"
   ],
   "engines": {
-    "node": ">= 6.x"
+    "node": ">= 8.x"
   },
   "dependencies": {
     "iterall": "^1.2.2"

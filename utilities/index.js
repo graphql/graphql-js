@@ -6,13 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 Object.defineProperty(exports, "getIntrospectionQuery", {
   enumerable: true,
   get: function get() {
-    return _introspectionQuery.getIntrospectionQuery;
-  }
-});
-Object.defineProperty(exports, "introspectionQuery", {
-  enumerable: true,
-  get: function get() {
-    return _introspectionQuery.introspectionQuery;
+    return _getIntrospectionQuery.getIntrospectionQuery;
   }
 });
 Object.defineProperty(exports, "getOperationAST", {
@@ -123,24 +117,6 @@ Object.defineProperty(exports, "coerceInputValue", {
     return _coerceInputValue.coerceInputValue;
   }
 });
-Object.defineProperty(exports, "coerceValue", {
-  enumerable: true,
-  get: function get() {
-    return _coerceValue.coerceValue;
-  }
-});
-Object.defineProperty(exports, "isValidJSValue", {
-  enumerable: true,
-  get: function get() {
-    return _isValidJSValue.isValidJSValue;
-  }
-});
-Object.defineProperty(exports, "isValidLiteralValue", {
-  enumerable: true,
-  get: function get() {
-    return _isValidLiteralValue.isValidLiteralValue;
-  }
-});
 Object.defineProperty(exports, "concatAST", {
   enumerable: true,
   get: function get() {
@@ -220,7 +196,7 @@ Object.defineProperty(exports, "findDeprecatedUsages", {
   }
 });
 
-var _introspectionQuery = require("./introspectionQuery");
+var _getIntrospectionQuery = require("./getIntrospectionQuery");
 
 var _getOperationAST = require("./getOperationAST");
 
@@ -249,12 +225,6 @@ var _astFromValue = require("./astFromValue");
 var _TypeInfo = require("./TypeInfo");
 
 var _coerceInputValue = require("./coerceInputValue");
-
-var _coerceValue = require("./coerceValue");
-
-var _isValidJSValue = require("./isValidJSValue");
-
-var _isValidLiteralValue = require("./isValidLiteralValue");
 
 var _concatAST = require("./concatAST");
 

@@ -2,22 +2,13 @@ import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 import { GraphQLError } from '../../error/GraphQLError';
 import { isObjectType, isInterfaceType, isAbstractType } from '../../type/definition';
-export function undefinedFieldMessage(fieldName, type, suggestedTypeNames, suggestedFieldNames) {
-  var quotedTypeNames = suggestedTypeNames.map(function (x) {
-    return "\"".concat(x, "\"");
-  });
-  var quotedFieldNames = suggestedFieldNames.map(function (x) {
-    return "\"".concat(x, "\"");
-  });
-  return "Cannot query field \"".concat(fieldName, "\" on type \"").concat(type, "\".") + (didYouMean('to use an inline fragment on', quotedTypeNames) || didYouMean(quotedFieldNames));
-}
+
 /**
  * Fields on correct type
  *
  * A GraphQL document is only valid if all fields selected are defined by the
  * parent type, or are an allowed meta field such as __typename.
  */
-
 export function FieldsOnCorrectType(context) {
   return {
     Field: function Field(node) {
@@ -35,7 +26,7 @@ export function FieldsOnCorrectType(context) {
 
           var suggestedFieldNames = suggestedTypeNames.length !== 0 ? [] : getSuggestedFieldNames(schema, type, fieldName); // Report an error, including helpful suggestions.
 
-          context.reportError(new GraphQLError(undefinedFieldMessage(fieldName, type.name, suggestedTypeNames, suggestedFieldNames), node));
+          context.reportError(new GraphQLError("Cannot query field \"".concat(fieldName, "\" on type \"").concat(type.name, "\".") + (didYouMean('to use an inline fragment on', suggestedTypeNames) || didYouMean(suggestedFieldNames)), node));
         }
       }
     }

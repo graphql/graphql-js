@@ -1,16 +1,10 @@
 import { GraphQLError } from '../../error/GraphQLError';
-export function duplicateOperationTypeMessage(operation) {
-  return "There can be only one ".concat(operation, " type in schema.");
-}
-export function existedOperationTypeMessage(operation) {
-  return "Type for ".concat(operation, " already defined in the schema. It cannot be redefined.");
-}
+
 /**
  * Unique operation types
  *
  * A GraphQL document is only valid if it has only one type per operation.
  */
-
 export function UniqueOperationTypes(context) {
   var schema = context.getSchema();
   var definedOperationTypes = Object.create(null);
@@ -32,9 +26,9 @@ export function UniqueOperationTypes(context) {
         var alreadyDefinedOperationType = definedOperationTypes[operation];
 
         if (existingOperationTypes[operation]) {
-          context.reportError(new GraphQLError(existedOperationTypeMessage(operation), operationType));
+          context.reportError(new GraphQLError("Type for ".concat(operation, " already defined in the schema. It cannot be redefined."), operationType));
         } else if (alreadyDefinedOperationType) {
-          context.reportError(new GraphQLError(duplicateOperationTypeMessage(operation), [alreadyDefinedOperationType, operationType]));
+          context.reportError(new GraphQLError("There can be only one ".concat(operation, " type in schema."), [alreadyDefinedOperationType, operationType]));
         } else {
           definedOperationTypes[operation] = operationType;
         }

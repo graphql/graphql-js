@@ -8,20 +8,12 @@ import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { isTypeDefinitionNode } from '../../language/predicates';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../../type/definition';
-export function extendingUnknownTypeMessage(typeName, suggestedTypes) {
-  return "Cannot extend type \"".concat(typeName, "\" because it is not defined.") + didYouMean(suggestedTypes.map(function (x) {
-    return "\"".concat(x, "\"");
-  }));
-}
-export function extendingDifferentTypeKindMessage(typeName, kind) {
-  return "Cannot extend non-".concat(kind, " type \"").concat(typeName, "\".");
-}
+
 /**
  * Possible type extension
  *
  * A type extension is only valid if the type is defined and has the same kind.
  */
-
 export function PossibleTypeExtensions(context) {
   var schema = context.getSchema();
   var definedTypes = Object.create(null);
@@ -47,18 +39,18 @@ export function PossibleTypeExtensions(context) {
     var typeName = node.name.value;
     var defNode = definedTypes[typeName];
     var existingType = schema && schema.getType(typeName);
+    var expectedKind;
 
     if (defNode) {
-      var expectedKind = defKindToExtKind[defNode.kind];
-
-      if (expectedKind !== node.kind) {
-        context.reportError(new GraphQLError(extendingDifferentTypeKindMessage(typeName, extensionKindToTypeName(expectedKind)), [defNode, node]));
-      }
+      expectedKind = defKindToExtKind[defNode.kind];
     } else if (existingType) {
-      var _expectedKind = typeToExtKind(existingType);
+      expectedKind = typeToExtKind(existingType);
+    }
 
-      if (_expectedKind !== node.kind) {
-        context.reportError(new GraphQLError(extendingDifferentTypeKindMessage(typeName, extensionKindToTypeName(_expectedKind)), node));
+    if (expectedKind) {
+      if (expectedKind !== node.kind) {
+        var kindStr = extensionKindToTypeName(node.kind);
+        context.reportError(new GraphQLError("Cannot extend non-".concat(kindStr, " type \"").concat(typeName, "\"."), defNode ? [defNode, node] : node));
       }
     } else {
       var allTypeNames = Object.keys(definedTypes);
@@ -68,7 +60,7 @@ export function PossibleTypeExtensions(context) {
       }
 
       var suggestedTypes = suggestionList(typeName, allTypeNames);
-      context.reportError(new GraphQLError(extendingUnknownTypeMessage(typeName, suggestedTypes), node.name));
+      context.reportError(new GraphQLError("Cannot extend type \"".concat(typeName, "\" because it is not defined.") + didYouMean(suggestedTypes), node.name));
     }
   }
 }

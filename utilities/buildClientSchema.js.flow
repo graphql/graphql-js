@@ -50,7 +50,7 @@ import {
   type IntrospectionInputTypeRef,
   type IntrospectionOutputTypeRef,
   type IntrospectionNamedTypeRef,
-} from './introspectionQuery';
+} from './getIntrospectionQuery';
 
 type Options = {|
   ...GraphQLSchemaValidationOptions,
@@ -121,7 +121,6 @@ export function buildClientSchema(
     types: objectValues(typeMap),
     directives,
     assumeValid: options && options.assumeValid,
-    allowedLegacyNames: options && options.allowedLegacyNames,
   });
 
   // Given a type reference in introspection, return the GraphQLType instance.

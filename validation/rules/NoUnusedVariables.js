@@ -3,22 +3,16 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.unusedVariableMessage = unusedVariableMessage;
 exports.NoUnusedVariables = NoUnusedVariables;
 
 var _GraphQLError = require("../../error/GraphQLError");
 
-function unusedVariableMessage(varName, opName) {
-  return opName ? "Variable \"$".concat(varName, "\" is never used in operation \"").concat(opName, "\".") : "Variable \"$".concat(varName, "\" is never used.");
-}
 /**
  * No unused variables
  *
  * A GraphQL operation is only valid if all variables defined by an operation
  * are used, either directly or within a spread fragment.
  */
-
-
 function NoUnusedVariables(context) {
   var variableDefs = [];
   return {
@@ -29,7 +23,6 @@ function NoUnusedVariables(context) {
       leave: function leave(operation) {
         var variableNameUsed = Object.create(null);
         var usages = context.getRecursiveVariableUsages(operation);
-        var opName = operation.name ? operation.name.value : null;
 
         for (var _i2 = 0; _i2 < usages.length; _i2++) {
           var _ref2 = usages[_i2];
@@ -42,7 +35,7 @@ function NoUnusedVariables(context) {
           var variableName = variableDef.variable.name.value;
 
           if (variableNameUsed[variableName] !== true) {
-            context.reportError(new _GraphQLError.GraphQLError(unusedVariableMessage(variableName, opName), variableDef));
+            context.reportError(new _GraphQLError.GraphQLError(operation.name ? "Variable \"$".concat(variableName, "\" is never used in operation \"").concat(operation.name.value, "\".") : "Variable \"$".concat(variableName, "\" is never used."), variableDef));
           }
         }
       }

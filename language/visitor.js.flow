@@ -346,7 +346,7 @@ export function visit(
 }
 
 function isNode(maybeNode): boolean %checks {
-  return Boolean(maybeNode && typeof maybeNode.kind === 'string');
+  return maybeNode != null && typeof maybeNode.kind === 'string';
 }
 
 /**

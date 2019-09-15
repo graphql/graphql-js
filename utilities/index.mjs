@@ -1,8 +1,6 @@
-// The GraphQL query recommended for a full schema introspection.
-export { // Produce the GraphQL query recommended for a full schema introspection.
+// Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.
-getIntrospectionQuery, // @deprecated, use getIntrospectionQuery() - will be removed in v15.
-introspectionQuery } from './introspectionQuery';
+export { getIntrospectionQuery } from './getIntrospectionQuery';
 // Gets the target Operation from a Document.
 export { getOperationAST } from './getOperationAST'; // Gets the Type for the target Operation AST.
 
@@ -12,9 +10,9 @@ export { introspectionFromSchema } from './introspectionFromSchema'; // Build a 
 
 export { buildClientSchema } from './buildClientSchema'; // Build a GraphQLSchema from GraphQL Schema language.
 
-export { buildASTSchema, buildSchema, // @deprecated: Get the description from a schema AST node and supports legacy
+export { buildASTSchema, buildSchema // @deprecated: Get the description from a schema AST node and supports legacy
 // syntax for specifying descriptions - will be removed in v16.
-getDescription } from './buildASTSchema';
+, getDescription } from './buildASTSchema';
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
 export { extendSchema } from './extendSchema'; // Sort a GraphQLSchema.
 
@@ -33,13 +31,7 @@ export { astFromValue } from './astFromValue'; // A helper to use within recursi
 
 export { TypeInfo } from './TypeInfo'; // Coerces a JavaScript value to a GraphQL type, or produces errors.
 
-export { coerceInputValue } from './coerceInputValue'; // @deprecated use coerceInputValue - will be removed in v15.
-
-export { coerceValue } from './coerceValue'; // @deprecated use coerceInputValue - will be removed in v15.
-
-export { isValidJSValue } from './isValidJSValue'; // @deprecated use validation - will be removed in v15
-
-export { isValidLiteralValue } from './isValidLiteralValue'; // Concatenates multiple AST together.
+export { coerceInputValue } from './coerceInputValue'; // Concatenates multiple AST together.
 
 export { concatAST } from './concatAST'; // Separates an AST into an AST per Operation.
 

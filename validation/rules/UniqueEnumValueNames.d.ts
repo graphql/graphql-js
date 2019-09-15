@@ -1,16 +1,6 @@
 import { ASTVisitor } from '../../language/visitor';
 import { SDLValidationContext } from '../ValidationContext';
 
-export function duplicateEnumValueNameMessage(
-  typeName: string,
-  valueName: string,
-): string;
-
-export function existedEnumValueNameMessage(
-  typeName: string,
-  valueName: string,
-): string;
-
 /**
  * Unique enum value names
  *

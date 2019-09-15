@@ -106,8 +106,7 @@ export function buildASTSchema(documentAST, options) {
     types: objectValues(typeMap),
     directives: directives,
     astNode: schemaDef,
-    assumeValid: options && options.assumeValid,
-    allowedLegacyNames: options && options.allowedLegacyNames
+    assumeValid: options && options.assumeValid
   });
 
   function getOperationTypes(schema) {

@@ -35,7 +35,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       return coerceInputValueImpl(inputValue, type.ofType, onError, path);
     }
 
-    onError(pathToArray(path), inputValue, new GraphQLError("Expected non-nullable type ".concat(inspect(type), " not to be null.")));
+    onError(pathToArray(path), inputValue, new GraphQLError("Expected non-nullable type \"".concat(inspect(type), "\" not to be null.")));
     return;
   }
 
@@ -61,7 +61,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
   if (isInputObjectType(type)) {
     if (!isObjectLike(inputValue)) {
-      onError(pathToArray(path), inputValue, new GraphQLError("Expected type ".concat(type.name, " to be an object.")));
+      onError(pathToArray(path), inputValue, new GraphQLError("Expected type \"".concat(type.name, "\" to be an object.")));
       return;
     }
 
@@ -77,7 +77,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           _coercedValue[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
           var typeStr = inspect(field.type);
-          onError(pathToArray(path), inputValue, new GraphQLError("Field ".concat(field.name, " of required type ").concat(typeStr, " was not provided.")));
+          onError(pathToArray(path), inputValue, new GraphQLError("Field \"".concat(field.name, "\" of required type \"").concat(typeStr, "\" was not provided.")));
         }
 
         continue;
@@ -92,7 +92,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
       if (!fieldDefs[fieldName]) {
         var suggestions = suggestionList(fieldName, Object.keys(type.getFields()));
-        onError(pathToArray(path), inputValue, new GraphQLError("Field \"".concat(fieldName, "\" is not defined by type ").concat(type.name, ".") + didYouMean(suggestions)));
+        onError(pathToArray(path), inputValue, new GraphQLError("Field \"".concat(fieldName, "\" is not defined by type \"").concat(type.name, "\".") + didYouMean(suggestions)));
       }
     }
 
@@ -107,12 +107,12 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     try {
       parseResult = type.parseValue(inputValue);
     } catch (error) {
-      onError(pathToArray(path), inputValue, new GraphQLError("Expected type ".concat(type.name, ". ") + error.message, undefined, undefined, undefined, undefined, error));
+      onError(pathToArray(path), inputValue, new GraphQLError("Expected type \"".concat(type.name, "\". ") + error.message, undefined, undefined, undefined, undefined, error));
       return;
     }
 
     if (parseResult === undefined) {
-      onError(pathToArray(path), inputValue, new GraphQLError("Expected type ".concat(type.name, ".")));
+      onError(pathToArray(path), inputValue, new GraphQLError("Expected type \"".concat(type.name, "\".")));
     }
 
     return parseResult;
@@ -132,7 +132,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       return enumValue.name;
     }));
 
-    onError(pathToArray(path), inputValue, new GraphQLError("Expected type ".concat(type.name, ".") + didYouMean(_suggestions)));
+    onError(pathToArray(path), inputValue, new GraphQLError("Expected type \"".concat(type.name, "\".") + didYouMean('the enum value', _suggestions)));
     return;
   } // Not reachable. All possible input types have been considered.
 

@@ -5,10 +5,6 @@ import { type ASTVisitor } from '../../language/visitor';
 
 import { type ASTValidationContext } from '../ValidationContext';
 
-export function duplicateOperationNameMessage(operationName: string): string {
-  return `There can be only one operation named "${operationName}".`;
-}
-
 /**
  * Unique operation names
  *
@@ -25,7 +21,7 @@ export function UniqueOperationNames(
         if (knownOperationNames[operationName.value]) {
           context.reportError(
             new GraphQLError(
-              duplicateOperationNameMessage(operationName.value),
+              `There can be only one operation named "${operationName.value}".`,
               [knownOperationNames[operationName.value], operationName],
             ),
           );

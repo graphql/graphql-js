@@ -3,8 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.extendingUnknownTypeMessage = extendingUnknownTypeMessage;
-exports.extendingDifferentTypeKindMessage = extendingDifferentTypeKindMessage;
 exports.PossibleTypeExtensions = PossibleTypeExtensions;
 
 var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
@@ -25,22 +23,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function extendingUnknownTypeMessage(typeName, suggestedTypes) {
-  return "Cannot extend type \"".concat(typeName, "\" because it is not defined.") + (0, _didYouMean.default)(suggestedTypes.map(function (x) {
-    return "\"".concat(x, "\"");
-  }));
-}
-
-function extendingDifferentTypeKindMessage(typeName, kind) {
-  return "Cannot extend non-".concat(kind, " type \"").concat(typeName, "\".");
-}
 /**
  * Possible type extension
  *
  * A type extension is only valid if the type is defined and has the same kind.
  */
-
-
 function PossibleTypeExtensions(context) {
   var schema = context.getSchema();
   var definedTypes = Object.create(null);
@@ -66,18 +53,18 @@ function PossibleTypeExtensions(context) {
     var typeName = node.name.value;
     var defNode = definedTypes[typeName];
     var existingType = schema && schema.getType(typeName);
+    var expectedKind;
 
     if (defNode) {
-      var expectedKind = defKindToExtKind[defNode.kind];
-
-      if (expectedKind !== node.kind) {
-        context.reportError(new _GraphQLError.GraphQLError(extendingDifferentTypeKindMessage(typeName, extensionKindToTypeName(expectedKind)), [defNode, node]));
-      }
+      expectedKind = defKindToExtKind[defNode.kind];
     } else if (existingType) {
-      var _expectedKind = typeToExtKind(existingType);
+      expectedKind = typeToExtKind(existingType);
+    }
 
-      if (_expectedKind !== node.kind) {
-        context.reportError(new _GraphQLError.GraphQLError(extendingDifferentTypeKindMessage(typeName, extensionKindToTypeName(_expectedKind)), node));
+    if (expectedKind) {
+      if (expectedKind !== node.kind) {
+        var kindStr = extensionKindToTypeName(node.kind);
+        context.reportError(new _GraphQLError.GraphQLError("Cannot extend non-".concat(kindStr, " type \"").concat(typeName, "\"."), defNode ? [defNode, node] : node));
       }
     } else {
       var allTypeNames = Object.keys(definedTypes);
@@ -87,7 +74,7 @@ function PossibleTypeExtensions(context) {
       }
 
       var suggestedTypes = (0, _suggestionList.default)(typeName, allTypeNames);
-      context.reportError(new _GraphQLError.GraphQLError(extendingUnknownTypeMessage(typeName, suggestedTypes), node.name));
+      context.reportError(new _GraphQLError.GraphQLError("Cannot extend type \"".concat(typeName, "\" because it is not defined.") + (0, _didYouMean.default)(suggestedTypes), node.name));
     }
   }
 }

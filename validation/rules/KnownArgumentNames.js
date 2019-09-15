@@ -3,8 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.unknownArgMessage = unknownArgMessage;
-exports.unknownDirectiveArgMessage = unknownDirectiveArgMessage;
 exports.KnownArgumentNames = KnownArgumentNames;
 exports.KnownArgumentNamesOnDirectives = KnownArgumentNamesOnDirectives;
 
@@ -26,25 +24,12 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function unknownArgMessage(argName, fieldName, typeName, suggestedArgs) {
-  return "Unknown argument \"".concat(argName, "\" on field \"").concat(fieldName, "\" of type \"").concat(typeName, "\".") + (0, _didYouMean.default)(suggestedArgs.map(function (x) {
-    return "\"".concat(x, "\"");
-  }));
-}
-
-function unknownDirectiveArgMessage(argName, directiveName, suggestedArgs) {
-  return "Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".") + (0, _didYouMean.default)(suggestedArgs.map(function (x) {
-    return "\"".concat(x, "\"");
-  }));
-}
 /**
  * Known argument names
  *
  * A GraphQL field is only valid if all supplied arguments are defined by
  * that field.
  */
-
-
 function KnownArgumentNames(context) {
   return _objectSpread({}, KnownArgumentNamesOnDirectives(context), {
     Argument: function Argument(argNode) {
@@ -57,7 +42,8 @@ function KnownArgumentNames(context) {
         var knownArgsNames = fieldDef.args.map(function (arg) {
           return arg.name;
         });
-        context.reportError(new _GraphQLError.GraphQLError(unknownArgMessage(argName, fieldDef.name, parentType.name, (0, _suggestionList.default)(argName, knownArgsNames)), argNode));
+        var suggestions = (0, _suggestionList.default)(argName, knownArgsNames);
+        context.reportError(new _GraphQLError.GraphQLError("Unknown argument \"".concat(argName, "\" on field \"").concat(parentType.name, ".").concat(fieldDef.name, "\".") + (0, _didYouMean.default)(suggestions), argNode));
       }
     }
   });
@@ -100,7 +86,7 @@ function KnownArgumentNamesOnDirectives(context) {
 
           if (knownArgs.indexOf(argName) === -1) {
             var suggestions = (0, _suggestionList.default)(argName, knownArgs);
-            context.reportError(new _GraphQLError.GraphQLError(unknownDirectiveArgMessage(argName, directiveName, suggestions), argNode));
+            context.reportError(new _GraphQLError.GraphQLError("Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".") + (0, _didYouMean.default)(suggestions), argNode));
           }
         }
       }

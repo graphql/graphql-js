@@ -2,12 +2,7 @@ import { GraphQLError } from '../../error/GraphQLError';
 import { print } from '../../language/printer';
 import { isCompositeType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
-export function inlineFragmentOnNonCompositeErrorMessage(type) {
-  return "Fragment cannot condition on non composite type \"".concat(type, "\".");
-}
-export function fragmentOnNonCompositeErrorMessage(fragName, type) {
-  return "Fragment \"".concat(fragName, "\" cannot condition on non composite type \"").concat(type, "\".");
-}
+
 /**
  * Fragments on composite type
  *
@@ -15,7 +10,6 @@ export function fragmentOnNonCompositeErrorMessage(fragName, type) {
  * can only be spread into a composite type (object, interface, or union), the
  * type condition must also be a composite type.
  */
-
 export function FragmentsOnCompositeTypes(context) {
   return {
     InlineFragment: function InlineFragment(node) {
@@ -25,7 +19,8 @@ export function FragmentsOnCompositeTypes(context) {
         var type = typeFromAST(context.getSchema(), typeCondition);
 
         if (type && !isCompositeType(type)) {
-          context.reportError(new GraphQLError(inlineFragmentOnNonCompositeErrorMessage(print(typeCondition)), typeCondition));
+          var typeStr = print(typeCondition);
+          context.reportError(new GraphQLError("Fragment cannot condition on non composite type \"".concat(typeStr, "\"."), typeCondition));
         }
       }
     },
@@ -33,7 +28,8 @@ export function FragmentsOnCompositeTypes(context) {
       var type = typeFromAST(context.getSchema(), node.typeCondition);
 
       if (type && !isCompositeType(type)) {
-        context.reportError(new GraphQLError(fragmentOnNonCompositeErrorMessage(node.name.value, print(node.typeCondition)), node.typeCondition));
+        var typeStr = print(node.typeCondition);
+        context.reportError(new GraphQLError("Fragment \"".concat(node.name.value, "\" cannot condition on non composite type \"").concat(typeStr, "\"."), node.typeCondition));
       }
     }
   };

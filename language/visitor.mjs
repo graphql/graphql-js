@@ -283,7 +283,7 @@ export function visit(root, visitor) {
 }
 
 function isNode(maybeNode) {
-  return Boolean(maybeNode && typeof maybeNode.kind === 'string');
+  return maybeNode != null && typeof maybeNode.kind === 'string';
 }
 /**
  * Creates a new visitor instance which delegates to many visitors to run in

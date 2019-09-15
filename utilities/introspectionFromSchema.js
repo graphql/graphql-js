@@ -13,7 +13,7 @@ var _parser = require("../language/parser");
 
 var _execute = require("../execution/execute");
 
-var _introspectionQuery = require("./introspectionQuery");
+var _getIntrospectionQuery = require("./getIntrospectionQuery");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27,7 +27,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * of the server context, for instance when doing schema comparisons.
  */
 function introspectionFromSchema(schema, options) {
-  var queryAST = (0, _parser.parse)((0, _introspectionQuery.getIntrospectionQuery)(options));
+  var queryAST = (0, _parser.parse)((0, _getIntrospectionQuery.getIntrospectionQuery)(options));
   var result = (0, _execute.execute)(schema, queryAST);
 
   /* istanbul ignore next */

@@ -1,16 +1,10 @@
 import { GraphQLError } from '../../error/GraphQLError';
-export function duplicateTypeNameMessage(typeName) {
-  return "There can be only one type named \"".concat(typeName, "\".");
-}
-export function existedTypeNameMessage(typeName) {
-  return "Type \"".concat(typeName, "\" already exists in the schema. It cannot also be defined in this type definition.");
-}
+
 /**
  * Unique type names
  *
  * A GraphQL document is only valid if all defined types have unique names.
  */
-
 export function UniqueTypeNames(context) {
   var knownTypeNames = Object.create(null);
   var schema = context.getSchema();
@@ -27,12 +21,12 @@ export function UniqueTypeNames(context) {
     var typeName = node.name.value;
 
     if (schema && schema.getType(typeName)) {
-      context.reportError(new GraphQLError(existedTypeNameMessage(typeName), node.name));
+      context.reportError(new GraphQLError("Type \"".concat(typeName, "\" already exists in the schema. It cannot also be defined in this type definition."), node.name));
       return;
     }
 
     if (knownTypeNames[typeName]) {
-      context.reportError(new GraphQLError(duplicateTypeNameMessage(typeName), [knownTypeNames[typeName], node.name]));
+      context.reportError(new GraphQLError("There can be only one type named \"".concat(typeName, "\"."), [knownTypeNames[typeName], node.name]));
     } else {
       knownTypeNames[typeName] = node.name;
     }

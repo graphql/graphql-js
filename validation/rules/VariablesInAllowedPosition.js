@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.badVarPosMessage = badVarPosMessage;
 exports.VariablesInAllowedPosition = VariablesInAllowedPosition;
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
@@ -20,14 +19,9 @@ var _typeComparators = require("../../utilities/typeComparators");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function badVarPosMessage(varName, varType, expectedType) {
-  return "Variable \"$".concat(varName, "\" of type \"").concat(varType, "\" used in position expecting type \"").concat(expectedType, "\".");
-}
 /**
  * Variables passed to field arguments conform to type
  */
-
-
 function VariablesInAllowedPosition(context) {
   var varDefMap = Object.create(null);
   return {
@@ -56,7 +50,9 @@ function VariablesInAllowedPosition(context) {
             var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
 
             if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
-              context.reportError(new _GraphQLError.GraphQLError(badVarPosMessage(varName, (0, _inspect.default)(varType), (0, _inspect.default)(type)), [varDef, node]));
+              var varTypeStr = (0, _inspect.default)(varType);
+              var typeStr = (0, _inspect.default)(type);
+              context.reportError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of type \"").concat(varTypeStr, "\" used in position expecting type \"").concat(typeStr, "\"."), [varDef, node]));
             }
           }
         }

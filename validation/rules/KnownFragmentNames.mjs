@@ -1,14 +1,11 @@
 import { GraphQLError } from '../../error/GraphQLError';
-export function unknownFragmentMessage(fragName) {
-  return "Unknown fragment \"".concat(fragName, "\".");
-}
+
 /**
  * Known fragment names
  *
  * A GraphQL document is only valid if all `...Fragment` fragment spreads refer
  * to fragments defined in the same document.
  */
-
 export function KnownFragmentNames(context) {
   return {
     FragmentSpread: function FragmentSpread(node) {
@@ -16,7 +13,7 @@ export function KnownFragmentNames(context) {
       var fragment = context.getFragment(fragmentName);
 
       if (!fragment) {
-        context.reportError(new GraphQLError(unknownFragmentMessage(fragmentName), node.name));
+        context.reportError(new GraphQLError("Unknown fragment \"".concat(fragmentName, "\"."), node.name));
       }
     }
   };

@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.nonExecutableDefinitionMessage = nonExecutableDefinitionMessage;
 exports.ExecutableDefinitions = ExecutableDefinitions;
 
 var _GraphQLError = require("../../error/GraphQLError");
@@ -12,17 +11,12 @@ var _kinds = require("../../language/kinds");
 
 var _predicates = require("../../language/predicates");
 
-function nonExecutableDefinitionMessage(defName) {
-  return "The ".concat(defName, " definition is not executable.");
-}
 /**
  * Executable definitions
  *
  * A GraphQL document is only valid for execution if all definitions are either
  * operation or fragment definitions.
  */
-
-
 function ExecutableDefinitions(context) {
   return {
     Document: function Document(node) {
@@ -30,7 +24,8 @@ function ExecutableDefinitions(context) {
         var definition = _node$definitions2[_i2];
 
         if (!(0, _predicates.isExecutableDefinitionNode)(definition)) {
-          context.reportError(new _GraphQLError.GraphQLError(nonExecutableDefinitionMessage(definition.kind === _kinds.Kind.SCHEMA_DEFINITION || definition.kind === _kinds.Kind.SCHEMA_EXTENSION ? 'schema' : definition.name.value), definition));
+          var defName = definition.kind === _kinds.Kind.SCHEMA_DEFINITION || definition.kind === _kinds.Kind.SCHEMA_EXTENSION ? 'schema' : '"' + definition.name.value + '"';
+          context.reportError(new _GraphQLError.GraphQLError("The ".concat(defName, " definition is not executable."), definition));
         }
       }
 

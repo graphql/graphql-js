@@ -22,7 +22,7 @@ export function UniqueArgumentNames(context) {
       var argName = node.name.value;
 
       if (knownArgNames[argName]) {
-        context.reportError(new GraphQLError(duplicateArgMessage(argName), [knownArgNames[argName], node.name]));
+        context.reportError(new GraphQLError("There can be only one argument named \"".concat(argName, "\"."), [knownArgNames[argName], node.name]));
       } else {
         knownArgNames[argName] = node.name;
       }

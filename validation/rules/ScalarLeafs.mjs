@@ -23,10 +23,16 @@ export function ScalarLeafs(context) {
       if (type) {
         if (isLeafType(getNamedType(type))) {
           if (selectionSet) {
-            context.reportError(new GraphQLError(noSubselectionAllowedMessage(node.name.value, inspect(type)), selectionSet));
+            var fieldName = node.name.value;
+            var typeStr = inspect(type);
+            context.reportError(new GraphQLError("Field \"".concat(fieldName, "\" must not have a selection since type \"").concat(typeStr, "\" has no subfields."), selectionSet));
           }
         } else if (!selectionSet) {
-          context.reportError(new GraphQLError(requiredSubselectionMessage(node.name.value, inspect(type)), node));
+          var _fieldName = node.name.value;
+
+          var _typeStr = inspect(type);
+
+          context.reportError(new GraphQLError("Field \"".concat(_fieldName, "\" of type \"").concat(_typeStr, "\" must have a selection of subfields. Did you mean \"").concat(_fieldName, " { ... }\"?"), node));
         }
       }
     }

@@ -45,14 +45,14 @@ function () {
     isObjectLike(args) && !Array.isArray(args) || devAssert(0, "@".concat(config.name, " args must be an object with argument names as keys."));
     this.args = objectEntries(args).map(function (_ref) {
       var argName = _ref[0],
-          arg = _ref[1];
+          argConfig = _ref[1];
       return {
         name: argName,
-        description: arg.description === undefined ? null : arg.description,
-        type: arg.type,
-        defaultValue: arg.defaultValue,
-        extensions: arg.extensions && toObjMap(arg.extensions),
-        astNode: arg.astNode
+        description: argConfig.description,
+        type: argConfig.type,
+        defaultValue: argConfig.defaultValue,
+        extensions: argConfig.extensions && toObjMap(argConfig.extensions),
+        astNode: argConfig.astNode
       };
     });
   }

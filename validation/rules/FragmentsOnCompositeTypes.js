@@ -3,8 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.inlineFragmentOnNonCompositeErrorMessage = inlineFragmentOnNonCompositeErrorMessage;
-exports.fragmentOnNonCompositeErrorMessage = fragmentOnNonCompositeErrorMessage;
 exports.FragmentsOnCompositeTypes = FragmentsOnCompositeTypes;
 
 var _GraphQLError = require("../../error/GraphQLError");
@@ -15,13 +13,6 @@ var _definition = require("../../type/definition");
 
 var _typeFromAST = require("../../utilities/typeFromAST");
 
-function inlineFragmentOnNonCompositeErrorMessage(type) {
-  return "Fragment cannot condition on non composite type \"".concat(type, "\".");
-}
-
-function fragmentOnNonCompositeErrorMessage(fragName, type) {
-  return "Fragment \"".concat(fragName, "\" cannot condition on non composite type \"").concat(type, "\".");
-}
 /**
  * Fragments on composite type
  *
@@ -29,8 +20,6 @@ function fragmentOnNonCompositeErrorMessage(fragName, type) {
  * can only be spread into a composite type (object, interface, or union), the
  * type condition must also be a composite type.
  */
-
-
 function FragmentsOnCompositeTypes(context) {
   return {
     InlineFragment: function InlineFragment(node) {
@@ -40,7 +29,8 @@ function FragmentsOnCompositeTypes(context) {
         var type = (0, _typeFromAST.typeFromAST)(context.getSchema(), typeCondition);
 
         if (type && !(0, _definition.isCompositeType)(type)) {
-          context.reportError(new _GraphQLError.GraphQLError(inlineFragmentOnNonCompositeErrorMessage((0, _printer.print)(typeCondition)), typeCondition));
+          var typeStr = (0, _printer.print)(typeCondition);
+          context.reportError(new _GraphQLError.GraphQLError("Fragment cannot condition on non composite type \"".concat(typeStr, "\"."), typeCondition));
         }
       }
     },
@@ -48,7 +38,8 @@ function FragmentsOnCompositeTypes(context) {
       var type = (0, _typeFromAST.typeFromAST)(context.getSchema(), node.typeCondition);
 
       if (type && !(0, _definition.isCompositeType)(type)) {
-        context.reportError(new _GraphQLError.GraphQLError(fragmentOnNonCompositeErrorMessage(node.name.value, (0, _printer.print)(node.typeCondition)), node.typeCondition));
+        var typeStr = (0, _printer.print)(node.typeCondition);
+        context.reportError(new _GraphQLError.GraphQLError("Fragment \"".concat(node.name.value, "\" cannot condition on non composite type \"").concat(typeStr, "\"."), node.typeCondition));
       }
     }
   };

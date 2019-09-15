@@ -54,7 +54,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       return coerceInputValueImpl(inputValue, type.ofType, onError, path);
     }
 
-    onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected non-nullable type ".concat((0, _inspect.default)(type), " not to be null.")));
+    onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected non-nullable type \"".concat((0, _inspect.default)(type), "\" not to be null.")));
     return;
   }
 
@@ -80,7 +80,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
   if ((0, _definition.isInputObjectType)(type)) {
     if (!(0, _isObjectLike.default)(inputValue)) {
-      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type ".concat(type.name, " to be an object.")));
+      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\" to be an object.")));
       return;
     }
 
@@ -96,7 +96,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           _coercedValue[field.name] = field.defaultValue;
         } else if ((0, _definition.isNonNullType)(field.type)) {
           var typeStr = (0, _inspect.default)(field.type);
-          onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Field ".concat(field.name, " of required type ").concat(typeStr, " was not provided.")));
+          onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Field \"".concat(field.name, "\" of required type \"").concat(typeStr, "\" was not provided.")));
         }
 
         continue;
@@ -111,7 +111,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
       if (!fieldDefs[fieldName]) {
         var suggestions = (0, _suggestionList.default)(fieldName, Object.keys(type.getFields()));
-        onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Field \"".concat(fieldName, "\" is not defined by type ").concat(type.name, ".") + (0, _didYouMean.default)(suggestions)));
+        onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Field \"".concat(fieldName, "\" is not defined by type \"").concat(type.name, "\".") + (0, _didYouMean.default)(suggestions)));
       }
     }
 
@@ -126,12 +126,12 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     try {
       parseResult = type.parseValue(inputValue);
     } catch (error) {
-      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type ".concat(type.name, ". ") + error.message, undefined, undefined, undefined, undefined, error));
+      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\". ") + error.message, undefined, undefined, undefined, undefined, error));
       return;
     }
 
     if (parseResult === undefined) {
-      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type ".concat(type.name, ".")));
+      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\".")));
     }
 
     return parseResult;
@@ -151,7 +151,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       return enumValue.name;
     }));
 
-    onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type ".concat(type.name, ".") + (0, _didYouMean.default)(_suggestions)));
+    onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\".") + (0, _didYouMean.default)('the enum value', _suggestions)));
     return;
   } // Not reachable. All possible input types have been considered.
 

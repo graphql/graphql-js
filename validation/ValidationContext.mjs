@@ -14,7 +14,6 @@ export var ASTValidationContext =
 function () {
   function ASTValidationContext(ast, onError) {
     this._ast = ast;
-    this._errors = [];
     this._fragments = undefined;
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
@@ -24,16 +23,7 @@ function () {
   var _proto = ASTValidationContext.prototype;
 
   _proto.reportError = function reportError(error) {
-    this._errors.push(error);
-
-    if (this._onError) {
-      this._onError(error);
-    }
-  } // @deprecated: use onError callback instead - will be removed in v15.
-  ;
-
-  _proto.getErrors = function getErrors() {
-    return this._errors;
+    this._onError(error);
   };
 
   _proto.getDocument = function getDocument() {

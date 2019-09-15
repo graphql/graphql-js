@@ -20,16 +20,6 @@ import {
   type SDLValidationContext,
 } from '../ValidationContext';
 
-export function unknownTypeMessage(
-  typeName: string,
-  suggestedTypes: $ReadOnlyArray<string>,
-): string {
-  return (
-    `Unknown type "${typeName}".` +
-    didYouMean(suggestedTypes.map(x => `"${x}"`))
-  );
-}
-
 /**
  * Known type names
  *
@@ -58,7 +48,7 @@ export function KnownTypeNames(
       const typeName = node.name.value;
       if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
         const definitionNode = ancestors[2] || parent;
-        const isSDL = isSDLNode(definitionNode);
+        const isSDL = definitionNode != null && isSDLNode(definitionNode);
         if (isSDL && isSpecifiedScalarName(typeName)) {
           return;
         }
@@ -68,7 +58,10 @@ export function KnownTypeNames(
           isSDL ? specifiedScalarsNames.concat(typeNames) : typeNames,
         );
         context.reportError(
-          new GraphQLError(unknownTypeMessage(typeName, suggestedTypes), node),
+          new GraphQLError(
+            `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
+            node,
+          ),
         );
       }
     },
@@ -80,10 +73,9 @@ function isSpecifiedScalarName(typeName) {
   return specifiedScalarsNames.indexOf(typeName) !== -1;
 }
 
-function isSDLNode(value: ASTNode | $ReadOnlyArray<ASTNode> | void): boolean {
-  return Boolean(
-    value &&
-      !Array.isArray(value) &&
-      (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value)),
+function isSDLNode(value: ASTNode | $ReadOnlyArray<ASTNode>): boolean {
+  return (
+    !Array.isArray(value) &&
+    (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value))
   );
 }

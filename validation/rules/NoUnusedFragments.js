@@ -3,22 +3,16 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.unusedFragMessage = unusedFragMessage;
 exports.NoUnusedFragments = NoUnusedFragments;
 
 var _GraphQLError = require("../../error/GraphQLError");
 
-function unusedFragMessage(fragName) {
-  return "Fragment \"".concat(fragName, "\" is never used.");
-}
 /**
  * No unused fragments
  *
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
  */
-
-
 function NoUnusedFragments(context) {
   var operationDefs = [];
   var fragmentDefs = [];
@@ -49,7 +43,7 @@ function NoUnusedFragments(context) {
           var fragName = fragmentDef.name.value;
 
           if (fragmentNameUsed[fragName] !== true) {
-            context.reportError(new _GraphQLError.GraphQLError(unusedFragMessage(fragName), fragmentDef));
+            context.reportError(new _GraphQLError.GraphQLError("Fragment \"".concat(fragName, "\" is never used."), fragmentDef));
           }
         }
       }

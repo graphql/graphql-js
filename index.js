@@ -915,12 +915,6 @@ Object.defineProperty(exports, "getIntrospectionQuery", {
     return _utilities.getIntrospectionQuery;
   }
 });
-Object.defineProperty(exports, "introspectionQuery", {
-  enumerable: true,
-  get: function get() {
-    return _utilities.introspectionQuery;
-  }
-});
 Object.defineProperty(exports, "getOperationAST", {
   enumerable: true,
   get: function get() {
@@ -1027,24 +1021,6 @@ Object.defineProperty(exports, "coerceInputValue", {
   enumerable: true,
   get: function get() {
     return _utilities.coerceInputValue;
-  }
-});
-Object.defineProperty(exports, "coerceValue", {
-  enumerable: true,
-  get: function get() {
-    return _utilities.coerceValue;
-  }
-});
-Object.defineProperty(exports, "isValidJSValue", {
-  enumerable: true,
-  get: function get() {
-    return _utilities.isValidJSValue;
-  }
-});
-Object.defineProperty(exports, "isValidLiteralValue", {
-  enumerable: true,
-  get: function get() {
-    return _utilities.isValidLiteralValue;
   }
 });
 Object.defineProperty(exports, "concatAST", {
