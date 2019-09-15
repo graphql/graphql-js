@@ -380,10 +380,10 @@ function readNumber(source, start, firstCode, line, col, prev) {
 
     position = readDigits(source, position, code);
     code = body.charCodeAt(position);
-  } // Numbers cannot be followed by . or e
+  } // Numbers cannot be followed by . or NameStart
 
 
-  if (code === 46 || code === 69 || code === 101) {
+  if (code === 46 || isNameStart(code)) {
     throw syntaxError(source, position, "Invalid number, expected digit but got: ".concat(printCharCode(code), "."));
   }
 
@@ -610,4 +610,9 @@ function readName(source, start, line, col, prev) {
   }
 
   return new Tok(TokenKind.NAME, start, position, line, col, prev, body.slice(start, position));
+} // _ A-Z a-z
+
+
+function isNameStart(code) {
+  return code === 95 || code >= 65 && code <= 90 || code >= 97 && code <= 122;
 }
