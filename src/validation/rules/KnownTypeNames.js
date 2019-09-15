@@ -48,7 +48,7 @@ export function KnownTypeNames(
       const typeName = node.name.value;
       if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
         const definitionNode = ancestors[2] || parent;
-        const isSDL = isSDLNode(definitionNode);
+        const isSDL = definitionNode != null && isSDLNode(definitionNode);
         if (isSDL && isSpecifiedScalarName(typeName)) {
           return;
         }
@@ -73,10 +73,9 @@ function isSpecifiedScalarName(typeName) {
   return specifiedScalarsNames.indexOf(typeName) !== -1;
 }
 
-function isSDLNode(value: ASTNode | $ReadOnlyArray<ASTNode> | void): boolean {
-  return Boolean(
-    value &&
-      !Array.isArray(value) &&
-      (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value)),
+function isSDLNode(value: ASTNode | $ReadOnlyArray<ASTNode>): boolean {
+  return (
+    !Array.isArray(value) &&
+    (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value))
   );
 }
