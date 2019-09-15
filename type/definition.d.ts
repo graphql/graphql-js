@@ -424,6 +424,7 @@ export type GraphQLTypeResolver<
   value: TSource,
   context: TContext,
   info: GraphQLResolveInfo,
+  abstractType: GraphQLAbstractType,
 ) => PromiseOrValue<
   Maybe<GraphQLObjectType<TSource, TContext, TArgs> | string>
 >;
