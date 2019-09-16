@@ -75,6 +75,11 @@ describe('Parser', () => {
       message: 'Syntax Error: Unexpected "...".',
       locations: [{ line: 1, column: 1 }],
     });
+
+    expectSyntaxError('{ ""').to.deep.include({
+      message: 'Syntax Error: Expected Name, found String "".',
+      locations: [{ line: 1, column: 3 }],
+    });
   });
 
   it('parse provides useful error when using source', () => {
