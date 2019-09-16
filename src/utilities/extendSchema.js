@@ -222,7 +222,7 @@ export function extendSchema(
   }
 
   function getMaybeTypeByName(typeName: ?string): ?GraphQLNamedType {
-    return typeName ? typeMap[typeName] : null;
+    return typeName != null ? typeMap[typeName] : null;
   }
 
   function getMergedDirectives(): Array<GraphQLDirective> {
