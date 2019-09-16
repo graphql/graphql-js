@@ -102,7 +102,7 @@ describe('Execute: synchronously when possible', () => {
       expect(result).to.deep.equal({
         errors: [
           {
-            message: 'Syntax Error: Expected Name, found {',
+            message: 'Syntax Error: Expected Name, found "{".',
             locations: [{ line: 1, column: 29 }],
           },
         ],
