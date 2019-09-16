@@ -317,7 +317,7 @@ function printDescription(
   indentation = '',
   firstInBlock = true,
 ): string {
-  if (!def.description) {
+  if (def.description == null) {
     return '';
   }
 
