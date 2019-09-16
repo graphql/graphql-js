@@ -1556,9 +1556,8 @@ defineToJSON(Loc, function() {
  * A helper function to describe a token as a string for debugging
  */
 function getTokenDesc(token: Token): string {
-  return (
-    getTokenKindDesc(token.kind) + (token.value ? ` "${token.value}"` : '')
-  );
+  const value = token.value;
+  return getTokenKindDesc(token.kind) + (value != null ? ` "${value}"` : '');
 }
 
 /**

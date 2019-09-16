@@ -1544,7 +1544,8 @@ function Loc(startToken, endToken, source) {
  */
 
 function getTokenDesc(token) {
-  return getTokenKindDesc(token.kind) + (token.value ? " \"".concat(token.value, "\"") : '');
+  var value = token.value;
+  return getTokenKindDesc(token.kind) + (value != null ? " \"".concat(value, "\"") : '');
 }
 /**
  * A helper function to describe a token kind as a string for debugging
