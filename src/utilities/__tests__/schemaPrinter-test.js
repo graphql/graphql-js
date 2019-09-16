@@ -483,6 +483,20 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints an empty description', () => {
+    const output = printSingleFieldSchema({
+      type: GraphQLString,
+      description: '',
+    });
+
+    expect(output).to.equal(dedent`
+      type Query {
+        """"""
+        singleField: String
+      }
+    `);
+  });
+
   it('One-line prints a short description', () => {
     const description = 'This field is awesome';
     const output = printSingleFieldSchema({
