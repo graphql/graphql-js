@@ -19,11 +19,11 @@ var _kinds = require("./kinds");
 
 var _source = require("./source");
 
-var _lexer = require("./lexer");
-
 var _directiveLocation = require("./directiveLocation");
 
 var _tokenKind = require("./tokenKind");
+
+var _lexer = require("./lexer");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1401,7 +1401,7 @@ function () {
       return token;
     }
 
-    throw (0, _syntaxError.syntaxError)(this._lexer.source, token.start, "Expected ".concat(kind, ", found ").concat(getTokenDesc(token)));
+    throw (0, _syntaxError.syntaxError)(this._lexer.source, token.start, "Expected ".concat(getTokenKindDesc(kind), ", found ").concat(getTokenDesc(token), "."));
   }
   /**
    * If the next token is of the given kind, return that token after advancing
@@ -1432,7 +1432,7 @@ function () {
     if (token.kind === _tokenKind.TokenKind.NAME && token.value === value) {
       this._lexer.advance();
     } else {
-      throw (0, _syntaxError.syntaxError)(this._lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(token)));
+      throw (0, _syntaxError.syntaxError)(this._lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(token), "."));
     }
   }
   /**
@@ -1460,7 +1460,7 @@ function () {
 
   _proto.unexpected = function unexpected(atToken) {
     var token = atToken || this._lexer.token;
-    return (0, _syntaxError.syntaxError)(this._lexer.source, token.start, "Unexpected ".concat(getTokenDesc(token)));
+    return (0, _syntaxError.syntaxError)(this._lexer.source, token.start, "Unexpected ".concat(getTokenDesc(token), "."));
   }
   /**
    * Returns a possibly empty list of parse nodes, determined by
@@ -1544,6 +1544,13 @@ function Loc(startToken, endToken, source) {
  */
 
 function getTokenDesc(token) {
-  var value = token.value;
-  return value ? "".concat(token.kind, " \"").concat(value, "\"") : token.kind;
+  return getTokenKindDesc(token.kind) + (token.value ? " \"".concat(token.value, "\"") : '');
+}
+/**
+ * A helper function to describe a token kind as a string for debugging
+ */
+
+
+function getTokenKindDesc(kind) {
+  return (0, _lexer.isPunctuatorTokenKind)(kind) ? "\"".concat(kind, "\"") : kind;
 }

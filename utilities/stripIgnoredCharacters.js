@@ -90,7 +90,7 @@ function stripIgnoredCharacters(source) {
      * in invalid token (e.g. `1...` is invalid Float token).
      */
 
-    var isNonPunctuator = !(0, _lexer.isPunctuatorToken)(currentToken);
+    var isNonPunctuator = !(0, _lexer.isPunctuatorTokenKind)(currentToken.kind);
 
     if (wasLastAddedTokenNonPunctuator) {
       if (isNonPunctuator || currentToken.kind === _tokenKind.TokenKind.SPREAD) {

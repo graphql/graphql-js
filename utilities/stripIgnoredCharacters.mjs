@@ -1,7 +1,7 @@
 import inspect from '../jsutils/inspect';
 import { Source } from '../language/source';
 import { TokenKind } from '../language/tokenKind';
-import { createLexer, isPunctuatorToken } from '../language/lexer';
+import { createLexer, isPunctuatorTokenKind } from '../language/lexer';
 import { dedentBlockStringValue, getBlockStringIndentation } from '../language/blockString';
 /**
  * Strips characters that are not significant to the validity or execution
@@ -77,7 +77,7 @@ export function stripIgnoredCharacters(source) {
      * in invalid token (e.g. `1...` is invalid Float token).
      */
 
-    var isNonPunctuator = !isPunctuatorToken(currentToken);
+    var isNonPunctuator = !isPunctuatorTokenKind(currentToken.kind);
 
     if (wasLastAddedTokenNonPunctuator) {
       if (isNonPunctuator || currentToken.kind === TokenKind.SPREAD) {

@@ -4,9 +4,9 @@ import defineToJSON from '../jsutils/defineToJSON';
 import { syntaxError } from '../error/syntaxError';
 import { Kind } from './kinds';
 import { Source } from './source';
-import { createLexer } from './lexer';
 import { DirectiveLocation } from './directiveLocation';
 import { TokenKind } from './tokenKind';
+import { createLexer, isPunctuatorTokenKind } from './lexer';
 
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -1380,7 +1380,7 @@ function () {
       return token;
     }
 
-    throw syntaxError(this._lexer.source, token.start, "Expected ".concat(kind, ", found ").concat(getTokenDesc(token)));
+    throw syntaxError(this._lexer.source, token.start, "Expected ".concat(getTokenKindDesc(kind), ", found ").concat(getTokenDesc(token), "."));
   }
   /**
    * If the next token is of the given kind, return that token after advancing
@@ -1411,7 +1411,7 @@ function () {
     if (token.kind === TokenKind.NAME && token.value === value) {
       this._lexer.advance();
     } else {
-      throw syntaxError(this._lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(token)));
+      throw syntaxError(this._lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(token), "."));
     }
   }
   /**
@@ -1439,7 +1439,7 @@ function () {
 
   _proto.unexpected = function unexpected(atToken) {
     var token = atToken || this._lexer.token;
-    return syntaxError(this._lexer.source, token.start, "Unexpected ".concat(getTokenDesc(token)));
+    return syntaxError(this._lexer.source, token.start, "Unexpected ".concat(getTokenDesc(token), "."));
   }
   /**
    * Returns a possibly empty list of parse nodes, determined by
@@ -1523,6 +1523,13 @@ defineToJSON(Loc, function () {
  */
 
 function getTokenDesc(token) {
-  var value = token.value;
-  return value ? "".concat(token.kind, " \"").concat(value, "\"") : token.kind;
+  return getTokenKindDesc(token.kind) + (token.value ? " \"".concat(token.value, "\"") : '');
+}
+/**
+ * A helper function to describe a token kind as a string for debugging
+ */
+
+
+function getTokenKindDesc(kind) {
+  return isPunctuatorTokenKind(kind) ? "\"".concat(kind, "\"") : kind;
 }

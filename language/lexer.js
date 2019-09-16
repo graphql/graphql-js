@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createLexer = createLexer;
-exports.isPunctuatorToken = isPunctuatorToken;
+exports.isPunctuatorTokenKind = isPunctuatorTokenKind;
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
@@ -63,8 +63,7 @@ function lookahead() {
 
 
 // @internal
-function isPunctuatorToken(token) {
-  var kind = token.kind;
+function isPunctuatorTokenKind(kind) {
   return kind === _tokenKind.TokenKind.BANG || kind === _tokenKind.TokenKind.DOLLAR || kind === _tokenKind.TokenKind.AMP || kind === _tokenKind.TokenKind.PAREN_L || kind === _tokenKind.TokenKind.PAREN_R || kind === _tokenKind.TokenKind.SPREAD || kind === _tokenKind.TokenKind.COLON || kind === _tokenKind.TokenKind.EQUALS || kind === _tokenKind.TokenKind.AT || kind === _tokenKind.TokenKind.BRACKET_L || kind === _tokenKind.TokenKind.BRACKET_R || kind === _tokenKind.TokenKind.BRACE_L || kind === _tokenKind.TokenKind.PIPE || kind === _tokenKind.TokenKind.BRACE_R;
 }
 /**
