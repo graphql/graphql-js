@@ -475,7 +475,7 @@ function getLeadingCommentBlock(node): void | string {
     comments.push(value);
     token = token.prev;
   }
-  return comments.reverse().join('\n');
+  return comments.length > 0 ? comments.reverse().join('\n') : undefined;
 }
 
 /**

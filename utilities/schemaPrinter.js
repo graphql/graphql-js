@@ -247,7 +247,7 @@ function printDescription(options, def) {
   var indentation = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
   var firstInBlock = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
 
-  if (!def.description) {
+  if (def.description == null) {
     return '';
   }
 

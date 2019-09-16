@@ -449,7 +449,7 @@ function getLeadingCommentBlock(node) {
     token = token.prev;
   }
 
-  return comments.reverse().join('\n');
+  return comments.length > 0 ? comments.reverse().join('\n') : undefined;
 }
 /**
  * A helper function to build a GraphQLSchema directly from a source
