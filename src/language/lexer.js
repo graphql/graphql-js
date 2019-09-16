@@ -94,8 +94,7 @@ export type Lexer<TOptions> = {
 };
 
 // @internal
-export function isPunctuatorToken(token: Token) {
-  const kind = token.kind;
+export function isPunctuatorTokenKind(kind: TokenKindEnum) {
   return (
     kind === TokenKind.BANG ||
     kind === TokenKind.DOLLAR ||

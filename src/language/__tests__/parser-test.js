@@ -40,13 +40,13 @@ describe('Parser', () => {
     }
 
     expect(caughtError).to.deep.contain({
-      message: 'Syntax Error: Expected Name, found <EOF>',
+      message: 'Syntax Error: Expected Name, found <EOF>.',
       positions: [1],
       locations: [{ line: 1, column: 2 }],
     });
 
     expect(String(caughtError) + '\n').to.equal(dedent`
-      Syntax Error: Expected Name, found <EOF>
+      Syntax Error: Expected Name, found <EOF>.
 
       GraphQL request:1:2
       1 | {
@@ -57,22 +57,22 @@ describe('Parser', () => {
       { ...MissingOn }
       fragment MissingOn Type
     `).to.deep.include({
-      message: 'Syntax Error: Expected "on", found Name "Type"',
+      message: 'Syntax Error: Expected "on", found Name "Type".',
       locations: [{ line: 3, column: 26 }],
     });
 
     expectSyntaxError('{ field: {} }').to.deep.include({
-      message: 'Syntax Error: Expected Name, found {',
+      message: 'Syntax Error: Expected Name, found "{".',
       locations: [{ line: 1, column: 10 }],
     });
 
     expectSyntaxError('notanoperation Foo { field }').to.deep.include({
-      message: 'Syntax Error: Unexpected Name "notanoperation"',
+      message: 'Syntax Error: Unexpected Name "notanoperation".',
       locations: [{ line: 1, column: 1 }],
     });
 
     expectSyntaxError('...').to.deep.include({
-      message: 'Syntax Error: Unexpected ...',
+      message: 'Syntax Error: Unexpected "...".',
       locations: [{ line: 1, column: 1 }],
     });
   });
@@ -85,7 +85,7 @@ describe('Parser', () => {
       caughtError = error;
     }
     expect(String(caughtError) + '\n').to.equal(dedent`
-      Syntax Error: Expected {, found <EOF>
+      Syntax Error: Expected "{", found <EOF>.
 
       MyQuery.graphql:1:6
       1 | query
@@ -103,7 +103,7 @@ describe('Parser', () => {
     expectSyntaxError(
       'query Foo($x: Complex = { a: { b: [ $var ] } }) { field }',
     ).to.deep.equal({
-      message: 'Syntax Error: Unexpected $',
+      message: 'Syntax Error: Unexpected "$".',
       locations: [{ line: 1, column: 37 }],
     });
   });
@@ -116,14 +116,14 @@ describe('Parser', () => {
 
   it('does not accept fragments named "on"', () => {
     expectSyntaxError('fragment on on on { on }').to.deep.equal({
-      message: 'Syntax Error: Unexpected Name "on"',
+      message: 'Syntax Error: Unexpected Name "on".',
       locations: [{ line: 1, column: 10 }],
     });
   });
 
   it('does not accept fragments spread of "on"', () => {
     expectSyntaxError('{ ...on }').to.deep.equal({
-      message: 'Syntax Error: Expected Name, found }',
+      message: 'Syntax Error: Expected Name, found "}".',
       locations: [{ line: 1, column: 9 }],
     });
   });

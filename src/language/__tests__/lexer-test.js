@@ -12,7 +12,7 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
-import { createLexer, isPunctuatorToken } from '../lexer';
+import { createLexer, isPunctuatorTokenKind } from '../lexer';
 
 function lexOne(str) {
   const lexer = createLexer(new Source(str));
@@ -905,30 +905,34 @@ describe('Lexer', () => {
   });
 });
 
-describe('isPunctuatorToken', () => {
+describe('isPunctuatorTokenKind', () => {
+  function isPunctuatorToken(text) {
+    return isPunctuatorTokenKind(lexOne(text).kind);
+  }
+
   it('returns true for punctuator tokens', () => {
-    expect(isPunctuatorToken(lexOne('!'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('$'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('&'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('('))).to.equal(true);
-    expect(isPunctuatorToken(lexOne(')'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('...'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne(':'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('='))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('@'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('['))).to.equal(true);
-    expect(isPunctuatorToken(lexOne(']'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('{'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('|'))).to.equal(true);
-    expect(isPunctuatorToken(lexOne('}'))).to.equal(true);
+    expect(isPunctuatorToken('!')).to.equal(true);
+    expect(isPunctuatorToken('$')).to.equal(true);
+    expect(isPunctuatorToken('&')).to.equal(true);
+    expect(isPunctuatorToken('(')).to.equal(true);
+    expect(isPunctuatorToken(')')).to.equal(true);
+    expect(isPunctuatorToken('...')).to.equal(true);
+    expect(isPunctuatorToken(':')).to.equal(true);
+    expect(isPunctuatorToken('=')).to.equal(true);
+    expect(isPunctuatorToken('@')).to.equal(true);
+    expect(isPunctuatorToken('[')).to.equal(true);
+    expect(isPunctuatorToken(']')).to.equal(true);
+    expect(isPunctuatorToken('{')).to.equal(true);
+    expect(isPunctuatorToken('|')).to.equal(true);
+    expect(isPunctuatorToken('}')).to.equal(true);
   });
 
   it('returns false for non-punctuator tokens', () => {
-    expect(isPunctuatorToken(lexOne(''))).to.equal(false);
-    expect(isPunctuatorToken(lexOne('name'))).to.equal(false);
-    expect(isPunctuatorToken(lexOne('1'))).to.equal(false);
-    expect(isPunctuatorToken(lexOne('3.14'))).to.equal(false);
-    expect(isPunctuatorToken(lexOne('"str"'))).to.equal(false);
-    expect(isPunctuatorToken(lexOne('"""str"""'))).to.equal(false);
+    expect(isPunctuatorToken('')).to.equal(false);
+    expect(isPunctuatorToken('name')).to.equal(false);
+    expect(isPunctuatorToken('1')).to.equal(false);
+    expect(isPunctuatorToken('3.14')).to.equal(false);
+    expect(isPunctuatorToken('"str"')).to.equal(false);
+    expect(isPunctuatorToken('"""str"""')).to.equal(false);
   });
 });

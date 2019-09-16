@@ -221,7 +221,7 @@ describe('Schema Parser', () => {
 
   it('Extension without anything throws', () => {
     expectSyntaxError('extend type Hello').to.deep.equal({
-      message: 'Syntax Error: Unexpected <EOF>',
+      message: 'Syntax Error: Unexpected <EOF>.',
       locations: [{ line: 1, column: 18 }],
     });
   });
@@ -233,7 +233,7 @@ describe('Schema Parser', () => {
         world: String
       }
     `).to.deep.equal({
-      message: 'Syntax Error: Unexpected Name "extend"',
+      message: 'Syntax Error: Unexpected Name "extend".',
       locations: [{ line: 3, column: 7 }],
     });
 
@@ -242,7 +242,7 @@ describe('Schema Parser', () => {
         world: String
       }
     `).to.deep.equal({
-      message: 'Syntax Error: Unexpected String "Description"',
+      message: 'Syntax Error: Unexpected String "Description".',
       locations: [{ line: 2, column: 14 }],
     });
   });
@@ -300,7 +300,7 @@ describe('Schema Parser', () => {
 
   it('Schema extension without anything throws', () => {
     expectSyntaxError('extend schema').to.deep.equal({
-      message: 'Syntax Error: Unexpected <EOF>',
+      message: 'Syntax Error: Unexpected <EOF>.',
       locations: [{ line: 1, column: 14 }],
     });
   });
@@ -724,28 +724,28 @@ describe('Schema Parser', () => {
 
   it('Union fails with no types', () => {
     expectSyntaxError('union Hello = |').to.deep.equal({
-      message: 'Syntax Error: Expected Name, found <EOF>',
+      message: 'Syntax Error: Expected Name, found <EOF>.',
       locations: [{ line: 1, column: 16 }],
     });
   });
 
   it('Union fails with leading double pipe', () => {
     expectSyntaxError('union Hello = || Wo | Rld').to.deep.equal({
-      message: 'Syntax Error: Expected Name, found |',
+      message: 'Syntax Error: Expected Name, found "|".',
       locations: [{ line: 1, column: 16 }],
     });
   });
 
   it('Union fails with double pipe', () => {
     expectSyntaxError('union Hello = Wo || Rld').to.deep.equal({
-      message: 'Syntax Error: Expected Name, found |',
+      message: 'Syntax Error: Expected Name, found "|".',
       locations: [{ line: 1, column: 19 }],
     });
   });
 
   it('Union fails with trailing pipe', () => {
     expectSyntaxError('union Hello = | Wo | Rld |').to.deep.equal({
-      message: 'Syntax Error: Expected Name, found <EOF>',
+      message: 'Syntax Error: Expected Name, found <EOF>.',
       locations: [{ line: 1, column: 27 }],
     });
   });
@@ -803,7 +803,7 @@ input Hello {
         world(foo: Int): String
       }
     `).to.deep.equal({
-      message: 'Syntax Error: Expected :, found (',
+      message: 'Syntax Error: Expected ":", found "(".',
       locations: [{ line: 3, column: 14 }],
     });
   });
@@ -884,7 +884,7 @@ input Hello {
     expectSyntaxError(
       'directive @foo on FIELD | INCORRECT_LOCATION',
     ).to.deep.equal({
-      message: 'Syntax Error: Unexpected Name "INCORRECT_LOCATION"',
+      message: 'Syntax Error: Unexpected Name "INCORRECT_LOCATION".',
       locations: [{ line: 1, column: 27 }],
     });
   });
@@ -896,7 +896,7 @@ input Hello {
   it('Option: allowLegacySDLEmptyFields supports type with empty fields', () => {
     const body = 'type Hello { }';
     expectSyntaxError(body).to.include({
-      message: 'Syntax Error: Expected Name, found }',
+      message: 'Syntax Error: Expected Name, found "}".',
     });
 
     const doc = parse(body, { allowLegacySDLEmptyFields: true });
@@ -906,7 +906,7 @@ input Hello {
   it('Option: allowLegacySDLImplementsInterfaces', () => {
     const body = 'type Hello implements Wo rld { field: String }';
     expectSyntaxError(body).to.include({
-      message: 'Syntax Error: Unexpected Name "rld"',
+      message: 'Syntax Error: Unexpected Name "rld".',
     });
 
     const doc = parse(body, { allowLegacySDLImplementsInterfaces: true });

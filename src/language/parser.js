@@ -9,9 +9,9 @@ import { type GraphQLError } from '../error/GraphQLError';
 
 import { Kind } from './kinds';
 import { Source } from './source';
-import { type Lexer, createLexer } from './lexer';
 import { DirectiveLocation } from './directiveLocation';
 import { type TokenKindEnum, TokenKind } from './tokenKind';
+import { type Lexer, createLexer, isPunctuatorTokenKind } from './lexer';
 import {
   type Location,
   type Token,
@@ -1418,7 +1418,7 @@ class Parser {
     throw syntaxError(
       this._lexer.source,
       token.start,
-      `Expected ${kind}, found ${getTokenDesc(token)}`,
+      `Expected ${getTokenKindDesc(kind)}, found ${getTokenDesc(token)}.`,
     );
   }
 
@@ -1447,7 +1447,7 @@ class Parser {
       throw syntaxError(
         this._lexer.source,
         token.start,
-        `Expected "${value}", found ${getTokenDesc(token)}`,
+        `Expected "${value}", found ${getTokenDesc(token)}.`,
       );
     }
   }
@@ -1474,7 +1474,7 @@ class Parser {
     return syntaxError(
       this._lexer.source,
       token.start,
-      `Unexpected ${getTokenDesc(token)}`,
+      `Unexpected ${getTokenDesc(token)}.`,
     );
   }
 
@@ -1556,6 +1556,14 @@ defineToJSON(Loc, function() {
  * A helper function to describe a token as a string for debugging
  */
 function getTokenDesc(token: Token): string {
-  const value = token.value;
-  return value ? `${token.kind} "${value}"` : token.kind;
+  return (
+    getTokenKindDesc(token.kind) + (token.value ? ` "${token.value}"` : '')
+  );
+}
+
+/**
+ * A helper function to describe a token kind as a string for debugging
+ */
+function getTokenKindDesc(kind: TokenKindEnum): string {
+  return isPunctuatorTokenKind(kind) ? `"${kind}"` : kind;
 }
