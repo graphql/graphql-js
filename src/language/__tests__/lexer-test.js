@@ -25,19 +25,16 @@ function lexSecond(str) {
   return lexer.advance();
 }
 
-function expectSyntaxError(text, message, location) {
-  expect(() => lexOne(text))
-    .to.throw('Syntax Error: ' + message)
-    .with.deep.property('locations', [location]);
+function expectSyntaxError(text) {
+  return expect(() => lexSecond(text)).to.throw();
 }
 
 describe('Lexer', () => {
   it('disallows uncommon control characters', () => {
-    expectSyntaxError(
-      '\u0007',
-      'Cannot contain the invalid character "\\u0007".',
-      { line: 1, column: 1 },
-    );
+    expectSyntaxError('\u0007').to.deep.equal({
+      message: 'Syntax Error: Cannot contain the invalid character "\\u0007".',
+      locations: [{ line: 1, column: 1 }],
+    });
   });
 
   it('accepts BOM header', () => {
@@ -274,86 +271,88 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful string errors', () => {
-    expectSyntaxError('"', 'Unterminated string.', { line: 1, column: 2 });
-
-    expectSyntaxError('"""', 'Unterminated string.', { line: 1, column: 4 });
-
-    expectSyntaxError('""""', 'Unterminated string.', { line: 1, column: 5 });
-
-    expectSyntaxError('"no end quote', 'Unterminated string.', {
-      line: 1,
-      column: 14,
+    expectSyntaxError('"').to.deep.equal({
+      message: 'Syntax Error: Unterminated string.',
+      locations: [{ line: 1, column: 2 }],
     });
 
-    expectSyntaxError(
-      "'single quotes'",
-      'Unexpected single quote character (\'), did you mean to use a double quote (")?',
-      { line: 1, column: 1 },
-    );
-
-    expectSyntaxError(
-      '"contains unescaped \u0007 control char"',
-      'Invalid character within String: "\\u0007".',
-      { line: 1, column: 21 },
-    );
-
-    expectSyntaxError(
-      '"null-byte is not \u0000 end of file"',
-      'Invalid character within String: "\\u0000".',
-      { line: 1, column: 19 },
-    );
-
-    expectSyntaxError('"multi\nline"', 'Unterminated string.', {
-      line: 1,
-      column: 7,
+    expectSyntaxError('"""').to.deep.equal({
+      message: 'Syntax Error: Unterminated string.',
+      locations: [{ line: 1, column: 4 }],
     });
 
-    expectSyntaxError('"multi\rline"', 'Unterminated string.', {
-      line: 1,
-      column: 7,
+    expectSyntaxError('""""').to.deep.equal({
+      message: 'Syntax Error: Unterminated string.',
+      locations: [{ line: 1, column: 5 }],
     });
 
-    expectSyntaxError(
-      '"bad \\z esc"',
-      'Invalid character escape sequence: \\z.',
-      { line: 1, column: 7 },
+    expectSyntaxError('"no end quote').to.deep.equal({
+      message: 'Syntax Error: Unterminated string.',
+      locations: [{ line: 1, column: 14 }],
+    });
+
+    expectSyntaxError("'single quotes'").to.deep.equal({
+      message:
+        'Syntax Error: Unexpected single quote character (\'), did you mean to use a double quote (")?',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('"contains unescaped \u0007 control char"').to.deep.equal(
+      {
+        message: 'Syntax Error: Invalid character within String: "\\u0007".',
+        locations: [{ line: 1, column: 21 }],
+      },
     );
 
-    expectSyntaxError(
-      '"bad \\x esc"',
-      'Invalid character escape sequence: \\x.',
-      { line: 1, column: 7 },
-    );
+    expectSyntaxError('"null-byte is not \u0000 end of file"').to.deep.equal({
+      message: 'Syntax Error: Invalid character within String: "\\u0000".',
+      locations: [{ line: 1, column: 19 }],
+    });
 
-    expectSyntaxError(
-      '"bad \\u1 esc"',
-      'Invalid character escape sequence: \\u1 es.',
-      { line: 1, column: 7 },
-    );
+    expectSyntaxError('"multi\nline"').to.deep.equal({
+      message: 'Syntax Error: Unterminated string.',
+      locations: [{ line: 1, column: 7 }],
+    });
 
-    expectSyntaxError(
-      '"bad \\u0XX1 esc"',
-      'Invalid character escape sequence: \\u0XX1.',
-      { line: 1, column: 7 },
-    );
+    expectSyntaxError('"multi\rline"').to.deep.equal({
+      message: 'Syntax Error: Unterminated string.',
+      locations: [{ line: 1, column: 7 }],
+    });
 
-    expectSyntaxError(
-      '"bad \\uXXXX esc"',
-      'Invalid character escape sequence: \\uXXXX.',
-      { line: 1, column: 7 },
-    );
+    expectSyntaxError('"bad \\z esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid character escape sequence: \\z.',
+      locations: [{ line: 1, column: 7 }],
+    });
 
-    expectSyntaxError(
-      '"bad \\uFXXX esc"',
-      'Invalid character escape sequence: \\uFXXX.',
-      { line: 1, column: 7 },
-    );
+    expectSyntaxError('"bad \\x esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid character escape sequence: \\x.',
+      locations: [{ line: 1, column: 7 }],
+    });
 
-    expectSyntaxError(
-      '"bad \\uXXXF esc"',
-      'Invalid character escape sequence: \\uXXXF.',
-      { line: 1, column: 7 },
-    );
+    expectSyntaxError('"bad \\u1 esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid character escape sequence: \\u1 es.',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\u0XX1 esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid character escape sequence: \\u0XX1.',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\uXXXX esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid character escape sequence: \\uXXXX.',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\uFXXX esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid character escape sequence: \\uFXXX.',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\uXXXF esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid character escape sequence: \\uXXXF.',
+      locations: [{ line: 1, column: 7 }],
+    });
   });
 
   it('lexes block strings', () => {
@@ -475,24 +474,29 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful block string errors', () => {
-    expectSyntaxError('"""', 'Unterminated string.', { line: 1, column: 4 });
+    expectSyntaxError('"""').to.deep.equal({
+      message: 'Syntax Error: Unterminated string.',
+      locations: [{ line: 1, column: 4 }],
+    });
 
-    expectSyntaxError('"""no end quote', 'Unterminated string.', {
-      line: 1,
-      column: 16,
+    expectSyntaxError('"""no end quote').to.deep.equal({
+      message: 'Syntax Error: Unterminated string.',
+      locations: [{ line: 1, column: 16 }],
     });
 
     expectSyntaxError(
       '"""contains unescaped \u0007 control char"""',
-      'Invalid character within String: "\\u0007".',
-      { line: 1, column: 23 },
-    );
+    ).to.deep.equal({
+      message: 'Syntax Error: Invalid character within String: "\\u0007".',
+      locations: [{ line: 1, column: 23 }],
+    });
 
     expectSyntaxError(
       '"""null-byte is not \u0000 end of file"""',
-      'Invalid character within String: "\\u0000".',
-      { line: 1, column: 21 },
-    );
+    ).to.deep.equal({
+      message: 'Syntax Error: Invalid character within String: "\\u0000".',
+      locations: [{ line: 1, column: 21 }],
+    });
   });
 
   it('lexes numbers', () => {
@@ -610,137 +614,120 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful number errors', () => {
-    expectSyntaxError('00', 'Invalid number, unexpected digit after 0: "0".', {
-      line: 1,
-      column: 2,
+    expectSyntaxError('00').to.deep.equal({
+      message: 'Syntax Error: Invalid number, unexpected digit after 0: "0".',
+      locations: [{ line: 1, column: 2 }],
     });
 
-    expectSyntaxError('01', 'Invalid number, unexpected digit after 0: "1".', {
-      line: 1,
-      column: 2,
+    expectSyntaxError('01').to.deep.equal({
+      message: 'Syntax Error: Invalid number, unexpected digit after 0: "1".',
+      locations: [{ line: 1, column: 2 }],
     });
 
-    expectSyntaxError(
-      '01.23',
-      'Invalid number, unexpected digit after 0: "1".',
-      {
-        line: 1,
-        column: 2,
-      },
-    );
-
-    expectSyntaxError('+1', 'Cannot parse the unexpected character "+".', {
-      line: 1,
-      column: 1,
+    expectSyntaxError('01.23').to.deep.equal({
+      message: 'Syntax Error: Invalid number, unexpected digit after 0: "1".',
+      locations: [{ line: 1, column: 2 }],
     });
 
-    expectSyntaxError('1.', 'Invalid number, expected digit but got: <EOF>.', {
-      line: 1,
-      column: 3,
+    expectSyntaxError('+1').to.deep.equal({
+      message: 'Syntax Error: Cannot parse the unexpected character "+".',
+      locations: [{ line: 1, column: 1 }],
     });
 
-    expectSyntaxError('1e', 'Invalid number, expected digit but got: <EOF>.', {
-      line: 1,
-      column: 3,
+    expectSyntaxError('1.').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: <EOF>.',
+      locations: [{ line: 1, column: 3 }],
     });
 
-    expectSyntaxError('1E', 'Invalid number, expected digit but got: <EOF>.', {
-      line: 1,
-      column: 3,
+    expectSyntaxError('1e').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: <EOF>.',
+      locations: [{ line: 1, column: 3 }],
     });
 
-    expectSyntaxError('1.e1', 'Invalid number, expected digit but got: "e".', {
-      line: 1,
-      column: 3,
+    expectSyntaxError('1E').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: <EOF>.',
+      locations: [{ line: 1, column: 3 }],
     });
 
-    expectSyntaxError('.123', 'Cannot parse the unexpected character ".".', {
-      line: 1,
-      column: 1,
+    expectSyntaxError('1.e1').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "e".',
+      locations: [{ line: 1, column: 3 }],
     });
 
-    expectSyntaxError('1.A', 'Invalid number, expected digit but got: "A".', {
-      line: 1,
-      column: 3,
+    expectSyntaxError('.123').to.deep.equal({
+      message: 'Syntax Error: Cannot parse the unexpected character ".".',
+      locations: [{ line: 1, column: 1 }],
     });
 
-    expectSyntaxError('-A', 'Invalid number, expected digit but got: "A".', {
-      line: 1,
-      column: 2,
+    expectSyntaxError('1.A').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "A".',
+      locations: [{ line: 1, column: 3 }],
     });
 
-    expectSyntaxError(
-      '1.0e',
-      'Invalid number, expected digit but got: <EOF>.',
-      { line: 1, column: 5 },
-    );
-
-    expectSyntaxError('1.0eA', 'Invalid number, expected digit but got: "A".', {
-      line: 1,
-      column: 5,
+    expectSyntaxError('-A').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "A".',
+      locations: [{ line: 1, column: 2 }],
     });
 
-    expectSyntaxError(
-      '1.2e3e',
-      'Invalid number, expected digit but got: "e".',
-      {
-        line: 1,
-        column: 6,
-      },
-    );
+    expectSyntaxError('1.0e').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: <EOF>.',
+      locations: [{ line: 1, column: 5 }],
+    });
 
-    expectSyntaxError(
-      '1.2e3.4',
-      'Invalid number, expected digit but got: ".".',
-      {
-        line: 1,
-        column: 6,
-      },
-    );
+    expectSyntaxError('1.0eA').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "A".',
+      locations: [{ line: 1, column: 5 }],
+    });
 
-    expectSyntaxError(
-      '1.23.4',
-      'Invalid number, expected digit but got: ".".',
-      {
-        line: 1,
-        column: 5,
-      },
-    );
+    expectSyntaxError('1.2e3e').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "e".',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('1.2e3.4').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: ".".',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('1.23.4').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: ".".',
+      locations: [{ line: 1, column: 5 }],
+    });
   });
 
   it('lex does not allow name-start after a number', () => {
-    expectSyntaxError('0xF1', 'Invalid number, expected digit but got: "x".', {
-      line: 1,
-      column: 2,
+    expectSyntaxError('0xF1').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "x".',
+      locations: [{ line: 1, column: 2 }],
     });
-    expectSyntaxError('0b10', 'Invalid number, expected digit but got: "b".', {
-      line: 1,
-      column: 2,
+    expectSyntaxError('0b10').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "b".',
+      locations: [{ line: 1, column: 2 }],
     });
-    expectSyntaxError(
-      '123abc',
-      'Invalid number, expected digit but got: "a".',
-      { line: 1, column: 4 },
-    );
-    expectSyntaxError('1_234', 'Invalid number, expected digit but got: "_".', {
-      line: 1,
-      column: 2,
+    expectSyntaxError('123abc').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "a".',
+      locations: [{ line: 1, column: 4 }],
     });
-    expect(() => lexSecond('1ß')).to.throw(
-      'Syntax Error: Cannot parse the unexpected character "\\u00DF".',
-    );
-    expectSyntaxError('1.23f', 'Invalid number, expected digit but got: "f".', {
-      line: 1,
-      column: 5,
+    expectSyntaxError('1_234').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "_".',
+      locations: [{ line: 1, column: 2 }],
     });
-    expectSyntaxError(
-      '1.234_5',
-      'Invalid number, expected digit but got: "_".',
-      { line: 1, column: 6 },
-    );
-    expect(() => lexSecond('1.2ß')).to.throw(
-      'Syntax Error: Cannot parse the unexpected character "\\u00DF".',
-    );
+    expectSyntaxError('1ß').to.deep.equal({
+      message: 'Syntax Error: Cannot parse the unexpected character "\\u00DF".',
+      locations: [{ line: 1, column: 2 }],
+    });
+    expectSyntaxError('1.23f').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "f".',
+      locations: [{ line: 1, column: 5 }],
+    });
+    expectSyntaxError('1.234_5').to.deep.equal({
+      message: 'Syntax Error: Invalid number, expected digit but got: "_".',
+      locations: [{ line: 1, column: 6 }],
+    });
+    expectSyntaxError('1ß').to.deep.equal({
+      message: 'Syntax Error: Cannot parse the unexpected character "\\u00DF".',
+      locations: [{ line: 1, column: 2 }],
+    });
   });
 
   it('lexes punctuation', () => {
@@ -837,27 +824,25 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful unknown character error', () => {
-    expectSyntaxError('..', 'Cannot parse the unexpected character ".".', {
-      line: 1,
-      column: 1,
+    expectSyntaxError('..').to.deep.equal({
+      message: 'Syntax Error: Cannot parse the unexpected character ".".',
+      locations: [{ line: 1, column: 1 }],
     });
 
-    expectSyntaxError('?', 'Cannot parse the unexpected character "?".', {
-      line: 1,
-      column: 1,
+    expectSyntaxError('?').to.deep.equal({
+      message: 'Syntax Error: Cannot parse the unexpected character "?".',
+      locations: [{ line: 1, column: 1 }],
     });
 
-    expectSyntaxError(
-      '\u203B',
-      'Cannot parse the unexpected character "\\u203B".',
-      { line: 1, column: 1 },
-    );
+    expectSyntaxError('\u203B').to.deep.equal({
+      message: 'Syntax Error: Cannot parse the unexpected character "\\u203B".',
+      locations: [{ line: 1, column: 1 }],
+    });
 
-    expectSyntaxError(
-      '\u200b',
-      'Cannot parse the unexpected character "\\u200B".',
-      { line: 1, column: 1 },
-    );
+    expectSyntaxError('\u200b').to.deep.equal({
+      message: 'Syntax Error: Cannot parse the unexpected character "\\u200B".',
+      locations: [{ line: 1, column: 1 }],
+    });
   });
 
   it('lex reports useful information for dashes in names', () => {

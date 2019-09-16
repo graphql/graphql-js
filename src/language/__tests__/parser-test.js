@@ -16,10 +16,8 @@ import { parse, parseValue, parseType } from '../parser';
 import { kitchenSinkQuery } from '../../__fixtures__';
 import toJSONDeep from './toJSONDeep';
 
-function expectSyntaxError(text, message, location) {
-  expect(() => parse(text))
-    .to.throw(message)
-    .with.deep.property('locations', [location]);
+function expectSyntaxError(text) {
+  return expect(() => parse(text)).to.throw();
 }
 
 describe('Parser', () => {
@@ -55,26 +53,28 @@ describe('Parser', () => {
         |  ^
     `);
 
-    expectSyntaxError(
-      `
+    expectSyntaxError(`
       { ...MissingOn }
-      fragment MissingOn Type`,
-      'Expected "on", found Name "Type"',
-      { line: 3, column: 26 },
-    );
-
-    expectSyntaxError('{ field: {} }', 'Expected Name, found {', {
-      line: 1,
-      column: 10,
+      fragment MissingOn Type
+    `).to.deep.include({
+      message: 'Syntax Error: Expected "on", found Name "Type"',
+      locations: [{ line: 3, column: 26 }],
     });
 
-    expectSyntaxError(
-      'notanoperation Foo { field }',
-      'Unexpected Name "notanoperation"',
-      { line: 1, column: 1 },
-    );
+    expectSyntaxError('{ field: {} }').to.deep.include({
+      message: 'Syntax Error: Expected Name, found {',
+      locations: [{ line: 1, column: 10 }],
+    });
 
-    expectSyntaxError('...', 'Unexpected ...', { line: 1, column: 1 });
+    expectSyntaxError('notanoperation Foo { field }').to.deep.include({
+      message: 'Syntax Error: Unexpected Name "notanoperation"',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('...').to.deep.include({
+      message: 'Syntax Error: Unexpected ...',
+      locations: [{ line: 1, column: 1 }],
+    });
   });
 
   it('parse provides useful error when using source', () => {
@@ -102,9 +102,10 @@ describe('Parser', () => {
   it('parses constant default values', () => {
     expectSyntaxError(
       'query Foo($x: Complex = { a: { b: [ $var ] } }) { field }',
-      'Unexpected $',
-      { line: 1, column: 37 },
-    );
+    ).to.deep.equal({
+      message: 'Syntax Error: Unexpected $',
+      locations: [{ line: 1, column: 37 }],
+    });
   });
 
   it('parses variable definition directives', () => {
@@ -114,16 +115,16 @@ describe('Parser', () => {
   });
 
   it('does not accept fragments named "on"', () => {
-    expectSyntaxError('fragment on on on { on }', 'Unexpected Name "on"', {
-      line: 1,
-      column: 10,
+    expectSyntaxError('fragment on on on { on }').to.deep.equal({
+      message: 'Syntax Error: Unexpected Name "on"',
+      locations: [{ line: 1, column: 10 }],
     });
   });
 
   it('does not accept fragments spread of "on"', () => {
-    expectSyntaxError('{ ...on }', 'Expected Name, found }', {
-      line: 1,
-      column: 9,
+    expectSyntaxError('{ ...on }').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found }',
+      locations: [{ line: 1, column: 9 }],
     });
   });
 
