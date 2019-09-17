@@ -350,9 +350,10 @@ export function buildClientSchema(
 
   function buildInputValue(inputValueIntrospection) {
     const type = getInputType(inputValueIntrospection.type);
-    const defaultValue = inputValueIntrospection.defaultValue
-      ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type)
-      : undefined;
+    const defaultValue =
+      inputValueIntrospection.defaultValue != null
+        ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type)
+        : undefined;
     return {
       description: inputValueIntrospection.description,
       type,
