@@ -28,7 +28,7 @@ import {
  * Function will match JavaScript/JSON values to GraphQL AST schema format
  * by using suggested GraphQLInputType. For example:
  *
- *  `astFromValue("value", GraphQLString)`
+ *     astFromValue("value", GraphQLString)
  *
  * A GraphQL type must be provided, which will be used to interpret different
  * JavaScript values.
