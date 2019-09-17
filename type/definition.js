@@ -497,7 +497,7 @@ function () {
       parseLiteral: this.parseLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || []
+      extensionASTNodes: this.extensionASTNodes
     };
   };
 
@@ -593,7 +593,7 @@ function () {
       isTypeOf: this.isTypeOf,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || []
+      extensionASTNodes: this.extensionASTNodes
     };
   };
 
@@ -739,7 +739,7 @@ function () {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || []
+      extensionASTNodes: this.extensionASTNodes
     };
   };
 
@@ -811,7 +811,7 @@ function () {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || []
+      extensionASTNodes: this.extensionASTNodes
     };
   };
 
@@ -936,7 +936,7 @@ function () {
       values: values,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || []
+      extensionASTNodes: this.extensionASTNodes
     };
   };
 
@@ -1030,7 +1030,7 @@ function () {
       fields: fields,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || []
+      extensionASTNodes: this.extensionASTNodes
     };
   };
 

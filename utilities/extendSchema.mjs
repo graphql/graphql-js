@@ -143,7 +143,7 @@ export function extendSchema(schema, documentAST, options) {
     types: objectValues(typeMap),
     directives: getMergedDirectives(),
     astNode: schemaDef || schemaConfig.astNode,
-    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExts)
+    extensionASTNodes: concatMaybeArrays(schemaConfig.extensionASTNodes, schemaExts)
   }); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
@@ -221,7 +221,7 @@ export function extendSchema(schema, documentAST, options) {
           return astBuilder.buildInputField(field);
         }));
       },
-      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
   }
 
@@ -237,7 +237,7 @@ export function extendSchema(schema, documentAST, options) {
       }, function (value) {
         return astBuilder.buildEnumValue(value);
       })),
-      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
   }
 
@@ -245,7 +245,7 @@ export function extendSchema(schema, documentAST, options) {
     var config = type.toConfig();
     var extensions = typeExtsMap[config.name] || [];
     return new GraphQLScalarType(_objectSpread({}, config, {
-      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
   }
 
@@ -271,7 +271,7 @@ export function extendSchema(schema, documentAST, options) {
           return astBuilder.buildField(node);
         }));
       },
-      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
   }
 
@@ -289,7 +289,7 @@ export function extendSchema(schema, documentAST, options) {
           return astBuilder.buildField(node);
         }));
       },
-      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
   }
 
@@ -305,7 +305,7 @@ export function extendSchema(schema, documentAST, options) {
           return astBuilder.getNamedType(node);
         }));
       },
-      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
   }
 
@@ -321,4 +321,23 @@ export function extendSchema(schema, documentAST, options) {
       type: replaceType(arg.type)
     });
   }
+}
+
+function concatMaybeArrays() {
+  // eslint-disable-next-line no-undef-init
+  var result = undefined;
+
+  for (var _len = arguments.length, arrays = new Array(_len), _key = 0; _key < _len; _key++) {
+    arrays[_key] = arguments[_key];
+  }
+
+  for (var _i12 = 0; _i12 < arrays.length; _i12++) {
+    var maybeArray = arrays[_i12];
+
+    if (maybeArray) {
+      result = result === undefined ? maybeArray : result.concat(maybeArray);
+    }
+  }
+
+  return result;
 }

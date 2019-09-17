@@ -28,7 +28,11 @@ var _definition = require("../type/definition");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
- * Produces a GraphQL Value AST given a JavaScript value.
+ * Produces a GraphQL Value AST given a JavaScript object.
+ * Function will match JavaScript/JSON values to GraphQL AST schema format
+ * by using suggested GraphQLInputType. For example:
+ *
+ *     astFromValue("value", GraphQLString)
  *
  * A GraphQL type must be provided, which will be used to interpret different
  * JavaScript values.

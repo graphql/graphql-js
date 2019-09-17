@@ -202,7 +202,10 @@ export function extendSchema(
     types: objectValues(typeMap),
     directives: getMergedDirectives(),
     astNode: schemaDef || schemaConfig.astNode,
-    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExts),
+    extensionASTNodes: concatMaybeArrays(
+      schemaConfig.extensionASTNodes,
+      schemaExts,
+    ),
   });
 
   // Below are functions used for producing this schema that have closed over
@@ -285,7 +288,10 @@ export function extendSchema(
           field => astBuilder.buildInputField(field),
         ),
       }),
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
+      extensionASTNodes: concatMaybeArrays(
+        config.extensionASTNodes,
+        extensions,
+      ),
     });
   }
 
@@ -304,7 +310,10 @@ export function extendSchema(
           value => astBuilder.buildEnumValue(value),
         ),
       },
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
+      extensionASTNodes: concatMaybeArrays(
+        config.extensionASTNodes,
+        extensions,
+      ),
     });
   }
 
@@ -314,7 +323,10 @@ export function extendSchema(
 
     return new GraphQLScalarType({
       ...config,
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
+      extensionASTNodes: concatMaybeArrays(
+        config.extensionASTNodes,
+        extensions,
+      ),
     });
   }
 
@@ -341,7 +353,10 @@ export function extendSchema(
           node => astBuilder.buildField(node),
         ),
       }),
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
+      extensionASTNodes: concatMaybeArrays(
+        config.extensionASTNodes,
+        extensions,
+      ),
     });
   }
 
@@ -362,7 +377,10 @@ export function extendSchema(
           node => astBuilder.buildField(node),
         ),
       }),
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
+      extensionASTNodes: concatMaybeArrays(
+        config.extensionASTNodes,
+        extensions,
+      ),
     });
   }
 
@@ -380,7 +398,10 @@ export function extendSchema(
         // validation with validateSchema() will produce more actionable results.
         ...typeNodes.map(node => (astBuilder.getNamedType(node): any)),
       ],
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
+      extensionASTNodes: concatMaybeArrays(
+        config.extensionASTNodes,
+        extensions,
+      ),
     });
   }
 
@@ -398,4 +419,17 @@ export function extendSchema(
       type: replaceType(arg.type),
     };
   }
+}
+
+function concatMaybeArrays<X>(
+  ...arrays: $ReadOnlyArray<?$ReadOnlyArray<X>>
+): ?$ReadOnlyArray<X> {
+  // eslint-disable-next-line no-undef-init
+  let result = undefined;
+  for (const maybeArray of arrays) {
+    if (maybeArray) {
+      result = result === undefined ? maybeArray : result.concat(maybeArray);
+    }
+  }
+  return result;
 }
