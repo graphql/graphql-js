@@ -263,7 +263,7 @@ export class GraphQLSchema {
     types: Array<GraphQLNamedType>,
     directives: Array<GraphQLDirective>,
     extensions: ?ReadOnlyObjMap<mixed>,
-    extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>,
+    extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>,
     assumeValid: boolean,
   |} {
     return {
@@ -274,7 +274,7 @@ export class GraphQLSchema {
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || [],
+      extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined,
     };
   }
