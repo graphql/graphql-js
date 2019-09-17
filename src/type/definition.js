@@ -586,7 +586,7 @@ export class GraphQLScalarType {
     parseValue: GraphQLScalarValueParser<*>,
     parseLiteral: GraphQLScalarLiteralParser<*>,
     extensions: ?ReadOnlyObjMap<mixed>,
-    extensionASTNodes: $ReadOnlyArray<ScalarTypeExtensionNode>,
+    extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>,
   |} {
     return {
       name: this.name,
@@ -596,7 +596,7 @@ export class GraphQLScalarType {
       parseLiteral: this.parseLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -715,7 +715,7 @@ export class GraphQLObjectType {
     interfaces: Array<GraphQLInterfaceType>,
     fields: GraphQLFieldConfigMap<*, *>,
     extensions: ?ReadOnlyObjMap<mixed>,
-    extensionASTNodes: $ReadOnlyArray<ObjectTypeExtensionNode>,
+    extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>,
   |} {
     return {
       name: this.name,
@@ -725,7 +725,7 @@ export class GraphQLObjectType {
       isTypeOf: this.isTypeOf,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -1005,7 +1005,7 @@ export class GraphQLInterfaceType {
     ...GraphQLInterfaceTypeConfig<*, *>,
     fields: GraphQLFieldConfigMap<*, *>,
     extensions: ?ReadOnlyObjMap<mixed>,
-    extensionASTNodes: $ReadOnlyArray<InterfaceTypeExtensionNode>,
+    extensionASTNodes: ?$ReadOnlyArray<InterfaceTypeExtensionNode>,
   |} {
     return {
       name: this.name,
@@ -1014,7 +1014,7 @@ export class GraphQLInterfaceType {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -1103,7 +1103,7 @@ export class GraphQLUnionType {
     ...GraphQLUnionTypeConfig<*, *>,
     types: Array<GraphQLObjectType>,
     extensions: ?ReadOnlyObjMap<mixed>,
-    extensionASTNodes: $ReadOnlyArray<UnionTypeExtensionNode>,
+    extensionASTNodes: ?$ReadOnlyArray<UnionTypeExtensionNode>,
   |} {
     return {
       name: this.name,
@@ -1112,7 +1112,7 @@ export class GraphQLUnionType {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -1236,7 +1236,7 @@ export class GraphQLEnumType /* <T> */ {
   toConfig(): {|
     ...GraphQLEnumTypeConfig,
     extensions: ?ReadOnlyObjMap<mixed>,
-    extensionASTNodes: $ReadOnlyArray<EnumTypeExtensionNode>,
+    extensionASTNodes: ?$ReadOnlyArray<EnumTypeExtensionNode>,
   |} {
     const values = keyValMap(
       this.getValues(),
@@ -1256,7 +1256,7 @@ export class GraphQLEnumType /* <T> */ {
       values,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -1379,7 +1379,7 @@ export class GraphQLInputObjectType {
     ...GraphQLInputObjectTypeConfig,
     fields: GraphQLInputFieldConfigMap,
     extensions: ?ReadOnlyObjMap<mixed>,
-    extensionASTNodes: $ReadOnlyArray<InputObjectTypeExtensionNode>,
+    extensionASTNodes: ?$ReadOnlyArray<InputObjectTypeExtensionNode>,
   |} {
     const fields = mapValue(this.getFields(), field => ({
       description: field.description,
@@ -1395,7 +1395,7 @@ export class GraphQLInputObjectType {
       fields,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
