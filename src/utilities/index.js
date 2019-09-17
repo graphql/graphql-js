@@ -107,10 +107,9 @@ export { assertValidName, isValidNameError } from './assertValidName';
 export {
   BreakingChangeType,
   DangerousChangeType,
-  findBreakingChanges,
-  findDangerousChanges,
+  findSchemaChanges,
 } from './findBreakingChanges';
-export type { BreakingChange, DangerousChange } from './findBreakingChanges';
+export type { SchemaChange } from './findBreakingChanges';
 
 // Report all deprecated usage within a GraphQL document.
 export { findDeprecatedUsages } from './findDeprecatedUsages';

@@ -35,30 +35,16 @@ type _DangerousChangeType = {
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE';
 };
 
-export interface BreakingChange {
-  type: keyof _BreakingChangeType;
-  description: string;
-}
-
-export interface DangerousChange {
-  type: keyof _DangerousChangeType;
+export interface SchemaChange {
+  type: keyof _BreakingChangeType | keyof _DangerousChangeType;
   description: string;
 }
 
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
- * of breaking changes covered by the other functions down below.
+ * of breaking and dangerous changes covered by the other functions down below.
  */
-export function findBreakingChanges(
+export function findSchemaChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
-): Array<BreakingChange>;
-
-/**
- * Given two schemas, returns an Array containing descriptions of all the types
- * of potentially dangerous changes covered by the other functions down below.
- */
-export function findDangerousChanges(
-  oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
-): Array<DangerousChange>;
+): Array<SchemaChange>;
