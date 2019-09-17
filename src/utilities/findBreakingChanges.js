@@ -102,7 +102,11 @@ export function findDangerousChanges(
   return ((dangerousChanges: any): Array<DangerousChange>);
 }
 
-function findSchemaChanges(
+/**
+ * Given two schemas, returns an Array containing descriptions of all the types
+ * of potentially breaking change and dangerous change
+ */
+export function findSchemaChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<BreakingChange | DangerousChange> {
