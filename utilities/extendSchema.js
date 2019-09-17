@@ -186,7 +186,7 @@ function extendSchema(schema, documentAST, options) {
   }
 
   function getMaybeTypeByName(typeName) {
-    return typeName ? typeMap[typeName] : null;
+    return typeName != null ? typeMap[typeName] : null;
   }
 
   function getMergedDirectives() {

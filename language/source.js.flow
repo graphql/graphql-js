@@ -23,7 +23,7 @@ export class Source {
 
   constructor(body: string, name?: string, locationOffset?: Location): void {
     this.body = body;
-    this.name = name || 'GraphQL request';
+    this.name = name != null ? name : 'GraphQL request';
     this.locationOffset = locationOffset || { line: 1, column: 1 };
     devAssert(
       this.locationOffset.line > 0,

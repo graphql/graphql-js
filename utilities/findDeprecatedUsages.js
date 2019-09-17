@@ -30,7 +30,7 @@ function findDeprecatedUsages(schema, ast) {
 
         if (parentType) {
           var reason = fieldDef.deprecationReason;
-          errors.push(new _GraphQLError.GraphQLError("The field \"".concat(parentType.name, ".").concat(fieldDef.name, "\" is deprecated.") + (reason ? ' ' + reason : ''), node));
+          errors.push(new _GraphQLError.GraphQLError("The field \"".concat(parentType.name, ".").concat(fieldDef.name, "\" is deprecated.") + (reason != null ? ' ' + reason : ''), node));
         }
       }
     },
@@ -42,7 +42,7 @@ function findDeprecatedUsages(schema, ast) {
 
         if (type) {
           var reason = enumVal.deprecationReason;
-          errors.push(new _GraphQLError.GraphQLError("The enum value \"".concat(type.name, ".").concat(enumVal.name, "\" is deprecated.") + (reason ? ' ' + reason : ''), node));
+          errors.push(new _GraphQLError.GraphQLError("The enum value \"".concat(type.name, ".").concat(enumVal.name, "\" is deprecated.") + (reason != null && reason !== '' ? ' ' + reason : ''), node));
         }
       }
     }

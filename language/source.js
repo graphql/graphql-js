@@ -21,7 +21,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 var Source = function Source(body, name, locationOffset) {
   this.body = body;
-  this.name = name || 'GraphQL request';
+  this.name = name != null ? name : 'GraphQL request';
   this.locationOffset = locationOffset || {
     line: 1,
     column: 1
