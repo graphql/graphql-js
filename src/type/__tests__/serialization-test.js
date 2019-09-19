@@ -133,6 +133,11 @@ describe('Type System: Scalar coercion', () => {
     expect(() => GraphQLString.serialize(badObjValue)).to.throw(
       'String cannot represent value: {}',
     );
+
+    const badValueOfObjValue = { valueOf: 'valueOf string' };
+    expect(() => GraphQLString.serialize(badValueOfObjValue)).to.throw(
+      'String cannot represent value: { valueOf: "valueOf string" }',
+    );
   });
 
   it('serializes output as Boolean', () => {
