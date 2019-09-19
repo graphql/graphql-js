@@ -224,8 +224,7 @@ describe('Type System: Enum Values', () => {
     expect(result).to.deep.equal({
       errors: [
         {
-          message:
-            'Expected value of type "Int", found GREEN; Int cannot represent non-integer value: GREEN',
+          message: 'Int cannot represent non-integer value: GREEN',
           locations: [{ line: 1, column: 22 }],
         },
       ],

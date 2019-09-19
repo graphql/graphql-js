@@ -166,18 +166,22 @@ function coerceInputValueImpl(
     try {
       parseResult = type.parseValue(inputValue);
     } catch (error) {
-      onError(
-        pathToArray(path),
-        inputValue,
-        new GraphQLError(
-          `Expected type "${type.name}". ` + error.message,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          error,
-        ),
-      );
+      if (error instanceof GraphQLError) {
+        onError(pathToArray(path), inputValue, error);
+      } else {
+        onError(
+          pathToArray(path),
+          inputValue,
+          new GraphQLError(
+            `Expected type "${type.name}". ` + error.message,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            error,
+          ),
+        );
+      }
       return;
     }
     if (parseResult === undefined) {
