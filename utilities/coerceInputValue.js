@@ -126,7 +126,12 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     try {
       parseResult = type.parseValue(inputValue);
     } catch (error) {
-      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\". ") + error.message, undefined, undefined, undefined, undefined, error));
+      if (error instanceof _GraphQLError.GraphQLError) {
+        onError((0, _Path.pathToArray)(path), inputValue, error);
+      } else {
+        onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\". ") + error.message, undefined, undefined, undefined, undefined, error));
+      }
+
       return;
     }
 

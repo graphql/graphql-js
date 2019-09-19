@@ -129,9 +129,12 @@ function isValidValueNode(context, node) {
       context.reportError(new GraphQLError("Expected value of type \"".concat(_typeStr, "\", found ").concat(print(node), "."), node));
     }
   } catch (error) {
-    var _typeStr2 = inspect(locationType); // Ensure a reference to the original error is maintained.
+    var _typeStr2 = inspect(locationType);
 
-
-    context.reportError(new GraphQLError("Expected value of type \"".concat(_typeStr2, "\", found ").concat(print(node), "; ") + error.message, node, undefined, undefined, undefined, error));
+    if (error instanceof GraphQLError) {
+      context.reportError(error);
+    } else {
+      context.reportError(new GraphQLError("Expected value of type \"".concat(_typeStr2, "\", found ").concat(print(node), "; ") + error.message, node, undefined, undefined, undefined, error));
+    }
   }
 }

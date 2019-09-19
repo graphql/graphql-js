@@ -107,7 +107,12 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     try {
       parseResult = type.parseValue(inputValue);
     } catch (error) {
-      onError(pathToArray(path), inputValue, new GraphQLError("Expected type \"".concat(type.name, "\". ") + error.message, undefined, undefined, undefined, undefined, error));
+      if (error instanceof GraphQLError) {
+        onError(pathToArray(path), inputValue, error);
+      } else {
+        onError(pathToArray(path), inputValue, new GraphQLError("Expected type \"".concat(type.name, "\". ") + error.message, undefined, undefined, undefined, undefined, error));
+      }
+
       return;
     }
 
