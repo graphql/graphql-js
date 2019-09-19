@@ -16,6 +16,8 @@ var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
 
 var _kinds = require("../language/kinds");
 
+var _printer = require("../language/printer");
+
 var _definition = require("./definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -68,15 +70,17 @@ var GraphQLInt = new _definition.GraphQLScalarType({
   serialize: serializeInt,
   parseValue: coerceInt,
   parseLiteral: function parseLiteral(ast) {
-    if (ast.kind === _kinds.Kind.INT) {
-      var num = parseInt(ast.value, 10);
-
-      if (num <= MAX_INT && num >= MIN_INT) {
-        return num;
-      }
+    if (ast.kind !== _kinds.Kind.INT) {
+      throw new TypeError('Int cannot represent non-integer value: ' + (0, _printer.print)(ast));
     }
 
-    return undefined;
+    var num = parseInt(ast.value, 10);
+
+    if (num > MAX_INT || num < MIN_INT) {
+      throw new TypeError('Int cannot represent non 32-bit signed integer value: ' + ast.value);
+    }
+
+    return num;
   }
 });
 exports.GraphQLInt = GraphQLInt;
@@ -113,7 +117,11 @@ var GraphQLFloat = new _definition.GraphQLScalarType({
   serialize: serializeFloat,
   parseValue: coerceFloat,
   parseLiteral: function parseLiteral(ast) {
-    return ast.kind === _kinds.Kind.FLOAT || ast.kind === _kinds.Kind.INT ? parseFloat(ast.value) : undefined;
+    if (ast.kind !== _kinds.Kind.FLOAT && ast.kind !== _kinds.Kind.INT) {
+      throw new TypeError('Float cannot represent non numeric value: ' + (0, _printer.print)(ast));
+    }
+
+    return parseFloat(ast.value);
   }
 }); // Support serializing objects with custom valueOf() or toJSON() functions -
 // a common way to represent a complex value which can be represented as
@@ -173,7 +181,11 @@ var GraphQLString = new _definition.GraphQLScalarType({
   serialize: serializeString,
   parseValue: coerceString,
   parseLiteral: function parseLiteral(ast) {
-    return ast.kind === _kinds.Kind.STRING ? ast.value : undefined;
+    if (ast.kind !== _kinds.Kind.STRING) {
+      throw new TypeError('String cannot represent a non string value: ' + (0, _printer.print)(ast));
+    }
+
+    return ast.value;
   }
 });
 exports.GraphQLString = GraphQLString;
@@ -204,7 +216,11 @@ var GraphQLBoolean = new _definition.GraphQLScalarType({
   serialize: serializeBoolean,
   parseValue: coerceBoolean,
   parseLiteral: function parseLiteral(ast) {
-    return ast.kind === _kinds.Kind.BOOLEAN ? ast.value : undefined;
+    if (ast.kind !== _kinds.Kind.BOOLEAN) {
+      throw new TypeError('Boolean cannot represent a non boolean value: ' + (0, _printer.print)(ast));
+    }
+
+    return ast.value;
   }
 });
 exports.GraphQLBoolean = GraphQLBoolean;
@@ -241,7 +257,11 @@ var GraphQLID = new _definition.GraphQLScalarType({
   serialize: serializeID,
   parseValue: coerceID,
   parseLiteral: function parseLiteral(ast) {
-    return ast.kind === _kinds.Kind.STRING || ast.kind === _kinds.Kind.INT ? ast.value : undefined;
+    if (ast.kind !== _kinds.Kind.STRING && ast.kind !== _kinds.Kind.INT) {
+      throw new TypeError('ID cannot represent a non-string and non-integer value: ' + (0, _printer.print)(ast));
+    }
+
+    return ast.value;
   }
 });
 exports.GraphQLID = GraphQLID;
