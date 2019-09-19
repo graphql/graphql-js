@@ -165,8 +165,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "String", found 1; String cannot represent a non string value: 1',
+          message: 'String cannot represent a non string value: 1',
           locations: [{ line: 4, column: 39 }],
         },
       ]);
@@ -181,8 +180,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "String", found 1.0; String cannot represent a non string value: 1.0',
+          message: 'String cannot represent a non string value: 1.0',
           locations: [{ line: 4, column: 39 }],
         },
       ]);
@@ -197,8 +195,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "String", found true; String cannot represent a non string value: true',
+          message: 'String cannot represent a non string value: true',
           locations: [{ line: 4, column: 39 }],
         },
       ]);
@@ -213,8 +210,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "String", found BAR; String cannot represent a non string value: BAR',
+          message: 'String cannot represent a non string value: BAR',
           locations: [{ line: 4, column: 39 }],
         },
       ]);
@@ -231,8 +227,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Int", found "3"; Int cannot represent non-integer value: "3"',
+          message: 'Int cannot represent non-integer value: "3"',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -248,7 +243,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Expected value of type "Int", found 829384293849283498239482938; Int cannot represent non 32-bit signed integer value: 829384293849283498239482938',
+            'Int cannot represent non 32-bit signed integer value: 829384293849283498239482938',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -263,8 +258,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Int", found FOO; Int cannot represent non-integer value: FOO',
+          message: 'Int cannot represent non-integer value: FOO',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -279,8 +273,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Int", found 3.0; Int cannot represent non-integer value: 3.0',
+          message: 'Int cannot represent non-integer value: 3.0',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -295,8 +288,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Int", found 3.333; Int cannot represent non-integer value: 3.333',
+          message: 'Int cannot represent non-integer value: 3.333',
           locations: [{ line: 4, column: 33 }],
         },
       ]);
@@ -313,8 +305,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Float", found "3.333"; Float cannot represent non numeric value: "3.333"',
+          message: 'Float cannot represent non numeric value: "3.333"',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -329,8 +320,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Float", found true; Float cannot represent non numeric value: true',
+          message: 'Float cannot represent non numeric value: true',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -345,8 +335,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Float", found FOO; Float cannot represent non numeric value: FOO',
+          message: 'Float cannot represent non numeric value: FOO',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -363,8 +352,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Boolean", found 2; Boolean cannot represent a non boolean value: 2',
+          message: 'Boolean cannot represent a non boolean value: 2',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -379,8 +367,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Boolean", found 1.0; Boolean cannot represent a non boolean value: 1.0',
+          message: 'Boolean cannot represent a non boolean value: 1.0',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -395,8 +382,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Boolean", found "true"; Boolean cannot represent a non boolean value: "true"',
+          message: 'Boolean cannot represent a non boolean value: "true"',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -411,8 +397,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Boolean", found TRUE; Boolean cannot represent a non boolean value: TRUE',
+          message: 'Boolean cannot represent a non boolean value: TRUE',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -430,7 +415,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Expected value of type "ID", found 1.0; ID cannot represent a non-string and non-integer value: 1.0',
+            'ID cannot represent a non-string and non-integer value: 1.0',
           locations: [{ line: 4, column: 31 }],
         },
       ]);
@@ -446,7 +431,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Expected value of type "ID", found true; ID cannot represent a non-string and non-integer value: true',
+            'ID cannot represent a non-string and non-integer value: true',
           locations: [{ line: 4, column: 31 }],
         },
       ]);
@@ -462,7 +447,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Expected value of type "ID", found SOMETHING; ID cannot represent a non-string and non-integer value: SOMETHING',
+            'ID cannot represent a non-string and non-integer value: SOMETHING',
           locations: [{ line: 4, column: 31 }],
         },
       ]);
@@ -615,8 +600,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "String", found 2; String cannot represent a non string value: 2',
+          message: 'String cannot represent a non string value: 2',
           locations: [{ line: 4, column: 55 }],
         },
       ]);
@@ -631,8 +615,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "[String]", found 1; String cannot represent a non string value: 1',
+          message: 'String cannot represent a non string value: 1',
           locations: [{ line: 4, column: 47 }],
         },
       ]);
@@ -751,13 +734,11 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Int!", found "two"; Int cannot represent non-integer value: "two"',
+          message: 'Int cannot represent non-integer value: "two"',
           locations: [{ line: 4, column: 32 }],
         },
         {
-          message:
-            'Expected value of type "Int!", found "one"; Int cannot represent non-integer value: "one"',
+          message: 'Int cannot represent non-integer value: "one"',
           locations: [{ line: 4, column: 45 }],
         },
       ]);
@@ -772,8 +753,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Int!", found "one"; Int cannot represent non-integer value: "one"',
+          message: 'Int cannot represent non-integer value: "one"',
           locations: [{ line: 4, column: 32 }],
         },
       ]);
@@ -898,8 +878,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "String", found 2; String cannot represent a non string value: 2',
+          message: 'String cannot represent a non string value: 2',
           locations: [{ line: 5, column: 40 }],
         },
       ]);
@@ -998,13 +977,11 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Boolean!", found "yes"; Boolean cannot represent a non boolean value: "yes"',
+          message: 'Boolean cannot represent a non boolean value: "yes"',
           locations: [{ line: 3, column: 28 }],
         },
         {
-          message:
-            'Expected value of type "Boolean!", found ENUM; Boolean cannot represent a non boolean value: ENUM',
+          message: 'Boolean cannot represent a non boolean value: ENUM',
           locations: [{ line: 4, column: 28 }],
         },
       ]);
@@ -1073,13 +1050,11 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Int", found "one"; Int cannot represent non-integer value: "one"',
+          message: 'Int cannot represent non-integer value: "one"',
           locations: [{ line: 3, column: 21 }],
         },
         {
-          message:
-            'Expected value of type "String", found 4; String cannot represent a non string value: 4',
+          message: 'String cannot represent a non string value: 4',
           locations: [{ line: 4, column: 24 }],
         },
         {
@@ -1099,13 +1074,11 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "Boolean!", found 123; Boolean cannot represent a non boolean value: 123',
+          message: 'Boolean cannot represent a non boolean value: 123',
           locations: [{ line: 3, column: 47 }],
         },
         {
-          message:
-            'Expected value of type "Int", found "abc"; Int cannot represent non-integer value: "abc"',
+          message: 'Int cannot represent non-integer value: "abc"',
           locations: [{ line: 3, column: 62 }],
         },
       ]);
@@ -1132,8 +1105,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message:
-            'Expected value of type "String", found 2; String cannot represent a non string value: 2',
+          message: 'String cannot represent a non string value: 2',
           locations: [{ line: 2, column: 50 }],
         },
       ]);

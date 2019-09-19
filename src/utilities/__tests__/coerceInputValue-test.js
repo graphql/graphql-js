@@ -197,8 +197,7 @@ describe('coerceInputValue', () => {
       const result = coerceValue({ foo: NaN }, TestInputObject);
       expectErrors(result).to.deep.equal([
         {
-          error:
-            'Expected type "Int". Int cannot represent non-integer value: NaN',
+          error: 'Int cannot represent non-integer value: NaN',
           path: ['foo'],
           value: NaN,
         },
@@ -209,14 +208,12 @@ describe('coerceInputValue', () => {
       const result = coerceValue({ foo: 'abc', bar: 'def' }, TestInputObject);
       expectErrors(result).to.deep.equal([
         {
-          error:
-            'Expected type "Int". Int cannot represent non-integer value: "abc"',
+          error: 'Int cannot represent non-integer value: "abc"',
           path: ['foo'],
           value: 'abc',
         },
         {
-          error:
-            'Expected type "Int". Int cannot represent non-integer value: "def"',
+          error: 'Int cannot represent non-integer value: "def"',
           path: ['bar'],
           value: 'def',
         },
@@ -309,14 +306,12 @@ describe('coerceInputValue', () => {
       const result = coerceValue([1, 'b', true, 4], TestList);
       expectErrors(result).to.deep.equal([
         {
-          error:
-            'Expected type "Int". Int cannot represent non-integer value: "b"',
+          error: 'Int cannot represent non-integer value: "b"',
           path: [1],
           value: 'b',
         },
         {
-          error:
-            'Expected type "Int". Int cannot represent non-integer value: true',
+          error: 'Int cannot represent non-integer value: true',
           path: [2],
           value: true,
         },
@@ -332,8 +327,7 @@ describe('coerceInputValue', () => {
       const result = coerceValue('INVALID', TestList);
       expectErrors(result).to.deep.equal([
         {
-          error:
-            'Expected type "Int". Int cannot represent non-integer value: "INVALID"',
+          error: 'Int cannot represent non-integer value: "INVALID"',
           path: [],
           value: 'INVALID',
         },

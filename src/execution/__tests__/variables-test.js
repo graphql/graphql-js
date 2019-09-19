@@ -687,7 +687,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$value" got invalid value [1, 2, 3]; Expected type "String". String cannot represent a non string value: [1, 2, 3]',
+              'Variable "$value" got invalid value [1, 2, 3]; String cannot represent a non string value: [1, 2, 3]',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -1006,7 +1006,7 @@ describe('Execute: Handles inputs', () => {
 
     function invalidValueError(value, index) {
       return {
-        message: `Variable "$input" got invalid value ${value} at "input[${index}]"; Expected type "String". String cannot represent a non string value: ${value}`,
+        message: `Variable "$input" got invalid value ${value} at "input[${index}]"; String cannot represent a non string value: ${value}`,
         locations: [{ line: 2, column: 14 }],
       };
     }
