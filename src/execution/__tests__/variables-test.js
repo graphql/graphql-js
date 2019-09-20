@@ -577,6 +577,20 @@ describe('Execute: Handles inputs', () => {
   });
 
   describe('Handles non-nullable scalars', () => {
+    it('allows non-nullable variable to be omitted given a default', () => {
+      const result = executeQuery(`
+        query ($value: String! = "default") {
+          fieldWithNullableStringInput(input: $value)
+        }
+      `);
+
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNullableStringInput: '"default"',
+        },
+      });
+    });
+
     it('allows non-nullable inputs to be omitted given a default', () => {
       const result = executeQuery(`
         query ($value: String = "default") {
