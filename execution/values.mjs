@@ -65,9 +65,7 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
     if (!hasOwnProperty(inputs, varName)) {
       if (varDefNode.defaultValue) {
         coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
-      }
-
-      if (isNonNullType(varType)) {
+      } else if (isNonNullType(varType)) {
         var _varTypeStr = inspect(varType);
 
         onError(new GraphQLError("Variable \"$".concat(varName, "\" of required type \"").concat(_varTypeStr, "\" was not provided."), varDefNode));

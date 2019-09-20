@@ -96,9 +96,7 @@ function coerceVariableValues(
     if (!hasOwnProperty(inputs, varName)) {
       if (varDefNode.defaultValue) {
         coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
-      }
-
-      if (isNonNullType(varType)) {
+      } else if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
         onError(
           new GraphQLError(
