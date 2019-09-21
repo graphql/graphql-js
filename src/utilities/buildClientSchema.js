@@ -72,11 +72,10 @@ export function buildClientSchema(
   introspection: IntrospectionQuery,
   options?: Options,
 ): GraphQLSchema {
+  const introspectionStr = inspect(introspection);
   devAssert(
     isObjectLike(introspection) && isObjectLike(introspection.__schema),
-    'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' +
-      inspect(introspection) +
-      '.',
+    `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${introspectionStr}.`,
   );
 
   // Get the schema from the introspection result.
@@ -144,7 +143,7 @@ export function buildClientSchema(
       return GraphQLNonNull(assertNullableType(nullableType));
     }
     if (!typeRef.name) {
-      throw new Error('Unknown type reference: ' + inspect(typeRef) + '.');
+      throw new Error(`Unknown type reference: ${inspect(typeRef)}.`);
     }
     return getNamedType(typeRef.name);
   }
@@ -165,10 +164,9 @@ export function buildClientSchema(
     if (isInputType(type)) {
       return type;
     }
+    const typeStr = inspect(type);
     throw new Error(
-      'Introspection must provide input type for arguments, but received: ' +
-        inspect(type) +
-        '.',
+      `Introspection must provide input type for arguments, but received: ${typeStr}.`,
     );
   }
 
@@ -179,10 +177,9 @@ export function buildClientSchema(
     if (isOutputType(type)) {
       return type;
     }
+    const typeStr = inspect(type);
     throw new Error(
-      'Introspection must provide output type for fields, but received: ' +
-        inspect(type) +
-        '.',
+      `Introspection must provide output type for fields, but received: ${typeStr}.`,
     );
   }
 
@@ -219,10 +216,9 @@ export function buildClientSchema(
           return buildInputObjectDef(type);
       }
     }
+    const typeStr = inspect(type);
     throw new Error(
-      'Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ' +
-        inspect(type) +
-        '.',
+      `Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ${typeStr}.`,
     );
   }
 
@@ -239,10 +235,9 @@ export function buildClientSchema(
     objectIntrospection: IntrospectionObjectType,
   ): GraphQLObjectType {
     if (!objectIntrospection.interfaces) {
+      const introspectionStr = inspect(objectIntrospection);
       throw new Error(
-        'Introspection result missing interfaces: ' +
-          inspect(objectIntrospection) +
-          '.',
+        `Introspection result missing interfaces: ${introspectionStr}.`,
       );
     }
     return new GraphQLObjectType({
@@ -267,10 +262,9 @@ export function buildClientSchema(
     unionIntrospection: IntrospectionUnionType,
   ): GraphQLUnionType {
     if (!unionIntrospection.possibleTypes) {
+      const introspectionStr = inspect(unionIntrospection);
       throw new Error(
-        'Introspection result missing possibleTypes: ' +
-          inspect(unionIntrospection) +
-          '.',
+        `Introspection result missing possibleTypes: ${introspectionStr}.`,
       );
     }
     return new GraphQLUnionType({
@@ -285,9 +279,9 @@ export function buildClientSchema(
   ): GraphQLEnumType {
     if (!enumIntrospection.enumValues) {
       throw new Error(
-        'Introspection result missing enumValues: ' +
-          inspect(enumIntrospection) +
-          '.',
+        `Introspection result missing enumValues: ${inspect(
+          enumIntrospection,
+        )}.`,
       );
     }
     return new GraphQLEnumType({
@@ -308,10 +302,9 @@ export function buildClientSchema(
     inputObjectIntrospection: IntrospectionInputObjectType,
   ): GraphQLInputObjectType {
     if (!inputObjectIntrospection.inputFields) {
+      const introspectionStr = inspect(inputObjectIntrospection);
       throw new Error(
-        'Introspection result missing inputFields: ' +
-          inspect(inputObjectIntrospection) +
-          '.',
+        `Introspection result missing inputFields: ${introspectionStr}.`,
       );
     }
     return new GraphQLInputObjectType({
@@ -324,7 +317,7 @@ export function buildClientSchema(
   function buildFieldDefMap(typeIntrospection) {
     if (!typeIntrospection.fields) {
       throw new Error(
-        'Introspection result missing fields: ' + inspect(typeIntrospection) + '.',
+        `Introspection result missing fields: ${inspect(typeIntrospection)}.`,
       );
     }
     return keyValMap(
@@ -333,9 +326,9 @@ export function buildClientSchema(
       fieldIntrospection => {
         if (!fieldIntrospection.args) {
           throw new Error(
-            'Introspection result missing field args: ' +
-              inspect(fieldIntrospection) +
-              '.',
+            `Introspection result missing field args: ${inspect(
+              fieldIntrospection,
+            )}.`,
           );
         }
         return {
@@ -370,18 +363,15 @@ export function buildClientSchema(
   }
 
   function buildDirective(directiveIntrospection) {
+    const introspectionStr = inspect(directiveIntrospection);
     if (!directiveIntrospection.args) {
       throw new Error(
-        'Introspection result missing directive args: ' +
-          inspect(directiveIntrospection) +
-          '.',
+        `Introspection result missing directive args: ${introspectionStr}.`,
       );
     }
     if (!directiveIntrospection.locations) {
       throw new Error(
-        'Introspection result missing directive locations: ' +
-          inspect(directiveIntrospection) +
-          '.',
+        `Introspection result missing directive locations: ${introspectionStr}.`,
       );
     }
     return new GraphQLDirective({
