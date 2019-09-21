@@ -13,43 +13,43 @@ import { GraphQLDirective } from '../type/directives';
 import { specifiedScalarTypes } from '../type/scalars';
 import { introspectionTypes, TypeKind } from '../type/introspection';
 import {
-  GraphQLSchema,
   type GraphQLSchemaValidationOptions,
+  GraphQLSchema,
 } from '../type/schema';
 import {
-  assertInterfaceType,
-  assertNullableType,
-  assertObjectType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  type GraphQLInputType,
-  GraphQLInterfaceType,
-  GraphQLList,
-  type GraphQLNamedType,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  type GraphQLOutputType,
-  GraphQLScalarType,
   type GraphQLType,
-  GraphQLUnionType,
+  type GraphQLInputType,
+  type GraphQLOutputType,
+  type GraphQLNamedType,
   isInputType,
   isOutputType,
+  GraphQLScalarType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+  assertNullableType,
+  assertObjectType,
+  assertInterfaceType,
 } from '../type/definition';
 
 import { valueFromAST } from './valueFromAST';
 import {
+  type IntrospectionQuery,
+  type IntrospectionType,
+  type IntrospectionScalarType,
+  type IntrospectionObjectType,
+  type IntrospectionInterfaceType,
+  type IntrospectionUnionType,
   type IntrospectionEnumType,
   type IntrospectionInputObjectType,
-  type IntrospectionInputTypeRef,
-  type IntrospectionInterfaceType,
-  type IntrospectionNamedTypeRef,
-  type IntrospectionObjectType,
-  type IntrospectionOutputTypeRef,
-  type IntrospectionQuery,
-  type IntrospectionScalarType,
-  type IntrospectionType,
   type IntrospectionTypeRef,
-  type IntrospectionUnionType,
+  type IntrospectionInputTypeRef,
+  type IntrospectionOutputTypeRef,
+  type IntrospectionNamedTypeRef,
 } from './getIntrospectionQuery';
 
 type Options = {|
