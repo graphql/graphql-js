@@ -13,43 +13,43 @@ import { GraphQLDirective } from '../type/directives';
 import { specifiedScalarTypes } from '../type/scalars';
 import { introspectionTypes, TypeKind } from '../type/introspection';
 import {
-  type GraphQLSchemaValidationOptions,
   GraphQLSchema,
+  type GraphQLSchemaValidationOptions,
 } from '../type/schema';
 import {
-  type GraphQLType,
-  type GraphQLInputType,
-  type GraphQLOutputType,
-  type GraphQLNamedType,
-  isInputType,
-  isOutputType,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
+  assertInterfaceType,
   assertNullableType,
   assertObjectType,
-  assertInterfaceType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  type GraphQLInputType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  type GraphQLNamedType,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  type GraphQLOutputType,
+  GraphQLScalarType,
+  type GraphQLType,
+  GraphQLUnionType,
+  isInputType,
+  isOutputType,
 } from '../type/definition';
 
 import { valueFromAST } from './valueFromAST';
 import {
-  type IntrospectionQuery,
-  type IntrospectionType,
-  type IntrospectionScalarType,
-  type IntrospectionObjectType,
-  type IntrospectionInterfaceType,
-  type IntrospectionUnionType,
   type IntrospectionEnumType,
   type IntrospectionInputObjectType,
-  type IntrospectionTypeRef,
   type IntrospectionInputTypeRef,
-  type IntrospectionOutputTypeRef,
+  type IntrospectionInterfaceType,
   type IntrospectionNamedTypeRef,
+  type IntrospectionObjectType,
+  type IntrospectionOutputTypeRef,
+  type IntrospectionQuery,
+  type IntrospectionScalarType,
+  type IntrospectionType,
+  type IntrospectionTypeRef,
+  type IntrospectionUnionType,
 } from './getIntrospectionQuery';
 
 type Options = {|
@@ -72,10 +72,11 @@ export function buildClientSchema(
   introspection: IntrospectionQuery,
   options?: Options,
 ): GraphQLSchema {
-  const introspectionStr = inspect(introspection);
   devAssert(
     isObjectLike(introspection) && isObjectLike(introspection.__schema),
-    `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${introspectionStr}.`,
+    `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${inspect(
+      introspection,
+    )}.`,
   );
 
   // Get the schema from the introspection result.
