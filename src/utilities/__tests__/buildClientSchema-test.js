@@ -29,10 +29,10 @@ import { introspectionFromSchema } from '../introspectionFromSchema';
 /**
  * This function does a full cycle of going from a string with the contents of
  * the SDL, build in-memory GraphQLSchema from it, produce a client-side
- * representation of the schema by using "buildClientSchema"and then finally
- * printing that that schema into the SDL
+ * representation of the schema by using "buildClientSchema" and then
+ * returns that schema printed as SDL.
  */
-function cycleIntrospection(sdlString) {
+function cycleIntrospection(sdlString: string): string {
   const serverSchema = buildSchema(sdlString);
   const initialIntrospection = introspectionFromSchema(serverSchema);
   const clientSchema = buildClientSchema(initialIntrospection);
@@ -141,7 +141,7 @@ describe('Type System: build schema from introspection', () => {
     expect(clientSchema.getType('CustomScalar')).not.to.equal(customScalar);
   });
 
-  it('include standard type only if it is used', () => {
+  it('includes standard types only if they are used', () => {
     const schema = buildSchema(`
       type Query {
         foo: String

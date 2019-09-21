@@ -89,6 +89,7 @@ export function buildClientSchema(
     typeIntrospection => buildType(typeIntrospection),
   );
 
+  // Include standard types only if they are used.
   for (const stdType of [...specifiedScalarTypes, ...introspectionTypes]) {
     if (typeMap[stdType.name]) {
       typeMap[stdType.name] = stdType;
