@@ -20,8 +20,6 @@ import {
   ValidationContext,
 } from './ValidationContext';
 
-export const ABORT_VALIDATION = Object.freeze({});
-
 /**
  * Implements the "Validation" section of the spec.
  *
