@@ -7,7 +7,6 @@ exports.validate = validate;
 exports.validateSDL = validateSDL;
 exports.assertValidSDL = assertValidSDL;
 exports.assertValidSDLExtension = assertValidSDLExtension;
-exports.ABORT_VALIDATION = void 0;
 
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
@@ -25,7 +24,6 @@ var _ValidationContext = require("./ValidationContext");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var ABORT_VALIDATION = Object.freeze({});
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -42,9 +40,6 @@ var ABORT_VALIDATION = Object.freeze({});
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-
-exports.ABORT_VALIDATION = ABORT_VALIDATION;
-
 function validate(schema, documentAST) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _specifiedRules.specifiedRules;
   var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new _TypeInfo.TypeInfo(schema);

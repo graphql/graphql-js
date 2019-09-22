@@ -5,7 +5,6 @@ import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
 import { SDLValidationContext, ValidationContext } from './ValidationContext';
-export var ABORT_VALIDATION = Object.freeze({});
 /**
  * Implements the "Validation" section of the spec.
  *
