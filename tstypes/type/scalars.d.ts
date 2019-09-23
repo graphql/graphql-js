@@ -13,6 +13,6 @@ export type SpecifiedScalarType =
   | typeof GraphQLBoolean
   | typeof GraphQLID;
 
-export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType>;
+export const specifiedScalarTypes: ReadonlyArray<SpecifiedScalarType>;
 
 export function isSpecifiedScalarType(type: any): type is SpecifiedScalarType;
