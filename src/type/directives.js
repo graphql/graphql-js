@@ -198,9 +198,8 @@ export const specifiedDirectives = Object.freeze([
   GraphQLDeprecatedDirective,
 ]);
 
-export function isSpecifiedDirective(directive: mixed): boolean %checks {
-  return (
-    isDirective(directive) &&
-    specifiedDirectives.some(({ name }) => name === directive.name)
-  );
+export function isSpecifiedDirective(
+  directive: GraphQLDirective,
+): boolean %checks {
+  return specifiedDirectives.some(({ name }) => name === directive.name);
 }

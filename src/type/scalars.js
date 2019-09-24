@@ -11,7 +11,7 @@ import { print } from '../language/printer';
 
 import { GraphQLError } from '../error/GraphQLError';
 
-import { GraphQLScalarType, isScalarType } from './definition';
+import { type GraphQLNamedType, GraphQLScalarType } from './definition';
 
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
@@ -271,9 +271,6 @@ export const specifiedScalarTypes = Object.freeze([
   GraphQLID,
 ]);
 
-export function isSpecifiedScalarType(type: mixed): boolean %checks {
-  return (
-    isScalarType(type) &&
-    specifiedScalarTypes.some(({ name }) => type.name === name)
-  );
+export function isSpecifiedScalarType(type: GraphQLNamedType): boolean %checks {
+  return specifiedScalarTypes.some(({ name }) => type.name === name);
 }

@@ -157,35 +157,6 @@ describe('Type predicates', () => {
     it('returns false for custom scalar', () => {
       expect(isSpecifiedScalarType(ScalarType)).to.equal(false);
     });
-
-    it('returns false for scalar class (rather than specified instance)', () => {
-      expect(isSpecifiedScalarType(GraphQLScalarType)).to.equal(false);
-    });
-
-    it('returns false for wrapped specified scalar', () => {
-      expect(isSpecifiedScalarType(GraphQLList(GraphQLString))).to.equal(false);
-    });
-
-    it('returns false for non-scalar', () => {
-      expect(isSpecifiedScalarType(EnumType)).to.equal(false);
-      expect(isSpecifiedScalarType(Directive)).to.equal(false);
-    });
-
-    it('returns false for spec defined directive', () => {
-      expect(isSpecifiedScalarType(GraphQLSkipDirective)).to.equal(false);
-    });
-
-    it('returns false for object type named like specified scalar', () => {
-      const ObjectNamedLikeScalar = new GraphQLObjectType({
-        name: 'String',
-        fields: { serialize: { type: GraphQLString } },
-      });
-      expect(isSpecifiedScalarType(ObjectNamedLikeScalar)).to.equal(false);
-    });
-
-    it('returns false for random garbage', () => {
-      expect(isSpecifiedScalarType({ what: 'is this' })).to.equal(false);
-    });
   });
 
   describe('isObjectType', () => {
@@ -699,30 +670,6 @@ describe('Directive predicates', () => {
 
     it('returns false for custom directive', () => {
       expect(isSpecifiedDirective(Directive)).to.equal(false);
-    });
-
-    it('returns false for directive class (rather than specified instance)', () => {
-      expect(isSpecifiedDirective(GraphQLDirective)).to.equal(false);
-    });
-
-    it('returns false for non-directive', () => {
-      expect(isSpecifiedDirective(EnumType)).to.equal(false);
-      expect(isSpecifiedDirective(ScalarType)).to.equal(false);
-    });
-
-    it('returns false for spec defined scalar type', () => {
-      expect(isSpecifiedDirective(GraphQLString)).to.equal(false);
-    });
-
-    it('returns false for scalar type named like specified directive', () => {
-      const ScalarNamedLikeDirective = new GraphQLScalarType({
-        name: 'deprecated',
-      });
-      expect(isSpecifiedDirective(ScalarNamedLikeDirective)).to.equal(false);
-    });
-
-    it('returns false for random garbage', () => {
-      expect(isSpecifiedDirective({ what: 'is this' })).to.equal(false);
     });
   });
 });

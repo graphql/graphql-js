@@ -37,4 +37,4 @@ export const TypeNameMetaFieldDef: GraphQLField<any, any>;
 
 export const introspectionTypes: ReadonlyArray<GraphQLType>;
 
-export function isIntrospectionType(type: any): boolean;
+export function isIntrospectionType(type: GraphQLType): boolean;
