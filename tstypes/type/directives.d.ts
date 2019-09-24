@@ -67,6 +67,4 @@ export const GraphQLDeprecatedDirective: GraphQLDirective;
  */
 export const specifiedDirectives: ReadonlyArray<GraphQLDirective>;
 
-export function isSpecifiedDirective(
-  directive: any,
-): directive is GraphQLDirective;
+export function isSpecifiedDirective(directive: any): boolean;
