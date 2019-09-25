@@ -110,6 +110,27 @@ describe('Validate: Known argument names', () => {
     ]);
   });
 
+  it('directive without args is valid', () => {
+    expectValid(`
+      {
+        dog @onField
+      }
+    `);
+  });
+
+  it('arg passed to directive without arg is reported', () => {
+    expectErrors(`
+      {
+        dog @onField(if: true)
+      }
+    `).to.deep.equal([
+      {
+        message: 'Unknown argument "if" on directive "@onField".',
+        locations: [{ line: 3, column: 22 }],
+      },
+    ]);
+  });
+
   it('misspelled directive args are reported', () => {
     expectErrors(`
       {
