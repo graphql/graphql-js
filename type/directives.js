@@ -80,10 +80,6 @@ function () {
 
   var _proto = GraphQLDirective.prototype;
 
-  _proto.toString = function toString() {
-    return '@' + this.name;
-  };
-
   _proto.toConfig = function toConfig() {
     return {
       name: this.name,
@@ -94,6 +90,10 @@ function () {
       extensions: this.extensions,
       astNode: this.astNode
     };
+  };
+
+  _proto.toString = function toString() {
+    return '@' + this.name;
   };
 
   return GraphQLDirective;
