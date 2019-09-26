@@ -56,8 +56,8 @@ export class GraphQLDirective {
   name: string;
   description: ?string;
   locations: Array<DirectiveLocationEnum>;
-  isRepeatable: boolean;
   args: Array<GraphQLArgument>;
+  isRepeatable: boolean;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?DirectiveDefinitionNode;
 
@@ -91,15 +91,11 @@ export class GraphQLDirective {
     }));
   }
 
-  toString(): string {
-    return '@' + this.name;
-  }
-
   toConfig(): {|
     ...GraphQLDirectiveConfig,
     args: GraphQLFieldConfigArgumentMap,
-    extensions: ?ReadOnlyObjMap<mixed>,
     isRepeatable: boolean,
+    extensions: ?ReadOnlyObjMap<mixed>,
   |} {
     return {
       name: this.name,
@@ -110,6 +106,10 @@ export class GraphQLDirective {
       extensions: this.extensions,
       astNode: this.astNode,
     };
+  }
+
+  toString(): string {
+    return '@' + this.name;
   }
 }
 
