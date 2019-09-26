@@ -18,18 +18,20 @@ export class GraphQLDirective {
   locations: DirectiveLocationEnum[];
   isRepeatable: boolean;
   args: GraphQLArgument[];
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: GraphQLDirectiveConfig);
 
-  toString(): string;
-
   toConfig(): GraphQLDirectiveConfig & {
     args: GraphQLFieldConfigArgumentMap;
-    extensions?: Maybe<Readonly<Record<string, any>>>;
     isRepeatable: boolean;
+    extensions: Maybe<Readonly<Record<string, any>>>;
   };
+
+  toString(): string;
+  toJSON(): string;
+  inspect(): string;
 }
 
 export interface GraphQLDirectiveConfig {

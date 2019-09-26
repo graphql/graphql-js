@@ -291,6 +291,7 @@ export class GraphQLScalarType {
   extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
+
   constructor(config: GraphQLScalarTypeConfig<any, any>);
 
   toConfig(): GraphQLScalarTypeConfig<any, any> & {
@@ -387,6 +388,7 @@ export class GraphQLObjectType<
   toConfig(): GraphQLObjectTypeConfig<any, any> & {
     interfaces: GraphQLInterfaceType[];
     fields: GraphQLFieldConfigMap<any, any>;
+    extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
   };
 
@@ -559,7 +561,6 @@ export class GraphQLInterfaceType {
   extensionASTNodes: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 
   constructor(config: GraphQLInterfaceTypeConfig<any, any>);
-
   getFields(): GraphQLFieldMap<any, any>;
 
   toConfig(): GraphQLInterfaceTypeConfig<any, any> & {
@@ -625,11 +626,11 @@ export class GraphQLUnionType {
   extensionASTNodes: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 
   constructor(config: GraphQLUnionTypeConfig<any, any>);
-
   getTypes(): GraphQLObjectType[];
 
   toConfig(): GraphQLUnionTypeConfig<any, any> & {
     types: GraphQLObjectType[];
+    extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
   };
 
@@ -692,6 +693,7 @@ export class GraphQLEnumType {
   ): Maybe<any>;
 
   toConfig(): GraphQLEnumTypeConfig & {
+    extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<EnumTypeExtensionNode>;
   };
 
@@ -757,6 +759,7 @@ export class GraphQLInputObjectType {
   extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
+
   constructor(config: GraphQLInputObjectTypeConfig);
   getFields(): GraphQLInputFieldMap;
 
