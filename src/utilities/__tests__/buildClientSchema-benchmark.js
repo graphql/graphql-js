@@ -6,6 +6,10 @@ import { bigSchemaIntrospectionResult } from '../../__fixtures__';
 
 export const name = 'Build Schema from Introspection';
 export const count = 10;
+
+/**
+ * @internal
+ */
 export function measure() {
   buildClientSchema(bigSchemaIntrospectionResult.data, { assumeValid: true });
 }

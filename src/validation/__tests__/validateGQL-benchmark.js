@@ -13,6 +13,10 @@ const queryAST = parse(getIntrospectionQuery());
 
 export const name = 'Validate Introspection Query';
 export const count = 50;
+
+/**
+ * @internal
+ */
 export function measure() {
   validate(schema, queryAST);
 }

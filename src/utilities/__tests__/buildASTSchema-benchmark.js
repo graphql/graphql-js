@@ -10,6 +10,10 @@ const schemaAST = parse(bigSchemaSDL);
 
 export const name = 'Build Schema from AST';
 export const count = 10;
+
+/**
+ * @internal
+ */
 export function measure() {
   buildASTSchema(schemaAST, { assumeValid: true });
 }

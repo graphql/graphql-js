@@ -370,6 +370,9 @@ export const testSchema = new GraphQLSchema({
   ],
 });
 
+/**
+ * @internal
+ */
 export function expectValidationErrorsWithSchema(
   schema: GraphQLSchema,
   rule: ValidationRule,
@@ -380,10 +383,16 @@ export function expectValidationErrorsWithSchema(
   return expect(errors);
 }
 
+/**
+ * @internal
+ */
 export function expectValidationErrors(rule: ValidationRule, queryStr: string) {
   return expectValidationErrorsWithSchema(testSchema, rule, queryStr);
 }
 
+/**
+ * @internal
+ */
 export function expectSDLValidationErrors(
   schema: ?GraphQLSchema,
   rule: SDLValidationRule,

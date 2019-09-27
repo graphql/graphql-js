@@ -41,6 +41,8 @@ type CoercedVariableValues =
  * Note: The returned value is a plain Object with a prototype, since it is
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
+ * 
+ * @internal
  */
 export function getVariableValues(
   schema: GraphQLSchema,
@@ -153,6 +155,8 @@ function coerceVariableValues(
  * Note: The returned value is a plain Object with a prototype, since it is
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
+ * 
+ * @internal
  */
 export function getArgumentValues(
   def: GraphQLField<mixed, mixed> | GraphQLDirective,
