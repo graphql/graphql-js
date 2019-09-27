@@ -244,7 +244,7 @@ function buildResponse(
 /**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
- * 
+ *
  * @internal
  */
 export function assertValidExecutionArguments(
@@ -269,7 +269,7 @@ export function assertValidExecutionArguments(
  * execute, which we will pass throughout the other execution methods.
  *
  * Throws a GraphQLError if a valid execution context cannot be created.
- * 
+ *
  * @internal
  */
 export function buildExecutionContext(
@@ -469,7 +469,7 @@ function executeFields(
  * CollectFields requires the "runtime type" of an object. For a field which
  * returns an Interface or Union type, the "runtime type" will be the actual
  * Object type returned by that field.
- * 
+ *
  * @internal
  */
 export function collectFields(
@@ -676,7 +676,7 @@ export function buildResolveInfo(
 /**
  * Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
  * function. Returns the result of resolveFn or the abrupt-return Error object.
- * 
+ *
  * @internal
  */
 export function resolveFieldValueOrError(
@@ -1205,7 +1205,7 @@ export const defaultFieldResolver: GraphQLFieldResolver<
  * are allowed, like on a Union. __schema could get automatically
  * added to the query type, but that would require mutating type
  * definitions, which would cause issues.
- * 
+ *
  * @internal
  */
 export function getFieldDef(

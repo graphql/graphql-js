@@ -7,7 +7,7 @@ export type Path = {|
 
 /**
  * Given a Path and a key, return a new Path containing the new key.
- * 
+ *
  * @internal
  */
 export function addPath(prev: $ReadOnly<Path> | void, key: string | number) {

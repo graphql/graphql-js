@@ -122,7 +122,7 @@ function getCharacter(id) {
 
 /**
  * Allows us to query for a character's friends.
- * 
+ *
  * @internal
  */
 export function getFriends(character: Character): Array<Promise<Character>> {
@@ -132,7 +132,7 @@ export function getFriends(character: Character): Array<Promise<Character>> {
 
 /**
  * Allows us to fetch the undisputed hero of the Star Wars trilogy, R2-D2.
- * 
+ *
  * @internal
  */
 export function getHero(episode: number): Character {
@@ -146,7 +146,7 @@ export function getHero(episode: number): Character {
 
 /**
  * Allows us to query for the human with the given id.
- * 
+ *
  * @internal
  */
 export function getHuman(id: string): Human {
@@ -155,7 +155,7 @@ export function getHuman(id: string): Human {
 
 /**
  * Allows us to query for the droid with the given id.
- * 
+ *
  * @internal
  */
 export function getDroid(id: string): Droid {
