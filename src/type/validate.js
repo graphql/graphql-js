@@ -3,7 +3,6 @@
 import find from '../polyfills/find';
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
-import objectEntries from '../polyfills/objectEntries';
 
 import inspect from '../jsutils/inspect';
 
@@ -337,6 +336,7 @@ function validateObjectInterfaces(
       continue;
     }
     implementedTypeNames[iface.name] = true;
+
     validateObjectImplementsInterface(context, object, iface);
   }
 }
@@ -347,10 +347,10 @@ function validateObjectImplementsInterface(
   iface: GraphQLInterfaceType,
 ): void {
   const objectFieldMap = object.getFields();
-  const ifaceFieldMap = iface.getFields();
 
   // Assert each interface field is implemented.
-  for (const [fieldName, ifaceField] of objectEntries(ifaceFieldMap)) {
+  for (const ifaceField of objectValues(iface.getFields())) {
+    const fieldName = ifaceField.name;
     const objectField = objectFieldMap[fieldName];
 
     // Assert interface field exists on object.
