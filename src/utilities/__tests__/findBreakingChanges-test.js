@@ -37,6 +37,32 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, oldSchema)).to.deep.equal([]);
   });
 
+  it('should detect if a standard scalar was removed', () => {
+    const oldSchema = buildSchema(`
+      type Query {
+        foo: Float
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      type Query {
+        foo: String
+      }
+    `);
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: BreakingChangeType.TYPE_REMOVED,
+        description:
+          'Standard scalar Float was removed because it is not referenced anymore.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Query.foo changed type from Float to String.',
+      },
+    ]);
+    expect(findBreakingChanges(oldSchema, oldSchema)).to.deep.equal([]);
+  });
+
   it('should detect if a type changed its type', () => {
     const oldSchema = buildSchema(`
       scalar TypeWasScalarBecomesEnum
@@ -601,7 +627,7 @@ describe('findBreakingChanges', () => {
       directive @DirectiveName on FIELD_DEFINITION | QUERY
 
       type ArgThatChanges {
-        field1(id: Int): String
+        field1(id: Float): String
       }
 
       enum EnumTypeThatLosesAValue {
@@ -660,7 +686,8 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.TYPE_REMOVED,
-        description: 'Int was removed.',
+        description:
+          'Standard scalar Float was removed because it is not referenced anymore.',
       },
       {
         type: BreakingChangeType.TYPE_REMOVED,
@@ -669,7 +696,7 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'ArgThatChanges.field1 arg id has changed type from Int to String.',
+          'ArgThatChanges.field1 arg id has changed type from Float to String.',
       },
       {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
