@@ -19,6 +19,8 @@ var _printer = require("../language/printer");
 
 var _visitor = require("../language/visitor");
 
+var _scalars = require("../type/scalars");
+
 var _definition = require("../type/definition");
 
 var _astFromValue = require("./astFromValue");
@@ -146,7 +148,7 @@ function findTypeChanges(oldSchema, newSchema) {
     var oldType = _typesDiff$removed2[_i12];
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED,
-      description: "".concat(oldType.name, " was removed.")
+      description: (0, _scalars.isSpecifiedScalarType)(oldType) ? "Standard scalar ".concat(oldType.name, " was removed because it is not referenced anymore.") : "".concat(oldType.name, " was removed.")
     });
   }
 

@@ -10,6 +10,7 @@ import { print } from '../language/printer';
 import { visit } from '../language/visitor';
 
 import { type GraphQLSchema } from '../type/schema';
+import { isSpecifiedScalarType } from '../type/scalars';
 import {
   type GraphQLField,
   type GraphQLType,
@@ -176,7 +177,9 @@ function findTypeChanges(
   for (const oldType of typesDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED,
-      description: `${oldType.name} was removed.`,
+      description: isSpecifiedScalarType(oldType)
+        ? `Standard scalar ${oldType.name} was removed because it is not referenced anymore.`
+        : `${oldType.name} was removed.`,
     });
   }
 

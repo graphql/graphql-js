@@ -10,6 +10,7 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import { print } from '../language/printer';
 import { visit } from '../language/visitor';
+import { isSpecifiedScalarType } from '../type/scalars';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from '../type/definition';
 import { astFromValue } from './astFromValue';
 export var BreakingChangeType = Object.freeze({
@@ -124,7 +125,7 @@ function findTypeChanges(oldSchema, newSchema) {
     var oldType = _typesDiff$removed2[_i12];
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED,
-      description: "".concat(oldType.name, " was removed.")
+      description: isSpecifiedScalarType(oldType) ? "Standard scalar ".concat(oldType.name, " was removed because it is not referenced anymore.") : "".concat(oldType.name, " was removed.")
     });
   }
 
