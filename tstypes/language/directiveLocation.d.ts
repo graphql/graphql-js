@@ -3,7 +3,9 @@
  */
 export const DirectiveLocation: _DirectiveLocation;
 
-// @internal
+/**
+ * @internal
+ */
 type _DirectiveLocation = {
   // Request Definitions
   QUERY: 'QUERY';

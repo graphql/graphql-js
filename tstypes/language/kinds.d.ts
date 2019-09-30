@@ -3,7 +3,9 @@
  */
 export const Kind: _Kind;
 
-// @internal
+/**
+ * @internal
+ */
 type _Kind = {
   // Name
   NAME: 'Name';

@@ -4,7 +4,9 @@ import { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export const BreakingChangeType: _BreakingChangeType;
 
-// @internal
+/**
+ * @internal
+ */
 type _BreakingChangeType = {
   TYPE_REMOVED: 'TYPE_REMOVED';
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND';
@@ -25,7 +27,9 @@ type _BreakingChangeType = {
 
 export const DangerousChangeType: _DangerousChangeType;
 
-// @internal
+/**
+ * @internal
+ */
 type _DangerousChangeType = {
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM';
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION';

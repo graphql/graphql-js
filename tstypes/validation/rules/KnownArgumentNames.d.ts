@@ -9,7 +9,9 @@ import { ASTVisitor } from '../../language/visitor';
  */
 export function KnownArgumentNames(context: ValidationContext): ASTVisitor;
 
-// @internal
+/**
+ * @internal
+ */
 export function KnownArgumentNamesOnDirectives(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

@@ -18,6 +18,7 @@ const {
 if (require.main === module) {
   rmdirRecursive('./dist');
   mkdirRecursive('./dist');
+
   copyFile('./LICENSE', './dist/LICENSE');
   copyFile('./README.md', './dist/README.md');
 
