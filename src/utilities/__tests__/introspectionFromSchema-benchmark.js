@@ -13,10 +13,6 @@ const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
 
 export const name = 'Execute Introspection Query';
 export const count = 10;
-
-/**
- * @internal
- */
 export function measure() {
   execute(schema, queryAST);
 }
