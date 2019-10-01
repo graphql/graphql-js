@@ -17,14 +17,10 @@ import { type TokenKindEnum, TokenKind } from './tokenKind';
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-export function createLexer<TOptions>(
-  source: Source,
-  options: TOptions,
-): Lexer<TOptions> {
+export function createLexer(source: Source): Lexer {
   const startOfFileToken = new Tok(TokenKind.SOF, 0, 0, 0, 0, null);
-  const lexer: Lexer<TOptions> = {
+  const lexer: Lexer = {
     source,
-    options,
     lastToken: startOfFileToken,
     token: startOfFileToken,
     line: 1,
@@ -55,9 +51,8 @@ function lookahead() {
 /**
  * The return type of createLexer.
  */
-export type Lexer<TOptions> = {
+export type Lexer = {
   source: Source,
-  options: TOptions,
 
   /**
    * The previously focused non-ignored token.
@@ -167,7 +162,7 @@ function printCharCode(code) {
  * punctuators immediately or calls the appropriate helper function for more
  * complicated tokens.
  */
-function readToken(lexer: Lexer<mixed>, prev: Token): Token {
+function readToken(lexer: Lexer, prev: Token): Token {
   const source = lexer.source;
   const body = source.body;
   const bodyLength = body.length;
@@ -334,7 +329,7 @@ function unexpectedCharacterMessage(code) {
 function positionAfterWhitespace(
   body: string,
   startPosition: number,
-  lexer: Lexer<mixed>,
+  lexer: Lexer,
 ): number {
   const bodyLength = body.length;
   let position = startPosition;
