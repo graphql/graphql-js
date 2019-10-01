@@ -93,7 +93,9 @@ export type Lexer<TOptions> = {
   ...
 };
 
-// @internal
+/**
+ * @internal
+ */
 export function isPunctuatorTokenKind(kind: TokenKindEnum) {
   return (
     kind === TokenKind.BANG ||

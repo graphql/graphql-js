@@ -822,6 +822,9 @@ function fieldsToFieldsConfig(fields) {
   }));
 }
 
+/**
+ * @internal
+ */
 export function argsToArgsConfig(
   args: $ReadOnlyArray<GraphQLArgument>,
 ): GraphQLFieldConfigArgumentMap {

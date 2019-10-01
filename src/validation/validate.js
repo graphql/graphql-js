@@ -82,7 +82,9 @@ export function validate(
   return errors;
 }
 
-// @internal
+/**
+ * @internal
+ */
 export function validateSDL(
   documentAST: DocumentNode,
   schemaToExtend?: ?GraphQLSchema,
