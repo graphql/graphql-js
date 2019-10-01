@@ -6,7 +6,9 @@
  */
 export function dedentBlockStringValue(rawString: string): string;
 
-// @internal
+/**
+ * @internal
+ */
 export function getBlockStringIndentation(lines: ReadonlyArray<string>): number;
 
 /**

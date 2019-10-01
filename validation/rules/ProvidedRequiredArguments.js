@@ -73,7 +73,10 @@ function ProvidedRequiredArguments(context) {
       }
     }
   });
-} // @internal
+}
+/**
+ * @internal
+ */
 
 
 function ProvidedRequiredArgumentsOnDirectives(context) {

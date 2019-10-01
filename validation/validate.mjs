@@ -55,7 +55,10 @@ export function validate(schema, documentAST) {
   }
 
   return errors;
-} // @internal
+}
+/**
+ * @internal
+ */
 
 export function validateSDL(documentAST, schemaToExtend) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedSDLRules;

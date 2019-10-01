@@ -71,7 +71,9 @@ export function ProvidedRequiredArguments(
   };
 }
 
-// @internal
+/**
+ * @internal
+ */
 export function ProvidedRequiredArgumentsOnDirectives(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {

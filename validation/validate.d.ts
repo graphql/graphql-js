@@ -29,7 +29,9 @@ export function validate(
   options?: { maxErrors?: number },
 ): ReadonlyArray<GraphQLError>;
 
-// @internal
+/**
+ * @internal
+ */
 export function validateSDL(
   documentAST: DocumentNode,
   schemaToExtend?: Maybe<GraphQLSchema>,

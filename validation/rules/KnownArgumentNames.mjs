@@ -33,7 +33,10 @@ export function KnownArgumentNames(context) {
       }
     }
   });
-} // @internal
+}
+/**
+ * @internal
+ */
 
 export function KnownArgumentNamesOnDirectives(context) {
   var directiveArgs = Object.create(null);

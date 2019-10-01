@@ -47,7 +47,10 @@ function KnownArgumentNames(context) {
       }
     }
   });
-} // @internal
+}
+/**
+ * @internal
+ */
 
 
 function KnownArgumentNamesOnDirectives(context) {

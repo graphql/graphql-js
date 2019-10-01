@@ -52,7 +52,10 @@ export function ProvidedRequiredArguments(context) {
       }
     }
   });
-} // @internal
+}
+/**
+ * @internal
+ */
 
 export function ProvidedRequiredArgumentsOnDirectives(context) {
   var requiredArgsMap = Object.create(null);

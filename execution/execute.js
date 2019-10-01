@@ -127,6 +127,8 @@ function buildResponse(exeContext, data) {
 /**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
+ *
+ * @internal
  */
 
 
@@ -142,6 +144,8 @@ function assertValidExecutionArguments(schema, document, rawVariableValues) {
  * execute, which we will pass throughout the other execution methods.
  *
  * Throws a GraphQLError if a valid execution context cannot be created.
+ *
+ * @internal
  */
 
 
@@ -299,6 +303,8 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
  * CollectFields requires the "runtime type" of an object. For a field which
  * returns an Interface or Union type, the "runtime type" will be the actual
  * Object type returned by that field.
+ *
+ * @internal
  */
 
 
@@ -433,6 +439,10 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
   var result = resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, source, info);
   return completeValueCatchingError(exeContext, fieldDef.type, fieldNodes, info, path, result);
 }
+/**
+ * @internal
+ */
+
 
 function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path) {
   // The resolve function's optional fourth argument is a collection of
@@ -449,8 +459,13 @@ function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path) {
     operation: exeContext.operation,
     variableValues: exeContext.variableValues
   };
-} // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
-// function. Returns the result of resolveFn or the abrupt-return Error object.
+}
+/**
+ * Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
+ * function. Returns the result of resolveFn or the abrupt-return Error object.
+ *
+ * @internal
+ */
 
 
 function resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, source, info) {
@@ -810,6 +825,8 @@ var defaultFieldResolver = function defaultFieldResolver(source, args, contextVa
  * are allowed, like on a Union. __schema could get automatically
  * added to the query type, but that would require mutating type
  * definitions, which would cause issues.
+ *
+ * @internal
  */
 
 

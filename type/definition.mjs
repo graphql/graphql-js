@@ -563,6 +563,10 @@ function fieldsToFieldsConfig(fields) {
     };
   });
 }
+/**
+ * @internal
+ */
+
 
 export function argsToArgsConfig(args) {
   return keyValMap(args, function (arg) {

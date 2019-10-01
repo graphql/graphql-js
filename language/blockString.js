@@ -12,6 +12,8 @@ exports.printBlockString = printBlockString;
  * CoffeeScript's block string, Python's docstring trim or Ruby's strip_heredoc.
  *
  * This implements the GraphQL spec's BlockStringValue() static algorithm.
+ *
+ * @internal
  */
 function dedentBlockStringValue(rawString) {
   // Expand a block string's raw value into independent lines.
@@ -36,7 +38,10 @@ function dedentBlockStringValue(rawString) {
 
 
   return lines.join('\n');
-} // @internal
+}
+/**
+ * @internal
+ */
 
 
 function getBlockStringIndentation(lines) {
@@ -79,6 +84,8 @@ function isBlank(str) {
  * Print a block string in the indented block form by adding a leading and
  * trailing blank line. However, if a block string starts with whitespace and is
  * a single-line, adding a leading blank line would strip that whitespace.
+ *
+ * @internal
  */
 
 

@@ -73,7 +73,10 @@ function validate(schema, documentAST) {
   }
 
   return errors;
-} // @internal
+}
+/**
+ * @internal
+ */
 
 
 function validateSDL(documentAST, schemaToExtend) {
