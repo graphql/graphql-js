@@ -4,7 +4,7 @@ import inspect from '../jsutils/inspect';
 
 import { Source } from '../language/source';
 import { TokenKind } from '../language/tokenKind';
-import { createLexer, isPunctuatorTokenKind } from '../language/lexer';
+import { Lexer, isPunctuatorTokenKind } from '../language/lexer';
 import {
   dedentBlockStringValue,
   getBlockStringIndentation,
@@ -71,7 +71,7 @@ export function stripIgnoredCharacters(source: string | Source): string {
   }
 
   const body = sourceObj.body;
-  const lexer = createLexer(sourceObj);
+  const lexer = new Lexer(sourceObj);
   let strippedBody = '';
 
   let wasLastAddedTokenNonPunctuator = false;

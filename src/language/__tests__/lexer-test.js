@@ -12,15 +12,15 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
-import { createLexer, isPunctuatorTokenKind } from '../lexer';
+import { Lexer, isPunctuatorTokenKind } from '../lexer';
 
 function lexOne(str) {
-  const lexer = createLexer(new Source(str));
+  const lexer = new Lexer(new Source(str));
   return lexer.advance();
 }
 
 function lexSecond(str) {
-  const lexer = createLexer(new Source(str));
+  const lexer = new Lexer(new Source(str));
   lexer.advance();
   return lexer.advance();
 }
@@ -187,7 +187,7 @@ describe('Lexer', () => {
     try {
       const str = ['', '', '     ?', ''].join('\n');
       const source = new Source(str, 'foo.js', { line: 11, column: 12 });
-      createLexer(source).advance();
+      new Lexer(source).advance();
     } catch (error) {
       caughtError = error;
     }
@@ -206,7 +206,7 @@ describe('Lexer', () => {
     let caughtError;
     try {
       const source = new Source('?', 'foo.js', { line: 1, column: 5 });
-      createLexer(source).advance();
+      new Lexer(source).advance();
     } catch (error) {
       caughtError = error;
     }
@@ -847,7 +847,7 @@ describe('Lexer', () => {
 
   it('lex reports useful information for dashes in names', () => {
     const source = new Source('a-b');
-    const lexer = createLexer(source);
+    const lexer = new Lexer(source);
     const firstToken = lexer.advance();
     expect(firstToken).to.contain({
       kind: TokenKind.NAME,
@@ -872,7 +872,7 @@ describe('Lexer', () => {
       }
     `);
 
-    const lexer = createLexer(source);
+    const lexer = new Lexer(source);
     const startToken = lexer.token;
     let endToken;
     do {
