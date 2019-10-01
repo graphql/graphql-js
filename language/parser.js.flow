@@ -168,7 +168,7 @@ export function parseType(
 
 class Parser {
   _options: ParseOptions;
-  _lexer: Lexer<void>;
+  _lexer: Lexer;
 
   constructor(source: string | Source, options?: ParseOptions) {
     const sourceObj = typeof source === 'string' ? new Source(source) : source;

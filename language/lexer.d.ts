@@ -10,17 +10,13 @@ import { Source } from './source';
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-export function createLexer<TOptions>(
-  source: Source,
-  options: TOptions,
-): Lexer<TOptions>;
+export function createLexer(source: Source): Lexer;
 
 /**
  * The return type of createLexer.
  */
-export interface Lexer<TOptions> {
+export interface Lexer {
   source: Source;
-  options: TOptions;
 
   /**
    * The previously focused non-ignored token.

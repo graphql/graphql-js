@@ -24,11 +24,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-function createLexer(source, options) {
+function createLexer(source) {
   var startOfFileToken = new Tok(_tokenKind.TokenKind.SOF, 0, 0, 0, 0, null);
   var lexer = {
     source: source,
-    options: options,
     lastToken: startOfFileToken,
     token: startOfFileToken,
     line: 1,

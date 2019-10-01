@@ -11,11 +11,10 @@ import { TokenKind } from './tokenKind';
  * whenever called.
  */
 
-export function createLexer(source, options) {
+export function createLexer(source) {
   var startOfFileToken = new Tok(TokenKind.SOF, 0, 0, 0, 0, null);
   var lexer = {
     source: source,
-    options: options,
     lastToken: startOfFileToken,
     token: startOfFileToken,
     line: 1,
