@@ -10,9 +10,7 @@ var _find = _interopRequireDefault(require("../polyfills/find"));
 
 var _flatMap = _interopRequireDefault(require("../polyfills/flatMap"));
 
-var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues"));
-
-var _objectEntries3 = _interopRequireDefault(require("../polyfills/objectEntries"));
+var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
@@ -201,7 +199,7 @@ function validateTypes(context) {
   var validateInputObjectCircularRefs = createInputObjectCircularRefsValidator(context);
   var typeMap = context.schema.getTypeMap();
 
-  for (var _i8 = 0, _objectValues2 = (0, _objectValues3.default)(typeMap); _i8 < _objectValues2.length; _i8++) {
+  for (var _i8 = 0, _objectValues2 = (0, _objectValues5.default)(typeMap); _i8 < _objectValues2.length; _i8++) {
     var type = _objectValues2[_i8];
 
     // Ensure all provided types are in fact GraphQL type.
@@ -239,7 +237,7 @@ function validateTypes(context) {
 }
 
 function validateFields(context, type) {
-  var fields = (0, _objectValues3.default)(type.getFields()); // Objects and Interfaces both must define one or more fields.
+  var fields = (0, _objectValues5.default)(type.getFields()); // Objects and Interfaces both must define one or more fields.
 
   if (fields.length === 0) {
     context.reportError("Type ".concat(type.name, " must define one or more fields."), getAllNodes(type));
@@ -308,13 +306,11 @@ function validateObjectInterfaces(context, object) {
 }
 
 function validateObjectImplementsInterface(context, object, iface) {
-  var objectFieldMap = object.getFields();
-  var ifaceFieldMap = iface.getFields(); // Assert each interface field is implemented.
+  var objectFieldMap = object.getFields(); // Assert each interface field is implemented.
 
-  for (var _i16 = 0, _objectEntries2 = (0, _objectEntries3.default)(ifaceFieldMap); _i16 < _objectEntries2.length; _i16++) {
-    var _ref6 = _objectEntries2[_i16];
-    var fieldName = _ref6[0];
-    var ifaceField = _ref6[1];
+  for (var _i16 = 0, _objectValues4 = (0, _objectValues5.default)(iface.getFields()); _i16 < _objectValues4.length; _i16++) {
+    var ifaceField = _objectValues4[_i16];
+    var fieldName = ifaceField.name;
     var objectField = objectFieldMap[fieldName]; // Assert interface field exists on object.
 
     if (!objectField) {
@@ -420,7 +416,7 @@ function validateEnumValues(context, enumType) {
 }
 
 function validateInputFields(context, inputObj) {
-  var fields = (0, _objectValues3.default)(inputObj.getFields());
+  var fields = (0, _objectValues5.default)(inputObj.getFields());
 
   if (fields.length === 0) {
     context.reportError("Input Object type ".concat(inputObj.name, " must define one or more fields."), getAllNodes(inputObj));
@@ -458,7 +454,7 @@ function createInputObjectCircularRefsValidator(context) {
 
     visitedTypes[inputObj.name] = true;
     fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
-    var fields = (0, _objectValues3.default)(inputObj.getFields());
+    var fields = (0, _objectValues5.default)(inputObj.getFields());
 
     for (var _i28 = 0; _i28 < fields.length; _i28++) {
       var field = fields[_i28];

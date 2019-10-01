@@ -1,7 +1,6 @@
 import find from '../polyfills/find';
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
-import objectEntries from '../polyfills/objectEntries';
 import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
 import { isValidNameError } from '../utilities/assertValidName';
@@ -286,13 +285,11 @@ function validateObjectInterfaces(context, object) {
 }
 
 function validateObjectImplementsInterface(context, object, iface) {
-  var objectFieldMap = object.getFields();
-  var ifaceFieldMap = iface.getFields(); // Assert each interface field is implemented.
+  var objectFieldMap = object.getFields(); // Assert each interface field is implemented.
 
-  for (var _i16 = 0, _objectEntries2 = objectEntries(ifaceFieldMap); _i16 < _objectEntries2.length; _i16++) {
-    var _ref6 = _objectEntries2[_i16];
-    var fieldName = _ref6[0];
-    var ifaceField = _ref6[1];
+  for (var _i16 = 0, _objectValues4 = objectValues(iface.getFields()); _i16 < _objectValues4.length; _i16++) {
+    var ifaceField = _objectValues4[_i16];
+    var fieldName = ifaceField.name;
     var objectField = objectFieldMap[fieldName]; // Assert interface field exists on object.
 
     if (!objectField) {
