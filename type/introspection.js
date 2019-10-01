@@ -550,7 +550,7 @@ var introspectionTypes = Object.freeze([__Schema, __Directive, __DirectiveLocati
 exports.introspectionTypes = introspectionTypes;
 
 function isIntrospectionType(type) {
-  return (0, _definition.isNamedType)(type) && introspectionTypes.some(function (_ref8) {
+  return introspectionTypes.some(function (_ref8) {
     var name = _ref8.name;
     return type.name === name;
   });

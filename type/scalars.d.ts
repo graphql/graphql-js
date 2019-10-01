@@ -1,4 +1,4 @@
-import { GraphQLScalarType } from './definition';
+import { GraphQLScalarType, GraphQLNamedType } from './definition';
 
 export const GraphQLInt: GraphQLScalarType;
 export const GraphQLFloat: GraphQLScalarType;
@@ -8,4 +8,4 @@ export const GraphQLID: GraphQLScalarType;
 
 export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType>;
 
-export function isSpecifiedScalarType(type: any): type is GraphQLScalarType;
+export function isSpecifiedScalarType(type: GraphQLNamedType): boolean;

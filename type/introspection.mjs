@@ -5,7 +5,7 @@ import { print } from '../language/printer';
 import { DirectiveLocation } from '../language/directiveLocation';
 import { astFromValue } from '../utilities/astFromValue';
 import { GraphQLString, GraphQLBoolean } from './scalars';
-import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType, isNamedType } from './definition';
+import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType } from './definition';
 export var __Schema = new GraphQLObjectType({
   name: '__Schema',
   description: 'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.',
@@ -503,7 +503,7 @@ export var TypeNameMetaFieldDef = {
 };
 export var introspectionTypes = Object.freeze([__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind]);
 export function isIntrospectionType(type) {
-  return isNamedType(type) && introspectionTypes.some(function (_ref8) {
+  return introspectionTypes.some(function (_ref8) {
     var name = _ref8.name;
     return type.name === name;
   });

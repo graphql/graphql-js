@@ -5,7 +5,7 @@ import isObjectLike from '../jsutils/isObjectLike';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 import { GraphQLError } from '../error/GraphQLError';
-import { GraphQLScalarType, isScalarType } from './definition'; // As per the GraphQL Spec, Integers are only treated as valid when a valid
+import { GraphQLScalarType } from './definition'; // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
 //
 // n.b. JavaScript's integers are safe between -(2^53 - 1) and 2^53 - 1 because
@@ -245,7 +245,7 @@ export var GraphQLID = new GraphQLScalarType({
 });
 export var specifiedScalarTypes = Object.freeze([GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID]);
 export function isSpecifiedScalarType(type) {
-  return isScalarType(type) && specifiedScalarTypes.some(function (_ref) {
+  return specifiedScalarTypes.some(function (_ref) {
     var name = _ref.name;
     return type.name === name;
   });

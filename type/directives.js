@@ -166,7 +166,7 @@ var specifiedDirectives = Object.freeze([GraphQLIncludeDirective, GraphQLSkipDir
 exports.specifiedDirectives = specifiedDirectives;
 
 function isSpecifiedDirective(directive) {
-  return isDirective(directive) && specifiedDirectives.some(function (_ref2) {
+  return specifiedDirectives.some(function (_ref2) {
     var name = _ref2.name;
     return name === directive.name;
   });

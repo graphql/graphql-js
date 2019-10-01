@@ -271,7 +271,7 @@ var specifiedScalarTypes = Object.freeze([GraphQLString, GraphQLInt, GraphQLFloa
 exports.specifiedScalarTypes = specifiedScalarTypes;
 
 function isSpecifiedScalarType(type) {
-  return (0, _definition.isScalarType)(type) && specifiedScalarTypes.some(function (_ref) {
+  return specifiedScalarTypes.some(function (_ref) {
     var name = _ref.name;
     return type.name === name;
   });
