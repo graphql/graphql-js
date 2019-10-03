@@ -38,7 +38,7 @@ const labelsConfig = {
 const GH_TOKEN = process.env['GH_TOKEN'];
 
 if (!GH_TOKEN) {
-  console.error('Must provide GH_TOKEN as enviroment variable!');
+  console.error('Must provide GH_TOKEN as environment variable!');
   process.exit(1);
 }
 
@@ -51,7 +51,7 @@ const match = /https:\/\/github.com\/([^/]+)\/([^/]+).git/.exec(
   packageJSON.repository.url,
 );
 if (match == null) {
-  console.error('Can not extract organisation and repo name from repo URL!');
+  console.error('Cannot extract organisation and repo name from repo URL!');
   process.exit(1);
 }
 const [, githubOrg, githubRepo] = match;
