@@ -63,50 +63,20 @@ export const DangerousChangeType = Object.freeze({
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
 });
 
-export type BreakingChange = {
-  type: $Keys<typeof BreakingChangeType>,
-  description: string,
-  ...
-};
-
-export type DangerousChange = {
-  type: $Keys<typeof DangerousChangeType>,
+export type SchemaChange = {
+  type: $Keys<typeof BreakingChangeType> | $Keys<typeof DangerousChangeType>,
   description: string,
   ...
 };
 
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
- * of breaking changes covered by the other functions down below.
+ * of potentially breaking and dangerous changes.
  */
-export function findBreakingChanges(
+export function findSchemaChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
-): Array<BreakingChange> {
-  const breakingChanges = findSchemaChanges(oldSchema, newSchema).filter(
-    change => change.type in BreakingChangeType,
-  );
-  return ((breakingChanges: any): Array<BreakingChange>);
-}
-
-/**
- * Given two schemas, returns an Array containing descriptions of all the types
- * of potentially dangerous changes covered by the other functions down below.
- */
-export function findDangerousChanges(
-  oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
-): Array<DangerousChange> {
-  const dangerousChanges = findSchemaChanges(oldSchema, newSchema).filter(
-    change => change.type in DangerousChangeType,
-  );
-  return ((dangerousChanges: any): Array<DangerousChange>);
-}
-
-function findSchemaChanges(
-  oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   return [
     ...findTypeChanges(oldSchema, newSchema),
     ...findDirectiveChanges(oldSchema, newSchema),
@@ -116,7 +86,7 @@ function findSchemaChanges(
 function findDirectiveChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
 
   const directivesDiff = diff(
@@ -166,7 +136,7 @@ function findDirectiveChanges(
 function findTypeChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
 
   const typesDiff = diff(
@@ -210,7 +180,7 @@ function findTypeChanges(
 function findInputObjectTypeChanges(
   oldType: GraphQLInputObjectType,
   newType: GraphQLInputObjectType,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
   const fieldsDiff = diff(
     objectValues(oldType.getFields()),
@@ -259,7 +229,7 @@ function findInputObjectTypeChanges(
 function findUnionTypeChanges(
   oldType: GraphQLUnionType,
   newType: GraphQLUnionType,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
   const possibleTypesDiff = diff(oldType.getTypes(), newType.getTypes());
 
@@ -283,7 +253,7 @@ function findUnionTypeChanges(
 function findEnumTypeChanges(
   oldType: GraphQLEnumType,
   newType: GraphQLEnumType,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
   const valuesDiff = diff(oldType.getValues(), newType.getValues());
 
@@ -307,7 +277,7 @@ function findEnumTypeChanges(
 function findObjectTypeChanges(
   oldType: GraphQLObjectType,
   newType: GraphQLObjectType,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = findFieldChanges(oldType, newType);
   const interfacesDiff = diff(oldType.getInterfaces(), newType.getInterfaces());
 
@@ -331,7 +301,7 @@ function findObjectTypeChanges(
 function findFieldChanges(
   oldType: GraphQLObjectType | GraphQLInterfaceType,
   newType: GraphQLObjectType | GraphQLInterfaceType,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
   const fieldsDiff = diff(
     objectValues(oldType.getFields()),
@@ -369,7 +339,7 @@ function findArgChanges(
   oldType: GraphQLObjectType | GraphQLInterfaceType,
   oldField: GraphQLField<mixed, mixed>,
   newField: GraphQLField<mixed, mixed>,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
   const argsDiff = diff(oldField.args, newField.args);
 
