@@ -130,9 +130,8 @@ export class GraphQLSchema {
   _subscriptionType: ?GraphQLObjectType;
   _directives: $ReadOnlyArray<GraphQLDirective>;
   _typeMap: TypeMap;
-  _implementations: ObjMap<Array<GraphQLObjectType | GraphQLInterfaceType>>;
-  _objectImplementations: ObjMap<Array<GraphQLObjectType>>;
-  _possibleTypeMap: ObjMap<ObjMap<boolean>>;
+  _implementations: ObjMap<InterfaceImplementations>;
+  _subTypeMap: ObjMap<ObjMap<boolean>>;
   // Used as a cache for validateSchema().
   __validationErrors: ?$ReadOnlyArray<GraphQLError>;
 
@@ -188,36 +187,10 @@ export class GraphQLSchema {
     // Storing the resulting map for reference by the schema.
     this._typeMap = typeMap;
 
-    this._possibleTypeMap = Object.create(null);
+    this._subTypeMap = Object.create(null);
 
     // Keep track of all implementations by interface name.
-    this._implementations = Object.create(null);
-    this._objectImplementations = Object.create(null);
-    for (const type of objectValues(this._typeMap)) {
-      if (isObjectType(type) || isInterfaceType(type)) {
-        for (const iface of type.getInterfaces()) {
-          if (isInterfaceType(iface)) {
-            // Store implementations by objects and interfaces.
-            const impls = this._implementations[iface.name];
-            if (impls) {
-              impls.push(type);
-            } else {
-              this._implementations[iface.name] = [type];
-            }
-
-            // Store implementations by objects only.
-            if (isObjectType(type)) {
-              const objImpls = this._objectImplementations[iface.name];
-              if (objImpls) {
-                objImpls.push(type);
-              } else {
-                this._objectImplementations[iface.name] = [type];
-              }
-            }
-          }
-        }
-      }
-    }
+    this._implementations = collectImplementations(objectValues(typeMap));
   }
 
   getQueryType(): ?GraphQLObjectType {
@@ -243,39 +216,50 @@ export class GraphQLSchema {
   getPossibleTypes(
     abstractType: GraphQLAbstractType,
   ): $ReadOnlyArray<GraphQLObjectType> {
-    if (isUnionType(abstractType)) {
-      return abstractType.getTypes();
-    }
-
-    return this._objectImplementations[abstractType.name] || [];
+    return isUnionType(abstractType)
+      ? abstractType.getTypes()
+      : this.getImplementations(abstractType).objects;
   }
 
   getImplementations(
     interfaceType: GraphQLInterfaceType,
-  ): $ReadOnlyArray<GraphQLObjectType | GraphQLInterfaceType> {
-    return this._implementations[interfaceType.name] || [];
+  ): InterfaceImplementations {
+    return this._implementations[interfaceType.name];
   }
 
+  // @deprecated: use isSubType instead - will be removed in v16.
   isPossibleType(
     abstractType: GraphQLAbstractType,
     possibleType: GraphQLObjectType,
   ): boolean {
-    if (this._possibleTypeMap[abstractType.name] == null) {
-      const map = Object.create(null);
-      for (const type of this.getPossibleTypes(abstractType)) {
-        map[type.name] = true;
-      }
-      this._possibleTypeMap[abstractType.name] = map;
-    }
-
-    return this._possibleTypeMap[abstractType.name][possibleType.name] != null;
+    return this.isSubType(abstractType, possibleType);
   }
 
-  isImplementation(
-    interfaceType: GraphQLInterfaceType,
-    possibleType: GraphQLObjectType | GraphQLInterfaceType,
+  isSubType(
+    abstractType: GraphQLAbstractType,
+    maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
   ): boolean {
-    return this.getImplementations(interfaceType).indexOf(possibleType) !== -1;
+    let map = this._subTypeMap[abstractType.name];
+    if (map === undefined) {
+      map = Object.create(null);
+
+      if (isUnionType(abstractType)) {
+        for (const type of abstractType.getTypes()) {
+          map[type.name] = true;
+        }
+      } else {
+        const implementations = this.getImplementations(abstractType);
+        for (const type of implementations.objects) {
+          map[type.name] = true;
+        }
+        for (const type of implementations.interfaces) {
+          map[type.name] = true;
+        }
+      }
+
+      this._subTypeMap[abstractType.name] = map;
+    }
+    return map[maybeSubType.name] !== undefined;
   }
 
   getDirectives(): $ReadOnlyArray<GraphQLDirective> {
@@ -313,6 +297,11 @@ defineToStringTag(GraphQLSchema);
 
 type TypeMap = ObjMap<GraphQLNamedType>;
 
+type InterfaceImplementations = {|
+  objects: $ReadOnlyArray<GraphQLObjectType>,
+  interfaces: $ReadOnlyArray<GraphQLInterfaceType>,
+|};
+
 export type GraphQLSchemaValidationOptions = {|
   /**
    * When building a schema from a GraphQL service's introspection result, it
@@ -335,6 +324,52 @@ export type GraphQLSchemaConfig = {|
   extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
   ...GraphQLSchemaValidationOptions,
 |};
+
+function collectImplementations(
+  types: $ReadOnlyArray<GraphQLNamedType>,
+): ObjMap<InterfaceImplementations> {
+  const implementations = Object.create(null);
+
+  for (const type of types) {
+    if (isInterfaceType(type)) {
+      if (implementations[type.name] === undefined) {
+        implementations[type.name] = { objects: [], interfaces: [] };
+      }
+
+      // Store implementations by interface.
+      for (const iface of type.getInterfaces()) {
+        if (isInterfaceType(iface)) {
+          const impls = implementations[iface.name];
+          if (impls === undefined) {
+            implementations[iface.name] = {
+              objects: [],
+              interfaces: [type],
+            };
+          } else {
+            impls.interfaces.push(type);
+          }
+        }
+      }
+    } else if (isObjectType(type)) {
+      // Store implementations by objects.
+      for (const iface of type.getInterfaces()) {
+        if (isInterfaceType(iface)) {
+          const impls = implementations[iface.name];
+          if (impls === undefined) {
+            implementations[iface.name] = {
+              objects: [type],
+              interfaces: [],
+            };
+          } else {
+            impls.objects.push(type);
+          }
+        }
+      }
+    }
+  }
+
+  return implementations;
+}
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (!type) {

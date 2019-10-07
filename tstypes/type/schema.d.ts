@@ -52,22 +52,24 @@ export class GraphQLSchema {
   getSubscriptionType(): Maybe<GraphQLObjectType>;
   getTypeMap(): TypeMap;
   getType(name: string): Maybe<GraphQLNamedType>;
+
   getPossibleTypes(
     abstractType: GraphQLAbstractType,
   ): ReadonlyArray<GraphQLObjectType>;
 
   getImplementations(
     interfaceType: GraphQLInterfaceType,
-  ): ReadonlyArray<GraphQLObjectType | GraphQLInterfaceType>;
+  ): InterfaceImplementations;
 
+  // @deprecated: use isSubType instead - will be removed in v16.
   isPossibleType(
     abstractType: GraphQLAbstractType,
     possibleType: GraphQLObjectType,
   ): boolean;
 
-  isImplementation(
-    interfaceType: GraphQLInterfaceType,
-    possibleType: GraphQLObjectType | GraphQLInterfaceType,
+  isSubType(
+    abstractType: GraphQLAbstractType,
+    maybeSubType: GraphQLNamedType,
   ): boolean;
 
   getDirectives(): ReadonlyArray<GraphQLDirective>;
@@ -83,6 +85,11 @@ export class GraphQLSchema {
 }
 
 type TypeMap = { [key: string]: GraphQLNamedType };
+
+type InterfaceImplementations = {
+  objects: ReadonlyArray<GraphQLObjectType>;
+  interfaces: ReadonlyArray<GraphQLInterfaceType>;
+};
 
 export interface GraphQLSchemaValidationOptions {
   /**
