@@ -583,7 +583,7 @@ function doesFragmentConditionMatch(
     return true;
   }
   if (isAbstractType(conditionalType)) {
-    return exeContext.schema.isPossibleType(conditionalType, type);
+    return exeContext.schema.isSubType(conditionalType, type);
   }
   return false;
 }
@@ -1021,7 +1021,7 @@ function ensureValidRuntimeType(
     );
   }
 
-  if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
+  if (!exeContext.schema.isSubType(returnType, runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
       fieldNodes,
