@@ -917,12 +917,14 @@ function () {
     var description = this.parseDescription();
     this.expectKeyword('interface');
     var name = this.parseName();
+    var interfaces = this.parseImplementsInterfaces();
     var directives = this.parseDirectives(true);
     var fields = this.parseFieldsDefinition();
     return {
       kind: _kinds.Kind.INTERFACE_TYPE_DEFINITION,
       description: description,
       name: name,
+      interfaces: interfaces,
       directives: directives,
       fields: fields,
       loc: this.loc(start)
@@ -1177,8 +1179,9 @@ function () {
   }
   /**
    * InterfaceTypeExtension :
-   *   - extend interface Name Directives[Const]? FieldsDefinition
-   *   - extend interface Name Directives[Const]
+   *  - extend interface Name ImplementsInterfaces? Directives[Const]? FieldsDefinition
+   *  - extend interface Name ImplementsInterfaces? Directives[Const]
+   *  - extend interface Name ImplementsInterfaces
    */
   ;
 
@@ -1187,16 +1190,18 @@ function () {
     this.expectKeyword('extend');
     this.expectKeyword('interface');
     var name = this.parseName();
+    var interfaces = this.parseImplementsInterfaces();
     var directives = this.parseDirectives(true);
     var fields = this.parseFieldsDefinition();
 
-    if (directives.length === 0 && fields.length === 0) {
+    if (interfaces.length === 0 && directives.length === 0 && fields.length === 0) {
       throw this.unexpected();
     }
 
     return {
       kind: _kinds.Kind.INTERFACE_TYPE_EXTENSION,
       name: name,
+      interfaces: interfaces,
       directives: directives,
       fields: fields,
       loc: this.loc(start)

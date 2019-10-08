@@ -119,6 +119,9 @@ function lexicographicSortSchema(schema) {
       var _config = type.toConfig();
 
       return new _definition.GraphQLInterfaceType(_objectSpread({}, _config, {
+        interfaces: function interfaces() {
+          return sortTypes(_config.interfaces);
+        },
         fields: function fields() {
           return sortFields(_config.fields);
         }

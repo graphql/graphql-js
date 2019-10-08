@@ -9,7 +9,7 @@ exports.GraphQLSchema = void 0;
 
 var _find = _interopRequireDefault(require("../polyfills/find"));
 
-var _objectValues7 = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
@@ -144,29 +144,9 @@ function () {
     typeMap = this._directives.reduce(typeMapDirectiveReducer, typeMap); // Storing the resulting map for reference by the schema.
 
     this._typeMap = typeMap;
-    this._possibleTypeMap = Object.create(null); // Keep track of all implementations by interface name.
+    this._subTypeMap = Object.create(null); // Keep track of all implementations by interface name.
 
-    this._implementations = Object.create(null);
-
-    for (var _i2 = 0, _objectValues2 = (0, _objectValues7.default)(this._typeMap); _i2 < _objectValues2.length; _i2++) {
-      var type = _objectValues2[_i2];
-
-      if ((0, _definition.isObjectType)(type)) {
-        for (var _i4 = 0, _type$getInterfaces2 = type.getInterfaces(); _i4 < _type$getInterfaces2.length; _i4++) {
-          var iface = _type$getInterfaces2[_i4];
-
-          if ((0, _definition.isInterfaceType)(iface)) {
-            var impls = this._implementations[iface.name];
-
-            if (impls) {
-              impls.push(type);
-            } else {
-              this._implementations[iface.name] = [type];
-            }
-          }
-        }
-      }
-    }
+    this._implementations = collectImplementations((0, _objectValues5.default)(typeMap));
   }
 
   var _proto = GraphQLSchema.prototype;
@@ -192,26 +172,47 @@ function () {
   };
 
   _proto.getPossibleTypes = function getPossibleTypes(abstractType) {
-    if ((0, _definition.isUnionType)(abstractType)) {
-      return abstractType.getTypes();
-    }
-
-    return this._implementations[abstractType.name] || [];
+    return (0, _definition.isUnionType)(abstractType) ? abstractType.getTypes() : this.getImplementations(abstractType).objects;
   };
 
-  _proto.isPossibleType = function isPossibleType(abstractType, possibleType) {
-    if (this._possibleTypeMap[abstractType.name] == null) {
-      var map = Object.create(null);
+  _proto.getImplementations = function getImplementations(interfaceType) {
+    return this._implementations[interfaceType.name];
+  } // @deprecated: use isSubType instead - will be removed in v16.
+  ;
 
-      for (var _i6 = 0, _this$getPossibleType2 = this.getPossibleTypes(abstractType); _i6 < _this$getPossibleType2.length; _i6++) {
-        var type = _this$getPossibleType2[_i6];
-        map[type.name] = true;
+  _proto.isPossibleType = function isPossibleType(abstractType, possibleType) {
+    return this.isSubType(abstractType, possibleType);
+  };
+
+  _proto.isSubType = function isSubType(abstractType, maybeSubType) {
+    var map = this._subTypeMap[abstractType.name];
+
+    if (map === undefined) {
+      map = Object.create(null);
+
+      if ((0, _definition.isUnionType)(abstractType)) {
+        for (var _i2 = 0, _abstractType$getType2 = abstractType.getTypes(); _i2 < _abstractType$getType2.length; _i2++) {
+          var type = _abstractType$getType2[_i2];
+          map[type.name] = true;
+        }
+      } else {
+        var implementations = this.getImplementations(abstractType);
+
+        for (var _i4 = 0, _implementations$obje2 = implementations.objects; _i4 < _implementations$obje2.length; _i4++) {
+          var _type = _implementations$obje2[_i4];
+          map[_type.name] = true;
+        }
+
+        for (var _i6 = 0, _implementations$inte2 = implementations.interfaces; _i6 < _implementations$inte2.length; _i6++) {
+          var _type2 = _implementations$inte2[_i6];
+          map[_type2.name] = true;
+        }
       }
 
-      this._possibleTypeMap[abstractType.name] = map;
+      this._subTypeMap[abstractType.name] = map;
     }
 
-    return this._possibleTypeMap[abstractType.name][possibleType.name] != null;
+    return map[maybeSubType.name] !== undefined;
   };
 
   _proto.getDirectives = function getDirectives() {
@@ -229,7 +230,7 @@ function () {
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
-      types: (0, _objectValues7.default)(this.getTypeMap()),
+      types: (0, _objectValues5.default)(this.getTypeMap()),
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
@@ -244,6 +245,61 @@ function () {
 
 exports.GraphQLSchema = GraphQLSchema;
 (0, _defineToStringTag.default)(GraphQLSchema);
+
+function collectImplementations(types) {
+  var implementations = Object.create(null);
+
+  for (var _i8 = 0; _i8 < types.length; _i8++) {
+    var type = types[_i8];
+
+    if ((0, _definition.isInterfaceType)(type)) {
+      if (implementations[type.name] === undefined) {
+        implementations[type.name] = {
+          objects: [],
+          interfaces: []
+        };
+      } // Store implementations by interface.
+
+
+      for (var _i10 = 0, _type$getInterfaces2 = type.getInterfaces(); _i10 < _type$getInterfaces2.length; _i10++) {
+        var iface = _type$getInterfaces2[_i10];
+
+        if ((0, _definition.isInterfaceType)(iface)) {
+          var impls = implementations[iface.name];
+
+          if (impls === undefined) {
+            implementations[iface.name] = {
+              objects: [],
+              interfaces: [type]
+            };
+          } else {
+            impls.interfaces.push(type);
+          }
+        }
+      }
+    } else if ((0, _definition.isObjectType)(type)) {
+      // Store implementations by objects.
+      for (var _i12 = 0, _type$getInterfaces4 = type.getInterfaces(); _i12 < _type$getInterfaces4.length; _i12++) {
+        var _iface = _type$getInterfaces4[_i12];
+
+        if ((0, _definition.isInterfaceType)(_iface)) {
+          var _impls = implementations[_iface.name];
+
+          if (_impls === undefined) {
+            implementations[_iface.name] = {
+              objects: [type],
+              interfaces: []
+            };
+          } else {
+            _impls.objects.push(type);
+          }
+        }
+      }
+    }
+  }
+
+  return implementations;
+}
 
 function typeMapReducer(map, type) {
   if (!type) {
@@ -268,13 +324,11 @@ function typeMapReducer(map, type) {
     reducedMap = namedType.getTypes().reduce(typeMapReducer, reducedMap);
   }
 
-  if ((0, _definition.isObjectType)(namedType)) {
-    reducedMap = namedType.getInterfaces().reduce(typeMapReducer, reducedMap);
-  }
-
   if ((0, _definition.isObjectType)(namedType) || (0, _definition.isInterfaceType)(namedType)) {
-    for (var _i8 = 0, _objectValues4 = (0, _objectValues7.default)(namedType.getFields()); _i8 < _objectValues4.length; _i8++) {
-      var field = _objectValues4[_i8];
+    reducedMap = namedType.getInterfaces().reduce(typeMapReducer, reducedMap);
+
+    for (var _i14 = 0, _objectValues2 = (0, _objectValues5.default)(namedType.getFields()); _i14 < _objectValues2.length; _i14++) {
+      var field = _objectValues2[_i14];
       var fieldArgTypes = field.args.map(function (arg) {
         return arg.type;
       });
@@ -284,8 +338,8 @@ function typeMapReducer(map, type) {
   }
 
   if ((0, _definition.isInputObjectType)(namedType)) {
-    for (var _i10 = 0, _objectValues6 = (0, _objectValues7.default)(namedType.getFields()); _i10 < _objectValues6.length; _i10++) {
-      var _field = _objectValues6[_i10];
+    for (var _i16 = 0, _objectValues4 = (0, _objectValues5.default)(namedType.getFields()); _i16 < _objectValues4.length; _i16++) {
+      var _field = _objectValues4[_i16];
       reducedMap = typeMapReducer(reducedMap, _field.type);
     }
   }

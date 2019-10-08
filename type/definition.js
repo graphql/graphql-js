@@ -721,6 +721,7 @@ function () {
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._fields = defineFieldMap.bind(undefined, config);
+    this._interfaces = defineInterfaces.bind(undefined, config);
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
     config.resolveType == null || typeof config.resolveType === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat((0, _inspect.default)(config.resolveType), "."));
   }
@@ -735,10 +736,19 @@ function () {
     return this._fields;
   };
 
+  _proto3.getInterfaces = function getInterfaces() {
+    if (typeof this._interfaces === 'function') {
+      this._interfaces = this._interfaces();
+    }
+
+    return this._interfaces;
+  };
+
   _proto3.toConfig = function toConfig() {
     return {
       name: this.name,
       description: this.description,
+      interfaces: this.getInterfaces(),
       fields: fieldsToFieldsConfig(this.getFields()),
       resolveType: this.resolveType,
       extensions: this.extensions,

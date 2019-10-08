@@ -217,10 +217,12 @@ function validateTypes(context) {
       // Ensure fields are valid
       validateFields(context, type); // Ensure objects implement the interfaces they claim to.
 
-      validateObjectInterfaces(context, type);
+      validateInterfaces(context, type);
     } else if ((0, _definition.isInterfaceType)(type)) {
       // Ensure fields are valid.
-      validateFields(context, type);
+      validateFields(context, type); // Ensure interfaces implement the interfaces they claim to.
+
+      validateInterfaces(context, type);
     } else if ((0, _definition.isUnionType)(type)) {
       // Ensure Unions include valid member types.
       validateUnionMembers(context, type);
@@ -284,64 +286,70 @@ function validateFields(context, type) {
   }
 }
 
-function validateObjectInterfaces(context, object) {
-  var implementedTypeNames = Object.create(null);
+function validateInterfaces(context, type) {
+  var ifaceTypeNames = Object.create(null);
 
-  for (var _i14 = 0, _object$getInterfaces2 = object.getInterfaces(); _i14 < _object$getInterfaces2.length; _i14++) {
-    var iface = _object$getInterfaces2[_i14];
+  for (var _i14 = 0, _type$getInterfaces2 = type.getInterfaces(); _i14 < _type$getInterfaces2.length; _i14++) {
+    var iface = _type$getInterfaces2[_i14];
 
     if (!(0, _definition.isInterfaceType)(iface)) {
-      context.reportError("Type ".concat((0, _inspect.default)(object), " must only implement Interface types, ") + "it cannot implement ".concat((0, _inspect.default)(iface), "."), getAllImplementsInterfaceNodes(object, iface));
+      context.reportError("Type ".concat((0, _inspect.default)(type), " must only implement Interface types, ") + "it cannot implement ".concat((0, _inspect.default)(iface), "."), getAllImplementsInterfaceNodes(type, iface));
       continue;
     }
 
-    if (implementedTypeNames[iface.name]) {
-      context.reportError("Type ".concat(object.name, " can only implement ").concat(iface.name, " once."), getAllImplementsInterfaceNodes(object, iface));
+    if (type === iface) {
+      context.reportError("Type ".concat(type.name, " cannot implement itself because it would create a circular reference."), getAllImplementsInterfaceNodes(type, iface));
       continue;
     }
 
-    implementedTypeNames[iface.name] = true;
-    validateObjectImplementsInterface(context, object, iface);
+    if (ifaceTypeNames[iface.name]) {
+      context.reportError("Type ".concat(type.name, " can only implement ").concat(iface.name, " once."), getAllImplementsInterfaceNodes(type, iface));
+      continue;
+    }
+
+    ifaceTypeNames[iface.name] = true;
+    validateTypeImplementsAncestors(context, type, iface);
+    validateTypeImplementsInterface(context, type, iface);
   }
 }
 
-function validateObjectImplementsInterface(context, object, iface) {
-  var objectFieldMap = object.getFields(); // Assert each interface field is implemented.
+function validateTypeImplementsInterface(context, type, iface) {
+  var typeFieldMap = type.getFields(); // Assert each interface field is implemented.
 
   for (var _i16 = 0, _objectValues4 = (0, _objectValues5.default)(iface.getFields()); _i16 < _objectValues4.length; _i16++) {
     var ifaceField = _objectValues4[_i16];
     var fieldName = ifaceField.name;
-    var objectField = objectFieldMap[fieldName]; // Assert interface field exists on object.
+    var typeField = typeFieldMap[fieldName]; // Assert interface field exists on type.
 
-    if (!objectField) {
-      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expected but ").concat(object.name, " does not provide it."), [ifaceField.astNode].concat(getAllNodes(object)));
+    if (!typeField) {
+      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expected but ").concat(type.name, " does not provide it."), [ifaceField.astNode].concat(getAllNodes(type)));
       continue;
-    } // Assert interface field type is satisfied by object field type, by being
+    } // Assert interface field type is satisfied by type field type, by being
     // a valid subtype. (covariant)
 
 
-    if (!(0, _typeComparators.isTypeSubTypeOf)(context.schema, objectField.type, ifaceField.type)) {
-      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expects type ") + "".concat((0, _inspect.default)(ifaceField.type), " but ").concat(object.name, ".").concat(fieldName, " ") + "is type ".concat((0, _inspect.default)(objectField.type), "."), [ifaceField.astNode && ifaceField.astNode.type, objectField.astNode && objectField.astNode.type]);
+    if (!(0, _typeComparators.isTypeSubTypeOf)(context.schema, typeField.type, ifaceField.type)) {
+      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expects type ") + "".concat((0, _inspect.default)(ifaceField.type), " but ").concat(type.name, ".").concat(fieldName, " ") + "is type ".concat((0, _inspect.default)(typeField.type), "."), [ifaceField.astNode && ifaceField.astNode.type, typeField.astNode && typeField.astNode.type]);
     } // Assert each interface field arg is implemented.
 
 
     var _loop3 = function _loop3(_i18, _ifaceField$args2) {
       var ifaceArg = _ifaceField$args2[_i18];
       var argName = ifaceArg.name;
-      var objectArg = (0, _find.default)(objectField.args, function (arg) {
+      var typeArg = (0, _find.default)(typeField.args, function (arg) {
         return arg.name === argName;
       }); // Assert interface field arg exists on object field.
 
-      if (!objectArg) {
-        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) expected but ").concat(object.name, ".").concat(fieldName, " does not provide it."), [ifaceArg.astNode, objectField.astNode]);
+      if (!typeArg) {
+        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) expected but ").concat(type.name, ".").concat(fieldName, " does not provide it."), [ifaceArg.astNode, typeField.astNode]);
         return "continue";
       } // Assert interface field arg type matches object field arg type.
       // (invariant)
       // TODO: change to contravariant?
 
 
-      if (!(0, _typeComparators.isEqualType)(ifaceArg.type, objectArg.type)) {
-        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat((0, _inspect.default)(ifaceArg.type), " but ") + "".concat(object.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat((0, _inspect.default)(objectArg.type), "."), [ifaceArg.astNode && ifaceArg.astNode.type, objectArg.astNode && objectArg.astNode.type]);
+      if (!(0, _typeComparators.isEqualType)(ifaceArg.type, typeArg.type)) {
+        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat((0, _inspect.default)(ifaceArg.type), " but ") + "".concat(type.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat((0, _inspect.default)(typeArg.type), "."), [ifaceArg.astNode && ifaceArg.astNode.type, typeArg.astNode && typeArg.astNode.type]);
       } // TODO: validate default values?
 
     };
@@ -353,20 +361,32 @@ function validateObjectImplementsInterface(context, object, iface) {
     } // Assert additional arguments must not be required.
 
 
-    var _loop4 = function _loop4(_i20, _objectField$args2) {
-      var objectArg = _objectField$args2[_i20];
-      var argName = objectArg.name;
+    var _loop4 = function _loop4(_i20, _typeField$args2) {
+      var typeArg = _typeField$args2[_i20];
+      var argName = typeArg.name;
       var ifaceArg = (0, _find.default)(ifaceField.args, function (arg) {
         return arg.name === argName;
       });
 
-      if (!ifaceArg && (0, _definition.isRequiredArgument)(objectArg)) {
-        context.reportError("Object field ".concat(object.name, ".").concat(fieldName, " includes required argument ").concat(argName, " that is missing from the Interface field ").concat(iface.name, ".").concat(fieldName, "."), [objectArg.astNode, ifaceField.astNode]);
+      if (!ifaceArg && (0, _definition.isRequiredArgument)(typeArg)) {
+        context.reportError("Object field ".concat(type.name, ".").concat(fieldName, " includes required argument ").concat(argName, " that is missing from the Interface field ").concat(iface.name, ".").concat(fieldName, "."), [typeArg.astNode, ifaceField.astNode]);
       }
     };
 
-    for (var _i20 = 0, _objectField$args2 = objectField.args; _i20 < _objectField$args2.length; _i20++) {
-      _loop4(_i20, _objectField$args2);
+    for (var _i20 = 0, _typeField$args2 = typeField.args; _i20 < _typeField$args2.length; _i20++) {
+      _loop4(_i20, _typeField$args2);
+    }
+  }
+}
+
+function validateTypeImplementsAncestors(context, type, iface) {
+  var ifaceInterfaces = type.getInterfaces();
+
+  for (var _i22 = 0, _iface$getInterfaces2 = iface.getInterfaces(); _i22 < _iface$getInterfaces2.length; _i22++) {
+    var transitive = _iface$getInterfaces2[_i22];
+
+    if (ifaceInterfaces.indexOf(transitive) === -1) {
+      context.reportError(transitive === type ? "Type ".concat(type.name, " cannot implement ").concat(iface.name, " because it would create a circular reference.") : "Type ".concat(type.name, " must implement ").concat(transitive.name, " because it is implemented by ").concat(iface.name, "."), [].concat(getAllImplementsInterfaceNodes(iface, transitive), getAllImplementsInterfaceNodes(type, iface)));
     }
   }
 }
@@ -380,8 +400,8 @@ function validateUnionMembers(context, union) {
 
   var includedTypeNames = Object.create(null);
 
-  for (var _i22 = 0; _i22 < memberTypes.length; _i22++) {
-    var memberType = memberTypes[_i22];
+  for (var _i24 = 0; _i24 < memberTypes.length; _i24++) {
+    var memberType = memberTypes[_i24];
 
     if (includedTypeNames[memberType.name]) {
       context.reportError("Union type ".concat(union.name, " can only include type ").concat(memberType.name, " once."), getUnionMemberTypeNodes(union, memberType.name));
@@ -403,8 +423,8 @@ function validateEnumValues(context, enumType) {
     context.reportError("Enum type ".concat(enumType.name, " must define one or more values."), getAllNodes(enumType));
   }
 
-  for (var _i24 = 0; _i24 < enumValues.length; _i24++) {
-    var enumValue = enumValues[_i24];
+  for (var _i26 = 0; _i26 < enumValues.length; _i26++) {
+    var enumValue = enumValues[_i26];
     var valueName = enumValue.name; // Ensure valid name.
 
     validateName(context, enumValue);
@@ -423,8 +443,8 @@ function validateInputFields(context, inputObj) {
   } // Ensure the arguments are valid
 
 
-  for (var _i26 = 0; _i26 < fields.length; _i26++) {
-    var field = fields[_i26];
+  for (var _i28 = 0; _i28 < fields.length; _i28++) {
+    var field = fields[_i28];
     // Ensure they are named correctly.
     validateName(context, field); // Ensure the type is an input type
 
@@ -456,8 +476,8 @@ function createInputObjectCircularRefsValidator(context) {
     fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
     var fields = (0, _objectValues5.default)(inputObj.getFields());
 
-    for (var _i28 = 0; _i28 < fields.length; _i28++) {
-      var field = fields[_i28];
+    for (var _i30 = 0; _i30 < fields.length; _i30++) {
+      var field = fields[_i30];
 
       if ((0, _definition.isNonNullType)(field.type) && (0, _definition.isInputObjectType)(field.type.ofType)) {
         var fieldType = field.type.ofType;

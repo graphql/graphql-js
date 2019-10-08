@@ -282,7 +282,16 @@ function () {
   _proto._makeInterfaceDef = function _makeInterfaceDef(astNode) {
     var _this4 = this;
 
-    var fieldNodes = astNode.fields;
+    var interfaceNodes = astNode.interfaces;
+    var fieldNodes = astNode.fields; // Note: While this could make assertions to get the correctly typed
+    // values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+
+    var interfaces = interfaceNodes && interfaceNodes.length > 0 ? function () {
+      return interfaceNodes.map(function (ref) {
+        return _this4.getNamedType(ref);
+      });
+    } : [];
     var fields = fieldNodes && fieldNodes.length > 0 ? function () {
       return keyByNameNode(fieldNodes, function (field) {
         return _this4.buildField(field);
@@ -291,6 +300,7 @@ function () {
     return new GraphQLInterfaceType({
       name: astNode.name.value,
       description: getDescription(astNode, this._options),
+      interfaces: interfaces,
       fields: fields,
       astNode: astNode
     });

@@ -69,16 +69,11 @@ function isTypeSubTypeOf(schema, maybeSubType, superType) {
   if ((0, _definition.isListType)(maybeSubType)) {
     // If superType is not a list, maybeSubType must also be not a list.
     return false;
-  } // If superType type is an abstract type, maybeSubType type may be a currently
-  // possible object type.
+  } // If superType type is an abstract type, check if it is super type of maybeSubType.
+  // Otherwise, the child type is not a valid subtype of the parent type.
 
 
-  if ((0, _definition.isAbstractType)(superType) && (0, _definition.isObjectType)(maybeSubType) && schema.isPossibleType(superType, maybeSubType)) {
-    return true;
-  } // Otherwise, the child type is not a valid subtype of the parent type.
-
-
-  return false;
+  return (0, _definition.isAbstractType)(superType) && ((0, _definition.isInterfaceType)(maybeSubType) || (0, _definition.isObjectType)(maybeSubType)) && schema.isSubType(superType, maybeSubType);
 }
 /**
  * Provided two composite types, determine if they "overlap". Two composite
@@ -102,17 +97,17 @@ function doTypesOverlap(schema, typeA, typeB) {
       // If both types are abstract, then determine if there is any intersection
       // between possible concrete types of each.
       return schema.getPossibleTypes(typeA).some(function (type) {
-        return schema.isPossibleType(typeB, type);
+        return schema.isSubType(typeB, type);
       });
     } // Determine if the latter type is a possible concrete type of the former.
 
 
-    return schema.isPossibleType(typeA, typeB);
+    return schema.isSubType(typeA, typeB);
   }
 
   if ((0, _definition.isAbstractType)(typeB)) {
     // Determine if the former type is a possible concrete type of the latter.
-    return schema.isPossibleType(typeB, typeA);
+    return schema.isSubType(typeB, typeA);
   } // Otherwise the types do not overlap.
 
 

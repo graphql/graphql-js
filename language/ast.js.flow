@@ -488,6 +488,7 @@ export type InterfaceTypeDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
+  +interfaces?: $ReadOnlyArray<NamedTypeNode>,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +fields?: $ReadOnlyArray<FieldDefinitionNode>,
   ...
@@ -589,6 +590,7 @@ export type InterfaceTypeExtensionNode = {
   +kind: 'InterfaceTypeExtension',
   +loc?: Location,
   +name: NameNode,
+  +interfaces?: $ReadOnlyArray<NamedTypeNode>,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +fields?: $ReadOnlyArray<FieldDefinitionNode>,
   ...

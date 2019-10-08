@@ -302,10 +302,18 @@ function extendSchema(schema, documentAST, options) {
   function extendInterfaceType(type) {
     var config = type.toConfig();
     var extensions = typeExtsMap[config.name] || [];
+    var interfaceNodes = (0, _flatMap.default)(extensions, function (node) {
+      return node.interfaces || [];
+    });
     var fieldNodes = (0, _flatMap.default)(extensions, function (node) {
       return node.fields || [];
     });
     return new _definition.GraphQLInterfaceType(_objectSpread({}, config, {
+      interfaces: function interfaces() {
+        return [].concat(type.getInterfaces().map(replaceNamedType), interfaceNodes.map(function (node) {
+          return astBuilder.getNamedType(node);
+        }));
+      },
       fields: function fields() {
         return _objectSpread({}, (0, _mapValue.default)(config.fields, extendField), {}, (0, _keyValMap.default)(fieldNodes, function (node) {
           return node.name.value;

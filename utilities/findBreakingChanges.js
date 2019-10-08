@@ -39,7 +39,7 @@ var BreakingChangeType = Object.freeze({
   TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION',
   VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
   REQUIRED_INPUT_FIELD_ADDED: 'REQUIRED_INPUT_FIELD_ADDED',
-  INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
+  IMPLEMENTED_INTERFACE_REMOVED: 'IMPLEMENTED_INTERFACE_REMOVED',
   FIELD_REMOVED: 'FIELD_REMOVED',
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
   REQUIRED_ARG_ADDED: 'REQUIRED_ARG_ADDED',
@@ -56,7 +56,7 @@ var DangerousChangeType = Object.freeze({
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
   OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED',
   OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED',
-  INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT',
+  IMPLEMENTED_INTERFACE_ADDED: 'IMPLEMENTED_INTERFACE_ADDED',
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE'
 });
 exports.DangerousChangeType = DangerousChangeType;
@@ -164,9 +164,9 @@ function findTypeChanges(oldSchema, newSchema) {
     } else if ((0, _definition.isInputObjectType)(_oldType) && (0, _definition.isInputObjectType)(newType)) {
       schemaChanges.push.apply(schemaChanges, findInputObjectTypeChanges(_oldType, newType));
     } else if ((0, _definition.isObjectType)(_oldType) && (0, _definition.isObjectType)(newType)) {
-      schemaChanges.push.apply(schemaChanges, findObjectTypeChanges(_oldType, newType));
+      schemaChanges.push.apply(schemaChanges, findFieldChanges(_oldType, newType).concat(findImplementedInterfacesChanges(_oldType, newType)));
     } else if ((0, _definition.isInterfaceType)(_oldType) && (0, _definition.isInterfaceType)(newType)) {
-      schemaChanges.push.apply(schemaChanges, findFieldChanges(_oldType, newType));
+      schemaChanges.push.apply(schemaChanges, findFieldChanges(_oldType, newType).concat(findImplementedInterfacesChanges(_oldType, newType)));
     } else if (_oldType.constructor !== newType.constructor) {
       schemaChanges.push({
         type: BreakingChangeType.TYPE_CHANGED_KIND,
@@ -269,14 +269,14 @@ function findEnumTypeChanges(oldType, newType) {
   return schemaChanges;
 }
 
-function findObjectTypeChanges(oldType, newType) {
-  var schemaChanges = findFieldChanges(oldType, newType);
+function findImplementedInterfacesChanges(oldType, newType) {
+  var schemaChanges = [];
   var interfacesDiff = diff(oldType.getInterfaces(), newType.getInterfaces());
 
   for (var _i30 = 0, _interfacesDiff$added2 = interfacesDiff.added; _i30 < _interfacesDiff$added2.length; _i30++) {
     var newInterface = _interfacesDiff$added2[_i30];
     schemaChanges.push({
-      type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+      type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
       description: "".concat(newInterface.name, " added to interfaces implemented by ").concat(oldType.name, ".")
     });
   }
@@ -284,7 +284,7 @@ function findObjectTypeChanges(oldType, newType) {
   for (var _i32 = 0, _interfacesDiff$remov2 = interfacesDiff.removed; _i32 < _interfacesDiff$remov2.length; _i32++) {
     var oldInterface = _interfacesDiff$remov2[_i32];
     schemaChanges.push({
-      type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+      type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
       description: "".concat(oldType.name, " no longer implements interface ").concat(oldInterface.name, ".")
     });
   }

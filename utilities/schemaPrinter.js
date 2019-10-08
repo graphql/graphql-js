@@ -151,16 +151,19 @@ function printScalar(type, options) {
   return printDescription(options, type) + "scalar ".concat(type.name);
 }
 
-function printObject(type, options) {
+function printImplementedInterfaces(type) {
   var interfaces = type.getInterfaces();
-  var implementedInterfaces = interfaces.length ? ' implements ' + interfaces.map(function (i) {
+  return interfaces.length ? ' implements ' + interfaces.map(function (i) {
     return i.name;
   }).join(' & ') : '';
-  return printDescription(options, type) + "type ".concat(type.name).concat(implementedInterfaces) + printFields(options, type);
+}
+
+function printObject(type, options) {
+  return printDescription(options, type) + "type ".concat(type.name) + printImplementedInterfaces(type) + printFields(options, type);
 }
 
 function printInterface(type, options) {
-  return printDescription(options, type) + "interface ".concat(type.name) + printFields(options, type);
+  return printDescription(options, type) + "interface ".concat(type.name) + printImplementedInterfaces(type) + printFields(options, type);
 }
 
 function printUnion(type, options) {

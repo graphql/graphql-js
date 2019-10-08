@@ -175,9 +175,10 @@ var printDocASTReducer = {
   }),
   InterfaceTypeDefinition: addDescription(function (_ref26) {
     var name = _ref26.name,
+        interfaces = _ref26.interfaces,
         directives = _ref26.directives,
         fields = _ref26.fields;
-    return join(['interface', name, join(directives, ' '), block(fields)], ' ');
+    return join(['interface', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ');
   }),
   UnionTypeDefinition: addDescription(function (_ref27) {
     var name = _ref27.name,
@@ -228,9 +229,10 @@ var printDocASTReducer = {
   },
   InterfaceTypeExtension: function InterfaceTypeExtension(_ref35) {
     var name = _ref35.name,
+        interfaces = _ref35.interfaces,
         directives = _ref35.directives,
         fields = _ref35.fields;
-    return join(['extend interface', name, join(directives, ' '), block(fields)], ' ');
+    return join(['extend interface', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ');
   },
   UnionTypeExtension: function UnionTypeExtension(_ref36) {
     var name = _ref36.name,

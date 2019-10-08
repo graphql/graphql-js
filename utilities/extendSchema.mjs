@@ -278,10 +278,18 @@ export function extendSchema(schema, documentAST, options) {
   function extendInterfaceType(type) {
     var config = type.toConfig();
     var extensions = typeExtsMap[config.name] || [];
+    var interfaceNodes = flatMap(extensions, function (node) {
+      return node.interfaces || [];
+    });
     var fieldNodes = flatMap(extensions, function (node) {
       return node.fields || [];
     });
     return new GraphQLInterfaceType(_objectSpread({}, config, {
+      interfaces: function interfaces() {
+        return [].concat(type.getInterfaces().map(replaceNamedType), interfaceNodes.map(function (node) {
+          return astBuilder.getNamedType(node);
+        }));
+      },
       fields: function fields() {
         return _objectSpread({}, mapValue(config.fields, extendField), {}, keyValMap(fieldNodes, function (node) {
           return node.name.value;

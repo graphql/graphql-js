@@ -160,6 +160,9 @@ export type IntrospectionInterfaceType = {
   +name: string,
   +description?: ?string,
   +fields: $ReadOnlyArray<IntrospectionField>,
+  +interfaces: $ReadOnlyArray<
+    IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
+  >,
   +possibleTypes: $ReadOnlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>,
   >,

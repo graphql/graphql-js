@@ -262,7 +262,7 @@ var __Type = new _definition.GraphQLObjectType({
       interfaces: {
         type: (0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__Type)),
         resolve: function resolve(type) {
-          if ((0, _definition.isObjectType)(type)) {
+          if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
             return type.getInterfaces();
           }
         }
@@ -465,7 +465,7 @@ var __TypeKind = new _definition.GraphQLEnumType({
     },
     INTERFACE: {
       value: TypeKind.INTERFACE,
-      description: 'Indicates this type is an interface. `fields` and `possibleTypes` are valid fields.'
+      description: 'Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields.'
     },
     UNION: {
       value: TypeKind.UNION,
