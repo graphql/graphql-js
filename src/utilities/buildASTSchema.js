@@ -346,7 +346,16 @@ export class ASTDefinitionBuilder {
   }
 
   _makeInterfaceDef(astNode: InterfaceTypeDefinitionNode) {
+    const interfaceNodes = astNode.interfaces;
     const fieldNodes = astNode.fields;
+
+    // Note: While this could make assertions to get the correctly typed
+    // values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+    const interfaces =
+      interfaceNodes && interfaceNodes.length > 0
+        ? () => interfaceNodes.map(ref => (this.getNamedType(ref): any))
+        : [];
 
     const fields =
       fieldNodes && fieldNodes.length > 0
@@ -356,6 +365,7 @@ export class ASTDefinitionBuilder {
     return new GraphQLInterfaceType({
       name: astNode.name.value,
       description: getDescription(astNode, this._options),
+      interfaces,
       fields,
       astNode,
     });

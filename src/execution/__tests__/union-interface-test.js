@@ -19,20 +19,32 @@ import { execute } from '../execute';
 class Dog {
   name: string;
   barks: boolean;
+  mother: ?Dog;
+  father: ?Dog;
+  progeny: Array<Dog>;
 
   constructor(name, barks) {
     this.name = name;
     this.barks = barks;
+    this.mother = null;
+    this.father = null;
+    this.progeny = [];
   }
 }
 
 class Cat {
   name: string;
   meows: boolean;
+  mother: ?Cat;
+  father: ?Cat;
+  progeny: Array<Cat>;
 
   constructor(name, meows) {
     this.name = name;
     this.meows = meows;
+    this.mother = null;
+    this.father = null;
+    this.progeny = [];
   }
 }
 
@@ -55,23 +67,46 @@ const NamedType = new GraphQLInterfaceType({
   },
 });
 
+const LifeType = new GraphQLInterfaceType({
+  name: 'Life',
+  fields: () => ({
+    progeny: { type: GraphQLList(LifeType) },
+  }),
+});
+
+const MammalType = new GraphQLInterfaceType({
+  name: 'Mammal',
+  interfaces: [LifeType],
+  fields: () => ({
+    progeny: { type: GraphQLList(MammalType) },
+    mother: { type: MammalType },
+    father: { type: MammalType },
+  }),
+});
+
 const DogType = new GraphQLObjectType({
   name: 'Dog',
-  interfaces: [NamedType],
-  fields: {
+  interfaces: [MammalType, LifeType, NamedType],
+  fields: () => ({
     name: { type: GraphQLString },
     barks: { type: GraphQLBoolean },
-  },
+    progeny: { type: GraphQLList(DogType) },
+    mother: { type: DogType },
+    father: { type: DogType },
+  }),
   isTypeOf: value => value instanceof Dog,
 });
 
 const CatType = new GraphQLObjectType({
   name: 'Cat',
-  interfaces: [NamedType],
-  fields: {
+  interfaces: [MammalType, LifeType, NamedType],
+  fields: () => ({
     name: { type: GraphQLString },
     meows: { type: GraphQLBoolean },
-  },
+    progeny: { type: GraphQLList(CatType) },
+    mother: { type: CatType },
+    father: { type: CatType },
+  }),
   isTypeOf: value => value instanceof Cat,
 });
 
@@ -90,12 +125,15 @@ const PetType = new GraphQLUnionType({
 
 const PersonType = new GraphQLObjectType({
   name: 'Person',
-  interfaces: [NamedType],
-  fields: {
+  interfaces: [NamedType, MammalType, LifeType],
+  fields: () => ({
     name: { type: GraphQLString },
     pets: { type: GraphQLList(PetType) },
     friends: { type: GraphQLList(NamedType) },
-  },
+    progeny: { type: GraphQLList(PersonType) },
+    mother: { type: PersonType },
+    father: { type: PersonType },
+  }),
   isTypeOf: value => value instanceof Person,
 });
 
@@ -105,7 +143,13 @@ const schema = new GraphQLSchema({
 });
 
 const garfield = new Cat('Garfield', false);
+garfield.mother = new Cat("Garfield's Mom", false);
+garfield.mother.progeny = [garfield];
+
 const odie = new Dog('Odie', true);
+odie.mother = new Dog("Odie's Mom", true);
+odie.mother.progeny = [odie];
+
 const liz = new Person('Liz');
 const john = new Person('John', [garfield, odie], [liz, odie]);
 
@@ -114,6 +158,15 @@ describe('Execute: Union and intersection types', () => {
     const ast = parse(`
       {
         Named: __type(name: "Named") {
+          kind
+          name
+          fields { name }
+          interfaces { name }
+          possibleTypes { name }
+          enumValues { name }
+          inputFields { name }
+        }
+        Mammal: __type(name: "Mammal") {
           kind
           name
           fields { name }
@@ -140,7 +193,16 @@ describe('Execute: Union and intersection types', () => {
           kind: 'INTERFACE',
           name: 'Named',
           fields: [{ name: 'name' }],
-          interfaces: null,
+          interfaces: [],
+          possibleTypes: [{ name: 'Person' }, { name: 'Dog' }, { name: 'Cat' }],
+          enumValues: null,
+          inputFields: null,
+        },
+        Mammal: {
+          kind: 'INTERFACE',
+          name: 'Mammal',
+          fields: [{ name: 'progeny' }, { name: 'mother' }, { name: 'father' }],
+          interfaces: [{ name: 'Life' }],
           possibleTypes: [{ name: 'Person' }, { name: 'Dog' }, { name: 'Cat' }],
           enumValues: null,
           inputFields: null,
@@ -178,8 +240,16 @@ describe('Execute: Union and intersection types', () => {
         __typename: 'Person',
         name: 'John',
         pets: [
-          { __typename: 'Cat', name: 'Garfield', meows: false },
-          { __typename: 'Dog', name: 'Odie', barks: true },
+          {
+            __typename: 'Cat',
+            name: 'Garfield',
+            meows: false,
+          },
+          {
+            __typename: 'Dog',
+            name: 'Odie',
+            barks: true,
+          },
         ],
       },
     });
@@ -210,8 +280,16 @@ describe('Execute: Union and intersection types', () => {
         __typename: 'Person',
         name: 'John',
         pets: [
-          { __typename: 'Cat', name: 'Garfield', meows: false },
-          { __typename: 'Dog', name: 'Odie', barks: true },
+          {
+            __typename: 'Cat',
+            name: 'Garfield',
+            meows: false,
+          },
+          {
+            __typename: 'Dog',
+            name: 'Odie',
+            barks: true,
+          },
         ],
       },
     });
@@ -259,6 +337,20 @@ describe('Execute: Union and intersection types', () => {
           ... on Cat {
             meows
           }
+
+          ... on Mammal {
+            mother {
+              __typename
+              ... on Dog {
+                name
+                barks
+              }
+              ... on Cat {
+                name
+                meows
+              }
+            }
+          }
         }
       }
     `);
@@ -268,8 +360,17 @@ describe('Execute: Union and intersection types', () => {
         __typename: 'Person',
         name: 'John',
         friends: [
-          { __typename: 'Person', name: 'Liz' },
-          { __typename: 'Dog', name: 'Odie', barks: true },
+          {
+            __typename: 'Person',
+            name: 'Liz',
+            mother: null,
+          },
+          {
+            __typename: 'Dog',
+            name: 'Odie',
+            barks: true,
+            mother: { __typename: 'Dog', name: "Odie's Mom", barks: true },
+          },
         ],
       },
     });
@@ -280,7 +381,14 @@ describe('Execute: Union and intersection types', () => {
       {
         __typename
         name
-        pets { ...PetFields }
+        pets {
+          ...PetFields,
+          ...on Mammal {
+            mother {
+              ...ProgenyFields
+            }
+          }
+        }
         friends { ...FriendFields }
       }
 
@@ -306,6 +414,12 @@ describe('Execute: Union and intersection types', () => {
           meows
         }
       }
+
+      fragment ProgenyFields on Life {
+        progeny {
+          __typename
+        }
+      }
     `);
 
     expect(execute(schema, ast, john)).to.deep.equal({
@@ -313,12 +427,29 @@ describe('Execute: Union and intersection types', () => {
         __typename: 'Person',
         name: 'John',
         pets: [
-          { __typename: 'Cat', name: 'Garfield', meows: false },
-          { __typename: 'Dog', name: 'Odie', barks: true },
+          {
+            __typename: 'Cat',
+            name: 'Garfield',
+            meows: false,
+            mother: { progeny: [{ __typename: 'Cat' }] },
+          },
+          {
+            __typename: 'Dog',
+            name: 'Odie',
+            barks: true,
+            mother: { progeny: [{ __typename: 'Dog' }] },
+          },
         ],
         friends: [
-          { __typename: 'Person', name: 'Liz' },
-          { __typename: 'Dog', name: 'Odie', barks: true },
+          {
+            __typename: 'Person',
+            name: 'Liz',
+          },
+          {
+            __typename: 'Dog',
+            name: 'Odie',
+            barks: true,
+          },
         ],
       },
     });

@@ -169,7 +169,7 @@ describe('Schema Parser', () => {
     });
   });
 
-  it('Extension without fields', () => {
+  it('Object extension without fields', () => {
     const doc = parse('extend type Hello implements Greeting');
 
     expect(toJSONDeep(doc)).to.deep.equal({
@@ -188,7 +188,25 @@ describe('Schema Parser', () => {
     });
   });
 
-  it('Extension without fields followed by extension', () => {
+  it('Interface extension without fields', () => {
+    const doc = parse('extend interface Hello implements Greeting');
+    expect(toJSONDeep(doc)).to.deep.equal({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'InterfaceTypeExtension',
+          name: nameNode('Hello', { start: 17, end: 22 }),
+          interfaces: [typeNode('Greeting', { start: 34, end: 42 })],
+          directives: [],
+          fields: [],
+          loc: { start: 0, end: 42 },
+        },
+      ],
+      loc: { start: 0, end: 42 },
+    });
+  });
+
+  it('Object extension without fields followed by extension', () => {
     const doc = parse(`
       extend type Hello implements Greeting
 
@@ -226,7 +244,51 @@ describe('Schema Parser', () => {
     });
   });
 
-  it('Extension do not include descriptions', () => {
+  it('Interface extension without fields followed by extension', () => {
+    const doc = parse(`
+      extend interface Hello implements Greeting
+
+      extend interface Hello implements SecondGreeting
+    `);
+    expect(toJSONDeep(doc)).to.deep.equal({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'InterfaceTypeExtension',
+          name: nameNode('Hello', { start: 24, end: 29 }),
+          interfaces: [typeNode('Greeting', { start: 41, end: 49 })],
+          directives: [],
+          fields: [],
+          loc: { start: 7, end: 49 },
+        },
+        {
+          kind: 'InterfaceTypeExtension',
+          name: nameNode('Hello', { start: 74, end: 79 }),
+          interfaces: [typeNode('SecondGreeting', { start: 91, end: 105 })],
+          directives: [],
+          fields: [],
+          loc: { start: 57, end: 105 },
+        },
+      ],
+      loc: { start: 0, end: 110 },
+    });
+  });
+
+  it('Object extension without anything throws', () => {
+    expectSyntaxError('extend type Hello').to.deep.equal({
+      message: 'Syntax Error: Unexpected <EOF>.',
+      locations: [{ line: 1, column: 18 }],
+    });
+  });
+
+  it('Interface extension without anything throws', () => {
+    expectSyntaxError('extend interface Hello').to.deep.equal({
+      message: 'Syntax Error: Unexpected <EOF>.',
+      locations: [{ line: 1, column: 23 }],
+    });
+  });
+
+  it('Object extension do not include descriptions', () => {
     expectSyntaxError(`
       "Description"
       extend type Hello {
@@ -239,6 +301,27 @@ describe('Schema Parser', () => {
 
     expectSyntaxError(`
       extend "Description" type Hello {
+        world: String
+      }
+    `).to.deep.equal({
+      message: 'Syntax Error: Unexpected String "Description".',
+      locations: [{ line: 2, column: 14 }],
+    });
+  });
+
+  it('Interface extension do not include descriptions', () => {
+    expectSyntaxError(`
+      "Description"
+      extend interface Hello {
+        world: String
+      }
+    `).to.deep.equal({
+      message: 'Syntax Error: Unexpected Name "extend".',
+      locations: [{ line: 3, column: 7 }],
+    });
+
+    expectSyntaxError(`
+      extend "Description" interface Hello {
         world: String
       }
     `).to.deep.equal({
@@ -339,6 +422,31 @@ describe('Schema Parser', () => {
     });
   });
 
+  it('Simple interface inheriting interface', () => {
+    const doc = parse('interface Hello implements World { field: String }');
+    expect(toJSONDeep(doc)).to.deep.equal({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'InterfaceTypeDefinition',
+          name: nameNode('Hello', { start: 10, end: 15 }),
+          description: undefined,
+          interfaces: [typeNode('World', { start: 27, end: 32 })],
+          directives: [],
+          fields: [
+            fieldNode(
+              nameNode('field', { start: 35, end: 40 }),
+              typeNode('String', { start: 42, end: 48 }),
+              { start: 35, end: 48 },
+            ),
+          ],
+          loc: { start: 0, end: 50 },
+        },
+      ],
+      loc: { start: 0, end: 50 },
+    });
+  });
+
   it('Simple type inheriting interface', () => {
     const doc = parse('type Hello implements World { field: String }');
 
@@ -394,6 +502,34 @@ describe('Schema Parser', () => {
     });
   });
 
+  it('Simple interface inheriting multiple interfaces', () => {
+    const doc = parse('interface Hello implements Wo & rld { field: String }');
+    expect(toJSONDeep(doc)).to.deep.equal({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'InterfaceTypeDefinition',
+          name: nameNode('Hello', { start: 10, end: 15 }),
+          description: undefined,
+          interfaces: [
+            typeNode('Wo', { start: 27, end: 29 }),
+            typeNode('rld', { start: 32, end: 35 }),
+          ],
+          directives: [],
+          fields: [
+            fieldNode(
+              nameNode('field', { start: 38, end: 43 }),
+              typeNode('String', { start: 45, end: 51 }),
+              { start: 38, end: 51 },
+            ),
+          ],
+          loc: { start: 0, end: 53 },
+        },
+      ],
+      loc: { start: 0, end: 53 },
+    });
+  });
+
   it('Simple type inheriting multiple interfaces with leading ampersand', () => {
     const doc = parse('type Hello implements & Wo & rld { field: String }');
 
@@ -420,6 +556,36 @@ describe('Schema Parser', () => {
         },
       ],
       loc: { start: 0, end: 50 },
+    });
+  });
+
+  it('Simple interface inheriting multiple interfaces with leading ampersand', () => {
+    const doc = parse(
+      'interface Hello implements & Wo & rld { field: String }',
+    );
+    expect(toJSONDeep(doc)).to.deep.equal({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'InterfaceTypeDefinition',
+          name: nameNode('Hello', { start: 10, end: 15 }),
+          description: undefined,
+          interfaces: [
+            typeNode('Wo', { start: 29, end: 31 }),
+            typeNode('rld', { start: 34, end: 37 }),
+          ],
+          directives: [],
+          fields: [
+            fieldNode(
+              nameNode('field', { start: 40, end: 45 }),
+              typeNode('String', { start: 47, end: 53 }),
+              { start: 40, end: 53 },
+            ),
+          ],
+          loc: { start: 0, end: 55 },
+        },
+      ],
+      loc: { start: 0, end: 55 },
     });
   });
 
@@ -478,6 +644,7 @@ describe('Schema Parser', () => {
           kind: 'InterfaceTypeDefinition',
           name: nameNode('Hello', { start: 10, end: 15 }),
           description: undefined,
+          interfaces: [],
           directives: [],
           fields: [
             fieldNode(

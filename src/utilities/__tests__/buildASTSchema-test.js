@@ -285,6 +285,12 @@ describe('Schema Builder', () => {
     const sdl = dedent`
       interface EmptyInterface
     `;
+
+    const definition = parse(sdl).definitions[0];
+    expect(
+      definition.kind === 'InterfaceTypeDefinition' && definition.interfaces,
+    ).to.deep.equal([], 'The interfaces property must be an empty array.');
+
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
@@ -295,6 +301,27 @@ describe('Schema Builder', () => {
       }
 
       interface WorldInterface {
+        str: String
+      }
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
+  it('Simple interface heirarchy', () => {
+    const sdl = dedent`
+      schema {
+        query: Child
+      }
+
+      interface Child implements Parent {
+        str: String
+      }
+
+      type Hello implements Parent & Child {
+        str: String
+      }
+
+      interface Parent {
         str: String
       }
     `;
@@ -627,6 +654,23 @@ describe('Schema Builder', () => {
 
       type Query {
         iface: Iface
+      }
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
+  it('Unreferenced interface implementing referenced interface', () => {
+    const sdl = dedent`
+      interface Child implements Parent {
+        key: String
+      }
+
+      interface Parent {
+        key: String
+      }
+
+      type Query {
+        iface: Parent
       }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);

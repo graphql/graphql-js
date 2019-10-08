@@ -47,7 +47,7 @@ describe('Printer: SDL document', () => {
       This is a description
       of the \`Foo\` type.
       """
-      type Foo implements Bar & Baz {
+      type Foo implements Bar & Baz & Two {
         "Description of the \`one\` field."
         one: Type
         """This is a description of the \`two\` field."""
@@ -86,11 +86,17 @@ describe('Printer: SDL document', () => {
 
       interface UndefinedInterface
 
-      extend interface Bar {
+      extend interface Bar implements Two {
         two(argument: InputType!): Type
       }
 
       extend interface Bar @onInterface
+
+      interface Baz implements Bar & Two {
+        one: Type
+        two(argument: InputType!): Type
+        four(argument: String = "string"): String
+      }
 
       union Feed = Story | Article | Advert
 

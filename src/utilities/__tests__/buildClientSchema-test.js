@@ -211,6 +211,36 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
+  it('builds a schema with an interface heirarchy', () => {
+    const sdl = dedent`
+      type Dog implements Friendly & Named {
+        bestFriend: Friendly
+        name: String
+      }
+
+      interface Friendly implements Named {
+        """The best friend of this friendly thing"""
+        bestFriend: Friendly
+        name: String
+      }
+
+      type Human implements Friendly & Named {
+        bestFriend: Friendly
+        name: String
+      }
+
+      interface Named {
+        name: String
+      }
+
+      type Query {
+        friendly: Friendly
+      }
+    `;
+
+    expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
   it('builds a schema with an implicit interface', () => {
     const sdl = dedent`
       type Dog implements Friendly {
@@ -552,6 +582,10 @@ describe('Type System: build schema from introspection', () => {
         foo(bar: String): String
       }
 
+      interface SomeInterface {
+        foo: String
+      }
+
       union SomeUnion = Query
 
       enum SomeEnum { FOO }
@@ -645,6 +679,20 @@ describe('Type System: build schema from introspection', () => {
       expect(() => buildClientSchema(introspection)).to.throw(
         'Introspection result missing interfaces: { kind: "OBJECT", name: "Query",',
       );
+    });
+
+    it('Legacy support for interfaces with null as interfaces field', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const someInterfaceIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'SomeInterface',
+      );
+
+      expect(someInterfaceIntrospection).to.have.property('interfaces');
+      // $DisableFlowOnNegativeTest
+      someInterfaceIntrospection.interfaces = null;
+
+      const clientSchema = buildClientSchema(introspection);
+      expect(printSchema(clientSchema)).to.equal(printSchema(dummySchema));
     });
 
     it('throws when missing fields', () => {

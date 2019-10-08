@@ -592,8 +592,29 @@ describe('findBreakingChanges', () => {
 
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
-        type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+        type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
         description: 'Type1 no longer implements interface Interface1.',
+      },
+    ]);
+  });
+
+  it('should detect interfaces removed from interfaces', () => {
+    const oldSchema = buildSchema(`
+      interface Interface1
+
+      interface Interface2 implements Interface1
+    `);
+
+    const newSchema = buildSchema(`
+      interface Interface1
+
+      interface Interface2
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
+        description: 'Interface2 no longer implements interface Interface1.',
       },
     ]);
   });
@@ -704,7 +725,7 @@ describe('findBreakingChanges', () => {
           'VALUE0 was removed from enum type EnumTypeThatLosesAValue.',
       },
       {
-        type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+        type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
         description:
           'TypeThatLooseInterface1 no longer implements interface Interface1.',
       },
@@ -1021,8 +1042,32 @@ describe('findDangerousChanges', () => {
 
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
-        type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+        type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
         description: 'NewInterface added to interfaces implemented by Type1.',
+      },
+    ]);
+  });
+
+  it('should detect interfaces added to interfaces', () => {
+    const oldSchema = buildSchema(`
+      interface OldInterface
+      interface NewInterface
+
+      interface Interface1 implements OldInterface
+    `);
+
+    const newSchema = buildSchema(`
+      interface OldInterface
+      interface NewInterface
+
+      interface Interface1 implements OldInterface & NewInterface
+    `);
+
+    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
+        description:
+          'NewInterface added to interfaces implemented by Interface1.',
       },
     ]);
   });
@@ -1121,7 +1166,7 @@ describe('findDangerousChanges', () => {
           'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue from "test" to "Test".',
       },
       {
-        type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+        type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
         description:
           'Interface1 added to interfaces implemented by TypeThatGainsInterface1.',
       },

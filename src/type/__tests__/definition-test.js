@@ -441,6 +441,50 @@ describe('Type System: Interfaces', () => {
     ).not.to.throw();
   });
 
+  it('accepts an Interface type with an array of interfaces', () => {
+    const implementing = new GraphQLInterfaceType({
+      name: 'AnotherInterface',
+      fields: {},
+      interfaces: [InterfaceType],
+    });
+    expect(implementing.getInterfaces()).to.deep.equal([InterfaceType]);
+  });
+
+  it('accepts an Interface type with interfaces as a function returning an array', () => {
+    const implementing = new GraphQLInterfaceType({
+      name: 'AnotherInterface',
+      fields: {},
+      interfaces: () => [InterfaceType],
+    });
+    expect(implementing.getInterfaces()).to.deep.equal([InterfaceType]);
+  });
+
+  it('rejects an Interface type with incorrectly typed interfaces', () => {
+    const objType = new GraphQLInterfaceType({
+      name: 'AnotherInterface',
+      fields: {},
+      // $DisableFlowOnNegativeTest
+      interfaces: {},
+    });
+    expect(() => objType.getInterfaces()).to.throw(
+      'AnotherInterface interfaces must be an Array or a function which returns an Array.',
+    );
+  });
+
+  it('rejects an Interface type with interfaces as a function returning an incorrect type', () => {
+    const objType = new GraphQLInterfaceType({
+      name: 'AnotherInterface',
+      fields: {},
+      // $DisableFlowOnNegativeTest
+      interfaces() {
+        return {};
+      },
+    });
+    expect(() => objType.getInterfaces()).to.throw(
+      'AnotherInterface interfaces must be an Array or a function which returns an Array.',
+    );
+  });
+
   it('rejects an Interface type with an incorrect type for resolveType', () => {
     expect(
       () =>
