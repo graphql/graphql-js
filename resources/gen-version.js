@@ -5,7 +5,7 @@
 const { version } = require('../package.json');
 const { writeFile, parseSemver } = require('./utils');
 
-const versionInfo = parseSemver(version);
+const { major, minor, patch, preReleaseTag } = parseSemver(version);
 const body = `// @flow strict
 
 /**
@@ -22,10 +22,10 @@ export const version = '${version}';
  * An object containing the components of the GraphQL.js version string
  */
 export const versionInfo = Object.freeze({
-  major: ${versionInfo.major},
-  minor: ${versionInfo.minor},
-  patch: ${versionInfo.patch},
-  preReleaseTag: ${JSON.stringify(versionInfo.preReleaseTag || null)},
+  major: ${major},
+  minor: ${minor},
+  patch: ${patch},
+  preReleaseTag: ${preReleaseTag ? `'${preReleaseTag}'` : 'null'},
 });
 `;
 
