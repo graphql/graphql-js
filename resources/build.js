@@ -117,7 +117,7 @@ function buildPackageJSON() {
   const { preReleaseTag } = parseSemver(packageJSON.version);
   if (preReleaseTag != null) {
     const [tag] = preReleaseTag.split('.');
-    assert(tag === 'rc', 'Only "rc" tag is supported.');
+    assert(['alpha', 'beta', 'rc'].includes(tag), `"${tag}" tag is supported.`);
 
     assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
     packageJSON.publishConfig = { tag: tag || 'latest' };
