@@ -13,8 +13,7 @@ export type { KindEnum } from './kinds';
 export { TokenKind } from './tokenKind';
 export type { TokenKindEnum } from './tokenKind';
 
-export { createLexer } from './lexer';
-export type { Lexer } from './lexer';
+export { Lexer } from './lexer';
 
 export { parse, parseValue, parseType } from './parser';
 export type { ParseOptions } from './parser';

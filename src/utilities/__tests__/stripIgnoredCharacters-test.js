@@ -8,7 +8,7 @@ import invariant from '../../jsutils/invariant';
 
 import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
-import { createLexer } from '../../language/lexer';
+import { Lexer } from '../../language/lexer';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
 
@@ -59,7 +59,7 @@ const nonPunctuatorTokens = [
 ];
 
 function lexValue(str) {
-  const lexer = createLexer(new Source(str));
+  const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 
   invariant(lexer.advance().kind === '<EOF>', 'Expected EOF');
