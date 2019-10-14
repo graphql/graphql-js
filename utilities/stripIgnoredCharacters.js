@@ -77,7 +77,7 @@ function stripIgnoredCharacters(source) {
   }
 
   var body = sourceObj.body;
-  var lexer = (0, _lexer.createLexer)(sourceObj);
+  var lexer = new _lexer.Lexer(sourceObj);
   var strippedBody = '';
   var wasLastAddedTokenNonPunctuator = false;
 

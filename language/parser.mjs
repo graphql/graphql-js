@@ -6,7 +6,7 @@ import { Kind } from './kinds';
 import { Source } from './source';
 import { DirectiveLocation } from './directiveLocation';
 import { TokenKind } from './tokenKind';
-import { createLexer, isPunctuatorTokenKind } from './lexer';
+import { Lexer, isPunctuatorTokenKind } from './lexer';
 
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -59,7 +59,7 @@ function () {
   function Parser(source, options) {
     var sourceObj = typeof source === 'string' ? new Source(source) : source;
     sourceObj instanceof Source || devAssert(0, "Must provide Source. Received: ".concat(inspect(sourceObj)));
-    this._lexer = createLexer(sourceObj);
+    this._lexer = new Lexer(sourceObj);
     this._options = options || {};
   }
   /**

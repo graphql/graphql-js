@@ -537,10 +537,10 @@ Object.defineProperty(exports, "printSourceLocation", {
     return _language.printSourceLocation;
   }
 });
-Object.defineProperty(exports, "createLexer", {
+Object.defineProperty(exports, "Lexer", {
   enumerable: true,
   get: function get() {
-    return _language.createLexer;
+    return _language.Lexer;
   }
 });
 Object.defineProperty(exports, "TokenKind", {

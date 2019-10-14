@@ -80,7 +80,7 @@ function () {
   function Parser(source, options) {
     var sourceObj = typeof source === 'string' ? new _source.Source(source) : source;
     sourceObj instanceof _source.Source || (0, _devAssert.default)(0, "Must provide Source. Received: ".concat((0, _inspect.default)(sourceObj)));
-    this._lexer = (0, _lexer.createLexer)(sourceObj);
+    this._lexer = new _lexer.Lexer(sourceObj);
     this._options = options || {};
   }
   /**

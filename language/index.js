@@ -39,10 +39,10 @@ Object.defineProperty(exports, "TokenKind", {
     return _tokenKind.TokenKind;
   }
 });
-Object.defineProperty(exports, "createLexer", {
+Object.defineProperty(exports, "Lexer", {
   enumerable: true,
   get: function get() {
-    return _lexer.createLexer;
+    return _lexer.Lexer;
   }
 });
 Object.defineProperty(exports, "parse", {

@@ -41,7 +41,7 @@ GraphQLSchema, GraphQLDirective, GraphQLScalarType, GraphQLObjectType, GraphQLIn
 // Parse and operate on GraphQL language source files.
 export { Source, getLocation // Print source location
 , printLocation, printSourceLocation // Lex
-, createLexer, TokenKind // Parse
+, Lexer, TokenKind // Parse
 , parse, parseValue, parseType // Print
 , print // Visit
 , visit, visitInParallel, visitWithTypeInfo, getVisitFn, BREAK, Kind, DirectiveLocation // Predicates

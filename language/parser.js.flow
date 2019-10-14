@@ -11,7 +11,7 @@ import { Kind } from './kinds';
 import { Source } from './source';
 import { DirectiveLocation } from './directiveLocation';
 import { type TokenKindEnum, TokenKind } from './tokenKind';
-import { type Lexer, createLexer, isPunctuatorTokenKind } from './lexer';
+import { Lexer, isPunctuatorTokenKind } from './lexer';
 import {
   type Location,
   type Token,
@@ -177,7 +177,7 @@ class Parser {
       `Must provide Source. Received: ${inspect(sourceObj)}`,
     );
 
-    this._lexer = createLexer(sourceObj);
+    this._lexer = new Lexer(sourceObj);
     this._options = options || {};
   }
 

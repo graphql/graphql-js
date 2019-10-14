@@ -1,7 +1,7 @@
 import inspect from '../jsutils/inspect';
 import { Source } from '../language/source';
 import { TokenKind } from '../language/tokenKind';
-import { createLexer, isPunctuatorTokenKind } from '../language/lexer';
+import { Lexer, isPunctuatorTokenKind } from '../language/lexer';
 import { dedentBlockStringValue, getBlockStringIndentation } from '../language/blockString';
 /**
  * Strips characters that are not significant to the validity or execution
@@ -64,7 +64,7 @@ export function stripIgnoredCharacters(source) {
   }
 
   var body = sourceObj.body;
-  var lexer = createLexer(sourceObj);
+  var lexer = new Lexer(sourceObj);
   var strippedBody = '';
   var wasLastAddedTokenNonPunctuator = false;
 

@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createLexer = createLexer;
 exports.isPunctuatorTokenKind = isPunctuatorTokenKind;
+exports.Lexer = void 0;
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
@@ -17,53 +17,79 @@ var _tokenKind = require("./tokenKind");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
- * Given a Source object, this returns a Lexer for that source.
+ * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
  * it is advanced, it returns the next token in the Source. Assuming the
  * source lexes, the final Token emitted by the lexer will be of kind
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-function createLexer(source) {
-  var startOfFileToken = new Tok(_tokenKind.TokenKind.SOF, 0, 0, 0, 0, null);
-  var lexer = {
-    source: source,
-    lastToken: startOfFileToken,
-    token: startOfFileToken,
-    line: 1,
-    lineStart: 0,
-    advance: advanceLexer,
-    lookahead: lookahead
-  };
-  return lexer;
-}
+var Lexer =
+/*#__PURE__*/
+function () {
+  /**
+   * The previously focused non-ignored token.
+   */
 
-function advanceLexer() {
-  this.lastToken = this.token;
-  var token = this.token = this.lookahead();
-  return token;
-}
+  /**
+   * The currently focused non-ignored token.
+   */
 
-function lookahead() {
-  var token = this.token;
+  /**
+   * The (1-indexed) line containing the current token.
+   */
 
-  if (token.kind !== _tokenKind.TokenKind.EOF) {
-    do {
-      // Note: next is only mutable during parsing, so we cast to allow this.
-      token = token.next || (token.next = readToken(this, token));
-    } while (token.kind === _tokenKind.TokenKind.COMMENT);
+  /**
+   * The character offset at which the current line begins.
+   */
+  function Lexer(source) {
+    var startOfFileToken = new Tok(_tokenKind.TokenKind.SOF, 0, 0, 0, 0, null);
+    this.source = source;
+    this.lastToken = startOfFileToken;
+    this.token = startOfFileToken;
+    this.line = 1;
+    this.lineStart = 0;
   }
-
-  return token;
-}
-/**
- * The return type of createLexer.
- */
+  /**
+   * Advances the token stream to the next non-ignored token.
+   */
 
 
+  var _proto = Lexer.prototype;
+
+  _proto.advance = function advance() {
+    this.lastToken = this.token;
+    var token = this.token = this.lookahead();
+    return token;
+  }
+  /**
+   * Looks ahead and returns the next non-ignored token, but does not change
+   * the Lexer's state.
+   */
+  ;
+
+  _proto.lookahead = function lookahead() {
+    var token = this.token;
+
+    if (token.kind !== _tokenKind.TokenKind.EOF) {
+      do {
+        // Note: next is only mutable during parsing, so we cast to allow this.
+        token = token.next || (token.next = readToken(this, token));
+      } while (token.kind === _tokenKind.TokenKind.COMMENT);
+    }
+
+    return token;
+  };
+
+  return Lexer;
+}();
 /**
  * @internal
  */
+
+
+exports.Lexer = Lexer;
+
 function isPunctuatorTokenKind(kind) {
   return kind === _tokenKind.TokenKind.BANG || kind === _tokenKind.TokenKind.DOLLAR || kind === _tokenKind.TokenKind.AMP || kind === _tokenKind.TokenKind.PAREN_L || kind === _tokenKind.TokenKind.PAREN_R || kind === _tokenKind.TokenKind.SPREAD || kind === _tokenKind.TokenKind.COLON || kind === _tokenKind.TokenKind.EQUALS || kind === _tokenKind.TokenKind.AT || kind === _tokenKind.TokenKind.BRACKET_L || kind === _tokenKind.TokenKind.BRACKET_R || kind === _tokenKind.TokenKind.BRACE_L || kind === _tokenKind.TokenKind.PIPE || kind === _tokenKind.TokenKind.BRACE_R;
 }
