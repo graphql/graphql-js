@@ -850,7 +850,7 @@ function completeValue(
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
   // returning null if serialization is not possible.
   if (isLeafType(returnType)) {
-    return completeLeafValue(returnType, result);
+    return completeLeafValue(returnType, result, fieldNodes, info);
   }
 
   // If field type is an abstract type, Interface or Union, determine the
@@ -935,8 +935,8 @@ function completeListValue(
  * Complete a Scalar or Enum by serializing to a valid value, returning
  * null if serialization is not possible.
  */
-function completeLeafValue(returnType: GraphQLLeafType, result: mixed): mixed {
-  const serializedResult = returnType.serialize(result);
+function completeLeafValue(returnType: GraphQLLeafType, result: mixed, fieldNodes: $ReadOnlyArray<FieldNode>, info: GraphQLResolveInfo): mixed {
+  const serializedResult = returnType.serialize(result, fieldNodes, info);
   if (isInvalid(serializedResult)) {
     throw new Error(
       `Expected a value of type "${inspect(returnType)}" but ` +
