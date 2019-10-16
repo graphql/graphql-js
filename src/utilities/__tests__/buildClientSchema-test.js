@@ -72,6 +72,8 @@ describe('Type System: build schema from introspection', () => {
 
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
+
+    // $DisableFlowOnNegativeTest
     delete introspection.__schema.queryType;
 
     const clientSchema = buildClientSchema(introspection);
@@ -501,6 +503,8 @@ describe('Type System: build schema from introspection', () => {
 
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
+
+    // $DisableFlowOnNegativeTest
     delete introspection.__schema.directives;
 
     const clientSchema = buildClientSchema(introspection);
@@ -644,6 +648,8 @@ describe('Type System: build schema from introspection', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
       expect(introspection).to.have.nested.property('__schema.queryType.name');
+
+      // $DisableFlowOnNegativeTest
       delete introspection.__schema.queryType.name;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -658,6 +664,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(queryTypeIntrospection).to.have.property('kind');
+
       // $DisableFlowOnNegativeTest
       delete queryTypeIntrospection.kind;
 
@@ -673,6 +680,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(queryTypeIntrospection).to.have.property('interfaces');
+
       // $DisableFlowOnNegativeTest
       delete queryTypeIntrospection.interfaces;
 
@@ -702,6 +710,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(queryTypeIntrospection).to.have.property('fields');
+
       // $DisableFlowOnNegativeTest
       delete queryTypeIntrospection.fields;
 
@@ -717,6 +726,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(queryTypeIntrospection).to.have.nested.property('fields[0].args');
+
       // $DisableFlowOnNegativeTest
       delete queryTypeIntrospection.fields[0].args;
 
@@ -768,6 +778,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someUnionIntrospection).to.have.property('possibleTypes');
+
       // $DisableFlowOnNegativeTest
       delete someUnionIntrospection.possibleTypes;
 
@@ -783,6 +794,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someEnumIntrospection).to.have.property('enumValues');
+
       // $DisableFlowOnNegativeTest
       delete someEnumIntrospection.enumValues;
 
@@ -798,6 +810,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someInputObjectIntrospection).to.have.property('inputFields');
+
       // $DisableFlowOnNegativeTest
       delete someInputObjectIntrospection.inputFields;
 
@@ -814,6 +827,8 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         locations: ['QUERY'],
       });
+
+      // $DisableFlowOnNegativeTest
       delete someDirectiveIntrospection.locations;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -829,6 +844,8 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         args: [],
       });
+
+      // $DisableFlowOnNegativeTest
       delete someDirectiveIntrospection.args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
