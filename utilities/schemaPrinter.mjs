@@ -1,4 +1,3 @@
-import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
@@ -227,65 +226,26 @@ function printDeprecated(fieldOrEnumVal) {
 function printDescription(options, def) {
   var indentation = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
   var firstInBlock = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+  var description = def.description;
 
-  if (def.description == null) {
+  if (description == null) {
     return '';
   }
 
-  var lines = descriptionLines(def.description, 120 - indentation.length);
-
   if (options && options.commentDescriptions) {
-    return printDescriptionWithComments(lines, indentation, firstInBlock);
+    return printDescriptionWithComments(description, indentation, firstInBlock);
   }
 
-  var text = lines.join('\n');
-  var preferMultipleLines = text.length > 70;
-  var blockString = printBlockString(text, '', preferMultipleLines);
+  var preferMultipleLines = description.length > 70;
+  var blockString = printBlockString(description, '', preferMultipleLines);
   var prefix = indentation && !firstInBlock ? '\n' + indentation : indentation;
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
 }
 
-function printDescriptionWithComments(lines, indentation, firstInBlock) {
-  var description = indentation && !firstInBlock ? '\n' : '';
-
-  for (var _i2 = 0; _i2 < lines.length; _i2++) {
-    var line = lines[_i2];
-
-    if (line === '') {
-      description += indentation + '#\n';
-    } else {
-      description += indentation + '# ' + line + '\n';
-    }
-  }
-
-  return description;
-}
-
-function descriptionLines(description, maxLen) {
-  var rawLines = description.split('\n');
-  return flatMap(rawLines, function (line) {
-    if (line.length < maxLen + 5) {
-      return line;
-    } // For > 120 character long lines, cut at space boundaries into sublines
-    // of ~80 chars.
-
-
-    return breakLine(line, maxLen);
-  });
-}
-
-function breakLine(line, maxLen) {
-  var parts = line.split(new RegExp("((?: |^).{15,".concat(maxLen - 40, "}(?= |$))")));
-
-  if (parts.length < 4) {
-    return [line];
-  }
-
-  var sublines = [parts[0] + parts[1] + parts[2]];
-
-  for (var i = 3; i < parts.length; i += 2) {
-    sublines.push(parts[i].slice(1) + parts[i + 1]);
-  }
-
-  return sublines;
+function printDescriptionWithComments(description, indentation, firstInBlock) {
+  var prefix = indentation && !firstInBlock ? '\n' : '';
+  var comment = description.split('\n').map(function (line) {
+    return indentation + (line !== '' ? '# ' + line : '#');
+  }).join('\n');
+  return prefix + comment + '\n';
 }
