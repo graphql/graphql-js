@@ -26,13 +26,8 @@ if (require.main === module) {
   for (const filepath of srcFiles) {
     if (filepath.endsWith('.js')) {
       buildJSFile(filepath);
-    }
-  }
-
-  const tsFiles = readdirRecursive('./tstypes', { ignoreDir: /^__.*__$/ });
-  for (const filepath of tsFiles) {
-    if (filepath.endsWith('.d.ts')) {
-      const srcPath = path.join('./tstypes', filepath);
+    } else if (filepath.endsWith('.d.ts')) {
+      const srcPath = path.join('./src', filepath);
       const destPath = path.join('./dist', filepath);
 
       copyFile(srcPath, destPath);

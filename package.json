@@ -33,7 +33,7 @@
     "prettier": "prettier --ignore-path .gitignore --write --list-different \"**/*.{js,ts,md,json,yml}\"",
     "prettier:check": "prettier --ignore-path .gitignore --check \"**/*.{js,ts,md,json,yml}\"",
     "check": "flow check",
-    "check:ts": "dtslint tstypes",
+    "check:ts": "dtslint src",
     "check:cover": "node resources/check-cover.js && nyc report --nycrc-path .nycflowrc.yml",
     "build": "node resources/build.js",
     "changelog": "node resources/gen-changelog.js",
