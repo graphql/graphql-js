@@ -79,6 +79,7 @@ rules:
   no-ex-assign: error
   no-extra-boolean-cast: error
   no-func-assign: error
+  no-import-assign: error
   no-inner-declarations: [error, both]
   no-invalid-regexp: error
   no-irregular-whitespace: error
@@ -106,6 +107,7 @@ rules:
   consistent-return: off # TODO
   curly: [error, all]
   default-case: off
+  default-param-last: off # TODO
   dot-notation: off
   eqeqeq: [error, smart]
   guard-for-in: error
@@ -163,6 +165,7 @@ rules:
   no-with: error
   prefer-named-capture-group: off # ES2018
   prefer-promise-reject-errors: error
+  prefer-regex-literals: error
   radix: error
   require-await: off # TODO
   require-unicode-regexp: off
