@@ -53,47 +53,74 @@ defineToJSON(Location, function() {
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
-export type Token = {
+export class Token {
   /**
    * The kind of Token.
    */
-  +kind: TokenKindEnum,
+  +kind: TokenKindEnum;
 
   /**
    * The character offset at which this Node begins.
    */
-  +start: number,
+  +start: number;
 
   /**
    * The character offset at which this Node ends.
    */
-  +end: number,
+  +end: number;
 
   /**
    * The 1-indexed line number on which this Token appears.
    */
-  +line: number,
+  +line: number;
 
   /**
    * The 1-indexed column number at which this Token begins.
    */
-  +column: number,
+  +column: number;
 
   /**
    * For non-punctuation tokens, represents the interpreted value of the token.
    */
-  +value: string | void,
+  +value: string | void;
 
   /**
    * Tokens exist as nodes in a double-linked-list amongst all tokens
    * including ignored tokens. <SOF> is always the first node and <EOF>
    * the last.
    */
-  +prev: Token | null,
-  +next: Token | null,
+  +prev: Token | null;
+  +next: Token | null;
 
-  ...
-};
+  constructor(
+    kind: TokenKindEnum,
+    start: number,
+    end: number,
+    line: number,
+    column: number,
+    prev: Token | null,
+    value?: string,
+  ) {
+    this.kind = kind;
+    this.start = start;
+    this.end = end;
+    this.line = line;
+    this.column = column;
+    this.value = value;
+    this.prev = prev;
+    this.next = null;
+  }
+}
+
+// Print a simplified form when appearing in JSON/util.inspect.
+defineToJSON(Token, function() {
+  return {
+    kind: this.kind,
+    value: this.value,
+    line: this.line,
+    column: this.column,
+  };
+});
 
 /**
  * The list of all possible AST node types.

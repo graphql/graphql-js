@@ -38,7 +38,7 @@ export class Location {
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
-export interface Token {
+export class Token {
   /**
    * The kind of Token.
    */
@@ -76,6 +76,16 @@ export interface Token {
    */
   readonly prev: Token | null;
   readonly next: Token | null;
+
+  constructor(
+    kind: TokenKindEnum,
+    start: number,
+    end: number,
+    line: number,
+    column: number,
+    prev: Token | null,
+    value?: string,
+  );
 }
 
 /**
