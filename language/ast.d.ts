@@ -5,7 +5,7 @@ import { TokenKindEnum } from './tokenKind';
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
  */
-export interface Location {
+export class Location {
   /**
    * The character offset at which this Node begins.
    */
@@ -30,6 +30,8 @@ export interface Location {
    * The Source document the AST represents.
    */
   readonly source: Source;
+
+  constructor(startToken: Token, endToken: Token, source: Source);
 }
 
 /**

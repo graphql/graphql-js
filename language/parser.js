@@ -11,8 +11,6 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
-var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
-
 var _syntaxError = require("../error/syntaxError");
 
 var _kinds = require("./kinds");
@@ -24,6 +22,8 @@ var _directiveLocation = require("./directiveLocation");
 var _tokenKind = require("./tokenKind");
 
 var _lexer = require("./lexer");
+
+var _ast = require("./ast");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1380,7 +1380,7 @@ function () {
 
   _proto.loc = function loc(startToken) {
     if (!this._options.noLocation) {
-      return new Loc(startToken, this._lexer.lastToken, this._lexer.source);
+      return new _ast.Location(startToken, this._lexer.lastToken, this._lexer.source);
     }
   }
   /**
@@ -1528,25 +1528,10 @@ function () {
 
   return Parser;
 }();
-
-function Loc(startToken, endToken, source) {
-  this.start = startToken.start;
-  this.end = endToken.end;
-  this.startToken = startToken;
-  this.endToken = endToken;
-  this.source = source;
-} // Print a simplified form when appearing in JSON/util.inspect.
-
-
-(0, _defineToJSON.default)(Loc, function () {
-  return {
-    start: this.start,
-    end: this.end
-  };
-});
 /**
  * A helper function to describe a token as a string for debugging
  */
+
 
 function getTokenDesc(token) {
   var value = token.value;

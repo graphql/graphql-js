@@ -1,12 +1,15 @@
 import inspect from '../jsutils/inspect';
 import devAssert from '../jsutils/devAssert';
-import defineToJSON from '../jsutils/defineToJSON';
 import { syntaxError } from '../error/syntaxError';
 import { Kind } from './kinds';
 import { Source } from './source';
 import { DirectiveLocation } from './directiveLocation';
 import { TokenKind } from './tokenKind';
 import { Lexer, isPunctuatorTokenKind } from './lexer';
+import { Location } from './ast';
+/**
+ * Configuration options to control parser behavior
+ */
 
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -1359,7 +1362,7 @@ function () {
 
   _proto.loc = function loc(startToken) {
     if (!this._options.noLocation) {
-      return new Loc(startToken, this._lexer.lastToken, this._lexer.source);
+      return new Location(startToken, this._lexer.lastToken, this._lexer.source);
     }
   }
   /**
@@ -1507,25 +1510,10 @@ function () {
 
   return Parser;
 }();
-
-function Loc(startToken, endToken, source) {
-  this.start = startToken.start;
-  this.end = endToken.end;
-  this.startToken = startToken;
-  this.endToken = endToken;
-  this.source = source;
-} // Print a simplified form when appearing in JSON/util.inspect.
-
-
-defineToJSON(Loc, function () {
-  return {
-    start: this.start,
-    end: this.end
-  };
-});
 /**
  * A helper function to describe a token as a string for debugging
  */
+
 
 function getTokenDesc(token) {
   var value = token.value;
