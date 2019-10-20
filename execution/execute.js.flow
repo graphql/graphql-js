@@ -111,11 +111,10 @@ export type ExecutionContext = {|
  *   - `errors` is included when any errors occurred as a non-empty array.
  *   - `data` is the result of a successful execution of the query.
  */
-export type ExecutionResult = {
+export type ExecutionResult = {|
   errors?: $ReadOnlyArray<GraphQLError>,
   data?: ObjMap<mixed> | null,
-  ...
-};
+|};
 
 export type ExecutionArgs = {|
   schema: GraphQLSchema,
@@ -181,7 +180,7 @@ export function execute(
       });
 }
 
-function executeImpl(args: ExecutionArgs): ExecutionResult {
+function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   const {
     schema,
     document,
@@ -232,7 +231,7 @@ function executeImpl(args: ExecutionArgs): ExecutionResult {
 function buildResponse(
   exeContext: ExecutionContext,
   data: PromiseOrValue<ObjMap<mixed> | null>,
-): ExecutionResult {
+): PromiseOrValue<ExecutionResult> {
   if (isPromise(data)) {
     return data.then(resolved => buildResponse(exeContext, resolved));
   }
