@@ -2,7 +2,6 @@
 
 import inspect from '../jsutils/inspect';
 import devAssert from '../jsutils/devAssert';
-import defineToJSON from '../jsutils/defineToJSON';
 
 import { syntaxError } from '../error/syntaxError';
 import { type GraphQLError } from '../error/GraphQLError';
@@ -13,7 +12,7 @@ import { DirectiveLocation } from './directiveLocation';
 import { type TokenKindEnum, TokenKind } from './tokenKind';
 import { Lexer, isPunctuatorTokenKind } from './lexer';
 import {
-  type Location,
+  Location,
   type Token,
   type NameNode,
   type VariableNode,
@@ -1402,7 +1401,11 @@ class Parser {
    */
   loc(startToken: Token): Location | void {
     if (!this._options.noLocation) {
-      return new Loc(startToken, this._lexer.lastToken, this._lexer.source);
+      return new Location(
+        startToken,
+        this._lexer.lastToken,
+        this._lexer.source,
+      );
     }
   }
 
@@ -1547,19 +1550,6 @@ class Parser {
     return nodes;
   }
 }
-
-function Loc(startToken: Token, endToken: Token, source: Source) {
-  this.start = startToken.start;
-  this.end = endToken.end;
-  this.startToken = startToken;
-  this.endToken = endToken;
-  this.source = source;
-}
-
-// Print a simplified form when appearing in JSON/util.inspect.
-defineToJSON(Loc, function() {
-  return { start: this.start, end: this.end };
-});
 
 /**
  * A helper function to describe a token as a string for debugging
