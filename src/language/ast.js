@@ -1,5 +1,7 @@
 // @flow strict
 
+import defineToJSON from '../jsutils/defineToJSON';
+
 import { type Source } from './source';
 import { type TokenKindEnum } from './tokenKind';
 
@@ -7,34 +9,45 @@ import { type TokenKindEnum } from './tokenKind';
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
  */
-export type Location = {
+export class Location {
   /**
    * The character offset at which this Node begins.
    */
-  +start: number,
+  +start: number;
 
   /**
    * The character offset at which this Node ends.
    */
-  +end: number,
+  +end: number;
 
   /**
    * The Token at which this Node begins.
    */
-  +startToken: Token,
+  +startToken: Token;
 
   /**
    * The Token at which this Node ends.
    */
-  +endToken: Token,
+  +endToken: Token;
 
   /**
    * The Source document the AST represents.
    */
-  +source: Source,
+  +source: Source;
 
-  ...
-};
+  constructor(startToken: Token, endToken: Token, source: Source) {
+    this.start = startToken.start;
+    this.end = endToken.end;
+    this.startToken = startToken;
+    this.endToken = endToken;
+    this.source = source;
+  }
+}
+
+// Print a simplified form when appearing in JSON/util.inspect.
+defineToJSON(Location, function() {
+  return { start: this.start, end: this.end };
+});
 
 /**
  * Represents a range of characters represented by a lexical token
