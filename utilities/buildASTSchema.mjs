@@ -80,9 +80,7 @@ export function buildASTSchema(documentAST, options) {
     mutation: typeMap['Mutation'],
     subscription: typeMap['Subscription']
   };
-  var directives = directiveDefs.map(function (def) {
-    return astBuilder.buildDirective(def);
-  }); // If specified directives were not explicitly declared, add them.
+  var directives = astBuilder.buildDirectives(directiveDefs); // If specified directives were not explicitly declared, add them.
 
   if (!directives.some(function (directive) {
     return directive.name === 'skip';
@@ -160,18 +158,22 @@ function () {
     return this.getNamedType(node);
   };
 
-  _proto.buildDirective = function buildDirective(directive) {
-    var locations = directive.locations.map(function (_ref) {
-      var value = _ref.value;
-      return value;
-    });
-    return new GraphQLDirective({
-      name: directive.name.value,
-      description: getDescription(directive, this._options),
-      locations: locations,
-      isRepeatable: directive.repeatable,
-      args: this.buildArgumentMap(directive.arguments),
-      astNode: directive
+  _proto.buildDirectives = function buildDirectives(nodes) {
+    var _this = this;
+
+    return nodes.map(function (directive) {
+      var locations = directive.locations.map(function (_ref) {
+        var value = _ref.value;
+        return value;
+      });
+      return new GraphQLDirective({
+        name: directive.name.value,
+        description: getDescription(directive, _this._options),
+        locations: locations,
+        isRepeatable: directive.repeatable,
+        args: _this.buildArgumentMap(directive.arguments),
+        astNode: directive
+      });
     });
   };
 
@@ -325,7 +327,7 @@ function () {
   };
 
   _proto._buildType = function _buildType(astNode) {
-    var _this = this;
+    var _this2 = this;
 
     var name = astNode.name.value;
     var description = getDescription(astNode, this._options);
@@ -336,10 +338,10 @@ function () {
           name: name,
           description: description,
           interfaces: function interfaces() {
-            return _this.buildInterfaces([astNode]);
+            return _this2.buildInterfaces([astNode]);
           },
           fields: function fields() {
-            return _this.buildFieldMap([astNode]);
+            return _this2.buildFieldMap([astNode]);
           },
           astNode: astNode
         });
@@ -349,10 +351,10 @@ function () {
           name: name,
           description: description,
           interfaces: function interfaces() {
-            return _this.buildInterfaces([astNode]);
+            return _this2.buildInterfaces([astNode]);
           },
           fields: function fields() {
-            return _this.buildFieldMap([astNode]);
+            return _this2.buildFieldMap([astNode]);
           },
           astNode: astNode
         });
@@ -370,7 +372,7 @@ function () {
           name: name,
           description: description,
           types: function types() {
-            return _this.buildUnionTypes([astNode]);
+            return _this2.buildUnionTypes([astNode]);
           },
           astNode: astNode
         });
@@ -387,7 +389,7 @@ function () {
           name: name,
           description: description,
           fields: function fields() {
-            return _this.buildInputFieldMap([astNode]);
+            return _this2.buildInputFieldMap([astNode]);
           },
           astNode: astNode
         });
