@@ -178,7 +178,10 @@ export function extendSchema(
   return new GraphQLSchema({
     ...operationTypes,
     types: objectValues(typeMap),
-    directives: getMergedDirectives(),
+    directives: [
+      ...replaceDirectives(schemaConfig.directives),
+      ...astBuilder.buildDirectives(directiveDefs),
+    ],
     astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: concatMaybeArrays(
       schemaConfig.extensionASTNodes,
@@ -205,19 +208,18 @@ export function extendSchema(
     return ((typeMap[type.name]: any): T);
   }
 
-  function getMergedDirectives(): Array<GraphQLDirective> {
-    const existingDirectives = schema.getDirectives().map(directive => {
+  function replaceDirectives(
+    directives: $ReadOnlyArray<GraphQLDirective>,
+  ): Array<GraphQLDirective> {
+    devAssert(directives, 'schema must have default directives');
+
+    return directives.map(directive => {
       const config = directive.toConfig();
       return new GraphQLDirective({
         ...config,
         args: mapValue(config.args, extendArg),
       });
     });
-
-    devAssert(existingDirectives, 'schema must have default directives');
-    return existingDirectives.concat(
-      directiveDefs.map(node => astBuilder.buildDirective(node)),
-    );
   }
 
   function extendNamedType(type: GraphQLNamedType): GraphQLNamedType {
