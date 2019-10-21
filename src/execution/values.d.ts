@@ -29,7 +29,7 @@ type CoercedVariableValues =
  */
 export function getVariableValues(
   schema: GraphQLSchema,
-  varDefNodes: VariableDefinitionNode[],
+  varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { [key: string]: any },
   options?: { maxErrors?: number },
 ): CoercedVariableValues;
