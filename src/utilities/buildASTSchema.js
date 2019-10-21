@@ -161,7 +161,7 @@ export function buildASTSchema(
         subscription: (typeMap['Subscription']: any),
       };
 
-  const directives = directiveDefs.map(def => astBuilder.buildDirective(def));
+  const directives = astBuilder.buildDirectives(directiveDefs);
 
   // If specified directives were not explicitly declared, add them.
   if (!directives.some(directive => directive.name === 'skip')) {
@@ -238,18 +238,22 @@ export class ASTDefinitionBuilder {
     return this.getNamedType(node);
   }
 
-  buildDirective(directive: DirectiveDefinitionNode): GraphQLDirective {
-    const locations = directive.locations.map(
-      ({ value }) => ((value: any): DirectiveLocationEnum),
-    );
+  buildDirectives(
+    nodes: Array<DirectiveDefinitionNode>,
+  ): Array<GraphQLDirective> {
+    return nodes.map(directive => {
+      const locations = directive.locations.map(
+        ({ value }) => ((value: any): DirectiveLocationEnum),
+      );
 
-    return new GraphQLDirective({
-      name: directive.name.value,
-      description: getDescription(directive, this._options),
-      locations,
-      isRepeatable: directive.repeatable,
-      args: this.buildArgumentMap(directive.arguments),
-      astNode: directive,
+      return new GraphQLDirective({
+        name: directive.name.value,
+        description: getDescription(directive, this._options),
+        locations,
+        isRepeatable: directive.repeatable,
+        args: this.buildArgumentMap(directive.arguments),
+        astNode: directive,
+      });
     });
   }
 
