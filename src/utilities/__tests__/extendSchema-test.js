@@ -1135,7 +1135,7 @@ describe('extendSchema', () => {
       const schema = extendTestSchema(`
         type Mutation
       `);
-      expect(schema.getMutationType()).to.equal(null);
+      expect(schema.getMutationType()).to.equal(undefined);
     });
 
     it('adds schema definition missing in the original schema', () => {
