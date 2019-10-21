@@ -4,13 +4,11 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import mapValue from '../jsutils/mapValue';
 import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
-import keyValMap from '../jsutils/keyValMap';
 import { Kind } from '../language/kinds';
 import { isTypeDefinitionNode, isTypeExtensionNode } from '../language/predicates';
 import { assertValidSDLExtension } from '../validation/validate';
@@ -81,7 +79,6 @@ export function extendSchema(schema, documentAST, options) {
     return schema;
   }
 
-  var schemaConfig = schema.toConfig();
   var astBuilder = new ASTDefinitionBuilder(options, function (typeName) {
     var type = typeMap[typeName];
 
@@ -91,60 +88,28 @@ export function extendSchema(schema, documentAST, options) {
 
     return type;
   });
-  var typeMap = keyValMap(typeDefs, function (node) {
-    return node.name.value;
-  }, function (node) {
-    return astBuilder.buildType(node);
-  });
+  var typeMap = astBuilder.buildTypeMap(typeDefs);
+  var schemaConfig = schema.toConfig();
 
   for (var _i4 = 0, _schemaConfig$types2 = schemaConfig.types; _i4 < _schemaConfig$types2.length; _i4++) {
     var existingType = _schemaConfig$types2[_i4];
     typeMap[existingType.name] = extendNamedType(existingType);
-  } // Get the extended root operation types.
+  }
+
+  var operationTypes = _objectSpread({
+    // Get the extended root operation types.
+    query: schemaConfig.query && replaceNamedType(schemaConfig.query),
+    mutation: schemaConfig.mutation && replaceNamedType(schemaConfig.mutation),
+    subscription: schemaConfig.subscription && replaceNamedType(schemaConfig.subscription)
+  }, astBuilder.getOperationTypes(concatMaybeArrays(schemaDef && [schemaDef], schemaExts) || [])); // Then produce and return a Schema with these types.
 
 
-  var operationTypes = {
-    query: schemaConfig.query && schemaConfig.query.name,
-    mutation: schemaConfig.mutation && schemaConfig.mutation.name,
-    subscription: schemaConfig.subscription && schemaConfig.subscription.name
-  };
-
-  if (schemaDef) {
-    for (var _i6 = 0, _schemaDef$operationT2 = schemaDef.operationTypes; _i6 < _schemaDef$operationT2.length; _i6++) {
-      var _ref2 = _schemaDef$operationT2[_i6];
-      var operation = _ref2.operation;
-      var type = _ref2.type;
-      operationTypes[operation] = type.name.value;
-    }
-  } // Then, incorporate schema definition and all schema extensions.
-
-
-  for (var _i8 = 0; _i8 < schemaExts.length; _i8++) {
-    var schemaExt = schemaExts[_i8];
-
-    if (schemaExt.operationTypes) {
-      for (var _i10 = 0, _schemaExt$operationT2 = schemaExt.operationTypes; _i10 < _schemaExt$operationT2.length; _i10++) {
-        var _ref4 = _schemaExt$operationT2[_i10];
-        var _operation = _ref4.operation;
-        var _type = _ref4.type;
-        operationTypes[_operation] = _type.name.value;
-      }
-    }
-  } // Then produce and return a Schema with these types.
-
-
-  return new GraphQLSchema({
-    // Note: While this could make early assertions to get the correctly
-    // typed values, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    query: getMaybeTypeByName(operationTypes.query),
-    mutation: getMaybeTypeByName(operationTypes.mutation),
-    subscription: getMaybeTypeByName(operationTypes.subscription),
+  return new GraphQLSchema(_objectSpread({}, operationTypes, {
     types: objectValues(typeMap),
     directives: getMergedDirectives(),
     astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: concatMaybeArrays(schemaConfig.extensionASTNodes, schemaExts)
-  }); // Below are functions used for producing this schema that have closed over
+  })); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
   function replaceType(type) {
@@ -158,15 +123,19 @@ export function extendSchema(schema, documentAST, options) {
   }
 
   function replaceNamedType(type) {
+    // Note: While this could make early assertions to get the correctly
+    // typed values, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
     return typeMap[type.name];
   }
 
-  function getMaybeTypeByName(typeName) {
-    return typeName != null ? typeMap[typeName] : null;
-  }
-
   function getMergedDirectives() {
-    var existingDirectives = schema.getDirectives().map(extendDirective);
+    var existingDirectives = schema.getDirectives().map(function (directive) {
+      var config = directive.toConfig();
+      return new GraphQLDirective(_objectSpread({}, config, {
+        args: mapValue(config.args, extendArg)
+      }));
+    });
     existingDirectives || devAssert(0, 'schema must have default directives');
     return existingDirectives.concat(directiveDefs.map(function (node) {
       return astBuilder.buildDirective(node);
@@ -196,30 +165,16 @@ export function extendSchema(schema, documentAST, options) {
     invariant(false, 'Unexpected type: ' + inspect(type));
   }
 
-  function extendDirective(directive) {
-    var config = directive.toConfig();
-    return new GraphQLDirective(_objectSpread({}, config, {
-      args: mapValue(config.args, extendArg)
-    }));
-  }
-
   function extendInputObjectType(type) {
     var config = type.toConfig();
     var extensions = typeExtsMap[config.name] || [];
-    var fieldNodes = flatMap(extensions, function (node) {
-      return node.fields || [];
-    });
     return new GraphQLInputObjectType(_objectSpread({}, config, {
       fields: function fields() {
         return _objectSpread({}, mapValue(config.fields, function (field) {
           return _objectSpread({}, field, {
             type: replaceType(field.type)
           });
-        }), {}, keyValMap(fieldNodes, function (field) {
-          return field.name.value;
-        }, function (field) {
-          return astBuilder.buildInputField(field);
-        }));
+        }), {}, astBuilder.buildInputFieldMap(extensions));
       },
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
@@ -228,15 +183,8 @@ export function extendSchema(schema, documentAST, options) {
   function extendEnumType(type) {
     var config = type.toConfig();
     var extensions = typeExtsMap[type.name] || [];
-    var valueNodes = flatMap(extensions, function (node) {
-      return node.values || [];
-    });
     return new GraphQLEnumType(_objectSpread({}, config, {
-      values: _objectSpread({}, config.values, {}, keyValMap(valueNodes, function (value) {
-        return value.name.value;
-      }, function (value) {
-        return astBuilder.buildEnumValue(value);
-      })),
+      values: _objectSpread({}, config.values, {}, astBuilder.buildEnumValueMap(extensions)),
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
   }
@@ -252,24 +200,12 @@ export function extendSchema(schema, documentAST, options) {
   function extendObjectType(type) {
     var config = type.toConfig();
     var extensions = typeExtsMap[config.name] || [];
-    var interfaceNodes = flatMap(extensions, function (node) {
-      return node.interfaces || [];
-    });
-    var fieldNodes = flatMap(extensions, function (node) {
-      return node.fields || [];
-    });
     return new GraphQLObjectType(_objectSpread({}, config, {
       interfaces: function interfaces() {
-        return [].concat(type.getInterfaces().map(replaceNamedType), interfaceNodes.map(function (node) {
-          return astBuilder.getNamedType(node);
-        }));
+        return [].concat(type.getInterfaces().map(replaceNamedType), astBuilder.buildInterfaces(extensions));
       },
       fields: function fields() {
-        return _objectSpread({}, mapValue(config.fields, extendField), {}, keyValMap(fieldNodes, function (node) {
-          return node.name.value;
-        }, function (node) {
-          return astBuilder.buildField(node);
-        }));
+        return _objectSpread({}, mapValue(config.fields, extendField), {}, astBuilder.buildFieldMap(extensions));
       },
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
@@ -278,24 +214,12 @@ export function extendSchema(schema, documentAST, options) {
   function extendInterfaceType(type) {
     var config = type.toConfig();
     var extensions = typeExtsMap[config.name] || [];
-    var interfaceNodes = flatMap(extensions, function (node) {
-      return node.interfaces || [];
-    });
-    var fieldNodes = flatMap(extensions, function (node) {
-      return node.fields || [];
-    });
     return new GraphQLInterfaceType(_objectSpread({}, config, {
       interfaces: function interfaces() {
-        return [].concat(type.getInterfaces().map(replaceNamedType), interfaceNodes.map(function (node) {
-          return astBuilder.getNamedType(node);
-        }));
+        return [].concat(type.getInterfaces().map(replaceNamedType), astBuilder.buildInterfaces(extensions));
       },
       fields: function fields() {
-        return _objectSpread({}, mapValue(config.fields, extendField), {}, keyValMap(fieldNodes, function (node) {
-          return node.name.value;
-        }, function (node) {
-          return astBuilder.buildField(node);
-        }));
+        return _objectSpread({}, mapValue(config.fields, extendField), {}, astBuilder.buildFieldMap(extensions));
       },
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
@@ -304,14 +228,9 @@ export function extendSchema(schema, documentAST, options) {
   function extendUnionType(type) {
     var config = type.toConfig();
     var extensions = typeExtsMap[config.name] || [];
-    var typeNodes = flatMap(extensions, function (node) {
-      return node.types || [];
-    });
     return new GraphQLUnionType(_objectSpread({}, config, {
       types: function types() {
-        return [].concat(type.getTypes().map(replaceNamedType), typeNodes.map(function (node) {
-          return astBuilder.getNamedType(node);
-        }));
+        return [].concat(type.getTypes().map(replaceNamedType), astBuilder.buildUnionTypes(extensions));
       },
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
@@ -339,8 +258,8 @@ function concatMaybeArrays() {
     arrays[_key] = arguments[_key];
   }
 
-  for (var _i12 = 0; _i12 < arrays.length; _i12++) {
-    var maybeArray = arrays[_i12];
+  for (var _i6 = 0; _i6 < arrays.length; _i6++) {
+    var maybeArray = arrays[_i6];
 
     if (maybeArray) {
       result = result === undefined ? maybeArray : result.concat(maybeArray);
