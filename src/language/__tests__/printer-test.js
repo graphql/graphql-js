@@ -165,7 +165,7 @@ describe('Printer: Query document', () => {
       }
 
       {
-        unnamed(truthy: true, falsey: false, nullish: null)
+        unnamed(truthy: true, falsy: false, nullish: null)
         query
       }
 

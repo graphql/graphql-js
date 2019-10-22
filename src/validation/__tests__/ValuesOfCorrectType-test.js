@@ -796,7 +796,7 @@ describe('Validate: Values of correct type', () => {
       `);
     });
 
-    it('Partial object, required field can be falsey', () => {
+    it('Partial object, required field can be falsy', () => {
       expectValid(`
         {
           complicatedArgs {
