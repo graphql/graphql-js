@@ -141,7 +141,7 @@ GraphQL.js is [MIT-licensed](https://github.com/graphql/graphql-js/blob/master/L
 
 ### Credits
 
-The `*.d.ts` files in this project are based on [DefinetlyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/54712a7e28090c5b1253b746d1878003c954f3ff/types/graphql) definitions written by:
+The `*.d.ts` files in this project are based on [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/54712a7e28090c5b1253b746d1878003c954f3ff/types/graphql) definitions written by:
 
 - TonyYang https://github.com/TonyPythoneer
 - Caleb Meredith https://github.com/calebmer
