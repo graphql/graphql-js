@@ -73,7 +73,7 @@ message, nodes, source, positions, path, originalError, extensions) {
       writable: true
     },
     locations: {
-      // Coercing falsey values to undefined ensures they will not be included
+      // Coercing falsy values to undefined ensures they will not be included
       // in JSON.stringify() when not provided.
       value: _locations || undefined,
       // By being enumerable, JSON.stringify will include `locations` in the
@@ -82,7 +82,7 @@ message, nodes, source, positions, path, originalError, extensions) {
       enumerable: _locations != null
     },
     path: {
-      // Coercing falsey values to undefined ensures they will not be included
+      // Coercing falsy values to undefined ensures they will not be included
       // in JSON.stringify() when not provided.
       value: path || undefined,
       // By being enumerable, JSON.stringify will include `path` in the
@@ -103,7 +103,7 @@ message, nodes, source, positions, path, originalError, extensions) {
       value: originalError
     },
     extensions: {
-      // Coercing falsey values to undefined ensures they will not be included
+      // Coercing falsy values to undefined ensures they will not be included
       // in JSON.stringify() when not provided.
       value: _extensions || undefined,
       // By being enumerable, JSON.stringify will include `path` in the
