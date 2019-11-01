@@ -53,7 +53,7 @@ describe('Type System: build schema from introspection', () => {
         query: Simple
       }
 
-      """This is simple type"""
+      """This is a simple type"""
       type Simple {
         """This is a string field"""
         string: String
