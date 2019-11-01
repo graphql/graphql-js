@@ -2,7 +2,6 @@
 
 import inspect from '../jsutils/inspect';
 import devAssert from '../jsutils/devAssert';
-import defineToJSON from '../jsutils/defineToJSON';
 
 import { syntaxError } from '../error/syntaxError';
 import { type GraphQLError } from '../error/GraphQLError';
@@ -11,9 +10,9 @@ import { Kind } from './kinds';
 import { Source } from './source';
 import { DirectiveLocation } from './directiveLocation';
 import { type TokenKindEnum, TokenKind } from './tokenKind';
-import { type Lexer, createLexer, isPunctuatorTokenKind } from './lexer';
+import { Lexer, isPunctuatorTokenKind } from './lexer';
 import {
-  type Location,
+  Location,
   type Token,
   type NameNode,
   type VariableNode,
@@ -168,7 +167,7 @@ export function parseType(
 
 class Parser {
   _options: ParseOptions;
-  _lexer: Lexer<void>;
+  _lexer: Lexer;
 
   constructor(source: string | Source, options?: ParseOptions) {
     const sourceObj = typeof source === 'string' ? new Source(source) : source;
@@ -177,7 +176,7 @@ class Parser {
       `Must provide Source. Received: ${inspect(sourceObj)}`,
     );
 
-    this._lexer = createLexer(sourceObj);
+    this._lexer = new Lexer(sourceObj);
     this._options = options || {};
   }
 
@@ -964,12 +963,14 @@ class Parser {
     const description = this.parseDescription();
     this.expectKeyword('interface');
     const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseDirectives(true);
     const fields = this.parseFieldsDefinition();
     return {
       kind: Kind.INTERFACE_TYPE_DEFINITION,
       description,
       name,
+      interfaces,
       directives,
       fields,
       loc: this.loc(start),
@@ -1215,22 +1216,29 @@ class Parser {
 
   /**
    * InterfaceTypeExtension :
-   *   - extend interface Name Directives[Const]? FieldsDefinition
-   *   - extend interface Name Directives[Const]
+   *  - extend interface Name ImplementsInterfaces? Directives[Const]? FieldsDefinition
+   *  - extend interface Name ImplementsInterfaces? Directives[Const]
+   *  - extend interface Name ImplementsInterfaces
    */
   parseInterfaceTypeExtension(): InterfaceTypeExtensionNode {
     const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('interface');
     const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseDirectives(true);
     const fields = this.parseFieldsDefinition();
-    if (directives.length === 0 && fields.length === 0) {
+    if (
+      interfaces.length === 0 &&
+      directives.length === 0 &&
+      fields.length === 0
+    ) {
       throw this.unexpected();
     }
     return {
       kind: Kind.INTERFACE_TYPE_EXTENSION,
       name,
+      interfaces,
       directives,
       fields,
       loc: this.loc(start),
@@ -1393,7 +1401,11 @@ class Parser {
    */
   loc(startToken: Token): Location | void {
     if (!this._options.noLocation) {
-      return new Loc(startToken, this._lexer.lastToken, this._lexer.source);
+      return new Location(
+        startToken,
+        this._lexer.lastToken,
+        this._lexer.source,
+      );
     }
   }
 
@@ -1538,19 +1550,6 @@ class Parser {
     return nodes;
   }
 }
-
-function Loc(startToken: Token, endToken: Token, source: Source) {
-  this.start = startToken.start;
-  this.end = endToken.end;
-  this.startToken = startToken;
-  this.endToken = endToken;
-  this.source = source;
-}
-
-// Print a simplified form when appearing in JSON/util.inspect.
-defineToJSON(Loc, function() {
-  return { start: this.start, end: this.end };
-});
 
 /**
  * A helper function to describe a token as a string for debugging

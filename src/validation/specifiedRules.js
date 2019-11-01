@@ -60,7 +60,7 @@ import { UniqueDirectivesPerLocation } from './rules/UniqueDirectivesPerLocation
 // Spec Section: "Argument Names"
 import {
   KnownArgumentNames,
-  KnownArgumentNamesOnDirectives, // @internal
+  KnownArgumentNamesOnDirectives,
 } from './rules/KnownArgumentNames';
 
 // Spec Section: "Argument Uniqueness"
@@ -72,7 +72,7 @@ import { ValuesOfCorrectType } from './rules/ValuesOfCorrectType';
 // Spec Section: "Argument Optionality"
 import {
   ProvidedRequiredArguments,
-  ProvidedRequiredArgumentsOnDirectives, // @internal
+  ProvidedRequiredArgumentsOnDirectives,
 } from './rules/ProvidedRequiredArguments';
 
 // Spec Section: "All Variable Usages Are Allowed"
@@ -127,7 +127,9 @@ import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
 import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
 import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
 
-// @internal
+/**
+ * @internal
+ */
 export const specifiedSDLRules = Object.freeze([
   LoneSchemaDefinition,
   UniqueOperationTypes,

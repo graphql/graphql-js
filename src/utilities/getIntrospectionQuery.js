@@ -137,14 +137,13 @@ export type IntrospectionInputType =
   | IntrospectionEnumType
   | IntrospectionInputObjectType;
 
-export type IntrospectionScalarType = {
+export type IntrospectionScalarType = {|
   +kind: 'SCALAR',
   +name: string,
   +description?: ?string,
-  ...
-};
+|};
 
-export type IntrospectionObjectType = {
+export type IntrospectionObjectType = {|
   +kind: 'OBJECT',
   +name: string,
   +description?: ?string,
@@ -152,61 +151,57 @@ export type IntrospectionObjectType = {
   +interfaces: $ReadOnlyArray<
     IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
   >,
-  ...
-};
+|};
 
-export type IntrospectionInterfaceType = {
+export type IntrospectionInterfaceType = {|
   +kind: 'INTERFACE',
   +name: string,
   +description?: ?string,
   +fields: $ReadOnlyArray<IntrospectionField>,
+  +interfaces: $ReadOnlyArray<
+    IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
+  >,
   +possibleTypes: $ReadOnlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>,
   >,
-  ...
-};
+|};
 
-export type IntrospectionUnionType = {
+export type IntrospectionUnionType = {|
   +kind: 'UNION',
   +name: string,
   +description?: ?string,
   +possibleTypes: $ReadOnlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>,
   >,
-  ...
-};
+|};
 
-export type IntrospectionEnumType = {
+export type IntrospectionEnumType = {|
   +kind: 'ENUM',
   +name: string,
   +description?: ?string,
   +enumValues: $ReadOnlyArray<IntrospectionEnumValue>,
-  ...
-};
+|};
 
-export type IntrospectionInputObjectType = {
+export type IntrospectionInputObjectType = {|
   +kind: 'INPUT_OBJECT',
   +name: string,
   +description?: ?string,
   +inputFields: $ReadOnlyArray<IntrospectionInputValue>,
-  ...
-};
+|};
 
 export type IntrospectionListTypeRef<
   T: IntrospectionTypeRef = IntrospectionTypeRef,
-> = {
+> = {|
   +kind: 'LIST',
   +ofType: T,
-  ...
-};
+|};
 
 export type IntrospectionNonNullTypeRef<
   T: IntrospectionTypeRef = IntrospectionTypeRef,
-> = {
+> = {|
   +kind: 'NON_NULL',
   +ofType: T,
-  ...
-};
+|};
 
 export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionType>
@@ -234,11 +229,10 @@ export type IntrospectionInputTypeRef =
 
 export type IntrospectionNamedTypeRef<
   T: IntrospectionType = IntrospectionType,
-> = {
+> = {|
   +kind: $PropertyType<T, 'kind'>,
   +name: string,
-  ...
-};
+|};
 
 export type IntrospectionField = {|
   +name: string,

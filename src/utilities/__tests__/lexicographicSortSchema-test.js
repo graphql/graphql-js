@@ -75,7 +75,7 @@ describe('lexicographicSortSchema', () => {
         dummy: String
       }
 
-      interface FooC {
+      interface FooC implements FooB & FooA {
         dummy: String
       }
 
@@ -93,7 +93,7 @@ describe('lexicographicSortSchema', () => {
         dummy: String
       }
 
-      interface FooC {
+      interface FooC implements FooA & FooB {
         dummy: String
       }
 

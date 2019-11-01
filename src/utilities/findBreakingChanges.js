@@ -10,6 +10,7 @@ import { print } from '../language/printer';
 import { visit } from '../language/visitor';
 
 import { type GraphQLSchema } from '../type/schema';
+import { isSpecifiedScalarType } from '../type/scalars';
 import {
   type GraphQLField,
   type GraphQLType,
@@ -41,7 +42,7 @@ export const BreakingChangeType = Object.freeze({
   TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION',
   VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
   REQUIRED_INPUT_FIELD_ADDED: 'REQUIRED_INPUT_FIELD_ADDED',
-  INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
+  IMPLEMENTED_INTERFACE_REMOVED: 'IMPLEMENTED_INTERFACE_REMOVED',
   FIELD_REMOVED: 'FIELD_REMOVED',
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
   REQUIRED_ARG_ADDED: 'REQUIRED_ARG_ADDED',
@@ -58,21 +59,19 @@ export const DangerousChangeType = Object.freeze({
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
   OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED',
   OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED',
-  INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT',
+  IMPLEMENTED_INTERFACE_ADDED: 'IMPLEMENTED_INTERFACE_ADDED',
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
 });
 
-export type BreakingChange = {
+export type BreakingChange = {|
   type: $Keys<typeof BreakingChangeType>,
   description: string,
-  ...
-};
+|};
 
-export type DangerousChange = {
+export type DangerousChange = {|
   type: $Keys<typeof DangerousChangeType>,
   description: string,
-  ...
-};
+|};
 
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
@@ -176,7 +175,9 @@ function findTypeChanges(
   for (const oldType of typesDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED,
-      description: `${oldType.name} was removed.`,
+      description: isSpecifiedScalarType(oldType)
+        ? `Standard scalar ${oldType.name} was removed because it is not referenced anymore.`
+        : `${oldType.name} was removed.`,
     });
   }
 
@@ -188,9 +189,15 @@ function findTypeChanges(
     } else if (isInputObjectType(oldType) && isInputObjectType(newType)) {
       schemaChanges.push(...findInputObjectTypeChanges(oldType, newType));
     } else if (isObjectType(oldType) && isObjectType(newType)) {
-      schemaChanges.push(...findObjectTypeChanges(oldType, newType));
+      schemaChanges.push(
+        ...findFieldChanges(oldType, newType),
+        ...findImplementedInterfacesChanges(oldType, newType),
+      );
     } else if (isInterfaceType(oldType) && isInterfaceType(newType)) {
-      schemaChanges.push(...findFieldChanges(oldType, newType));
+      schemaChanges.push(
+        ...findFieldChanges(oldType, newType),
+        ...findImplementedInterfacesChanges(oldType, newType),
+      );
     } else if (oldType.constructor !== newType.constructor) {
       schemaChanges.push({
         type: BreakingChangeType.TYPE_CHANGED_KIND,
@@ -301,23 +308,23 @@ function findEnumTypeChanges(
   return schemaChanges;
 }
 
-function findObjectTypeChanges(
-  oldType: GraphQLObjectType,
-  newType: GraphQLObjectType,
+function findImplementedInterfacesChanges(
+  oldType: GraphQLObjectType | GraphQLInterfaceType,
+  newType: GraphQLObjectType | GraphQLInterfaceType,
 ): Array<BreakingChange | DangerousChange> {
-  const schemaChanges = findFieldChanges(oldType, newType);
+  const schemaChanges = [];
   const interfacesDiff = diff(oldType.getInterfaces(), newType.getInterfaces());
 
   for (const newInterface of interfacesDiff.added) {
     schemaChanges.push({
-      type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+      type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
       description: `${newInterface.name} added to interfaces implemented by ${oldType.name}.`,
     });
   }
 
   for (const oldInterface of interfacesDiff.removed) {
     schemaChanges.push({
-      type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+      type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
       description: `${oldType.name} no longer implements interface ${oldInterface.name}.`,
     });
   }

@@ -232,19 +232,37 @@ export function buildClientSchema(
     });
   }
 
+  function buildImplementationsList(
+    implementingIntrospection:
+      | IntrospectionObjectType
+      | IntrospectionInterfaceType,
+  ) {
+    // TODO: Temprorary workaround until GraphQL ecosystem will fully support
+    // 'interfaces' on interface types.
+    if (
+      implementingIntrospection.interfaces === null &&
+      implementingIntrospection.kind === TypeKind.INTERFACE
+    ) {
+      return [];
+    }
+
+    if (!implementingIntrospection.interfaces) {
+      throw new Error(
+        'Introspection result missing interfaces: ' +
+          inspect(implementingIntrospection),
+      );
+    }
+
+    return implementingIntrospection.interfaces.map(getInterfaceType);
+  }
+
   function buildObjectDef(
     objectIntrospection: IntrospectionObjectType,
   ): GraphQLObjectType {
-    if (!objectIntrospection.interfaces) {
-      const objectIntrospectionStr = inspect(objectIntrospection);
-      throw new Error(
-        `Introspection result missing interfaces: ${objectIntrospectionStr}.`,
-      );
-    }
     return new GraphQLObjectType({
       name: objectIntrospection.name,
       description: objectIntrospection.description,
-      interfaces: () => objectIntrospection.interfaces.map(getInterfaceType),
+      interfaces: () => buildImplementationsList(objectIntrospection),
       fields: () => buildFieldDefMap(objectIntrospection),
     });
   }
@@ -255,6 +273,7 @@ export function buildClientSchema(
     return new GraphQLInterfaceType({
       name: interfaceIntrospection.name,
       description: interfaceIntrospection.description,
+      interfaces: () => buildImplementationsList(interfaceIntrospection),
       fields: () => buildFieldDefMap(interfaceIntrospection),
     });
   }

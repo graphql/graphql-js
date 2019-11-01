@@ -11,7 +11,9 @@ export function ProvidedRequiredArguments(
   context: ValidationContext,
 ): ASTVisitor;
 
-// @internal
+/**
+ * @internal
+ */
 export function ProvidedRequiredArgumentsOnDirectives(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

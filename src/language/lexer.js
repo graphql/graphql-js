@@ -1,99 +1,81 @@
 // @flow strict
 
-import defineToJSON from '../jsutils/defineToJSON';
-
 import { syntaxError } from '../error/syntaxError';
 
-import { type Token } from './ast';
+import { Token } from './ast';
 import { type Source } from './source';
 import { dedentBlockStringValue } from './blockString';
 import { type TokenKindEnum, TokenKind } from './tokenKind';
 
 /**
- * Given a Source object, this returns a Lexer for that source.
+ * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
  * it is advanced, it returns the next token in the Source. Assuming the
  * source lexes, the final Token emitted by the lexer will be of kind
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-export function createLexer<TOptions>(
-  source: Source,
-  options: TOptions,
-): Lexer<TOptions> {
-  const startOfFileToken = new Tok(TokenKind.SOF, 0, 0, 0, 0, null);
-  const lexer: Lexer<TOptions> = {
-    source,
-    options,
-    lastToken: startOfFileToken,
-    token: startOfFileToken,
-    line: 1,
-    lineStart: 0,
-    advance: advanceLexer,
-    lookahead,
-  };
-  return lexer;
-}
-
-function advanceLexer() {
-  this.lastToken = this.token;
-  const token = (this.token = this.lookahead());
-  return token;
-}
-
-function lookahead() {
-  let token = this.token;
-  if (token.kind !== TokenKind.EOF) {
-    do {
-      // Note: next is only mutable during parsing, so we cast to allow this.
-      token = token.next || ((token: any).next = readToken(this, token));
-    } while (token.kind === TokenKind.COMMENT);
-  }
-  return token;
-}
-
-/**
- * The return type of createLexer.
- */
-export type Lexer<TOptions> = {
-  source: Source,
-  options: TOptions,
+export class Lexer {
+  source: Source;
 
   /**
    * The previously focused non-ignored token.
    */
-  lastToken: Token,
+  lastToken: Token;
 
   /**
    * The currently focused non-ignored token.
    */
-  token: Token,
+  token: Token;
 
   /**
    * The (1-indexed) line containing the current token.
    */
-  line: number,
+  line: number;
 
   /**
    * The character offset at which the current line begins.
    */
-  lineStart: number,
+  lineStart: number;
+
+  constructor(source: Source) {
+    const startOfFileToken = new Token(TokenKind.SOF, 0, 0, 0, 0, null);
+
+    this.source = source;
+    this.lastToken = startOfFileToken;
+    this.token = startOfFileToken;
+    this.line = 1;
+    this.lineStart = 0;
+  }
 
   /**
    * Advances the token stream to the next non-ignored token.
    */
-  advance(): Token,
+  advance(): Token {
+    this.lastToken = this.token;
+    const token = (this.token = this.lookahead());
+    return token;
+  }
 
   /**
    * Looks ahead and returns the next non-ignored token, but does not change
    * the Lexer's state.
    */
-  lookahead(): Token,
+  lookahead(): Token {
+    let token = this.token;
+    if (token.kind !== TokenKind.EOF) {
+      do {
+        // Note: next is only mutable during parsing, so we cast to allow this.
+        token = token.next || ((token: any).next = readToken(this, token));
+      } while (token.kind === TokenKind.COMMENT);
+    }
+    return token;
+  }
+}
 
-  ...
-};
-
-// @internal
+/**
+ * @internal
+ */
 export function isPunctuatorTokenKind(kind: TokenKindEnum) {
   return (
     kind === TokenKind.BANG ||
@@ -112,38 +94,6 @@ export function isPunctuatorTokenKind(kind: TokenKindEnum) {
     kind === TokenKind.BRACE_R
   );
 }
-
-/**
- * Helper function for constructing the Token object.
- */
-function Tok(
-  kind: TokenKindEnum,
-  start: number,
-  end: number,
-  line: number,
-  column: number,
-  prev: Token | null,
-  value?: string,
-) {
-  this.kind = kind;
-  this.start = start;
-  this.end = end;
-  this.line = line;
-  this.column = column;
-  this.value = value;
-  this.prev = prev;
-  this.next = null;
-}
-
-// Print a simplified form when appearing in JSON/util.inspect.
-defineToJSON(Tok, function() {
-  return {
-    kind: this.kind,
-    value: this.value,
-    line: this.line,
-    column: this.column,
-  };
-});
 
 function printCharCode(code) {
   return (
@@ -165,7 +115,7 @@ function printCharCode(code) {
  * punctuators immediately or calls the appropriate helper function for more
  * complicated tokens.
  */
-function readToken(lexer: Lexer<mixed>, prev: Token): Token {
+function readToken(lexer: Lexer, prev: Token): Token {
   const source = lexer.source;
   const body = source.body;
   const bodyLength = body.length;
@@ -175,7 +125,7 @@ function readToken(lexer: Lexer<mixed>, prev: Token): Token {
   const col = 1 + pos - lexer.lineStart;
 
   if (pos >= bodyLength) {
-    return new Tok(TokenKind.EOF, bodyLength, bodyLength, line, col, prev);
+    return new Token(TokenKind.EOF, bodyLength, bodyLength, line, col, prev);
   }
 
   const code = body.charCodeAt(pos);
@@ -184,52 +134,52 @@ function readToken(lexer: Lexer<mixed>, prev: Token): Token {
   switch (code) {
     // !
     case 33:
-      return new Tok(TokenKind.BANG, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.BANG, pos, pos + 1, line, col, prev);
     // #
     case 35:
       return readComment(source, pos, line, col, prev);
     // $
     case 36:
-      return new Tok(TokenKind.DOLLAR, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.DOLLAR, pos, pos + 1, line, col, prev);
     // &
     case 38:
-      return new Tok(TokenKind.AMP, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.AMP, pos, pos + 1, line, col, prev);
     // (
     case 40:
-      return new Tok(TokenKind.PAREN_L, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.PAREN_L, pos, pos + 1, line, col, prev);
     // )
     case 41:
-      return new Tok(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
     // .
     case 46:
       if (body.charCodeAt(pos + 1) === 46 && body.charCodeAt(pos + 2) === 46) {
-        return new Tok(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
+        return new Token(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
       }
       break;
     // :
     case 58:
-      return new Tok(TokenKind.COLON, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.COLON, pos, pos + 1, line, col, prev);
     // =
     case 61:
-      return new Tok(TokenKind.EQUALS, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.EQUALS, pos, pos + 1, line, col, prev);
     // @
     case 64:
-      return new Tok(TokenKind.AT, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.AT, pos, pos + 1, line, col, prev);
     // [
     case 91:
-      return new Tok(TokenKind.BRACKET_L, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.BRACKET_L, pos, pos + 1, line, col, prev);
     // ]
     case 93:
-      return new Tok(TokenKind.BRACKET_R, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.BRACKET_R, pos, pos + 1, line, col, prev);
     // {
     case 123:
-      return new Tok(TokenKind.BRACE_L, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.BRACE_L, pos, pos + 1, line, col, prev);
     // |
     case 124:
-      return new Tok(TokenKind.PIPE, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.PIPE, pos, pos + 1, line, col, prev);
     // }
     case 125:
-      return new Tok(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
+      return new Token(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
     // A-Z _ a-z
     case 65:
     case 66:
@@ -332,7 +282,7 @@ function unexpectedCharacterMessage(code) {
 function positionAfterWhitespace(
   body: string,
   startPosition: number,
-  lexer: Lexer<mixed>,
+  lexer: Lexer,
 ): number {
   const bodyLength = body.length;
   let position = startPosition;
@@ -380,7 +330,7 @@ function readComment(source, start, line, col, prev): Token {
     (code > 0x001f || code === 0x0009)
   );
 
-  return new Tok(
+  return new Token(
     TokenKind.COMMENT,
     start,
     position,
@@ -455,7 +405,7 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
     );
   }
 
-  return new Tok(
+  return new Token(
     isFloat ? TokenKind.FLOAT : TokenKind.INT,
     start,
     position,
@@ -509,7 +459,7 @@ function readString(source, start, line, col, prev): Token {
     // Closing Quote (")
     if (code === 34) {
       value += body.slice(chunkStart, position);
-      return new Tok(
+      return new Token(
         TokenKind.STRING,
         start,
         position + 1,
@@ -616,7 +566,7 @@ function readBlockString(source, start, line, col, prev, lexer): Token {
       body.charCodeAt(position + 2) === 34
     ) {
       rawValue += body.slice(chunkStart, position);
-      return new Tok(
+      return new Token(
         TokenKind.BLOCK_STRING,
         start,
         position + 3,
@@ -727,7 +677,7 @@ function readName(source, start, line, col, prev): Token {
   ) {
     ++position;
   }
-  return new Tok(
+  return new Token(
     TokenKind.NAME,
     start,
     position,

@@ -5,7 +5,7 @@ import { TokenKindEnum } from './tokenKind';
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
  */
-export interface Location {
+export class Location {
   /**
    * The character offset at which this Node begins.
    */
@@ -30,13 +30,15 @@ export interface Location {
    * The Source document the AST represents.
    */
   readonly source: Source;
+
+  constructor(startToken: Token, endToken: Token, source: Source);
 }
 
 /**
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
-export interface Token {
+export class Token {
   /**
    * The kind of Token.
    */
@@ -74,6 +76,16 @@ export interface Token {
    */
   readonly prev: Token | null;
   readonly next: Token | null;
+
+  constructor(
+    kind: TokenKindEnum,
+    start: number,
+    end: number,
+    line: number,
+    column: number,
+    prev: Token | null,
+    value?: string,
+  );
 }
 
 /**
@@ -452,6 +464,7 @@ export interface InterfaceTypeDefinitionNode {
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly name: NameNode;
+  readonly interfaces?: ReadonlyArray<NamedTypeNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly fields?: ReadonlyArray<FieldDefinitionNode>;
 }
@@ -544,6 +557,7 @@ export interface InterfaceTypeExtensionNode {
   readonly kind: 'InterfaceTypeExtension';
   readonly loc?: Location;
   readonly name: NameNode;
+  readonly interfaces?: ReadonlyArray<NamedTypeNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly fields?: ReadonlyArray<FieldDefinitionNode>;
 }

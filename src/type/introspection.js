@@ -14,6 +14,7 @@ import { type GraphQLDirective } from './directives';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import {
   type GraphQLType,
+  type GraphQLNamedType,
   type GraphQLInputField,
   type GraphQLEnumValue,
   type GraphQLField,
@@ -31,7 +32,6 @@ import {
   isListType,
   isNonNullType,
   isAbstractType,
-  isNamedType,
 } from './definition';
 
 export const __Schema = new GraphQLObjectType({
@@ -240,7 +240,7 @@ export const __Type = new GraphQLObjectType({
       interfaces: {
         type: GraphQLList(GraphQLNonNull(__Type)),
         resolve(type) {
-          if (isObjectType(type)) {
+          if (isObjectType(type) || isInterfaceType(type)) {
             return type.getInterfaces();
           }
         },
@@ -398,7 +398,7 @@ export const __TypeKind = new GraphQLEnumType({
     INTERFACE: {
       value: TypeKind.INTERFACE,
       description:
-        'Indicates this type is an interface. `fields` and `possibleTypes` are valid fields.',
+        'Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields.',
     },
     UNION: {
       value: TypeKind.UNION,
@@ -485,9 +485,6 @@ export const introspectionTypes = Object.freeze([
   __TypeKind,
 ]);
 
-export function isIntrospectionType(type: mixed): boolean %checks {
-  return (
-    isNamedType(type) &&
-    introspectionTypes.some(({ name }) => type.name === name)
-  );
+export function isIntrospectionType(type: GraphQLNamedType): boolean %checks {
+  return introspectionTypes.some(({ name }) => type.name === name);
 }

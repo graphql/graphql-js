@@ -157,17 +157,20 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     }
   } catch (error) {
     const typeStr = inspect(locationType);
-    // Ensure a reference to the original error is maintained.
-    context.reportError(
-      new GraphQLError(
-        `Expected value of type "${typeStr}", found ${print(node)}; ` +
-          error.message,
-        node,
-        undefined,
-        undefined,
-        undefined,
-        error,
-      ),
-    );
+    if (error instanceof GraphQLError) {
+      context.reportError(error);
+    } else {
+      context.reportError(
+        new GraphQLError(
+          `Expected value of type "${typeStr}", found ${print(node)}; ` +
+            error.message,
+          node,
+          undefined,
+          undefined,
+          undefined,
+          error, // Ensure a reference to the original error is maintained.
+        ),
+      );
+    }
   }
 }

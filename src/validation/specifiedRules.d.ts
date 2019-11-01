@@ -60,7 +60,7 @@ import { UniqueDirectivesPerLocation } from './rules/UniqueDirectivesPerLocation
 // Spec Section: "Argument Names"
 import {
   KnownArgumentNames,
-  KnownArgumentNamesOnDirectives, // @internal
+  KnownArgumentNamesOnDirectives,
 } from './rules/KnownArgumentNames';
 
 // Spec Section: "Argument Uniqueness"
@@ -72,7 +72,7 @@ import { ValuesOfCorrectType } from './rules/ValuesOfCorrectType';
 // Spec Section: "Argument Optionality"
 import {
   ProvidedRequiredArguments,
-  ProvidedRequiredArgumentsOnDirectives, // @internal
+  ProvidedRequiredArgumentsOnDirectives,
 } from './rules/ProvidedRequiredArguments';
 
 // Spec Section: "All Variable Usages Are Allowed"
@@ -94,5 +94,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule>;
 
 import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
 
-// @internal
+/**
+ * @internal
+ */
 export const specifiedSDLRules: ReadonlyArray<SDLValidationRule>;

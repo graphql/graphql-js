@@ -739,7 +739,9 @@ defineToStringTag(GraphQLObjectType);
 defineToJSON(GraphQLObjectType);
 
 function defineInterfaces(
-  config: GraphQLObjectTypeConfig<mixed, mixed>,
+  config:
+    | GraphQLObjectTypeConfig<mixed, mixed>
+    | GraphQLInterfaceTypeConfig<mixed, mixed>,
 ): Array<GraphQLInterfaceType> {
   const interfaces = resolveThunk(config.interfaces) || [];
   devAssert(
@@ -822,6 +824,9 @@ function fieldsToFieldsConfig(fields) {
   }));
 }
 
+/**
+ * @internal
+ */
 export function argsToArgsConfig(
   args: $ReadOnlyArray<GraphQLArgument>,
 ): GraphQLFieldConfigArgumentMap {
@@ -976,6 +981,7 @@ export class GraphQLInterfaceType {
   extensionASTNodes: ?$ReadOnlyArray<InterfaceTypeExtensionNode>;
 
   _fields: Thunk<GraphQLFieldMap<*, *>>;
+  _interfaces: Thunk<Array<GraphQLInterfaceType>>;
 
   constructor(config: GraphQLInterfaceTypeConfig<*, *>): void {
     this.name = config.name;
@@ -986,6 +992,7 @@ export class GraphQLInterfaceType {
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
 
     this._fields = defineFieldMap.bind(undefined, config);
+    this._interfaces = defineInterfaces.bind(undefined, config);
     devAssert(typeof config.name === 'string', 'Must provide name.');
     devAssert(
       config.resolveType == null || typeof config.resolveType === 'function',
@@ -1001,8 +1008,16 @@ export class GraphQLInterfaceType {
     return this._fields;
   }
 
+  getInterfaces(): Array<GraphQLInterfaceType> {
+    if (typeof this._interfaces === 'function') {
+      this._interfaces = this._interfaces();
+    }
+    return this._interfaces;
+  }
+
   toConfig(): {|
     ...GraphQLInterfaceTypeConfig<*, *>,
+    interfaces: Array<GraphQLInterfaceType>,
     fields: GraphQLFieldConfigMap<*, *>,
     extensions: ?ReadOnlyObjMap<mixed>,
     extensionASTNodes: ?$ReadOnlyArray<InterfaceTypeExtensionNode>,
@@ -1010,6 +1025,7 @@ export class GraphQLInterfaceType {
     return {
       name: this.name,
       description: this.description,
+      interfaces: this.getInterfaces(),
       fields: fieldsToFieldsConfig(this.getFields()),
       resolveType: this.resolveType,
       extensions: this.extensions,
@@ -1030,6 +1046,7 @@ defineToJSON(GraphQLInterfaceType);
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {|
   name: string,
   description?: ?string,
+  interfaces?: Thunk<?Array<GraphQLInterfaceType>>,
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,

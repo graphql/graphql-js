@@ -3,7 +3,6 @@
 import find from '../polyfills/find';
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
-import objectEntries from '../polyfills/objectEntries';
 
 import inspect from '../jsutils/inspect';
 
@@ -236,10 +235,13 @@ function validateTypes(context: SchemaValidationContext): void {
       validateFields(context, type);
 
       // Ensure objects implement the interfaces they claim to.
-      validateObjectInterfaces(context, type);
+      validateInterfaces(context, type);
     } else if (isInterfaceType(type)) {
       // Ensure fields are valid.
       validateFields(context, type);
+
+      // Ensure interfaces implement the interfaces they claim to.
+      validateInterfaces(context, type);
     } else if (isUnionType(type)) {
       // Ensure Unions include valid member types.
       validateUnionMembers(context, type);
@@ -314,64 +316,75 @@ function validateFields(
   }
 }
 
-function validateObjectInterfaces(
+function validateInterfaces(
   context: SchemaValidationContext,
-  object: GraphQLObjectType,
+  type: GraphQLObjectType | GraphQLInterfaceType,
 ): void {
-  const implementedTypeNames = Object.create(null);
-  for (const iface of object.getInterfaces()) {
+  const ifaceTypeNames = Object.create(null);
+  for (const iface of type.getInterfaces()) {
     if (!isInterfaceType(iface)) {
       context.reportError(
-        `Type ${inspect(object)} must only implement Interface types, ` +
+        `Type ${inspect(type)} must only implement Interface types, ` +
           `it cannot implement ${inspect(iface)}.`,
-        getAllImplementsInterfaceNodes(object, iface),
+        getAllImplementsInterfaceNodes(type, iface),
       );
       continue;
     }
 
-    if (implementedTypeNames[iface.name]) {
+    if (type === iface) {
       context.reportError(
-        `Type ${object.name} can only implement ${iface.name} once.`,
-        getAllImplementsInterfaceNodes(object, iface),
+        `Type ${type.name} cannot implement itself because it would create a circular reference.`,
+        getAllImplementsInterfaceNodes(type, iface),
       );
       continue;
     }
-    implementedTypeNames[iface.name] = true;
-    validateObjectImplementsInterface(context, object, iface);
+
+    if (ifaceTypeNames[iface.name]) {
+      context.reportError(
+        `Type ${type.name} can only implement ${iface.name} once.`,
+        getAllImplementsInterfaceNodes(type, iface),
+      );
+      continue;
+    }
+
+    ifaceTypeNames[iface.name] = true;
+
+    validateTypeImplementsAncestors(context, type, iface);
+    validateTypeImplementsInterface(context, type, iface);
   }
 }
 
-function validateObjectImplementsInterface(
+function validateTypeImplementsInterface(
   context: SchemaValidationContext,
-  object: GraphQLObjectType,
+  type: GraphQLObjectType | GraphQLInterfaceType,
   iface: GraphQLInterfaceType,
 ): void {
-  const objectFieldMap = object.getFields();
-  const ifaceFieldMap = iface.getFields();
+  const typeFieldMap = type.getFields();
 
   // Assert each interface field is implemented.
-  for (const [fieldName, ifaceField] of objectEntries(ifaceFieldMap)) {
-    const objectField = objectFieldMap[fieldName];
+  for (const ifaceField of objectValues(iface.getFields())) {
+    const fieldName = ifaceField.name;
+    const typeField = typeFieldMap[fieldName];
 
-    // Assert interface field exists on object.
-    if (!objectField) {
+    // Assert interface field exists on type.
+    if (!typeField) {
       context.reportError(
-        `Interface field ${iface.name}.${fieldName} expected but ${object.name} does not provide it.`,
-        [ifaceField.astNode, ...getAllNodes(object)],
+        `Interface field ${iface.name}.${fieldName} expected but ${type.name} does not provide it.`,
+        [ifaceField.astNode, ...getAllNodes(type)],
       );
       continue;
     }
 
-    // Assert interface field type is satisfied by object field type, by being
+    // Assert interface field type is satisfied by type field type, by being
     // a valid subtype. (covariant)
-    if (!isTypeSubTypeOf(context.schema, objectField.type, ifaceField.type)) {
+    if (!isTypeSubTypeOf(context.schema, typeField.type, ifaceField.type)) {
       context.reportError(
         `Interface field ${iface.name}.${fieldName} expects type ` +
-          `${inspect(ifaceField.type)} but ${object.name}.${fieldName} ` +
-          `is type ${inspect(objectField.type)}.`,
+          `${inspect(ifaceField.type)} but ${type.name}.${fieldName} ` +
+          `is type ${inspect(typeField.type)}.`,
         [
           ifaceField.astNode && ifaceField.astNode.type,
-          objectField.astNode && objectField.astNode.type,
+          typeField.astNode && typeField.astNode.type,
         ],
       );
     }
@@ -379,13 +392,13 @@ function validateObjectImplementsInterface(
     // Assert each interface field arg is implemented.
     for (const ifaceArg of ifaceField.args) {
       const argName = ifaceArg.name;
-      const objectArg = find(objectField.args, arg => arg.name === argName);
+      const typeArg = find(typeField.args, arg => arg.name === argName);
 
       // Assert interface field arg exists on object field.
-      if (!objectArg) {
+      if (!typeArg) {
         context.reportError(
-          `Interface field argument ${iface.name}.${fieldName}(${argName}:) expected but ${object.name}.${fieldName} does not provide it.`,
-          [ifaceArg.astNode, objectField.astNode],
+          `Interface field argument ${iface.name}.${fieldName}(${argName}:) expected but ${type.name}.${fieldName} does not provide it.`,
+          [ifaceArg.astNode, typeField.astNode],
         );
         continue;
       }
@@ -393,15 +406,15 @@ function validateObjectImplementsInterface(
       // Assert interface field arg type matches object field arg type.
       // (invariant)
       // TODO: change to contravariant?
-      if (!isEqualType(ifaceArg.type, objectArg.type)) {
+      if (!isEqualType(ifaceArg.type, typeArg.type)) {
         context.reportError(
           `Interface field argument ${iface.name}.${fieldName}(${argName}:) ` +
             `expects type ${inspect(ifaceArg.type)} but ` +
-            `${object.name}.${fieldName}(${argName}:) is type ` +
-            `${inspect(objectArg.type)}.`,
+            `${type.name}.${fieldName}(${argName}:) is type ` +
+            `${inspect(typeArg.type)}.`,
           [
             ifaceArg.astNode && ifaceArg.astNode.type,
-            objectArg.astNode && objectArg.astNode.type,
+            typeArg.astNode && typeArg.astNode.type,
           ],
         );
       }
@@ -410,15 +423,36 @@ function validateObjectImplementsInterface(
     }
 
     // Assert additional arguments must not be required.
-    for (const objectArg of objectField.args) {
-      const argName = objectArg.name;
+    for (const typeArg of typeField.args) {
+      const argName = typeArg.name;
       const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
-      if (!ifaceArg && isRequiredArgument(objectArg)) {
+      if (!ifaceArg && isRequiredArgument(typeArg)) {
         context.reportError(
-          `Object field ${object.name}.${fieldName} includes required argument ${argName} that is missing from the Interface field ${iface.name}.${fieldName}.`,
-          [objectArg.astNode, ifaceField.astNode],
+          `Object field ${type.name}.${fieldName} includes required argument ${argName} that is missing from the Interface field ${iface.name}.${fieldName}.`,
+          [typeArg.astNode, ifaceField.astNode],
         );
       }
+    }
+  }
+}
+
+function validateTypeImplementsAncestors(
+  context: SchemaValidationContext,
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  iface: GraphQLInterfaceType,
+): void {
+  const ifaceInterfaces = type.getInterfaces();
+  for (const transitive of iface.getInterfaces()) {
+    if (ifaceInterfaces.indexOf(transitive) === -1) {
+      context.reportError(
+        transitive === type
+          ? `Type ${type.name} cannot implement ${iface.name} because it would create a circular reference.`
+          : `Type ${type.name} must implement ${transitive.name} because it is implemented by ${iface.name}.`,
+        [
+          ...getAllImplementsInterfaceNodes(iface, transitive),
+          ...getAllImplementsInterfaceNodes(type, iface),
+        ],
+      );
     }
   }
 }
@@ -589,7 +623,7 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
 }
 
 function getAllImplementsInterfaceNodes(
-  type: GraphQLObjectType,
+  type: GraphQLObjectType | GraphQLInterfaceType,
   iface: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
   return getAllSubNodes(type, typeNode => typeNode.interfaces).filter(

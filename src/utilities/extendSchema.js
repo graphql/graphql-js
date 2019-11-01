@@ -1,13 +1,11 @@
 // @flow strict
 
-import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
 import mapValue from '../jsutils/mapValue';
 import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
-import keyValMap from '../jsutils/keyValMap';
 
 import { Kind } from '../language/kinds';
 import {
@@ -150,7 +148,6 @@ export function extendSchema(
     return schema;
   }
 
-  const schemaConfig = schema.toConfig();
   const astBuilder = new ASTDefinitionBuilder(options, typeName => {
     const type = typeMap[typeName];
     if (type === undefined) {
@@ -159,48 +156,32 @@ export function extendSchema(
     return type;
   });
 
-  const typeMap = keyValMap(
-    typeDefs,
-    node => node.name.value,
-    node => astBuilder.buildType(node),
-  );
+  const typeMap = astBuilder.buildTypeMap(typeDefs);
+  const schemaConfig = schema.toConfig();
   for (const existingType of schemaConfig.types) {
     typeMap[existingType.name] = extendNamedType(existingType);
   }
 
-  // Get the extended root operation types.
   const operationTypes = {
-    query: schemaConfig.query && schemaConfig.query.name,
-    mutation: schemaConfig.mutation && schemaConfig.mutation.name,
-    subscription: schemaConfig.subscription && schemaConfig.subscription.name,
+    // Get the extended root operation types.
+    query: schemaConfig.query && replaceNamedType(schemaConfig.query),
+    mutation: schemaConfig.mutation && replaceNamedType(schemaConfig.mutation),
+    subscription:
+      schemaConfig.subscription && replaceNamedType(schemaConfig.subscription),
+    // Then, incorporate schema definition and all schema extensions.
+    ...astBuilder.getOperationTypes(
+      concatMaybeArrays(schemaDef && [schemaDef], schemaExts) || [],
+    ),
   };
-
-  if (schemaDef) {
-    for (const { operation, type } of schemaDef.operationTypes) {
-      operationTypes[operation] = type.name.value;
-    }
-  }
-
-  // Then, incorporate schema definition and all schema extensions.
-  for (const schemaExt of schemaExts) {
-    if (schemaExt.operationTypes) {
-      for (const { operation, type } of schemaExt.operationTypes) {
-        operationTypes[operation] = type.name.value;
-      }
-    }
-  }
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
-    // Note: While this could make early assertions to get the correctly
-    // typed values, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    query: (getMaybeTypeByName(operationTypes.query): any),
-    mutation: (getMaybeTypeByName(operationTypes.mutation): any),
-    subscription: (getMaybeTypeByName(operationTypes.subscription): any),
-
+    ...operationTypes,
     types: objectValues(typeMap),
-    directives: getMergedDirectives(),
+    directives: [
+      ...replaceDirectives(schemaConfig.directives),
+      ...astBuilder.buildDirectives(directiveDefs),
+    ],
     astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: concatMaybeArrays(
       schemaConfig.extensionASTNodes,
@@ -221,20 +202,24 @@ export function extendSchema(
   }
 
   function replaceNamedType<T: GraphQLNamedType>(type: T): T {
+    // Note: While this could make early assertions to get the correctly
+    // typed values, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
     return ((typeMap[type.name]: any): T);
   }
 
-  function getMaybeTypeByName(typeName: ?string): ?GraphQLNamedType {
-    return typeName != null ? typeMap[typeName] : null;
-  }
+  function replaceDirectives(
+    directives: $ReadOnlyArray<GraphQLDirective>,
+  ): Array<GraphQLDirective> {
+    devAssert(directives, 'schema must have default directives');
 
-  function getMergedDirectives(): Array<GraphQLDirective> {
-    const existingDirectives = schema.getDirectives().map(extendDirective);
-    devAssert(existingDirectives, 'schema must have default directives');
-
-    return existingDirectives.concat(
-      directiveDefs.map(node => astBuilder.buildDirective(node)),
-    );
+    return directives.map(directive => {
+      const config = directive.toConfig();
+      return new GraphQLDirective({
+        ...config,
+        args: mapValue(config.args, extendArg),
+      });
+    });
   }
 
   function extendNamedType(type: GraphQLNamedType): GraphQLNamedType {
@@ -259,21 +244,11 @@ export function extendSchema(
     invariant(false, 'Unexpected type: ' + inspect((type: empty)));
   }
 
-  function extendDirective(directive: GraphQLDirective): GraphQLDirective {
-    const config = directive.toConfig();
-
-    return new GraphQLDirective({
-      ...config,
-      args: mapValue(config.args, extendArg),
-    });
-  }
-
   function extendInputObjectType(
     type: GraphQLInputObjectType,
   ): GraphQLInputObjectType {
     const config = type.toConfig();
     const extensions = typeExtsMap[config.name] || [];
-    const fieldNodes = flatMap(extensions, node => node.fields || []);
 
     return new GraphQLInputObjectType({
       ...config,
@@ -282,11 +257,7 @@ export function extendSchema(
           ...field,
           type: replaceType(field.type),
         })),
-        ...keyValMap(
-          fieldNodes,
-          field => field.name.value,
-          field => astBuilder.buildInputField(field),
-        ),
+        ...astBuilder.buildInputFieldMap(extensions),
       }),
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,
@@ -298,17 +269,12 @@ export function extendSchema(
   function extendEnumType(type: GraphQLEnumType): GraphQLEnumType {
     const config = type.toConfig();
     const extensions = typeExtsMap[type.name] || [];
-    const valueNodes = flatMap(extensions, node => node.values || []);
 
     return new GraphQLEnumType({
       ...config,
       values: {
         ...config.values,
-        ...keyValMap(
-          valueNodes,
-          value => value.name.value,
-          value => astBuilder.buildEnumValue(value),
-        ),
+        ...astBuilder.buildEnumValueMap(extensions),
       },
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,
@@ -333,25 +299,16 @@ export function extendSchema(
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
     const config = type.toConfig();
     const extensions = typeExtsMap[config.name] || [];
-    const interfaceNodes = flatMap(extensions, node => node.interfaces || []);
-    const fieldNodes = flatMap(extensions, node => node.fields || []);
 
     return new GraphQLObjectType({
       ...config,
       interfaces: () => [
         ...type.getInterfaces().map(replaceNamedType),
-        // Note: While this could make early assertions to get the correctly
-        // typed values, that would throw immediately while type system
-        // validation with validateSchema() will produce more actionable results.
-        ...interfaceNodes.map(node => (astBuilder.getNamedType(node): any)),
+        ...astBuilder.buildInterfaces(extensions),
       ],
       fields: () => ({
         ...mapValue(config.fields, extendField),
-        ...keyValMap(
-          fieldNodes,
-          node => node.name.value,
-          node => astBuilder.buildField(node),
-        ),
+        ...astBuilder.buildFieldMap(extensions),
       }),
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,
@@ -365,17 +322,16 @@ export function extendSchema(
   ): GraphQLInterfaceType {
     const config = type.toConfig();
     const extensions = typeExtsMap[config.name] || [];
-    const fieldNodes = flatMap(extensions, node => node.fields || []);
 
     return new GraphQLInterfaceType({
       ...config,
+      interfaces: () => [
+        ...type.getInterfaces().map(replaceNamedType),
+        ...astBuilder.buildInterfaces(extensions),
+      ],
       fields: () => ({
         ...mapValue(config.fields, extendField),
-        ...keyValMap(
-          fieldNodes,
-          node => node.name.value,
-          node => astBuilder.buildField(node),
-        ),
+        ...astBuilder.buildFieldMap(extensions),
       }),
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,
@@ -387,16 +343,12 @@ export function extendSchema(
   function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
     const config = type.toConfig();
     const extensions = typeExtsMap[config.name] || [];
-    const typeNodes = flatMap(extensions, node => node.types || []);
 
     return new GraphQLUnionType({
       ...config,
       types: () => [
         ...type.getTypes().map(replaceNamedType),
-        // Note: While this could make early assertions to get the correctly
-        // typed values, that would throw immediately while type system
-        // validation with validateSchema() will produce more actionable results.
-        ...typeNodes.map(node => (astBuilder.getNamedType(node): any)),
+        ...astBuilder.buildUnionTypes(extensions),
       ],
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,

@@ -111,11 +111,10 @@ export type ExecutionContext = {|
  *   - `errors` is included when any errors occurred as a non-empty array.
  *   - `data` is the result of a successful execution of the query.
  */
-export type ExecutionResult = {
+export type ExecutionResult = {|
   errors?: $ReadOnlyArray<GraphQLError>,
   data?: ObjMap<mixed> | null,
-  ...
-};
+|};
 
 export type ExecutionArgs = {|
   schema: GraphQLSchema,
@@ -181,7 +180,7 @@ export function execute(
       });
 }
 
-function executeImpl(args: ExecutionArgs): ExecutionResult {
+function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   const {
     schema,
     document,
@@ -232,7 +231,7 @@ function executeImpl(args: ExecutionArgs): ExecutionResult {
 function buildResponse(
   exeContext: ExecutionContext,
   data: PromiseOrValue<ObjMap<mixed> | null>,
-): ExecutionResult {
+): PromiseOrValue<ExecutionResult> {
   if (isPromise(data)) {
     return data.then(resolved => buildResponse(exeContext, resolved));
   }
@@ -244,6 +243,8 @@ function buildResponse(
 /**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
+ *
+ * @internal
  */
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
@@ -267,6 +268,8 @@ export function assertValidExecutionArguments(
  * execute, which we will pass throughout the other execution methods.
  *
  * Throws a GraphQLError if a valid execution context cannot be created.
+ *
+ * @internal
  */
 export function buildExecutionContext(
   schema: GraphQLSchema,
@@ -465,6 +468,8 @@ function executeFields(
  * CollectFields requires the "runtime type" of an object. For a field which
  * returns an Interface or Union type, the "runtime type" will be the actual
  * Object type returned by that field.
+ *
+ * @internal
  */
 export function collectFields(
   exeContext: ExecutionContext,
@@ -577,7 +582,7 @@ function doesFragmentConditionMatch(
     return true;
   }
   if (isAbstractType(conditionalType)) {
-    return exeContext.schema.isPossibleType(conditionalType, type);
+    return exeContext.schema.isSubType(conditionalType, type);
   }
   return false;
 }
@@ -641,6 +646,9 @@ function resolveField(
   );
 }
 
+/**
+ * @internal
+ */
 export function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<mixed, mixed>,
@@ -664,8 +672,12 @@ export function buildResolveInfo(
   };
 }
 
-// Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
-// function. Returns the result of resolveFn or the abrupt-return Error object.
+/**
+ * Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
+ * function. Returns the result of resolveFn or the abrupt-return Error object.
+ *
+ * @internal
+ */
 export function resolveFieldValueOrError(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<mixed, mixed>,
@@ -1008,7 +1020,7 @@ function ensureValidRuntimeType(
     );
   }
 
-  if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
+  if (!exeContext.schema.isSubType(returnType, runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
       fieldNodes,
@@ -1192,6 +1204,8 @@ export const defaultFieldResolver: GraphQLFieldResolver<
  * are allowed, like on a Union. __schema could get automatically
  * added to the query type, but that would require mutating type
  * definitions, which would cause issues.
+ *
+ * @internal
  */
 export function getFieldDef(
   schema: GraphQLSchema,

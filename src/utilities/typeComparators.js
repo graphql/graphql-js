@@ -4,6 +4,7 @@ import { type GraphQLSchema } from '../type/schema';
 import {
   type GraphQLType,
   type GraphQLCompositeType,
+  isInterfaceType,
   isObjectType,
   isListType,
   isNonNullType,
@@ -71,18 +72,13 @@ export function isTypeSubTypeOf(
     return false;
   }
 
-  // If superType type is an abstract type, maybeSubType type may be a currently
-  // possible object type.
-  if (
-    isAbstractType(superType) &&
-    isObjectType(maybeSubType) &&
-    schema.isPossibleType(superType, maybeSubType)
-  ) {
-    return true;
-  }
-
+  // If superType type is an abstract type, check if it is super type of maybeSubType.
   // Otherwise, the child type is not a valid subtype of the parent type.
-  return false;
+  return (
+    isAbstractType(superType) &&
+    (isInterfaceType(maybeSubType) || isObjectType(maybeSubType)) &&
+    schema.isSubType(superType, maybeSubType)
+  );
 }
 
 /**
@@ -110,15 +106,15 @@ export function doTypesOverlap(
       // between possible concrete types of each.
       return schema
         .getPossibleTypes(typeA)
-        .some(type => schema.isPossibleType(typeB, type));
+        .some(type => schema.isSubType(typeB, type));
     }
     // Determine if the latter type is a possible concrete type of the former.
-    return schema.isPossibleType(typeA, typeB);
+    return schema.isSubType(typeA, typeB);
   }
 
   if (isAbstractType(typeB)) {
     // Determine if the former type is a possible concrete type of the latter.
-    return schema.isPossibleType(typeB, typeA);
+    return schema.isSubType(typeB, typeA);
   }
 
   // Otherwise the types do not overlap.

@@ -1,6 +1,6 @@
 {
   "name": "graphql",
-  "version": "14.5.6",
+  "version": "15.0.0-alpha.1",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "private": true,
@@ -33,7 +33,7 @@
     "prettier": "prettier --ignore-path .gitignore --write --list-different \"**/*.{js,ts,md,json,yml}\"",
     "prettier:check": "prettier --ignore-path .gitignore --check \"**/*.{js,ts,md,json,yml}\"",
     "check": "flow check",
-    "check:ts": "dtslint tstypes",
+    "check:ts": "dtslint src",
     "check:cover": "node resources/check-cover.js && nyc report --nycrc-path .nycflowrc.yml",
     "build": "node resources/build.js",
     "changelog": "node resources/gen-changelog.js",
@@ -45,18 +45,18 @@
     "iterall": "^1.2.2"
   },
   "devDependencies": {
-    "@babel/core": "7.6.0",
+    "@babel/core": "7.6.2",
     "@babel/plugin-transform-flow-strip-types": "7.4.4",
     "@babel/polyfill": "7.6.0",
-    "@babel/preset-env": "7.6.0",
-    "@babel/register": "7.6.0",
+    "@babel/preset-env": "7.6.2",
+    "@babel/register": "7.6.2",
     "babel-eslint": "10.0.3",
     "chai": "4.2.0",
-    "dtslint": "^0.9.6",
-    "eslint": "6.3.0",
+    "dtslint": "0.9.8",
+    "eslint": "6.5.1",
     "eslint-plugin-flowtype": "4.3.0",
-    "flow-bin": "0.107.0",
-    "mocha": "6.2.0",
+    "flow-bin": "0.110.0",
+    "mocha": "6.2.2",
     "nyc": "14.1.1",
     "prettier": "1.18.2"
   }

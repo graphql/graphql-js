@@ -10,17 +10,8 @@ import { Source } from './source';
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-export function createLexer<TOptions>(
-  source: Source,
-  options: TOptions,
-): Lexer<TOptions>;
-
-/**
- * The return type of createLexer.
- */
-export interface Lexer<TOptions> {
+export class Lexer {
   source: Source;
-  options: TOptions;
 
   /**
    * The previously focused non-ignored token.
@@ -41,6 +32,8 @@ export interface Lexer<TOptions> {
    * The character offset at which the current line begins.
    */
   lineStart: number;
+
+  constructor(source: Source);
 
   /**
    * Advances the token stream to the next non-ignored token.

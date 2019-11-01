@@ -148,8 +148,18 @@ const printDocASTReducer: any = {
       ),
   ),
 
-  InterfaceTypeDefinition: addDescription(({ name, directives, fields }) =>
-    join(['interface', name, join(directives, ' '), block(fields)], ' '),
+  InterfaceTypeDefinition: addDescription(
+    ({ name, interfaces, directives, fields }) =>
+      join(
+        [
+          'interface',
+          name,
+          wrap('implements ', join(interfaces, ' & ')),
+          join(directives, ' '),
+          block(fields),
+        ],
+        ' ',
+      ),
   ),
 
   UnionTypeDefinition: addDescription(({ name, directives, types }) =>
@@ -206,8 +216,17 @@ const printDocASTReducer: any = {
       ' ',
     ),
 
-  InterfaceTypeExtension: ({ name, directives, fields }) =>
-    join(['extend interface', name, join(directives, ' '), block(fields)], ' '),
+  InterfaceTypeExtension: ({ name, interfaces, directives, fields }) =>
+    join(
+      [
+        'extend interface',
+        name,
+        wrap('implements ', join(interfaces, ' & ')),
+        join(directives, ' '),
+        block(fields),
+      ],
+      ' ',
+    ),
 
   UnionTypeExtension: ({ name, directives, types }) =>
     join(

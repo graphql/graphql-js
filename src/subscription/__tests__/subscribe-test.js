@@ -519,7 +519,6 @@ describe('Subscription Initialization Phase', () => {
       },
     };
 
-    // $FlowFixMe
     const result = await subscribe(emailSchema, ast, data, null, {
       priority: 'meow',
     });
@@ -528,13 +527,11 @@ describe('Subscription Initialization Phase', () => {
       errors: [
         {
           message:
-            'Variable "$priority" got invalid value "meow"; Expected type "Int". Int cannot represent non-integer value: "meow"',
+            'Variable "$priority" got invalid value "meow"; Int cannot represent non-integer value: "meow"',
           locations: [{ line: 2, column: 21 }],
         },
       ],
     });
-
-    expect(result.errors[0].originalError).not.to.equal(undefined);
   });
 });
 

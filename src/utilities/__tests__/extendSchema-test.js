@@ -41,18 +41,21 @@ const testSchema = buildSchema(`
   scalar SomeScalar
 
   interface SomeInterface {
-    name: String
     some: SomeInterface
   }
 
-  type Foo implements SomeInterface {
+  interface AnotherInterface implements SomeInterface {
     name: String
-    some: SomeInterface
+    some: AnotherInterface
+  }
+
+  type Foo implements AnotherInterface & SomeInterface {
+    name: String
+    some: AnotherInterface
     tree: [Foo]!
   }
 
   type Bar implements SomeInterface {
-    name: String
     some: SomeInterface
     foo: Foo
   }
@@ -194,9 +197,9 @@ describe('extendSchema', () => {
       }
     `);
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         newField: String
       }
@@ -633,9 +636,9 @@ describe('extendSchema', () => {
       }
     `);
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         newField(arg1: String, arg2: NewInputObj!): String
       }
@@ -655,9 +658,9 @@ describe('extendSchema', () => {
       }
     `);
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         newField(arg1: SomeEnum!): SomeEnum
       }
@@ -713,9 +716,9 @@ describe('extendSchema', () => {
       }
     `);
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         newObject: NewObject
         newInterface: NewInterface
@@ -759,9 +762,9 @@ describe('extendSchema', () => {
       }
     `);
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
-      type Foo implements SomeInterface & NewInterface {
+      type Foo implements AnotherInterface & SomeInterface & NewInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         baz: String
       }
@@ -865,6 +868,10 @@ describe('extendSchema', () => {
         newField: String
       }
 
+      extend interface AnotherInterface {
+        newField: String
+      }
+
       extend type Bar {
         newField: String
       }
@@ -874,23 +881,61 @@ describe('extendSchema', () => {
       }
     `);
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         name: String
+        some: AnotherInterface
+        newField: String
+      }
+
+      type Bar implements SomeInterface {
         some: SomeInterface
         foo: Foo
         newField: String
       }
 
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         newField: String
       }
 
       interface SomeInterface {
-        name: String
         some: SomeInterface
+        newField: String
+      }
+    `);
+  });
+
+  it('extends interfaces by adding new implemted interfaces', () => {
+    const extendedSchema = extendTestSchema(`
+      interface NewInterface {
+        newField: String
+      }
+
+      extend interface AnotherInterface implements NewInterface {
+        newField: String
+      }
+
+      extend type Foo implements NewInterface {
+        newField: String
+      }
+    `);
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
+      interface AnotherInterface implements SomeInterface & NewInterface {
+        name: String
+        some: AnotherInterface
+        newField: String
+      }
+
+      type Foo implements AnotherInterface & SomeInterface & NewInterface {
+        name: String
+        some: AnotherInterface
+        tree: [Foo]!
+        newField: String
+      }
+      
+      interface NewInterface {
         newField: String
       }
     `);
@@ -908,7 +953,6 @@ describe('extendSchema', () => {
 
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       interface SomeInterface {
-        name: String
         some: SomeInterface
         newField: String
       }
@@ -927,7 +971,6 @@ describe('extendSchema', () => {
     `);
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       interface SomeInterface {
-        name: String
         some: SomeInterface
         newFieldA: Int
         newFieldB(test: Boolean): String
@@ -1092,7 +1135,7 @@ describe('extendSchema', () => {
       const schema = extendTestSchema(`
         type Mutation
       `);
-      expect(schema.getMutationType()).to.equal(null);
+      expect(schema.getMutationType()).to.equal(undefined);
     });
 
     it('adds schema definition missing in the original schema', () => {

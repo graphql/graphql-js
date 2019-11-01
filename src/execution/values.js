@@ -41,6 +41,8 @@ type CoercedVariableValues =
  * Note: The returned value is a plain Object with a prototype, since it is
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
+ *
+ * @internal
  */
 export function getVariableValues(
   schema: GraphQLSchema,
@@ -96,9 +98,7 @@ function coerceVariableValues(
     if (!hasOwnProperty(inputs, varName)) {
       if (varDefNode.defaultValue) {
         coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
-      }
-
-      if (isNonNullType(varType)) {
+      } else if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
         onError(
           new GraphQLError(
@@ -155,6 +155,8 @@ function coerceVariableValues(
  * Note: The returned value is a plain Object with a prototype, since it is
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
+ *
+ * @internal
  */
 export function getArgumentValues(
   def: GraphQLField<mixed, mixed> | GraphQLDirective,

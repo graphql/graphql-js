@@ -177,9 +177,15 @@ describe('Type System: Schema', () => {
       expect(schema.getType('SomeSubtype')).to.equal(SomeSubtype);
     });
 
-    it("includes interfaces' thunk subtypes in the type map", () => {
+    it("includes interface's thunk subtypes in the type map", () => {
       const SomeInterface = new GraphQLInterfaceType({
         name: 'SomeInterface',
+        fields: {},
+        interfaces: () => [AnotherInterface],
+      });
+
+      const AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
         fields: {},
       });
 
@@ -189,17 +195,10 @@ describe('Type System: Schema', () => {
         interfaces: () => [SomeInterface],
       });
 
-      const schema = new GraphQLSchema({
-        query: new GraphQLObjectType({
-          name: 'Query',
-          fields: {
-            iface: { type: SomeInterface },
-          },
-        }),
-        types: [SomeSubtype],
-      });
+      const schema = new GraphQLSchema({ types: [SomeSubtype] });
 
       expect(schema.getType('SomeInterface')).to.equal(SomeInterface);
+      expect(schema.getType('AnotherInterface')).to.equal(AnotherInterface);
       expect(schema.getType('SomeSubtype')).to.equal(SomeSubtype);
     });
 

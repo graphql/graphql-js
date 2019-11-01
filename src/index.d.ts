@@ -177,7 +177,7 @@ export {
   printLocation,
   printSourceLocation,
   // Lex
-  createLexer,
+  Lexer,
   TokenKind,
   // Parse
   parse,
@@ -206,7 +206,6 @@ export {
 } from './language';
 
 export {
-  Lexer,
   ParseOptions,
   SourceLocation,
   Location,
