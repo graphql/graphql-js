@@ -6,6 +6,7 @@ import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
 
+import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
@@ -34,7 +35,7 @@ import {
 
 import { graphqlSync } from '../../graphql';
 
-import { printSchema } from '../schemaPrinter';
+import { printType, printSchema } from '../schemaPrinter';
 import { buildASTSchema, buildSchema } from '../buildASTSchema';
 
 /**
@@ -52,6 +53,14 @@ function cycleSDL(sdl, options = {}) {
 function printASTNode(obj) {
   invariant(obj != null && obj.astNode != null);
   return print(obj.astNode);
+}
+
+function printAllASTNodes(obj) {
+  invariant(obj.astNode != null && obj.extensionASTNodes != null);
+  return print({
+    kind: Kind.DOCUMENT,
+    definitions: [obj.astNode, ...obj.extensionASTNodes],
+  });
 }
 
 describe('Schema Builder', () => {
@@ -752,6 +761,168 @@ describe('Schema Builder', () => {
       isDeprecated: true,
       deprecationReason: 'Because I said so',
     });
+  });
+
+  it('Correctly extend scalar type', () => {
+    const scalarSDL = dedent`
+      scalar SomeScalar
+
+      extend scalar SomeScalar @foo
+
+      extend scalar SomeScalar @bar
+    `;
+    const schema = buildSchema(`
+      ${scalarSDL}
+      directive @foo on SCALAR
+      directive @bar on SCALAR
+    `);
+
+    const someScalar = assertScalarType(schema.getType('SomeScalar'));
+    expect(printType(someScalar) + '\n').to.equal(dedent`
+      scalar SomeScalar
+    `);
+
+    expect(printAllASTNodes(someScalar)).to.equal(scalarSDL);
+  });
+
+  it('Correctly extend object type', () => {
+    const objectSDL = dedent`
+      type SomeObject implements Foo {
+        first: String
+      }
+
+      extend type SomeObject implements Bar {
+        second: Int
+      }
+
+      extend type SomeObject implements Baz {
+        third: Float
+      }
+    `;
+    const schema = buildSchema(`
+      ${objectSDL}
+      interface Foo
+      interface Bar
+      interface Baz
+    `);
+
+    const someObject = assertObjectType(schema.getType('SomeObject'));
+    expect(printType(someObject) + '\n').to.equal(dedent`
+      type SomeObject implements Foo & Bar & Baz {
+        first: String
+        second: Int
+        third: Float
+      }
+    `);
+
+    expect(printAllASTNodes(someObject)).to.equal(objectSDL);
+  });
+
+  it('Correctly extend interface type', () => {
+    const interfaceSDL = dedent`
+      interface SomeInterface {
+        first: String
+      }
+
+      extend interface SomeInterface {
+        second: Int
+      }
+
+      extend interface SomeInterface {
+        third: Float
+      }
+    `;
+    const schema = buildSchema(interfaceSDL);
+
+    const someInterface = assertInterfaceType(schema.getType('SomeInterface'));
+    expect(printType(someInterface) + '\n').to.equal(dedent`
+      interface SomeInterface {
+        first: String
+        second: Int
+        third: Float
+      }
+    `);
+
+    expect(printAllASTNodes(someInterface)).to.equal(interfaceSDL);
+  });
+
+  it('Correctly extend union type', () => {
+    const unionSDL = dedent`
+      union SomeUnion = FirstType
+
+      extend union SomeUnion = SecondType
+
+      extend union SomeUnion = ThirdType
+    `;
+    const schema = buildSchema(`
+      ${unionSDL}
+      type FirstType
+      type SecondType
+      type ThirdType
+    `);
+
+    const someUnion = assertUnionType(schema.getType('SomeUnion'));
+    expect(printType(someUnion) + '\n').to.equal(dedent`
+      union SomeUnion = FirstType | SecondType | ThirdType
+    `);
+
+    expect(printAllASTNodes(someUnion)).to.equal(unionSDL);
+  });
+
+  it('Correctly extend enum type', () => {
+    const enumSDL = dedent`
+      enum SomeEnum {
+        FIRST
+      }
+
+      extend enum SomeEnum {
+        SECOND
+      }
+
+      extend enum SomeEnum {
+        THIRD
+      }
+    `;
+    const schema = buildSchema(enumSDL);
+
+    const someEnum = assertEnumType(schema.getType('SomeEnum'));
+    expect(printType(someEnum) + '\n').to.equal(dedent`
+      enum SomeEnum {
+        FIRST
+        SECOND
+        THIRD
+      }
+    `);
+
+    expect(printAllASTNodes(someEnum)).to.equal(enumSDL);
+  });
+
+  it('Correctly extend input object type', () => {
+    const inputSDL = dedent`
+      input SomeInput {
+        first: String
+      }
+
+      extend input SomeInput {
+        second: Int
+      }
+
+      extend input SomeInput {
+        third: Float
+      }
+    `;
+    const schema = buildSchema(inputSDL);
+
+    const someInput = assertInputObjectType(schema.getType('SomeInput'));
+    expect(printType(someInput) + '\n').to.equal(dedent`
+      input SomeInput {
+        first: String
+        second: Int
+        third: Float
+      }
+    `);
+
+    expect(printAllASTNodes(someInput)).to.equal(inputSDL);
   });
 
   it('Correctly assign AST nodes', () => {
