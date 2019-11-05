@@ -691,6 +691,32 @@ describe('Schema Builder', () => {
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
+  it('Extension adds new fields and interfaces', () => {
+    const sdl = dedent`
+      interface Bar {
+        bravo: String
+      }
+
+      type Foo {
+        alpha: String
+      }
+
+      extend type Foo implements Bar {
+        bravo: String
+      }
+    `;
+    expect(cycleSDL(sdl)).to.equal(dedent`
+      interface Bar {
+        bravo: String
+      }
+
+      type Foo implements Bar {
+        alpha: String
+        bravo: String
+      }
+    `);
+  });
+
   it('Supports @deprecated', () => {
     const sdl = dedent`
       enum MyEnum {
