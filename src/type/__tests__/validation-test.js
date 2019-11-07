@@ -872,18 +872,16 @@ describe('Type System: Enum types must be well defined', () => {
   });
 
   it('rejects an Enum type with incorrectly named values', () => {
-    function schemaWithEnum(name) {
+    function schemaWithEnum(values) {
       return schemaWithFieldType(
         new GraphQLEnumType({
           name: 'SomeEnum',
-          values: {
-            [name]: {},
-          },
+          values,
         }),
       );
     }
 
-    const schema1 = schemaWithEnum('#value');
+    const schema1 = schemaWithEnum({ '#value': {} });
     expect(validateSchema(schema1)).to.deep.equal([
       {
         message:
@@ -891,7 +889,7 @@ describe('Type System: Enum types must be well defined', () => {
       },
     ]);
 
-    const schema2 = schemaWithEnum('1value');
+    const schema2 = schemaWithEnum({ '1value': {} });
     expect(validateSchema(schema2)).to.deep.equal([
       {
         message:
@@ -899,7 +897,7 @@ describe('Type System: Enum types must be well defined', () => {
       },
     ]);
 
-    const schema3 = schemaWithEnum('KEBAB-CASE');
+    const schema3 = schemaWithEnum({ 'KEBAB-CASE': {} });
     expect(validateSchema(schema3)).to.deep.equal([
       {
         message:
@@ -907,17 +905,17 @@ describe('Type System: Enum types must be well defined', () => {
       },
     ]);
 
-    const schema4 = schemaWithEnum('true');
+    const schema4 = schemaWithEnum({ true: {} });
     expect(validateSchema(schema4)).to.deep.equal([
       { message: 'Enum type SomeEnum cannot include value: true.' },
     ]);
 
-    const schema5 = schemaWithEnum('false');
+    const schema5 = schemaWithEnum({ false: {} });
     expect(validateSchema(schema5)).to.deep.equal([
       { message: 'Enum type SomeEnum cannot include value: false.' },
     ]);
 
-    const schema6 = schemaWithEnum('null');
+    const schema6 = schemaWithEnum({ null: {} });
     expect(validateSchema(schema6)).to.deep.equal([
       { message: 'Enum type SomeEnum cannot include value: null.' },
     ]);
