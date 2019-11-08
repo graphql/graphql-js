@@ -257,6 +257,7 @@ export function extendSchema(
           ...field,
           type: replaceType(field.type),
         })),
+        // $FlowFixMe Bug in Flow, see https://github.com/facebook/flow/issues/8178
         ...astBuilder.buildInputFieldMap(extensions),
       }),
       extensionASTNodes: concatMaybeArrays(
@@ -274,6 +275,7 @@ export function extendSchema(
       ...config,
       values: {
         ...config.values,
+        // $FlowFixMe Bug in Flow, see https://github.com/facebook/flow/issues/8178
         ...astBuilder.buildEnumValueMap(extensions),
       },
       extensionASTNodes: concatMaybeArrays(
@@ -308,6 +310,7 @@ export function extendSchema(
       ],
       fields: () => ({
         ...mapValue(config.fields, extendField),
+        // $FlowFixMe Bug in Flow, see https://github.com/facebook/flow/issues/8178
         ...astBuilder.buildFieldMap(extensions),
       }),
       extensionASTNodes: concatMaybeArrays(
@@ -331,6 +334,7 @@ export function extendSchema(
       ],
       fields: () => ({
         ...mapValue(config.fields, extendField),
+        // $FlowFixMe Bug in Flow, see https://github.com/facebook/flow/issues/8178
         ...astBuilder.buildFieldMap(extensions),
       }),
       extensionASTNodes: concatMaybeArrays(

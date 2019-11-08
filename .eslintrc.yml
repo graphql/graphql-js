@@ -55,7 +55,7 @@ rules:
   flowtype/union-intersection-spacing: off
 
   ##################################################
-  # ESLint builtin rules list based on `v6.3.x`
+  # ESLint builtin rules list based on `v6.6.x`
   ##################################################
 
   # Possible Errors
