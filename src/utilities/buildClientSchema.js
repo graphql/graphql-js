@@ -247,9 +247,9 @@ export function buildClientSchema(
     }
 
     if (!implementingIntrospection.interfaces) {
+      const implementingIntrospectionStr = inspect(implementingIntrospection);
       throw new Error(
-        'Introspection result missing interfaces: ' +
-          inspect(implementingIntrospection),
+        `Introspection result missing interfaces: ${implementingIntrospectionStr}.`,
       );
     }
 
@@ -381,13 +381,14 @@ export function buildClientSchema(
   }
 
   function buildDirective(directiveIntrospection) {
-    const directiveIntrospectionStr = inspect(directiveIntrospection);
     if (!directiveIntrospection.args) {
+      const directiveIntrospectionStr = inspect(directiveIntrospection);
       throw new Error(
         `Introspection result missing directive args: ${directiveIntrospectionStr}.`,
       );
     }
     if (!directiveIntrospection.locations) {
+      const directiveIntrospectionStr = inspect(directiveIntrospection);
       throw new Error(
         `Introspection result missing directive locations: ${directiveIntrospectionStr}.`,
       );
