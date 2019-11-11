@@ -45,8 +45,9 @@ app.use(
     graphiql: true,
   }),
 );
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
+app.listen(4000, () => {
+  console.log('Running a GraphQL API server at localhost:4000/graphql');
+});
 ```
 
 In a REST API, authentication is often handled with a header, that contains an auth token which proves what user is making this request. Express middleware processes these headers and puts authentication data on the Express `request` object. Some middleware modules that handle authentication like this are [Passport](http://passportjs.org/), [express-jwt](https://github.com/auth0/express-jwt), and [express-session](https://github.com/expressjs/session). Each of these modules works with `express-graphql`.

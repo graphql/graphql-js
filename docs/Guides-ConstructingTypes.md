@@ -55,8 +55,9 @@ app.use(
     graphiql: true,
   }),
 );
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
+app.listen(4000, () => {
+  console.log('Running a GraphQL API server at localhost:4000/graphql');
+});
 ```
 
 We can implement this same API without using GraphQL schema language:
@@ -114,8 +115,9 @@ app.use(
     graphiql: true,
   }),
 );
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
+app.listen(4000, () => {
+  console.log('Running a GraphQL API server at localhost:4000/graphql');
+});
 ```
 
 When we use this method of creating the API, the root level resolvers are implemented on the `Query` and `Mutation` types rather than on a `root` object.

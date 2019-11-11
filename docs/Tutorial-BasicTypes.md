@@ -52,8 +52,9 @@ app.use(
     graphiql: true,
   }),
 );
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
+app.listen(4000, () => {
+  console.log('Running a GraphQL API server at localhost:4000/graphql');
+});
 ```
 
 If you run this code with `node server.js` and browse to http://localhost:4000/graphql you can try out these APIs.

@@ -88,8 +88,9 @@ app.use(
     graphiql: true,
   }),
 );
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
+app.listen(4000, () => {
+  console.log('Running a GraphQL API server at localhost:4000/graphql');
+});
 ```
 
 When you call this API, you have to pass each argument by name. So for the server above, you could issue this GraphQL query to roll three six-sided dice:
