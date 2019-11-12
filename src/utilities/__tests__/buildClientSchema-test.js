@@ -344,8 +344,8 @@ describe('Type System: build schema from introspection', () => {
           value: 2,
         },
         OILS: {
-          deprecationReason: 'Too fatty',
           value: 3,
+          deprecationReason: 'Too fatty',
         },
       },
     });
