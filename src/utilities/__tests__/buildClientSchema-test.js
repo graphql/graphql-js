@@ -341,20 +341,11 @@ describe('Type System: build schema from introspection', () => {
           value: 1,
         },
         FRUITS: {
-          description: 'Foods that are fruits.',
           value: 2,
         },
         OILS: {
-          description: 'Foods that are oils.',
+          deprecationReason: 'Too fatty',
           value: 3,
-        },
-        DAIRY: {
-          description: 'Foods that are dairy.',
-          value: 4,
-        },
-        MEAT: {
-          description: 'Foods that are meat.',
-          value: 5,
         },
       },
     });
@@ -399,7 +390,7 @@ describe('Type System: build schema from introspection', () => {
       },
       {
         name: 'FRUITS',
-        description: 'Foods that are fruits.',
+        description: null,
         value: 'FRUITS',
         isDeprecated: false,
         deprecationReason: null,
@@ -408,28 +399,10 @@ describe('Type System: build schema from introspection', () => {
       },
       {
         name: 'OILS',
-        description: 'Foods that are oils.',
+        description: null,
         value: 'OILS',
-        isDeprecated: false,
-        deprecationReason: null,
-        extensions: undefined,
-        astNode: undefined,
-      },
-      {
-        name: 'DAIRY',
-        description: 'Foods that are dairy.',
-        value: 'DAIRY',
-        isDeprecated: false,
-        deprecationReason: null,
-        extensions: undefined,
-        astNode: undefined,
-      },
-      {
-        name: 'MEAT',
-        description: 'Foods that are meat.',
-        value: 'MEAT',
-        isDeprecated: false,
-        deprecationReason: null,
+        isDeprecated: true,
+        deprecationReason: 'Too fatty',
         extensions: undefined,
         astNode: undefined,
       },
