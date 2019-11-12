@@ -213,7 +213,7 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
-  it('builds a schema with an interface heirarchy', () => {
+  it('builds a schema with an interface hierarchy', () => {
     const sdl = dedent`
       type Dog implements Friendly & Named {
         bestFriend: Friendly
