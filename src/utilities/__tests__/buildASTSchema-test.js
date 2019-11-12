@@ -307,7 +307,7 @@ describe('Schema Builder', () => {
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
-  it('Simple interface heirarchy', () => {
+  it('Simple interface hierarchy', () => {
     const sdl = dedent`
       schema {
         query: Child
