@@ -15,7 +15,7 @@ npm install express express-graphql graphql --save
 
 Let's modify our “hello world” example so that it's an API server rather than a script that runs a single query. We can use the 'express' module to run a webserver, and instead of executing a query directly with the `graphql` function, we can use the `express-graphql` library to mount a GraphQL API server on the “/graphql” HTTP endpoint:
 
-```javascript
+```js
 var express = require('express');
 var graphqlHTTP = require('express-graphql');
 var { buildSchema } = require('graphql');
