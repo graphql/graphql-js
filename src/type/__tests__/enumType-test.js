@@ -19,7 +19,7 @@ const ColorType = new GraphQLEnumType({
   },
 });
 
-const Complex1 = { someRandomFunction: () => {} };
+const Complex1 = { someRandomFunction: () => null };
 const Complex2 = { someRandomValue: 123 };
 
 const ComplexEnum = new GraphQLEnumType({
