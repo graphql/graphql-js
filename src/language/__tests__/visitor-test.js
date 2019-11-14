@@ -66,11 +66,11 @@ describe('Visitor', () => {
     const ast = parse('{ a }', { noLocation: true });
 
     visit(ast, {
-      enter(node, key, parent, path) {
+      enter(_node, _key, _parent, path) {
         checkVisitorFnArgs(ast, arguments);
         visited.push(['enter', path.slice()]);
       },
-      leave(node, key, parent, path) {
+      leave(_node, _key, _parent, path) {
         checkVisitorFnArgs(ast, arguments);
         visited.push(['leave', path.slice()]);
       },
@@ -95,7 +95,7 @@ describe('Visitor', () => {
     const visitedNodes = [];
 
     visit(ast, {
-      enter(node, key, parent, path, ancestors) {
+      enter(node, key, parent, _path, ancestors) {
         const inArray = typeof key === 'number';
         if (inArray) {
           visitedNodes.push(parent);
@@ -105,7 +105,7 @@ describe('Visitor', () => {
         const expectedAncestors = visitedNodes.slice(0, -2);
         expect(ancestors).to.deep.equal(expectedAncestors);
       },
-      leave(node, key, parent, path, ancestors) {
+      leave(_node, key, _parent, _path, ancestors) {
         const expectedAncestors = visitedNodes.slice(0, -2);
         expect(ancestors).to.deep.equal(expectedAncestors);
 

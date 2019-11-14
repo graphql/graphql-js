@@ -110,7 +110,7 @@ function getSuggestedTypeNames(
  * that may be the result of a typo.
  */
 function getSuggestedFieldNames(
-  schema: GraphQLSchema,
+  _schema: GraphQLSchema,
   type: GraphQLOutputType,
   fieldName: string,
 ): Array<string> {

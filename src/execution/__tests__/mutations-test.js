@@ -44,7 +44,7 @@ class Root {
   }
 
   promiseAndFailToChangeTheNumber(): Promise<NumberHolder> {
-    return new Promise((resolve, reject) => {
+    return new Promise((_resolve, reject) => {
       process.nextTick(() => {
         reject(new Error('Cannot change the number'));
       });

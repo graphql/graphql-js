@@ -932,7 +932,7 @@ describe('Execute: Handles basic execution tasks', () => {
         fields: {
           field: {
             type: GraphQLString,
-            resolve: (data, args) => inspect(args),
+            resolve: (_source, args) => inspect(args),
             args: {
               a: { type: GraphQLBoolean },
               b: { type: GraphQLBoolean },
@@ -1038,7 +1038,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
     const document = parse('{ foo }');
 
-    function fieldResolver(source, args, context, info) {
+    function fieldResolver(_source, _args, _context, info) {
       // For the purposes of test, just return the name of the field!
       return info.fieldName;
     }
@@ -1076,7 +1076,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     let possibleTypes;
-    function typeResolver(source, context, info, abstractType) {
+    function typeResolver(_source, _context, info, abstractType) {
       // Resolver should be able to figure out all possible types on its own
       possibleTypes = info.schema.getPossibleTypes(abstractType);
 
