@@ -19,7 +19,7 @@ http://localhost:4000/graphql
 
 You should see the output returned as JSON:
 
-```bash
+```
 {"data":{"hello":"Hello world!"}}
 ```
 
@@ -27,7 +27,7 @@ If you prefer to use a graphical user interface to send a test query, you can us
 
 It's also simple to send GraphQL from the browser. Open up http://localhost:4000, open a developer console, and paste in:
 
-```javascript
+```js
 fetch('/graphql', {
   method: 'POST',
   headers: {
@@ -50,7 +50,7 @@ In this example, the query was just a hardcoded string. As your application beco
 
 For example, let's say you're running the example server from [Passing Arguments](/graphql-js/passing-arguments/) that has a schema of
 
-```javascript
+```graphql
 type Query {
   rollDice(numDice: Int!, numSides: Int): [Int]
 }
@@ -58,7 +58,7 @@ type Query {
 
 You could access this from JavaScript with the code:
 
-```javascript
+```js
 var dice = 3;
 var sides = 6;
 var query = `query RollDice($dice: Int!, $sides: Int) {

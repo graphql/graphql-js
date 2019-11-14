@@ -12,7 +12,7 @@ When you are using the `GraphQLSchema` constructor to create a schema, instead o
 
 For example, let's say we are building a simple API that lets you fetch user data for a few hardcoded users based on an id. Using `buildSchema` we could write a server with:
 
-```javascript
+```js
 var express = require('express');
 var graphqlHTTP = require('express-graphql');
 var { buildSchema } = require('graphql');
@@ -62,7 +62,7 @@ app.listen(4000, () => {
 
 We can implement this same API without using GraphQL schema language:
 
-```javascript
+```js
 var express = require('express');
 var graphqlHTTP = require('express-graphql');
 var graphql = require('graphql');

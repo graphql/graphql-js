@@ -256,7 +256,7 @@ visit(ast, {
       // leave the "Kind" node
     }
   }
-})
+});
 ```
 
 3. Generic visitors that trigger upon entering and leaving any node.

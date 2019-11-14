@@ -22,7 +22,7 @@ npm install graphql --save
 
 To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a “resolver” for each API endpoint. For an API that just returns “Hello world!”, we can put this code in a file named `server.js`:
 
-```javascript
+```js
 var { graphql, buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
@@ -53,7 +53,7 @@ node server.js
 
 You should see the GraphQL response printed out:
 
-```javascript
+```js
 {
   data: {
     hello: 'Hello world!';

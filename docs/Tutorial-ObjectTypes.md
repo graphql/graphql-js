@@ -10,7 +10,7 @@ In many cases, you don't want to return a number or a string from an API. You wa
 
 In GraphQL schema language, the way you define a new object type is the same way we have been defining the `Query` type in our examples. Each object can have fields that return a particular type, and methods that take arguments. For example, in the [Passing Arguments](/graphql-js/passing-arguments/) documentation, we had a method to roll some random dice:
 
-```javascript
+```graphql
 type Query {
   rollDice(numDice: Int!, numSides: Int): [Int]
 }
@@ -18,7 +18,7 @@ type Query {
 
 If we wanted to have more and more methods based on a random die over time, we could implement this with a `RandomDie` object type instead.
 
-```javascript
+```graphql
 type RandomDie {
   roll(numRolls: Int!): [Int]
 }
@@ -30,7 +30,7 @@ type Query {
 
 Instead of a root-level resolver for the `RandomDie` type, we can instead use an ES6 class, where the resolvers are instance methods. This code shows how the `RandomDie` schema above can be implemented:
 
-```javascript
+```js
 class RandomDie {
   constructor(numSides) {
     this.numSides = numSides;
@@ -58,7 +58,7 @@ var root = {
 
 For fields that don't use any arguments, you can use either properties on the object or instance methods. So for the example code above, both `numSides` and `rollOnce` can actually be used to implement GraphQL fields, so that code also implements the schema of:
 
-```javascript
+```graphql
 type RandomDie {
   numSides: Int!
   rollOnce: Int!
@@ -72,7 +72,7 @@ type Query {
 
 Putting this all together, here is some sample code that runs a server with this GraphQL API:
 
-```javascript
+```js
 var express = require('express');
 var graphqlHTTP = require('express-graphql');
 var { buildSchema } = require('graphql');
@@ -132,7 +132,7 @@ app.listen(4000, () => {
 
 When you issue a GraphQL query against an API that returns object types, you can call multiple methods on the object at once by nesting the GraphQL field names. For example, if you wanted to call both `rollOnce` to roll a die once, and `roll` to roll a die three times, you could do it with this query:
 
-```javascript
+```graphql
 {
   getDie(numSides: 6) {
     rollOnce
