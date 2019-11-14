@@ -18,7 +18,7 @@ rules:
   flowtype/newline-after-flow-annotation: [error, always]
   flowtype/no-dupe-keys: error
   flowtype/no-existential-type: off # checked by Flow
-  flowtype/no-flow-fix-me-comments: off # TODO
+  flowtype/no-flow-fix-me-comments: off
   flowtype/no-mixed: off
   flowtype/no-mutable-array: off
   flowtype/no-primitive-constructor-types: error
@@ -103,8 +103,8 @@ rules:
   array-callback-return: [error, { allowImplicit: true }]
   block-scoped-var: error
   class-methods-use-this: off
-  complexity: off # maybe
-  consistent-return: off # TODO
+  complexity: off
+  consistent-return: off
   curly: [error, all]
   default-case: off
   default-param-last: off # TODO
@@ -117,7 +117,7 @@ rules:
   no-case-declarations: error
   no-div-regex: error
   no-else-return: error
-  no-empty-function: off # TODO
+  no-empty-function: error
   no-empty-pattern: error
   no-eq-null: off
   no-eval: error
@@ -314,7 +314,7 @@ rules:
   jsx-quotes: off
   key-spacing: off
   keyword-spacing: off
-  linebreak-style: error
+  linebreak-style: off
   max-len: off
   multiline-ternary: off
   newline-per-chained-call: off
