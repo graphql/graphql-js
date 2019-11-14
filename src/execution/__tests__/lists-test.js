@@ -71,8 +71,8 @@ describe('Execute: Accepts any iterable as list value', () => {
     }),
   );
 
-  function getArgs(..._args) {
-    return arguments;
+  function getArgs(...args) {
+    return args;
   }
 
   it(
