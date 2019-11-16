@@ -242,7 +242,7 @@ export var __Type = new GraphQLObjectType({
       },
       possibleTypes: {
         type: GraphQLList(GraphQLNonNull(__Type)),
-        resolve: function resolve(type, args, context, _ref2) {
+        resolve: function resolve(type, _args, _context, _ref2) {
           var schema = _ref2.schema;
 
           if (isAbstractType(type)) {
@@ -459,7 +459,7 @@ export var SchemaMetaFieldDef = {
   type: GraphQLNonNull(__Schema),
   description: 'Access the current type schema of this server.',
   args: [],
-  resolve: function resolve(source, args, context, _ref4) {
+  resolve: function resolve(_source, _args, _context, _ref4) {
     var schema = _ref4.schema;
     return schema;
   },
@@ -479,7 +479,7 @@ export var TypeMetaFieldDef = {
     extensions: undefined,
     astNode: undefined
   }],
-  resolve: function resolve(source, _ref5, context, _ref6) {
+  resolve: function resolve(_source, _ref5, _context, _ref6) {
     var name = _ref5.name;
     var schema = _ref6.schema;
     return schema.getType(name);
@@ -493,7 +493,7 @@ export var TypeNameMetaFieldDef = {
   type: GraphQLNonNull(GraphQLString),
   description: 'The name of the current Object type at runtime.',
   args: [],
-  resolve: function resolve(source, args, context, _ref7) {
+  resolve: function resolve(_source, _args, _context, _ref7) {
     var parentType = _ref7.parentType;
     return parentType.name;
   },

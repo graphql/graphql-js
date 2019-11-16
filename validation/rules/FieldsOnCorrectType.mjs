@@ -82,7 +82,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
  */
 
 
-function getSuggestedFieldNames(schema, type, fieldName) {
+function getSuggestedFieldNames(_schema, type, fieldName) {
   if (isObjectType(type) || isInterfaceType(type)) {
     var possibleFieldNames = Object.keys(type.getFields());
     return suggestionList(fieldName, possibleFieldNames);

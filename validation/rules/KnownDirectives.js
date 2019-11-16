@@ -42,7 +42,7 @@ function KnownDirectives(context) {
   }
 
   return {
-    Directive: function Directive(node, key, parent, path, ancestors) {
+    Directive: function Directive(node, _key, _parent, _path, ancestors) {
       var name = node.name.value;
       var locations = locationsMap[name];
 
