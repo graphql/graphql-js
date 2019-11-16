@@ -465,7 +465,7 @@ describe('Execute: Union and intersection types', () => {
       fields: {
         name: { type: GraphQLString },
       },
-      resolveType(obj, context, { schema: _schema, rootValue }) {
+      resolveType(_source, context, { schema: _schema, rootValue }) {
         encounteredContext = context;
         encounteredSchema = _schema;
         encounteredRootValue = rootValue;

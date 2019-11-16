@@ -189,8 +189,7 @@ rules:
   no-undef: error
   no-undef-init: error
   no-undefined: off
-  no-unused-vars:
-    [error, { vars: all, args: after-used, argsIgnorePattern: '^_' }]
+  no-unused-vars: [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
   no-use-before-define: off
 
   # Node.js and CommonJS

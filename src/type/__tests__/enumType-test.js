@@ -40,7 +40,7 @@ const QueryType = new GraphQLObjectType({
         fromInt: { type: GraphQLInt },
         fromString: { type: GraphQLString },
       },
-      resolve(value, { fromEnum, fromInt, fromString }) {
+      resolve(_source, { fromEnum, fromInt, fromString }) {
         return fromInt !== undefined
           ? fromInt
           : fromString !== undefined
@@ -54,7 +54,7 @@ const QueryType = new GraphQLObjectType({
         fromEnum: { type: ColorType },
         fromInt: { type: GraphQLInt },
       },
-      resolve(value, { fromEnum, fromInt }) {
+      resolve(_source, { fromEnum, fromInt }) {
         return fromInt !== undefined ? fromInt : fromEnum;
       },
     },
@@ -70,7 +70,7 @@ const QueryType = new GraphQLObjectType({
         provideGoodValue: { type: GraphQLBoolean },
         provideBadValue: { type: GraphQLBoolean },
       },
-      resolve(value, { fromEnum, provideGoodValue, provideBadValue }) {
+      resolve(_source, { fromEnum, provideGoodValue, provideBadValue }) {
         if (provideGoodValue) {
           // Note: this is one of the references of the internal values which
           // ComplexEnum allows.
@@ -93,9 +93,7 @@ const MutationType = new GraphQLObjectType({
     favoriteEnum: {
       type: ColorType,
       args: { color: { type: ColorType } },
-      resolve(value, { color }) {
-        return color;
-      },
+      resolve: (_source, { color }) => color,
     },
   },
 });
@@ -106,9 +104,7 @@ const SubscriptionType = new GraphQLObjectType({
     subscribeToEnum: {
       type: ColorType,
       args: { color: { type: ColorType } },
-      resolve(value, { color }) {
-        return color;
-      },
+      resolve: (_source, { color }) => color,
     },
   },
 });
