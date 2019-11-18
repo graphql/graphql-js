@@ -85,15 +85,24 @@ describe('Validate: Unique operation types', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one query type in schema.',
-        locations: [{ line: 5, column: 9 }, { line: 9, column: 9 }],
+        locations: [
+          { line: 5, column: 9 },
+          { line: 9, column: 9 },
+        ],
       },
       {
         message: 'There can be only one mutation type in schema.',
-        locations: [{ line: 6, column: 9 }, { line: 10, column: 9 }],
+        locations: [
+          { line: 6, column: 9 },
+          { line: 10, column: 9 },
+        ],
       },
       {
         message: 'There can be only one subscription type in schema.',
-        locations: [{ line: 7, column: 9 }, { line: 11, column: 9 }],
+        locations: [
+          { line: 7, column: 9 },
+          { line: 11, column: 9 },
+        ],
       },
     ]);
   });
@@ -116,15 +125,24 @@ describe('Validate: Unique operation types', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one query type in schema.',
-        locations: [{ line: 5, column: 9 }, { line: 11, column: 9 }],
+        locations: [
+          { line: 5, column: 9 },
+          { line: 11, column: 9 },
+        ],
       },
       {
         message: 'There can be only one mutation type in schema.',
-        locations: [{ line: 6, column: 9 }, { line: 12, column: 9 }],
+        locations: [
+          { line: 6, column: 9 },
+          { line: 12, column: 9 },
+        ],
       },
       {
         message: 'There can be only one subscription type in schema.',
-        locations: [{ line: 7, column: 9 }, { line: 13, column: 9 }],
+        locations: [
+          { line: 7, column: 9 },
+          { line: 13, column: 9 },
+        ],
       },
     ]);
   });
@@ -153,27 +171,45 @@ describe('Validate: Unique operation types', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one query type in schema.',
-        locations: [{ line: 5, column: 9 }, { line: 11, column: 9 }],
+        locations: [
+          { line: 5, column: 9 },
+          { line: 11, column: 9 },
+        ],
       },
       {
         message: 'There can be only one mutation type in schema.',
-        locations: [{ line: 6, column: 9 }, { line: 12, column: 9 }],
+        locations: [
+          { line: 6, column: 9 },
+          { line: 12, column: 9 },
+        ],
       },
       {
         message: 'There can be only one subscription type in schema.',
-        locations: [{ line: 7, column: 9 }, { line: 13, column: 9 }],
+        locations: [
+          { line: 7, column: 9 },
+          { line: 13, column: 9 },
+        ],
       },
       {
         message: 'There can be only one query type in schema.',
-        locations: [{ line: 5, column: 9 }, { line: 17, column: 9 }],
+        locations: [
+          { line: 5, column: 9 },
+          { line: 17, column: 9 },
+        ],
       },
       {
         message: 'There can be only one mutation type in schema.',
-        locations: [{ line: 6, column: 9 }, { line: 18, column: 9 }],
+        locations: [
+          { line: 6, column: 9 },
+          { line: 18, column: 9 },
+        ],
       },
       {
         message: 'There can be only one subscription type in schema.',
-        locations: [{ line: 7, column: 9 }, { line: 19, column: 9 }],
+        locations: [
+          { line: 7, column: 9 },
+          { line: 19, column: 9 },
+        ],
       },
     ]);
   });
@@ -199,15 +235,24 @@ describe('Validate: Unique operation types', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one query type in schema.',
-        locations: [{ line: 5, column: 9 }, { line: 14, column: 9 }],
+        locations: [
+          { line: 5, column: 9 },
+          { line: 14, column: 9 },
+        ],
       },
       {
         message: 'There can be only one mutation type in schema.',
-        locations: [{ line: 9, column: 9 }, { line: 15, column: 9 }],
+        locations: [
+          { line: 9, column: 9 },
+          { line: 15, column: 9 },
+        ],
       },
       {
         message: 'There can be only one subscription type in schema.',
-        locations: [{ line: 10, column: 9 }, { line: 16, column: 9 }],
+        locations: [
+          { line: 10, column: 9 },
+          { line: 16, column: 9 },
+        ],
       },
     ]);
   });

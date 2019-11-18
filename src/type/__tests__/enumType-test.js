@@ -279,7 +279,10 @@ describe('Type System: Enum Values', () => {
         {
           message:
             'Variable "$color" of type "String!" used in position expecting type "Color".',
-          locations: [{ line: 1, column: 8 }, { line: 1, column: 47 }],
+          locations: [
+            { line: 1, column: 8 },
+            { line: 1, column: 47 },
+          ],
         },
       ],
     });
@@ -294,7 +297,10 @@ describe('Type System: Enum Values', () => {
         {
           message:
             'Variable "$color" of type "Int!" used in position expecting type "Color".',
-          locations: [{ line: 1, column: 8 }, { line: 1, column: 44 }],
+          locations: [
+            { line: 1, column: 8 },
+            { line: 1, column: 44 },
+          ],
         },
       ],
     });

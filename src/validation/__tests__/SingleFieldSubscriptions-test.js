@@ -64,7 +64,10 @@ describe('Validate: Subscriptions with single field', () => {
       {
         message:
           'Subscription "ImportantEmails" must select only one top level field.',
-        locations: [{ line: 4, column: 9 }, { line: 5, column: 9 }],
+        locations: [
+          { line: 4, column: 9 },
+          { line: 5, column: 9 },
+        ],
       },
     ]);
   });

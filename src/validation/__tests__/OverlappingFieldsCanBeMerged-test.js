@@ -108,7 +108,10 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "fido" conflict because "name" and "nickname" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
       },
     ]);
   });
@@ -138,7 +141,10 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "name" conflict because "nickname" and "name" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
       },
     ]);
   });
@@ -153,7 +159,10 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "doesKnowCommand" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
       },
     ]);
   });
@@ -168,7 +177,10 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "doesKnowCommand" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
       },
     ]);
   });
@@ -183,7 +195,10 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "doesKnowCommand" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
       },
     ]);
   });
@@ -219,7 +234,10 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "x" conflict because "a" and "b" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 7, column: 9 }, { line: 10, column: 9 }],
+        locations: [
+          { line: 7, column: 9 },
+          { line: 10, column: 9 },
+        ],
       },
     ]);
   });
@@ -251,17 +269,26 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "x" conflict because "a" and "b" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 18, column: 9 }, { line: 21, column: 9 }],
+        locations: [
+          { line: 18, column: 9 },
+          { line: 21, column: 9 },
+        ],
       },
       {
         message:
           'Fields "x" conflict because "c" and "a" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 14, column: 11 }, { line: 18, column: 9 }],
+        locations: [
+          { line: 14, column: 11 },
+          { line: 18, column: 9 },
+        ],
       },
       {
         message:
           'Fields "x" conflict because "c" and "b" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 14, column: 11 }, { line: 21, column: 9 }],
+        locations: [
+          { line: 14, column: 11 },
+          { line: 21, column: 9 },
+        ],
       },
     ]);
   });
@@ -560,7 +587,10 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           message:
             'Fields "scalar" conflict because they return conflicting types "Int" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
-          locations: [{ line: 5, column: 17 }, { line: 8, column: 17 }],
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
         },
       ]);
     });
@@ -609,7 +639,10 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           message:
             'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
-          locations: [{ line: 5, column: 17 }, { line: 8, column: 17 }],
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
         },
       ]);
     });
@@ -694,7 +727,10 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           message:
             'Fields "scalar" conflict because they return conflicting types "String!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
-          locations: [{ line: 5, column: 17 }, { line: 8, column: 17 }],
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
         },
       ]);
     });
@@ -722,7 +758,10 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           message:
             'Fields "box" conflict because they return conflicting types "[StringBox]" and "StringBox". Use different aliases on the fields to fetch both if this was intentional.',
-          locations: [{ line: 5, column: 17 }, { line: 10, column: 17 }],
+          locations: [
+            { line: 5, column: 17 },
+            { line: 10, column: 17 },
+          ],
         },
       ]);
 
@@ -748,7 +787,10 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           message:
             'Fields "box" conflict because they return conflicting types "StringBox" and "[StringBox]". Use different aliases on the fields to fetch both if this was intentional.',
-          locations: [{ line: 5, column: 17 }, { line: 10, column: 17 }],
+          locations: [
+            { line: 5, column: 17 },
+            { line: 10, column: 17 },
+          ],
         },
       ]);
     });
@@ -777,7 +819,10 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           message:
             'Fields "val" conflict because "scalar" and "unrelatedField" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
-          locations: [{ line: 6, column: 19 }, { line: 7, column: 19 }],
+          locations: [
+            { line: 6, column: 19 },
+            { line: 7, column: 19 },
+          ],
         },
       ]);
     });
@@ -977,7 +1022,10 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "fido" conflict because "name" and "nickname" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [{ line: 4, column: 9 }, { line: 5, column: 9 }],
+        locations: [
+          { line: 4, column: 9 },
+          { line: 5, column: 9 },
+        ],
       },
     ]);
   });

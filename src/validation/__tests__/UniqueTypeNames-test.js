@@ -60,27 +60,45 @@ describe('Validate: Unique type names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one type named "Foo".',
-        locations: [{ line: 2, column: 12 }, { line: 4, column: 14 }],
+        locations: [
+          { line: 2, column: 12 },
+          { line: 4, column: 14 },
+        ],
       },
       {
         message: 'There can be only one type named "Foo".',
-        locations: [{ line: 2, column: 12 }, { line: 5, column: 12 }],
+        locations: [
+          { line: 2, column: 12 },
+          { line: 5, column: 12 },
+        ],
       },
       {
         message: 'There can be only one type named "Foo".',
-        locations: [{ line: 2, column: 12 }, { line: 6, column: 17 }],
+        locations: [
+          { line: 2, column: 12 },
+          { line: 6, column: 17 },
+        ],
       },
       {
         message: 'There can be only one type named "Foo".',
-        locations: [{ line: 2, column: 12 }, { line: 7, column: 13 }],
+        locations: [
+          { line: 2, column: 12 },
+          { line: 7, column: 13 },
+        ],
       },
       {
         message: 'There can be only one type named "Foo".',
-        locations: [{ line: 2, column: 12 }, { line: 8, column: 12 }],
+        locations: [
+          { line: 2, column: 12 },
+          { line: 8, column: 12 },
+        ],
       },
       {
         message: 'There can be only one type named "Foo".',
-        locations: [{ line: 2, column: 12 }, { line: 9, column: 13 }],
+        locations: [
+          { line: 2, column: 12 },
+          { line: 9, column: 13 },
+        ],
       },
     ]);
   });

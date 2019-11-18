@@ -55,7 +55,10 @@ describe('Validate: Unique directive names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one directive named "@foo".',
-        locations: [{ line: 2, column: 18 }, { line: 4, column: 18 }],
+        locations: [
+          { line: 2, column: 18 },
+          { line: 4, column: 18 },
+        ],
       },
     ]);
   });

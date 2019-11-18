@@ -50,7 +50,10 @@ describe('Validate: Unique enum value names', () => {
     `).to.deep.equal([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
-        locations: [{ line: 3, column: 9 }, { line: 5, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 5, column: 9 },
+        ],
       },
     ]);
   });
@@ -80,7 +83,10 @@ describe('Validate: Unique enum value names', () => {
     `).to.deep.equal([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
-        locations: [{ line: 3, column: 9 }, { line: 6, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 6, column: 9 },
+        ],
       },
     ]);
   });
@@ -96,7 +102,10 @@ describe('Validate: Unique enum value names', () => {
     `).to.deep.equal([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
-        locations: [{ line: 4, column: 9 }, { line: 6, column: 9 }],
+        locations: [
+          { line: 4, column: 9 },
+          { line: 6, column: 9 },
+        ],
       },
     ]);
   });
@@ -113,7 +122,10 @@ describe('Validate: Unique enum value names', () => {
     `).to.deep.equal([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
-        locations: [{ line: 4, column: 9 }, { line: 7, column: 9 }],
+        locations: [
+          { line: 4, column: 9 },
+          { line: 7, column: 9 },
+        ],
       },
     ]);
   });
@@ -172,7 +184,10 @@ describe('Validate: Unique enum value names', () => {
     expectSDLErrors(sdl, schema).to.deep.equal([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
-        locations: [{ line: 3, column: 9 }, { line: 6, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 6, column: 9 },
+        ],
       },
     ]);
   });

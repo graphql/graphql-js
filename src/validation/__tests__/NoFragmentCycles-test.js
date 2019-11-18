@@ -103,7 +103,10 @@ describe('Validate: No circular fragment spreads', () => {
     `).to.deep.equal([
       {
         message: 'Cannot spread fragment "fragA" within itself via "fragB".',
-        locations: [{ line: 2, column: 31 }, { line: 3, column: 31 }],
+        locations: [
+          { line: 2, column: 31 },
+          { line: 3, column: 31 },
+        ],
       },
     ]);
   });
@@ -115,7 +118,10 @@ describe('Validate: No circular fragment spreads', () => {
     `).to.deep.equal([
       {
         message: 'Cannot spread fragment "fragB" within itself via "fragA".',
-        locations: [{ line: 2, column: 31 }, { line: 3, column: 31 }],
+        locations: [
+          { line: 2, column: 31 },
+          { line: 3, column: 31 },
+        ],
       },
     ]);
   });
@@ -135,7 +141,10 @@ describe('Validate: No circular fragment spreads', () => {
     `).to.deep.equal([
       {
         message: 'Cannot spread fragment "fragA" within itself via "fragB".',
-        locations: [{ line: 4, column: 11 }, { line: 9, column: 11 }],
+        locations: [
+          { line: 4, column: 11 },
+          { line: 9, column: 11 },
+        ],
       },
     ]);
   });
@@ -184,11 +193,17 @@ describe('Validate: No circular fragment spreads', () => {
     `).to.deep.equal([
       {
         message: 'Cannot spread fragment "fragA" within itself via "fragB".',
-        locations: [{ line: 2, column: 31 }, { line: 3, column: 31 }],
+        locations: [
+          { line: 2, column: 31 },
+          { line: 3, column: 31 },
+        ],
       },
       {
         message: 'Cannot spread fragment "fragA" within itself via "fragC".',
-        locations: [{ line: 2, column: 41 }, { line: 4, column: 31 }],
+        locations: [
+          { line: 2, column: 41 },
+          { line: 4, column: 31 },
+        ],
       },
     ]);
   });
@@ -201,11 +216,17 @@ describe('Validate: No circular fragment spreads', () => {
     `).to.deep.equal([
       {
         message: 'Cannot spread fragment "fragA" within itself via "fragC".',
-        locations: [{ line: 2, column: 31 }, { line: 4, column: 31 }],
+        locations: [
+          { line: 2, column: 31 },
+          { line: 4, column: 31 },
+        ],
       },
       {
         message: 'Cannot spread fragment "fragC" within itself via "fragB".',
-        locations: [{ line: 4, column: 41 }, { line: 3, column: 31 }],
+        locations: [
+          { line: 4, column: 41 },
+          { line: 3, column: 31 },
+        ],
       },
     ]);
   });
@@ -231,7 +252,10 @@ describe('Validate: No circular fragment spreads', () => {
       },
       {
         message: 'Cannot spread fragment "fragB" within itself via "fragC".',
-        locations: [{ line: 3, column: 41 }, { line: 4, column: 41 }],
+        locations: [
+          { line: 3, column: 41 },
+          { line: 4, column: 41 },
+        ],
       },
     ]);
   });

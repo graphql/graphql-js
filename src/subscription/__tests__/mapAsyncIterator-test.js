@@ -200,7 +200,11 @@ describe('mapAsyncIterator', () => {
       throw new Error('Goodbye');
     }
 
-    const doubles = mapAsyncIterator(source(), x => x + x, error => error);
+    const doubles = mapAsyncIterator(
+      source(),
+      x => x + x,
+      error => error,
+    );
 
     expect(await doubles.next()).to.deep.equal({
       value: 'HelloHello',

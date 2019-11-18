@@ -124,7 +124,10 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$d" is not defined by operation "Foo".',
-        locations: [{ line: 3, column: 39 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 3, column: 39 },
+          { line: 2, column: 7 },
+        ],
       },
     ]);
   });
@@ -137,7 +140,10 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$a" is not defined.',
-        locations: [{ line: 3, column: 18 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 3, column: 18 },
+          { line: 2, column: 7 },
+        ],
       },
     ]);
   });
@@ -150,11 +156,17 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
-        locations: [{ line: 3, column: 18 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 3, column: 18 },
+          { line: 2, column: 7 },
+        ],
       },
       {
         message: 'Variable "$c" is not defined by operation "Foo".',
-        locations: [{ line: 3, column: 32 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 3, column: 32 },
+          { line: 2, column: 7 },
+        ],
       },
     ]);
   });
@@ -170,7 +182,10 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$a" is not defined.',
-        locations: [{ line: 6, column: 18 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 6, column: 18 },
+          { line: 2, column: 7 },
+        ],
       },
     ]);
   });
@@ -196,7 +211,10 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$c" is not defined by operation "Foo".',
-        locations: [{ line: 16, column: 18 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 16, column: 18 },
+          { line: 2, column: 7 },
+        ],
       },
     ]);
   });
@@ -222,11 +240,17 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
-        locations: [{ line: 6, column: 18 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 6, column: 18 },
+          { line: 2, column: 7 },
+        ],
       },
       {
         message: 'Variable "$c" is not defined by operation "Foo".',
-        locations: [{ line: 16, column: 18 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 16, column: 18 },
+          { line: 2, column: 7 },
+        ],
       },
     ]);
   });
@@ -245,11 +269,17 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$b" is not defined by operation "Foo".',
-        locations: [{ line: 9, column: 25 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 9, column: 25 },
+          { line: 2, column: 7 },
+        ],
       },
       {
         message: 'Variable "$b" is not defined by operation "Bar".',
-        locations: [{ line: 9, column: 25 }, { line: 5, column: 7 }],
+        locations: [
+          { line: 9, column: 25 },
+          { line: 5, column: 7 },
+        ],
       },
     ]);
   });
@@ -268,11 +298,17 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
-        locations: [{ line: 9, column: 18 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 9, column: 18 },
+          { line: 2, column: 7 },
+        ],
       },
       {
         message: 'Variable "$b" is not defined by operation "Bar".',
-        locations: [{ line: 9, column: 25 }, { line: 5, column: 7 }],
+        locations: [
+          { line: 9, column: 25 },
+          { line: 5, column: 7 },
+        ],
       },
     ]);
   });
@@ -294,11 +330,17 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
-        locations: [{ line: 9, column: 18 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 9, column: 18 },
+          { line: 2, column: 7 },
+        ],
       },
       {
         message: 'Variable "$b" is not defined by operation "Bar".',
-        locations: [{ line: 12, column: 18 }, { line: 5, column: 7 }],
+        locations: [
+          { line: 12, column: 18 },
+          { line: 5, column: 7 },
+        ],
       },
     ]);
   });
@@ -322,27 +364,45 @@ describe('Validate: No undefined variables', () => {
     `).to.deep.equal([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
-        locations: [{ line: 9, column: 19 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 9, column: 19 },
+          { line: 2, column: 7 },
+        ],
       },
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
-        locations: [{ line: 11, column: 19 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 11, column: 19 },
+          { line: 2, column: 7 },
+        ],
       },
       {
         message: 'Variable "$c" is not defined by operation "Foo".',
-        locations: [{ line: 14, column: 19 }, { line: 2, column: 7 }],
+        locations: [
+          { line: 14, column: 19 },
+          { line: 2, column: 7 },
+        ],
       },
       {
         message: 'Variable "$b" is not defined by operation "Bar".',
-        locations: [{ line: 9, column: 26 }, { line: 5, column: 7 }],
+        locations: [
+          { line: 9, column: 26 },
+          { line: 5, column: 7 },
+        ],
       },
       {
         message: 'Variable "$b" is not defined by operation "Bar".',
-        locations: [{ line: 11, column: 26 }, { line: 5, column: 7 }],
+        locations: [
+          { line: 11, column: 26 },
+          { line: 5, column: 7 },
+        ],
       },
       {
         message: 'Variable "$c" is not defined by operation "Bar".',
-        locations: [{ line: 14, column: 19 }, { line: 5, column: 7 }],
+        locations: [
+          { line: 14, column: 19 },
+          { line: 5, column: 7 },
+        ],
       },
     ]);
   });

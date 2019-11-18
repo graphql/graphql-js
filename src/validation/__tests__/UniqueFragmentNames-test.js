@@ -92,7 +92,10 @@ describe('Validate: Unique fragment names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one fragment named "fragA".',
-        locations: [{ line: 5, column: 16 }, { line: 8, column: 16 }],
+        locations: [
+          { line: 5, column: 16 },
+          { line: 8, column: 16 },
+        ],
       },
     ]);
   });
@@ -108,7 +111,10 @@ describe('Validate: Unique fragment names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one fragment named "fragA".',
-        locations: [{ line: 2, column: 16 }, { line: 5, column: 16 }],
+        locations: [
+          { line: 2, column: 16 },
+          { line: 5, column: 16 },
+        ],
       },
     ]);
   });
