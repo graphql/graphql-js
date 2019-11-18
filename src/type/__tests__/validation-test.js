@@ -548,7 +548,10 @@ describe('Type System: Union types must be valid', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message: 'Union type BadUnion must define one or more member types.',
-        locations: [{ line: 6, column: 7 }, { line: 4, column: 9 }],
+        locations: [
+          { line: 6, column: 7 },
+          { line: 4, column: 9 },
+        ],
       },
     ]);
   });
@@ -576,7 +579,10 @@ describe('Type System: Union types must be valid', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message: 'Union type BadUnion can only include type TypeA once.',
-        locations: [{ line: 15, column: 11 }, { line: 17, column: 11 }],
+        locations: [
+          { line: 15, column: 11 },
+          { line: 17, column: 11 },
+        ],
       },
     ]);
 
@@ -585,11 +591,17 @@ describe('Type System: Union types must be valid', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message: 'Union type BadUnion can only include type TypeA once.',
-        locations: [{ line: 15, column: 11 }, { line: 17, column: 11 }],
+        locations: [
+          { line: 15, column: 11 },
+          { line: 17, column: 11 },
+        ],
       },
       {
         message: 'Union type BadUnion can only include type TypeB once.',
-        locations: [{ line: 16, column: 11 }, { line: 1, column: 25 }],
+        locations: [
+          { line: 16, column: 11 },
+          { line: 1, column: 25 },
+        ],
       },
     ]);
   });
@@ -692,7 +704,10 @@ describe('Type System: Input Objects must have fields', () => {
       {
         message:
           'Input Object type SomeInputObject must define one or more fields.',
-        locations: [{ line: 6, column: 7 }, { line: 4, column: 9 }],
+        locations: [
+          { line: 6, column: 7 },
+          { line: 4, column: 9 },
+        ],
       },
     ]);
   });
@@ -796,12 +811,18 @@ describe('Type System: Input Objects must have fields', () => {
       {
         message:
           'Cannot reference Input Object "SomeInputObject" within itself through a series of non-null fields: "startLoop.closeLoop".',
-        locations: [{ line: 7, column: 9 }, { line: 11, column: 9 }],
+        locations: [
+          { line: 7, column: 9 },
+          { line: 11, column: 9 },
+        ],
       },
       {
         message:
           'Cannot reference Input Object "AnotherInputObject" within itself through a series of non-null fields: "startSecondLoop.closeSecondLoop".',
-        locations: [{ line: 12, column: 9 }, { line: 16, column: 9 }],
+        locations: [
+          { line: 12, column: 9 },
+          { line: 16, column: 9 },
+        ],
       },
       {
         message:
@@ -866,7 +887,10 @@ describe('Type System: Enum types must be well defined', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message: 'Enum type SomeEnum must define one or more values.',
-        locations: [{ line: 6, column: 7 }, { line: 4, column: 9 }],
+        locations: [
+          { line: 6, column: 7 },
+          { line: 4, column: 9 },
+        ],
       },
     ]);
   });
@@ -1067,7 +1091,10 @@ describe('Type System: Objects can only implement unique interfaces', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message: 'Type AnotherObject can only implement AnotherInterface once.',
-        locations: [{ line: 10, column: 37 }, { line: 10, column: 56 }],
+        locations: [
+          { line: 10, column: 37 },
+          { line: 10, column: 56 },
+        ],
       },
     ]);
   });
@@ -1093,7 +1120,10 @@ describe('Type System: Objects can only implement unique interfaces', () => {
     expect(validateSchema(extendedSchema)).to.deep.equal([
       {
         message: 'Type AnotherObject can only implement AnotherInterface once.',
-        locations: [{ line: 10, column: 37 }, { line: 1, column: 38 }],
+        locations: [
+          { line: 10, column: 37 },
+          { line: 1, column: 38 },
+        ],
       },
     ]);
   });
@@ -1169,7 +1199,10 @@ describe('Type System: Interface extensions should be valid', () => {
       {
         message:
           'Interface field argument AnotherInterface.newField(test:) expected but AnotherObject.newField does not provide it.',
-        locations: [{ line: 3, column: 20 }, { line: 7, column: 11 }],
+        locations: [
+          { line: 3, column: 20 },
+          { line: 7, column: 11 },
+        ],
       },
     ]);
   });
@@ -1217,7 +1250,10 @@ describe('Type System: Interface extensions should be valid', () => {
       {
         message:
           'Interface field AnotherInterface.newInterfaceField expects type NewInterface but AnotherObject.newInterfaceField is type MismatchingInterface.',
-        locations: [{ line: 3, column: 30 }, { line: 15, column: 30 }],
+        locations: [
+          { line: 3, column: 30 },
+          { line: 15, column: 30 },
+        ],
       },
     ]);
   });
@@ -1609,7 +1645,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Interface field AnotherInterface.field expected but AnotherObject does not provide it.',
-        locations: [{ line: 7, column: 9 }, { line: 10, column: 7 }],
+        locations: [
+          { line: 7, column: 9 },
+          { line: 10, column: 7 },
+        ],
       },
     ]);
   });
@@ -1632,7 +1671,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Interface field AnotherInterface.field expects type String but AnotherObject.field is type Int.',
-        locations: [{ line: 7, column: 31 }, { line: 11, column: 31 }],
+        locations: [
+          { line: 7, column: 31 },
+          { line: 11, column: 31 },
+        ],
       },
     ]);
   });
@@ -1658,7 +1700,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Interface field AnotherInterface.field expects type A but AnotherObject.field is type B.',
-        locations: [{ line: 10, column: 16 }, { line: 14, column: 16 }],
+        locations: [
+          { line: 10, column: 16 },
+          { line: 14, column: 16 },
+        ],
       },
     ]);
   });
@@ -1721,7 +1766,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Interface field argument AnotherInterface.field(input:) expected but AnotherObject.field does not provide it.',
-        locations: [{ line: 7, column: 15 }, { line: 11, column: 9 }],
+        locations: [
+          { line: 7, column: 15 },
+          { line: 11, column: 9 },
+        ],
       },
     ]);
   });
@@ -1744,7 +1792,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Interface field argument AnotherInterface.field(input:) expects type String but AnotherObject.field(input:) is type Int.',
-        locations: [{ line: 7, column: 22 }, { line: 11, column: 22 }],
+        locations: [
+          { line: 7, column: 22 },
+          { line: 11, column: 22 },
+        ],
       },
     ]);
   });
@@ -1767,12 +1818,18 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Interface field AnotherInterface.field expects type String but AnotherObject.field is type Int.',
-        locations: [{ line: 7, column: 31 }, { line: 11, column: 28 }],
+        locations: [
+          { line: 7, column: 31 },
+          { line: 11, column: 28 },
+        ],
       },
       {
         message:
           'Interface field argument AnotherInterface.field(input:) expects type String but AnotherObject.field(input:) is type Int.',
-        locations: [{ line: 7, column: 22 }, { line: 11, column: 22 }],
+        locations: [
+          { line: 7, column: 22 },
+          { line: 11, column: 22 },
+        ],
       },
     ]);
   });
@@ -1800,7 +1857,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Object field AnotherObject.field includes required argument requiredArg that is missing from the Interface field AnotherInterface.field.',
-        locations: [{ line: 13, column: 11 }, { line: 7, column: 9 }],
+        locations: [
+          { line: 13, column: 11 },
+          { line: 7, column: 9 },
+        ],
       },
     ]);
   });
@@ -1840,7 +1900,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Interface field AnotherInterface.field expects type [String] but AnotherObject.field is type String.',
-        locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+        locations: [
+          { line: 7, column: 16 },
+          { line: 11, column: 16 },
+        ],
       },
     ]);
   });
@@ -1863,7 +1926,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Interface field AnotherInterface.field expects type String but AnotherObject.field is type [String].',
-        locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+        locations: [
+          { line: 7, column: 16 },
+          { line: 11, column: 16 },
+        ],
       },
     ]);
   });
@@ -1903,7 +1969,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Interface field AnotherInterface.field expects type String! but AnotherObject.field is type String.',
-        locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+        locations: [
+          { line: 7, column: 16 },
+          { line: 11, column: 16 },
+        ],
       },
     ]);
   });
@@ -1930,7 +1999,10 @@ describe('Objects must adhere to Interface they implement', () => {
       {
         message:
           'Type AnotherObject must implement SuperInterface because it is implemented by AnotherInterface.',
-        locations: [{ line: 10, column: 45 }, { line: 14, column: 37 }],
+        locations: [
+          { line: 10, column: 45 },
+          { line: 14, column: 37 },
+        ],
       },
     ]);
   });
@@ -2007,7 +2079,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Interface field ParentInterface.field expected but ChildInterface does not provide it.',
-        locations: [{ line: 7, column: 9 }, { line: 10, column: 7 }],
+        locations: [
+          { line: 7, column: 9 },
+          { line: 10, column: 7 },
+        ],
       },
     ]);
   });
@@ -2030,7 +2105,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Interface field ParentInterface.field expects type String but ChildInterface.field is type Int.',
-        locations: [{ line: 7, column: 31 }, { line: 11, column: 31 }],
+        locations: [
+          { line: 7, column: 31 },
+          { line: 11, column: 31 },
+        ],
       },
     ]);
   });
@@ -2056,7 +2134,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Interface field ParentInterface.field expects type A but ChildInterface.field is type B.',
-        locations: [{ line: 10, column: 16 }, { line: 14, column: 16 }],
+        locations: [
+          { line: 10, column: 16 },
+          { line: 14, column: 16 },
+        ],
       },
     ]);
   });
@@ -2119,7 +2200,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Interface field argument ParentInterface.field(input:) expected but ChildInterface.field does not provide it.',
-        locations: [{ line: 7, column: 15 }, { line: 11, column: 9 }],
+        locations: [
+          { line: 7, column: 15 },
+          { line: 11, column: 9 },
+        ],
       },
     ]);
   });
@@ -2142,7 +2226,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Interface field argument ParentInterface.field(input:) expects type String but ChildInterface.field(input:) is type Int.',
-        locations: [{ line: 7, column: 22 }, { line: 11, column: 22 }],
+        locations: [
+          { line: 7, column: 22 },
+          { line: 11, column: 22 },
+        ],
       },
     ]);
   });
@@ -2165,12 +2252,18 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Interface field ParentInterface.field expects type String but ChildInterface.field is type Int.',
-        locations: [{ line: 7, column: 31 }, { line: 11, column: 28 }],
+        locations: [
+          { line: 7, column: 31 },
+          { line: 11, column: 28 },
+        ],
       },
       {
         message:
           'Interface field argument ParentInterface.field(input:) expects type String but ChildInterface.field(input:) is type Int.',
-        locations: [{ line: 7, column: 22 }, { line: 11, column: 22 }],
+        locations: [
+          { line: 7, column: 22 },
+          { line: 11, column: 22 },
+        ],
       },
     ]);
   });
@@ -2198,7 +2291,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Object field ChildInterface.field includes required argument requiredArg that is missing from the Interface field ParentInterface.field.',
-        locations: [{ line: 13, column: 11 }, { line: 7, column: 9 }],
+        locations: [
+          { line: 13, column: 11 },
+          { line: 7, column: 9 },
+        ],
       },
     ]);
   });
@@ -2238,7 +2334,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Interface field ParentInterface.field expects type [String] but ChildInterface.field is type String.',
-        locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+        locations: [
+          { line: 7, column: 16 },
+          { line: 11, column: 16 },
+        ],
       },
     ]);
   });
@@ -2261,7 +2360,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Interface field ParentInterface.field expects type String but ChildInterface.field is type [String].',
-        locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+        locations: [
+          { line: 7, column: 16 },
+          { line: 11, column: 16 },
+        ],
       },
     ]);
   });
@@ -2301,7 +2403,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Interface field ParentInterface.field expects type String! but ChildInterface.field is type String.',
-        locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+        locations: [
+          { line: 7, column: 16 },
+          { line: 11, column: 16 },
+        ],
       },
     ]);
   });
@@ -2328,7 +2433,10 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Type ChildInterface must implement SuperInterface because it is implemented by ParentInterface.',
-        locations: [{ line: 10, column: 44 }, { line: 14, column: 43 }],
+        locations: [
+          { line: 10, column: 44 },
+          { line: 14, column: 43 },
+        ],
       },
     ]);
   });
@@ -2372,12 +2480,18 @@ describe('Interfaces must adhere to Interface they implement', () => {
       {
         message:
           'Type FooInterface cannot implement BarIntereface because it would create a circular reference.',
-        locations: [{ line: 10, column: 42 }, { line: 6, column: 41 }],
+        locations: [
+          { line: 10, column: 42 },
+          { line: 6, column: 41 },
+        ],
       },
       {
         message:
           'Type BarIntereface cannot implement FooInterface because it would create a circular reference.',
-        locations: [{ line: 6, column: 41 }, { line: 10, column: 42 }],
+        locations: [
+          { line: 6, column: 41 },
+          { line: 10, column: 42 },
+        ],
       },
     ]);
   });

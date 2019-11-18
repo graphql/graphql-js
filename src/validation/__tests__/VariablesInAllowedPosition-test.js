@@ -164,7 +164,10 @@ describe('Validate: Variables are in allowed positions', () => {
       {
         message:
           'Variable "$intArg" of type "Int" used in position expecting type "Int!".',
-        locations: [{ line: 2, column: 19 }, { line: 4, column: 45 }],
+        locations: [
+          { line: 2, column: 19 },
+          { line: 4, column: 45 },
+        ],
       },
     ]);
   });
@@ -184,7 +187,10 @@ describe('Validate: Variables are in allowed positions', () => {
       {
         message:
           'Variable "$intArg" of type "Int" used in position expecting type "Int!".',
-        locations: [{ line: 6, column: 19 }, { line: 3, column: 43 }],
+        locations: [
+          { line: 6, column: 19 },
+          { line: 3, column: 43 },
+        ],
       },
     ]);
   });
@@ -208,7 +214,10 @@ describe('Validate: Variables are in allowed positions', () => {
       {
         message:
           'Variable "$intArg" of type "Int" used in position expecting type "Int!".',
-        locations: [{ line: 10, column: 19 }, { line: 7, column: 43 }],
+        locations: [
+          { line: 10, column: 19 },
+          { line: 7, column: 43 },
+        ],
       },
     ]);
   });
@@ -224,7 +233,10 @@ describe('Validate: Variables are in allowed positions', () => {
       {
         message:
           'Variable "$stringVar" of type "String" used in position expecting type "Boolean".',
-        locations: [{ line: 2, column: 19 }, { line: 4, column: 39 }],
+        locations: [
+          { line: 2, column: 19 },
+          { line: 4, column: 39 },
+        ],
       },
     ]);
   });
@@ -240,7 +252,10 @@ describe('Validate: Variables are in allowed positions', () => {
       {
         message:
           'Variable "$stringVar" of type "String" used in position expecting type "[String]".',
-        locations: [{ line: 2, column: 19 }, { line: 4, column: 45 }],
+        locations: [
+          { line: 2, column: 19 },
+          { line: 4, column: 45 },
+        ],
       },
     ]);
   });
@@ -254,7 +269,10 @@ describe('Validate: Variables are in allowed positions', () => {
       {
         message:
           'Variable "$boolVar" of type "Boolean" used in position expecting type "Boolean!".',
-        locations: [{ line: 2, column: 19 }, { line: 3, column: 26 }],
+        locations: [
+          { line: 2, column: 19 },
+          { line: 3, column: 26 },
+        ],
       },
     ]);
   });
@@ -268,7 +286,10 @@ describe('Validate: Variables are in allowed positions', () => {
       {
         message:
           'Variable "$stringVar" of type "String" used in position expecting type "Boolean!".',
-        locations: [{ line: 2, column: 19 }, { line: 3, column: 26 }],
+        locations: [
+          { line: 2, column: 19 },
+          { line: 3, column: 26 },
+        ],
       },
     ]);
   });
@@ -285,7 +306,10 @@ describe('Validate: Variables are in allowed positions', () => {
       {
         message:
           'Variable "$stringListVar" of type "[String]" used in position expecting type "[String!]".',
-        locations: [{ line: 2, column: 19 }, { line: 5, column: 59 }],
+        locations: [
+          { line: 2, column: 19 },
+          { line: 5, column: 59 },
+        ],
       },
     ]);
   });
@@ -302,7 +326,10 @@ describe('Validate: Variables are in allowed positions', () => {
         {
           message:
             'Variable "$intVar" of type "Int" used in position expecting type "Int!".',
-          locations: [{ line: 2, column: 21 }, { line: 4, column: 47 }],
+          locations: [
+            { line: 2, column: 21 },
+            { line: 4, column: 47 },
+          ],
         },
       ]);
     });

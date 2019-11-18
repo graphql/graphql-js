@@ -82,15 +82,24 @@ describe('Validate: Unique field definition names', () => {
     `).to.deep.equal([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
-        locations: [{ line: 3, column: 9 }, { line: 5, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 5, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInterface.foo" can only be defined once.',
-        locations: [{ line: 9, column: 9 }, { line: 11, column: 9 }],
+        locations: [
+          { line: 9, column: 9 },
+          { line: 11, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInputObject.foo" can only be defined once.',
-        locations: [{ line: 15, column: 9 }, { line: 17, column: 9 }],
+        locations: [
+          { line: 15, column: 9 },
+          { line: 17, column: 9 },
+        ],
       },
     ]);
   });
@@ -154,15 +163,24 @@ describe('Validate: Unique field definition names', () => {
     `).to.deep.equal([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
-        locations: [{ line: 3, column: 9 }, { line: 6, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 6, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInterface.foo" can only be defined once.',
-        locations: [{ line: 10, column: 9 }, { line: 13, column: 9 }],
+        locations: [
+          { line: 10, column: 9 },
+          { line: 13, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInputObject.foo" can only be defined once.',
-        locations: [{ line: 17, column: 9 }, { line: 20, column: 9 }],
+        locations: [
+          { line: 17, column: 9 },
+          { line: 20, column: 9 },
+        ],
       },
     ]);
   });
@@ -192,15 +210,24 @@ describe('Validate: Unique field definition names', () => {
     `).to.deep.equal([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
-        locations: [{ line: 4, column: 9 }, { line: 6, column: 9 }],
+        locations: [
+          { line: 4, column: 9 },
+          { line: 6, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInterface.foo" can only be defined once.',
-        locations: [{ line: 11, column: 9 }, { line: 13, column: 9 }],
+        locations: [
+          { line: 11, column: 9 },
+          { line: 13, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInputObject.foo" can only be defined once.',
-        locations: [{ line: 18, column: 9 }, { line: 20, column: 9 }],
+        locations: [
+          { line: 18, column: 9 },
+          { line: 20, column: 9 },
+        ],
       },
     ]);
   });
@@ -233,15 +260,24 @@ describe('Validate: Unique field definition names', () => {
     `).to.deep.equal([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
-        locations: [{ line: 4, column: 9 }, { line: 7, column: 9 }],
+        locations: [
+          { line: 4, column: 9 },
+          { line: 7, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInterface.foo" can only be defined once.',
-        locations: [{ line: 12, column: 9 }, { line: 15, column: 9 }],
+        locations: [
+          { line: 12, column: 9 },
+          { line: 15, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInputObject.foo" can only be defined once.',
-        locations: [{ line: 20, column: 9 }, { line: 23, column: 9 }],
+        locations: [
+          { line: 20, column: 9 },
+          { line: 23, column: 9 },
+        ],
       },
     ]);
   });
@@ -371,15 +407,24 @@ describe('Validate: Unique field definition names', () => {
     expectSDLErrors(sdl, schema).to.deep.equal([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
-        locations: [{ line: 3, column: 9 }, { line: 6, column: 9 }],
+        locations: [
+          { line: 3, column: 9 },
+          { line: 6, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInterface.foo" can only be defined once.',
-        locations: [{ line: 10, column: 9 }, { line: 13, column: 9 }],
+        locations: [
+          { line: 10, column: 9 },
+          { line: 13, column: 9 },
+        ],
       },
       {
         message: 'Field "SomeInputObject.foo" can only be defined once.',
-        locations: [{ line: 17, column: 9 }, { line: 20, column: 9 }],
+        locations: [
+          { line: 17, column: 9 },
+          { line: 20, column: 9 },
+        ],
       },
     ]);
   });

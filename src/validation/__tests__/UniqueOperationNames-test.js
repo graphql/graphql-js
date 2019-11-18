@@ -89,7 +89,10 @@ describe('Validate: Unique operation names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one operation named "Foo".',
-        locations: [{ line: 2, column: 13 }, { line: 5, column: 13 }],
+        locations: [
+          { line: 2, column: 13 },
+          { line: 5, column: 13 },
+        ],
       },
     ]);
   });
@@ -105,7 +108,10 @@ describe('Validate: Unique operation names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one operation named "Foo".',
-        locations: [{ line: 2, column: 13 }, { line: 5, column: 16 }],
+        locations: [
+          { line: 2, column: 13 },
+          { line: 5, column: 16 },
+        ],
       },
     ]);
   });
@@ -121,7 +127,10 @@ describe('Validate: Unique operation names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one operation named "Foo".',
-        locations: [{ line: 2, column: 13 }, { line: 5, column: 20 }],
+        locations: [
+          { line: 2, column: 13 },
+          { line: 5, column: 20 },
+        ],
       },
     ]);
   });

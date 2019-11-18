@@ -1077,12 +1077,11 @@ input Hello {
     });
 
     const doc = parse(body, { allowLegacySDLImplementsInterfaces: true });
-    expect(toJSONDeep(doc)).to.have.deep.nested.property(
-      'definitions[0].interfaces',
-      [
-        typeNode('Wo', { start: 22, end: 24 }),
-        typeNode('rld', { start: 25, end: 28 }),
-      ],
-    );
+    expect(
+      toJSONDeep(doc),
+    ).to.have.deep.nested.property('definitions[0].interfaces', [
+      typeNode('Wo', { start: 22, end: 24 }),
+      typeNode('rld', { start: 25, end: 28 }),
+    ]);
   });
 });

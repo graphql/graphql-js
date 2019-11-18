@@ -63,7 +63,10 @@ describe('Validate: Unique input field names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one input field named "f1".',
-        locations: [{ line: 3, column: 22 }, { line: 3, column: 35 }],
+        locations: [
+          { line: 3, column: 22 },
+          { line: 3, column: 35 },
+        ],
       },
     ]);
   });
@@ -76,11 +79,17 @@ describe('Validate: Unique input field names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one input field named "f1".',
-        locations: [{ line: 3, column: 22 }, { line: 3, column: 35 }],
+        locations: [
+          { line: 3, column: 22 },
+          { line: 3, column: 35 },
+        ],
       },
       {
         message: 'There can be only one input field named "f1".',
-        locations: [{ line: 3, column: 22 }, { line: 3, column: 48 }],
+        locations: [
+          { line: 3, column: 22 },
+          { line: 3, column: 48 },
+        ],
       },
     ]);
   });
@@ -93,7 +102,10 @@ describe('Validate: Unique input field names', () => {
     `).to.deep.equal([
       {
         message: 'There can be only one input field named "f2".',
-        locations: [{ line: 3, column: 27 }, { line: 3, column: 40 }],
+        locations: [
+          { line: 3, column: 27 },
+          { line: 3, column: 40 },
+        ],
       },
     ]);
   });
