@@ -24,10 +24,11 @@ deprecated-utility=error
 dynamic-export=off
 unsafe-getters-setters=error
 inexact-spread=error
-implicit-inexact-object=error
 unnecessary-optional-chain=error
 unnecessary-invariant=error
 signature-verification-failure=error
+implicit-inexact-object=error
+ambiguous-object-type=error
 uninitialized-instance-property=error
 non-array-spread=error
 
@@ -38,4 +39,4 @@ suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)?)\\)
 suppress_comment=\\(.\\|\n\\)*\\$DisableFlowOnNegativeTest
 
 [version]
-^0.111.0
+^0.112.0
