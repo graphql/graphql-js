@@ -48,7 +48,7 @@ Complete your CLA here: <https://code.facebook.com/cla>
 3. Install or Update all dependencies
 
    ```sh
-   npm install
+   cd graphql-js && yarn/npm install
    ```
 
 4. Get coding! If you've added code, add tests. If you've changed APIs, update
@@ -58,8 +58,19 @@ Complete your CLA here: <https://code.facebook.com/cla>
 5. Ensure all tests pass
 
    ```sh
-   npm test
+   yarn/npm test
    ```
+
+6. A typical solution for working on a library is to test changes in your application project through `linking`.
+  - Using `yarn/npm link`:
+    - Either trigger a build manually by running `yarn/npm build`
+    - Make your grapphql-js package available to link: `cd dist && yarn/npm link`
+    - Link the package into your project: `cd my/app && yarn/npm link graphql`
+  - Or you can to use [yalc](https://github.com/whitecolor/yalc)
+    - Install `yalc`: `yarn global add yalc` or `npm i yalc -g`
+    - Either trigger a build manually by running `yarn/npm build`
+    - Run `cd dist && yalc publish --private` in your graphql-js package
+    - Run `cd my/app && yalc add graphql` in your dependent project
 
 ### Live Feedback
 
