@@ -75,7 +75,7 @@ import {
 
 import { valueFromAST } from './valueFromAST';
 
-export type BuildSchemaOptions = {
+export type BuildSchemaOptions = {|
   ...GraphQLSchemaValidationOptions,
 
   /**
@@ -94,9 +94,7 @@ export type BuildSchemaOptions = {
    * Default: false
    */
   assumeValidSDL?: boolean,
-
-  ...
-};
+|};
 
 /**
  * This takes the ast of a schema document produced by the parse function in
@@ -525,7 +523,21 @@ function getLeadingCommentBlock(node): void | string {
  */
 export function buildSchema(
   source: string | Source,
-  options?: BuildSchemaOptions & ParseOptions,
+  options?: {| ...BuildSchemaOptions, ...ParseOptions |},
 ): GraphQLSchema {
-  return buildASTSchema(parse(source, options), options);
+  const document = parse(source, {
+    noLocation: (options && options.noLocation) || false,
+    allowLegacySDLEmptyFields:
+      (options && options.allowLegacySDLEmptyFields) || false,
+    allowLegacySDLImplementsInterfaces:
+      (options && options.allowLegacySDLImplementsInterfaces) || false,
+    experimentalFragmentVariables:
+      (options && options.experimentalFragmentVariables) || false,
+  });
+
+  return buildASTSchema(document, {
+    commentDescriptions: (options && options.commentDescriptions) || false,
+    assumeValidSDL: (options && options.assumeValidSDL) || false,
+    assumeValid: (options && options.assumeValid) || false,
+  });
 }

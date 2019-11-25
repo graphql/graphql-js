@@ -62,7 +62,7 @@ import {
 /**
  * Configuration options to control parser behavior
  */
-export type ParseOptions = {
+export type ParseOptions = {|
   /**
    * By default, the parser creates AST nodes that know the location
    * in the source that they correspond to. This configuration flag
@@ -107,9 +107,7 @@ export type ParseOptions = {
    * future.
    */
   experimentalFragmentVariables?: boolean,
-
-  ...
-};
+|};
 
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -177,7 +175,12 @@ class Parser {
     );
 
     this._lexer = new Lexer(sourceObj);
-    this._options = options || {};
+    this._options = options || {
+      noLocation: false,
+      allowLegacySDLEmptyFields: false,
+      allowLegacySDLImplementsInterfaces: false,
+      experimentalFragmentVariables: false,
+    };
   }
 
   /**
