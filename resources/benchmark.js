@@ -138,7 +138,7 @@ function computeStats(samples) {
   // Compute the sample variance (estimate of the population variance).
   let variance = 0;
   for (const { clocked } of samples) {
-    variance += Math.pow(clocked - mean, 2);
+    variance += (clocked - mean) ** 2;
   }
   variance /= samples.length - 1;
 
@@ -223,7 +223,7 @@ function beautifyBenchmark(results) {
 function beautifyBytes(bytes) {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log2(bytes) / 10);
-  return beautifyNumber(bytes / Math.pow(2, i * 10)) + ' ' + sizes[i];
+  return beautifyNumber(bytes / 2 ** (i * 10)) + ' ' + sizes[i];
 }
 
 function beautifyNumber(num) {
