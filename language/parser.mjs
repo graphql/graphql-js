@@ -63,7 +63,12 @@ function () {
     var sourceObj = typeof source === 'string' ? new Source(source) : source;
     sourceObj instanceof Source || devAssert(0, "Must provide Source. Received: ".concat(inspect(sourceObj)));
     this._lexer = new Lexer(sourceObj);
-    this._options = options || {};
+    this._options = options || {
+      noLocation: false,
+      allowLegacySDLEmptyFields: false,
+      allowLegacySDLImplementsInterfaces: false,
+      experimentalFragmentVariables: false
+    };
   }
   /**
    * Converts a name lex token into a name parse node.

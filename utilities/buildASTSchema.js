@@ -496,5 +496,15 @@ function getLeadingCommentBlock(node) {
 
 
 function buildSchema(source, options) {
-  return buildASTSchema((0, _parser.parse)(source, options), options);
+  var document = (0, _parser.parse)(source, {
+    noLocation: options && options.noLocation || false,
+    allowLegacySDLEmptyFields: options && options.allowLegacySDLEmptyFields || false,
+    allowLegacySDLImplementsInterfaces: options && options.allowLegacySDLImplementsInterfaces || false,
+    experimentalFragmentVariables: options && options.experimentalFragmentVariables || false
+  });
+  return buildASTSchema(document, {
+    commentDescriptions: options && options.commentDescriptions || false,
+    assumeValidSDL: options && options.assumeValidSDL || false,
+    assumeValid: options && options.assumeValid || false
+  });
 }
