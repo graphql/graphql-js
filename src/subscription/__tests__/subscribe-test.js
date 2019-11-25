@@ -78,7 +78,26 @@ function emailSchemaWithResolvers(subscribeFn, resolveFn) {
   });
 }
 
-async function createSubscription(pubsub, schema = emailSchema, ast, vars) {
+const defaultSubscriptionAST = parse(`
+  subscription ($priority: Int = 0) {
+    importantEmail(priority: $priority) {
+      email {
+        from
+        subject
+      }
+      inbox {
+        unread
+        total
+      }
+    }
+  }
+`);
+
+async function createSubscription(
+  pubsub,
+  schema = emailSchema,
+  ast = defaultSubscriptionAST,
+) {
   const data = {
     inbox: {
       emails: [
@@ -106,26 +125,11 @@ async function createSubscription(pubsub, schema = emailSchema, ast, vars) {
     });
   }
 
-  const defaultAST = parse(`
-    subscription ($priority: Int = 0) {
-      importantEmail(priority: $priority) {
-        email {
-          from
-          subject
-        }
-        inbox {
-          unread
-          total
-        }
-      }
-    }
-  `);
-
   // `subscribe` returns Promise<AsyncIterator | ExecutionResult>
   return {
     sendImportantEmail,
     // $FlowFixMe
-    subscription: await subscribe(schema, ast || defaultAST, data, null, vars),
+    subscription: await subscribe(schema, ast, data),
   };
 }
 
