@@ -25,7 +25,9 @@ import { SDLValidationContext, ValidationContext } from './ValidationContext';
 export function validate(schema, documentAST) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedRules;
   var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new TypeInfo(schema);
-  var options = arguments.length > 4 ? arguments[4] : undefined;
+  var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
+    maxErrors: undefined
+  };
   documentAST || devAssert(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
 
   assertValidSchema(schema);

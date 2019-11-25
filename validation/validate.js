@@ -43,7 +43,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function validate(schema, documentAST) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _specifiedRules.specifiedRules;
   var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new _TypeInfo.TypeInfo(schema);
-  var options = arguments.length > 4 ? arguments[4] : undefined;
+  var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
+    maxErrors: undefined
+  };
   documentAST || (0, _devAssert.default)(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);
