@@ -12,10 +12,10 @@ rules:
   # `eslint-plugin-flowtype` rule list based on `v4.4.x`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
 
-  flowtype/array-style-complex-type: [error, verbose]
-  flowtype/array-style-simple-type: [error, verbose]
+  flowtype/array-style-complex-type: error
+  flowtype/array-style-simple-type: error
   flowtype/define-flow-type: error
-  flowtype/newline-after-flow-annotation: [error, always]
+  flowtype/newline-after-flow-annotation: error
   flowtype/no-dupe-keys: error
   flowtype/no-existential-type: off # checked by Flow
   flowtype/no-flow-fix-me-comments: off
@@ -44,6 +44,7 @@ rules:
 
   # Bellow rules are disabled because coflicts with Prettier, see:
   # https://github.com/prettier/eslint-config-prettier/blob/master/flowtype.js
+  flowtype/arrow-parens: off
   flowtype/boolean-style: off
   flowtype/delimiter-dangle: off
   flowtype/generic-spacing: off
@@ -102,12 +103,12 @@ rules:
   # https://eslint.org/docs/rules/#best-practices
 
   accessor-pairs: error
-  array-callback-return: [error, { allowImplicit: true }]
+  array-callback-return: error
   block-scoped-var: error
   class-methods-use-this: off
   complexity: off
   consistent-return: off
-  curly: [error, all]
+  curly: error
   default-case: off
   default-param-last: off # TODO
   dot-notation: off
@@ -135,7 +136,7 @@ rules:
   no-implied-eval: error
   no-invalid-this: off
   no-iterator: error
-  no-labels: [error, { allowLoop: true }]
+  no-labels: error
   no-lone-blocks: error
   no-loop-func: error
   no-magic-numbers: off
@@ -203,7 +204,7 @@ rules:
   global-require: error
   handle-callback-err: [error, error]
   no-buffer-constructor: error
-  no-mixed-requires: [error, true]
+  no-mixed-requires: error
   no-new-require: error
   no-path-concat: error
   no-process-env: off
@@ -214,7 +215,7 @@ rules:
   # Stylistic Issues
   # https://eslint.org/docs/rules/#stylistic-issues
 
-  camelcase: [error, { properties: always }]
+  camelcase: error
   capitalized-comments: off # maybe
   consistent-this: off
   func-name-matching: off
@@ -257,14 +258,14 @@ rules:
   no-underscore-dangle: off
   no-unneeded-ternary: error
   one-var: [error, never]
-  operator-assignment: [error, always]
+  operator-assignment: error
   padding-line-between-statements: off
   prefer-exponentiation-operator: error
   prefer-object-spread: error
-  quotes: [error, single, { avoidEscape: true, allowTemplateLiterals: false }]
+  quotes: [error, single, { avoidEscape: true }]
   sort-keys: off
   sort-vars: off
-  spaced-comment: [error, always]
+  spaced-comment: error
 
   # ECMAScript 6
   # https://eslint.org/docs/rules/#ecmascript-6
@@ -282,7 +283,7 @@ rules:
   no-useless-constructor: error
   no-useless-rename: error
   no-var: error
-  object-shorthand: [error, always]
+  object-shorthand: error
   prefer-arrow-callback: error
   prefer-const: error
   prefer-destructuring: off
@@ -331,7 +332,6 @@ rules:
   no-mixed-spaces-and-tabs: off
   no-multi-spaces: off
   no-multiple-empty-lines: off
-  no-spaced-func: off
   no-trailing-spaces: off
   no-unexpected-multiline: off
   no-whitespace-before-property: off
