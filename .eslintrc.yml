@@ -26,7 +26,7 @@ rules:
   flowtype/no-unused-expressions: off
   flowtype/no-weak-types: [error, { any: false }]
   flowtype/require-compound-type-alias: off
-  flowtype/require-exact-type: off # TODO
+  flowtype/require-exact-type: off
   flowtype/require-indexer-name: error
   flowtype/require-inexact-type: off # checked by Flow
   flowtype/require-parameter-type: off
