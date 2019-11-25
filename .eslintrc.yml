@@ -9,7 +9,7 @@ plugins:
   - flowtype
 
 rules:
-  # `eslint-plugin-flowtype` rule list based on `v4.3.x`
+  # `eslint-plugin-flowtype` rule list based on `v4.4.x`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
 
   flowtype/array-style-complex-type: [error, verbose]
@@ -55,7 +55,7 @@ rules:
   flowtype/union-intersection-spacing: off
 
   ##################################################
-  # ESLint builtin rules list based on `v6.6.x`
+  # ESLint builtin rules list based on `v6.7.x`
   ##################################################
 
   # Possible Errors
@@ -72,6 +72,7 @@ rules:
   no-control-regex: error
   no-debugger: warn
   no-dupe-args: error
+  no-dupe-else-if: error
   no-dupe-keys: error
   no-duplicate-case: error
   no-empty: error
@@ -87,6 +88,7 @@ rules:
   no-obj-calls: error
   no-prototype-builtins: error
   no-regex-spaces: error
+  no-setter-return: error
   no-sparse-arrays: error
   no-template-curly-in-string: error
   no-unreachable: error
@@ -110,11 +112,13 @@ rules:
   default-param-last: off # TODO
   dot-notation: off
   eqeqeq: [error, smart]
+  grouped-accessor-pairs: error
   guard-for-in: error
   max-classes-per-file: off
   no-alert: error
   no-caller: error
   no-case-declarations: error
+  no-constructor-return: error
   no-div-regex: error
   no-else-return: error
   no-empty-function: error
@@ -255,6 +259,7 @@ rules:
   one-var: [error, never]
   operator-assignment: [error, always]
   padding-line-between-statements: off
+  prefer-exponentiation-operator: error
   prefer-object-spread: error
   quotes: [error, single, { avoidEscape: true, allowTemplateLiterals: false }]
   sort-keys: off
