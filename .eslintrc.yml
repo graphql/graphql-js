@@ -110,7 +110,7 @@ rules:
   consistent-return: off
   curly: error
   default-case: off
-  default-param-last: off # TODO
+  default-param-last: error
   dot-notation: off
   eqeqeq: [error, smart]
   grouped-accessor-pairs: error
