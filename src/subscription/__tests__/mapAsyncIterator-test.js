@@ -1,5 +1,8 @@
 // @flow strict
 
+// FIXME temporary hack until https://github.com/eslint/eslint/pull/12484 is merged
+/* eslint-disable require-await */
+
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -270,12 +273,11 @@ describe('mapAsyncIterator', () => {
   });
 
   it('closes source if mapper rejects', async () => {
-    await testClosesSourceWithMapper(async x => {
-      if (x > 1) {
-        throw new Error('Cannot count to ' + x);
-      }
-      return x;
-    });
+    await testClosesSourceWithMapper(x =>
+      x > 1
+        ? Promise.reject(new Error('Cannot count to ' + x))
+        : Promise.resolve(x),
+    );
   });
 
   async function testClosesSourceWithRejectMapper(mapper) {
@@ -313,8 +315,8 @@ describe('mapAsyncIterator', () => {
   });
 
   it('closes source if mapper rejects', async () => {
-    await testClosesSourceWithRejectMapper(async error => {
-      throw new Error('Cannot count to ' + error.message);
-    });
+    await testClosesSourceWithRejectMapper(error =>
+      Promise.reject(new Error('Cannot count to ' + error.message)),
+    );
   });
 });
