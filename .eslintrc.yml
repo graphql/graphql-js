@@ -172,7 +172,7 @@ rules:
   prefer-promise-reject-errors: error
   prefer-regex-literals: error
   radix: error
-  require-await: off # TODO
+  require-await: error
   require-unicode-regexp: off
   vars-on-top: error
   yoda: [error, never, { exceptRange: true }]
@@ -291,7 +291,7 @@ rules:
   prefer-rest-params: off # TODO
   prefer-spread: error
   prefer-template: off
-  require-yield: off
+  require-yield: error
   sort-imports: off
   symbol-description: off
 

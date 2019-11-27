@@ -1,5 +1,8 @@
 // @flow strict
 
+// FIXME temporary hack until https://github.com/eslint/eslint/pull/12484 is merged
+/* eslint-disable require-await */
+
 import EventEmitter from 'events';
 
 import { expect } from 'chai';
@@ -401,16 +404,14 @@ describe('Subscription Initialization Phase', () => {
     await testReportsError(subscriptionThrowingErrorSchema);
 
     // Resolving to an error
-    const subscriptionResolvingErrorSchema = emailSchemaWithResolvers(
-      async () => new Error('test error'),
+    const subscriptionResolvingErrorSchema = emailSchemaWithResolvers(() =>
+      Promise.resolve(new Error('test error')),
     );
     await testReportsError(subscriptionResolvingErrorSchema);
 
     // Rejecting with an error
-    const subscriptionRejectingErrorSchema = emailSchemaWithResolvers(
-      async () => {
-        throw new Error('test error');
-      },
+    const subscriptionRejectingErrorSchema = emailSchemaWithResolvers(() =>
+      Promise.reject(new Error('test error')),
     );
     await testReportsError(subscriptionRejectingErrorSchema);
 
@@ -457,10 +458,8 @@ describe('Subscription Initialization Phase', () => {
     await testReportsError(subscriptionResolvingErrorSchema);
 
     // Rejecting with an error
-    const subscriptionRejectingErrorSchema = emailSchemaWithResolvers(
-      async () => {
-        throw new Error('test error');
-      },
+    const subscriptionRejectingErrorSchema = emailSchemaWithResolvers(() =>
+      Promise.reject(new Error('test error')),
     );
     await testReportsError(subscriptionRejectingErrorSchema);
 
