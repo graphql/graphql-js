@@ -775,7 +775,8 @@ function defineFieldMap<TSource, TContext>(
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
   );
 
-  return mapValue(fieldMap, (fieldConfig, fieldName) => {
+  return mapValue(fieldMap, (fieldConfigThunk, fieldName) => {
+    const fieldConfig = resolveThunk(fieldConfigThunk);
     devAssert(
       isPlainObj(fieldConfig),
       `${config.name}.${fieldName} field config must be an object.`,
@@ -930,7 +931,7 @@ export type GraphQLArgumentConfig = {|
 |};
 
 export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
-  GraphQLFieldConfig<TSource, TContext>,
+  Thunk<GraphQLFieldConfig<TSource, TContext>>,
 >;
 
 export type GraphQLField<

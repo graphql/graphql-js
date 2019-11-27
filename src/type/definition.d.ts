@@ -496,7 +496,7 @@ export type GraphQLFieldConfigMap<
   TContext,
   TArgs = { [key: string]: any }
 > = {
-  [key: string]: GraphQLFieldConfig<TSource, TContext, TArgs>;
+  [key: string]: Thunk<GraphQLFieldConfig<TSource, TContext, TArgs>>;
 };
 
 export interface GraphQLField<

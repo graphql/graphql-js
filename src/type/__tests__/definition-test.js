@@ -213,12 +213,35 @@ describe('Type System: Objects', () => {
     });
   });
 
-  it('accepts an Object type with a field function', () => {
+  it('accepts an Object type with a fields function', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       fields: () => ({
         f: { type: ScalarType },
       }),
+    });
+    expect(objType.getFields()).to.deep.equal({
+      f: {
+        name: 'f',
+        description: undefined,
+        type: ScalarType,
+        args: [],
+        resolve: undefined,
+        subscribe: undefined,
+        isDeprecated: false,
+        deprecationReason: undefined,
+        extensions: undefined,
+        astNode: undefined,
+      },
+    });
+  });
+
+  it('accepts an Object type with a field function', () => {
+    const objType = new GraphQLObjectType({
+      name: 'SomeObject',
+      fields: {
+        f: () => ({ type: ScalarType }),
+      },
     });
     expect(objType.getFields()).to.deep.equal({
       f: {

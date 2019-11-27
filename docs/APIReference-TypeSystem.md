@@ -294,8 +294,10 @@ type GraphQLArgumentConfig = {
 }
 
 type GraphQLFieldConfigMap = {
-  [fieldName: string]: GraphQLFieldConfig;
+  [fieldName: string]: GraphQLFieldConfigThunk | GraphQLFieldConfig;
 };
+
+type GraphQLFieldConfigThunk = () => GraphQLFieldConfig;
 ```
 
 Almost all of the GraphQL types you define will be object types. Object types
