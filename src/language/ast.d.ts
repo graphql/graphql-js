@@ -89,6 +89,11 @@ export class Token {
 }
 
 /**
+ * @internal
+ */
+export function isNode(maybeNode: any): maybeNode is ASTNode;
+
+/**
  * The list of all possible AST node types.
  */
 export type ASTNode =

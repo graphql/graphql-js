@@ -1,5 +1,6 @@
 import Maybe from '../tsutils/Maybe';
-import { ASTNode, FieldNode } from '../language/ast';
+import { Visitor } from '../language/visitor';
+import { ASTNode, ASTKindToNode, FieldNode } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import {
@@ -47,3 +48,12 @@ type getFieldDef = (
   parentType: GraphQLType,
   fieldNode: FieldNode,
 ) => Maybe<GraphQLField<any, any>>;
+
+/**
+ * Creates a new visitor instance which maintains a provided TypeInfo instance
+ * along with visiting visitor.
+ */
+export function visitWithTypeInfo(
+  typeInfo: TypeInfo,
+  visitor: Visitor<ASTKindToNode>,
+): Visitor<ASTKindToNode>;

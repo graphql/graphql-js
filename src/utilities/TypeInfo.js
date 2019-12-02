@@ -3,7 +3,13 @@
 import find from '../polyfills/find';
 
 import { Kind } from '../language/kinds';
-import { type ASTNode, type FieldNode } from '../language/ast';
+import { type Visitor, getVisitFn } from '../language/visitor';
+import {
+  type ASTNode,
+  type ASTKindToNode,
+  type FieldNode,
+  isNode,
+} from '../language/ast';
 
 import { type GraphQLSchema } from '../type/schema';
 import { type GraphQLDirective } from '../type/directives';
@@ -313,4 +319,39 @@ function getFieldDef(
   if (isObjectType(parentType) || isInterfaceType(parentType)) {
     return parentType.getFields()[name];
   }
+}
+
+/**
+ * Creates a new visitor instance which maintains a provided TypeInfo instance
+ * along with visiting visitor.
+ */
+export function visitWithTypeInfo(
+  typeInfo: TypeInfo,
+  visitor: Visitor<ASTKindToNode>,
+): Visitor<ASTKindToNode> {
+  return {
+    enter(node) {
+      typeInfo.enter(node);
+      const fn = getVisitFn(visitor, node.kind, /* isLeaving */ false);
+      if (fn) {
+        const result = fn.apply(visitor, arguments);
+        if (result !== undefined) {
+          typeInfo.leave(node);
+          if (isNode(result)) {
+            typeInfo.enter(result);
+          }
+        }
+        return result;
+      }
+    },
+    leave(node) {
+      const fn = getVisitFn(visitor, node.kind, /* isLeaving */ true);
+      let result;
+      if (fn) {
+        result = fn.apply(visitor, arguments);
+      }
+      typeInfo.leave(node);
+      return result;
+    },
+  };
 }
