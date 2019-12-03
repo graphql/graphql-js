@@ -188,7 +188,6 @@ export {
   // Visit
   visit,
   visitInParallel,
-  visitWithTypeInfo,
   getVisitFn,
   BREAK,
   Kind,
@@ -382,6 +381,7 @@ export {
   // A helper to use within recursive-descent visitors which need to be aware of
   // the GraphQL type system.
   TypeInfo,
+  visitWithTypeInfo,
   // Coerces a JavaScript value to a GraphQL type, or produces errors.
   coerceInputValue,
   // Concatenates multiple AST together.

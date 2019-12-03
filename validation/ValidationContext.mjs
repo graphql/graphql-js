@@ -1,8 +1,8 @@
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
 import { Kind } from '../language/kinds';
-import { visit, visitWithTypeInfo } from '../language/visitor';
-import { TypeInfo } from '../utilities/TypeInfo';
+import { visit } from '../language/visitor';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
 /**
  * An instance of this class is passed as the "this" context to all validators,

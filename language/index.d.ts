@@ -11,7 +11,6 @@ export { print } from './printer';
 export {
   visit,
   visitInParallel,
-  visitWithTypeInfo,
   getVisitFn,
   BREAK,
   ASTVisitor,

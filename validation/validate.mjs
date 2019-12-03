@@ -1,8 +1,8 @@
 import devAssert from '../jsutils/devAssert';
 import { GraphQLError } from '../error/GraphQLError';
-import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
+import { visit, visitInParallel } from '../language/visitor';
 import { assertValidSchema } from '../type/validate';
-import { TypeInfo } from '../utilities/TypeInfo';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
 import { SDLValidationContext, ValidationContext } from './ValidationContext';
 /**

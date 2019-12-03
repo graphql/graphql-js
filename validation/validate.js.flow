@@ -5,12 +5,12 @@ import devAssert from '../jsutils/devAssert';
 import { GraphQLError } from '../error/GraphQLError';
 
 import { type DocumentNode } from '../language/ast';
-import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
+import { visit, visitInParallel } from '../language/visitor';
 
 import { type GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 
-import { TypeInfo } from '../utilities/TypeInfo';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
 import {

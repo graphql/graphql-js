@@ -3,11 +3,16 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.visitWithTypeInfo = visitWithTypeInfo;
 exports.TypeInfo = void 0;
 
 var _find = _interopRequireDefault(require("../polyfills/find"));
 
 var _kinds = require("../language/kinds");
+
+var _visitor = require("../language/visitor");
+
+var _ast = require("../language/ast");
 
 var _definition = require("../type/definition");
 
@@ -340,4 +345,47 @@ function getFieldDef(schema, parentType, fieldNode) {
   if ((0, _definition.isObjectType)(parentType) || (0, _definition.isInterfaceType)(parentType)) {
     return parentType.getFields()[name];
   }
+}
+/**
+ * Creates a new visitor instance which maintains a provided TypeInfo instance
+ * along with visiting visitor.
+ */
+
+
+function visitWithTypeInfo(typeInfo, visitor) {
+  return {
+    enter: function enter(node) {
+      typeInfo.enter(node);
+      var fn = (0, _visitor.getVisitFn)(visitor, node.kind,
+      /* isLeaving */
+      false);
+
+      if (fn) {
+        var result = fn.apply(visitor, arguments);
+
+        if (result !== undefined) {
+          typeInfo.leave(node);
+
+          if ((0, _ast.isNode)(result)) {
+            typeInfo.enter(result);
+          }
+        }
+
+        return result;
+      }
+    },
+    leave: function leave(node) {
+      var fn = (0, _visitor.getVisitFn)(visitor, node.kind,
+      /* isLeaving */
+      true);
+      var result;
+
+      if (fn) {
+        result = fn.apply(visitor, arguments);
+      }
+
+      typeInfo.leave(node);
+      return result;
+    }
+  };
 }

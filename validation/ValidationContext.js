@@ -172,7 +172,7 @@ function (_ASTValidationContext2) {
     if (!usages) {
       var newUsages = [];
       var typeInfo = new _TypeInfo.TypeInfo(this._schema);
-      (0, _visitor.visit)(node, (0, _visitor.visitWithTypeInfo)(typeInfo, {
+      (0, _visitor.visit)(node, (0, _TypeInfo.visitWithTypeInfo)(typeInfo, {
         VariableDefinition: function VariableDefinition() {
           return false;
         },

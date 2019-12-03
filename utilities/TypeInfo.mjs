@@ -1,5 +1,7 @@
 import find from '../polyfills/find';
 import { Kind } from '../language/kinds';
+import { getVisitFn } from '../language/visitor';
+import { isNode } from '../language/ast';
 import { isObjectType, isInterfaceType, isEnumType, isInputObjectType, isListType, isCompositeType, isInputType, isOutputType, getNullableType, getNamedType } from '../type/definition';
 import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from '../type/introspection';
 import { typeFromAST } from './typeFromAST';
@@ -324,4 +326,47 @@ function getFieldDef(schema, parentType, fieldNode) {
   if (isObjectType(parentType) || isInterfaceType(parentType)) {
     return parentType.getFields()[name];
   }
+}
+/**
+ * Creates a new visitor instance which maintains a provided TypeInfo instance
+ * along with visiting visitor.
+ */
+
+
+export function visitWithTypeInfo(typeInfo, visitor) {
+  return {
+    enter: function enter(node) {
+      typeInfo.enter(node);
+      var fn = getVisitFn(visitor, node.kind,
+      /* isLeaving */
+      false);
+
+      if (fn) {
+        var result = fn.apply(visitor, arguments);
+
+        if (result !== undefined) {
+          typeInfo.leave(node);
+
+          if (isNode(result)) {
+            typeInfo.enter(result);
+          }
+        }
+
+        return result;
+      }
+    },
+    leave: function leave(node) {
+      var fn = getVisitFn(visitor, node.kind,
+      /* isLeaving */
+      true);
+      var result;
+
+      if (fn) {
+        result = fn.apply(visitor, arguments);
+      }
+
+      typeInfo.leave(node);
+      return result;
+    }
+  };
 }

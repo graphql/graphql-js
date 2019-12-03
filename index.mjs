@@ -44,7 +44,7 @@ export { Source, getLocation // Print source location
 , Lexer, TokenKind // Parse
 , parse, parseValue, parseType // Print
 , print // Visit
-, visit, visitInParallel, visitWithTypeInfo, getVisitFn, BREAK, Kind, DirectiveLocation // Predicates
+, visit, visitInParallel, getVisitFn, BREAK, Kind, DirectiveLocation // Predicates
 , isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from './language';
 // Execute GraphQL queries.
 export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from './execution';
@@ -79,7 +79,7 @@ getIntrospectionQuery // Gets the target Operation from a Document.
 , valueFromASTUntyped // Create a GraphQL language AST from a JavaScript value.
 , astFromValue // A helper to use within recursive-descent visitors which need to be aware of
 // the GraphQL type system.
-, TypeInfo // Coerces a JavaScript value to a GraphQL type, or produces errors.
+, TypeInfo, visitWithTypeInfo // Coerces a JavaScript value to a GraphQL type, or produces errors.
 , coerceInputValue // Concatenates multiple AST together.
 , concatAST // Separates an AST into an AST per Operation.
 , separateOperations // Strips characters that are not significant to the validity or execution

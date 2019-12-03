@@ -2,9 +2,7 @@
 
 import inspect from '../jsutils/inspect';
 
-import { type TypeInfo } from '../utilities/TypeInfo';
-
-import { type ASTNode, type ASTKindToNode } from './ast';
+import { type ASTNode, type ASTKindToNode, isNode } from './ast';
 
 /**
  * A visitor is provided to visit, it contains the collection of
@@ -351,10 +349,6 @@ export function visit(
   return newRoot;
 }
 
-function isNode(maybeNode): boolean %checks {
-  return maybeNode != null && typeof maybeNode.kind === 'string';
-}
-
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
  * parallel. Each visitor will be visited for each node before moving on.
@@ -400,41 +394,6 @@ export function visitInParallel(
           skipping[i] = null;
         }
       }
-    },
-  };
-}
-
-/**
- * Creates a new visitor instance which maintains a provided TypeInfo instance
- * along with visiting visitor.
- */
-export function visitWithTypeInfo(
-  typeInfo: TypeInfo,
-  visitor: Visitor<ASTKindToNode>,
-): Visitor<ASTKindToNode> {
-  return {
-    enter(node) {
-      typeInfo.enter(node);
-      const fn = getVisitFn(visitor, node.kind, /* isLeaving */ false);
-      if (fn) {
-        const result = fn.apply(visitor, arguments);
-        if (result !== undefined) {
-          typeInfo.leave(node);
-          if (isNode(result)) {
-            typeInfo.enter(result);
-          }
-        }
-        return result;
-      }
-    },
-    leave(node) {
-      const fn = getVisitFn(visitor, node.kind, /* isLeaving */ true);
-      let result;
-      if (fn) {
-        result = fn.apply(visitor, arguments);
-      }
-      typeInfo.leave(node);
-      return result;
     },
   };
 }

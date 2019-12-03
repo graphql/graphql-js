@@ -1,5 +1,4 @@
 import Maybe from '../tsutils/Maybe';
-import { TypeInfo } from '../utilities/TypeInfo';
 import { ASTNode, ASTKindToNode } from './ast';
 
 /**
@@ -249,15 +248,6 @@ export function visit(
  */
 export function visitInParallel(
   visitors: ReadonlyArray<Visitor<ASTKindToNode>>,
-): Visitor<ASTKindToNode>;
-
-/**
- * Creates a new visitor instance which maintains a provided TypeInfo instance
- * along with visiting visitor.
- */
-export function visitWithTypeInfo(
-  typeInfo: TypeInfo,
-  visitor: Visitor<ASTKindToNode>,
 ): Visitor<ASTKindToNode>;
 
 /**

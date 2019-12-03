@@ -6,6 +6,6 @@ export { TokenKind } from './tokenKind';
 export { Lexer } from './lexer';
 export { parse, parseValue, parseType } from './parser';
 export { print } from './printer';
-export { visit, visitInParallel, visitWithTypeInfo, getVisitFn, BREAK } from './visitor';
+export { visit, visitInParallel, getVisitFn, BREAK } from './visitor';
 export { isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from './predicates';
 export { DirectiveLocation } from './directiveLocation';

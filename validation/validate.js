@@ -67,7 +67,7 @@ function validate(schema, documentAST) {
   })); // Visit the whole document with each instance of all provided rules.
 
   try {
-    (0, _visitor.visit)(documentAST, (0, _visitor.visitWithTypeInfo)(typeInfo, visitor));
+    (0, _visitor.visit)(documentAST, (0, _TypeInfo.visitWithTypeInfo)(typeInfo, visitor));
   } catch (e) {
     if (e !== abortObj) {
       throw e;

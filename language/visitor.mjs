@@ -1,4 +1,10 @@
 import inspect from '../jsutils/inspect';
+import { isNode } from './ast';
+/**
+ * A visitor is provided to visit, it contains the collection of
+ * relevant functions to be called during the visitor's traversal.
+ */
+
 export var QueryDocumentKeys = {
   Name: [],
   Document: ['definitions'],
@@ -281,17 +287,12 @@ export function visit(root, visitor) {
 
   return newRoot;
 }
-
-function isNode(maybeNode) {
-  return maybeNode != null && typeof maybeNode.kind === 'string';
-}
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
  * parallel. Each visitor will be visited for each node before moving on.
  *
  * If a prior visitor edits a node, no following visitors will see that node.
  */
-
 
 export function visitInParallel(visitors) {
   var skipping = new Array(visitors.length);
@@ -337,48 +338,6 @@ export function visitInParallel(visitors) {
           skipping[i] = null;
         }
       }
-    }
-  };
-}
-/**
- * Creates a new visitor instance which maintains a provided TypeInfo instance
- * along with visiting visitor.
- */
-
-export function visitWithTypeInfo(typeInfo, visitor) {
-  return {
-    enter: function enter(node) {
-      typeInfo.enter(node);
-      var fn = getVisitFn(visitor, node.kind,
-      /* isLeaving */
-      false);
-
-      if (fn) {
-        var result = fn.apply(visitor, arguments);
-
-        if (result !== undefined) {
-          typeInfo.leave(node);
-
-          if (isNode(result)) {
-            typeInfo.enter(result);
-          }
-        }
-
-        return result;
-      }
-    },
-    leave: function leave(node) {
-      var fn = getVisitFn(visitor, node.kind,
-      /* isLeaving */
-      true);
-      var result;
-
-      if (fn) {
-        result = fn.apply(visitor, arguments);
-      }
-
-      typeInfo.leave(node);
-      return result;
     }
   };
 }

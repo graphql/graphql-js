@@ -75,7 +75,7 @@ export { astFromValue } from './astFromValue';
 
 // A helper to use within recursive-descent visitors which need to be aware of
 // the GraphQL type system.
-export { TypeInfo } from './TypeInfo';
+export { TypeInfo, visitWithTypeInfo } from './TypeInfo';
 
 // Coerces a JavaScript value to a GraphQL type, or produces errors.
 export { coerceInputValue } from './coerceInputValue';

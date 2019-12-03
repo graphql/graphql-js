@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.isNode = isNode;
 exports.Token = exports.Location = void 0;
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
@@ -105,6 +106,13 @@ exports.Token = Token;
     column: this.column
   };
 });
+/**
+ * @internal
+ */
+
+function isNode(maybeNode) {
+  return maybeNode != null && typeof maybeNode.kind === 'string';
+}
 /**
  * The list of all possible AST node types.
  */

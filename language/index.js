@@ -81,12 +81,6 @@ Object.defineProperty(exports, "visitInParallel", {
     return _visitor.visitInParallel;
   }
 });
-Object.defineProperty(exports, "visitWithTypeInfo", {
-  enumerable: true,
-  get: function get() {
-    return _visitor.visitWithTypeInfo;
-  }
-});
 Object.defineProperty(exports, "getVisitFn", {
   enumerable: true,
   get: function get() {

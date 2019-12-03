@@ -5,11 +5,12 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.visit = visit;
 exports.visitInParallel = visitInParallel;
-exports.visitWithTypeInfo = visitWithTypeInfo;
 exports.getVisitFn = getVisitFn;
 exports.BREAK = exports.QueryDocumentKeys = void 0;
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
+var _ast = require("./ast");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -232,7 +233,7 @@ function visit(root, visitor) {
     var result = void 0;
 
     if (!Array.isArray(node)) {
-      if (!isNode(node)) {
+      if (!(0, _ast.isNode)(node)) {
         throw new Error('Invalid AST Node: ' + (0, _inspect.default)(node));
       }
 
@@ -254,7 +255,7 @@ function visit(root, visitor) {
           edits.push([key, result]);
 
           if (!isLeaving) {
-            if (isNode(result)) {
+            if ((0, _ast.isNode)(result)) {
               node = result;
             } else {
               path.pop();
@@ -297,10 +298,6 @@ function visit(root, visitor) {
   }
 
   return newRoot;
-}
-
-function isNode(maybeNode) {
-  return maybeNode != null && typeof maybeNode.kind === 'string';
 }
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
@@ -354,49 +351,6 @@ function visitInParallel(visitors) {
           skipping[i] = null;
         }
       }
-    }
-  };
-}
-/**
- * Creates a new visitor instance which maintains a provided TypeInfo instance
- * along with visiting visitor.
- */
-
-
-function visitWithTypeInfo(typeInfo, visitor) {
-  return {
-    enter: function enter(node) {
-      typeInfo.enter(node);
-      var fn = getVisitFn(visitor, node.kind,
-      /* isLeaving */
-      false);
-
-      if (fn) {
-        var result = fn.apply(visitor, arguments);
-
-        if (result !== undefined) {
-          typeInfo.leave(node);
-
-          if (isNode(result)) {
-            typeInfo.enter(result);
-          }
-        }
-
-        return result;
-      }
-    },
-    leave: function leave(node) {
-      var fn = getVisitFn(visitor, node.kind,
-      /* isLeaving */
-      true);
-      var result;
-
-      if (fn) {
-        result = fn.apply(visitor, arguments);
-      }
-
-      typeInfo.leave(node);
-      return result;
     }
   };
 }

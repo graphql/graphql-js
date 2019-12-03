@@ -585,12 +585,6 @@ Object.defineProperty(exports, "visitInParallel", {
     return _language.visitInParallel;
   }
 });
-Object.defineProperty(exports, "visitWithTypeInfo", {
-  enumerable: true,
-  get: function get() {
-    return _language.visitWithTypeInfo;
-  }
-});
 Object.defineProperty(exports, "getVisitFn", {
   enumerable: true,
   get: function get() {
@@ -1015,6 +1009,12 @@ Object.defineProperty(exports, "TypeInfo", {
   enumerable: true,
   get: function get() {
     return _utilities.TypeInfo;
+  }
+});
+Object.defineProperty(exports, "visitWithTypeInfo", {
+  enumerable: true,
+  get: function get() {
+    return _utilities.visitWithTypeInfo;
   }
 });
 Object.defineProperty(exports, "coerceInputValue", {

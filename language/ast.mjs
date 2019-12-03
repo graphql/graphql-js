@@ -93,5 +93,12 @@ defineToJSON(Token, function () {
   };
 });
 /**
+ * @internal
+ */
+
+export function isNode(maybeNode) {
+  return maybeNode != null && typeof maybeNode.kind === 'string';
+}
+/**
  * The list of all possible AST node types.
  */

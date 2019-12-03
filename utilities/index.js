@@ -111,6 +111,12 @@ Object.defineProperty(exports, "TypeInfo", {
     return _TypeInfo.TypeInfo;
   }
 });
+Object.defineProperty(exports, "visitWithTypeInfo", {
+  enumerable: true,
+  get: function get() {
+    return _TypeInfo.visitWithTypeInfo;
+  }
+});
 Object.defineProperty(exports, "coerceInputValue", {
   enumerable: true,
   get: function get() {
