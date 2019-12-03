@@ -123,6 +123,13 @@ defineToJSON(Token, function() {
 });
 
 /**
+ * @internal
+ */
+export function isNode(maybeNode: mixed): boolean %checks {
+  return maybeNode != null && typeof maybeNode.kind === 'string';
+}
+
+/**
  * The list of all possible AST node types.
  */
 export type ASTNode =

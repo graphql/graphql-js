@@ -20,13 +20,7 @@ export type { ParseOptions } from './parser';
 
 export { print } from './printer';
 
-export {
-  visit,
-  visitInParallel,
-  visitWithTypeInfo,
-  getVisitFn,
-  BREAK,
-} from './visitor';
+export { visit, visitInParallel, getVisitFn, BREAK } from './visitor';
 export type { ASTVisitor, Visitor, VisitFn, VisitorKeyMap } from './visitor';
 
 export type {

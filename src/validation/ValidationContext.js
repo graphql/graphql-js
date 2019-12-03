@@ -5,7 +5,7 @@ import { type ObjMap } from '../jsutils/ObjMap';
 import { type GraphQLError } from '../error/GraphQLError';
 
 import { Kind } from '../language/kinds';
-import { type ASTVisitor, visit, visitWithTypeInfo } from '../language/visitor';
+import { type ASTVisitor, visit } from '../language/visitor';
 import {
   type DocumentNode,
   type OperationDefinitionNode,
@@ -25,7 +25,7 @@ import {
   type GraphQLArgument,
 } from '../type/definition';
 
-import { TypeInfo } from '../utilities/TypeInfo';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 type VariableUsage = {|
