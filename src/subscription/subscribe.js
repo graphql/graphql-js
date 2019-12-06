@@ -1,6 +1,6 @@
 // @flow strict
 
-import { isAsyncIterable } from 'iterall';
+import { isAsyncIterable } from '../jsutils/iterall';
 
 import inspect from '../jsutils/inspect';
 import { addPath, pathToArray } from '../jsutils/Path';

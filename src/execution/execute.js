@@ -1,6 +1,6 @@
 // @flow strict
 
-import { forEach, isCollection } from 'iterall';
+import { forEach, isCollection } from '../jsutils/iterall';
 
 import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';

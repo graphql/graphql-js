@@ -1,6 +1,6 @@
 // @flow strict
 
-import { $$asyncIterator } from 'iterall';
+import { $$asyncIterator } from '../jsutils/iterall';
 
 /**
  * Given an error, returns an AsyncIterable which will fail with that error.

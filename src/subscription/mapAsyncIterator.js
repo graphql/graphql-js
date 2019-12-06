@@ -1,6 +1,6 @@
 // @flow strict
 
-import { $$asyncIterator, getAsyncIterator } from 'iterall';
+import { $$asyncIterator, getAsyncIterator } from '../jsutils/iterall';
 
 import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 

@@ -1,6 +1,6 @@
 // @flow strict
 
-import { forEach, isCollection } from 'iterall';
+import { forEach, isCollection } from '../jsutils/iterall';
 
 import objectValues from '../polyfills/objectValues';
 

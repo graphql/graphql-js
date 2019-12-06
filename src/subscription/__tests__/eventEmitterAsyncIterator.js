@@ -1,7 +1,7 @@
 // @flow strict
 
 import type EventEmitter from 'events';
-import { $$asyncIterator } from 'iterall';
+import { $$asyncIterator } from '../../jsutils/iterall';
 
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
