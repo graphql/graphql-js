@@ -61,11 +61,6 @@ Complete your CLA here: <https://code.facebook.com/cla>
    npm test
    ```
 
-### Live Feedback
-
-While actively developing, we recommend running `npm run watch` in a terminal.
-This will watch the file system run any relevant lint, tests, and type checks automatically whenever you save a `.js` file.
-
 ## Coding Style
 
 This project uses [Prettier](https://prettier.io/) for standard formatting. To
