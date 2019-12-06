@@ -297,6 +297,7 @@ export class GraphQLScalarType {
   extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
+  specifiedByUrl?: Maybe<string>;
 
   constructor(config: Readonly<GraphQLScalarTypeConfig<any, any>>);
 
@@ -306,6 +307,7 @@ export class GraphQLScalarType {
     parseLiteral: GraphQLScalarLiteralParser<any>;
     extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
+    specifiedByUrl: Maybe<string>;
   };
 
   toString(): string;
@@ -336,6 +338,7 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
+  specifiedByUrl?: Maybe<string>;
 }
 
 /**

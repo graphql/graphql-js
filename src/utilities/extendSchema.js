@@ -39,6 +39,8 @@ import {
   type EnumTypeExtensionNode,
   type EnumValueDefinitionNode,
   type DirectiveDefinitionNode,
+  type ScalarTypeDefinitionNode,
+  type ScalarTypeExtensionNode,
 } from '../language/ast';
 
 import { assertValidSDLExtension } from '../validation/validate';
@@ -50,6 +52,7 @@ import { introspectionTypes, isIntrospectionType } from '../type/introspection';
 import {
   GraphQLDirective,
   GraphQLDeprecatedDirective,
+  GraphQLSpecifiedByDirective,
 } from '../type/directives';
 import {
   type GraphQLSchemaValidationOptions,
@@ -324,9 +327,15 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
 
+    const specifiedByUrl = [
+      config.specifiedByUrl,
+      ...extensions.map(getSpecifiedByUrl),
+    ].filter(Boolean)[0];
+
     return new GraphQLScalarType({
       ...config,
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
+      specifiedByUrl,
     });
   }
 
@@ -660,6 +669,7 @@ export function extendSchemaImpl(
           description,
           astNode,
           extensionASTNodes,
+          specifiedByUrl: getSpecifiedByUrl(astNode),
         });
       }
       case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
@@ -698,6 +708,16 @@ function getDeprecationReason(
 ): ?string {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   return (deprecated?.reason: any);
+}
+
+/**
+ * Given a scalar node, returns the string value for the specifiedByUrl.
+ */
+function getSpecifiedByUrl(
+  node: ScalarTypeDefinitionNode | ScalarTypeExtensionNode,
+): ?string {
+  const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
+  return (specifiedBy?.url: any);
 }
 
 /**

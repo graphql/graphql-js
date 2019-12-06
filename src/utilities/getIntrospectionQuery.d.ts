@@ -53,6 +53,7 @@ export interface IntrospectionScalarType {
   readonly kind: 'SCALAR';
   readonly name: string;
   readonly description?: Maybe<string>;
+  readonly specifiedByUrl?: Maybe<string>;
 }
 
 export interface IntrospectionObjectType {

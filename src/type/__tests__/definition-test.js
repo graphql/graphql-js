@@ -49,6 +49,16 @@ describe('Type System: Scalars', () => {
     expect(() => new GraphQLScalarType({ name: 'SomeScalar' })).to.not.throw();
   });
 
+  it('accepts a Scalar type defining specifiedByUrl', () => {
+    expect(
+      () =>
+        new GraphQLScalarType({
+          name: 'SomeScalar',
+          specifiedByUrl: 'https://example.com/foo_spec',
+        }),
+    ).not.to.throw();
+  });
+
   it('accepts a Scalar type defining parseValue and parseLiteral', () => {
     expect(
       () =>
@@ -126,6 +136,19 @@ describe('Type System: Scalars', () => {
         }),
     ).to.throw(
       'SomeScalar must provide both "parseValue" and "parseLiteral" functions.',
+    );
+  });
+
+  it('rejects a Scalar type defining specifiedByUrl with an incorrect type', () => {
+    expect(
+      () =>
+        new GraphQLScalarType({
+          name: 'SomeScalar',
+          // $DisableFlowOnNegativeTest
+          specifiedByUrl: {},
+        }),
+    ).to.throw(
+      'SomeScalar must provide "specifiedByUrl" as a string, but got: {}.',
     );
   });
 });

@@ -63,6 +63,7 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'SCALAR',
@@ -72,6 +73,7 @@ describe('Introspection', () => {
               interfaces: null,
               enumValues: null,
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'SCALAR',
@@ -81,6 +83,7 @@ describe('Introspection', () => {
               interfaces: null,
               enumValues: null,
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
@@ -185,6 +188,7 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
@@ -218,6 +222,17 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'description',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'specifiedByUrl',
                   args: [],
                   type: {
                     kind: 'SCALAR',
@@ -358,6 +373,7 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'ENUM',
@@ -408,6 +424,7 @@ describe('Introspection', () => {
                 },
               ],
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
@@ -508,6 +525,7 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
@@ -570,6 +588,7 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
@@ -632,6 +651,7 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
@@ -729,6 +749,7 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
+              specifiedByUrl: null,
             },
             {
               kind: 'ENUM',
@@ -834,6 +855,7 @@ describe('Introspection', () => {
                 },
               ],
               possibleTypes: null,
+              specifiedByUrl: null,
             },
           ],
           directives: [
@@ -871,6 +893,26 @@ describe('Introspection', () => {
                     ofType: {
                       kind: 'SCALAR',
                       name: 'Boolean',
+                      ofType: null,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              name: 'specifiedBy',
+              isRepeatable: false,
+              locations: ['SCALAR'],
+              args: [
+                {
+                  defaultValue: null,
+                  name: 'url',
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'String',
                       ofType: null,
                     },
                   },

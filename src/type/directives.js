@@ -171,6 +171,21 @@ export const GraphQLSkipDirective = new GraphQLDirective({
 });
 
 /**
+ * Used to provide a URL for specifying the behaviour of custom scalar definitions.
+ */
+export const GraphQLSpecifiedByDirective = new GraphQLDirective({
+  name: 'specifiedBy',
+  description: 'Exposes a URL that specifies the behaviour of this scalar.',
+  locations: [DirectiveLocation.SCALAR],
+  args: {
+    url: {
+      type: GraphQLNonNull(GraphQLString),
+      description: 'The URL that specifies the behaviour of this scalar.',
+    },
+  },
+});
+
+/**
  * Constant string used for default reason for a deprecation.
  */
 export const DEFAULT_DEPRECATION_REASON = 'No longer supported';
@@ -198,6 +213,7 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
 export const specifiedDirectives = Object.freeze([
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+  GraphQLSpecifiedByDirective,
   GraphQLDeprecatedDirective,
 ]);
 

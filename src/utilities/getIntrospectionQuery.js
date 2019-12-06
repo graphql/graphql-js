@@ -58,6 +58,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
       kind
       name
       ${descriptions}
+      specifiedByUrl
       fields(includeDeprecated: true) {
         name
         ${descriptions}
@@ -166,6 +167,7 @@ export type IntrospectionScalarType = {|
   +kind: 'SCALAR',
   +name: string,
   +description?: ?string,
+  +specifiedByUrl: ?string,
 |};
 
 export type IntrospectionObjectType = {|

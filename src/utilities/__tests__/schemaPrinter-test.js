@@ -505,6 +505,19 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Custom Scalar with specifiedByUrl', () => {
+    const FooType = new GraphQLScalarType({
+      name: 'Foo',
+      specifiedByUrl: 'https://example.com/foo_spec',
+    });
+
+    const Schema = new GraphQLSchema({ types: [FooType] });
+    const output = printForTest(Schema);
+    expect(output).to.equal(dedent`
+      scalar Foo @specifiedBy(url: "https://example.com/foo_spec")
+    `);
+  });
+
   it('Enum', () => {
     const RGBType = new GraphQLEnumType({
       name: 'RGB',
@@ -631,6 +644,12 @@ describe('Type System Printer', () => {
         if: Boolean!
       ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
+      """Exposes a URL that specifies the behaviour of this scalar."""
+      directive @specifiedBy(
+        """The URL that specifies the behaviour of this scalar."""
+        url: String!
+      ) on SCALAR
+
       """Marks an element of a GraphQL schema as no longer supported."""
       directive @deprecated(
         """
@@ -668,12 +687,13 @@ describe('Type System Printer', () => {
       """
       The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the \`__TypeKind\` enum.
 
-      Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name and description, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
+      Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional specifiedByUrl, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
       """
       type __Type {
         kind: __TypeKind!
         name: String
         description: String
+        specifiedByUrl: String
         fields(includeDeprecated: Boolean = false): [__Field!]
         interfaces: [__Type!]
         possibleTypes: [__Type!]
@@ -847,6 +867,12 @@ describe('Type System Printer', () => {
         if: Boolean!
       ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
+      # Exposes a URL that specifies the behaviour of this scalar.
+      directive @specifiedBy(
+        # The URL that specifies the behaviour of this scalar.
+        url: String!
+      ) on SCALAR
+
       # Marks an element of a GraphQL schema as no longer supported.
       directive @deprecated(
         # Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).
@@ -875,11 +901,12 @@ describe('Type System Printer', () => {
 
       # The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the \`__TypeKind\` enum.
       #
-      # Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name and description, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
+      # Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional specifiedByUrl, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
       type __Type {
         kind: __TypeKind!
         name: String
         description: String
+        specifiedByUrl: String
         fields(includeDeprecated: Boolean = false): [__Field!]
         interfaces: [__Type!]
         possibleTypes: [__Type!]

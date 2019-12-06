@@ -574,6 +574,7 @@ export class GraphQLScalarType {
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
+  specifiedByUrl: ?string;
 
   constructor(config: $ReadOnly<GraphQLScalarTypeConfig<mixed, mixed>>): void {
     const parseValue = config.parseValue ?? identityFunc;
@@ -586,6 +587,7 @@ export class GraphQLScalarType {
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.specifiedByUrl = config.specifiedByUrl;
 
     devAssert(typeof config.name === 'string', 'Must provide name.');
     devAssert(
@@ -600,6 +602,14 @@ export class GraphQLScalarType {
         `${this.name} must provide both "parseValue" and "parseLiteral" functions.`,
       );
     }
+
+    if (config.specifiedByUrl != null) {
+      devAssert(
+        typeof config.specifiedByUrl === 'string',
+        `${this.name} must provide "specifiedByUrl" as a string, ` +
+          `but got: ${inspect(config.specifiedByUrl)}.`,
+      );
+    }
   }
 
   toConfig(): {|
@@ -609,6 +619,7 @@ export class GraphQLScalarType {
     parseLiteral: GraphQLScalarLiteralParser<mixed>,
     extensions: ?ReadOnlyObjMap<mixed>,
     extensionASTNodes: $ReadOnlyArray<ScalarTypeExtensionNode>,
+    specifiedByUrl: ?string,
   |} {
     return {
       name: this.name,
@@ -619,6 +630,7 @@ export class GraphQLScalarType {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes ?? [],
+      specifiedByUrl: this.specifiedByUrl,
     };
   }
 
@@ -659,6 +671,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?ScalarTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<ScalarTypeExtensionNode>,
+  specifiedByUrl?: ?string,
 |};
 
 /**

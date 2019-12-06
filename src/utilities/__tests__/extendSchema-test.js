@@ -359,6 +359,33 @@ describe('extendSchema', () => {
     expect(printExtensionNodes(someScalar)).to.deep.equal(extensionSDL);
   });
 
+  it('extends scalars by adding specifiedBy directive', () => {
+    const schema = buildSchema(`
+      type Query {
+        foo: Foo
+      }
+
+      scalar Foo
+
+      directive @foo on SCALAR
+    `);
+    const extensionSDL = dedent`
+      extend scalar Foo @foo
+
+      extend scalar Foo @specifiedBy(url: "https://example.com/foo_spec")
+    `;
+
+    const extendedSchema = extendSchema(schema, parse(extensionSDL));
+    const foo = assertScalarType(extendedSchema.getType('Foo'));
+
+    expect(foo.toConfig().specifiedByUrl).to.equal(
+      'https://example.com/foo_spec',
+    );
+
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    expect(printExtensionNodes(foo)).to.deep.equal(extensionSDL);
+  });
+
   it('correctly assign AST nodes to new and extended types', () => {
     const schema = buildSchema(`
       type Query
