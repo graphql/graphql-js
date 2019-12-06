@@ -101,6 +101,7 @@ function buildJSFile(filepath) {
   copyFile(srcPath, destPath + '.flow');
   writeFile(destPath, babelBuild(srcPath, 'cjs'));
   writeFile(destPath.replace(/\.js$/, '.mjs'), babelBuild(srcPath, 'mjs'));
+  writeFile(destPath.replace(/\.js$/, '.es.js'), babelBuild(srcPath, 'esm'));
 }
 
 function buildPackageJSON() {

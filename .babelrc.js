@@ -15,5 +15,27 @@ module.exports = {
     mjs: {
       presets: [['@babel/preset-env', { modules: false }]],
     },
+    esm: {
+      presets: [['@babel/preset-env', { modules: false }]],
+      plugins: [
+        function({ types }) {
+          return {
+            visitor: {
+              ImportDeclaration: function(path, state) {
+                var source = path.node.source.value;
+                if (source.match(/^\.{0,2}\//) && !source.endsWith('.es.js')) {
+                  path.replaceWith(
+                    types.importDeclaration(
+                      path.node.specifiers,
+                      types.stringLiteral(source + '.es.js'),
+                    ),
+                  );
+                }
+              },
+            },
+          };
+        },
+      ],
+    },
   },
 };
