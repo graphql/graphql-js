@@ -10,7 +10,7 @@ node_js:
   - '8'
 
 script: |
-  if [[ "$(node -pe process.version)" == v10.* ]]; then # Is latest LTS?
+  if [[ "$(node -pe process.version)" == v12.* ]]; then # Is latest LTS?
     npm run test:ci &&
     bash <(curl -s https://codecov.io/bash) -f coverage/tests/coverage-final.json
   else
@@ -23,7 +23,7 @@ jobs:
       if: type = push AND branch = master
       script: npm run gitpublish
       skip_cleanup: true
-      node_js: '10'
+      node_js: '12'
 
 notifications:
   irc:
