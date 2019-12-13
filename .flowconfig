@@ -39,4 +39,4 @@ suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)?)\\)
 suppress_comment=\\(.\\|\n\\)*\\$DisableFlowOnNegativeTest
 
 [version]
-^0.112.0
+^0.113.0

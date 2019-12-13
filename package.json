@@ -53,9 +53,9 @@
     "babel-eslint": "10.0.3",
     "chai": "4.2.0",
     "dtslint": "2.0.2",
-    "eslint": "6.7.1",
+    "eslint": "6.7.2",
     "eslint-plugin-flowtype": "4.5.2",
-    "flow-bin": "0.112.0",
+    "flow-bin": "0.113.0",
     "mocha": "6.2.2",
     "nyc": "14.1.1",
     "prettier": "1.19.1"
