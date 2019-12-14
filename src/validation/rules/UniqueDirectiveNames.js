@@ -5,14 +5,6 @@ import { type ASTVisitor } from '../../language/visitor';
 
 import { type SDLValidationContext } from '../ValidationContext';
 
-export function duplicateDirectiveNameMessage(directiveName: string): string {
-  return `There can be only one directive named "${directiveName}".`;
-}
-
-export function existedDirectiveNameMessage(directiveName: string): string {
-  return `Directive "${directiveName}" already exists in the schema. It cannot be redefined.`;
-}
-
 /**
  * Unique directive names
  *

@@ -5,8 +5,6 @@ import { describe, it } from 'mocha';
 
 import invariant from '../../jsutils/invariant';
 
-import { missingFieldArgMessage } from '../../validation/rules/ProvidedRequiredArguments';
-
 import { graphqlSync } from '../../graphql';
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 
@@ -1253,7 +1251,8 @@ describe('Introspection', () => {
     expect(graphqlSync(schema, request)).to.deep.equal({
       errors: [
         {
-          message: missingFieldArgMessage('__type', 'name', 'String!'),
+          message:
+            'Field "__type" argument "name" of type "String!" is required, but it was not provided.',
           locations: [{ line: 3, column: 9 }],
         },
       ],
