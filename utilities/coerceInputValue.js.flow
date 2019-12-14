@@ -46,7 +46,7 @@ function defaultOnError(
 ) {
   let errorPrefix = 'Invalid value ' + inspect(invalidValue);
   if (path.length > 0) {
-    errorPrefix += ` at "value${printPathArray(path)}": `;
+    errorPrefix += ` at "value${printPathArray(path)}"`;
   }
   error.message = errorPrefix + ': ' + error.message;
   throw error;

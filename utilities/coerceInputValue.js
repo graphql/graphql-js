@@ -41,7 +41,7 @@ function defaultOnError(path, invalidValue, error) {
   var errorPrefix = 'Invalid value ' + (0, _inspect.default)(invalidValue);
 
   if (path.length > 0) {
-    errorPrefix += " at \"value".concat((0, _printPathArray.default)(path), "\": ");
+    errorPrefix += " at \"value".concat((0, _printPathArray.default)(path), "\"");
   }
 
   error.message = errorPrefix + ': ' + error.message;

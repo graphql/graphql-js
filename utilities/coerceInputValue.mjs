@@ -22,7 +22,7 @@ function defaultOnError(path, invalidValue, error) {
   var errorPrefix = 'Invalid value ' + inspect(invalidValue);
 
   if (path.length > 0) {
-    errorPrefix += " at \"value".concat(printPathArray(path), "\": ");
+    errorPrefix += " at \"value".concat(printPathArray(path), "\"");
   }
 
   error.message = errorPrefix + ': ' + error.message;
