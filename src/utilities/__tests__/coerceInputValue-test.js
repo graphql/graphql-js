@@ -380,7 +380,7 @@ describe('coerceInputValue', () => {
       expect(() =>
         coerceInputValue([null], GraphQLList(GraphQLNonNull(GraphQLInt))),
       ).to.throw(
-        'Invalid value null at "value[0]": : Expected non-nullable type "Int!" not to be null.',
+        'Invalid value null at "value[0]": Expected non-nullable type "Int!" not to be null.',
       );
     });
   });
