@@ -5,10 +5,6 @@ import { type ASTVisitor } from '../../language/visitor';
 
 import { type ASTValidationContext } from '../ValidationContext';
 
-export function duplicateArgMessage(argName: string): string {
-  return `There can be only one argument named "${argName}".`;
-}
-
 /**
  * Unique argument names
  *

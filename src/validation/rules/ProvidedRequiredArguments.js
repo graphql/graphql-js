@@ -17,22 +17,6 @@ import {
   type SDLValidationContext,
 } from '../ValidationContext';
 
-export function missingFieldArgMessage(
-  fieldName: string,
-  argName: string,
-  type: string,
-): string {
-  return `Field "${fieldName}" argument "${argName}" of type "${type}" is required, but it was not provided.`;
-}
-
-export function missingDirectiveArgMessage(
-  directiveName: string,
-  argName: string,
-  type: string,
-): string {
-  return `Directive "@${directiveName}" argument "${argName}" of type "${type}" is required, but it was not provided.`;
-}
-
 /**
  * Provided required arguments
  *
