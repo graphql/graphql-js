@@ -11,20 +11,6 @@ import { getNamedType, isLeafType } from '../../type/definition';
 
 import { type ValidationContext } from '../ValidationContext';
 
-export function noSubselectionAllowedMessage(
-  fieldName: string,
-  type: string,
-): string {
-  return `Field "${fieldName}" must not have a selection since type "${type}" has no subfields.`;
-}
-
-export function requiredSubselectionMessage(
-  fieldName: string,
-  type: string,
-): string {
-  return `Field "${fieldName}" of type "${type}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`;
-}
-
 /**
  * Scalar leafs
  *

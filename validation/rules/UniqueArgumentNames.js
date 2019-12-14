@@ -3,22 +3,16 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.duplicateArgMessage = duplicateArgMessage;
 exports.UniqueArgumentNames = UniqueArgumentNames;
 
 var _GraphQLError = require("../../error/GraphQLError");
 
-function duplicateArgMessage(argName) {
-  return "There can be only one argument named \"".concat(argName, "\".");
-}
 /**
  * Unique argument names
  *
  * A GraphQL field or directive is only valid if all supplied arguments are
  * uniquely named.
  */
-
-
 function UniqueArgumentNames(context) {
   var knownArgNames = Object.create(null);
   return {

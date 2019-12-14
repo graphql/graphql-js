@@ -1,16 +1,10 @@
 import { GraphQLError } from '../../error/GraphQLError';
-export function duplicateDirectiveNameMessage(directiveName) {
-  return "There can be only one directive named \"".concat(directiveName, "\".");
-}
-export function existedDirectiveNameMessage(directiveName) {
-  return "Directive \"".concat(directiveName, "\" already exists in the schema. It cannot be redefined.");
-}
+
 /**
  * Unique directive names
  *
  * A GraphQL document is only valid if all defined directives have unique names.
  */
-
 export function UniqueDirectiveNames(context) {
   var knownDirectiveNames = Object.create(null);
   var schema = context.getSchema();

@@ -1,14 +1,11 @@
 import { GraphQLError } from '../../error/GraphQLError';
-export function duplicateArgMessage(argName) {
-  return "There can be only one argument named \"".concat(argName, "\".");
-}
+
 /**
  * Unique argument names
  *
  * A GraphQL field or directive is only valid if all supplied arguments are
  * uniquely named.
  */
-
 export function UniqueArgumentNames(context) {
   var knownArgNames = Object.create(null);
   return {

@@ -3,8 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.missingFieldArgMessage = missingFieldArgMessage;
-exports.missingDirectiveArgMessage = missingDirectiveArgMessage;
 exports.ProvidedRequiredArguments = ProvidedRequiredArguments;
 exports.ProvidedRequiredArgumentsOnDirectives = ProvidedRequiredArgumentsOnDirectives;
 
@@ -30,21 +28,12 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function missingFieldArgMessage(fieldName, argName, type) {
-  return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type \"").concat(type, "\" is required, but it was not provided.");
-}
-
-function missingDirectiveArgMessage(directiveName, argName, type) {
-  return "Directive \"@".concat(directiveName, "\" argument \"").concat(argName, "\" of type \"").concat(type, "\" is required, but it was not provided.");
-}
 /**
  * Provided required arguments
  *
  * A field or directive is only valid if all required (non-null without a
  * default value) field arguments have been provided.
  */
-
-
 function ProvidedRequiredArguments(context) {
   return _objectSpread({}, ProvidedRequiredArgumentsOnDirectives(context), {
     Field: {

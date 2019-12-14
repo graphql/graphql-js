@@ -11,19 +11,13 @@ import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import { specifiedDirectives } from '../../type/directives';
 import { isType, isRequiredArgument } from '../../type/definition';
-export function missingFieldArgMessage(fieldName, argName, type) {
-  return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type \"").concat(type, "\" is required, but it was not provided.");
-}
-export function missingDirectiveArgMessage(directiveName, argName, type) {
-  return "Directive \"@".concat(directiveName, "\" argument \"").concat(argName, "\" of type \"").concat(type, "\" is required, but it was not provided.");
-}
+
 /**
  * Provided required arguments
  *
  * A field or directive is only valid if all required (non-null without a
  * default value) field arguments have been provided.
  */
-
 export function ProvidedRequiredArguments(context) {
   return _objectSpread({}, ProvidedRequiredArgumentsOnDirectives(context), {
     Field: {
