@@ -102,23 +102,25 @@ const schema = new GraphQLSchema({
 
 describe('Execute: Handles mutation execution ordering', () => {
   it('evaluates mutations serially', async () => {
-    const doc = `mutation M {
-      first: immediatelyChangeTheNumber(newNumber: 1) {
-        theNumber
-      },
-      second: promiseToChangeTheNumber(newNumber: 2) {
-        theNumber
-      },
-      third: immediatelyChangeTheNumber(newNumber: 3) {
-        theNumber
+    const doc = `
+      mutation M {
+        first: immediatelyChangeTheNumber(newNumber: 1) {
+          theNumber
+        },
+        second: promiseToChangeTheNumber(newNumber: 2) {
+          theNumber
+        },
+        third: immediatelyChangeTheNumber(newNumber: 3) {
+          theNumber
+        }
+        fourth: promiseToChangeTheNumber(newNumber: 4) {
+          theNumber
+        },
+        fifth: immediatelyChangeTheNumber(newNumber: 5) {
+          theNumber
+        }
       }
-      fourth: promiseToChangeTheNumber(newNumber: 4) {
-        theNumber
-      },
-      fifth: immediatelyChangeTheNumber(newNumber: 5) {
-        theNumber
-      }
-    }`;
+    `;
 
     const mutationResult = await execute(schema, parse(doc), new Root(6));
 
@@ -134,26 +136,28 @@ describe('Execute: Handles mutation execution ordering', () => {
   });
 
   it('evaluates mutations correctly in the presence of a failed mutation', async () => {
-    const doc = `mutation M {
-      first: immediatelyChangeTheNumber(newNumber: 1) {
-        theNumber
-      },
-      second: promiseToChangeTheNumber(newNumber: 2) {
-        theNumber
-      },
-      third: failToChangeTheNumber(newNumber: 3) {
-        theNumber
+    const doc = `
+      mutation M {
+        first: immediatelyChangeTheNumber(newNumber: 1) {
+          theNumber
+        },
+        second: promiseToChangeTheNumber(newNumber: 2) {
+          theNumber
+        },
+        third: failToChangeTheNumber(newNumber: 3) {
+          theNumber
+        }
+        fourth: promiseToChangeTheNumber(newNumber: 4) {
+          theNumber
+        },
+        fifth: immediatelyChangeTheNumber(newNumber: 5) {
+          theNumber
+        }
+        sixth: promiseAndFailToChangeTheNumber(newNumber: 6) {
+          theNumber
+        }
       }
-      fourth: promiseToChangeTheNumber(newNumber: 4) {
-        theNumber
-      },
-      fifth: immediatelyChangeTheNumber(newNumber: 5) {
-        theNumber
-      }
-      sixth: promiseAndFailToChangeTheNumber(newNumber: 6) {
-        theNumber
-      }
-    }`;
+    `;
 
     const result = await execute(schema, parse(doc), new Root(6));
 
@@ -169,12 +173,12 @@ describe('Execute: Handles mutation execution ordering', () => {
       errors: [
         {
           message: 'Cannot change the number',
-          locations: [{ line: 8, column: 7 }],
+          locations: [{ line: 9, column: 9 }],
           path: ['third'],
         },
         {
           message: 'Cannot change the number',
-          locations: [{ line: 17, column: 7 }],
+          locations: [{ line: 18, column: 9 }],
           path: ['sixth'],
         },
       ],

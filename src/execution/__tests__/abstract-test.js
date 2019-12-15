@@ -86,17 +86,19 @@ describe('Execute: Handles execution of abstract types', () => {
       types: [CatType, DogType],
     });
 
-    const query = `{
-      pets {
-        name
-        ... on Dog {
-          woofs
-        }
-        ... on Cat {
-          meows
+    const query = `
+      {
+        pets {
+          name
+          ... on Dog {
+            woofs
+          }
+          ... on Cat {
+            meows
+          }
         }
       }
-    }`;
+    `;
 
     const result = graphqlSync(schema, query);
 
@@ -246,17 +248,19 @@ describe('Execute: Handles execution of abstract types', () => {
       types: [CatType, DogType],
     });
 
-    const query = `{
-      pets {
-        name
-        ... on Dog {
-          woofs
-        }
-        ... on Cat {
-          meows
+    const query = `
+      {
+        pets {
+          name
+          ... on Dog {
+            woofs
+          }
+          ... on Cat {
+            meows
+          }
         }
       }
-    }`;
+    `;
 
     const result = graphqlSync(schema, query);
 
@@ -278,7 +282,7 @@ describe('Execute: Handles execution of abstract types', () => {
         {
           message:
             'Runtime Object type "Human" is not a possible type for "Pet".',
-          locations: [{ line: 2, column: 7 }],
+          locations: [{ line: 3, column: 9 }],
           path: ['pets', 2],
         },
       ],
@@ -341,18 +345,20 @@ describe('Execute: Handles execution of abstract types', () => {
       }),
     });
 
-    const query = `{
-      pets {
-        ... on Dog {
-          name
-          woofs
-        }
-        ... on Cat {
-          name
-          meows
+    const query = `
+      {
+        pets {
+          ... on Dog {
+            name
+            woofs
+          }
+          ... on Cat {
+            name
+            meows
+          }
         }
       }
-    }`;
+    `;
 
     const result = graphqlSync(schema, query);
 
@@ -374,7 +380,7 @@ describe('Execute: Handles execution of abstract types', () => {
         {
           message:
             'Runtime Object type "Human" is not a possible type for "Pet".',
-          locations: [{ line: 2, column: 7 }],
+          locations: [{ line: 3, column: 9 }],
           path: ['pets', 2],
         },
       ],
@@ -469,17 +475,19 @@ describe('Execute: Handles execution of abstract types', () => {
       types: [CatType, DogType],
     });
 
-    const query = `{
-      pets {
-        name
-        ... on Dog {
-          woofs
-        }
-        ... on Cat {
-          meows
+    const query = `
+      {
+        pets {
+          name
+          ... on Dog {
+            woofs
+          }
+          ... on Cat {
+            meows
+          }
         }
       }
-    }`;
+    `;
 
     const result = graphqlSync(schema, query);
 

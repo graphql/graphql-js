@@ -295,9 +295,11 @@ describe('Execute: Handles inputs', () => {
 
       it('does not use default value when provided', () => {
         const result = executeQuery(
-          `query q($input: String = "Default value") {
-            fieldWithNullableStringInput(input: $input)
-          }`,
+          `
+            query q($input: String = "Default value") {
+              fieldWithNullableStringInput(input: $input)
+            }
+          `,
           { input: 'Variable value' },
         );
 
