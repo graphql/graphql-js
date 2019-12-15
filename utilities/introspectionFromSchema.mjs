@@ -14,8 +14,11 @@ import { getIntrospectionQuery } from './getIntrospectionQuery';
  */
 
 export function introspectionFromSchema(schema, options) {
-  var queryAST = parse(getIntrospectionQuery(options));
-  var result = execute(schema, queryAST);
+  var document = parse(getIntrospectionQuery(options));
+  var result = execute({
+    schema: schema,
+    document: document
+  });
 
   /* istanbul ignore next */
   !isPromise(result) && !result.errors && result.data || invariant(0);

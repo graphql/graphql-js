@@ -53,7 +53,15 @@ function subscribeImpl(args) {
   // "ExecuteQuery" algorithm, for which `execute` is also used.
 
   var mapSourceToResponse = function mapSourceToResponse(payload) {
-    return execute(schema, document, payload, contextValue, variableValues, operationName, fieldResolver);
+    return execute({
+      schema: schema,
+      document: document,
+      rootValue: payload,
+      contextValue: contextValue,
+      variableValues: variableValues,
+      operationName: operationName,
+      fieldResolver: fieldResolver
+    });
   }; // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
 
