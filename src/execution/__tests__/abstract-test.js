@@ -100,7 +100,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    const result = graphqlSync(schema, query);
+    const result = graphqlSync({ schema, source: query });
 
     expect(result).to.deep.equal({
       data: {
@@ -169,7 +169,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     }`;
 
-    const result = graphqlSync(schema, query);
+    const result = graphqlSync({ schema, source: query });
 
     expect(result).to.deep.equal({
       data: {
@@ -262,7 +262,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    const result = graphqlSync(schema, query);
+    const result = graphqlSync({ schema, source: query });
 
     expect(result).to.deep.equal({
       data: {
@@ -360,7 +360,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    const result = graphqlSync(schema, query);
+    const result = graphqlSync({ schema, source: query });
 
     expect(result).to.deep.equal({
       data: {
@@ -416,7 +416,7 @@ describe('Execute: Handles execution of abstract types', () => {
       types: [fooObject],
     });
 
-    const result = graphqlSync(schema, '{ foo { bar } }');
+    const result = graphqlSync({ schema, source: '{ foo { bar } }' });
 
     expect(result).to.deep.equal({
       data: { foo: null },
@@ -489,7 +489,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    const result = graphqlSync(schema, query);
+    const result = graphqlSync({ schema, source: query });
 
     expect(result).to.deep.equal({
       data: {

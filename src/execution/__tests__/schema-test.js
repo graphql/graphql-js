@@ -114,7 +114,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       };
     }
 
-    const request = `
+    const document = parse(`
       {
         feed {
           id,
@@ -146,11 +146,11 @@ describe('Execute: Handles execution with a complex schema', () => {
         hidden,
         notdefined
       }
-    `;
+    `);
 
     // Note: this is intentionally not validating to ensure appropriate
     // behavior occurs when executing an invalid query.
-    expect(execute(BlogSchema, parse(request))).to.deep.equal({
+    expect(execute({ schema: BlogSchema, document })).to.deep.equal({
       data: {
         feed: [
           { id: '1', title: 'My Article 1' },

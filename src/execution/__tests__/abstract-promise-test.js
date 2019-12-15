@@ -86,7 +86,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       types: [CatType, DogType],
     });
 
-    const query = `
+    const source = `
       {
         pets {
           name
@@ -100,8 +100,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       }
     `;
 
-    const result = await graphql(schema, query);
-
+    const result = await graphql({ schema, source });
     expect(result).to.deep.equal({
       data: {
         pets: [
@@ -161,7 +160,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       types: [CatType, DogType],
     });
 
-    const query = `
+    const source = `
       {
         pets {
           name
@@ -175,8 +174,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       }
     `;
 
-    const result = await graphql(schema, query);
-
+    const result = await graphql({ schema, source });
     expect(result).to.deep.equal({
       data: {
         pets: [null, null],
@@ -234,7 +232,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       }),
     });
 
-    const query = `
+    const source = `
       {
         pets {
           ... on Dog {
@@ -249,8 +247,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       }
     `;
 
-    const result = await graphql(schema, query);
-
+    const result = await graphql({ schema, source });
     expect(result).to.deep.equal({
       data: {
         pets: [
@@ -330,7 +327,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       types: [CatType, DogType],
     });
 
-    const query = `
+    const source = `
       {
         pets {
           name
@@ -344,8 +341,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       }
     `;
 
-    const result = await graphql(schema, query);
-
+    const result = await graphql({ schema, source });
     expect(result).to.deep.equal({
       data: {
         pets: [
@@ -429,7 +425,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       }),
     });
 
-    const query = `
+    const source = `
       {
         pets {
           ... on Dog {
@@ -444,8 +440,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       }
     `;
 
-    const result = await graphql(schema, query);
-
+    const result = await graphql({ schema, source });
     expect(result).to.deep.equal({
       data: {
         pets: [
@@ -517,7 +512,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       types: [CatType, DogType],
     });
 
-    const query = `
+    const source = `
       {
         pets {
           name
@@ -531,8 +526,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       }
     `;
 
-    const result = await graphql(schema, query);
-
+    const result = await graphql({ schema, source });
     expect(result).to.deep.equal({
       data: {
         pets: [
@@ -591,7 +585,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       types: [CatType, DogType],
     });
 
-    const query = `
+    const source = `
       {
         pets {
           name
@@ -605,8 +599,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
       }
     `;
 
-    const result = await graphql(schema, query);
-
+    const result = await graphql({ schema, source });
     expect(result).to.deep.equal({
       data: {
         pets: [null, null],

@@ -137,8 +137,10 @@ describe('extendSchema', () => {
       }
     `);
 
-    const result = graphqlSync(extendedSchema, '{ newField }', {
-      newField: 123,
+    const result = graphqlSync({
+      schema: extendedSchema,
+      source: '{ newField }',
+      rootValue: { newField: 123 },
     });
     expect(result).to.deep.equal({
       data: { newField: '123' },

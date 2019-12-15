@@ -8,11 +8,11 @@ import { getIntrospectionQuery } from '../getIntrospectionQuery';
 
 import { bigSchemaSDL } from '../../__fixtures__';
 
-const queryAST = parse(getIntrospectionQuery());
 const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
+const document = parse(getIntrospectionQuery());
 
 export const name = 'Execute Introspection Query';
 export const count = 10;
 export function measure() {
-  execute(schema, queryAST);
+  execute({ schema, document });
 }
