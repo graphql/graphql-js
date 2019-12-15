@@ -26,8 +26,8 @@ export function introspectionFromSchema(
   schema: GraphQLSchema,
   options?: IntrospectionOptions,
 ): IntrospectionQuery {
-  const queryAST = parse(getIntrospectionQuery(options));
-  const result = execute(schema, queryAST);
+  const document = parse(getIntrospectionQuery(options));
+  const result = execute({ schema, document });
   invariant(!isPromise(result) && !result.errors && result.data);
   return (result.data: any);
 }

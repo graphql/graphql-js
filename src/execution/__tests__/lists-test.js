@@ -39,11 +39,11 @@ function check(testType, testData, expected) {
       }),
     });
 
-    const schema = new GraphQLSchema({ query: dataType });
-
-    const ast = parse('{ nest { test } }');
-
-    const response = await execute(schema, ast, data);
+    const response = await execute({
+      schema: new GraphQLSchema({ query: dataType }),
+      document: parse('{ nest { test } }'),
+      contextValue: { test: testData },
+    });
     expect(response).to.deep.equal(expected);
   };
 }

@@ -19,7 +19,7 @@ import {
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {
-    const EmptySchema = new GraphQLSchema({
+    const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'QueryRoot',
         fields: {
@@ -27,9 +27,9 @@ describe('Introspection', () => {
         },
       }),
     });
-    const query = getIntrospectionQuery({ descriptions: false });
-    const result = graphqlSync(EmptySchema, query);
+    const source = getIntrospectionQuery({ descriptions: false });
 
+    const result = graphqlSync({ schema, source });
     expect(result).to.deep.equal({
       data: {
         __schema: {
@@ -887,7 +887,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: TestType });
-    const request = `
+    const source = `
       {
         __type(name: "TestInputObject") {
           kind
@@ -918,7 +918,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
           kind: 'INPUT_OBJECT',
@@ -972,7 +972,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: TestType });
-    const request = `
+    const source = `
       {
         __type(name: "TestType") {
           name
@@ -980,7 +980,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
           name: 'TestType',
@@ -1004,7 +1004,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: TestType });
-    const request = `
+    const source = `
       {
         __type(name: "TestType") {
           name
@@ -1017,7 +1017,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
           name: 'TestType',
@@ -1053,7 +1053,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: TestType });
-    const request = `
+    const source = `
       {
         __type(name: "TestType") {
           name
@@ -1070,7 +1070,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
           name: 'TestType',
@@ -1117,7 +1117,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: TestType });
-    const request = `
+    const source = `
       {
         __type(name: "TestEnum") {
           name
@@ -1130,7 +1130,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
           name: 'TestEnum',
@@ -1176,7 +1176,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: TestType });
-    const request = `
+    const source = `
       {
         __type(name: "TestEnum") {
           name
@@ -1193,7 +1193,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
           name: 'TestEnum',
@@ -1240,7 +1240,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: TestType });
-    const request = `
+    const source = `
       {
         __type {
           name
@@ -1248,7 +1248,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync({ schema, source })).to.deep.equal({
       errors: [
         {
           message:
@@ -1268,7 +1268,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: QueryRoot });
-    const request = `
+    const source = `
       {
         schemaType: __type(name: "__Schema") {
           name,
@@ -1281,7 +1281,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         schemaType: {
           name: '__Schema',
@@ -1325,7 +1325,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: QueryRoot });
-    const request = `
+    const source = `
       {
         typeKindType: __type(name: "__TypeKind") {
           name,
@@ -1338,7 +1338,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         typeKindType: {
           name: '__TypeKind',

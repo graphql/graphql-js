@@ -155,7 +155,7 @@ const john = new Person('John', [garfield, odie], [liz, odie]);
 
 describe('Execute: Union and intersection types', () => {
   it('can introspect on union and intersection types', () => {
-    const ast = parse(`
+    const document = parse(`
       {
         Named: __type(name: "Named") {
           kind
@@ -187,7 +187,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute(schema, ast)).to.deep.equal({
+    expect(execute({ schema, document })).to.deep.equal({
       data: {
         Named: {
           kind: 'INTERFACE',
@@ -222,7 +222,7 @@ describe('Execute: Union and intersection types', () => {
 
   it('executes using union types', () => {
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
-    const ast = parse(`
+    const document = parse(`
       {
         __typename
         name
@@ -235,7 +235,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -257,7 +257,7 @@ describe('Execute: Union and intersection types', () => {
 
   it('executes union types with inline fragments', () => {
     // This is the valid version of the query in the above test.
-    const ast = parse(`
+    const document = parse(`
       {
         __typename
         name
@@ -275,7 +275,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -297,7 +297,7 @@ describe('Execute: Union and intersection types', () => {
 
   it('executes using interface types', () => {
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
-    const ast = parse(`
+    const document = parse(`
       {
         __typename
         name
@@ -310,7 +310,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -324,7 +324,7 @@ describe('Execute: Union and intersection types', () => {
 
   it('executes interface types with inline fragments', () => {
     // This is the valid version of the query in the above test.
-    const ast = parse(`
+    const document = parse(`
       {
         __typename
         name
@@ -355,7 +355,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -377,7 +377,7 @@ describe('Execute: Union and intersection types', () => {
   });
 
   it('allows fragment conditions to be abstract types', () => {
-    const ast = parse(`
+    const document = parse(`
       {
         __typename
         name
@@ -422,7 +422,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -465,10 +465,10 @@ describe('Execute: Union and intersection types', () => {
       fields: {
         name: { type: GraphQLString },
       },
-      resolveType(_source, context, { schema: _schema, rootValue }) {
+      resolveType(_source, context, info) {
         encounteredContext = context;
-        encounteredSchema = _schema;
-        encounteredRootValue = rootValue;
+        encounteredSchema = info.schema;
+        encounteredRootValue = info.rootValue;
         return PersonType2;
       },
     });
@@ -481,23 +481,26 @@ describe('Execute: Union and intersection types', () => {
         friends: { type: GraphQLList(NamedType2) },
       },
     });
+    const schema2 = new GraphQLSchema({ query: PersonType2 });
+    const document = parse('{ name, friends { name } }');
+    const rootValue = new Person('John', [], [liz]);
+    const contextValue = { authToken: '123abc' };
 
-    const schema2 = new GraphQLSchema({
-      query: PersonType2,
+    const result = execute({
+      schema: schema2,
+      document,
+      rootValue,
+      contextValue,
+    });
+    expect(result).to.deep.equal({
+      data: {
+        name: 'John',
+        friends: [{ name: 'Liz' }],
+      },
     });
 
-    const john2 = new Person('John', [], [liz]);
-
-    const context = { authToken: '123abc' };
-
-    const ast = parse('{ name, friends { name } }');
-
-    expect(execute(schema2, ast, john2, context)).to.deep.equal({
-      data: { name: 'John', friends: [{ name: 'Liz' }] },
-    });
-
-    expect(encounteredContext).to.equal(context);
     expect(encounteredSchema).to.equal(schema2);
-    expect(encounteredRootValue).to.equal(john2);
+    expect(encounteredRootValue).to.equal(rootValue);
+    expect(encounteredContext).to.equal(contextValue);
   });
 });

@@ -144,15 +144,15 @@ function subscribeImpl(
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   const mapSourceToResponse = payload =>
-    execute(
+    execute({
       schema,
       document,
-      payload,
+      rootValue: payload,
       contextValue,
       variableValues,
       operationName,
       fieldResolver,
-    );
+    });
 
   // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.

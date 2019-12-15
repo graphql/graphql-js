@@ -65,7 +65,11 @@ describe('Schema Builder', () => {
       `),
     );
 
-    const result = graphqlSync(schema, '{ str }', { str: 123 });
+    const result = graphqlSync({
+      schema,
+      source: '{ str }',
+      rootValue: { str: 123 },
+    });
     expect(result.data).to.deep.equal({ str: '123' });
   });
 
@@ -76,10 +80,11 @@ describe('Schema Builder', () => {
       }
     `);
 
-    const root = {
+    const source = '{ add(x: 34, y: 55) }';
+    const rootValue = {
       add: ({ x, y }) => x + y,
     };
-    expect(graphqlSync(schema, '{ add(x: 34, y: 55) }', root)).to.deep.equal({
+    expect(graphqlSync({ schema, source, rootValue })).to.deep.equal({
       data: { add: 89 },
     });
   });
@@ -445,7 +450,7 @@ describe('Schema Builder', () => {
       }
     `);
 
-    const query = `
+    const source = `
       {
         fruits {
           ... on Apple {
@@ -458,7 +463,7 @@ describe('Schema Builder', () => {
       }
     `;
 
-    const root = {
+    const rootValue = {
       fruits: [
         {
           color: 'green',
@@ -471,7 +476,7 @@ describe('Schema Builder', () => {
       ],
     };
 
-    expect(graphqlSync(schema, query, root)).to.deep.equal({
+    expect(graphqlSync({ schema, source, rootValue })).to.deep.equal({
       data: {
         fruits: [
           {
@@ -506,7 +511,7 @@ describe('Schema Builder', () => {
       }
     `);
 
-    const query = `
+    const source = `
       {
         characters {
           name
@@ -520,7 +525,7 @@ describe('Schema Builder', () => {
       }
     `;
 
-    const root = {
+    const rootValue = {
       characters: [
         {
           name: 'Han Solo',
@@ -535,7 +540,7 @@ describe('Schema Builder', () => {
       ],
     };
 
-    expect(graphqlSync(schema, query, root)).to.deep.equal({
+    expect(graphqlSync({ schema, source, rootValue })).to.deep.equal({
       data: {
         characters: [
           {

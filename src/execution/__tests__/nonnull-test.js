@@ -106,7 +106,7 @@ const schema = buildSchema(`
 `);
 
 function executeQuery(query, rootValue) {
-  return execute(schema, parse(query), rootValue);
+  return execute({ schema, document: parse(query), rootValue });
 }
 
 // avoids also doing any nests

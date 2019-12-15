@@ -22,13 +22,13 @@ describe('Execute: resolve function', () => {
   }
 
   it('default function accesses properties', () => {
-    const schema = testSchema({ type: GraphQLString });
+    const result = graphqlSync({
+      schema: testSchema({ type: GraphQLString }),
+      source: '{ test }',
+      rootValue: { test: 'testValue' },
+    });
 
-    const source = {
-      test: 'testValue',
-    };
-
-    expect(graphqlSync(schema, '{ test }', source)).to.deep.equal({
+    expect(result).to.deep.equal({
       data: {
         test: 'testValue',
       },
@@ -36,16 +36,19 @@ describe('Execute: resolve function', () => {
   });
 
   it('default function calls methods', () => {
-    const schema = testSchema({ type: GraphQLString });
-
-    const source = {
+    const rootValue = {
       _secret: 'secretValue',
       test() {
         return this._secret;
       },
     };
 
-    expect(graphqlSync(schema, '{ test }', source)).to.deep.equal({
+    const result = graphqlSync({
+      schema: testSchema({ type: GraphQLString }),
+      source: '{ test }',
+      rootValue,
+    });
+    expect(result).to.deep.equal({
       data: {
         test: 'secretValue',
       },
@@ -53,13 +56,6 @@ describe('Execute: resolve function', () => {
   });
 
   it('default function passes args and context', () => {
-    const schema = testSchema({
-      type: GraphQLInt,
-      args: {
-        addend1: { type: GraphQLInt },
-      },
-    });
-
     class Adder {
       _num: number;
 
@@ -71,14 +67,20 @@ describe('Execute: resolve function', () => {
         return this._num + addend1 + context.addend2;
       }
     }
-    const source = new Adder(700);
+    const rootValue = new Adder(700);
 
-    expect(
-      graphqlSync(schema, '{ test(addend1: 80) }', source, { addend2: 9 }),
-    ).to.deep.equal({
-      data: {
-        test: 789,
+    const schema = testSchema({
+      type: GraphQLInt,
+      args: {
+        addend1: { type: GraphQLInt },
       },
+    });
+    const contextValue = { addend2: 9 };
+    const source = '{ test(addend1: 80) }';
+
+    const result = graphqlSync({ schema, source, rootValue, contextValue });
+    expect(result).to.deep.equal({
+      data: { test: 789 },
     });
   });
 
@@ -89,33 +91,33 @@ describe('Execute: resolve function', () => {
         aStr: { type: GraphQLString },
         aInt: { type: GraphQLInt },
       },
-      resolve(source, args) {
-        return JSON.stringify([source, args]);
-      },
+      resolve: (source, args) => JSON.stringify([source, args]),
     });
 
-    expect(graphqlSync(schema, '{ test }')).to.deep.equal({
+    function execute(source, rootValue, contextValue) {
+      return graphqlSync({ schema, source, rootValue, contextValue });
+    }
+
+    expect(execute('{ test }')).to.deep.equal({
       data: {
         test: '[null,{}]',
       },
     });
 
-    expect(graphqlSync(schema, '{ test }', 'Source!')).to.deep.equal({
+    expect(execute('{ test }', 'Source!')).to.deep.equal({
       data: {
         test: '["Source!",{}]',
       },
     });
 
-    expect(
-      graphqlSync(schema, '{ test(aStr: "String!") }', 'Source!'),
-    ).to.deep.equal({
+    expect(execute('{ test(aStr: "String!") }', 'Source!')).to.deep.equal({
       data: {
         test: '["Source!",{"aStr":"String!"}]',
       },
     });
 
     expect(
-      graphqlSync(schema, '{ test(aInt: -123, aStr: "String!") }', 'Source!'),
+      execute('{ test(aInt: -123, aStr: "String!") }', 'Source!'),
     ).to.deep.equal({
       data: {
         test: '["Source!",{"aStr":"String!","aInt":-123}]',
