@@ -5,6 +5,7 @@ cache: yarn
 
 # https://github.com/nodejs/Release
 node_js:
+  - '13'
   - '12'
   - '10'
 
