@@ -282,10 +282,7 @@ function matchBenchmarks(patterns) {
   }
 
   if (benchmarks.length === 0) {
-    console.warn(
-      'No benchmarks matching: ' +
-        `\u001b[1m${patterns.join('\u001b[0m or \u001b[1m')}\u001b[0m`,
-    );
+    console.warn('No benchmarks matching: ' + patterns.map(bold).join(''));
   }
 
   return benchmarks;
@@ -312,10 +309,14 @@ function getArguments(argv) {
   }
   if (assumeArgs) {
     console.warn(
-      `Assuming you meant: \u001b[1mbenchmark ${assumeArgs.join(' ')}\u001b[0m`,
+      'Assuming you meant: ' + bold('benchmark ' + assumeArgs.join(' ')),
     );
   }
   return { benchmarkPatterns, revisions };
+}
+
+function bold(str) {
+  return '\u001b[1m' + str + '\u001b[0m';
 }
 
 // Get the revisions and make things happen!
