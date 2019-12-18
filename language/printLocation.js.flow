@@ -73,7 +73,8 @@ function printPrefixedLines(lines: $ReadOnlyArray<[string, string]>): string {
   const padLen = Math.max(...existingLines.map(([prefix]) => prefix.length));
   return existingLines
     .map(
-      ([prefix, line]) => lpad(padLen, prefix) + (line ? ' | ' + line : ' |'),
+      ([prefix, line]) =>
+        leftPad(padLen, prefix) + (line ? ' | ' + line : ' |'),
     )
     .join('\n');
 }
@@ -82,6 +83,6 @@ function whitespace(len: number): string {
   return Array(len + 1).join(' ');
 }
 
-function lpad(len: number, str: string): string {
+function leftPad(len: number, str: string): string {
   return whitespace(len - str.length) + str;
 }

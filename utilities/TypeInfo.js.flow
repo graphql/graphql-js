@@ -61,7 +61,7 @@ export class TypeInfo {
   constructor(
     schema: GraphQLSchema,
     // NOTE: this experimental optional second parameter is only needed in order
-    // to support non-spec-compliant codebases. You should never need to use it.
+    // to support non-spec-compliant code bases. You should never need to use it.
     // It may disappear in the future.
     getFieldDefFn?: typeof getFieldDef,
     // Initial type may be provided in rare cases to facilitate traversals

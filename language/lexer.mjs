@@ -51,7 +51,7 @@ function () {
   }
   /**
    * Looks ahead and returns the next non-ignored token, but does not change
-   * the Lexer's state.
+   * the state of Lexer.
    */
   ;
 

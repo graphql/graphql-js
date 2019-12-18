@@ -188,7 +188,7 @@ function buildClientSchema(introspection, options) {
   }
 
   function buildImplementationsList(implementingIntrospection) {
-    // TODO: Temprorary workaround until GraphQL ecosystem will fully support
+    // TODO: Temporary workaround until GraphQL ecosystem will fully support
     // 'interfaces' on interface types.
     if (implementingIntrospection.interfaces === null && implementingIntrospection.kind === _introspection.TypeKind.INTERFACE) {
       return [];

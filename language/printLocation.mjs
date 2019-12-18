@@ -53,7 +53,7 @@ function printPrefixedLines(lines) {
   return existingLines.map(function (_ref3) {
     var prefix = _ref3[0],
         line = _ref3[1];
-    return lpad(padLen, prefix) + (line ? ' | ' + line : ' |');
+    return leftPad(padLen, prefix) + (line ? ' | ' + line : ' |');
   }).join('\n');
 }
 
@@ -61,6 +61,6 @@ function whitespace(len) {
   return Array(len + 1).join(' ');
 }
 
-function lpad(len, str) {
+function leftPad(len, str) {
   return whitespace(len - str.length) + str;
 }
