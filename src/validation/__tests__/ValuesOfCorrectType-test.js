@@ -1044,7 +1044,7 @@ describe('Validate: Values of correct type', () => {
         query InvalidDefaultValues(
           $a: Int = "one",
           $b: String = 4,
-          $c: ComplexInput = "notverycomplex"
+          $c: ComplexInput = "NotVeryComplex"
         ) {
           dog { name }
         }
@@ -1059,7 +1059,7 @@ describe('Validate: Values of correct type', () => {
         },
         {
           message:
-            'Expected value of type "ComplexInput", found "notverycomplex".',
+            'Expected value of type "ComplexInput", found "NotVeryComplex".',
           locations: [{ line: 5, column: 30 }],
         },
       ]);

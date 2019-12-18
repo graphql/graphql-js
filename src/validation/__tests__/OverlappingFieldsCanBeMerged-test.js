@@ -896,7 +896,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       );
     });
 
-    it('allows inline typeless fragments', () => {
+    it('allows inline fragments without type condition', () => {
       expectValidWithSchema(
         schema,
         `

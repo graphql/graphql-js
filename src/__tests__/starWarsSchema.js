@@ -27,7 +27,7 @@ import { getFriends, getHero, getHuman, getDroid } from './starWarsData';
  * Using our shorthand to describe type systems, the type system for our
  * Star Wars example is:
  *
- * enum Episode { NEWHOPE, EMPIRE, JEDI }
+ * enum Episode { NEW_HOPE, EMPIRE, JEDI }
  *
  * interface Character {
  *   id: String!
@@ -65,13 +65,13 @@ import { getFriends, getHero, getHuman, getDroid } from './starWarsData';
  * The original trilogy consists of three movies.
  *
  * This implements the following type system shorthand:
- *   enum Episode { NEWHOPE, EMPIRE, JEDI }
+ *   enum Episode { NEW_HOPE, EMPIRE, JEDI }
  */
 const episodeEnum = new GraphQLEnumType({
   name: 'Episode',
   description: 'One of the films in the Star Wars Trilogy',
   values: {
-    NEWHOPE: {
+    NEW_HOPE: {
       value: 4,
       description: 'Released in 1977.',
     },

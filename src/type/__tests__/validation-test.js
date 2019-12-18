@@ -383,11 +383,11 @@ describe('Type System: A Schema must have Object root types', () => {
     const schema = new GraphQLSchema({
       query: SomeObjectType,
       // $DisableFlowOnNegativeTest
-      directives: ['somedirective'],
+      directives: ['SomeDirective'],
     });
     expect(validateSchema(schema)).to.deep.equal([
       {
-        message: 'Expected directive but got: "somedirective".',
+        message: 'Expected directive but got: "SomeDirective".',
       },
     ]);
   });
@@ -2467,11 +2467,11 @@ describe('Interfaces must adhere to Interface they implement', () => {
         test: FooInterface
       }
 
-      interface FooInterface implements BarIntereface {
+      interface FooInterface implements BarInterface {
         field: String
       }
 
-      interface BarIntereface implements FooInterface {
+      interface BarInterface implements FooInterface {
         field: String
       }
     `);
@@ -2479,18 +2479,18 @@ describe('Interfaces must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Type FooInterface cannot implement BarIntereface because it would create a circular reference.',
+          'Type FooInterface cannot implement BarInterface because it would create a circular reference.',
         locations: [
-          { line: 10, column: 42 },
+          { line: 10, column: 41 },
           { line: 6, column: 41 },
         ],
       },
       {
         message:
-          'Type BarIntereface cannot implement FooInterface because it would create a circular reference.',
+          'Type BarInterface cannot implement FooInterface because it would create a circular reference.',
         locations: [
           { line: 6, column: 41 },
-          { line: 10, column: 42 },
+          { line: 10, column: 41 },
         ],
       },
     ]);

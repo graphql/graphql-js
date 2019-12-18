@@ -34,13 +34,13 @@ describe('dedent', () => {
 
   it('removes only the first level of indentation', () => {
     const output = dedent`
-            qux
-              quux
-                quuux
-                  quuuux
+            first
+              second
+                third
+                  fourth
     `;
     expect(output).to.equal(
-      ['qux', '  quux', '    quuux', '      quuuux', ''].join('\n'),
+      ['first', '  second', '    third', '      fourth', ''].join('\n'),
     );
   });
 

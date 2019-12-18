@@ -230,10 +230,10 @@ describe('Schema Builder', () => {
     const sdl = dedent`
       type Query {
         nonNullStr: String!
-        listOfStrs: [String]
-        listOfNonNullStrs: [String!]
-        nonNullListOfStrs: [String]!
-        nonNullListOfNonNullStrs: [String!]!
+        listOfStrings: [String]
+        listOfNonNullStrings: [String!]
+        nonNullListOfStrings: [String]!
+        nonNullListOfNonNullStrings: [String!]!
       }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);

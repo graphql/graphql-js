@@ -161,12 +161,12 @@ describe('Validate: Known argument names', () => {
   it('misspelled arg name is reported', () => {
     expectErrors(`
       fragment invalidArgName on Dog {
-        doesKnowCommand(dogcommand: true)
+        doesKnowCommand(DogCommand: true)
       }
     `).to.deep.equal([
       {
         message:
-          'Unknown argument "dogcommand" on field "Dog.doesKnowCommand". Did you mean "dogCommand"?',
+          'Unknown argument "DogCommand" on field "Dog.doesKnowCommand". Did you mean "dogCommand"?',
         locations: [{ line: 3, column: 25 }],
       },
     ]);
@@ -175,11 +175,11 @@ describe('Validate: Known argument names', () => {
   it('unknown args amongst known args', () => {
     expectErrors(`
       fragment oneGoodArgOneInvalidArg on Dog {
-        doesKnowCommand(whoknows: 1, dogCommand: SIT, unknown: true)
+        doesKnowCommand(whoKnows: 1, dogCommand: SIT, unknown: true)
       }
     `).to.deep.equal([
       {
-        message: 'Unknown argument "whoknows" on field "Dog.doesKnowCommand".',
+        message: 'Unknown argument "whoKnows" on field "Dog.doesKnowCommand".',
         locations: [{ line: 3, column: 25 }],
       },
       {

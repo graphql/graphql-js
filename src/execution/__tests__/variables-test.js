@@ -930,7 +930,7 @@ describe('Execute: Handles inputs', () => {
           fieldWithObjectInput(input: $input)
         }
       `;
-      const result = executeQuery(doc, { input: 'whoknows' });
+      const result = executeQuery(doc, { input: 'WhoKnows' });
 
       expect(result).to.deep.equal({
         errors: [

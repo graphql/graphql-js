@@ -144,7 +144,7 @@ describe('Execute: Handles execution with a complex schema', () => {
         title,
         body,
         hidden,
-        notdefined
+        notDefined
       }
     `);
 

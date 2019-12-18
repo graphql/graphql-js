@@ -539,7 +539,7 @@ describe('Execute: Handles basic execution tasks', () => {
               }),
             ),
             resolve() {
-              return Promise.reject(new Error('Dangit'));
+              return Promise.reject(new Error('Oops'));
             },
           },
         },
@@ -561,7 +561,7 @@ describe('Execute: Handles basic execution tasks', () => {
       errors: [
         {
           locations: [{ column: 9, line: 3 }],
-          message: 'Dangit',
+          message: 'Oops',
           path: ['foods'],
         },
       ],
