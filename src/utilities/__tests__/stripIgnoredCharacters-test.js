@@ -157,15 +157,15 @@ describe('stripIgnoredCharacters', () => {
   });
 
   it('report document with invalid token', () => {
-    let catchedError;
+    let caughtError;
 
     try {
       stripIgnoredCharacters('{ foo(arg: "\n"');
     } catch (e) {
-      catchedError = e;
+      caughtError = e;
     }
 
-    expect(String(catchedError) + '\n').to.equal(dedent`
+    expect(String(caughtError) + '\n').to.equal(dedent`
       Syntax Error: Unterminated string.
 
       GraphQL request:1:13
@@ -408,14 +408,12 @@ describe('stripIgnoredCharacters', () => {
   it('strips ignored characters inside block strings', () => {
     function expectStrippedString(blockStr) {
       const originalValue = lexValue(blockStr);
-
-      const strippedStr = stripIgnoredCharacters(blockStr);
-      const strippedValue = lexValue(strippedStr);
+      const strippedValue = lexValue(stripIgnoredCharacters(blockStr));
 
       invariant(
         originalValue === strippedValue,
         dedent`
-        Expected lextOne(stripIgnoredCharacters(${inspectStr(blockStr)}))
+        Expected lexValue(stripIgnoredCharacters(${inspectStr(blockStr)}))
           to equal ${inspectStr(originalValue)}
           but got  ${inspectStr(strippedValue)}
       `,
@@ -471,13 +469,12 @@ describe('stripIgnoredCharacters', () => {
           continue; // skip invalid values
         }
 
-        const strippedStr = stripIgnoredCharacters(testStr);
-        const strippedValue = lexValue(strippedStr);
+        const strippedValue = lexValue(stripIgnoredCharacters(testStr));
 
         invariant(
           testValue === strippedValue,
           dedent`
-            Expected lextOne(stripIgnoredCharacters(${inspectStr(testStr)}))
+            Expected lexValue(stripIgnoredCharacters(${inspectStr(testStr)}))
               to equal ${inspectStr(testValue)}
               but got  ${inspectStr(strippedValue)}
           `,

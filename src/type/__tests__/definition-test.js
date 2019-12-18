@@ -37,7 +37,7 @@ const InputObjectType = new GraphQLInputObjectType({
 const ListOfScalarsType = GraphQLList(ScalarType);
 const NonNullScalarType = GraphQLNonNull(ScalarType);
 const ListOfNonNullScalarsType = GraphQLList(NonNullScalarType);
-const NonNullListofScalars = GraphQLNonNull(ListOfScalarsType);
+const NonNullListOfScalars = GraphQLNonNull(ListOfScalarsType);
 
 describe('Type System: Scalars', () => {
   it('accepts a Scalar type defining serialize', () => {
@@ -874,7 +874,7 @@ describe('Type System: test utility methods', () => {
 
     expect(String(NonNullScalarType)).to.equal('Scalar!');
     expect(String(ListOfScalarsType)).to.equal('[Scalar]');
-    expect(String(NonNullListofScalars)).to.equal('[Scalar]!');
+    expect(String(NonNullListOfScalars)).to.equal('[Scalar]!');
     expect(String(ListOfNonNullScalarsType)).to.equal('[Scalar!]');
     expect(String(GraphQLList(ListOfScalarsType))).to.equal('[[Scalar]]');
   });
@@ -889,7 +889,7 @@ describe('Type System: test utility methods', () => {
 
     expect(JSON.stringify(NonNullScalarType)).to.equal('"Scalar!"');
     expect(JSON.stringify(ListOfScalarsType)).to.equal('"[Scalar]"');
-    expect(JSON.stringify(NonNullListofScalars)).to.equal('"[Scalar]!"');
+    expect(JSON.stringify(NonNullListOfScalars)).to.equal('"[Scalar]!"');
     expect(JSON.stringify(ListOfNonNullScalarsType)).to.equal('"[Scalar!]"');
     expect(JSON.stringify(GraphQLList(ListOfScalarsType))).to.equal(
       '"[[Scalar]]"',

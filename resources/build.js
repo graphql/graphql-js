@@ -50,8 +50,8 @@ function showStats() {
 
   for (const filepath of readdirRecursive('./dist')) {
     const name = filepath.split(path.sep).pop();
-    const [base, ...splitedExt] = name.split('.');
-    const ext = splitedExt.join('.');
+    const [base, ...splitExt] = name.split('.');
+    const ext = splitExt.join('.');
 
     const filetype = ext ? '*.' + ext : base;
     fileTypes[filetype] = fileTypes[filetype] || { filepaths: [], size: 0 };

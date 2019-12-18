@@ -909,7 +909,7 @@ describe('extendSchema', () => {
     `);
   });
 
-  it('extends interfaces by adding new implemted interfaces', () => {
+  it('extends interfaces by adding new implemented interfaces', () => {
     const extendedSchema = extendTestSchema(`
       interface NewInterface {
         newField: String

@@ -166,7 +166,7 @@ describe('inspect', () => {
     expect(inspect(customA)).to.equal('[Circular]');
   });
 
-  it('Use class names for the shortform of an object', () => {
+  it('Use class names for the short form of an object', () => {
     class Foo {
       foo: string;
 

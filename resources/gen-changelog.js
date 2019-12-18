@@ -51,7 +51,7 @@ const repoURLMatch = /https:\/\/github.com\/([^/]+)\/([^/]+).git/.exec(
   packageJSON.repository.url,
 );
 if (repoURLMatch == null) {
-  console.error('Cannot extract organisation and repo name from repo URL!');
+  console.error('Cannot extract organization and repo name from repo URL!');
   process.exit(1);
 }
 const [, githubOrg, githubRepo] = repoURLMatch;
@@ -80,7 +80,7 @@ function getChangeLog() {
 
 function genChangeLog(tag, date, allPRs) {
   const byLabel = {};
-  const commitersByLogin = {};
+  const committersByLogin = {};
 
   for (const pr of allPRs) {
     const labels = pr.labels.nodes
@@ -102,7 +102,7 @@ function genChangeLog(tag, date, allPRs) {
     }
     byLabel[label] = byLabel[label] || [];
     byLabel[label].push(pr);
-    commitersByLogin[pr.author.login] = pr.author;
+    committersByLogin[pr.author.login] = pr.author;
   }
 
   let changelog = `## ${tag || 'Unreleased'} (${date})\n`;
@@ -128,12 +128,12 @@ function genChangeLog(tag, date, allPRs) {
     }
   }
 
-  const commiters = Object.values(commitersByLogin).sort((a, b) =>
+  const committers = Object.values(committersByLogin).sort((a, b) =>
     (a.name || a.login).localeCompare(b.name || b.login),
   );
-  changelog += `\n#### Committers: ${commiters.length}\n`;
-  for (const commiter of commiters) {
-    changelog += `* ${commiter.name}([@${commiter.login}](${commiter.url}))\n`;
+  changelog += `\n#### Committers: ${committers.length}\n`;
+  for (const committer of committers) {
+    changelog += `* ${committer.name}([@${committer.login}](${committer.url}))\n`;
   }
 
   return changelog;

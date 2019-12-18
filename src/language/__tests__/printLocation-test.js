@@ -11,7 +11,7 @@ import { printSourceLocation } from '../printLocation';
 describe('printSourceLocation', () => {
   it('prints minified documents', () => {
     const minifiedSource = new Source(
-      'query SomeMiniFiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String){someField(foo:$foo bar:$bar baz:SECOND_ERROR_HERE){fieldA fieldB{fieldC fieldD...on THIRD_ERROR_HERE}}}',
+      'query SomeMinifiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String){someField(foo:$foo bar:$bar baz:SECOND_ERROR_HERE){fieldA fieldB{fieldC fieldD...on THIRD_ERROR_HERE}}}',
     );
 
     const firstLocation = printSourceLocation(minifiedSource, {
@@ -20,7 +20,7 @@ describe('printSourceLocation', () => {
     });
     expect(firstLocation + '\n').to.equal(dedent`
       GraphQL request:1:53
-      1 | query SomeMiniFiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String)
+      1 | query SomeMinifiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String)
         |                                                     ^
         | {someField(foo:$foo bar:$bar baz:SECOND_ERROR_HERE){fieldA fieldB{fieldC fieldD.
     `);
@@ -31,7 +31,7 @@ describe('printSourceLocation', () => {
     });
     expect(secondLocation + '\n').to.equal(dedent`
       GraphQL request:1:114
-      1 | query SomeMiniFiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String)
+      1 | query SomeMinifiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String)
         | {someField(foo:$foo bar:$bar baz:SECOND_ERROR_HERE){fieldA fieldB{fieldC fieldD.
         |                                  ^
         | ..on THIRD_ERROR_HERE}}}
@@ -43,7 +43,7 @@ describe('printSourceLocation', () => {
     });
     expect(thirdLocation + '\n').to.equal(dedent`
       GraphQL request:1:166
-      1 | query SomeMiniFiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String)
+      1 | query SomeMinifiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String)
         | {someField(foo:$foo bar:$bar baz:SECOND_ERROR_HERE){fieldA fieldB{fieldC fieldD.
         | ..on THIRD_ERROR_HERE}}}
         |      ^

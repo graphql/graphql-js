@@ -36,8 +36,8 @@ async function getFullCoverage() {
       .filter(filepath => filepath.endsWith('.js'))
       .map(filepath => path.join('src/', filepath));
 
-    await Promise.all(files.map(getCoverage)).then(covarageObjs => {
-      for (const coverage of covarageObjs) {
+    await Promise.all(files.map(getCoverage)).then(coverages => {
+      for (const coverage of coverages) {
         fullCoverage[coverage.path] = coverage;
       }
     });

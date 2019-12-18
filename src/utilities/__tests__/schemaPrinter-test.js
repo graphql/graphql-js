@@ -308,8 +308,8 @@ describe('Type System Printer', () => {
       fields: { str: { type: GraphQLString } },
     });
 
-    const BaazType = new GraphQLInterfaceType({
-      name: 'Baaz',
+    const BazType = new GraphQLInterfaceType({
+      name: 'Baz',
       fields: { int: { type: GraphQLInt } },
     });
 
@@ -319,18 +319,18 @@ describe('Type System Printer', () => {
         str: { type: GraphQLString },
         int: { type: GraphQLInt },
       },
-      interfaces: [FooType, BaazType],
+      interfaces: [FooType, BazType],
     });
 
     const Schema = new GraphQLSchema({ types: [BarType] });
     const output = printForTest(Schema);
     expect(output).to.equal(dedent`
-      interface Baaz {
+      type Bar implements Foo & Baz {
+        str: String
         int: Int
       }
 
-      type Bar implements Foo & Baaz {
-        str: String
+      interface Baz {
         int: Int
       }
 
@@ -346,8 +346,8 @@ describe('Type System Printer', () => {
       fields: { str: { type: GraphQLString } },
     });
 
-    const BaazType = new GraphQLInterfaceType({
-      name: 'Baaz',
+    const BazType = new GraphQLInterfaceType({
+      name: 'Baz',
       interfaces: [FooType],
       fields: {
         int: { type: GraphQLInt },
@@ -361,7 +361,7 @@ describe('Type System Printer', () => {
         str: { type: GraphQLString },
         int: { type: GraphQLInt },
       },
-      interfaces: [FooType, BaazType],
+      interfaces: [FooType, BazType],
     });
 
     const Query = new GraphQLObjectType({
@@ -375,14 +375,14 @@ describe('Type System Printer', () => {
     });
     const output = printForTest(Schema);
     expect(output).to.equal(dedent`
-      interface Baaz implements Foo {
-        int: Int
+      type Bar implements Foo & Baz {
         str: String
+        int: Int
       }
 
-      type Bar implements Foo & Baaz {
-        str: String
+      interface Baz implements Foo {
         int: Int
+        str: String
       }
 
       interface Foo {

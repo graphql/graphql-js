@@ -384,11 +384,11 @@ describe('Lexer', () => {
       value: 'contains " quote',
     });
 
-    expect(lexOne('"""contains \\""" triplequote"""')).to.contain({
+    expect(lexOne('"""contains \\""" triple quote"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
-      end: 31,
-      value: 'contains """ triplequote',
+      end: 32,
+      value: 'contains """ triple quote',
     });
 
     expect(lexOne('"""multi\nline"""')).to.contain({

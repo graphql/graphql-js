@@ -76,7 +76,7 @@ describe('Validate: Scalar leafs', () => {
   it('scalar selection not allowed on Enum', () => {
     expectErrors(`
       fragment scalarSelectionsNotAllowedOnEnum on Cat {
-        furColor { inHexdec }
+        furColor { inHexDec }
       }
     `).to.deep.equal([
       {

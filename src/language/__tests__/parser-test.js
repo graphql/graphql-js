@@ -66,8 +66,8 @@ describe('Parser', () => {
       locations: [{ line: 1, column: 10 }],
     });
 
-    expectSyntaxError('notanoperation Foo { field }').to.deep.include({
-      message: 'Syntax Error: Unexpected Name "notanoperation".',
+    expectSyntaxError('notAnOperation Foo { field }').to.deep.include({
+      message: 'Syntax Error: Unexpected Name "notAnOperation".',
       locations: [{ line: 1, column: 1 }],
     });
 

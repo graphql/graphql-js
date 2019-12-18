@@ -67,7 +67,7 @@ describe('mapAsyncIterator', () => {
       done: true,
     });
 
-    // Subsequent nexts
+    // Subsequent next calls
     expect(await doubles.next()).to.deep.equal({
       value: undefined,
       done: true,
@@ -85,8 +85,8 @@ describe('mapAsyncIterator', () => {
         yield 2;
         yield 3;
       } finally {
-        yield 'done';
-        yield 'last';
+        yield 'Done';
+        yield 'Last';
       }
     }
 
@@ -97,13 +97,13 @@ describe('mapAsyncIterator', () => {
 
     // Early return
     expect(await doubles.return()).to.deep.equal({
-      value: 'donedone',
+      value: 'DoneDone',
       done: false,
     });
 
-    // Subsequent nexts may yield from finally block
+    // Subsequent next calls may yield from finally block
     expect(await doubles.next()).to.deep.equal({
-      value: 'lastlast',
+      value: 'LastLast',
       done: false,
     });
     expect(await doubles.next()).to.deep.equal({
@@ -160,8 +160,8 @@ describe('mapAsyncIterator', () => {
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
 
     // Throw error
-    expect(await doubles.throw('ouch')).to.deep.equal({
-      value: 'ouchouch',
+    expect(await doubles.throw('Ouch')).to.deep.equal({
+      value: 'OuchOuch',
       done: false,
     });
 

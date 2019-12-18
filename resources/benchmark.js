@@ -21,7 +21,7 @@ const { sampleModule } = require('./benchmark-fork');
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
 
-// The maximum time in secounds a benchmark is allowed to run before finishing.
+// The maximum time in seconds a benchmark is allowed to run before finishing.
 const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 const minSamples = 5;
@@ -30,7 +30,7 @@ function LOCAL_DIR(...paths) {
   return path.join(__dirname, '..', ...paths);
 }
 
-// Build a benchmarkable environment for the given revision
+// Build a benchmark-friendly environment for the given revision
 // and returns path to its 'dist' directory.
 function prepareRevision(revision) {
   console.log(`🍳  Preparing ${revision}...`);

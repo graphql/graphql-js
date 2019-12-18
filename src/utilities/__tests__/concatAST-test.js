@@ -12,7 +12,7 @@ import { Source } from '../../language/source';
 import { concatAST } from '../concatAST';
 
 describe('concatAST', () => {
-  it('concats two ASTs together', () => {
+  it('concatenates two ASTs together', () => {
     const sourceA = new Source(`
       { a, b, ...Frag }
     `);

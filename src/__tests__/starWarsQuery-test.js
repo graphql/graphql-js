@@ -108,7 +108,7 @@ describe('Star Wars Query Tests', () => {
             friends: [
               {
                 name: 'Luke Skywalker',
-                appearsIn: ['NEWHOPE', 'EMPIRE', 'JEDI'],
+                appearsIn: ['NEW_HOPE', 'EMPIRE', 'JEDI'],
                 friends: [
                   {
                     name: 'Han Solo',
@@ -126,7 +126,7 @@ describe('Star Wars Query Tests', () => {
               },
               {
                 name: 'Han Solo',
-                appearsIn: ['NEWHOPE', 'EMPIRE', 'JEDI'],
+                appearsIn: ['NEW_HOPE', 'EMPIRE', 'JEDI'],
                 friends: [
                   {
                     name: 'Luke Skywalker',
@@ -141,7 +141,7 @@ describe('Star Wars Query Tests', () => {
               },
               {
                 name: 'Leia Organa',
-                appearsIn: ['NEWHOPE', 'EMPIRE', 'JEDI'],
+                appearsIn: ['NEW_HOPE', 'EMPIRE', 'JEDI'],
                 friends: [
                   {
                     name: 'Luke Skywalker',

@@ -54,7 +54,7 @@ describe('Validate: Known type names', () => {
           pets { ... on Badger { name }, ...PetFields }
         }
       }
-      fragment PetFields on Peettt {
+      fragment PetFields on Peat {
         name
       }
     `).to.deep.equal([
@@ -67,7 +67,7 @@ describe('Validate: Known type names', () => {
         locations: [{ line: 5, column: 25 }],
       },
       {
-        message: 'Unknown type "Peettt". Did you mean "Pet"?',
+        message: 'Unknown type "Peat". Did you mean "Pet" or "Cat"?',
         locations: [{ line: 8, column: 29 }],
       },
     ]);

@@ -8,4 +8,4 @@ export default function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T>,
   callback: (arg: T) => PromiseOrValue<U>,
   rejectCallback?: (arg: any) => PromiseOrValue<U>,
-): any; // TS_SPECIFIC: es2018.asyncgenerator requires typescript@3.6
+): any; // TS_SPECIFIC: AsyncGenerator requires typescript@3.6
