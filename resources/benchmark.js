@@ -30,10 +30,6 @@ function LOCAL_DIR(...paths) {
   return path.join(__dirname, '..', ...paths);
 }
 
-function TEMP_DIR(...paths) {
-  return path.join(os.tmpdir(), 'graphql-js-benchmark', ...paths);
-}
-
 // Build a benchmarkable environment for the given revision
 // and returns path to its 'dist' directory.
 function prepareRevision(revision) {
@@ -43,19 +39,16 @@ function prepareRevision(revision) {
     return babelBuild(LOCAL_DIR());
   }
 
-  if (!fs.existsSync(TEMP_DIR())) {
-    fs.mkdirSync(TEMP_DIR());
-  }
-
   // Returns the complete git hash for a given git revision reference.
   const hash = exec(`git rev-parse "${revision}"`);
-  const dir = TEMP_DIR(hash);
 
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
-    exec(`git archive "${hash}" | tar -xC "${dir}"`);
-    exec('yarn install', { cwd: dir });
-  }
+  const dir = path.join(os.tmpdir(), 'graphql-js-benchmark', hash);
+  rmdirRecursive(dir);
+  mkdirRecursive(dir);
+
+  exec(`git archive "${hash}" | tar -xC "${dir}"`);
+  exec('yarn install', { cwd: dir });
+
   for (const file of findFiles(LOCAL_DIR('src'), '*/__tests__/*')) {
     const from = LOCAL_DIR('src', file);
     const to = path.join(dir, 'src', file);
