@@ -113,7 +113,7 @@ const Dog = new GraphQLObjectType({
         dogCommand: { type: DogCommand },
       },
     },
-    isHousetrained: {
+    isHouseTrained: {
       type: GraphQLBoolean,
       args: {
         atOtherHomes: {

@@ -19,7 +19,7 @@ describe('Validate: Supports full validation', () => {
             furColor
           }
           ... on Dog {
-            isHousetrained
+            isHouseTrained
           }
         }
       }
@@ -58,7 +58,7 @@ describe('Validate: Supports full validation', () => {
             furColor
           }
           ... on Dog {
-            isHousetrained
+            isHouseTrained
           }
         }
       }
@@ -70,7 +70,7 @@ describe('Validate: Supports full validation', () => {
     expect(errorMessages).to.deep.equal([
       'Cannot query field "catOrDog" on type "QueryRoot". Did you mean "catOrDog"?',
       'Cannot query field "furColor" on type "Cat". Did you mean "furColor"?',
-      'Cannot query field "isHousetrained" on type "Dog". Did you mean "isHousetrained"?',
+      'Cannot query field "isHouseTrained" on type "Dog". Did you mean "isHouseTrained"?',
     ]);
   });
 });

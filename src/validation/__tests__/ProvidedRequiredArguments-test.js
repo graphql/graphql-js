@@ -36,7 +36,7 @@ describe('Validate: Provided required arguments', () => {
     expectValid(`
       {
         dog {
-          isHousetrained(unknownArgument: true)
+          isHouseTrained(unknownArgument: true)
         }
       }
     `);
@@ -47,7 +47,7 @@ describe('Validate: Provided required arguments', () => {
       expectValid(`
         {
           dog {
-            isHousetrained(atOtherHomes: true)
+            isHouseTrained(atOtherHomes: true)
           }
         }
       `);
@@ -57,7 +57,7 @@ describe('Validate: Provided required arguments', () => {
       expectValid(`
         {
           dog {
-            isHousetrained
+            isHouseTrained
           }
         }
       `);
@@ -123,7 +123,7 @@ describe('Validate: Provided required arguments', () => {
       `);
     });
 
-    it('Multiple reqs on mixedList', () => {
+    it('Multiple required args on mixedList', () => {
       expectValid(`
         {
           complicatedArgs {
@@ -133,7 +133,7 @@ describe('Validate: Provided required arguments', () => {
       `);
     });
 
-    it('Multiple reqs and one opt on mixedList', () => {
+    it('Multiple required and one optional arg on mixedList', () => {
       expectValid(`
         {
           complicatedArgs {
@@ -143,7 +143,7 @@ describe('Validate: Provided required arguments', () => {
       `);
     });
 
-    it('All reqs and opts on mixedList', () => {
+    it('All required and optional args on mixedList', () => {
       expectValid(`
         {
           complicatedArgs {
