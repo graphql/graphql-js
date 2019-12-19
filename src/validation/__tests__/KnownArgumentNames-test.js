@@ -67,7 +67,7 @@ describe('Validate: Known argument names', () => {
   it('no args on optional arg', () => {
     expectValid(`
       fragment noArgOnOptionalArg on Dog {
-        isHousetrained
+        isHouseTrained
       }
     `);
   });

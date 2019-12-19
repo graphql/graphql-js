@@ -649,16 +649,16 @@ describe('Schema Builder', () => {
 
   it('Unreferenced type implementing referenced interface', () => {
     const sdl = dedent`
-      type Concrete implements Iface {
+      type Concrete implements Interface {
         key: String
       }
 
-      interface Iface {
+      interface Interface {
         key: String
       }
 
       type Query {
-        iface: Iface
+        interface: Interface
       }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);
@@ -675,7 +675,7 @@ describe('Schema Builder', () => {
       }
 
       type Query {
-        iface: Parent
+        interfaceField: Parent
       }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);

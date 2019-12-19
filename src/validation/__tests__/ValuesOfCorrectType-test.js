@@ -627,7 +627,7 @@ describe('Validate: Values of correct type', () => {
       expectValid(`
         {
           dog {
-            isHousetrained(atOtherHomes: true)
+            isHouseTrained(atOtherHomes: true)
           }
         }
       `);
@@ -637,7 +637,7 @@ describe('Validate: Values of correct type', () => {
       expectValid(`
         {
           dog {
-            isHousetrained
+            isHouseTrained
           }
         }
       `);
@@ -693,7 +693,7 @@ describe('Validate: Values of correct type', () => {
       `);
     });
 
-    it('Multiple reqs on mixedList', () => {
+    it('Multiple required args on mixedList', () => {
       expectValid(`
         {
           complicatedArgs {
@@ -703,7 +703,7 @@ describe('Validate: Values of correct type', () => {
       `);
     });
 
-    it('Multiple reqs and one opt on mixedList', () => {
+    it('Multiple required and one optional arg on mixedList', () => {
       expectValid(`
         {
           complicatedArgs {
@@ -713,7 +713,7 @@ describe('Validate: Values of correct type', () => {
       `);
     });
 
-    it('All reqs and opts on mixedList', () => {
+    it('All required and optional args on mixedList', () => {
       expectValid(`
         {
           complicatedArgs {

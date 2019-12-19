@@ -39,10 +39,9 @@ function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
     return reason
       .map(
-        ([responseName, subreason]) =>
-          `subfields "${responseName}" conflict because ${reasonMessage(
-            subreason,
-          )}`,
+        ([responseName, subReason]) =>
+          `subfields "${responseName}" conflict because ` +
+          reasonMessage(subReason),
       )
       .join(' and ');
   }
