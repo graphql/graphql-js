@@ -24,8 +24,8 @@
     "node": ">= 10.x"
   },
   "scripts": {
-    "test": "npm run prettier:check && npm run lint && npm run check && npm run testonly && npm run check:ts",
-    "test:ci": "yarn check --integrity && npm run prettier:check && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run check:ts && npm run build",
+    "test": "npm run prettier:check && npm run lint && npm run check && npm run testonly && npm run check:ts && npm run check:spelling",
+    "test:ci": "yarn check --integrity && npm run prettier:check && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run check:ts && npm run check:spelling && npm run build",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc npm run testonly",
     "lint": "eslint --cache src resources",
@@ -35,6 +35,7 @@
     "check": "flow check",
     "check:ts": "dtslint src",
     "check:cover": "node resources/check-cover.js && nyc report --nycrc-path .nycflowrc.yml",
+    "check:spelling": "cspell \"./{src/**/,resources**/,}*.{js,ts,md,graphql}\"",
     "build": "node resources/build.js",
     "changelog": "node resources/gen-changelog.js",
     "preversion": ". ./resources/checkgit.sh",
@@ -52,6 +53,7 @@
     "@babel/register": "7.6.2",
     "babel-eslint": "10.0.3",
     "chai": "4.2.0",
+    "cspell": "4.0.37",
     "dtslint": "2.0.2",
     "eslint": "6.7.2",
     "eslint-plugin-flowtype": "4.5.2",
