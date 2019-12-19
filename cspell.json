@@ -1,0 +1,85 @@
+{
+  "language": "en",
+  "ignorePaths": [
+    "src/__fixtures__/github-schema.graphql",
+    "src/__fixtures__/github-schema.json"
+  ],
+  "words": [
+    "jsutils",
+    "tsutils",
+    "iterall",
+    "noflow",
+
+    // Different names used inside tests
+    "Skywalker",
+    "Leia",
+    "Wilhuff",
+    "Tarkin",
+    "Artoo",
+    "Threepio",
+    "Odie",
+    "Odie's",
+    "Damerau",
+    "Alderaan",
+    "Tatooine",
+    "astromech",
+    "yuzhi",
+
+    // TODO: remove bellow words
+    "Graphi", // GraphiQL
+    "QL's", // GraphQL's
+    "QLIs", // GraphQLIs*
+    "QLID", // GraphQLID
+    "iface",
+    "Reqs",
+    "ORing",
+    "FXXX",
+    "XXXF",
+    "bfnrt",
+
+    // TODO: contribute to upstream dictionaries
+    "ASTs",
+    "adjacencies",
+    "bigint",
+    "bugfixes",
+    "contravariant",
+    "dedent",
+    "deserialized",
+    "dirent",
+    "docstring",
+    "erroring",
+    "filepath",
+    "filepaths",
+    "hardcoded",
+    "heredoc",
+    "lexable",
+    "lexed",
+    "lexes",
+    "lexing",
+    "memoed",
+    "memoization",
+    "memoized",
+    "memoizes",
+    "memoizing",
+    "nullability",
+    "nullish",
+    "passthrough",
+    "polyfill",
+    "promisify",
+    "pubsub",
+    "punctuator",
+    "punctuators",
+    "recurse",
+    "recursing",
+    "refetch",
+    "stateful",
+    "stringifies",
+    "subfields",
+    "subgraphs",
+    "subtrees",
+    "subtyped",
+    "superset",
+    "undefine",
+    "unparsed"
+  ]
+}
