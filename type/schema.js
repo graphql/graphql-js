@@ -247,14 +247,14 @@ exports.GraphQLSchema = GraphQLSchema;
 (0, _defineToStringTag.default)(GraphQLSchema);
 
 function collectImplementations(types) {
-  var implementations = Object.create(null);
+  var implementationsMap = Object.create(null);
 
   for (var _i8 = 0; _i8 < types.length; _i8++) {
     var type = types[_i8];
 
     if ((0, _definition.isInterfaceType)(type)) {
-      if (implementations[type.name] === undefined) {
-        implementations[type.name] = {
+      if (implementationsMap[type.name] === undefined) {
+        implementationsMap[type.name] = {
           objects: [],
           interfaces: []
         };
@@ -265,15 +265,15 @@ function collectImplementations(types) {
         var iface = _type$getInterfaces2[_i10];
 
         if ((0, _definition.isInterfaceType)(iface)) {
-          var impls = implementations[iface.name];
+          var implementations = implementationsMap[iface.name];
 
-          if (impls === undefined) {
-            implementations[iface.name] = {
+          if (implementations === undefined) {
+            implementationsMap[iface.name] = {
               objects: [],
               interfaces: [type]
             };
           } else {
-            impls.interfaces.push(type);
+            implementations.interfaces.push(type);
           }
         }
       }
@@ -283,22 +283,22 @@ function collectImplementations(types) {
         var _iface = _type$getInterfaces4[_i12];
 
         if ((0, _definition.isInterfaceType)(_iface)) {
-          var _impls = implementations[_iface.name];
+          var _implementations = implementationsMap[_iface.name];
 
-          if (_impls === undefined) {
-            implementations[_iface.name] = {
+          if (_implementations === undefined) {
+            implementationsMap[_iface.name] = {
               objects: [type],
               interfaces: []
             };
           } else {
-            _impls.objects.push(type);
+            _implementations.objects.push(type);
           }
         }
       }
     }
   }
 
-  return implementations;
+  return implementationsMap;
 }
 
 function typeMapReducer(map, type) {

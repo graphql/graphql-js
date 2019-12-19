@@ -328,25 +328,25 @@ export type GraphQLSchemaConfig = {|
 function collectImplementations(
   types: $ReadOnlyArray<GraphQLNamedType>,
 ): ObjMap<InterfaceImplementations> {
-  const implementations = Object.create(null);
+  const implementationsMap = Object.create(null);
 
   for (const type of types) {
     if (isInterfaceType(type)) {
-      if (implementations[type.name] === undefined) {
-        implementations[type.name] = { objects: [], interfaces: [] };
+      if (implementationsMap[type.name] === undefined) {
+        implementationsMap[type.name] = { objects: [], interfaces: [] };
       }
 
       // Store implementations by interface.
       for (const iface of type.getInterfaces()) {
         if (isInterfaceType(iface)) {
-          const impls = implementations[iface.name];
-          if (impls === undefined) {
-            implementations[iface.name] = {
+          const implementations = implementationsMap[iface.name];
+          if (implementations === undefined) {
+            implementationsMap[iface.name] = {
               objects: [],
               interfaces: [type],
             };
           } else {
-            impls.interfaces.push(type);
+            implementations.interfaces.push(type);
           }
         }
       }
@@ -354,21 +354,21 @@ function collectImplementations(
       // Store implementations by objects.
       for (const iface of type.getInterfaces()) {
         if (isInterfaceType(iface)) {
-          const impls = implementations[iface.name];
-          if (impls === undefined) {
-            implementations[iface.name] = {
+          const implementations = implementationsMap[iface.name];
+          if (implementations === undefined) {
+            implementationsMap[iface.name] = {
               objects: [type],
               interfaces: [],
             };
           } else {
-            impls.objects.push(type);
+            implementations.objects.push(type);
           }
         }
       }
     }
   }
 
-  return implementations;
+  return implementationsMap;
 }
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {

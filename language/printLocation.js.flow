@@ -37,20 +37,20 @@ export function printSourceLocation(
 
   // Special case for minified documents
   if (locationLine.length > 120) {
-    const sublineIndex = Math.floor(columnNum / 80);
-    const sublineColumnNum = columnNum % 80;
-    const sublines = [];
+    const subLineIndex = Math.floor(columnNum / 80);
+    const subLineColumnNum = columnNum % 80;
+    const subLines = [];
     for (let i = 0; i < locationLine.length; i += 80) {
-      sublines.push(locationLine.slice(i, i + 80));
+      subLines.push(locationLine.slice(i, i + 80));
     }
 
     return (
       locationStr +
       printPrefixedLines([
-        [`${lineNum}`, sublines[0]],
-        ...sublines.slice(1, sublineIndex + 1).map(subline => ['', subline]),
-        [' ', whitespace(sublineColumnNum - 1) + '^'],
-        ['', sublines[sublineIndex + 1]],
+        [`${lineNum}`, subLines[0]],
+        ...subLines.slice(1, subLineIndex + 1).map(subLine => ['', subLine]),
+        [' ', whitespace(subLineColumnNum - 1) + '^'],
+        ['', subLines[subLineIndex + 1]],
       ])
     );
   }

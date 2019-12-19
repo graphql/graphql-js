@@ -88,13 +88,13 @@ first ensure the query is syntactically and semantically valid before executing
 it, reporting errors otherwise.
 
 ```js
-var query = '{ boyhowdy }';
+var query = '{ BoyHowdy }';
 
 graphql(schema, query).then(result => {
   // Prints
   // {
   //   errors: [
-  //     { message: 'Cannot query field boyhowdy on RootQueryType',
+  //     { message: 'Cannot query field BoyHowdy on RootQueryType',
   //       locations: [ { line: 1, column: 3 } ] }
   //   ]
   // }

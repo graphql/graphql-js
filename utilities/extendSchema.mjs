@@ -47,13 +47,13 @@ export function extendSchema(schema, documentAST, options) {
 
 
   var typeDefs = [];
-  var typeExtsMap = Object.create(null); // New directives and types are separate because a directives and types can
+  var typeExtensionsMap = Object.create(null); // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
 
   var directiveDefs = [];
   var schemaDef; // Schema extensions are collected which may add additional operation types.
 
-  var schemaExts = [];
+  var schemaExtensions = [];
 
   for (var _i2 = 0, _documentAST$definiti2 = documentAST.definitions; _i2 < _documentAST$definiti2.length; _i2++) {
     var def = _documentAST$definiti2[_i2];
@@ -61,13 +61,13 @@ export function extendSchema(schema, documentAST, options) {
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
     } else if (def.kind === Kind.SCHEMA_EXTENSION) {
-      schemaExts.push(def);
+      schemaExtensions.push(def);
     } else if (isTypeDefinitionNode(def)) {
       typeDefs.push(def);
     } else if (isTypeExtensionNode(def)) {
       var extendedTypeName = def.name.value;
-      var existingTypeExts = typeExtsMap[extendedTypeName];
-      typeExtsMap[extendedTypeName] = existingTypeExts ? existingTypeExts.concat([def]) : [def];
+      var existingTypeExtensions = typeExtensionsMap[extendedTypeName];
+      typeExtensionsMap[extendedTypeName] = existingTypeExtensions ? existingTypeExtensions.concat([def]) : [def];
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       directiveDefs.push(def);
     }
@@ -75,7 +75,7 @@ export function extendSchema(schema, documentAST, options) {
   // return the same unmodified GraphQLSchema instance.
 
 
-  if (Object.keys(typeExtsMap).length === 0 && typeDefs.length === 0 && directiveDefs.length === 0 && schemaExts.length === 0 && !schemaDef) {
+  if (Object.keys(typeExtensionsMap).length === 0 && typeDefs.length === 0 && directiveDefs.length === 0 && schemaExtensions.length === 0 && !schemaDef) {
     return schema;
   }
 
@@ -101,14 +101,14 @@ export function extendSchema(schema, documentAST, options) {
     query: schemaConfig.query && replaceNamedType(schemaConfig.query),
     mutation: schemaConfig.mutation && replaceNamedType(schemaConfig.mutation),
     subscription: schemaConfig.subscription && replaceNamedType(schemaConfig.subscription)
-  }, astBuilder.getOperationTypes(concatMaybeArrays(schemaDef && [schemaDef], schemaExts) || [])); // Then produce and return a Schema with these types.
+  }, astBuilder.getOperationTypes(concatMaybeArrays(schemaDef && [schemaDef], schemaExtensions) || [])); // Then produce and return a Schema with these types.
 
 
   return new GraphQLSchema(_objectSpread({}, operationTypes, {
     types: objectValues(typeMap),
     directives: [].concat(replaceDirectives(schemaConfig.directives), astBuilder.buildDirectives(directiveDefs)),
     astNode: schemaDef || schemaConfig.astNode,
-    extensionASTNodes: concatMaybeArrays(schemaConfig.extensionASTNodes, schemaExts)
+    extensionASTNodes: concatMaybeArrays(schemaConfig.extensionASTNodes, schemaExtensions)
   })); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
@@ -164,7 +164,7 @@ export function extendSchema(schema, documentAST, options) {
 
   function extendInputObjectType(type) {
     var config = type.toConfig();
-    var extensions = typeExtsMap[config.name] || [];
+    var extensions = typeExtensionsMap[config.name] || [];
     return new GraphQLInputObjectType(_objectSpread({}, config, {
       fields: function fields() {
         return _objectSpread({}, mapValue(config.fields, function (field) {
@@ -179,7 +179,7 @@ export function extendSchema(schema, documentAST, options) {
 
   function extendEnumType(type) {
     var config = type.toConfig();
-    var extensions = typeExtsMap[type.name] || [];
+    var extensions = typeExtensionsMap[type.name] || [];
     return new GraphQLEnumType(_objectSpread({}, config, {
       values: _objectSpread({}, config.values, {}, astBuilder.buildEnumValueMap(extensions)),
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
@@ -188,7 +188,7 @@ export function extendSchema(schema, documentAST, options) {
 
   function extendScalarType(type) {
     var config = type.toConfig();
-    var extensions = typeExtsMap[config.name] || [];
+    var extensions = typeExtensionsMap[config.name] || [];
     return new GraphQLScalarType(_objectSpread({}, config, {
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
@@ -196,7 +196,7 @@ export function extendSchema(schema, documentAST, options) {
 
   function extendObjectType(type) {
     var config = type.toConfig();
-    var extensions = typeExtsMap[config.name] || [];
+    var extensions = typeExtensionsMap[config.name] || [];
     return new GraphQLObjectType(_objectSpread({}, config, {
       interfaces: function interfaces() {
         return [].concat(type.getInterfaces().map(replaceNamedType), astBuilder.buildInterfaces(extensions));
@@ -210,7 +210,7 @@ export function extendSchema(schema, documentAST, options) {
 
   function extendInterfaceType(type) {
     var config = type.toConfig();
-    var extensions = typeExtsMap[config.name] || [];
+    var extensions = typeExtensionsMap[config.name] || [];
     return new GraphQLInterfaceType(_objectSpread({}, config, {
       interfaces: function interfaces() {
         return [].concat(type.getInterfaces().map(replaceNamedType), astBuilder.buildInterfaces(extensions));
@@ -224,7 +224,7 @@ export function extendSchema(schema, documentAST, options) {
 
   function extendUnionType(type) {
     var config = type.toConfig();
-    var extensions = typeExtsMap[config.name] || [];
+    var extensions = typeExtensionsMap[config.name] || [];
     return new GraphQLUnionType(_objectSpread({}, config, {
       types: function types() {
         return [].concat(type.getTypes().map(replaceNamedType), astBuilder.buildUnionTypes(extensions));

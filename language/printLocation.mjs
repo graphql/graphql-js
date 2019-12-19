@@ -23,17 +23,17 @@ export function printSourceLocation(source, sourceLocation) {
   var locationLine = lines[lineIndex]; // Special case for minified documents
 
   if (locationLine.length > 120) {
-    var sublineIndex = Math.floor(columnNum / 80);
-    var sublineColumnNum = columnNum % 80;
-    var sublines = [];
+    var subLineIndex = Math.floor(columnNum / 80);
+    var subLineColumnNum = columnNum % 80;
+    var subLines = [];
 
     for (var i = 0; i < locationLine.length; i += 80) {
-      sublines.push(locationLine.slice(i, i + 80));
+      subLines.push(locationLine.slice(i, i + 80));
     }
 
-    return locationStr + printPrefixedLines([["".concat(lineNum), sublines[0]]].concat(sublines.slice(1, sublineIndex + 1).map(function (subline) {
-      return ['', subline];
-    }), [[' ', whitespace(sublineColumnNum - 1) + '^'], ['', sublines[sublineIndex + 1]]]));
+    return locationStr + printPrefixedLines([["".concat(lineNum), subLines[0]]].concat(subLines.slice(1, subLineIndex + 1).map(function (subLine) {
+      return ['', subLine];
+    }), [[' ', whitespace(subLineColumnNum - 1) + '^'], ['', subLines[subLineIndex + 1]]]));
   }
 
   return locationStr + printPrefixedLines([// Lines specified like this: ["prefix", "string"],

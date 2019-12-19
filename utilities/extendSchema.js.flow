@@ -108,7 +108,7 @@ export function extendSchema(
 
   // Collect the type definitions and extensions found in the document.
   const typeDefs = [];
-  const typeExtsMap = Object.create(null);
+  const typeExtensionsMap = Object.create(null);
 
   // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
@@ -116,20 +116,20 @@ export function extendSchema(
 
   let schemaDef: ?SchemaDefinitionNode;
   // Schema extensions are collected which may add additional operation types.
-  const schemaExts: Array<SchemaExtensionNode> = [];
+  const schemaExtensions: Array<SchemaExtensionNode> = [];
 
   for (const def of documentAST.definitions) {
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
     } else if (def.kind === Kind.SCHEMA_EXTENSION) {
-      schemaExts.push(def);
+      schemaExtensions.push(def);
     } else if (isTypeDefinitionNode(def)) {
       typeDefs.push(def);
     } else if (isTypeExtensionNode(def)) {
       const extendedTypeName = def.name.value;
-      const existingTypeExts = typeExtsMap[extendedTypeName];
-      typeExtsMap[extendedTypeName] = existingTypeExts
-        ? existingTypeExts.concat([def])
+      const existingTypeExtensions = typeExtensionsMap[extendedTypeName];
+      typeExtensionsMap[extendedTypeName] = existingTypeExtensions
+        ? existingTypeExtensions.concat([def])
         : [def];
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       directiveDefs.push(def);
@@ -139,10 +139,10 @@ export function extendSchema(
   // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
   if (
-    Object.keys(typeExtsMap).length === 0 &&
+    Object.keys(typeExtensionsMap).length === 0 &&
     typeDefs.length === 0 &&
     directiveDefs.length === 0 &&
-    schemaExts.length === 0 &&
+    schemaExtensions.length === 0 &&
     !schemaDef
   ) {
     return schema;
@@ -170,7 +170,7 @@ export function extendSchema(
       schemaConfig.subscription && replaceNamedType(schemaConfig.subscription),
     // Then, incorporate schema definition and all schema extensions.
     ...astBuilder.getOperationTypes(
-      concatMaybeArrays(schemaDef && [schemaDef], schemaExts) || [],
+      concatMaybeArrays(schemaDef && [schemaDef], schemaExtensions) || [],
     ),
   };
 
@@ -185,7 +185,7 @@ export function extendSchema(
     astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: concatMaybeArrays(
       schemaConfig.extensionASTNodes,
-      schemaExts,
+      schemaExtensions,
     ),
   });
 
@@ -248,7 +248,7 @@ export function extendSchema(
     type: GraphQLInputObjectType,
   ): GraphQLInputObjectType {
     const config = type.toConfig();
-    const extensions = typeExtsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] || [];
 
     return new GraphQLInputObjectType({
       ...config,
@@ -269,7 +269,7 @@ export function extendSchema(
 
   function extendEnumType(type: GraphQLEnumType): GraphQLEnumType {
     const config = type.toConfig();
-    const extensions = typeExtsMap[type.name] || [];
+    const extensions = typeExtensionsMap[type.name] || [];
 
     return new GraphQLEnumType({
       ...config,
@@ -287,7 +287,7 @@ export function extendSchema(
 
   function extendScalarType(type: GraphQLScalarType): GraphQLScalarType {
     const config = type.toConfig();
-    const extensions = typeExtsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] || [];
 
     return new GraphQLScalarType({
       ...config,
@@ -300,7 +300,7 @@ export function extendSchema(
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
     const config = type.toConfig();
-    const extensions = typeExtsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] || [];
 
     return new GraphQLObjectType({
       ...config,
@@ -324,7 +324,7 @@ export function extendSchema(
     type: GraphQLInterfaceType,
   ): GraphQLInterfaceType {
     const config = type.toConfig();
-    const extensions = typeExtsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] || [];
 
     return new GraphQLInterfaceType({
       ...config,
@@ -346,7 +346,7 @@ export function extendSchema(
 
   function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
     const config = type.toConfig();
-    const extensions = typeExtsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] || [];
 
     return new GraphQLUnionType({
       ...config,

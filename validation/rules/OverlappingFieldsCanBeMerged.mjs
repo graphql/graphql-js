@@ -11,8 +11,8 @@ function reasonMessage(reason) {
   if (Array.isArray(reason)) {
     return reason.map(function (_ref) {
       var responseName = _ref[0],
-          subreason = _ref[1];
-      return "subfields \"".concat(responseName, "\" conflict because ").concat(reasonMessage(subreason));
+          subReason = _ref[1];
+      return "subfields \"".concat(responseName, "\" conflict because ") + reasonMessage(subReason);
     }).join(' and ');
   }
 
