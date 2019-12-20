@@ -44,30 +44,6 @@ describe('Execute: Handles basic execution tasks', () => {
     );
   });
 
-  it('accepts positional arguments', () => {
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Type',
-        fields: {
-          a: {
-            type: GraphQLString,
-            resolve(rootValue) {
-              return rootValue;
-            },
-          },
-        },
-      }),
-    });
-
-    const document = parse('{ a }');
-    const rootValue = 'rootValue';
-    const result = execute(schema, document, rootValue);
-
-    expect(result).to.deep.equal({
-      data: { a: 'rootValue' },
-    });
-  });
-
   it('executes arbitrary code', async () => {
     const data = {
       a: () => 'Apple',

@@ -147,25 +147,6 @@ async function expectPromiseToThrow(promise, message) {
 
 // Check all error cases when initializing the subscription.
 describe('Subscription Initialization Phase', () => {
-  it('accepts positional arguments', async () => {
-    const document = parse(`
-      subscription {
-        importantEmail
-      }
-    `);
-
-    async function* emptyAsyncIterator() {
-      // Empty
-    }
-
-    const ai = await subscribe(emailSchema, document, {
-      importantEmail: emptyAsyncIterator,
-    });
-
-    // $FlowFixMe
-    ai.return();
-  });
-
   it('accepts multiple subscription fields defined in schema', async () => {
     const pubsub = new EventEmitter();
     const SubscriptionTypeMultiple = new GraphQLObjectType({
@@ -322,24 +303,12 @@ describe('Subscription Initialization Phase', () => {
 
     await expectPromiseToThrow(
       // $DisableFlowOnNegativeTest
-      () => subscribe(null, document),
-      'Expected null to be a GraphQL schema.',
-    );
-
-    await expectPromiseToThrow(
-      // $DisableFlowOnNegativeTest
       () => subscribe({ document }),
       'Expected undefined to be a GraphQL schema.',
     );
   });
 
   it('throws an error if document is missing', async () => {
-    await expectPromiseToThrow(
-      // $DisableFlowOnNegativeTest
-      () => subscribe(emailSchema, null),
-      'Must provide document',
-    );
-
     await expectPromiseToThrow(
       // $DisableFlowOnNegativeTest
       () => subscribe({ schema: emailSchema }),

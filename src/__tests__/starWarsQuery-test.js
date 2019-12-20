@@ -28,25 +28,6 @@ describe('Star Wars Query Tests', () => {
       });
     });
 
-    it('Accepts positional arguments to graphql()', async () => {
-      const source = `
-        query HeroNameQuery {
-          hero {
-            name
-          }
-        }
-      `;
-
-      const result = await graphql(schema, source);
-      expect(result).to.deep.equal({
-        data: {
-          hero: {
-            name: 'R2-D2',
-          },
-        },
-      });
-    });
-
     it('Allows us to query for the ID and friends of R2-D2', async () => {
       const source = `
         query HeroNameAndFriendsQuery {
