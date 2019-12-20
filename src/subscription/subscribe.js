@@ -57,60 +57,7 @@ export type SubscriptionArgs = {|
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-declare function subscribe(
-  SubscriptionArgs,
-  ..._: []
-): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
-/* eslint-disable no-redeclare */
-declare function subscribe(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
-): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
 export function subscribe(
-  argsOrSchema,
-  document,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver,
-  subscribeFieldResolver,
-) {
-  /* eslint-enable no-redeclare */
-  // Extract arguments from object args if provided.
-  return arguments.length === 1
-    ? subscribeImpl(argsOrSchema)
-    : subscribeImpl({
-        schema: argsOrSchema,
-        document,
-        rootValue,
-        contextValue,
-        variableValues,
-        operationName,
-        fieldResolver,
-        subscribeFieldResolver,
-      });
-}
-
-/**
- * This function checks if the error is a GraphQLError. If it is, report it as
- * an ExecutionResult, containing only errors and no data. Otherwise treat the
- * error as a system-class error and re-throw it.
- */
-function reportGraphQLError(error: mixed): ExecutionResult {
-  if (error instanceof GraphQLError) {
-    return { errors: [error] };
-  }
-  throw error;
-}
-
-function subscribeImpl(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
   const {
@@ -163,6 +110,18 @@ function subscribeImpl(
         )
       : ((resultOrStream: any): ExecutionResult),
   );
+}
+
+/**
+ * This function checks if the error is a GraphQLError. If it is, report it as
+ * an ExecutionResult, containing only errors and no data. Otherwise treat the
+ * error as a system-class error and re-throw it.
+ */
+function reportGraphQLError(error: mixed): ExecutionResult {
+  if (error instanceof GraphQLError) {
+    return { errors: [error] };
+  }
+  throw error;
 }
 
 /**
