@@ -152,26 +152,6 @@ async function expectPromiseToThrow(
 
 // Check all error cases when initializing the subscription.
 describe('Subscription Initialization Phase', () => {
-  it('accepts positional arguments', async () => {
-    const document = parse(`
-      subscription {
-        importantEmail
-      }
-    `);
-
-    async function* emptyAsyncIterator() {
-      // Empty
-    }
-
-    // $FlowFixMe[incompatible-call]
-    const ai = await subscribe(emailSchema, document, {
-      importantEmail: emptyAsyncIterator,
-    });
-
-    ai.next();
-    ai.return();
-  });
-
   it('accepts multiple subscription fields defined in schema', async () => {
     const pubsub = new SimplePubSub();
     const SubscriptionTypeMultiple = new GraphQLObjectType({
@@ -328,7 +308,7 @@ describe('Subscription Initialization Phase', () => {
     );
 
     await expectPromiseToThrow(
-      // $FlowExpectedError[incompatible-call]
+      // $FlowExpectedError[prop-missing]
       () => subscribe({ document }),
       'Expected undefined to be a GraphQL schema.',
     );
@@ -342,7 +322,7 @@ describe('Subscription Initialization Phase', () => {
     );
 
     await expectPromiseToThrow(
-      // $FlowExpectedError[incompatible-call]
+      // $FlowExpectedError[prop-missing]
       () => subscribe({ schema: emailSchema }),
       'Must provide document.',
     );
@@ -371,7 +351,7 @@ describe('Subscription Initialization Phase', () => {
   it('should pass through unexpected errors thrown in subscribe', async () => {
     let expectedError;
     try {
-      // $FlowExpectedError[incompatible-call]
+      // $FlowExpectedError[prop-missing]
       await subscribe({ schema: emailSchema, document: {} });
     } catch (error) {
       expectedError = error;
