@@ -99,7 +99,7 @@ const defaultSubscriptionAST = parse(`
 async function createSubscription(
   pubsub,
   schema = emailSchema,
-  ast = defaultSubscriptionAST,
+  document = defaultSubscriptionAST,
 ) {
   const data = {
     inbox: {
@@ -132,7 +132,7 @@ async function createSubscription(
   return {
     sendImportantEmail,
     // $FlowFixMe
-    subscription: await subscribe(schema, ast, data),
+    subscription: await subscribe({ schema, document, rootValue: data }),
   };
 }
 
@@ -147,7 +147,7 @@ async function expectPromiseToThrow(promise, message) {
 
 // Check all error cases when initializing the subscription.
 describe('Subscription Initialization Phase', () => {
-  it('accepts an object with named properties as arguments', async () => {
+  it('accepts positional arguments', async () => {
     const document = parse(`
       subscription {
         importantEmail
@@ -158,12 +158,8 @@ describe('Subscription Initialization Phase', () => {
       // Empty
     }
 
-    const ai = await subscribe({
-      schema: emailSchema,
-      document,
-      rootValue: {
-        importantEmail: emptyAsyncIterator,
-      },
+    const ai = await subscribe(emailSchema, document, {
+      importantEmail: emptyAsyncIterator,
     });
 
     // $FlowFixMe
@@ -216,13 +212,14 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const ast = parse(`
-      subscription {
-        importantEmail
-      }
-    `);
-
-    const subscription = await subscribe(schema, ast);
+    const subscription = await subscribe({
+      schema,
+      document: parse(`
+        subscription {
+          importantEmail
+        }
+      `),
+    });
 
     pubsub.emit('importantEmail', {
       importantEmail: {},
@@ -250,13 +247,14 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const ast = parse(`
-      subscription {
-        importantEmail
-      }
-    `);
-
-    const subscription = await subscribe(schema, ast);
+    const subscription = await subscribe({
+      schema,
+      document: parse(`
+        subscription {
+          importantEmail
+        }
+      `),
+    });
 
     pubsub.emit('importantEmail', {
       importantEmail: {},
@@ -290,19 +288,21 @@ describe('Subscription Initialization Phase', () => {
       },
     });
 
-    const testSchema = new GraphQLSchema({
+    const schema = new GraphQLSchema({
       query: QueryType,
       subscription: SubscriptionTypeMultiple,
     });
 
-    const ast = parse(`
-      subscription {
-        importantEmail
-        nonImportantEmail
-      }
-    `);
+    const subscription = await subscribe({
+      schema,
+      document: parse(`
+        subscription {
+          importantEmail
+          nonImportantEmail
+        }
+      `),
+    });
 
-    const subscription = await subscribe(testSchema, ast);
     // $FlowFixMe
     subscription.next(); // Ask for a result, but ignore it.
 
@@ -417,14 +417,14 @@ describe('Subscription Initialization Phase', () => {
 
     async function testReportsError(schema) {
       // Promise<AsyncIterable<ExecutionResult> | ExecutionResult>
-      const result = await subscribe(
+      const result = await subscribe({
         schema,
-        parse(`
+        document: parse(`
           subscription {
             importantEmail
           }
         `),
-      );
+      });
 
       expect(result).to.deep.equal({
         errors: [
@@ -506,7 +506,7 @@ describe('Subscription Initialization Phase', () => {
     `);
 
     const pubsub = new EventEmitter();
-    const data = {
+    const rootValue = {
       inbox: {
         emails: [
           {
@@ -522,8 +522,11 @@ describe('Subscription Initialization Phase', () => {
       },
     };
 
-    const result = await subscribe(emailSchema, ast, data, null, {
-      priority: 'meow',
+    const result = await subscribe({
+      schema: emailSchema,
+      document: ast,
+      rootValue,
+      variableValues: { priority: 'meow' },
     });
 
     expect(result).to.deep.equal({
@@ -873,9 +876,9 @@ describe('Subscription Publish Phase', () => {
       },
     );
 
-    const subscription = await subscribe(
-      erroringEmailSchema,
-      parse(`
+    const subscription = await subscribe({
+      schema: erroringEmailSchema,
+      document: parse(`
         subscription {
           importantEmail {
             email {
@@ -884,7 +887,7 @@ describe('Subscription Publish Phase', () => {
           }
         }
       `),
-    );
+    });
 
     // $FlowFixMe
     const payload1 = await subscription.next();
@@ -945,9 +948,9 @@ describe('Subscription Publish Phase', () => {
       email => email,
     );
 
-    const subscription = await subscribe(
-      erroringEmailSchema,
-      parse(`
+    const subscription = await subscribe({
+      schema: erroringEmailSchema,
+      document: parse(`
         subscription {
           importantEmail {
             email {
@@ -956,7 +959,7 @@ describe('Subscription Publish Phase', () => {
           }
         }
       `),
-    );
+    });
 
     // $FlowFixMe
     const payload1 = await subscription.next();
@@ -999,9 +1002,9 @@ describe('Subscription Publish Phase', () => {
       email => email,
     );
 
-    const subscription = await subscribe(
-      erroringEmailSchema,
-      parse(`
+    const subscription = await subscribe({
+      schema: erroringEmailSchema,
+      document: parse(`
         subscription {
           importantEmail {
             email {
@@ -1010,7 +1013,7 @@ describe('Subscription Publish Phase', () => {
           }
         }
       `),
-    );
+    });
 
     // $FlowFixMe
     const payload1 = await subscription.next();
