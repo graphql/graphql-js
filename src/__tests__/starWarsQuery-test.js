@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { graphql, graphqlSync } from '../graphql';
+import { graphql } from '../graphql';
 
 import { StarWarsSchema as schema } from './starWarsSchema';
 
@@ -24,28 +24,6 @@ describe('Star Wars Query Tests', () => {
           },
         },
       });
-    });
-
-    it('Accepts positional arguments to graphql()', async () => {
-      const source = `
-        query HeroNameQuery {
-          hero {
-            name
-          }
-        }
-      `;
-
-      const result = await graphql(schema, source);
-      expect(result).to.deep.equal({
-        data: {
-          hero: {
-            name: 'R2-D2',
-          },
-        },
-      });
-
-      const syncResult = graphqlSync(schema, source);
-      expect(syncResult).to.deep.equal(result);
     });
 
     it('Allows us to query for the ID and friends of R2-D2', async () => {
