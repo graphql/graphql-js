@@ -6,7 +6,6 @@ import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
 
-import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
@@ -786,22 +785,17 @@ describe('Schema Builder', () => {
     const testScalar = assertScalarType(schema.getType('TestScalar'));
     const testDirective = assertDirective(schema.getDirective('test'));
 
-    const restoredSchemaAST = {
-      kind: Kind.DOCUMENT,
-      definitions: [
-        schema.astNode,
-        query.astNode,
-        testInput.astNode,
-        testEnum.astNode,
-        testUnion.astNode,
-        testInterface.astNode,
-        testType.astNode,
-        testScalar.astNode,
-        testDirective.astNode,
-      ],
-      loc: undefined,
-    };
-    expect(restoredSchemaAST).to.be.deep.equal(ast);
+    expect([
+      schema.astNode,
+      query.astNode,
+      testInput.astNode,
+      testEnum.astNode,
+      testUnion.astNode,
+      testInterface.astNode,
+      testType.astNode,
+      testScalar.astNode,
+      testDirective.astNode,
+    ]).to.be.deep.equal(ast.definitions);
 
     const testField = query.getFields().testField;
     expect(printASTNode(testField)).to.equal(

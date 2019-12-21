@@ -6,7 +6,6 @@ import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
 
-import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
@@ -101,7 +100,7 @@ const testSchemaDefinitions = testSchemaAST.definitions.map(print);
 function printTestSchemaChanges(extendedSchema) {
   const ast = parse(printSchema(extendedSchema));
   return print({
-    kind: Kind.DOCUMENT,
+    ...ast,
     definitions: ast.definitions.filter(
       node => !testSchemaDefinitions.includes(print(node)),
     ),
@@ -333,7 +332,7 @@ describe('extendSchema', () => {
   });
 
   it('correctly assign AST nodes to new and extended types', () => {
-    const extendedSchema = extendTestSchema(`
+    const firstExtensionAST = parse(`
       extend type Query {
         newField(testArg: TestInput): TestEnum
       }
@@ -362,7 +361,9 @@ describe('extendSchema', () => {
         testInputField: TestEnum
       }
     `);
-    const ast = parse(`
+    const extendedSchema = extendSchema(testSchema, firstExtensionAST);
+
+    const secondExtensionAST = parse(`
       extend type Query {
         oneMoreNewField: TestUnion
       }
@@ -395,7 +396,10 @@ describe('extendSchema', () => {
 
       directive @test(arg: Int) repeatable on FIELD | SCALAR
     `);
-    const extendedTwiceSchema = extendSchema(extendedSchema, ast);
+    const extendedTwiceSchema = extendSchema(
+      extendedSchema,
+      secondExtensionAST,
+    );
 
     const query = assertObjectType(extendedTwiceSchema.getType('Query'));
     const someEnum = assertEnumType(extendedTwiceSchema.getType('SomeEnum'));
@@ -429,41 +433,30 @@ describe('extendSchema', () => {
     expect(testInput).to.include({ extensionASTNodes: undefined });
     expect(testInterface).to.include({ extensionASTNodes: undefined });
 
-    expect(query.extensionASTNodes).to.have.lengthOf(2);
-    expect(someScalar.extensionASTNodes).to.have.lengthOf(2);
-    expect(someEnum.extensionASTNodes).to.have.lengthOf(2);
-    expect(someUnion.extensionASTNodes).to.have.lengthOf(2);
-    expect(someInput.extensionASTNodes).to.have.lengthOf(2);
-    expect(someInterface.extensionASTNodes).to.have.lengthOf(2);
+    invariant(query.extensionASTNodes);
+    invariant(someScalar.extensionASTNodes);
+    invariant(someEnum.extensionASTNodes);
+    invariant(someUnion.extensionASTNodes);
+    invariant(someInput.extensionASTNodes);
+    invariant(someInterface.extensionASTNodes);
 
-    invariant(testInput.astNode);
-    invariant(testEnum.astNode);
-    invariant(testUnion.astNode);
-    invariant(testInterface.astNode);
-    invariant(testType.astNode);
-    invariant(testDirective.astNode);
-
-    const restoredExtensionAST = {
-      kind: Kind.DOCUMENT,
-      definitions: [
-        testInput.astNode,
-        testEnum.astNode,
-        testUnion.astNode,
-        testInterface.astNode,
-        testType.astNode,
-        testDirective.astNode,
-      ].concat(
-        query.extensionASTNodes || [],
-        someScalar.extensionASTNodes || [],
-        someEnum.extensionASTNodes || [],
-        someUnion.extensionASTNodes || [],
-        someInput.extensionASTNodes || [],
-        someInterface.extensionASTNodes || [],
-      ),
-    };
-    expect(
-      printSchema(extendSchema(testSchema, restoredExtensionAST)),
-    ).to.be.equal(printSchema(extendedTwiceSchema));
+    expect([
+      testInput.astNode,
+      testEnum.astNode,
+      testUnion.astNode,
+      testInterface.astNode,
+      testType.astNode,
+      testDirective.astNode,
+      ...query.extensionASTNodes,
+      ...someScalar.extensionASTNodes,
+      ...someEnum.extensionASTNodes,
+      ...someUnion.extensionASTNodes,
+      ...someInput.extensionASTNodes,
+      ...someInterface.extensionASTNodes,
+    ]).to.have.members([
+      ...firstExtensionAST.definitions,
+      ...secondExtensionAST.definitions,
+    ]);
 
     const newField = query.getFields().newField;
     expect(printASTNode(newField)).to.equal(
