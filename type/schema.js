@@ -322,9 +322,7 @@ function typeMapReducer(map, type) {
 
   if ((0, _definition.isUnionType)(namedType)) {
     reducedMap = namedType.getTypes().reduce(typeMapReducer, reducedMap);
-  }
-
-  if ((0, _definition.isObjectType)(namedType) || (0, _definition.isInterfaceType)(namedType)) {
+  } else if ((0, _definition.isObjectType)(namedType) || (0, _definition.isInterfaceType)(namedType)) {
     reducedMap = namedType.getInterfaces().reduce(typeMapReducer, reducedMap);
 
     for (var _i14 = 0, _objectValues2 = (0, _objectValues5.default)(namedType.getFields()); _i14 < _objectValues2.length; _i14++) {
@@ -335,9 +333,7 @@ function typeMapReducer(map, type) {
       reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       reducedMap = typeMapReducer(reducedMap, field.type);
     }
-  }
-
-  if ((0, _definition.isInputObjectType)(namedType)) {
+  } else if ((0, _definition.isInputObjectType)(namedType)) {
     for (var _i16 = 0, _objectValues4 = (0, _objectValues5.default)(namedType.getFields()); _i16 < _objectValues4.length; _i16++) {
       var _field = _objectValues4[_i16];
       reducedMap = typeMapReducer(reducedMap, _field.type);

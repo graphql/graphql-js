@@ -392,9 +392,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
 
   if (isUnionType(namedType)) {
     reducedMap = namedType.getTypes().reduce(typeMapReducer, reducedMap);
-  }
-
-  if (isObjectType(namedType) || isInterfaceType(namedType)) {
+  } else if (isObjectType(namedType) || isInterfaceType(namedType)) {
     reducedMap = namedType.getInterfaces().reduce(typeMapReducer, reducedMap);
 
     for (const field of objectValues(namedType.getFields())) {
@@ -402,9 +400,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
       reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       reducedMap = typeMapReducer(reducedMap, field.type);
     }
-  }
-
-  if (isInputObjectType(namedType)) {
+  } else if (isInputObjectType(namedType)) {
     for (const field of objectValues(namedType.getFields())) {
       reducedMap = typeMapReducer(reducedMap, field.type);
     }
