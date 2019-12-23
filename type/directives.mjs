@@ -126,7 +126,7 @@ export var GraphQLDeprecatedDirective = new GraphQLDirective({
   args: {
     reason: {
       type: GraphQLString,
-      description: 'Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).',
+      description: 'Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).',
       defaultValue: DEFAULT_DEPRECATION_REASON
     }
   }
