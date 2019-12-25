@@ -27,11 +27,11 @@ export class Source {
     this.locationOffset = locationOffset || { line: 1, column: 1 };
     devAssert(
       this.locationOffset.line > 0,
-      'line in locationOffset is 1-indexed and must be positive',
+      'line in locationOffset is 1-indexed and must be positive.',
     );
     devAssert(
       this.locationOffset.column > 0,
-      'column in locationOffset is 1-indexed and must be positive',
+      'column in locationOffset is 1-indexed and must be positive.',
     );
   }
 }

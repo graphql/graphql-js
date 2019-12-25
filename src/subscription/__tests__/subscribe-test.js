@@ -337,13 +337,13 @@ describe('Subscription Initialization Phase', () => {
     await expectPromiseToThrow(
       // $DisableFlowOnNegativeTest
       () => subscribe(emailSchema, null),
-      'Must provide document',
+      'Must provide document.',
     );
 
     await expectPromiseToThrow(
       // $DisableFlowOnNegativeTest
       () => subscribe({ schema: emailSchema }),
-      'Must provide document',
+      'Must provide document.',
     );
   });
 
@@ -386,7 +386,7 @@ describe('Subscription Initialization Phase', () => {
 
     await expectPromiseToThrow(
       () => createSubscription(pubsub, invalidEmailSchema),
-      'Subscription field must return Async Iterable. Received: "test"',
+      'Subscription field must return Async Iterable. Received: "test".',
     );
   });
 

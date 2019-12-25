@@ -303,7 +303,7 @@ describe('Type System: Objects', () => {
       },
     });
     expect(() => objType.getFields()).to.throw(
-      'SomeObject.f field config must be an object',
+      'SomeObject.f field config must be an object.',
     );
   });
 

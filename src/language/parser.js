@@ -171,7 +171,7 @@ class Parser {
     const sourceObj = typeof source === 'string' ? new Source(source) : source;
     devAssert(
       sourceObj instanceof Source,
-      `Must provide Source. Received: ${inspect(sourceObj)}`,
+      `Must provide Source. Received: ${inspect(sourceObj)}.`,
     );
 
     this._lexer = new Lexer(sourceObj);

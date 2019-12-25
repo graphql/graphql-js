@@ -66,7 +66,7 @@ export function stripIgnoredCharacters(source: string | Source): string {
   const sourceObj = typeof source === 'string' ? new Source(source) : source;
   if (!(sourceObj instanceof Source)) {
     throw new TypeError(
-      `Must provide string or Source. Received: ${inspect(sourceObj)}`,
+      `Must provide string or Source. Received: ${inspect(sourceObj)}.`,
     );
   }
 

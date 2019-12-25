@@ -27,7 +27,7 @@ describe('Printer: Query document', () => {
     const badAST = { random: 'Data' };
     // $DisableFlowOnNegativeTest
     expect(() => print(badAST)).to.throw(
-      'Invalid AST Node: { random: "Data" }',
+      'Invalid AST Node: { random: "Data" }.',
     );
   });
 

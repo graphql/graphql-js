@@ -32,7 +32,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     // $DisableFlowOnNegativeTest
-    expect(() => execute({ schema })).to.throw('Must provide document');
+    expect(() => execute({ schema })).to.throw('Must provide document.');
   });
 
   it('throws if no schema is provided', () => {

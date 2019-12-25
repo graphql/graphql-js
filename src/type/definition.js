@@ -765,7 +765,7 @@ function defineFieldMap<TSource, TContext>(
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     devAssert(
       isPlainObj(fieldConfig),
-      `${config.name}.${fieldName} field config must be an object`,
+      `${config.name}.${fieldName} field config must be an object.`,
     );
     devAssert(
       !('isDeprecated' in fieldConfig),
