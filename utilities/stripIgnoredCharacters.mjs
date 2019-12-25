@@ -60,7 +60,7 @@ export function stripIgnoredCharacters(source) {
   var sourceObj = typeof source === 'string' ? new Source(source) : source;
 
   if (!(sourceObj instanceof Source)) {
-    throw new TypeError("Must provide string or Source. Received: ".concat(inspect(sourceObj)));
+    throw new TypeError("Must provide string or Source. Received: ".concat(inspect(sourceObj), "."));
   }
 
   var body = sourceObj.body;

@@ -26,8 +26,8 @@ var Source = function Source(body, name, locationOffset) {
     line: 1,
     column: 1
   };
-  this.locationOffset.line > 0 || (0, _devAssert.default)(0, 'line in locationOffset is 1-indexed and must be positive');
-  this.locationOffset.column > 0 || (0, _devAssert.default)(0, 'column in locationOffset is 1-indexed and must be positive');
+  this.locationOffset.line > 0 || (0, _devAssert.default)(0, 'line in locationOffset is 1-indexed and must be positive.');
+  this.locationOffset.column > 0 || (0, _devAssert.default)(0, 'column in locationOffset is 1-indexed and must be positive.');
 }; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
 

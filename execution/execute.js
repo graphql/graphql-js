@@ -133,7 +133,7 @@ function buildResponse(exeContext, data) {
 
 
 function assertValidExecutionArguments(schema, document, rawVariableValues) {
-  document || (0, _devAssert.default)(0, 'Must provide document'); // If the schema used for execution is invalid, throw an error.
+  document || (0, _devAssert.default)(0, 'Must provide document.'); // If the schema used for execution is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema); // Variables, if provided, must be an object.
 

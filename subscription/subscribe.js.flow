@@ -283,9 +283,10 @@ export function createSourceEventStream(
         // Note: isAsyncIterable above ensures this will be correct.
         return ((eventStream: any): AsyncIterable<mixed>);
       }
+
       throw new Error(
-        'Subscription field must return Async Iterable. Received: ' +
-          inspect(eventStream),
+        'Subscription field must return Async Iterable. ' +
+          `Received: ${inspect(eventStream)}.`,
       );
     });
   } catch (error) {

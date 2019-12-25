@@ -155,7 +155,7 @@ export function createSourceEventStream(schema, document, rootValue, contextValu
         return eventStream;
       }
 
-      throw new Error('Subscription field must return Async Iterable. Received: ' + inspect(eventStream));
+      throw new Error('Subscription field must return Async Iterable. ' + "Received: ".concat(inspect(eventStream), "."));
     });
   } catch (error) {
     // As with reportGraphQLError above, if the error is a GraphQLError, report

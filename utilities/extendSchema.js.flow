@@ -99,7 +99,7 @@ export function extendSchema(
 
   devAssert(
     documentAST && documentAST.kind === Kind.DOCUMENT,
-    'Must provide valid Document AST',
+    'Must provide valid Document AST.',
   );
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
@@ -211,7 +211,7 @@ export function extendSchema(
   function replaceDirectives(
     directives: $ReadOnlyArray<GraphQLDirective>,
   ): Array<GraphQLDirective> {
-    devAssert(directives, 'schema must have default directives');
+    devAssert(directives, 'schema must have default directives.');
 
     return directives.map(directive => {
       const config = directive.toConfig();

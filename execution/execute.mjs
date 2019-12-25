@@ -122,7 +122,7 @@ function buildResponse(exeContext, data) {
 
 
 export function assertValidExecutionArguments(schema, document, rawVariableValues) {
-  document || devAssert(0, 'Must provide document'); // If the schema used for execution is invalid, throw an error.
+  document || devAssert(0, 'Must provide document.'); // If the schema used for execution is invalid, throw an error.
 
   assertValidSchema(schema); // Variables, if provided, must be an object.
 

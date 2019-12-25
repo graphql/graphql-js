@@ -160,7 +160,7 @@ export function astFromValue(value, type) {
       };
     }
 
-    throw new TypeError("Cannot convert value to AST: ".concat(inspect(serialized)));
+    throw new TypeError("Cannot convert value to AST: ".concat(inspect(serialized), "."));
   } // Not reachable. All possible input types have been considered.
 
 

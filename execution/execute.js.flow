@@ -251,7 +251,7 @@ export function assertValidExecutionArguments(
   document: DocumentNode,
   rawVariableValues: ?{ +[variable: string]: mixed, ... },
 ): void {
-  devAssert(document, 'Must provide document');
+  devAssert(document, 'Must provide document.');
 
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);

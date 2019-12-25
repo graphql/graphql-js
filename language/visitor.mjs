@@ -222,7 +222,7 @@ export function visit(root, visitor) {
 
     if (!Array.isArray(node)) {
       if (!isNode(node)) {
-        throw new Error('Invalid AST Node: ' + inspect(node));
+        throw new Error("Invalid AST Node: ".concat(inspect(node), "."));
       }
 
       var visitFn = getVisitFn(visitor, node.kind, isLeaving);

@@ -61,7 +61,7 @@ var Parser =
 function () {
   function Parser(source, options) {
     var sourceObj = typeof source === 'string' ? new Source(source) : source;
-    sourceObj instanceof Source || devAssert(0, "Must provide Source. Received: ".concat(inspect(sourceObj)));
+    sourceObj instanceof Source || devAssert(0, "Must provide Source. Received: ".concat(inspect(sourceObj), "."));
     this._lexer = new Lexer(sourceObj);
     this._options = options || {
       noLocation: false,

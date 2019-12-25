@@ -61,7 +61,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 function extendSchema(schema, documentAST, options) {
   (0, _schema.assertSchema)(schema);
-  documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST');
+  documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST.');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     (0, _validate.assertValidSDLExtension)(documentAST, schema);
@@ -152,7 +152,7 @@ function extendSchema(schema, documentAST, options) {
   }
 
   function replaceDirectives(directives) {
-    directives || (0, _devAssert.default)(0, 'schema must have default directives');
+    directives || (0, _devAssert.default)(0, 'schema must have default directives.');
     return directives.map(function (directive) {
       var config = directive.toConfig();
       return new _directives.GraphQLDirective(_objectSpread({}, config, {

@@ -619,7 +619,7 @@ function defineFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
   isPlainObj(fieldMap) || (0, _devAssert.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return (0, _mapValue.default)(fieldMap, function (fieldConfig, fieldName) {
-    isPlainObj(fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object"));
+    isPlainObj(fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object."));
     !('isDeprecated' in fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
     fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function' || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat((0, _inspect.default)(fieldConfig.resolve), "."));
     var argsConfig = fieldConfig.args || {};

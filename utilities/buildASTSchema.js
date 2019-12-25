@@ -69,7 +69,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  */
 function buildASTSchema(documentAST, options) {
-  documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST');
+  documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST.');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     (0, _validate.assertValidSDL)(documentAST);

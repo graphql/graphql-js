@@ -234,7 +234,7 @@ function visit(root, visitor) {
 
     if (!Array.isArray(node)) {
       if (!(0, _ast.isNode)(node)) {
-        throw new Error('Invalid AST Node: ' + (0, _inspect.default)(node));
+        throw new Error("Invalid AST Node: ".concat((0, _inspect.default)(node), "."));
       }
 
       var visitFn = getVisitFn(visitor, node.kind, isLeaving);

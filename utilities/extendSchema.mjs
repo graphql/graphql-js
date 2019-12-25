@@ -39,7 +39,7 @@ import { ASTDefinitionBuilder } from './buildASTSchema';
  */
 export function extendSchema(schema, documentAST, options) {
   assertSchema(schema);
-  documentAST && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST');
+  documentAST && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST.');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     assertValidSDLExtension(documentAST, schema);
@@ -130,7 +130,7 @@ export function extendSchema(schema, documentAST, options) {
   }
 
   function replaceDirectives(directives) {
-    directives || devAssert(0, 'schema must have default directives');
+    directives || devAssert(0, 'schema must have default directives.');
     return directives.map(function (directive) {
       var config = directive.toConfig();
       return new GraphQLDirective(_objectSpread({}, config, {

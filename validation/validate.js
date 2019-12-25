@@ -46,7 +46,7 @@ function validate(schema, documentAST) {
   var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
     maxErrors: undefined
   };
-  documentAST || (0, _devAssert.default)(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
+  documentAST || (0, _devAssert.default)(0, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);
   var abortObj = Object.freeze({});

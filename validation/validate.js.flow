@@ -43,7 +43,7 @@ export function validate(
   typeInfo?: TypeInfo = new TypeInfo(schema),
   options?: {| maxErrors?: number |} = { maxErrors: undefined },
 ): $ReadOnlyArray<GraphQLError> {
-  devAssert(documentAST, 'Must provide document');
+  devAssert(documentAST, 'Must provide document.');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
 
