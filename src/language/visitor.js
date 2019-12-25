@@ -294,7 +294,7 @@ export function visit(
     let result;
     if (!Array.isArray(node)) {
       if (!isNode(node)) {
-        throw new Error('Invalid AST Node: ' + inspect(node));
+        throw new Error(`Invalid AST Node: ${inspect(node)}.`);
       }
       const visitFn = getVisitFn(visitor, node.kind, isLeaving);
       if (visitFn) {

@@ -118,7 +118,7 @@ export function buildASTSchema(
 ): GraphQLSchema {
   devAssert(
     documentAST && documentAST.kind === Kind.DOCUMENT,
-    'Must provide valid Document AST',
+    'Must provide valid Document AST.',
   );
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {

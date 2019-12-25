@@ -25,7 +25,7 @@ export function isValidNameError(
   name: string,
   node?: ASTNode | void,
 ): GraphQLError | void {
-  devAssert(typeof name === 'string', 'Expected string');
+  devAssert(typeof name === 'string', 'Expected name to be a string.');
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new GraphQLError(
       `Name "${name}" must not begin with "__", which is reserved by GraphQL introspection.`,
