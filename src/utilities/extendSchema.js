@@ -179,7 +179,7 @@ export function extendSchema(
     ...operationTypes,
     types: objectValues(typeMap),
     directives: [
-      ...replaceDirectives(schemaConfig.directives),
+      ...schemaConfig.directives.map(replaceDirective),
       ...astBuilder.buildDirectives(directiveDefs),
     ],
     astNode: schemaDef || schemaConfig.astNode,
@@ -208,17 +208,11 @@ export function extendSchema(
     return ((typeMap[type.name]: any): T);
   }
 
-  function replaceDirectives(
-    directives: $ReadOnlyArray<GraphQLDirective>,
-  ): Array<GraphQLDirective> {
-    devAssert(directives, 'schema must have default directives.');
-
-    return directives.map(directive => {
-      const config = directive.toConfig();
-      return new GraphQLDirective({
-        ...config,
-        args: mapValue(config.args, extendArg),
-      });
+  function replaceDirective(directive: GraphQLDirective): GraphQLDirective {
+    const config = directive.toConfig();
+    return new GraphQLDirective({
+      ...config,
+      args: mapValue(config.args, extendArg),
     });
   }
 
