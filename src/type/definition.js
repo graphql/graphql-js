@@ -553,7 +553,7 @@ export class GraphQLScalarType {
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
-  constructor(config: GraphQLScalarTypeConfig<mixed, mixed>): void {
+  constructor(config: $ReadOnly<GraphQLScalarTypeConfig<mixed, mixed>>): void {
     const parseValue = config.parseValue || identityFunc;
     this.name = config.name;
     this.description = config.description;
@@ -678,7 +678,7 @@ export class GraphQLObjectType {
   _fields: Thunk<GraphQLFieldMap<any, any>>;
   _interfaces: Thunk<Array<GraphQLInterfaceType>>;
 
-  constructor(config: GraphQLObjectTypeConfig<any, any>): void {
+  constructor(config: $ReadOnly<GraphQLObjectTypeConfig<any, any>>): void {
     this.name = config.name;
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
@@ -739,9 +739,10 @@ defineToStringTag(GraphQLObjectType);
 defineToJSON(GraphQLObjectType);
 
 function defineInterfaces(
-  config:
+  config: $ReadOnly<
     | GraphQLObjectTypeConfig<mixed, mixed>
     | GraphQLInterfaceTypeConfig<mixed, mixed>,
+  >,
 ): Array<GraphQLInterfaceType> {
   const interfaces = resolveThunk(config.interfaces) || [];
   devAssert(
@@ -752,9 +753,10 @@ function defineInterfaces(
 }
 
 function defineFieldMap<TSource, TContext>(
-  config:
+  config: $ReadOnly<
     | GraphQLObjectTypeConfig<TSource, TContext>
     | GraphQLInterfaceTypeConfig<TSource, TContext>,
+  >,
 ): GraphQLFieldMap<TSource, TContext> {
   const fieldMap = resolveThunk(config.fields) || {};
   devAssert(
@@ -983,7 +985,7 @@ export class GraphQLInterfaceType {
   _fields: Thunk<GraphQLFieldMap<any, any>>;
   _interfaces: Thunk<Array<GraphQLInterfaceType>>;
 
-  constructor(config: GraphQLInterfaceTypeConfig<any, any>): void {
+  constructor(config: $ReadOnly<GraphQLInterfaceTypeConfig<any, any>>): void {
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1092,7 +1094,7 @@ export class GraphQLUnionType {
 
   _types: Thunk<Array<GraphQLObjectType>>;
 
-  constructor(config: GraphQLUnionTypeConfig<any, any>): void {
+  constructor(config: $ReadOnly<GraphQLUnionTypeConfig<any, any>>): void {
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1143,7 +1145,7 @@ defineToStringTag(GraphQLUnionType);
 defineToJSON(GraphQLUnionType);
 
 function defineTypes(
-  config: GraphQLUnionTypeConfig<mixed, mixed>,
+  config: $ReadOnly<GraphQLUnionTypeConfig<mixed, mixed>>,
 ): Array<GraphQLObjectType> {
   const types = resolveThunk(config.types) || [];
   devAssert(
@@ -1200,7 +1202,7 @@ export class GraphQLEnumType /* <T> */ {
   _valueLookup: Map<any /* T */, GraphQLEnumValue>;
   _nameLookup: ObjMap<GraphQLEnumValue>;
 
-  constructor(config: GraphQLEnumTypeConfig /* <T> */): void {
+  constructor(config: $ReadOnly<GraphQLEnumTypeConfig /* <T> */>): void {
     this.name = config.name;
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
@@ -1374,7 +1376,7 @@ export class GraphQLInputObjectType {
 
   _fields: Thunk<GraphQLInputFieldMap>;
 
-  constructor(config: GraphQLInputObjectTypeConfig): void {
+  constructor(config: $ReadOnly<GraphQLInputObjectTypeConfig>): void {
     this.name = config.name;
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
@@ -1426,7 +1428,7 @@ defineToStringTag(GraphQLInputObjectType);
 defineToJSON(GraphQLInputObjectType);
 
 function defineInputFieldMap(
-  config: GraphQLInputObjectTypeConfig,
+  config: $ReadOnly<GraphQLInputObjectTypeConfig>,
 ): GraphQLInputFieldMap {
   const fieldMap = resolveThunk(config.fields) || {};
   devAssert(

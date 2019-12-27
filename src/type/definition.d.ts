@@ -292,7 +292,7 @@ export class GraphQLScalarType {
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
 
-  constructor(config: GraphQLScalarTypeConfig<any, any>);
+  constructor(config: Readonly<GraphQLScalarTypeConfig<any, any>>);
 
   toConfig(): GraphQLScalarTypeConfig<any, any> & {
     serialize: GraphQLScalarSerializer<any>;
@@ -381,7 +381,9 @@ export class GraphQLObjectType<
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 
-  constructor(config: GraphQLObjectTypeConfig<TSource, TContext, TArgs>);
+  constructor(
+    config: Readonly<GraphQLObjectTypeConfig<TSource, TContext, TArgs>>,
+  );
   getFields(): GraphQLFieldMap<any, TContext, TArgs>;
   getInterfaces(): GraphQLInterfaceType[];
 
@@ -560,7 +562,7 @@ export class GraphQLInterfaceType {
   astNode?: Maybe<InterfaceTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 
-  constructor(config: GraphQLInterfaceTypeConfig<any, any>);
+  constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>);
   getFields(): GraphQLFieldMap<any, any>;
   getInterfaces(): GraphQLInterfaceType[];
 
@@ -628,7 +630,7 @@ export class GraphQLUnionType {
   astNode: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 
-  constructor(config: GraphQLUnionTypeConfig<any, any>);
+  constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>);
   getTypes(): GraphQLObjectType[];
 
   toConfig(): GraphQLUnionTypeConfig<any, any> & {
@@ -685,7 +687,7 @@ export class GraphQLEnumType {
   astNode: Maybe<EnumTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 
-  constructor(config: GraphQLEnumTypeConfig);
+  constructor(config: Readonly<GraphQLEnumTypeConfig>);
   getValues(): GraphQLEnumValue[];
   getValue(name: string): Maybe<GraphQLEnumValue>;
   serialize(value: any): Maybe<string>;
@@ -763,7 +765,7 @@ export class GraphQLInputObjectType {
   astNode: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
 
-  constructor(config: GraphQLInputObjectTypeConfig);
+  constructor(config: Readonly<GraphQLInputObjectTypeConfig>);
   getFields(): GraphQLInputFieldMap;
 
   toConfig(): GraphQLInputObjectTypeConfig & {
