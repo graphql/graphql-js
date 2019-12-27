@@ -106,7 +106,7 @@ export function extendSchema(schema, documentAST, options) {
 
   return new GraphQLSchema(_objectSpread({}, operationTypes, {
     types: objectValues(typeMap),
-    directives: [].concat(replaceDirectives(schemaConfig.directives), astBuilder.buildDirectives(directiveDefs)),
+    directives: [].concat(schemaConfig.directives.map(replaceDirective), astBuilder.buildDirectives(directiveDefs)),
     astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: concatMaybeArrays(schemaConfig.extensionASTNodes, schemaExtensions)
   })); // Below are functions used for producing this schema that have closed over
@@ -129,14 +129,11 @@ export function extendSchema(schema, documentAST, options) {
     return typeMap[type.name];
   }
 
-  function replaceDirectives(directives) {
-    directives || devAssert(0, 'schema must have default directives.');
-    return directives.map(function (directive) {
-      var config = directive.toConfig();
-      return new GraphQLDirective(_objectSpread({}, config, {
-        args: mapValue(config.args, extendArg)
-      }));
-    });
+  function replaceDirective(directive) {
+    var config = directive.toConfig();
+    return new GraphQLDirective(_objectSpread({}, config, {
+      args: mapValue(config.args, extendArg)
+    }));
   }
 
   function extendNamedType(type) {
