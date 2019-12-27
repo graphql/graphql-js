@@ -88,6 +88,19 @@ describe('Schema Builder', () => {
     });
   });
 
+  it('Ignores non-type system definitions', () => {
+    const sdl = `
+      type Query {
+        str: String
+      }
+
+      fragment SomeFragment on Query {
+        str
+      }
+    `;
+    expect(() => buildSchema(sdl)).to.not.throw();
+  });
+
   it('Empty type', () => {
     const sdl = dedent`
       type EmptyType
@@ -874,5 +887,28 @@ describe('Schema Builder', () => {
     `;
     buildSchema(sdl, { assumeValid: true });
     buildSchema(sdl, { assumeValidSDL: true });
+  });
+
+  it('Throws on unknown types', () => {
+    const sdl = `
+      type Query {
+        unknown: UnknownType
+      }
+    `;
+    expect(() => buildSchema(sdl, { assumeValidSDL: true })).to.throw(
+      'Type "UnknownType" not found in document.',
+    );
+  });
+
+  it('Rejects invalid AST', () => {
+    // $DisableFlowOnNegativeTest
+    expect(() => buildASTSchema(null)).to.throw(
+      'Must provide valid Document AST',
+    );
+
+    // $DisableFlowOnNegativeTest
+    expect(() => buildASTSchema({})).to.throw(
+      'Must provide valid Document AST',
+    );
   });
 });

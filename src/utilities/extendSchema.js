@@ -169,9 +169,8 @@ export function extendSchema(
     subscription:
       schemaConfig.subscription && replaceNamedType(schemaConfig.subscription),
     // Then, incorporate schema definition and all schema extensions.
-    ...astBuilder.getOperationTypes(
-      concatMaybeArrays(schemaDef && [schemaDef], schemaExtensions) || [],
-    ),
+    ...(schemaDef && astBuilder.getOperationTypes([schemaDef])),
+    ...astBuilder.getOperationTypes(schemaExtensions),
   };
 
   // Then produce and return a Schema with these types.
