@@ -42,14 +42,16 @@ export { buildClientSchema } from './buildClientSchema';
 export {
   buildASTSchema,
   buildSchema,
-  // @deprecated: Get the description from a schema AST node and supports legacy
-  // syntax for specifying descriptions - will be removed in v16
-  getDescription,
   BuildSchemaOptions,
 } from './buildASTSchema';
 
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
-export { extendSchema } from './extendSchema';
+export {
+  extendSchema,
+  // @deprecated: Get the description from a schema AST node and supports legacy
+  // syntax for specifying descriptions - will be removed in v16
+  getDescription,
+} from './extendSchema';
 
 // Sort a GraphQLSchema.
 export { lexicographicSortSchema } from './lexicographicSortSchema';

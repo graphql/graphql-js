@@ -1067,7 +1067,7 @@ describe('Schema Builder', () => {
       }
     `;
     expect(() => buildSchema(sdl, { assumeValidSDL: true })).to.throw(
-      'Type "UnknownType" not found in document.',
+      'Unknown type: "UnknownType".',
     );
   });
 

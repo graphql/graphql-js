@@ -1,30 +1,8 @@
 import Maybe from '../tsutils/Maybe';
-import {
-  DocumentNode,
-  Location,
-  StringValueNode,
-  TypeDefinitionNode,
-  NamedTypeNode,
-  DirectiveDefinitionNode,
-  FieldDefinitionNode,
-  InputValueDefinitionNode,
-  EnumValueDefinitionNode,
-  TypeNode,
-} from '../language/ast';
-import {
-  GraphQLNamedType,
-  GraphQLFieldConfig,
-  GraphQLInputField,
-  GraphQLEnumValueConfig,
-  GraphQLType,
-  GraphQLArgumentConfig,
-  GraphQLInputFieldConfig,
-} from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
+import { DocumentNode } from '../language/ast';
 import { Source } from '../language/source';
 import { GraphQLSchema, GraphQLSchemaValidationOptions } from '../type/schema';
 import { ParseOptions } from '../language/parser';
-import { dedentBlockStringValue } from '../language/blockString';
 
 interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**
@@ -65,44 +43,6 @@ export function buildASTSchema(
   documentAST: DocumentNode,
   options?: BuildSchemaOptions,
 ): GraphQLSchema;
-
-type TypeDefinitionsMap = { [key: string]: TypeDefinitionNode };
-type TypeResolver = (typeRef: NamedTypeNode) => GraphQLNamedType;
-
-export class ASTDefinitionBuilder {
-  constructor(options: Maybe<BuildSchemaOptions>, resolveType: TypeResolver);
-
-  getNamedType(node: NamedTypeNode): GraphQLNamedType;
-
-  getWrappedType(node: TypeNode): GraphQLType;
-
-  buildDirective(directive: DirectiveDefinitionNode): GraphQLDirective;
-
-  buildField(field: FieldDefinitionNode): GraphQLFieldConfig<any, any>;
-
-  buildArg(value: InputValueDefinitionNode): GraphQLArgumentConfig;
-
-  buildInputField(value: InputValueDefinitionNode): GraphQLInputFieldConfig;
-
-  buildEnumValue(value: EnumValueDefinitionNode): GraphQLEnumValueConfig;
-
-  buildType(node: NamedTypeNode | TypeDefinitionNode): GraphQLNamedType;
-}
-
-/**
- * Given an ast node, returns its string description.
- * @deprecated: provided to ease adoption and will be removed in v16.
- *
- * Accepts options as a second argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
- */
-export function getDescription(
-  node: { readonly description?: StringValueNode; readonly loc?: Location },
-  options: Maybe<BuildSchemaOptions>,
-): string | undefined;
 
 /**
  * A helper function to build a GraphQLSchema directly from a source
