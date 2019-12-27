@@ -46,7 +46,7 @@ export class GraphQLSchema {
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 
-  constructor(config: GraphQLSchemaConfig);
+  constructor(config: Readonly<GraphQLSchemaConfig>);
   getQueryType(): Maybe<GraphQLObjectType>;
   getMutationType(): Maybe<GraphQLObjectType>;
   getSubscriptionType(): Maybe<GraphQLObjectType>;
