@@ -123,7 +123,7 @@ function extendSchema(schema, documentAST, options) {
     query: schemaConfig.query && replaceNamedType(schemaConfig.query),
     mutation: schemaConfig.mutation && replaceNamedType(schemaConfig.mutation),
     subscription: schemaConfig.subscription && replaceNamedType(schemaConfig.subscription)
-  }, astBuilder.getOperationTypes(concatMaybeArrays(schemaDef && [schemaDef], schemaExtensions) || [])); // Then produce and return a Schema with these types.
+  }, schemaDef && astBuilder.getOperationTypes([schemaDef]), {}, astBuilder.getOperationTypes(schemaExtensions)); // Then produce and return a Schema with these types.
 
 
   return new _schema.GraphQLSchema(_objectSpread({}, operationTypes, {
