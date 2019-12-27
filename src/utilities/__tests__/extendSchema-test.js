@@ -1158,6 +1158,32 @@ describe('extendSchema', () => {
     extendSchema(schema, extendAST, { assumeValidSDL: true });
   });
 
+  it('Throws on unknown types', () => {
+    const schema = new GraphQLSchema({});
+    const ast = parse(`
+      type Query {
+        unknown: UnknownType
+      }
+    `);
+    expect(() => extendSchema(schema, ast, { assumeValidSDL: true })).to.throw(
+      'Unknown type: "UnknownType".',
+    );
+  });
+
+  it('Rejects invalid AST', () => {
+    const schema = new GraphQLSchema({});
+
+    // $DisableFlowOnNegativeTest
+    expect(() => extendSchema(schema, null)).to.throw(
+      'Must provide valid Document AST',
+    );
+
+    // $DisableFlowOnNegativeTest
+    expect(() => extendSchema(schema, {})).to.throw(
+      'Must provide valid Document AST',
+    );
+  });
+
   it('does not allow replacing a default directive', () => {
     const schema = new GraphQLSchema({});
     const extendAST = parse(`
@@ -1228,6 +1254,20 @@ describe('extendSchema', () => {
 
       const mutationType = extendedSchema.getMutationType();
       expect(mutationType).to.include({ name: 'MutationRoot' });
+      expect(printExtensionNodes(extendedSchema)).to.equal(extensionSDL);
+    });
+
+    it('adds directive via schema extension', () => {
+      const schema = buildSchema(`
+        type Query
+
+        directive @foo on SCHEMA
+      `);
+      const extensionSDL = dedent`
+        extend schema @foo
+      `;
+      const extendedSchema = extendSchema(schema, parse(extensionSDL));
+
       expect(printExtensionNodes(extendedSchema)).to.equal(extensionSDL);
     });
 
