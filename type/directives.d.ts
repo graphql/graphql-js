@@ -21,7 +21,7 @@ export class GraphQLDirective {
   extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
-  constructor(config: GraphQLDirectiveConfig);
+  constructor(config: Readonly<GraphQLDirectiveConfig>);
 
   toConfig(): GraphQLDirectiveConfig & {
     args: GraphQLFieldConfigArgumentMap;
