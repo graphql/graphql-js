@@ -24,9 +24,9 @@ var _tokenKind = require("../language/tokenKind");
 
 var _parser = require("../language/parser");
 
-var _predicates = require("../language/predicates");
-
 var _blockString = require("../language/blockString");
+
+var _predicates = require("../language/predicates");
 
 var _validate = require("../validation/validate");
 
@@ -73,10 +73,13 @@ function buildASTSchema(documentAST, options) {
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     (0, _validate.assertValidSDL)(documentAST);
-  }
+  } // Collect the definitions and extensions found in the document.
+
 
   var schemaDef;
+  var schemaExtensions = [];
   var typeDefs = [];
+  var typeExtensionsMap = Object.create(null);
   var directiveDefs = [];
 
   for (var _i2 = 0, _documentAST$definiti2 = documentAST.definitions; _i2 < _documentAST$definiti2.length; _i2++) {
@@ -84,8 +87,14 @@ function buildASTSchema(documentAST, options) {
 
     if (def.kind === _kinds.Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
+    } else if (def.kind === _kinds.Kind.SCHEMA_EXTENSION) {
+      schemaExtensions.push(def);
     } else if ((0, _predicates.isTypeDefinitionNode)(def)) {
       typeDefs.push(def);
+    } else if ((0, _predicates.isTypeExtensionNode)(def)) {
+      var extendedTypeName = def.name.value;
+      var existingTypeExtensions = typeExtensionsMap[extendedTypeName];
+      typeExtensionsMap[extendedTypeName] = existingTypeExtensions ? existingTypeExtensions.concat([def]) : [def];
     } else if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
       directiveDefs.push(def);
     }
@@ -100,8 +109,8 @@ function buildASTSchema(documentAST, options) {
 
     return type;
   });
-  var typeMap = astBuilder.buildTypeMap(typeDefs);
-  var operationTypes = schemaDef ? astBuilder.getOperationTypes([schemaDef]) : {
+  var typeMap = astBuilder.buildTypeMap(typeDefs, typeExtensionsMap);
+  var operationTypes = schemaDef ? astBuilder.getOperationTypes([schemaDef].concat(schemaExtensions)) : {
     // Note: While this could make early assertions to get the correctly
     // typed values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
@@ -133,6 +142,7 @@ function buildASTSchema(documentAST, options) {
     types: (0, _objectValues.default)(typeMap),
     directives: directives,
     astNode: schemaDef,
+    extensionASTNodes: schemaExtensions,
     assumeValid: options && options.assumeValid
   }));
 }
@@ -345,19 +355,19 @@ function () {
     return types;
   };
 
-  _proto.buildTypeMap = function buildTypeMap(nodes) {
+  _proto.buildTypeMap = function buildTypeMap(nodes, extensionMap) {
     var typeMap = Object.create(null);
 
     for (var _i30 = 0; _i30 < nodes.length; _i30++) {
       var node = nodes[_i30];
       var name = node.name.value;
-      typeMap[name] = stdTypeMap[name] || this._buildType(node);
+      typeMap[name] = stdTypeMap[name] || this._buildType(node, extensionMap[name] || []);
     }
 
     return typeMap;
   };
 
-  _proto._buildType = function _buildType(astNode) {
+  _proto._buildType = function _buildType(astNode, extensionNodes) {
     var _this2 = this;
 
     var name = astNode.name.value;
@@ -365,65 +375,102 @@ function () {
 
     switch (astNode.kind) {
       case _kinds.Kind.OBJECT_TYPE_DEFINITION:
-        return new _definition.GraphQLObjectType({
-          name: name,
-          description: description,
-          interfaces: function interfaces() {
-            return _this2.buildInterfaces([astNode]);
-          },
-          fields: function fields() {
-            return _this2.buildFieldMap([astNode]);
-          },
-          astNode: astNode
-        });
+        {
+          var extensionASTNodes = extensionNodes;
+          var allNodes = [astNode].concat(extensionASTNodes);
+          return new _definition.GraphQLObjectType({
+            name: name,
+            description: description,
+            interfaces: function interfaces() {
+              return _this2.buildInterfaces(allNodes);
+            },
+            fields: function fields() {
+              return _this2.buildFieldMap(allNodes);
+            },
+            astNode: astNode,
+            extensionASTNodes: extensionASTNodes
+          });
+        }
 
       case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
-        return new _definition.GraphQLInterfaceType({
-          name: name,
-          description: description,
-          interfaces: function interfaces() {
-            return _this2.buildInterfaces([astNode]);
-          },
-          fields: function fields() {
-            return _this2.buildFieldMap([astNode]);
-          },
-          astNode: astNode
-        });
+        {
+          var _extensionASTNodes = extensionNodes;
+
+          var _allNodes = [astNode].concat(_extensionASTNodes);
+
+          return new _definition.GraphQLInterfaceType({
+            name: name,
+            description: description,
+            interfaces: function interfaces() {
+              return _this2.buildInterfaces(_allNodes);
+            },
+            fields: function fields() {
+              return _this2.buildFieldMap(_allNodes);
+            },
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes
+          });
+        }
 
       case _kinds.Kind.ENUM_TYPE_DEFINITION:
-        return new _definition.GraphQLEnumType({
-          name: name,
-          description: description,
-          values: this.buildEnumValueMap([astNode]),
-          astNode: astNode
-        });
+        {
+          var _extensionASTNodes2 = extensionNodes;
+
+          var _allNodes2 = [astNode].concat(_extensionASTNodes2);
+
+          return new _definition.GraphQLEnumType({
+            name: name,
+            description: description,
+            values: this.buildEnumValueMap(_allNodes2),
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes2
+          });
+        }
 
       case _kinds.Kind.UNION_TYPE_DEFINITION:
-        return new _definition.GraphQLUnionType({
-          name: name,
-          description: description,
-          types: function types() {
-            return _this2.buildUnionTypes([astNode]);
-          },
-          astNode: astNode
-        });
+        {
+          var _extensionASTNodes3 = extensionNodes;
+
+          var _allNodes3 = [astNode].concat(_extensionASTNodes3);
+
+          return new _definition.GraphQLUnionType({
+            name: name,
+            description: description,
+            types: function types() {
+              return _this2.buildUnionTypes(_allNodes3);
+            },
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes3
+          });
+        }
 
       case _kinds.Kind.SCALAR_TYPE_DEFINITION:
-        return new _definition.GraphQLScalarType({
-          name: name,
-          description: description,
-          astNode: astNode
-        });
+        {
+          var _extensionASTNodes4 = extensionNodes;
+          return new _definition.GraphQLScalarType({
+            name: name,
+            description: description,
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes4
+          });
+        }
 
       case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
-        return new _definition.GraphQLInputObjectType({
-          name: name,
-          description: description,
-          fields: function fields() {
-            return _this2.buildInputFieldMap([astNode]);
-          },
-          astNode: astNode
-        });
+        {
+          var _extensionASTNodes5 = extensionNodes;
+
+          var _allNodes4 = [astNode].concat(_extensionASTNodes5);
+
+          return new _definition.GraphQLInputObjectType({
+            name: name,
+            description: description,
+            fields: function fields() {
+              return _this2.buildInputFieldMap(_allNodes4);
+            },
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes5
+          });
+        }
     } // Not reachable. All possible type definition nodes have been considered.
 
 

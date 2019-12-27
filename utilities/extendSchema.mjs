@@ -88,7 +88,7 @@ export function extendSchema(schema, documentAST, options) {
 
     return type;
   });
-  var typeMap = astBuilder.buildTypeMap(typeDefs);
+  var typeMap = astBuilder.buildTypeMap(typeDefs, typeExtensionsMap);
   var schemaConfig = schema.toConfig();
 
   for (var _i4 = 0, _schemaConfig$types2 = schemaConfig.types; _i4 < _schemaConfig$types2.length; _i4++) {

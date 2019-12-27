@@ -156,7 +156,7 @@ export function extendSchema(
     return type;
   });
 
-  const typeMap = astBuilder.buildTypeMap(typeDefs);
+  const typeMap = astBuilder.buildTypeMap(typeDefs, typeExtensionsMap);
   const schemaConfig = schema.toConfig();
   for (const existingType of schemaConfig.types) {
     typeMap[existingType.name] = extendNamedType(existingType);
