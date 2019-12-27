@@ -31,6 +31,7 @@ import {
   assertScalarType,
 } from '../../type/definition';
 
+import { concatAST } from '../concatAST';
 import { printSchema } from '../schemaPrinter';
 import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
@@ -417,6 +418,14 @@ describe('extendSchema', () => {
     const extendedTwiceSchema = extendSchema(
       extendedSchema,
       secondExtensionAST,
+    );
+
+    const extendedInOneGoSchema = extendSchema(
+      schema,
+      concatAST([firstExtensionAST, secondExtensionAST]),
+    );
+    expect(printSchema(extendedInOneGoSchema)).to.equal(
+      printSchema(extendedTwiceSchema),
     );
 
     const query = assertObjectType(extendedTwiceSchema.getType('Query'));

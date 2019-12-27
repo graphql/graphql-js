@@ -6,20 +6,24 @@ import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
-import { type ObjMap } from '../jsutils/ObjMap';
+import { type ObjMap, type ReadOnlyObjMap } from '../jsutils/ObjMap';
 
 import { Kind } from '../language/kinds';
 import { type Source } from '../language/source';
 import { TokenKind } from '../language/tokenKind';
 import { type ParseOptions, parse } from '../language/parser';
-import { isTypeDefinitionNode } from '../language/predicates';
 import { dedentBlockStringValue } from '../language/blockString';
 import { type DirectiveLocationEnum } from '../language/directiveLocation';
+import {
+  isTypeDefinitionNode,
+  isTypeExtensionNode,
+} from '../language/predicates';
 import {
   type Location,
   type StringValueNode,
   type DocumentNode,
   type TypeNode,
+  type TypeExtensionNode,
   type NamedTypeNode,
   type SchemaDefinitionNode,
   type SchemaExtensionNode,
@@ -125,15 +129,28 @@ export function buildASTSchema(
     assertValidSDL(documentAST);
   }
 
+  // Collect the definitions and extensions found in the document.
   let schemaDef: ?SchemaDefinitionNode;
+  const schemaExtensions: Array<SchemaExtensionNode> = [];
   const typeDefs: Array<TypeDefinitionNode> = [];
+  const typeExtensionsMap: ObjMap<Array<TypeExtensionNode>> = Object.create(
+    null,
+  );
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
 
   for (const def of documentAST.definitions) {
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
+    } else if (def.kind === Kind.SCHEMA_EXTENSION) {
+      schemaExtensions.push(def);
     } else if (isTypeDefinitionNode(def)) {
       typeDefs.push(def);
+    } else if (isTypeExtensionNode(def)) {
+      const extendedTypeName = def.name.value;
+      const existingTypeExtensions = typeExtensionsMap[extendedTypeName];
+      typeExtensionsMap[extendedTypeName] = existingTypeExtensions
+        ? existingTypeExtensions.concat([def])
+        : [def];
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       directiveDefs.push(def);
     }
@@ -147,9 +164,9 @@ export function buildASTSchema(
     return type;
   });
 
-  const typeMap = astBuilder.buildTypeMap(typeDefs);
+  const typeMap = astBuilder.buildTypeMap(typeDefs, typeExtensionsMap);
   const operationTypes = schemaDef
-    ? astBuilder.getOperationTypes([schemaDef])
+    ? astBuilder.getOperationTypes([schemaDef, ...schemaExtensions])
     : {
         // Note: While this could make early assertions to get the correctly
         // typed values below, that would throw immediately while type system
@@ -179,6 +196,7 @@ export function buildASTSchema(
     types: objectValues(typeMap),
     directives,
     astNode: schemaDef,
+    extensionASTNodes: schemaExtensions,
     assumeValid: options && options.assumeValid,
   });
 }
@@ -392,63 +410,97 @@ export class ASTDefinitionBuilder {
 
   buildTypeMap(
     nodes: $ReadOnlyArray<TypeDefinitionNode>,
+    extensionMap: ReadOnlyObjMap<$ReadOnlyArray<TypeExtensionNode>>,
   ): ObjMap<GraphQLNamedType> {
     const typeMap = Object.create(null);
     for (const node of nodes) {
       const name = node.name.value;
-      typeMap[name] = stdTypeMap[name] || this._buildType(node);
+      typeMap[name] =
+        stdTypeMap[name] || this._buildType(node, extensionMap[name] || []);
     }
     return typeMap;
   }
 
-  _buildType(astNode: TypeDefinitionNode): GraphQLNamedType {
+  _buildType(
+    astNode: TypeDefinitionNode,
+    extensionNodes: $ReadOnlyArray<TypeExtensionNode>,
+  ): GraphQLNamedType {
     const name = astNode.name.value;
     const description = getDescription(astNode, this._options);
 
     switch (astNode.kind) {
-      case Kind.OBJECT_TYPE_DEFINITION:
+      case Kind.OBJECT_TYPE_DEFINITION: {
+        const extensionASTNodes = (extensionNodes: any);
+        const allNodes = [astNode, ...extensionASTNodes];
+
         return new GraphQLObjectType({
           name,
           description,
-          interfaces: () => this.buildInterfaces([astNode]),
-          fields: () => this.buildFieldMap([astNode]),
+          interfaces: () => this.buildInterfaces(allNodes),
+          fields: () => this.buildFieldMap(allNodes),
           astNode,
+          extensionASTNodes,
         });
-      case Kind.INTERFACE_TYPE_DEFINITION:
+      }
+      case Kind.INTERFACE_TYPE_DEFINITION: {
+        const extensionASTNodes = (extensionNodes: any);
+        const allNodes = [astNode, ...extensionASTNodes];
+
         return new GraphQLInterfaceType({
           name,
           description,
-          interfaces: () => this.buildInterfaces([astNode]),
-          fields: () => this.buildFieldMap([astNode]),
+          interfaces: () => this.buildInterfaces(allNodes),
+          fields: () => this.buildFieldMap(allNodes),
           astNode,
+          extensionASTNodes,
         });
-      case Kind.ENUM_TYPE_DEFINITION:
+      }
+      case Kind.ENUM_TYPE_DEFINITION: {
+        const extensionASTNodes = (extensionNodes: any);
+        const allNodes = [astNode, ...extensionASTNodes];
+
         return new GraphQLEnumType({
           name,
           description,
-          values: this.buildEnumValueMap([astNode]),
+          values: this.buildEnumValueMap(allNodes),
           astNode,
+          extensionASTNodes,
         });
-      case Kind.UNION_TYPE_DEFINITION:
+      }
+      case Kind.UNION_TYPE_DEFINITION: {
+        const extensionASTNodes = (extensionNodes: any);
+        const allNodes = [astNode, ...extensionASTNodes];
+
         return new GraphQLUnionType({
           name,
           description,
-          types: () => this.buildUnionTypes([astNode]),
+          types: () => this.buildUnionTypes(allNodes),
           astNode,
+          extensionASTNodes,
         });
-      case Kind.SCALAR_TYPE_DEFINITION:
+      }
+      case Kind.SCALAR_TYPE_DEFINITION: {
+        const extensionASTNodes = (extensionNodes: any);
+
         return new GraphQLScalarType({
           name,
           description,
           astNode,
+          extensionASTNodes,
         });
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+      }
+      case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
+        const extensionASTNodes = (extensionNodes: any);
+        const allNodes = [astNode, ...extensionASTNodes];
+
         return new GraphQLInputObjectType({
           name,
           description,
-          fields: () => this.buildInputFieldMap([astNode]),
+          fields: () => this.buildInputFieldMap(allNodes),
           astNode,
+          extensionASTNodes,
         });
+      }
     }
 
     // Not reachable. All possible type definition nodes have been considered.
