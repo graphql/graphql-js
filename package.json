@@ -53,13 +53,13 @@
     "@babel/register": "7.6.2",
     "babel-eslint": "10.0.3",
     "chai": "4.2.0",
-    "cspell": "4.0.37",
+    "cspell": "4.0.43",
     "dtslint": "2.0.2",
-    "eslint": "6.7.2",
+    "eslint": "6.8.0",
     "eslint-plugin-flowtype": "4.5.2",
     "flow-bin": "0.114.0",
     "mocha": "6.2.2",
-    "nyc": "14.1.1",
+    "nyc": "15.0.0",
     "prettier": "1.19.1"
   }
 }
