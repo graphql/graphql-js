@@ -57,6 +57,7 @@ import {
   type GraphQLSchemaValidationOptions,
   assertSchema,
   GraphQLSchema,
+  type GraphQLSchemaNormalizedConfig,
 } from '../type/schema';
 import {
   type GraphQLType,
@@ -140,6 +141,18 @@ export function extendSchema(
     assertValidSDLExtension(documentAST, schema);
   }
 
+  const schemaConfig = schema.toConfig();
+  const extendedConfig = extendSchemaImpl(schemaConfig, documentAST, options);
+  return schemaConfig === extendedConfig
+    ? schema
+    : new GraphQLSchema(extendedConfig);
+}
+
+export function extendSchemaImpl(
+  schemaConfig: GraphQLSchemaNormalizedConfig,
+  documentAST: DocumentNode,
+  options?: Options,
+): GraphQLSchemaNormalizedConfig {
   // Collect the type definitions and extensions found in the document.
   const typeDefs = [];
   const typeExtensionsMap = Object.create(null);
@@ -179,7 +192,7 @@ export function extendSchema(
     schemaExtensions.length === 0 &&
     !schemaDef
   ) {
-    return schema;
+    return schemaConfig;
   }
 
   const astBuilder = new ASTDefinitionBuilder(options, typeName => {
@@ -191,7 +204,6 @@ export function extendSchema(
   });
 
   const typeMap = astBuilder.buildTypeMap(typeDefs, typeExtensionsMap);
-  const schemaConfig = schema.toConfig();
   for (const existingType of schemaConfig.types) {
     typeMap[existingType.name] = extendNamedType(existingType);
   }
@@ -208,19 +220,21 @@ export function extendSchema(
   };
 
   // Then produce and return a Schema with these types.
-  return new GraphQLSchema({
+  return {
     ...operationTypes,
     types: objectValues(typeMap),
     directives: [
       ...schemaConfig.directives.map(replaceDirective),
       ...astBuilder.buildDirectives(directiveDefs),
     ],
+    extensions: Object.create(null),
     astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: concatMaybeArrays(
       schemaConfig.extensionASTNodes,
       schemaExtensions,
     ),
-  });
+    assumeValid: (options && options.assumeValid) || false,
+  };
 
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
