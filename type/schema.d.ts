@@ -112,3 +112,14 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 }
+
+/**
+ * @internal
+ */
+export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
+  types: Array<GraphQLNamedType>;
+  directives: Array<GraphQLDirective>;
+  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;
+  assumeValid: boolean;
+}

@@ -10,11 +10,11 @@ export { introspectionFromSchema } from './introspectionFromSchema'; // Build a 
 
 export { buildClientSchema } from './buildClientSchema'; // Build a GraphQLSchema from GraphQL Schema language.
 
-export { buildASTSchema, buildSchema // @deprecated: Get the description from a schema AST node and supports legacy
-// syntax for specifying descriptions - will be removed in v16.
-, getDescription } from './buildASTSchema';
+export { buildASTSchema, buildSchema } from './buildASTSchema';
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
-export { extendSchema } from './extendSchema'; // Sort a GraphQLSchema.
+export { extendSchema // @deprecated: Get the description from a schema AST node and supports legacy
+// syntax for specifying descriptions - will be removed in v16.
+, getDescription } from './extendSchema'; // Sort a GraphQLSchema.
 
 export { lexicographicSortSchema } from './lexicographicSortSchema'; // Print a GraphQLSchema to GraphQL Schema language.
 

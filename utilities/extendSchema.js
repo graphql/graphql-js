@@ -4,8 +4,12 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.extendSchema = extendSchema;
+exports.extendSchemaImpl = extendSchemaImpl;
+exports.getDescription = getDescription;
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
@@ -17,21 +21,27 @@ var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _kinds = require("../language/kinds");
 
+var _tokenKind = require("../language/tokenKind");
+
+var _blockString = require("../language/blockString");
+
 var _predicates = require("../language/predicates");
 
 var _validate = require("../validation/validate");
 
-var _directives = require("../type/directives");
+var _values = require("../execution/values");
 
 var _scalars = require("../type/scalars");
 
 var _introspection = require("../type/introspection");
 
+var _directives = require("../type/directives");
+
 var _schema = require("../type/schema");
 
 var _definition = require("../type/definition");
 
-var _buildASTSchema = require("./buildASTSchema");
+var _valueFromAST = require("./valueFromAST");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -65,9 +75,19 @@ function extendSchema(schema, documentAST, options) {
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     (0, _validate.assertValidSDLExtension)(documentAST, schema);
-  } // Collect the type definitions and extensions found in the document.
+  }
+
+  var schemaConfig = schema.toConfig();
+  var extendedConfig = extendSchemaImpl(schemaConfig, documentAST, options);
+  return schemaConfig === extendedConfig ? schema : new _schema.GraphQLSchema(extendedConfig);
+}
+/**
+ * @internal
+ */
 
 
+function extendSchemaImpl(schemaConfig, documentAST, options) {
+  // Collect the type definitions and extensions found in the document.
   var typeDefs = [];
   var typeExtensionsMap = Object.create(null); // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
@@ -98,23 +118,19 @@ function extendSchema(schema, documentAST, options) {
 
 
   if (Object.keys(typeExtensionsMap).length === 0 && typeDefs.length === 0 && directiveDefs.length === 0 && schemaExtensions.length === 0 && !schemaDef) {
-    return schema;
+    return schemaConfig;
   }
 
-  var astBuilder = new _buildASTSchema.ASTDefinitionBuilder(options, function (typeName) {
-    var type = typeMap[typeName];
+  var typeMap = Object.create(null);
 
-    if (type === undefined) {
-      throw new Error("Unknown type: \"".concat(typeName, "\"."));
-    }
+  for (var _i4 = 0; _i4 < typeDefs.length; _i4++) {
+    var typeNode = typeDefs[_i4];
+    var name = typeNode.name.value;
+    typeMap[name] = stdTypeMap[name] || buildType(typeNode);
+  }
 
-    return type;
-  });
-  var typeMap = astBuilder.buildTypeMap(typeDefs, typeExtensionsMap);
-  var schemaConfig = schema.toConfig();
-
-  for (var _i4 = 0, _schemaConfig$types2 = schemaConfig.types; _i4 < _schemaConfig$types2.length; _i4++) {
-    var existingType = _schemaConfig$types2[_i4];
+  for (var _i6 = 0, _schemaConfig$types2 = schemaConfig.types; _i6 < _schemaConfig$types2.length; _i6++) {
+    var existingType = _schemaConfig$types2[_i6];
     typeMap[existingType.name] = extendNamedType(existingType);
   }
 
@@ -123,15 +139,17 @@ function extendSchema(schema, documentAST, options) {
     query: schemaConfig.query && replaceNamedType(schemaConfig.query),
     mutation: schemaConfig.mutation && replaceNamedType(schemaConfig.mutation),
     subscription: schemaConfig.subscription && replaceNamedType(schemaConfig.subscription)
-  }, schemaDef && astBuilder.getOperationTypes([schemaDef]), {}, astBuilder.getOperationTypes(schemaExtensions)); // Then produce and return a Schema with these types.
+  }, schemaDef && getOperationTypes([schemaDef]), {}, getOperationTypes(schemaExtensions)); // Then produce and return a Schema config with these types.
 
 
-  return new _schema.GraphQLSchema(_objectSpread({}, operationTypes, {
+  return _objectSpread({}, operationTypes, {
     types: (0, _objectValues.default)(typeMap),
-    directives: [].concat(schemaConfig.directives.map(replaceDirective), astBuilder.buildDirectives(directiveDefs)),
+    directives: [].concat(schemaConfig.directives.map(replaceDirective), directiveDefs.map(buildDirective)),
+    extensions: undefined,
     astNode: schemaDef || schemaConfig.astNode,
-    extensionASTNodes: concatMaybeArrays(schemaConfig.extensionASTNodes, schemaExtensions)
-  })); // Below are functions used for producing this schema that have closed over
+    extensionASTNodes: concatMaybeArrays(schemaConfig.extensionASTNodes, schemaExtensions),
+    assumeValid: options && options.assumeValid || false
+  }); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
   function replaceType(type) {
@@ -190,7 +208,7 @@ function extendSchema(schema, documentAST, options) {
           return _objectSpread({}, field, {
             type: replaceType(field.type)
           });
-        }), {}, astBuilder.buildInputFieldMap(extensions));
+        }), {}, buildInputFieldMap(extensions));
       },
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
@@ -200,7 +218,7 @@ function extendSchema(schema, documentAST, options) {
     var config = type.toConfig();
     var extensions = typeExtensionsMap[type.name] || [];
     return new _definition.GraphQLEnumType(_objectSpread({}, config, {
-      values: _objectSpread({}, config.values, {}, astBuilder.buildEnumValueMap(extensions)),
+      values: _objectSpread({}, config.values, {}, buildEnumValueMap(extensions)),
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
   }
@@ -218,10 +236,10 @@ function extendSchema(schema, documentAST, options) {
     var extensions = typeExtensionsMap[config.name] || [];
     return new _definition.GraphQLObjectType(_objectSpread({}, config, {
       interfaces: function interfaces() {
-        return [].concat(type.getInterfaces().map(replaceNamedType), astBuilder.buildInterfaces(extensions));
+        return [].concat(type.getInterfaces().map(replaceNamedType), buildInterfaces(extensions));
       },
       fields: function fields() {
-        return _objectSpread({}, (0, _mapValue.default)(config.fields, extendField), {}, astBuilder.buildFieldMap(extensions));
+        return _objectSpread({}, (0, _mapValue.default)(config.fields, extendField), {}, buildFieldMap(extensions));
       },
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
@@ -232,10 +250,10 @@ function extendSchema(schema, documentAST, options) {
     var extensions = typeExtensionsMap[config.name] || [];
     return new _definition.GraphQLInterfaceType(_objectSpread({}, config, {
       interfaces: function interfaces() {
-        return [].concat(type.getInterfaces().map(replaceNamedType), astBuilder.buildInterfaces(extensions));
+        return [].concat(type.getInterfaces().map(replaceNamedType), buildInterfaces(extensions));
       },
       fields: function fields() {
-        return _objectSpread({}, (0, _mapValue.default)(config.fields, extendField), {}, astBuilder.buildFieldMap(extensions));
+        return _objectSpread({}, (0, _mapValue.default)(config.fields, extendField), {}, buildFieldMap(extensions));
       },
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
@@ -246,7 +264,7 @@ function extendSchema(schema, documentAST, options) {
     var extensions = typeExtensionsMap[config.name] || [];
     return new _definition.GraphQLUnionType(_objectSpread({}, config, {
       types: function types() {
-        return [].concat(type.getTypes().map(replaceNamedType), astBuilder.buildUnionTypes(extensions));
+        return [].concat(type.getTypes().map(replaceNamedType), buildUnionTypes(extensions));
       },
       extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
     }));
@@ -264,6 +282,311 @@ function extendSchema(schema, documentAST, options) {
       type: replaceType(arg.type)
     });
   }
+
+  function getOperationTypes(nodes) {
+    // Note: While this could make early assertions to get the correctly
+    // typed values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+    var opTypes = {};
+
+    for (var _i8 = 0; _i8 < nodes.length; _i8++) {
+      var node = nodes[_i8];
+
+      if (node.operationTypes != null) {
+        for (var _i10 = 0, _node$operationTypes2 = node.operationTypes; _i10 < _node$operationTypes2.length; _i10++) {
+          var operationType = _node$operationTypes2[_i10];
+          opTypes[operationType.operation] = getNamedType(operationType.type);
+        }
+      }
+    }
+
+    return opTypes;
+  }
+
+  function getNamedType(node) {
+    var name = node.name.value;
+    var type = stdTypeMap[name] || typeMap[name];
+
+    if (type === undefined) {
+      throw new Error("Unknown type: \"".concat(name, "\"."));
+    }
+
+    return type;
+  }
+
+  function getWrappedType(node) {
+    if (node.kind === _kinds.Kind.LIST_TYPE) {
+      return new _definition.GraphQLList(getWrappedType(node.type));
+    }
+
+    if (node.kind === _kinds.Kind.NON_NULL_TYPE) {
+      return new _definition.GraphQLNonNull(getWrappedType(node.type));
+    }
+
+    return getNamedType(node);
+  }
+
+  function buildDirective(node) {
+    var locations = node.locations.map(function (_ref) {
+      var value = _ref.value;
+      return value;
+    });
+    return new _directives.GraphQLDirective({
+      name: node.name.value,
+      description: getDescription(node, options),
+      locations: locations,
+      isRepeatable: node.repeatable,
+      args: buildArgumentMap(node.arguments),
+      astNode: node
+    });
+  }
+
+  function buildFieldMap(nodes) {
+    var fieldConfigMap = Object.create(null);
+
+    for (var _i12 = 0; _i12 < nodes.length; _i12++) {
+      var node = nodes[_i12];
+
+      if (node.fields != null) {
+        for (var _i14 = 0, _node$fields2 = node.fields; _i14 < _node$fields2.length; _i14++) {
+          var field = _node$fields2[_i14];
+          fieldConfigMap[field.name.value] = {
+            // Note: While this could make assertions to get the correctly typed
+            // value, that would throw immediately while type system validation
+            // with validateSchema() will produce more actionable results.
+            type: getWrappedType(field.type),
+            description: getDescription(field, options),
+            args: buildArgumentMap(field.arguments),
+            deprecationReason: getDeprecationReason(field),
+            astNode: field
+          };
+        }
+      }
+    }
+
+    return fieldConfigMap;
+  }
+
+  function buildArgumentMap(args) {
+    var argConfigMap = Object.create(null);
+
+    if (args != null) {
+      for (var _i16 = 0; _i16 < args.length; _i16++) {
+        var arg = args[_i16];
+        // Note: While this could make assertions to get the correctly typed
+        // value, that would throw immediately while type system validation
+        // with validateSchema() will produce more actionable results.
+        var type = getWrappedType(arg.type);
+        argConfigMap[arg.name.value] = {
+          type: type,
+          description: getDescription(arg, options),
+          defaultValue: (0, _valueFromAST.valueFromAST)(arg.defaultValue, type),
+          astNode: arg
+        };
+      }
+    }
+
+    return argConfigMap;
+  }
+
+  function buildInputFieldMap(nodes) {
+    var inputFieldMap = Object.create(null);
+
+    for (var _i18 = 0; _i18 < nodes.length; _i18++) {
+      var node = nodes[_i18];
+
+      if (node.fields != null) {
+        for (var _i20 = 0, _node$fields4 = node.fields; _i20 < _node$fields4.length; _i20++) {
+          var field = _node$fields4[_i20];
+          // Note: While this could make assertions to get the correctly typed
+          // value, that would throw immediately while type system validation
+          // with validateSchema() will produce more actionable results.
+          var type = getWrappedType(field.type);
+          inputFieldMap[field.name.value] = {
+            type: type,
+            description: getDescription(field, options),
+            defaultValue: (0, _valueFromAST.valueFromAST)(field.defaultValue, type),
+            astNode: field
+          };
+        }
+      }
+    }
+
+    return inputFieldMap;
+  }
+
+  function buildEnumValueMap(nodes) {
+    var enumValueMap = Object.create(null);
+
+    for (var _i22 = 0; _i22 < nodes.length; _i22++) {
+      var node = nodes[_i22];
+
+      if (node.values != null) {
+        for (var _i24 = 0, _node$values2 = node.values; _i24 < _node$values2.length; _i24++) {
+          var value = _node$values2[_i24];
+          enumValueMap[value.name.value] = {
+            description: getDescription(value, options),
+            deprecationReason: getDeprecationReason(value),
+            astNode: value
+          };
+        }
+      }
+    }
+
+    return enumValueMap;
+  }
+
+  function buildInterfaces(nodes) {
+    var interfaces = [];
+
+    for (var _i26 = 0; _i26 < nodes.length; _i26++) {
+      var node = nodes[_i26];
+
+      if (node.interfaces != null) {
+        for (var _i28 = 0, _node$interfaces2 = node.interfaces; _i28 < _node$interfaces2.length; _i28++) {
+          var type = _node$interfaces2[_i28];
+          // Note: While this could make assertions to get the correctly typed
+          // values below, that would throw immediately while type system
+          // validation with validateSchema() will produce more actionable
+          // results.
+          interfaces.push(getNamedType(type));
+        }
+      }
+    }
+
+    return interfaces;
+  }
+
+  function buildUnionTypes(nodes) {
+    var types = [];
+
+    for (var _i30 = 0; _i30 < nodes.length; _i30++) {
+      var node = nodes[_i30];
+
+      if (node.types != null) {
+        for (var _i32 = 0, _node$types2 = node.types; _i32 < _node$types2.length; _i32++) {
+          var type = _node$types2[_i32];
+          // Note: While this could make assertions to get the correctly typed
+          // values below, that would throw immediately while type system
+          // validation with validateSchema() will produce more actionable
+          // results.
+          types.push(getNamedType(type));
+        }
+      }
+    }
+
+    return types;
+  }
+
+  function buildType(astNode) {
+    var name = astNode.name.value;
+    var description = getDescription(astNode, options);
+    var extensionNodes = typeExtensionsMap[name] || [];
+
+    switch (astNode.kind) {
+      case _kinds.Kind.OBJECT_TYPE_DEFINITION:
+        {
+          var extensionASTNodes = extensionNodes;
+          var allNodes = [astNode].concat(extensionASTNodes);
+          return new _definition.GraphQLObjectType({
+            name: name,
+            description: description,
+            interfaces: function interfaces() {
+              return buildInterfaces(allNodes);
+            },
+            fields: function fields() {
+              return buildFieldMap(allNodes);
+            },
+            astNode: astNode,
+            extensionASTNodes: extensionASTNodes
+          });
+        }
+
+      case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
+        {
+          var _extensionASTNodes = extensionNodes;
+
+          var _allNodes = [astNode].concat(_extensionASTNodes);
+
+          return new _definition.GraphQLInterfaceType({
+            name: name,
+            description: description,
+            interfaces: function interfaces() {
+              return buildInterfaces(_allNodes);
+            },
+            fields: function fields() {
+              return buildFieldMap(_allNodes);
+            },
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes
+          });
+        }
+
+      case _kinds.Kind.ENUM_TYPE_DEFINITION:
+        {
+          var _extensionASTNodes2 = extensionNodes;
+
+          var _allNodes2 = [astNode].concat(_extensionASTNodes2);
+
+          return new _definition.GraphQLEnumType({
+            name: name,
+            description: description,
+            values: buildEnumValueMap(_allNodes2),
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes2
+          });
+        }
+
+      case _kinds.Kind.UNION_TYPE_DEFINITION:
+        {
+          var _extensionASTNodes3 = extensionNodes;
+
+          var _allNodes3 = [astNode].concat(_extensionASTNodes3);
+
+          return new _definition.GraphQLUnionType({
+            name: name,
+            description: description,
+            types: function types() {
+              return buildUnionTypes(_allNodes3);
+            },
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes3
+          });
+        }
+
+      case _kinds.Kind.SCALAR_TYPE_DEFINITION:
+        {
+          var _extensionASTNodes4 = extensionNodes;
+          return new _definition.GraphQLScalarType({
+            name: name,
+            description: description,
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes4
+          });
+        }
+
+      case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
+        {
+          var _extensionASTNodes5 = extensionNodes;
+
+          var _allNodes4 = [astNode].concat(_extensionASTNodes5);
+
+          return new _definition.GraphQLInputObjectType({
+            name: name,
+            description: description,
+            fields: function fields() {
+              return buildInputFieldMap(_allNodes4);
+            },
+            astNode: astNode,
+            extensionASTNodes: _extensionASTNodes5
+          });
+        }
+    } // Not reachable. All possible type definition nodes have been considered.
+
+
+    /* istanbul ignore next */
+    (0, _invariant.default)(false, 'Unexpected type definition node: ' + (0, _inspect.default)(astNode));
+  }
 }
 
 function concatMaybeArrays() {
@@ -274,8 +597,8 @@ function concatMaybeArrays() {
     arrays[_key] = arguments[_key];
   }
 
-  for (var _i6 = 0; _i6 < arrays.length; _i6++) {
-    var maybeArray = arrays[_i6];
+  for (var _i34 = 0; _i34 < arrays.length; _i34++) {
+    var maybeArray = arrays[_i34];
 
     if (maybeArray) {
       result = result === undefined ? maybeArray : result.concat(maybeArray);
@@ -283,4 +606,61 @@ function concatMaybeArrays() {
   }
 
   return result;
+}
+
+var stdTypeMap = (0, _keyMap.default)(_scalars.specifiedScalarTypes.concat(_introspection.introspectionTypes), function (type) {
+  return type.name;
+});
+/**
+ * Given a field or enum value node, returns the string value for the
+ * deprecation reason.
+ */
+
+function getDeprecationReason(node) {
+  var deprecated = (0, _values.getDirectiveValues)(_directives.GraphQLDeprecatedDirective, node);
+  return deprecated && deprecated.reason;
+}
+/**
+ * Given an ast node, returns its string description.
+ * @deprecated: provided to ease adoption and will be removed in v16.
+ *
+ * Accepts options as a second argument:
+ *
+ *    - commentDescriptions:
+ *        Provide true to use preceding comments as the description.
+ *
+ */
+
+
+function getDescription(node, options) {
+  if (node.description) {
+    return node.description.value;
+  }
+
+  if (options && options.commentDescriptions) {
+    var rawValue = getLeadingCommentBlock(node);
+
+    if (rawValue !== undefined) {
+      return (0, _blockString.dedentBlockStringValue)('\n' + rawValue);
+    }
+  }
+}
+
+function getLeadingCommentBlock(node) {
+  var loc = node.loc;
+
+  if (!loc) {
+    return;
+  }
+
+  var comments = [];
+  var token = loc.startToken.prev;
+
+  while (token && token.kind === _tokenKind.TokenKind.COMMENT && token.next && token.prev && token.line + 1 === token.next.line && token.line !== token.prev.line) {
+    var value = String(token.value);
+    comments.push(value);
+    token = token.prev;
+  }
+
+  return comments.length > 0 ? comments.reverse().join('\n') : undefined;
 }

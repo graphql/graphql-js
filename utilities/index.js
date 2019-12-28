@@ -45,16 +45,16 @@ Object.defineProperty(exports, "buildSchema", {
     return _buildASTSchema.buildSchema;
   }
 });
-Object.defineProperty(exports, "getDescription", {
-  enumerable: true,
-  get: function get() {
-    return _buildASTSchema.getDescription;
-  }
-});
 Object.defineProperty(exports, "extendSchema", {
   enumerable: true,
   get: function get() {
     return _extendSchema.extendSchema;
+  }
+});
+Object.defineProperty(exports, "getDescription", {
+  enumerable: true,
+  get: function get() {
+    return _extendSchema.getDescription;
   }
 });
 Object.defineProperty(exports, "lexicographicSortSchema", {

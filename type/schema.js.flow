@@ -270,14 +270,7 @@ export class GraphQLSchema {
     return find(this.getDirectives(), directive => directive.name === name);
   }
 
-  toConfig(): {|
-    ...GraphQLSchemaConfig,
-    types: Array<GraphQLNamedType>,
-    directives: Array<GraphQLDirective>,
-    extensions: ?ReadOnlyObjMap<mixed>,
-    extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>,
-    assumeValid: boolean,
-  |} {
+  toConfig(): GraphQLSchemaNormalizedConfig {
     return {
       query: this.getQueryType(),
       mutation: this.getMutationType(),
@@ -323,6 +316,18 @@ export type GraphQLSchemaConfig = {|
   astNode?: ?SchemaDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
   ...GraphQLSchemaValidationOptions,
+|};
+
+/**
+ * @internal
+ */
+export type GraphQLSchemaNormalizedConfig = {|
+  ...GraphQLSchemaConfig,
+  types: Array<GraphQLNamedType>,
+  directives: Array<GraphQLDirective>,
+  extensions: ?ReadOnlyObjMap<mixed>,
+  extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>,
+  assumeValid: boolean,
 |};
 
 function collectImplementations(
