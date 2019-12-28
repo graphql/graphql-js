@@ -7,7 +7,6 @@ import inspect from '../jsutils/inspect';
 import mapValue from '../jsutils/mapValue';
 import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
-import { type ObjMap, type ReadOnlyObjMap } from '../jsutils/ObjMap';
 
 import { Kind } from '../language/kinds';
 import { TokenKind } from '../language/tokenKind';
@@ -22,7 +21,6 @@ import {
   type DocumentNode,
   type StringValueNode,
   type TypeNode,
-  type TypeExtensionNode,
   type NamedTypeNode,
   type SchemaDefinitionNode,
   type SchemaExtensionNode,
@@ -148,13 +146,16 @@ export function extendSchema(
     : new GraphQLSchema(extendedConfig);
 }
 
+/**
+ * @internal
+ */
 export function extendSchemaImpl(
   schemaConfig: GraphQLSchemaNormalizedConfig,
   documentAST: DocumentNode,
   options?: Options,
 ): GraphQLSchemaNormalizedConfig {
   // Collect the type definitions and extensions found in the document.
-  const typeDefs = [];
+  const typeDefs: Array<TypeDefinitionNode> = [];
   const typeExtensionsMap = Object.create(null);
 
   // New directives and types are separate because a directives and types can
@@ -195,15 +196,12 @@ export function extendSchemaImpl(
     return schemaConfig;
   }
 
-  const astBuilder = new ASTDefinitionBuilder(options, typeName => {
-    const type = typeMap[typeName];
-    if (type === undefined) {
-      throw new Error(`Unknown type: "${typeName}".`);
-    }
-    return type;
-  });
+  const typeMap = Object.create(null);
+  for (const typeNode of typeDefs) {
+    const name = typeNode.name.value;
+    typeMap[name] = stdTypeMap[name] || buildType(typeNode);
+  }
 
-  const typeMap = astBuilder.buildTypeMap(typeDefs, typeExtensionsMap);
   for (const existingType of schemaConfig.types) {
     typeMap[existingType.name] = extendNamedType(existingType);
   }
@@ -215,19 +213,19 @@ export function extendSchemaImpl(
     subscription:
       schemaConfig.subscription && replaceNamedType(schemaConfig.subscription),
     // Then, incorporate schema definition and all schema extensions.
-    ...(schemaDef && astBuilder.getOperationTypes([schemaDef])),
-    ...astBuilder.getOperationTypes(schemaExtensions),
+    ...(schemaDef && getOperationTypes([schemaDef])),
+    ...getOperationTypes(schemaExtensions),
   };
 
-  // Then produce and return a Schema with these types.
+  // Then produce and return a Schema config with these types.
   return {
     ...operationTypes,
     types: objectValues(typeMap),
     directives: [
       ...schemaConfig.directives.map(replaceDirective),
-      ...astBuilder.buildDirectives(directiveDefs),
+      ...directiveDefs.map(buildDirective),
     ],
-    extensions: Object.create(null),
+    extensions: undefined,
     astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: concatMaybeArrays(
       schemaConfig.extensionASTNodes,
@@ -299,7 +297,7 @@ export function extendSchemaImpl(
           type: replaceType(field.type),
         })),
         // $FlowFixMe Bug in Flow, see https://github.com/facebook/flow/issues/8178
-        ...astBuilder.buildInputFieldMap(extensions),
+        ...buildInputFieldMap(extensions),
       }),
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,
@@ -317,7 +315,7 @@ export function extendSchemaImpl(
       values: {
         ...config.values,
         // $FlowFixMe Bug in Flow, see https://github.com/facebook/flow/issues/8178
-        ...astBuilder.buildEnumValueMap(extensions),
+        ...buildEnumValueMap(extensions),
       },
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,
@@ -347,12 +345,12 @@ export function extendSchemaImpl(
       ...config,
       interfaces: () => [
         ...type.getInterfaces().map(replaceNamedType),
-        ...astBuilder.buildInterfaces(extensions),
+        ...buildInterfaces(extensions),
       ],
       fields: () => ({
         ...mapValue(config.fields, extendField),
         // $FlowFixMe Bug in Flow, see https://github.com/facebook/flow/issues/8178
-        ...astBuilder.buildFieldMap(extensions),
+        ...buildFieldMap(extensions),
       }),
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,
@@ -371,12 +369,12 @@ export function extendSchemaImpl(
       ...config,
       interfaces: () => [
         ...type.getInterfaces().map(replaceNamedType),
-        ...astBuilder.buildInterfaces(extensions),
+        ...buildInterfaces(extensions),
       ],
       fields: () => ({
         ...mapValue(config.fields, extendField),
         // $FlowFixMe Bug in Flow, see https://github.com/facebook/flow/issues/8178
-        ...astBuilder.buildFieldMap(extensions),
+        ...buildFieldMap(extensions),
       }),
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,
@@ -393,7 +391,7 @@ export function extendSchemaImpl(
       ...config,
       types: () => [
         ...type.getTypes().map(replaceNamedType),
-        ...astBuilder.buildUnionTypes(extensions),
+        ...buildUnionTypes(extensions),
       ],
       extensionASTNodes: concatMaybeArrays(
         config.extensionASTNodes,
@@ -416,41 +414,8 @@ export function extendSchemaImpl(
       type: replaceType(arg.type),
     };
   }
-}
 
-function concatMaybeArrays<X>(
-  ...arrays: $ReadOnlyArray<?$ReadOnlyArray<X>>
-): ?$ReadOnlyArray<X> {
-  // eslint-disable-next-line no-undef-init
-  let result = undefined;
-  for (const maybeArray of arrays) {
-    if (maybeArray) {
-      result = result === undefined ? maybeArray : result.concat(maybeArray);
-    }
-  }
-  return result;
-}
-
-type TypeResolver = (typeName: string) => GraphQLNamedType;
-
-const stdTypeMap = keyMap(
-  specifiedScalarTypes.concat(introspectionTypes),
-  type => type.name,
-);
-
-class ASTDefinitionBuilder {
-  _options: ?{ commentDescriptions?: boolean, ... };
-  _resolveType: TypeResolver;
-
-  constructor(
-    options: ?{ commentDescriptions?: boolean, ... },
-    resolveType: TypeResolver,
-  ) {
-    this._options = options;
-    this._resolveType = resolveType;
-  }
-
-  getOperationTypes(
+  function getOperationTypes(
     nodes: $ReadOnlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
   ): {|
     query: ?GraphQLObjectType,
@@ -464,49 +429,49 @@ class ASTDefinitionBuilder {
     for (const node of nodes) {
       if (node.operationTypes != null) {
         for (const operationType of node.operationTypes) {
-          const typeName = operationType.type.name.value;
-          opTypes[operationType.operation] = this._resolveType(typeName);
+          opTypes[operationType.operation] = getNamedType(operationType.type);
         }
       }
     }
     return opTypes;
   }
 
-  getNamedType(node: NamedTypeNode): GraphQLNamedType {
+  function getNamedType(node: NamedTypeNode): GraphQLNamedType {
     const name = node.name.value;
-    return stdTypeMap[name] || this._resolveType(name);
+    const type = stdTypeMap[name] || typeMap[name];
+
+    if (type === undefined) {
+      throw new Error(`Unknown type: "${name}".`);
+    }
+    return type;
   }
 
-  getWrappedType(node: TypeNode): GraphQLType {
+  function getWrappedType(node: TypeNode): GraphQLType {
     if (node.kind === Kind.LIST_TYPE) {
-      return new GraphQLList(this.getWrappedType(node.type));
+      return new GraphQLList(getWrappedType(node.type));
     }
     if (node.kind === Kind.NON_NULL_TYPE) {
-      return new GraphQLNonNull(this.getWrappedType(node.type));
+      return new GraphQLNonNull(getWrappedType(node.type));
     }
-    return this.getNamedType(node);
+    return getNamedType(node);
   }
 
-  buildDirectives(
-    nodes: Array<DirectiveDefinitionNode>,
-  ): Array<GraphQLDirective> {
-    return nodes.map(directive => {
-      const locations = directive.locations.map(
-        ({ value }) => ((value: any): DirectiveLocationEnum),
-      );
+  function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
+    const locations = node.locations.map(
+      ({ value }) => ((value: any): DirectiveLocationEnum),
+    );
 
-      return new GraphQLDirective({
-        name: directive.name.value,
-        description: getDescription(directive, this._options),
-        locations,
-        isRepeatable: directive.repeatable,
-        args: this.buildArgumentMap(directive.arguments),
-        astNode: directive,
-      });
+    return new GraphQLDirective({
+      name: node.name.value,
+      description: getDescription(node, options),
+      locations,
+      isRepeatable: node.repeatable,
+      args: buildArgumentMap(node.arguments),
+      astNode: node,
     });
   }
 
-  buildFieldMap(
+  function buildFieldMap(
     nodes: $ReadOnlyArray<
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
@@ -522,9 +487,9 @@ class ASTDefinitionBuilder {
             // Note: While this could make assertions to get the correctly typed
             // value, that would throw immediately while type system validation
             // with validateSchema() will produce more actionable results.
-            type: (this.getWrappedType(field.type): any),
-            description: getDescription(field, this._options),
-            args: this.buildArgumentMap(field.arguments),
+            type: (getWrappedType(field.type): any),
+            description: getDescription(field, options),
+            args: buildArgumentMap(field.arguments),
             deprecationReason: getDeprecationReason(field),
             astNode: field,
           };
@@ -534,7 +499,7 @@ class ASTDefinitionBuilder {
     return fieldConfigMap;
   }
 
-  buildArgumentMap(
+  function buildArgumentMap(
     args: ?$ReadOnlyArray<InputValueDefinitionNode>,
   ): GraphQLFieldConfigArgumentMap {
     const argConfigMap = Object.create(null);
@@ -543,11 +508,11 @@ class ASTDefinitionBuilder {
         // Note: While this could make assertions to get the correctly typed
         // value, that would throw immediately while type system validation
         // with validateSchema() will produce more actionable results.
-        const type: any = this.getWrappedType(arg.type);
+        const type: any = getWrappedType(arg.type);
 
         argConfigMap[arg.name.value] = {
           type,
-          description: getDescription(arg, this._options),
+          description: getDescription(arg, options),
           defaultValue: valueFromAST(arg.defaultValue, type),
           astNode: arg,
         };
@@ -556,7 +521,7 @@ class ASTDefinitionBuilder {
     return argConfigMap;
   }
 
-  buildInputFieldMap(
+  function buildInputFieldMap(
     nodes: $ReadOnlyArray<
       InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode,
     >,
@@ -568,11 +533,11 @@ class ASTDefinitionBuilder {
           // Note: While this could make assertions to get the correctly typed
           // value, that would throw immediately while type system validation
           // with validateSchema() will produce more actionable results.
-          const type: any = this.getWrappedType(field.type);
+          const type: any = getWrappedType(field.type);
 
           inputFieldMap[field.name.value] = {
             type,
-            description: getDescription(field, this._options),
+            description: getDescription(field, options),
             defaultValue: valueFromAST(field.defaultValue, type),
             astNode: field,
           };
@@ -582,7 +547,7 @@ class ASTDefinitionBuilder {
     return inputFieldMap;
   }
 
-  buildEnumValueMap(
+  function buildEnumValueMap(
     nodes: $ReadOnlyArray<EnumTypeDefinitionNode | EnumTypeExtensionNode>,
   ): GraphQLEnumValueConfigMap {
     const enumValueMap = Object.create(null);
@@ -590,7 +555,7 @@ class ASTDefinitionBuilder {
       if (node.values != null) {
         for (const value of node.values) {
           enumValueMap[value.name.value] = {
-            description: getDescription(value, this._options),
+            description: getDescription(value, options),
             deprecationReason: getDeprecationReason(value),
             astNode: value,
           };
@@ -600,7 +565,7 @@ class ASTDefinitionBuilder {
     return enumValueMap;
   }
 
-  buildInterfaces(
+  function buildInterfaces(
     nodes: $ReadOnlyArray<
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
@@ -616,14 +581,14 @@ class ASTDefinitionBuilder {
           // values below, that would throw immediately while type system
           // validation with validateSchema() will produce more actionable
           // results.
-          interfaces.push((this.getNamedType(type): any));
+          interfaces.push((getNamedType(type): any));
         }
       }
     }
     return interfaces;
   }
 
-  buildUnionTypes(
+  function buildUnionTypes(
     nodes: $ReadOnlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode>,
   ): Array<GraphQLObjectType> {
     const types = [];
@@ -634,32 +599,17 @@ class ASTDefinitionBuilder {
           // values below, that would throw immediately while type system
           // validation with validateSchema() will produce more actionable
           // results.
-          types.push((this.getNamedType(type): any));
+          types.push((getNamedType(type): any));
         }
       }
     }
     return types;
   }
 
-  buildTypeMap(
-    nodes: $ReadOnlyArray<TypeDefinitionNode>,
-    extensionMap: ReadOnlyObjMap<$ReadOnlyArray<TypeExtensionNode>>,
-  ): ObjMap<GraphQLNamedType> {
-    const typeMap = Object.create(null);
-    for (const node of nodes) {
-      const name = node.name.value;
-      typeMap[name] =
-        stdTypeMap[name] || this._buildType(node, extensionMap[name] || []);
-    }
-    return typeMap;
-  }
-
-  _buildType(
-    astNode: TypeDefinitionNode,
-    extensionNodes: $ReadOnlyArray<TypeExtensionNode>,
-  ): GraphQLNamedType {
+  function buildType(astNode: TypeDefinitionNode): GraphQLNamedType {
     const name = astNode.name.value;
-    const description = getDescription(astNode, this._options);
+    const description = getDescription(astNode, options);
+    const extensionNodes = typeExtensionsMap[name] || [];
 
     switch (astNode.kind) {
       case Kind.OBJECT_TYPE_DEFINITION: {
@@ -669,8 +619,8 @@ class ASTDefinitionBuilder {
         return new GraphQLObjectType({
           name,
           description,
-          interfaces: () => this.buildInterfaces(allNodes),
-          fields: () => this.buildFieldMap(allNodes),
+          interfaces: () => buildInterfaces(allNodes),
+          fields: () => buildFieldMap(allNodes),
           astNode,
           extensionASTNodes,
         });
@@ -682,8 +632,8 @@ class ASTDefinitionBuilder {
         return new GraphQLInterfaceType({
           name,
           description,
-          interfaces: () => this.buildInterfaces(allNodes),
-          fields: () => this.buildFieldMap(allNodes),
+          interfaces: () => buildInterfaces(allNodes),
+          fields: () => buildFieldMap(allNodes),
           astNode,
           extensionASTNodes,
         });
@@ -695,7 +645,7 @@ class ASTDefinitionBuilder {
         return new GraphQLEnumType({
           name,
           description,
-          values: this.buildEnumValueMap(allNodes),
+          values: buildEnumValueMap(allNodes),
           astNode,
           extensionASTNodes,
         });
@@ -707,7 +657,7 @@ class ASTDefinitionBuilder {
         return new GraphQLUnionType({
           name,
           description,
-          types: () => this.buildUnionTypes(allNodes),
+          types: () => buildUnionTypes(allNodes),
           astNode,
           extensionASTNodes,
         });
@@ -729,7 +679,7 @@ class ASTDefinitionBuilder {
         return new GraphQLInputObjectType({
           name,
           description,
-          fields: () => this.buildInputFieldMap(allNodes),
+          fields: () => buildInputFieldMap(allNodes),
           astNode,
           extensionASTNodes,
         });
@@ -743,6 +693,24 @@ class ASTDefinitionBuilder {
     );
   }
 }
+
+function concatMaybeArrays<X>(
+  ...arrays: $ReadOnlyArray<?$ReadOnlyArray<X>>
+): ?$ReadOnlyArray<X> {
+  // eslint-disable-next-line no-undef-init
+  let result = undefined;
+  for (const maybeArray of arrays) {
+    if (maybeArray) {
+      result = result === undefined ? maybeArray : result.concat(maybeArray);
+    }
+  }
+  return result;
+}
+
+const stdTypeMap = keyMap(
+  specifiedScalarTypes.concat(introspectionTypes),
+  type => type.name,
+);
 
 /**
  * Given a field or enum value node, returns the string value for the

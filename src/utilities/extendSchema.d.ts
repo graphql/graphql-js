@@ -1,6 +1,10 @@
 import Maybe from '../tsutils/Maybe';
 import { Location, DocumentNode, StringValueNode } from '../language/ast';
-import { GraphQLSchemaValidationOptions, GraphQLSchema } from '../type/schema';
+import {
+  GraphQLSchemaValidationOptions,
+  GraphQLSchema,
+  GraphQLSchemaNormalizedConfig,
+} from '../type/schema';
 
 interface Options extends GraphQLSchemaValidationOptions {
   /**
@@ -44,6 +48,15 @@ export function extendSchema(
   documentAST: DocumentNode,
   options?: Options,
 ): GraphQLSchema;
+
+/**
+ * @internal
+ */
+export function extendSchemaImpl(
+  schemaConfig: GraphQLSchemaNormalizedConfig,
+  documentAST: DocumentNode,
+  options?: Options,
+): GraphQLSchemaNormalizedConfig;
 
 /**
  * Given an ast node, returns its string description.
