@@ -19,7 +19,7 @@ import {
   GraphQLDeprecatedDirective,
 } from '../type/directives';
 
-import { extendSchema } from './extendSchema';
+import { extendSchemaImpl } from './extendSchema';
 
 export type BuildSchemaOptions = {|
   ...GraphQLSchemaValidationOptions,
@@ -71,20 +71,28 @@ export function buildASTSchema(
     assertValidSDL(documentAST);
   }
 
-  const emptySchema = new GraphQLSchema({ directives: [] });
-  const extendedSchema = extendSchema(emptySchema, documentAST, {
+  const config = extendSchemaImpl(emptySchemaConfig, documentAST, {
     ...options,
     assumeValidSDL: true,
   });
 
-  const config = extendedSchema.toConfig();
-  if (extendedSchema.astNode == null) {
-    // Note: While this could make early assertions to get the correctly
-    // typed values below, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    config.query = (extendedSchema.getType('Query'): any);
-    config.mutation = (extendedSchema.getType('Mutation'): any);
-    config.subscription = (extendedSchema.getType('Subscription'): any);
+  if (config.astNode == null) {
+    for (const type of config.types) {
+      switch (type.name) {
+        // Note: While this could make early assertions to get the correctly
+        // typed values below, that would throw immediately while type system
+        // validation with validateSchema() will produce more actionable results.
+        case 'Query':
+          config.query = (type: any);
+          break;
+        case 'Mutation':
+          config.mutation = (type: any);
+          break;
+        case 'Subscription':
+          config.subscription = (type: any);
+          break;
+      }
+    }
   }
 
   const { directives } = config;
@@ -101,9 +109,10 @@ export function buildASTSchema(
     directives.push(GraphQLDeprecatedDirective);
   }
 
-  config.assumeValid = (options && options.assumeValid) || false;
   return new GraphQLSchema(config);
 }
+
+const emptySchemaConfig = new GraphQLSchema({ directives: [] }).toConfig();
 
 /**
  * A helper function to build a GraphQLSchema directly from a source
