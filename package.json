@@ -38,7 +38,7 @@
     "check:spelling": "cspell \"./{src/**/,resources**/,}*.{js,ts,md,graphql}\"",
     "build": "node resources/build.js",
     "changelog": "node resources/gen-changelog.js",
-    "preversion": ". ./resources/checkgit.sh",
+    "preversion": ". ./resources/checkgit.sh && yarn check --integrity",
     "version": "node resources/gen-version.js && npm test && git add src/version.js",
     "gitpublish": ". ./resources/gitpublish.sh"
   },
