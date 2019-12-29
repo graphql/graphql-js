@@ -88,17 +88,17 @@ function genChangeLog(tag, date, allPRs) {
       .filter(label => label.startsWith('PR: '));
 
     if (labels.length === 0) {
-      throw new Error(`PR #${pr.number} missing label`);
+      throw new Error(`PR is missing label. See ${pr.url}`);
     }
     if (labels.length > 1) {
       throw new Error(
-        `PR #${pr.number} has conflicting labels: ` + labels.join('\n'),
+        `PR has conflicting labels: ${labels.join('\n')}\nSee ${pr.url}`,
       );
     }
 
     const label = labels[0];
     if (!labelsConfig[label]) {
-      throw new Error('Unknown label: ' + label + pr.number);
+      throw new Error(`Unknown label: ${label}. See ${pr.url}`);
     }
     byLabel[label] = byLabel[label] || [];
     byLabel[label].push(pr);
@@ -185,7 +185,7 @@ function graphqlRequestImpl(query, variables, cb) {
     });
   });
 
-  req.on('error', error => cb(error));
+  req.on('error', error => resultCB(error));
   req.write(JSON.stringify({ query, variables }));
   req.end();
 }
