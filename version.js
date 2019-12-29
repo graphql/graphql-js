@@ -13,7 +13,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-var version = '15.0.0-alpha.1';
+var version = '15.0.0-alpha.2';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -23,6 +23,6 @@ var versionInfo = Object.freeze({
   major: 15,
   minor: 0,
   patch: 0,
-  preReleaseTag: 'alpha.1'
+  preReleaseTag: 'alpha.2'
 });
 exports.versionInfo = versionInfo;
