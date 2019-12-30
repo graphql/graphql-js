@@ -231,6 +231,22 @@ export function getArgumentValues(
 }
 
 /**
+ * If the directive does not exist on the node, returns undefined otherwise returns a DirectiveNode.
+ */
+export function getDirective(
+  directiveDef: GraphQLDirective,
+  node: { +directives?: $ReadOnlyArray<DirectiveNode>, ... },
+): void | DirectiveNode {
+  return (
+    node.directives &&
+    find(
+      node.directives,
+      directive => directive.name.value === directiveDef.name,
+    )
+  );
+}
+
+/**
  * Prepares an object map of argument values given a directive definition
  * and a AST node which may contain directives. Optionally also accepts a map
  * of variable values.
@@ -246,12 +262,7 @@ export function getDirectiveValues(
   node: { +directives?: $ReadOnlyArray<DirectiveNode>, ... },
   variableValues?: ?ObjMap<mixed>,
 ): void | { [argument: string]: mixed, ... } {
-  const directiveNode =
-    node.directives &&
-    find(
-      node.directives,
-      directive => directive.name.value === directiveDef.name,
-    );
+  const directiveNode = getDirective(directiveDef, node);
 
   if (directiveNode) {
     return getArgumentValues(directiveDef, directiveNode, variableValues);
