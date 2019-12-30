@@ -219,8 +219,6 @@ class ResultResolver {
       };
 
       this.executionResults.push(resolveResult());
-      //this.addDeferResults(exeContext);
-      // change questo con una promise dopo la prima esecuzione then (add deferResult return data)
     }
   }
 
