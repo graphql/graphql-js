@@ -2,6 +2,7 @@
 
 import { type ObjMap } from '../jsutils/ObjMap';
 
+import { Kind } from '../language/kinds';
 import { visit } from '../language/visitor';
 import {
   type DocumentNode,
@@ -18,29 +19,25 @@ export function separateOperations(
   documentAST: DocumentNode,
 ): ObjMap<DocumentNode> {
   const operations = [];
-  const fragments = Object.create(null);
-  const positions = new Map();
   const depGraph: DepGraph = Object.create(null);
   let fromName;
-  let idx = 0;
 
   // Populate metadata and build a dependency graph.
   visit(documentAST, {
     OperationDefinition(node) {
       fromName = opName(node);
       operations.push(node);
-      positions.set(node, idx++);
     },
     FragmentDefinition(node) {
       fromName = node.name.value;
-      fragments[fromName] = node;
-      positions.set(node, idx++);
     },
     FragmentSpread(node) {
       const toName = node.name.value;
-      (depGraph[fromName] || (depGraph[fromName] = Object.create(null)))[
-        toName
-      ] = true;
+      let dependents = depGraph[fromName];
+      if (dependents === undefined) {
+        dependents = depGraph[fromName] = Object.create(null);
+      }
+      dependents[toName] = true;
     },
   });
 
@@ -54,17 +51,14 @@ export function separateOperations(
 
     // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
-    const definitions = [operation];
-    for (const name of Object.keys(dependencies)) {
-      definitions.push(fragments[name]);
-    }
-    definitions.sort(
-      (n1, n2) => (positions.get(n1) || 0) - (positions.get(n2) || 0),
-    );
-
     separatedDocumentASTs[operationName] = {
-      kind: 'Document',
-      definitions,
+      kind: Kind.DOCUMENT,
+      definitions: documentAST.definitions.filter(
+        node =>
+          node === operation ||
+          (node.kind === Kind.FRAGMENT_DEFINITION &&
+            dependencies[node.name.value]),
+      ),
     };
   }
 
