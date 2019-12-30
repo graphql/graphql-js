@@ -10,7 +10,7 @@ import { GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
 
 import { execute } from '../execute';
-import { forAwaitEach, isAsyncIterable, createAsyncIterator } from 'iterall';
+import { forAwaitEach, isAsyncIterable } from 'iterall';
 
 class Data {
   d: string;
@@ -190,10 +190,8 @@ describe('Execute: handles directives', () => {
         }
       `);
         expect(isAsyncIterable(result)).to.equal(true);
-        const resultsIterator = createAsyncIterator(result);
-
         const results = [];
-        await forAwaitEach(resultsIterator, value => {
+        await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
           results.push(value);
         });
 
@@ -219,10 +217,9 @@ describe('Execute: handles directives', () => {
         }
       `);
         expect(isAsyncIterable(result)).to.equal(true);
-        const resultsIterator = createAsyncIterator(result);
 
         const results = [];
-        await forAwaitEach(resultsIterator, value => {
+        await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
           results.push(value);
         });
 
@@ -328,10 +325,9 @@ describe('Execute: handles directives', () => {
             }
           `);
           expect(isAsyncIterable(result)).to.equal(true);
-          const resultsIterator = createAsyncIterator(result);
 
           const results = [];
-          await forAwaitEach(resultsIterator, value => {
+          await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
             results.push(value);
           });
 
@@ -381,10 +377,9 @@ describe('Execute: handles directives', () => {
             }
           `);
           expect(isAsyncIterable(result)).to.equal(true);
-          const resultsIterator = createAsyncIterator(result);
 
           const results = [];
-          await forAwaitEach(resultsIterator, value => {
+          await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
             results.push(value);
           });
 
@@ -429,10 +424,9 @@ describe('Execute: handles directives', () => {
             }
           `);
           expect(isAsyncIterable(result)).to.equal(true);
-          const resultsIterator = createAsyncIterator(result);
 
           const results = [];
-          await forAwaitEach(resultsIterator, value => {
+          await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
             results.push(value);
           });
 
@@ -465,10 +459,9 @@ describe('Execute: handles directives', () => {
             }
           `);
           expect(isAsyncIterable(result)).to.equal(true);
-          const resultsIterator = createAsyncIterator(result);
 
           const results = [];
-          await forAwaitEach(resultsIterator, value => {
+          await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
             results.push(value);
           });
 
@@ -504,10 +497,9 @@ describe('Execute: handles directives', () => {
             }
           `);
           expect(isAsyncIterable(result)).to.equal(true);
-          const resultsIterator = createAsyncIterator(result);
 
           const results = [];
-          await forAwaitEach(resultsIterator, value => {
+          await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
             results.push(value);
           });
 

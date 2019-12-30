@@ -63,6 +63,8 @@ import {
 import { typeFromAST } from '../utilities/typeFromAST';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
+import objectValues from '../polyfills/objectValues';
+
 import {
   getVariableValues,
   getArgumentValues,
@@ -139,19 +141,20 @@ export type ExecutionArgs = {|
 |};
 
 /**
- * Helper class that allows us to dispatch patches dynamically, and obtain an
- * AsyncIterable that yields each patch in the order that they get resolved.
+ * ResultResolver class that allows us to create the result of the execution:
+ * AsyncIterable <Promise <ExecutionResult>> when there are deferred results
+ * PromiseOrValue <ExecutionResult> for standard executions
  */
 class ResultResolver {
   executionResults: Array<Promise<AsyncExecutionResult>>;
-  deferResults: {
-    path: Path | void,
+  deferResults: ObjMap<{|
+    path: Array<string | number>,
     label: string,
-    resolvers: Array<{
+    resolvers: Array<{|
       responseName: string,
       resolver: () => PromiseOrValue<mixed>,
-    }>,
-  };
+    |}>,
+  |}>;
 
   constructor() {
     this.executionResults = [];
@@ -176,13 +179,13 @@ class ResultResolver {
   }
 
   addDeferResults(exeContext: ExecutionContext) {
-    const deferResultsArray = Object.values(this.deferResults);
+    const deferResultsArray = objectValues(this.deferResults);
     this.deferResults = Object.create(null);
 
     // avoid multiple resolve for same responseName in same path
     const resultsResolver = Object.create({});
     for (const deferResult of deferResultsArray) {
-      const resolveResult = () => {
+      const resolveResult = (): Promise<AsyncExecutionResult> => {
         const { label, path, resolvers } = deferResult;
         const results = Object.create({});
         let containsPromise = false;
@@ -203,8 +206,8 @@ class ResultResolver {
 
         // If there are no promises, we can just return the object
         if (!containsPromise) {
-          // defer's result must always be a Promise
-          return this.buildResponse(exeContext, Promise.resolve(results), {
+          // deferred result must always be a Promise
+          return this.buildAsyncResponse(exeContext, Promise.resolve(results), {
             label,
             path,
           });
@@ -212,7 +215,7 @@ class ResultResolver {
         // Otherwise, results is a map from field name to the result of resolving that
         // field, which is possibly a promise. Return a promise that will return this
         // same map, but with any promises replaced with the values they resolved to.
-        return this.buildResponse(exeContext, promiseForObject(results), {
+        return this.buildAsyncResponse(exeContext, promiseForObject(results), {
           label,
           path,
         });
@@ -223,33 +226,41 @@ class ResultResolver {
   }
 
   /**
+   * Given a completed execution context, data and iterable object , build the { value, done }
+   * response defined by the "AsyncIterable"
+   */
+  buildAsyncResponse(
+    exeContext: ExecutionContext,
+    data: Promise<ObjMap<mixed> | null>,
+    iterable?: {|
+      label?: string,
+      path?: Array<string | number>,
+    |},
+  ): Promise<AsyncExecutionResult> {
+    return data.then(resolved => {
+      const value =
+        exeContext.errors.length === 0
+          ? { data: resolved, ...iterable }
+          : { errors: exeContext.errors, data: resolved, ...iterable };
+      // defer results are added only after the parent's response has been resolved
+      this.addDeferResults(exeContext);
+      return {
+        value,
+        done: false,
+      };
+    });
+  }
+
+  /**
    * Given a completed execution context and data, build the { errors, data }
    * response defined by the "Response" section of the GraphQL specification.
    */
   buildResponse(
     exeContext: ExecutionContext,
     data: PromiseOrValue<ObjMap<mixed> | null>,
-    iterable?: {
-      label?: string,
-      path?: Array<string | number>,
-    },
-  ): PromiseOrValue<ExecutionResult> | Promise<AsyncExecutionResult> {
+  ): PromiseOrValue<ExecutionResult> {
     if (isPromise(data)) {
-      return data.then(resolved => {
-        const value =
-          exeContext.errors.length === 0
-            ? { data: resolved, ...iterable }
-            : { errors: exeContext.errors, data: resolved, ...iterable };
-        if (iterable) {
-          // defer results are added only after the parent's response has been resolved
-          this.addDeferResults(exeContext);
-          return {
-            value,
-            done: false,
-          };
-        }
-        return value;
-      });
+      return data.then(resolved => this.buildResponse(exeContext, resolved));
     }
     return exeContext.errors.length === 0
       ? { data }
@@ -263,9 +274,11 @@ class ResultResolver {
     if (!Object.keys(this.deferResults).length) {
       return this.buildResponse(exeContext, data);
     }
-    // defer's result must always be a Promise
+    // deferred result must always be a Promise
     const promiseData = isPromise(data) ? data : Promise.resolve(data);
-    this.executionResults.push(this.buildResponse(exeContext, promiseData, {}));
+    this.executionResults.push(
+      this.buildAsyncResponse(exeContext, promiseData),
+    );
     return this.getAsyncIterable();
   }
 
@@ -570,11 +583,12 @@ function executeFieldsSerially(
 
 function getDeferredInfo(exeContext, fieldNodes) {
   let every = true;
-  const deferLabels = [];
+  const deferLabels: Array<string> = [];
   for (const node of fieldNodes) {
     const lastDefer = getDeferDirectiveValues(exeContext, node);
     every = every && lastDefer;
     if (lastDefer && !deferLabels.includes(lastDefer.label)) {
+      // $FlowFixMe(>=0.90.0)
       deferLabels.push(lastDefer.label);
     }
   }
@@ -666,6 +680,7 @@ export function collectFields(
           if (deferDirective && !isFieldDefer) {
         */
         if (deferDirective) {
+          // $FlowFixMe(>=0.90.0)
           selection.directives.push(deferDirective);
         }
         fields[name].push(selection);
@@ -764,16 +779,15 @@ function shouldDeferNode(
 function getDeferDirectiveValues(
   exeContext: ExecutionContext,
   node: FragmentSpreadNode | FieldNode,
-): null | { [argument: string]: mixed, ... } {
+): void | { [argument: string]: mixed, ... } {
   const defer = getDirectiveValues(
     GraphQLDeferDirective,
     node,
     exeContext.variableValues,
   );
-  if (!defer || defer.if === false) {
-    return null;
+  if (defer && defer.if !== false) {
+    return defer;
   }
-  return defer;
 }
 
 /**

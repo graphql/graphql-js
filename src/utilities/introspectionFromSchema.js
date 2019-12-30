@@ -28,6 +28,6 @@ export function introspectionFromSchema(
 ): IntrospectionQuery {
   const document = parse(getIntrospectionQuery(options));
   const result = execute({ schema, document });
-  invariant(!isPromise(result) && !result.errors && result.data);
+  invariant(!isPromise(result) && result.errors == null && result.data != null);
   return (result.data: any);
 }
