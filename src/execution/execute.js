@@ -295,9 +295,6 @@ class ResultResolver {
               })
             );
           },
-          [$$asyncIterator]() {
-            return this;
-          },
         };
       },
     }: any);
