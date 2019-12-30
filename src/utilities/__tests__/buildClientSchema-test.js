@@ -140,7 +140,7 @@ describe('Type System: build schema from introspection', () => {
 
     // Custom are built
     const customScalar = schema.getType('CustomScalar');
-    expect(clientSchema.getType('CustomScalar')).not.to.equal(customScalar);
+    expect(clientSchema.getType('CustomScalar')).to.not.equal(customScalar);
   });
 
   it('includes standard types only if they are used', () => {

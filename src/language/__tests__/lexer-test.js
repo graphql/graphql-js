@@ -879,7 +879,7 @@ describe('Lexer', () => {
       endToken = lexer.advance();
       // Lexer advances over ignored comment tokens to make writing parsers
       // easier, but will include them in the linked list result.
-      expect(endToken.kind).not.to.equal(TokenKind.COMMENT);
+      expect(endToken.kind).to.not.equal(TokenKind.COMMENT);
     } while (endToken.kind !== TokenKind.EOF);
 
     expect(startToken.prev).to.equal(null);
