@@ -15,6 +15,7 @@ import {
 } from '../type/schema';
 import {
   GraphQLSkipDirective,
+  GraphQLDeferDirective,
   GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
 } from '../type/directives';
@@ -99,6 +100,10 @@ export function buildASTSchema(
   // If specified directives were not explicitly declared, add them.
   if (!directives.some(directive => directive.name === 'skip')) {
     directives.push(GraphQLSkipDirective);
+  }
+
+  if (!directives.some(directive => directive.name === 'defer')) {
+    directives.push(GraphQLDeferDirective);
   }
 
   if (!directives.some(directive => directive.name === 'include')) {

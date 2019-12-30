@@ -1,6 +1,6 @@
 // @flow strict
 
-import { forEach, isCollection } from 'iterall';
+import { $$asyncIterator, forEach, isCollection } from 'iterall';
 
 import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';
@@ -22,6 +22,7 @@ import { locatedError } from '../error/locatedError';
 import { Kind } from '../language/kinds';
 import {
   type DocumentNode,
+  type DirectiveNode,
   type OperationDefinitionNode,
   type SelectionSetNode,
   type FieldNode,
@@ -40,6 +41,7 @@ import {
 import {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+  GraphQLDeferDirective,
 } from '../type/directives';
 import {
   type GraphQLObjectType,
@@ -65,6 +67,7 @@ import {
   getVariableValues,
   getArgumentValues,
   getDirectiveValues,
+  getDirective,
 } from './values';
 
 /**
@@ -103,6 +106,7 @@ export type ExecutionContext = {|
   fieldResolver: GraphQLFieldResolver<any, any>,
   typeResolver: GraphQLTypeResolver<any, any>,
   errors: Array<GraphQLError>,
+  resultResolver: ResultResolver,
 |};
 
 /**
@@ -114,6 +118,13 @@ export type ExecutionContext = {|
 export type ExecutionResult = {|
   errors?: $ReadOnlyArray<GraphQLError>,
   data?: ObjMap<mixed> | null,
+  label?: string,
+  path?: Array<string | number>,
+|};
+
+export type AsyncExecutionResult = {|
+  value: ExecutionResult,
+  done: boolean,
 |};
 
 export type ExecutionArgs = {|
@@ -126,6 +137,161 @@ export type ExecutionArgs = {|
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
 |};
+
+/**
+ * Helper class that allows us to dispatch patches dynamically, and obtain an
+ * AsyncIterable that yields each patch in the order that they get resolved.
+ */
+class ResultResolver {
+  executionResults: Array<Promise<AsyncExecutionResult>>;
+  deferResults: {
+    path: Path | void,
+    label: string,
+    resolvers: Array<{
+      responseName: string,
+      resolver: () => PromiseOrValue<mixed>,
+    }>,
+  };
+
+  constructor() {
+    this.executionResults = [];
+    this.deferResults = Object.create(null);
+  }
+
+  addDeferResolver(
+    path: Path | void,
+    label: string,
+    responseName: string,
+    resolver: () => PromiseOrValue<mixed>,
+  ): void {
+    const pathArray = pathToArray(path);
+    const keyDeferResult = pathArray.toString() + label;
+    const deferResult = this.deferResults[keyDeferResult] || {
+      resolvers: [],
+      label,
+      path: pathArray,
+    };
+    deferResult.resolvers.push({ resolver, responseName });
+    this.deferResults[keyDeferResult] = deferResult;
+  }
+
+  addDeferResults(exeContext: ExecutionContext) {
+    const deferResultsArray = Object.values(this.deferResults);
+    this.deferResults = Object.create(null);
+
+    // avoid multiple resolve for same responseName in same path
+    const resultsResolver = Object.create({});
+    for (const deferResult of deferResultsArray) {
+      const resolveResult = () => {
+        const { label, path, resolvers } = deferResult;
+        const results = Object.create({});
+        let containsPromise = false;
+        resolvers.forEach(({ resolver, responseName }) => {
+          const keyResultResolve = path.toString() + responseName;
+          const result = resultsResolver[keyResultResolve]
+            ? resultsResolver[keyResultResolve]
+            : resolver();
+
+          resultsResolver[keyResultResolve] = result;
+          if (result !== undefined) {
+            results[responseName] = result;
+            if (!containsPromise && isPromise(result)) {
+              containsPromise = true;
+            }
+          }
+        });
+
+        // If there are no promises, we can just return the object
+        if (!containsPromise) {
+          // defer's result must always be a Promise
+          return this.buildResponse(exeContext, Promise.resolve(results), {
+            label,
+            path,
+          });
+        }
+        // Otherwise, results is a map from field name to the result of resolving that
+        // field, which is possibly a promise. Return a promise that will return this
+        // same map, but with any promises replaced with the values they resolved to.
+        return this.buildResponse(exeContext, promiseForObject(results), {
+          label,
+          path,
+        });
+      };
+
+      this.executionResults.push(resolveResult());
+      //this.addDeferResults(exeContext);
+      // change questo con una promise dopo la prima esecuzione then (add deferResult return data)
+    }
+  }
+
+  /**
+   * Given a completed execution context and data, build the { errors, data }
+   * response defined by the "Response" section of the GraphQL specification.
+   */
+  buildResponse(
+    exeContext: ExecutionContext,
+    data: PromiseOrValue<ObjMap<mixed> | null>,
+    iterable?: {
+      label?: string,
+      path?: Array<string | number>,
+    },
+  ): PromiseOrValue<ExecutionResult> | Promise<AsyncExecutionResult> {
+    if (isPromise(data)) {
+      return data.then(resolved => {
+        const value =
+          exeContext.errors.length === 0
+            ? { data: resolved, ...iterable }
+            : { errors: exeContext.errors, data: resolved, ...iterable };
+        if (iterable) {
+          // defer results are added only after the parent's response has been resolved
+          this.addDeferResults(exeContext);
+          return {
+            value,
+            done: false,
+          };
+        }
+        return value;
+      });
+    }
+    return exeContext.errors.length === 0
+      ? { data }
+      : { errors: exeContext.errors, data };
+  }
+
+  getResult(
+    exeContext: ExecutionContext,
+    data: PromiseOrValue<ObjMap<mixed> | null>,
+  ): AsyncIterable<Promise<ExecutionResult>> | PromiseOrValue<ExecutionResult> {
+    if (!Object.keys(this.deferResults).length) {
+      return this.buildResponse(exeContext, data);
+    }
+    // defer's result must always be a Promise
+    const promiseData = isPromise(data) ? data : Promise.resolve(data);
+    this.executionResults.push(this.buildResponse(exeContext, promiseData, {}));
+    return this.getAsyncIterable();
+  }
+
+  getAsyncIterable(): AsyncIterable<Promise<ExecutionResult>> {
+    const self = this;
+    return ({
+      [$$asyncIterator]() {
+        return {
+          next() {
+            return (
+              self.executionResults.shift() ||
+              Promise.resolve({
+                done: true,
+              })
+            );
+          },
+          [$$asyncIterator]() {
+            return this;
+          },
+        };
+      },
+    }: any);
+  }
+}
 
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.
@@ -142,7 +308,7 @@ export type ExecutionArgs = {|
 declare function execute(
   ExecutionArgs,
   ..._: []
-): PromiseOrValue<ExecutionResult>;
+): AsyncIterable<Promise<ExecutionResult>> | PromiseOrValue<ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function execute(
   schema: GraphQLSchema,
@@ -153,7 +319,7 @@ declare function execute(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
-): PromiseOrValue<ExecutionResult>;
+): AsyncIterable<Promise<ExecutionResult>> | PromiseOrValue<ExecutionResult>;
 export function execute(
   argsOrSchema,
   document,
@@ -180,7 +346,9 @@ export function execute(
       });
 }
 
-function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+function executeImpl(
+  args: ExecutionArgs,
+): AsyncIterable<Promise<ExecutionResult>> | PromiseOrValue<ExecutionResult> {
   const {
     schema,
     document,
@@ -221,23 +389,7 @@ function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
   const data = executeOperation(exeContext, exeContext.operation, rootValue);
-  return buildResponse(exeContext, data);
-}
-
-/**
- * Given a completed execution context and data, build the { errors, data }
- * response defined by the "Response" section of the GraphQL specification.
- */
-function buildResponse(
-  exeContext: ExecutionContext,
-  data: PromiseOrValue<ObjMap<mixed> | null>,
-): PromiseOrValue<ExecutionResult> {
-  if (isPromise(data)) {
-    return data.then(resolved => buildResponse(exeContext, resolved));
-  }
-  return exeContext.errors.length === 0
-    ? { data }
-    : { errors: exeContext.errors, data };
+  return exeContext.resultResolver.getResult(exeContext, data);
 }
 
 /**
@@ -333,6 +485,7 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver || defaultFieldResolver,
     typeResolver: typeResolver || defaultTypeResolver,
     errors: [],
+    resultResolver: new ResultResolver(),
   };
 }
 
@@ -417,6 +570,19 @@ function executeFieldsSerially(
   );
 }
 
+function getDeferredInfo(exeContext, fieldNodes) {
+  let every = true;
+  const deferLabels = [];
+  for (const node of fieldNodes) {
+    const lastDefer = getDeferDirectiveValues(exeContext, node);
+    every = every && lastDefer;
+    if (lastDefer && !deferLabels.includes(lastDefer.label)) {
+      deferLabels.push(lastDefer.label);
+    }
+  }
+  return [every, deferLabels];
+}
+
 /**
  * Implements the "Evaluating selection sets" section of the spec
  * for "read" mode.
@@ -430,17 +596,24 @@ function executeFields(
 ): PromiseOrValue<ObjMap<mixed>> {
   const results = Object.create(null);
   let containsPromise = false;
-
   for (const responseName of Object.keys(fields)) {
     const fieldNodes = fields[responseName];
     const fieldPath = addPath(path, responseName);
-    const result = resolveField(
-      exeContext,
-      parentType,
-      sourceValue,
-      fieldNodes,
-      fieldPath,
-    );
+    const [every, deferLabels] = getDeferredInfo(exeContext, fieldNodes);
+
+    const resolve = () =>
+      resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
+
+    const result = every ? null : resolve();
+
+    for (const label of deferLabels) {
+      exeContext.resultResolver.addDeferResolver(
+        path,
+        label,
+        responseName,
+        () => (every ? resolve() : result),
+      );
+    }
 
     if (result !== undefined) {
       results[responseName] = result;
@@ -477,6 +650,7 @@ export function collectFields(
   selectionSet: SelectionSetNode,
   fields: ObjMap<Array<FieldNode>>,
   visitedFragmentNames: ObjMap<boolean>,
+  deferDirective?: DirectiveNode,
 ): ObjMap<Array<FieldNode>> {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
@@ -487,6 +661,14 @@ export function collectFields(
         const name = getFieldEntryKey(selection);
         if (!fields[name]) {
           fields[name] = [];
+        }
+        /*
+          in order to support defer on field
+          const isFieldDefer = shouldDeferNode(exeContext, selection);
+          if (deferDirective && !isFieldDefer) {
+        */
+        if (deferDirective) {
+          selection.directives.push(deferDirective);
         }
         fields[name].push(selection);
         break;
@@ -504,6 +686,7 @@ export function collectFields(
           selection.selectionSet,
           fields,
           visitedFragmentNames,
+          deferDirective,
         );
         break;
       }
@@ -523,12 +706,15 @@ export function collectFields(
         ) {
           continue;
         }
+        const fragmentDeferDirective =
+          shouldDeferNode(exeContext, selection) || deferDirective;
         collectFields(
           exeContext,
           runtimeType,
           fragment.selectionSet,
           fields,
           visitedFragmentNames,
+          fragmentDeferDirective,
         );
         break;
       }
@@ -563,6 +749,33 @@ function shouldIncludeNode(
     return false;
   }
   return true;
+}
+
+/**
+ * Determines if a field should be deferred. @skip and @include has higher
+ * precedence than @defer.
+ */
+function shouldDeferNode(
+  exeContext: ExecutionContext,
+  node: FragmentSpreadNode,
+): DirectiveNode | void {
+  const shouldDefer = getDeferDirectiveValues(exeContext, node);
+  return shouldDefer && getDirective(GraphQLDeferDirective, node);
+}
+
+function getDeferDirectiveValues(
+  exeContext: ExecutionContext,
+  node: FragmentSpreadNode | FieldNode,
+): null | { [argument: string]: mixed, ... } {
+  const defer = getDirectiveValues(
+    GraphQLDeferDirective,
+    node,
+    exeContext.variableValues,
+  );
+  if (!defer || defer.if === false) {
+    return null;
+  }
+  return defer;
 }
 
 /**
