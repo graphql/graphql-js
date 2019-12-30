@@ -41,7 +41,7 @@ const NonNullListOfScalars = GraphQLNonNull(ListOfScalarsType);
 
 describe('Type System: Scalars', () => {
   it('accepts a Scalar type defining serialize', () => {
-    expect(() => new GraphQLScalarType({ name: 'SomeScalar' })).not.to.throw();
+    expect(() => new GraphQLScalarType({ name: 'SomeScalar' })).to.not.throw();
   });
 
   it('accepts a Scalar type defining parseValue and parseLiteral', () => {
@@ -52,7 +52,7 @@ describe('Type System: Scalars', () => {
           parseValue: () => null,
           parseLiteral: () => null,
         }),
-    ).not.to.throw();
+    ).to.not.throw();
   });
 
   it('provides default methods if omitted', () => {
@@ -291,7 +291,7 @@ describe('Type System: Objects', () => {
         },
       },
     });
-    expect(() => objType.getFields()).not.to.throw();
+    expect(() => objType.getFields()).to.not.throw();
   });
 
   it('rejects an Object type field with undefined config', () => {
@@ -438,7 +438,7 @@ describe('Type System: Interfaces', () => {
           name: 'AnotherInterface',
           fields: { f: { type: ScalarType } },
         }),
-    ).not.to.throw();
+    ).to.not.throw();
   });
 
   it('accepts an Interface type with an array of interfaces', () => {
@@ -508,7 +508,7 @@ describe('Type System: Unions', () => {
           name: 'SomeUnion',
           types: [ObjectType],
         }),
-    ).not.to.throw();
+    ).to.not.throw();
   });
 
   it('accepts a Union type with array types', () => {
@@ -801,14 +801,14 @@ describe('Type System: List', () => {
   }
 
   it('accepts an type as item type of list', () => {
-    expectList(ScalarType).not.to.throw();
-    expectList(ObjectType).not.to.throw();
-    expectList(UnionType).not.to.throw();
-    expectList(InterfaceType).not.to.throw();
-    expectList(EnumType).not.to.throw();
-    expectList(InputObjectType).not.to.throw();
-    expectList(ListOfScalarsType).not.to.throw();
-    expectList(NonNullScalarType).not.to.throw();
+    expectList(ScalarType).to.not.throw();
+    expectList(ObjectType).to.not.throw();
+    expectList(UnionType).to.not.throw();
+    expectList(InterfaceType).to.not.throw();
+    expectList(EnumType).to.not.throw();
+    expectList(InputObjectType).to.not.throw();
+    expectList(ListOfScalarsType).to.not.throw();
+    expectList(NonNullScalarType).to.not.throw();
   });
 
   it('rejects a non-type as item type of list', () => {
@@ -831,14 +831,14 @@ describe('Type System: Non-Null', () => {
   }
 
   it('accepts an type as nullable type of non-null', () => {
-    expectNonNull(ScalarType).not.to.throw();
-    expectNonNull(ObjectType).not.to.throw();
-    expectNonNull(UnionType).not.to.throw();
-    expectNonNull(InterfaceType).not.to.throw();
-    expectNonNull(EnumType).not.to.throw();
-    expectNonNull(InputObjectType).not.to.throw();
-    expectNonNull(ListOfScalarsType).not.to.throw();
-    expectNonNull(ListOfNonNullScalarsType).not.to.throw();
+    expectNonNull(ScalarType).to.not.throw();
+    expectNonNull(ObjectType).to.not.throw();
+    expectNonNull(UnionType).to.not.throw();
+    expectNonNull(InterfaceType).to.not.throw();
+    expectNonNull(EnumType).to.not.throw();
+    expectNonNull(InputObjectType).to.not.throw();
+    expectNonNull(ListOfScalarsType).to.not.throw();
+    expectNonNull(ListOfNonNullScalarsType).to.not.throw();
   });
 
   it('rejects a non-type as nullable type of non-null', () => {
