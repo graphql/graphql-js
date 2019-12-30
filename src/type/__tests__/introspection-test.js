@@ -846,6 +846,34 @@ describe('Introspection', () => {
               ],
             },
             {
+              name: 'defer',
+              locations: ['FRAGMENT_SPREAD'],
+              args: [
+                {
+                  defaultValue: null,
+                  name: 'if',
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'Boolean',
+                    ofType: null,
+                  },
+                },
+                {
+                  defaultValue: null,
+                  name: 'label',
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'String',
+                      ofType: null,
+                    },
+                  },
+                },
+              ],
+            },
+            {
               name: 'deprecated',
               locations: ['FIELD_DEFINITION', 'ENUM_VALUE'],
               args: [

@@ -61,6 +61,7 @@ describe('Validate: Known directives', () => {
         human @skip(if: false) {
           name
         }
+        ...DeferFrag @defer(if: true)
       }
     `);
   });
@@ -116,6 +117,8 @@ describe('Validate: Known directives', () => {
         ...Frag @include(if: true)
         skippedField @skip(if: true)
         ...SkippedFrag @skip(if: true)
+        ...DeferVarFrag @defer(if: $var)
+        ...DeferFrag @defer(if: true)
       }
 
       mutation Bar @onMutation {
@@ -135,7 +138,7 @@ describe('Validate: Known directives', () => {
   it('with misplaced directives', () => {
     expectErrors(`
       query Foo($var: Boolean) @include(if: true) {
-        name @onQuery @include(if: $var)
+        name @onQuery @include(if: $var) @defer(if: $var)
         ...Frag @onQuery
       }
 
@@ -150,6 +153,10 @@ describe('Validate: Known directives', () => {
       {
         message: 'Directive "@onQuery" may not be used on FIELD.',
         locations: [{ line: 3, column: 14 }],
+      },
+      {
+        message: 'Directive "@defer" may not be used on FIELD.',
+        locations: [{ line: 3, column: 42 }],
       },
       {
         message: 'Directive "@onQuery" may not be used on FRAGMENT_SPREAD.',

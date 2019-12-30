@@ -7,6 +7,7 @@ import { GraphQLSchema } from '../../type/schema';
 import {
   GraphQLSkipDirective,
   GraphQLIncludeDirective,
+  GraphQLDeferDirective,
   GraphQLDeprecatedDirective,
 } from '../../type/directives';
 
@@ -790,7 +791,11 @@ describe('findBreakingChanges', () => {
     const oldSchema = new GraphQLSchema({});
 
     const newSchema = new GraphQLSchema({
-      directives: [GraphQLSkipDirective, GraphQLIncludeDirective],
+      directives: [
+        GraphQLSkipDirective,
+        GraphQLIncludeDirective,
+        GraphQLDeferDirective,
+      ],
     });
 
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([

@@ -227,6 +227,8 @@ describe('Validate: Provided required arguments', () => {
           human @skip(if: false) {
             name
           }
+          ...DeferFrag @defer(label: "DeferFrag_defer")
+          ...DeferIfFrag @defer(if: true, label: "DeferFrag_defer")
         }
       `);
     });
@@ -237,6 +239,7 @@ describe('Validate: Provided required arguments', () => {
           dog @include {
             name @skip
           }
+          ...DeferFrag @defer
         }
       `).to.deep.equal([
         {
@@ -248,6 +251,11 @@ describe('Validate: Provided required arguments', () => {
           message:
             'Directive "@skip" argument "if" of type "Boolean!" is required, but it was not provided.',
           locations: [{ line: 4, column: 18 }],
+        },
+        {
+          message:
+            'Directive "@defer" argument "label" of type "String!" is required, but it was not provided.',
+          locations: [{ line: 6, column: 24 }],
         },
       ]);
     });
