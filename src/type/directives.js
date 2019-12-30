@@ -168,6 +168,26 @@ export const GraphQLSkipDirective = new GraphQLDirective({
 });
 
 /**
+ * Used to conditionally defer fragments.
+ */
+export const GraphQLDeferDirective = new GraphQLDirective({
+  name: 'defer',
+  description:
+    'Directs the executor to defer fragment when the `if` argument is true.',
+  locations: [DirectiveLocation.FRAGMENT_SPREAD],
+  args: {
+    if: {
+      type: GraphQLBoolean,
+      description: 'Deferred when true.',
+    },
+    label: {
+      type: GraphQLNonNull(GraphQLString),
+      description: 'label',
+    },
+  },
+});
+
+/**
  * Constant string used for default reason for a deprecation.
  */
 export const DEFAULT_DEPRECATION_REASON = 'No longer supported';
@@ -195,6 +215,7 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
 export const specifiedDirectives = Object.freeze([
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+  GraphQLDeferDirective,
   GraphQLDeprecatedDirective,
 ]);
 
