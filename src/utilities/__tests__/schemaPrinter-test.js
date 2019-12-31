@@ -597,7 +597,7 @@ describe('Type System Printer', () => {
 
         """label"""
         label: String!
-      ) on FRAGMENT_SPREAD
+      ) on FRAGMENT_SPREAD | INLINE_FRAGMENT
 
       """Marks an element of a GraphQL schema as no longer supported."""
       directive @deprecated(
@@ -819,7 +819,7 @@ describe('Type System Printer', () => {
 
         # label
         label: String!
-      ) on FRAGMENT_SPREAD
+      ) on FRAGMENT_SPREAD | INLINE_FRAGMENT
 
       # Marks an element of a GraphQL schema as no longer supported.
       directive @deprecated(

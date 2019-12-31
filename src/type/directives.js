@@ -174,7 +174,10 @@ export const GraphQLDeferDirective = new GraphQLDirective({
   name: 'defer',
   description:
     'Directs the executor to defer fragment when the `if` argument is true.',
-  locations: [DirectiveLocation.FRAGMENT_SPREAD],
+  locations: [
+    DirectiveLocation.FRAGMENT_SPREAD,
+    DirectiveLocation.INLINE_FRAGMENT,
+  ],
   args: {
     if: {
       type: GraphQLBoolean,

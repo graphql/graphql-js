@@ -690,13 +690,15 @@ export function collectFields(
         ) {
           continue;
         }
+        const fragmentDeferDirective =
+          shouldDeferNode(exeContext, selection) || deferDirective;
         collectFields(
           exeContext,
           runtimeType,
           selection.selectionSet,
           fields,
           visitedFragmentNames,
-          deferDirective,
+          fragmentDeferDirective,
         );
         break;
       }
@@ -767,7 +769,7 @@ function shouldIncludeNode(
  */
 function shouldDeferNode(
   exeContext: ExecutionContext,
-  node: FragmentSpreadNode,
+  node: FragmentSpreadNode | InlineFragmentNode,
 ): DirectiveNode | void {
   const shouldDefer = getDeferDirectiveValues(exeContext, node);
   return shouldDefer && getDirective(GraphQLDeferDirective, node);
@@ -775,7 +777,7 @@ function shouldDeferNode(
 
 function getDeferDirectiveValues(
   exeContext: ExecutionContext,
-  node: FragmentSpreadNode | FieldNode,
+  node: FragmentSpreadNode | InlineFragmentNode | FieldNode,
 ): void | { [argument: string]: mixed, ... } {
   const defer = getDirectiveValues(
     GraphQLDeferDirective,

@@ -250,7 +250,7 @@ describe('Execute: handles directives', () => {
           data: { a: 'a', b: 'b' },
         });
       });
-      describe('defer defer fragment spread with DataType', () => {
+      describe('defer fragment spread with DataType', () => {
         it('without defer', async () => {
           const result = executeTestQuery(`
             query {
@@ -581,6 +581,101 @@ describe('Execute: handles directives', () => {
 
       expect(result).to.deep.equal({
         data: { a: 'a' },
+      });
+    });
+
+    describe('defer on inline fragment', () => {
+      it('without if', async () => {
+        const result = executeTestQuery(`
+        query {
+          a
+          ... on TestType @defer(label: "Frag_b_defer") {
+            b
+          } 
+        }
+      `);
+        expect(isAsyncIterable(result)).to.equal(true);
+        const results = [];
+        await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
+          results.push(value);
+        });
+
+        expect(results.length).to.equal(2);
+        expect(results[0]).to.deep.equal({
+          data: { a: 'a', b: null },
+        });
+        expect(results[1]).to.deep.equal({
+          data: { b: 'b' },
+          label: 'Frag_b_defer',
+          path: [],
+        });
+      });
+
+      it('if true', async () => {
+        const result = executeTestQuery(`
+        query {
+          a
+          ... on TestType @defer(label: "Frag_b_defer") {
+            b
+          } 
+        }
+      `);
+        expect(isAsyncIterable(result)).to.equal(true);
+
+        const results = [];
+        await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
+          results.push(value);
+        });
+
+        expect(results.length).to.equal(2);
+        expect(results[0]).to.deep.equal({
+          data: { a: 'a', b: null },
+        });
+        expect(results[1]).to.deep.equal({
+          data: { b: 'b' },
+          label: 'Frag_b_defer',
+          path: [],
+        });
+      });
+
+      it('if true DataType', async () => {
+        const result = executeTestQuery(`
+            query {
+              a
+              ... on TestType @defer(if: true, label: "Frag_c_defer") {
+                c {
+                ... on DataType @defer(if: true, label: "FragData_d_defer") {
+                    d
+                  }
+                }
+              }
+            }
+          `);
+        expect(isAsyncIterable(result)).to.equal(true);
+
+        const results = [];
+        await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
+          results.push(value);
+        });
+
+        expect(results.length).to.equal(3);
+        expect(results[0]).to.deep.equal({
+          data: { a: 'a', c: null },
+        });
+        expect(results[1]).to.deep.equal({
+          data: {
+            c: {
+              d: null,
+            },
+          },
+          label: 'Frag_c_defer',
+          path: [],
+        });
+        expect(results[2]).to.deep.equal({
+          data: { d: 'd' },
+          label: 'FragData_d_defer',
+          path: ['c'],
+        });
       });
     });
   });

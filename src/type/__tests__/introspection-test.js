@@ -847,7 +847,7 @@ describe('Introspection', () => {
             },
             {
               name: 'defer',
-              locations: ['FRAGMENT_SPREAD'],
+              locations: ['FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
               args: [
                 {
                   defaultValue: null,
