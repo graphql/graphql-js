@@ -167,30 +167,14 @@ function validateDirectives(context: SchemaValidationContext): void {
     // TODO: Ensure proper locations.
 
     // Ensure the arguments are valid.
-    const argNames = Object.create(null);
     for (const arg of directive.args) {
-      const argName = arg.name;
-
       // Ensure they are named correctly.
       validateName(context, arg);
-
-      // Ensure they are unique per directive.
-      if (argNames[argName]) {
-        context.reportError(
-          `Argument @${directive.name}(${argName}:) can only be defined once.`,
-          directive.astNode &&
-            directive.args
-              .filter(({ name }) => name === argName)
-              .map(({ astNode }) => astNode),
-        );
-        continue;
-      }
-      argNames[argName] = true;
 
       // Ensure the type is an input type.
       if (!isInputType(arg.type)) {
         context.reportError(
-          `The type of @${directive.name}(${argName}:) must be Input Type ` +
+          `The type of @${directive.name}(${arg.name}:) must be Input Type ` +
             `but got: ${inspect(arg.type)}.`,
           arg.astNode,
         );
@@ -286,23 +270,11 @@ function validateFields(
     }
 
     // Ensure the arguments are valid
-    const argNames = Object.create(null);
     for (const arg of field.args) {
       const argName = arg.name;
 
       // Ensure they are named correctly.
       validateName(context, arg);
-
-      // Ensure they are unique per field.
-      if (argNames[argName]) {
-        context.reportError(
-          `Field argument ${type.name}.${field.name}(${argName}:) can only be defined once.`,
-          field.args
-            .filter(({ name }) => name === argName)
-            .map(({ astNode }) => astNode),
-        );
-      }
-      argNames[argName] = true;
 
       // Ensure the type is an input type
       if (!isInputType(arg.type)) {

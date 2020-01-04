@@ -152,36 +152,14 @@ function validateDirectives(context) {
     validateName(context, directive); // TODO: Ensure proper locations.
     // Ensure the arguments are valid.
 
-    var argNames = Object.create(null);
-
-    var _loop = function _loop(_i6, _directive$args2) {
+    for (var _i6 = 0, _directive$args2 = directive.args; _i6 < _directive$args2.length; _i6++) {
       var arg = _directive$args2[_i6];
-      var argName = arg.name; // Ensure they are named correctly.
-
-      validateName(context, arg); // Ensure they are unique per directive.
-
-      if (argNames[argName]) {
-        context.reportError("Argument @".concat(directive.name, "(").concat(argName, ":) can only be defined once."), directive.astNode && directive.args.filter(function (_ref) {
-          var name = _ref.name;
-          return name === argName;
-        }).map(function (_ref2) {
-          var astNode = _ref2.astNode;
-          return astNode;
-        }));
-        return "continue";
-      }
-
-      argNames[argName] = true; // Ensure the type is an input type.
+      // Ensure they are named correctly.
+      validateName(context, arg); // Ensure the type is an input type.
 
       if (!(0, _definition.isInputType)(arg.type)) {
-        context.reportError("The type of @".concat(directive.name, "(").concat(argName, ":) must be Input Type ") + "but got: ".concat((0, _inspect.default)(arg.type), "."), arg.astNode);
+        context.reportError("The type of @".concat(directive.name, "(").concat(arg.name, ":) must be Input Type ") + "but got: ".concat((0, _inspect.default)(arg.type), "."), arg.astNode);
       }
-    };
-
-    for (var _i6 = 0, _directive$args2 = directive.args; _i6 < _directive$args2.length; _i6++) {
-      var _ret = _loop(_i6, _directive$args2);
-
-      if (_ret === "continue") continue;
     }
   }
 }
@@ -255,33 +233,15 @@ function validateFields(context, type) {
     } // Ensure the arguments are valid
 
 
-    var argNames = Object.create(null);
-
-    var _loop2 = function _loop2(_i12, _field$args2) {
+    for (var _i12 = 0, _field$args2 = field.args; _i12 < _field$args2.length; _i12++) {
       var arg = _field$args2[_i12];
       var argName = arg.name; // Ensure they are named correctly.
 
-      validateName(context, arg); // Ensure they are unique per field.
-
-      if (argNames[argName]) {
-        context.reportError("Field argument ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) can only be defined once."), field.args.filter(function (_ref3) {
-          var name = _ref3.name;
-          return name === argName;
-        }).map(function (_ref4) {
-          var astNode = _ref4.astNode;
-          return astNode;
-        }));
-      }
-
-      argNames[argName] = true; // Ensure the type is an input type
+      validateName(context, arg); // Ensure the type is an input type
 
       if (!(0, _definition.isInputType)(arg.type)) {
         context.reportError("The type of ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) must be Input ") + "Type but got: ".concat((0, _inspect.default)(arg.type), "."), arg.astNode && arg.astNode.type);
       }
-    };
-
-    for (var _i12 = 0, _field$args2 = field.args; _i12 < _field$args2.length; _i12++) {
-      _loop2(_i12, _field$args2);
     }
   }
 }
@@ -333,7 +293,7 @@ function validateTypeImplementsInterface(context, type, iface) {
     } // Assert each interface field arg is implemented.
 
 
-    var _loop3 = function _loop3(_i18, _ifaceField$args2) {
+    var _loop = function _loop(_i18, _ifaceField$args2) {
       var ifaceArg = _ifaceField$args2[_i18];
       var argName = ifaceArg.name;
       var typeArg = (0, _find.default)(typeField.args, function (arg) {
@@ -355,13 +315,13 @@ function validateTypeImplementsInterface(context, type, iface) {
     };
 
     for (var _i18 = 0, _ifaceField$args2 = ifaceField.args; _i18 < _ifaceField$args2.length; _i18++) {
-      var _ret2 = _loop3(_i18, _ifaceField$args2);
+      var _ret = _loop(_i18, _ifaceField$args2);
 
-      if (_ret2 === "continue") continue;
+      if (_ret === "continue") continue;
     } // Assert additional arguments must not be required.
 
 
-    var _loop4 = function _loop4(_i20, _typeField$args2) {
+    var _loop2 = function _loop2(_i20, _typeField$args2) {
       var typeArg = _typeField$args2[_i20];
       var argName = typeArg.name;
       var ifaceArg = (0, _find.default)(ifaceField.args, function (arg) {
@@ -374,7 +334,7 @@ function validateTypeImplementsInterface(context, type, iface) {
     };
 
     for (var _i20 = 0, _typeField$args2 = typeField.args; _i20 < _typeField$args2.length; _i20++) {
-      _loop4(_i20, _typeField$args2);
+      _loop2(_i20, _typeField$args2);
     }
   }
 }
