@@ -656,7 +656,7 @@ function sameArguments(
 }
 
 function sameValue(value1, value2) {
-  return (!value1 && !value2) || print(value1) === print(value2);
+  return print(value1) === print(value2);
 }
 
 // Two types conflict if both types could not apply to a value simultaneously.
