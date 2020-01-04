@@ -104,15 +104,15 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLString.serialize(true)).to.equal('true');
     expect(GraphQLString.serialize(false)).to.equal('false');
 
-    const valueOfAndToJSONValue = {
-      valueOf: () => 'valueOf string',
-      toJSON: () => 'toJSON string',
-    };
+    const valueOf = () => 'valueOf string';
+    const toJSON = () => 'toJSON string';
+
+    const valueOfAndToJSONValue = { valueOf, toJSON };
     expect(GraphQLString.serialize(valueOfAndToJSONValue)).to.equal(
       'valueOf string',
     );
 
-    const onlyToJSONValue = { toJSON: () => 'toJSON string' };
+    const onlyToJSONValue = { toJSON };
     expect(GraphQLString.serialize(onlyToJSONValue)).to.equal('toJSON string');
 
     expect(() => GraphQLString.serialize(NaN)).to.throw(
@@ -165,13 +165,13 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLID.serialize(0)).to.equal('0');
     expect(GraphQLID.serialize(-1)).to.equal('-1');
 
-    const valueOfAndToJSONValue = {
-      valueOf: () => 'valueOf ID',
-      toJSON: () => 'toJSON ID',
-    };
+    const valueOf = () => 'valueOf ID';
+    const toJSON = () => 'toJSON ID';
+
+    const valueOfAndToJSONValue = { valueOf, toJSON };
     expect(GraphQLID.serialize(valueOfAndToJSONValue)).to.equal('valueOf ID');
 
-    const onlyToJSONValue = { toJSON: () => 'toJSON ID' };
+    const onlyToJSONValue = { toJSON };
     expect(GraphQLID.serialize(onlyToJSONValue)).to.equal('toJSON ID');
 
     const badObjValue = {

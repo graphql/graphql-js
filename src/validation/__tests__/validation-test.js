@@ -11,6 +11,11 @@ import { validate } from '../validate';
 import { testSchema } from './harness';
 
 describe('Validate: Supports full validation', () => {
+  it('rejects invalid documents', () => {
+    // $DisableFlowOnNegativeTest
+    expect(() => validate(testSchema, null)).to.throw('Must provide document.');
+  });
+
   it('validates queries', () => {
     const doc = parse(`
       query {
@@ -115,5 +120,18 @@ describe('Validate: Limit maximum number of validation errors', () => {
           'Too many validation errors, error limit reached. Validation aborted.',
       },
     ]);
+  });
+
+  it('passthrough exceptions from rules', () => {
+    function customRule() {
+      return {
+        Field() {
+          throw new Error('Error from custom rule!');
+        },
+      };
+    }
+    expect(() =>
+      validate(testSchema, doc, [customRule], undefined, { maxErrors: 1 }),
+    ).to.throw(/^Error from custom rule!$/);
   });
 });

@@ -256,24 +256,48 @@ describe('Type System Printer', () => {
     `);
   });
 
-  it('Prints custom query root type', () => {
-    const CustomQueryType = new GraphQLObjectType({
-      name: 'CustomQueryType',
-      fields: { bar: { type: GraphQLString } },
+  it('Prints custom query root types', () => {
+    const Schema = new GraphQLSchema({
+      query: new GraphQLObjectType({ name: 'CustomType', fields: {} }),
     });
 
-    const Schema = new GraphQLSchema({
-      query: CustomQueryType,
-    });
     const output = printForTest(Schema);
     expect(output).to.equal(dedent`
       schema {
-        query: CustomQueryType
+        query: CustomType
       }
 
-      type CustomQueryType {
-        bar: String
+      type CustomType
+    `);
+  });
+
+  it('Prints custom mutation root types', () => {
+    const Schema = new GraphQLSchema({
+      mutation: new GraphQLObjectType({ name: 'CustomType', fields: {} }),
+    });
+
+    const output = printForTest(Schema);
+    expect(output).to.equal(dedent`
+      schema {
+        mutation: CustomType
       }
+
+      type CustomType
+    `);
+  });
+
+  it('Prints custom subscription root types', () => {
+    const Schema = new GraphQLSchema({
+      subscription: new GraphQLObjectType({ name: 'CustomType', fields: {} }),
+    });
+
+    const output = printForTest(Schema);
+    expect(output).to.equal(dedent`
+      schema {
+        subscription: CustomType
+      }
+
+      type CustomType
     `);
   });
 

@@ -19,7 +19,7 @@ const ColorType = new GraphQLEnumType({
   },
 });
 
-const Complex1 = { someRandomFunction: () => null };
+const Complex1 = { someRandomObject: new Date() };
 const Complex2 = { someRandomValue: 123 };
 
 const ComplexEnum = new GraphQLEnumType({
@@ -52,10 +52,9 @@ const QueryType = new GraphQLObjectType({
       type: GraphQLInt,
       args: {
         fromEnum: { type: ColorType },
-        fromInt: { type: GraphQLInt },
       },
-      resolve(_source, { fromEnum, fromInt }) {
-        return fromInt !== undefined ? fromInt : fromEnum;
+      resolve(_source, { fromEnum }) {
+        return fromEnum;
       },
     },
     complexEnum: {

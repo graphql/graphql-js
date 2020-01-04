@@ -3,9 +3,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import invariant from '../../jsutils/invariant';
+
 import { Kind } from '../kinds';
 import { parse } from '../parser';
-import { visit, visitInParallel, BREAK } from '../visitor';
+import { visit, visitInParallel, BREAK, QueryDocumentKeys } from '../visitor';
 
 import { kitchenSinkQuery } from '../../__fixtures__';
 
@@ -111,6 +113,29 @@ describe('Visitor', () => {
         visitedNodes.pop();
       },
     });
+  });
+
+  it('allows visiting only specified nodes', () => {
+    const ast = parse('{ a }', { noLocation: true });
+    const visited = [];
+
+    visit(ast, {
+      enter: {
+        Field(node) {
+          visited.push(['enter', node.kind]);
+        },
+      },
+      leave: {
+        Field(node) {
+          visited.push(['leave', node.kind]);
+        },
+      },
+    });
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Field'],
+      ['leave', 'Field'],
+    ]);
   });
 
   it('allows editing a node both on enter and on leave', () => {
@@ -308,7 +333,6 @@ describe('Visitor', () => {
           return BREAK;
         }
       },
-
       leave(node) {
         checkVisitorFnArgs(ast, arguments);
         visited.push(['leave', node.kind, getValue(node)]);
@@ -829,6 +853,97 @@ describe('Visitor', () => {
     ]);
   });
 
+  describe('Support for custom AST nodes', () => {
+    const customAST: any = parse('{ a }');
+    customAST.definitions[0].selectionSet.selections.push({
+      kind: 'CustomField',
+      name: {
+        kind: 'Name',
+        value: 'b',
+      },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'CustomField',
+            name: {
+              kind: 'Name',
+              value: 'c',
+            },
+          },
+        ],
+      },
+    });
+
+    it('does not traverse unknown node kinds', () => {
+      const visited = [];
+      visit(customAST, {
+        enter(node) {
+          visited.push(['enter', node.kind, getValue(node)]);
+        },
+        leave(node) {
+          visited.push(['leave', node.kind, getValue(node)]);
+        },
+      });
+
+      expect(visited).to.deep.equal([
+        ['enter', 'Document', undefined],
+        ['enter', 'OperationDefinition', undefined],
+        ['enter', 'SelectionSet', undefined],
+        ['enter', 'Field', undefined],
+        ['enter', 'Name', 'a'],
+        ['leave', 'Name', 'a'],
+        ['leave', 'Field', undefined],
+        ['enter', 'CustomField', undefined],
+        ['leave', 'CustomField', undefined],
+        ['leave', 'SelectionSet', undefined],
+        ['leave', 'OperationDefinition', undefined],
+        ['leave', 'Document', undefined],
+      ]);
+    });
+
+    it('does not traverse unknown node kinds', () => {
+      const customQueryDocumentKeys: any = {
+        ...QueryDocumentKeys,
+        CustomField: ['name', 'selectionSet'],
+      };
+
+      const visited = [];
+      const visitor = {
+        enter(node) {
+          visited.push(['enter', node.kind, getValue(node)]);
+        },
+        leave(node) {
+          visited.push(['leave', node.kind, getValue(node)]);
+        },
+      };
+      visit(customAST, visitor, customQueryDocumentKeys);
+
+      expect(visited).to.deep.equal([
+        ['enter', 'Document', undefined],
+        ['enter', 'OperationDefinition', undefined],
+        ['enter', 'SelectionSet', undefined],
+        ['enter', 'Field', undefined],
+        ['enter', 'Name', 'a'],
+        ['leave', 'Name', 'a'],
+        ['leave', 'Field', undefined],
+        ['enter', 'CustomField', undefined],
+        ['enter', 'Name', 'b'],
+        ['leave', 'Name', 'b'],
+        ['enter', 'SelectionSet', undefined],
+        ['enter', 'CustomField', undefined],
+        ['enter', 'Name', 'c'],
+        ['leave', 'Name', 'c'],
+        ['leave', 'CustomField', undefined],
+        ['leave', 'SelectionSet', undefined],
+        ['leave', 'CustomField', undefined],
+        ['leave', 'SelectionSet', undefined],
+        ['leave', 'OperationDefinition', undefined],
+        ['leave', 'Document', undefined],
+      ]);
+    });
+  });
+
   describe('visitInParallel', () => {
     // Note: nearly identical to the above test of the same test but
     // using visitInParallel.
@@ -1006,9 +1121,9 @@ describe('Visitor', () => {
                 return BREAK;
               }
             },
-            leave(node) {
-              checkVisitorFnArgs(ast, arguments);
-              visited.push(['break-a', 'leave', node.kind, getValue(node)]);
+            /* istanbul ignore next */
+            leave() {
+              invariant(false);
             },
           },
           {

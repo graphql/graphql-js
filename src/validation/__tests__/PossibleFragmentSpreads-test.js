@@ -97,6 +97,12 @@ describe('Validate: Possible fragment spreads', () => {
     `);
   });
 
+  it('ignores unknown fragments (caught by KnownFragmentNames)', () => {
+    expectValid(`
+      fragment petFragment on Pet { ...UnknownFragment }
+    `);
+  });
+
   it('different object into object', () => {
     expectErrors(`
       fragment invalidObjectWithinObject on Cat { ...dogFragment }

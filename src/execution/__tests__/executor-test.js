@@ -44,6 +44,31 @@ describe('Execute: Handles basic execution tasks', () => {
     );
   });
 
+  it('throws on invalid variables', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Type',
+        fields: {
+          fieldA: {
+            type: GraphQLString,
+            args: { argA: { type: GraphQLInt } },
+          },
+        },
+      }),
+    });
+    const document = parse(`
+      query ($a: Int) {
+        fieldA(argA: $a)
+      }
+    `);
+    const variableValues = '{ "a": 1 }';
+
+    // $DisableFlowOnNegativeTest
+    expect(() => execute({ schema, document, variableValues })).to.throw(
+      'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
+    );
+  });
+
   it('accepts positional arguments', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -77,7 +102,7 @@ describe('Execute: Handles basic execution tasks', () => {
       e: () => 'Egg',
       f: 'Fish',
       // Called only by DataType::pic static resolver
-      pic: size => 'Pic of size: ' + (size || 50),
+      pic: size => 'Pic of size: ' + size,
       deep: () => deepData,
       promise: promiseData,
     };
@@ -908,6 +933,30 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('ignores missing sub selections on fields', () => {
+    const someType = new GraphQLObjectType({
+      name: 'SomeType',
+      fields: {
+        b: { type: GraphQLString },
+      },
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          a: { type: someType },
+        },
+      }),
+    });
+    const document = parse('{ a }');
+    const rootValue = { a: { b: 'c' } };
+
+    const result = execute({ schema, document, rootValue });
+    expect(result).to.deep.equal({
+      data: { a: {} },
+    });
+  });
+
   it('does not include illegal fields in output', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -973,7 +1022,10 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const SpecialType = new GraphQLObjectType({
       name: 'SpecialType',
-      isTypeOf: obj => obj instanceof Special,
+      isTypeOf(obj, context) {
+        const result = obj instanceof Special;
+        return context && context.async ? Promise.resolve(result) : result;
+      },
       fields: { value: { type: GraphQLString } },
     });
 
@@ -1005,6 +1057,10 @@ describe('Execute: Handles basic execution tasks', () => {
         },
       ],
     });
+
+    const contextValue = { async: true };
+    const asyncResult = execute({ schema, document, rootValue, contextValue });
+    expect(asyncResult).to.deep.equal(asyncResult);
   });
 
   it('executes ignoring invalid non-executable definitions', () => {

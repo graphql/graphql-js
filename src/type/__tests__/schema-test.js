@@ -270,7 +270,7 @@ describe('Type System: Schema', () => {
 
       it('checks the configuration for mistakes', () => {
         // $DisableFlowOnNegativeTest
-        expect(() => new GraphQLSchema(() => null)).to.throw();
+        expect(() => new GraphQLSchema(JSON.parse)).to.throw();
         // $DisableFlowOnNegativeTest
         expect(() => new GraphQLSchema({ types: {} })).to.throw();
         // $DisableFlowOnNegativeTest
@@ -332,7 +332,8 @@ describe('Type System: Schema', () => {
       });
 
       it('does not check the configuration for mistakes', () => {
-        const config = () => null;
+        const config = [];
+        // $DisableFlowOnNegativeTest
         config.assumeValid = true;
         // $DisableFlowOnNegativeTest
         expect(() => new GraphQLSchema(config)).to.not.throw();

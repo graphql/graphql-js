@@ -156,7 +156,10 @@ describe('Printer: SDL document', () => {
       extend input InputType @onInputObject
 
       """This is a description of the \`@skip\` directive"""
-      directive @skip(if: Boolean! @onArgumentDefinition) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+      directive @skip(
+        """This is a description of the \`if\` argument"""
+        if: Boolean! @onArgumentDefinition
+      ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
       directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 

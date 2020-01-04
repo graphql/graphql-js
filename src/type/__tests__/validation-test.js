@@ -3,12 +3,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import dedent from '../../jsutils/dedent';
 import inspect from '../../jsutils/inspect';
 
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
+import { GraphQLDirective } from '../../type/directives';
 import {
   type GraphQLNamedType,
   type GraphQLInputType,
@@ -26,7 +28,7 @@ import {
 import { extendSchema } from '../../utilities/extendSchema';
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { validateSchema } from '../validate';
+import { validateSchema, assertValidSchema } from '../validate';
 
 const SomeScalarType = new GraphQLScalarType({ name: 'SomeScalar' });
 
@@ -1390,7 +1392,7 @@ describe('Type System: Interface fields must have output types', () => {
   });
 });
 
-describe('Type System: Field arguments must have input types', () => {
+describe('Type System: Arguments must have input types', () => {
   function schemaWithArgOfType(argType: GraphQLInputType) {
     const BadObjectType = new GraphQLObjectType({
       name: 'BadObject',
@@ -1411,6 +1413,15 @@ describe('Type System: Field arguments must have input types', () => {
           f: { type: BadObjectType },
         },
       }),
+      directives: [
+        new GraphQLDirective({
+          name: 'BadDirective',
+          args: {
+            badArg: { type: argType },
+          },
+          locations: ['QUERY'],
+        }),
+      ],
     });
   }
 
@@ -1428,6 +1439,10 @@ describe('Type System: Field arguments must have input types', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
+          'The type of @BadDirective(badArg:) must be Input Type but got: undefined.',
+      },
+      {
+        message:
           'The type of BadObject.badField(badArg:) must be Input Type but got: undefined.',
       },
     ]);
@@ -1440,6 +1455,9 @@ describe('Type System: Field arguments must have input types', () => {
       const schema = schemaWithArgOfType(type);
       expect(validateSchema(schema)).to.deep.equal([
         {
+          message: `The type of @BadDirective(badArg:) must be Input Type but got: ${typeStr}.`,
+        },
+        {
           message: `The type of BadObject.badField(badArg:) must be Input Type but got: ${typeStr}.`,
         },
       ]);
@@ -1450,6 +1468,10 @@ describe('Type System: Field arguments must have input types', () => {
     // $DisableFlowOnNegativeTest
     const schema = schemaWithArgOfType(Number);
     expect(validateSchema(schema)).to.deep.equal([
+      {
+        message:
+          'The type of @BadDirective(badArg:) must be Input Type but got: [function Number].',
+      },
       {
         message:
           'The type of BadObject.badField(badArg:) must be Input Type but got: [function Number].',
@@ -2182,6 +2204,29 @@ describe('Interfaces must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([]);
   });
 
+  it('rejects an Interface implementing a non-Interface type', () => {
+    const schema = buildSchema(`
+      type Query {
+        field: String
+      }
+
+      input SomeInputObject {
+        field: String
+      }
+
+      interface BadInterface implements SomeInputObject {
+        field: String
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message:
+          'Type BadInterface must only implement Interface types, it cannot implement SomeInputObject.',
+        locations: [{ line: 10, column: 41 }],
+      },
+    ]);
+  });
+
   it('rejects an Interface missing an Interface argument', () => {
     const schema = buildSchema(`
       type Query {
@@ -2494,5 +2539,24 @@ describe('Interfaces must adhere to Interface they implement', () => {
         ],
       },
     ]);
+  });
+});
+
+describe('assertValidSchema', () => {
+  it('do not throw on valid schemas', () => {
+    const schema = buildSchema(`
+      type Query {
+        foo: String
+      }
+    `);
+    expect(() => assertValidSchema(schema)).to.not.throw();
+  });
+
+  it('include multiple errors into a description', () => {
+    const schema = buildSchema('type SomeType');
+    expect(() => assertValidSchema(schema)).to.throw(dedent`
+      Query root type must be provided.
+
+      Type SomeType must define one or more fields.`);
   });
 });
