@@ -10,7 +10,6 @@ import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
 
-import { formatError } from '../formatError';
 import { GraphQLError, printError } from '../GraphQLError';
 
 const source = new Source(dedent`
@@ -131,34 +130,6 @@ describe('GraphQLError', () => {
     expect(JSON.stringify(e)).to.equal(
       '{"message":"msg","path":["path",3,"to","field"]}',
     );
-  });
-
-  it('default error formatter includes path', () => {
-    const e = new GraphQLError('msg', null, null, null, [
-      'path',
-      3,
-      'to',
-      'field',
-    ]);
-
-    expect(formatError(e)).to.deep.equal({
-      message: 'msg',
-      locations: undefined,
-      path: ['path', 3, 'to', 'field'],
-    });
-  });
-
-  it('default error formatter includes extension fields', () => {
-    const e = new GraphQLError('msg', null, null, null, null, null, {
-      foo: 'bar',
-    });
-
-    expect(formatError(e)).to.deep.equal({
-      message: 'msg',
-      locations: undefined,
-      path: undefined,
-      extensions: { foo: 'bar' },
-    });
   });
 });
 
