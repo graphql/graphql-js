@@ -381,6 +381,47 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
+  it('executes interface types with named fragments', () => {
+    const document = parse(`
+      {
+        __typename
+        name
+        friends {
+          __typename
+          name
+          ...DogBarks
+          ...CatMeows
+        }
+      }
+
+      fragment  DogBarks on Dog {
+        barks
+      }
+
+      fragment  CatMeows on Cat {
+        meows
+      }
+    `);
+
+    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+      data: {
+        __typename: 'Person',
+        name: 'John',
+        friends: [
+          {
+            __typename: 'Person',
+            name: 'Liz',
+          },
+          {
+            __typename: 'Dog',
+            name: 'Odie',
+            barks: true,
+          },
+        ],
+      },
+    });
+  });
+
   it('allows fragment conditions to be abstract types', () => {
     const document = parse(`
       {

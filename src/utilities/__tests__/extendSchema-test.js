@@ -171,6 +171,27 @@ describe('extendSchema', () => {
     `);
   });
 
+  it('ignores comment description on extended fields if location is not provided', () => {
+    const schema = buildSchema('type Query');
+    const extendSDL = `
+      extend type Query {
+        # New field description.
+        newField: String
+      }
+    `;
+    const extendAST = parse(extendSDL, { noLocation: true });
+    const extendedSchema = extendSchema(schema, extendAST, {
+      commentDescriptions: true,
+    });
+
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
+      type Query {
+        newField: String
+      }
+    `);
+  });
+
   it('extends objects with standard type fields', () => {
     const schema = buildSchema('type Query');
 

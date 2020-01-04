@@ -3,7 +3,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { graphql } from '../graphql';
+import { graphql, graphqlSync } from '../graphql';
 
 import { StarWarsSchema as schema } from './starWarsSchema';
 
@@ -45,6 +45,9 @@ describe('Star Wars Query Tests', () => {
           },
         },
       });
+
+      const syncResult = graphqlSync(schema, source);
+      expect(syncResult).to.deep.equal(result);
     });
 
     it('Allows us to query for the ID and friends of R2-D2', async () => {
@@ -165,10 +168,13 @@ describe('Star Wars Query Tests', () => {
   });
 
   describe('Using IDs and query parameters to refetch objects', () => {
-    it('Allows us to query for Luke Skywalker directly, using his ID', async () => {
+    it('Allows us to query characters directly, using their IDs', async () => {
       const source = `
-        query FetchLukeQuery {
+        query FetchLukeAndC3POQuery {
           human(id: "1000") {
+            name
+          }
+          droid(id: "2000") {
             name
           }
         }
@@ -179,6 +185,9 @@ describe('Star Wars Query Tests', () => {
         data: {
           human: {
             name: 'Luke Skywalker',
+          },
+          droid: {
+            name: 'C-3PO',
           },
         },
       });

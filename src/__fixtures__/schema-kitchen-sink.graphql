@@ -130,6 +130,7 @@ extend input InputType @onInputObject
 This is a description of the `@skip` directive
 """
 directive @skip(
+  """This is a description of the `if` argument"""
   if: Boolean! @onArgumentDefinition
 ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 

@@ -140,6 +140,13 @@ describe('Schema Parser', () => {
     );
   });
 
+  it('parses type with description multi-line string', () => {
+    expectSyntaxError('"Description" 1').to.deep.equal({
+      message: 'Syntax Error: Unexpected Int "1".',
+      locations: [{ line: 1, column: 15 }],
+    });
+  });
+
   it('Simple extension', () => {
     const doc = parse(dedent`
       extend type Hello {
@@ -238,9 +245,34 @@ describe('Schema Parser', () => {
   });
 
   it('Extension without anything throws', () => {
+    expectSyntaxError('extend scalar Hello').to.deep.equal({
+      message: 'Syntax Error: Unexpected <EOF>.',
+      locations: [{ line: 1, column: 20 }],
+    });
+
     expectSyntaxError('extend type Hello').to.deep.equal({
       message: 'Syntax Error: Unexpected <EOF>.',
       locations: [{ line: 1, column: 18 }],
+    });
+
+    expectSyntaxError('extend interface Hello').to.deep.equal({
+      message: 'Syntax Error: Unexpected <EOF>.',
+      locations: [{ line: 1, column: 23 }],
+    });
+
+    expectSyntaxError('extend union Hello').to.deep.equal({
+      message: 'Syntax Error: Unexpected <EOF>.',
+      locations: [{ line: 1, column: 19 }],
+    });
+
+    expectSyntaxError('extend enum Hello').to.deep.equal({
+      message: 'Syntax Error: Unexpected <EOF>.',
+      locations: [{ line: 1, column: 18 }],
+    });
+
+    expectSyntaxError('extend input Hello').to.deep.equal({
+      message: 'Syntax Error: Unexpected <EOF>.',
+      locations: [{ line: 1, column: 19 }],
     });
   });
 
@@ -271,20 +303,6 @@ describe('Schema Parser', () => {
         },
       ],
       loc: { start: 0, end: 110 },
-    });
-  });
-
-  it('Object extension without anything throws', () => {
-    expectSyntaxError('extend type Hello').to.deep.equal({
-      message: 'Syntax Error: Unexpected <EOF>.',
-      locations: [{ line: 1, column: 18 }],
-    });
-  });
-
-  it('Interface extension without anything throws', () => {
-    expectSyntaxError('extend interface Hello').to.deep.equal({
-      message: 'Syntax Error: Unexpected <EOF>.',
-      locations: [{ line: 1, column: 23 }],
     });
   });
 
@@ -385,6 +403,13 @@ describe('Schema Parser', () => {
     expectSyntaxError('extend schema').to.deep.equal({
       message: 'Syntax Error: Unexpected <EOF>.',
       locations: [{ line: 1, column: 14 }],
+    });
+  });
+
+  it('Schema extension with invalid operation type throws', () => {
+    expectSyntaxError('extend schema { unknown: SomeType }').to.deep.equal({
+      message: 'Syntax Error: Unexpected Name "unknown".',
+      locations: [{ line: 1, column: 17 }],
     });
   });
 

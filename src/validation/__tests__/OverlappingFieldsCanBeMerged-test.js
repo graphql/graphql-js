@@ -185,7 +185,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
-  it('conflicting args', () => {
+  it('conflicting arg values', () => {
     expectErrors(`
       fragment conflictingArgs on Dog {
         doesKnowCommand(dogCommand: SIT)
@@ -195,6 +195,24 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "doesKnowCommand" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('conflicting arg names', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        isAtLocation(x: 0)
+        isAtLocation(y: 0)
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Fields "isAtLocation" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 9 },

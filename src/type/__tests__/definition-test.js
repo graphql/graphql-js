@@ -39,6 +39,11 @@ const NonNullScalarType = GraphQLNonNull(ScalarType);
 const ListOfNonNullScalarsType = GraphQLList(NonNullScalarType);
 const NonNullListOfScalars = GraphQLNonNull(ListOfScalarsType);
 
+/* istanbul ignore next */
+const dummyFunc = () => {
+  /* empty */
+};
+
 describe('Type System: Scalars', () => {
   it('accepts a Scalar type defining serialize', () => {
     expect(() => new GraphQLScalarType({ name: 'SomeScalar' })).to.not.throw();
@@ -49,8 +54,8 @@ describe('Type System: Scalars', () => {
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
-          parseValue: () => null,
-          parseLiteral: () => null,
+          parseValue: dummyFunc,
+          parseLiteral: dummyFunc,
         }),
     ).to.not.throw();
   });
@@ -79,6 +84,11 @@ describe('Type System: Scalars', () => {
     );
   });
 
+  it('rejects a Scalar type without name', () => {
+    // $DisableFlowOnNegativeTest
+    expect(() => new GraphQLScalarType({})).to.throw('Must provide name.');
+  });
+
   it('rejects a Scalar type defining serialize with an incorrect type', () => {
     expect(
       () =>
@@ -97,7 +107,7 @@ describe('Type System: Scalars', () => {
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
-          parseLiteral: () => null,
+          parseLiteral: dummyFunc,
         }),
     ).to.throw(
       'SomeScalar must provide both "parseValue" and "parseLiteral" functions.',
@@ -287,11 +297,16 @@ describe('Type System: Objects', () => {
       fields: {
         f: {
           type: ScalarType,
-          resolve: () => ({}),
+          resolve: dummyFunc,
         },
       },
     });
     expect(() => objType.getFields()).to.not.throw();
+  });
+
+  it('rejects an Object type without name', () => {
+    // $DisableFlowOnNegativeTest
+    expect(() => new GraphQLObjectType({})).to.throw('Must provide name.');
   });
 
   it('rejects an Object type field with undefined config', () => {
@@ -459,6 +474,11 @@ describe('Type System: Interfaces', () => {
     expect(implementing.getInterfaces()).to.deep.equal([InterfaceType]);
   });
 
+  it('rejects an Interface type without name', () => {
+    // $DisableFlowOnNegativeTest
+    expect(() => new GraphQLInterfaceType({})).to.throw('Must provide name.');
+  });
+
   it('rejects an Interface type with incorrectly typed interfaces', () => {
     const objType = new GraphQLInterfaceType({
       name: 'AnotherInterface',
@@ -533,6 +553,11 @@ describe('Type System: Unions', () => {
       types: [],
     });
     expect(unionType.getTypes()).to.deep.equal([]);
+  });
+
+  it('rejects an Union type without name', () => {
+    // $DisableFlowOnNegativeTest
+    expect(() => new GraphQLUnionType({})).to.throw('Must provide name.');
   });
 
   it('rejects an Union type with an incorrect type for resolveType', () => {
@@ -650,6 +675,13 @@ describe('Type System: Enums', () => {
     expect(enumType.getValue('BAR')).has.property('value', 20);
   });
 
+  it('rejects an Enum type without name', () => {
+    // $DisableFlowOnNegativeTest
+    expect(() => new GraphQLEnumType({ values: {} })).to.throw(
+      'Must provide name.',
+    );
+  });
+
   it('rejects an Enum type with incorrectly typed values', () => {
     expect(
       () =>
@@ -743,6 +775,13 @@ describe('Type System: Input Objects', () => {
       });
     });
 
+    it('rejects an Input Object type without name', () => {
+      // $DisableFlowOnNegativeTest
+      expect(() => new GraphQLInputObjectType({})).to.throw(
+        'Must provide name.',
+      );
+    });
+
     it('rejects an Input Object type with incorrect fields', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
@@ -772,7 +811,7 @@ describe('Type System: Input Objects', () => {
         name: 'SomeInputObject',
         fields: {
           // $DisableFlowOnNegativeTest
-          f: { type: ScalarType, resolve: () => 0 },
+          f: { type: ScalarType, resolve: dummyFunc },
         },
       });
       expect(() => inputObjType.getFields()).to.throw(

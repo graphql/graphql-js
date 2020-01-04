@@ -6,6 +6,16 @@ import { describe, it } from 'mocha';
 import { assertValidName } from '../assertValidName';
 
 describe('assertValidName()', () => {
+  it('passthrough valid name', () => {
+    expect(assertValidName('_ValidName123')).to.equal('_ValidName123');
+  });
+
+  it('throws for use of leading double underscores', () => {
+    expect(() => assertValidName('__bad')).to.throw(
+      '"__bad" must not begin with "__", which is reserved by GraphQL introspection.',
+    );
+  });
+
   it('throws for use of leading double underscores', () => {
     expect(() => assertValidName('__bad')).to.throw(
       '"__bad" must not begin with "__", which is reserved by GraphQL introspection.',

@@ -137,6 +137,15 @@ describe('Execute: Handles mutation execution ordering', () => {
     });
   });
 
+  it('does not include illegal mutation fields in output', () => {
+    const document = parse('mutation { thisIsIllegalDoNotIncludeMe }');
+
+    const result = execute({ schema, document });
+    expect(result).to.deep.equal({
+      data: {},
+    });
+  });
+
   it('evaluates mutations correctly in the presence of a failed mutation', async () => {
     const document = parse(`
       mutation M {

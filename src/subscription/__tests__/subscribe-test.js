@@ -368,6 +368,17 @@ describe('Subscription Initialization Phase', () => {
     });
   });
 
+  it('should pass through unexpected errors thrown in subscribe', async () => {
+    let expectedError;
+    try {
+      // $DisableFlowOnNegativeTest
+      await subscribe({ schema: emailSchema, document: {} });
+    } catch (error) {
+      expectedError = error;
+    }
+    expect(expectedError).to.be.instanceOf(Error);
+  });
+
   it('throws an error if subscribe does not return an iterator', async () => {
     const invalidEmailSchema = new GraphQLSchema({
       query: QueryType,

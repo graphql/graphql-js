@@ -25,23 +25,13 @@ import { getVariableValues } from '../values';
 
 const TestComplexScalar = new GraphQLScalarType({
   name: 'ComplexScalar',
-  serialize(value) {
-    if (value === 'DeserializedValue') {
-      return 'SerializedValue';
-    }
-    return null;
-  },
   parseValue(value) {
-    if (value === 'SerializedValue') {
-      return 'DeserializedValue';
-    }
-    return null;
+    invariant(value === 'SerializedValue');
+    return 'DeserializedValue';
   },
   parseLiteral(ast) {
-    if (ast.value === 'SerializedValue') {
-      return 'DeserializedValue';
-    }
-    return null;
+    invariant(ast.value === 'SerializedValue');
+    return 'DeserializedValue';
   },
 });
 
