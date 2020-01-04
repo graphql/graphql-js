@@ -104,33 +104,38 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   function sortNamedType(type) {
     if (isScalarType(type) || isIntrospectionType(type)) {
       return type;
-    } else if (isObjectType(type)) {
+    }
+    if (isObjectType(type)) {
       const config = type.toConfig();
       return new GraphQLObjectType({
         ...config,
         interfaces: () => sortTypes(config.interfaces),
         fields: () => sortFields(config.fields),
       });
-    } else if (isInterfaceType(type)) {
+    }
+    if (isInterfaceType(type)) {
       const config = type.toConfig();
       return new GraphQLInterfaceType({
         ...config,
         interfaces: () => sortTypes(config.interfaces),
         fields: () => sortFields(config.fields),
       });
-    } else if (isUnionType(type)) {
+    }
+    if (isUnionType(type)) {
       const config = type.toConfig();
       return new GraphQLUnionType({
         ...config,
         types: () => sortTypes(config.types),
       });
-    } else if (isEnumType(type)) {
+    }
+    if (isEnumType(type)) {
       const config = type.toConfig();
       return new GraphQLEnumType({
         ...config,
         values: sortObjMap(config.values),
       });
-    } else if (isInputObjectType(type)) {
+    }
+    if (isInputObjectType(type)) {
       const config = type.toConfig();
       return new GraphQLInputObjectType({
         ...config,

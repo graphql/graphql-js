@@ -3,6 +3,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import invariant from '../../jsutils/invariant';
+
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
@@ -268,15 +270,18 @@ describe('Execute: Handles execution of abstract types with promises', () => {
     const PetType = new GraphQLInterfaceType({
       name: 'Pet',
       resolveType(obj) {
-        return Promise.resolve(
-          obj instanceof Dog
-            ? DogType
-            : obj instanceof Cat
-            ? CatType
-            : obj instanceof Human
-            ? HumanType
-            : null,
-        );
+        if (obj instanceof Dog) {
+          return Promise.resolve(DogType);
+        }
+        if (obj instanceof Cat) {
+          return Promise.resolve(CatType);
+        }
+        if (obj instanceof Human) {
+          return Promise.resolve(HumanType);
+        }
+
+        // Not reachable. All possible types have been considered.
+        invariant(false);
       },
       fields: {
         name: { type: GraphQLString },
@@ -394,15 +399,18 @@ describe('Execute: Handles execution of abstract types with promises', () => {
     const PetType = new GraphQLUnionType({
       name: 'Pet',
       resolveType(obj) {
-        return Promise.resolve(
-          obj instanceof Dog
-            ? DogType
-            : obj instanceof Cat
-            ? CatType
-            : obj instanceof Human
-            ? HumanType
-            : null,
-        );
+        if (obj instanceof Dog) {
+          return Promise.resolve(DogType);
+        }
+        if (obj instanceof Cat) {
+          return Promise.resolve(CatType);
+        }
+        if (obj instanceof Human) {
+          return Promise.resolve(HumanType);
+        }
+
+        // Not reachable. All possible types have been considered.
+        invariant(false);
       },
       types: [DogType, CatType],
     });
@@ -470,9 +478,15 @@ describe('Execute: Handles execution of abstract types with promises', () => {
     const PetType = new GraphQLInterfaceType({
       name: 'Pet',
       resolveType(obj) {
-        return Promise.resolve(
-          obj instanceof Dog ? 'Dog' : obj instanceof Cat ? 'Cat' : null,
-        );
+        if (obj instanceof Dog) {
+          return Promise.resolve('Dog');
+        }
+        if (obj instanceof Cat) {
+          return Promise.resolve('Cat');
+        }
+
+        // Not reachable. All possible types have been considered.
+        invariant(false);
       },
       fields: {
         name: { type: GraphQLString },
