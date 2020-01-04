@@ -11,12 +11,12 @@ import { findDeprecatedUsages } from '../findDeprecatedUsages';
 describe('findDeprecatedUsages', () => {
   const schema = buildSchema(`
     enum EnumType {
-      ONE
-      TWO @deprecated(reason: "Some enum reason.")
+      NORMAL_VALUE
+      DEPRECATED_VALUE @deprecated(reason: "Some enum reason.")
     }
 
     type Query {
-      normalField(enumArg: EnumType): String
+      normalField(enumArg: [EnumType]): String
       deprecatedField: String @deprecated(reason: "Some field reason.")
     }
   `);
@@ -24,7 +24,7 @@ describe('findDeprecatedUsages', () => {
   it('should report empty set for no deprecated usages', () => {
     const errors = findDeprecatedUsages(
       schema,
-      parse('{ normalField(enumArg: ONE) }'),
+      parse('{ normalField(enumArg: [NORMAL_VALUE]) }'),
     );
 
     expect(errors.length).to.equal(0);
@@ -46,13 +46,17 @@ describe('findDeprecatedUsages', () => {
   it('should report usage of deprecated enums', () => {
     const errors = findDeprecatedUsages(
       schema,
-      parse('{ normalField(enumArg: TWO) }'),
+      parse(`
+        {
+           normalField(enumArg: [NORMAL_VALUE, DEPRECATED_VALUE])
+        }
+      `),
     );
 
     const errorMessages = errors.map(err => err.message);
 
     expect(errorMessages).to.deep.equal([
-      'The enum value "EnumType.TWO" is deprecated. Some enum reason.',
+      'The enum value "EnumType.DEPRECATED_VALUE" is deprecated. Some enum reason.',
     ]);
   });
 });
