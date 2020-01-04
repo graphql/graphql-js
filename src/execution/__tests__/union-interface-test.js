@@ -3,6 +3,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import invariant from '../../jsutils/invariant';
+
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -120,6 +122,9 @@ const PetType = new GraphQLUnionType({
     if (value instanceof Cat) {
       return CatType;
     }
+
+    // Not reachable. All possible types have been considered.
+    invariant(false);
   },
 });
 

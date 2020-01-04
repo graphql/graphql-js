@@ -1,5 +1,7 @@
 // @flow strict
 
+import inspect from '../../jsutils/inspect';
+import invariant from '../../jsutils/invariant';
 import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 
@@ -98,17 +100,25 @@ const defKindToExtKind = {
 function typeToExtKind(type) {
   if (isScalarType(type)) {
     return Kind.SCALAR_TYPE_EXTENSION;
-  } else if (isObjectType(type)) {
+  }
+  if (isObjectType(type)) {
     return Kind.OBJECT_TYPE_EXTENSION;
-  } else if (isInterfaceType(type)) {
+  }
+  if (isInterfaceType(type)) {
     return Kind.INTERFACE_TYPE_EXTENSION;
-  } else if (isUnionType(type)) {
+  }
+  if (isUnionType(type)) {
     return Kind.UNION_TYPE_EXTENSION;
-  } else if (isEnumType(type)) {
+  }
+  if (isEnumType(type)) {
     return Kind.ENUM_TYPE_EXTENSION;
-  } else if (isInputObjectType(type)) {
+  }
+  if (isInputObjectType(type)) {
     return Kind.INPUT_OBJECT_TYPE_EXTENSION;
   }
+
+  // Not reachable. All possible types have been considered.
+  invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 
 function extensionKindToTypeName(kind) {
@@ -125,7 +135,8 @@ function extensionKindToTypeName(kind) {
       return 'enum';
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
-    default:
-      return 'unknown type';
   }
+
+  // Not reachable. All possible types have been considered.
+  invariant(false, 'Unexpected kind: ' + inspect(kind));
 }

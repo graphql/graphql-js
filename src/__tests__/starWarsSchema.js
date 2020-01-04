@@ -1,5 +1,7 @@
 // @flow strict
 
+import invariant from '../jsutils/invariant';
+
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLString } from '../type/scalars';
 import {
@@ -131,6 +133,9 @@ const characterInterface = new GraphQLInterfaceType({
     if (character.type === 'Droid') {
       return droidType;
     }
+
+    // Not reachable. All possible types have been considered.
+    invariant(false);
   },
 });
 
