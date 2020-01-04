@@ -164,7 +164,10 @@ export function getArgumentValues(
   variableValues?: ?ObjMap<mixed>,
 ): { [argument: string]: mixed, ... } {
   const coercedValues = {};
-  const argNodeMap = keyMap(node.arguments || [], arg => arg.name.value);
+
+  /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+  const argumentNodes = node.arguments || [];
+  const argNodeMap = keyMap(argumentNodes, arg => arg.name.value);
 
   for (const argDef of def.args) {
     const name = argDef.name;
