@@ -26,35 +26,29 @@ export function findDeprecatedUsages(
     ast,
     visitWithTypeInfo(typeInfo, {
       Field(node) {
+        const parentType = typeInfo.getParentType();
         const fieldDef = typeInfo.getFieldDef();
-        if (fieldDef && fieldDef.isDeprecated) {
-          const parentType = typeInfo.getParentType();
-          if (parentType) {
-            const reason = fieldDef.deprecationReason;
-            errors.push(
-              new GraphQLError(
-                `The field "${parentType.name}.${fieldDef.name}" is deprecated.` +
-                  (reason != null ? ' ' + reason : ''),
-                node,
-              ),
-            );
-          }
+        if (parentType && fieldDef && fieldDef.deprecationReason != null) {
+          errors.push(
+            new GraphQLError(
+              `The field "${parentType.name}.${fieldDef.name}" is deprecated. ` +
+                fieldDef.deprecationReason,
+              node,
+            ),
+          );
         }
       },
       EnumValue(node) {
+        const type = getNamedType(typeInfo.getInputType());
         const enumVal = typeInfo.getEnumValue();
-        if (enumVal && enumVal.isDeprecated) {
-          const type = getNamedType(typeInfo.getInputType());
-          if (type) {
-            const reason = enumVal.deprecationReason;
-            errors.push(
-              new GraphQLError(
-                `The enum value "${type.name}.${enumVal.name}" is deprecated.` +
-                  (reason != null && reason !== '' ? ' ' + reason : ''),
-                node,
-              ),
-            );
-          }
+        if (type && enumVal && enumVal.deprecationReason != null) {
+          errors.push(
+            new GraphQLError(
+              `The enum value "${type.name}.${enumVal.name}" is deprecated. ` +
+                enumVal.deprecationReason,
+              node,
+            ),
+          );
         }
       },
     }),
