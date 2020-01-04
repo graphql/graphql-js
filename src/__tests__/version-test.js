@@ -25,12 +25,15 @@ describe('Version', () => {
     expect(major).to.be.a('number');
     expect(minor).to.be.a('number');
     expect(patch).to.be.a('number');
+
+    /* istanbul ignore next (Can't be verified on all versions) */
     if (preReleaseTag !== null) {
       expect(preReleaseTag).to.be.a('string');
     }
 
     expect(
       `${major}.${minor}.${patch}` +
+        /* istanbul ignore next (Can't be verified on all versions) */
         (preReleaseTag !== null ? '-' + preReleaseTag : ''),
     ).to.equal(version);
   });
