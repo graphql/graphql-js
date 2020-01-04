@@ -139,7 +139,10 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
 
 function getArgumentValues(def, node, variableValues) {
   var coercedValues = {};
-  var argNodeMap = (0, _keyMap.default)(node.arguments || [], function (arg) {
+  /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+
+  var argumentNodes = node.arguments || [];
+  var argNodeMap = (0, _keyMap.default)(argumentNodes, function (arg) {
     return arg.name.value;
   });
 

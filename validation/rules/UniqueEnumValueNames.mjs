@@ -21,22 +21,23 @@ export function UniqueEnumValueNames(context) {
     if (!knownValueNames[typeName]) {
       knownValueNames[typeName] = Object.create(null);
     }
+    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
 
-    if (node.values) {
-      var valueNames = knownValueNames[typeName];
 
-      for (var _i2 = 0, _node$values2 = node.values; _i2 < _node$values2.length; _i2++) {
-        var valueDef = _node$values2[_i2];
-        var valueName = valueDef.name.value;
-        var existingType = existingTypeMap[typeName];
+    var valueNodes = node.values || [];
+    var valueNames = knownValueNames[typeName];
 
-        if (isEnumType(existingType) && existingType.getValue(valueName)) {
-          context.reportError(new GraphQLError("Enum value \"".concat(typeName, ".").concat(valueName, "\" already exists in the schema. It cannot also be defined in this type extension."), valueDef.name));
-        } else if (valueNames[valueName]) {
-          context.reportError(new GraphQLError("Enum value \"".concat(typeName, ".").concat(valueName, "\" can only be defined once."), [valueNames[valueName], valueDef.name]));
-        } else {
-          valueNames[valueName] = valueDef.name;
-        }
+    for (var _i2 = 0; _i2 < valueNodes.length; _i2++) {
+      var valueDef = valueNodes[_i2];
+      var valueName = valueDef.name.value;
+      var existingType = existingTypeMap[typeName];
+
+      if (isEnumType(existingType) && existingType.getValue(valueName)) {
+        context.reportError(new GraphQLError("Enum value \"".concat(typeName, ".").concat(valueName, "\" already exists in the schema. It cannot also be defined in this type extension."), valueDef.name));
+      } else if (valueNames[valueName]) {
+        context.reportError(new GraphQLError("Enum value \"".concat(typeName, ".").concat(valueName, "\" can only be defined once."), [valueNames[valueName], valueDef.name]));
+      } else {
+        valueNames[valueName] = valueDef.name;
       }
     }
 

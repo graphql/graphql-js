@@ -171,8 +171,11 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
 
     return [new GraphQLError('Must provide an operation.')];
   }
+  /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
 
-  var coercedVariableValues = getVariableValues(schema, operation.variableDefinitions || [], rawVariableValues || {}, {
+
+  var variableDefinitions = operation.variableDefinitions || [];
+  var coercedVariableValues = getVariableValues(schema, variableDefinitions, rawVariableValues || {}, {
     maxErrors: 50
   });
 

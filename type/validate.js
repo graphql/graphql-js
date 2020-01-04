@@ -471,6 +471,7 @@ function getAllNodes(object) {
 }
 
 function getAllSubNodes(object, getter) {
+  /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
   return (0, _flatMap.default)(getAllNodes(object), function (item) {
     return getter(item) || [];
   });

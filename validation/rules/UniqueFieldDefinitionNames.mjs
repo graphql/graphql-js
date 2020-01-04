@@ -25,21 +25,22 @@ export function UniqueFieldDefinitionNames(context) {
     if (!knownFieldNames[typeName]) {
       knownFieldNames[typeName] = Object.create(null);
     }
+    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
 
-    if (node.fields) {
-      var fieldNames = knownFieldNames[typeName];
 
-      for (var _i2 = 0, _node$fields2 = node.fields; _i2 < _node$fields2.length; _i2++) {
-        var fieldDef = _node$fields2[_i2];
-        var fieldName = fieldDef.name.value;
+    var fieldNodes = node.fields || [];
+    var fieldNames = knownFieldNames[typeName];
 
-        if (hasField(existingTypeMap[typeName], fieldName)) {
-          context.reportError(new GraphQLError("Field \"".concat(typeName, ".").concat(fieldName, "\" already exists in the schema. It cannot also be defined in this type extension."), fieldDef.name));
-        } else if (fieldNames[fieldName]) {
-          context.reportError(new GraphQLError("Field \"".concat(typeName, ".").concat(fieldName, "\" can only be defined once."), [fieldNames[fieldName], fieldDef.name]));
-        } else {
-          fieldNames[fieldName] = fieldDef.name;
-        }
+    for (var _i2 = 0; _i2 < fieldNodes.length; _i2++) {
+      var fieldDef = fieldNodes[_i2];
+      var fieldName = fieldDef.name.value;
+
+      if (hasField(existingTypeMap[typeName], fieldName)) {
+        context.reportError(new GraphQLError("Field \"".concat(typeName, ".").concat(fieldName, "\" already exists in the schema. It cannot also be defined in this type extension."), fieldDef.name));
+      } else if (fieldNames[fieldName]) {
+        context.reportError(new GraphQLError("Field \"".concat(typeName, ".").concat(fieldName, "\" can only be defined once."), [fieldNames[fieldName], fieldDef.name]));
+      } else {
+        fieldNames[fieldName] = fieldDef.name;
       }
     }
 

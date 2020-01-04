@@ -26,19 +26,20 @@ function UniqueOperationTypes(context) {
   };
 
   function checkOperationTypes(node) {
-    if (node.operationTypes) {
-      for (var _i2 = 0, _ref2 = node.operationTypes || []; _i2 < _ref2.length; _i2++) {
-        var operationType = _ref2[_i2];
-        var operation = operationType.operation;
-        var alreadyDefinedOperationType = definedOperationTypes[operation];
+    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    var operationTypesNodes = node.operationTypes || [];
 
-        if (existingOperationTypes[operation]) {
-          context.reportError(new _GraphQLError.GraphQLError("Type for ".concat(operation, " already defined in the schema. It cannot be redefined."), operationType));
-        } else if (alreadyDefinedOperationType) {
-          context.reportError(new _GraphQLError.GraphQLError("There can be only one ".concat(operation, " type in schema."), [alreadyDefinedOperationType, operationType]));
-        } else {
-          definedOperationTypes[operation] = operationType;
-        }
+    for (var _i2 = 0; _i2 < operationTypesNodes.length; _i2++) {
+      var operationType = operationTypesNodes[_i2];
+      var operation = operationType.operation;
+      var alreadyDefinedOperationType = definedOperationTypes[operation];
+
+      if (existingOperationTypes[operation]) {
+        context.reportError(new _GraphQLError.GraphQLError("Type for ".concat(operation, " already defined in the schema. It cannot be redefined."), operationType));
+      } else if (alreadyDefinedOperationType) {
+        context.reportError(new _GraphQLError.GraphQLError("There can be only one ".concat(operation, " type in schema."), [alreadyDefinedOperationType, operationType]));
+      } else {
+        definedOperationTypes[operation] = operationType;
       }
     }
 

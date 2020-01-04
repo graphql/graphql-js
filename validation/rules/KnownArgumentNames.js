@@ -71,9 +71,11 @@ function KnownArgumentNamesOnDirectives(context) {
     var def = astDefinitions[_i4];
 
     if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
-      directiveArgs[def.name.value] = def.arguments ? def.arguments.map(function (arg) {
+      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      var argsNodes = def.arguments || [];
+      directiveArgs[def.name.value] = argsNodes.map(function (arg) {
         return arg.name.value;
-      }) : [];
+      });
     }
   }
 

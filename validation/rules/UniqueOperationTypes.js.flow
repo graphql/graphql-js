@@ -29,28 +29,29 @@ export function UniqueOperationTypes(
   };
 
   function checkOperationTypes(node) {
-    if (node.operationTypes) {
-      for (const operationType of node.operationTypes || []) {
-        const operation = operationType.operation;
-        const alreadyDefinedOperationType = definedOperationTypes[operation];
+    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    const operationTypesNodes = node.operationTypes || [];
 
-        if (existingOperationTypes[operation]) {
-          context.reportError(
-            new GraphQLError(
-              `Type for ${operation} already defined in the schema. It cannot be redefined.`,
-              operationType,
-            ),
-          );
-        } else if (alreadyDefinedOperationType) {
-          context.reportError(
-            new GraphQLError(
-              `There can be only one ${operation} type in schema.`,
-              [alreadyDefinedOperationType, operationType],
-            ),
-          );
-        } else {
-          definedOperationTypes[operation] = operationType;
-        }
+    for (const operationType of operationTypesNodes) {
+      const operation = operationType.operation;
+      const alreadyDefinedOperationType = definedOperationTypes[operation];
+
+      if (existingOperationTypes[operation]) {
+        context.reportError(
+          new GraphQLError(
+            `Type for ${operation} already defined in the schema. It cannot be redefined.`,
+            operationType,
+          ),
+        );
+      } else if (alreadyDefinedOperationType) {
+        context.reportError(
+          new GraphQLError(
+            `There can be only one ${operation} type in schema.`,
+            [alreadyDefinedOperationType, operationType],
+          ),
+        );
+      } else {
+        definedOperationTypes[operation] = operationType;
       }
     }
 

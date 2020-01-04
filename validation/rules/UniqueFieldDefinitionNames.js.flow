@@ -38,29 +38,29 @@ export function UniqueFieldDefinitionNames(
       knownFieldNames[typeName] = Object.create(null);
     }
 
-    if (node.fields) {
-      const fieldNames = knownFieldNames[typeName];
+    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    const fieldNodes = node.fields || [];
+    const fieldNames = knownFieldNames[typeName];
 
-      for (const fieldDef of node.fields) {
-        const fieldName = fieldDef.name.value;
+    for (const fieldDef of fieldNodes) {
+      const fieldName = fieldDef.name.value;
 
-        if (hasField(existingTypeMap[typeName], fieldName)) {
-          context.reportError(
-            new GraphQLError(
-              `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
-              fieldDef.name,
-            ),
-          );
-        } else if (fieldNames[fieldName]) {
-          context.reportError(
-            new GraphQLError(
-              `Field "${typeName}.${fieldName}" can only be defined once.`,
-              [fieldNames[fieldName], fieldDef.name],
-            ),
-          );
-        } else {
-          fieldNames[fieldName] = fieldDef.name;
-        }
+      if (hasField(existingTypeMap[typeName], fieldName)) {
+        context.reportError(
+          new GraphQLError(
+            `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
+            fieldDef.name,
+          ),
+        );
+      } else if (fieldNames[fieldName]) {
+        context.reportError(
+          new GraphQLError(
+            `Field "${typeName}.${fieldName}" can only be defined once.`,
+            [fieldNames[fieldName], fieldDef.name],
+          ),
+        );
+      } else {
+        fieldNames[fieldName] = fieldDef.name;
       }
     }
 

@@ -305,11 +305,12 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (var _i8 = 0; _i8 < nodes.length; _i8++) {
       var node = nodes[_i8];
 
-      if (node.operationTypes != null) {
-        for (var _i10 = 0, _node$operationTypes2 = node.operationTypes; _i10 < _node$operationTypes2.length; _i10++) {
-          var operationType = _node$operationTypes2[_i10];
-          opTypes[operationType.operation] = getNamedType(operationType.type);
-        }
+      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      var operationTypesNodes = node.operationTypes || [];
+
+      for (var _i10 = 0; _i10 < operationTypesNodes.length; _i10++) {
+        var operationType = operationTypesNodes[_i10];
+        opTypes[operationType.operation] = getNamedType(operationType.type);
       }
     }
 
@@ -360,20 +361,21 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (var _i12 = 0; _i12 < nodes.length; _i12++) {
       var node = nodes[_i12];
 
-      if (node.fields != null) {
-        for (var _i14 = 0, _node$fields2 = node.fields; _i14 < _node$fields2.length; _i14++) {
-          var field = _node$fields2[_i14];
-          fieldConfigMap[field.name.value] = {
-            // Note: While this could make assertions to get the correctly typed
-            // value, that would throw immediately while type system validation
-            // with validateSchema() will produce more actionable results.
-            type: getWrappedType(field.type),
-            description: getDescription(field, options),
-            args: buildArgumentMap(field.arguments),
-            deprecationReason: getDeprecationReason(field),
-            astNode: field
-          };
-        }
+      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      var nodeFields = node.fields || [];
+
+      for (var _i14 = 0; _i14 < nodeFields.length; _i14++) {
+        var field = nodeFields[_i14];
+        fieldConfigMap[field.name.value] = {
+          // Note: While this could make assertions to get the correctly typed
+          // value, that would throw immediately while type system validation
+          // with validateSchema() will produce more actionable results.
+          type: getWrappedType(field.type),
+          description: getDescription(field, options),
+          args: buildArgumentMap(field.arguments),
+          deprecationReason: getDeprecationReason(field),
+          astNode: field
+        };
       }
     }
 
@@ -381,22 +383,22 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 
   function buildArgumentMap(args) {
+    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    var argsNodes = args || [];
     var argConfigMap = Object.create(null);
 
-    if (args != null) {
-      for (var _i16 = 0; _i16 < args.length; _i16++) {
-        var arg = args[_i16];
-        // Note: While this could make assertions to get the correctly typed
-        // value, that would throw immediately while type system validation
-        // with validateSchema() will produce more actionable results.
-        var type = getWrappedType(arg.type);
-        argConfigMap[arg.name.value] = {
-          type: type,
-          description: getDescription(arg, options),
-          defaultValue: (0, _valueFromAST.valueFromAST)(arg.defaultValue, type),
-          astNode: arg
-        };
-      }
+    for (var _i16 = 0; _i16 < argsNodes.length; _i16++) {
+      var arg = argsNodes[_i16];
+      // Note: While this could make assertions to get the correctly typed
+      // value, that would throw immediately while type system validation
+      // with validateSchema() will produce more actionable results.
+      var type = getWrappedType(arg.type);
+      argConfigMap[arg.name.value] = {
+        type: type,
+        description: getDescription(arg, options),
+        defaultValue: (0, _valueFromAST.valueFromAST)(arg.defaultValue, type),
+        astNode: arg
+      };
     }
 
     return argConfigMap;
@@ -408,20 +410,21 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (var _i18 = 0; _i18 < nodes.length; _i18++) {
       var node = nodes[_i18];
 
-      if (node.fields != null) {
-        for (var _i20 = 0, _node$fields4 = node.fields; _i20 < _node$fields4.length; _i20++) {
-          var field = _node$fields4[_i20];
-          // Note: While this could make assertions to get the correctly typed
-          // value, that would throw immediately while type system validation
-          // with validateSchema() will produce more actionable results.
-          var type = getWrappedType(field.type);
-          inputFieldMap[field.name.value] = {
-            type: type,
-            description: getDescription(field, options),
-            defaultValue: (0, _valueFromAST.valueFromAST)(field.defaultValue, type),
-            astNode: field
-          };
-        }
+      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      var fieldsNodes = node.fields || [];
+
+      for (var _i20 = 0; _i20 < fieldsNodes.length; _i20++) {
+        var field = fieldsNodes[_i20];
+        // Note: While this could make assertions to get the correctly typed
+        // value, that would throw immediately while type system validation
+        // with validateSchema() will produce more actionable results.
+        var type = getWrappedType(field.type);
+        inputFieldMap[field.name.value] = {
+          type: type,
+          description: getDescription(field, options),
+          defaultValue: (0, _valueFromAST.valueFromAST)(field.defaultValue, type),
+          astNode: field
+        };
       }
     }
 
@@ -434,15 +437,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (var _i22 = 0; _i22 < nodes.length; _i22++) {
       var node = nodes[_i22];
 
-      if (node.values != null) {
-        for (var _i24 = 0, _node$values2 = node.values; _i24 < _node$values2.length; _i24++) {
-          var value = _node$values2[_i24];
-          enumValueMap[value.name.value] = {
-            description: getDescription(value, options),
-            deprecationReason: getDeprecationReason(value),
-            astNode: value
-          };
-        }
+      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      var valuesNodes = node.values || [];
+
+      for (var _i24 = 0; _i24 < valuesNodes.length; _i24++) {
+        var value = valuesNodes[_i24];
+        enumValueMap[value.name.value] = {
+          description: getDescription(value, options),
+          deprecationReason: getDeprecationReason(value),
+          astNode: value
+        };
       }
     }
 
@@ -455,15 +459,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (var _i26 = 0; _i26 < nodes.length; _i26++) {
       var node = nodes[_i26];
 
-      if (node.interfaces != null) {
-        for (var _i28 = 0, _node$interfaces2 = node.interfaces; _i28 < _node$interfaces2.length; _i28++) {
-          var type = _node$interfaces2[_i28];
-          // Note: While this could make assertions to get the correctly typed
-          // values below, that would throw immediately while type system
-          // validation with validateSchema() will produce more actionable
-          // results.
-          interfaces.push(getNamedType(type));
-        }
+      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      var interfacesNodes = node.interfaces || [];
+
+      for (var _i28 = 0; _i28 < interfacesNodes.length; _i28++) {
+        var type = interfacesNodes[_i28];
+        // Note: While this could make assertions to get the correctly typed
+        // values below, that would throw immediately while type system
+        // validation with validateSchema() will produce more actionable
+        // results.
+        interfaces.push(getNamedType(type));
       }
     }
 
@@ -476,15 +481,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (var _i30 = 0; _i30 < nodes.length; _i30++) {
       var node = nodes[_i30];
 
-      if (node.types != null) {
-        for (var _i32 = 0, _node$types2 = node.types; _i32 < _node$types2.length; _i32++) {
-          var type = _node$types2[_i32];
-          // Note: While this could make assertions to get the correctly typed
-          // values below, that would throw immediately while type system
-          // validation with validateSchema() will produce more actionable
-          // results.
-          types.push(getNamedType(type));
-        }
+      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      var typeNodes = node.types || [];
+
+      for (var _i32 = 0; _i32 < typeNodes.length; _i32++) {
+        var type = typeNodes[_i32];
+        // Note: While this could make assertions to get the correctly typed
+        // values below, that would throw immediately while type system
+        // validation with validateSchema() will produce more actionable
+        // results.
+        types.push(getNamedType(type));
       }
     }
 

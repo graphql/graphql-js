@@ -591,6 +591,7 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
   object: SDLDefinedObject<T, K>,
   getter: (T | K) => ?(L | $ReadOnlyArray<L>),
 ): $ReadOnlyArray<L> {
+  /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
   return flatMap(getAllNodes(object), item => getter(item) || []);
 }
 

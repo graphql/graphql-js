@@ -28,6 +28,8 @@ export function ProvidedRequiredArguments(context) {
         if (!fieldDef) {
           return false;
         }
+        /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+
 
         var argNodes = fieldNode.arguments || [];
         var argNodeMap = keyMap(argNodes, function (arg) {
@@ -69,7 +71,9 @@ export function ProvidedRequiredArgumentsOnDirectives(context) {
     var def = astDefinitions[_i6];
 
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      requiredArgsMap[def.name.value] = keyMap(def.arguments ? def.arguments.filter(isRequiredArgumentNode) : [], function (arg) {
+      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      var argNodes = def.arguments || [];
+      requiredArgsMap[def.name.value] = keyMap(argNodes.filter(isRequiredArgumentNode), function (arg) {
         return arg.name.value;
       });
     }
@@ -83,8 +87,10 @@ export function ProvidedRequiredArgumentsOnDirectives(context) {
         var requiredArgs = requiredArgsMap[directiveName];
 
         if (requiredArgs) {
-          var argNodes = directiveNode.arguments || [];
-          var argNodeMap = keyMap(argNodes, function (arg) {
+          /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+          var _argNodes = directiveNode.arguments || [];
+
+          var argNodeMap = keyMap(_argNodes, function (arg) {
             return arg.name.value;
           });
 
