@@ -2,6 +2,8 @@ var _defKindToExtKind;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+import inspect from '../../jsutils/inspect';
+import invariant from '../../jsutils/invariant';
 import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 import { GraphQLError } from '../../error/GraphQLError';
@@ -69,17 +71,32 @@ var defKindToExtKind = (_defKindToExtKind = {}, _defineProperty(_defKindToExtKin
 function typeToExtKind(type) {
   if (isScalarType(type)) {
     return Kind.SCALAR_TYPE_EXTENSION;
-  } else if (isObjectType(type)) {
-    return Kind.OBJECT_TYPE_EXTENSION;
-  } else if (isInterfaceType(type)) {
-    return Kind.INTERFACE_TYPE_EXTENSION;
-  } else if (isUnionType(type)) {
-    return Kind.UNION_TYPE_EXTENSION;
-  } else if (isEnumType(type)) {
-    return Kind.ENUM_TYPE_EXTENSION;
-  } else if (isInputObjectType(type)) {
-    return Kind.INPUT_OBJECT_TYPE_EXTENSION;
   }
+
+  if (isObjectType(type)) {
+    return Kind.OBJECT_TYPE_EXTENSION;
+  }
+
+  if (isInterfaceType(type)) {
+    return Kind.INTERFACE_TYPE_EXTENSION;
+  }
+
+  if (isUnionType(type)) {
+    return Kind.UNION_TYPE_EXTENSION;
+  }
+
+  if (isEnumType(type)) {
+    return Kind.ENUM_TYPE_EXTENSION;
+  }
+
+  /* istanbul ignore else */
+  if (isInputObjectType(type)) {
+    return Kind.INPUT_OBJECT_TYPE_EXTENSION;
+  } // Not reachable. All possible types have been considered.
+
+
+  /* istanbul ignore next */
+  invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
 function extensionKindToTypeName(kind) {
@@ -101,8 +118,9 @@ function extensionKindToTypeName(kind) {
 
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
+  } // Not reachable. All possible types have been considered.
 
-    default:
-      return 'unknown type';
-  }
+
+  /* istanbul ignore next */
+  invariant(false, 'Unexpected kind: ' + inspect(kind));
 }

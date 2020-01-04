@@ -107,15 +107,26 @@ function isSchemaOfCommonNames(schema) {
 export function printType(type, options) {
   if (isScalarType(type)) {
     return printScalar(type, options);
-  } else if (isObjectType(type)) {
+  }
+
+  if (isObjectType(type)) {
     return printObject(type, options);
-  } else if (isInterfaceType(type)) {
+  }
+
+  if (isInterfaceType(type)) {
     return printInterface(type, options);
-  } else if (isUnionType(type)) {
+  }
+
+  if (isUnionType(type)) {
     return printUnion(type, options);
-  } else if (isEnumType(type)) {
+  }
+
+  if (isEnumType(type)) {
     return printEnum(type, options);
-  } else if (isInputObjectType(type)) {
+  }
+
+  /* istanbul ignore else */
+  if (isInputObjectType(type)) {
     return printInputObject(type, options);
   } // Not reachable. All possible types have been considered.
 

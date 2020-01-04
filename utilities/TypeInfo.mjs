@@ -141,12 +141,18 @@ function () {
         {
           var type;
 
-          if (node.operation === 'query') {
-            type = schema.getQueryType();
-          } else if (node.operation === 'mutation') {
-            type = schema.getMutationType();
-          } else if (node.operation === 'subscription') {
-            type = schema.getSubscriptionType();
+          switch (node.operation) {
+            case 'query':
+              type = schema.getQueryType();
+              break;
+
+            case 'mutation':
+              type = schema.getMutationType();
+              break;
+
+            case 'subscription':
+              type = schema.getSubscriptionType();
+              break;
           }
 
           this._typeStack.push(isObjectType(type) ? type : undefined);

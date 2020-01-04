@@ -151,17 +151,30 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     if (isIntrospectionType(type) || isSpecifiedScalarType(type)) {
       // Builtin types are not extended.
       return type;
-    } else if (isScalarType(type)) {
+    }
+
+    if (isScalarType(type)) {
       return extendScalarType(type);
-    } else if (isObjectType(type)) {
+    }
+
+    if (isObjectType(type)) {
       return extendObjectType(type);
-    } else if (isInterfaceType(type)) {
+    }
+
+    if (isInterfaceType(type)) {
       return extendInterfaceType(type);
-    } else if (isUnionType(type)) {
+    }
+
+    if (isUnionType(type)) {
       return extendUnionType(type);
-    } else if (isEnumType(type)) {
+    }
+
+    if (isEnumType(type)) {
       return extendEnumType(type);
-    } else if (isInputObjectType(type)) {
+    }
+
+    /* istanbul ignore else */
+    if (isInputObjectType(type)) {
       return extendInputObjectType(type);
     } // Not reachable. All possible types have been considered.
 

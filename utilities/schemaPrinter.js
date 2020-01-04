@@ -128,15 +128,26 @@ function isSchemaOfCommonNames(schema) {
 function printType(type, options) {
   if ((0, _definition.isScalarType)(type)) {
     return printScalar(type, options);
-  } else if ((0, _definition.isObjectType)(type)) {
+  }
+
+  if ((0, _definition.isObjectType)(type)) {
     return printObject(type, options);
-  } else if ((0, _definition.isInterfaceType)(type)) {
+  }
+
+  if ((0, _definition.isInterfaceType)(type)) {
     return printInterface(type, options);
-  } else if ((0, _definition.isUnionType)(type)) {
+  }
+
+  if ((0, _definition.isUnionType)(type)) {
     return printUnion(type, options);
-  } else if ((0, _definition.isEnumType)(type)) {
+  }
+
+  if ((0, _definition.isEnumType)(type)) {
     return printEnum(type, options);
-  } else if ((0, _definition.isInputObjectType)(type)) {
+  }
+
+  /* istanbul ignore else */
+  if ((0, _definition.isInputObjectType)(type)) {
     return printInputObject(type, options);
   } // Not reachable. All possible types have been considered.
 

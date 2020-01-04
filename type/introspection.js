@@ -200,19 +200,34 @@ var __Type = new _definition.GraphQLObjectType({
         resolve: function resolve(type) {
           if ((0, _definition.isScalarType)(type)) {
             return TypeKind.SCALAR;
-          } else if ((0, _definition.isObjectType)(type)) {
+          }
+
+          if ((0, _definition.isObjectType)(type)) {
             return TypeKind.OBJECT;
-          } else if ((0, _definition.isInterfaceType)(type)) {
+          }
+
+          if ((0, _definition.isInterfaceType)(type)) {
             return TypeKind.INTERFACE;
-          } else if ((0, _definition.isUnionType)(type)) {
+          }
+
+          if ((0, _definition.isUnionType)(type)) {
             return TypeKind.UNION;
-          } else if ((0, _definition.isEnumType)(type)) {
+          }
+
+          if ((0, _definition.isEnumType)(type)) {
             return TypeKind.ENUM;
-          } else if ((0, _definition.isInputObjectType)(type)) {
+          }
+
+          if ((0, _definition.isInputObjectType)(type)) {
             return TypeKind.INPUT_OBJECT;
-          } else if ((0, _definition.isListType)(type)) {
+          }
+
+          if ((0, _definition.isListType)(type)) {
             return TypeKind.LIST;
-          } else if ((0, _definition.isNonNullType)(type)) {
+          }
+
+          /* istanbul ignore else */
+          if ((0, _definition.isNonNullType)(type)) {
             return TypeKind.NON_NULL;
           } // Not reachable. All possible types have been considered.
 

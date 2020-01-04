@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PossibleTypeExtensions = PossibleTypeExtensions;
 
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+
+var _invariant = _interopRequireDefault(require("../../jsutils/invariant"));
+
 var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
@@ -84,17 +88,32 @@ var defKindToExtKind = (_defKindToExtKind = {}, _defineProperty(_defKindToExtKin
 function typeToExtKind(type) {
   if ((0, _definition.isScalarType)(type)) {
     return _kinds.Kind.SCALAR_TYPE_EXTENSION;
-  } else if ((0, _definition.isObjectType)(type)) {
-    return _kinds.Kind.OBJECT_TYPE_EXTENSION;
-  } else if ((0, _definition.isInterfaceType)(type)) {
-    return _kinds.Kind.INTERFACE_TYPE_EXTENSION;
-  } else if ((0, _definition.isUnionType)(type)) {
-    return _kinds.Kind.UNION_TYPE_EXTENSION;
-  } else if ((0, _definition.isEnumType)(type)) {
-    return _kinds.Kind.ENUM_TYPE_EXTENSION;
-  } else if ((0, _definition.isInputObjectType)(type)) {
-    return _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION;
   }
+
+  if ((0, _definition.isObjectType)(type)) {
+    return _kinds.Kind.OBJECT_TYPE_EXTENSION;
+  }
+
+  if ((0, _definition.isInterfaceType)(type)) {
+    return _kinds.Kind.INTERFACE_TYPE_EXTENSION;
+  }
+
+  if ((0, _definition.isUnionType)(type)) {
+    return _kinds.Kind.UNION_TYPE_EXTENSION;
+  }
+
+  if ((0, _definition.isEnumType)(type)) {
+    return _kinds.Kind.ENUM_TYPE_EXTENSION;
+  }
+
+  /* istanbul ignore else */
+  if ((0, _definition.isInputObjectType)(type)) {
+    return _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION;
+  } // Not reachable. All possible types have been considered.
+
+
+  /* istanbul ignore next */
+  (0, _invariant.default)(false, 'Unexpected type: ' + (0, _inspect.default)(type));
 }
 
 function extensionKindToTypeName(kind) {
@@ -116,8 +135,9 @@ function extensionKindToTypeName(kind) {
 
     case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
+  } // Not reachable. All possible types have been considered.
 
-    default:
-      return 'unknown type';
-  }
+
+  /* istanbul ignore next */
+  (0, _invariant.default)(false, 'Unexpected kind: ' + (0, _inspect.default)(kind));
 }

@@ -105,7 +105,9 @@ function lexicographicSortSchema(schema) {
   function sortNamedType(type) {
     if ((0, _definition.isScalarType)(type) || (0, _introspection.isIntrospectionType)(type)) {
       return type;
-    } else if ((0, _definition.isObjectType)(type)) {
+    }
+
+    if ((0, _definition.isObjectType)(type)) {
       var config = type.toConfig();
       return new _definition.GraphQLObjectType(_objectSpread({}, config, {
         interfaces: function interfaces() {
@@ -115,7 +117,9 @@ function lexicographicSortSchema(schema) {
           return sortFields(config.fields);
         }
       }));
-    } else if ((0, _definition.isInterfaceType)(type)) {
+    }
+
+    if ((0, _definition.isInterfaceType)(type)) {
       var _config = type.toConfig();
 
       return new _definition.GraphQLInterfaceType(_objectSpread({}, _config, {
@@ -126,7 +130,9 @@ function lexicographicSortSchema(schema) {
           return sortFields(_config.fields);
         }
       }));
-    } else if ((0, _definition.isUnionType)(type)) {
+    }
+
+    if ((0, _definition.isUnionType)(type)) {
       var _config2 = type.toConfig();
 
       return new _definition.GraphQLUnionType(_objectSpread({}, _config2, {
@@ -134,13 +140,18 @@ function lexicographicSortSchema(schema) {
           return sortTypes(_config2.types);
         }
       }));
-    } else if ((0, _definition.isEnumType)(type)) {
+    }
+
+    if ((0, _definition.isEnumType)(type)) {
       var _config3 = type.toConfig();
 
       return new _definition.GraphQLEnumType(_objectSpread({}, _config3, {
         values: sortObjMap(_config3.values)
       }));
-    } else if ((0, _definition.isInputObjectType)(type)) {
+    }
+
+    /* istanbul ignore else */
+    if ((0, _definition.isInputObjectType)(type)) {
       var _config4 = type.toConfig();
 
       return new _definition.GraphQLInputObjectType(_objectSpread({}, _config4, {

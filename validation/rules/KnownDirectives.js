@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.KnownDirectives = KnownDirectives;
 
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+
+var _invariant = _interopRequireDefault(require("../../jsutils/invariant"));
+
 var _GraphQLError = require("../../error/GraphQLError");
 
 var _kinds = require("../../language/kinds");
@@ -12,6 +16,8 @@ var _kinds = require("../../language/kinds");
 var _directiveLocation = require("../../language/directiveLocation");
 
 var _directives = require("../../type/directives");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Known directives
@@ -63,76 +69,83 @@ function KnownDirectives(context) {
 function getDirectiveLocationForASTPath(ancestors) {
   var appliedTo = ancestors[ancestors.length - 1];
 
-  if (!Array.isArray(appliedTo)) {
-    switch (appliedTo.kind) {
-      case _kinds.Kind.OPERATION_DEFINITION:
-        switch (appliedTo.operation) {
-          case 'query':
-            return _directiveLocation.DirectiveLocation.QUERY;
+  /* istanbul ignore next */
+  !Array.isArray(appliedTo) || (0, _invariant.default)(0);
 
-          case 'mutation':
-            return _directiveLocation.DirectiveLocation.MUTATION;
+  switch (appliedTo.kind) {
+    case _kinds.Kind.OPERATION_DEFINITION:
+      return getDirectiveLocationForOperation(appliedTo.operation);
 
-          case 'subscription':
-            return _directiveLocation.DirectiveLocation.SUBSCRIPTION;
-        }
+    case _kinds.Kind.FIELD:
+      return _directiveLocation.DirectiveLocation.FIELD;
 
-        break;
+    case _kinds.Kind.FRAGMENT_SPREAD:
+      return _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD;
 
-      case _kinds.Kind.FIELD:
-        return _directiveLocation.DirectiveLocation.FIELD;
+    case _kinds.Kind.INLINE_FRAGMENT:
+      return _directiveLocation.DirectiveLocation.INLINE_FRAGMENT;
 
-      case _kinds.Kind.FRAGMENT_SPREAD:
-        return _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD;
+    case _kinds.Kind.FRAGMENT_DEFINITION:
+      return _directiveLocation.DirectiveLocation.FRAGMENT_DEFINITION;
 
-      case _kinds.Kind.INLINE_FRAGMENT:
-        return _directiveLocation.DirectiveLocation.INLINE_FRAGMENT;
+    case _kinds.Kind.VARIABLE_DEFINITION:
+      return _directiveLocation.DirectiveLocation.VARIABLE_DEFINITION;
 
-      case _kinds.Kind.FRAGMENT_DEFINITION:
-        return _directiveLocation.DirectiveLocation.FRAGMENT_DEFINITION;
+    case _kinds.Kind.SCHEMA_DEFINITION:
+    case _kinds.Kind.SCHEMA_EXTENSION:
+      return _directiveLocation.DirectiveLocation.SCHEMA;
 
-      case _kinds.Kind.VARIABLE_DEFINITION:
-        return _directiveLocation.DirectiveLocation.VARIABLE_DEFINITION;
+    case _kinds.Kind.SCALAR_TYPE_DEFINITION:
+    case _kinds.Kind.SCALAR_TYPE_EXTENSION:
+      return _directiveLocation.DirectiveLocation.SCALAR;
 
-      case _kinds.Kind.SCHEMA_DEFINITION:
-      case _kinds.Kind.SCHEMA_EXTENSION:
-        return _directiveLocation.DirectiveLocation.SCHEMA;
+    case _kinds.Kind.OBJECT_TYPE_DEFINITION:
+    case _kinds.Kind.OBJECT_TYPE_EXTENSION:
+      return _directiveLocation.DirectiveLocation.OBJECT;
 
-      case _kinds.Kind.SCALAR_TYPE_DEFINITION:
-      case _kinds.Kind.SCALAR_TYPE_EXTENSION:
-        return _directiveLocation.DirectiveLocation.SCALAR;
+    case _kinds.Kind.FIELD_DEFINITION:
+      return _directiveLocation.DirectiveLocation.FIELD_DEFINITION;
 
-      case _kinds.Kind.OBJECT_TYPE_DEFINITION:
-      case _kinds.Kind.OBJECT_TYPE_EXTENSION:
-        return _directiveLocation.DirectiveLocation.OBJECT;
+    case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
+    case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
+      return _directiveLocation.DirectiveLocation.INTERFACE;
 
-      case _kinds.Kind.FIELD_DEFINITION:
-        return _directiveLocation.DirectiveLocation.FIELD_DEFINITION;
+    case _kinds.Kind.UNION_TYPE_DEFINITION:
+    case _kinds.Kind.UNION_TYPE_EXTENSION:
+      return _directiveLocation.DirectiveLocation.UNION;
 
-      case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
-      case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
-        return _directiveLocation.DirectiveLocation.INTERFACE;
+    case _kinds.Kind.ENUM_TYPE_DEFINITION:
+    case _kinds.Kind.ENUM_TYPE_EXTENSION:
+      return _directiveLocation.DirectiveLocation.ENUM;
 
-      case _kinds.Kind.UNION_TYPE_DEFINITION:
-      case _kinds.Kind.UNION_TYPE_EXTENSION:
-        return _directiveLocation.DirectiveLocation.UNION;
+    case _kinds.Kind.ENUM_VALUE_DEFINITION:
+      return _directiveLocation.DirectiveLocation.ENUM_VALUE;
 
-      case _kinds.Kind.ENUM_TYPE_DEFINITION:
-      case _kinds.Kind.ENUM_TYPE_EXTENSION:
-        return _directiveLocation.DirectiveLocation.ENUM;
+    case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
+    case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
+      return _directiveLocation.DirectiveLocation.INPUT_OBJECT;
 
-      case _kinds.Kind.ENUM_VALUE_DEFINITION:
-        return _directiveLocation.DirectiveLocation.ENUM_VALUE;
-
-      case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
-      case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
-        return _directiveLocation.DirectiveLocation.INPUT_OBJECT;
-
-      case _kinds.Kind.INPUT_VALUE_DEFINITION:
-        {
-          var parentNode = ancestors[ancestors.length - 3];
-          return parentNode.kind === _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
-        }
-    }
+    case _kinds.Kind.INPUT_VALUE_DEFINITION:
+      {
+        var parentNode = ancestors[ancestors.length - 3];
+        return parentNode.kind === _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
+      }
   }
+}
+
+function getDirectiveLocationForOperation(operation) {
+  switch (operation) {
+    case 'query':
+      return _directiveLocation.DirectiveLocation.QUERY;
+
+    case 'mutation':
+      return _directiveLocation.DirectiveLocation.MUTATION;
+
+    case 'subscription':
+      return _directiveLocation.DirectiveLocation.SUBSCRIPTION;
+  } // Not reachable. All possible types have been considered.
+
+
+  /* istanbul ignore next */
+  (0, _invariant.default)(false, 'Unexpected operation: ' + (0, _inspect.default)(operation));
 }

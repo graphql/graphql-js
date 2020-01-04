@@ -173,19 +173,34 @@ export var __Type = new GraphQLObjectType({
         resolve: function resolve(type) {
           if (isScalarType(type)) {
             return TypeKind.SCALAR;
-          } else if (isObjectType(type)) {
+          }
+
+          if (isObjectType(type)) {
             return TypeKind.OBJECT;
-          } else if (isInterfaceType(type)) {
+          }
+
+          if (isInterfaceType(type)) {
             return TypeKind.INTERFACE;
-          } else if (isUnionType(type)) {
+          }
+
+          if (isUnionType(type)) {
             return TypeKind.UNION;
-          } else if (isEnumType(type)) {
+          }
+
+          if (isEnumType(type)) {
             return TypeKind.ENUM;
-          } else if (isInputObjectType(type)) {
+          }
+
+          if (isInputObjectType(type)) {
             return TypeKind.INPUT_OBJECT;
-          } else if (isListType(type)) {
+          }
+
+          if (isListType(type)) {
             return TypeKind.LIST;
-          } else if (isNonNullType(type)) {
+          }
+
+          /* istanbul ignore else */
+          if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
           } // Not reachable. All possible types have been considered.
 

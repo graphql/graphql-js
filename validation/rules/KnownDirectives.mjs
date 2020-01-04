@@ -1,3 +1,5 @@
+import inspect from '../../jsutils/inspect';
+import invariant from '../../jsutils/invariant';
 import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { DirectiveLocation } from '../../language/directiveLocation';
@@ -53,76 +55,83 @@ export function KnownDirectives(context) {
 function getDirectiveLocationForASTPath(ancestors) {
   var appliedTo = ancestors[ancestors.length - 1];
 
-  if (!Array.isArray(appliedTo)) {
-    switch (appliedTo.kind) {
-      case Kind.OPERATION_DEFINITION:
-        switch (appliedTo.operation) {
-          case 'query':
-            return DirectiveLocation.QUERY;
+  /* istanbul ignore next */
+  !Array.isArray(appliedTo) || invariant(0);
 
-          case 'mutation':
-            return DirectiveLocation.MUTATION;
+  switch (appliedTo.kind) {
+    case Kind.OPERATION_DEFINITION:
+      return getDirectiveLocationForOperation(appliedTo.operation);
 
-          case 'subscription':
-            return DirectiveLocation.SUBSCRIPTION;
-        }
+    case Kind.FIELD:
+      return DirectiveLocation.FIELD;
 
-        break;
+    case Kind.FRAGMENT_SPREAD:
+      return DirectiveLocation.FRAGMENT_SPREAD;
 
-      case Kind.FIELD:
-        return DirectiveLocation.FIELD;
+    case Kind.INLINE_FRAGMENT:
+      return DirectiveLocation.INLINE_FRAGMENT;
 
-      case Kind.FRAGMENT_SPREAD:
-        return DirectiveLocation.FRAGMENT_SPREAD;
+    case Kind.FRAGMENT_DEFINITION:
+      return DirectiveLocation.FRAGMENT_DEFINITION;
 
-      case Kind.INLINE_FRAGMENT:
-        return DirectiveLocation.INLINE_FRAGMENT;
+    case Kind.VARIABLE_DEFINITION:
+      return DirectiveLocation.VARIABLE_DEFINITION;
 
-      case Kind.FRAGMENT_DEFINITION:
-        return DirectiveLocation.FRAGMENT_DEFINITION;
+    case Kind.SCHEMA_DEFINITION:
+    case Kind.SCHEMA_EXTENSION:
+      return DirectiveLocation.SCHEMA;
 
-      case Kind.VARIABLE_DEFINITION:
-        return DirectiveLocation.VARIABLE_DEFINITION;
+    case Kind.SCALAR_TYPE_DEFINITION:
+    case Kind.SCALAR_TYPE_EXTENSION:
+      return DirectiveLocation.SCALAR;
 
-      case Kind.SCHEMA_DEFINITION:
-      case Kind.SCHEMA_EXTENSION:
-        return DirectiveLocation.SCHEMA;
+    case Kind.OBJECT_TYPE_DEFINITION:
+    case Kind.OBJECT_TYPE_EXTENSION:
+      return DirectiveLocation.OBJECT;
 
-      case Kind.SCALAR_TYPE_DEFINITION:
-      case Kind.SCALAR_TYPE_EXTENSION:
-        return DirectiveLocation.SCALAR;
+    case Kind.FIELD_DEFINITION:
+      return DirectiveLocation.FIELD_DEFINITION;
 
-      case Kind.OBJECT_TYPE_DEFINITION:
-      case Kind.OBJECT_TYPE_EXTENSION:
-        return DirectiveLocation.OBJECT;
+    case Kind.INTERFACE_TYPE_DEFINITION:
+    case Kind.INTERFACE_TYPE_EXTENSION:
+      return DirectiveLocation.INTERFACE;
 
-      case Kind.FIELD_DEFINITION:
-        return DirectiveLocation.FIELD_DEFINITION;
+    case Kind.UNION_TYPE_DEFINITION:
+    case Kind.UNION_TYPE_EXTENSION:
+      return DirectiveLocation.UNION;
 
-      case Kind.INTERFACE_TYPE_DEFINITION:
-      case Kind.INTERFACE_TYPE_EXTENSION:
-        return DirectiveLocation.INTERFACE;
+    case Kind.ENUM_TYPE_DEFINITION:
+    case Kind.ENUM_TYPE_EXTENSION:
+      return DirectiveLocation.ENUM;
 
-      case Kind.UNION_TYPE_DEFINITION:
-      case Kind.UNION_TYPE_EXTENSION:
-        return DirectiveLocation.UNION;
+    case Kind.ENUM_VALUE_DEFINITION:
+      return DirectiveLocation.ENUM_VALUE;
 
-      case Kind.ENUM_TYPE_DEFINITION:
-      case Kind.ENUM_TYPE_EXTENSION:
-        return DirectiveLocation.ENUM;
+    case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+    case Kind.INPUT_OBJECT_TYPE_EXTENSION:
+      return DirectiveLocation.INPUT_OBJECT;
 
-      case Kind.ENUM_VALUE_DEFINITION:
-        return DirectiveLocation.ENUM_VALUE;
-
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
-      case Kind.INPUT_OBJECT_TYPE_EXTENSION:
-        return DirectiveLocation.INPUT_OBJECT;
-
-      case Kind.INPUT_VALUE_DEFINITION:
-        {
-          var parentNode = ancestors[ancestors.length - 3];
-          return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION ? DirectiveLocation.INPUT_FIELD_DEFINITION : DirectiveLocation.ARGUMENT_DEFINITION;
-        }
-    }
+    case Kind.INPUT_VALUE_DEFINITION:
+      {
+        var parentNode = ancestors[ancestors.length - 3];
+        return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION ? DirectiveLocation.INPUT_FIELD_DEFINITION : DirectiveLocation.ARGUMENT_DEFINITION;
+      }
   }
+}
+
+function getDirectiveLocationForOperation(operation) {
+  switch (operation) {
+    case 'query':
+      return DirectiveLocation.QUERY;
+
+    case 'mutation':
+      return DirectiveLocation.MUTATION;
+
+    case 'subscription':
+      return DirectiveLocation.SUBSCRIPTION;
+  } // Not reachable. All possible types have been considered.
+
+
+  /* istanbul ignore next */
+  invariant(false, 'Unexpected operation: ' + inspect(operation));
 }
