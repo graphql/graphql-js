@@ -232,6 +232,7 @@ export class GraphQLSchema {
     abstractType: GraphQLAbstractType,
     possibleType: GraphQLObjectType,
   ): boolean {
+    /* istanbul ignore next */
     return this.isSubType(abstractType, possibleType);
   }
 

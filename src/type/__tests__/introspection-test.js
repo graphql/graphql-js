@@ -1401,6 +1401,7 @@ describe('Introspection', () => {
     const schema = new GraphQLSchema({ query: QueryRoot });
     const source = getIntrospectionQuery();
 
+    /* istanbul ignore next */
     function fieldResolver(_1, _2, _3, info) {
       invariant(false, `Called on ${info.parentType.name}::${info.fieldName}`);
     }
