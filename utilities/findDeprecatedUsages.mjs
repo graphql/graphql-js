@@ -13,27 +13,19 @@ export function findDeprecatedUsages(schema, ast) {
   var typeInfo = new TypeInfo(schema);
   visit(ast, visitWithTypeInfo(typeInfo, {
     Field: function Field(node) {
+      var parentType = typeInfo.getParentType();
       var fieldDef = typeInfo.getFieldDef();
 
-      if (fieldDef && fieldDef.isDeprecated) {
-        var parentType = typeInfo.getParentType();
-
-        if (parentType) {
-          var reason = fieldDef.deprecationReason;
-          errors.push(new GraphQLError("The field \"".concat(parentType.name, ".").concat(fieldDef.name, "\" is deprecated.") + (reason != null ? ' ' + reason : ''), node));
-        }
+      if (parentType && fieldDef && fieldDef.deprecationReason != null) {
+        errors.push(new GraphQLError("The field \"".concat(parentType.name, ".").concat(fieldDef.name, "\" is deprecated. ") + fieldDef.deprecationReason, node));
       }
     },
     EnumValue: function EnumValue(node) {
+      var type = getNamedType(typeInfo.getInputType());
       var enumVal = typeInfo.getEnumValue();
 
-      if (enumVal && enumVal.isDeprecated) {
-        var type = getNamedType(typeInfo.getInputType());
-
-        if (type) {
-          var reason = enumVal.deprecationReason;
-          errors.push(new GraphQLError("The enum value \"".concat(type.name, ".").concat(enumVal.name, "\" is deprecated.") + (reason != null && reason !== '' ? ' ' + reason : ''), node));
-        }
+      if (type && enumVal && enumVal.deprecationReason != null) {
+        errors.push(new GraphQLError("The enum value \"".concat(type.name, ".").concat(enumVal.name, "\" is deprecated. ") + enumVal.deprecationReason, node));
       }
     }
   }));
