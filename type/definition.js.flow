@@ -758,7 +758,7 @@ function defineFieldMap<TSource, TContext>(
     | GraphQLInterfaceTypeConfig<TSource, TContext>,
   >,
 ): GraphQLFieldMap<TSource, TContext> {
-  const fieldMap = resolveThunk(config.fields) || {};
+  const fieldMap = resolveThunk(config.fields);
   devAssert(
     isPlainObj(fieldMap),
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
@@ -1147,7 +1147,7 @@ defineToJSON(GraphQLUnionType);
 function defineTypes(
   config: $ReadOnly<GraphQLUnionTypeConfig<mixed, mixed>>,
 ): Array<GraphQLObjectType> {
-  const types = resolveThunk(config.types) || [];
+  const types = resolveThunk(config.types);
   devAssert(
     Array.isArray(types),
     `Must provide Array of types or a function which returns such an array for Union ${config.name}.`,
@@ -1430,7 +1430,7 @@ defineToJSON(GraphQLInputObjectType);
 function defineInputFieldMap(
   config: $ReadOnly<GraphQLInputObjectTypeConfig>,
 ): GraphQLInputFieldMap {
-  const fieldMap = resolveThunk(config.fields) || {};
+  const fieldMap = resolveThunk(config.fields);
   devAssert(
     isPlainObj(fieldMap),
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,

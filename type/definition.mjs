@@ -510,7 +510,7 @@ function defineInterfaces(config) {
 }
 
 function defineFieldMap(config) {
-  var fieldMap = resolveThunk(config.fields) || {};
+  var fieldMap = resolveThunk(config.fields);
   isPlainObj(fieldMap) || devAssert(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return mapValue(fieldMap, function (fieldConfig, fieldName) {
     isPlainObj(fieldConfig) || devAssert(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object."));
@@ -731,7 +731,7 @@ defineToStringTag(GraphQLUnionType);
 defineToJSON(GraphQLUnionType);
 
 function defineTypes(config) {
-  var types = resolveThunk(config.types) || [];
+  var types = resolveThunk(config.types);
   Array.isArray(types) || devAssert(0, "Must provide Array of types or a function which returns such an array for Union ".concat(config.name, "."));
   return types;
 }
@@ -946,7 +946,7 @@ defineToStringTag(GraphQLInputObjectType);
 defineToJSON(GraphQLInputObjectType);
 
 function defineInputFieldMap(config) {
-  var fieldMap = resolveThunk(config.fields) || {};
+  var fieldMap = resolveThunk(config.fields);
   isPlainObj(fieldMap) || devAssert(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return mapValue(fieldMap, function (fieldConfig, fieldName) {
     !('resolve' in fieldConfig) || devAssert(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but Input Types cannot define resolvers."));
