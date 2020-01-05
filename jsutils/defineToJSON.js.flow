@@ -12,6 +12,8 @@ export default function defineToJSON(
 ): void {
   classObject.prototype.toJSON = fn;
   classObject.prototype.inspect = fn;
+
+  /* istanbul ignore else (See: https://github.com/graphql/graphql-js/issues/2317) */
   if (nodejsCustomInspectSymbol) {
     classObject.prototype[nodejsCustomInspectSymbol] = fn;
   }

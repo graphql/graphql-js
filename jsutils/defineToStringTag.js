@@ -19,6 +19,7 @@ exports.default = defineToStringTag;
  * for example.
  */
 function defineToStringTag(classObject) {
+  /* istanbul ignore else (See: https://github.com/graphql/graphql-js/issues/2317) */
   if (typeof Symbol === 'function' && Symbol.toStringTag) {
     Object.defineProperty(classObject.prototype, Symbol.toStringTag, {
       get: function get() {

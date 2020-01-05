@@ -198,7 +198,11 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       writable: true,
       configurable: true,
     });
-  } else if (Error.captureStackTrace) {
+    return;
+  }
+
+  /* istanbul ignore next (See: https://github.com/graphql/graphql-js/issues/2317) */
+  if (Error.captureStackTrace) {
     Error.captureStackTrace(this, GraphQLError);
   } else {
     Object.defineProperty(this, 'stack', {

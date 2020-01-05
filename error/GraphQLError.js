@@ -125,7 +125,12 @@ message, nodes, source, positions, path, originalError, extensions) {
       writable: true,
       configurable: true
     });
-  } else if (Error.captureStackTrace) {
+    return;
+  }
+  /* istanbul ignore next (See: https://github.com/graphql/graphql-js/issues/2317) */
+
+
+  if (Error.captureStackTrace) {
     Error.captureStackTrace(this, GraphQLError);
   } else {
     Object.defineProperty(this, 'stack', {

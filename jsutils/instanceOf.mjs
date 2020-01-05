@@ -4,7 +4,9 @@
  */
 // See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
 // See: https://webpack.js.org/guides/production/
-export default process.env.NODE_ENV === 'production' ? // eslint-disable-next-line no-shadow
+export default process.env.NODE_ENV === 'production' ?
+/* istanbul ignore next (See: https://github.com/graphql/graphql-js/issues/2317) */
+// eslint-disable-next-line no-shadow
 function instanceOf(value, constructor) {
   return value instanceof constructor;
 } : // eslint-disable-next-line no-shadow

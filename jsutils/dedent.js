@@ -24,7 +24,9 @@ function dedent(strings) {
     str += strings[i];
 
     if (i < (arguments.length <= 1 ? 0 : arguments.length - 1)) {
-      str += i + 1 < 1 || arguments.length <= i + 1 ? undefined : arguments[i + 1]; // interpolation
+      /* istanbul ignore next (ignore else inside Babel generated code) */
+      var value = i + 1 < 1 || arguments.length <= i + 1 ? undefined : arguments[i + 1];
+      str += value; // interpolation
     }
   }
 
