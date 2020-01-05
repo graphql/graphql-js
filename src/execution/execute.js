@@ -64,6 +64,7 @@ import { typeFromAST } from '../utilities/typeFromAST';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
 import objectValues from '../polyfills/objectValues';
+import objectEntries from '../polyfills/objectEntries';
 
 import {
   getVariableValues,
@@ -146,7 +147,8 @@ export type ExecutionArgs = {|
  * PromiseOrValue <ExecutionResult> for standard executions
  */
 class ResultResolver {
-  executionResults: Array<Promise<AsyncExecutionResult>>;
+  initialResult: Promise<AsyncExecutionResult> | void;
+  executionResults: ObjMap<Promise<AsyncExecutionResult>>;
   deferResults: ObjMap<{|
     path: Array<string | number>,
     label: string,
@@ -157,11 +159,11 @@ class ResultResolver {
   |}>;
 
   constructor() {
-    this.executionResults = [];
+    this.executionResults = Object.create(null);
     this.deferResults = Object.create(null);
   }
 
-  addDeferResolver(
+  addDeferredResult(
     path: Path | void,
     label: string,
     responseName: string,
@@ -178,15 +180,15 @@ class ResultResolver {
     this.deferResults[keyDeferResult] = deferResult;
   }
 
-  addDeferResults(exeContext: ExecutionContext) {
-    const deferResultsArray = objectValues(this.deferResults);
+  resolveResults(exeContext: ExecutionContext) {
+    const deferResultsArray = objectEntries(this.deferResults);
     this.deferResults = Object.create(null);
 
     // avoid multiple resolve for same responseName in same path
     const resultsResolver = Object.create({});
-    for (const deferResult of deferResultsArray) {
-      const resolveResult = (): Promise<AsyncExecutionResult> => {
-        const { label, path, resolvers } = deferResult;
+    for (const [keyDeferResult, deferResult] of deferResultsArray) {
+      const { label, path, resolvers } = deferResult;
+      const resolve = () => {
         const results = Object.create({});
         let containsPromise = false;
         resolvers.forEach(({ resolver, responseName }) => {
@@ -207,21 +209,22 @@ class ResultResolver {
         // If there are no promises, we can just return the object
         if (!containsPromise) {
           // deferred result must always be a Promise
-          return this.buildAsyncResponse(exeContext, Promise.resolve(results), {
-            label,
-            path,
-          });
+          return results;
         }
         // Otherwise, results is a map from field name to the result of resolving that
         // field, which is possibly a promise. Return a promise that will return this
         // same map, but with any promises replaced with the values they resolved to.
-        return this.buildAsyncResponse(exeContext, promiseForObject(results), {
-          label,
-          path,
-        });
+        return promiseForObject(results);
       };
 
-      this.executionResults.push(resolveResult());
+      this.executionResults[keyDeferResult] = this.buildAsyncResponse(
+        exeContext,
+        resolve(),
+        {
+          label,
+          path,
+        },
+      );
     }
   }
 
@@ -231,19 +234,20 @@ class ResultResolver {
    */
   buildAsyncResponse(
     exeContext: ExecutionContext,
-    data: Promise<ObjMap<mixed> | null>,
+    data: PromiseOrValue<ObjMap<mixed> | null>,
     iterable?: {|
       label?: string,
       path?: Array<string | number>,
     |},
   ): Promise<AsyncExecutionResult> {
-    return data.then(resolved => {
+    const result = isPromise(data) ? data : Promise.resolve(data);
+    return result.then(resolved => {
       const value =
         exeContext.errors.length === 0
           ? { data: resolved, ...iterable }
           : { errors: exeContext.errors, data: resolved, ...iterable };
       // defer results are added only after the parent's response has been resolved
-      this.addDeferResults(exeContext);
+      this.resolveResults(exeContext);
       return {
         value,
         done: false,
@@ -258,27 +262,16 @@ class ResultResolver {
   buildResponse(
     exeContext: ExecutionContext,
     data: PromiseOrValue<ObjMap<mixed> | null>,
-  ): PromiseOrValue<ExecutionResult> {
+  ): PromiseOrValue<AsyncIterable<Promise<ExecutionResult>> | ExecutionResult> {
     if (isPromise(data)) {
       return data.then(resolved => this.buildResponse(exeContext, resolved));
     }
-    return exeContext.errors.length === 0
-      ? { data }
-      : { errors: exeContext.errors, data };
-  }
-
-  getResult(
-    exeContext: ExecutionContext,
-    data: PromiseOrValue<ObjMap<mixed> | null>,
-  ): AsyncIterable<Promise<ExecutionResult>> | PromiseOrValue<ExecutionResult> {
     if (!Object.keys(this.deferResults).length) {
-      return this.buildResponse(exeContext, data);
+      return exeContext.errors.length === 0
+        ? { data }
+        : { errors: exeContext.errors, data };
     }
-    // deferred result must always be a Promise
-    const promiseData = isPromise(data) ? data : Promise.resolve(data);
-    this.executionResults.push(
-      this.buildAsyncResponse(exeContext, promiseData),
-    );
+    this.initialResult = this.buildAsyncResponse(exeContext, data);
     return this.getAsyncIterable();
   }
 
@@ -288,12 +281,28 @@ class ResultResolver {
       [$$asyncIterator]() {
         return {
           next() {
-            return (
-              self.executionResults.shift() ||
-              Promise.resolve({
-                done: true,
-              })
-            );
+            if (self.initialResult) {
+              return (
+                self.initialResult &&
+                self.initialResult.then(value => {
+                  self.initialResult = undefined;
+                  return value;
+                })
+              );
+            }
+            const promises = objectValues(self.executionResults);
+            if (promises.length === 0) {
+              return Promise.resolve({ value: undefined, done: true });
+            }
+            return Promise.race(promises)
+              .then(r => r)
+              .then(response => {
+                const { path, label } = response.value;
+                if (path) {
+                  delete self.executionResults[path.toString() + label];
+                }
+                return response;
+              });
           },
         };
       },
@@ -316,7 +325,7 @@ class ResultResolver {
 declare function execute(
   ExecutionArgs,
   ..._: []
-): AsyncIterable<Promise<ExecutionResult>> | PromiseOrValue<ExecutionResult>;
+): PromiseOrValue<AsyncIterable<Promise<ExecutionResult>> | ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function execute(
   schema: GraphQLSchema,
@@ -327,7 +336,7 @@ declare function execute(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
-): AsyncIterable<Promise<ExecutionResult>> | PromiseOrValue<ExecutionResult>;
+): PromiseOrValue<AsyncIterable<Promise<ExecutionResult>> | ExecutionResult>;
 export function execute(
   argsOrSchema,
   document,
@@ -356,7 +365,7 @@ export function execute(
 
 function executeImpl(
   args: ExecutionArgs,
-): AsyncIterable<Promise<ExecutionResult>> | PromiseOrValue<ExecutionResult> {
+): PromiseOrValue<AsyncIterable<Promise<ExecutionResult>> | ExecutionResult> {
   const {
     schema,
     document,
@@ -397,7 +406,7 @@ function executeImpl(
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
   const data = executeOperation(exeContext, exeContext.operation, rootValue);
-  return exeContext.resultResolver.getResult(exeContext, data);
+  return exeContext.resultResolver.buildResponse(exeContext, data);
 }
 
 /**
@@ -613,10 +622,10 @@ function executeFields(
     const resolve = () =>
       resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
 
-    const result = every ? null : resolve();
+    const result = every ? undefined : resolve();
 
     for (const label of deferLabels) {
-      exeContext.resultResolver.addDeferResolver(
+      exeContext.resultResolver.addDeferredResult(
         path,
         label,
         responseName,

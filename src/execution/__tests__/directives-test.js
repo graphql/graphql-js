@@ -22,13 +22,19 @@ class Data {
   }
 }
 
+function delay(t, v) {
+  return new Promise(function(resolve) {
+    setTimeout(resolve.bind(null, v), t);
+  });
+}
+
 const DataType = new GraphQLObjectType({
   name: 'DataType',
   fields: {
     d: {
       type: GraphQLString,
       resolve(obj) {
-        return Promise.resolve(obj.d);
+        return delay(5).then(() => obj.d);
       },
     },
     e: {
@@ -59,7 +65,7 @@ const rootValue = {
     return 'b';
   },
   c() {
-    return new Data('d');
+    return Promise.resolve(new Data('d'));
   },
 };
 
@@ -180,7 +186,7 @@ describe('Execute: handles directives', () => {
 
     describe('defer fragment spread', () => {
       it('without if', async () => {
-        const result = executeTestQuery(`
+        const result = await executeTestQuery(`
         query {
           a
           ...Frag @defer(label: "Frag_b_defer")
@@ -197,7 +203,7 @@ describe('Execute: handles directives', () => {
 
         expect(results.length).to.equal(2);
         expect(results[0]).to.deep.equal({
-          data: { a: 'a', b: null },
+          data: { a: 'a' },
         });
         expect(results[1]).to.deep.equal({
           data: { b: 'b' },
@@ -207,7 +213,7 @@ describe('Execute: handles directives', () => {
       });
 
       it('if true', async () => {
-        const result = executeTestQuery(`
+        const result = await executeTestQuery(`
         query {
           a
           ...Frag @defer(if: true, label: "Frag_b_defer")
@@ -225,7 +231,7 @@ describe('Execute: handles directives', () => {
 
         expect(results.length).to.equal(2);
         expect(results[0]).to.deep.equal({
-          data: { a: 'a', b: null },
+          data: { a: 'a' },
         });
         expect(results[1]).to.deep.equal({
           data: { b: 'b' },
@@ -235,7 +241,7 @@ describe('Execute: handles directives', () => {
       });
 
       it('if false', async () => {
-        const result = executeTestQuery(`
+        const result = await executeTestQuery(`
         query {
           a
           ...Frag @defer(if: false, label: "Frag_b_defer")
@@ -252,7 +258,7 @@ describe('Execute: handles directives', () => {
       });
       describe('defer fragment spread with DataType', () => {
         it('without defer', async () => {
-          const result = executeTestQuery(`
+          const result = await executeTestQuery(`
             query {
               a
               ...Frag
@@ -279,7 +285,7 @@ describe('Execute: handles directives', () => {
         });
 
         it('if false not defer', async () => {
-          const result = executeTestQuery(`
+          const result = await executeTestQuery(`
             query {
               a
               ...Frag @defer(if: false, label: "Frag_c_defer")
@@ -305,7 +311,7 @@ describe('Execute: handles directives', () => {
           });
         });
         it('two fragments with two field equals', async () => {
-          const result = executeTestQuery(`
+          const result = await executeTestQuery(`
             query {
               a
               ...Frag @defer(if: true, label: "Frag_c_defer")
@@ -333,14 +339,11 @@ describe('Execute: handles directives', () => {
 
           expect(results.length).to.equal(4);
           expect(results[0]).to.deep.equal({
-            data: { a: 'a', c: null },
+            data: { a: 'a' },
           });
           expect(results[1]).to.deep.equal({
             data: {
-              c: {
-                d: null,
-                e: null,
-              },
+              c: {},
             },
             label: 'Frag_c_defer',
             path: [],
@@ -357,8 +360,58 @@ describe('Execute: handles directives', () => {
           });
         });
 
+        it('race condition', async () => {
+          const result = await executeTestQuery(`
+            query {
+              a
+              ...Frag @defer(if: true, label: "Frag_c_defer")
+            }
+            fragment Frag on TestType {
+              c {
+                ...FragData @defer(if: true, label: "FragData_d_defer")
+                ...FragDeData @defer(if: true, label: "FragDeData_de_defer")
+              }
+            }
+            fragment FragData on DataType {
+              d
+            }
+            fragment FragDeData on DataType {
+              e
+            }
+          `);
+          expect(isAsyncIterable(result)).to.equal(true);
+
+          const results = [];
+          await forAwaitEach(((result: any): AsyncIterable<mixed>), value => {
+            results.push(value);
+          });
+
+          expect(results.length).to.equal(4);
+          expect(results[0]).to.deep.equal({
+            data: { a: 'a' },
+          });
+          expect(results[1]).to.deep.equal({
+            data: {
+              c: {},
+            },
+            label: 'Frag_c_defer',
+            path: [],
+          });
+
+          expect(results[2]).to.deep.equal({
+            data: { e: 'e' },
+            label: 'FragDeData_de_defer',
+            path: ['c'],
+          });
+          expect(results[3]).to.deep.equal({
+            data: { d: 'd' },
+            label: 'FragData_d_defer',
+            path: ['c'],
+          });
+        });
+
         it('with two equals fragments', async () => {
-          const result = executeTestQuery(`
+          const result = await executeTestQuery(`
             query {
               a
               ...Frag @defer(if: true, label: "Frag_c_defer")
@@ -385,13 +438,11 @@ describe('Execute: handles directives', () => {
 
           expect(results.length).to.equal(4);
           expect(results[0]).to.deep.equal({
-            data: { a: 'a', c: null },
+            data: { a: 'a' },
           });
           expect(results[1]).to.deep.equal({
             data: {
-              c: {
-                d: null,
-              },
+              c: {},
             },
             label: 'Frag_c_defer',
             path: [],
@@ -409,7 +460,7 @@ describe('Execute: handles directives', () => {
         });
 
         it('mixed if true & if false', async () => {
-          const result = executeTestQuery(`
+          const result = await executeTestQuery(`
             query {
               a
               ...Frag @defer(if: true, label: "Frag_c_defer")
@@ -432,7 +483,7 @@ describe('Execute: handles directives', () => {
 
           expect(results.length).to.equal(2);
           expect(results[0]).to.deep.equal({
-            data: { a: 'a', c: null },
+            data: { a: 'a' },
           });
           expect(results[1]).to.deep.equal({
             data: {
@@ -444,7 +495,7 @@ describe('Execute: handles directives', () => {
         });
 
         it('mixed if false & if true', async () => {
-          const result = executeTestQuery(`
+          const result = await executeTestQuery(`
             query {
               a
               ...Frag @defer(if: false, label: "Frag_c_defer")
@@ -469,9 +520,7 @@ describe('Execute: handles directives', () => {
           expect(results[0]).to.deep.equal({
             data: {
               a: 'a',
-              c: {
-                d: null,
-              },
+              c: {},
             },
           });
           expect(results[1]).to.deep.equal({
@@ -482,7 +531,7 @@ describe('Execute: handles directives', () => {
         });
 
         it('if true', async () => {
-          const result = executeTestQuery(`
+          const result = await executeTestQuery(`
             query {
               a
               ...Frag @defer(if: true, label: "Frag_c_defer")
@@ -505,13 +554,11 @@ describe('Execute: handles directives', () => {
 
           expect(results.length).to.equal(3);
           expect(results[0]).to.deep.equal({
-            data: { a: 'a', c: null },
+            data: { a: 'a' },
           });
           expect(results[1]).to.deep.equal({
             data: {
-              c: {
-                d: null,
-              },
+              c: {},
             },
             label: 'Frag_c_defer',
             path: [],
@@ -586,7 +633,7 @@ describe('Execute: handles directives', () => {
 
     describe('defer on inline fragment', () => {
       it('without if', async () => {
-        const result = executeTestQuery(`
+        const result = await executeTestQuery(`
         query {
           a
           ... on TestType @defer(label: "Frag_b_defer") {
@@ -602,7 +649,7 @@ describe('Execute: handles directives', () => {
 
         expect(results.length).to.equal(2);
         expect(results[0]).to.deep.equal({
-          data: { a: 'a', b: null },
+          data: { a: 'a' },
         });
         expect(results[1]).to.deep.equal({
           data: { b: 'b' },
@@ -612,7 +659,7 @@ describe('Execute: handles directives', () => {
       });
 
       it('if true', async () => {
-        const result = executeTestQuery(`
+        const result = await executeTestQuery(`
         query {
           a
           ... on TestType @defer(label: "Frag_b_defer") {
@@ -629,7 +676,7 @@ describe('Execute: handles directives', () => {
 
         expect(results.length).to.equal(2);
         expect(results[0]).to.deep.equal({
-          data: { a: 'a', b: null },
+          data: { a: 'a' },
         });
         expect(results[1]).to.deep.equal({
           data: { b: 'b' },
@@ -639,7 +686,7 @@ describe('Execute: handles directives', () => {
       });
 
       it('if true DataType', async () => {
-        const result = executeTestQuery(`
+        const result = await executeTestQuery(`
             query {
               a
               ... on TestType @defer(if: true, label: "Frag_c_defer") {
@@ -660,13 +707,11 @@ describe('Execute: handles directives', () => {
 
         expect(results.length).to.equal(3);
         expect(results[0]).to.deep.equal({
-          data: { a: 'a', c: null },
+          data: { a: 'a' },
         });
         expect(results[1]).to.deep.equal({
           data: {
-            c: {
-              d: null,
-            },
+            c: {},
           },
           label: 'Frag_c_defer',
           path: [],

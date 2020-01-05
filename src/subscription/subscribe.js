@@ -4,6 +4,7 @@ import { isAsyncIterable } from 'iterall';
 
 import inspect from '../jsutils/inspect';
 import { addPath, pathToArray } from '../jsutils/Path';
+import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
@@ -161,7 +162,9 @@ function subscribeImpl(
     isAsyncIterable(resultOrStream)
       ? mapAsyncIterator(
           ((resultOrStream: any): AsyncIterable<mixed>),
-          mapSourceToResponse,
+          ((mapSourceToResponse: any): (
+            payload: any,
+          ) => PromiseOrValue<ExecutionResult>),
           reportGraphQLError,
         )
       : ((resultOrStream: any): ExecutionResult),
