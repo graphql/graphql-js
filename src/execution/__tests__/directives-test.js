@@ -23,9 +23,7 @@ class Data {
 }
 
 function delay(t, v) {
-  return new Promise(function(resolve) {
-    setTimeout(resolve.bind(null, v), t);
-  });
+  return new Promise(resolve => setTimeout(resolve.bind(null, v), t));
 }
 
 const DataType = new GraphQLObjectType({

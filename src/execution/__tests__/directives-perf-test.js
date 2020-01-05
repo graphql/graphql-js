@@ -1,7 +1,7 @@
 // @flow strict
 
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { it } from 'mocha';
 
 import { parse } from '../../language/parser';
 
@@ -39,13 +39,13 @@ function executeTestQuery(query) {
   return execute({ schema, document, rootValue });
 }
 
-it('perfomance test, if the same field is deferred several times, its resolve is called only once', async () => {
+it('performance test, if the same field is deferred several times, its resolve is called only once', async () => {
   const index = 100;
   let fragString = '';
   let fragElementString = '';
   for (const i of Array.from(Array(index).keys())) {
     fragString += `
-    ...Frag${i} @defer(label: \"Frag_b_defer${i}\")
+    ...Frag${i} @defer(label: "Frag_b_defer${i}")
     `;
     fragElementString += `
     fragment Frag${i} on TestType {
