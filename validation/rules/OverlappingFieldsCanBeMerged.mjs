@@ -407,7 +407,7 @@ function sameArguments(arguments1, arguments2) {
 }
 
 function sameValue(value1, value2) {
-  return !value1 && !value2 || print(value1) === print(value2);
+  return print(value1) === print(value2);
 } // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.
