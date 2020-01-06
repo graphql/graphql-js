@@ -293,7 +293,7 @@ const queryType = new GraphQLObjectType({
  * Finally, we construct our schema (whose starting query type is the query
  * type we defined above) and export it.
  */
-export const StarWarsSchema = new GraphQLSchema({
+export const StarWarsSchema: GraphQLSchema = new GraphQLSchema({
   query: queryType,
   types: [humanType, droidType],
 });
