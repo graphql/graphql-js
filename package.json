@@ -23,7 +23,7 @@
     "node": ">= 10.x"
   },
   "dependencies": {
-    "iterall": "^1.2.2"
+    "iterall": "^1.3.0"
   },
   "publishConfig": {
     "tag": "alpha"
