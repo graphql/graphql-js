@@ -10,14 +10,12 @@ import suggestionList from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import { type ValueNode } from '../../language/ast';
 import { type ASTVisitor } from '../../language/visitor';
 
 import {
-  isScalarType,
-  isEnumType,
+  isLeafType,
   isInputObjectType,
   isListType,
   isNonNullType,
@@ -115,23 +113,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
 
   const type = getNamedType(locationType);
 
-  if (isEnumType(type)) {
-    if (node.kind !== Kind.ENUM || !type.getValue(node.value)) {
-      const allNames = type.getValues().map(value => value.name);
-      const suggestedValues = suggestionList(print(node), allNames);
-
-      context.reportError(
-        new GraphQLError(
-          `Expected value of type "${type.name}", found ${print(node)}.` +
-            didYouMean('the enum value', suggestedValues),
-          node,
-        ),
-      );
-    }
-    return;
-  }
-
-  if (!isScalarType(type)) {
+  if (!isLeafType(type)) {
     const typeStr = inspect(locationType);
     context.reportError(
       new GraphQLError(

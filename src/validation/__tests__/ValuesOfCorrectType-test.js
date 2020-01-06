@@ -464,7 +464,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected value of type "DogCommand", found 2.',
+          message: 'Enum "DogCommand" cannot represent non-enum value: 2.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -479,7 +479,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected value of type "DogCommand", found 1.0.',
+          message: 'Enum "DogCommand" cannot represent non-enum value: 1.0.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -495,7 +495,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Expected value of type "DogCommand", found "SIT". Did you mean the enum value "SIT"?',
+            'Enum "DogCommand" cannot represent non-enum value: "SIT". Did you mean the enum value "SIT"?',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -510,7 +510,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected value of type "DogCommand", found true.',
+          message: 'Enum "DogCommand" cannot represent non-enum value: true.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -525,7 +525,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected value of type "DogCommand", found JUGGLE.',
+          message: 'Value "JUGGLE" does not exist in "DogCommand" enum.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -541,7 +541,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Expected value of type "DogCommand", found sit. Did you mean the enum value "SIT"?',
+            'Value "sit" does not exist in "DogCommand" enum. Did you mean the enum value "SIT"?',
           locations: [{ line: 4, column: 41 }],
         },
       ]);

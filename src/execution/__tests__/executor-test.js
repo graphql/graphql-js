@@ -14,6 +14,7 @@ import { GraphQLInt, GraphQLBoolean, GraphQLString } from '../../type/scalars';
 import {
   GraphQLList,
   GraphQLNonNull,
+  GraphQLScalarType,
   GraphQLInterfaceType,
   GraphQLObjectType,
 } from '../../type/definition';
@@ -1061,6 +1062,39 @@ describe('Execute: Handles basic execution tasks', () => {
     const contextValue = { async: true };
     const asyncResult = execute({ schema, document, rootValue, contextValue });
     expect(asyncResult).to.deep.equal(asyncResult);
+  });
+
+  it('fails when serialize of custom scalar does not return a value', () => {
+    const customScalar = new GraphQLScalarType({
+      name: 'CustomScalar',
+      serialize() {
+        /* returns nothing */
+      },
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          customScalar: {
+            type: customScalar,
+            resolve: () => 'CUSTOM_VALUE',
+          },
+        },
+      }),
+    });
+
+    const result = execute({ schema, document: parse('{ customScalar }') });
+    expect(result).to.deep.equal({
+      data: { customScalar: null },
+      errors: [
+        {
+          message:
+            'Expected a value of type "CustomScalar" but received: "CUSTOM_VALUE"',
+          locations: [{ line: 1, column: 3 }],
+          path: ['customScalar'],
+        },
+      ],
+    });
   });
 
   it('executes ignoring invalid non-executable definitions', () => {
