@@ -219,10 +219,14 @@ describe('astFromValue', () => {
     });
 
     // Note: case sensitive
-    expect(astFromValue('hello', myEnum)).to.deep.equal(null);
+    expect(() => astFromValue('hello', myEnum)).to.throw(
+      'Enum "MyEnum" cannot represent value: "hello"',
+    );
 
     // Note: Not a valid enum value
-    expect(astFromValue('VALUE', myEnum)).to.deep.equal(null);
+    expect(() => astFromValue('UNKNOWN_VALUE', myEnum)).to.throw(
+      'Enum "MyEnum" cannot represent value: "UNKNOWN_VALUE"',
+    );
   });
 
   it('converts array values to List ASTs', () => {

@@ -150,7 +150,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected value of type "Color", found "GREEN". Did you mean the enum value "GREEN"?',
+            'Enum "Color" cannot represent non-enum value: "GREEN". Did you mean the enum value "GREEN"?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -164,7 +164,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected value of type "Color", found GREENISH. Did you mean the enum value "GREEN"?',
+            'Value "GREENISH" does not exist in "Color" enum. Did you mean the enum value "GREEN"?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -178,7 +178,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected value of type "Color", found green. Did you mean the enum value "GREEN"?',
+            'Value "green" does not exist in "Color" enum. Did you mean the enum value "GREEN"?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -192,7 +192,7 @@ describe('Type System: Enum Values', () => {
       data: { colorEnum: null },
       errors: [
         {
-          message: 'Expected a value of type "Color" but received: "GREEN"',
+          message: 'Enum "Color" cannot represent value: "GREEN"',
           locations: [{ line: 1, column: 3 }],
           path: ['colorEnum'],
         },
@@ -206,7 +206,7 @@ describe('Type System: Enum Values', () => {
     expect(result).to.deep.equal({
       errors: [
         {
-          message: 'Expected value of type "Color", found 1.',
+          message: 'Enum "Color" cannot represent non-enum value: 1.',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -262,7 +262,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Variable "$color" got invalid value 2; Expected type "Color".',
+            'Variable "$color" got invalid value 2; Enum "Color" cannot represent non-string value: 2.',
           locations: [{ line: 1, column: 8 }],
         },
       ],
@@ -390,7 +390,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected a value of type "Complex" but received: { someRandomValue: 123 }',
+            'Enum "Complex" cannot represent value: { someRandomValue: 123 }',
           locations: [{ line: 6, column: 9 }],
           path: ['bad'],
         },

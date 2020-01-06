@@ -13,8 +13,7 @@ import { type ValueNode } from '../language/ast';
 
 import {
   type GraphQLInputType,
-  isScalarType,
-  isEnumType,
+  isLeafType,
   isInputObjectType,
   isListType,
   isNonNullType,
@@ -133,18 +132,7 @@ export function valueFromAST(
     return coercedObj;
   }
 
-  if (isEnumType(type)) {
-    if (valueNode.kind !== Kind.ENUM) {
-      return; // Invalid: intentionally return no value.
-    }
-    const enumValue = type.getValue(valueNode.value);
-    if (!enumValue) {
-      return; // Invalid: intentionally return no value.
-    }
-    return enumValue.value;
-  }
-
-  if (isScalarType(type)) {
+  if (isLeafType(type)) {
     // Scalars fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
     // no value is returned.
@@ -154,7 +142,7 @@ export function valueFromAST(
     } catch (_error) {
       return; // Invalid: intentionally return no value.
     }
-    if (isInvalid(result)) {
+    if (result === undefined) {
       return; // Invalid: intentionally return no value.
     }
     return result;
