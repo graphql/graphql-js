@@ -30,13 +30,13 @@ signature-verification-failure=error
 implicit-inexact-object=error
 ambiguous-object-type=error
 uninitialized-instance-property=error
-non-array-spread=error
 
 [options]
 include_warnings=true
 module.use_strict=true
+babel_loose_array_spread=true
 suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)?)\\)
 suppress_comment=\\(.\\|\n\\)*\\$DisableFlowOnNegativeTest
 
 [version]
-^0.114.0
+^0.115.0
