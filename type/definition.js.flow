@@ -609,8 +609,14 @@ export class GraphQLScalarType {
 defineToStringTag(GraphQLScalarType);
 defineToJSON(GraphQLScalarType);
 
-export type GraphQLScalarSerializer<TExternal> = (value: mixed) => ?TExternal;
-export type GraphQLScalarValueParser<TInternal> = (value: mixed) => ?TInternal;
+export type GraphQLScalarSerializer<TExternal> = (
+  outputValue: mixed,
+) => ?TExternal;
+
+export type GraphQLScalarValueParser<TInternal> = (
+  inputValue: mixed,
+) => ?TInternal;
+
 export type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
   variables: ?ObjMap<mixed>,
@@ -1226,16 +1232,16 @@ export class GraphQLEnumType /* <T> */ {
     return this._nameLookup[name];
   }
 
-  serialize(value: mixed /* T */): ?string {
-    const enumValue = this._valueLookup.get(value);
+  serialize(outputValue: mixed /* T */): ?string {
+    const enumValue = this._valueLookup.get(outputValue);
     if (enumValue) {
       return enumValue.name;
     }
   }
 
-  parseValue(value: mixed): ?any /* T */ {
-    if (typeof value === 'string') {
-      const enumValue = this.getValue(value);
+  parseValue(inputValue: mixed): ?any /* T */ {
+    if (typeof inputValue === 'string') {
+      const enumValue = this.getValue(inputValue);
       if (enumValue) {
         return enumValue.value;
       }

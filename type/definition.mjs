@@ -788,19 +788,19 @@ function () {
     return this._nameLookup[name];
   };
 
-  _proto5.serialize = function serialize(value) {
-    var enumValue = this._valueLookup.get(value);
+  _proto5.serialize = function serialize(outputValue) {
+    var enumValue = this._valueLookup.get(outputValue);
 
     if (enumValue) {
       return enumValue.name;
     }
   };
 
-  _proto5.parseValue = function parseValue(value)
+  _proto5.parseValue = function parseValue(inputValue)
   /* T */
   {
-    if (typeof value === 'string') {
-      var enumValue = this.getValue(value);
+    if (typeof inputValue === 'string') {
+      var enumValue = this.getValue(inputValue);
 
       if (enumValue) {
         return enumValue.value;
