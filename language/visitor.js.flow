@@ -48,7 +48,7 @@ export type VisitorKeyMap<KindToNode> = $ObjMap<
   <T>(T) => $ReadOnlyArray<$Keys<T>>,
 >;
 
-export const QueryDocumentKeys = {
+export const QueryDocumentKeys: VisitorKeyMap<ASTKindToNode> = {
   Name: [],
 
   Document: ['definitions'],
@@ -135,7 +135,7 @@ export const QueryDocumentKeys = {
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
 
-export const BREAK = Object.freeze({});
+export const BREAK: { ... } = Object.freeze({});
 
 /**
  * visit() will walk through an AST using a depth first traversal, calling
@@ -363,7 +363,7 @@ export function visitInParallel(
   return {
     enter(node) {
       for (let i = 0; i < visitors.length; i++) {
-        if (!skipping[i]) {
+        if (skipping[i] == null) {
           const fn = getVisitFn(visitors[i], node.kind, /* isLeaving */ false);
           if (fn) {
             const result = fn.apply(visitors[i], arguments);
@@ -380,7 +380,7 @@ export function visitInParallel(
     },
     leave(node) {
       for (let i = 0; i < visitors.length; i++) {
-        if (!skipping[i]) {
+        if (skipping[i] == null) {
           const fn = getVisitFn(visitors[i], node.kind, /* isLeaving */ true);
           if (fn) {
             const result = fn.apply(visitors[i], arguments);

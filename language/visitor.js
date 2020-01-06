@@ -312,7 +312,7 @@ function visitInParallel(visitors) {
   return {
     enter: function enter(node) {
       for (var i = 0; i < visitors.length; i++) {
-        if (!skipping[i]) {
+        if (skipping[i] == null) {
           var fn = getVisitFn(visitors[i], node.kind,
           /* isLeaving */
           false);
@@ -333,7 +333,7 @@ function visitInParallel(visitors) {
     },
     leave: function leave(node) {
       for (var i = 0; i < visitors.length; i++) {
-        if (!skipping[i]) {
+        if (skipping[i] == null) {
           var fn = getVisitFn(visitors[i], node.kind,
           /* isLeaving */
           true);
