@@ -57,7 +57,7 @@
     "dtslint": "2.0.2",
     "eslint": "6.8.0",
     "eslint-plugin-flowtype": "4.5.2",
-    "flow-bin": "0.114.0",
+    "flow-bin": "0.115.0",
     "mocha": "6.2.2",
     "nyc": "15.0.0",
     "prettier": "1.19.1"
