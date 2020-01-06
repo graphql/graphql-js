@@ -4,7 +4,7 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import { Kind } from '../language/kinds';
-import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
+import { isLeafType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -142,22 +142,8 @@ export function valueFromAST(valueNode, type, variables) {
     return coercedObj;
   }
 
-  if (isEnumType(type)) {
-    if (valueNode.kind !== Kind.ENUM) {
-      return; // Invalid: intentionally return no value.
-    }
-
-    var enumValue = type.getValue(valueNode.value);
-
-    if (!enumValue) {
-      return; // Invalid: intentionally return no value.
-    }
-
-    return enumValue.value;
-  }
-
   /* istanbul ignore else */
-  if (isScalarType(type)) {
+  if (isLeafType(type)) {
     // Scalars fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
     // no value is returned.
@@ -169,7 +155,7 @@ export function valueFromAST(valueNode, type, variables) {
       return; // Invalid: intentionally return no value.
     }
 
-    if (isInvalid(result)) {
+    if (result === undefined) {
       return; // Invalid: intentionally return no value.
     }
 

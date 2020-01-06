@@ -8,7 +8,7 @@ import suggestionList from '../jsutils/suggestionList';
 import printPathArray from '../jsutils/printPathArray';
 import { addPath, pathToArray } from '../jsutils/Path';
 import { GraphQLError } from '../error/GraphQLError';
-import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
+import { isLeafType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
@@ -99,7 +99,8 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     return _coercedValue;
   }
 
-  if (isScalarType(type)) {
+  /* istanbul ignore else */
+  if (isLeafType(type)) {
     var parseResult; // Scalars determine if a input value is valid via parseValue(), which can
     // throw to indicate failure. If it throws, maintain a reference to
     // the original error.
@@ -121,24 +122,6 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     }
 
     return parseResult;
-  }
-
-  /* istanbul ignore else */
-  if (isEnumType(type)) {
-    if (typeof inputValue === 'string') {
-      var enumValue = type.getValue(inputValue);
-
-      if (enumValue) {
-        return enumValue.value;
-      }
-    }
-
-    var _suggestions = suggestionList(String(inputValue), type.getValues().map(function (enumValue) {
-      return enumValue.name;
-    }));
-
-    onError(pathToArray(path), inputValue, new GraphQLError("Expected type \"".concat(type.name, "\".") + didYouMean('the enum value', _suggestions)));
-    return;
   } // Not reachable. All possible input types have been considered.
 
 

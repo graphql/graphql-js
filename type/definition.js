@@ -62,15 +62,23 @@ var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
+var _didYouMean = _interopRequireDefault(require("../jsutils/didYouMean"));
+
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
 
 var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc"));
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
+var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
+
 var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
 
 var _kinds = require("../language/kinds");
+
+var _printer = require("../language/printer");
+
+var _GraphQLError = require("../error/GraphQLError");
 
 var _valueFromASTUntyped = require("../utilities/valueFromASTUntyped");
 
@@ -902,34 +910,48 @@ function () {
   _proto5.serialize = function serialize(outputValue) {
     var enumValue = this._valueLookup.get(outputValue);
 
-    if (enumValue) {
-      return enumValue.name;
+    if (enumValue === undefined) {
+      throw new _GraphQLError.GraphQLError("Enum \"".concat(this.name, "\" cannot represent value: ").concat((0, _inspect.default)(outputValue)));
     }
+
+    return enumValue.name;
   };
 
   _proto5.parseValue = function parseValue(inputValue)
   /* T */
   {
-    if (typeof inputValue === 'string') {
-      var enumValue = this.getValue(inputValue);
-
-      if (enumValue) {
-        return enumValue.value;
-      }
+    if (typeof inputValue !== 'string') {
+      var valueStr = (0, _inspect.default)(inputValue);
+      throw new _GraphQLError.GraphQLError("Enum \"".concat(this.name, "\" cannot represent non-string value: ").concat(valueStr, ".") + didYouMeanEnumValue(this, valueStr));
     }
+
+    var enumValue = this.getValue(inputValue);
+
+    if (enumValue == null) {
+      throw new _GraphQLError.GraphQLError("Value \"".concat(inputValue, "\" does not exist in \"").concat(this.name, "\" enum.") + didYouMeanEnumValue(this, inputValue));
+    }
+
+    return enumValue.value;
   };
 
   _proto5.parseLiteral = function parseLiteral(valueNode, _variables)
   /* T */
   {
     // Note: variables will be resolved to a value before calling this function.
-    if (valueNode.kind === _kinds.Kind.ENUM) {
-      var enumValue = this.getValue(valueNode.value);
-
-      if (enumValue) {
-        return enumValue.value;
-      }
+    if (valueNode.kind !== _kinds.Kind.ENUM) {
+      var valueStr = (0, _printer.print)(valueNode);
+      throw new _GraphQLError.GraphQLError("Enum \"".concat(this.name, "\" cannot represent non-enum value: ").concat(valueStr, ".") + didYouMeanEnumValue(this, valueStr), valueNode);
     }
+
+    var enumValue = this.getValue(valueNode.value);
+
+    if (enumValue == null) {
+      var _valueStr = (0, _printer.print)(valueNode);
+
+      throw new _GraphQLError.GraphQLError("Value \"".concat(_valueStr, "\" does not exist in \"").concat(this.name, "\" enum.") + didYouMeanEnumValue(this, _valueStr), valueNode);
+    }
+
+    return enumValue.value;
   };
 
   _proto5.toConfig = function toConfig() {
@@ -965,6 +987,14 @@ function () {
 exports.GraphQLEnumType = GraphQLEnumType;
 (0, _defineToStringTag.default)(GraphQLEnumType);
 (0, _defineToJSON.default)(GraphQLEnumType);
+
+function didYouMeanEnumValue(enumType, unknownValueStr) {
+  var allNames = enumType.getValues().map(function (value) {
+    return value.name;
+  });
+  var suggestedValues = (0, _suggestionList.default)(unknownValueStr, allNames);
+  return (0, _didYouMean.default)('the enum value', suggestedValues);
+}
 
 function defineEnumValues(typeName, valueMap) {
   isPlainObj(valueMap) || (0, _devAssert.default)(0, "".concat(typeName, " values must be an object with value names as keys."));

@@ -5,9 +5,8 @@ import isInvalid from '../../jsutils/isInvalid';
 import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 import { GraphQLError } from '../../error/GraphQLError';
-import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
-import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType, isRequiredInputField, getNullableType, getNamedType } from '../../type/definition';
+import { isLeafType, isInputObjectType, isListType, isNonNullType, isRequiredInputField, getNullableType, getNamedType } from '../../type/definition';
 
 /**
  * Value literals of correct type
@@ -98,19 +97,7 @@ function isValidValueNode(context, node) {
 
   var type = getNamedType(locationType);
 
-  if (isEnumType(type)) {
-    if (node.kind !== Kind.ENUM || !type.getValue(node.value)) {
-      var allNames = type.getValues().map(function (value) {
-        return value.name;
-      });
-      var suggestedValues = suggestionList(print(node), allNames);
-      context.reportError(new GraphQLError("Expected value of type \"".concat(type.name, "\", found ").concat(print(node), ".") + didYouMean('the enum value', suggestedValues), node));
-    }
-
-    return;
-  }
-
-  if (!isScalarType(type)) {
+  if (!isLeafType(type)) {
     var typeStr = inspect(locationType);
     context.reportError(new GraphQLError("Expected value of type \"".concat(typeStr, "\", found ").concat(print(node), "."), node));
     return;

@@ -118,7 +118,8 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     return _coercedValue;
   }
 
-  if ((0, _definition.isScalarType)(type)) {
+  /* istanbul ignore else */
+  if ((0, _definition.isLeafType)(type)) {
     var parseResult; // Scalars determine if a input value is valid via parseValue(), which can
     // throw to indicate failure. If it throws, maintain a reference to
     // the original error.
@@ -140,24 +141,6 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     }
 
     return parseResult;
-  }
-
-  /* istanbul ignore else */
-  if ((0, _definition.isEnumType)(type)) {
-    if (typeof inputValue === 'string') {
-      var enumValue = type.getValue(inputValue);
-
-      if (enumValue) {
-        return enumValue.value;
-      }
-    }
-
-    var _suggestions = (0, _suggestionList.default)(String(inputValue), type.getValues().map(function (enumValue) {
-      return enumValue.name;
-    }));
-
-    onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\".") + (0, _didYouMean.default)('the enum value', _suggestions)));
-    return;
   } // Not reachable. All possible input types have been considered.
 
 

@@ -19,8 +19,6 @@ var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionLi
 
 var _GraphQLError = require("../../error/GraphQLError");
 
-var _kinds = require("../../language/kinds");
-
 var _printer = require("../../language/printer");
 
 var _definition = require("../../type/definition");
@@ -117,19 +115,7 @@ function isValidValueNode(context, node) {
 
   var type = (0, _definition.getNamedType)(locationType);
 
-  if ((0, _definition.isEnumType)(type)) {
-    if (node.kind !== _kinds.Kind.ENUM || !type.getValue(node.value)) {
-      var allNames = type.getValues().map(function (value) {
-        return value.name;
-      });
-      var suggestedValues = (0, _suggestionList.default)((0, _printer.print)(node), allNames);
-      context.reportError(new _GraphQLError.GraphQLError("Expected value of type \"".concat(type.name, "\", found ").concat((0, _printer.print)(node), ".") + (0, _didYouMean.default)('the enum value', suggestedValues), node));
-    }
-
-    return;
-  }
-
-  if (!(0, _definition.isScalarType)(type)) {
+  if (!(0, _definition.isLeafType)(type)) {
     var typeStr = (0, _inspect.default)(locationType);
     context.reportError(new _GraphQLError.GraphQLError("Expected value of type \"".concat(typeStr, "\", found ").concat((0, _printer.print)(node), "."), node));
     return;

@@ -15,8 +15,7 @@ import { type Path, addPath, pathToArray } from '../jsutils/Path';
 import { GraphQLError } from '../error/GraphQLError';
 import {
   type GraphQLInputType,
-  isScalarType,
-  isEnumType,
+  isLeafType,
   isInputObjectType,
   isListType,
   isNonNullType,
@@ -157,7 +156,7 @@ function coerceInputValueImpl(
     return coercedValue;
   }
 
-  if (isScalarType(type)) {
+  if (isLeafType(type)) {
     let parseResult;
 
     // Scalars determine if a input value is valid via parseValue(), which can
@@ -192,28 +191,6 @@ function coerceInputValueImpl(
       );
     }
     return parseResult;
-  }
-
-  if (isEnumType(type)) {
-    if (typeof inputValue === 'string') {
-      const enumValue = type.getValue(inputValue);
-      if (enumValue) {
-        return enumValue.value;
-      }
-    }
-    const suggestions = suggestionList(
-      String(inputValue),
-      type.getValues().map(enumValue => enumValue.name),
-    );
-    onError(
-      pathToArray(path),
-      inputValue,
-      new GraphQLError(
-        `Expected type "${type.name}".` +
-          didYouMean('the enum value', suggestions),
-      ),
-    );
-    return;
   }
 
   // Not reachable. All possible input types have been considered.

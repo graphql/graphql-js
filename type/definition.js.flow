@@ -10,9 +10,11 @@ import { type Path } from '../jsutils/Path';
 import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 import instanceOf from '../jsutils/instanceOf';
+import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import identityFunc from '../jsutils/identityFunc';
 import defineToJSON from '../jsutils/defineToJSON';
+import suggestionList from '../jsutils/suggestionList';
 import defineToStringTag from '../jsutils/defineToStringTag';
 import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 import {
@@ -22,6 +24,7 @@ import {
 } from '../jsutils/ObjMap';
 
 import { Kind } from '../language/kinds';
+import { print } from '../language/printer';
 import {
   type ScalarTypeDefinitionNode,
   type ObjectTypeDefinitionNode,
@@ -43,6 +46,8 @@ import {
   type FragmentDefinitionNode,
   type ValueNode,
 } from '../language/ast';
+
+import { GraphQLError } from '../error/GraphQLError';
 
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 
@@ -1234,28 +1239,54 @@ export class GraphQLEnumType /* <T> */ {
 
   serialize(outputValue: mixed /* T */): ?string {
     const enumValue = this._valueLookup.get(outputValue);
-    if (enumValue) {
-      return enumValue.name;
+    if (enumValue === undefined) {
+      throw new GraphQLError(
+        `Enum "${this.name}" cannot represent value: ${inspect(outputValue)}`,
+      );
     }
+    return enumValue.name;
   }
 
   parseValue(inputValue: mixed): ?any /* T */ {
-    if (typeof inputValue === 'string') {
-      const enumValue = this.getValue(inputValue);
-      if (enumValue) {
-        return enumValue.value;
-      }
+    if (typeof inputValue !== 'string') {
+      const valueStr = inspect(inputValue);
+      throw new GraphQLError(
+        `Enum "${this.name}" cannot represent non-string value: ${valueStr}.` +
+          didYouMeanEnumValue(this, valueStr),
+      );
     }
+
+    const enumValue = this.getValue(inputValue);
+    if (enumValue == null) {
+      throw new GraphQLError(
+        `Value "${inputValue}" does not exist in "${this.name}" enum.` +
+          didYouMeanEnumValue(this, inputValue),
+      );
+    }
+    return enumValue.value;
   }
 
   parseLiteral(valueNode: ValueNode, _variables: ?ObjMap<mixed>): ?any /* T */ {
     // Note: variables will be resolved to a value before calling this function.
-    if (valueNode.kind === Kind.ENUM) {
-      const enumValue = this.getValue(valueNode.value);
-      if (enumValue) {
-        return enumValue.value;
-      }
+    if (valueNode.kind !== Kind.ENUM) {
+      const valueStr = print(valueNode);
+      throw new GraphQLError(
+        `Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
+          didYouMeanEnumValue(this, valueStr),
+        valueNode,
+      );
     }
+
+    const enumValue = this.getValue(valueNode.value);
+    if (enumValue == null) {
+      const valueStr = print(valueNode);
+      throw new GraphQLError(
+        `Value "${valueStr}" does not exist in "${this.name}" enum.` +
+          didYouMeanEnumValue(this, valueStr),
+        valueNode,
+      );
+    }
+    return enumValue.value;
   }
 
   toConfig(): {|
@@ -1293,6 +1324,16 @@ export class GraphQLEnumType /* <T> */ {
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 defineToStringTag(GraphQLEnumType);
 defineToJSON(GraphQLEnumType);
+
+function didYouMeanEnumValue(
+  enumType: GraphQLEnumType,
+  unknownValueStr: string,
+): string {
+  const allNames = enumType.getValues().map(value => value.name);
+  const suggestedValues = suggestionList(unknownValueStr, allNames);
+
+  return didYouMean('the enum value', suggestedValues);
+}
 
 function defineEnumValues(
   typeName: string,

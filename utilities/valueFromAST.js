@@ -157,22 +157,8 @@ function valueFromAST(valueNode, type, variables) {
     return coercedObj;
   }
 
-  if ((0, _definition.isEnumType)(type)) {
-    if (valueNode.kind !== _kinds.Kind.ENUM) {
-      return; // Invalid: intentionally return no value.
-    }
-
-    var enumValue = type.getValue(valueNode.value);
-
-    if (!enumValue) {
-      return; // Invalid: intentionally return no value.
-    }
-
-    return enumValue.value;
-  }
-
   /* istanbul ignore else */
-  if ((0, _definition.isScalarType)(type)) {
+  if ((0, _definition.isLeafType)(type)) {
     // Scalars fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
     // no value is returned.
@@ -184,7 +170,7 @@ function valueFromAST(valueNode, type, variables) {
       return; // Invalid: intentionally return no value.
     }
 
-    if ((0, _isInvalid.default)(result)) {
+    if (result === undefined) {
       return; // Invalid: intentionally return no value.
     }
 
