@@ -52,6 +52,7 @@
     "@babel/preset-env": "7.6.2",
     "@babel/register": "7.6.2",
     "babel-eslint": "10.0.3",
+    "babel-plugin-add-import-extension": "^1.2.2",
     "chai": "4.2.0",
     "cspell": "4.0.44",
     "dtslint": "2.0.3",

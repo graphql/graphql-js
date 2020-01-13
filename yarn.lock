@@ -961,6 +961,11 @@ babel-eslint@10.0.3:
     eslint-visitor-keys "^1.0.0"
     resolve "^1.12.0"
 
+babel-plugin-add-import-extension@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/babel-plugin-add-import-extension/-/babel-plugin-add-import-extension-1.2.2.tgz#8c5f3b945c5b1650eb4d9acf7d63f0303e7e90e3"
+  integrity sha512-ynfkOe/kGKlYvqACoH6HeVDDoheHNw0l56bQRA1BE/f2bRPIZytB21/4DEDvUNzv+JJdpvC3kyc5m4qDJGIiYA==
+
 babel-plugin-dynamic-import-node@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-dynamic-import-node/-/babel-plugin-dynamic-import-node-2.3.0.tgz#f00f507bdaa3c3e3ff6e7e5e98d90a7acab96f7f"
