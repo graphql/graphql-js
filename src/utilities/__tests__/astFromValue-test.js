@@ -13,6 +13,7 @@ import {
 import {
   GraphQLList,
   GraphQLNonNull,
+  GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
 } from '../../type/definition';
@@ -191,6 +192,42 @@ describe('astFromValue', () => {
     expect(astFromValue(undefined, GraphQLID)).to.deep.equal(null);
   });
 
+  it('converts using serialize from a custom scalar type', () => {
+    const passthroughScalar = new GraphQLScalarType({
+      name: 'PassthroughScalar',
+      serialize(value) {
+        return value;
+      },
+    });
+
+    expect(astFromValue('value', passthroughScalar)).to.deep.equal({
+      kind: 'StringValue',
+      value: 'value',
+    });
+
+    const returnNullScalar = new GraphQLScalarType({
+      name: 'ReturnNullScalar',
+      serialize() {
+        return null;
+      },
+    });
+
+    expect(astFromValue('value', returnNullScalar)).to.equal(null);
+
+    class SomeClass {}
+
+    const returnCustomClassScalar = new GraphQLScalarType({
+      name: 'ReturnCustomClassScalar',
+      serialize() {
+        return new SomeClass();
+      },
+    });
+
+    expect(() => astFromValue('value', returnCustomClassScalar)).to.throw(
+      'Cannot convert value to AST: {}.',
+    );
+  });
+
   it('does not converts NonNull values to NullValue', () => {
     const NonNullBoolean = GraphQLNonNull(GraphQLBoolean);
     expect(astFromValue(null, NonNullBoolean)).to.deep.equal(null);
@@ -258,15 +295,30 @@ describe('astFromValue', () => {
     });
   });
 
-  it('converts input objects', () => {
-    const inputObj = new GraphQLInputObjectType({
-      name: 'MyInputObj',
-      fields: {
-        foo: { type: GraphQLFloat },
-        bar: { type: myEnum },
-      },
-    });
+  it('skip invalid list items', () => {
+    const ast = astFromValue(
+      ['FOO', null, 'BAR'],
+      GraphQLList(GraphQLNonNull(GraphQLString)),
+    );
 
+    expect(ast).to.deep.equal({
+      kind: 'ListValue',
+      values: [
+        { kind: 'StringValue', value: 'FOO' },
+        { kind: 'StringValue', value: 'BAR' },
+      ],
+    });
+  });
+
+  const inputObj = new GraphQLInputObjectType({
+    name: 'MyInputObj',
+    fields: {
+      foo: { type: GraphQLFloat },
+      bar: { type: myEnum },
+    },
+  });
+
+  it('converts input objects', () => {
     expect(astFromValue({ foo: 3, bar: 'HELLO' }, inputObj)).to.deep.equal({
       kind: 'ObjectValue',
       fields: [
@@ -285,14 +337,6 @@ describe('astFromValue', () => {
   });
 
   it('converts input objects with explicit nulls', () => {
-    const inputObj = new GraphQLInputObjectType({
-      name: 'MyInputObj',
-      fields: {
-        foo: { type: GraphQLFloat },
-        bar: { type: myEnum },
-      },
-    });
-
     expect(astFromValue({ foo: null }, inputObj)).to.deep.equal({
       kind: 'ObjectValue',
       fields: [
@@ -303,5 +347,9 @@ describe('astFromValue', () => {
         },
       ],
     });
+  });
+
+  it('does not converts non-object values as input objects', () => {
+    expect(astFromValue(5, inputObj)).to.equal(null);
   });
 });
