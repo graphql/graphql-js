@@ -1,4 +1,4 @@
-// TypeScript Version: 2.6
+// Minimum TypeScript Version: 2.6
 
 /**
  * GraphQL.js provides a reference implementation for the GraphQL specification
