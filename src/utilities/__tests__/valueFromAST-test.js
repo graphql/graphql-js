@@ -3,6 +3,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import invariant from '../../jsutils/invariant';
+import identityFunc from '../../jsutils/identityFunc';
+
 import { parseValue } from '../../language/parser';
 import {
   GraphQLInt,
@@ -12,6 +15,7 @@ import {
   GraphQLID,
 } from '../../type/scalars';
 import {
+  GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
@@ -51,6 +55,39 @@ describe('valueFromAST', () => {
     expectValueFrom('123', GraphQLString).to.equal(undefined);
     expectValueFrom('true', GraphQLString).to.equal(undefined);
     expectValueFrom('123.456', GraphQLString).to.equal(undefined);
+  });
+
+  it('convert using parseLiteral from a custom scalar type', () => {
+    const passthroughScalar = new GraphQLScalarType({
+      name: 'PassthroughScalar',
+      parseLiteral(node) {
+        invariant(node.kind === 'StringValue');
+        return node.value;
+      },
+      parseValue: identityFunc,
+    });
+
+    expectValueFrom('"value"', passthroughScalar).to.equal('value');
+
+    const throwScalar = new GraphQLScalarType({
+      name: 'ThrowScalar',
+      parseLiteral() {
+        throw new Error('Test');
+      },
+      parseValue: identityFunc,
+    });
+
+    expectValueFrom('value', throwScalar).to.equal(undefined);
+
+    const returnUndefinedScalar = new GraphQLScalarType({
+      name: 'ReturnUndefinedScalar',
+      parseLiteral() {
+        return undefined;
+      },
+      parseValue: identityFunc,
+    });
+
+    expectValueFrom('value', returnUndefinedScalar).to.equal(undefined);
   });
 
   it('converts enum values according to input coercion rules', () => {
