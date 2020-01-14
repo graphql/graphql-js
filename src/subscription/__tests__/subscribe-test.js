@@ -164,6 +164,7 @@ describe('Subscription Initialization Phase', () => {
     });
 
     // $FlowFixMe
+    ai.next();
     ai.return();
   });
 
