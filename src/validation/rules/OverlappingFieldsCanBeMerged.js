@@ -191,13 +191,11 @@ function findConflictsWithinSelectionSet(
   if (fragmentNames.length !== 0) {
     // (B) Then collect conflicts between these fields and those represented by
     // each spread fragment name found.
-    const comparedFragments = Object.create(null);
     for (let i = 0; i < fragmentNames.length; i++) {
       collectConflictsBetweenFieldsAndFragment(
         context,
         conflicts,
         cachedFieldsAndFragmentNames,
-        comparedFragments,
         comparedFragmentPairs,
         false,
         fieldMap,
@@ -229,18 +227,11 @@ function collectConflictsBetweenFieldsAndFragment(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames,
-  comparedFragments: ObjMap<boolean>,
   comparedFragmentPairs: PairSet,
   areMutuallyExclusive: boolean,
   fieldMap: NodeAndDefCollection,
   fragmentName: string,
 ): void {
-  // Memoize so a fragment is not compared for conflicts more than once.
-  if (comparedFragments[fragmentName]) {
-    return;
-  }
-  comparedFragments[fragmentName] = true;
-
   const fragment = context.getFragment(fragmentName);
   if (!fragment) {
     return;
@@ -276,7 +267,6 @@ function collectConflictsBetweenFieldsAndFragment(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
-      comparedFragments,
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap,
@@ -413,13 +403,11 @@ function findConflictsBetweenSubSelectionSets(
   // (I) Then collect conflicts between the first collection of fields and
   // those referenced by each fragment name associated with the second.
   if (fragmentNames2.length !== 0) {
-    const comparedFragments = Object.create(null);
     for (let j = 0; j < fragmentNames2.length; j++) {
       collectConflictsBetweenFieldsAndFragment(
         context,
         conflicts,
         cachedFieldsAndFragmentNames,
-        comparedFragments,
         comparedFragmentPairs,
         areMutuallyExclusive,
         fieldMap1,
@@ -431,13 +419,11 @@ function findConflictsBetweenSubSelectionSets(
   // (I) Then collect conflicts between the second collection of fields and
   // those referenced by each fragment name associated with the first.
   if (fragmentNames1.length !== 0) {
-    const comparedFragments = Object.create(null);
     for (let i = 0; i < fragmentNames1.length; i++) {
       collectConflictsBetweenFieldsAndFragment(
         context,
         conflicts,
         cachedFieldsAndFragmentNames,
-        comparedFragments,
         comparedFragmentPairs,
         areMutuallyExclusive,
         fieldMap2,
