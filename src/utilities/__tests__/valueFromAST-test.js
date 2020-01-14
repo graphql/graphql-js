@@ -21,14 +21,10 @@ import {
 import { valueFromAST } from '../valueFromAST';
 
 describe('valueFromAST', () => {
-  function testCase(type, valueText, expected) {
-    expect(valueFromAST(parseValue(valueText), type)).to.deep.equal(expected);
-  }
-
-  function testCaseWithVars(variables, type, valueText, expected) {
-    expect(valueFromAST(parseValue(valueText), type, variables)).to.deep.equal(
-      expected,
-    );
+  function expectValueFrom(valueText, type, variables) {
+    const ast = parseValue(valueText);
+    const value = valueFromAST(ast, type, variables);
+    return expect(value);
   }
 
   it('rejects empty input', () => {
@@ -36,48 +32,48 @@ describe('valueFromAST', () => {
   });
 
   it('converts according to input coercion rules', () => {
-    testCase(GraphQLBoolean, 'true', true);
-    testCase(GraphQLBoolean, 'false', false);
-    testCase(GraphQLInt, '123', 123);
-    testCase(GraphQLFloat, '123', 123);
-    testCase(GraphQLFloat, '123.456', 123.456);
-    testCase(GraphQLString, '"abc123"', 'abc123');
-    testCase(GraphQLID, '123456', '123456');
-    testCase(GraphQLID, '"123456"', '123456');
+    expectValueFrom('true', GraphQLBoolean).to.equal(true);
+    expectValueFrom('false', GraphQLBoolean).to.equal(false);
+    expectValueFrom('123', GraphQLInt).to.equal(123);
+    expectValueFrom('123', GraphQLFloat).to.equal(123);
+    expectValueFrom('123.456', GraphQLFloat).to.equal(123.456);
+    expectValueFrom('"abc123"', GraphQLString).to.equal('abc123');
+    expectValueFrom('123456', GraphQLID).to.equal('123456');
+    expectValueFrom('"123456"', GraphQLID).to.equal('123456');
   });
 
   it('does not convert when input coercion rules reject a value', () => {
-    testCase(GraphQLBoolean, '123', undefined);
-    testCase(GraphQLInt, '123.456', undefined);
-    testCase(GraphQLInt, 'true', undefined);
-    testCase(GraphQLInt, '"123"', undefined);
-    testCase(GraphQLFloat, '"123"', undefined);
-    testCase(GraphQLString, '123', undefined);
-    testCase(GraphQLString, 'true', undefined);
-    testCase(GraphQLID, '123.456', undefined);
-  });
-
-  const testEnum = new GraphQLEnumType({
-    name: 'TestColor',
-    values: {
-      RED: { value: 1 },
-      GREEN: { value: 2 },
-      BLUE: { value: 3 },
-      NULL: { value: null },
-      NAN: { value: NaN },
-      NO_CUSTOM_VALUE: { value: undefined },
-    },
+    expectValueFrom('123', GraphQLBoolean).to.equal(undefined);
+    expectValueFrom('123.456', GraphQLInt).to.equal(undefined);
+    expectValueFrom('true', GraphQLInt).to.equal(undefined);
+    expectValueFrom('"123"', GraphQLInt).to.equal(undefined);
+    expectValueFrom('"123"', GraphQLFloat).to.equal(undefined);
+    expectValueFrom('123', GraphQLString).to.equal(undefined);
+    expectValueFrom('true', GraphQLString).to.equal(undefined);
+    expectValueFrom('123.456', GraphQLString).to.equal(undefined);
   });
 
   it('converts enum values according to input coercion rules', () => {
-    testCase(testEnum, 'RED', 1);
-    testCase(testEnum, 'BLUE', 3);
-    testCase(testEnum, '3', undefined);
-    testCase(testEnum, '"BLUE"', undefined);
-    testCase(testEnum, 'null', null);
-    testCase(testEnum, 'NULL', null);
-    testCase(testEnum, 'NAN', NaN);
-    testCase(testEnum, 'NO_CUSTOM_VALUE', 'NO_CUSTOM_VALUE');
+    const testEnum = new GraphQLEnumType({
+      name: 'TestColor',
+      values: {
+        RED: { value: 1 },
+        GREEN: { value: 2 },
+        BLUE: { value: 3 },
+        NULL: { value: null },
+        NAN: { value: NaN },
+        NO_CUSTOM_VALUE: { value: undefined },
+      },
+    });
+
+    expectValueFrom('RED', testEnum).to.equal(1);
+    expectValueFrom('BLUE', testEnum).to.equal(3);
+    expectValueFrom('3', testEnum).to.equal(undefined);
+    expectValueFrom('"BLUE"', testEnum).to.equal(undefined);
+    expectValueFrom('null', testEnum).to.equal(null);
+    expectValueFrom('NULL', testEnum).to.equal(null);
+    expectValueFrom('NAN', testEnum).to.deep.equal(NaN);
+    expectValueFrom('NO_CUSTOM_VALUE', testEnum).to.equal('NO_CUSTOM_VALUE');
   });
 
   // Boolean!
@@ -92,45 +88,61 @@ describe('valueFromAST', () => {
   const nonNullListOfNonNullBool = GraphQLNonNull(listOfNonNullBool);
 
   it('coerces to null unless non-null', () => {
-    testCase(GraphQLBoolean, 'null', null);
-    testCase(nonNullBool, 'null', undefined);
+    expectValueFrom('null', GraphQLBoolean).to.equal(null);
+    expectValueFrom('null', nonNullBool).to.equal(undefined);
   });
 
   it('coerces lists of values', () => {
-    testCase(listOfBool, 'true', [true]);
-    testCase(listOfBool, '123', undefined);
-    testCase(listOfBool, 'null', null);
-    testCase(listOfBool, '[true, false]', [true, false]);
-    testCase(listOfBool, '[true, 123]', undefined);
-    testCase(listOfBool, '[true, null]', [true, null]);
-    testCase(listOfBool, '{ true: true }', undefined);
+    expectValueFrom('true', listOfBool).to.deep.equal([true]);
+    expectValueFrom('123', listOfBool).to.equal(undefined);
+    expectValueFrom('null', listOfBool).to.equal(null);
+    expectValueFrom('[true, false]', listOfBool).to.deep.equal([true, false]);
+    expectValueFrom('[true, 123]', listOfBool).to.equal(undefined);
+    expectValueFrom('[true, null]', listOfBool).to.deep.equal([true, null]);
+    expectValueFrom('{ true: true }', listOfBool).to.equal(undefined);
   });
 
   it('coerces non-null lists of values', () => {
-    testCase(nonNullListOfBool, 'true', [true]);
-    testCase(nonNullListOfBool, '123', undefined);
-    testCase(nonNullListOfBool, 'null', undefined);
-    testCase(nonNullListOfBool, '[true, false]', [true, false]);
-    testCase(nonNullListOfBool, '[true, 123]', undefined);
-    testCase(nonNullListOfBool, '[true, null]', [true, null]);
+    expectValueFrom('true', nonNullListOfBool).to.deep.equal([true]);
+    expectValueFrom('123', nonNullListOfBool).to.equal(undefined);
+    expectValueFrom('null', nonNullListOfBool).to.equal(undefined);
+    expectValueFrom('[true, false]', nonNullListOfBool).to.deep.equal([
+      true,
+      false,
+    ]);
+    expectValueFrom('[true, 123]', nonNullListOfBool).to.equal(undefined);
+    expectValueFrom('[true, null]', nonNullListOfBool).to.deep.equal([
+      true,
+      null,
+    ]);
   });
 
   it('coerces lists of non-null values', () => {
-    testCase(listOfNonNullBool, 'true', [true]);
-    testCase(listOfNonNullBool, '123', undefined);
-    testCase(listOfNonNullBool, 'null', null);
-    testCase(listOfNonNullBool, '[true, false]', [true, false]);
-    testCase(listOfNonNullBool, '[true, 123]', undefined);
-    testCase(listOfNonNullBool, '[true, null]', undefined);
+    expectValueFrom('true', listOfNonNullBool).to.deep.equal([true]);
+    expectValueFrom('123', listOfNonNullBool).to.equal(undefined);
+    expectValueFrom('null', listOfNonNullBool).to.equal(null);
+    expectValueFrom('[true, false]', listOfNonNullBool).to.deep.equal([
+      true,
+      false,
+    ]);
+    expectValueFrom('[true, 123]', listOfNonNullBool).to.equal(undefined);
+    expectValueFrom('[true, null]', listOfNonNullBool).to.equal(undefined);
   });
 
   it('coerces non-null lists of non-null values', () => {
-    testCase(nonNullListOfNonNullBool, 'true', [true]);
-    testCase(nonNullListOfNonNullBool, '123', undefined);
-    testCase(nonNullListOfNonNullBool, 'null', undefined);
-    testCase(nonNullListOfNonNullBool, '[true, false]', [true, false]);
-    testCase(nonNullListOfNonNullBool, '[true, 123]', undefined);
-    testCase(nonNullListOfNonNullBool, '[true, null]', undefined);
+    expectValueFrom('true', nonNullListOfNonNullBool).to.deep.equal([true]);
+    expectValueFrom('123', nonNullListOfNonNullBool).to.equal(undefined);
+    expectValueFrom('null', nonNullListOfNonNullBool).to.equal(undefined);
+    expectValueFrom('[true, false]', nonNullListOfNonNullBool).to.deep.equal([
+      true,
+      false,
+    ]);
+    expectValueFrom('[true, 123]', nonNullListOfNonNullBool).to.equal(
+      undefined,
+    );
+    expectValueFrom('[true, null]', nonNullListOfNonNullBool).to.equal(
+      undefined,
+    );
   });
 
   const testInputObj = new GraphQLInputObjectType({
@@ -143,48 +155,65 @@ describe('valueFromAST', () => {
   });
 
   it('coerces input objects according to input coercion rules', () => {
-    testCase(testInputObj, 'null', null);
-    testCase(testInputObj, '123', undefined);
-    testCase(testInputObj, '[]', undefined);
-    testCase(testInputObj, '{ int: 123, requiredBool: false }', {
+    expectValueFrom('null', testInputObj).to.equal(null);
+    expectValueFrom('123', testInputObj).to.equal(undefined);
+    expectValueFrom('[]', testInputObj).to.equal(undefined);
+    expectValueFrom(
+      '{ int: 123, requiredBool: false }',
+      testInputObj,
+    ).to.deep.equal({
       int: 123,
       requiredBool: false,
     });
-    testCase(testInputObj, '{ bool: true, requiredBool: false }', {
+    expectValueFrom(
+      '{ bool: true, requiredBool: false }',
+      testInputObj,
+    ).to.deep.equal({
       int: 42,
       bool: true,
       requiredBool: false,
     });
-    testCase(testInputObj, '{ int: true, requiredBool: true }', undefined);
-    testCase(testInputObj, '{ requiredBool: null }', undefined);
-    testCase(testInputObj, '{ bool: true }', undefined);
+    expectValueFrom('{ int: true, requiredBool: true }', testInputObj).to.equal(
+      undefined,
+    );
+    expectValueFrom('{ requiredBool: null }', testInputObj).to.equal(undefined);
+    expectValueFrom('{ bool: true }', testInputObj).to.equal(undefined);
   });
 
   it('accepts variable values assuming already coerced', () => {
-    testCaseWithVars({}, GraphQLBoolean, '$var', undefined);
-    testCaseWithVars({ var: true }, GraphQLBoolean, '$var', true);
-    testCaseWithVars({ var: null }, GraphQLBoolean, '$var', null);
+    expectValueFrom('$var', GraphQLBoolean, {}).to.equal(undefined);
+    expectValueFrom('$var', GraphQLBoolean, { var: true }).to.equal(true);
+    expectValueFrom('$var', GraphQLBoolean, { var: null }).to.equal(null);
   });
 
   it('asserts variables are provided as items in lists', () => {
-    testCaseWithVars({}, listOfBool, '[ $foo ]', [null]);
-    testCaseWithVars({}, listOfNonNullBool, '[ $foo ]', undefined);
-    testCaseWithVars({ foo: true }, listOfNonNullBool, '[ $foo ]', [true]);
+    expectValueFrom('[ $foo ]', listOfBool, {}).to.deep.equal([null]);
+    expectValueFrom('[ $foo ]', listOfNonNullBool, {}).to.equal(undefined);
+    expectValueFrom('[ $foo ]', listOfNonNullBool, {
+      foo: true,
+    }).to.deep.equal([true]);
     // Note: variables are expected to have already been coerced, so we
     // do not expect the singleton wrapping behavior for variables.
-    testCaseWithVars({ foo: true }, listOfNonNullBool, '$foo', true);
-    testCaseWithVars({ foo: [true] }, listOfNonNullBool, '$foo', [true]);
+    expectValueFrom('$foo', listOfNonNullBool, { foo: true }).to.equal(true);
+    expectValueFrom('$foo', listOfNonNullBool, { foo: [true] }).to.deep.equal([
+      true,
+    ]);
   });
 
   it('omits input object fields for unprovided variables', () => {
-    testCaseWithVars(
-      {},
-      testInputObj,
+    expectValueFrom(
       '{ int: $foo, bool: $foo, requiredBool: true }',
-      { int: 42, requiredBool: true },
+      testInputObj,
+      {},
+    ).to.deep.equal({ int: 42, requiredBool: true });
+
+    expectValueFrom('{ requiredBool: $foo }', testInputObj, {}).to.equal(
+      undefined,
     );
-    testCaseWithVars({}, testInputObj, '{ requiredBool: $foo }', undefined);
-    testCaseWithVars({ foo: true }, testInputObj, '{ requiredBool: $foo }', {
+
+    expectValueFrom('{ requiredBool: $foo }', testInputObj, {
+      foo: true,
+    }).to.deep.equal({
       int: 42,
       requiredBool: true,
     });
