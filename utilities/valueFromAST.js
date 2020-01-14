@@ -48,19 +48,6 @@ function valueFromAST(valueNode, type, variables) {
     return;
   }
 
-  if ((0, _definition.isNonNullType)(type)) {
-    if (valueNode.kind === _kinds.Kind.NULL) {
-      return; // Invalid: intentionally return no value.
-    }
-
-    return valueFromAST(valueNode, type.ofType, variables);
-  }
-
-  if (valueNode.kind === _kinds.Kind.NULL) {
-    // This is explicitly returning the value null.
-    return null;
-  }
-
   if (valueNode.kind === _kinds.Kind.VARIABLE) {
     var variableName = valueNode.name.value;
 
@@ -79,6 +66,19 @@ function valueFromAST(valueNode, type, variables) {
 
 
     return variableValue;
+  }
+
+  if ((0, _definition.isNonNullType)(type)) {
+    if (valueNode.kind === _kinds.Kind.NULL) {
+      return; // Invalid: intentionally return no value.
+    }
+
+    return valueFromAST(valueNode, type.ofType, variables);
+  }
+
+  if (valueNode.kind === _kinds.Kind.NULL) {
+    // This is explicitly returning the value null.
+    return null;
   }
 
   if ((0, _definition.isListType)(type)) {

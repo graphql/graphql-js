@@ -33,19 +33,6 @@ export function valueFromAST(valueNode, type, variables) {
     return;
   }
 
-  if (isNonNullType(type)) {
-    if (valueNode.kind === Kind.NULL) {
-      return; // Invalid: intentionally return no value.
-    }
-
-    return valueFromAST(valueNode, type.ofType, variables);
-  }
-
-  if (valueNode.kind === Kind.NULL) {
-    // This is explicitly returning the value null.
-    return null;
-  }
-
   if (valueNode.kind === Kind.VARIABLE) {
     var variableName = valueNode.name.value;
 
@@ -64,6 +51,19 @@ export function valueFromAST(valueNode, type, variables) {
 
 
     return variableValue;
+  }
+
+  if (isNonNullType(type)) {
+    if (valueNode.kind === Kind.NULL) {
+      return; // Invalid: intentionally return no value.
+    }
+
+    return valueFromAST(valueNode, type.ofType, variables);
+  }
+
+  if (valueNode.kind === Kind.NULL) {
+    // This is explicitly returning the value null.
+    return null;
   }
 
   if (isListType(type)) {
