@@ -72,6 +72,7 @@ describe('valueFromAST', () => {
     expectValueFrom('"BLUE"', testEnum).to.equal(undefined);
     expectValueFrom('null', testEnum).to.equal(null);
     expectValueFrom('NULL', testEnum).to.equal(null);
+    expectValueFrom('NULL', new GraphQLNonNull(testEnum)).to.equal(null);
     expectValueFrom('NAN', testEnum).to.deep.equal(NaN);
     expectValueFrom('NO_CUSTOM_VALUE', testEnum).to.equal('NO_CUSTOM_VALUE');
   });
@@ -184,6 +185,7 @@ describe('valueFromAST', () => {
     expectValueFrom('$var', GraphQLBoolean, {}).to.equal(undefined);
     expectValueFrom('$var', GraphQLBoolean, { var: true }).to.equal(true);
     expectValueFrom('$var', GraphQLBoolean, { var: null }).to.equal(null);
+    expectValueFrom('$var', nonNullBool, { var: null }).to.equal(undefined);
   });
 
   it('asserts variables are provided as items in lists', () => {

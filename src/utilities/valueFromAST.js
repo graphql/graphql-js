@@ -50,18 +50,6 @@ export function valueFromAST(
     return;
   }
 
-  if (isNonNullType(type)) {
-    if (valueNode.kind === Kind.NULL) {
-      return; // Invalid: intentionally return no value.
-    }
-    return valueFromAST(valueNode, type.ofType, variables);
-  }
-
-  if (valueNode.kind === Kind.NULL) {
-    // This is explicitly returning the value null.
-    return null;
-  }
-
   if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
     if (!variables || isInvalid(variables[variableName])) {
@@ -76,6 +64,18 @@ export function valueFromAST(
     // This assumes that this query has been validated and the variable
     // usage here is of the correct type.
     return variableValue;
+  }
+
+  if (isNonNullType(type)) {
+    if (valueNode.kind === Kind.NULL) {
+      return; // Invalid: intentionally return no value.
+    }
+    return valueFromAST(valueNode, type.ofType, variables);
+  }
+
+  if (valueNode.kind === Kind.NULL) {
+    // This is explicitly returning the value null.
+    return null;
   }
 
   if (isListType(type)) {
