@@ -125,10 +125,8 @@ function findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, 
   if (fragmentNames.length !== 0) {
     // (B) Then collect conflicts between these fields and those represented by
     // each spread fragment name found.
-    var comparedFragments = Object.create(null);
-
     for (var i = 0; i < fragmentNames.length; i++) {
-      collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragments, comparedFragmentPairs, false, fieldMap, fragmentNames[i]); // (C) Then compare this fragment with all other fragments found in this
+      collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, fieldMap, fragmentNames[i]); // (C) Then compare this fragment with all other fragments found in this
       // selection set to collect conflicts between fragments spread together.
       // This compares each item in the list of fragment names to every other
       // item in that same list (except for itself).
@@ -144,13 +142,7 @@ function findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, 
 // including via spreading in any nested fragments.
 
 
-function collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragments, comparedFragmentPairs, areMutuallyExclusive, fieldMap, fragmentName) {
-  // Memoize so a fragment is not compared for conflicts more than once.
-  if (comparedFragments[fragmentName]) {
-    return;
-  }
-
-  comparedFragments[fragmentName] = true;
+function collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap, fragmentName) {
   var fragment = context.getFragment(fragmentName);
 
   if (!fragment) {
@@ -172,7 +164,7 @@ function collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFiel
   // and any fragment names found in the given fragment.
 
   for (var i = 0; i < fragmentNames2.length; i++) {
-    collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragments, comparedFragmentPairs, areMutuallyExclusive, fieldMap, fragmentNames2[i]);
+    collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap, fragmentNames2[i]);
   }
 } // Collect all conflicts found between two fragments, including via spreading in
 // any nested fragments.
@@ -240,20 +232,16 @@ function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNa
   // those referenced by each fragment name associated with the second.
 
   if (fragmentNames2.length !== 0) {
-    var comparedFragments = Object.create(null);
-
     for (var j = 0; j < fragmentNames2.length; j++) {
-      collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragments, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, fragmentNames2[j]);
+      collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, fragmentNames2[j]);
     }
   } // (I) Then collect conflicts between the second collection of fields and
   // those referenced by each fragment name associated with the first.
 
 
   if (fragmentNames1.length !== 0) {
-    var _comparedFragments = Object.create(null);
-
     for (var i = 0; i < fragmentNames1.length; i++) {
-      collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, _comparedFragments, comparedFragmentPairs, areMutuallyExclusive, fieldMap2, fragmentNames1[i]);
+      collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap2, fragmentNames1[i]);
     }
   } // (J) Also collect conflicts between any fragment names by the first and
   // fragment names by the second. This compares each item in the first set of
