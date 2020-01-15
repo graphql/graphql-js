@@ -2,12 +2,27 @@
 
 import { describe, it } from 'mocha';
 
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLScalarType, GraphQLObjectType } from '../../type/definition';
+
 import { ValuesOfCorrectType } from '../rules/ValuesOfCorrectType';
 
-import { expectValidationErrors } from './harness';
+import {
+  expectValidationErrors,
+  expectValidationErrorsWithSchema,
+} from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(ValuesOfCorrectType, queryStr);
+}
+
+function expectErrorsWithSchema(schema, queryStr) {
+  return expectValidationErrorsWithSchema(
+    schema,
+    ValuesOfCorrectType,
+    queryStr,
+  );
 }
 
 function expectValid(queryStr) {
@@ -940,6 +955,45 @@ describe('Validate: Values of correct type', () => {
         '[0].originalError.message',
         'Invalid scalar is always invalid: 123',
       );
+    });
+
+    it('reports error for custom scalar that returns undefined', () => {
+      const customScalar = new GraphQLScalarType({
+        name: 'CustomScalar',
+        parseValue() {
+          return undefined;
+        },
+      });
+
+      const schema = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'Query',
+          fields: {
+            invalidArg: {
+              type: GraphQLString,
+              args: {
+                arg: { type: customScalar },
+              },
+            },
+          },
+        }),
+      });
+
+      const expectedErrors = expectErrorsWithSchema(
+        schema,
+        `
+        {
+          invalidArg(arg: 123)
+        }
+      `,
+      );
+
+      expectedErrors.to.deep.equal([
+        {
+          message: 'Expected value of type "CustomScalar", found 123.',
+          locations: [{ line: 3, column: 27 }],
+        },
+      ]);
     });
 
     it('allows custom scalar to accept complex literals', () => {
