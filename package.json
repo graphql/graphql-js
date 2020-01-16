@@ -42,9 +42,7 @@
     "version": "node resources/gen-version.js && npm test && git add src/version.js",
     "gitpublish": ". ./resources/gitpublish.sh"
   },
-  "dependencies": {
-    "iterall": "^1.3.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "7.6.2",
     "@babel/plugin-transform-flow-strip-types": "7.4.4",

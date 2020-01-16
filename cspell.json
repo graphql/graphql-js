@@ -7,7 +7,6 @@
   "words": [
     "jsutils",
     "tsutils",
-    "iterall",
     "noflow",
 
     // Different names used inside tests
@@ -51,6 +50,7 @@
     "filepaths",
     "hardcoded",
     "heredoc",
+    "iteratable",
     "lexable",
     "lexed",
     "lexes",
@@ -63,6 +63,7 @@
     "nullability",
     "nullish",
     "passthrough",
+    "polyfilled",
     "promisify",
     "pubsub",
     "punctuator",

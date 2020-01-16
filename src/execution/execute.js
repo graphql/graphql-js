@@ -1,6 +1,6 @@
 // @flow strict
 
-import { forEach, isCollection } from 'iterall';
+import arrayFrom from '../polyfills/arrayFrom';
 
 import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';
@@ -11,6 +11,7 @@ import isNullish from '../jsutils/isNullish';
 import isPromise from '../jsutils/isPromise';
 import { type ObjMap } from '../jsutils/ObjMap';
 import isObjectLike from '../jsutils/isObjectLike';
+import isCollection from '../jsutils/isCollection';
 import promiseReduce from '../jsutils/promiseReduce';
 import promiseForObject from '../jsutils/promiseForObject';
 import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
@@ -910,8 +911,7 @@ function completeListValue(
   // where the list contains no Promises by avoiding creating another Promise.
   const itemType = returnType.ofType;
   let containsPromise = false;
-  const completedResults = [];
-  forEach((result: any), (item, index) => {
+  const completedResults = arrayFrom(result, (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const fieldPath = addPath(path, index);
@@ -927,7 +927,8 @@ function completeListValue(
     if (!containsPromise && isPromise(completedItem)) {
       containsPromise = true;
     }
-    completedResults.push(completedItem);
+
+    return completedItem;
   });
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
