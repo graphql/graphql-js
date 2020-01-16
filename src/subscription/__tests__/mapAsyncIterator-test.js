@@ -6,10 +6,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import invariant from '../../jsutils/invariant';
+
 import mapAsyncIterator from '../mapAsyncIterator';
 
 describe('mapAsyncIterator', () => {
-  it('maps over async values', async () => {
+  it('maps over async generator', async () => {
     async function* source() {
       yield 1;
       yield 2;
@@ -25,6 +27,49 @@ describe('mapAsyncIterator', () => {
       value: undefined,
       done: true,
     });
+  });
+
+  it('maps over async iterator', async () => {
+    const items = [1, 2, 3];
+
+    const iterator: any = {
+      // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return Promise.resolve({
+          done: items.length === 0,
+          value: items.shift(),
+        });
+      },
+    };
+
+    const doubles = mapAsyncIterator(iterator, x => x + x);
+
+    expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
+    expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
+    expect(await doubles.next()).to.deep.equal({ value: 6, done: false });
+    expect(await doubles.next()).to.deep.equal({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it('compatible with for-await-of', async () => {
+    async function* source() {
+      yield 1;
+      yield 2;
+      yield 3;
+    }
+
+    const doubles = mapAsyncIterator(source(), x => x + x);
+
+    const result = [];
+    for await (const x of doubles) {
+      result.push(x);
+    }
+    expect(result).to.deep.equal([2, 4, 6]);
   });
 
   it('maps over async values with async function', async () => {
@@ -49,10 +94,12 @@ describe('mapAsyncIterator', () => {
     });
   });
 
-  it('allows returning early from async values', async () => {
+  it('allows returning early from mapped async generator', async () => {
     async function* source() {
       yield 1;
       yield 2;
+
+      /* istanbul ignore next (shouldn't be reached) */
       yield 3;
     }
 
@@ -78,11 +125,41 @@ describe('mapAsyncIterator', () => {
     });
   });
 
+  it('allows returning early from mapped async iterator', async () => {
+    const items = [1, 2, 3];
+
+    const iterator: any = {
+      // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return Promise.resolve({
+          done: items.length === 0,
+          value: items.shift(),
+        });
+      },
+    };
+
+    const doubles = mapAsyncIterator(iterator, x => x + x);
+
+    expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
+    expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
+
+    // Early return
+    expect(await doubles.return()).to.deep.equal({
+      value: undefined,
+      done: true,
+    });
+  });
+
   it('passes through early return from async values', async () => {
     async function* source() {
       try {
         yield 1;
         yield 2;
+
+        /* istanbul ignore next (shouldn't be reached) */
         yield 3;
       } finally {
         yield 'Done';
@@ -112,14 +189,23 @@ describe('mapAsyncIterator', () => {
     });
   });
 
-  it('allows throwing errors through async generators', async () => {
-    async function* source() {
-      yield 1;
-      yield 2;
-      yield 3;
-    }
+  it('allows throwing errors through async iterators', async () => {
+    const items = [1, 2, 3];
 
-    const doubles = mapAsyncIterator(source(), x => x + x);
+    const iterator: any = {
+      // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return Promise.resolve({
+          done: items.length === 0,
+          value: items.shift(),
+        });
+      },
+    };
+
+    const doubles = mapAsyncIterator(iterator, x => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -132,15 +218,6 @@ describe('mapAsyncIterator', () => {
       caughtError = e;
     }
     expect(caughtError).to.equal('ouch');
-
-    expect(await doubles.next()).to.deep.equal({
-      value: undefined,
-      done: true,
-    });
-    expect(await doubles.next()).to.deep.equal({
-      value: undefined,
-      done: true,
-    });
   });
 
   it('passes through caught errors through async generators', async () => {
@@ -148,6 +225,8 @@ describe('mapAsyncIterator', () => {
       try {
         yield 1;
         yield 2;
+
+        /* istanbul ignore next (shouldn't be reached) */
         yield 3;
       } catch (e) {
         yield e;
@@ -232,6 +311,8 @@ describe('mapAsyncIterator', () => {
       try {
         yield 1;
         yield 2;
+
+        /* istanbul ignore next (shouldn't be reached) */
         yield 3;
       } finally {
         didVisitFinally = true;
@@ -250,10 +331,8 @@ describe('mapAsyncIterator', () => {
       expectedError = error;
     }
 
-    expect(expectedError).to.be.an('error');
-    if (expectedError) {
-      expect(expectedError.message).to.equal('Cannot count to 2');
-    }
+    invariant(expectedError instanceof Error);
+    expect(expectedError.message).to.equal('Cannot count to 2');
 
     expect(await throwOver1.next()).to.deep.equal({
       value: undefined,
@@ -297,10 +376,8 @@ describe('mapAsyncIterator', () => {
       expectedError = error;
     }
 
-    expect(expectedError).to.be.an('error');
-    if (expectedError) {
-      expect(expectedError.message).to.equal('Cannot count to 2');
-    }
+    invariant(expectedError instanceof Error);
+    expect(expectedError.message).to.equal('Cannot count to 2');
 
     expect(await throwOver1.next()).to.deep.equal({
       value: undefined,
