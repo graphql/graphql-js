@@ -139,6 +139,7 @@ async function createSubscription(
 async function expectPromiseToThrow(promise, message) {
   try {
     await promise();
+    /* istanbul ignore next */
     expect.fail('promise should have thrown but did not');
   } catch (error) {
     expect(error && error.message).to.equal(message);
@@ -280,6 +281,7 @@ describe('Subscription Initialization Phase', () => {
         },
         nonImportantEmail: {
           type: EmailEventType,
+          /* istanbul ignore next (shouldn't be called) */
           subscribe() {
             didResolveNonImportantEmail = true;
             return eventEmitterAsyncIterator(new EventEmitter(), 'event');
@@ -516,27 +518,9 @@ describe('Subscription Initialization Phase', () => {
       }
     `);
 
-    const pubsub = new EventEmitter();
-    const rootValue = {
-      inbox: {
-        emails: [
-          {
-            from: 'joe@graphql.org',
-            subject: 'Hello',
-            message: 'Hello World',
-            unread: false,
-          },
-        ],
-      },
-      importantEmail() {
-        return eventEmitterAsyncIterator(pubsub, 'importantEmail');
-      },
-    };
-
     const result = await subscribe({
       schema: emailSchema,
       document: ast,
-      rootValue,
       variableValues: { priority: 'meow' },
     });
 
@@ -789,6 +773,68 @@ describe('Subscription Publish Phase', () => {
 
     payload = subscription.next();
     subscription.return();
+
+    // A new email arrives!
+    expect(
+      sendImportantEmail({
+        from: 'yuzhi@graphql.org',
+        subject: 'Alright 2',
+        message: 'Tests are good 2',
+        unread: true,
+      }),
+    ).to.equal(false);
+
+    expect(await payload).to.deep.equal({
+      done: true,
+      value: undefined,
+    });
+  });
+
+  it('should not trigger when subscription is thrown', async () => {
+    const pubsub = new EventEmitter();
+    const { sendImportantEmail, subscription } = await createSubscription(
+      pubsub,
+    );
+    let payload = subscription.next();
+
+    // A new email arrives!
+    expect(
+      sendImportantEmail({
+        from: 'yuzhi@graphql.org',
+        subject: 'Alright',
+        message: 'Tests are good',
+        unread: true,
+      }),
+    ).to.equal(true);
+
+    expect(await payload).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              from: 'yuzhi@graphql.org',
+              subject: 'Alright',
+            },
+            inbox: {
+              unread: 1,
+              total: 2,
+            },
+          },
+        },
+      },
+    });
+
+    payload = subscription.next();
+
+    // Throw error
+    let caughtError;
+    try {
+      await subscription.throw('ouch');
+    } catch (e) {
+      caughtError = e;
+    }
+    expect(caughtError).to.equal('ouch');
 
     // A new email arrives!
     expect(
