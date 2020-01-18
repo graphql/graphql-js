@@ -161,7 +161,6 @@ function () {
   ;
 
   _proto.isPossibleType = function isPossibleType(abstractType, possibleType) {
-    /* istanbul ignore next */
     return this.isSubType(abstractType, possibleType);
   };
 
