@@ -5,10 +5,11 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 
+import { kitchenSinkSDL } from '../../__fixtures__';
+
 import { parse } from '../parser';
 
 import toJSONDeep from './toJSONDeep';
-import { kitchenSinkSDL } from '../../__fixtures__';
 
 function expectSyntaxError(text) {
   return expect(() => parse(text)).to.throw();

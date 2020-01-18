@@ -84,6 +84,15 @@ import { OverlappingFieldsCanBeMerged } from './rules/OverlappingFieldsCanBeMerg
 // Spec Section: "Input Object Field Uniqueness"
 import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
 
+// SDL-specific validation rules
+import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
+import { UniqueOperationTypes } from './rules/UniqueOperationTypes';
+import { UniqueTypeNames } from './rules/UniqueTypeNames';
+import { UniqueEnumValueNames } from './rules/UniqueEnumValueNames';
+import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
+import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
+import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
+
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  *
@@ -118,14 +127,6 @@ export const specifiedRules = Object.freeze([
   OverlappingFieldsCanBeMerged,
   UniqueInputFieldNames,
 ]);
-
-import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
-import { UniqueOperationTypes } from './rules/UniqueOperationTypes';
-import { UniqueTypeNames } from './rules/UniqueTypeNames';
-import { UniqueEnumValueNames } from './rules/UniqueEnumValueNames';
-import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
-import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
-import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
 
 /**
  * @internal

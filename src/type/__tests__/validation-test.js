@@ -8,9 +8,13 @@ import inspect from '../../jsutils/inspect';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLDirective } from '../../type/directives';
+import { extendSchema } from '../../utilities/extendSchema';
+import { buildSchema } from '../../utilities/buildASTSchema';
+
+import { GraphQLSchema } from '../schema';
+import { GraphQLString } from '../scalars';
+import { GraphQLDirective } from '../directives';
+import { validateSchema, assertValidSchema } from '../validate';
 import {
   type GraphQLNamedType,
   type GraphQLInputType,
@@ -23,12 +27,7 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-} from '../../type/definition';
-
-import { extendSchema } from '../../utilities/extendSchema';
-import { buildSchema } from '../../utilities/buildASTSchema';
-
-import { validateSchema, assertValidSchema } from '../validate';
+} from '../definition';
 
 const SomeScalarType = new GraphQLScalarType({ name: 'SomeScalar' });
 
