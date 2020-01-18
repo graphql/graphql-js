@@ -3,8 +3,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { GraphQLError } from '../../error/GraphQLError';
+
 import { parse } from '../../language/parser';
+
 import { TypeInfo } from '../../utilities/TypeInfo';
+import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { validate } from '../validate';
 
@@ -76,6 +80,43 @@ describe('Validate: Supports full validation', () => {
       'Cannot query field "catOrDog" on type "QueryRoot". Did you mean "catOrDog"?',
       'Cannot query field "furColor" on type "Cat". Did you mean "furColor"?',
       'Cannot query field "isHouseTrained" on type "Dog". Did you mean "isHouseTrained"?',
+    ]);
+  });
+
+  it('validates using a custom rule', () => {
+    const schema = buildSchema(`
+      directive @custom(arg: String) on FIELD
+
+      type Query {
+        foo: String
+      }
+    `);
+
+    const doc = parse(`
+      query {
+        name @custom
+      }
+    `);
+
+    function customRule(context) {
+      return {
+        Directive(node) {
+          const directiveDef = context.getDirective();
+          const error = new GraphQLError(
+            'Reporting directive: ' + String(directiveDef),
+            node,
+          );
+          context.reportError(error);
+        },
+      };
+    }
+
+    const errors = validate(schema, doc, [customRule]);
+    expect(errors).to.deep.equal([
+      {
+        message: 'Reporting directive: @custom',
+        locations: [{ line: 3, column: 14 }],
+      },
     ]);
   });
 });

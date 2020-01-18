@@ -175,6 +175,9 @@ describe('Type System: Schema', () => {
 
       expect(schema.getType('SomeInterface')).to.equal(SomeInterface);
       expect(schema.getType('SomeSubtype')).to.equal(SomeSubtype);
+
+      expect(schema.isSubType(SomeInterface, SomeSubtype)).to.equal(true);
+      expect(schema.isPossibleType(SomeInterface, SomeSubtype)).to.equal(true);
     });
 
     it("includes interface's thunk subtypes in the type map", () => {

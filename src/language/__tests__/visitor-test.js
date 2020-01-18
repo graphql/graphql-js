@@ -253,6 +253,19 @@ describe('Visitor', () => {
     );
   });
 
+  it('ignores false returned on leave', () => {
+    const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
+    const returnedAST = visit(ast, {
+      leave() {
+        return false;
+      },
+    });
+
+    expect(returnedAST).to.deep.equal(
+      parse('{ a, b, c { a, b, c } }', { noLocation: true }),
+    );
+  });
+
   it('visits edited node', () => {
     const addedField = {
       kind: 'Field',
