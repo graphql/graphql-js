@@ -32,7 +32,8 @@ describe('getOperationAST', () => {
     const doc = parse(`
       { field }
       mutation Test { field }
-      subscription TestSub { field }`);
+      subscription TestSub { field }
+    `);
     expect(getOperationAST(doc)).to.equal(null);
   });
 
@@ -40,15 +41,19 @@ describe('getOperationAST', () => {
     const doc = parse(`
       query TestQ { field }
       mutation TestM { field }
-      subscription TestS { field }`);
+      subscription TestS { field }
+    `);
     expect(getOperationAST(doc)).to.equal(null);
   });
 
   it('Does not get misnamed operation', () => {
     const doc = parse(`
+      { field }
+
       query TestQ { field }
       mutation TestM { field }
-      subscription TestS { field }`);
+      subscription TestS { field }
+    `);
     expect(getOperationAST(doc, 'Unknown')).to.equal(null);
   });
 
@@ -56,7 +61,8 @@ describe('getOperationAST', () => {
     const doc = parse(`
       query TestQ { field }
       mutation TestM { field }
-      subscription TestS { field }`);
+      subscription TestS { field }
+    `);
     expect(getOperationAST(doc, 'TestQ')).to.equal(doc.definitions[0]);
     expect(getOperationAST(doc, 'TestM')).to.equal(doc.definitions[1]);
     expect(getOperationAST(doc, 'TestS')).to.equal(doc.definitions[2]);
