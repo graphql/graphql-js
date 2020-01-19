@@ -273,7 +273,7 @@ describe('mapAsyncIterator', () => {
     } catch (e) {
       caughtError = e;
     }
-    expect(caughtError && caughtError.message).to.equal('Goodbye');
+    expect(caughtError?.message).to.equal('Goodbye');
   });
 
   it('maps over thrown errors if second callback provided', async () => {
@@ -295,7 +295,7 @@ describe('mapAsyncIterator', () => {
 
     const result = await doubles.next();
     expect(result.value).to.be.instanceof(Error);
-    expect(result.value && result.value.message).to.equal('Goodbye');
+    expect(result.value?.message).to.equal('Goodbye');
     expect(result.done).to.equal(false);
 
     expect(await doubles.next()).to.deep.equal({

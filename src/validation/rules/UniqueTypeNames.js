@@ -28,7 +28,7 @@ export function UniqueTypeNames(context: SDLValidationContext): ASTVisitor {
   function checkTypeName(node: TypeDefinitionNode) {
     const typeName = node.name.value;
 
-    if (schema && schema.getType(typeName)) {
+    if (schema?.getType(typeName)) {
       context.reportError(
         new GraphQLError(
           `Type "${typeName}" already exists in the schema. It cannot also be defined in this type definition.`,

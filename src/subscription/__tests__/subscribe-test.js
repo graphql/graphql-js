@@ -142,7 +142,7 @@ async function expectPromiseToThrow(promise, message) {
     /* istanbul ignore next */
     expect.fail('promise should have thrown but did not');
   } catch (error) {
-    expect(error && error.message).to.equal(message);
+    expect(error?.message).to.equal(message);
   }
 }
 

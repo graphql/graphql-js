@@ -50,7 +50,7 @@ export function getVariableValues(
   inputs: { +[variable: string]: mixed, ... },
   options?: {| maxErrors?: number |},
 ): CoercedVariableValues {
-  const maxErrors = options && options.maxErrors;
+  const maxErrors = options?.maxErrors;
   const errors = [];
   try {
     const coerced = coerceVariableValues(schema, varDefNodes, inputs, error => {

@@ -131,11 +131,11 @@ export function extendSchema(
   assertSchema(schema);
 
   devAssert(
-    documentAST && documentAST.kind === Kind.DOCUMENT,
+    documentAST != null && documentAST.kind === Kind.DOCUMENT,
     'Must provide valid Document AST.',
   );
 
-  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+  if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDLExtension(documentAST, schema);
   }
 
@@ -191,7 +191,7 @@ export function extendSchemaImpl(
     typeDefs.length === 0 &&
     directiveDefs.length === 0 &&
     schemaExtensions.length === 0 &&
-    !schemaDef
+    schemaDef == null
   ) {
     return schemaConfig;
   }
@@ -231,7 +231,7 @@ export function extendSchemaImpl(
       schemaConfig.extensionASTNodes,
       schemaExtensions,
     ),
-    assumeValid: (options && options.assumeValid) || false,
+    assumeValid: options?.assumeValid || false,
   };
 
   // Below are functions used for producing this schema that have closed over
@@ -729,7 +729,7 @@ function getDeprecationReason(
   node: EnumValueDefinitionNode | FieldDefinitionNode,
 ): ?string {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
-  return deprecated && (deprecated.reason: any);
+  return (deprecated?.reason: any);
 }
 
 /**
@@ -749,7 +749,7 @@ export function getDescription(
   if (node.description) {
     return node.description.value;
   }
-  if (options && options.commentDescriptions) {
+  if (options?.commentDescriptions === true) {
     const rawValue = getLeadingCommentBlock(node);
     if (rawValue !== undefined) {
       return dedentBlockStringValue('\n' + rawValue);
@@ -765,7 +765,7 @@ function getLeadingCommentBlock(node): void | string {
   const comments = [];
   let token = loc.startToken.prev;
   while (
-    token &&
+    token != null &&
     token.kind === TokenKind.COMMENT &&
     token.next &&
     token.prev &&

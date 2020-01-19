@@ -37,7 +37,7 @@ import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
 
 function printExtensionNodes(obj) {
-  invariant(obj && obj.extensionASTNodes);
+  invariant(obj?.extensionASTNodes != null);
   return print({
     kind: Kind.DOCUMENT,
     definitions: obj.extensionASTNodes,
@@ -56,7 +56,7 @@ function printSchemaChanges(schema, extendedSchema) {
 }
 
 function printASTNode(obj) {
-  invariant(obj != null && obj.astNode != null);
+  invariant(obj?.astNode != null);
   return print(obj.astNode);
 }
 

@@ -292,7 +292,7 @@ describe('Execute: Handles basic execution tasks', () => {
     );
 
     const operation = document.definitions[0];
-    invariant(operation && operation.kind === Kind.OPERATION_DEFINITION);
+    invariant(operation.kind === Kind.OPERATION_DEFINITION);
 
     expect(resolvedInfo).to.include({
       fieldName: 'test',
@@ -1025,7 +1025,7 @@ describe('Execute: Handles basic execution tasks', () => {
       name: 'SpecialType',
       isTypeOf(obj, context) {
         const result = obj instanceof Special;
-        return context && context.async ? Promise.resolve(result) : result;
+        return context?.async ? Promise.resolve(result) : result;
       },
       fields: { value: { type: GraphQLString } },
     });

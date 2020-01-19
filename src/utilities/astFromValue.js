@@ -47,7 +47,7 @@ import {
 export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   if (isNonNullType(type)) {
     const astValue = astFromValue(value, type.ofType);
-    if (astValue && astValue.kind === Kind.NULL) {
+    if (astValue?.kind === Kind.NULL) {
       return null;
     }
     return astValue;

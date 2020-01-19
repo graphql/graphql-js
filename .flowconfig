@@ -10,7 +10,7 @@
 [libs]
 
 [lints]
-sketchy-null-bool=off
+sketchy-null-bool=error
 sketchy-null-string=error
 sketchy-null-number=error
 sketchy-null-mixed=error
@@ -35,6 +35,7 @@ uninitialized-instance-property=error
 include_warnings=true
 module.use_strict=true
 babel_loose_array_spread=true
+esproposal.optional_chaining=enable
 suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)?)\\)
 suppress_comment=\\(.\\|\n\\)*\\$DisableFlowOnNegativeTest
 

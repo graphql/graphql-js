@@ -51,7 +51,7 @@ function cycleSDL(sdl, options = {}) {
 }
 
 function printASTNode(obj) {
-  invariant(obj != null && obj.astNode != null);
+  invariant(obj?.astNode != null);
   return print(obj.astNode);
 }
 
