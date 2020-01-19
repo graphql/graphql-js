@@ -120,3 +120,51 @@ export function doTypesOverlap(
   // Otherwise the types do not overlap.
   return false;
 }
+
+/**
+ * Checks if type is query
+ *
+ * @internal
+ */
+export function isQueryType(schema: GraphQLSchema, type: GraphQLCompositeType) {
+  const schemaType = schema.getQueryType();
+  if (schemaType) {
+    return schemaType.name === type.name;
+  }
+
+  return false;
+}
+
+/**
+ * Checks if type is mutation
+ *
+ * @internal
+ */
+export function isMutationType(
+  schema: GraphQLSchema,
+  type: GraphQLCompositeType,
+) {
+  const schemaType = schema.getMutationType();
+  if (schemaType) {
+    return schemaType.name === type.name;
+  }
+
+  return false;
+}
+
+/**
+ * Checks if type is subscription
+ *
+ * @internal
+ */
+export function isSubscriptionType(
+  schema: GraphQLSchema,
+  type: GraphQLCompositeType,
+) {
+  const schemaType = schema.getSubscriptionType();
+  if (schemaType) {
+    return schemaType.name === type.name;
+  }
+
+  return false;
+}
