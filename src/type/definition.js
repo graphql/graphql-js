@@ -347,13 +347,16 @@ export function assertAbstractType(type: mixed): GraphQLAbstractType {
  *     })
  *
  */
+// FIXME: workaround to fix issue with Babel parser
+/* ::
 declare class GraphQLList<+T: GraphQLType> {
   +ofType: T;
   static <T>(ofType: T): GraphQLList<T>;
   // Note: constructors cannot be used for covariant types. Drop the "new".
   constructor(ofType: GraphQLType): void;
 }
-// eslint-disable-next-line no-redeclare
+*/
+
 export function GraphQLList(ofType) {
   if (this instanceof GraphQLList) {
     this.ofType = assertType(ofType);
@@ -395,13 +398,16 @@ defineToJSON(GraphQLList);
  *
  * Note: the enforcement of non-nullability occurs within the executor.
  */
+// FIXME: workaround to fix issue with Babel parser
+/* ::
 declare class GraphQLNonNull<+T: GraphQLNullableType> {
   +ofType: T;
   static <T>(ofType: T): GraphQLNonNull<T>;
   // Note: constructors cannot be used for covariant types. Drop the "new".
   constructor(ofType: GraphQLType): void;
 }
-// eslint-disable-next-line no-redeclare
+*/
+
 export function GraphQLNonNull(ofType) {
   if (this instanceof GraphQLNonNull) {
     this.ofType = assertNullableType(ofType);
