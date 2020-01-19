@@ -22,6 +22,12 @@
           "presets": [["@babel/preset-env", { "modules": false }]]
         }
       }
+    },
+    {
+      "include": "src/error/GraphQLError.js",
+      "plugins": [
+        ["@babel/plugin-transform-classes", { "loose": false }]
+      ]
     }
   ]
 }
