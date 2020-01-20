@@ -500,7 +500,7 @@ describe('Visitor', () => {
           'enter',
           node.kind,
           key,
-          parent && parent.kind != null ? parent.kind : undefined,
+          parent?.kind != null ? parent.kind : undefined,
         ]);
 
         checkVisitorFnArgs(ast, arguments);
@@ -512,7 +512,7 @@ describe('Visitor', () => {
           'leave',
           node.kind,
           key,
-          parent && parent.kind != null ? parent.kind : undefined,
+          parent?.kind != null ? parent.kind : undefined,
         ]);
 
         expect(argsStack.pop()).to.deep.equal([...arguments]);

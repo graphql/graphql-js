@@ -164,7 +164,7 @@ export function parseType(
 }
 
 class Parser {
-  _options: ParseOptions;
+  _options: ?ParseOptions;
   _lexer: Lexer;
 
   constructor(source: string | Source, options?: ParseOptions) {
@@ -175,12 +175,7 @@ class Parser {
     );
 
     this._lexer = new Lexer(sourceObj);
-    this._options = options || {
-      noLocation: false,
-      allowLegacySDLEmptyFields: false,
-      allowLegacySDLImplementsInterfaces: false,
-      experimentalFragmentVariables: false,
-    };
+    this._options = options;
   }
 
   /**
@@ -483,7 +478,7 @@ class Parser {
     // Experimental support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options.experimentalFragmentVariables) {
+    if (this._options?.experimentalFragmentVariables === true) {
       return {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
@@ -869,7 +864,7 @@ class Parser {
       } while (
         this.expectOptionalToken(TokenKind.AMP) ||
         // Legacy support for the SDL?
-        (this._options.allowLegacySDLImplementsInterfaces &&
+        (this._options?.allowLegacySDLImplementsInterfaces === true &&
           this.peek(TokenKind.NAME))
       );
     }
@@ -882,7 +877,7 @@ class Parser {
   parseFieldsDefinition(): Array<FieldDefinitionNode> {
     // Legacy support for the SDL?
     if (
-      this._options.allowLegacySDLEmptyFields &&
+      this._options?.allowLegacySDLEmptyFields === true &&
       this.peek(TokenKind.BRACE_L) &&
       this._lexer.lookahead().kind === TokenKind.BRACE_R
     ) {
@@ -1403,7 +1398,7 @@ class Parser {
    * the source that created a given parsed object.
    */
   loc(startToken: Token): Location | void {
-    if (!this._options.noLocation) {
+    if (this._options?.noLocation !== true) {
       return new Location(
         startToken,
         this._lexer.lastToken,

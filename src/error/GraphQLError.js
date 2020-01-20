@@ -99,8 +99,7 @@ export class GraphQLError extends Error {
     // Compute locations in the source for the given nodes/positions.
     let _source = source;
     if (!_source && _nodes) {
-      const node = _nodes[0];
-      _source = node && node.loc && node.loc.source;
+      _source = _nodes[0].loc?.source;
     }
 
     let _positions = positions;
@@ -188,7 +187,7 @@ export class GraphQLError extends Error {
     });
 
     // Include (non-enumerable) stack trace.
-    if (originalError && originalError.stack) {
+    if (originalError?.stack) {
       Object.defineProperty(this, 'stack', {
         value: originalError.stack,
         writable: true,

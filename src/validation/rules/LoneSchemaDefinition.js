@@ -15,11 +15,10 @@ export function LoneSchemaDefinition(
 ): ASTVisitor {
   const oldSchema = context.getSchema();
   const alreadyDefined =
-    oldSchema &&
-    (oldSchema.astNode ||
-      oldSchema.getQueryType() ||
-      oldSchema.getMutationType() ||
-      oldSchema.getSubscriptionType());
+    oldSchema?.astNode ||
+    oldSchema?.getQueryType() ||
+    oldSchema?.getMutationType() ||
+    oldSchema?.getSubscriptionType();
 
   let schemaDefinitionsCount = 0;
   return {

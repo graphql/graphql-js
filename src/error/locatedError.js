@@ -16,15 +16,15 @@ export function locatedError(
 ): GraphQLError {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
-  if (originalError && Array.isArray(originalError.path)) {
+  if (Array.isArray(originalError.path)) {
     return (originalError: any);
   }
 
   return new GraphQLError(
-    originalError && originalError.message,
-    (originalError && (originalError: any).nodes) || nodes,
-    originalError && (originalError: any).source,
-    originalError && (originalError: any).positions,
+    originalError.message,
+    (originalError: any).nodes || nodes,
+    (originalError: any).source,
+    (originalError: any).positions,
     path,
     originalError,
   );

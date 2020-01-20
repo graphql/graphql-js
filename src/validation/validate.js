@@ -49,13 +49,12 @@ export function validate(
 
   const abortObj = Object.freeze({});
   const errors = [];
-  const maxErrors = options && options.maxErrors;
   const context = new ValidationContext(
     schema,
     documentAST,
     typeInfo,
     error => {
-      if (maxErrors != null && errors.length >= maxErrors) {
+      if (options.maxErrors != null && errors.length >= options.maxErrors) {
         errors.push(
           new GraphQLError(
             'Too many validation errors, error limit reached. Validation aborted.',

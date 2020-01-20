@@ -333,7 +333,7 @@ function printDescription(
     return '';
   }
 
-  if (options && options.commentDescriptions) {
+  if (options?.commentDescriptions === true) {
     return printDescriptionWithComments(description, indentation, firstInBlock);
   }
 
