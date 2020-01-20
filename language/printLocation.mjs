@@ -1,4 +1,4 @@
-import { getLocation } from '../language/location';
+import { getLocation } from './location';
 /**
  * Render a helpful description of the location in the GraphQL Source document.
  */

@@ -7,7 +7,7 @@ import { isIntrospectionType } from '../type/introspection';
 import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
 import { GraphQLDirective, DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from '../type/directives';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
-import { astFromValue } from '../utilities/astFromValue';
+import { astFromValue } from './astFromValue';
 
 /**
  * Accepts options as a second argument:

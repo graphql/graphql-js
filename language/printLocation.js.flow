@@ -1,8 +1,8 @@
 // @flow strict
 
-import { type Location } from '../language/ast';
-import { type Source } from '../language/source';
-import { type SourceLocation, getLocation } from '../language/location';
+import { type Location } from './ast';
+import { type Source } from './source';
+import { type SourceLocation, getLocation } from './location';
 
 /**
  * Render a helpful description of the location in the GraphQL Source document.

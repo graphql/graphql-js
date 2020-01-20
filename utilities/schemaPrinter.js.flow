@@ -32,7 +32,7 @@ import {
   isInputObjectType,
 } from '../type/definition';
 
-import { astFromValue } from '../utilities/astFromValue';
+import { astFromValue } from './astFromValue';
 
 type Options = {|
   /**

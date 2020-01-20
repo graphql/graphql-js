@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.printLocation = printLocation;
 exports.printSourceLocation = printSourceLocation;
 
-var _location = require("../language/location");
+var _location = require("./location");
 
 /**
  * Render a helpful description of the location in the GraphQL Source document.

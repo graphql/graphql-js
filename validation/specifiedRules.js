@@ -97,6 +97,7 @@ var _PossibleTypeExtensions = require("./rules/PossibleTypeExtensions");
 // Spec Section: "All Variable Usages Are Allowed"
 // Spec Section: "Field Selection Merging"
 // Spec Section: "Input Object Field Uniqueness"
+// SDL-specific validation rules
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.
@@ -105,10 +106,10 @@ var _PossibleTypeExtensions = require("./rules/PossibleTypeExtensions");
  * most clear output when encountering multiple validation errors.
  */
 var specifiedRules = Object.freeze([_ExecutableDefinitions.ExecutableDefinitions, _UniqueOperationNames.UniqueOperationNames, _LoneAnonymousOperation.LoneAnonymousOperation, _SingleFieldSubscriptions.SingleFieldSubscriptions, _KnownTypeNames.KnownTypeNames, _FragmentsOnCompositeTypes.FragmentsOnCompositeTypes, _VariablesAreInputTypes.VariablesAreInputTypes, _ScalarLeafs.ScalarLeafs, _FieldsOnCorrectType.FieldsOnCorrectType, _UniqueFragmentNames.UniqueFragmentNames, _KnownFragmentNames.KnownFragmentNames, _NoUnusedFragments.NoUnusedFragments, _PossibleFragmentSpreads.PossibleFragmentSpreads, _NoFragmentCycles.NoFragmentCycles, _UniqueVariableNames.UniqueVariableNames, _NoUndefinedVariables.NoUndefinedVariables, _NoUnusedVariables.NoUnusedVariables, _KnownDirectives.KnownDirectives, _UniqueDirectivesPerLocation.UniqueDirectivesPerLocation, _KnownArgumentNames.KnownArgumentNames, _UniqueArgumentNames.UniqueArgumentNames, _ValuesOfCorrectType.ValuesOfCorrectType, _ProvidedRequiredArguments.ProvidedRequiredArguments, _VariablesInAllowedPosition.VariablesInAllowedPosition, _OverlappingFieldsCanBeMerged.OverlappingFieldsCanBeMerged, _UniqueInputFieldNames.UniqueInputFieldNames]);
-exports.specifiedRules = specifiedRules;
-
 /**
  * @internal
  */
+
+exports.specifiedRules = specifiedRules;
 var specifiedSDLRules = Object.freeze([_LoneSchemaDefinition.LoneSchemaDefinition, _UniqueOperationTypes.UniqueOperationTypes, _UniqueTypeNames.UniqueTypeNames, _UniqueEnumValueNames.UniqueEnumValueNames, _UniqueFieldDefinitionNames.UniqueFieldDefinitionNames, _UniqueDirectiveNames.UniqueDirectiveNames, _KnownTypeNames.KnownTypeNames, _KnownDirectives.KnownDirectives, _UniqueDirectivesPerLocation.UniqueDirectivesPerLocation, _PossibleTypeExtensions.PossibleTypeExtensions, _KnownArgumentNames.KnownArgumentNamesOnDirectives, _UniqueArgumentNames.UniqueArgumentNames, _UniqueInputFieldNames.UniqueInputFieldNames, _ProvidedRequiredArguments.ProvidedRequiredArgumentsOnDirectives]);
 exports.specifiedSDLRules = specifiedSDLRules;

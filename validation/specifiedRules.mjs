@@ -49,7 +49,15 @@ import { VariablesInAllowedPosition } from './rules/VariablesInAllowedPosition';
 
 import { OverlappingFieldsCanBeMerged } from './rules/OverlappingFieldsCanBeMerged'; // Spec Section: "Input Object Field Uniqueness"
 
-import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
+import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames'; // SDL-specific validation rules
+
+import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
+import { UniqueOperationTypes } from './rules/UniqueOperationTypes';
+import { UniqueTypeNames } from './rules/UniqueTypeNames';
+import { UniqueEnumValueNames } from './rules/UniqueEnumValueNames';
+import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
+import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
+import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  *
@@ -58,13 +66,6 @@ import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
  */
 
 export var specifiedRules = Object.freeze([ExecutableDefinitions, UniqueOperationNames, LoneAnonymousOperation, SingleFieldSubscriptions, KnownTypeNames, FragmentsOnCompositeTypes, VariablesAreInputTypes, ScalarLeafs, FieldsOnCorrectType, UniqueFragmentNames, KnownFragmentNames, NoUnusedFragments, PossibleFragmentSpreads, NoFragmentCycles, UniqueVariableNames, NoUndefinedVariables, NoUnusedVariables, KnownDirectives, UniqueDirectivesPerLocation, KnownArgumentNames, UniqueArgumentNames, ValuesOfCorrectType, ProvidedRequiredArguments, VariablesInAllowedPosition, OverlappingFieldsCanBeMerged, UniqueInputFieldNames]);
-import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
-import { UniqueOperationTypes } from './rules/UniqueOperationTypes';
-import { UniqueTypeNames } from './rules/UniqueTypeNames';
-import { UniqueEnumValueNames } from './rules/UniqueEnumValueNames';
-import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
-import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
-import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
 /**
  * @internal
  */

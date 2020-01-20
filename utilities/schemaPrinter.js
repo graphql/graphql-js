@@ -25,7 +25,7 @@ var _directives = require("../type/directives");
 
 var _definition = require("../type/definition");
 
-var _astFromValue = require("../utilities/astFromValue");
+var _astFromValue = require("./astFromValue");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
