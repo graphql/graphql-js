@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.subscribe = subscribe;
 exports.createSourceEventStream = createSourceEventStream;
 
-var _iterall = require("iterall");
+var _symbols = require("../polyfills/symbols");
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
@@ -23,6 +23,8 @@ var _getOperationRootType = require("../utilities/getOperationRootType");
 var _mapAsyncIterator = _interopRequireDefault(require("./mapAsyncIterator"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
   /* eslint-enable no-redeclare */
@@ -87,7 +89,7 @@ function subscribeImpl(args) {
 
   return sourcePromise.then(function (resultOrStream) {
     return (// Note: Flow can't refine isAsyncIterable, so explicit casts are used.
-      (0, _iterall.isAsyncIterable)(resultOrStream) ? (0, _mapAsyncIterator.default)(resultOrStream, mapSourceToResponse, reportGraphQLError) : resultOrStream
+      isAsyncIterable(resultOrStream) ? (0, _mapAsyncIterator.default)(resultOrStream, mapSourceToResponse, reportGraphQLError) : resultOrStream
     );
   });
 }
@@ -169,7 +171,7 @@ function createSourceEventStream(schema, document, rootValue, contextValue, vari
       } // Assert field returned an event stream, otherwise yield an error.
 
 
-      if ((0, _iterall.isAsyncIterable)(eventStream)) {
+      if (isAsyncIterable(eventStream)) {
         // Note: isAsyncIterable above ensures this will be correct.
         return eventStream;
       }
@@ -184,4 +186,17 @@ function createSourceEventStream(schema, document, rootValue, contextValue, vari
       errors: [error]
     }) : Promise.reject(error);
   }
+}
+/**
+ * Returns true if the provided object implements the AsyncIterator protocol via
+ * either implementing a `Symbol.asyncIterator` or `"@@asyncIterator"` method.
+ */
+
+
+function isAsyncIterable(maybeAsyncIterable) {
+  if (maybeAsyncIterable == null || _typeof(maybeAsyncIterable) !== 'object') {
+    return false;
+  }
+
+  return typeof maybeAsyncIterable[_symbols.SYMBOL_ASYNC_ITERATOR] === 'function';
 }

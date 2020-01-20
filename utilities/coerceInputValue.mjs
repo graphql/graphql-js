@@ -1,9 +1,10 @@
-import { forEach, isCollection } from 'iterall';
+import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
+import isCollection from '../jsutils/isCollection';
 import suggestionList from '../jsutils/suggestionList';
 import printPathArray from '../jsutils/printPathArray';
 import { addPath, pathToArray } from '../jsutils/Path';
@@ -48,11 +49,10 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     var itemType = type.ofType;
 
     if (isCollection(inputValue)) {
-      var coercedValue = [];
-      forEach(inputValue, function (itemValue, index) {
-        coercedValue.push(coerceInputValueImpl(itemValue, itemType, onError, addPath(path, index)));
+      return arrayFrom(inputValue, function (itemValue, index) {
+        var itemPath = addPath(path, index);
+        return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
-      return coercedValue;
     } // Lists accept a non-list value as a list of one.
 
 
@@ -65,7 +65,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       return;
     }
 
-    var _coercedValue = {};
+    var coercedValue = {};
     var fieldDefs = type.getFields();
 
     for (var _i2 = 0, _objectValues2 = objectValues(fieldDefs); _i2 < _objectValues2.length; _i2++) {
@@ -74,7 +74,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
       if (fieldValue === undefined) {
         if (field.defaultValue !== undefined) {
-          _coercedValue[field.name] = field.defaultValue;
+          coercedValue[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
           var typeStr = inspect(field.type);
           onError(pathToArray(path), inputValue, new GraphQLError("Field \"".concat(field.name, "\" of required type \"").concat(typeStr, "\" was not provided.")));
@@ -83,7 +83,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
         continue;
       }
 
-      _coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, addPath(path, field.name));
+      coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, addPath(path, field.name));
     } // Ensure every provided field is defined.
 
 
@@ -96,7 +96,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       }
     }
 
-    return _coercedValue;
+    return coercedValue;
   }
 
   /* istanbul ignore else */

@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.astFromValue = astFromValue;
 
-var _iterall = require("iterall");
+var _arrayFrom3 = _interopRequireDefault(require("../polyfills/arrayFrom"));
 
 var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues"));
 
@@ -18,6 +18,8 @@ var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
+var _isCollection = _interopRequireDefault(require("../jsutils/isCollection"));
 
 var _kinds = require("../language/kinds");
 
@@ -76,15 +78,19 @@ function astFromValue(value, type) {
   if ((0, _definition.isListType)(type)) {
     var itemType = type.ofType;
 
-    if ((0, _iterall.isCollection)(value)) {
-      var valuesNodes = [];
-      (0, _iterall.forEach)(value, function (item) {
+    if ((0, _isCollection.default)(value)) {
+      var valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
+      // and it's required to first convert iteratable into array
+
+      for (var _i2 = 0, _arrayFrom2 = (0, _arrayFrom3.default)(value); _i2 < _arrayFrom2.length; _i2++) {
+        var item = _arrayFrom2[_i2];
         var itemNode = astFromValue(item, itemType);
 
-        if (itemNode) {
+        if (itemNode != null) {
           valuesNodes.push(itemNode);
         }
-      });
+      }
+
       return {
         kind: _kinds.Kind.LIST,
         values: valuesNodes
@@ -103,8 +109,8 @@ function astFromValue(value, type) {
 
     var fieldNodes = [];
 
-    for (var _i2 = 0, _objectValues2 = (0, _objectValues3.default)(type.getFields()); _i2 < _objectValues2.length; _i2++) {
-      var field = _objectValues2[_i2];
+    for (var _i4 = 0, _objectValues2 = (0, _objectValues3.default)(type.getFields()); _i4 < _objectValues2.length; _i4++) {
+      var field = _objectValues2[_i4];
       var fieldValue = astFromValue(value[field.name], field.type);
 
       if (fieldValue) {

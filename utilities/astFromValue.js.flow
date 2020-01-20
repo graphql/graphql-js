@@ -1,7 +1,6 @@
 // @flow strict
 
-import { forEach, isCollection } from 'iterall';
-
+import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
@@ -9,6 +8,7 @@ import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import isObjectLike from '../jsutils/isObjectLike';
+import isCollection from '../jsutils/isCollection';
 
 import { Kind } from '../language/kinds';
 import { type ValueNode } from '../language/ast';
@@ -69,12 +69,14 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     const itemType = type.ofType;
     if (isCollection(value)) {
       const valuesNodes = [];
-      forEach((value: any), item => {
+      // Since we transpile for-of in loose mode it doesn't support iterators
+      // and it's required to first convert iteratable into array
+      for (const item of arrayFrom(value)) {
         const itemNode = astFromValue(item, itemType);
-        if (itemNode) {
+        if (itemNode != null) {
           valuesNodes.push(itemNode);
         }
-      });
+      }
       return { kind: Kind.LIST, values: valuesNodes };
     }
     return astFromValue(value, itemType);

@@ -1,6 +1,6 @@
 // @flow strict
 
-import { isAsyncIterable } from 'iterall';
+import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
 
 import inspect from '../jsutils/inspect';
 import { addPath, pathToArray } from '../jsutils/Path';
@@ -297,4 +297,16 @@ export function createSourceEventStream(
       ? Promise.resolve({ errors: [error] })
       : Promise.reject(error);
   }
+}
+
+/**
+ * Returns true if the provided object implements the AsyncIterator protocol via
+ * either implementing a `Symbol.asyncIterator` or `"@@asyncIterator"` method.
+ */
+function isAsyncIterable(maybeAsyncIterable: mixed): boolean {
+  if (maybeAsyncIterable == null || typeof maybeAsyncIterable !== 'object') {
+    return false;
+  }
+
+  return typeof maybeAsyncIterable[SYMBOL_ASYNC_ITERATOR] === 'function';
 }

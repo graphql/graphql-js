@@ -1,4 +1,4 @@
-import { forEach, isCollection } from 'iterall';
+import arrayFrom from '../polyfills/arrayFrom';
 import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';
 import invariant from '../jsutils/invariant';
@@ -7,6 +7,7 @@ import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import isPromise from '../jsutils/isPromise';
 import isObjectLike from '../jsutils/isObjectLike';
+import isCollection from '../jsutils/isCollection';
 import promiseReduce from '../jsutils/promiseReduce';
 import promiseForObject from '../jsutils/promiseForObject';
 import { addPath, pathToArray } from '../jsutils/Path';
@@ -611,8 +612,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
 
   var itemType = returnType.ofType;
   var containsPromise = false;
-  var completedResults = [];
-  forEach(result, function (item, index) {
+  var completedResults = arrayFrom(result, function (item, index) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     var fieldPath = addPath(path, index);
@@ -622,7 +622,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
       containsPromise = true;
     }
 
-    completedResults.push(completedItem);
+    return completedItem;
   });
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }

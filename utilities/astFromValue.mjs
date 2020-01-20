@@ -1,10 +1,11 @@
-import { forEach, isCollection } from 'iterall';
+import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import isObjectLike from '../jsutils/isObjectLike';
+import isCollection from '../jsutils/isCollection';
 import { Kind } from '../language/kinds';
 import { GraphQLID } from '../type/scalars';
 import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
@@ -59,14 +60,18 @@ export function astFromValue(value, type) {
     var itemType = type.ofType;
 
     if (isCollection(value)) {
-      var valuesNodes = [];
-      forEach(value, function (item) {
+      var valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
+      // and it's required to first convert iteratable into array
+
+      for (var _i2 = 0, _arrayFrom2 = arrayFrom(value); _i2 < _arrayFrom2.length; _i2++) {
+        var item = _arrayFrom2[_i2];
         var itemNode = astFromValue(item, itemType);
 
-        if (itemNode) {
+        if (itemNode != null) {
           valuesNodes.push(itemNode);
         }
-      });
+      }
+
       return {
         kind: Kind.LIST,
         values: valuesNodes
@@ -85,8 +90,8 @@ export function astFromValue(value, type) {
 
     var fieldNodes = [];
 
-    for (var _i2 = 0, _objectValues2 = objectValues(type.getFields()); _i2 < _objectValues2.length; _i2++) {
-      var field = _objectValues2[_i2];
+    for (var _i4 = 0, _objectValues2 = objectValues(type.getFields()); _i4 < _objectValues2.length; _i4++) {
+      var field = _objectValues2[_i4];
       var fieldValue = astFromValue(value[field.name], field.type);
 
       if (fieldValue) {

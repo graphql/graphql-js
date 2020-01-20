@@ -12,7 +12,7 @@ exports.resolveFieldValueOrError = resolveFieldValueOrError;
 exports.getFieldDef = getFieldDef;
 exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
 
-var _iterall = require("iterall");
+var _arrayFrom = _interopRequireDefault(require("../polyfills/arrayFrom"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
@@ -29,6 +29,8 @@ var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
 var _isPromise = _interopRequireDefault(require("../jsutils/isPromise"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
+var _isCollection = _interopRequireDefault(require("../jsutils/isCollection"));
 
 var _promiseReduce = _interopRequireDefault(require("../jsutils/promiseReduce"));
 
@@ -619,7 +621,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
 
 function completeListValue(exeContext, returnType, fieldNodes, info, path, result) {
-  if (!(0, _iterall.isCollection)(result)) {
+  if (!(0, _isCollection.default)(result)) {
     throw new _GraphQLError.GraphQLError("Expected Iterable, but did not find one for field \"".concat(info.parentType.name, ".").concat(info.fieldName, "\"."));
   } // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
@@ -627,8 +629,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
 
   var itemType = returnType.ofType;
   var containsPromise = false;
-  var completedResults = [];
-  (0, _iterall.forEach)(result, function (item, index) {
+  var completedResults = (0, _arrayFrom.default)(result, function (item, index) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     var fieldPath = (0, _Path.addPath)(path, index);
@@ -638,7 +639,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
       containsPromise = true;
     }
 
-    completedResults.push(completedItem);
+    return completedItem;
   });
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }

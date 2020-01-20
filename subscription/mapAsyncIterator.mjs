@@ -1,13 +1,15 @@
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import { $$asyncIterator, getAsyncIterator } from 'iterall';
+import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
 export default function mapAsyncIterator(iterable, callback, rejectCallback) {
-  var iterator = getAsyncIterator(iterable);
+  // $FlowFixMe
+  var iteratorMethod = iterable[SYMBOL_ASYNC_ITERATOR];
+  var iterator = iteratorMethod.call(iterable);
   var $return;
   var abruptClose; // $FlowFixMe(>=0.68.0)
 
@@ -59,7 +61,7 @@ export default function mapAsyncIterator(iterable, callback, rejectCallback) {
 
       return Promise.reject(error).catch(abruptClose);
     }
-  }, $$asyncIterator, function () {
+  }, SYMBOL_ASYNC_ITERATOR, function () {
     return this;
   });
 }

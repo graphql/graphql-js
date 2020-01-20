@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.coerceInputValue = coerceInputValue;
 
-var _iterall = require("iterall");
+var _arrayFrom = _interopRequireDefault(require("../polyfills/arrayFrom"));
 
 var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues"));
 
@@ -16,6 +16,8 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 var _didYouMean = _interopRequireDefault(require("../jsutils/didYouMean"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
+var _isCollection = _interopRequireDefault(require("../jsutils/isCollection"));
 
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
 
@@ -66,12 +68,11 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
   if ((0, _definition.isListType)(type)) {
     var itemType = type.ofType;
 
-    if ((0, _iterall.isCollection)(inputValue)) {
-      var coercedValue = [];
-      (0, _iterall.forEach)(inputValue, function (itemValue, index) {
-        coercedValue.push(coerceInputValueImpl(itemValue, itemType, onError, (0, _Path.addPath)(path, index)));
+    if ((0, _isCollection.default)(inputValue)) {
+      return (0, _arrayFrom.default)(inputValue, function (itemValue, index) {
+        var itemPath = (0, _Path.addPath)(path, index);
+        return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
-      return coercedValue;
     } // Lists accept a non-list value as a list of one.
 
 
@@ -84,7 +85,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       return;
     }
 
-    var _coercedValue = {};
+    var coercedValue = {};
     var fieldDefs = type.getFields();
 
     for (var _i2 = 0, _objectValues2 = (0, _objectValues3.default)(fieldDefs); _i2 < _objectValues2.length; _i2++) {
@@ -93,7 +94,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
       if (fieldValue === undefined) {
         if (field.defaultValue !== undefined) {
-          _coercedValue[field.name] = field.defaultValue;
+          coercedValue[field.name] = field.defaultValue;
         } else if ((0, _definition.isNonNullType)(field.type)) {
           var typeStr = (0, _inspect.default)(field.type);
           onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Field \"".concat(field.name, "\" of required type \"").concat(typeStr, "\" was not provided.")));
@@ -102,7 +103,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
         continue;
       }
 
-      _coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, (0, _Path.addPath)(path, field.name));
+      coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, (0, _Path.addPath)(path, field.name));
     } // Ensure every provided field is defined.
 
 
@@ -115,7 +116,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       }
     }
 
-    return _coercedValue;
+    return coercedValue;
   }
 
   /* istanbul ignore else */
