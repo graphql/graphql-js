@@ -4,7 +4,7 @@ import { parse } from '../../language/parser';
 
 import { validateSDL } from '../validate';
 
-import { bigSchemaSDL } from '../../__fixtures__';
+import { bigSchemaSDL } from '../../__fixtures__/index';
 
 const sdlAST = parse(bigSchemaSDL);
 

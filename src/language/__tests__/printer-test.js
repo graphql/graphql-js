@@ -8,7 +8,7 @@ import dedent from '../../jsutils/dedent';
 import { parse } from '../parser';
 import { print } from '../printer';
 
-import { kitchenSinkQuery } from '../../__fixtures__';
+import { kitchenSinkQuery } from '../../__fixtures__/index';
 
 describe('Printer: Query document', () => {
   it('does not alter ast', () => {

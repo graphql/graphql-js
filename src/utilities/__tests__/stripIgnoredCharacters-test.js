@@ -12,7 +12,7 @@ import { Lexer } from '../../language/lexer';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
 
-import { kitchenSinkQuery, kitchenSinkSDL } from '../../__fixtures__';
+import { kitchenSinkQuery, kitchenSinkSDL } from '../../__fixtures__/index';
 
 const ignoredTokens = [
   // UnicodeBOM ::

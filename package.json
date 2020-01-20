@@ -28,7 +28,7 @@
     "test:ci": "yarn check --integrity && npm run prettier:check && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run check:ts && npm run check:spelling && npm run build",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc npm run testonly",
-    "lint": "eslint --cache --ext .js,.ts src resources",
+    "lint": "eslint --rulesdir './resources/eslint-rules' --cache --ext .js,.ts src resources",
     "benchmark": "node --noconcurrent_sweeping --expose-gc --predictable ./resources/benchmark.js",
     "prettier": "prettier --ignore-path .gitignore --write --list-different \"**/*.{js,ts,md,json,yml}\"",
     "prettier:check": "prettier --ignore-path .gitignore --check \"**/*.{js,ts,md,json,yml}\"",

@@ -9,7 +9,7 @@ import { Kind } from '../kinds';
 import { parse } from '../parser';
 import { visit, visitInParallel, BREAK, QueryDocumentKeys } from '../visitor';
 
-import { kitchenSinkQuery } from '../../__fixtures__';
+import { kitchenSinkQuery } from '../../__fixtures__/index';
 
 function checkVisitorFnArgs(ast, args, isEdited) {
   const [node, key, parent, path, ancestors] = args;

@@ -5,7 +5,7 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { validate } from '../validate';
 
-import { bigSchemaSDL } from '../../__fixtures__';
+import { bigSchemaSDL } from '../../__fixtures__/index';
 
 const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
 const queryAST = parse(`

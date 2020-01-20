@@ -10,6 +10,8 @@ plugins:
   - import
 
 rules:
+  no-dir-import: error
+
   ##############################################################################
   # `eslint-plugin-flowtype` rule list based on `v4.6.x`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
