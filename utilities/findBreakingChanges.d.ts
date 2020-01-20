@@ -1,6 +1,4 @@
-import { GraphQLDirective } from '../type/directives';
 import { GraphQLSchema } from '../type/schema';
-import { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export const BreakingChangeType: _BreakingChangeType;
 

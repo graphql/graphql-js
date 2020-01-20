@@ -1,17 +1,14 @@
 import Maybe from '../tsutils/Maybe';
 import { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import { Path, addPath, pathToArray } from '../jsutils/Path';
+import { Path } from '../jsutils/Path';
 
 import { GraphQLError } from '../error/GraphQLError';
-import { locatedError } from '../error/locatedError';
 
 import {
-  DirectiveNode,
   DocumentNode,
   OperationDefinitionNode,
   SelectionSetNode,
   FieldNode,
-  InlineFragmentNode,
   FragmentDefinitionNode,
 } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
