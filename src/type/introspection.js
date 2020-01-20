@@ -1,5 +1,8 @@
 // @flow strict
 
+// FIXME
+/* eslint-disable import/no-cycle */
+
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
