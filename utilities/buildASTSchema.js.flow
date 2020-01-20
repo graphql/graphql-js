@@ -63,11 +63,11 @@ export function buildASTSchema(
   options?: BuildSchemaOptions,
 ): GraphQLSchema {
   devAssert(
-    documentAST && documentAST.kind === Kind.DOCUMENT,
+    documentAST != null && documentAST.kind === Kind.DOCUMENT,
     'Must provide valid Document AST.',
   );
 
-  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+  if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDL(documentAST);
   }
 
@@ -123,18 +123,17 @@ export function buildSchema(
   options?: {| ...BuildSchemaOptions, ...ParseOptions |},
 ): GraphQLSchema {
   const document = parse(source, {
-    noLocation: (options && options.noLocation) || false,
-    allowLegacySDLEmptyFields:
-      (options && options.allowLegacySDLEmptyFields) || false,
+    noLocation: options?.noLocation || false,
+    allowLegacySDLEmptyFields: options?.allowLegacySDLEmptyFields || false,
     allowLegacySDLImplementsInterfaces:
-      (options && options.allowLegacySDLImplementsInterfaces) || false,
+      options?.allowLegacySDLImplementsInterfaces || false,
     experimentalFragmentVariables:
-      (options && options.experimentalFragmentVariables) || false,
+      options?.experimentalFragmentVariables || false,
   });
 
   return buildASTSchema(document, {
-    commentDescriptions: (options && options.commentDescriptions) || false,
-    assumeValidSDL: (options && options.assumeValidSDL) || false,
-    assumeValid: (options && options.assumeValid) || false,
+    commentDescriptions: options?.commentDescriptions || false,
+    assumeValidSDL: options?.assumeValidSDL || false,
+    assumeValid: options?.assumeValid || false,
   });
 }

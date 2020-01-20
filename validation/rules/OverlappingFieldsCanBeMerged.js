@@ -350,10 +350,7 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
   // in the current state of the schema, then perhaps in some future version,
   // thus may not safely diverge.
 
-  var areMutuallyExclusive = parentFieldsAreMutuallyExclusive || parentType1 !== parentType2 && (0, _definition.isObjectType)(parentType1) && (0, _definition.isObjectType)(parentType2); // The return type for each field.
-
-  var type1 = def1 && def1.type;
-  var type2 = def2 && def2.type;
+  var areMutuallyExclusive = parentFieldsAreMutuallyExclusive || parentType1 !== parentType2 && (0, _definition.isObjectType)(parentType1) && (0, _definition.isObjectType)(parentType2);
 
   if (!areMutuallyExclusive) {
     // Two aliases must refer to the same field.
@@ -374,7 +371,11 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
     if (!sameArguments(args1, args2)) {
       return [[responseName, 'they have differing arguments'], [node1], [node2]];
     }
-  }
+  } // The return type for each field.
+
+
+  var type1 = def1 === null || def1 === void 0 ? void 0 : def1.type;
+  var type2 = def2 === null || def2 === void 0 ? void 0 : def2.type;
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
     return [[responseName, "they return conflicting types \"".concat((0, _inspect.default)(type1), "\" and \"").concat((0, _inspect.default)(type2), "\"")], [node1], [node2]];

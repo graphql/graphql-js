@@ -104,8 +104,9 @@ function (_Error) {
     var _source = source;
 
     if (!_source && _nodes) {
-      var node = _nodes[0];
-      _source = node && node.loc && node.loc.source;
+      var _nodes$0$loc;
+
+      _source = (_nodes$0$loc = _nodes[0].loc) === null || _nodes$0$loc === void 0 ? void 0 : _nodes$0$loc.source;
     }
 
     var _positions = positions;
@@ -203,7 +204,7 @@ function (_Error) {
       }
     }); // Include (non-enumerable) stack trace.
 
-    if (originalError && originalError.stack) {
+    if (originalError === null || originalError === void 0 ? void 0 : originalError.stack) {
       Object.defineProperty(_assertThisInitialized(_this), 'stack', {
         value: originalError.stack,
         writable: true,

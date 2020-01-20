@@ -22,7 +22,7 @@ import { coerceInputValue } from '../utilities/coerceInputValue';
  * @internal
  */
 export function getVariableValues(schema, varDefNodes, inputs, options) {
-  var maxErrors = options && options.maxErrors;
+  var maxErrors = options === null || options === void 0 ? void 0 : options.maxErrors;
   var errors = [];
 
   try {

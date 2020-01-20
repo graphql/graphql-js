@@ -76,7 +76,7 @@ function buildClientSchema(introspection, options) {
     subscription: subscriptionType,
     types: (0, _objectValues.default)(typeMap),
     directives: directives,
-    assumeValid: options && options.assumeValid
+    assumeValid: options === null || options === void 0 ? void 0 : options.assumeValid
   }); // Given a type reference in introspection, return the GraphQLType instance.
   // preferring cached instances before building new instances.
 
@@ -154,7 +154,7 @@ function buildClientSchema(introspection, options) {
 
 
   function buildType(type) {
-    if (type && type.name && type.kind) {
+    if (type != null && type.name != null && type.kind != null) {
       switch (type.kind) {
         case _introspection.TypeKind.SCALAR:
           return buildScalarDef(type);

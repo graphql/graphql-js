@@ -54,7 +54,7 @@ function astFromValue(value, type) {
   if ((0, _definition.isNonNullType)(type)) {
     var astValue = astFromValue(value, type.ofType);
 
-    if (astValue && astValue.kind === _kinds.Kind.NULL) {
+    if ((astValue === null || astValue === void 0 ? void 0 : astValue.kind) === _kinds.Kind.NULL) {
       return null;
     }
 

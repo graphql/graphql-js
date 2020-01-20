@@ -20,7 +20,7 @@ export function UniqueDirectiveNames(
     DirectiveDefinition(node) {
       const directiveName = node.name.value;
 
-      if (schema && schema.getDirective(directiveName)) {
+      if (schema?.getDirective(directiveName)) {
         context.reportError(
           new GraphQLError(
             `Directive "@${directiveName}" already exists in the schema. It cannot be redefined.`,

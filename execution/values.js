@@ -43,7 +43,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @internal
  */
 function getVariableValues(schema, varDefNodes, inputs, options) {
-  var maxErrors = options && options.maxErrors;
+  var maxErrors = options === null || options === void 0 ? void 0 : options.maxErrors;
   var errors = [];
 
   try {

@@ -56,7 +56,7 @@ function PossibleTypeExtensions(context) {
   function checkExtension(node) {
     var typeName = node.name.value;
     var defNode = definedTypes[typeName];
-    var existingType = schema && schema.getType(typeName);
+    var existingType = schema === null || schema === void 0 ? void 0 : schema.getType(typeName);
     var expectedKind;
 
     if (defNode) {

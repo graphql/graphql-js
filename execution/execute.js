@@ -152,6 +152,8 @@ function assertValidExecutionArguments(schema, document, rawVariableValues) {
 
 
 function buildExecutionContext(schema, document, rootValue, contextValue, rawVariableValues, operationName, fieldResolver, typeResolver) {
+  var _definition$name;
+
   var operation;
   var fragments = Object.create(null);
 
@@ -166,7 +168,7 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
           }
 
           operation = definition;
-        } else if (definition.name && definition.name.value === operationName) {
+        } else if (((_definition$name = definition.name) === null || _definition$name === void 0 ? void 0 : _definition$name.value) === operationName) {
           operation = definition;
         }
 
@@ -376,13 +378,13 @@ function collectFields(exeContext, runtimeType, selectionSet, fields, visitedFra
 function shouldIncludeNode(exeContext, node) {
   var skip = (0, _values.getDirectiveValues)(_directives.GraphQLSkipDirective, node, exeContext.variableValues);
 
-  if (skip && skip.if === true) {
+  if ((skip === null || skip === void 0 ? void 0 : skip.if) === true) {
     return false;
   }
 
   var include = (0, _values.getDirectiveValues)(_directives.GraphQLIncludeDirective, node, exeContext.variableValues);
 
-  if (include && include.if === false) {
+  if ((include === null || include === void 0 ? void 0 : include.if) === false) {
     return false;
   }
 

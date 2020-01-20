@@ -8,9 +8,9 @@ import { GraphQLError } from './GraphQLError';
 export function locatedError(originalError, nodes, path) {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
-  if (originalError && Array.isArray(originalError.path)) {
+  if (Array.isArray(originalError.path)) {
     return originalError;
   }
 
-  return new GraphQLError(originalError && originalError.message, originalError && originalError.nodes || nodes, originalError && originalError.source, originalError && originalError.positions, path, originalError);
+  return new GraphQLError(originalError.message, originalError.nodes || nodes, originalError.source, originalError.positions, path, originalError);
 }

@@ -61,7 +61,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
-    this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
+    this.isRepeatable = config.isRepeatable || false;
     this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     config.name || (0, _devAssert.default)(0, 'Directive must be named.');

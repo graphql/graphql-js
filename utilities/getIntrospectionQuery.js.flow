@@ -9,7 +9,7 @@ export type IntrospectionOptions = {|
 |};
 
 export function getIntrospectionQuery(options?: IntrospectionOptions): string {
-  const descriptions = !(options && options.descriptions === false);
+  const descriptions = options?.descriptions !== false ? 'description' : '';
   return `
     query IntrospectionQuery {
       __schema {
@@ -21,7 +21,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         }
         directives {
           name
-          ${descriptions ? 'description' : ''}
+          ${descriptions}
           locations
           args {
             ...InputValue
@@ -33,10 +33,10 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     fragment FullType on __Type {
       kind
       name
-      ${descriptions ? 'description' : ''}
+      ${descriptions}
       fields(includeDeprecated: true) {
         name
-        ${descriptions ? 'description' : ''}
+        ${descriptions}
         args {
           ...InputValue
         }
@@ -54,7 +54,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
       }
       enumValues(includeDeprecated: true) {
         name
-        ${descriptions ? 'description' : ''}
+        ${descriptions}
         isDeprecated
         deprecationReason
       }
@@ -65,7 +65,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
 
     fragment InputValue on __InputValue {
       name
-      ${descriptions ? 'description' : ''}
+      ${descriptions}
       type { ...TypeRef }
       defaultValue
     }

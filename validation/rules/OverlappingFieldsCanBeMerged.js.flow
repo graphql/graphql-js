@@ -559,10 +559,6 @@ function findConflict(
       isObjectType(parentType1) &&
       isObjectType(parentType2));
 
-  // The return type for each field.
-  const type1 = def1 && def1.type;
-  const type2 = def2 && def2.type;
-
   if (!areMutuallyExclusive) {
     // Two aliases must refer to the same field.
     const name1 = node1.name.value;
@@ -588,6 +584,10 @@ function findConflict(
       ];
     }
   }
+
+  // The return type for each field.
+  const type1 = def1?.type;
+  const type2 = def2?.type;
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
     return [

@@ -51,9 +51,8 @@ function validate(schema, documentAST) {
   (0, _validate.assertValidSchema)(schema);
   var abortObj = Object.freeze({});
   var errors = [];
-  var maxErrors = options && options.maxErrors;
   var context = new _ValidationContext.ValidationContext(schema, documentAST, typeInfo, function (error) {
-    if (maxErrors != null && errors.length >= maxErrors) {
+    if (options.maxErrors != null && errors.length >= options.maxErrors) {
       errors.push(new _GraphQLError.GraphQLError('Too many validation errors, error limit reached. Validation aborted.'));
       throw abortObj;
     }

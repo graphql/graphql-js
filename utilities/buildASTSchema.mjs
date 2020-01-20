@@ -29,9 +29,9 @@ import { extendSchemaImpl } from './extendSchema';
  *
  */
 export function buildASTSchema(documentAST, options) {
-  documentAST && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST.');
+  documentAST != null && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST.');
 
-  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+  if ((options === null || options === void 0 ? void 0 : options.assumeValid) !== true && (options === null || options === void 0 ? void 0 : options.assumeValidSDL) !== true) {
     assertValidSDL(documentAST);
   }
 
@@ -94,14 +94,14 @@ var emptySchemaConfig = new GraphQLSchema({
 
 export function buildSchema(source, options) {
   var document = parse(source, {
-    noLocation: options && options.noLocation || false,
-    allowLegacySDLEmptyFields: options && options.allowLegacySDLEmptyFields || false,
-    allowLegacySDLImplementsInterfaces: options && options.allowLegacySDLImplementsInterfaces || false,
-    experimentalFragmentVariables: options && options.experimentalFragmentVariables || false
+    noLocation: (options === null || options === void 0 ? void 0 : options.noLocation) || false,
+    allowLegacySDLEmptyFields: (options === null || options === void 0 ? void 0 : options.allowLegacySDLEmptyFields) || false,
+    allowLegacySDLImplementsInterfaces: (options === null || options === void 0 ? void 0 : options.allowLegacySDLImplementsInterfaces) || false,
+    experimentalFragmentVariables: (options === null || options === void 0 ? void 0 : options.experimentalFragmentVariables) || false
   });
   return buildASTSchema(document, {
-    commentDescriptions: options && options.commentDescriptions || false,
-    assumeValidSDL: options && options.assumeValidSDL || false,
-    assumeValid: options && options.assumeValid || false
+    commentDescriptions: (options === null || options === void 0 ? void 0 : options.commentDescriptions) || false,
+    assumeValidSDL: (options === null || options === void 0 ? void 0 : options.assumeValidSDL) || false,
+    assumeValid: (options === null || options === void 0 ? void 0 : options.assumeValid) || false
   });
 }

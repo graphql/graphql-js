@@ -144,7 +144,7 @@ function validateDirectives(context) {
 
     // Ensure all directives are in fact GraphQL directives.
     if (!(0, _directives.isDirective)(directive)) {
-      context.reportError("Expected directive but got: ".concat((0, _inspect.default)(directive), "."), directive && directive.astNode);
+      context.reportError("Expected directive but got: ".concat((0, _inspect.default)(directive), "."), directive === null || directive === void 0 ? void 0 : directive.astNode);
       continue;
     } // Ensure they are named correctly.
 
@@ -182,7 +182,7 @@ function validateTypes(context) {
 
     // Ensure all provided types are in fact GraphQL type.
     if (!(0, _definition.isNamedType)(type)) {
-      context.reportError("Expected GraphQL named type but got: ".concat((0, _inspect.default)(type), "."), type && type.astNode);
+      context.reportError("Expected GraphQL named type but got: ".concat((0, _inspect.default)(type), "."), type === null || type === void 0 ? void 0 : type.astNode);
       continue;
     } // Ensure it is named correctly (excluding introspection types).
 
@@ -229,7 +229,9 @@ function validateFields(context, type) {
     validateName(context, field); // Ensure the type is an output type
 
     if (!(0, _definition.isOutputType)(field.type)) {
-      context.reportError("The type of ".concat(type.name, ".").concat(field.name, " must be Output Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), field.astNode && field.astNode.type);
+      var _field$astNode;
+
+      context.reportError("The type of ".concat(type.name, ".").concat(field.name, " must be Output Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), (_field$astNode = field.astNode) === null || _field$astNode === void 0 ? void 0 : _field$astNode.type);
     } // Ensure the arguments are valid
 
 
@@ -240,7 +242,9 @@ function validateFields(context, type) {
       validateName(context, arg); // Ensure the type is an input type
 
       if (!(0, _definition.isInputType)(arg.type)) {
-        context.reportError("The type of ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) must be Input ") + "Type but got: ".concat((0, _inspect.default)(arg.type), "."), arg.astNode && arg.astNode.type);
+        var _arg$astNode;
+
+        context.reportError("The type of ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) must be Input ") + "Type but got: ".concat((0, _inspect.default)(arg.type), "."), (_arg$astNode = arg.astNode) === null || _arg$astNode === void 0 ? void 0 : _arg$astNode.type);
       }
     }
   }
@@ -289,7 +293,9 @@ function validateTypeImplementsInterface(context, type, iface) {
 
 
     if (!(0, _typeComparators.isTypeSubTypeOf)(context.schema, typeField.type, ifaceField.type)) {
-      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expects type ") + "".concat((0, _inspect.default)(ifaceField.type), " but ").concat(type.name, ".").concat(fieldName, " ") + "is type ".concat((0, _inspect.default)(typeField.type), "."), [ifaceField.astNode && ifaceField.astNode.type, typeField.astNode && typeField.astNode.type]);
+      var _ifaceField$astNode, _typeField$astNode;
+
+      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expects type ") + "".concat((0, _inspect.default)(ifaceField.type), " but ").concat(type.name, ".").concat(fieldName, " ") + "is type ".concat((0, _inspect.default)(typeField.type), "."), [(_ifaceField$astNode = ifaceField.astNode) === null || _ifaceField$astNode === void 0 ? void 0 : _ifaceField$astNode.type, (_typeField$astNode = typeField.astNode) === null || _typeField$astNode === void 0 ? void 0 : _typeField$astNode.type]);
     } // Assert each interface field arg is implemented.
 
 
@@ -309,7 +315,9 @@ function validateTypeImplementsInterface(context, type, iface) {
 
 
       if (!(0, _typeComparators.isEqualType)(ifaceArg.type, typeArg.type)) {
-        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat((0, _inspect.default)(ifaceArg.type), " but ") + "".concat(type.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat((0, _inspect.default)(typeArg.type), "."), [ifaceArg.astNode && ifaceArg.astNode.type, typeArg.astNode && typeArg.astNode.type]);
+        var _ifaceArg$astNode, _typeArg$astNode;
+
+        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat((0, _inspect.default)(ifaceArg.type), " but ") + "".concat(type.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat((0, _inspect.default)(typeArg.type), "."), [(_ifaceArg$astNode = ifaceArg.astNode) === null || _ifaceArg$astNode === void 0 ? void 0 : _ifaceArg$astNode.type, (_typeArg$astNode = typeArg.astNode) === null || _typeArg$astNode === void 0 ? void 0 : _typeArg$astNode.type]);
       } // TODO: validate default values?
 
     };
@@ -409,7 +417,9 @@ function validateInputFields(context, inputObj) {
     validateName(context, field); // Ensure the type is an input type
 
     if (!(0, _definition.isInputType)(field.type)) {
-      context.reportError("The type of ".concat(inputObj.name, ".").concat(field.name, " must be Input Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), field.astNode && field.astNode.type);
+      var _field$astNode2;
+
+      context.reportError("The type of ".concat(inputObj.name, ".").concat(field.name, " must be Input Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), (_field$astNode2 = field.astNode) === null || _field$astNode2 === void 0 ? void 0 : _field$astNode2.type);
     }
   }
 }

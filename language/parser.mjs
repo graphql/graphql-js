@@ -63,12 +63,7 @@ function () {
     var sourceObj = typeof source === 'string' ? new Source(source) : source;
     sourceObj instanceof Source || devAssert(0, "Must provide Source. Received: ".concat(inspect(sourceObj), "."));
     this._lexer = new Lexer(sourceObj);
-    this._options = options || {
-      noLocation: false,
-      allowLegacySDLEmptyFields: false,
-      allowLegacySDLImplementsInterfaces: false,
-      experimentalFragmentVariables: false
-    };
+    this._options = options;
   }
   /**
    * Converts a name lex token into a name parse node.
@@ -372,12 +367,14 @@ function () {
   ;
 
   _proto.parseFragmentDefinition = function parseFragmentDefinition() {
+    var _this$_options;
+
     var start = this._lexer.token;
     this.expectKeyword('fragment'); // Experimental support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
 
-    if (this._options.experimentalFragmentVariables) {
+    if (((_this$_options = this._options) === null || _this$_options === void 0 ? void 0 : _this$_options.experimentalFragmentVariables) === true) {
       return {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
@@ -808,9 +805,11 @@ function () {
       this.expectOptionalToken(TokenKind.AMP);
 
       do {
+        var _this$_options2;
+
         types.push(this.parseNamedType());
       } while (this.expectOptionalToken(TokenKind.AMP) || // Legacy support for the SDL?
-      this._options.allowLegacySDLImplementsInterfaces && this.peek(TokenKind.NAME));
+      ((_this$_options2 = this._options) === null || _this$_options2 === void 0 ? void 0 : _this$_options2.allowLegacySDLImplementsInterfaces) === true && this.peek(TokenKind.NAME));
     }
 
     return types;
@@ -821,8 +820,10 @@ function () {
   ;
 
   _proto.parseFieldsDefinition = function parseFieldsDefinition() {
+    var _this$_options3;
+
     // Legacy support for the SDL?
-    if (this._options.allowLegacySDLEmptyFields && this.peek(TokenKind.BRACE_L) && this._lexer.lookahead().kind === TokenKind.BRACE_R) {
+    if (((_this$_options3 = this._options) === null || _this$_options3 === void 0 ? void 0 : _this$_options3.allowLegacySDLEmptyFields) === true && this.peek(TokenKind.BRACE_L) && this._lexer.lookahead().kind === TokenKind.BRACE_R) {
       this._lexer.advance();
 
       this._lexer.advance();
@@ -1366,7 +1367,9 @@ function () {
   ;
 
   _proto.loc = function loc(startToken) {
-    if (!this._options.noLocation) {
+    var _this$_options4;
+
+    if (((_this$_options4 = this._options) === null || _this$_options4 === void 0 ? void 0 : _this$_options4.noLocation) !== true) {
       return new Location(startToken, this._lexer.lastToken, this._lexer.source);
     }
   }

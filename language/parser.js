@@ -81,12 +81,7 @@ function () {
     var sourceObj = typeof source === 'string' ? new _source.Source(source) : source;
     sourceObj instanceof _source.Source || (0, _devAssert.default)(0, "Must provide Source. Received: ".concat((0, _inspect.default)(sourceObj), "."));
     this._lexer = new _lexer.Lexer(sourceObj);
-    this._options = options || {
-      noLocation: false,
-      allowLegacySDLEmptyFields: false,
-      allowLegacySDLImplementsInterfaces: false,
-      experimentalFragmentVariables: false
-    };
+    this._options = options;
   }
   /**
    * Converts a name lex token into a name parse node.
@@ -390,12 +385,14 @@ function () {
   ;
 
   _proto.parseFragmentDefinition = function parseFragmentDefinition() {
+    var _this$_options;
+
     var start = this._lexer.token;
     this.expectKeyword('fragment'); // Experimental support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
 
-    if (this._options.experimentalFragmentVariables) {
+    if (((_this$_options = this._options) === null || _this$_options === void 0 ? void 0 : _this$_options.experimentalFragmentVariables) === true) {
       return {
         kind: _kinds.Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
@@ -826,9 +823,11 @@ function () {
       this.expectOptionalToken(_tokenKind.TokenKind.AMP);
 
       do {
+        var _this$_options2;
+
         types.push(this.parseNamedType());
       } while (this.expectOptionalToken(_tokenKind.TokenKind.AMP) || // Legacy support for the SDL?
-      this._options.allowLegacySDLImplementsInterfaces && this.peek(_tokenKind.TokenKind.NAME));
+      ((_this$_options2 = this._options) === null || _this$_options2 === void 0 ? void 0 : _this$_options2.allowLegacySDLImplementsInterfaces) === true && this.peek(_tokenKind.TokenKind.NAME));
     }
 
     return types;
@@ -839,8 +838,10 @@ function () {
   ;
 
   _proto.parseFieldsDefinition = function parseFieldsDefinition() {
+    var _this$_options3;
+
     // Legacy support for the SDL?
-    if (this._options.allowLegacySDLEmptyFields && this.peek(_tokenKind.TokenKind.BRACE_L) && this._lexer.lookahead().kind === _tokenKind.TokenKind.BRACE_R) {
+    if (((_this$_options3 = this._options) === null || _this$_options3 === void 0 ? void 0 : _this$_options3.allowLegacySDLEmptyFields) === true && this.peek(_tokenKind.TokenKind.BRACE_L) && this._lexer.lookahead().kind === _tokenKind.TokenKind.BRACE_R) {
       this._lexer.advance();
 
       this._lexer.advance();
@@ -1384,7 +1385,9 @@ function () {
   ;
 
   _proto.loc = function loc(startToken) {
-    if (!this._options.noLocation) {
+    var _this$_options4;
+
+    if (((_this$_options4 = this._options) === null || _this$_options4 === void 0 ? void 0 : _this$_options4.noLocation) !== true) {
       return new _ast.Location(startToken, this._lexer.lastToken, this._lexer.source);
     }
   }

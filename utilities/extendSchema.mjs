@@ -43,9 +43,9 @@ import { valueFromAST } from './valueFromAST';
  */
 export function extendSchema(schema, documentAST, options) {
   assertSchema(schema);
-  documentAST && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST.');
+  documentAST != null && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST.');
 
-  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+  if ((options === null || options === void 0 ? void 0 : options.assumeValid) !== true && (options === null || options === void 0 ? void 0 : options.assumeValidSDL) !== true) {
     assertValidSDLExtension(documentAST, schema);
   }
 
@@ -88,7 +88,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   // return the same unmodified GraphQLSchema instance.
 
 
-  if (Object.keys(typeExtensionsMap).length === 0 && typeDefs.length === 0 && directiveDefs.length === 0 && schemaExtensions.length === 0 && !schemaDef) {
+  if (Object.keys(typeExtensionsMap).length === 0 && typeDefs.length === 0 && directiveDefs.length === 0 && schemaExtensions.length === 0 && schemaDef == null) {
     return schemaConfig;
   }
 
@@ -119,7 +119,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     extensions: undefined,
     astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: concatMaybeArrays(schemaConfig.extensionASTNodes, schemaExtensions),
-    assumeValid: options && options.assumeValid || false
+    assumeValid: (options === null || options === void 0 ? void 0 : options.assumeValid) || false
   }); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
@@ -608,7 +608,7 @@ var stdTypeMap = keyMap(specifiedScalarTypes.concat(introspectionTypes), functio
 
 function getDeprecationReason(node) {
   var deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
-  return deprecated && deprecated.reason;
+  return deprecated === null || deprecated === void 0 ? void 0 : deprecated.reason;
 }
 /**
  * Given an ast node, returns its string description.
@@ -627,7 +627,7 @@ export function getDescription(node, options) {
     return node.description.value;
   }
 
-  if (options && options.commentDescriptions) {
+  if ((options === null || options === void 0 ? void 0 : options.commentDescriptions) === true) {
     var rawValue = getLeadingCommentBlock(node);
 
     if (rawValue !== undefined) {
@@ -646,7 +646,7 @@ function getLeadingCommentBlock(node) {
   var comments = [];
   var token = loc.startToken.prev;
 
-  while (token && token.kind === TokenKind.COMMENT && token.next && token.prev && token.line + 1 === token.next.line && token.line !== token.prev.line) {
+  while (token != null && token.kind === TokenKind.COMMENT && token.next && token.prev && token.line + 1 === token.next.line && token.line !== token.prev.line) {
     var value = String(token.value);
     comments.push(value);
     token = token.prev;

@@ -119,7 +119,7 @@ function () {
   function GraphQLSchema(config) {
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
-    if (config && config.assumeValid) {
+    if (config.assumeValid === true) {
       this.__validationErrors = [];
     } else {
       this.__validationErrors = undefined; // Otherwise check for common mistakes during construction to produce

@@ -19,6 +19,8 @@ function getOperationAST(documentAST, operationName) {
     var definition = _documentAST$definiti2[_i2];
 
     if (definition.kind === _kinds.Kind.OPERATION_DEFINITION) {
+      var _definition$name;
+
       if (operationName == null) {
         // If no operation name was provided, only return an Operation if there
         // is one defined in the document. Upon encountering the second, return
@@ -28,7 +30,7 @@ function getOperationAST(documentAST, operationName) {
         }
 
         operation = definition;
-      } else if (definition.name && definition.name.value === operationName) {
+      } else if (((_definition$name = definition.name) === null || _definition$name === void 0 ? void 0 : _definition$name.value) === operationName) {
         return definition;
       }
     }

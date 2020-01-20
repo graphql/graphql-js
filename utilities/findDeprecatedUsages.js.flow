@@ -28,7 +28,7 @@ export function findDeprecatedUsages(
       Field(node) {
         const parentType = typeInfo.getParentType();
         const fieldDef = typeInfo.getFieldDef();
-        if (parentType && fieldDef && fieldDef.deprecationReason != null) {
+        if (parentType && fieldDef?.deprecationReason != null) {
           errors.push(
             new GraphQLError(
               `The field "${parentType.name}.${fieldDef.name}" is deprecated. ` +
@@ -41,7 +41,7 @@ export function findDeprecatedUsages(
       EnumValue(node) {
         const type = getNamedType(typeInfo.getInputType());
         const enumVal = typeInfo.getEnumValue();
-        if (type && enumVal && enumVal.deprecationReason != null) {
+        if (type && enumVal?.deprecationReason != null) {
           errors.push(
             new GraphQLError(
               `The enum value "${type.name}.${enumVal.name}" is deprecated. ` +

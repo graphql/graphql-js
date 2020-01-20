@@ -156,7 +156,7 @@ function validateDirectives(context: SchemaValidationContext): void {
     if (!isDirective(directive)) {
       context.reportError(
         `Expected directive but got: ${inspect(directive)}.`,
-        directive && directive.astNode,
+        directive?.astNode,
       );
       continue;
     }
@@ -204,7 +204,7 @@ function validateTypes(context: SchemaValidationContext): void {
     if (!isNamedType(type)) {
       context.reportError(
         `Expected GraphQL named type but got: ${inspect(type)}.`,
-        type && type.astNode,
+        type?.astNode,
       );
       continue;
     }
@@ -265,7 +265,7 @@ function validateFields(
       context.reportError(
         `The type of ${type.name}.${field.name} must be Output Type ` +
           `but got: ${inspect(field.type)}.`,
-        field.astNode && field.astNode.type,
+        field.astNode?.type,
       );
     }
 
@@ -281,7 +281,7 @@ function validateFields(
         context.reportError(
           `The type of ${type.name}.${field.name}(${argName}:) must be Input ` +
             `Type but got: ${inspect(arg.type)}.`,
-          arg.astNode && arg.astNode.type,
+          arg.astNode?.type,
         );
       }
     }
@@ -354,10 +354,7 @@ function validateTypeImplementsInterface(
         `Interface field ${iface.name}.${fieldName} expects type ` +
           `${inspect(ifaceField.type)} but ${type.name}.${fieldName} ` +
           `is type ${inspect(typeField.type)}.`,
-        [
-          ifaceField.astNode && ifaceField.astNode.type,
-          typeField.astNode && typeField.astNode.type,
-        ],
+        [ifaceField.astNode?.type, typeField.astNode?.type],
       );
     }
 
@@ -384,10 +381,7 @@ function validateTypeImplementsInterface(
             `expects type ${inspect(ifaceArg.type)} but ` +
             `${type.name}.${fieldName}(${argName}:) is type ` +
             `${inspect(typeArg.type)}.`,
-          [
-            ifaceArg.astNode && ifaceArg.astNode.type,
-            typeArg.astNode && typeArg.astNode.type,
-          ],
+          [ifaceArg.astNode?.type, typeArg.astNode?.type],
         );
       }
 
@@ -512,7 +506,7 @@ function validateInputFields(
       context.reportError(
         `The type of ${inputObj.name}.${field.name} must be Input Type ` +
           `but got: ${inspect(field.type)}.`,
-        field.astNode && field.astNode.type,
+        field.astNode?.type,
       );
     }
   }

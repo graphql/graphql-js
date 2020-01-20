@@ -51,7 +51,7 @@ export function PossibleTypeExtensions(
   function checkExtension(node) {
     const typeName = node.name.value;
     const defNode = definedTypes[typeName];
-    const existingType = schema && schema.getType(typeName);
+    const existingType = schema?.getType(typeName);
 
     let expectedKind;
     if (defNode) {

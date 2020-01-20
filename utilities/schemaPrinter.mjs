@@ -243,7 +243,7 @@ function printDescription(options, def) {
     return '';
   }
 
-  if (options && options.commentDescriptions) {
+  if ((options === null || options === void 0 ? void 0 : options.commentDescriptions) === true) {
     return printDescriptionWithComments(description, indentation, firstInBlock);
   }
 

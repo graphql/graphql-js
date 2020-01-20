@@ -296,7 +296,7 @@ export function buildExecutionContext(
             ];
           }
           operation = definition;
-        } else if (definition.name && definition.name.value === operationName) {
+        } else if (definition.name?.value === operationName) {
           operation = definition;
         }
         break;
@@ -554,7 +554,7 @@ function shouldIncludeNode(
     node,
     exeContext.variableValues,
   );
-  if (skip && skip.if === true) {
+  if (skip?.if === true) {
     return false;
   }
 
@@ -563,7 +563,7 @@ function shouldIncludeNode(
     node,
     exeContext.variableValues,
   );
-  if (include && include.if === false) {
+  if (include?.if === false) {
     return false;
   }
   return true;

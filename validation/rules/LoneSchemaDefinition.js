@@ -14,7 +14,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  */
 function LoneSchemaDefinition(context) {
   var oldSchema = context.getSchema();
-  var alreadyDefined = oldSchema && (oldSchema.astNode || oldSchema.getQueryType() || oldSchema.getMutationType() || oldSchema.getSubscriptionType());
+  var alreadyDefined = (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.astNode) || (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.getQueryType()) || (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.getMutationType()) || (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.getSubscriptionType());
   var schemaDefinitionsCount = 0;
   return {
     SchemaDefinition: function SchemaDefinition(node) {
