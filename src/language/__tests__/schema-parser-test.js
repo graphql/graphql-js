@@ -5,7 +5,7 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 
-import { kitchenSinkSDL } from '../../__fixtures__';
+import { kitchenSinkSDL } from '../../__fixtures__/index';
 
 import { parse } from '../parser';
 

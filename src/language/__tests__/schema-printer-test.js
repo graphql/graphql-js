@@ -8,7 +8,7 @@ import dedent from '../../jsutils/dedent';
 import { parse } from '../parser';
 import { print } from '../printer';
 
-import { kitchenSinkSDL } from '../../__fixtures__';
+import { kitchenSinkSDL } from '../../__fixtures__/index';
 
 describe('Printer: SDL document', () => {
   it('prints minimal ast', () => {

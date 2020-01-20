@@ -4,7 +4,7 @@ import { parse } from '../../language/parser';
 
 import { buildASTSchema } from '../buildASTSchema';
 
-import { bigSchemaSDL } from '../../__fixtures__';
+import { bigSchemaSDL } from '../../__fixtures__/index';
 
 const schemaAST = parse(bigSchemaSDL);
 

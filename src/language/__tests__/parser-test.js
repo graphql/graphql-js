@@ -13,7 +13,7 @@ import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseType } from '../parser';
 
-import { kitchenSinkQuery } from '../../__fixtures__';
+import { kitchenSinkQuery } from '../../__fixtures__/index';
 
 import toJSONDeep from './toJSONDeep';
 
