@@ -30,6 +30,20 @@ describe('findDeprecatedUsages', () => {
     expect(errors.length).to.equal(0);
   });
 
+  it('should ignore unknown stuff', () => {
+    const errors = findDeprecatedUsages(
+      schema,
+      parse(`
+        {
+          unknownField(unknownArg: UNKNOWN_VALUE)
+          normalField(enumArg: UNKNOWN_VALUE)
+        }
+      `),
+    );
+
+    expect(errors.length).to.equal(0);
+  });
+
   it('should report usage of deprecated fields', () => {
     const errors = findDeprecatedUsages(
       schema,

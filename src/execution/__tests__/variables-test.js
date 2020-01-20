@@ -1017,6 +1017,18 @@ describe('Execute: Handles inputs', () => {
       };
     }
 
+    it('return all errors by default', () => {
+      const result = getVariableValues(schema, variableDefinitions, inputValue);
+
+      expect(result).to.deep.equal({
+        errors: [
+          invalidValueError(0, 0),
+          invalidValueError(1, 1),
+          invalidValueError(2, 2),
+        ],
+      });
+    });
+
     it('when maxErrors is equal to number of errors', () => {
       const result = getVariableValues(
         schema,

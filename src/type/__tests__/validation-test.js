@@ -13,88 +13,92 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { GraphQLSchema } from '../schema';
 import { GraphQLString } from '../scalars';
-import { GraphQLDirective } from '../directives';
 import { validateSchema, assertValidSchema } from '../validate';
+import { GraphQLDirective, assertDirective } from '../directives';
 import {
   type GraphQLNamedType,
   type GraphQLInputType,
   type GraphQLOutputType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  assertScalarType,
+  assertInterfaceType,
+  assertObjectType,
+  assertUnionType,
+  assertEnumType,
+  assertInputObjectType,
 } from '../definition';
 
-const SomeScalarType = new GraphQLScalarType({ name: 'SomeScalar' });
+const SomeSchema = buildSchema(`
+  scalar SomeScalar
 
-const SomeInterfaceType = new GraphQLInterfaceType({
-  name: 'SomeInterface',
-  fields: () => ({ f: { type: SomeObjectType } }),
-});
+  interface SomeInterface { f: SomeObject }
 
-const SomeObjectType = new GraphQLObjectType({
-  name: 'SomeObject',
-  fields: () => ({ f: { type: SomeObjectType } }),
-  interfaces: [SomeInterfaceType],
-});
+  type SomeObject implements SomeInterface { f: SomeObject }
 
-const SomeUnionType = new GraphQLUnionType({
-  name: 'SomeUnion',
-  types: [SomeObjectType],
-});
+  union SomeUnion = SomeObject
 
-const SomeEnumType = new GraphQLEnumType({
-  name: 'SomeEnum',
-  values: {
-    ONLY: {},
-  },
-});
+  enum SomeEnum { ONLY }
 
-const SomeInputObjectType = new GraphQLInputObjectType({
-  name: 'SomeInputObject',
-  fields: {
-    val: { type: GraphQLString, defaultValue: 'hello' },
-  },
-});
+  input SomeInputObject { val: String = "hello" }
+
+  directive @SomeDirective on QUERY
+`);
+
+const SomeScalarType = assertScalarType(SomeSchema.getType('SomeScalar'));
+const SomeInterfaceType = assertInterfaceType(
+  SomeSchema.getType('SomeInterface'),
+);
+const SomeObjectType = assertObjectType(SomeSchema.getType('SomeObject'));
+const SomeUnionType = assertUnionType(SomeSchema.getType('SomeUnion'));
+const SomeEnumType = assertEnumType(SomeSchema.getType('SomeEnum'));
+const SomeInputObjectType = assertInputObjectType(
+  SomeSchema.getType('SomeInputObject'),
+);
+
+const SomeDirective = assertDirective(SomeSchema.getDirective('SomeDirective'));
 
 function withModifiers<T: GraphQLNamedType>(
-  types: Array<T>,
+  type: T,
 ): Array<T | GraphQLList<T> | GraphQLNonNull<T | GraphQLList<T>>> {
   return [
-    ...types,
-    ...types.map(type => GraphQLList(type)),
-    ...types.map(type => GraphQLNonNull(type)),
-    ...types.map(type => GraphQLNonNull(GraphQLList(type))),
+    type,
+    GraphQLList(type),
+    GraphQLNonNull(type),
+    GraphQLNonNull(GraphQLList(type)),
   ];
 }
 
-const outputTypes = withModifiers([
-  GraphQLString,
-  SomeScalarType,
-  SomeEnumType,
-  SomeObjectType,
-  SomeUnionType,
-  SomeInterfaceType,
-]);
+const outputTypes: Array<GraphQLOutputType> = [
+  ...withModifiers(GraphQLString),
+  ...withModifiers(SomeScalarType),
+  ...withModifiers(SomeEnumType),
+  ...withModifiers(SomeObjectType),
+  ...withModifiers(SomeUnionType),
+  ...withModifiers(SomeInterfaceType),
+];
 
-const notOutputTypes = withModifiers([SomeInputObjectType]);
+const notOutputTypes: Array<GraphQLInputType> = [
+  ...withModifiers(SomeInputObjectType),
+];
 
-const inputTypes = withModifiers([
-  GraphQLString,
-  SomeScalarType,
-  SomeEnumType,
-  SomeInputObjectType,
-]);
+const inputTypes: Array<GraphQLInputType> = [
+  ...withModifiers(GraphQLString),
+  ...withModifiers(SomeScalarType),
+  ...withModifiers(SomeEnumType),
+  ...withModifiers(SomeInputObjectType),
+];
 
-const notInputTypes = withModifiers([
-  SomeObjectType,
-  SomeUnionType,
-  SomeInterfaceType,
-]);
+const notInputTypes: Array<GraphQLOutputType> = [
+  ...withModifiers(SomeObjectType),
+  ...withModifiers(SomeUnionType),
+  ...withModifiers(SomeInterfaceType),
+];
 
 function schemaWithFieldType(type) {
   return new GraphQLSchema({
@@ -380,15 +384,39 @@ describe('Type System: A Schema must have Object root types', () => {
     ]);
   });
 
+  it('rejects a Schema whose types are incorrectly typed', () => {
+    const schema = new GraphQLSchema({
+      query: SomeObjectType,
+      // $DisableFlowOnNegativeTest
+      types: [{ name: 'SomeType' }, SomeDirective],
+    });
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message: 'Expected GraphQL named type but got: { name: "SomeType" }.',
+      },
+      {
+        message: 'Expected GraphQL named type but got: @SomeDirective.',
+        locations: [{ line: 14, column: 3 }],
+      },
+    ]);
+  });
+
   it('rejects a Schema whose directives are incorrectly typed', () => {
     const schema = new GraphQLSchema({
       query: SomeObjectType,
       // $DisableFlowOnNegativeTest
-      directives: ['SomeDirective'],
+      directives: [null, 'SomeDirective', SomeScalarType],
     });
     expect(validateSchema(schema)).to.deep.equal([
       {
+        message: 'Expected directive but got: null.',
+      },
+      {
         message: 'Expected directive but got: "SomeDirective".',
+      },
+      {
+        message: 'Expected directive but got: SomeScalar.',
+        locations: [{ line: 2, column: 3 }],
       },
     ]);
   });

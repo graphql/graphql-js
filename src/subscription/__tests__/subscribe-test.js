@@ -8,6 +8,8 @@ import EventEmitter from 'events';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import invariant from '../../jsutils/invariant';
+
 import { parse } from '../../language/parser';
 
 import { GraphQLError } from '../../error/GraphQLError';
@@ -142,7 +144,8 @@ async function expectPromiseToThrow(promise, message) {
     /* istanbul ignore next */
     expect.fail('promise should have thrown but did not');
   } catch (error) {
-    expect(error?.message).to.equal(message);
+    invariant(error instanceof Error);
+    expect(error.message).to.equal(message);
   }
 }
 
