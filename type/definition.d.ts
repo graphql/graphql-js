@@ -1,6 +1,7 @@
 import Maybe from '../tsutils/Maybe';
 import { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { Path } from '../jsutils/Path';
+
 import {
   ScalarTypeDefinitionNode,
   ObjectTypeDefinitionNode,
@@ -22,6 +23,7 @@ import {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
 } from '../language/ast';
+
 import { GraphQLSchema } from './schema';
 
 /**
@@ -384,6 +386,7 @@ export class GraphQLObjectType<
   constructor(
     config: Readonly<GraphQLObjectTypeConfig<TSource, TContext, TArgs>>,
   );
+
   getFields(): GraphQLFieldMap<any, TContext, TArgs>;
   getInterfaces(): GraphQLInterfaceType[];
 

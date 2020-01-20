@@ -37,7 +37,7 @@ GraphQLSchema, GraphQLDirective, GraphQLScalarType, GraphQLObjectType, GraphQLIn
 , isSchema, isDirective, isType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isInputType, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isRequiredArgument, isRequiredInputField, isSpecifiedScalarType, isIntrospectionType, isSpecifiedDirective // Assertions
 , assertSchema, assertDirective, assertType, assertScalarType, assertObjectType, assertInterfaceType, assertUnionType, assertEnumType, assertInputObjectType, assertListType, assertNonNullType, assertInputType, assertOutputType, assertLeafType, assertCompositeType, assertAbstractType, assertWrappingType, assertNullableType, assertNamedType // Un-modifiers
 , getNullableType, getNamedType // Validate GraphQL schema.
-, validateSchema, assertValidSchema } from './type';
+, validateSchema, assertValidSchema } from './type/index';
 // Parse and operate on GraphQL language source files.
 export { Source, getLocation // Print source location
 , printLocation, printSourceLocation // Lex
@@ -45,16 +45,16 @@ export { Source, getLocation // Print source location
 , parse, parseValue, parseType // Print
 , print // Visit
 , visit, visitInParallel, getVisitFn, BREAK, Kind, DirectiveLocation // Predicates
-, isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from './language';
+, isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from './language/index';
 // Execute GraphQL queries.
-export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from './execution';
-export { subscribe, createSourceEventStream } from './subscription';
+export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from './execution/index';
+export { subscribe, createSourceEventStream } from './subscription/index';
 // Validate GraphQL documents.
 export { validate, ValidationContext // All validation rules in the GraphQL Specification.
 , specifiedRules // Individual validation rules.
-, FieldsOnCorrectTypeRule, FragmentsOnCompositeTypesRule, KnownArgumentNamesRule, KnownDirectivesRule, KnownFragmentNamesRule, KnownTypeNamesRule, LoneAnonymousOperationRule, NoFragmentCyclesRule, NoUndefinedVariablesRule, NoUnusedFragmentsRule, NoUnusedVariablesRule, OverlappingFieldsCanBeMergedRule, PossibleFragmentSpreadsRule, ProvidedRequiredArgumentsRule, ScalarLeafsRule, SingleFieldSubscriptionsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule, UniqueFragmentNamesRule, UniqueInputFieldNamesRule, UniqueOperationNamesRule, UniqueVariableNamesRule, ValuesOfCorrectTypeRule, VariablesAreInputTypesRule, VariablesInAllowedPositionRule } from './validation';
+, FieldsOnCorrectTypeRule, FragmentsOnCompositeTypesRule, KnownArgumentNamesRule, KnownDirectivesRule, KnownFragmentNamesRule, KnownTypeNamesRule, LoneAnonymousOperationRule, NoFragmentCyclesRule, NoUndefinedVariablesRule, NoUnusedFragmentsRule, NoUnusedVariablesRule, OverlappingFieldsCanBeMergedRule, PossibleFragmentSpreadsRule, ProvidedRequiredArgumentsRule, ScalarLeafsRule, SingleFieldSubscriptionsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule, UniqueFragmentNamesRule, UniqueInputFieldNamesRule, UniqueOperationNamesRule, UniqueVariableNamesRule, ValuesOfCorrectTypeRule, VariablesAreInputTypesRule, VariablesInAllowedPositionRule } from './validation/index';
 // Create, format, and print GraphQL errors.
-export { GraphQLError, syntaxError, locatedError, printError, formatError } from './error';
+export { GraphQLError, syntaxError, locatedError, printError, formatError } from './error/index';
 // Utilities for operating on GraphQL type schema and parsed sources.
 export { // Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.
@@ -89,4 +89,4 @@ getIntrospectionQuery // Gets the target Operation from a Document.
 , assertValidName // Determine if a string is a valid GraphQL name.
 , isValidNameError // Compares two GraphQLSchemas and detects breaking changes.
 , BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges // Report all deprecated usage within a GraphQL document.
-, findDeprecatedUsages } from './utilities';
+, findDeprecatedUsages } from './utilities/index';

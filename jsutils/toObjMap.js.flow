@@ -1,6 +1,7 @@
 // @flow strict
 
 import objectEntries from '../polyfills/objectEntries';
+
 import {
   type ObjMap,
   type ObjMapLike,

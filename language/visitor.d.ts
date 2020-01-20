@@ -1,4 +1,5 @@
 import Maybe from '../tsutils/Maybe';
+
 import { ASTNode, ASTKindToNode } from './ast';
 
 /**

@@ -124,7 +124,7 @@ export {
   // Validate GraphQL schema.
   validateSchema,
   assertValidSchema,
-} from './type';
+} from './type/index';
 
 export {
   GraphQLType,
@@ -167,7 +167,7 @@ export {
   GraphQLScalarSerializer,
   GraphQLScalarValueParser,
   GraphQLScalarLiteralParser,
-} from './type';
+} from './type/index';
 
 // Parse and operate on GraphQL language source files.
 export {
@@ -202,7 +202,7 @@ export {
   isTypeDefinitionNode,
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
-} from './language';
+} from './language/index';
 
 export {
   ParseOptions,
@@ -274,7 +274,7 @@ export {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
-} from './language';
+} from './language/index';
 
 // Execute GraphQL queries.
 export {
@@ -285,13 +285,13 @@ export {
   getDirectiveValues,
   ExecutionArgs,
   ExecutionResult,
-} from './execution';
+} from './execution/index';
 
 export {
   subscribe,
   createSourceEventStream,
   SubscriptionArgs,
-} from './subscription';
+} from './subscription/index';
 
 // Validate GraphQL documents.
 export {
@@ -326,7 +326,7 @@ export {
   VariablesAreInputTypesRule,
   VariablesInAllowedPositionRule,
   ValidationRule,
-} from './validation';
+} from './validation/index';
 
 // Create, format, and print GraphQL errors.
 export {
@@ -336,7 +336,7 @@ export {
   printError,
   formatError,
   GraphQLFormattedError,
-} from './error';
+} from './error/index';
 
 // Utilities for operating on GraphQL type schema and parsed sources.
 export {
@@ -406,7 +406,7 @@ export {
   findDangerousChanges,
   // Report all deprecated usage within a GraphQL document.
   findDeprecatedUsages,
-} from './utilities';
+} from './utilities/index';
 
 export {
   IntrospectionOptions,
@@ -434,4 +434,4 @@ export {
   BuildSchemaOptions,
   BreakingChange,
   DangerousChange,
-} from './utilities';
+} from './utilities/index';
