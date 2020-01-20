@@ -1,4 +1,5 @@
 import { GraphQLError } from '../error/GraphQLError';
+
 import { GraphQLSchema } from './schema';
 
 /**

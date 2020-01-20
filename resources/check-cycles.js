@@ -6,6 +6,7 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+
 const { exec } = require('./utils');
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flow-dep-graph'));

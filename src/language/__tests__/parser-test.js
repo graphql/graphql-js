@@ -14,6 +14,7 @@ import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseType } from '../parser';
 
 import { kitchenSinkQuery } from '../../__fixtures__';
+
 import toJSONDeep from './toJSONDeep';
 
 function expectSyntaxError(text) {

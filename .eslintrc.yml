@@ -103,7 +103,7 @@ rules:
   import/no-duplicates: error
   import/no-namespace: error
   import/extensions: [error, never] # TODO: switch to ignorePackages
-  import/order: error
+  import/order: [error, { newlines-between: always-and-inside-groups }]
   import/newline-after-import: error
   import/prefer-default-export: off
   import/max-dependencies: off

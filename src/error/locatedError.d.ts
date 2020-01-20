@@ -1,4 +1,5 @@
 import { ASTNode } from '../language/ast';
+
 import { GraphQLError } from './GraphQLError';
 
 /**
