@@ -87,7 +87,7 @@ rules:
   import/no-named-as-default: error
   import/no-named-as-default-member: error
   import/no-deprecated: error
-  import/no-extraneous-dependencies: error
+  import/no-extraneous-dependencies: [error, { devDependencies: false }]
   import/no-mutable-exports: error
   import/no-unused-modules: error
 
@@ -480,6 +480,7 @@ overrides:
       '@typescript-eslint/type-annotation-spacing': off
   - files: '**/__*__/**'
     rules:
+      import/no-extraneous-dependencies: off
       import/no-nodejs-modules: off
       no-restricted-syntax: off
   - files: 'resources/**'
@@ -487,6 +488,7 @@ overrides:
       sourceType: script
     rules:
       import/no-dynamic-require: off
+      import/no-extraneous-dependencies: off
       import/no-nodejs-modules: off
       import/no-commonjs: off
       no-await-in-loop: off
