@@ -161,7 +161,7 @@ function validateTypes(context) {
 
     // Ensure all provided types are in fact GraphQL type.
     if (!isNamedType(type)) {
-      context.reportError("Expected GraphQL named type but got: ".concat(inspect(type), "."), type === null || type === void 0 ? void 0 : type.astNode);
+      context.reportError("Expected GraphQL named type but got: ".concat(inspect(type), "."), type.astNode);
       continue;
     } // Ensure it is named correctly (excluding introspection types).
 
@@ -272,9 +272,7 @@ function validateTypeImplementsInterface(context, type, iface) {
 
 
     if (!isTypeSubTypeOf(context.schema, typeField.type, ifaceField.type)) {
-      var _ifaceField$astNode, _typeField$astNode;
-
-      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expects type ") + "".concat(inspect(ifaceField.type), " but ").concat(type.name, ".").concat(fieldName, " ") + "is type ".concat(inspect(typeField.type), "."), [(_ifaceField$astNode = ifaceField.astNode) === null || _ifaceField$astNode === void 0 ? void 0 : _ifaceField$astNode.type, (_typeField$astNode = typeField.astNode) === null || _typeField$astNode === void 0 ? void 0 : _typeField$astNode.type]);
+      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expects type ") + "".concat(inspect(ifaceField.type), " but ").concat(type.name, ".").concat(fieldName, " ") + "is type ".concat(inspect(typeField.type), "."), [ifaceField.astNode.type, typeField.astNode.type]);
     } // Assert each interface field arg is implemented.
 
 
@@ -294,9 +292,7 @@ function validateTypeImplementsInterface(context, type, iface) {
 
 
       if (!isEqualType(ifaceArg.type, typeArg.type)) {
-        var _ifaceArg$astNode, _typeArg$astNode;
-
-        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat(inspect(ifaceArg.type), " but ") + "".concat(type.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat(inspect(typeArg.type), "."), [(_ifaceArg$astNode = ifaceArg.astNode) === null || _ifaceArg$astNode === void 0 ? void 0 : _ifaceArg$astNode.type, (_typeArg$astNode = typeArg.astNode) === null || _typeArg$astNode === void 0 ? void 0 : _typeArg$astNode.type]);
+        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat(inspect(ifaceArg.type), " but ") + "".concat(type.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat(inspect(typeArg.type), "."), [ifaceArg.astNode.type, typeArg.astNode.type]);
       } // TODO: validate default values?
 
     };
