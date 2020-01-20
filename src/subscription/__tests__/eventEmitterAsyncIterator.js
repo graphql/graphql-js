@@ -1,7 +1,6 @@
 // @flow strict
 
 import type EventEmitter from 'events';
-import { $$asyncIterator } from 'iterall';
 
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
@@ -60,7 +59,8 @@ export default function eventEmitterAsyncIterator(
       emptyQueue();
       return Promise.reject(error);
     },
-    [$$asyncIterator]() {
+    // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
+    [Symbol.asyncIterator]() {
       return this;
     },
   }: any);
