@@ -8,6 +8,7 @@
     "jsutils",
     "tsutils",
     "noflow",
+    "flowlint",
 
     // Different names used inside tests
     "Skywalker",
