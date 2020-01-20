@@ -1,4 +1,3 @@
-import Maybe from '../tsutils/Maybe';
 import { DocumentNode } from '../language/ast';
 import { Source } from '../language/source';
 import { GraphQLSchema, GraphQLSchemaValidationOptions } from '../type/schema';

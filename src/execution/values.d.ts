@@ -8,11 +8,7 @@ import {
 
 import { GraphQLDirective } from '../type/directives';
 import { GraphQLSchema } from '../type/schema';
-import {
-  GraphQLInputType,
-  GraphQLField,
-  GraphQLArgument,
-} from '../type/definition';
+import { GraphQLField } from '../type/definition';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
