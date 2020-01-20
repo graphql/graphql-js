@@ -28,7 +28,7 @@
     "test:ci": "yarn check --integrity && npm run prettier:check && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run check:ts && npm run check:spelling && npm run build",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc npm run testonly",
-    "lint": "eslint --cache src resources",
+    "lint": "eslint --cache --ext .js,.ts src resources",
     "benchmark": "node --noconcurrent_sweeping --expose-gc --predictable ./resources/benchmark.js",
     "prettier": "prettier --ignore-path .gitignore --write --list-different \"**/*.{js,ts,md,json,yml}\"",
     "prettier:check": "prettier --ignore-path .gitignore --check \"**/*.{js,ts,md,json,yml}\"",
@@ -49,6 +49,8 @@
     "@babel/polyfill": "7.8.3",
     "@babel/preset-env": "7.8.3",
     "@babel/register": "7.8.3",
+    "@typescript-eslint/eslint-plugin": "2.16.0",
+    "@typescript-eslint/parser": "2.16.0",
     "babel-eslint": "10.0.3",
     "chai": "4.2.0",
     "cspell": "4.0.44",
@@ -59,6 +61,7 @@
     "flow-bin": "0.116.1",
     "mocha": "7.0.0",
     "nyc": "15.0.0",
-    "prettier": "1.19.1"
+    "prettier": "1.19.1",
+    "typescript": "^3.7.5"
   }
 }

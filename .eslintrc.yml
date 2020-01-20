@@ -421,6 +421,66 @@ rules:
   yield-star-spacing: off
 
 overrides:
+  - files: '**/*.ts'
+    parser: '@typescript-eslint/parser'
+    plugins:
+      - '@typescript-eslint'
+    rules:
+      flowtype/require-valid-file-annotation: off
+      import/named: off
+      import/namespace: off
+      import/default: off
+      import/no-named-as-default-member: off
+      import/no-named-as-default: off
+      import/no-cycle: off
+      import/no-unused-modules: off
+      import/no-deprecated: off
+      import/no-unresolved: off
+      import/export: off
+      no-undef: off
+
+      import/first: off
+      import/order: off
+      import/no-useless-path-segments: off
+      lines-between-class-members: off
+
+      # Extension Rules
+      # https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#extension-rules
+
+      # Disable conflicting ESLint rules and enable TS-compatible ones
+      default-param-last: off
+      no-array-constructor: off
+      no-empty-function: off
+      no-unused-expressions: off
+      no-unused-vars: off
+      no-useless-constructor: off
+      require-await: off
+      no-return-await: off
+      '@typescript-eslint/default-param-last': error
+      '@typescript-eslint/no-array-constructor': error
+      '@typescript-eslint/no-empty-function': error
+      '@typescript-eslint/no-unused-expressions': error
+      '@typescript-eslint/no-unused-vars': off # TODO [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
+      '@typescript-eslint/no-useless-constructor': error
+      '@typescript-eslint/require-await': off # TODO
+      '@typescript-eslint/return-await': off # TODO
+
+      # Disable for JS, Flow and TS
+      '@typescript-eslint/no-magic-numbers': off
+      '@typescript-eslint/no-use-before-define': off
+
+      # Bellow rules are disabled because coflicts with Prettier, see:
+      # https://github.com/prettier/eslint-config-prettier/blob/master/%40typescript-eslint.js
+      '@typescript-eslint/quotes': off
+      '@typescript-eslint/brace-style': off
+      '@typescript-eslint/func-call-spacing': off
+      '@typescript-eslint/indent': off
+      '@typescript-eslint/member-delimiter-style': off
+      '@typescript-eslint/no-extra-parens': off
+      '@typescript-eslint/no-extra-semi': off
+      '@typescript-eslint/semi': off
+      '@typescript-eslint/space-before-function-paren': off
+      '@typescript-eslint/type-annotation-spacing': off
   - files: '**/__*__/**'
     rules:
       import/no-nodejs-modules: off
