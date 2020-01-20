@@ -1,7 +1,8 @@
 // @flow strict
 
+import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
+
 import devAssert from '../jsutils/devAssert';
-import defineToStringTag from '../jsutils/defineToStringTag';
 
 type Location = {|
   line: number,
@@ -34,7 +35,9 @@ export class Source {
       'column in locationOffset is 1-indexed and must be positive.',
     );
   }
-}
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(Source);
+  // $FlowFixMe Flow doesn't support computed properties yet
+  get [SYMBOL_TO_STRING_TAG]() {
+    return 'Source';
+  }
+}

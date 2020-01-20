@@ -1,6 +1,7 @@
 // @flow strict
 
 import objectEntries from '../polyfills/objectEntries';
+import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
 import inspect from '../jsutils/inspect';
 import toObjMap from '../jsutils/toObjMap';
@@ -8,7 +9,6 @@ import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import defineToJSON from '../jsutils/defineToJSON';
 import isObjectLike from '../jsutils/isObjectLike';
-import defineToStringTag from '../jsutils/defineToStringTag';
 import {
   type ReadOnlyObjMap,
   type ReadOnlyObjMapLike,
@@ -111,10 +111,13 @@ export class GraphQLDirective {
   toString(): string {
     return '@' + this.name;
   }
+
+  // $FlowFixMe Flow doesn't support computed properties yet
+  get [SYMBOL_TO_STRING_TAG]() {
+    return 'GraphQLDirective';
+  }
 }
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(GraphQLDirective);
 defineToJSON(GraphQLDirective);
 
 export type GraphQLDirectiveConfig = {|
