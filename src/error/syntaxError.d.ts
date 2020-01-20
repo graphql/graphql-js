@@ -1,4 +1,5 @@
 import { Source } from '../language/source';
+
 import { GraphQLError } from './GraphQLError';
 
 /**

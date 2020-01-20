@@ -3,6 +3,7 @@
 'use strict';
 
 const { version } = require('../package.json');
+
 const { writeFile, parseSemver } = require('./utils');
 
 const { major, minor, patch, preReleaseTag } = parseSemver(version);

@@ -1,5 +1,7 @@
 import Maybe from '../tsutils/Maybe';
+
 import { SchemaDefinitionNode, SchemaExtensionNode } from '../language/ast';
+
 import { GraphQLDirective } from './directives';
 import {
   GraphQLNamedType,

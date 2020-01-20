@@ -1,4 +1,5 @@
 import { GraphQLSchema } from '../type/schema';
+
 import {
   IntrospectionQuery,
   IntrospectionOptions,
