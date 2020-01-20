@@ -1,4 +1,3 @@
-import Maybe from '../../tsutils/Maybe';
 import { ASTVisitor } from '../../language/visitor';
 import { ASTValidationContext } from '../ValidationContext';
 

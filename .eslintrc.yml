@@ -460,7 +460,8 @@ overrides:
       '@typescript-eslint/no-array-constructor': error
       '@typescript-eslint/no-empty-function': error
       '@typescript-eslint/no-unused-expressions': error
-      '@typescript-eslint/no-unused-vars': off # TODO [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
+      '@typescript-eslint/no-unused-vars':
+        [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
       '@typescript-eslint/no-useless-constructor': error
       '@typescript-eslint/require-await': off # TODO
       '@typescript-eslint/return-await': off # TODO
