@@ -1,7 +1,10 @@
+all: true
 include:
   - 'src/'
 exclude:
   - 'src/polyfills'
+  - '**/*-benchmark.js'
+  - '**/*.d.ts'
 clean: true
 temp-directory: 'coverage/tests'
 report-dir: 'coverage/tests'
