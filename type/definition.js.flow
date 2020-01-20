@@ -1,6 +1,7 @@
 // @flow strict
 
 import objectEntries from '../polyfills/objectEntries';
+import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
 import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
@@ -15,7 +16,6 @@ import isObjectLike from '../jsutils/isObjectLike';
 import identityFunc from '../jsutils/identityFunc';
 import defineToJSON from '../jsutils/defineToJSON';
 import suggestionList from '../jsutils/suggestionList';
-import defineToStringTag from '../jsutils/defineToStringTag';
 import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 import {
   type ObjMap,
@@ -367,8 +367,12 @@ export function GraphQLList(ofType) {
   return '[' + String(this.ofType) + ']';
 };
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(GraphQLList);
+Object.defineProperty(GraphQLList.prototype, SYMBOL_TO_STRING_TAG, {
+  get() {
+    return 'GraphQLList';
+  },
+});
+
 defineToJSON(GraphQLList);
 
 /**
@@ -411,8 +415,12 @@ export function GraphQLNonNull(ofType) {
   return String(this.ofType) + '!';
 };
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(GraphQLNonNull);
+Object.defineProperty(GraphQLNonNull.prototype, SYMBOL_TO_STRING_TAG, {
+  get() {
+    return 'GraphQLNonNull';
+  },
+});
+
 defineToJSON(GraphQLNonNull);
 
 /**
@@ -608,10 +616,13 @@ export class GraphQLScalarType {
   toString(): string {
     return this.name;
   }
+
+  // $FlowFixMe Flow doesn't support computed properties yet
+  get [SYMBOL_TO_STRING_TAG]() {
+    return 'GraphQLScalarType';
+  }
 }
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(GraphQLScalarType);
 defineToJSON(GraphQLScalarType);
 
 export type GraphQLScalarSerializer<TExternal> = (
@@ -743,10 +754,13 @@ export class GraphQLObjectType {
   toString(): string {
     return this.name;
   }
+
+  // $FlowFixMe Flow doesn't support computed properties yet
+  get [SYMBOL_TO_STRING_TAG]() {
+    return 'GraphQLObjectType';
+  }
 }
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(GraphQLObjectType);
 defineToJSON(GraphQLObjectType);
 
 function defineInterfaces(
@@ -1050,10 +1064,13 @@ export class GraphQLInterfaceType {
   toString(): string {
     return this.name;
   }
+
+  // $FlowFixMe Flow doesn't support computed properties yet
+  get [SYMBOL_TO_STRING_TAG]() {
+    return 'GraphQLInterfaceType';
+  }
 }
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(GraphQLInterfaceType);
 defineToJSON(GraphQLInterfaceType);
 
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {|
@@ -1149,10 +1166,13 @@ export class GraphQLUnionType {
   toString(): string {
     return this.name;
   }
+
+  // $FlowFixMe Flow doesn't support computed properties yet
+  get [SYMBOL_TO_STRING_TAG]() {
+    return 'GraphQLUnionType';
+  }
 }
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(GraphQLUnionType);
 defineToJSON(GraphQLUnionType);
 
 function defineTypes(
@@ -1319,10 +1339,13 @@ export class GraphQLEnumType /* <T> */ {
   toString(): string {
     return this.name;
   }
+
+  // $FlowFixMe Flow doesn't support computed properties yet
+  get [SYMBOL_TO_STRING_TAG]() {
+    return 'GraphQLEnumType';
+  }
 }
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(GraphQLEnumType);
 defineToJSON(GraphQLEnumType);
 
 function didYouMeanEnumValue(
@@ -1468,10 +1491,13 @@ export class GraphQLInputObjectType {
   toString(): string {
     return this.name;
   }
+
+  // $FlowFixMe Flow doesn't support computed properties yet
+  get [SYMBOL_TO_STRING_TAG]() {
+    return 'GraphQLInputObjectType';
+  }
 }
 
-// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-defineToStringTag(GraphQLInputObjectType);
 defineToJSON(GraphQLInputObjectType);
 
 function defineInputFieldMap(

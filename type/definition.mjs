@@ -1,4 +1,9 @@
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 import objectEntries from '../polyfills/objectEntries';
+import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
 import mapValue from '../jsutils/mapValue';
@@ -11,7 +16,6 @@ import isObjectLike from '../jsutils/isObjectLike';
 import identityFunc from '../jsutils/identityFunc';
 import defineToJSON from '../jsutils/defineToJSON';
 import suggestionList from '../jsutils/suggestionList';
-import defineToStringTag from '../jsutils/defineToStringTag';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 import { GraphQLError } from '../error/GraphQLError';
@@ -218,10 +222,13 @@ export function GraphQLList(ofType) {
 
 GraphQLList.prototype.toString = function toString() {
   return '[' + String(this.ofType) + ']';
-}; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+};
 
-
-defineToStringTag(GraphQLList);
+Object.defineProperty(GraphQLList.prototype, SYMBOL_TO_STRING_TAG, {
+  get: function get() {
+    return 'GraphQLList';
+  }
+});
 defineToJSON(GraphQLList);
 /**
  * Non-Null Type Wrapper
@@ -255,10 +262,13 @@ export function GraphQLNonNull(ofType) {
 
 GraphQLNonNull.prototype.toString = function toString() {
   return String(this.ofType) + '!';
-}; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+};
 
-
-defineToStringTag(GraphQLNonNull);
+Object.defineProperty(GraphQLNonNull.prototype, SYMBOL_TO_STRING_TAG, {
+  get: function get() {
+    return 'GraphQLNonNull';
+  }
+});
 defineToJSON(GraphQLNonNull);
 /**
  * These types wrap and modify other types
@@ -405,12 +415,18 @@ function () {
 
   _proto.toString = function toString() {
     return this.name;
-  };
+  } // $FlowFixMe Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLScalarType, [{
+    key: SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLScalarType';
+    }
+  }]);
 
   return GraphQLScalarType;
-}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-
-defineToStringTag(GraphQLScalarType);
+}();
 defineToJSON(GraphQLScalarType);
 
 /**
@@ -499,12 +515,18 @@ function () {
 
   _proto2.toString = function toString() {
     return this.name;
-  };
+  } // $FlowFixMe Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLObjectType, [{
+    key: SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLObjectType';
+    }
+  }]);
 
   return GraphQLObjectType;
-}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-
-defineToStringTag(GraphQLObjectType);
+}();
 defineToJSON(GraphQLObjectType);
 
 function defineInterfaces(config) {
@@ -656,12 +678,18 @@ function () {
 
   _proto3.toString = function toString() {
     return this.name;
-  };
+  } // $FlowFixMe Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLInterfaceType, [{
+    key: SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLInterfaceType';
+    }
+  }]);
 
   return GraphQLInterfaceType;
-}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-
-defineToStringTag(GraphQLInterfaceType);
+}();
 defineToJSON(GraphQLInterfaceType);
 
 /**
@@ -726,12 +754,18 @@ function () {
 
   _proto4.toString = function toString() {
     return this.name;
-  };
+  } // $FlowFixMe Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLUnionType, [{
+    key: SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLUnionType';
+    }
+  }]);
 
   return GraphQLUnionType;
-}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-
-defineToStringTag(GraphQLUnionType);
+}();
 defineToJSON(GraphQLUnionType);
 
 function defineTypes(config) {
@@ -863,12 +897,18 @@ function () {
 
   _proto5.toString = function toString() {
     return this.name;
-  };
+  } // $FlowFixMe Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLEnumType, [{
+    key: SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLEnumType';
+    }
+  }]);
 
   return GraphQLEnumType;
-}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-
-defineToStringTag(GraphQLEnumType);
+}();
 defineToJSON(GraphQLEnumType);
 
 function didYouMeanEnumValue(enumType, unknownValueStr) {
@@ -963,12 +1003,18 @@ function () {
 
   _proto6.toString = function toString() {
     return this.name;
-  };
+  } // $FlowFixMe Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLInputObjectType, [{
+    key: SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLInputObjectType';
+    }
+  }]);
 
   return GraphQLInputObjectType;
-}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-
-defineToStringTag(GraphQLInputObjectType);
+}();
 defineToJSON(GraphQLInputObjectType);
 
 function defineInputFieldMap(config) {

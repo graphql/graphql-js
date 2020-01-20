@@ -11,6 +11,8 @@ var _find = _interopRequireDefault(require("../polyfills/find"));
 
 var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues"));
 
+var _symbols = require("../polyfills/symbols");
+
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap"));
@@ -21,8 +23,6 @@ var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
 
-var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
-
 var _introspection = require("./introspection");
 
 var _directives = require("./directives");
@@ -30,6 +30,10 @@ var _directives = require("./directives");
 var _definition = require("./definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 // eslint-disable-next-line no-redeclare
 function isSchema(schema) {
@@ -237,14 +241,20 @@ function () {
       extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined
     };
-  };
+  } // $FlowFixMe Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLSchema, [{
+    key: _symbols.SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLSchema';
+    }
+  }]);
 
   return GraphQLSchema;
-}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-
+}();
 
 exports.GraphQLSchema = GraphQLSchema;
-(0, _defineToStringTag.default)(GraphQLSchema);
 
 function collectImplementations(types) {
   var implementationsMap = Object.create(null);

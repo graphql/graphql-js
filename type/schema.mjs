@@ -1,11 +1,15 @@
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
+import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 import inspect from '../jsutils/inspect';
 import toObjMap from '../jsutils/toObjMap';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import isObjectLike from '../jsutils/isObjectLike';
-import defineToStringTag from '../jsutils/defineToStringTag';
 import { __Schema } from './introspection';
 import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
 import { isObjectType, isInterfaceType, isUnionType, isInputObjectType, getNamedType } from './definition';
@@ -217,12 +221,18 @@ function () {
       extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined
     };
-  };
+  } // $FlowFixMe Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLSchema, [{
+    key: SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLSchema';
+    }
+  }]);
 
   return GraphQLSchema;
-}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-
-defineToStringTag(GraphQLSchema);
+}();
 
 function collectImplementations(types) {
   var implementationsMap = Object.create(null);

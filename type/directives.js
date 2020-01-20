@@ -10,6 +10,8 @@ exports.specifiedDirectives = exports.GraphQLDeprecatedDirective = exports.DEFAU
 
 var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
 
+var _symbols = require("../polyfills/symbols");
+
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap"));
@@ -22,8 +24,6 @@ var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
 
-var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
-
 var _directiveLocation = require("../language/directiveLocation");
 
 var _scalars = require("./scalars");
@@ -31,6 +31,10 @@ var _scalars = require("./scalars");
 var _definition = require("./definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 // eslint-disable-next-line no-redeclare
 function isDirective(directive) {
@@ -94,14 +98,20 @@ function () {
 
   _proto.toString = function toString() {
     return '@' + this.name;
-  };
+  } // $FlowFixMe Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLDirective, [{
+    key: _symbols.SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLDirective';
+    }
+  }]);
 
   return GraphQLDirective;
-}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-
+}();
 
 exports.GraphQLDirective = GraphQLDirective;
-(0, _defineToStringTag.default)(GraphQLDirective);
 (0, _defineToJSON.default)(GraphQLDirective);
 
 /**
