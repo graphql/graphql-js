@@ -76,7 +76,7 @@ rules:
   import/no-webpack-loader-syntax: error
   import/no-self-import: error
   import/no-cycle: off # TODO
-  import/no-useless-path-segments: off # TODO
+  import/no-useless-path-segments: error
   import/no-relative-parent-imports: off
 
   # Helpful warnings
@@ -98,12 +98,12 @@ rules:
 
   # Style guide
   # https://github.com/benmosher/eslint-plugin-import#style-guide
-  import/first: off # TODO
+  import/first: error
   import/exports-last: off
   import/no-duplicates: error
   import/no-namespace: error
   import/extensions: [error, never] # TODO: switch to ignorePackages
-  import/order: off # TODO
+  import/order: error
   import/newline-after-import: error
   import/prefer-default-export: off
   import/max-dependencies: off
