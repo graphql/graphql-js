@@ -384,6 +384,7 @@ export class GraphQLObjectType<
   constructor(
     config: Readonly<GraphQLObjectTypeConfig<TSource, TContext, TArgs>>,
   );
+
   getFields(): GraphQLFieldMap<any, TContext, TArgs>;
   getInterfaces(): GraphQLInterfaceType[];
 

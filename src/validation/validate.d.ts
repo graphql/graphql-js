@@ -1,9 +1,14 @@
-import { GraphQLError } from '../error/GraphQLError';
-import { DocumentNode } from '../language/ast';
-import { GraphQLSchema } from '../type/schema';
-import { TypeInfo } from '../utilities/TypeInfo';
-import { ValidationRule, SDLValidationRule } from './ValidationContext';
 import Maybe from '../tsutils/Maybe';
+
+import { GraphQLError } from '../error/GraphQLError';
+
+import { DocumentNode } from '../language/ast';
+
+import { GraphQLSchema } from '../type/schema';
+
+import { TypeInfo } from '../utilities/TypeInfo';
+
+import { ValidationRule, SDLValidationRule } from './ValidationContext';
 
 /**
  * Implements the "Validation" section of the spec.

@@ -437,12 +437,6 @@ overrides:
       import/no-deprecated: off
       import/no-unresolved: off
       import/export: off
-      no-undef: off
-
-      import/first: off
-      import/order: off
-      import/no-useless-path-segments: off
-      lines-between-class-members: off
 
       # Extension Rules
       # https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#extension-rules
