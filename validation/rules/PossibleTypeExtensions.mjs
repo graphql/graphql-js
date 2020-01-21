@@ -2,14 +2,14 @@ var _defKindToExtKind;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import inspect from '../../jsutils/inspect';
-import invariant from '../../jsutils/invariant';
-import didYouMean from '../../jsutils/didYouMean';
-import suggestionList from '../../jsutils/suggestionList';
-import { GraphQLError } from '../../error/GraphQLError';
-import { Kind } from '../../language/kinds';
-import { isTypeDefinitionNode } from '../../language/predicates';
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../../type/definition';
+import inspect from "../../jsutils/inspect.mjs";
+import invariant from "../../jsutils/invariant.mjs";
+import didYouMean from "../../jsutils/didYouMean.mjs";
+import suggestionList from "../../jsutils/suggestionList.mjs";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { Kind } from "../../language/kinds.mjs";
+import { isTypeDefinitionNode } from "../../language/predicates.mjs";
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../../type/definition.mjs";
 
 /**
  * Possible type extension

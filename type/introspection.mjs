@@ -1,11 +1,11 @@
-import objectValues from '../polyfills/objectValues';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import { print } from '../language/printer';
-import { DirectiveLocation } from '../language/directiveLocation';
-import { astFromValue } from '../utilities/astFromValue';
-import { GraphQLString, GraphQLBoolean } from './scalars';
-import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType } from './definition';
+import objectValues from "../polyfills/objectValues.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import { print } from "../language/printer.mjs";
+import { DirectiveLocation } from "../language/directiveLocation.mjs";
+import { astFromValue } from "../utilities/astFromValue.mjs";
+import { GraphQLString, GraphQLBoolean } from "./scalars.mjs";
+import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType } from "./definition.mjs";
 export var __Schema = new GraphQLObjectType({
   name: '__Schema',
   description: 'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.',

@@ -1,6 +1,6 @@
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
+import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.mjs";
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator

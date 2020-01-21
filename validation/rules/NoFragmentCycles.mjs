@@ -1,4 +1,4 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from "../../error/GraphQLError.mjs";
 export function NoFragmentCycles(context) {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.

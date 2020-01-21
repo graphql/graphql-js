@@ -1,4 +1,4 @@
-import { isInterfaceType, isObjectType, isListType, isNonNullType, isAbstractType } from '../type/definition';
+import { isInterfaceType, isObjectType, isListType, isNonNullType, isAbstractType } from "../type/definition.mjs";
 /**
  * Provided two types, return true if the types are equal (invariant).
  */

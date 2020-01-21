@@ -1,4 +1,4 @@
-export { GraphQLError, printError } from './GraphQLError';
-export { syntaxError } from './syntaxError';
-export { locatedError } from './locatedError';
-export { formatError } from './formatError';
+export { GraphQLError, printError } from "./GraphQLError.mjs";
+export { syntaxError } from "./syntaxError.mjs";
+export { locatedError } from "./locatedError.mjs";
+export { formatError } from "./formatError.mjs";

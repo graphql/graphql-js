@@ -1,14 +1,14 @@
-import find from '../polyfills/find';
-import flatMap from '../polyfills/flatMap';
-import objectValues from '../polyfills/objectValues';
-import inspect from '../jsutils/inspect';
-import { GraphQLError } from '../error/GraphQLError';
-import { isValidNameError } from '../utilities/assertValidName';
-import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
-import { isDirective } from './directives';
-import { isIntrospectionType } from './introspection';
-import { assertSchema } from './schema';
-import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument } from './definition';
+import find from "../polyfills/find.mjs";
+import flatMap from "../polyfills/flatMap.mjs";
+import objectValues from "../polyfills/objectValues.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { isValidNameError } from "../utilities/assertValidName.mjs";
+import { isEqualType, isTypeSubTypeOf } from "../utilities/typeComparators.mjs";
+import { isDirective } from "./directives.mjs";
+import { isIntrospectionType } from "./introspection.mjs";
+import { assertSchema } from "./schema.mjs";
+import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument } from "./definition.mjs";
 /**
  * Implements the "Type Validation" sub-sections of the specification's
  * "Type System" section.

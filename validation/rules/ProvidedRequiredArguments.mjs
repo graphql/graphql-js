@@ -4,13 +4,13 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import inspect from '../../jsutils/inspect';
-import keyMap from '../../jsutils/keyMap';
-import { GraphQLError } from '../../error/GraphQLError';
-import { Kind } from '../../language/kinds';
-import { print } from '../../language/printer';
-import { specifiedDirectives } from '../../type/directives';
-import { isType, isRequiredArgument } from '../../type/definition';
+import inspect from "../../jsutils/inspect.mjs";
+import keyMap from "../../jsutils/keyMap.mjs";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { Kind } from "../../language/kinds.mjs";
+import { print } from "../../language/printer.mjs";
+import { specifiedDirectives } from "../../type/directives.mjs";
+import { isType, isRequiredArgument } from "../../type/definition.mjs";
 
 /**
  * Provided required arguments

@@ -1,14 +1,14 @@
-import arrayFrom from '../polyfills/arrayFrom';
-import objectValues from '../polyfills/objectValues';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import isNullish from '../jsutils/isNullish';
-import isInvalid from '../jsutils/isInvalid';
-import isObjectLike from '../jsutils/isObjectLike';
-import isCollection from '../jsutils/isCollection';
-import { Kind } from '../language/kinds';
-import { GraphQLID } from '../type/scalars';
-import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
+import arrayFrom from "../polyfills/arrayFrom.mjs";
+import objectValues from "../polyfills/objectValues.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import isNullish from "../jsutils/isNullish.mjs";
+import isInvalid from "../jsutils/isInvalid.mjs";
+import isObjectLike from "../jsutils/isObjectLike.mjs";
+import isCollection from "../jsutils/isCollection.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { GraphQLID } from "../type/scalars.mjs";
+import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from "../type/definition.mjs";
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format

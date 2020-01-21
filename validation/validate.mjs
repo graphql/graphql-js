@@ -1,10 +1,10 @@
-import devAssert from '../jsutils/devAssert';
-import { GraphQLError } from '../error/GraphQLError';
-import { visit, visitInParallel } from '../language/visitor';
-import { assertValidSchema } from '../type/validate';
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
-import { specifiedRules, specifiedSDLRules } from './specifiedRules';
-import { SDLValidationContext, ValidationContext } from './ValidationContext';
+import devAssert from "../jsutils/devAssert.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { visit, visitInParallel } from "../language/visitor.mjs";
+import { assertValidSchema } from "../type/validate.mjs";
+import { TypeInfo, visitWithTypeInfo } from "../utilities/TypeInfo.mjs";
+import { specifiedRules, specifiedSDLRules } from "./specifiedRules.mjs";
+import { SDLValidationContext, ValidationContext } from "./ValidationContext.mjs";
 /**
  * Implements the "Validation" section of the spec.
  *

@@ -1,7 +1,7 @@
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import { Kind } from '../language/kinds';
-import { GraphQLList, GraphQLNonNull } from '../type/definition';
+import inspect from "../jsutils/inspect.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { GraphQLList, GraphQLNonNull } from "../type/definition.mjs";
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType
  * definition which applies to that type. For example, if provided the parsed

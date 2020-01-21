@@ -2,24 +2,24 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-import objectEntries from '../polyfills/objectEntries';
-import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
-import inspect from '../jsutils/inspect';
-import keyMap from '../jsutils/keyMap';
-import mapValue from '../jsutils/mapValue';
-import toObjMap from '../jsutils/toObjMap';
-import devAssert from '../jsutils/devAssert';
-import keyValMap from '../jsutils/keyValMap';
-import instanceOf from '../jsutils/instanceOf';
-import didYouMean from '../jsutils/didYouMean';
-import isObjectLike from '../jsutils/isObjectLike';
-import identityFunc from '../jsutils/identityFunc';
-import defineToJSON from '../jsutils/defineToJSON';
-import suggestionList from '../jsutils/suggestionList';
-import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
-import { GraphQLError } from '../error/GraphQLError';
-import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
+import objectEntries from "../polyfills/objectEntries.mjs";
+import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import keyMap from "../jsutils/keyMap.mjs";
+import mapValue from "../jsutils/mapValue.mjs";
+import toObjMap from "../jsutils/toObjMap.mjs";
+import devAssert from "../jsutils/devAssert.mjs";
+import keyValMap from "../jsutils/keyValMap.mjs";
+import instanceOf from "../jsutils/instanceOf.mjs";
+import didYouMean from "../jsutils/didYouMean.mjs";
+import isObjectLike from "../jsutils/isObjectLike.mjs";
+import identityFunc from "../jsutils/identityFunc.mjs";
+import defineToJSON from "../jsutils/defineToJSON.mjs";
+import suggestionList from "../jsutils/suggestionList.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { print } from "../language/printer.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { valueFromASTUntyped } from "../utilities/valueFromASTUntyped.mjs";
 export function isType(type) {
   return isScalarType(type) || isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type) || isInputObjectType(type) || isListType(type) || isNonNullType(type);
 }

@@ -4,13 +4,13 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import devAssert from '../jsutils/devAssert';
-import { Kind } from '../language/kinds';
-import { parse } from '../language/parser';
-import { assertValidSDL } from '../validation/validate';
-import { GraphQLSchema } from '../type/schema';
-import { GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective } from '../type/directives';
-import { extendSchemaImpl } from './extendSchema';
+import devAssert from "../jsutils/devAssert.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { parse } from "../language/parser.mjs";
+import { assertValidSDL } from "../validation/validate.mjs";
+import { GraphQLSchema } from "../type/schema.mjs";
+import { GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective } from "../type/directives.mjs";
+import { extendSchemaImpl } from "./extendSchema.mjs";
 
 /**
  * This takes the ast of a schema document produced by the parse function in

@@ -1,15 +1,15 @@
-import objectValues from '../polyfills/objectValues';
-import inspect from '../jsutils/inspect';
-import devAssert from '../jsutils/devAssert';
-import keyValMap from '../jsutils/keyValMap';
-import isObjectLike from '../jsutils/isObjectLike';
-import { parseValue } from '../language/parser';
-import { GraphQLDirective } from '../type/directives';
-import { specifiedScalarTypes } from '../type/scalars';
-import { introspectionTypes, TypeKind } from '../type/introspection';
-import { GraphQLSchema } from '../type/schema';
-import { isInputType, isOutputType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, assertNullableType, assertObjectType, assertInterfaceType } from '../type/definition';
-import { valueFromAST } from './valueFromAST';
+import objectValues from "../polyfills/objectValues.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import devAssert from "../jsutils/devAssert.mjs";
+import keyValMap from "../jsutils/keyValMap.mjs";
+import isObjectLike from "../jsutils/isObjectLike.mjs";
+import { parseValue } from "../language/parser.mjs";
+import { GraphQLDirective } from "../type/directives.mjs";
+import { specifiedScalarTypes } from "../type/scalars.mjs";
+import { introspectionTypes, TypeKind } from "../type/introspection.mjs";
+import { GraphQLSchema } from "../type/schema.mjs";
+import { isInputType, isOutputType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, assertNullableType, assertObjectType, assertInterfaceType } from "../type/definition.mjs";
+import { valueFromAST } from "./valueFromAST.mjs";
 
 /**
  * Build a GraphQLSchema for use by client tools.

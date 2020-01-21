@@ -1,8 +1,8 @@
-import inspect from '../jsutils/inspect';
-import { Source } from '../language/source';
-import { TokenKind } from '../language/tokenKind';
-import { Lexer, isPunctuatorTokenKind } from '../language/lexer';
-import { dedentBlockStringValue, getBlockStringIndentation } from '../language/blockString';
+import inspect from "../jsutils/inspect.mjs";
+import { Source } from "../language/source.mjs";
+import { TokenKind } from "../language/tokenKind.mjs";
+import { Lexer, isPunctuatorTokenKind } from "../language/lexer.mjs";
+import { dedentBlockStringValue, getBlockStringIndentation } from "../language/blockString.mjs";
 /**
  * Strips characters that are not significant to the validity or execution
  * of a GraphQL document:

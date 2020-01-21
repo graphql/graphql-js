@@ -1,5 +1,5 @@
-import { visit } from './visitor';
-import { printBlockString } from './blockString';
+import { visit } from "./visitor.mjs";
+import { printBlockString } from "./blockString.mjs";
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.

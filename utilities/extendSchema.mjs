@@ -4,24 +4,24 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import objectValues from '../polyfills/objectValues';
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import mapValue from '../jsutils/mapValue';
-import invariant from '../jsutils/invariant';
-import devAssert from '../jsutils/devAssert';
-import { Kind } from '../language/kinds';
-import { TokenKind } from '../language/tokenKind';
-import { dedentBlockStringValue } from '../language/blockString';
-import { isTypeDefinitionNode, isTypeExtensionNode } from '../language/predicates';
-import { assertValidSDLExtension } from '../validation/validate';
-import { getDirectiveValues } from '../execution/values';
-import { specifiedScalarTypes, isSpecifiedScalarType } from '../type/scalars';
-import { introspectionTypes, isIntrospectionType } from '../type/introspection';
-import { GraphQLDirective, GraphQLDeprecatedDirective } from '../type/directives';
-import { assertSchema, GraphQLSchema } from '../type/schema';
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from '../type/definition';
-import { valueFromAST } from './valueFromAST';
+import objectValues from "../polyfills/objectValues.mjs";
+import keyMap from "../jsutils/keyMap.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import mapValue from "../jsutils/mapValue.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import devAssert from "../jsutils/devAssert.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { TokenKind } from "../language/tokenKind.mjs";
+import { dedentBlockStringValue } from "../language/blockString.mjs";
+import { isTypeDefinitionNode, isTypeExtensionNode } from "../language/predicates.mjs";
+import { assertValidSDLExtension } from "../validation/validate.mjs";
+import { getDirectiveValues } from "../execution/values.mjs";
+import { specifiedScalarTypes, isSpecifiedScalarType } from "../type/scalars.mjs";
+import { introspectionTypes, isIntrospectionType } from "../type/introspection.mjs";
+import { GraphQLDirective, GraphQLDeprecatedDirective } from "../type/directives.mjs";
+import { assertSchema, GraphQLSchema } from "../type/schema.mjs";
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from "../type/definition.mjs";
+import { valueFromAST } from "./valueFromAST.mjs";
 
 /**
  * Produces a new schema given an existing schema and a document which may

@@ -4,14 +4,14 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import objectValues from '../polyfills/objectValues';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import keyValMap from '../jsutils/keyValMap';
-import { GraphQLSchema } from '../type/schema';
-import { GraphQLDirective } from '../type/directives';
-import { isIntrospectionType } from '../type/introspection';
-import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
+import objectValues from "../polyfills/objectValues.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import keyValMap from "../jsutils/keyValMap.mjs";
+import { GraphQLSchema } from "../type/schema.mjs";
+import { GraphQLDirective } from "../type/directives.mjs";
+import { isIntrospectionType } from "../type/introspection.mjs";
+import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.mjs";
 /**
  * Sort GraphQLSchema.
  */

@@ -1,4 +1,4 @@
-import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
+import nodejsCustomInspectSymbol from "./nodejsCustomInspectSymbol.mjs";
 /**
  * The `defineToJSON()` function defines toJSON() and inspect() prototype
  * methods, if no function provided they become aliases for toString().

@@ -1,6 +1,6 @@
-import { GraphQLError } from '../../error/GraphQLError';
-import { Kind } from '../../language/kinds';
-import { specifiedDirectives } from '../../type/directives';
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { Kind } from "../../language/kinds.mjs";
+import { specifiedDirectives } from "../../type/directives.mjs";
 
 /**
  * Unique directive names per location

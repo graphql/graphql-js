@@ -1,8 +1,8 @@
-import invariant from '../jsutils/invariant';
-import isPromise from '../jsutils/isPromise';
-import { parse } from '../language/parser';
-import { execute } from '../execution/execute';
-import { getIntrospectionQuery } from './getIntrospectionQuery';
+import invariant from "../jsutils/invariant.mjs";
+import isPromise from "../jsutils/isPromise.mjs";
+import { parse } from "../language/parser.mjs";
+import { execute } from "../execution/execute.mjs";
+import { getIntrospectionQuery } from "./getIntrospectionQuery.mjs";
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
  *

@@ -1,12 +1,12 @@
-import objectValues from '../../polyfills/objectValues';
-import keyMap from '../../jsutils/keyMap';
-import inspect from '../../jsutils/inspect';
-import isInvalid from '../../jsutils/isInvalid';
-import didYouMean from '../../jsutils/didYouMean';
-import suggestionList from '../../jsutils/suggestionList';
-import { GraphQLError } from '../../error/GraphQLError';
-import { print } from '../../language/printer';
-import { isLeafType, isInputObjectType, isListType, isNonNullType, isRequiredInputField, getNullableType, getNamedType } from '../../type/definition';
+import objectValues from "../../polyfills/objectValues.mjs";
+import keyMap from "../../jsutils/keyMap.mjs";
+import inspect from "../../jsutils/inspect.mjs";
+import isInvalid from "../../jsutils/isInvalid.mjs";
+import didYouMean from "../../jsutils/didYouMean.mjs";
+import suggestionList from "../../jsutils/suggestionList.mjs";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { print } from "../../language/printer.mjs";
+import { isLeafType, isInputObjectType, isListType, isNonNullType, isRequiredInputField, getNullableType, getNamedType } from "../../type/definition.mjs";
 
 /**
  * Value literals of correct type

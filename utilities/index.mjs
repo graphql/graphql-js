@@ -1,49 +1,49 @@
 // Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.
-export { getIntrospectionQuery } from './getIntrospectionQuery';
+export { getIntrospectionQuery } from "./getIntrospectionQuery.mjs";
 // Gets the target Operation from a Document.
-export { getOperationAST } from './getOperationAST'; // Gets the Type for the target Operation AST.
+export { getOperationAST } from "./getOperationAST.mjs"; // Gets the Type for the target Operation AST.
 
-export { getOperationRootType } from './getOperationRootType'; // Convert a GraphQLSchema to an IntrospectionQuery.
+export { getOperationRootType } from "./getOperationRootType.mjs"; // Convert a GraphQLSchema to an IntrospectionQuery.
 
-export { introspectionFromSchema } from './introspectionFromSchema'; // Build a GraphQLSchema from an introspection result.
+export { introspectionFromSchema } from "./introspectionFromSchema.mjs"; // Build a GraphQLSchema from an introspection result.
 
-export { buildClientSchema } from './buildClientSchema'; // Build a GraphQLSchema from GraphQL Schema language.
+export { buildClientSchema } from "./buildClientSchema.mjs"; // Build a GraphQLSchema from GraphQL Schema language.
 
-export { buildASTSchema, buildSchema } from './buildASTSchema';
+export { buildASTSchema, buildSchema } from "./buildASTSchema.mjs";
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
 export { extendSchema // @deprecated: Get the description from a schema AST node and supports legacy
 // syntax for specifying descriptions - will be removed in v16.
-, getDescription } from './extendSchema'; // Sort a GraphQLSchema.
+, getDescription } from "./extendSchema.mjs"; // Sort a GraphQLSchema.
 
-export { lexicographicSortSchema } from './lexicographicSortSchema'; // Print a GraphQLSchema to GraphQL Schema language.
+export { lexicographicSortSchema } from "./lexicographicSortSchema.mjs"; // Print a GraphQLSchema to GraphQL Schema language.
 
-export { printSchema, printType, printIntrospectionSchema } from './schemaPrinter'; // Create a GraphQLType from a GraphQL language AST.
+export { printSchema, printType, printIntrospectionSchema } from "./schemaPrinter.mjs"; // Create a GraphQLType from a GraphQL language AST.
 
-export { typeFromAST } from './typeFromAST'; // Create a JavaScript value from a GraphQL language AST with a type.
+export { typeFromAST } from "./typeFromAST.mjs"; // Create a JavaScript value from a GraphQL language AST with a type.
 
-export { valueFromAST } from './valueFromAST'; // Create a JavaScript value from a GraphQL language AST without a type.
+export { valueFromAST } from "./valueFromAST.mjs"; // Create a JavaScript value from a GraphQL language AST without a type.
 
-export { valueFromASTUntyped } from './valueFromASTUntyped'; // Create a GraphQL language AST from a JavaScript value.
+export { valueFromASTUntyped } from "./valueFromASTUntyped.mjs"; // Create a GraphQL language AST from a JavaScript value.
 
-export { astFromValue } from './astFromValue'; // A helper to use within recursive-descent visitors which need to be aware of
+export { astFromValue } from "./astFromValue.mjs"; // A helper to use within recursive-descent visitors which need to be aware of
 // the GraphQL type system.
 
-export { TypeInfo, visitWithTypeInfo } from './TypeInfo'; // Coerces a JavaScript value to a GraphQL type, or produces errors.
+export { TypeInfo, visitWithTypeInfo } from "./TypeInfo.mjs"; // Coerces a JavaScript value to a GraphQL type, or produces errors.
 
-export { coerceInputValue } from './coerceInputValue'; // Concatenates multiple AST together.
+export { coerceInputValue } from "./coerceInputValue.mjs"; // Concatenates multiple AST together.
 
-export { concatAST } from './concatAST'; // Separates an AST into an AST per Operation.
+export { concatAST } from "./concatAST.mjs"; // Separates an AST into an AST per Operation.
 
-export { separateOperations } from './separateOperations'; // Strips characters that are not significant to the validity or execution
+export { separateOperations } from "./separateOperations.mjs"; // Strips characters that are not significant to the validity or execution
 // of a GraphQL document.
 
-export { stripIgnoredCharacters } from './stripIgnoredCharacters'; // Comparators for types
+export { stripIgnoredCharacters } from "./stripIgnoredCharacters.mjs"; // Comparators for types
 
-export { isEqualType, isTypeSubTypeOf, doTypesOverlap } from './typeComparators'; // Asserts that a string is a valid GraphQL name
+export { isEqualType, isTypeSubTypeOf, doTypesOverlap } from "./typeComparators.mjs"; // Asserts that a string is a valid GraphQL name
 
-export { assertValidName, isValidNameError } from './assertValidName'; // Compares two GraphQLSchemas and detects breaking changes.
+export { assertValidName, isValidNameError } from "./assertValidName.mjs"; // Compares two GraphQLSchemas and detects breaking changes.
 
-export { BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges } from './findBreakingChanges';
+export { BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges } from "./findBreakingChanges.mjs";
 // Report all deprecated usage within a GraphQL document.
-export { findDeprecatedUsages } from './findDeprecatedUsages';
+export { findDeprecatedUsages } from "./findDeprecatedUsages.mjs";

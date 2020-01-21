@@ -1,8 +1,8 @@
-import isPromise from './jsutils/isPromise';
-import { parse } from './language/parser';
-import { validate } from './validation/validate';
-import { validateSchema } from './type/validate';
-import { execute } from './execution/execute';
+import isPromise from "./jsutils/isPromise.mjs";
+import { parse } from "./language/parser.mjs";
+import { validate } from "./validation/validate.mjs";
+import { validateSchema } from "./type/validate.mjs";
+import { execute } from "./execution/execute.mjs";
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
  * by parsing, validating, and executing a GraphQL document along side a

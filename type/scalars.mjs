@@ -1,11 +1,11 @@
-import isFinite from '../polyfills/isFinite';
-import isInteger from '../polyfills/isInteger';
-import inspect from '../jsutils/inspect';
-import isObjectLike from '../jsutils/isObjectLike';
-import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
-import { GraphQLError } from '../error/GraphQLError';
-import { GraphQLScalarType } from './definition'; // As per the GraphQL Spec, Integers are only treated as valid when a valid
+import isFinite from "../polyfills/isFinite.mjs";
+import isInteger from "../polyfills/isInteger.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import isObjectLike from "../jsutils/isObjectLike.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { print } from "../language/printer.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { GraphQLScalarType } from "./definition.mjs"; // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
 //
 // n.b. JavaScript's integers are safe between -(2^53 - 1) and 2^53 - 1 because

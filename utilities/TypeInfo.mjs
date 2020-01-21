@@ -1,10 +1,10 @@
-import find from '../polyfills/find';
-import { Kind } from '../language/kinds';
-import { getVisitFn } from '../language/visitor';
-import { isNode } from '../language/ast';
-import { isObjectType, isInterfaceType, isEnumType, isInputObjectType, isListType, isCompositeType, isInputType, isOutputType, getNullableType, getNamedType } from '../type/definition';
-import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from '../type/introspection';
-import { typeFromAST } from './typeFromAST';
+import find from "../polyfills/find.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { getVisitFn } from "../language/visitor.mjs";
+import { isNode } from "../language/ast.mjs";
+import { isObjectType, isInterfaceType, isEnumType, isInputObjectType, isListType, isCompositeType, isInputType, isOutputType, getNullableType, getNamedType } from "../type/definition.mjs";
+import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from "../type/introspection.mjs";
+import { typeFromAST } from "./typeFromAST.mjs";
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
  * of the current field and type definitions at any point in a GraphQL document

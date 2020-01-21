@@ -1,5 +1,5 @@
-import { GraphQLError } from '../../error/GraphQLError';
-import { isEnumType } from '../../type/definition';
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { isEnumType } from "../../type/definition.mjs";
 
 /**
  * Unique enum value names

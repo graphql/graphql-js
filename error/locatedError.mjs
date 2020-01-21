@@ -1,4 +1,4 @@
-import { GraphQLError } from './GraphQLError';
+import { GraphQLError } from "./GraphQLError.mjs";
 /**
  * Given an arbitrary Error, presumably thrown while attempting to execute a
  * GraphQL operation, produce a new GraphQLError aware of the location in the

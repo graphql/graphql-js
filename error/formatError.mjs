@@ -1,4 +1,4 @@
-import devAssert from '../jsutils/devAssert';
+import devAssert from "../jsutils/devAssert.mjs";
 
 /**
  * Given a GraphQLError, format it according to the rules described by the

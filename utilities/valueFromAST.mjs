@@ -1,10 +1,10 @@
-import objectValues from '../polyfills/objectValues';
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import isInvalid from '../jsutils/isInvalid';
-import { Kind } from '../language/kinds';
-import { isLeafType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
+import objectValues from "../polyfills/objectValues.mjs";
+import keyMap from "../jsutils/keyMap.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import isInvalid from "../jsutils/isInvalid.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { isLeafType, isInputObjectType, isListType, isNonNullType } from "../type/definition.mjs";
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *

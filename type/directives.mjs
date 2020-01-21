@@ -2,17 +2,17 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-import objectEntries from '../polyfills/objectEntries';
-import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
-import inspect from '../jsutils/inspect';
-import toObjMap from '../jsutils/toObjMap';
-import devAssert from '../jsutils/devAssert';
-import instanceOf from '../jsutils/instanceOf';
-import defineToJSON from '../jsutils/defineToJSON';
-import isObjectLike from '../jsutils/isObjectLike';
-import { DirectiveLocation } from '../language/directiveLocation';
-import { GraphQLString, GraphQLBoolean } from './scalars';
-import { argsToArgsConfig, GraphQLNonNull } from './definition';
+import objectEntries from "../polyfills/objectEntries.mjs";
+import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import toObjMap from "../jsutils/toObjMap.mjs";
+import devAssert from "../jsutils/devAssert.mjs";
+import instanceOf from "../jsutils/instanceOf.mjs";
+import defineToJSON from "../jsutils/defineToJSON.mjs";
+import isObjectLike from "../jsutils/isObjectLike.mjs";
+import { DirectiveLocation } from "../language/directiveLocation.mjs";
+import { GraphQLString, GraphQLBoolean } from "./scalars.mjs";
+import { argsToArgsConfig, GraphQLNonNull } from "./definition.mjs";
 /**
  * Test if the given value is a GraphQL directive.
  */

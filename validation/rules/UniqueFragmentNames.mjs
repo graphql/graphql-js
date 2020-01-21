@@ -1,4 +1,4 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from "../../error/GraphQLError.mjs";
 
 /**
  * Unique fragment names

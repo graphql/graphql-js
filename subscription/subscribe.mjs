@@ -1,13 +1,13 @@
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
-import inspect from '../jsutils/inspect';
-import { addPath, pathToArray } from '../jsutils/Path';
-import { GraphQLError } from '../error/GraphQLError';
-import { locatedError } from '../error/locatedError';
-import { assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError } from '../execution/execute';
-import { getOperationRootType } from '../utilities/getOperationRootType';
-import mapAsyncIterator from './mapAsyncIterator';
+import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import { addPath, pathToArray } from "../jsutils/Path.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { locatedError } from "../error/locatedError.mjs";
+import { assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError } from "../execution/execute.mjs";
+import { getOperationRootType } from "../utilities/getOperationRootType.mjs";
+import mapAsyncIterator from "./mapAsyncIterator.mjs";
 export function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.

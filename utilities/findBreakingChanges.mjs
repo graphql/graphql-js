@@ -4,15 +4,15 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import objectValues from '../polyfills/objectValues';
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import { print } from '../language/printer';
-import { visit } from '../language/visitor';
-import { isSpecifiedScalarType } from '../type/scalars';
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from '../type/definition';
-import { astFromValue } from './astFromValue';
+import objectValues from "../polyfills/objectValues.mjs";
+import keyMap from "../jsutils/keyMap.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import { print } from "../language/printer.mjs";
+import { visit } from "../language/visitor.mjs";
+import { isSpecifiedScalarType } from "../type/scalars.mjs";
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from "../type/definition.mjs";
+import { astFromValue } from "./astFromValue.mjs";
 export var BreakingChangeType = Object.freeze({
   TYPE_REMOVED: 'TYPE_REMOVED',
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND',

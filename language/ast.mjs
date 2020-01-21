@@ -1,4 +1,4 @@
-import defineToJSON from '../jsutils/defineToJSON';
+import defineToJSON from "../jsutils/defineToJSON.mjs";
 
 /**
  * Contains a range of UTF-8 character offsets and token references that

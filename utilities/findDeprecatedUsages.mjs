@@ -1,7 +1,7 @@
-import { GraphQLError } from '../error/GraphQLError';
-import { visit } from '../language/visitor';
-import { getNamedType } from '../type/definition';
-import { TypeInfo, visitWithTypeInfo } from './TypeInfo';
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { visit } from "../language/visitor.mjs";
+import { getNamedType } from "../type/definition.mjs";
+import { TypeInfo, visitWithTypeInfo } from "./TypeInfo.mjs";
 /**
  * A validation rule which reports deprecated usages.
  *
