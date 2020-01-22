@@ -2,6 +2,9 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+// FIXME
+
+/* eslint-disable import/no-cycle */
 import objectEntries from "../polyfills/objectEntries.mjs";
 import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
 import inspect from "../jsutils/inspect.mjs";
