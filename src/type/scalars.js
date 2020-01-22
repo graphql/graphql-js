@@ -31,6 +31,15 @@ function serializeInt(outputValue: mixed): number {
     num = Number(outputValue);
   }
 
+  if (
+    outputValue !== null &&
+    typeof outputValue === 'object' &&
+    typeof outputValue.valueOf === 'function' &&
+    !Array.isArray(outputValue)
+  ) {
+    num = Number(outputValue.valueOf());
+  }
+
   if (!isInteger(num)) {
     throw new GraphQLError(
       `Int cannot represent non-integer value: ${inspect(outputValue)}`,
@@ -92,6 +101,16 @@ function serializeFloat(outputValue: mixed): number {
   if (typeof outputValue === 'string' && outputValue !== '') {
     num = Number(outputValue);
   }
+
+  if (
+    outputValue !== null &&
+    typeof outputValue === 'object' &&
+    typeof outputValue.valueOf === 'function' &&
+    !Array.isArray(outputValue)
+  ) {
+    num = Number(outputValue.valueOf());
+  }
+
   if (!isFinite(num)) {
     throw new GraphQLError(
       `Float cannot represent non numeric value: ${inspect(outputValue)}`,
