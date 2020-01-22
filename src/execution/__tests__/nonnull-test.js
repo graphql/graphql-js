@@ -3,8 +3,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import invariant from '../../jsutils/invariant';
-
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -567,10 +565,7 @@ describe('Execute: handles non-nullable types', () => {
                 type: GraphQLNonNull(GraphQLString),
               },
             },
-            resolve: (_, args) => {
-              invariant(typeof args.cannotBeNull === 'string');
-              return 'Passed: ' + args.cannotBeNull;
-            },
+            resolve: (_, args) => 'Passed: ' + String(args.cannotBeNull),
           },
         },
       }),
