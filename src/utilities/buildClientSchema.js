@@ -52,10 +52,6 @@ import {
   type IntrospectionNamedTypeRef,
 } from './getIntrospectionQuery';
 
-type Options = {|
-  ...GraphQLSchemaValidationOptions,
-|};
-
 /**
  * Build a GraphQLSchema for use by client tools.
  *
@@ -70,7 +66,7 @@ type Options = {|
  */
 export function buildClientSchema(
   introspection: IntrospectionQuery,
-  options?: Options,
+  options?: GraphQLSchemaValidationOptions,
 ): GraphQLSchema {
   devAssert(
     isObjectLike(introspection) && isObjectLike(introspection.__schema),
