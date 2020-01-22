@@ -21,7 +21,7 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLInt.serialize(false)).to.equal(0);
     expect(GraphQLInt.serialize(true)).to.equal(1);
     expect(
-      GraphQLFloat.serialize({
+      GraphQLInt.serialize({
         value: 5,
         valueOf() {
           return this.value;
