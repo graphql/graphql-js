@@ -18,8 +18,6 @@ import {
 } from '../type/schema';
 import {
   type GraphQLType,
-  type GraphQLInputType,
-  type GraphQLOutputType,
   type GraphQLNamedType,
   isInputType,
   isOutputType,
@@ -47,8 +45,6 @@ import {
   type IntrospectionEnumType,
   type IntrospectionInputObjectType,
   type IntrospectionTypeRef,
-  type IntrospectionInputTypeRef,
-  type IntrospectionOutputTypeRef,
   type IntrospectionNamedTypeRef,
 } from './getIntrospectionQuery';
 
@@ -139,13 +135,17 @@ export function buildClientSchema(
       const nullableType = getType(nullableRef);
       return GraphQLNonNull(assertNullableType(nullableType));
     }
-    if (!typeRef.name) {
-      throw new Error(`Unknown type reference: ${inspect(typeRef)}.`);
-    }
-    return getNamedType(typeRef.name);
+    return getNamedType(typeRef);
   }
 
-  function getNamedType(typeName: string): GraphQLNamedType {
+  function getNamedType(
+    typeRef: IntrospectionNamedTypeRef<>,
+  ): GraphQLNamedType {
+    const typeName = typeRef.name;
+    if (!typeName) {
+      throw new Error(`Unknown type reference: ${inspect(typeRef)}.`);
+    }
+
     const type = typeMap[typeName];
     if (!type) {
       throw new Error(
@@ -156,42 +156,16 @@ export function buildClientSchema(
     return type;
   }
 
-  function getInputType(typeRef: IntrospectionInputTypeRef): GraphQLInputType {
-    const type = getType(typeRef);
-    if (isInputType(type)) {
-      return type;
-    }
-    const typeStr = inspect(type);
-    throw new Error(
-      `Introspection must provide input type for arguments, but received: ${typeStr}.`,
-    );
-  }
-
-  function getOutputType(
-    typeRef: IntrospectionOutputTypeRef,
-  ): GraphQLOutputType {
-    const type = getType(typeRef);
-    if (isOutputType(type)) {
-      return type;
-    }
-    const typeStr = inspect(type);
-    throw new Error(
-      `Introspection must provide output type for fields, but received: ${typeStr}.`,
-    );
-  }
-
   function getObjectType(
     typeRef: IntrospectionNamedTypeRef<IntrospectionObjectType>,
   ): GraphQLObjectType {
-    const type = getType(typeRef);
-    return assertObjectType(type);
+    return assertObjectType(getNamedType(typeRef));
   }
 
   function getInterfaceType(
-    typeRef: IntrospectionTypeRef,
+    typeRef: IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
   ): GraphQLInterfaceType {
-    const type = getType(typeRef);
-    return assertInterfaceType(type);
+    return assertInterfaceType(getNamedType(typeRef));
   }
 
   // Given a type's introspection result, construct the correct
@@ -335,24 +309,36 @@ export function buildClientSchema(
         `Introspection result missing fields: ${inspect(typeIntrospection)}.`,
       );
     }
+
     return keyValMap(
       typeIntrospection.fields,
       fieldIntrospection => fieldIntrospection.name,
-      fieldIntrospection => {
-        if (!fieldIntrospection.args) {
-          const fieldIntrospectionStr = inspect(fieldIntrospection);
-          throw new Error(
-            `Introspection result missing field args: ${fieldIntrospectionStr}.`,
-          );
-        }
-        return {
-          description: fieldIntrospection.description,
-          deprecationReason: fieldIntrospection.deprecationReason,
-          type: getOutputType(fieldIntrospection.type),
-          args: buildInputValueDefMap(fieldIntrospection.args),
-        };
-      },
+      buildField,
     );
+  }
+
+  function buildField(fieldIntrospection) {
+    const type = getType(fieldIntrospection.type);
+    if (!isOutputType(type)) {
+      const typeStr = inspect(type);
+      throw new Error(
+        `Introspection must provide output type for fields, but received: ${typeStr}.`,
+      );
+    }
+
+    if (!fieldIntrospection.args) {
+      const fieldIntrospectionStr = inspect(fieldIntrospection);
+      throw new Error(
+        `Introspection result missing field args: ${fieldIntrospectionStr}.`,
+      );
+    }
+
+    return {
+      description: fieldIntrospection.description,
+      deprecationReason: fieldIntrospection.deprecationReason,
+      type,
+      args: buildInputValueDefMap(fieldIntrospection.args),
+    };
   }
 
   function buildInputValueDefMap(inputValueIntrospections) {
@@ -364,7 +350,14 @@ export function buildClientSchema(
   }
 
   function buildInputValue(inputValueIntrospection) {
-    const type = getInputType(inputValueIntrospection.type);
+    const type = getType(inputValueIntrospection.type);
+    if (!isInputType(type)) {
+      const typeStr = inspect(type);
+      throw new Error(
+        `Introspection must provide input type for arguments, but received: ${typeStr}.`,
+      );
+    }
+
     const defaultValue =
       inputValueIntrospection.defaultValue != null
         ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type)
