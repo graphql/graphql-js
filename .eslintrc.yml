@@ -62,7 +62,6 @@ rules:
 
   ##############################################################################
   # `eslint-plugin-import` rule list based on `v2.20.x`
-  # https://github.com/benmosher/eslint-plugin-import
   ##############################################################################
 
   # Static analysis
@@ -439,6 +438,68 @@ overrides:
       import/no-deprecated: off
       import/no-unresolved: off
       import/export: off
+
+      ##########################################################################
+      # `@typescript-eslint/eslint-plugin` rule list based on `v2.16.x`
+      ##########################################################################
+
+      # Supported Rules
+      # https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#supported-rules
+      '@typescript-eslint/adjacent-overload-signatures': error
+      '@typescript-eslint/array-type': off # TODO [error, { default: generic }]
+      '@typescript-eslint/await-thenable': off # TODO error
+      '@typescript-eslint/ban-ts-ignore': error
+      '@typescript-eslint/ban-types': error
+      '@typescript-eslint/consistent-type-assertions':
+        [error, { assertionStyle: as, objectLiteralTypeAssertions: never }]
+      '@typescript-eslint/consistent-type-definitions': off # TODO consider
+      '@typescript-eslint/explicit-function-return-type': off # TODO consider
+      '@typescript-eslint/explicit-member-accessibility': off # TODO consider
+      '@typescript-eslint/member-ordering': off # TODO consider
+      '@typescript-eslint/naming-convention': off # TODO consider
+      '@typescript-eslint/no-dynamic-delete': off
+      '@typescript-eslint/no-empty-interface': off # TODO error
+      '@typescript-eslint/no-explicit-any': off # TODO error
+      '@typescript-eslint/no-extra-non-null-assertion': error
+      '@typescript-eslint/no-extraneous-class': off # TODO consider
+      '@typescript-eslint/no-floating-promises': off # TODO error
+      '@typescript-eslint/no-for-in-array': error
+      '@typescript-eslint/no-implied-eval': off # TODO error
+      '@typescript-eslint/no-inferrable-types':
+        [error, { ignoreParameters: true, ignoreProperties: true }]
+      '@typescript-eslint/no-misused-new': error
+      '@typescript-eslint/no-misused-promises': off # TODO error
+      '@typescript-eslint/no-namespace': error
+      '@typescript-eslint/no-non-null-assertion': off # TODO error
+      '@typescript-eslint/no-parameter-properties': error
+      '@typescript-eslint/no-require-imports': error
+      '@typescript-eslint/no-this-alias': error
+      '@typescript-eslint/no-throw-literal': off # TODO error
+      '@typescript-eslint/no-type-alias': off # TODO consider
+      '@typescript-eslint/no-unnecessary-condition': off # TODO error
+      '@typescript-eslint/no-unnecessary-qualifier': off # TODO error
+      '@typescript-eslint/no-unnecessary-type-arguments': off # TODO error
+      '@typescript-eslint/no-unnecessary-type-assertion': off # TODO error
+      '@typescript-eslint/no-unused-vars-experimental': off
+      '@typescript-eslint/no-var-requires': error
+      '@typescript-eslint/prefer-for-of': off # TODO switch to error after TS migration
+      '@typescript-eslint/prefer-function-type': error
+      '@typescript-eslint/prefer-includes': off # TODO switch to error after IE11 drop
+      '@typescript-eslint/prefer-namespace-keyword': error
+      '@typescript-eslint/prefer-nullish-coalescing': off # TODO error
+      '@typescript-eslint/prefer-optional-chain': error
+      '@typescript-eslint/prefer-readonly': off # TODO error
+      '@typescript-eslint/prefer-regexp-exec': off # TODO error
+      '@typescript-eslint/prefer-string-starts-ends-with': off # TODO switch to error after IE11 drop
+      '@typescript-eslint/promise-function-async': off
+      '@typescript-eslint/require-array-sort-compare': off # TODO error
+      '@typescript-eslint/restrict-plus-operands': off # TODO [error, { checkCompoundAssignments: true }]
+      '@typescript-eslint/restrict-template-expressions': off # TODO error
+      '@typescript-eslint/strict-boolean-expressions': off # TODO consider
+      '@typescript-eslint/triple-slash-reference': error
+      '@typescript-eslint/typedef': off
+      '@typescript-eslint/unbound-method': off # TODO consider
+      '@typescript-eslint/unified-signatures': off # TODO error
 
       # Extension Rules
       # https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#extension-rules
