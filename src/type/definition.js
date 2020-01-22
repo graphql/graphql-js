@@ -1,5 +1,8 @@
 // @flow strict
 
+// FIXME
+/* eslint-disable import/no-cycle */
+
 import objectEntries from '../polyfills/objectEntries';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
