@@ -52,7 +52,7 @@ export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
 export type VisitorKeyMap<T> = { [P in keyof T]: ReadonlyArray<keyof T[P]> };
 
 // TODO: Should be `[]`, but that requires TypeScript@3
-type EmptyTuple = never[];
+type EmptyTuple = Array<never>;
 
 export const QueryDocumentKeys: {
   Name: EmptyTuple;
