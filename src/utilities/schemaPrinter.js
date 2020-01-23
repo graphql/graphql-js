@@ -86,15 +86,7 @@ function printFilteredSchema(
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
   const typeMap = schema.getTypeMap();
-  const types = objectValues(typeMap)
-    .sort((type1, type2) => {
-      if (isMutationType(schema, type1)) return -1;
-      if (isQueryType(schema, type1)) return -1;
-      if (isSubscriptionType(schema, type1)) return -1;
-
-      return type1.name.localeCompare(type2.name);
-    })
-    .filter(typeFilter);
+  const types = objectValues(typeMap).filter(typeFilter);
 
   return (
     [printSchemaDefinition(schema)]
