@@ -293,34 +293,34 @@ describe('Validate: Fields on correct type', () => {
     it('Works with no small numbers of field suggestions', () => {
       const schema = buildSchema(`
         type T {
-          z: String
           y: String
+          z: String
         }
         type Query { t: T }
       `);
 
       expectErrorMessage(schema, '{ t { f } }').to.equal(
-        'Cannot query field "f" on type "T". Did you mean "z" or "y"?',
+        'Cannot query field "f" on type "T". Did you mean "y" or "z"?',
       );
     });
 
     it('Only shows one set of suggestions at a time, preferring types', () => {
       const schema = buildSchema(`
         interface T {
-          z: String
           y: String
+          z: String
         }
         type Query { t: T }
 
         type A implements T {
           f: String
-          z: String
           y: String
+          z: String
         }
         type B implements T {
           f: String
-          z: String
           y: String
+          z: String
         }
       `);
 
@@ -350,18 +350,18 @@ describe('Validate: Fields on correct type', () => {
     it('Limits lots of field suggestions', () => {
       const schema = buildSchema(`
         type T {
-          z: String
-          y: String
-          x: String
-          w: String
-          v: String
           u: String
+          v: String
+          w: String
+          x: String
+          y: String
+          z: String
         }
         type Query { t: T }
       `);
 
       expectErrorMessage(schema, '{ t { f } }').to.equal(
-        'Cannot query field "f" on type "T". Did you mean "z", "y", "x", "w", or "v"?',
+        'Cannot query field "f" on type "T". Did you mean "u", "v", "w", "x", or "y"?',
       );
     });
   });

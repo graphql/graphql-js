@@ -14,10 +14,18 @@ describe('suggestionList', () => {
     expect(suggestionList('input', [])).to.deep.equal([]);
   });
 
-  it('Returns options sorted based on similarity', () => {
+  it('Returns options sorted based on lexical distance', () => {
     expect(suggestionList('abc', ['a', 'ab', 'abc'])).to.deep.equal([
       'abc',
       'ab',
+    ]);
+  });
+
+  it('Returns options with the same lexical distance sorted lexicographically', () => {
+    expect(suggestionList('a', ['az', 'ax', 'ay'])).to.deep.equal([
+      'ax',
+      'ay',
+      'az',
     ]);
   });
 });
