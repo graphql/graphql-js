@@ -33,22 +33,24 @@ var MAX_INT = 2147483647;
 var MIN_INT = -2147483648;
 
 function serializeInt(outputValue) {
-  if (typeof outputValue === 'boolean') {
-    return outputValue ? 1 : 0;
+  var coercedValue = serializeObject(outputValue);
+
+  if (typeof coercedValue === 'boolean') {
+    return coercedValue ? 1 : 0;
   }
 
-  var num = outputValue;
+  var num = coercedValue;
 
-  if (typeof outputValue === 'string' && outputValue !== '') {
-    num = Number(outputValue);
+  if (typeof coercedValue === 'string' && coercedValue !== '') {
+    num = Number(coercedValue);
   }
 
   if (!(0, _isInteger.default)(num)) {
-    throw new _GraphQLError.GraphQLError("Int cannot represent non-integer value: ".concat((0, _inspect.default)(outputValue)));
+    throw new _GraphQLError.GraphQLError("Int cannot represent non-integer value: ".concat((0, _inspect.default)(coercedValue)));
   }
 
   if (num > MAX_INT || num < MIN_INT) {
-    throw new _GraphQLError.GraphQLError('Int cannot represent non 32-bit signed integer value: ' + (0, _inspect.default)(outputValue));
+    throw new _GraphQLError.GraphQLError('Int cannot represent non 32-bit signed integer value: ' + (0, _inspect.default)(coercedValue));
   }
 
   return num;
@@ -88,18 +90,20 @@ var GraphQLInt = new _definition.GraphQLScalarType({
 exports.GraphQLInt = GraphQLInt;
 
 function serializeFloat(outputValue) {
-  if (typeof outputValue === 'boolean') {
-    return outputValue ? 1 : 0;
+  var coercedValue = serializeObject(outputValue);
+
+  if (typeof coercedValue === 'boolean') {
+    return coercedValue ? 1 : 0;
   }
 
-  var num = outputValue;
+  var num = coercedValue;
 
-  if (typeof outputValue === 'string' && outputValue !== '') {
-    num = Number(outputValue);
+  if (typeof coercedValue === 'string' && coercedValue !== '') {
+    num = Number(coercedValue);
   }
 
   if (!(0, _isFinite.default)(num)) {
-    throw new _GraphQLError.GraphQLError("Float cannot represent non numeric value: ".concat((0, _inspect.default)(outputValue)));
+    throw new _GraphQLError.GraphQLError("Float cannot represent non numeric value: ".concat((0, _inspect.default)(coercedValue)));
   }
 
   return num;
@@ -193,15 +197,17 @@ var GraphQLString = new _definition.GraphQLScalarType({
 exports.GraphQLString = GraphQLString;
 
 function serializeBoolean(outputValue) {
-  if (typeof outputValue === 'boolean') {
-    return outputValue;
+  var coercedValue = serializeObject(outputValue);
+
+  if (typeof coercedValue === 'boolean') {
+    return coercedValue;
   }
 
-  if ((0, _isFinite.default)(outputValue)) {
-    return outputValue !== 0;
+  if ((0, _isFinite.default)(coercedValue)) {
+    return coercedValue !== 0;
   }
 
-  throw new _GraphQLError.GraphQLError("Boolean cannot represent a non boolean value: ".concat((0, _inspect.default)(outputValue)));
+  throw new _GraphQLError.GraphQLError("Boolean cannot represent a non boolean value: ".concat((0, _inspect.default)(coercedValue)));
 }
 
 function coerceBoolean(inputValue) {

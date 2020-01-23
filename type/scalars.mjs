@@ -15,22 +15,24 @@ var MAX_INT = 2147483647;
 var MIN_INT = -2147483648;
 
 function serializeInt(outputValue) {
-  if (typeof outputValue === 'boolean') {
-    return outputValue ? 1 : 0;
+  var coercedValue = serializeObject(outputValue);
+
+  if (typeof coercedValue === 'boolean') {
+    return coercedValue ? 1 : 0;
   }
 
-  var num = outputValue;
+  var num = coercedValue;
 
-  if (typeof outputValue === 'string' && outputValue !== '') {
-    num = Number(outputValue);
+  if (typeof coercedValue === 'string' && coercedValue !== '') {
+    num = Number(coercedValue);
   }
 
   if (!isInteger(num)) {
-    throw new GraphQLError("Int cannot represent non-integer value: ".concat(inspect(outputValue)));
+    throw new GraphQLError("Int cannot represent non-integer value: ".concat(inspect(coercedValue)));
   }
 
   if (num > MAX_INT || num < MIN_INT) {
-    throw new GraphQLError('Int cannot represent non 32-bit signed integer value: ' + inspect(outputValue));
+    throw new GraphQLError('Int cannot represent non 32-bit signed integer value: ' + inspect(coercedValue));
   }
 
   return num;
@@ -69,18 +71,20 @@ export var GraphQLInt = new GraphQLScalarType({
 });
 
 function serializeFloat(outputValue) {
-  if (typeof outputValue === 'boolean') {
-    return outputValue ? 1 : 0;
+  var coercedValue = serializeObject(outputValue);
+
+  if (typeof coercedValue === 'boolean') {
+    return coercedValue ? 1 : 0;
   }
 
-  var num = outputValue;
+  var num = coercedValue;
 
-  if (typeof outputValue === 'string' && outputValue !== '') {
-    num = Number(outputValue);
+  if (typeof coercedValue === 'string' && coercedValue !== '') {
+    num = Number(coercedValue);
   }
 
   if (!isFinite(num)) {
-    throw new GraphQLError("Float cannot represent non numeric value: ".concat(inspect(outputValue)));
+    throw new GraphQLError("Float cannot represent non numeric value: ".concat(inspect(coercedValue)));
   }
 
   return num;
@@ -171,15 +175,17 @@ export var GraphQLString = new GraphQLScalarType({
 });
 
 function serializeBoolean(outputValue) {
-  if (typeof outputValue === 'boolean') {
-    return outputValue;
+  var coercedValue = serializeObject(outputValue);
+
+  if (typeof coercedValue === 'boolean') {
+    return coercedValue;
   }
 
-  if (isFinite(outputValue)) {
-    return outputValue !== 0;
+  if (isFinite(coercedValue)) {
+    return coercedValue !== 0;
   }
 
-  throw new GraphQLError("Boolean cannot represent a non boolean value: ".concat(inspect(outputValue)));
+  throw new GraphQLError("Boolean cannot represent a non boolean value: ".concat(inspect(coercedValue)));
 }
 
 function coerceBoolean(inputValue) {
