@@ -20,6 +20,14 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLInt.serialize(1e5)).to.equal(100000);
     expect(GraphQLInt.serialize(false)).to.equal(0);
     expect(GraphQLInt.serialize(true)).to.equal(1);
+    expect(
+      GraphQLInt.serialize({
+        value: 5,
+        valueOf() {
+          return this.value;
+        },
+      }),
+    ).to.equal(5);
 
     // The GraphQL specification does not allow serializing non-integer values
     // as Int to avoid accidental data loss.
@@ -79,6 +87,14 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLFloat.serialize('-1.1')).to.equal(-1.1);
     expect(GraphQLFloat.serialize(false)).to.equal(0.0);
     expect(GraphQLFloat.serialize(true)).to.equal(1.0);
+    expect(
+      GraphQLFloat.serialize({
+        value: 5.5,
+        valueOf() {
+          return this.value;
+        },
+      }),
+    ).to.equal(5.5);
 
     expect(() => GraphQLFloat.serialize(NaN)).to.throw(
       'Float cannot represent non numeric value: NaN',
@@ -139,6 +155,14 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLBoolean.serialize(0)).to.equal(false);
     expect(GraphQLBoolean.serialize(true)).to.equal(true);
     expect(GraphQLBoolean.serialize(false)).to.equal(false);
+    expect(
+      GraphQLBoolean.serialize({
+        value: true,
+        valueOf() {
+          return this.value;
+        },
+      }),
+    ).to.equal(true);
 
     expect(() => GraphQLBoolean.serialize(NaN)).to.throw(
       'Boolean cannot represent a non boolean value: NaN',
