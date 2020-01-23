@@ -155,6 +155,14 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLBoolean.serialize(0)).to.equal(false);
     expect(GraphQLBoolean.serialize(true)).to.equal(true);
     expect(GraphQLBoolean.serialize(false)).to.equal(false);
+    expect(
+      GraphQLBoolean.serialize({
+        value: true,
+        valueOf() {
+          return this.value;
+        },
+      }),
+    ).to.equal(true);
 
     expect(() => GraphQLBoolean.serialize(NaN)).to.throw(
       'Boolean cannot represent a non boolean value: NaN',

@@ -196,14 +196,16 @@ export const GraphQLString = new GraphQLScalarType({
 });
 
 function serializeBoolean(outputValue: mixed): boolean {
-  if (typeof outputValue === 'boolean') {
-    return outputValue;
+  const coercedValue = serializeObject(outputValue);
+
+  if (typeof coercedValue === 'boolean') {
+    return coercedValue;
   }
-  if (isFinite(outputValue)) {
-    return outputValue !== 0;
+  if (isFinite(coercedValue)) {
+    return coercedValue !== 0;
   }
   throw new GraphQLError(
-    `Boolean cannot represent a non boolean value: ${inspect(outputValue)}`,
+    `Boolean cannot represent a non boolean value: ${inspect(coercedValue)}`,
   );
 }
 
