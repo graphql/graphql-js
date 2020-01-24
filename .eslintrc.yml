@@ -443,7 +443,7 @@ overrides:
       import/export: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v2.16.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v2.17.x`
       ##########################################################################
 
       # Supported Rules
@@ -458,6 +458,7 @@ overrides:
       '@typescript-eslint/consistent-type-definitions': off # TODO consider
       '@typescript-eslint/explicit-function-return-type': off # TODO consider
       '@typescript-eslint/explicit-member-accessibility': off # TODO consider
+      '@typescript-eslint/explicit-module-boundary-types': off # TODO consider
       '@typescript-eslint/member-ordering': off # TODO consider
       '@typescript-eslint/naming-convention': off # TODO consider
       '@typescript-eslint/no-dynamic-delete': off
@@ -473,6 +474,7 @@ overrides:
       '@typescript-eslint/no-misused-new': error
       '@typescript-eslint/no-misused-promises': error
       '@typescript-eslint/no-namespace': error
+      '@typescript-eslint/no-non-null-asserted-optional-chain': error
       '@typescript-eslint/no-non-null-assertion': error
       '@typescript-eslint/no-parameter-properties': error
       '@typescript-eslint/no-require-imports': error
