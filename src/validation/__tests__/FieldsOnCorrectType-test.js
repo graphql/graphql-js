@@ -202,7 +202,7 @@ describe('Validate: Fields on correct type', () => {
     `).to.deep.equal([
       {
         message:
-          'Cannot query field "nickname" on type "Pet". Did you mean to use an inline fragment on "Dog" or "Cat"?',
+          'Cannot query field "nickname" on type "Pet". Did you mean to use an inline fragment on "Cat" or "Dog"?',
         locations: [{ line: 3, column: 9 }],
       },
     ]);
@@ -237,7 +237,7 @@ describe('Validate: Fields on correct type', () => {
     `).to.deep.equal([
       {
         message:
-          'Cannot query field "name" on type "CatOrDog". Did you mean to use an inline fragment on "Being", "Pet", "Canine", "Dog", or "Cat"?',
+          'Cannot query field "name" on type "CatOrDog". Did you mean to use an inline fragment on "Being", "Pet", "Canine", "Cat", or "Dog"?',
         locations: [{ line: 3, column: 9 }],
       },
     ]);
