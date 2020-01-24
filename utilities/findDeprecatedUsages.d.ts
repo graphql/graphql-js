@@ -10,4 +10,4 @@ import { GraphQLSchema } from '../type/schema';
 export function findDeprecatedUsages(
   schema: GraphQLSchema,
   ast: DocumentNode,
-): GraphQLError[];
+): Array<GraphQLError>;

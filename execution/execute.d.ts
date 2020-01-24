@@ -34,7 +34,7 @@ export interface ExecutionContext {
   operation: OperationDefinitionNode;
   variableValues: { [key: string]: any };
   fieldResolver: GraphQLFieldResolver<any, any>;
-  errors: GraphQLError[];
+  errors: Array<GraphQLError>;
 }
 
 export interface ExecutionResultDataDefault {
