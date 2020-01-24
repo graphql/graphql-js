@@ -446,7 +446,7 @@ overrides:
       # Supported Rules
       # https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#supported-rules
       '@typescript-eslint/adjacent-overload-signatures': error
-      '@typescript-eslint/array-type': off # TODO [error, { default: generic }]
+      '@typescript-eslint/array-type': [error, { default: generic }]
       '@typescript-eslint/await-thenable': off # TODO error
       '@typescript-eslint/ban-ts-ignore': error
       '@typescript-eslint/ban-types': error

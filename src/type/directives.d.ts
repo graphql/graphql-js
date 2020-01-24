@@ -17,9 +17,9 @@ export function assertDirective(directive: any): GraphQLDirective;
 export class GraphQLDirective {
   name: string;
   description: Maybe<string>;
-  locations: DirectiveLocationEnum[];
+  locations: Array<DirectiveLocationEnum>;
   isRepeatable: boolean;
-  args: GraphQLArgument[];
+  args: Array<GraphQLArgument>;
   extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
@@ -39,7 +39,7 @@ export class GraphQLDirective {
 export interface GraphQLDirectiveConfig {
   name: string;
   description?: Maybe<string>;
-  locations: DirectiveLocationEnum[];
+  locations: Array<DirectiveLocationEnum>;
   args?: Maybe<GraphQLFieldConfigArgumentMap>;
   isRepeatable?: Maybe<boolean>;
   extensions?: Maybe<Readonly<Record<string, any>>>;

@@ -388,10 +388,10 @@ export class GraphQLObjectType<
   );
 
   getFields(): GraphQLFieldMap<any, TContext, TArgs>;
-  getInterfaces(): GraphQLInterfaceType[];
+  getInterfaces(): Array<GraphQLInterfaceType>;
 
   toConfig(): GraphQLObjectTypeConfig<any, any> & {
-    interfaces: GraphQLInterfaceType[];
+    interfaces: Array<GraphQLInterfaceType>;
     fields: GraphQLFieldConfigMap<any, any>;
     extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
@@ -414,7 +414,7 @@ export interface GraphQLObjectTypeConfig<
 > {
   name: string;
   description?: Maybe<string>;
-  interfaces?: Thunk<Maybe<GraphQLInterfaceType[]>>;
+  interfaces?: Thunk<Maybe<Array<GraphQLInterfaceType>>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext, TArgs>>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
   extensions?: Maybe<Readonly<Record<string, any>>>;
@@ -510,7 +510,7 @@ export interface GraphQLField<
   name: string;
   description: Maybe<string>;
   type: GraphQLOutputType;
-  args: GraphQLArgument[];
+  args: Array<GraphQLArgument>;
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   isDeprecated?: boolean;
@@ -567,10 +567,10 @@ export class GraphQLInterfaceType {
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>);
   getFields(): GraphQLFieldMap<any, any>;
-  getInterfaces(): GraphQLInterfaceType[];
+  getInterfaces(): Array<GraphQLInterfaceType>;
 
   toConfig(): GraphQLInterfaceTypeConfig<any, any> & {
-    interfaces: GraphQLInterfaceType[];
+    interfaces: Array<GraphQLInterfaceType>;
     fields: GraphQLFieldConfigMap<any, any>;
     extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
@@ -589,7 +589,7 @@ export interface GraphQLInterfaceTypeConfig<
 > {
   name: string;
   description?: Maybe<string>;
-  interfaces?: Thunk<Maybe<GraphQLInterfaceType[]>>;
+  interfaces?: Thunk<Maybe<Array<GraphQLInterfaceType>>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext, TArgs>>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
@@ -634,10 +634,10 @@ export class GraphQLUnionType {
   extensionASTNodes: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>);
-  getTypes(): GraphQLObjectType[];
+  getTypes(): Array<GraphQLObjectType>;
 
   toConfig(): GraphQLUnionTypeConfig<any, any> & {
-    types: GraphQLObjectType[];
+    types: Array<GraphQLObjectType>;
     extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
   };
@@ -650,7 +650,7 @@ export class GraphQLUnionType {
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  types: Thunk<GraphQLObjectType[]>;
+  types: Thunk<Array<GraphQLObjectType>>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -691,7 +691,7 @@ export class GraphQLEnumType {
   extensionASTNodes: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 
   constructor(config: Readonly<GraphQLEnumTypeConfig>);
-  getValues(): GraphQLEnumValue[];
+  getValues(): Array<GraphQLEnumValue>;
   getValue(name: string): Maybe<GraphQLEnumValue>;
   serialize(value: any): Maybe<string>;
   parseValue(value: any): Maybe<any>;
