@@ -238,9 +238,8 @@ export function isNullableType(type: any): type is GraphQLNullableType;
 export function assertNullableType(type: any): GraphQLNullableType;
 
 export function getNullableType(type: void): undefined;
-export function getNullableType<T extends GraphQLNullableType>(type: T): T;
 export function getNullableType<T extends GraphQLNullableType>(
-  type: GraphQLNonNull<T>,
+  type: GraphQLNonNull<T> | T,
 ): T;
 
 /**
