@@ -2,8 +2,6 @@ import { GraphQLSchema, GraphQLSchemaValidationOptions } from '../type/schema';
 
 import { IntrospectionQuery } from './getIntrospectionQuery';
 
-interface Options extends GraphQLSchemaValidationOptions {}
-
 /**
  * Build a GraphQLSchema for use by client tools.
  *
@@ -18,5 +16,5 @@ interface Options extends GraphQLSchemaValidationOptions {}
  */
 export function buildClientSchema(
   introspection: IntrospectionQuery,
-  options?: Options,
+  options?: GraphQLSchemaValidationOptions,
 ): GraphQLSchema;

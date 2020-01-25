@@ -474,8 +474,7 @@ export function assertNullableType(type: mixed): GraphQLNullableType {
 
 /* eslint-disable no-redeclare */
 declare function getNullableType(type: void | null): void;
-declare function getNullableType<T: GraphQLNullableType>(type: T): T;
-declare function getNullableType<T>(type: GraphQLNonNull<T>): T;
+declare function getNullableType<T>(type: GraphQLNonNull<T> | T): T;
 export function getNullableType(type) {
   /* eslint-enable no-redeclare */
   if (type) {
