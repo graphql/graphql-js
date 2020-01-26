@@ -34,11 +34,14 @@ function FieldsOnCorrectType(context) {
           var schema = context.getSchema();
           var fieldName = node.name.value; // First determine if there are any suggested types to condition on.
 
-          var suggestedTypeNames = getSuggestedTypeNames(schema, type, fieldName); // If there are no suggested types, then perhaps this was a typo?
+          var suggestion = (0, _didYouMean.default)('to use an inline fragment on', getSuggestedTypeNames(schema, type, fieldName)); // If there are no suggested types, then perhaps this was a typo?
 
-          var suggestedFieldNames = suggestedTypeNames.length !== 0 ? [] : getSuggestedFieldNames(schema, type, fieldName); // Report an error, including helpful suggestions.
+          if (suggestion === '') {
+            suggestion = (0, _didYouMean.default)(getSuggestedFieldNames(type, fieldName));
+          } // Report an error, including helpful suggestions.
 
-          context.reportError(new _GraphQLError.GraphQLError("Cannot query field \"".concat(fieldName, "\" on type \"").concat(type.name, "\".") + ((0, _didYouMean.default)('to use an inline fragment on', suggestedTypeNames) || (0, _didYouMean.default)(suggestedFieldNames)), node));
+
+          context.reportError(new _GraphQLError.GraphQLError("Cannot query field \"".concat(fieldName, "\" on type \"").concat(type.name, "\".") + suggestion, node));
         }
       }
     }
@@ -95,7 +98,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
  */
 
 
-function getSuggestedFieldNames(_schema, type, fieldName) {
+function getSuggestedFieldNames(type, fieldName) {
   if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
     var possibleFieldNames = Object.keys(type.getFields());
     return (0, _suggestionList.default)(fieldName, possibleFieldNames);
