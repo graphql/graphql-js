@@ -102,14 +102,16 @@ function buildClientSchema(introspection, options) {
       return (0, _definition.GraphQLNonNull)((0, _definition.assertNullableType)(nullableType));
     }
 
-    if (!typeRef.name) {
+    return getNamedType(typeRef);
+  }
+
+  function getNamedType(typeRef) {
+    var typeName = typeRef.name;
+
+    if (!typeName) {
       throw new Error("Unknown type reference: ".concat((0, _inspect.default)(typeRef), "."));
     }
 
-    return getNamedType(typeRef.name);
-  }
-
-  function getNamedType(typeName) {
     var type = typeMap[typeName];
 
     if (!type) {
@@ -119,36 +121,12 @@ function buildClientSchema(introspection, options) {
     return type;
   }
 
-  function getInputType(typeRef) {
-    var type = getType(typeRef);
-
-    if ((0, _definition.isInputType)(type)) {
-      return type;
-    }
-
-    var typeStr = (0, _inspect.default)(type);
-    throw new Error("Introspection must provide input type for arguments, but received: ".concat(typeStr, "."));
-  }
-
-  function getOutputType(typeRef) {
-    var type = getType(typeRef);
-
-    if ((0, _definition.isOutputType)(type)) {
-      return type;
-    }
-
-    var typeStr = (0, _inspect.default)(type);
-    throw new Error("Introspection must provide output type for fields, but received: ".concat(typeStr, "."));
-  }
-
   function getObjectType(typeRef) {
-    var type = getType(typeRef);
-    return (0, _definition.assertObjectType)(type);
+    return (0, _definition.assertObjectType)(getNamedType(typeRef));
   }
 
   function getInterfaceType(typeRef) {
-    var type = getType(typeRef);
-    return (0, _definition.assertInterfaceType)(type);
+    return (0, _definition.assertInterfaceType)(getNamedType(typeRef));
   } // Given a type's introspection result, construct the correct
   // GraphQLType instance.
 
@@ -285,19 +263,28 @@ function buildClientSchema(introspection, options) {
 
     return (0, _keyValMap.default)(typeIntrospection.fields, function (fieldIntrospection) {
       return fieldIntrospection.name;
-    }, function (fieldIntrospection) {
-      if (!fieldIntrospection.args) {
-        var fieldIntrospectionStr = (0, _inspect.default)(fieldIntrospection);
-        throw new Error("Introspection result missing field args: ".concat(fieldIntrospectionStr, "."));
-      }
+    }, buildField);
+  }
 
-      return {
-        description: fieldIntrospection.description,
-        deprecationReason: fieldIntrospection.deprecationReason,
-        type: getOutputType(fieldIntrospection.type),
-        args: buildInputValueDefMap(fieldIntrospection.args)
-      };
-    });
+  function buildField(fieldIntrospection) {
+    var type = getType(fieldIntrospection.type);
+
+    if (!(0, _definition.isOutputType)(type)) {
+      var typeStr = (0, _inspect.default)(type);
+      throw new Error("Introspection must provide output type for fields, but received: ".concat(typeStr, "."));
+    }
+
+    if (!fieldIntrospection.args) {
+      var fieldIntrospectionStr = (0, _inspect.default)(fieldIntrospection);
+      throw new Error("Introspection result missing field args: ".concat(fieldIntrospectionStr, "."));
+    }
+
+    return {
+      description: fieldIntrospection.description,
+      deprecationReason: fieldIntrospection.deprecationReason,
+      type: type,
+      args: buildInputValueDefMap(fieldIntrospection.args)
+    };
   }
 
   function buildInputValueDefMap(inputValueIntrospections) {
@@ -307,7 +294,13 @@ function buildClientSchema(introspection, options) {
   }
 
   function buildInputValue(inputValueIntrospection) {
-    var type = getInputType(inputValueIntrospection.type);
+    var type = getType(inputValueIntrospection.type);
+
+    if (!(0, _definition.isInputType)(type)) {
+      var typeStr = (0, _inspect.default)(type);
+      throw new Error("Introspection must provide input type for arguments, but received: ".concat(typeStr, "."));
+    }
+
     var defaultValue = inputValueIntrospection.defaultValue != null ? (0, _valueFromAST.valueFromAST)((0, _parser.parseValue)(inputValueIntrospection.defaultValue), type) : undefined;
     return {
       description: inputValueIntrospection.description,

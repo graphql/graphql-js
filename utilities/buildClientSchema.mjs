@@ -82,14 +82,16 @@ export function buildClientSchema(introspection, options) {
       return GraphQLNonNull(assertNullableType(nullableType));
     }
 
-    if (!typeRef.name) {
+    return getNamedType(typeRef);
+  }
+
+  function getNamedType(typeRef) {
+    var typeName = typeRef.name;
+
+    if (!typeName) {
       throw new Error("Unknown type reference: ".concat(inspect(typeRef), "."));
     }
 
-    return getNamedType(typeRef.name);
-  }
-
-  function getNamedType(typeName) {
     var type = typeMap[typeName];
 
     if (!type) {
@@ -99,36 +101,12 @@ export function buildClientSchema(introspection, options) {
     return type;
   }
 
-  function getInputType(typeRef) {
-    var type = getType(typeRef);
-
-    if (isInputType(type)) {
-      return type;
-    }
-
-    var typeStr = inspect(type);
-    throw new Error("Introspection must provide input type for arguments, but received: ".concat(typeStr, "."));
-  }
-
-  function getOutputType(typeRef) {
-    var type = getType(typeRef);
-
-    if (isOutputType(type)) {
-      return type;
-    }
-
-    var typeStr = inspect(type);
-    throw new Error("Introspection must provide output type for fields, but received: ".concat(typeStr, "."));
-  }
-
   function getObjectType(typeRef) {
-    var type = getType(typeRef);
-    return assertObjectType(type);
+    return assertObjectType(getNamedType(typeRef));
   }
 
   function getInterfaceType(typeRef) {
-    var type = getType(typeRef);
-    return assertInterfaceType(type);
+    return assertInterfaceType(getNamedType(typeRef));
   } // Given a type's introspection result, construct the correct
   // GraphQLType instance.
 
@@ -265,19 +243,28 @@ export function buildClientSchema(introspection, options) {
 
     return keyValMap(typeIntrospection.fields, function (fieldIntrospection) {
       return fieldIntrospection.name;
-    }, function (fieldIntrospection) {
-      if (!fieldIntrospection.args) {
-        var fieldIntrospectionStr = inspect(fieldIntrospection);
-        throw new Error("Introspection result missing field args: ".concat(fieldIntrospectionStr, "."));
-      }
+    }, buildField);
+  }
 
-      return {
-        description: fieldIntrospection.description,
-        deprecationReason: fieldIntrospection.deprecationReason,
-        type: getOutputType(fieldIntrospection.type),
-        args: buildInputValueDefMap(fieldIntrospection.args)
-      };
-    });
+  function buildField(fieldIntrospection) {
+    var type = getType(fieldIntrospection.type);
+
+    if (!isOutputType(type)) {
+      var typeStr = inspect(type);
+      throw new Error("Introspection must provide output type for fields, but received: ".concat(typeStr, "."));
+    }
+
+    if (!fieldIntrospection.args) {
+      var fieldIntrospectionStr = inspect(fieldIntrospection);
+      throw new Error("Introspection result missing field args: ".concat(fieldIntrospectionStr, "."));
+    }
+
+    return {
+      description: fieldIntrospection.description,
+      deprecationReason: fieldIntrospection.deprecationReason,
+      type: type,
+      args: buildInputValueDefMap(fieldIntrospection.args)
+    };
   }
 
   function buildInputValueDefMap(inputValueIntrospections) {
@@ -287,7 +274,13 @@ export function buildClientSchema(introspection, options) {
   }
 
   function buildInputValue(inputValueIntrospection) {
-    var type = getInputType(inputValueIntrospection.type);
+    var type = getType(inputValueIntrospection.type);
+
+    if (!isInputType(type)) {
+      var typeStr = inspect(type);
+      throw new Error("Introspection must provide input type for arguments, but received: ".concat(typeStr, "."));
+    }
+
     var defaultValue = inputValueIntrospection.defaultValue != null ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type) : undefined;
     return {
       description: inputValueIntrospection.description,
