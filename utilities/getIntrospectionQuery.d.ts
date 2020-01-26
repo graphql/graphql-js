@@ -112,11 +112,10 @@ export interface IntrospectionNonNullTypeRef<
 }
 
 export type IntrospectionTypeRef =
-  | IntrospectionNamedTypeRef<IntrospectionType>
+  | IntrospectionNamedTypeRef
   | IntrospectionListTypeRef<any>
   | IntrospectionNonNullTypeRef<
-      | IntrospectionNamedTypeRef<IntrospectionType>
-      | IntrospectionListTypeRef<any>
+      IntrospectionNamedTypeRef | IntrospectionListTypeRef<any>
     >;
 
 export type IntrospectionOutputTypeRef =
