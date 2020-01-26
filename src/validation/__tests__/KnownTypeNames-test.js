@@ -176,7 +176,7 @@ describe('Validate: Known type names', () => {
           locations: [{ line: 5, column: 36 }],
         },
         {
-          message: 'Unknown type "D". Did you mean "ID", "A", or "B"?',
+          message: 'Unknown type "D". Did you mean "A", "B", or "ID"?',
           locations: [{ line: 6, column: 16 }],
         },
         {
@@ -196,7 +196,7 @@ describe('Validate: Known type names', () => {
           locations: [{ line: 12, column: 16 }],
         },
         {
-          message: 'Unknown type "I". Did you mean "ID", "A", or "B"?',
+          message: 'Unknown type "I". Did you mean "A", "B", or "ID"?',
           locations: [{ line: 12, column: 20 }],
         },
         {
@@ -306,7 +306,7 @@ describe('Validate: Known type names', () => {
           locations: [{ line: 4, column: 36 }],
         },
         {
-          message: 'Unknown type "D". Did you mean "ID", "A", or "B"?',
+          message: 'Unknown type "D". Did you mean "A", "B", or "ID"?',
           locations: [{ line: 5, column: 16 }],
         },
         {
@@ -326,7 +326,7 @@ describe('Validate: Known type names', () => {
           locations: [{ line: 11, column: 16 }],
         },
         {
-          message: 'Unknown type "I". Did you mean "ID", "A", or "B"?',
+          message: 'Unknown type "I". Did you mean "A", "B", or "ID"?',
           locations: [{ line: 11, column: 20 }],
         },
         {
