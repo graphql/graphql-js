@@ -1,7 +1,9 @@
 export { validate } from "./validate.mjs";
 export { ValidationContext } from "./ValidationContext.mjs";
 // All validation rules in the GraphQL Specification.
-export { specifiedRules } from "./specifiedRules.mjs"; // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
+export { specifiedRules } from "./specifiedRules.mjs"; // Spec Section: "Executable Definitions"
+
+export { ExecutableDefinitions as ExecutableDefinitionsRule } from "./rules/ExecutableDefinitions.mjs"; // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 
 export { FieldsOnCorrectType as FieldsOnCorrectTypeRule } from "./rules/FieldsOnCorrectType.mjs"; // Spec Section: "Fragments on Composite Types"
 
@@ -51,4 +53,12 @@ export { ValuesOfCorrectType as ValuesOfCorrectTypeRule } from "./rules/ValuesOf
 
 export { VariablesAreInputTypes as VariablesAreInputTypesRule } from "./rules/VariablesAreInputTypes.mjs"; // Spec Section: "All Variable Usages Are Allowed"
 
-export { VariablesInAllowedPosition as VariablesInAllowedPositionRule } from "./rules/VariablesInAllowedPosition.mjs";
+export { VariablesInAllowedPosition as VariablesInAllowedPositionRule } from "./rules/VariablesInAllowedPosition.mjs"; // SDL-specific validation rules
+
+export { LoneSchemaDefinition as LoneSchemaDefinitionRule } from "./rules/LoneSchemaDefinition.mjs";
+export { UniqueOperationTypes as UniqueOperationTypesRule } from "./rules/UniqueOperationTypes.mjs";
+export { UniqueTypeNames as UniqueTypeNamesRule } from "./rules/UniqueTypeNames.mjs";
+export { UniqueEnumValueNames as UniqueEnumValueNamesRule } from "./rules/UniqueEnumValueNames.mjs";
+export { UniqueFieldDefinitionNames as UniqueFieldDefinitionNamesRule } from "./rules/UniqueFieldDefinitionNames.mjs";
+export { UniqueDirectiveNames as UniqueDirectiveNamesRule } from "./rules/UniqueDirectiveNames.mjs";
+export { PossibleTypeExtensions as PossibleTypeExtensionsRule } from "./rules/PossibleTypeExtensions.mjs";

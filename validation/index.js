@@ -21,6 +21,12 @@ Object.defineProperty(exports, "specifiedRules", {
     return _specifiedRules.specifiedRules;
   }
 });
+Object.defineProperty(exports, "ExecutableDefinitionsRule", {
+  enumerable: true,
+  get: function get() {
+    return _ExecutableDefinitions.ExecutableDefinitions;
+  }
+});
 Object.defineProperty(exports, "FieldsOnCorrectTypeRule", {
   enumerable: true,
   get: function get() {
@@ -171,12 +177,56 @@ Object.defineProperty(exports, "VariablesInAllowedPositionRule", {
     return _VariablesInAllowedPosition.VariablesInAllowedPosition;
   }
 });
+Object.defineProperty(exports, "LoneSchemaDefinitionRule", {
+  enumerable: true,
+  get: function get() {
+    return _LoneSchemaDefinition.LoneSchemaDefinition;
+  }
+});
+Object.defineProperty(exports, "UniqueOperationTypesRule", {
+  enumerable: true,
+  get: function get() {
+    return _UniqueOperationTypes.UniqueOperationTypes;
+  }
+});
+Object.defineProperty(exports, "UniqueTypeNamesRule", {
+  enumerable: true,
+  get: function get() {
+    return _UniqueTypeNames.UniqueTypeNames;
+  }
+});
+Object.defineProperty(exports, "UniqueEnumValueNamesRule", {
+  enumerable: true,
+  get: function get() {
+    return _UniqueEnumValueNames.UniqueEnumValueNames;
+  }
+});
+Object.defineProperty(exports, "UniqueFieldDefinitionNamesRule", {
+  enumerable: true,
+  get: function get() {
+    return _UniqueFieldDefinitionNames.UniqueFieldDefinitionNames;
+  }
+});
+Object.defineProperty(exports, "UniqueDirectiveNamesRule", {
+  enumerable: true,
+  get: function get() {
+    return _UniqueDirectiveNames.UniqueDirectiveNames;
+  }
+});
+Object.defineProperty(exports, "PossibleTypeExtensionsRule", {
+  enumerable: true,
+  get: function get() {
+    return _PossibleTypeExtensions.PossibleTypeExtensions;
+  }
+});
 
 var _validate = require("./validate");
 
 var _ValidationContext = require("./ValidationContext");
 
 var _specifiedRules = require("./specifiedRules");
+
+var _ExecutableDefinitions = require("./rules/ExecutableDefinitions");
 
 var _FieldsOnCorrectType = require("./rules/FieldsOnCorrectType");
 
@@ -227,3 +277,17 @@ var _ValuesOfCorrectType = require("./rules/ValuesOfCorrectType");
 var _VariablesAreInputTypes = require("./rules/VariablesAreInputTypes");
 
 var _VariablesInAllowedPosition = require("./rules/VariablesInAllowedPosition");
+
+var _LoneSchemaDefinition = require("./rules/LoneSchemaDefinition");
+
+var _UniqueOperationTypes = require("./rules/UniqueOperationTypes");
+
+var _UniqueTypeNames = require("./rules/UniqueTypeNames");
+
+var _UniqueEnumValueNames = require("./rules/UniqueEnumValueNames");
+
+var _UniqueFieldDefinitionNames = require("./rules/UniqueFieldDefinitionNames");
+
+var _UniqueDirectiveNames = require("./rules/UniqueDirectiveNames");
+
+var _PossibleTypeExtensions = require("./rules/PossibleTypeExtensions");

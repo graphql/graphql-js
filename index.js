@@ -873,6 +873,48 @@ Object.defineProperty(exports, "VariablesInAllowedPositionRule", {
     return _index5.VariablesInAllowedPositionRule;
   }
 });
+Object.defineProperty(exports, "LoneSchemaDefinitionRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.LoneSchemaDefinitionRule;
+  }
+});
+Object.defineProperty(exports, "UniqueOperationTypesRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.UniqueOperationTypesRule;
+  }
+});
+Object.defineProperty(exports, "UniqueTypeNamesRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.UniqueTypeNamesRule;
+  }
+});
+Object.defineProperty(exports, "UniqueEnumValueNamesRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.UniqueEnumValueNamesRule;
+  }
+});
+Object.defineProperty(exports, "UniqueFieldDefinitionNamesRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.UniqueFieldDefinitionNamesRule;
+  }
+});
+Object.defineProperty(exports, "UniqueDirectiveNamesRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.UniqueDirectiveNamesRule;
+  }
+});
+Object.defineProperty(exports, "PossibleTypeExtensionsRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.PossibleTypeExtensionsRule;
+  }
+});
 Object.defineProperty(exports, "GraphQLError", {
   enumerable: true,
   get: function get() {
