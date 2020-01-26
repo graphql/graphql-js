@@ -24,7 +24,8 @@ function suggestionList(input, options) {
   }
 
   return Object.keys(optionsByDistance).sort(function (a, b) {
-    return optionsByDistance[a] - optionsByDistance[b];
+    var diff = optionsByDistance[a] - optionsByDistance[b];
+    return diff !== 0 ? diff : a.localeCompare(b);
   });
 }
 /**

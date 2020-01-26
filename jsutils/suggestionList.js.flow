@@ -17,9 +17,10 @@ export default function suggestionList(
       optionsByDistance[option] = distance;
     }
   }
-  return Object.keys(optionsByDistance).sort(
-    (a, b) => optionsByDistance[a] - optionsByDistance[b],
-  );
+  return Object.keys(optionsByDistance).sort((a, b) => {
+    const diff = optionsByDistance[a] - optionsByDistance[b];
+    return diff !== 0 ? diff : a.localeCompare(b);
+  });
 }
 
 /**
