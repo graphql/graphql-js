@@ -481,7 +481,7 @@ overrides:
       '@typescript-eslint/no-type-alias': off # TODO consider
       '@typescript-eslint/no-unnecessary-condition': error
       '@typescript-eslint/no-unnecessary-qualifier': error
-      '@typescript-eslint/no-unnecessary-type-arguments': off # TODO error
+      '@typescript-eslint/no-unnecessary-type-arguments': error
       '@typescript-eslint/no-unnecessary-type-assertion': error
       '@typescript-eslint/no-unused-vars-experimental': off
       '@typescript-eslint/no-var-requires': error
