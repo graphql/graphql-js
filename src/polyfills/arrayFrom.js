@@ -2,6 +2,8 @@
 
 import { SYMBOL_ITERATOR } from './symbols';
 
+declare function arrayFrom<T>(arrayLike: Iterable<T>): Array<T>;
+// eslint-disable-next-line no-redeclare
 declare function arrayFrom<T: mixed>(
   arrayLike: mixed,
   mapFn?: (elem: mixed, index: number) => T,

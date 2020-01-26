@@ -13,6 +13,8 @@ import { type ASTVisitor } from '../../language/visitor';
 import { type GraphQLSchema } from '../../type/schema';
 import {
   type GraphQLOutputType,
+  type GraphQLObjectType,
+  type GraphQLInterfaceType,
   isObjectType,
   isInterfaceType,
   isAbstractType,
@@ -79,7 +81,9 @@ function getSuggestedTypeNames(
     return [];
   }
 
-  const suggestedTypes = new Set();
+  const suggestedTypes: Set<
+    GraphQLObjectType | GraphQLInterfaceType,
+  > = new Set();
   const usageCount = Object.create(null);
   for (const possibleType of schema.getPossibleTypes(type)) {
     if (!possibleType.getFields()[fieldName]) {
@@ -111,10 +115,10 @@ function getSuggestedTypeNames(
       }
 
       // Suggest super types first followed by subtypes
-      if (isAbstractType(typeA) && schema.isSubType(typeA, typeB)) {
+      if (isInterfaceType(typeA) && schema.isSubType(typeA, typeB)) {
         return -1;
       }
-      if (isAbstractType(typeB) && schema.isSubType(typeB, typeA)) {
+      if (isInterfaceType(typeB) && schema.isSubType(typeB, typeA)) {
         return 1;
       }
 
