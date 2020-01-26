@@ -4,6 +4,11 @@ export { ValidationContext, ValidationRule } from './ValidationContext';
 
 export { specifiedRules } from './specifiedRules';
 
+// Spec Section: "Executable Definitions"
+export {
+  ExecutableDefinitions as ExecutableDefinitionsRule,
+} from './rules/ExecutableDefinitions';
+
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 export {
   FieldsOnCorrectType as FieldsOnCorrectTypeRule,
@@ -124,3 +129,26 @@ export {
 export {
   VariablesInAllowedPosition as VariablesInAllowedPositionRule,
 } from './rules/VariablesInAllowedPosition';
+
+// SDL-specific validation rules
+export {
+  LoneSchemaDefinition as LoneSchemaDefinitionRule,
+} from './rules/LoneSchemaDefinition';
+export {
+  UniqueOperationTypes as UniqueOperationTypesRule,
+} from './rules/UniqueOperationTypes';
+export {
+  UniqueTypeNames as UniqueTypeNamesRule,
+} from './rules/UniqueTypeNames';
+export {
+  UniqueEnumValueNames as UniqueEnumValueNamesRule,
+} from './rules/UniqueEnumValueNames';
+export {
+  UniqueFieldDefinitionNames as UniqueFieldDefinitionNamesRule,
+} from './rules/UniqueFieldDefinitionNames';
+export {
+  UniqueDirectiveNames as UniqueDirectiveNamesRule,
+} from './rules/UniqueDirectiveNames';
+export {
+  PossibleTypeExtensions as PossibleTypeExtensionsRule,
+} from './rules/PossibleTypeExtensions';

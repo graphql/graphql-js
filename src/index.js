@@ -300,6 +300,7 @@ export {
   // All validation rules in the GraphQL Specification.
   specifiedRules,
   // Individual validation rules.
+  ExecutableDefinitionsRule,
   FieldsOnCorrectTypeRule,
   FragmentsOnCompositeTypesRule,
   KnownArgumentNamesRule,
@@ -325,6 +326,14 @@ export {
   ValuesOfCorrectTypeRule,
   VariablesAreInputTypesRule,
   VariablesInAllowedPositionRule,
+  // SDL-specific validation rules
+  LoneSchemaDefinitionRule,
+  UniqueOperationTypesRule,
+  UniqueTypeNamesRule,
+  UniqueEnumValueNamesRule,
+  UniqueFieldDefinitionNamesRule,
+  UniqueDirectiveNamesRule,
+  PossibleTypeExtensionsRule,
 } from './validation';
 
 export type { ValidationRule } from './validation';
