@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.FieldsOnCorrectType = FieldsOnCorrectType;
 
+var _arrayFrom = _interopRequireDefault(require("../../polyfills/arrayFrom"));
+
 var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
@@ -49,48 +51,65 @@ function FieldsOnCorrectType(context) {
 }
 /**
  * Go through all of the implementations of type, as well as the interfaces that
- * they implement. If any of those types include the provided field, suggest
- * them, sorted by how often the type is referenced, starting with Interfaces.
+ * they implement. If any of those types include the provided field, suggest them,
+ * sorted by how often the type is referenced.
  */
 
 
 function getSuggestedTypeNames(schema, type, fieldName) {
-  if ((0, _definition.isAbstractType)(type)) {
-    var suggestedObjectTypes = [];
-    var interfaceUsageCount = Object.create(null);
+  if (!(0, _definition.isAbstractType)(type)) {
+    // Must be an Object type, which does not have possible fields.
+    return [];
+  }
 
-    for (var _i2 = 0, _schema$getPossibleTy2 = schema.getPossibleTypes(type); _i2 < _schema$getPossibleTy2.length; _i2++) {
-      var possibleType = _schema$getPossibleTy2[_i2];
+  var suggestedTypes = new Set();
+  var usageCount = Object.create(null);
 
-      if (!possibleType.getFields()[fieldName]) {
+  for (var _i2 = 0, _schema$getPossibleTy2 = schema.getPossibleTypes(type); _i2 < _schema$getPossibleTy2.length; _i2++) {
+    var possibleType = _schema$getPossibleTy2[_i2];
+
+    if (!possibleType.getFields()[fieldName]) {
+      continue;
+    } // This object type defines this field.
+
+
+    suggestedTypes.add(possibleType);
+    usageCount[possibleType.name] = 1;
+
+    for (var _i4 = 0, _possibleType$getInte2 = possibleType.getInterfaces(); _i4 < _possibleType$getInte2.length; _i4++) {
+      var possibleInterface = _possibleType$getInte2[_i4];
+
+      if (!possibleInterface.getFields()[fieldName]) {
         continue;
-      } // This object type defines this field.
+      } // This interface type defines this field.
 
 
-      suggestedObjectTypes.push(possibleType.name);
+      suggestedTypes.add(possibleInterface);
+      usageCount[possibleInterface.name] = (usageCount[possibleInterface.name] || 0) + 1;
+    }
+  }
 
-      for (var _i4 = 0, _possibleType$getInte2 = possibleType.getInterfaces(); _i4 < _possibleType$getInte2.length; _i4++) {
-        var possibleInterface = _possibleType$getInte2[_i4];
+  return (0, _arrayFrom.default)(suggestedTypes).sort(function (typeA, typeB) {
+    // Suggest both interface and object types based on how common they are.
+    var usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];
 
-        if (!possibleInterface.getFields()[fieldName]) {
-          continue;
-        } // This interface type defines this field.
-
-
-        interfaceUsageCount[possibleInterface.name] = (interfaceUsageCount[possibleInterface.name] || 0) + 1;
-      }
-    } // Suggest interface types based on how common they are.
-
-
-    var suggestedInterfaceTypes = Object.keys(interfaceUsageCount).sort(function (a, b) {
-      return interfaceUsageCount[b] - interfaceUsageCount[a];
-    }); // Suggest both interface and object types.
-
-    return suggestedInterfaceTypes.concat(suggestedObjectTypes);
-  } // Otherwise, must be an Object type, which does not have possible fields.
+    if (usageCountDiff !== 0) {
+      return usageCountDiff;
+    } // Suggest super types first followed by subtypes
 
 
-  return [];
+    if ((0, _definition.isAbstractType)(typeA) && schema.isSubType(typeA, typeB)) {
+      return -1;
+    }
+
+    if ((0, _definition.isAbstractType)(typeB) && schema.isSubType(typeB, typeA)) {
+      return 1;
+    }
+
+    return typeA.name.localeCompare(typeB.name);
+  }).map(function (x) {
+    return x.name;
+  });
 }
 /**
  * For the field name provided, determine if there are any similar field names

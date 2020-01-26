@@ -18,8 +18,8 @@ export default function suggestionList(
     }
   }
   return Object.keys(optionsByDistance).sort((a, b) => {
-    const diff = optionsByDistance[a] - optionsByDistance[b];
-    return diff !== 0 ? diff : a.localeCompare(b);
+    const distanceDiff = optionsByDistance[a] - optionsByDistance[b];
+    return distanceDiff !== 0 ? distanceDiff : a.localeCompare(b);
   });
 }
 

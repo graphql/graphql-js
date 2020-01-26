@@ -1,5 +1,7 @@
 // @flow strict
 
+import arrayFrom from '../../polyfills/arrayFrom';
+
 import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 
@@ -62,44 +64,61 @@ export function FieldsOnCorrectType(context: ValidationContext): ASTVisitor {
 
 /**
  * Go through all of the implementations of type, as well as the interfaces that
- * they implement. If any of those types include the provided field, suggest
- * them, sorted by how often the type is referenced, starting with Interfaces.
+ * they implement. If any of those types include the provided field, suggest them,
+ * sorted by how often the type is referenced.
  */
 function getSuggestedTypeNames(
   schema: GraphQLSchema,
   type: GraphQLOutputType,
   fieldName: string,
 ): Array<string> {
-  if (isAbstractType(type)) {
-    const suggestedObjectTypes = [];
-    const interfaceUsageCount = Object.create(null);
-    for (const possibleType of schema.getPossibleTypes(type)) {
-      if (!possibleType.getFields()[fieldName]) {
-        continue;
-      }
-      // This object type defines this field.
-      suggestedObjectTypes.push(possibleType.name);
-      for (const possibleInterface of possibleType.getInterfaces()) {
-        if (!possibleInterface.getFields()[fieldName]) {
-          continue;
-        }
-        // This interface type defines this field.
-        interfaceUsageCount[possibleInterface.name] =
-          (interfaceUsageCount[possibleInterface.name] || 0) + 1;
-      }
-    }
-
-    // Suggest interface types based on how common they are.
-    const suggestedInterfaceTypes = Object.keys(interfaceUsageCount).sort(
-      (a, b) => interfaceUsageCount[b] - interfaceUsageCount[a],
-    );
-
-    // Suggest both interface and object types.
-    return suggestedInterfaceTypes.concat(suggestedObjectTypes);
+  if (!isAbstractType(type)) {
+    // Must be an Object type, which does not have possible fields.
+    return [];
   }
 
-  // Otherwise, must be an Object type, which does not have possible fields.
-  return [];
+  const suggestedTypes = new Set();
+  const usageCount = Object.create(null);
+  for (const possibleType of schema.getPossibleTypes(type)) {
+    if (!possibleType.getFields()[fieldName]) {
+      continue;
+    }
+
+    // This object type defines this field.
+    suggestedTypes.add(possibleType);
+    usageCount[possibleType.name] = 1;
+
+    for (const possibleInterface of possibleType.getInterfaces()) {
+      if (!possibleInterface.getFields()[fieldName]) {
+        continue;
+      }
+
+      // This interface type defines this field.
+      suggestedTypes.add(possibleInterface);
+      usageCount[possibleInterface.name] =
+        (usageCount[possibleInterface.name] || 0) + 1;
+    }
+  }
+
+  return arrayFrom(suggestedTypes)
+    .sort((typeA, typeB) => {
+      // Suggest both interface and object types based on how common they are.
+      const usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];
+      if (usageCountDiff !== 0) {
+        return usageCountDiff;
+      }
+
+      // Suggest super types first followed by subtypes
+      if (isAbstractType(typeA) && schema.isSubType(typeA, typeB)) {
+        return -1;
+      }
+      if (isAbstractType(typeB) && schema.isSubType(typeB, typeA)) {
+        return 1;
+      }
+
+      return typeA.name.localeCompare(typeB.name);
+    })
+    .map(x => x.name);
 }
 
 /**

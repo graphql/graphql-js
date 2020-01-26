@@ -17,8 +17,8 @@ export default function suggestionList(input, options) {
   }
 
   return Object.keys(optionsByDistance).sort(function (a, b) {
-    var diff = optionsByDistance[a] - optionsByDistance[b];
-    return diff !== 0 ? diff : a.localeCompare(b);
+    var distanceDiff = optionsByDistance[a] - optionsByDistance[b];
+    return distanceDiff !== 0 ? distanceDiff : a.localeCompare(b);
   });
 }
 /**
