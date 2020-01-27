@@ -9,88 +9,88 @@ export type { ValidationRule } from './ValidationContext';
 export { specifiedRules } from './specifiedRules';
 
 // Spec Section: "Executable Definitions"
-export { ExecutableDefinitions as ExecutableDefinitionsRule } from './rules/ExecutableDefinitions';
+export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
 
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
-export { FieldsOnCorrectType as FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectType';
+export { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule';
 
 // Spec Section: "Fragments on Composite Types"
-export { FragmentsOnCompositeTypes as FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypes';
+export { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypesRule';
 
 // Spec Section: "Argument Names"
-export { KnownArgumentNames as KnownArgumentNamesRule } from './rules/KnownArgumentNames';
+export { KnownArgumentNamesRule } from './rules/KnownArgumentNamesRule';
 
 // Spec Section: "Directives Are Defined"
-export { KnownDirectives as KnownDirectivesRule } from './rules/KnownDirectives';
+export { KnownDirectivesRule } from './rules/KnownDirectivesRule';
 
 // Spec Section: "Fragment spread target defined"
-export { KnownFragmentNames as KnownFragmentNamesRule } from './rules/KnownFragmentNames';
+export { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule';
 
 // Spec Section: "Fragment Spread Type Existence"
-export { KnownTypeNames as KnownTypeNamesRule } from './rules/KnownTypeNames';
+export { KnownTypeNamesRule } from './rules/KnownTypeNamesRule';
 
 // Spec Section: "Lone Anonymous Operation"
-export { LoneAnonymousOperation as LoneAnonymousOperationRule } from './rules/LoneAnonymousOperation';
+export { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule';
 
 // Spec Section: "Fragments must not form cycles"
-export { NoFragmentCycles as NoFragmentCyclesRule } from './rules/NoFragmentCycles';
+export { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule';
 
 // Spec Section: "All Variable Used Defined"
-export { NoUndefinedVariables as NoUndefinedVariablesRule } from './rules/NoUndefinedVariables';
+export { NoUndefinedVariablesRule } from './rules/NoUndefinedVariablesRule';
 
 // Spec Section: "Fragments must be used"
-export { NoUnusedFragments as NoUnusedFragmentsRule } from './rules/NoUnusedFragments';
+export { NoUnusedFragmentsRule } from './rules/NoUnusedFragmentsRule';
 
 // Spec Section: "All Variables Used"
-export { NoUnusedVariables as NoUnusedVariablesRule } from './rules/NoUnusedVariables';
+export { NoUnusedVariablesRule } from './rules/NoUnusedVariablesRule';
 
 // Spec Section: "Field Selection Merging"
-export { OverlappingFieldsCanBeMerged as OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBeMerged';
+export { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBeMergedRule';
 
 // Spec Section: "Fragment spread is possible"
-export { PossibleFragmentSpreads as PossibleFragmentSpreadsRule } from './rules/PossibleFragmentSpreads';
+export { PossibleFragmentSpreadsRule } from './rules/PossibleFragmentSpreadsRule';
 
 // Spec Section: "Argument Optionality"
-export { ProvidedRequiredArguments as ProvidedRequiredArgumentsRule } from './rules/ProvidedRequiredArguments';
+export { ProvidedRequiredArgumentsRule } from './rules/ProvidedRequiredArgumentsRule';
 
 // Spec Section: "Leaf Field Selections"
-export { ScalarLeafs as ScalarLeafsRule } from './rules/ScalarLeafs';
+export { ScalarLeafsRule } from './rules/ScalarLeafsRule';
 
 // Spec Section: "Subscriptions with Single Root Field"
-export { SingleFieldSubscriptions as SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptions';
+export { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule';
 
 // Spec Section: "Argument Uniqueness"
-export { UniqueArgumentNames as UniqueArgumentNamesRule } from './rules/UniqueArgumentNames';
+export { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule';
 
 // Spec Section: "Directives Are Unique Per Location"
-export { UniqueDirectivesPerLocation as UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLocation';
+export { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLocationRule';
 
 // Spec Section: "Fragment Name Uniqueness"
-export { UniqueFragmentNames as UniqueFragmentNamesRule } from './rules/UniqueFragmentNames';
+export { UniqueFragmentNamesRule } from './rules/UniqueFragmentNamesRule';
 
 // Spec Section: "Input Object Field Uniqueness"
-export { UniqueInputFieldNames as UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNames';
+export { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule';
 
 // Spec Section: "Operation Name Uniqueness"
-export { UniqueOperationNames as UniqueOperationNamesRule } from './rules/UniqueOperationNames';
+export { UniqueOperationNamesRule } from './rules/UniqueOperationNamesRule';
 
 // Spec Section: "Variable Uniqueness"
-export { UniqueVariableNames as UniqueVariableNamesRule } from './rules/UniqueVariableNames';
+export { UniqueVariableNamesRule } from './rules/UniqueVariableNamesRule';
 
 // Spec Section: "Values Type Correctness"
-export { ValuesOfCorrectType as ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectType';
+export { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule';
 
 // Spec Section: "Variables are Input Types"
-export { VariablesAreInputTypes as VariablesAreInputTypesRule } from './rules/VariablesAreInputTypes';
+export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule';
 
 // Spec Section: "All Variable Usages Are Allowed"
-export { VariablesInAllowedPosition as VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPosition';
+export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule';
 
 // SDL-specific validation rules
-export { LoneSchemaDefinition as LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinition';
-export { UniqueOperationTypes as UniqueOperationTypesRule } from './rules/UniqueOperationTypes';
-export { UniqueTypeNames as UniqueTypeNamesRule } from './rules/UniqueTypeNames';
-export { UniqueEnumValueNames as UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNames';
-export { UniqueFieldDefinitionNames as UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNames';
-export { UniqueDirectiveNames as UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNames';
-export { PossibleTypeExtensions as PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensions';
+export { LoneSchemaDefinitionRuleRule } from './rules/LoneSchemaDefinitionRule';
+export { UniqueOperationTypesRuleRule } from './rules/UniqueOperationTypesRule';
+export { UniqueTypeNamesRuleRule } from './rules/UniqueTypeNamesRule';
+export { UniqueEnumValueNamesRuleRule } from './rules/UniqueEnumValueNamesRule';
+export { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule';
+export { UniqueDirectiveNamesRuleRule } from './rules/UniqueDirectiveNamesRule';
+export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';

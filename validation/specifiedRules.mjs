@@ -1,63 +1,63 @@
 // Spec Section: "Executable Definitions"
-import { ExecutableDefinitions } from "./rules/ExecutableDefinitions.mjs"; // Spec Section: "Operation Name Uniqueness"
+import { ExecutableDefinitionsRule } from "./rules/ExecutableDefinitionsRule.mjs"; // Spec Section: "Operation Name Uniqueness"
 
-import { UniqueOperationNames } from "./rules/UniqueOperationNames.mjs"; // Spec Section: "Lone Anonymous Operation"
+import { UniqueOperationNamesRule } from "./rules/UniqueOperationNamesRule.mjs"; // Spec Section: "Lone Anonymous Operation"
 
-import { LoneAnonymousOperation } from "./rules/LoneAnonymousOperation.mjs"; // Spec Section: "Subscriptions with Single Root Field"
+import { LoneAnonymousOperationRule } from "./rules/LoneAnonymousOperationRule.mjs"; // Spec Section: "Subscriptions with Single Root Field"
 
-import { SingleFieldSubscriptions } from "./rules/SingleFieldSubscriptions.mjs"; // Spec Section: "Fragment Spread Type Existence"
+import { SingleFieldSubscriptionsRule } from "./rules/SingleFieldSubscriptionsRule.mjs"; // Spec Section: "Fragment Spread Type Existence"
 
-import { KnownTypeNames } from "./rules/KnownTypeNames.mjs"; // Spec Section: "Fragments on Composite Types"
+import { KnownTypeNamesRule } from "./rules/KnownTypeNamesRule.mjs"; // Spec Section: "Fragments on Composite Types"
 
-import { FragmentsOnCompositeTypes } from "./rules/FragmentsOnCompositeTypes.mjs"; // Spec Section: "Variables are Input Types"
+import { FragmentsOnCompositeTypesRule } from "./rules/FragmentsOnCompositeTypesRule.mjs"; // Spec Section: "Variables are Input Types"
 
-import { VariablesAreInputTypes } from "./rules/VariablesAreInputTypes.mjs"; // Spec Section: "Leaf Field Selections"
+import { VariablesAreInputTypesRule } from "./rules/VariablesAreInputTypesRule.mjs"; // Spec Section: "Leaf Field Selections"
 
-import { ScalarLeafs } from "./rules/ScalarLeafs.mjs"; // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
+import { ScalarLeafsRule } from "./rules/ScalarLeafsRule.mjs"; // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 
-import { FieldsOnCorrectType } from "./rules/FieldsOnCorrectType.mjs"; // Spec Section: "Fragment Name Uniqueness"
+import { FieldsOnCorrectTypeRule } from "./rules/FieldsOnCorrectTypeRule.mjs"; // Spec Section: "Fragment Name Uniqueness"
 
-import { UniqueFragmentNames } from "./rules/UniqueFragmentNames.mjs"; // Spec Section: "Fragment spread target defined"
+import { UniqueFragmentNamesRule } from "./rules/UniqueFragmentNamesRule.mjs"; // Spec Section: "Fragment spread target defined"
 
-import { KnownFragmentNames } from "./rules/KnownFragmentNames.mjs"; // Spec Section: "Fragments must be used"
+import { KnownFragmentNamesRule } from "./rules/KnownFragmentNamesRule.mjs"; // Spec Section: "Fragments must be used"
 
-import { NoUnusedFragments } from "./rules/NoUnusedFragments.mjs"; // Spec Section: "Fragment spread is possible"
+import { NoUnusedFragmentsRule } from "./rules/NoUnusedFragmentsRule.mjs"; // Spec Section: "Fragment spread is possible"
 
-import { PossibleFragmentSpreads } from "./rules/PossibleFragmentSpreads.mjs"; // Spec Section: "Fragments must not form cycles"
+import { PossibleFragmentSpreadsRule } from "./rules/PossibleFragmentSpreadsRule.mjs"; // Spec Section: "Fragments must not form cycles"
 
-import { NoFragmentCycles } from "./rules/NoFragmentCycles.mjs"; // Spec Section: "Variable Uniqueness"
+import { NoFragmentCyclesRule } from "./rules/NoFragmentCyclesRule.mjs"; // Spec Section: "Variable Uniqueness"
 
-import { UniqueVariableNames } from "./rules/UniqueVariableNames.mjs"; // Spec Section: "All Variable Used Defined"
+import { UniqueVariableNamesRule } from "./rules/UniqueVariableNamesRule.mjs"; // Spec Section: "All Variable Used Defined"
 
-import { NoUndefinedVariables } from "./rules/NoUndefinedVariables.mjs"; // Spec Section: "All Variables Used"
+import { NoUndefinedVariablesRule } from "./rules/NoUndefinedVariablesRule.mjs"; // Spec Section: "All Variables Used"
 
-import { NoUnusedVariables } from "./rules/NoUnusedVariables.mjs"; // Spec Section: "Directives Are Defined"
+import { NoUnusedVariablesRule } from "./rules/NoUnusedVariablesRule.mjs"; // Spec Section: "Directives Are Defined"
 
-import { KnownDirectives } from "./rules/KnownDirectives.mjs"; // Spec Section: "Directives Are Unique Per Location"
+import { KnownDirectivesRule } from "./rules/KnownDirectivesRule.mjs"; // Spec Section: "Directives Are Unique Per Location"
 
-import { UniqueDirectivesPerLocation } from "./rules/UniqueDirectivesPerLocation.mjs"; // Spec Section: "Argument Names"
+import { UniqueDirectivesPerLocationRule } from "./rules/UniqueDirectivesPerLocationRule.mjs"; // Spec Section: "Argument Names"
 
-import { KnownArgumentNames, KnownArgumentNamesOnDirectives } from "./rules/KnownArgumentNames.mjs"; // Spec Section: "Argument Uniqueness"
+import { KnownArgumentNamesRule, KnownArgumentNamesOnDirectives } from "./rules/KnownArgumentNamesRule.mjs"; // Spec Section: "Argument Uniqueness"
 
-import { UniqueArgumentNames } from "./rules/UniqueArgumentNames.mjs"; // Spec Section: "Value Type Correctness"
+import { UniqueArgumentNamesRule } from "./rules/UniqueArgumentNamesRule.mjs"; // Spec Section: "Value Type Correctness"
 
-import { ValuesOfCorrectType } from "./rules/ValuesOfCorrectType.mjs"; // Spec Section: "Argument Optionality"
+import { ValuesOfCorrectTypeRule } from "./rules/ValuesOfCorrectTypeRule.mjs"; // Spec Section: "Argument Optionality"
 
-import { ProvidedRequiredArguments, ProvidedRequiredArgumentsOnDirectives } from "./rules/ProvidedRequiredArguments.mjs"; // Spec Section: "All Variable Usages Are Allowed"
+import { ProvidedRequiredArgumentsRule, ProvidedRequiredArgumentsOnDirectives } from "./rules/ProvidedRequiredArgumentsRule.mjs"; // Spec Section: "All Variable Usages Are Allowed"
 
-import { VariablesInAllowedPosition } from "./rules/VariablesInAllowedPosition.mjs"; // Spec Section: "Field Selection Merging"
+import { VariablesInAllowedPositionRule } from "./rules/VariablesInAllowedPositionRule.mjs"; // Spec Section: "Field Selection Merging"
 
-import { OverlappingFieldsCanBeMerged } from "./rules/OverlappingFieldsCanBeMerged.mjs"; // Spec Section: "Input Object Field Uniqueness"
+import { OverlappingFieldsCanBeMergedRule } from "./rules/OverlappingFieldsCanBeMergedRule.mjs"; // Spec Section: "Input Object Field Uniqueness"
 
-import { UniqueInputFieldNames } from "./rules/UniqueInputFieldNames.mjs"; // SDL-specific validation rules
+import { UniqueInputFieldNamesRule } from "./rules/UniqueInputFieldNamesRule.mjs"; // SDL-specific validation rules
 
-import { LoneSchemaDefinition } from "./rules/LoneSchemaDefinition.mjs";
-import { UniqueOperationTypes } from "./rules/UniqueOperationTypes.mjs";
-import { UniqueTypeNames } from "./rules/UniqueTypeNames.mjs";
-import { UniqueEnumValueNames } from "./rules/UniqueEnumValueNames.mjs";
-import { UniqueFieldDefinitionNames } from "./rules/UniqueFieldDefinitionNames.mjs";
-import { UniqueDirectiveNames } from "./rules/UniqueDirectiveNames.mjs";
-import { PossibleTypeExtensions } from "./rules/PossibleTypeExtensions.mjs";
+import { LoneSchemaDefinitionRuleRule } from "./rules/LoneSchemaDefinitionRule.mjs";
+import { UniqueOperationTypesRuleRule } from "./rules/UniqueOperationTypesRule.mjs";
+import { UniqueTypeNamesRuleRule } from "./rules/UniqueTypeNamesRule.mjs";
+import { UniqueEnumValueNamesRuleRule } from "./rules/UniqueEnumValueNamesRule.mjs";
+import { UniqueFieldDefinitionNamesRule } from "./rules/UniqueFieldDefinitionNamesRule.mjs";
+import { UniqueDirectiveNamesRuleRule } from "./rules/UniqueDirectiveNamesRule.mjs";
+import { PossibleTypeExtensionsRule } from "./rules/PossibleTypeExtensionsRule.mjs";
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  *
@@ -65,9 +65,9 @@ import { PossibleTypeExtensions } from "./rules/PossibleTypeExtensions.mjs";
  * most clear output when encountering multiple validation errors.
  */
 
-export var specifiedRules = Object.freeze([ExecutableDefinitions, UniqueOperationNames, LoneAnonymousOperation, SingleFieldSubscriptions, KnownTypeNames, FragmentsOnCompositeTypes, VariablesAreInputTypes, ScalarLeafs, FieldsOnCorrectType, UniqueFragmentNames, KnownFragmentNames, NoUnusedFragments, PossibleFragmentSpreads, NoFragmentCycles, UniqueVariableNames, NoUndefinedVariables, NoUnusedVariables, KnownDirectives, UniqueDirectivesPerLocation, KnownArgumentNames, UniqueArgumentNames, ValuesOfCorrectType, ProvidedRequiredArguments, VariablesInAllowedPosition, OverlappingFieldsCanBeMerged, UniqueInputFieldNames]);
+export var specifiedRules = Object.freeze([ExecutableDefinitionsRule, UniqueOperationNamesRule, LoneAnonymousOperationRule, SingleFieldSubscriptionsRule, KnownTypeNamesRule, FragmentsOnCompositeTypesRule, VariablesAreInputTypesRule, ScalarLeafsRule, FieldsOnCorrectTypeRule, UniqueFragmentNamesRule, KnownFragmentNamesRule, NoUnusedFragmentsRule, PossibleFragmentSpreadsRule, NoFragmentCyclesRule, UniqueVariableNamesRule, NoUndefinedVariablesRule, NoUnusedVariablesRule, KnownDirectivesRule, UniqueDirectivesPerLocationRule, KnownArgumentNamesRule, UniqueArgumentNamesRule, ValuesOfCorrectTypeRule, ProvidedRequiredArgumentsRule, VariablesInAllowedPositionRule, OverlappingFieldsCanBeMergedRule, UniqueInputFieldNamesRule]);
 /**
  * @internal
  */
 
-export var specifiedSDLRules = Object.freeze([LoneSchemaDefinition, UniqueOperationTypes, UniqueTypeNames, UniqueEnumValueNames, UniqueFieldDefinitionNames, UniqueDirectiveNames, KnownTypeNames, KnownDirectives, UniqueDirectivesPerLocation, PossibleTypeExtensions, KnownArgumentNamesOnDirectives, UniqueArgumentNames, UniqueInputFieldNames, ProvidedRequiredArgumentsOnDirectives]);
+export var specifiedSDLRules = Object.freeze([LoneSchemaDefinitionRuleRule, UniqueOperationTypesRuleRule, UniqueTypeNamesRuleRule, UniqueEnumValueNamesRuleRule, UniqueFieldDefinitionNamesRule, UniqueDirectiveNamesRuleRule, KnownTypeNamesRule, KnownDirectivesRule, UniqueDirectivesPerLocationRule, PossibleTypeExtensionsRule, KnownArgumentNamesOnDirectives, UniqueArgumentNamesRule, UniqueInputFieldNamesRule, ProvidedRequiredArgumentsOnDirectives]);

@@ -24,199 +24,199 @@ Object.defineProperty(exports, "specifiedRules", {
 Object.defineProperty(exports, "ExecutableDefinitionsRule", {
   enumerable: true,
   get: function get() {
-    return _ExecutableDefinitions.ExecutableDefinitions;
+    return _ExecutableDefinitionsRule.ExecutableDefinitionsRule;
   }
 });
 Object.defineProperty(exports, "FieldsOnCorrectTypeRule", {
   enumerable: true,
   get: function get() {
-    return _FieldsOnCorrectType.FieldsOnCorrectType;
+    return _FieldsOnCorrectTypeRule.FieldsOnCorrectTypeRule;
   }
 });
 Object.defineProperty(exports, "FragmentsOnCompositeTypesRule", {
   enumerable: true,
   get: function get() {
-    return _FragmentsOnCompositeTypes.FragmentsOnCompositeTypes;
+    return _FragmentsOnCompositeTypesRule.FragmentsOnCompositeTypesRule;
   }
 });
 Object.defineProperty(exports, "KnownArgumentNamesRule", {
   enumerable: true,
   get: function get() {
-    return _KnownArgumentNames.KnownArgumentNames;
+    return _KnownArgumentNamesRule.KnownArgumentNamesRule;
   }
 });
 Object.defineProperty(exports, "KnownDirectivesRule", {
   enumerable: true,
   get: function get() {
-    return _KnownDirectives.KnownDirectives;
+    return _KnownDirectivesRule.KnownDirectivesRule;
   }
 });
 Object.defineProperty(exports, "KnownFragmentNamesRule", {
   enumerable: true,
   get: function get() {
-    return _KnownFragmentNames.KnownFragmentNames;
+    return _KnownFragmentNamesRule.KnownFragmentNamesRule;
   }
 });
 Object.defineProperty(exports, "KnownTypeNamesRule", {
   enumerable: true,
   get: function get() {
-    return _KnownTypeNames.KnownTypeNames;
+    return _KnownTypeNamesRule.KnownTypeNamesRule;
   }
 });
 Object.defineProperty(exports, "LoneAnonymousOperationRule", {
   enumerable: true,
   get: function get() {
-    return _LoneAnonymousOperation.LoneAnonymousOperation;
+    return _LoneAnonymousOperationRule.LoneAnonymousOperationRule;
   }
 });
 Object.defineProperty(exports, "NoFragmentCyclesRule", {
   enumerable: true,
   get: function get() {
-    return _NoFragmentCycles.NoFragmentCycles;
+    return _NoFragmentCyclesRule.NoFragmentCyclesRule;
   }
 });
 Object.defineProperty(exports, "NoUndefinedVariablesRule", {
   enumerable: true,
   get: function get() {
-    return _NoUndefinedVariables.NoUndefinedVariables;
+    return _NoUndefinedVariablesRule.NoUndefinedVariablesRule;
   }
 });
 Object.defineProperty(exports, "NoUnusedFragmentsRule", {
   enumerable: true,
   get: function get() {
-    return _NoUnusedFragments.NoUnusedFragments;
+    return _NoUnusedFragmentsRule.NoUnusedFragmentsRule;
   }
 });
 Object.defineProperty(exports, "NoUnusedVariablesRule", {
   enumerable: true,
   get: function get() {
-    return _NoUnusedVariables.NoUnusedVariables;
+    return _NoUnusedVariablesRule.NoUnusedVariablesRule;
   }
 });
 Object.defineProperty(exports, "OverlappingFieldsCanBeMergedRule", {
   enumerable: true,
   get: function get() {
-    return _OverlappingFieldsCanBeMerged.OverlappingFieldsCanBeMerged;
+    return _OverlappingFieldsCanBeMergedRule.OverlappingFieldsCanBeMergedRule;
   }
 });
 Object.defineProperty(exports, "PossibleFragmentSpreadsRule", {
   enumerable: true,
   get: function get() {
-    return _PossibleFragmentSpreads.PossibleFragmentSpreads;
+    return _PossibleFragmentSpreadsRule.PossibleFragmentSpreadsRule;
   }
 });
 Object.defineProperty(exports, "ProvidedRequiredArgumentsRule", {
   enumerable: true,
   get: function get() {
-    return _ProvidedRequiredArguments.ProvidedRequiredArguments;
+    return _ProvidedRequiredArgumentsRule.ProvidedRequiredArgumentsRule;
   }
 });
 Object.defineProperty(exports, "ScalarLeafsRule", {
   enumerable: true,
   get: function get() {
-    return _ScalarLeafs.ScalarLeafs;
+    return _ScalarLeafsRule.ScalarLeafsRule;
   }
 });
 Object.defineProperty(exports, "SingleFieldSubscriptionsRule", {
   enumerable: true,
   get: function get() {
-    return _SingleFieldSubscriptions.SingleFieldSubscriptions;
+    return _SingleFieldSubscriptionsRule.SingleFieldSubscriptionsRule;
   }
 });
 Object.defineProperty(exports, "UniqueArgumentNamesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueArgumentNames.UniqueArgumentNames;
+    return _UniqueArgumentNamesRule.UniqueArgumentNamesRule;
   }
 });
 Object.defineProperty(exports, "UniqueDirectivesPerLocationRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueDirectivesPerLocation.UniqueDirectivesPerLocation;
+    return _UniqueDirectivesPerLocationRule.UniqueDirectivesPerLocationRule;
   }
 });
 Object.defineProperty(exports, "UniqueFragmentNamesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueFragmentNames.UniqueFragmentNames;
+    return _UniqueFragmentNamesRule.UniqueFragmentNamesRule;
   }
 });
 Object.defineProperty(exports, "UniqueInputFieldNamesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueInputFieldNames.UniqueInputFieldNames;
+    return _UniqueInputFieldNamesRule.UniqueInputFieldNamesRule;
   }
 });
 Object.defineProperty(exports, "UniqueOperationNamesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueOperationNames.UniqueOperationNames;
+    return _UniqueOperationNamesRule.UniqueOperationNamesRule;
   }
 });
 Object.defineProperty(exports, "UniqueVariableNamesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueVariableNames.UniqueVariableNames;
+    return _UniqueVariableNamesRule.UniqueVariableNamesRule;
   }
 });
 Object.defineProperty(exports, "ValuesOfCorrectTypeRule", {
   enumerable: true,
   get: function get() {
-    return _ValuesOfCorrectType.ValuesOfCorrectType;
+    return _ValuesOfCorrectTypeRule.ValuesOfCorrectTypeRule;
   }
 });
 Object.defineProperty(exports, "VariablesAreInputTypesRule", {
   enumerable: true,
   get: function get() {
-    return _VariablesAreInputTypes.VariablesAreInputTypes;
+    return _VariablesAreInputTypesRule.VariablesAreInputTypesRule;
   }
 });
 Object.defineProperty(exports, "VariablesInAllowedPositionRule", {
   enumerable: true,
   get: function get() {
-    return _VariablesInAllowedPosition.VariablesInAllowedPosition;
+    return _VariablesInAllowedPositionRule.VariablesInAllowedPositionRule;
   }
 });
-Object.defineProperty(exports, "LoneSchemaDefinitionRule", {
+Object.defineProperty(exports, "LoneSchemaDefinitionRuleRule", {
   enumerable: true,
   get: function get() {
-    return _LoneSchemaDefinition.LoneSchemaDefinition;
+    return _LoneSchemaDefinitionRule.LoneSchemaDefinitionRuleRule;
   }
 });
-Object.defineProperty(exports, "UniqueOperationTypesRule", {
+Object.defineProperty(exports, "UniqueOperationTypesRuleRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueOperationTypes.UniqueOperationTypes;
+    return _UniqueOperationTypesRule.UniqueOperationTypesRuleRule;
   }
 });
-Object.defineProperty(exports, "UniqueTypeNamesRule", {
+Object.defineProperty(exports, "UniqueTypeNamesRuleRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueTypeNames.UniqueTypeNames;
+    return _UniqueTypeNamesRule.UniqueTypeNamesRuleRule;
   }
 });
-Object.defineProperty(exports, "UniqueEnumValueNamesRule", {
+Object.defineProperty(exports, "UniqueEnumValueNamesRuleRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueEnumValueNames.UniqueEnumValueNames;
+    return _UniqueEnumValueNamesRule.UniqueEnumValueNamesRuleRule;
   }
 });
 Object.defineProperty(exports, "UniqueFieldDefinitionNamesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueFieldDefinitionNames.UniqueFieldDefinitionNames;
+    return _UniqueFieldDefinitionNamesRule.UniqueFieldDefinitionNamesRule;
   }
 });
-Object.defineProperty(exports, "UniqueDirectiveNamesRule", {
+Object.defineProperty(exports, "UniqueDirectiveNamesRuleRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueDirectiveNames.UniqueDirectiveNames;
+    return _UniqueDirectiveNamesRule.UniqueDirectiveNamesRuleRule;
   }
 });
 Object.defineProperty(exports, "PossibleTypeExtensionsRule", {
   enumerable: true,
   get: function get() {
-    return _PossibleTypeExtensions.PossibleTypeExtensions;
+    return _PossibleTypeExtensionsRule.PossibleTypeExtensionsRule;
   }
 });
 
@@ -226,68 +226,68 @@ var _ValidationContext = require("./ValidationContext");
 
 var _specifiedRules = require("./specifiedRules");
 
-var _ExecutableDefinitions = require("./rules/ExecutableDefinitions");
+var _ExecutableDefinitionsRule = require("./rules/ExecutableDefinitionsRule");
 
-var _FieldsOnCorrectType = require("./rules/FieldsOnCorrectType");
+var _FieldsOnCorrectTypeRule = require("./rules/FieldsOnCorrectTypeRule");
 
-var _FragmentsOnCompositeTypes = require("./rules/FragmentsOnCompositeTypes");
+var _FragmentsOnCompositeTypesRule = require("./rules/FragmentsOnCompositeTypesRule");
 
-var _KnownArgumentNames = require("./rules/KnownArgumentNames");
+var _KnownArgumentNamesRule = require("./rules/KnownArgumentNamesRule");
 
-var _KnownDirectives = require("./rules/KnownDirectives");
+var _KnownDirectivesRule = require("./rules/KnownDirectivesRule");
 
-var _KnownFragmentNames = require("./rules/KnownFragmentNames");
+var _KnownFragmentNamesRule = require("./rules/KnownFragmentNamesRule");
 
-var _KnownTypeNames = require("./rules/KnownTypeNames");
+var _KnownTypeNamesRule = require("./rules/KnownTypeNamesRule");
 
-var _LoneAnonymousOperation = require("./rules/LoneAnonymousOperation");
+var _LoneAnonymousOperationRule = require("./rules/LoneAnonymousOperationRule");
 
-var _NoFragmentCycles = require("./rules/NoFragmentCycles");
+var _NoFragmentCyclesRule = require("./rules/NoFragmentCyclesRule");
 
-var _NoUndefinedVariables = require("./rules/NoUndefinedVariables");
+var _NoUndefinedVariablesRule = require("./rules/NoUndefinedVariablesRule");
 
-var _NoUnusedFragments = require("./rules/NoUnusedFragments");
+var _NoUnusedFragmentsRule = require("./rules/NoUnusedFragmentsRule");
 
-var _NoUnusedVariables = require("./rules/NoUnusedVariables");
+var _NoUnusedVariablesRule = require("./rules/NoUnusedVariablesRule");
 
-var _OverlappingFieldsCanBeMerged = require("./rules/OverlappingFieldsCanBeMerged");
+var _OverlappingFieldsCanBeMergedRule = require("./rules/OverlappingFieldsCanBeMergedRule");
 
-var _PossibleFragmentSpreads = require("./rules/PossibleFragmentSpreads");
+var _PossibleFragmentSpreadsRule = require("./rules/PossibleFragmentSpreadsRule");
 
-var _ProvidedRequiredArguments = require("./rules/ProvidedRequiredArguments");
+var _ProvidedRequiredArgumentsRule = require("./rules/ProvidedRequiredArgumentsRule");
 
-var _ScalarLeafs = require("./rules/ScalarLeafs");
+var _ScalarLeafsRule = require("./rules/ScalarLeafsRule");
 
-var _SingleFieldSubscriptions = require("./rules/SingleFieldSubscriptions");
+var _SingleFieldSubscriptionsRule = require("./rules/SingleFieldSubscriptionsRule");
 
-var _UniqueArgumentNames = require("./rules/UniqueArgumentNames");
+var _UniqueArgumentNamesRule = require("./rules/UniqueArgumentNamesRule");
 
-var _UniqueDirectivesPerLocation = require("./rules/UniqueDirectivesPerLocation");
+var _UniqueDirectivesPerLocationRule = require("./rules/UniqueDirectivesPerLocationRule");
 
-var _UniqueFragmentNames = require("./rules/UniqueFragmentNames");
+var _UniqueFragmentNamesRule = require("./rules/UniqueFragmentNamesRule");
 
-var _UniqueInputFieldNames = require("./rules/UniqueInputFieldNames");
+var _UniqueInputFieldNamesRule = require("./rules/UniqueInputFieldNamesRule");
 
-var _UniqueOperationNames = require("./rules/UniqueOperationNames");
+var _UniqueOperationNamesRule = require("./rules/UniqueOperationNamesRule");
 
-var _UniqueVariableNames = require("./rules/UniqueVariableNames");
+var _UniqueVariableNamesRule = require("./rules/UniqueVariableNamesRule");
 
-var _ValuesOfCorrectType = require("./rules/ValuesOfCorrectType");
+var _ValuesOfCorrectTypeRule = require("./rules/ValuesOfCorrectTypeRule");
 
-var _VariablesAreInputTypes = require("./rules/VariablesAreInputTypes");
+var _VariablesAreInputTypesRule = require("./rules/VariablesAreInputTypesRule");
 
-var _VariablesInAllowedPosition = require("./rules/VariablesInAllowedPosition");
+var _VariablesInAllowedPositionRule = require("./rules/VariablesInAllowedPositionRule");
 
-var _LoneSchemaDefinition = require("./rules/LoneSchemaDefinition");
+var _LoneSchemaDefinitionRule = require("./rules/LoneSchemaDefinitionRule");
 
-var _UniqueOperationTypes = require("./rules/UniqueOperationTypes");
+var _UniqueOperationTypesRule = require("./rules/UniqueOperationTypesRule");
 
-var _UniqueTypeNames = require("./rules/UniqueTypeNames");
+var _UniqueTypeNamesRule = require("./rules/UniqueTypeNamesRule");
 
-var _UniqueEnumValueNames = require("./rules/UniqueEnumValueNames");
+var _UniqueEnumValueNamesRule = require("./rules/UniqueEnumValueNamesRule");
 
-var _UniqueFieldDefinitionNames = require("./rules/UniqueFieldDefinitionNames");
+var _UniqueFieldDefinitionNamesRule = require("./rules/UniqueFieldDefinitionNamesRule");
 
-var _UniqueDirectiveNames = require("./rules/UniqueDirectiveNames");
+var _UniqueDirectiveNamesRule = require("./rules/UniqueDirectiveNamesRule");
 
-var _PossibleTypeExtensions = require("./rules/PossibleTypeExtensions");
+var _PossibleTypeExtensionsRule = require("./rules/PossibleTypeExtensionsRule");

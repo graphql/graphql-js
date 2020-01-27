@@ -188,7 +188,7 @@ function getArgumentValues(def, node, variableValues) {
     var coercedValue = (0, _valueFromAST.valueFromAST)(valueNode, argType, variableValues);
 
     if (coercedValue === undefined) {
-      // Note: ValuesOfCorrectType validation should catch this before
+      // Note: ValuesOfCorrectTypeRule validation should catch this before
       // execution. This is a runtime check to ensure execution does not
       // continue with an invalid argument value.
       throw new _GraphQLError.GraphQLError("Argument \"".concat(name, "\" has invalid value ").concat((0, _printer.print)(valueNode), "."), valueNode);

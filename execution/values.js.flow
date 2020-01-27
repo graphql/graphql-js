@@ -220,7 +220,7 @@ export function getArgumentValues(
 
     const coercedValue = valueFromAST(valueNode, argType, variableValues);
     if (coercedValue === undefined) {
-      // Note: ValuesOfCorrectType validation should catch this before
+      // Note: ValuesOfCorrectTypeRule validation should catch this before
       // execution. This is a runtime check to ensure execution does not
       // continue with an invalid argument value.
       throw new GraphQLError(

@@ -5,71 +5,71 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.specifiedSDLRules = exports.specifiedRules = void 0;
 
-var _ExecutableDefinitions = require("./rules/ExecutableDefinitions");
+var _ExecutableDefinitionsRule = require("./rules/ExecutableDefinitionsRule");
 
-var _UniqueOperationNames = require("./rules/UniqueOperationNames");
+var _UniqueOperationNamesRule = require("./rules/UniqueOperationNamesRule");
 
-var _LoneAnonymousOperation = require("./rules/LoneAnonymousOperation");
+var _LoneAnonymousOperationRule = require("./rules/LoneAnonymousOperationRule");
 
-var _SingleFieldSubscriptions = require("./rules/SingleFieldSubscriptions");
+var _SingleFieldSubscriptionsRule = require("./rules/SingleFieldSubscriptionsRule");
 
-var _KnownTypeNames = require("./rules/KnownTypeNames");
+var _KnownTypeNamesRule = require("./rules/KnownTypeNamesRule");
 
-var _FragmentsOnCompositeTypes = require("./rules/FragmentsOnCompositeTypes");
+var _FragmentsOnCompositeTypesRule = require("./rules/FragmentsOnCompositeTypesRule");
 
-var _VariablesAreInputTypes = require("./rules/VariablesAreInputTypes");
+var _VariablesAreInputTypesRule = require("./rules/VariablesAreInputTypesRule");
 
-var _ScalarLeafs = require("./rules/ScalarLeafs");
+var _ScalarLeafsRule = require("./rules/ScalarLeafsRule");
 
-var _FieldsOnCorrectType = require("./rules/FieldsOnCorrectType");
+var _FieldsOnCorrectTypeRule = require("./rules/FieldsOnCorrectTypeRule");
 
-var _UniqueFragmentNames = require("./rules/UniqueFragmentNames");
+var _UniqueFragmentNamesRule = require("./rules/UniqueFragmentNamesRule");
 
-var _KnownFragmentNames = require("./rules/KnownFragmentNames");
+var _KnownFragmentNamesRule = require("./rules/KnownFragmentNamesRule");
 
-var _NoUnusedFragments = require("./rules/NoUnusedFragments");
+var _NoUnusedFragmentsRule = require("./rules/NoUnusedFragmentsRule");
 
-var _PossibleFragmentSpreads = require("./rules/PossibleFragmentSpreads");
+var _PossibleFragmentSpreadsRule = require("./rules/PossibleFragmentSpreadsRule");
 
-var _NoFragmentCycles = require("./rules/NoFragmentCycles");
+var _NoFragmentCyclesRule = require("./rules/NoFragmentCyclesRule");
 
-var _UniqueVariableNames = require("./rules/UniqueVariableNames");
+var _UniqueVariableNamesRule = require("./rules/UniqueVariableNamesRule");
 
-var _NoUndefinedVariables = require("./rules/NoUndefinedVariables");
+var _NoUndefinedVariablesRule = require("./rules/NoUndefinedVariablesRule");
 
-var _NoUnusedVariables = require("./rules/NoUnusedVariables");
+var _NoUnusedVariablesRule = require("./rules/NoUnusedVariablesRule");
 
-var _KnownDirectives = require("./rules/KnownDirectives");
+var _KnownDirectivesRule = require("./rules/KnownDirectivesRule");
 
-var _UniqueDirectivesPerLocation = require("./rules/UniqueDirectivesPerLocation");
+var _UniqueDirectivesPerLocationRule = require("./rules/UniqueDirectivesPerLocationRule");
 
-var _KnownArgumentNames = require("./rules/KnownArgumentNames");
+var _KnownArgumentNamesRule = require("./rules/KnownArgumentNamesRule");
 
-var _UniqueArgumentNames = require("./rules/UniqueArgumentNames");
+var _UniqueArgumentNamesRule = require("./rules/UniqueArgumentNamesRule");
 
-var _ValuesOfCorrectType = require("./rules/ValuesOfCorrectType");
+var _ValuesOfCorrectTypeRule = require("./rules/ValuesOfCorrectTypeRule");
 
-var _ProvidedRequiredArguments = require("./rules/ProvidedRequiredArguments");
+var _ProvidedRequiredArgumentsRule = require("./rules/ProvidedRequiredArgumentsRule");
 
-var _VariablesInAllowedPosition = require("./rules/VariablesInAllowedPosition");
+var _VariablesInAllowedPositionRule = require("./rules/VariablesInAllowedPositionRule");
 
-var _OverlappingFieldsCanBeMerged = require("./rules/OverlappingFieldsCanBeMerged");
+var _OverlappingFieldsCanBeMergedRule = require("./rules/OverlappingFieldsCanBeMergedRule");
 
-var _UniqueInputFieldNames = require("./rules/UniqueInputFieldNames");
+var _UniqueInputFieldNamesRule = require("./rules/UniqueInputFieldNamesRule");
 
-var _LoneSchemaDefinition = require("./rules/LoneSchemaDefinition");
+var _LoneSchemaDefinitionRule = require("./rules/LoneSchemaDefinitionRule");
 
-var _UniqueOperationTypes = require("./rules/UniqueOperationTypes");
+var _UniqueOperationTypesRule = require("./rules/UniqueOperationTypesRule");
 
-var _UniqueTypeNames = require("./rules/UniqueTypeNames");
+var _UniqueTypeNamesRule = require("./rules/UniqueTypeNamesRule");
 
-var _UniqueEnumValueNames = require("./rules/UniqueEnumValueNames");
+var _UniqueEnumValueNamesRule = require("./rules/UniqueEnumValueNamesRule");
 
-var _UniqueFieldDefinitionNames = require("./rules/UniqueFieldDefinitionNames");
+var _UniqueFieldDefinitionNamesRule = require("./rules/UniqueFieldDefinitionNamesRule");
 
-var _UniqueDirectiveNames = require("./rules/UniqueDirectiveNames");
+var _UniqueDirectiveNamesRule = require("./rules/UniqueDirectiveNamesRule");
 
-var _PossibleTypeExtensions = require("./rules/PossibleTypeExtensions");
+var _PossibleTypeExtensionsRule = require("./rules/PossibleTypeExtensionsRule");
 
 // Spec Section: "Executable Definitions"
 // Spec Section: "Operation Name Uniqueness"
@@ -105,11 +105,11 @@ var _PossibleTypeExtensions = require("./rules/PossibleTypeExtensions");
  * The order of the rules in this list has been adjusted to lead to the
  * most clear output when encountering multiple validation errors.
  */
-var specifiedRules = Object.freeze([_ExecutableDefinitions.ExecutableDefinitions, _UniqueOperationNames.UniqueOperationNames, _LoneAnonymousOperation.LoneAnonymousOperation, _SingleFieldSubscriptions.SingleFieldSubscriptions, _KnownTypeNames.KnownTypeNames, _FragmentsOnCompositeTypes.FragmentsOnCompositeTypes, _VariablesAreInputTypes.VariablesAreInputTypes, _ScalarLeafs.ScalarLeafs, _FieldsOnCorrectType.FieldsOnCorrectType, _UniqueFragmentNames.UniqueFragmentNames, _KnownFragmentNames.KnownFragmentNames, _NoUnusedFragments.NoUnusedFragments, _PossibleFragmentSpreads.PossibleFragmentSpreads, _NoFragmentCycles.NoFragmentCycles, _UniqueVariableNames.UniqueVariableNames, _NoUndefinedVariables.NoUndefinedVariables, _NoUnusedVariables.NoUnusedVariables, _KnownDirectives.KnownDirectives, _UniqueDirectivesPerLocation.UniqueDirectivesPerLocation, _KnownArgumentNames.KnownArgumentNames, _UniqueArgumentNames.UniqueArgumentNames, _ValuesOfCorrectType.ValuesOfCorrectType, _ProvidedRequiredArguments.ProvidedRequiredArguments, _VariablesInAllowedPosition.VariablesInAllowedPosition, _OverlappingFieldsCanBeMerged.OverlappingFieldsCanBeMerged, _UniqueInputFieldNames.UniqueInputFieldNames]);
+var specifiedRules = Object.freeze([_ExecutableDefinitionsRule.ExecutableDefinitionsRule, _UniqueOperationNamesRule.UniqueOperationNamesRule, _LoneAnonymousOperationRule.LoneAnonymousOperationRule, _SingleFieldSubscriptionsRule.SingleFieldSubscriptionsRule, _KnownTypeNamesRule.KnownTypeNamesRule, _FragmentsOnCompositeTypesRule.FragmentsOnCompositeTypesRule, _VariablesAreInputTypesRule.VariablesAreInputTypesRule, _ScalarLeafsRule.ScalarLeafsRule, _FieldsOnCorrectTypeRule.FieldsOnCorrectTypeRule, _UniqueFragmentNamesRule.UniqueFragmentNamesRule, _KnownFragmentNamesRule.KnownFragmentNamesRule, _NoUnusedFragmentsRule.NoUnusedFragmentsRule, _PossibleFragmentSpreadsRule.PossibleFragmentSpreadsRule, _NoFragmentCyclesRule.NoFragmentCyclesRule, _UniqueVariableNamesRule.UniqueVariableNamesRule, _NoUndefinedVariablesRule.NoUndefinedVariablesRule, _NoUnusedVariablesRule.NoUnusedVariablesRule, _KnownDirectivesRule.KnownDirectivesRule, _UniqueDirectivesPerLocationRule.UniqueDirectivesPerLocationRule, _KnownArgumentNamesRule.KnownArgumentNamesRule, _UniqueArgumentNamesRule.UniqueArgumentNamesRule, _ValuesOfCorrectTypeRule.ValuesOfCorrectTypeRule, _ProvidedRequiredArgumentsRule.ProvidedRequiredArgumentsRule, _VariablesInAllowedPositionRule.VariablesInAllowedPositionRule, _OverlappingFieldsCanBeMergedRule.OverlappingFieldsCanBeMergedRule, _UniqueInputFieldNamesRule.UniqueInputFieldNamesRule]);
 /**
  * @internal
  */
 
 exports.specifiedRules = specifiedRules;
-var specifiedSDLRules = Object.freeze([_LoneSchemaDefinition.LoneSchemaDefinition, _UniqueOperationTypes.UniqueOperationTypes, _UniqueTypeNames.UniqueTypeNames, _UniqueEnumValueNames.UniqueEnumValueNames, _UniqueFieldDefinitionNames.UniqueFieldDefinitionNames, _UniqueDirectiveNames.UniqueDirectiveNames, _KnownTypeNames.KnownTypeNames, _KnownDirectives.KnownDirectives, _UniqueDirectivesPerLocation.UniqueDirectivesPerLocation, _PossibleTypeExtensions.PossibleTypeExtensions, _KnownArgumentNames.KnownArgumentNamesOnDirectives, _UniqueArgumentNames.UniqueArgumentNames, _UniqueInputFieldNames.UniqueInputFieldNames, _ProvidedRequiredArguments.ProvidedRequiredArgumentsOnDirectives]);
+var specifiedSDLRules = Object.freeze([_LoneSchemaDefinitionRule.LoneSchemaDefinitionRuleRule, _UniqueOperationTypesRule.UniqueOperationTypesRuleRule, _UniqueTypeNamesRule.UniqueTypeNamesRuleRule, _UniqueEnumValueNamesRule.UniqueEnumValueNamesRuleRule, _UniqueFieldDefinitionNamesRule.UniqueFieldDefinitionNamesRule, _UniqueDirectiveNamesRule.UniqueDirectiveNamesRuleRule, _KnownTypeNamesRule.KnownTypeNamesRule, _KnownDirectivesRule.KnownDirectivesRule, _UniqueDirectivesPerLocationRule.UniqueDirectivesPerLocationRule, _PossibleTypeExtensionsRule.PossibleTypeExtensionsRule, _KnownArgumentNamesRule.KnownArgumentNamesOnDirectives, _UniqueArgumentNamesRule.UniqueArgumentNamesRule, _UniqueInputFieldNamesRule.UniqueInputFieldNamesRule, _ProvidedRequiredArgumentsRule.ProvidedRequiredArgumentsOnDirectives]);
 exports.specifiedSDLRules = specifiedSDLRules;
