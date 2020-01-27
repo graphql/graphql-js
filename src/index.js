@@ -325,12 +325,12 @@ export {
   VariablesAreInputTypesRule,
   VariablesInAllowedPositionRule,
   // SDL-specific validation rules
-  LoneSchemaDefinitionRule,
-  UniqueOperationTypesRule,
-  UniqueTypeNamesRule,
-  UniqueEnumValueNamesRule,
+  LoneSchemaDefinitionRuleRule,
+  UniqueOperationTypesRuleRule,
+  UniqueTypeNamesRuleRule,
+  UniqueEnumValueNamesRuleRule,
   UniqueFieldDefinitionNamesRule,
-  UniqueDirectiveNamesRule,
+  UniqueDirectiveNamesRuleRule,
   PossibleTypeExtensionsRule,
 } from './validation/index';
 

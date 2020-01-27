@@ -1,97 +1,97 @@
 // @flow strict
 
 // Spec Section: "Executable Definitions"
-import { ExecutableDefinitions } from './rules/ExecutableDefinitions';
+import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
 
 // Spec Section: "Operation Name Uniqueness"
-import { UniqueOperationNames } from './rules/UniqueOperationNames';
+import { UniqueOperationNamesRule } from './rules/UniqueOperationNamesRule';
 
 // Spec Section: "Lone Anonymous Operation"
-import { LoneAnonymousOperation } from './rules/LoneAnonymousOperation';
+import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule';
 
 // Spec Section: "Subscriptions with Single Root Field"
-import { SingleFieldSubscriptions } from './rules/SingleFieldSubscriptions';
+import { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule';
 
 // Spec Section: "Fragment Spread Type Existence"
-import { KnownTypeNames } from './rules/KnownTypeNames';
+import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule';
 
 // Spec Section: "Fragments on Composite Types"
-import { FragmentsOnCompositeTypes } from './rules/FragmentsOnCompositeTypes';
+import { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypesRule';
 
 // Spec Section: "Variables are Input Types"
-import { VariablesAreInputTypes } from './rules/VariablesAreInputTypes';
+import { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule';
 
 // Spec Section: "Leaf Field Selections"
-import { ScalarLeafs } from './rules/ScalarLeafs';
+import { ScalarLeafsRule } from './rules/ScalarLeafsRule';
 
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
-import { FieldsOnCorrectType } from './rules/FieldsOnCorrectType';
+import { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule';
 
 // Spec Section: "Fragment Name Uniqueness"
-import { UniqueFragmentNames } from './rules/UniqueFragmentNames';
+import { UniqueFragmentNamesRule } from './rules/UniqueFragmentNamesRule';
 
 // Spec Section: "Fragment spread target defined"
-import { KnownFragmentNames } from './rules/KnownFragmentNames';
+import { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule';
 
 // Spec Section: "Fragments must be used"
-import { NoUnusedFragments } from './rules/NoUnusedFragments';
+import { NoUnusedFragmentsRule } from './rules/NoUnusedFragmentsRule';
 
 // Spec Section: "Fragment spread is possible"
-import { PossibleFragmentSpreads } from './rules/PossibleFragmentSpreads';
+import { PossibleFragmentSpreadsRule } from './rules/PossibleFragmentSpreadsRule';
 
 // Spec Section: "Fragments must not form cycles"
-import { NoFragmentCycles } from './rules/NoFragmentCycles';
+import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule';
 
 // Spec Section: "Variable Uniqueness"
-import { UniqueVariableNames } from './rules/UniqueVariableNames';
+import { UniqueVariableNamesRule } from './rules/UniqueVariableNamesRule';
 
 // Spec Section: "All Variable Used Defined"
-import { NoUndefinedVariables } from './rules/NoUndefinedVariables';
+import { NoUndefinedVariablesRule } from './rules/NoUndefinedVariablesRule';
 
 // Spec Section: "All Variables Used"
-import { NoUnusedVariables } from './rules/NoUnusedVariables';
+import { NoUnusedVariablesRule } from './rules/NoUnusedVariablesRule';
 
 // Spec Section: "Directives Are Defined"
-import { KnownDirectives } from './rules/KnownDirectives';
+import { KnownDirectivesRule } from './rules/KnownDirectivesRule';
 
 // Spec Section: "Directives Are Unique Per Location"
-import { UniqueDirectivesPerLocation } from './rules/UniqueDirectivesPerLocation';
+import { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLocationRule';
 
 // Spec Section: "Argument Names"
 import {
-  KnownArgumentNames,
+  KnownArgumentNamesRule,
   KnownArgumentNamesOnDirectives,
-} from './rules/KnownArgumentNames';
+} from './rules/KnownArgumentNamesRule';
 
 // Spec Section: "Argument Uniqueness"
-import { UniqueArgumentNames } from './rules/UniqueArgumentNames';
+import { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule';
 
 // Spec Section: "Value Type Correctness"
-import { ValuesOfCorrectType } from './rules/ValuesOfCorrectType';
+import { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule';
 
 // Spec Section: "Argument Optionality"
 import {
-  ProvidedRequiredArguments,
+  ProvidedRequiredArgumentsRule,
   ProvidedRequiredArgumentsOnDirectives,
-} from './rules/ProvidedRequiredArguments';
+} from './rules/ProvidedRequiredArgumentsRule';
 
 // Spec Section: "All Variable Usages Are Allowed"
-import { VariablesInAllowedPosition } from './rules/VariablesInAllowedPosition';
+import { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule';
 
 // Spec Section: "Field Selection Merging"
-import { OverlappingFieldsCanBeMerged } from './rules/OverlappingFieldsCanBeMerged';
+import { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBeMergedRule';
 
 // Spec Section: "Input Object Field Uniqueness"
-import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
+import { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule';
 
 // SDL-specific validation rules
-import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
-import { UniqueOperationTypes } from './rules/UniqueOperationTypes';
-import { UniqueTypeNames } from './rules/UniqueTypeNames';
-import { UniqueEnumValueNames } from './rules/UniqueEnumValueNames';
-import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
-import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
-import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
+import { LoneSchemaDefinitionRuleRule } from './rules/LoneSchemaDefinitionRule';
+import { UniqueOperationTypesRuleRule } from './rules/UniqueOperationTypesRule';
+import { UniqueTypeNamesRuleRule } from './rules/UniqueTypeNamesRule';
+import { UniqueEnumValueNamesRuleRule } from './rules/UniqueEnumValueNamesRule';
+import { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule';
+import { UniqueDirectiveNamesRuleRule } from './rules/UniqueDirectiveNamesRule';
+import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.
@@ -100,50 +100,50 @@ import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
  * most clear output when encountering multiple validation errors.
  */
 export const specifiedRules = Object.freeze([
-  ExecutableDefinitions,
-  UniqueOperationNames,
-  LoneAnonymousOperation,
-  SingleFieldSubscriptions,
-  KnownTypeNames,
-  FragmentsOnCompositeTypes,
-  VariablesAreInputTypes,
-  ScalarLeafs,
-  FieldsOnCorrectType,
-  UniqueFragmentNames,
-  KnownFragmentNames,
-  NoUnusedFragments,
-  PossibleFragmentSpreads,
-  NoFragmentCycles,
-  UniqueVariableNames,
-  NoUndefinedVariables,
-  NoUnusedVariables,
-  KnownDirectives,
-  UniqueDirectivesPerLocation,
-  KnownArgumentNames,
-  UniqueArgumentNames,
-  ValuesOfCorrectType,
-  ProvidedRequiredArguments,
-  VariablesInAllowedPosition,
-  OverlappingFieldsCanBeMerged,
-  UniqueInputFieldNames,
+  ExecutableDefinitionsRule,
+  UniqueOperationNamesRule,
+  LoneAnonymousOperationRule,
+  SingleFieldSubscriptionsRule,
+  KnownTypeNamesRule,
+  FragmentsOnCompositeTypesRule,
+  VariablesAreInputTypesRule,
+  ScalarLeafsRule,
+  FieldsOnCorrectTypeRule,
+  UniqueFragmentNamesRule,
+  KnownFragmentNamesRule,
+  NoUnusedFragmentsRule,
+  PossibleFragmentSpreadsRule,
+  NoFragmentCyclesRule,
+  UniqueVariableNamesRule,
+  NoUndefinedVariablesRule,
+  NoUnusedVariablesRule,
+  KnownDirectivesRule,
+  UniqueDirectivesPerLocationRule,
+  KnownArgumentNamesRule,
+  UniqueArgumentNamesRule,
+  ValuesOfCorrectTypeRule,
+  ProvidedRequiredArgumentsRule,
+  VariablesInAllowedPositionRule,
+  OverlappingFieldsCanBeMergedRule,
+  UniqueInputFieldNamesRule,
 ]);
 
 /**
  * @internal
  */
 export const specifiedSDLRules = Object.freeze([
-  LoneSchemaDefinition,
-  UniqueOperationTypes,
-  UniqueTypeNames,
-  UniqueEnumValueNames,
-  UniqueFieldDefinitionNames,
-  UniqueDirectiveNames,
-  KnownTypeNames,
-  KnownDirectives,
-  UniqueDirectivesPerLocation,
-  PossibleTypeExtensions,
+  LoneSchemaDefinitionRuleRule,
+  UniqueOperationTypesRuleRule,
+  UniqueTypeNamesRuleRule,
+  UniqueEnumValueNamesRuleRule,
+  UniqueFieldDefinitionNamesRule,
+  UniqueDirectiveNamesRuleRule,
+  KnownTypeNamesRule,
+  KnownDirectivesRule,
+  UniqueDirectivesPerLocationRule,
+  PossibleTypeExtensionsRule,
   KnownArgumentNamesOnDirectives,
-  UniqueArgumentNames,
-  UniqueInputFieldNames,
+  UniqueArgumentNamesRule,
+  UniqueInputFieldNamesRule,
   ProvidedRequiredArgumentsOnDirectives,
 ]);
