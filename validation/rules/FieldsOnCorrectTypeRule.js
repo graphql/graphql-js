@@ -98,11 +98,11 @@ function getSuggestedTypeNames(schema, type, fieldName) {
     } // Suggest super types first followed by subtypes
 
 
-    if ((0, _definition.isAbstractType)(typeA) && schema.isSubType(typeA, typeB)) {
+    if ((0, _definition.isInterfaceType)(typeA) && schema.isSubType(typeA, typeB)) {
       return -1;
     }
 
-    if ((0, _definition.isAbstractType)(typeB) && schema.isSubType(typeB, typeA)) {
+    if ((0, _definition.isInterfaceType)(typeB) && schema.isSubType(typeB, typeA)) {
       return 1;
     }
 
