@@ -300,6 +300,7 @@ export {
   // All validation rules in the GraphQL Specification.
   specifiedRules,
   // Individual validation rules.
+  ExecutableDefinitionsRule,
   FieldsOnCorrectTypeRule,
   FragmentsOnCompositeTypesRule,
   KnownArgumentNamesRule,

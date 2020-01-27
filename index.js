@@ -723,6 +723,12 @@ Object.defineProperty(exports, "specifiedRules", {
     return _index5.specifiedRules;
   }
 });
+Object.defineProperty(exports, "ExecutableDefinitionsRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.ExecutableDefinitionsRule;
+  }
+});
 Object.defineProperty(exports, "FieldsOnCorrectTypeRule", {
   enumerable: true,
   get: function get() {
