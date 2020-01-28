@@ -87,10 +87,10 @@ export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule';
 export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule';
 
 // SDL-specific validation rules
-export { LoneSchemaDefinitionRuleRule } from './rules/LoneSchemaDefinitionRule';
-export { UniqueOperationTypesRuleRule } from './rules/UniqueOperationTypesRule';
-export { UniqueTypeNamesRuleRule } from './rules/UniqueTypeNamesRule';
-export { UniqueEnumValueNamesRuleRule } from './rules/UniqueEnumValueNamesRule';
+export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
+export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule';
+export { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule';
+export { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule';
 export { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule';
-export { UniqueDirectiveNamesRuleRule } from './rules/UniqueDirectiveNamesRule';
+export { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule';
 export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';

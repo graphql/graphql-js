@@ -4,16 +4,12 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { UniqueEnumValueNamesRuleRule } from '../rules/UniqueEnumValueNamesRule';
+import { UniqueEnumValueNamesRule } from '../rules/UniqueEnumValueNamesRule';
 
 import { expectSDLValidationErrors } from './harness';
 
 function expectSDLErrors(sdlStr, schema) {
-  return expectSDLValidationErrors(
-    schema,
-    UniqueEnumValueNamesRuleRule,
-    sdlStr,
-  );
+  return expectSDLValidationErrors(schema, UniqueEnumValueNamesRule, sdlStr);
 }
 
 function expectValidSDL(sdlStr, schema) {

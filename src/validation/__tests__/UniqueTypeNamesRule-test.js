@@ -4,12 +4,12 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { UniqueTypeNamesRuleRule } from '../rules/UniqueTypeNamesRule';
+import { UniqueTypeNamesRule } from '../rules/UniqueTypeNamesRule';
 
 import { expectSDLValidationErrors } from './harness';
 
 function expectSDLErrors(sdlStr, schema) {
-  return expectSDLValidationErrors(schema, UniqueTypeNamesRuleRule, sdlStr);
+  return expectSDLValidationErrors(schema, UniqueTypeNamesRule, sdlStr);
 }
 
 function expectValidSDL(sdlStr, schema) {

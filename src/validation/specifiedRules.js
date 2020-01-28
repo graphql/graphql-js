@@ -85,12 +85,12 @@ import { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBe
 import { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule';
 
 // SDL-specific validation rules
-import { LoneSchemaDefinitionRuleRule } from './rules/LoneSchemaDefinitionRule';
-import { UniqueOperationTypesRuleRule } from './rules/UniqueOperationTypesRule';
-import { UniqueTypeNamesRuleRule } from './rules/UniqueTypeNamesRule';
-import { UniqueEnumValueNamesRuleRule } from './rules/UniqueEnumValueNamesRule';
+import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
+import { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule';
+import { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule';
+import { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule';
 import { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule';
-import { UniqueDirectiveNamesRuleRule } from './rules/UniqueDirectiveNamesRule';
+import { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule';
 import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
 
 /**
@@ -132,12 +132,12 @@ export const specifiedRules = Object.freeze([
  * @internal
  */
 export const specifiedSDLRules = Object.freeze([
-  LoneSchemaDefinitionRuleRule,
-  UniqueOperationTypesRuleRule,
-  UniqueTypeNamesRuleRule,
-  UniqueEnumValueNamesRuleRule,
+  LoneSchemaDefinitionRule,
+  UniqueOperationTypesRule,
+  UniqueTypeNamesRule,
+  UniqueEnumValueNamesRule,
   UniqueFieldDefinitionNamesRule,
-  UniqueDirectiveNamesRuleRule,
+  UniqueDirectiveNamesRule,
   KnownTypeNamesRule,
   KnownDirectivesRule,
   UniqueDirectivesPerLocationRule,
