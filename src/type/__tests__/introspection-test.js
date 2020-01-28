@@ -70,6 +70,15 @@ describe('Introspection', () => {
               possibleTypes: null,
             },
             {
+              kind: 'SCALAR',
+              name: 'Boolean',
+              fields: null,
+              inputFields: null,
+              interfaces: null,
+              enumValues: null,
+              possibleTypes: null,
+            },
+            {
               kind: 'OBJECT',
               name: '__Schema',
               fields: [
@@ -383,15 +392,6 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
               ],
-              possibleTypes: null,
-            },
-            {
-              kind: 'SCALAR',
-              name: 'Boolean',
-              fields: null,
-              inputFields: null,
-              interfaces: null,
-              enumValues: null,
               possibleTypes: null,
             },
             {
