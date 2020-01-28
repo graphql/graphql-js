@@ -119,17 +119,11 @@ function () {
   function GraphQLSchema(config) {
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
-    if (config.assumeValid === true) {
-      this.__validationErrors = [];
-    } else {
-      this.__validationErrors = undefined; // Otherwise check for common mistakes during construction to produce
-      // clear and early error messages.
+    this.__validationErrors = config.assumeValid === true ? [] : undefined; // Check for common mistakes during construction to produce early errors.
 
-      (0, _isObjectLike.default)(config) || (0, _devAssert.default)(0, 'Must provide configuration object.');
-      !config.types || Array.isArray(config.types) || (0, _devAssert.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), "."));
-      !config.directives || Array.isArray(config.directives) || (0, _devAssert.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), "."));
-    }
-
+    (0, _isObjectLike.default)(config) || (0, _devAssert.default)(0, 'Must provide configuration object.');
+    !config.types || Array.isArray(config.types) || (0, _devAssert.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), "."));
+    !config.directives || Array.isArray(config.directives) || (0, _devAssert.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), "."));
     this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;

@@ -138,24 +138,19 @@ export class GraphQLSchema {
   constructor(config: $ReadOnly<GraphQLSchemaConfig>): void {
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
-    if (config.assumeValid === true) {
-      this.__validationErrors = [];
-    } else {
-      this.__validationErrors = undefined;
+    this.__validationErrors = config.assumeValid === true ? [] : undefined;
 
-      // Otherwise check for common mistakes during construction to produce
-      // clear and early error messages.
-      devAssert(isObjectLike(config), 'Must provide configuration object.');
-      devAssert(
-        !config.types || Array.isArray(config.types),
-        `"types" must be Array if provided but got: ${inspect(config.types)}.`,
-      );
-      devAssert(
-        !config.directives || Array.isArray(config.directives),
-        '"directives" must be Array if provided but got: ' +
-          `${inspect(config.directives)}.`,
-      );
-    }
+    // Check for common mistakes during construction to produce early errors.
+    devAssert(isObjectLike(config), 'Must provide configuration object.');
+    devAssert(
+      !config.types || Array.isArray(config.types),
+      `"types" must be Array if provided but got: ${inspect(config.types)}.`,
+    );
+    devAssert(
+      !config.directives || Array.isArray(config.directives),
+      '"directives" must be Array if provided but got: ' +
+        `${inspect(config.directives)}.`,
+    );
 
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
