@@ -4,16 +4,12 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { LoneSchemaDefinitionRuleRule } from '../rules/LoneSchemaDefinitionRule';
+import { LoneSchemaDefinitionRule } from '../rules/LoneSchemaDefinitionRule';
 
 import { expectSDLValidationErrors } from './harness';
 
 function expectSDLErrors(sdlStr, schema) {
-  return expectSDLValidationErrors(
-    schema,
-    LoneSchemaDefinitionRuleRule,
-    sdlStr,
-  );
+  return expectSDLValidationErrors(schema, LoneSchemaDefinitionRule, sdlStr);
 }
 
 function expectValidSDL(sdlStr, schema) {

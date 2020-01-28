@@ -10,7 +10,7 @@ import { type SDLValidationContext } from '../ValidationContext';
  *
  * A GraphQL document is only valid if it contains only one schema definition.
  */
-export function LoneSchemaDefinitionRuleRule(
+export function LoneSchemaDefinitionRule(
   context: SDLValidationContext,
 ): ASTVisitor {
   const oldSchema = context.getSchema();

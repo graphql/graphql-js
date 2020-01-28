@@ -6,6 +6,6 @@ import { SDLValidationContext } from '../ValidationContext';
  *
  * A GraphQL document is only valid if all defined directives have unique names.
  */
-export function UniqueDirectiveNamesRuleRule(
+export function UniqueDirectiveNamesRule(
   context: SDLValidationContext,
 ): ASTVisitor;

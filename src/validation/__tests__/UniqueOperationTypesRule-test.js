@@ -4,16 +4,12 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { UniqueOperationTypesRuleRule } from '../rules/UniqueOperationTypesRule';
+import { UniqueOperationTypesRule } from '../rules/UniqueOperationTypesRule';
 
 import { expectSDLValidationErrors } from './harness';
 
 function expectSDLErrors(sdlStr, schema) {
-  return expectSDLValidationErrors(
-    schema,
-    UniqueOperationTypesRuleRule,
-    sdlStr,
-  );
+  return expectSDLValidationErrors(schema, UniqueOperationTypesRule, sdlStr);
 }
 
 function expectValidSDL(sdlStr, schema) {
