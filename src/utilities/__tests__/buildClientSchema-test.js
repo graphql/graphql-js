@@ -891,7 +891,10 @@ describe('Type System: build schema from introspection', () => {
       const schema = buildSchema(sdl, { assumeValid: true });
       const introspection = introspectionFromSchema(schema);
 
-      expect(introspection.__schema.types[1]).to.deep.include({
+      const fooIntrospection = introspection.__schema.types.find(
+        type => type.name === 'Foo',
+      );
+      expect(fooIntrospection).to.deep.include({
         name: 'Foo',
         interfaces: [{ kind: 'OBJECT', name: 'Foo', ofType: null }],
       });
@@ -912,7 +915,10 @@ describe('Type System: build schema from introspection', () => {
       const schema = buildSchema(sdl, { assumeValid: true });
       const introspection = introspectionFromSchema(schema);
 
-      expect(introspection.__schema.types[1]).to.deep.include({
+      const fooIntrospection = introspection.__schema.types.find(
+        type => type.name === 'Foo',
+      );
+      expect(fooIntrospection).to.deep.include({
         name: 'Foo',
         possibleTypes: [{ kind: 'UNION', name: 'Foo', ofType: null }],
       });
