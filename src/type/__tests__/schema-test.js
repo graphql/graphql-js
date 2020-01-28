@@ -333,24 +333,6 @@ describe('Type System: Schema', () => {
           }).__validationErrors,
         ).to.deep.equal([]);
       });
-
-      it('does not check the configuration for mistakes', () => {
-        const config = [];
-        // $DisableFlowOnNegativeTest
-        config.assumeValid = true;
-        // $DisableFlowOnNegativeTest
-        expect(() => new GraphQLSchema(config)).to.not.throw();
-
-        expect(
-          () =>
-            // $DisableFlowOnNegativeTest
-            new GraphQLSchema({
-              assumeValid: true,
-              types: {},
-              directives: { reduce: () => [] },
-            }),
-        ).to.not.throw();
-      });
     });
   });
 });
