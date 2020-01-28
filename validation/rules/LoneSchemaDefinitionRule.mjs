@@ -5,7 +5,7 @@ import { GraphQLError } from "../../error/GraphQLError.mjs";
  *
  * A GraphQL document is only valid if it contains only one schema definition.
  */
-export function LoneSchemaDefinitionRuleRule(context) {
+export function LoneSchemaDefinitionRule(context) {
   var oldSchema = context.getSchema();
   var alreadyDefined = (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.astNode) || (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.getQueryType()) || (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.getMutationType()) || (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.getSubscriptionType());
   var schemaDefinitionsCount = 0;

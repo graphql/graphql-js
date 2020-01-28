@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.LoneSchemaDefinitionRuleRule = LoneSchemaDefinitionRuleRule;
+exports.LoneSchemaDefinitionRule = LoneSchemaDefinitionRule;
 
 var _GraphQLError = require("../../error/GraphQLError");
 
@@ -12,7 +12,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  *
  * A GraphQL document is only valid if it contains only one schema definition.
  */
-function LoneSchemaDefinitionRuleRule(context) {
+function LoneSchemaDefinitionRule(context) {
   var oldSchema = context.getSchema();
   var alreadyDefined = (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.astNode) || (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.getQueryType()) || (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.getMutationType()) || (oldSchema === null || oldSchema === void 0 ? void 0 : oldSchema.getSubscriptionType());
   var schemaDefinitionsCount = 0;

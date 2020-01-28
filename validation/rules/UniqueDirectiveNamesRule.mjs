@@ -5,7 +5,7 @@ import { GraphQLError } from "../../error/GraphQLError.mjs";
  *
  * A GraphQL document is only valid if all defined directives have unique names.
  */
-export function UniqueDirectiveNamesRuleRule(context) {
+export function UniqueDirectiveNamesRule(context) {
   var knownDirectiveNames = Object.create(null);
   var schema = context.getSchema();
   return {

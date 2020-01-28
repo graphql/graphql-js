@@ -55,10 +55,10 @@ export { VariablesAreInputTypesRule } from "./rules/VariablesAreInputTypesRule.m
 
 export { VariablesInAllowedPositionRule } from "./rules/VariablesInAllowedPositionRule.mjs"; // SDL-specific validation rules
 
-export { LoneSchemaDefinitionRuleRule } from "./rules/LoneSchemaDefinitionRule.mjs";
-export { UniqueOperationTypesRuleRule } from "./rules/UniqueOperationTypesRule.mjs";
-export { UniqueTypeNamesRuleRule } from "./rules/UniqueTypeNamesRule.mjs";
-export { UniqueEnumValueNamesRuleRule } from "./rules/UniqueEnumValueNamesRule.mjs";
+export { LoneSchemaDefinitionRule } from "./rules/LoneSchemaDefinitionRule.mjs";
+export { UniqueOperationTypesRule } from "./rules/UniqueOperationTypesRule.mjs";
+export { UniqueTypeNamesRule } from "./rules/UniqueTypeNamesRule.mjs";
+export { UniqueEnumValueNamesRule } from "./rules/UniqueEnumValueNamesRule.mjs";
 export { UniqueFieldDefinitionNamesRule } from "./rules/UniqueFieldDefinitionNamesRule.mjs";
-export { UniqueDirectiveNamesRuleRule } from "./rules/UniqueDirectiveNamesRule.mjs";
+export { UniqueDirectiveNamesRule } from "./rules/UniqueDirectiveNamesRule.mjs";
 export { PossibleTypeExtensionsRule } from "./rules/PossibleTypeExtensionsRule.mjs";

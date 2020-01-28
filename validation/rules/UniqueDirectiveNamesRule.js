@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.UniqueDirectiveNamesRuleRule = UniqueDirectiveNamesRuleRule;
+exports.UniqueDirectiveNamesRule = UniqueDirectiveNamesRule;
 
 var _GraphQLError = require("../../error/GraphQLError");
 
@@ -12,7 +12,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  *
  * A GraphQL document is only valid if all defined directives have unique names.
  */
-function UniqueDirectiveNamesRuleRule(context) {
+function UniqueDirectiveNamesRule(context) {
   var knownDirectiveNames = Object.create(null);
   var schema = context.getSchema();
   return {

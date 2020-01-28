@@ -177,28 +177,28 @@ Object.defineProperty(exports, "VariablesInAllowedPositionRule", {
     return _VariablesInAllowedPositionRule.VariablesInAllowedPositionRule;
   }
 });
-Object.defineProperty(exports, "LoneSchemaDefinitionRuleRule", {
+Object.defineProperty(exports, "LoneSchemaDefinitionRule", {
   enumerable: true,
   get: function get() {
-    return _LoneSchemaDefinitionRule.LoneSchemaDefinitionRuleRule;
+    return _LoneSchemaDefinitionRule.LoneSchemaDefinitionRule;
   }
 });
-Object.defineProperty(exports, "UniqueOperationTypesRuleRule", {
+Object.defineProperty(exports, "UniqueOperationTypesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueOperationTypesRule.UniqueOperationTypesRuleRule;
+    return _UniqueOperationTypesRule.UniqueOperationTypesRule;
   }
 });
-Object.defineProperty(exports, "UniqueTypeNamesRuleRule", {
+Object.defineProperty(exports, "UniqueTypeNamesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueTypeNamesRule.UniqueTypeNamesRuleRule;
+    return _UniqueTypeNamesRule.UniqueTypeNamesRule;
   }
 });
-Object.defineProperty(exports, "UniqueEnumValueNamesRuleRule", {
+Object.defineProperty(exports, "UniqueEnumValueNamesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueEnumValueNamesRule.UniqueEnumValueNamesRuleRule;
+    return _UniqueEnumValueNamesRule.UniqueEnumValueNamesRule;
   }
 });
 Object.defineProperty(exports, "UniqueFieldDefinitionNamesRule", {
@@ -207,10 +207,10 @@ Object.defineProperty(exports, "UniqueFieldDefinitionNamesRule", {
     return _UniqueFieldDefinitionNamesRule.UniqueFieldDefinitionNamesRule;
   }
 });
-Object.defineProperty(exports, "UniqueDirectiveNamesRuleRule", {
+Object.defineProperty(exports, "UniqueDirectiveNamesRule", {
   enumerable: true,
   get: function get() {
-    return _UniqueDirectiveNamesRule.UniqueDirectiveNamesRuleRule;
+    return _UniqueDirectiveNamesRule.UniqueDirectiveNamesRule;
   }
 });
 Object.defineProperty(exports, "PossibleTypeExtensionsRule", {

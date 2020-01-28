@@ -6,7 +6,7 @@ import { isEnumType } from "../../type/definition.mjs";
  *
  * A GraphQL enum type is only valid if all its values are uniquely named.
  */
-export function UniqueEnumValueNamesRuleRule(context) {
+export function UniqueEnumValueNamesRule(context) {
   var schema = context.getSchema();
   var existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
   var knownValueNames = Object.create(null);

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.UniqueOperationTypesRuleRule = UniqueOperationTypesRuleRule;
+exports.UniqueOperationTypesRule = UniqueOperationTypesRule;
 
 var _GraphQLError = require("../../error/GraphQLError");
 
@@ -12,7 +12,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  *
  * A GraphQL document is only valid if it has only one type per operation.
  */
-function UniqueOperationTypesRuleRule(context) {
+function UniqueOperationTypesRule(context) {
   var schema = context.getSchema();
   var definedOperationTypes = Object.create(null);
   var existingOperationTypes = schema ? {

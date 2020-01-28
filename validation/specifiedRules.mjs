@@ -51,12 +51,12 @@ import { OverlappingFieldsCanBeMergedRule } from "./rules/OverlappingFieldsCanBe
 
 import { UniqueInputFieldNamesRule } from "./rules/UniqueInputFieldNamesRule.mjs"; // SDL-specific validation rules
 
-import { LoneSchemaDefinitionRuleRule } from "./rules/LoneSchemaDefinitionRule.mjs";
-import { UniqueOperationTypesRuleRule } from "./rules/UniqueOperationTypesRule.mjs";
-import { UniqueTypeNamesRuleRule } from "./rules/UniqueTypeNamesRule.mjs";
-import { UniqueEnumValueNamesRuleRule } from "./rules/UniqueEnumValueNamesRule.mjs";
+import { LoneSchemaDefinitionRule } from "./rules/LoneSchemaDefinitionRule.mjs";
+import { UniqueOperationTypesRule } from "./rules/UniqueOperationTypesRule.mjs";
+import { UniqueTypeNamesRule } from "./rules/UniqueTypeNamesRule.mjs";
+import { UniqueEnumValueNamesRule } from "./rules/UniqueEnumValueNamesRule.mjs";
 import { UniqueFieldDefinitionNamesRule } from "./rules/UniqueFieldDefinitionNamesRule.mjs";
-import { UniqueDirectiveNamesRuleRule } from "./rules/UniqueDirectiveNamesRule.mjs";
+import { UniqueDirectiveNamesRule } from "./rules/UniqueDirectiveNamesRule.mjs";
 import { PossibleTypeExtensionsRule } from "./rules/PossibleTypeExtensionsRule.mjs";
 /**
  * This set includes all validation rules defined by the GraphQL spec.
@@ -70,4 +70,4 @@ export var specifiedRules = Object.freeze([ExecutableDefinitionsRule, UniqueOper
  * @internal
  */
 
-export var specifiedSDLRules = Object.freeze([LoneSchemaDefinitionRuleRule, UniqueOperationTypesRuleRule, UniqueTypeNamesRuleRule, UniqueEnumValueNamesRuleRule, UniqueFieldDefinitionNamesRule, UniqueDirectiveNamesRuleRule, KnownTypeNamesRule, KnownDirectivesRule, UniqueDirectivesPerLocationRule, PossibleTypeExtensionsRule, KnownArgumentNamesOnDirectives, UniqueArgumentNamesRule, UniqueInputFieldNamesRule, ProvidedRequiredArgumentsOnDirectives]);
+export var specifiedSDLRules = Object.freeze([LoneSchemaDefinitionRule, UniqueOperationTypesRule, UniqueTypeNamesRule, UniqueEnumValueNamesRule, UniqueFieldDefinitionNamesRule, UniqueDirectiveNamesRule, KnownTypeNamesRule, KnownDirectivesRule, UniqueDirectivesPerLocationRule, PossibleTypeExtensionsRule, KnownArgumentNamesOnDirectives, UniqueArgumentNamesRule, UniqueInputFieldNamesRule, ProvidedRequiredArgumentsOnDirectives]);

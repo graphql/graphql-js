@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.UniqueTypeNamesRuleRule = UniqueTypeNamesRuleRule;
+exports.UniqueTypeNamesRule = UniqueTypeNamesRule;
 
 var _GraphQLError = require("../../error/GraphQLError");
 
@@ -12,7 +12,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  *
  * A GraphQL document is only valid if all defined types have unique names.
  */
-function UniqueTypeNamesRuleRule(context) {
+function UniqueTypeNamesRule(context) {
   var knownTypeNames = Object.create(null);
   var schema = context.getSchema();
   return {

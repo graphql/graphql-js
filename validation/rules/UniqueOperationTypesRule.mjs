@@ -5,7 +5,7 @@ import { GraphQLError } from "../../error/GraphQLError.mjs";
  *
  * A GraphQL document is only valid if it has only one type per operation.
  */
-export function UniqueOperationTypesRuleRule(context) {
+export function UniqueOperationTypesRule(context) {
   var schema = context.getSchema();
   var definedOperationTypes = Object.create(null);
   var existingOperationTypes = schema ? {

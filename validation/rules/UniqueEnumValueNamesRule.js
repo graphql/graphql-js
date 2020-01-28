@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.UniqueEnumValueNamesRuleRule = UniqueEnumValueNamesRuleRule;
+exports.UniqueEnumValueNamesRule = UniqueEnumValueNamesRule;
 
 var _GraphQLError = require("../../error/GraphQLError");
 
@@ -14,7 +14,7 @@ var _definition = require("../../type/definition");
  *
  * A GraphQL enum type is only valid if all its values are uniquely named.
  */
-function UniqueEnumValueNamesRuleRule(context) {
+function UniqueEnumValueNamesRule(context) {
   var schema = context.getSchema();
   var existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
   var knownValueNames = Object.create(null);
