@@ -123,15 +123,15 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
   var typeMap = Object.create(null);
 
-  for (var _i4 = 0; _i4 < typeDefs.length; _i4++) {
-    var typeNode = typeDefs[_i4];
-    var name = typeNode.name.value;
-    typeMap[name] = stdTypeMap[name] || buildType(typeNode);
+  for (var _i4 = 0, _schemaConfig$types2 = schemaConfig.types; _i4 < _schemaConfig$types2.length; _i4++) {
+    var existingType = _schemaConfig$types2[_i4];
+    typeMap[existingType.name] = extendNamedType(existingType);
   }
 
-  for (var _i6 = 0, _schemaConfig$types2 = schemaConfig.types; _i6 < _schemaConfig$types2.length; _i6++) {
-    var existingType = _schemaConfig$types2[_i6];
-    typeMap[existingType.name] = extendNamedType(existingType);
+  for (var _i6 = 0; _i6 < typeDefs.length; _i6++) {
+    var typeNode = typeDefs[_i6];
+    var name = typeNode.name.value;
+    typeMap[name] = stdTypeMap[name] || buildType(typeNode);
   }
 
   var operationTypes = _objectSpread({

@@ -197,13 +197,13 @@ export function extendSchemaImpl(
   }
 
   const typeMap = Object.create(null);
+  for (const existingType of schemaConfig.types) {
+    typeMap[existingType.name] = extendNamedType(existingType);
+  }
+
   for (const typeNode of typeDefs) {
     const name = typeNode.name.value;
     typeMap[name] = stdTypeMap[name] || buildType(typeNode);
-  }
-
-  for (const existingType of schemaConfig.types) {
-    typeMap[existingType.name] = extendNamedType(existingType);
   }
 
   const operationTypes = {

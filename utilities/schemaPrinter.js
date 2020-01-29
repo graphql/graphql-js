@@ -52,10 +52,7 @@ function isDefinedType(type) {
 
 function printFilteredSchema(schema, directiveFilter, typeFilter, options) {
   var directives = schema.getDirectives().filter(directiveFilter);
-  var typeMap = schema.getTypeMap();
-  var types = (0, _objectValues.default)(typeMap).sort(function (type1, type2) {
-    return type1.name.localeCompare(type2.name);
-  }).filter(typeFilter);
+  var types = (0, _objectValues.default)(schema.getTypeMap()).filter(typeFilter);
   return [printSchemaDefinition(schema)].concat(directives.map(function (directive) {
     return printDirective(directive, options);
   }), types.map(function (type) {
