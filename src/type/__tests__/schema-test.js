@@ -253,6 +253,57 @@ describe('Type System: Schema', () => {
     });
   });
 
+  it('preserve order of use provided types', () => {
+    const aType = new GraphQLObjectType({
+      name: 'A',
+      fields: {
+        sub: { type: new GraphQLScalarType({ name: 'ASub' }) },
+      },
+    });
+    const zType = new GraphQLObjectType({
+      name: 'Z',
+      fields: {
+        sub: { type: new GraphQLScalarType({ name: 'ZSub' }) },
+      },
+    });
+    const queryType = new GraphQLObjectType({
+      name: 'Query',
+      fields: {
+        a: { type: aType },
+        z: { type: zType },
+        sub: { type: new GraphQLScalarType({ name: 'QuerySub' }) },
+      },
+    });
+    const schema = new GraphQLSchema({
+      types: [zType, queryType, aType],
+      query: queryType,
+    });
+
+    const typeNames = Object.keys(schema.getTypeMap());
+    expect(typeNames).to.deep.equal([
+      'Z',
+      'ZSub',
+      'Query',
+      'QuerySub',
+      'A',
+      'ASub',
+      'Boolean',
+      'String',
+      '__Schema',
+      '__Type',
+      '__TypeKind',
+      '__Field',
+      '__InputValue',
+      '__EnumValue',
+      '__Directive',
+      '__DirectiveLocation',
+    ]);
+
+    // Also check that this order is stable
+    const copySchema = new GraphQLSchema(schema.toConfig());
+    expect(Object.keys(copySchema.getTypeMap())).to.deep.equal(typeNames);
+  });
+
   it('can be Object.toStringified', () => {
     const schema = new GraphQLSchema({});
 

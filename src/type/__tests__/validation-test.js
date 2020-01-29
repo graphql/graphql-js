@@ -1330,11 +1330,11 @@ describe('Type System: Interface fields must have output types', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'The type of BadInterface.badField must be Output Type but got: undefined.',
+          'The type of BadImplementing.badField must be Output Type but got: undefined.',
       },
       {
         message:
-          'The type of BadImplementing.badField must be Output Type but got: undefined.',
+          'The type of BadInterface.badField must be Output Type but got: undefined.',
       },
     ]);
   });
@@ -1346,10 +1346,10 @@ describe('Type System: Interface fields must have output types', () => {
       const schema = schemaWithInterfaceFieldOfType(type);
       expect(validateSchema(schema)).to.deep.equal([
         {
-          message: `The type of BadInterface.badField must be Output Type but got: ${typeStr}.`,
+          message: `The type of BadImplementing.badField must be Output Type but got: ${typeStr}.`,
         },
         {
-          message: `The type of BadImplementing.badField must be Output Type but got: ${typeStr}.`,
+          message: `The type of BadInterface.badField must be Output Type but got: ${typeStr}.`,
         },
       ]);
     });
@@ -1361,14 +1361,14 @@ describe('Type System: Interface fields must have output types', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
+          'The type of BadImplementing.badField must be Output Type but got: [function Number].',
+      },
+      {
+        message:
           'The type of BadInterface.badField must be Output Type but got: [function Number].',
       },
       {
         message: 'Expected GraphQL named type but got: [function Number].',
-      },
-      {
-        message:
-          'The type of BadImplementing.badField must be Output Type but got: [function Number].',
       },
     ]);
   });
