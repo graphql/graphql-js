@@ -92,6 +92,11 @@ describe('Type System: Schema', () => {
     });
 
     expect(printSchema(schema)).to.equal(dedent`
+      type Query {
+        article(id: String): Article
+        feed: [Article]
+      }
+
       type Article {
         id: String
         isPublished: Boolean
@@ -115,11 +120,6 @@ describe('Type System: Schema', () => {
 
       type Mutation {
         writeArticle: Article
-      }
-
-      type Query {
-        article(id: String): Article
-        feed: [Article]
       }
 
       type Subscription {

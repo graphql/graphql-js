@@ -666,14 +666,14 @@ describe('extendSchema', () => {
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
+      type SomeObject {
+        newField(arg1: String, arg2: NewInputObj!): String
+      }
+
       input NewInputObj {
         field1: Int
         field2: [Float]
         field3: String!
-      }
-
-      type SomeObject {
-        newField(arg1: String, arg2: NewInputObj!): String
       }
     `);
   });
@@ -754,8 +754,7 @@ describe('extendSchema', () => {
 
       scalar NewScalar
 
-      union NewUnion = NewObject
-    `;
+      union NewUnion = NewObject`;
     const extendAST = parse(`
       ${newTypesSDL}
       extend type SomeObject {
@@ -771,7 +770,6 @@ describe('extendSchema', () => {
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
-      ${newTypesSDL}
       type SomeObject {
         oldField: String
         newObject: NewObject
@@ -781,6 +779,8 @@ describe('extendSchema', () => {
         newEnum: NewEnum
         newTree: [SomeObject]!
       }
+
+      ${newTypesSDL}
     `);
   });
 
@@ -811,12 +811,12 @@ describe('extendSchema', () => {
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
-      interface NewInterface {
+      type SomeObject implements OldInterface & NewInterface {
+        oldField: String
         newField: String
       }
 
-      type SomeObject implements OldInterface & NewInterface {
-        oldField: String
+      interface NewInterface {
         newField: String
       }
     `);
@@ -864,8 +864,7 @@ describe('extendSchema', () => {
 
       type NewObject {
         foo: String
-      }
-    `;
+      }`;
     const extendAST = parse(`
       ${newTypesSDL}
       extend type SomeObject implements NewInterface {
@@ -900,12 +899,19 @@ describe('extendSchema', () => {
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
-      ${newTypesSDL}
+      type SomeObject implements SomeInterface & NewInterface & AnotherNewInterface {
+        oldField: String
+        newField: String
+        anotherNewField: String
+      }
+
       enum SomeEnum {
         OLD_VALUE
         NEW_VALUE
         ANOTHER_NEW_VALUE
       }
+
+      union SomeUnion = SomeObject | NewObject | AnotherNewObject
 
       input SomeInput {
         oldField: String
@@ -913,13 +919,7 @@ describe('extendSchema', () => {
         anotherNewField: String
       }
 
-      type SomeObject implements SomeInterface & NewInterface & AnotherNewInterface {
-        oldField: String
-        newField: String
-        anotherNewField: String
-      }
-
-      union SomeUnion = SomeObject | NewObject | AnotherNewObject
+      ${newTypesSDL}
     `);
   });
 
@@ -958,12 +958,12 @@ describe('extendSchema', () => {
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
-      interface AnotherInterface implements SomeInterface {
+      interface SomeInterface {
         oldField: String
         newField: String
       }
 
-      interface SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         oldField: String
         newField: String
       }
@@ -1015,12 +1015,12 @@ describe('extendSchema', () => {
         newField: String
       }
 
-      interface NewInterface {
+      type SomeObject implements SomeInterface & AnotherInterface & NewInterface {
+        oldField: String
         newField: String
       }
 
-      type SomeObject implements SomeInterface & AnotherInterface & NewInterface {
-        oldField: String
+      interface NewInterface {
         newField: String
       }
     `);
@@ -1120,14 +1120,14 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(mutationSchema);
     expect(printSchema(mutationSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Mutation {
-        mutationField: String
-        newMutationField: Int
-      }
-
       type Query {
         queryField: String
         newQueryField: Int
+      }
+
+      type Mutation {
+        mutationField: String
+        newMutationField: Int
       }
 
       type Subscription {
