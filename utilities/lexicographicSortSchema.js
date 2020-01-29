@@ -31,6 +31,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 /**
  * Sort GraphQLSchema.
+ *
+ * This function returns a sorted copy of the given GraphQLSchema.
  */
 function lexicographicSortSchema(schema) {
   var schemaConfig = schema.toConfig();

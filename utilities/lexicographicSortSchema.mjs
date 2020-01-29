@@ -14,6 +14,8 @@ import { isIntrospectionType } from "../type/introspection.mjs";
 import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.mjs";
 /**
  * Sort GraphQLSchema.
+ *
+ * This function returns a sorted copy of the given GraphQLSchema.
  */
 
 export function lexicographicSortSchema(schema) {
