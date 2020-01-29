@@ -1,6 +1,7 @@
 // @flow strict
 
 import find from '../polyfills/find';
+import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
@@ -130,8 +131,12 @@ export class GraphQLSchema {
   _subscriptionType: ?GraphQLObjectType;
   _directives: $ReadOnlyArray<GraphQLDirective>;
   _typeMap: TypeMap;
-  _implementations: ObjMap<InterfaceImplementations>;
   _subTypeMap: ObjMap<ObjMap<boolean>>;
+  _implementationsMap: ObjMap<{|
+    objects: Array<GraphQLObjectType>,
+    interfaces: Array<GraphQLInterfaceType>,
+  |}>;
+
   // Used as a cache for validateSchema().
   __validationErrors: ?$ReadOnlyArray<GraphQLError>;
 
@@ -162,30 +167,89 @@ export class GraphQLSchema {
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives || specifiedDirectives;
 
-    // Build type map now to detect any errors within this schema.
-    const initialTypes: Array<?GraphQLNamedType> = [
-      this._queryType,
-      this._mutationType,
-      this._subscriptionType,
-      __Schema,
-    ].concat(config.types);
+    // To preserve order of user-provided types, we add first to add them to
+    // the set of "collected" types, so `collectReferencedTypes` ignore them.
+    const allReferencedTypes: Set<GraphQLNamedType> = new Set(config.types);
+    if (config.types != null) {
+      for (const type of config.types) {
+        // When we ready to process this type, we remove it from "collected" types
+        // and then add it together with all dependent types in the correct position.
+        allReferencedTypes.delete(type);
+        collectReferencedTypes(type, allReferencedTypes);
+      }
+    }
 
-    // Keep track of all types referenced within the schema.
-    let typeMap: TypeMap = Object.create(null);
+    if (this._queryType != null) {
+      collectReferencedTypes(this._queryType, allReferencedTypes);
+    }
+    if (this._mutationType != null) {
+      collectReferencedTypes(this._mutationType, allReferencedTypes);
+    }
+    if (this._subscriptionType != null) {
+      collectReferencedTypes(this._subscriptionType, allReferencedTypes);
+    }
 
-    // First by deeply visiting all initial types.
-    typeMap = initialTypes.reduce(typeMapReducer, typeMap);
-
-    // Then by deeply visiting all directive types.
-    typeMap = this._directives.reduce(typeMapDirectiveReducer, typeMap);
+    for (const directive of this._directives) {
+      // Directives are not validated until validateSchema() is called.
+      if (isDirective(directive)) {
+        for (const arg of directive.args) {
+          collectReferencedTypes(arg.type, allReferencedTypes);
+        }
+      }
+    }
+    collectReferencedTypes(__Schema, allReferencedTypes);
 
     // Storing the resulting map for reference by the schema.
-    this._typeMap = typeMap;
-
+    this._typeMap = Object.create(null);
     this._subTypeMap = Object.create(null);
-
     // Keep track of all implementations by interface name.
-    this._implementations = collectImplementations(objectValues(typeMap));
+    this._implementationsMap = Object.create(null);
+
+    for (const namedType of arrayFrom(allReferencedTypes)) {
+      if (namedType == null) {
+        continue;
+      }
+
+      const typeName = namedType.name;
+      if (this._typeMap[typeName] !== undefined) {
+        throw new Error(
+          `Schema must contain uniquely named types but contains multiple types named "${typeName}".`,
+        );
+      }
+      this._typeMap[typeName] = namedType;
+
+      if (isInterfaceType(namedType)) {
+        // Store implementations by interface.
+        for (const iface of namedType.getInterfaces()) {
+          if (isInterfaceType(iface)) {
+            let implementations = this._implementationsMap[iface.name];
+            if (implementations === undefined) {
+              implementations = this._implementationsMap[iface.name] = {
+                objects: [],
+                interfaces: [],
+              };
+            }
+
+            implementations.interfaces.push(namedType);
+          }
+        }
+      } else if (isObjectType(namedType)) {
+        // Store implementations by objects.
+        for (const iface of namedType.getInterfaces()) {
+          if (isInterfaceType(iface)) {
+            let implementations = this._implementationsMap[iface.name];
+            if (implementations === undefined) {
+              implementations = this._implementationsMap[iface.name] = {
+                objects: [],
+                interfaces: [],
+              };
+            }
+
+            implementations.objects.push(namedType);
+          }
+        }
+      }
+    }
   }
 
   getQueryType(): ?GraphQLObjectType {
@@ -218,8 +282,12 @@ export class GraphQLSchema {
 
   getImplementations(
     interfaceType: GraphQLInterfaceType,
-  ): InterfaceImplementations {
-    return this._implementations[interfaceType.name];
+  ): {|
+    objects: /* $ReadOnly */ Array<GraphQLObjectType>,
+    interfaces: /* $ReadOnly */ Array<GraphQLInterfaceType>,
+  |} {
+    const implementations = this._implementationsMap[interfaceType.name];
+    return implementations || { objects: [], interfaces: [] };
   }
 
   // @deprecated: use isSubType instead - will be removed in v16.
@@ -287,11 +355,6 @@ export class GraphQLSchema {
 
 type TypeMap = ObjMap<GraphQLNamedType>;
 
-type InterfaceImplementations = {|
-  objects: $ReadOnlyArray<GraphQLObjectType>,
-  interfaces: $ReadOnlyArray<GraphQLInterfaceType>,
-|};
-
 export type GraphQLSchemaValidationOptions = {|
   /**
    * When building a schema from a GraphQL service's introspection result, it
@@ -327,100 +390,35 @@ export type GraphQLSchemaNormalizedConfig = {|
   assumeValid: boolean,
 |};
 
-function collectImplementations(
-  types: $ReadOnlyArray<GraphQLNamedType>,
-): ObjMap<InterfaceImplementations> {
-  const implementationsMap = Object.create(null);
-
-  for (const type of types) {
-    if (isInterfaceType(type)) {
-      if (implementationsMap[type.name] === undefined) {
-        implementationsMap[type.name] = { objects: [], interfaces: [] };
-      }
-
-      // Store implementations by interface.
-      for (const iface of type.getInterfaces()) {
-        if (isInterfaceType(iface)) {
-          const implementations = implementationsMap[iface.name];
-          if (implementations === undefined) {
-            implementationsMap[iface.name] = {
-              objects: [],
-              interfaces: [type],
-            };
-          } else {
-            implementations.interfaces.push(type);
-          }
-        }
-      }
-    } else if (isObjectType(type)) {
-      // Store implementations by objects.
-      for (const iface of type.getInterfaces()) {
-        if (isInterfaceType(iface)) {
-          const implementations = implementationsMap[iface.name];
-          if (implementations === undefined) {
-            implementationsMap[iface.name] = {
-              objects: [type],
-              interfaces: [],
-            };
-          } else {
-            implementations.objects.push(type);
-          }
-        }
-      }
-    }
-  }
-
-  return implementationsMap;
-}
-
-function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
-  if (!type) {
-    return map;
-  }
-
+function collectReferencedTypes(
+  type: GraphQLType,
+  typeSet: Set<GraphQLNamedType>,
+): Set<GraphQLNamedType> {
   const namedType = getNamedType(type);
-  const seenType = map[namedType.name];
-  if (seenType) {
-    if (seenType !== namedType) {
-      throw new Error(
-        `Schema must contain uniquely named types but contains multiple types named "${namedType.name}".`,
-      );
-    }
-    return map;
-  }
-  map[namedType.name] = namedType;
 
-  let reducedMap = map;
+  if (!typeSet.has(namedType)) {
+    typeSet.add(namedType);
+    if (isUnionType(namedType)) {
+      for (const memberType of namedType.getTypes()) {
+        collectReferencedTypes(memberType, typeSet);
+      }
+    } else if (isObjectType(namedType) || isInterfaceType(namedType)) {
+      for (const interfaceType of namedType.getInterfaces()) {
+        collectReferencedTypes(interfaceType, typeSet);
+      }
 
-  if (isUnionType(namedType)) {
-    reducedMap = namedType.getTypes().reduce(typeMapReducer, reducedMap);
-  } else if (isObjectType(namedType) || isInterfaceType(namedType)) {
-    reducedMap = namedType.getInterfaces().reduce(typeMapReducer, reducedMap);
-
-    for (const field of objectValues(namedType.getFields())) {
-      const fieldArgTypes = field.args.map(arg => arg.type);
-      reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
-      reducedMap = typeMapReducer(reducedMap, field.type);
-    }
-  } else if (isInputObjectType(namedType)) {
-    for (const field of objectValues(namedType.getFields())) {
-      reducedMap = typeMapReducer(reducedMap, field.type);
+      for (const field of objectValues(namedType.getFields())) {
+        collectReferencedTypes(field.type, typeSet);
+        for (const arg of field.args) {
+          collectReferencedTypes(arg.type, typeSet);
+        }
+      }
+    } else if (isInputObjectType(namedType)) {
+      for (const field of objectValues(namedType.getFields())) {
+        collectReferencedTypes(field.type, typeSet);
+      }
     }
   }
 
-  return reducedMap;
-}
-
-function typeMapDirectiveReducer(
-  map: TypeMap,
-  directive: ?GraphQLDirective,
-): TypeMap {
-  // Directives are not validated until validateSchema() is called.
-  if (!isDirective(directive)) {
-    return map;
-  }
-  return directive.args.reduce(
-    (_map, arg) => typeMapReducer(_map, arg.type),
-    map,
-  );
+  return typeSet;
 }

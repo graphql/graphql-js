@@ -3,6 +3,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 import find from "../polyfills/find.mjs";
+import arrayFrom from "../polyfills/arrayFrom.mjs";
 import objectValues from "../polyfills/objectValues.mjs";
 import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
 import inspect from "../jsutils/inspect.mjs";
@@ -111,20 +112,105 @@ function () {
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
 
-    this._directives = config.directives || specifiedDirectives; // Build type map now to detect any errors within this schema.
+    this._directives = config.directives || specifiedDirectives; // To preserve order of user-provided types, we add first to add them to
+    // the set of "collected" types, so `collectReferencedTypes` ignore them.
 
-    var initialTypes = [this._queryType, this._mutationType, this._subscriptionType, __Schema].concat(config.types); // Keep track of all types referenced within the schema.
+    var allReferencedTypes = new Set(config.types);
 
-    var typeMap = Object.create(null); // First by deeply visiting all initial types.
+    if (config.types != null) {
+      for (var _i2 = 0, _config$types2 = config.types; _i2 < _config$types2.length; _i2++) {
+        var type = _config$types2[_i2];
+        // When we ready to process this type, we remove it from "collected" types
+        // and then add it together with all dependent types in the correct position.
+        allReferencedTypes.delete(type);
+        collectReferencedTypes(type, allReferencedTypes);
+      }
+    }
 
-    typeMap = initialTypes.reduce(typeMapReducer, typeMap); // Then by deeply visiting all directive types.
+    if (this._queryType != null) {
+      collectReferencedTypes(this._queryType, allReferencedTypes);
+    }
 
-    typeMap = this._directives.reduce(typeMapDirectiveReducer, typeMap); // Storing the resulting map for reference by the schema.
+    if (this._mutationType != null) {
+      collectReferencedTypes(this._mutationType, allReferencedTypes);
+    }
 
-    this._typeMap = typeMap;
+    if (this._subscriptionType != null) {
+      collectReferencedTypes(this._subscriptionType, allReferencedTypes);
+    }
+
+    for (var _i4 = 0, _this$_directives2 = this._directives; _i4 < _this$_directives2.length; _i4++) {
+      var directive = _this$_directives2[_i4];
+
+      // Directives are not validated until validateSchema() is called.
+      if (isDirective(directive)) {
+        for (var _i6 = 0, _directive$args2 = directive.args; _i6 < _directive$args2.length; _i6++) {
+          var arg = _directive$args2[_i6];
+          collectReferencedTypes(arg.type, allReferencedTypes);
+        }
+      }
+    }
+
+    collectReferencedTypes(__Schema, allReferencedTypes); // Storing the resulting map for reference by the schema.
+
+    this._typeMap = Object.create(null);
     this._subTypeMap = Object.create(null); // Keep track of all implementations by interface name.
 
-    this._implementations = collectImplementations(objectValues(typeMap));
+    this._implementationsMap = Object.create(null);
+
+    for (var _i8 = 0, _arrayFrom2 = arrayFrom(allReferencedTypes); _i8 < _arrayFrom2.length; _i8++) {
+      var namedType = _arrayFrom2[_i8];
+
+      if (namedType == null) {
+        continue;
+      }
+
+      var typeName = namedType.name;
+
+      if (this._typeMap[typeName] !== undefined) {
+        throw new Error("Schema must contain uniquely named types but contains multiple types named \"".concat(typeName, "\"."));
+      }
+
+      this._typeMap[typeName] = namedType;
+
+      if (isInterfaceType(namedType)) {
+        // Store implementations by interface.
+        for (var _i10 = 0, _namedType$getInterfa2 = namedType.getInterfaces(); _i10 < _namedType$getInterfa2.length; _i10++) {
+          var iface = _namedType$getInterfa2[_i10];
+
+          if (isInterfaceType(iface)) {
+            var implementations = this._implementationsMap[iface.name];
+
+            if (implementations === undefined) {
+              implementations = this._implementationsMap[iface.name] = {
+                objects: [],
+                interfaces: []
+              };
+            }
+
+            implementations.interfaces.push(namedType);
+          }
+        }
+      } else if (isObjectType(namedType)) {
+        // Store implementations by objects.
+        for (var _i12 = 0, _namedType$getInterfa4 = namedType.getInterfaces(); _i12 < _namedType$getInterfa4.length; _i12++) {
+          var _iface = _namedType$getInterfa4[_i12];
+
+          if (isInterfaceType(_iface)) {
+            var _implementations = this._implementationsMap[_iface.name];
+
+            if (_implementations === undefined) {
+              _implementations = this._implementationsMap[_iface.name] = {
+                objects: [],
+                interfaces: []
+              };
+            }
+
+            _implementations.objects.push(namedType);
+          }
+        }
+      }
+    }
   }
 
   var _proto = GraphQLSchema.prototype;
@@ -154,7 +240,11 @@ function () {
   };
 
   _proto.getImplementations = function getImplementations(interfaceType) {
-    return this._implementations[interfaceType.name];
+    var implementations = this._implementationsMap[interfaceType.name];
+    return implementations || {
+      objects: [],
+      interfaces: []
+    };
   } // @deprecated: use isSubType instead - will be removed in v16.
   ;
 
@@ -169,20 +259,20 @@ function () {
       map = Object.create(null);
 
       if (isUnionType(abstractType)) {
-        for (var _i2 = 0, _abstractType$getType2 = abstractType.getTypes(); _i2 < _abstractType$getType2.length; _i2++) {
-          var type = _abstractType$getType2[_i2];
+        for (var _i14 = 0, _abstractType$getType2 = abstractType.getTypes(); _i14 < _abstractType$getType2.length; _i14++) {
+          var type = _abstractType$getType2[_i14];
           map[type.name] = true;
         }
       } else {
         var implementations = this.getImplementations(abstractType);
 
-        for (var _i4 = 0, _implementations$obje2 = implementations.objects; _i4 < _implementations$obje2.length; _i4++) {
-          var _type = _implementations$obje2[_i4];
+        for (var _i16 = 0, _implementations$obje2 = implementations.objects; _i16 < _implementations$obje2.length; _i16++) {
+          var _type = _implementations$obje2[_i16];
           map[_type.name] = true;
         }
 
-        for (var _i6 = 0, _implementations$inte2 = implementations.interfaces; _i6 < _implementations$inte2.length; _i6++) {
-          var _type2 = _implementations$inte2[_i6];
+        for (var _i18 = 0, _implementations$inte2 = implementations.interfaces; _i18 < _implementations$inte2.length; _i18++) {
+          var _type2 = _implementations$inte2[_i18];
           map[_type2.name] = true;
         }
       }
@@ -228,110 +318,39 @@ function () {
   return GraphQLSchema;
 }();
 
-function collectImplementations(types) {
-  var implementationsMap = Object.create(null);
-
-  for (var _i8 = 0; _i8 < types.length; _i8++) {
-    var type = types[_i8];
-
-    if (isInterfaceType(type)) {
-      if (implementationsMap[type.name] === undefined) {
-        implementationsMap[type.name] = {
-          objects: [],
-          interfaces: []
-        };
-      } // Store implementations by interface.
-
-
-      for (var _i10 = 0, _type$getInterfaces2 = type.getInterfaces(); _i10 < _type$getInterfaces2.length; _i10++) {
-        var iface = _type$getInterfaces2[_i10];
-
-        if (isInterfaceType(iface)) {
-          var implementations = implementationsMap[iface.name];
-
-          if (implementations === undefined) {
-            implementationsMap[iface.name] = {
-              objects: [],
-              interfaces: [type]
-            };
-          } else {
-            implementations.interfaces.push(type);
-          }
-        }
-      }
-    } else if (isObjectType(type)) {
-      // Store implementations by objects.
-      for (var _i12 = 0, _type$getInterfaces4 = type.getInterfaces(); _i12 < _type$getInterfaces4.length; _i12++) {
-        var _iface = _type$getInterfaces4[_i12];
-
-        if (isInterfaceType(_iface)) {
-          var _implementations = implementationsMap[_iface.name];
-
-          if (_implementations === undefined) {
-            implementationsMap[_iface.name] = {
-              objects: [type],
-              interfaces: []
-            };
-          } else {
-            _implementations.objects.push(type);
-          }
-        }
-      }
-    }
-  }
-
-  return implementationsMap;
-}
-
-function typeMapReducer(map, type) {
-  if (!type) {
-    return map;
-  }
-
+function collectReferencedTypes(type, typeSet) {
   var namedType = getNamedType(type);
-  var seenType = map[namedType.name];
 
-  if (seenType) {
-    if (seenType !== namedType) {
-      throw new Error("Schema must contain uniquely named types but contains multiple types named \"".concat(namedType.name, "\"."));
+  if (!typeSet.has(namedType)) {
+    typeSet.add(namedType);
+
+    if (isUnionType(namedType)) {
+      for (var _i20 = 0, _namedType$getTypes2 = namedType.getTypes(); _i20 < _namedType$getTypes2.length; _i20++) {
+        var memberType = _namedType$getTypes2[_i20];
+        collectReferencedTypes(memberType, typeSet);
+      }
+    } else if (isObjectType(namedType) || isInterfaceType(namedType)) {
+      for (var _i22 = 0, _namedType$getInterfa6 = namedType.getInterfaces(); _i22 < _namedType$getInterfa6.length; _i22++) {
+        var interfaceType = _namedType$getInterfa6[_i22];
+        collectReferencedTypes(interfaceType, typeSet);
+      }
+
+      for (var _i24 = 0, _objectValues2 = objectValues(namedType.getFields()); _i24 < _objectValues2.length; _i24++) {
+        var field = _objectValues2[_i24];
+        collectReferencedTypes(field.type, typeSet);
+
+        for (var _i26 = 0, _field$args2 = field.args; _i26 < _field$args2.length; _i26++) {
+          var arg = _field$args2[_i26];
+          collectReferencedTypes(arg.type, typeSet);
+        }
+      }
+    } else if (isInputObjectType(namedType)) {
+      for (var _i28 = 0, _objectValues4 = objectValues(namedType.getFields()); _i28 < _objectValues4.length; _i28++) {
+        var _field = _objectValues4[_i28];
+        collectReferencedTypes(_field.type, typeSet);
+      }
     }
-
-    return map;
   }
 
-  map[namedType.name] = namedType;
-  var reducedMap = map;
-
-  if (isUnionType(namedType)) {
-    reducedMap = namedType.getTypes().reduce(typeMapReducer, reducedMap);
-  } else if (isObjectType(namedType) || isInterfaceType(namedType)) {
-    reducedMap = namedType.getInterfaces().reduce(typeMapReducer, reducedMap);
-
-    for (var _i14 = 0, _objectValues2 = objectValues(namedType.getFields()); _i14 < _objectValues2.length; _i14++) {
-      var field = _objectValues2[_i14];
-      var fieldArgTypes = field.args.map(function (arg) {
-        return arg.type;
-      });
-      reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
-      reducedMap = typeMapReducer(reducedMap, field.type);
-    }
-  } else if (isInputObjectType(namedType)) {
-    for (var _i16 = 0, _objectValues4 = objectValues(namedType.getFields()); _i16 < _objectValues4.length; _i16++) {
-      var _field = _objectValues4[_i16];
-      reducedMap = typeMapReducer(reducedMap, _field.type);
-    }
-  }
-
-  return reducedMap;
-}
-
-function typeMapDirectiveReducer(map, directive) {
-  // Directives are not validated until validateSchema() is called.
-  if (!isDirective(directive)) {
-    return map;
-  }
-
-  return directive.args.reduce(function (_map, arg) {
-    return typeMapReducer(_map, arg.type);
-  }, map);
+  return typeSet;
 }
