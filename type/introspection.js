@@ -90,6 +90,12 @@ var __Directive = new _definition.GraphQLObjectType({
           return obj.description;
         }
       },
+      isRepeatable: {
+        type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
+        resolve: function resolve(obj) {
+          return obj.isRepeatable;
+        }
+      },
       locations: {
         type: (0, _definition.GraphQLNonNull)((0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__DirectiveLocation))),
         resolve: function resolve(obj) {

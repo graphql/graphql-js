@@ -69,6 +69,12 @@ export var __Directive = new GraphQLObjectType({
           return obj.description;
         }
       },
+      isRepeatable: {
+        type: GraphQLNonNull(GraphQLBoolean),
+        resolve: function resolve(obj) {
+          return obj.isRepeatable;
+        }
+      },
       locations: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation))),
         resolve: function resolve(obj) {
