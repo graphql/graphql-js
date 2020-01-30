@@ -51,6 +51,7 @@ function cycleIntrospection(sdlString: string): string {
 describe('Type System: build schema from introspection', () => {
   it('builds a simple schema', () => {
     const sdl = dedent`
+      """Simple schema"""
       schema {
         query: Simple
       }

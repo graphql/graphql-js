@@ -86,12 +86,20 @@ describe('Type System: Schema', () => {
     });
 
     const schema = new GraphQLSchema({
+      description: 'Sample schema',
       query: BlogQuery,
       mutation: BlogMutation,
       subscription: BlogSubscription,
     });
 
     expect(printSchema(schema)).to.equal(dedent`
+      """Sample schema"""
+      schema {
+        query: Query
+        mutation: Mutation
+        subscription: Subscription
+      }
+
       type Query {
         article(id: String): Article
         feed: [Article]

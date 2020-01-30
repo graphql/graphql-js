@@ -106,8 +106,9 @@ const printDocASTReducer: any = {
 
   // Type System Definitions
 
-  SchemaDefinition: ({ directives, operationTypes }) =>
+  SchemaDefinition: addDescription(({ directives, operationTypes }) =>
     join(['schema', join(directives, ' '), block(operationTypes)], ' '),
+  ),
 
   OperationTypeDefinition: ({ operation, type }) => operation + ': ' + type,
 

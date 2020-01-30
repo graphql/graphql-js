@@ -122,6 +122,7 @@ export function assertSchema(schema: mixed): GraphQLSchema {
  *
  */
 export class GraphQLSchema {
+  description: ?string;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?SchemaDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>;
@@ -157,6 +158,7 @@ export class GraphQLSchema {
         `${inspect(config.directives)}.`,
     );
 
+    this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
@@ -335,6 +337,7 @@ export class GraphQLSchema {
 
   toConfig(): GraphQLSchemaNormalizedConfig {
     return {
+      description: this.description,
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
@@ -367,6 +370,7 @@ export type GraphQLSchemaValidationOptions = {|
 |};
 
 export type GraphQLSchemaConfig = {|
+  description?: ?string,
   query?: ?GraphQLObjectType,
   mutation?: ?GraphQLObjectType,
   subscription?: ?GraphQLObjectType,
@@ -383,6 +387,7 @@ export type GraphQLSchemaConfig = {|
  */
 export type GraphQLSchemaNormalizedConfig = {|
   ...GraphQLSchemaConfig,
+  description: ?string,
   types: Array<GraphQLNamedType>,
   directives: Array<GraphQLDirective>,
   extensions: ?ReadOnlyObjMap<mixed>,
