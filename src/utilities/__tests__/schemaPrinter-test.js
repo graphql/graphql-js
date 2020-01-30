@@ -740,6 +740,7 @@ describe('Type System Printer', () => {
       type __Directive {
         name: String!
         description: String
+        isRepeatable: Boolean!
         locations: [__DirectiveLocation!]!
         args: [__InputValue!]!
       }
@@ -927,6 +928,7 @@ describe('Type System Printer', () => {
       type __Directive {
         name: String!
         description: String
+        isRepeatable: Boolean!
         locations: [__DirectiveLocation!]!
         args: [__InputValue!]!
       }
