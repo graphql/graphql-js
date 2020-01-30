@@ -1000,6 +1000,10 @@ describe('Introspection', () => {
           type: GraphQLString,
           deprecationReason: 'Removed in 1.0',
         },
+        deprecatedWithEmptyReason: {
+          type: GraphQLString,
+          deprecationReason: '',
+        },
       },
     });
 
@@ -1031,6 +1035,11 @@ describe('Introspection', () => {
               name: 'deprecated',
               isDeprecated: true,
               deprecationReason: 'Removed in 1.0',
+            },
+            {
+              name: 'deprecatedWithEmptyReason',
+              isDeprecated: true,
+              deprecationReason: '',
             },
           ],
         },
@@ -1160,9 +1169,10 @@ describe('Introspection', () => {
     const TestEnum = new GraphQLEnumType({
       name: 'TestEnum',
       values: {
-        NON_DEPRECATED: { value: 0 },
-        DEPRECATED: { value: 1, deprecationReason: 'Removed in 1.0' },
-        ALSO_NON_DEPRECATED: { value: 2 },
+        NON_DEPRECATED: {},
+        DEPRECATED: { deprecationReason: 'Removed in 1.0' },
+        DEPRECATED_WITH_EMPTY_REASON: { deprecationReason: '' },
+        ALSO_NON_DEPRECATED: {},
       },
     });
 
@@ -1179,7 +1189,6 @@ describe('Introspection', () => {
     const source = `
       {
         __type(name: "TestEnum") {
-          name
           trueValues: enumValues(includeDeprecated: true) {
             name
           }
@@ -1196,33 +1205,19 @@ describe('Introspection', () => {
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
-          name: 'TestEnum',
           trueValues: [
-            {
-              name: 'NON_DEPRECATED',
-            },
-            {
-              name: 'DEPRECATED',
-            },
-            {
-              name: 'ALSO_NON_DEPRECATED',
-            },
+            { name: 'NON_DEPRECATED' },
+            { name: 'DEPRECATED' },
+            { name: 'DEPRECATED_WITH_EMPTY_REASON' },
+            { name: 'ALSO_NON_DEPRECATED' },
           ],
           falseValues: [
-            {
-              name: 'NON_DEPRECATED',
-            },
-            {
-              name: 'ALSO_NON_DEPRECATED',
-            },
+            { name: 'NON_DEPRECATED' },
+            { name: 'ALSO_NON_DEPRECATED' },
           ],
           omittedValues: [
-            {
-              name: 'NON_DEPRECATED',
-            },
-            {
-              name: 'ALSO_NON_DEPRECATED',
-            },
+            { name: 'NON_DEPRECATED' },
+            { name: 'ALSO_NON_DEPRECATED' },
           ],
         },
       },
