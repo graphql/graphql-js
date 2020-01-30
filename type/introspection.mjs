@@ -59,26 +59,26 @@ export var __Directive = new GraphQLObjectType({
     return {
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: function resolve(obj) {
-          return obj.name;
+        resolve: function resolve(directive) {
+          return directive.name;
         }
       },
       description: {
         type: GraphQLString,
-        resolve: function resolve(obj) {
-          return obj.description;
+        resolve: function resolve(directive) {
+          return directive.description;
         }
       },
       isRepeatable: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: function resolve(obj) {
-          return obj.isRepeatable;
+        resolve: function resolve(directive) {
+          return directive.isRepeatable;
         }
       },
       locations: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation))),
-        resolve: function resolve(obj) {
-          return obj.locations;
+        resolve: function resolve(directive) {
+          return directive.locations;
         }
       },
       args: {
@@ -220,14 +220,14 @@ export var __Type = new GraphQLObjectType({
       },
       name: {
         type: GraphQLString,
-        resolve: function resolve(obj) {
-          return obj.name !== undefined ? obj.name : undefined;
+        resolve: function resolve(type) {
+          return type.name !== undefined ? type.name : undefined;
         }
       },
       description: {
         type: GraphQLString,
-        resolve: function resolve(obj) {
-          return obj.description !== undefined ? obj.description : undefined;
+        resolve: function resolve(type) {
+          return type.description !== undefined ? type.description : undefined;
         }
       },
       fields: {
@@ -308,8 +308,8 @@ export var __Type = new GraphQLObjectType({
       },
       ofType: {
         type: __Type,
-        resolve: function resolve(obj) {
-          return obj.ofType !== undefined ? obj.ofType : undefined;
+        resolve: function resolve(type) {
+          return type.ofType !== undefined ? type.ofType : undefined;
         }
       }
     };
@@ -322,14 +322,14 @@ export var __Field = new GraphQLObjectType({
     return {
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: function resolve(obj) {
-          return obj.name;
+        resolve: function resolve(field) {
+          return field.name;
         }
       },
       description: {
         type: GraphQLString,
-        resolve: function resolve(obj) {
-          return obj.description;
+        resolve: function resolve(field) {
+          return field.description;
         }
       },
       args: {
@@ -340,20 +340,20 @@ export var __Field = new GraphQLObjectType({
       },
       type: {
         type: GraphQLNonNull(__Type),
-        resolve: function resolve(obj) {
-          return obj.type;
+        resolve: function resolve(field) {
+          return field.type;
         }
       },
       isDeprecated: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: function resolve(obj) {
-          return obj.isDeprecated;
+        resolve: function resolve(field) {
+          return field.isDeprecated;
         }
       },
       deprecationReason: {
         type: GraphQLString,
-        resolve: function resolve(obj) {
-          return obj.deprecationReason;
+        resolve: function resolve(field) {
+          return field.deprecationReason;
         }
       }
     };
@@ -366,27 +366,29 @@ export var __InputValue = new GraphQLObjectType({
     return {
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: function resolve(obj) {
-          return obj.name;
+        resolve: function resolve(inputValue) {
+          return inputValue.name;
         }
       },
       description: {
         type: GraphQLString,
-        resolve: function resolve(obj) {
-          return obj.description;
+        resolve: function resolve(inputValue) {
+          return inputValue.description;
         }
       },
       type: {
         type: GraphQLNonNull(__Type),
-        resolve: function resolve(obj) {
-          return obj.type;
+        resolve: function resolve(inputValue) {
+          return inputValue.type;
         }
       },
       defaultValue: {
         type: GraphQLString,
         description: 'A GraphQL-formatted string representing the default value for this input value.',
-        resolve: function resolve(inputVal) {
-          var valueAST = astFromValue(inputVal.defaultValue, inputVal.type);
+        resolve: function resolve(inputValue) {
+          var type = inputValue.type,
+              defaultValue = inputValue.defaultValue;
+          var valueAST = astFromValue(defaultValue, type);
           return valueAST ? print(valueAST) : null;
         }
       }
@@ -400,26 +402,26 @@ export var __EnumValue = new GraphQLObjectType({
     return {
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: function resolve(obj) {
-          return obj.name;
+        resolve: function resolve(enumValue) {
+          return enumValue.name;
         }
       },
       description: {
         type: GraphQLString,
-        resolve: function resolve(obj) {
-          return obj.description;
+        resolve: function resolve(enumValue) {
+          return enumValue.description;
         }
       },
       isDeprecated: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: function resolve(obj) {
-          return obj.isDeprecated;
+        resolve: function resolve(enumValue) {
+          return enumValue.isDeprecated;
         }
       },
       deprecationReason: {
         type: GraphQLString,
-        resolve: function resolve(obj) {
-          return obj.deprecationReason;
+        resolve: function resolve(enumValue) {
+          return enumValue.deprecationReason;
         }
       }
     };
