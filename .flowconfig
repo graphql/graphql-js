@@ -23,7 +23,6 @@ deprecated-type=error
 deprecated-utility=error
 dynamic-export=off
 unsafe-getters-setters=error
-inexact-spread=error
 unnecessary-optional-chain=error
 unnecessary-invariant=error
 signature-verification-failure=error
@@ -40,4 +39,4 @@ suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)?)\\)
 suppress_comment=\\(.\\|\n\\)*\\$DisableFlowOnNegativeTest
 
 [version]
-^0.116.0
+^0.117.0
