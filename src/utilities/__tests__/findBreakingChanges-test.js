@@ -645,6 +645,8 @@ describe('findBreakingChanges', () => {
 
       directive @NonNullDirectiveAdded on FIELD_DEFINITION
 
+      directive @DirectiveThatWasRepeatable repeatable on FIELD_DEFINITION
+
       directive @DirectiveName on FIELD_DEFINITION | QUERY
 
       type ArgThatChanges {
@@ -678,6 +680,8 @@ describe('findBreakingChanges', () => {
       directive @DirectiveThatRemovesArg on FIELD_DEFINITION
 
       directive @NonNullDirectiveAdded(arg1: Boolean!) on FIELD_DEFINITION
+
+      directive @DirectiveThatWasRepeatable on FIELD_DEFINITION
 
       directive @DirectiveName on FIELD_DEFINITION
 
@@ -762,6 +766,11 @@ describe('findBreakingChanges', () => {
           'A required arg arg1 on directive NonNullDirectiveAdded was added.',
       },
       {
+        type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
+        description:
+          'Repeatable flag was removed from DirectiveThatWasRepeatable.',
+      },
+      {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
         description: 'QUERY was removed from DirectiveName.',
       },
@@ -836,6 +845,23 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
         description:
           'A required arg newRequiredArg on directive DirectiveName was added.',
+      },
+    ]);
+  });
+
+  it('should detect removal of repeatable flag', () => {
+    const oldSchema = buildSchema(`
+      directive @DirectiveName repeatable on OBJECT
+    `);
+
+    const newSchema = buildSchema(`
+      directive @DirectiveName on OBJECT
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
+        description: 'Repeatable flag was removed from DirectiveName.',
       },
     ]);
   });
