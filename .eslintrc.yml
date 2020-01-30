@@ -451,7 +451,7 @@ overrides:
       '@typescript-eslint/adjacent-overload-signatures': error
       '@typescript-eslint/array-type': [error, { default: generic }]
       '@typescript-eslint/await-thenable': error
-      '@typescript-eslint/ban-ts-ignore': error
+      '@typescript-eslint/ban-ts-comment': error
       '@typescript-eslint/ban-types': error
       '@typescript-eslint/consistent-type-assertions':
         [error, { assertionStyle: as, objectLiteralTypeAssertions: never }]
@@ -487,6 +487,7 @@ overrides:
       '@typescript-eslint/no-unnecessary-type-assertion': error
       '@typescript-eslint/no-unused-vars-experimental': off
       '@typescript-eslint/no-var-requires': error
+      '@typescript-eslint/prefer-as-const': off # TODO consider
       '@typescript-eslint/prefer-for-of': off # TODO switch to error after TS migration
       '@typescript-eslint/prefer-function-type': error
       '@typescript-eslint/prefer-includes': off # TODO switch to error after IE11 drop
@@ -537,6 +538,7 @@ overrides:
       # https://github.com/prettier/eslint-config-prettier/blob/master/%40typescript-eslint.js
       '@typescript-eslint/quotes': off
       '@typescript-eslint/brace-style': off
+      '@typescript-eslint/comma-spacing': off
       '@typescript-eslint/func-call-spacing': off
       '@typescript-eslint/indent': off
       '@typescript-eslint/member-delimiter-style': off
