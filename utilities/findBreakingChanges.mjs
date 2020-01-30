@@ -28,6 +28,7 @@ export var BreakingChangeType = Object.freeze({
   DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
   DIRECTIVE_ARG_REMOVED: 'DIRECTIVE_ARG_REMOVED',
   REQUIRED_DIRECTIVE_ARG_ADDED: 'REQUIRED_DIRECTIVE_ARG_ADDED',
+  DIRECTIVE_REPEATABLE_REMOVED: 'DIRECTIVE_REPEATABLE_REMOVED',
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED'
 });
 export var DangerousChangeType = Object.freeze({
@@ -99,6 +100,13 @@ function findDirectiveChanges(oldSchema, newSchema) {
       schemaChanges.push({
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
         description: "".concat(oldArg.name, " was removed from ").concat(_oldDirective.name, ".")
+      });
+    }
+
+    if (_oldDirective.isRepeatable && !newDirective.isRepeatable) {
+      schemaChanges.push({
+        type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
+        description: "Repeatable flag was removed from ".concat(_oldDirective.name, ".")
       });
     }
 
