@@ -83,19 +83,19 @@ export const __Directive = new GraphQLObjectType({
     ({
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: obj => obj.name,
+        resolve: directive => directive.name,
       },
       description: {
         type: GraphQLString,
-        resolve: obj => obj.description,
+        resolve: directive => directive.description,
       },
       isRepeatable: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: obj => obj.isRepeatable,
+        resolve: directive => directive.isRepeatable,
       },
       locations: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation))),
-        resolve: obj => obj.locations,
+        resolve: directive => directive.locations,
       },
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
@@ -228,12 +228,12 @@ export const __Type = new GraphQLObjectType({
       },
       name: {
         type: GraphQLString,
-        resolve: obj => (obj.name !== undefined ? obj.name : undefined),
+        resolve: type => (type.name !== undefined ? type.name : undefined),
       },
       description: {
         type: GraphQLString,
-        resolve: obj =>
-          obj.description !== undefined ? obj.description : undefined,
+        resolve: type =>
+          type.description !== undefined ? type.description : undefined,
       },
       fields: {
         type: GraphQLList(GraphQLNonNull(__Field)),
@@ -292,7 +292,7 @@ export const __Type = new GraphQLObjectType({
       },
       ofType: {
         type: __Type,
-        resolve: obj => (obj.ofType !== undefined ? obj.ofType : undefined),
+        resolve: type => (type.ofType !== undefined ? type.ofType : undefined),
       },
     }: GraphQLFieldConfigMap<GraphQLType, mixed>),
 });
@@ -305,11 +305,11 @@ export const __Field = new GraphQLObjectType({
     ({
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: obj => obj.name,
+        resolve: field => field.name,
       },
       description: {
         type: GraphQLString,
-        resolve: obj => obj.description,
+        resolve: field => field.description,
       },
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
@@ -317,15 +317,15 @@ export const __Field = new GraphQLObjectType({
       },
       type: {
         type: GraphQLNonNull(__Type),
-        resolve: obj => obj.type,
+        resolve: field => field.type,
       },
       isDeprecated: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: obj => obj.isDeprecated,
+        resolve: field => field.isDeprecated,
       },
       deprecationReason: {
         type: GraphQLString,
-        resolve: obj => obj.deprecationReason,
+        resolve: field => field.deprecationReason,
       },
     }: GraphQLFieldConfigMap<GraphQLField<mixed, mixed>, mixed>),
 });
@@ -338,22 +338,23 @@ export const __InputValue = new GraphQLObjectType({
     ({
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: obj => obj.name,
+        resolve: inputValue => inputValue.name,
       },
       description: {
         type: GraphQLString,
-        resolve: obj => obj.description,
+        resolve: inputValue => inputValue.description,
       },
       type: {
         type: GraphQLNonNull(__Type),
-        resolve: obj => obj.type,
+        resolve: inputValue => inputValue.type,
       },
       defaultValue: {
         type: GraphQLString,
         description:
           'A GraphQL-formatted string representing the default value for this input value.',
-        resolve(inputVal) {
-          const valueAST = astFromValue(inputVal.defaultValue, inputVal.type);
+        resolve(inputValue) {
+          const { type, defaultValue } = inputValue;
+          const valueAST = astFromValue(defaultValue, type);
           return valueAST ? print(valueAST) : null;
         },
       },
@@ -368,19 +369,19 @@ export const __EnumValue = new GraphQLObjectType({
     ({
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: obj => obj.name,
+        resolve: enumValue => enumValue.name,
       },
       description: {
         type: GraphQLString,
-        resolve: obj => obj.description,
+        resolve: enumValue => enumValue.description,
       },
       isDeprecated: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: obj => obj.isDeprecated,
+        resolve: enumValue => enumValue.isDeprecated,
       },
       deprecationReason: {
         type: GraphQLString,
-        resolve: obj => obj.deprecationReason,
+        resolve: enumValue => enumValue.deprecationReason,
       },
     }: GraphQLFieldConfigMap<GraphQLEnumValue, mixed>),
 });
