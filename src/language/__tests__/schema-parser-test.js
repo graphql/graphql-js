@@ -141,7 +141,7 @@ describe('Schema Parser', () => {
     );
   });
 
-  it('parses type with description multi-line string', () => {
+  it('Description followed by something other than type system definition throws', () => {
     expectSyntaxError('"Description" 1').to.deep.equal({
       message: 'Syntax Error: Unexpected Int "1".',
       locations: [{ line: 1, column: 15 }],
