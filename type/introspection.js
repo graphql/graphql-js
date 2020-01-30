@@ -267,7 +267,7 @@ var __Type = new _definition.GraphQLObjectType({
 
             if (!includeDeprecated) {
               fields = fields.filter(function (field) {
-                return !field.deprecationReason;
+                return !field.isDeprecated;
               });
             }
 
@@ -311,7 +311,7 @@ var __Type = new _definition.GraphQLObjectType({
 
             if (!includeDeprecated) {
               values = values.filter(function (value) {
-                return !value.deprecationReason;
+                return !value.isDeprecated;
               });
             }
 

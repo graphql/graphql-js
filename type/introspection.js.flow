@@ -240,7 +240,7 @@ export const __Type = new GraphQLObjectType({
           if (isObjectType(type) || isInterfaceType(type)) {
             let fields = objectValues(type.getFields());
             if (!includeDeprecated) {
-              fields = fields.filter(field => !field.deprecationReason);
+              fields = fields.filter(field => !field.isDeprecated);
             }
             return fields;
           }
@@ -272,7 +272,7 @@ export const __Type = new GraphQLObjectType({
           if (isEnumType(type)) {
             let values = type.getValues();
             if (!includeDeprecated) {
-              values = values.filter(value => !value.deprecationReason);
+              values = values.filter(value => !value.isDeprecated);
             }
             return values;
           }

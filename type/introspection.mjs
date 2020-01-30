@@ -240,7 +240,7 @@ export var __Type = new GraphQLObjectType({
 
             if (!includeDeprecated) {
               fields = fields.filter(function (field) {
-                return !field.deprecationReason;
+                return !field.isDeprecated;
               });
             }
 
@@ -284,7 +284,7 @@ export var __Type = new GraphQLObjectType({
 
             if (!includeDeprecated) {
               values = values.filter(function (value) {
-                return !value.deprecationReason;
+                return !value.isDeprecated;
               });
             }
 
