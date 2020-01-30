@@ -89,6 +89,10 @@ export const __Directive = new GraphQLObjectType({
         type: GraphQLString,
         resolve: obj => obj.description,
       },
+      isRepeatable: {
+        type: GraphQLNonNull(GraphQLBoolean),
+        resolve: obj => obj.isRepeatable,
+      },
       locations: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation))),
         resolve: obj => obj.locations,

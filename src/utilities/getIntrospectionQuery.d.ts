@@ -5,6 +5,10 @@ export interface IntrospectionOptions {
   // Whether to include descriptions in the introspection result.
   // Default: true
   descriptions: boolean;
+
+  // Whether to include `isRepeatable` flag on directives.
+  // Default: false
+  directiveIsRepeatable?: boolean;
 }
 
 export function getIntrospectionQuery(options?: IntrospectionOptions): string;
@@ -167,6 +171,7 @@ export interface IntrospectionEnumValue {
 export interface IntrospectionDirective {
   readonly name: string;
   readonly description?: Maybe<string>;
+  readonly isRepeatable?: boolean;
   readonly locations: ReadonlyArray<DirectiveLocationEnum>;
   readonly args: ReadonlyArray<IntrospectionInputValue>;
 }

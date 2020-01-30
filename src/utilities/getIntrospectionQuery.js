@@ -5,11 +5,25 @@ import { type DirectiveLocationEnum } from '../language/directiveLocation';
 export type IntrospectionOptions = {|
   // Whether to include descriptions in the introspection result.
   // Default: true
-  descriptions: boolean,
+  descriptions?: boolean,
+
+  // Whether to include `isRepeatable` flag on directives.
+  // Default: false
+  directiveIsRepeatable?: boolean,
 |};
 
 export function getIntrospectionQuery(options?: IntrospectionOptions): string {
-  const descriptions = options?.descriptions !== false ? 'description' : '';
+  const optionsWithDefault = {
+    descriptions: true,
+    directiveIsRepeatable: false,
+    ...options,
+  };
+
+  const descriptions = optionsWithDefault.descriptions ? 'description' : '';
+  const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable
+    ? 'isRepeatable'
+    : '';
+
   return `
     query IntrospectionQuery {
       __schema {
@@ -22,6 +36,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         directives {
           name
           ${descriptions}
+          ${directiveIsRepeatable}
           locations
           args {
             ...InputValue
@@ -259,6 +274,7 @@ export type IntrospectionEnumValue = {|
 export type IntrospectionDirective = {|
   +name: string,
   +description?: ?string,
+  +isRepeatable?: boolean,
   +locations: $ReadOnlyArray<DirectiveLocationEnum>,
   +args: $ReadOnlyArray<IntrospectionInputValue>,
 |};

@@ -385,6 +385,7 @@ export function buildClientSchema(
     return new GraphQLDirective({
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,
+      isRepeatable: directiveIntrospection.isRepeatable,
       locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args),
     });

@@ -33,10 +33,12 @@ import { introspectionFromSchema } from '../introspectionFromSchema';
  * returns that schema printed as SDL.
  */
 function cycleIntrospection(sdlString: string): string {
+  const options = { directiveIsRepeatable: true };
+
   const serverSchema = buildSchema(sdlString);
-  const initialIntrospection = introspectionFromSchema(serverSchema);
+  const initialIntrospection = introspectionFromSchema(serverSchema, options);
   const clientSchema = buildClientSchema(initialIntrospection);
-  const secondIntrospection = introspectionFromSchema(clientSchema);
+  const secondIntrospection = introspectionFromSchema(clientSchema, options);
 
   /**
    * If the client then runs the introspection query against the client-side
@@ -457,7 +459,7 @@ describe('Type System: build schema from introspection', () => {
   it('builds a schema with custom directives', () => {
     const sdl = dedent`
       """This is a custom directive"""
-      directive @customDirective on FIELD
+      directive @customDirective repeatable on FIELD
 
       type Query {
         string: String

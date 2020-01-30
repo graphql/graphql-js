@@ -27,7 +27,10 @@ describe('Introspection', () => {
         },
       }),
     });
-    const source = getIntrospectionQuery({ descriptions: false });
+    const source = getIntrospectionQuery({
+      descriptions: false,
+      directiveIsRepeatable: true,
+    });
 
     const result = graphqlSync({ schema, source });
     expect(result).to.deep.equal({
@@ -649,6 +652,21 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
+                  name: 'isRepeatable',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'Boolean',
+                      ofType: null,
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
                   name: 'locations',
                   args: [],
                   type: {
@@ -809,6 +827,7 @@ describe('Introspection', () => {
           directives: [
             {
               name: 'include',
+              isRepeatable: false,
               locations: ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
               args: [
                 {
@@ -828,6 +847,7 @@ describe('Introspection', () => {
             },
             {
               name: 'skip',
+              isRepeatable: false,
               locations: ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
               args: [
                 {
@@ -847,6 +867,7 @@ describe('Introspection', () => {
             },
             {
               name: 'deprecated',
+              isRepeatable: false,
               locations: ['FIELD_DEFINITION', 'ENUM_VALUE'],
               args: [
                 {
@@ -1394,7 +1415,7 @@ describe('Introspection', () => {
     });
 
     const schema = new GraphQLSchema({ query: QueryRoot });
-    const source = getIntrospectionQuery();
+    const source = getIntrospectionQuery({ directiveIsRepeatable: true });
 
     /* istanbul ignore next */
     function fieldResolver(_1, _2, _3, info) {
