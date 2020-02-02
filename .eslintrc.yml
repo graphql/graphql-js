@@ -440,7 +440,6 @@ overrides:
       import/no-unused-modules: off
       import/no-deprecated: off
       import/no-unresolved: off
-      import/export: off
 
       ##########################################################################
       # `@typescript-eslint/eslint-plugin` rule list based on `v2.17.x`
