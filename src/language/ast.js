@@ -441,6 +441,7 @@ export type TypeSystemDefinitionNode =
 export type SchemaDefinitionNode = {|
   +kind: 'SchemaDefinition',
   +loc?: Location,
+  +description?: StringValueNode,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +operationTypes: $ReadOnlyArray<OperationTypeDefinitionNode>,
 |};

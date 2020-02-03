@@ -26,7 +26,12 @@ export function introspectionFromSchema(
   schema: GraphQLSchema,
   options?: IntrospectionOptions,
 ): IntrospectionQuery {
-  const optionsWithDefaults = { directiveIsRepeatable: true, ...options };
+  const optionsWithDefaults = {
+    directiveIsRepeatable: true,
+    schemaDescription: true,
+    ...options,
+  };
+
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
   const result = execute({ schema, document });
   invariant(!isPromise(result) && !result.errors && result.data);

@@ -405,6 +405,7 @@ export type TypeSystemDefinitionNode =
 export interface SchemaDefinitionNode {
   readonly kind: 'SchemaDefinition';
   readonly loc?: Location;
+  readonly description?: StringValueNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly operationTypes: ReadonlyArray<OperationTypeDefinitionNode>;
 }

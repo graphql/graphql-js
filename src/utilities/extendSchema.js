@@ -219,6 +219,7 @@ export function extendSchemaImpl(
 
   // Then produce and return a Schema config with these types.
   return {
+    description: schemaDef?.description?.value,
     ...operationTypes,
     types: objectValues(typeMap),
     directives: [

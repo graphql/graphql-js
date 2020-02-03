@@ -38,6 +38,7 @@ describe('Printer: SDL document', () => {
     const printed = print(parse(kitchenSinkSDL));
 
     expect(printed).to.equal(dedent`
+      """This is a description of the schema as a whole."""
       schema {
         query: QueryType
         mutation: MutationType

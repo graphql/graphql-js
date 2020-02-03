@@ -141,6 +141,25 @@ describe('Schema Parser', () => {
     );
   });
 
+  it('parses schema with description string', () => {
+    const doc = parse(dedent`
+      "Description"
+      schema {
+        query: Foo
+      }
+    `);
+
+    expect(toJSONDeep(doc)).to.nested.deep.property(
+      'definitions[0].description',
+      {
+        kind: 'StringValue',
+        value: 'Description',
+        block: false,
+        loc: { start: 0, end: 13 },
+      },
+    );
+  });
+
   it('Description followed by something other than type system definition throws', () => {
     expectSyntaxError('"Description" 1').to.deep.equal({
       message: 'Syntax Error: Unexpected Int "1".',

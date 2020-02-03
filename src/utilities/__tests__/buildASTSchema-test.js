@@ -158,6 +158,11 @@ describe('Schema Builder', () => {
 
   it('Supports descriptions', () => {
     const sdl = dedent`
+      """Do you agree that this is the most creative schema ever?"""
+      schema {
+        query: Query
+      }
+
       """This is a directive"""
       directive @foo(
         """It has an argument"""

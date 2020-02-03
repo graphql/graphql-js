@@ -20,6 +20,7 @@ import {
 describe('Introspection', () => {
   it('executes an introspection query', () => {
     const schema = new GraphQLSchema({
+      description: 'Sample schema',
       query: new GraphQLObjectType({
         name: 'QueryRoot',
         fields: {
@@ -85,6 +86,17 @@ describe('Introspection', () => {
               kind: 'OBJECT',
               name: '__Schema',
               fields: [
+                {
+                  name: 'description',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
                 {
                   name: 'types',
                   args: [],
@@ -1304,6 +1316,10 @@ describe('Introspection', () => {
           description:
             'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.',
           fields: [
+            {
+              name: 'description',
+              description: null,
+            },
             {
               name: 'types',
               description: 'A list of all types supported by this server.',

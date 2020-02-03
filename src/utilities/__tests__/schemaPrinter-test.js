@@ -256,6 +256,23 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints schema with description', () => {
+    const Schema = new GraphQLSchema({
+      description: 'Schema description.',
+      query: new GraphQLObjectType({ name: 'Query', fields: {} }),
+    });
+
+    const output = printForTest(Schema);
+    expect(output).to.equal(dedent`
+      """Schema description."""
+      schema {
+        query: Query
+      }
+
+      type Query
+    `);
+  });
+
   it('Prints custom query root types', () => {
     const Schema = new GraphQLSchema({
       query: new GraphQLObjectType({ name: 'CustomType', fields: {} }),
@@ -626,6 +643,8 @@ describe('Type System Printer', () => {
       A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
       """
       type __Schema {
+        description: String
+
         """A list of all types supported by this server."""
         types: [__Type!]!
 
@@ -836,6 +855,8 @@ describe('Type System Printer', () => {
 
       # A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
       type __Schema {
+        description: String
+
         # A list of all types supported by this server.
         types: [__Type!]!
 

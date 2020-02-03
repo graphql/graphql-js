@@ -43,6 +43,10 @@ export const __Schema = new GraphQLObjectType({
     'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.',
   fields: () =>
     ({
+      description: {
+        type: GraphQLString,
+        resolve: schema => schema.description,
+      },
       types: {
         description: 'A list of all types supported by this server.',
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__Type))),

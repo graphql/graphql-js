@@ -99,7 +99,7 @@ function printFilteredSchema(
 }
 
 function printSchemaDefinition(schema: GraphQLSchema): ?string {
-  if (isSchemaOfCommonNames(schema)) {
+  if (schema.description == null && isSchemaOfCommonNames(schema)) {
     return;
   }
 
@@ -120,7 +120,9 @@ function printSchemaDefinition(schema: GraphQLSchema): ?string {
     operationTypes.push(`  subscription: ${subscriptionType.name}`);
   }
 
-  return `schema {\n${operationTypes.join('\n')}\n}`;
+  return (
+    printDescription({}, schema) + `schema {\n${operationTypes.join('\n')}\n}`
+  );
 }
 
 /**

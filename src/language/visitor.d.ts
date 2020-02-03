@@ -101,7 +101,7 @@ export const QueryDocumentKeys: {
   ListType: ['type'];
   NonNullType: ['type'];
 
-  SchemaDefinition: ['directives', 'operationTypes'];
+  SchemaDefinition: ['description', 'directives', 'operationTypes'];
   OperationTypeDefinition: ['type'];
 
   ScalarTypeDefinition: ['description', 'name', 'directives'];
