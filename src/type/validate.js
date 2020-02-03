@@ -105,9 +105,7 @@ class SchemaValidationContext {
 function validateRootTypes(context) {
   const schema = context.schema;
   const queryType = schema.getQueryType();
-  if (!queryType) {
-    context.reportError('Query root type must be provided.', schema.astNode);
-  } else if (!isObjectType(queryType)) {
+  if (queryType && !isObjectType(queryType)) {
     context.reportError(
       `Query root type must be Object type, it cannot be ${inspect(
         queryType,

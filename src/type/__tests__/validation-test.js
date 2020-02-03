@@ -189,35 +189,6 @@ describe('Type System: A Schema must have Object root types', () => {
     expect(validateSchema(schemaWithDef)).to.deep.equal([]);
   });
 
-  it('rejects a Schema without a query type', () => {
-    const schema = buildSchema(`
-      type Mutation {
-        test: String
-      }
-    `);
-    expect(validateSchema(schema)).to.deep.equal([
-      {
-        message: 'Query root type must be provided.',
-      },
-    ]);
-
-    const schemaWithDef = buildSchema(`
-      schema {
-        mutation: MutationRoot
-      }
-
-      type MutationRoot {
-        test: String
-      }
-    `);
-    expect(validateSchema(schemaWithDef)).to.deep.equal([
-      {
-        message: 'Query root type must be provided.',
-        locations: [{ line: 2, column: 7 }],
-      },
-    ]);
-  });
-
   it('rejects a Schema whose query root type is not an Object type', () => {
     const schema = buildSchema(`
       input Query {
@@ -2582,8 +2553,6 @@ describe('assertValidSchema', () => {
   it('include multiple errors into a description', () => {
     const schema = buildSchema('type SomeType');
     expect(() => assertValidSchema(schema)).to.throw(dedent`
-      Query root type must be provided.
-
       Type SomeType must define one or more fields.`);
   });
 });
