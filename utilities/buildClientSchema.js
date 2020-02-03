@@ -71,6 +71,7 @@ function buildClientSchema(introspection, options) {
   var directives = schemaIntrospection.directives ? schemaIntrospection.directives.map(buildDirective) : []; // Then produce and return a Schema with these types.
 
   return new _schema.GraphQLSchema({
+    description: schemaIntrospection.description,
     query: queryType,
     mutation: mutationType,
     subscription: subscriptionType,

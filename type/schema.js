@@ -126,6 +126,7 @@ function () {
     (0, _isObjectLike.default)(config) || (0, _devAssert.default)(0, 'Must provide configuration object.');
     !config.types || Array.isArray(config.types) || (0, _devAssert.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), "."));
     !config.directives || Array.isArray(config.directives) || (0, _devAssert.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), "."));
+    this.description = config.description;
     this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
@@ -316,6 +317,7 @@ function () {
 
   _proto.toConfig = function toConfig() {
     return {
+      description: this.description,
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),

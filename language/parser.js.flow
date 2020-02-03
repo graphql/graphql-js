@@ -772,10 +772,11 @@ class Parser {
   }
 
   /**
-   * SchemaDefinition : schema Directives[Const]? { OperationTypeDefinition+ }
+   * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
    */
   parseSchemaDefinition(): SchemaDefinitionNode {
     const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('schema');
     const directives = this.parseDirectives(true);
     const operationTypes = this.many(
@@ -785,6 +786,7 @@ class Parser {
     );
     return {
       kind: Kind.SCHEMA_DEFINITION,
+      description,
       directives,
       operationTypes,
       loc: this.loc(start),

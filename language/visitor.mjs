@@ -32,7 +32,7 @@ export var QueryDocumentKeys = {
   NamedType: ['name'],
   ListType: ['type'],
   NonNullType: ['type'],
-  SchemaDefinition: ['directives', 'operationTypes'],
+  SchemaDefinition: ['description', 'directives', 'operationTypes'],
   OperationTypeDefinition: ['type'],
   ScalarTypeDefinition: ['description', 'name', 'directives'],
   ObjectTypeDefinition: ['description', 'name', 'interfaces', 'directives', 'fields'],

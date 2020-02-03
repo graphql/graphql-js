@@ -21,7 +21,8 @@ import { getIntrospectionQuery } from "./getIntrospectionQuery.mjs";
 
 export function introspectionFromSchema(schema, options) {
   var optionsWithDefaults = _objectSpread({
-    directiveIsRepeatable: true
+    directiveIsRepeatable: true,
+    schemaDescription: true
   }, options);
 
   var document = parse(getIntrospectionQuery(optionsWithDefaults));

@@ -7,15 +7,20 @@ export type IntrospectionOptions = {|
   // Default: true
   descriptions?: boolean,
 
-  // Whether to include `isRepeatable` flag on directives.
+  // Whether to include `isRepeatable` field on directives.
   // Default: false
   directiveIsRepeatable?: boolean,
+
+  // Whether to include `description` field on schema.
+  // Default: false
+  schemaDescription?: boolean,
 |};
 
 export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   const optionsWithDefault = {
     descriptions: true,
     directiveIsRepeatable: false,
+    schemaDescription: false,
     ...options,
   };
 
@@ -23,10 +28,14 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable
     ? 'isRepeatable'
     : '';
+  const schemaDescription = optionsWithDefault.schemaDescription
+    ? descriptions
+    : '';
 
   return `
     query IntrospectionQuery {
       __schema {
+        ${schemaDescription}
         queryType { name }
         mutationType { name }
         subscriptionType { name }
@@ -125,6 +134,7 @@ export type IntrospectionQuery = {|
 |};
 
 export type IntrospectionSchema = {|
+  +description?: ?string,
   +queryType: IntrospectionNamedTypeRef<IntrospectionObjectType>,
   +mutationType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>,
   +subscriptionType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>,

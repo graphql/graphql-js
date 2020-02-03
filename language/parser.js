@@ -731,17 +731,19 @@ function () {
     }
   }
   /**
-   * SchemaDefinition : schema Directives[Const]? { OperationTypeDefinition+ }
+   * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
    */
   ;
 
   _proto.parseSchemaDefinition = function parseSchemaDefinition() {
     var start = this._lexer.token;
+    var description = this.parseDescription();
     this.expectKeyword('schema');
     var directives = this.parseDirectives(true);
     var operationTypes = this.many(_tokenKind.TokenKind.BRACE_L, this.parseOperationTypeDefinition, _tokenKind.TokenKind.BRACE_R);
     return {
       kind: _kinds.Kind.SCHEMA_DEFINITION,
+      description: description,
       directives: directives,
       operationTypes: operationTypes,
       loc: this.loc(start)

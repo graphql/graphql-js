@@ -32,6 +32,12 @@ var __Schema = new _definition.GraphQLObjectType({
   description: 'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.',
   fields: function fields() {
     return {
+      description: {
+        type: _scalars.GraphQLString,
+        resolve: function resolve(schema) {
+          return schema.description;
+        }
+      },
       types: {
         description: 'A list of all types supported by this server.',
         type: (0, _definition.GraphQLNonNull)((0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__Type))),

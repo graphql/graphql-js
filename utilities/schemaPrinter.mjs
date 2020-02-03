@@ -40,7 +40,7 @@ function printFilteredSchema(schema, directiveFilter, typeFilter, options) {
 }
 
 function printSchemaDefinition(schema) {
-  if (isSchemaOfCommonNames(schema)) {
+  if (schema.description == null && isSchemaOfCommonNames(schema)) {
     return;
   }
 
@@ -63,7 +63,7 @@ function printSchemaDefinition(schema) {
     operationTypes.push("  subscription: ".concat(subscriptionType.name));
   }
 
-  return "schema {\n".concat(operationTypes.join('\n'), "\n}");
+  return printDescription({}, schema) + "schema {\n".concat(operationTypes.join('\n'), "\n}");
 }
 /**
  * GraphQL schema define root types for each type of operation. These types are

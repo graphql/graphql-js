@@ -58,6 +58,8 @@ export function extendSchema(schema, documentAST, options) {
  */
 
 export function extendSchemaImpl(schemaConfig, documentAST, options) {
+  var _schemaDef, _schemaDef$descriptio;
+
   // Collect the type definitions and extensions found in the document.
   var typeDefs = [];
   var typeExtensionsMap = Object.create(null); // New directives and types are separate because a directives and types can
@@ -113,7 +115,9 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   }, schemaDef && getOperationTypes([schemaDef]), {}, getOperationTypes(schemaExtensions)); // Then produce and return a Schema config with these types.
 
 
-  return _objectSpread({}, operationTypes, {
+  return _objectSpread({
+    description: (_schemaDef = schemaDef) === null || _schemaDef === void 0 ? void 0 : (_schemaDef$descriptio = _schemaDef.description) === null || _schemaDef$descriptio === void 0 ? void 0 : _schemaDef$descriptio.value
+  }, operationTypes, {
     types: objectValues(typeMap),
     directives: [].concat(schemaConfig.directives.map(replaceDirective), directiveDefs.map(buildDirective)),
     extensions: undefined,

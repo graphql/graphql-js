@@ -109,6 +109,7 @@ export function buildClientSchema(
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
+    description: schemaIntrospection.description,
     query: queryType,
     mutation: mutationType,
     subscription: subscriptionType,

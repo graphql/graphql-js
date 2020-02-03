@@ -146,11 +146,11 @@ var printDocASTReducer = {
     return type + '!';
   },
   // Type System Definitions
-  SchemaDefinition: function SchemaDefinition(_ref20) {
+  SchemaDefinition: addDescription(function (_ref20) {
     var directives = _ref20.directives,
         operationTypes = _ref20.operationTypes;
     return join(['schema', join(directives, ' '), block(operationTypes)], ' ');
-  },
+  }),
   OperationTypeDefinition: function OperationTypeDefinition(_ref21) {
     var operation = _ref21.operation,
         type = _ref21.type;
