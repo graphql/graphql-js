@@ -203,7 +203,7 @@ export function extendSchemaImpl(
 
   for (const typeNode of typeDefs) {
     const name = typeNode.name.value;
-    typeMap[name] = stdTypeMap[name] || buildType(typeNode);
+    typeMap[name] = stdTypeMap[name] ?? buildType(typeNode);
   }
 
   const operationTypes = {
@@ -227,12 +227,12 @@ export function extendSchemaImpl(
       ...directiveDefs.map(buildDirective),
     ],
     extensions: undefined,
-    astNode: schemaDef || schemaConfig.astNode,
+    astNode: schemaDef ?? schemaConfig.astNode,
     extensionASTNodes: concatMaybeArrays(
       schemaConfig.extensionASTNodes,
       schemaExtensions,
     ),
-    assumeValid: options?.assumeValid || false,
+    assumeValid: options?.assumeValid ?? false,
   };
 
   // Below are functions used for producing this schema that have closed over
@@ -294,7 +294,7 @@ export function extendSchemaImpl(
     type: GraphQLInputObjectType,
   ): GraphQLInputObjectType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] ?? [];
 
     return new GraphQLInputObjectType({
       ...config,
@@ -314,7 +314,7 @@ export function extendSchemaImpl(
 
   function extendEnumType(type: GraphQLEnumType): GraphQLEnumType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[type.name] || [];
+    const extensions = typeExtensionsMap[type.name] ?? [];
 
     return new GraphQLEnumType({
       ...config,
@@ -331,7 +331,7 @@ export function extendSchemaImpl(
 
   function extendScalarType(type: GraphQLScalarType): GraphQLScalarType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] ?? [];
 
     return new GraphQLScalarType({
       ...config,
@@ -344,7 +344,7 @@ export function extendSchemaImpl(
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] ?? [];
 
     return new GraphQLObjectType({
       ...config,
@@ -367,7 +367,7 @@ export function extendSchemaImpl(
     type: GraphQLInterfaceType,
   ): GraphQLInterfaceType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] ?? [];
 
     return new GraphQLInterfaceType({
       ...config,
@@ -388,7 +388,7 @@ export function extendSchemaImpl(
 
   function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtensionsMap[config.name] ?? [];
 
     return new GraphQLUnionType({
       ...config,
@@ -431,7 +431,7 @@ export function extendSchemaImpl(
     const opTypes: any = {};
     for (const node of nodes) {
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-      const operationTypesNodes = node.operationTypes || [];
+      const operationTypesNodes = node.operationTypes ?? [];
 
       for (const operationType of operationTypesNodes) {
         opTypes[operationType.operation] = getNamedType(operationType.type);
@@ -442,7 +442,7 @@ export function extendSchemaImpl(
 
   function getNamedType(node: NamedTypeNode): GraphQLNamedType {
     const name = node.name.value;
-    const type = stdTypeMap[name] || typeMap[name];
+    const type = stdTypeMap[name] ?? typeMap[name];
 
     if (type === undefined) {
       throw new Error(`Unknown type: "${name}".`);
@@ -486,7 +486,7 @@ export function extendSchemaImpl(
     const fieldConfigMap = Object.create(null);
     for (const node of nodes) {
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-      const nodeFields = node.fields || [];
+      const nodeFields = node.fields ?? [];
 
       for (const field of nodeFields) {
         fieldConfigMap[field.name.value] = {
@@ -508,7 +508,7 @@ export function extendSchemaImpl(
     args: ?$ReadOnlyArray<InputValueDefinitionNode>,
   ): GraphQLFieldConfigArgumentMap {
     /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-    const argsNodes = args || [];
+    const argsNodes = args ?? [];
 
     const argConfigMap = Object.create(null);
     for (const arg of argsNodes) {
@@ -535,7 +535,7 @@ export function extendSchemaImpl(
     const inputFieldMap = Object.create(null);
     for (const node of nodes) {
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-      const fieldsNodes = node.fields || [];
+      const fieldsNodes = node.fields ?? [];
 
       for (const field of fieldsNodes) {
         // Note: While this could make assertions to get the correctly typed
@@ -560,7 +560,7 @@ export function extendSchemaImpl(
     const enumValueMap = Object.create(null);
     for (const node of nodes) {
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-      const valuesNodes = node.values || [];
+      const valuesNodes = node.values ?? [];
 
       for (const value of valuesNodes) {
         enumValueMap[value.name.value] = {
@@ -584,7 +584,7 @@ export function extendSchemaImpl(
     const interfaces = [];
     for (const node of nodes) {
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-      const interfacesNodes = node.interfaces || [];
+      const interfacesNodes = node.interfaces ?? [];
 
       for (const type of interfacesNodes) {
         // Note: While this could make assertions to get the correctly typed
@@ -603,7 +603,7 @@ export function extendSchemaImpl(
     const types = [];
     for (const node of nodes) {
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-      const typeNodes = node.types || [];
+      const typeNodes = node.types ?? [];
 
       for (const type of typeNodes) {
         // Note: While this could make assertions to get the correctly typed
@@ -619,7 +619,7 @@ export function extendSchemaImpl(
   function buildType(astNode: TypeDefinitionNode): GraphQLNamedType {
     const name = astNode.name.value;
     const description = getDescription(astNode, options);
-    const extensionNodes = typeExtensionsMap[name] || [];
+    const extensionNodes = typeExtensionsMap[name] ?? [];
 
     switch (astNode.kind) {
       case Kind.OBJECT_TYPE_DEFINITION: {

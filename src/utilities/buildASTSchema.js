@@ -123,17 +123,16 @@ export function buildSchema(
   options?: {| ...BuildSchemaOptions, ...ParseOptions |},
 ): GraphQLSchema {
   const document = parse(source, {
-    noLocation: options?.noLocation || false,
-    allowLegacySDLEmptyFields: options?.allowLegacySDLEmptyFields || false,
+    noLocation: options?.noLocation,
+    allowLegacySDLEmptyFields: options?.allowLegacySDLEmptyFields,
     allowLegacySDLImplementsInterfaces:
-      options?.allowLegacySDLImplementsInterfaces || false,
-    experimentalFragmentVariables:
-      options?.experimentalFragmentVariables || false,
+      options?.allowLegacySDLImplementsInterfaces,
+    experimentalFragmentVariables: options?.experimentalFragmentVariables,
   });
 
   return buildASTSchema(document, {
-    commentDescriptions: options?.commentDescriptions || false,
-    assumeValidSDL: options?.assumeValidSDL || false,
-    assumeValid: options?.assumeValid || false,
+    commentDescriptions: options?.commentDescriptions,
+    assumeValidSDL: options?.assumeValidSDL,
+    assumeValid: options?.assumeValid,
   });
 }

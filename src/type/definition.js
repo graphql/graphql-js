@@ -575,13 +575,13 @@ export class GraphQLScalarType {
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
   constructor(config: $ReadOnly<GraphQLScalarTypeConfig<mixed, mixed>>): void {
-    const parseValue = config.parseValue || identityFunc;
+    const parseValue = config.parseValue ?? identityFunc;
     this.name = config.name;
     this.description = config.description;
-    this.serialize = config.serialize || identityFunc;
+    this.serialize = config.serialize ?? identityFunc;
     this.parseValue = parseValue;
     this.parseLiteral =
-      config.parseLiteral || (node => parseValue(valueFromASTUntyped(node)));
+      config.parseLiteral ?? (node => parseValue(valueFromASTUntyped(node)));
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
@@ -777,7 +777,7 @@ function defineInterfaces(
     | GraphQLInterfaceTypeConfig<mixed, mixed>,
   >,
 ): Array<GraphQLInterfaceType> {
-  const interfaces = resolveThunk(config.interfaces) || [];
+  const interfaces = resolveThunk(config.interfaces) ?? [];
   devAssert(
     Array.isArray(interfaces),
     `${config.name} interfaces must be an Array or a function which returns an Array.`,
@@ -812,7 +812,7 @@ function defineFieldMap<TSource, TContext>(
         `provided, but got: ${inspect(fieldConfig.resolve)}.`,
     );
 
-    const argsConfig = fieldConfig.args || {};
+    const argsConfig = fieldConfig.args ?? {};
     devAssert(
       isPlainObj(argsConfig),
       `${config.name}.${fieldName} args must be an object with argument names as keys.`,

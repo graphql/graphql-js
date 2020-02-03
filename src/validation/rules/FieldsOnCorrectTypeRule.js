@@ -102,7 +102,7 @@ function getSuggestedTypeNames(
       // This interface type defines this field.
       suggestedTypes.add(possibleInterface);
       usageCount[possibleInterface.name] =
-        (usageCount[possibleInterface.name] || 0) + 1;
+        (usageCount[possibleInterface.name] ?? 0) + 1;
     }
   }
 

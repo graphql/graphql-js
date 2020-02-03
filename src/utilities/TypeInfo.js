@@ -77,7 +77,7 @@ export class TypeInfo {
     this._directive = null;
     this._argument = null;
     this._enumValue = null;
-    this._getFieldDef = getFieldDefFn || getFieldDef;
+    this._getFieldDef = getFieldDefFn ?? getFieldDef;
     if (initialType) {
       if (isInputType(initialType)) {
         this._inputTypeStack.push(initialType);
@@ -205,7 +205,7 @@ export class TypeInfo {
       case Kind.ARGUMENT: {
         let argDef;
         let argType: mixed;
-        const fieldOrDirective = this.getDirective() || this.getFieldDef();
+        const fieldOrDirective = this.getDirective() ?? this.getFieldDef();
         if (fieldOrDirective) {
           argDef = find(
             fieldOrDirective.args,

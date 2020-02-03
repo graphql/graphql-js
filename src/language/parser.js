@@ -1482,7 +1482,7 @@ class Parser {
    * is encountered.
    */
   unexpected(atToken?: ?Token): GraphQLError {
-    const token = atToken || this._lexer.token;
+    const token = atToken ?? this._lexer.token;
     return syntaxError(
       this._lexer.source,
       token.start,

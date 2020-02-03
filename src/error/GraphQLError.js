@@ -148,7 +148,7 @@ export class GraphQLError extends Error {
       locations: {
         // Coercing falsy values to undefined ensures they will not be included
         // in JSON.stringify() when not provided.
-        value: _locations || undefined,
+        value: _locations ?? undefined,
         // By being enumerable, JSON.stringify will include `locations` in the
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.
@@ -157,20 +157,20 @@ export class GraphQLError extends Error {
       path: {
         // Coercing falsy values to undefined ensures they will not be included
         // in JSON.stringify() when not provided.
-        value: path || undefined,
+        value: path ?? undefined,
         // By being enumerable, JSON.stringify will include `path` in the
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.
         enumerable: path != null,
       },
       nodes: {
-        value: _nodes || undefined,
+        value: _nodes ?? undefined,
       },
       source: {
-        value: _source || undefined,
+        value: _source ?? undefined,
       },
       positions: {
-        value: _positions || undefined,
+        value: _positions ?? undefined,
       },
       originalError: {
         value: originalError,
@@ -178,7 +178,7 @@ export class GraphQLError extends Error {
       extensions: {
         // Coercing falsy values to undefined ensures they will not be included
         // in JSON.stringify() when not provided.
-        value: _extensions || undefined,
+        value: _extensions ?? undefined,
         // By being enumerable, JSON.stringify will include `path` in the
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.

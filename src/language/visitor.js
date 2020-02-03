@@ -332,7 +332,7 @@ export function visit(
     } else {
       stack = { inArray, index, keys, edits, prev: stack };
       inArray = Array.isArray(node);
-      keys = inArray ? node : visitorKeys[node.kind] || [];
+      keys = inArray ? node : visitorKeys[node.kind] ?? [];
       index = -1;
       edits = [];
       if (parent) {

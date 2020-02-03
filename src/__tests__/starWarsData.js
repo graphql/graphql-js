@@ -117,7 +117,7 @@ export type Droid = {|
  */
 function getCharacter(id) {
   // Returning a promise just to illustrate that GraphQL.js supports it.
-  return Promise.resolve(humanData[id] || droidData[id]);
+  return Promise.resolve(humanData[id] ?? droidData[id]);
 }
 
 /**

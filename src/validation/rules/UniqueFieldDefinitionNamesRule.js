@@ -39,7 +39,7 @@ export function UniqueFieldDefinitionNamesRule(
     }
 
     /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-    const fieldNodes = node.fields || [];
+    const fieldNodes = node.fields ?? [];
     const fieldNames = knownFieldNames[typeName];
 
     for (const fieldDef of fieldNodes) {
