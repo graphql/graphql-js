@@ -255,8 +255,8 @@ function addDescription(cb) {
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print all items together separated by separator if provided
  */
-function join(maybeArray, separator) {
-  return maybeArray ? maybeArray.filter(x => x).join(separator || '') : '';
+function join(maybeArray: ?Array<string>, separator = '') {
+  return maybeArray?.filter(x => x).join(separator) || '';
 }
 
 /**
@@ -273,8 +273,8 @@ function block(array) {
  * If maybeString is not null or empty, then wrap with start and end, otherwise
  * print an empty string.
  */
-function wrap(start, maybeString, end) {
-  return maybeString ? start + maybeString + (end || '') : '';
+function wrap(start, maybeString, end = '') {
+  return maybeString ? start + maybeString + end : '';
 }
 
 function indent(maybeString) {

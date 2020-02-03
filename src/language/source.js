@@ -22,10 +22,14 @@ export class Source {
   name: string;
   locationOffset: Location;
 
-  constructor(body: string, name?: string, locationOffset?: Location): void {
+  constructor(
+    body: string,
+    name: string = 'GraphQL request',
+    locationOffset: Location = { line: 1, column: 1 },
+  ): void {
     this.body = body;
-    this.name = name != null ? name : 'GraphQL request';
-    this.locationOffset = locationOffset || { line: 1, column: 1 };
+    this.name = name;
+    this.locationOffset = locationOffset;
     devAssert(
       this.locationOffset.line > 0,
       'line in locationOffset is 1-indexed and must be positive.',
