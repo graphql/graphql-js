@@ -265,10 +265,11 @@ function addDescription(cb) {
  */
 
 
-function join(maybeArray, separator) {
-  return maybeArray ? maybeArray.filter(function (x) {
+function join(maybeArray) {
+  var separator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  return (maybeArray === null || maybeArray === void 0 ? void 0 : maybeArray.filter(function (x) {
     return x;
-  }).join(separator || '') : '';
+  }).join(separator)) || '';
 }
 /**
  * Given array, print each item on its own line, wrapped in an
@@ -285,8 +286,9 @@ function block(array) {
  */
 
 
-function wrap(start, maybeString, end) {
-  return maybeString ? start + maybeString + (end || '') : '';
+function wrap(start, maybeString) {
+  var end = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+  return maybeString ? start + maybeString + end : '';
 }
 
 function indent(maybeString) {

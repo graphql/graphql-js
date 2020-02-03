@@ -16,13 +16,15 @@ import devAssert from "../jsutils/devAssert.mjs";
 export var Source =
 /*#__PURE__*/
 function () {
-  function Source(body, name, locationOffset) {
-    this.body = body;
-    this.name = name != null ? name : 'GraphQL request';
-    this.locationOffset = locationOffset || {
+  function Source(body) {
+    var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'GraphQL request';
+    var locationOffset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {
       line: 1,
       column: 1
     };
+    this.body = body;
+    this.name = name;
+    this.locationOffset = locationOffset;
     this.locationOffset.line > 0 || devAssert(0, 'line in locationOffset is 1-indexed and must be positive.');
     this.locationOffset.column > 0 || devAssert(0, 'column in locationOffset is 1-indexed and must be positive.');
   } // $FlowFixMe Flow doesn't support computed properties yet
