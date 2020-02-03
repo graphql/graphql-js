@@ -11,8 +11,8 @@ import { GraphQLError } from './GraphQLError';
  */
 export function locatedError(
   originalError: Error | GraphQLError,
-  nodes: $ReadOnlyArray<ASTNode>,
-  path: $ReadOnlyArray<string | number>,
+  nodes: ASTNode | $ReadOnlyArray<ASTNode> | void | null,
+  path?: ?$ReadOnlyArray<string | number>,
 ): GraphQLError {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
