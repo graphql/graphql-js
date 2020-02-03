@@ -23,7 +23,7 @@ import {
 } from '../../type/definition';
 
 import { buildSchema } from '../buildASTSchema';
-import { printSchema, printIntrospectionSchema } from '../schemaPrinter';
+import { printSchema, printIntrospectionSchema } from '../printSchema';
 
 function printForTest(schema) {
   const schemaText = printSchema(schema);

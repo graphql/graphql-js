@@ -36,7 +36,7 @@ import {
 
 import { graphqlSync } from '../../graphql';
 
-import { printType, printSchema } from '../schemaPrinter';
+import { printType, printSchema } from '../printSchema';
 import { buildASTSchema, buildSchema } from '../buildASTSchema';
 
 /**

@@ -21,7 +21,7 @@ import {
   GraphQLID,
 } from '../../type/scalars';
 
-import { printSchema } from '../schemaPrinter';
+import { printSchema } from '../printSchema';
 import { buildSchema } from '../buildASTSchema';
 import { buildClientSchema } from '../buildClientSchema';
 import { introspectionFromSchema } from '../introspectionFromSchema';
