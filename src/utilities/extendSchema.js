@@ -705,16 +705,16 @@ export function extendSchemaImpl(
 }
 
 function concatMaybeArrays<X>(
-  ...arrays: $ReadOnlyArray<?$ReadOnlyArray<X>>
+  maybeArrayA: ?$ReadOnlyArray<X>,
+  maybeArrayB: ?$ReadOnlyArray<X>,
 ): ?$ReadOnlyArray<X> {
-  // eslint-disable-next-line no-undef-init
-  let result = undefined;
-  for (const maybeArray of arrays) {
-    if (maybeArray) {
-      result = result === undefined ? maybeArray : result.concat(maybeArray);
-    }
+  if (maybeArrayA == null) {
+    return maybeArrayB;
   }
-  return result;
+  if (maybeArrayB == null) {
+    return maybeArrayA;
+  }
+  return maybeArrayA.concat(maybeArrayB);
 }
 
 const stdTypeMap = keyMap(
