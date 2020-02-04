@@ -404,10 +404,7 @@ export function extendSchemaImpl(
     mutation: ?GraphQLObjectType,
     subscription: ?GraphQLObjectType,
   |} {
-    // Note: While this could make early assertions to get the correctly
-    // typed values below, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    const opTypes: any = {};
+    const opTypes = {};
     for (const node of nodes) {
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
       const operationTypesNodes = node.operationTypes ?? [];
@@ -416,7 +413,11 @@ export function extendSchemaImpl(
         opTypes[operationType.operation] = getNamedType(operationType.type);
       }
     }
-    return opTypes;
+
+    // Note: While this could make early assertions to get the correctly
+    // typed values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+    return (opTypes: any);
   }
 
   function getNamedType(node: NamedTypeNode): GraphQLNamedType {

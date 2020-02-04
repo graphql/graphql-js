@@ -458,10 +458,8 @@ describe('Execute: Handles basic execution tasks', () => {
         return Promise.resolve(new Error('Error getting asyncReturnError'));
       },
       asyncReturnErrorWithExtensions() {
-        const error: any = new Error(
-          'Error getting asyncReturnErrorWithExtensions',
-        );
-        error.extensions = { foo: 'bar' };
+        const error = new Error('Error getting asyncReturnErrorWithExtensions');
+        (error: any).extensions = { foo: 'bar' };
 
         return Promise.resolve(error);
       },
