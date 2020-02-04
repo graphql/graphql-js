@@ -7,6 +7,7 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 
 import { GraphQLError } from '../error/GraphQLError';
+import { locatedError } from '../error/locatedError';
 
 import { type ASTNode, type NamedTypeNode } from '../language/ast';
 
@@ -188,9 +189,9 @@ function validateName(
   node: { +name: string, +astNode: ?ASTNode, ... },
 ): void {
   // Ensure names are valid, however introspection types opt out.
-  const error = isValidNameError(node.name, node.astNode ?? undefined);
+  const error = isValidNameError(node.name);
   if (error) {
-    context.addError(error);
+    context.addError(locatedError(error, node.astNode));
   }
 }
 

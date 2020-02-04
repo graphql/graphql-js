@@ -3,7 +3,6 @@
 import devAssert from '../jsutils/devAssert';
 
 import { GraphQLError } from '../error/GraphQLError';
-import { type ASTNode } from '../language/ast';
 
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 
@@ -21,21 +20,16 @@ export function assertValidName(name: string): string {
 /**
  * Returns an Error if a name is invalid.
  */
-export function isValidNameError(
-  name: string,
-  node?: ASTNode | void,
-): GraphQLError | void {
+export function isValidNameError(name: string): GraphQLError | void {
   devAssert(typeof name === 'string', 'Expected name to be a string.');
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new GraphQLError(
       `Name "${name}" must not begin with "__", which is reserved by GraphQL introspection.`,
-      node,
     );
   }
   if (!NAME_RX.test(name)) {
     return new GraphQLError(
       `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`,
-      node,
     );
   }
 }

@@ -1,3 +1,5 @@
+import Maybe from '../tsutils/Maybe';
+
 import { ASTNode } from '../language/ast';
 
 import { GraphQLError } from './GraphQLError';
@@ -9,6 +11,6 @@ import { GraphQLError } from './GraphQLError';
  */
 export function locatedError(
   originalError: Error | GraphQLError,
-  nodes: ReadonlyArray<ASTNode>,
-  path: ReadonlyArray<string | number>,
+  nodes: ASTNode | ReadonlyArray<ASTNode> | undefined,
+  path?: Maybe<ReadonlyArray<string | number>>,
 ): GraphQLError;
