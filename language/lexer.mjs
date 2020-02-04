@@ -60,8 +60,10 @@ function () {
 
     if (token.kind !== TokenKind.EOF) {
       do {
+        var _token$next;
+
         // Note: next is only mutable during parsing, so we cast to allow this.
-        token = token.next || (token.next = readToken(this, token));
+        token = (_token$next = token.next) !== null && _token$next !== void 0 ? _token$next : token.next = readToken(this, token);
       } while (token.kind === TokenKind.COMMENT);
     }
 

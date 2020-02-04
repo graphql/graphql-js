@@ -58,15 +58,17 @@ var GraphQLDirective =
 /*#__PURE__*/
 function () {
   function GraphQLDirective(config) {
+    var _config$isRepeatable, _config$args;
+
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
-    this.isRepeatable = config.isRepeatable || false;
+    this.isRepeatable = (_config$isRepeatable = config.isRepeatable) !== null && _config$isRepeatable !== void 0 ? _config$isRepeatable : false;
     this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     config.name || (0, _devAssert.default)(0, 'Directive must be named.');
     Array.isArray(config.locations) || (0, _devAssert.default)(0, "@".concat(config.name, " locations must be an Array."));
-    var args = config.args || {};
+    var args = (_config$args = config.args) !== null && _config$args !== void 0 ? _config$args : {};
     (0, _isObjectLike.default)(args) && !Array.isArray(args) || (0, _devAssert.default)(0, "@".concat(config.name, " args must be an object with argument names as keys."));
     this.args = (0, _objectEntries.default)(args).map(function (_ref) {
       var argName = _ref[0],

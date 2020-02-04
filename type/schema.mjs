@@ -98,6 +98,8 @@ export var GraphQLSchema =
 function () {
   // Used as a cache for validateSchema().
   function GraphQLSchema(config) {
+    var _config$directives;
+
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
     this.__validationErrors = config.assumeValid === true ? [] : undefined; // Check for common mistakes during construction to produce early errors.
@@ -113,7 +115,7 @@ function () {
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
 
-    this._directives = config.directives || specifiedDirectives; // To preserve order of user-provided types, we add first to add them to
+    this._directives = (_config$directives = config.directives) !== null && _config$directives !== void 0 ? _config$directives : specifiedDirectives; // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
 
     var allReferencedTypes = new Set(config.types);
@@ -242,7 +244,7 @@ function () {
 
   _proto.getImplementations = function getImplementations(interfaceType) {
     var implementations = this._implementationsMap[interfaceType.name];
-    return implementations || {
+    return implementations !== null && implementations !== void 0 ? implementations : {
       objects: [],
       interfaces: []
     };

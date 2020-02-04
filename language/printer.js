@@ -275,10 +275,12 @@ function addDescription(cb) {
 
 
 function join(maybeArray) {
+  var _ref39;
+
   var separator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-  return (maybeArray === null || maybeArray === void 0 ? void 0 : maybeArray.filter(function (x) {
+  return (_ref39 = maybeArray === null || maybeArray === void 0 ? void 0 : maybeArray.filter(function (x) {
     return x;
-  }).join(separator)) || '';
+  }).join(separator)) !== null && _ref39 !== void 0 ? _ref39 : '';
 }
 /**
  * Given array, print each item on its own line, wrapped in an

@@ -353,6 +353,8 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
   var areMutuallyExclusive = parentFieldsAreMutuallyExclusive || parentType1 !== parentType2 && (0, _definition.isObjectType)(parentType1) && (0, _definition.isObjectType)(parentType2);
 
   if (!areMutuallyExclusive) {
+    var _node1$arguments, _node2$arguments;
+
     // Two aliases must refer to the same field.
     var name1 = node1.name.value;
     var name2 = node2.name.value;
@@ -363,10 +365,10 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
     /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
 
 
-    var args1 = node1.arguments || [];
+    var args1 = (_node1$arguments = node1.arguments) !== null && _node1$arguments !== void 0 ? _node1$arguments : [];
     /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
 
-    var args2 = node2.arguments || []; // Two field calls must have the same arguments.
+    var args2 = (_node2$arguments = node2.arguments) !== null && _node2$arguments !== void 0 ? _node2$arguments : []; // Two field calls must have the same arguments.
 
     if (!sameArguments(args1, args2)) {
       return [[responseName, 'they have differing arguments'], [node1], [node2]];

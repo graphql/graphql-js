@@ -29,7 +29,9 @@ export function KnownTypeNamesRule(context) {
       var typeName = node.name.value;
 
       if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
-        var definitionNode = ancestors[2] || parent;
+        var _ancestors$;
+
+        var definitionNode = (_ancestors$ = ancestors[2]) !== null && _ancestors$ !== void 0 ? _ancestors$ : parent;
         var isSDL = definitionNode != null && isSDLNode(definitionNode);
 
         if (isSDL && isSpecifiedScalarName(typeName)) {

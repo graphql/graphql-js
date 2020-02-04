@@ -77,6 +77,8 @@ function getSuggestedTypeNames(schema, type, fieldName) {
     usageCount[possibleType.name] = 1;
 
     for (var _i4 = 0, _possibleType$getInte2 = possibleType.getInterfaces(); _i4 < _possibleType$getInte2.length; _i4++) {
+      var _usageCount$possibleI;
+
       var possibleInterface = _possibleType$getInte2[_i4];
 
       if (!possibleInterface.getFields()[fieldName]) {
@@ -85,7 +87,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
 
 
       suggestedTypes.add(possibleInterface);
-      usageCount[possibleInterface.name] = (usageCount[possibleInterface.name] || 0) + 1;
+      usageCount[possibleInterface.name] = ((_usageCount$possibleI = usageCount[possibleInterface.name]) !== null && _usageCount$possibleI !== void 0 ? _usageCount$possibleI : 0) + 1;
     }
   }
 

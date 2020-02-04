@@ -165,8 +165,10 @@ function validateDirectives(context) {
 }
 
 function validateName(context, node) {
+  var _node$astNode;
+
   // Ensure names are valid, however introspection types opt out.
-  var error = (0, _assertValidName.isValidNameError)(node.name, node.astNode || undefined);
+  var error = (0, _assertValidName.isValidNameError)(node.name, (_node$astNode = node.astNode) !== null && _node$astNode !== void 0 ? _node$astNode : undefined);
 
   if (error) {
     context.addError(error);
@@ -473,13 +475,15 @@ function createInputObjectCircularRefsValidator(context) {
 function getAllNodes(object) {
   var astNode = object.astNode,
       extensionASTNodes = object.extensionASTNodes;
-  return astNode ? extensionASTNodes ? [astNode].concat(extensionASTNodes) : [astNode] : extensionASTNodes || [];
+  return astNode ? extensionASTNodes ? [astNode].concat(extensionASTNodes) : [astNode] : extensionASTNodes !== null && extensionASTNodes !== void 0 ? extensionASTNodes : [];
 }
 
 function getAllSubNodes(object, getter) {
   /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
   return (0, _flatMap.default)(getAllNodes(object), function (item) {
-    return getter(item) || [];
+    var _getter;
+
+    return (_getter = getter(item)) !== null && _getter !== void 0 ? _getter : [];
   });
 }
 

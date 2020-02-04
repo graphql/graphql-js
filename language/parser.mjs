@@ -1456,7 +1456,7 @@ function () {
   ;
 
   _proto.unexpected = function unexpected(atToken) {
-    var token = atToken || this._lexer.token;
+    var token = atToken !== null && atToken !== void 0 ? atToken : this._lexer.token;
     return syntaxError(this._lexer.source, token.start, "Unexpected ".concat(getTokenDesc(token), "."));
   }
   /**

@@ -501,16 +501,16 @@ var GraphQLScalarType =
 /*#__PURE__*/
 function () {
   function GraphQLScalarType(config) {
-    var parseValue = config.parseValue || _identityFunc.default;
+    var _config$parseValue, _config$serialize, _config$parseLiteral;
+
+    var parseValue = (_config$parseValue = config.parseValue) !== null && _config$parseValue !== void 0 ? _config$parseValue : _identityFunc.default;
     this.name = config.name;
     this.description = config.description;
-    this.serialize = config.serialize || _identityFunc.default;
+    this.serialize = (_config$serialize = config.serialize) !== null && _config$serialize !== void 0 ? _config$serialize : _identityFunc.default;
     this.parseValue = parseValue;
-
-    this.parseLiteral = config.parseLiteral || function (node) {
+    this.parseLiteral = (_config$parseLiteral = config.parseLiteral) !== null && _config$parseLiteral !== void 0 ? _config$parseLiteral : function (node) {
       return parseValue((0, _valueFromASTUntyped.valueFromASTUntyped)(node));
     };
-
     this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
@@ -658,7 +658,9 @@ exports.GraphQLObjectType = GraphQLObjectType;
 (0, _defineToJSON.default)(GraphQLObjectType);
 
 function defineInterfaces(config) {
-  var interfaces = resolveThunk(config.interfaces) || [];
+  var _resolveThunk;
+
+  var interfaces = (_resolveThunk = resolveThunk(config.interfaces)) !== null && _resolveThunk !== void 0 ? _resolveThunk : [];
   Array.isArray(interfaces) || (0, _devAssert.default)(0, "".concat(config.name, " interfaces must be an Array or a function which returns an Array."));
   return interfaces;
 }
@@ -667,10 +669,12 @@ function defineFieldMap(config) {
   var fieldMap = resolveThunk(config.fields);
   isPlainObj(fieldMap) || (0, _devAssert.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return (0, _mapValue.default)(fieldMap, function (fieldConfig, fieldName) {
+    var _fieldConfig$args;
+
     isPlainObj(fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object."));
     !('isDeprecated' in fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
     fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function' || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat((0, _inspect.default)(fieldConfig.resolve), "."));
-    var argsConfig = fieldConfig.args || {};
+    var argsConfig = (_fieldConfig$args = fieldConfig.args) !== null && _fieldConfig$args !== void 0 ? _fieldConfig$args : {};
     isPlainObj(argsConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument names as keys."));
     var args = (0, _objectEntries.default)(argsConfig).map(function (_ref) {
       var argName = _ref[0],

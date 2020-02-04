@@ -22,7 +22,7 @@ export function locatedError(
 
   return new GraphQLError(
     originalError.message,
-    (originalError: any).nodes || nodes,
+    (originalError: any).nodes ?? nodes,
     (originalError: any).source,
     (originalError: any).positions,
     path,

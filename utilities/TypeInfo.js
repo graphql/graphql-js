@@ -45,7 +45,7 @@ function () {
     this._directive = null;
     this._argument = null;
     this._enumValue = null;
-    this._getFieldDef = getFieldDefFn || getFieldDef;
+    this._getFieldDef = getFieldDefFn !== null && getFieldDefFn !== void 0 ? getFieldDefFn : getFieldDef;
 
     if (initialType) {
       if ((0, _definition.isInputType)(initialType)) {
@@ -198,9 +198,11 @@ function () {
 
       case _kinds.Kind.ARGUMENT:
         {
+          var _this$getDirective;
+
           var argDef;
           var argType;
-          var fieldOrDirective = this.getDirective() || this.getFieldDef();
+          var fieldOrDirective = (_this$getDirective = this.getDirective()) !== null && _this$getDirective !== void 0 ? _this$getDirective : this.getFieldDef();
 
           if (fieldOrDirective) {
             argDef = (0, _find.default)(fieldOrDirective.args, function (arg) {

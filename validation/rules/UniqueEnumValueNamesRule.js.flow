@@ -31,7 +31,7 @@ export function UniqueEnumValueNamesRule(
     }
 
     /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-    const valueNodes = node.values || [];
+    const valueNodes = node.values ?? [];
     const valueNames = knownValueNames[typeName];
 
     for (const valueDef of valueNodes) {

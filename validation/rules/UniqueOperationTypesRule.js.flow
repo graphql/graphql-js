@@ -30,7 +30,7 @@ export function UniqueOperationTypesRule(
 
   function checkOperationTypes(node) {
     /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-    const operationTypesNodes = node.operationTypes || [];
+    const operationTypesNodes = node.operationTypes ?? [];
 
     for (const operationType of operationTypesNodes) {
       const operation = operationType.operation;

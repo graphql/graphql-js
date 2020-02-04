@@ -20,6 +20,8 @@ export function UniqueFieldDefinitionNamesRule(context) {
   };
 
   function checkFieldUniqueness(node) {
+    var _node$fields;
+
     var typeName = node.name.value;
 
     if (!knownFieldNames[typeName]) {
@@ -28,7 +30,7 @@ export function UniqueFieldDefinitionNamesRule(context) {
     /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
 
 
-    var fieldNodes = node.fields || [];
+    var fieldNodes = (_node$fields = node.fields) !== null && _node$fields !== void 0 ? _node$fields : [];
     var fieldNames = knownFieldNames[typeName];
 
     for (var _i2 = 0; _i2 < fieldNodes.length; _i2++) {

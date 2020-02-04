@@ -139,7 +139,7 @@ export function assertValidExecutionArguments(schema, document, rawVariableValue
  */
 
 export function buildExecutionContext(schema, document, rootValue, contextValue, rawVariableValues, operationName, fieldResolver, typeResolver) {
-  var _definition$name;
+  var _definition$name, _operation$variableDe;
 
   var operation;
   var fragments = Object.create(null);
@@ -177,8 +177,8 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
   /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
 
 
-  var variableDefinitions = operation.variableDefinitions || [];
-  var coercedVariableValues = getVariableValues(schema, variableDefinitions, rawVariableValues || {}, {
+  var variableDefinitions = (_operation$variableDe = operation.variableDefinitions) !== null && _operation$variableDe !== void 0 ? _operation$variableDe : [];
+  var coercedVariableValues = getVariableValues(schema, variableDefinitions, rawVariableValues !== null && rawVariableValues !== void 0 ? rawVariableValues : {}, {
     maxErrors: 50
   });
 
@@ -193,8 +193,8 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
     contextValue: contextValue,
     operation: operation,
     variableValues: coercedVariableValues.coerced,
-    fieldResolver: fieldResolver || defaultFieldResolver,
-    typeResolver: typeResolver || defaultTypeResolver,
+    fieldResolver: fieldResolver !== null && fieldResolver !== void 0 ? fieldResolver : defaultFieldResolver,
+    typeResolver: typeResolver !== null && typeResolver !== void 0 ? typeResolver : defaultTypeResolver,
     errors: []
   };
 }
@@ -416,6 +416,8 @@ function getFieldEntryKey(node) {
 
 
 function resolveField(exeContext, parentType, source, fieldNodes, path) {
+  var _fieldDef$resolve;
+
   var fieldNode = fieldNodes[0];
   var fieldName = fieldNode.name.value;
   var fieldDef = getFieldDef(exeContext.schema, parentType, fieldName);
@@ -424,7 +426,7 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
     return;
   }
 
-  var resolveFn = fieldDef.resolve || exeContext.fieldResolver;
+  var resolveFn = (_fieldDef$resolve = fieldDef.resolve) !== null && _fieldDef$resolve !== void 0 ? _fieldDef$resolve : exeContext.fieldResolver;
   var info = buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path); // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
 
@@ -650,7 +652,9 @@ function completeLeafValue(returnType, result) {
 
 
 function completeAbstractValue(exeContext, returnType, fieldNodes, info, path, result) {
-  var resolveTypeFn = returnType.resolveType || exeContext.typeResolver;
+  var _returnType$resolveTy;
+
+  var resolveTypeFn = (_returnType$resolveTy = returnType.resolveType) !== null && _returnType$resolveTy !== void 0 ? _returnType$resolveTy : exeContext.typeResolver;
   var contextValue = exeContext.contextValue;
   var runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 

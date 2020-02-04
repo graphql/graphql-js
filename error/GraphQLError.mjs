@@ -92,6 +92,8 @@ function (_Error) {
    * Extension fields to add to the formatted error.
    */
   function GraphQLError(message, nodes, source, positions, path, originalError, extensions) {
+    var _locations2, _source2, _positions2, _extensions2;
+
     var _this;
 
     _classCallCheck(this, GraphQLError);
@@ -166,7 +168,7 @@ function (_Error) {
       locations: {
         // Coercing falsy values to undefined ensures they will not be included
         // in JSON.stringify() when not provided.
-        value: _locations || undefined,
+        value: (_locations2 = _locations) !== null && _locations2 !== void 0 ? _locations2 : undefined,
         // By being enumerable, JSON.stringify will include `locations` in the
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.
@@ -175,20 +177,20 @@ function (_Error) {
       path: {
         // Coercing falsy values to undefined ensures they will not be included
         // in JSON.stringify() when not provided.
-        value: path || undefined,
+        value: path !== null && path !== void 0 ? path : undefined,
         // By being enumerable, JSON.stringify will include `path` in the
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.
         enumerable: path != null
       },
       nodes: {
-        value: _nodes || undefined
+        value: _nodes !== null && _nodes !== void 0 ? _nodes : undefined
       },
       source: {
-        value: _source || undefined
+        value: (_source2 = _source) !== null && _source2 !== void 0 ? _source2 : undefined
       },
       positions: {
-        value: _positions || undefined
+        value: (_positions2 = _positions) !== null && _positions2 !== void 0 ? _positions2 : undefined
       },
       originalError: {
         value: originalError
@@ -196,7 +198,7 @@ function (_Error) {
       extensions: {
         // Coercing falsy values to undefined ensures they will not be included
         // in JSON.stringify() when not provided.
-        value: _extensions || undefined,
+        value: (_extensions2 = _extensions) !== null && _extensions2 !== void 0 ? _extensions2 : undefined,
         // By being enumerable, JSON.stringify will include `path` in the
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.

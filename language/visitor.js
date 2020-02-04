@@ -273,6 +273,8 @@ function visit(root, visitor) {
     if (isLeaving) {
       path.pop();
     } else {
+      var _visitorKeys$node$kin;
+
       stack = {
         inArray: inArray,
         index: index,
@@ -281,7 +283,7 @@ function visit(root, visitor) {
         prev: stack
       };
       inArray = Array.isArray(node);
-      keys = inArray ? node : visitorKeys[node.kind] || [];
+      keys = inArray ? node : (_visitorKeys$node$kin = visitorKeys[node.kind]) !== null && _visitorKeys$node$kin !== void 0 ? _visitorKeys$node$kin : [];
       index = -1;
       edits = [];
 

@@ -24,6 +24,8 @@ function UniqueEnumValueNamesRule(context) {
   };
 
   function checkValueUniqueness(node) {
+    var _node$values;
+
     var typeName = node.name.value;
 
     if (!knownValueNames[typeName]) {
@@ -32,7 +34,7 @@ function UniqueEnumValueNamesRule(context) {
     /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
 
 
-    var valueNodes = node.values || [];
+    var valueNodes = (_node$values = node.values) !== null && _node$values !== void 0 ? _node$values : [];
     var valueNames = knownValueNames[typeName];
 
     for (var _i2 = 0; _i2 < valueNodes.length; _i2++) {

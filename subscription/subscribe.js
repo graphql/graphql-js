@@ -129,6 +129,8 @@ function createSourceEventStream(schema, document, rootValue, contextValue, vari
   (0, _execute.assertValidExecutionArguments)(schema, document, variableValues);
 
   try {
+    var _fieldDef$subscribe;
+
     // If a valid context cannot be created due to incorrect arguments,
     // this will throw an error.
     var exeContext = (0, _execute.buildExecutionContext)(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver); // Return early errors if execution context failed.
@@ -154,7 +156,7 @@ function createSourceEventStream(schema, document, rootValue, contextValue, vari
     // AsyncIterable yielding raw payloads.
 
 
-    var resolveFn = fieldDef.subscribe || exeContext.fieldResolver;
+    var resolveFn = (_fieldDef$subscribe = fieldDef.subscribe) !== null && _fieldDef$subscribe !== void 0 ? _fieldDef$subscribe : exeContext.fieldResolver;
     var path = (0, _Path.addPath)(undefined, responseName);
     var info = (0, _execute.buildResolveInfo)(exeContext, fieldDef, fieldNodes, type, path); // resolveFieldValueOrError implements the "ResolveFieldEventStream"
     // algorithm from GraphQL specification. It differs from

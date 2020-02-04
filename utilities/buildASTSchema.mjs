@@ -94,14 +94,14 @@ var emptySchemaConfig = new GraphQLSchema({
 
 export function buildSchema(source, options) {
   var document = parse(source, {
-    noLocation: (options === null || options === void 0 ? void 0 : options.noLocation) || false,
-    allowLegacySDLEmptyFields: (options === null || options === void 0 ? void 0 : options.allowLegacySDLEmptyFields) || false,
-    allowLegacySDLImplementsInterfaces: (options === null || options === void 0 ? void 0 : options.allowLegacySDLImplementsInterfaces) || false,
-    experimentalFragmentVariables: (options === null || options === void 0 ? void 0 : options.experimentalFragmentVariables) || false
+    noLocation: options === null || options === void 0 ? void 0 : options.noLocation,
+    allowLegacySDLEmptyFields: options === null || options === void 0 ? void 0 : options.allowLegacySDLEmptyFields,
+    allowLegacySDLImplementsInterfaces: options === null || options === void 0 ? void 0 : options.allowLegacySDLImplementsInterfaces,
+    experimentalFragmentVariables: options === null || options === void 0 ? void 0 : options.experimentalFragmentVariables
   });
   return buildASTSchema(document, {
-    commentDescriptions: (options === null || options === void 0 ? void 0 : options.commentDescriptions) || false,
-    assumeValidSDL: (options === null || options === void 0 ? void 0 : options.assumeValidSDL) || false,
-    assumeValid: (options === null || options === void 0 ? void 0 : options.assumeValid) || false
+    commentDescriptions: options === null || options === void 0 ? void 0 : options.commentDescriptions,
+    assumeValidSDL: options === null || options === void 0 ? void 0 : options.assumeValidSDL,
+    assumeValid: options === null || options === void 0 ? void 0 : options.assumeValid
   });
 }

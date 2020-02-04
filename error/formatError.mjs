@@ -5,8 +5,10 @@ import devAssert from "../jsutils/devAssert.mjs";
  * Response Format, Errors section of the GraphQL Specification.
  */
 export function formatError(error) {
+  var _error$message;
+
   error || devAssert(0, 'Received null or undefined error.');
-  var message = error.message || 'An unknown error occurred.';
+  var message = (_error$message = error.message) !== null && _error$message !== void 0 ? _error$message : 'An unknown error occurred.';
   var locations = error.locations;
   var path = error.path;
   var extensions = error.extensions;
