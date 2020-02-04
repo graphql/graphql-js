@@ -16,6 +16,8 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _GraphQLError = require("../error/GraphQLError");
 
+var _locatedError = require("../error/locatedError");
+
 var _assertValidName = require("../utilities/assertValidName");
 
 var _typeComparators = require("../utilities/typeComparators");
@@ -165,13 +167,11 @@ function validateDirectives(context) {
 }
 
 function validateName(context, node) {
-  var _node$astNode;
-
   // Ensure names are valid, however introspection types opt out.
-  var error = (0, _assertValidName.isValidNameError)(node.name, (_node$astNode = node.astNode) !== null && _node$astNode !== void 0 ? _node$astNode : undefined);
+  var error = (0, _assertValidName.isValidNameError)(node.name);
 
   if (error) {
-    context.addError(error);
+    context.addError((0, _locatedError.locatedError)(error, node.astNode));
   }
 }
 

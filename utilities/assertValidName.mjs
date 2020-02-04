@@ -18,14 +18,14 @@ export function assertValidName(name) {
  * Returns an Error if a name is invalid.
  */
 
-export function isValidNameError(name, node) {
+export function isValidNameError(name) {
   typeof name === 'string' || devAssert(0, 'Expected name to be a string.');
 
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
-    return new GraphQLError("Name \"".concat(name, "\" must not begin with \"__\", which is reserved by GraphQL introspection."), node);
+    return new GraphQLError("Name \"".concat(name, "\" must not begin with \"__\", which is reserved by GraphQL introspection."));
   }
 
   if (!NAME_RX.test(name)) {
-    return new GraphQLError("Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but \"".concat(name, "\" does not."), node);
+    return new GraphQLError("Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but \"".concat(name, "\" does not."));
   }
 }

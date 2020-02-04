@@ -3,6 +3,7 @@ import flatMap from "../polyfills/flatMap.mjs";
 import objectValues from "../polyfills/objectValues.mjs";
 import inspect from "../jsutils/inspect.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
+import { locatedError } from "../error/locatedError.mjs";
 import { isValidNameError } from "../utilities/assertValidName.mjs";
 import { isEqualType, isTypeSubTypeOf } from "../utilities/typeComparators.mjs";
 import { isDirective } from "./directives.mjs";
@@ -144,13 +145,11 @@ function validateDirectives(context) {
 }
 
 function validateName(context, node) {
-  var _node$astNode;
-
   // Ensure names are valid, however introspection types opt out.
-  var error = isValidNameError(node.name, (_node$astNode = node.astNode) !== null && _node$astNode !== void 0 ? _node$astNode : undefined);
+  var error = isValidNameError(node.name);
 
   if (error) {
-    context.addError(error);
+    context.addError(locatedError(error, node.astNode));
   }
 }
 

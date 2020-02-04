@@ -31,14 +31,14 @@ function assertValidName(name) {
  */
 
 
-function isValidNameError(name, node) {
+function isValidNameError(name) {
   typeof name === 'string' || (0, _devAssert.default)(0, 'Expected name to be a string.');
 
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
-    return new _GraphQLError.GraphQLError("Name \"".concat(name, "\" must not begin with \"__\", which is reserved by GraphQL introspection."), node);
+    return new _GraphQLError.GraphQLError("Name \"".concat(name, "\" must not begin with \"__\", which is reserved by GraphQL introspection."));
   }
 
   if (!NAME_RX.test(name)) {
-    return new _GraphQLError.GraphQLError("Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but \"".concat(name, "\" does not."), node);
+    return new _GraphQLError.GraphQLError("Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but \"".concat(name, "\" does not."));
   }
 }
