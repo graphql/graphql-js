@@ -65,7 +65,7 @@ export class GraphQLDirective {
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
-    this.isRepeatable = config.isRepeatable || false;
+    this.isRepeatable = config.isRepeatable ?? false;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
 
@@ -75,7 +75,7 @@ export class GraphQLDirective {
       `@${config.name} locations must be an Array.`,
     );
 
-    const args = config.args || {};
+    const args = config.args ?? {};
     devAssert(
       isObjectLike(args) && !Array.isArray(args),
       `@${config.name} args must be an object with argument names as keys.`,

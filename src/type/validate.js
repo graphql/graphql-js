@@ -188,7 +188,7 @@ function validateName(
   node: { +name: string, +astNode: ?ASTNode, ... },
 ): void {
   // Ensure names are valid, however introspection types opt out.
-  const error = isValidNameError(node.name, node.astNode || undefined);
+  const error = isValidNameError(node.name, node.astNode ?? undefined);
   if (error) {
     context.addError(error);
   }
@@ -578,7 +578,7 @@ function getAllNodes<T: ASTNode, K: ASTNode>(
     ? extensionASTNodes
       ? [astNode].concat(extensionASTNodes)
       : [astNode]
-    : extensionASTNodes || [];
+    : extensionASTNodes ?? [];
 }
 
 function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
@@ -586,7 +586,7 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
   getter: (T | K) => ?(L | $ReadOnlyArray<L>),
 ): $ReadOnlyArray<L> {
   /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-  return flatMap(getAllNodes(object), item => getter(item) || []);
+  return flatMap(getAllNodes(object), item => getter(item) ?? []);
 }
 
 function getAllImplementsInterfaceNodes(

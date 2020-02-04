@@ -167,7 +167,7 @@ export class GraphQLSchema {
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription;
     // Provide specified directives (e.g. @include and @skip) by default.
-    this._directives = config.directives || specifiedDirectives;
+    this._directives = config.directives ?? specifiedDirectives;
 
     // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
@@ -289,7 +289,7 @@ export class GraphQLSchema {
     interfaces: /* $ReadOnly */ Array<GraphQLInterfaceType>,
   |} {
     const implementations = this._implementationsMap[interfaceType.name];
-    return implementations || { objects: [], interfaces: [] };
+    return implementations ?? { objects: [], interfaces: [] };
   }
 
   // @deprecated: use isSubType instead - will be removed in v16.

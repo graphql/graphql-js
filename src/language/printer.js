@@ -256,7 +256,7 @@ function addDescription(cb) {
  * print all items together separated by separator if provided
  */
 function join(maybeArray: ?Array<string>, separator = '') {
-  return maybeArray?.filter(x => x).join(separator) || '';
+  return maybeArray?.filter(x => x).join(separator) ?? '';
 }
 
 /**

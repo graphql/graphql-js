@@ -12,7 +12,7 @@ import { type GraphQLError } from './GraphQLError';
  */
 export function formatError(error: GraphQLError): GraphQLFormattedError {
   devAssert(error, 'Received null or undefined error.');
-  const message = error.message || 'An unknown error occurred.';
+  const message = error.message ?? 'An unknown error occurred.';
   const locations = error.locations;
   const path = error.path;
   const extensions = error.extensions;

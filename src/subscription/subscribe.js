@@ -251,7 +251,7 @@ export function createSourceEventStream(
 
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
-    const resolveFn = fieldDef.subscribe || exeContext.fieldResolver;
+    const resolveFn = fieldDef.subscribe ?? exeContext.fieldResolver;
 
     const path = addPath(undefined, responseName);
 

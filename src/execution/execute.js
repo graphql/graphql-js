@@ -314,12 +314,12 @@ export function buildExecutionContext(
   }
 
   /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-  const variableDefinitions = operation.variableDefinitions || [];
+  const variableDefinitions = operation.variableDefinitions ?? [];
 
   const coercedVariableValues = getVariableValues(
     schema,
     variableDefinitions,
-    rawVariableValues || {},
+    rawVariableValues ?? {},
     { maxErrors: 50 },
   );
 
@@ -334,8 +334,8 @@ export function buildExecutionContext(
     contextValue,
     operation,
     variableValues: coercedVariableValues.coerced,
-    fieldResolver: fieldResolver || defaultFieldResolver,
-    typeResolver: typeResolver || defaultTypeResolver,
+    fieldResolver: fieldResolver ?? defaultFieldResolver,
+    typeResolver: typeResolver ?? defaultTypeResolver,
     errors: [],
   };
 }
@@ -619,7 +619,7 @@ function resolveField(
     return;
   }
 
-  const resolveFn = fieldDef.resolve || exeContext.fieldResolver;
+  const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(
     exeContext,
@@ -961,7 +961,7 @@ function completeAbstractValue(
   path: Path,
   result: mixed,
 ): PromiseOrValue<ObjMap<mixed>> {
-  const resolveTypeFn = returnType.resolveType || exeContext.typeResolver;
+  const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 

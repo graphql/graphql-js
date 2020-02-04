@@ -69,7 +69,7 @@ function lexValue(str) {
 // Called only to make error messages for failing tests
 /* istanbul ignore next */
 function inspectStr(str) {
-  return (JSON.stringify(str) || '')
+  return (JSON.stringify(str) ?? '')
     .replace(/^"|"$/g, '`')
     .replace(/\\"/g, '"');
 }

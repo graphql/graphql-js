@@ -11,6 +11,7 @@ import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
 import { validateSchema } from '../../type/validate';
+import { __Schema } from '../../type/introspection';
 import {
   assertDirective,
   GraphQLSkipDirective,
@@ -43,10 +44,11 @@ import { buildASTSchema, buildSchema } from '../buildASTSchema';
  * the SDL, parsed in a schema AST, materializing that schema AST into an
  * in-memory GraphQLSchema, and then finally printing that object into the SDL
  */
-function cycleSDL(sdl, options = {}) {
-  const commentDescriptions = options.commentDescriptions || false;
+function cycleSDL(sdl, options) {
   const ast = parse(sdl);
   const schema = buildASTSchema(ast, options);
+
+  const commentDescriptions = options?.commentDescriptions;
   return printSchema(schema, { commentDescriptions });
 }
 
@@ -1044,6 +1046,20 @@ describe('Schema Builder', () => {
     const schema = buildSchema('type Mutation');
     const errors = validateSchema(schema);
     expect(errors).to.have.lengthOf.above(0);
+  });
+
+  it('Do not override standard types', () => {
+    // NOTE: not sure it's desired behaviour to just silently ignore override
+    // attempts so just documenting it here.
+
+    const schema = buildSchema(`
+      scalar ID
+
+      scalar __Schema
+    `);
+
+    expect(schema.getType('ID')).to.equal(GraphQLID);
+    expect(schema.getType('__Schema')).to.equal(__Schema);
   });
 
   it('Rejects invalid SDL', () => {
