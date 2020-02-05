@@ -9,7 +9,7 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
 
-import { printSchema } from '../schemaPrinter';
+import { printSchema } from '../printSchema';
 import { buildClientSchema } from '../buildClientSchema';
 import { introspectionFromSchema } from '../introspectionFromSchema';
 

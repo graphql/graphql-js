@@ -5,7 +5,7 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 
-import { printSchema } from '../../utilities/schemaPrinter';
+import { printSchema } from '../../utilities/printSchema';
 
 import { GraphQLSchema } from '../schema';
 import { GraphQLDirective } from '../directives';

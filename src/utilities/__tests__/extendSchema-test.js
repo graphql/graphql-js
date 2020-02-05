@@ -32,7 +32,7 @@ import {
 } from '../../type/definition';
 
 import { concatAST } from '../concatAST';
-import { printSchema } from '../schemaPrinter';
+import { printSchema } from '../printSchema';
 import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
 

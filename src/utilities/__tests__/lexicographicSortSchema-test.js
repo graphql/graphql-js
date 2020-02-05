@@ -5,7 +5,7 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 
-import { printSchema } from '../schemaPrinter';
+import { printSchema } from '../printSchema';
 import { buildSchema } from '../buildASTSchema';
 import { lexicographicSortSchema } from '../lexicographicSortSchema';
 
