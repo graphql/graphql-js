@@ -61,7 +61,7 @@ export {
   printSchema,
   printType,
   printIntrospectionSchema,
-} from './schemaPrinter';
+} from './printSchema';
 
 // Create a GraphQLType from a GraphQL language AST.
 export { typeFromAST } from './typeFromAST';

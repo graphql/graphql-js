@@ -18,7 +18,7 @@ export { extendSchema // @deprecated: Get the description from a schema AST node
 
 export { lexicographicSortSchema } from "./lexicographicSortSchema.mjs"; // Print a GraphQLSchema to GraphQL Schema language.
 
-export { printSchema, printType, printIntrospectionSchema } from "./schemaPrinter.mjs"; // Create a GraphQLType from a GraphQL language AST.
+export { printSchema, printType, printIntrospectionSchema } from "./printSchema.mjs"; // Create a GraphQLType from a GraphQL language AST.
 
 export { typeFromAST } from "./typeFromAST.mjs"; // Create a JavaScript value from a GraphQL language AST with a type.
 

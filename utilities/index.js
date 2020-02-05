@@ -66,19 +66,19 @@ Object.defineProperty(exports, "lexicographicSortSchema", {
 Object.defineProperty(exports, "printSchema", {
   enumerable: true,
   get: function get() {
-    return _schemaPrinter.printSchema;
+    return _printSchema.printSchema;
   }
 });
 Object.defineProperty(exports, "printType", {
   enumerable: true,
   get: function get() {
-    return _schemaPrinter.printType;
+    return _printSchema.printType;
   }
 });
 Object.defineProperty(exports, "printIntrospectionSchema", {
   enumerable: true,
   get: function get() {
-    return _schemaPrinter.printIntrospectionSchema;
+    return _printSchema.printIntrospectionSchema;
   }
 });
 Object.defineProperty(exports, "typeFromAST", {
@@ -218,7 +218,7 @@ var _extendSchema = require("./extendSchema");
 
 var _lexicographicSortSchema = require("./lexicographicSortSchema");
 
-var _schemaPrinter = require("./schemaPrinter");
+var _printSchema = require("./printSchema");
 
 var _typeFromAST = require("./typeFromAST");
 
