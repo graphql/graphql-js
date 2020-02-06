@@ -102,6 +102,8 @@ graphql(schema, query).then(result => {
 });
 ```
 
+**Note**: Please don't forget to set `NODE_ENV=production` if you are running a production server it will disable some checks that can be useful during development but will significantly improve performance.
+
 ### Want to ride the bleeding edge?
 
 The `npm` branch in this repository is automatically maintained to be the last
