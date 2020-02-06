@@ -6,8 +6,6 @@ import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';
 import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
-import isInvalid from '../jsutils/isInvalid';
-import isNullish from '../jsutils/isNullish';
 import isPromise from '../jsutils/isPromise';
 import { type ObjMap } from '../jsutils/ObjMap';
 import isObjectLike from '../jsutils/isObjectLike';
@@ -833,8 +831,8 @@ function completeValue(
     return completed;
   }
 
-  // If result value is null-ish (null, undefined, or NaN) then return null.
-  if (isNullish(result)) {
+  // If result value is null or undefined then return null.
+  if (result == null) {
     return null;
   }
 
@@ -940,7 +938,7 @@ function completeListValue(
  */
 function completeLeafValue(returnType: GraphQLLeafType, result: mixed): mixed {
   const serializedResult = returnType.serialize(result);
-  if (isInvalid(serializedResult)) {
+  if (serializedResult === undefined) {
     throw new Error(
       `Expected a value of type "${inspect(returnType)}" but ` +
         `received: ${inspect(result)}`,

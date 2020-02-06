@@ -34,8 +34,6 @@ describe('astFromValue', () => {
 
     expect(astFromValue(undefined, GraphQLBoolean)).to.deep.equal(null);
 
-    expect(astFromValue(NaN, GraphQLInt)).to.deep.equal(null);
-
     expect(astFromValue(null, GraphQLBoolean)).to.deep.equal({
       kind: 'NullValue',
     });
@@ -82,6 +80,10 @@ describe('astFromValue', () => {
     // Note: outside the bounds of 32bit signed int.
     expect(() => astFromValue(1e40, GraphQLInt)).to.throw(
       'Int cannot represent non 32-bit signed integer value: 1e+40',
+    );
+
+    expect(() => astFromValue(NaN, GraphQLInt)).to.throw(
+      'Int cannot represent non-integer value: NaN',
     );
   });
 
@@ -205,7 +207,9 @@ describe('astFromValue', () => {
       value: 'value',
     });
 
-    expect(astFromValue(NaN, passthroughScalar)).to.equal(null);
+    expect(() => astFromValue(NaN, passthroughScalar)).to.throw(
+      'Cannot convert value to AST: NaN.',
+    );
     expect(() => astFromValue(Infinity, passthroughScalar)).to.throw(
       'Cannot convert value to AST: Infinity.',
     );

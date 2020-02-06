@@ -6,8 +6,6 @@ import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
-import isNullish from '../jsutils/isNullish';
-import isInvalid from '../jsutils/isInvalid';
 import isObjectLike from '../jsutils/isObjectLike';
 import isCollection from '../jsutils/isCollection';
 
@@ -59,8 +57,8 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     return { kind: Kind.NULL };
   }
 
-  // undefined, NaN
-  if (isInvalid(value)) {
+  // undefined
+  if (value === undefined) {
     return null;
   }
 
@@ -107,7 +105,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
     const serialized = type.serialize(value);
-    if (isNullish(serialized)) {
+    if (serialized == null) {
       return null;
     }
 
