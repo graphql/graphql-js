@@ -461,30 +461,36 @@ function () {
         return this.parseStringLiteral();
 
       case TokenKind.NAME:
-        if (token.value === 'true' || token.value === 'false') {
-          this._lexer.advance();
-
-          return {
-            kind: Kind.BOOLEAN,
-            value: token.value === 'true',
-            loc: this.loc(token)
-          };
-        } else if (token.value === 'null') {
-          this._lexer.advance();
-
-          return {
-            kind: Kind.NULL,
-            loc: this.loc(token)
-          };
-        }
-
         this._lexer.advance();
 
-        return {
-          kind: Kind.ENUM,
-          value: token.value,
-          loc: this.loc(token)
-        };
+        switch (token.value) {
+          case 'true':
+            return {
+              kind: Kind.BOOLEAN,
+              value: true,
+              loc: this.loc(token)
+            };
+
+          case 'false':
+            return {
+              kind: Kind.BOOLEAN,
+              value: false,
+              loc: this.loc(token)
+            };
+
+          case 'null':
+            return {
+              kind: Kind.NULL,
+              loc: this.loc(token)
+            };
+
+          default:
+            return {
+              kind: Kind.ENUM,
+              value: token.value,
+              loc: this.loc(token)
+            };
+        }
 
       case TokenKind.DOLLAR:
         if (!isConst) {
