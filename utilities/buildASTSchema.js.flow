@@ -71,10 +71,7 @@ export function buildASTSchema(
     assertValidSDL(documentAST);
   }
 
-  const config = extendSchemaImpl(emptySchemaConfig, documentAST, {
-    ...options,
-    assumeValidSDL: true,
-  });
+  const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
   if (config.astNode == null) {
     for (const type of config.types) {
