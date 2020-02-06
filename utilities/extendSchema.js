@@ -642,23 +642,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 }
 
-function concatMaybeArrays() {
-  // eslint-disable-next-line no-undef-init
-  var result = undefined;
-
-  for (var _len = arguments.length, arrays = new Array(_len), _key = 0; _key < _len; _key++) {
-    arrays[_key] = arguments[_key];
+function concatMaybeArrays(maybeArrayA, maybeArrayB) {
+  if (maybeArrayA == null) {
+    return maybeArrayB;
   }
 
-  for (var _i34 = 0; _i34 < arrays.length; _i34++) {
-    var maybeArray = arrays[_i34];
-
-    if (maybeArray) {
-      result = result === undefined ? maybeArray : result.concat(maybeArray);
-    }
+  if (maybeArrayB == null) {
+    return maybeArrayA;
   }
 
-  return result;
+  return maybeArrayA.concat(maybeArrayB);
 }
 
 var stdTypeMap = (0, _keyMap.default)(_scalars.specifiedScalarTypes.concat(_introspection.introspectionTypes), function (type) {
