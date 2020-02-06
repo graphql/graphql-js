@@ -480,6 +480,7 @@ overrides:
       '@typescript-eslint/no-this-alias': error
       '@typescript-eslint/no-throw-literal': error
       '@typescript-eslint/no-type-alias': off # TODO consider
+      '@typescript-eslint/no-unnecessary-boolean-literal-compare': error
       '@typescript-eslint/no-unnecessary-condition': error
       '@typescript-eslint/no-unnecessary-qualifier': error
       '@typescript-eslint/no-unnecessary-type-arguments': error
@@ -502,6 +503,7 @@ overrides:
         [error, { checkCompoundAssignments: true }]
       '@typescript-eslint/restrict-template-expressions': error
       '@typescript-eslint/strict-boolean-expressions': off # TODO consider
+      '@typescript-eslint/switch-exhaustiveness-check': error
       '@typescript-eslint/triple-slash-reference': error
       '@typescript-eslint/typedef': off
       '@typescript-eslint/unbound-method': off # TODO consider
@@ -513,6 +515,7 @@ overrides:
       # Disable conflicting ESLint rules and enable TS-compatible ones
       default-param-last: off
       no-array-constructor: off
+      no-dupe-class-members: off
       no-empty-function: off
       no-unused-expressions: off
       no-unused-vars: off
@@ -520,6 +523,7 @@ overrides:
       require-await: off
       no-return-await: off
       '@typescript-eslint/default-param-last': error
+      '@typescript-eslint/no-dupe-class-members': error
       '@typescript-eslint/no-array-constructor': error
       '@typescript-eslint/no-empty-function': error
       '@typescript-eslint/no-unused-expressions': error
