@@ -1,5 +1,6 @@
 // @flow strict
 
+import isFinite from '../polyfills/isFinite';
 import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 
@@ -116,7 +117,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     }
 
     // JavaScript numbers can be Int or Float values.
-    if (typeof serialized === 'number') {
+    if (typeof serialized === 'number' && isFinite(serialized)) {
       const stringNum = String(serialized);
       return integerStringRegExp.test(stringNum)
         ? { kind: Kind.INT, value: stringNum }
