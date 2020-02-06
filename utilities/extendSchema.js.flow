@@ -228,10 +228,7 @@ export function extendSchemaImpl(
     ],
     extensions: undefined,
     astNode: schemaDef ?? schemaConfig.astNode,
-    extensionASTNodes: concatMaybeArrays(
-      schemaConfig.extensionASTNodes,
-      schemaExtensions,
-    ),
+    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
     assumeValid: options?.assumeValid ?? false,
   };
 
@@ -305,10 +302,7 @@ export function extendSchemaImpl(
         })),
         ...buildInputFieldMap(extensions),
       }),
-      extensionASTNodes: concatMaybeArrays(
-        config.extensionASTNodes,
-        extensions,
-      ),
+      extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
 
@@ -322,10 +316,7 @@ export function extendSchemaImpl(
         ...config.values,
         ...buildEnumValueMap(extensions),
       },
-      extensionASTNodes: concatMaybeArrays(
-        config.extensionASTNodes,
-        extensions,
-      ),
+      extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
 
@@ -335,10 +326,7 @@ export function extendSchemaImpl(
 
     return new GraphQLScalarType({
       ...config,
-      extensionASTNodes: concatMaybeArrays(
-        config.extensionASTNodes,
-        extensions,
-      ),
+      extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
 
@@ -356,10 +344,7 @@ export function extendSchemaImpl(
         ...mapValue(config.fields, extendField),
         ...buildFieldMap(extensions),
       }),
-      extensionASTNodes: concatMaybeArrays(
-        config.extensionASTNodes,
-        extensions,
-      ),
+      extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
 
@@ -379,10 +364,7 @@ export function extendSchemaImpl(
         ...mapValue(config.fields, extendField),
         ...buildFieldMap(extensions),
       }),
-      extensionASTNodes: concatMaybeArrays(
-        config.extensionASTNodes,
-        extensions,
-      ),
+      extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
 
@@ -396,10 +378,7 @@ export function extendSchemaImpl(
         ...type.getTypes().map(replaceNamedType),
         ...buildUnionTypes(extensions),
       ],
-      extensionASTNodes: concatMaybeArrays(
-        config.extensionASTNodes,
-        extensions,
-      ),
+      extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
 
@@ -702,19 +681,6 @@ export function extendSchemaImpl(
       'Unexpected type definition node: ' + inspect((astNode: empty)),
     );
   }
-}
-
-function concatMaybeArrays<X>(
-  maybeArrayA: ?$ReadOnlyArray<X>,
-  maybeArrayB: ?$ReadOnlyArray<X>,
-): ?$ReadOnlyArray<X> {
-  if (maybeArrayA == null) {
-    return maybeArrayB;
-  }
-  if (maybeArrayB == null) {
-    return maybeArrayA;
-  }
-  return maybeArrayA.concat(maybeArrayB);
 }
 
 const stdTypeMap = keyMap(

@@ -124,7 +124,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     directives: [].concat(schemaConfig.directives.map(replaceDirective), directiveDefs.map(buildDirective)),
     extensions: undefined,
     astNode: (_schemaDef2 = schemaDef) !== null && _schemaDef2 !== void 0 ? _schemaDef2 : schemaConfig.astNode,
-    extensionASTNodes: concatMaybeArrays(schemaConfig.extensionASTNodes, schemaExtensions),
+    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
     assumeValid: (_ref = options === null || options === void 0 ? void 0 : options.assumeValid) !== null && _ref !== void 0 ? _ref : false
   }); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
@@ -202,7 +202,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
           });
         }), {}, buildInputFieldMap(extensions));
       },
-      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
   }
 
@@ -213,7 +213,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     var extensions = (_typeExtensionsMap$ty = typeExtensionsMap[type.name]) !== null && _typeExtensionsMap$ty !== void 0 ? _typeExtensionsMap$ty : [];
     return new GraphQLEnumType(_objectSpread({}, config, {
       values: _objectSpread({}, config.values, {}, buildEnumValueMap(extensions)),
-      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
   }
 
@@ -223,7 +223,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     var config = type.toConfig();
     var extensions = (_typeExtensionsMap$co2 = typeExtensionsMap[config.name]) !== null && _typeExtensionsMap$co2 !== void 0 ? _typeExtensionsMap$co2 : [];
     return new GraphQLScalarType(_objectSpread({}, config, {
-      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
   }
 
@@ -239,7 +239,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       fields: function fields() {
         return _objectSpread({}, mapValue(config.fields, extendField), {}, buildFieldMap(extensions));
       },
-      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
   }
 
@@ -255,7 +255,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       fields: function fields() {
         return _objectSpread({}, mapValue(config.fields, extendField), {}, buildFieldMap(extensions));
       },
-      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
   }
 
@@ -268,7 +268,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       types: function types() {
         return [].concat(type.getTypes().map(replaceNamedType), buildUnionTypes(extensions));
       },
-      extensionASTNodes: concatMaybeArrays(config.extensionASTNodes, extensions)
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
   }
 
@@ -612,19 +612,6 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     invariant(false, 'Unexpected type definition node: ' + inspect(astNode));
   }
 }
-
-function concatMaybeArrays(maybeArrayA, maybeArrayB) {
-  if (maybeArrayA == null) {
-    return maybeArrayB;
-  }
-
-  if (maybeArrayB == null) {
-    return maybeArrayA;
-  }
-
-  return maybeArrayA.concat(maybeArrayB);
-}
-
 var stdTypeMap = keyMap(specifiedScalarTypes.concat(introspectionTypes), function (type) {
   return type.name;
 });

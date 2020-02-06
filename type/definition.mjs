@@ -422,6 +422,8 @@ function () {
   var _proto = GraphQLScalarType.prototype;
 
   _proto.toConfig = function toConfig() {
+    var _this$extensionASTNod;
+
     return {
       name: this.name,
       description: this.description,
@@ -430,7 +432,7 @@ function () {
       parseLiteral: this.parseLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes
+      extensionASTNodes: (_this$extensionASTNod = this.extensionASTNodes) !== null && _this$extensionASTNod !== void 0 ? _this$extensionASTNod : []
     };
   };
 
@@ -530,7 +532,7 @@ function () {
       isTypeOf: this.isTypeOf,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes
+      extensionASTNodes: this.extensionASTNodes || []
     };
   };
 
@@ -689,6 +691,8 @@ function () {
   };
 
   _proto3.toConfig = function toConfig() {
+    var _this$extensionASTNod2;
+
     return {
       name: this.name,
       description: this.description,
@@ -697,7 +701,7 @@ function () {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes
+      extensionASTNodes: (_this$extensionASTNod2 = this.extensionASTNodes) !== null && _this$extensionASTNod2 !== void 0 ? _this$extensionASTNod2 : []
     };
   };
 
@@ -766,6 +770,8 @@ function () {
   };
 
   _proto4.toConfig = function toConfig() {
+    var _this$extensionASTNod3;
+
     return {
       name: this.name,
       description: this.description,
@@ -773,7 +779,7 @@ function () {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes
+      extensionASTNodes: (_this$extensionASTNod3 = this.extensionASTNodes) !== null && _this$extensionASTNod3 !== void 0 ? _this$extensionASTNod3 : []
     };
   };
 
@@ -899,6 +905,8 @@ function () {
   };
 
   _proto5.toConfig = function toConfig() {
+    var _this$extensionASTNod4;
+
     var values = keyValMap(this.getValues(), function (value) {
       return value.name;
     }, function (value) {
@@ -916,7 +924,7 @@ function () {
       values: values,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes
+      extensionASTNodes: (_this$extensionASTNod4 = this.extensionASTNodes) !== null && _this$extensionASTNod4 !== void 0 ? _this$extensionASTNod4 : []
     };
   };
 
@@ -1007,6 +1015,8 @@ function () {
   };
 
   _proto6.toConfig = function toConfig() {
+    var _this$extensionASTNod5;
+
     var fields = mapValue(this.getFields(), function (field) {
       return {
         description: field.description,
@@ -1022,7 +1032,7 @@ function () {
       fields: fields,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes
+      extensionASTNodes: (_this$extensionASTNod5 = this.extensionASTNodes) !== null && _this$extensionASTNod5 !== void 0 ? _this$extensionASTNod5 : []
     };
   };
 

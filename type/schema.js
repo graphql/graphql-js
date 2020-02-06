@@ -318,6 +318,8 @@ function () {
   };
 
   _proto.toConfig = function toConfig() {
+    var _this$extensionASTNod;
+
     return {
       description: this.description,
       query: this.getQueryType(),
@@ -327,7 +329,7 @@ function () {
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes,
+      extensionASTNodes: (_this$extensionASTNod = this.extensionASTNodes) !== null && _this$extensionASTNod !== void 0 ? _this$extensionASTNod : [],
       assumeValid: this.__validationErrors !== undefined
     };
   } // $FlowFixMe Flow doesn't support computed properties yet
