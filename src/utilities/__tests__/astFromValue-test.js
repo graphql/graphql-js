@@ -205,6 +205,11 @@ describe('astFromValue', () => {
       value: 'value',
     });
 
+    expect(astFromValue(NaN, passthroughScalar)).to.equal(null);
+    expect(() => astFromValue(Infinity, passthroughScalar)).to.throw(
+      'Cannot convert value to AST: Infinity.',
+    );
+
     const returnNullScalar = new GraphQLScalarType({
       name: 'ReturnNullScalar',
       serialize() {
