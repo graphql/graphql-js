@@ -35,7 +35,10 @@ if (require.main === module) {
 
 function sampleModule(modulePath) {
   return new Promise((resolve, reject) => {
-    const env = { BENCHMARK_MODULE_PATH: modulePath };
+    const env = {
+      NODE_ENV: 'production',
+      BENCHMARK_MODULE_PATH: modulePath,
+    };
     const child = cp.fork(__filename, { env });
     let message;
     let error;
