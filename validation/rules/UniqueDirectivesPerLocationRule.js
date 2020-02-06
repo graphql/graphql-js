@@ -42,15 +42,11 @@ function UniqueDirectivesPerLocationRule(context) {
     // them all, just listen for entering any node, and check to see if it
     // defines any directives.
     enter: function enter(node) {
-      // Flow can't refine that node.directives will only contain directives,
-      // so we cast so the rest of the code is well typed.
-      var directives = node.directives;
-
-      if (directives) {
+      if (node.directives != null) {
         var knownDirectives = Object.create(null);
 
-        for (var _i6 = 0; _i6 < directives.length; _i6++) {
-          var _directive = directives[_i6];
+        for (var _i6 = 0, _node$directives2 = node.directives; _i6 < _node$directives2.length; _i6++) {
+          var _directive = _node$directives2[_i6];
           var directiveName = _directive.name.value;
 
           if (uniqueDirectiveMap[directiveName]) {

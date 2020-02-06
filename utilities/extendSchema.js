@@ -315,9 +315,6 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 
   function getOperationTypes(nodes) {
-    // Note: While this could make early assertions to get the correctly
-    // typed values below, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
     var opTypes = {};
 
     for (var _i8 = 0; _i8 < nodes.length; _i8++) {
@@ -332,7 +329,10 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         var operationType = operationTypesNodes[_i10];
         opTypes[operationType.operation] = getNamedType(operationType.type);
       }
-    }
+    } // Note: While this could make early assertions to get the correctly
+    // typed values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+
 
     return opTypes;
   }

@@ -1,4 +1,3 @@
-// Workaround to make older Flow versions happy
 var flatMapMethod = Array.prototype.flatMap;
 /* eslint-disable no-redeclare */
 // $FlowFixMe

@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-// Workaround to make older Flow versions happy
 var flatMapMethod = Array.prototype.flatMap;
 /* eslint-disable no-redeclare */
 // $FlowFixMe

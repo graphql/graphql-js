@@ -5,8 +5,7 @@ declare function flatMap<T, U>(
   fn: (item: T, index: number) => $ReadOnlyArray<U> | U,
 ): Array<U>;
 
-// Workaround to make older Flow versions happy
-const flatMapMethod = (Array.prototype: any).flatMap;
+const flatMapMethod = Array.prototype.flatMap;
 
 /* eslint-disable no-redeclare */
 // $FlowFixMe

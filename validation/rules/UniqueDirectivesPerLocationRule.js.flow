@@ -3,7 +3,6 @@
 import { GraphQLError } from '../../error/GraphQLError';
 
 import { Kind } from '../../language/kinds';
-import { type DirectiveNode } from '../../language/ast';
 import { type ASTVisitor } from '../../language/visitor';
 
 import { specifiedDirectives } from '../../type/directives';
@@ -44,12 +43,9 @@ export function UniqueDirectivesPerLocationRule(
     // them all, just listen for entering any node, and check to see if it
     // defines any directives.
     enter(node) {
-      // Flow can't refine that node.directives will only contain directives,
-      // so we cast so the rest of the code is well typed.
-      const directives: ?$ReadOnlyArray<DirectiveNode> = (node: any).directives;
-      if (directives) {
+      if (node.directives != null) {
         const knownDirectives = Object.create(null);
-        for (const directive of directives) {
+        for (const directive of node.directives) {
           const directiveName = directive.name.value;
 
           if (uniqueDirectiveMap[directiveName]) {
