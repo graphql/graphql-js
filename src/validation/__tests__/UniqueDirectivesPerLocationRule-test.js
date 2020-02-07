@@ -316,4 +316,153 @@ describe('Validate: Directives Are Unique Per Location', () => {
       },
     ]);
   });
+
+  it('extend should not allow repeating non-repeatable directives on initial location', () => {
+    expectSDLErrors(`
+      directive @nonRepeatable on
+        SCHEMA | SCALAR | OBJECT | INTERFACE | UNION | INPUT_OBJECT
+
+      schema @nonRepeatable { query: Dummy }
+      extend schema @nonRepeatable
+
+      scalar TestScalar @nonRepeatable
+      extend scalar TestScalar @nonRepeatable
+
+      type TestObject @nonRepeatable
+      extend type TestObject @nonRepeatable
+
+      interface TestInterface @nonRepeatable
+      extend interface TestInterface @nonRepeatable
+
+      union TestUnion @nonRepeatable
+      extend union TestUnion @nonRepeatable
+
+      input TestInput @nonRepeatable
+      extend input TestInput @nonRepeatable
+    `).to.deep.equal([
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 5, column: 14 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 8, column: 25 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 11, column: 23 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 14, column: 31 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 17, column: 23 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 20, column: 23 }],
+      },
+    ]);
+  });
+
+  it('extend should not allow repeating non-repeatable directives added in previous extend', () => {
+    expectSDLErrors(`
+      directive @nonRepeatable on
+        SCHEMA | SCALAR | OBJECT | INTERFACE | UNION | INPUT_OBJECT
+
+      schema { query: Dummy }
+      extend schema @nonRepeatable
+      extend schema @nonRepeatable
+
+      scalar TestScalar
+      extend scalar TestScalar @nonRepeatable
+      extend scalar TestScalar @nonRepeatable
+
+      type TestObject
+      extend type TestObject @nonRepeatable
+      extend type TestObject @nonRepeatable
+
+      interface TestInterface
+      extend interface TestInterface @nonRepeatable
+      extend interface TestInterface @nonRepeatable
+
+      union TestUnion
+      extend union TestUnion @nonRepeatable
+      extend union TestUnion @nonRepeatable
+
+      input TestInput
+      extend input TestInput @nonRepeatable
+      extend input TestInput @nonRepeatable
+    `).to.deep.equal([
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 6, column: 14 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 10, column: 25 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 14, column: 23 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 18, column: 31 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 22, column: 23 }],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [{ line: 26, column: 23 }],
+      },
+    ]);
+  });
+
+  it('extend should allow adding a repeatable directive multiple times', () => {
+    expectValid(`
+      directive @repeatableWithArg(arg: String!) repeatable on
+        SCHEMA | SCALAR | OBJECT | INTERFACE | UNION | INPUT_OBJECT
+
+      schema @repeatableWithArg(arg: "one") { query: Dummy }
+      extend schema @repeatableWithArg(arg: "two")
+      extend schema @repeatableWithArg(arg: "three")
+
+      scalar TestScalar @repeatableWithArg(arg: "one")
+      extend scalar TestScalar @repeatableWithArg(arg: "two")
+      extend scalar TestScalar @repeatableWithArg(arg: "three")
+
+      type TestObject @repeatableWithArg(arg: "one")
+      extend type TestObject @repeatableWithArg(arg: "two")
+      extend type TestObject @repeatableWithArg(arg: "three")
+
+      interface TestInterface @repeatableWithArg(arg: "one")
+      extend interface TestInterface @repeatableWithArg(arg: "two")
+      extend interface TestInterface @repeatableWithArg(arg: "three")
+
+      union TestUnion @repeatableWithArg(arg: "one")
+      extend union TestUnion @repeatableWithArg(arg: "two")
+      extend union TestUnion @repeatableWithArg(arg: "three")
+
+      input TestInput @repeatableWithArg(arg: "one")
+      extend input TestInput @repeatableWithArg(arg: "two")
+      extend input TestInput @repeatableWithArg(arg: "three")
+    `);
+  });
 });
