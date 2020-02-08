@@ -1002,7 +1002,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
-  it('fails when an isTypeOf check is not met', () => {
+  it('fails when an isTypeOf check is not met', async () => {
     class Special {
       value: string;
 
@@ -1058,8 +1058,13 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     const contextValue = { async: true };
-    const asyncResult = execute({ schema, document, rootValue, contextValue });
-    expect(asyncResult).to.deep.equal(asyncResult);
+    const asyncResult = await execute({
+      schema,
+      document,
+      rootValue,
+      contextValue,
+    });
+    expect(asyncResult).to.deep.equal(result);
   });
 
   it('fails when serialize of custom scalar does not return a value', () => {
