@@ -4,7 +4,6 @@ import objectValues from '../../polyfills/objectValues';
 
 import keyMap from '../../jsutils/keyMap';
 import inspect from '../../jsutils/inspect';
-import isInvalid from '../../jsutils/isInvalid';
 import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 
@@ -130,7 +129,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   // may throw or return an invalid value to indicate failure.
   try {
     const parseResult = type.parseLiteral(node, undefined /* variables */);
-    if (isInvalid(parseResult)) {
+    if (parseResult === undefined) {
       const typeStr = inspect(locationType);
       context.reportError(
         new GraphQLError(

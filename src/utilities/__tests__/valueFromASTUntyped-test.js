@@ -53,6 +53,8 @@ describe('valueFromASTUntyped', () => {
       { a: ['foo'] },
     );
     testCaseWithVars('$testVariable', { testVariable: null }, null);
+    testCaseWithVars('$testVariable', { testVariable: NaN }, NaN);
     testCaseWithVars('$testVariable', {}, undefined);
+    testCaseWithVars('$testVariable', null, undefined);
   });
 });

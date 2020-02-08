@@ -5,7 +5,6 @@ import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
-import isInvalid from '../jsutils/isInvalid';
 import { type ObjMap } from '../jsutils/ObjMap';
 
 import { Kind } from '../language/kinds';
@@ -52,7 +51,7 @@ export function valueFromAST(
 
   if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
-    if (!variables || isInvalid(variables[variableName])) {
+    if (variables == null || variables[variableName] === undefined) {
       // No valid return value.
       return;
     }
@@ -92,7 +91,7 @@ export function valueFromAST(
           coercedValues.push(null);
         } else {
           const itemValue = valueFromAST(itemNode, itemType, variables);
-          if (isInvalid(itemValue)) {
+          if (itemValue === undefined) {
             return; // Invalid: intentionally return no value.
           }
           coercedValues.push(itemValue);
@@ -101,7 +100,7 @@ export function valueFromAST(
       return coercedValues;
     }
     const coercedValue = valueFromAST(valueNode, itemType, variables);
-    if (isInvalid(coercedValue)) {
+    if (coercedValue === undefined) {
       return; // Invalid: intentionally return no value.
     }
     return [coercedValue];
@@ -124,7 +123,7 @@ export function valueFromAST(
         continue;
       }
       const fieldValue = valueFromAST(fieldNode.value, field.type, variables);
-      if (isInvalid(fieldValue)) {
+      if (fieldValue === undefined) {
         return; // Invalid: intentionally return no value.
       }
       coercedObj[field.name] = fieldValue;
@@ -157,6 +156,6 @@ export function valueFromAST(
 function isMissingVariable(valueNode, variables) {
   return (
     valueNode.kind === Kind.VARIABLE &&
-    (!variables || isInvalid(variables[valueNode.name.value]))
+    (variables == null || variables[valueNode.name.value] === undefined)
   );
 }
