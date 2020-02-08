@@ -309,7 +309,7 @@ describe('visitWithTypeInfo', () => {
     ]);
   });
 
-  it('support traversals of input values', () => {
+  it('supports traversals of input values', () => {
     const ast = parseValue('{ stringListField: ["foo"] }');
     const complexInputType = testSchema.getType('ComplexInput');
     invariant(complexInputType != null);
@@ -355,7 +355,7 @@ describe('visitWithTypeInfo', () => {
     ]);
   });
 
-  it('support traversals of input values', () => {
+  it('supports traversals of selection sets', () => {
     const humanType = testSchema.getType('Human');
     invariant(humanType != null);
 
