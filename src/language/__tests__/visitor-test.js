@@ -915,7 +915,7 @@ describe('Visitor', () => {
       ]);
     });
 
-    it('does not traverse unknown node kinds', () => {
+    it('does traverse unknown node kinds with visitor keys', () => {
       const customQueryDocumentKeys = { ...QueryDocumentKeys };
       (customQueryDocumentKeys: any).CustomField = ['name', 'selectionSet'];
 
