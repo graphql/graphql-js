@@ -29,6 +29,7 @@ signature-verification-failure=error
 implicit-inexact-object=error
 ambiguous-object-type=error
 uninitialized-instance-property=error
+unsafe-addition=error
 
 [options]
 include_warnings=true
@@ -39,4 +40,4 @@ suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)?)\\)
 suppress_comment=\\(.\\|\n\\)*\\$DisableFlowOnNegativeTest
 
 [version]
-^0.117.0
+^0.118.0

@@ -2046,10 +2046,10 @@ flatted@^2.0.0:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-2.0.1.tgz#69e57caa8f0eacbc281d2e2cb458d46fdb449e08"
   integrity sha512-a1hQMktqW9Nmqr5aktAux3JMNqaucxGcjtjWnZLHX7yyPCmlSV3M54nGYbqT8K+0GhF3NBgmJCc3ma+WOgX8Jg==
 
-flow-bin@0.117.0:
-  version "0.117.0"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.117.0.tgz#2fd331f476dac31f7dae6ac9b557581ebc84e8ad"
-  integrity sha512-LwDdiApyQsO26ubieaLBcW//K8QNcFR50FSUUDo5roy+2nsvkfRdJa0Qse2De6/2fwBElLDDrc3rrSzvC3hy2Q==
+flow-bin@0.118.0:
+  version "0.118.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.118.0.tgz#fb706364a58c682d67a2ca7df39396467dc397d1"
+  integrity sha512-jlbUu0XkbpXeXhan5xyTqVK1jmEKNxE8hpzznI3TThHTr76GiFwK0iRzhDo4KNy+S9h/KxHaqVhTP86vA6wHCg==
 
 foreground-child@^2.0.0:
   version "2.0.0"
@@ -3868,9 +3868,9 @@ typescript@^3.7.5:
   integrity sha512-/P5lkRXkWHNAbcJIiHPfRoKqyd7bsyCma1hZNUGfn20qm64T6ZBlrzprymeu918H+mB/0rIg2gGK/BXkhhYgBw==
 
 typescript@next:
-  version "3.8.0-dev.20200206"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.8.0-dev.20200206.tgz#4d5c377db14a9f166d172934a4add60a9157881d"
-  integrity sha512-wCLl+s+qhZX46hDlYuS9FDAT1J0LgDYRYIPebQWXFuYSyy7eZGUgiISEajSEhEV02+bgwrCiobm/2jgSLTMYxw==
+  version "3.8.0-dev.20200208"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.8.0-dev.20200208.tgz#3cd1ee025932c88ff78831f3629e99b1995e1de5"
+  integrity sha512-/n4f+RIfoHvEmXprHjE7dHzGlDzD0wpqpvHBXBtwaCi1wp8zsGqA07v1UPijR1xBqumO5FFDMEPIuu7fEDJemA==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"
