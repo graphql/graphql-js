@@ -562,8 +562,10 @@ function convertUnicodeEscape(source, body, position) {
     );
   }
   if (isLeadingSurrogate(charCode)) {
-    if (body.charCodeAt(position + 5) !== 92 ||
-      body.charCodeAt(position + 6) !== 117) {
+    if (
+      body.charCodeAt(position + 5) !== 92 ||
+      body.charCodeAt(position + 6) !== 117
+    ) {
       const invalidSequence = body.slice(position + 1, position + 7);
       throw syntaxError(
         source,
@@ -595,11 +597,11 @@ function convertUnicodeEscape(source, body, position) {
 }
 
 function isLeadingSurrogate(charCode) {
-  return 0xD800 <= charCode && charCode <= 0xDBFF;
+  return 0xd800 <= charCode && charCode <= 0xdbff;
 }
 
 function isTrailingSurrogate(charCode) {
-  return 0xDC00 <= charCode && charCode <= 0xDFFF;
+  return 0xdc00 <= charCode && charCode <= 0xdfff;
 }
 
 /**
