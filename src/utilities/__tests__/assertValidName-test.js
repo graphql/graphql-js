@@ -16,12 +16,6 @@ describe('assertValidName()', () => {
     );
   });
 
-  it('throws for use of leading double underscores', () => {
-    expect(() => assertValidName('__bad')).to.throw(
-      '"__bad" must not begin with "__", which is reserved by GraphQL introspection.',
-    );
-  });
-
   it('throws for non-strings', () => {
     // $DisableFlowOnNegativeTest
     expect(() => assertValidName({})).to.throw('Expected name to be a string.');
