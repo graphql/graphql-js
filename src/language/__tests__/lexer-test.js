@@ -268,6 +268,20 @@ describe('Lexer', () => {
       end: 34,
       value: 'unicode \u1234\u5678\u90AB\uCDEF',
     });
+
+    expect(lexOne('"string with unicode code point outside BMP 😀"')).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 47,
+      value: 'string with unicode code point outside BMP 😀',
+    });
+
+    expect(lexOne('"string with unicode code point outside BMP escaped \\uD83D\\uDE00"')).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 65,
+      value: 'string with unicode code point outside BMP escaped 😀',
+    });
   });
 
   it('lex reports useful string errors', () => {
@@ -353,6 +367,17 @@ describe('Lexer', () => {
       message: 'Syntax Error: Invalid character escape sequence: \\uXXXF.',
       locations: [{ line: 1, column: 7 }],
     });
+
+    expectSyntaxError('"bad \\uDEAD esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid surrogate pair escape sequence: \\uDEAD.',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\uD83D\\uDBFF esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid surrogate pair escape sequence: \\uD83D\\uDBFF.',
+      locations: [{ line: 1, column: 7 }],
+    });
+
   });
 
   it('lexes block strings', () => {
@@ -411,6 +436,14 @@ describe('Lexer', () => {
       end: 32,
       value: 'unescaped \\n\\r\\b\\t\\f\\u1234',
     });
+
+    expect(lexOne('"""unescaped unicode outside BMP 😀"""')).to.contain({
+      kind: TokenKind.BLOCK_STRING,
+      start: 0,
+      end: 38,
+      value: 'unescaped unicode outside BMP 😀',
+    });
+
 
     expect(lexOne('"""slashes \\\\ \\/"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,

@@ -511,22 +511,9 @@ function readString(source, start, line, col, prev): Token {
           break;
         case 117: {
           // uXXXX
-          const charCode = uniCharCode(
-            body.charCodeAt(position + 1),
-            body.charCodeAt(position + 2),
-            body.charCodeAt(position + 3),
-            body.charCodeAt(position + 4),
-          );
-          if (charCode < 0) {
-            const invalidSequence = body.slice(position + 1, position + 5);
-            throw syntaxError(
-              source,
-              position,
-              `Invalid character escape sequence: \\u${invalidSequence}.`,
-            );
-          }
-          value += String.fromCharCode(charCode);
-          position += 4;
+          const convertedEscape = convertUnicodeEscape(source, body, position);
+          value += convertedEscape.value;
+          position += convertedEscape.positionIncrease;
           break;
         }
         default:
@@ -544,6 +531,75 @@ function readString(source, start, line, col, prev): Token {
   }
 
   throw syntaxError(source, position, 'Unterminated string.');
+}
+
+function convertUnicodeEscape(source, body, position) {
+  const charCode = uniCharCode(
+    body.charCodeAt(position + 1),
+    body.charCodeAt(position + 2),
+    body.charCodeAt(position + 3),
+    body.charCodeAt(position + 4),
+  );
+  if (charCode < 0) {
+    const invalidSequence = body.slice(position + 1, position + 5);
+    throw syntaxError(
+      source,
+      position,
+      `Invalid character escape sequence: \\u${invalidSequence}.`,
+    );
+  }
+
+  let value;
+  let positionIncrease;
+  // String.fromCharCode doesn't fail for invalid surrogate pairs, therefore
+  // it is manually verified here
+  if (isTrailingSurrogate(charCode)) {
+    const invalidSequence = body.slice(position + 1, position + 5);
+    throw syntaxError(
+      source,
+      position,
+      `Invalid surrogate pair escape sequence: \\u${invalidSequence}.`,
+    );
+  }
+  if (isLeadingSurrogate(charCode)) {
+    if (body.charCodeAt(position + 5) !== 92 ||
+      body.charCodeAt(position + 6) !== 117) {
+      const invalidSequence = body.slice(position + 1, position + 7);
+      throw syntaxError(
+        source,
+        position,
+        `Invalid surrogate pair escape sequence: \\u${invalidSequence}.`,
+      );
+    }
+    const trailingSurrogate = uniCharCode(
+      body.charCodeAt(position + 7),
+      body.charCodeAt(position + 8),
+      body.charCodeAt(position + 9),
+      body.charCodeAt(position + 10),
+    );
+    if (!isTrailingSurrogate(trailingSurrogate)) {
+      const invalidSequence = body.slice(position + 1, position + 11);
+      throw syntaxError(
+        source,
+        position,
+        `Invalid surrogate pair escape sequence: \\u${invalidSequence}.`,
+      );
+    }
+    value = String.fromCharCode(charCode, trailingSurrogate);
+    positionIncrease = 10;
+  } else {
+    value = String.fromCharCode(charCode);
+    positionIncrease = 4;
+  }
+  return { value, positionIncrease };
+}
+
+function isLeadingSurrogate(charCode) {
+  return 0xD800 <= charCode && charCode <= 0xDBFF;
+}
+
+function isTrailingSurrogate(charCode) {
+  return 0xDC00 <= charCode && charCode <= 0xDFFF;
 }
 
 /**
