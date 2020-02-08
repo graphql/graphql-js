@@ -6,7 +6,7 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 
 import {
   KnownArgumentNamesRule,
-  KnownArgumentNamesOnDirectives,
+  KnownArgumentNamesOnDirectivesRule,
 } from '../rules/KnownArgumentNamesRule';
 
 import { expectValidationErrors, expectSDLValidationErrors } from './harness';
@@ -22,7 +22,7 @@ function expectValid(queryStr) {
 function expectSDLErrors(sdlStr, schema) {
   return expectSDLValidationErrors(
     schema,
-    KnownArgumentNamesOnDirectives,
+    KnownArgumentNamesOnDirectivesRule,
     sdlStr,
   );
 }

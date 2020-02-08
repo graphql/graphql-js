@@ -23,7 +23,7 @@ import {
  */
 export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
   return {
-    ...KnownArgumentNamesOnDirectives(context),
+    ...KnownArgumentNamesOnDirectivesRule(context),
     Argument(argNode) {
       const argDef = context.getArgument();
       const fieldDef = context.getFieldDef();
@@ -48,7 +48,7 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 /**
  * @internal
  */
-export function KnownArgumentNamesOnDirectives(
+export function KnownArgumentNamesOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
   const directiveArgs = Object.create(null);
