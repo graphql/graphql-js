@@ -1,7 +1,6 @@
 import objectValues from "../../polyfills/objectValues.mjs";
 import keyMap from "../../jsutils/keyMap.mjs";
 import inspect from "../../jsutils/inspect.mjs";
-import isInvalid from "../../jsutils/isInvalid.mjs";
 import didYouMean from "../../jsutils/didYouMean.mjs";
 import suggestionList from "../../jsutils/suggestionList.mjs";
 import { GraphQLError } from "../../error/GraphQLError.mjs";
@@ -110,7 +109,7 @@ function isValidValueNode(context, node) {
     /* variables */
     );
 
-    if (isInvalid(parseResult)) {
+    if (parseResult === undefined) {
       var _typeStr = inspect(locationType);
 
       context.reportError(new GraphQLError("Expected value of type \"".concat(_typeStr, "\", found ").concat(print(node), "."), node));

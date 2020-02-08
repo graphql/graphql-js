@@ -1,7 +1,6 @@
 import inspect from "../jsutils/inspect.mjs";
 import invariant from "../jsutils/invariant.mjs";
 import keyValMap from "../jsutils/keyValMap.mjs";
-import isInvalid from "../jsutils/isInvalid.mjs";
 import { Kind } from "../language/kinds.mjs";
 
 /**
@@ -49,10 +48,7 @@ export function valueFromASTUntyped(valueNode, variables) {
       });
 
     case Kind.VARIABLE:
-      {
-        var variableName = valueNode.name.value;
-        return variables && !isInvalid(variables[variableName]) ? variables[variableName] : undefined;
-      }
+      return variables === null || variables === void 0 ? void 0 : variables[valueNode.name.value];
   } // Not reachable. All possible value nodes have been considered.
 
 

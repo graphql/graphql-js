@@ -11,8 +11,6 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
-var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
 var _kinds = require("../language/kinds");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -62,10 +60,7 @@ function valueFromASTUntyped(valueNode, variables) {
       });
 
     case _kinds.Kind.VARIABLE:
-      {
-        var variableName = valueNode.name.value;
-        return variables && !(0, _isInvalid.default)(variables[variableName]) ? variables[variableName] : undefined;
-      }
+      return variables === null || variables === void 0 ? void 0 : variables[valueNode.name.value];
   } // Not reachable. All possible value nodes have been considered.
 
 

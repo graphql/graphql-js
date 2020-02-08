@@ -13,8 +13,6 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
 var _kinds = require("../language/kinds");
 
 var _definition = require("../type/definition");
@@ -51,7 +49,7 @@ function valueFromAST(valueNode, type, variables) {
   if (valueNode.kind === _kinds.Kind.VARIABLE) {
     var variableName = valueNode.name.value;
 
-    if (!variables || (0, _isInvalid.default)(variables[variableName])) {
+    if (variables == null || variables[variableName] === undefined) {
       // No valid return value.
       return;
     }
@@ -101,7 +99,7 @@ function valueFromAST(valueNode, type, variables) {
         } else {
           var itemValue = valueFromAST(itemNode, itemType, variables);
 
-          if ((0, _isInvalid.default)(itemValue)) {
+          if (itemValue === undefined) {
             return; // Invalid: intentionally return no value.
           }
 
@@ -114,7 +112,7 @@ function valueFromAST(valueNode, type, variables) {
 
     var coercedValue = valueFromAST(valueNode, itemType, variables);
 
-    if ((0, _isInvalid.default)(coercedValue)) {
+    if (coercedValue === undefined) {
       return; // Invalid: intentionally return no value.
     }
 
@@ -147,7 +145,7 @@ function valueFromAST(valueNode, type, variables) {
 
       var fieldValue = valueFromAST(fieldNode.value, field.type, variables);
 
-      if ((0, _isInvalid.default)(fieldValue)) {
+      if (fieldValue === undefined) {
         return; // Invalid: intentionally return no value.
       }
 
@@ -185,5 +183,5 @@ function valueFromAST(valueNode, type, variables) {
 
 
 function isMissingVariable(valueNode, variables) {
-  return valueNode.kind === _kinds.Kind.VARIABLE && (!variables || (0, _isInvalid.default)(variables[valueNode.name.value]));
+  return valueNode.kind === _kinds.Kind.VARIABLE && (variables == null || variables[valueNode.name.value] === undefined);
 }

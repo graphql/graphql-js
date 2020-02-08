@@ -2,7 +2,6 @@ import objectValues from "../polyfills/objectValues.mjs";
 import keyMap from "../jsutils/keyMap.mjs";
 import inspect from "../jsutils/inspect.mjs";
 import invariant from "../jsutils/invariant.mjs";
-import isInvalid from "../jsutils/isInvalid.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { isLeafType, isInputObjectType, isListType, isNonNullType } from "../type/definition.mjs";
 /**
@@ -36,7 +35,7 @@ export function valueFromAST(valueNode, type, variables) {
   if (valueNode.kind === Kind.VARIABLE) {
     var variableName = valueNode.name.value;
 
-    if (!variables || isInvalid(variables[variableName])) {
+    if (variables == null || variables[variableName] === undefined) {
       // No valid return value.
       return;
     }
@@ -86,7 +85,7 @@ export function valueFromAST(valueNode, type, variables) {
         } else {
           var itemValue = valueFromAST(itemNode, itemType, variables);
 
-          if (isInvalid(itemValue)) {
+          if (itemValue === undefined) {
             return; // Invalid: intentionally return no value.
           }
 
@@ -99,7 +98,7 @@ export function valueFromAST(valueNode, type, variables) {
 
     var coercedValue = valueFromAST(valueNode, itemType, variables);
 
-    if (isInvalid(coercedValue)) {
+    if (coercedValue === undefined) {
       return; // Invalid: intentionally return no value.
     }
 
@@ -132,7 +131,7 @@ export function valueFromAST(valueNode, type, variables) {
 
       var fieldValue = valueFromAST(fieldNode.value, field.type, variables);
 
-      if (isInvalid(fieldValue)) {
+      if (fieldValue === undefined) {
         return; // Invalid: intentionally return no value.
       }
 
@@ -169,5 +168,5 @@ export function valueFromAST(valueNode, type, variables) {
 // in the set of variables.
 
 function isMissingVariable(valueNode, variables) {
-  return valueNode.kind === Kind.VARIABLE && (!variables || isInvalid(variables[valueNode.name.value]));
+  return valueNode.kind === Kind.VARIABLE && (variables == null || variables[valueNode.name.value] === undefined);
 }

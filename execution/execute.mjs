@@ -3,8 +3,6 @@ import inspect from "../jsutils/inspect.mjs";
 import memoize3 from "../jsutils/memoize3.mjs";
 import invariant from "../jsutils/invariant.mjs";
 import devAssert from "../jsutils/devAssert.mjs";
-import isInvalid from "../jsutils/isInvalid.mjs";
-import isNullish from "../jsutils/isNullish.mjs";
 import isPromise from "../jsutils/isPromise.mjs";
 import isObjectLike from "../jsutils/isObjectLike.mjs";
 import isCollection from "../jsutils/isCollection.mjs";
@@ -567,10 +565,10 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
     }
 
     return completed;
-  } // If result value is null-ish (null, undefined, or NaN) then return null.
+  } // If result value is null or undefined then return null.
 
 
-  if (isNullish(result)) {
+  if (result == null) {
     return null;
   } // If field type is List, complete each item in the list with the inner type
 
@@ -639,7 +637,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
 function completeLeafValue(returnType, result) {
   var serializedResult = returnType.serialize(result);
 
-  if (isInvalid(serializedResult)) {
+  if (serializedResult === undefined) {
     throw new Error("Expected a value of type \"".concat(inspect(returnType), "\" but ") + "received: ".concat(inspect(result)));
   }
 

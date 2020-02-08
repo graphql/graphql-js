@@ -15,10 +15,6 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
-
-var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
 
 var _isCollection = _interopRequireDefault(require("../jsutils/isCollection"));
@@ -68,10 +64,10 @@ function astFromValue(value, type) {
     return {
       kind: _kinds.Kind.NULL
     };
-  } // undefined, NaN
+  } // undefined
 
 
-  if ((0, _isInvalid.default)(value)) {
+  if (value === undefined) {
     return null;
   } // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
   // the value is not an array, convert the value using the list's item type.
@@ -139,7 +135,7 @@ function astFromValue(value, type) {
     // to an externally represented value before converting into an AST.
     var serialized = type.serialize(value);
 
-    if ((0, _isNullish.default)(serialized)) {
+    if (serialized == null) {
       return null;
     } // Others serialize based on their corresponding JavaScript scalar types.
 

@@ -3,8 +3,6 @@ import arrayFrom from "../polyfills/arrayFrom.mjs";
 import objectValues from "../polyfills/objectValues.mjs";
 import inspect from "../jsutils/inspect.mjs";
 import invariant from "../jsutils/invariant.mjs";
-import isNullish from "../jsutils/isNullish.mjs";
-import isInvalid from "../jsutils/isInvalid.mjs";
 import isObjectLike from "../jsutils/isObjectLike.mjs";
 import isCollection from "../jsutils/isCollection.mjs";
 import { Kind } from "../language/kinds.mjs";
@@ -48,10 +46,10 @@ export function astFromValue(value, type) {
     return {
       kind: Kind.NULL
     };
-  } // undefined, NaN
+  } // undefined
 
 
-  if (isInvalid(value)) {
+  if (value === undefined) {
     return null;
   } // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
   // the value is not an array, convert the value using the list's item type.
@@ -119,7 +117,7 @@ export function astFromValue(value, type) {
     // to an externally represented value before converting into an AST.
     var serialized = type.serialize(value);
 
-    if (isNullish(serialized)) {
+    if (serialized == null) {
       return null;
     } // Others serialize based on their corresponding JavaScript scalar types.
 

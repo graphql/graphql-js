@@ -11,8 +11,6 @@ var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
-var _isInvalid = _interopRequireDefault(require("../../jsutils/isInvalid"));
-
 var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
@@ -128,7 +126,7 @@ function isValidValueNode(context, node) {
     /* variables */
     );
 
-    if ((0, _isInvalid.default)(parseResult)) {
+    if (parseResult === undefined) {
       var _typeStr = (0, _inspect.default)(locationType);
 
       context.reportError(new _GraphQLError.GraphQLError("Expected value of type \"".concat(_typeStr, "\", found ").concat((0, _printer.print)(node), "."), node));

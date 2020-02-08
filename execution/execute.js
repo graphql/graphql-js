@@ -22,10 +22,6 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
-var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
-var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
-
 var _isPromise = _interopRequireDefault(require("../jsutils/isPromise"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
@@ -584,10 +580,10 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
     }
 
     return completed;
-  } // If result value is null-ish (null, undefined, or NaN) then return null.
+  } // If result value is null or undefined then return null.
 
 
-  if ((0, _isNullish.default)(result)) {
+  if (result == null) {
     return null;
   } // If field type is List, complete each item in the list with the inner type
 
@@ -656,7 +652,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
 function completeLeafValue(returnType, result) {
   var serializedResult = returnType.serialize(result);
 
-  if ((0, _isInvalid.default)(serializedResult)) {
+  if (serializedResult === undefined) {
     throw new Error("Expected a value of type \"".concat((0, _inspect.default)(returnType), "\" but ") + "received: ".concat((0, _inspect.default)(result)));
   }
 
