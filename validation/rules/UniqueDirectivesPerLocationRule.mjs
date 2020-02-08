@@ -1,5 +1,6 @@
 import { GraphQLError } from "../../error/GraphQLError.mjs";
 import { Kind } from "../../language/kinds.mjs";
+import { isTypeDefinitionNode, isTypeExtensionNode } from "../../language/predicates.mjs";
 import { specifiedDirectives } from "../../type/directives.mjs";
 
 /**
@@ -28,24 +29,41 @@ export function UniqueDirectivesPerLocationRule(context) {
     }
   }
 
+  var schemaDirectives = Object.create(null);
+  var typeDirectivesMap = Object.create(null);
   return {
     // Many different AST nodes may contain directives. Rather than listing
     // them all, just listen for entering any node, and check to see if it
     // defines any directives.
     enter: function enter(node) {
-      if (node.directives != null) {
-        var knownDirectives = Object.create(null);
+      if (node.directives == null) {
+        return;
+      }
 
-        for (var _i6 = 0, _node$directives2 = node.directives; _i6 < _node$directives2.length; _i6++) {
-          var _directive = _node$directives2[_i6];
-          var directiveName = _directive.name.value;
+      var seenDirectives;
 
-          if (uniqueDirectiveMap[directiveName]) {
-            if (knownDirectives[directiveName]) {
-              context.reportError(new GraphQLError("The directive \"@".concat(directiveName, "\" can only be used once at this location."), [knownDirectives[directiveName], _directive]));
-            } else {
-              knownDirectives[directiveName] = _directive;
-            }
+      if (node.kind === Kind.SCHEMA_DEFINITION || node.kind === Kind.SCHEMA_EXTENSION) {
+        seenDirectives = schemaDirectives;
+      } else if (isTypeDefinitionNode(node) || isTypeExtensionNode(node)) {
+        var typeName = node.name.value;
+        seenDirectives = typeDirectivesMap[typeName];
+
+        if (seenDirectives === undefined) {
+          typeDirectivesMap[typeName] = seenDirectives = Object.create(null);
+        }
+      } else {
+        seenDirectives = Object.create(null);
+      }
+
+      for (var _i6 = 0, _node$directives2 = node.directives; _i6 < _node$directives2.length; _i6++) {
+        var _directive = _node$directives2[_i6];
+        var directiveName = _directive.name.value;
+
+        if (uniqueDirectiveMap[directiveName]) {
+          if (seenDirectives[directiveName]) {
+            context.reportError(new GraphQLError("The directive \"@".concat(directiveName, "\" can only be used once at this location."), [seenDirectives[directiveName], _directive]));
+          } else {
+            seenDirectives[directiveName] = _directive;
           }
         }
       }
