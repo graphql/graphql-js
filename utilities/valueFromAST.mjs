@@ -143,7 +143,7 @@ export function valueFromAST(valueNode, type, variables) {
 
   /* istanbul ignore else */
   if (isLeafType(type)) {
-    // Scalars fulfill parsing a literal value via parseLiteral().
+    // Scalars and Enums fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
     // no value is returned.
     var result;

@@ -125,8 +125,8 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     return;
   }
 
-  // Scalars determine if a literal value is valid via parseLiteral() which
-  // may throw or return an invalid value to indicate failure.
+  // Scalars and Enums determine if a literal value is valid via parseLiteral(),
+  // which may throw or return an invalid value to indicate failure.
   try {
     const parseResult = type.parseLiteral(node, undefined /* variables */);
     if (parseResult === undefined) {

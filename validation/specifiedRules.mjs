@@ -37,13 +37,13 @@ import { KnownDirectivesRule } from "./rules/KnownDirectivesRule.mjs"; // Spec S
 
 import { UniqueDirectivesPerLocationRule } from "./rules/UniqueDirectivesPerLocationRule.mjs"; // Spec Section: "Argument Names"
 
-import { KnownArgumentNamesRule, KnownArgumentNamesOnDirectives } from "./rules/KnownArgumentNamesRule.mjs"; // Spec Section: "Argument Uniqueness"
+import { KnownArgumentNamesRule, KnownArgumentNamesOnDirectivesRule } from "./rules/KnownArgumentNamesRule.mjs"; // Spec Section: "Argument Uniqueness"
 
 import { UniqueArgumentNamesRule } from "./rules/UniqueArgumentNamesRule.mjs"; // Spec Section: "Value Type Correctness"
 
 import { ValuesOfCorrectTypeRule } from "./rules/ValuesOfCorrectTypeRule.mjs"; // Spec Section: "Argument Optionality"
 
-import { ProvidedRequiredArgumentsRule, ProvidedRequiredArgumentsOnDirectives } from "./rules/ProvidedRequiredArgumentsRule.mjs"; // Spec Section: "All Variable Usages Are Allowed"
+import { ProvidedRequiredArgumentsRule, ProvidedRequiredArgumentsOnDirectivesRule } from "./rules/ProvidedRequiredArgumentsRule.mjs"; // Spec Section: "All Variable Usages Are Allowed"
 
 import { VariablesInAllowedPositionRule } from "./rules/VariablesInAllowedPositionRule.mjs"; // Spec Section: "Field Selection Merging"
 
@@ -70,4 +70,4 @@ export var specifiedRules = Object.freeze([ExecutableDefinitionsRule, UniqueOper
  * @internal
  */
 
-export var specifiedSDLRules = Object.freeze([LoneSchemaDefinitionRule, UniqueOperationTypesRule, UniqueTypeNamesRule, UniqueEnumValueNamesRule, UniqueFieldDefinitionNamesRule, UniqueDirectiveNamesRule, KnownTypeNamesRule, KnownDirectivesRule, UniqueDirectivesPerLocationRule, PossibleTypeExtensionsRule, KnownArgumentNamesOnDirectives, UniqueArgumentNamesRule, UniqueInputFieldNamesRule, ProvidedRequiredArgumentsOnDirectives]);
+export var specifiedSDLRules = Object.freeze([LoneSchemaDefinitionRule, UniqueOperationTypesRule, UniqueTypeNamesRule, UniqueEnumValueNamesRule, UniqueFieldDefinitionNamesRule, UniqueDirectiveNamesRule, KnownTypeNamesRule, KnownDirectivesRule, UniqueDirectivesPerLocationRule, PossibleTypeExtensionsRule, KnownArgumentNamesOnDirectivesRule, UniqueArgumentNamesRule, UniqueInputFieldNamesRule, ProvidedRequiredArgumentsOnDirectivesRule]);

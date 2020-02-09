@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.KnownArgumentNamesRule = KnownArgumentNamesRule;
-exports.KnownArgumentNamesOnDirectives = KnownArgumentNamesOnDirectives;
+exports.KnownArgumentNamesOnDirectivesRule = KnownArgumentNamesOnDirectivesRule;
 
 var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
@@ -31,7 +31,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * that field.
  */
 function KnownArgumentNamesRule(context) {
-  return _objectSpread({}, KnownArgumentNamesOnDirectives(context), {
+  return _objectSpread({}, KnownArgumentNamesOnDirectivesRule(context), {
     Argument: function Argument(argNode) {
       var argDef = context.getArgument();
       var fieldDef = context.getFieldDef();
@@ -53,7 +53,7 @@ function KnownArgumentNamesRule(context) {
  */
 
 
-function KnownArgumentNamesOnDirectives(context) {
+function KnownArgumentNamesOnDirectivesRule(context) {
   var directiveArgs = Object.create(null);
   var schema = context.getSchema();
   var definedDirectives = schema ? schema.getDirectives() : _directives.specifiedDirectives;

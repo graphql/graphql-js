@@ -100,8 +100,8 @@ function isValidValueNode(context, node) {
     var typeStr = inspect(locationType);
     context.reportError(new GraphQLError("Expected value of type \"".concat(typeStr, "\", found ").concat(print(node), "."), node));
     return;
-  } // Scalars determine if a literal value is valid via parseLiteral() which
-  // may throw or return an invalid value to indicate failure.
+  } // Scalars and Enums determine if a literal value is valid via parseLiteral(),
+  // which may throw or return an invalid value to indicate failure.
 
 
   try {

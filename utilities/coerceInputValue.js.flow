@@ -151,9 +151,9 @@ function coerceInputValueImpl(
   if (isLeafType(type)) {
     let parseResult;
 
-    // Scalars determine if a input value is valid via parseValue(), which can
-    // throw to indicate failure. If it throws, maintain a reference to
-    // the original error.
+    // Scalars and Enums determine if a input value is valid via parseValue(),
+    // which can throw to indicate failure. If it throws, maintain a reference
+    // to the original error.
     try {
       parseResult = type.parseValue(inputValue);
     } catch (error) {
