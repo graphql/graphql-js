@@ -288,6 +288,50 @@ describe('Lexer', () => {
       end: 65,
       value: 'string with unicode code point outside BMP escaped 😀',
     });
+
+    expect(
+      lexOne(
+        '"string with unicode code point outside BMP escaped \\uD800\\uDC00"',
+      ),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 65,
+      value: 'string with unicode code point outside BMP escaped \uD800\uDC00',
+    });
+
+    expect(
+      lexOne(
+        '"string with unicode code point outside BMP escaped \\uDBFF\\uDC00"',
+      ),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 65,
+      value: 'string with unicode code point outside BMP escaped \uDBFF\uDC00',
+    });
+
+    expect(
+      lexOne(
+        '"string with unicode code point outside BMP escaped \\uDBFF\\uDFFF"',
+      ),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 65,
+      value: 'string with unicode code point outside BMP escaped \uDBFF\uDFFF',
+    });
+
+    expect(
+      lexOne(
+        '"string with unicode code point outside BMP escaped \\uD800\\uDFFF"',
+      ),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 65,
+      value: 'string with unicode code point outside BMP escaped \uD800\uDFFF',
+    });
   });
 
   it('lex reports useful string errors', () => {
