@@ -597,11 +597,11 @@ function convertUnicodeEscape(source, body, position) {
 }
 
 function isLeadingSurrogate(charCode) {
-  return 0xd800 <= charCode && charCode <= 0xdbff;
+  return charCode >= 0xd800 && charCode <= 0xdbff;
 }
 
 function isTrailingSurrogate(charCode) {
-  return 0xdc00 <= charCode && charCode <= 0xdfff;
+  return charCode >= 0xdc00 && charCode <= 0xdfff;
 }
 
 /**
