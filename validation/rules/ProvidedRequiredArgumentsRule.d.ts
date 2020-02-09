@@ -14,6 +14,6 @@ export function ProvidedRequiredArgumentsRule(
 /**
  * @internal
  */
-export function ProvidedRequiredArgumentsOnDirectivesRule(
+export function ProvidedRequiredArgumentsOnDirectives(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

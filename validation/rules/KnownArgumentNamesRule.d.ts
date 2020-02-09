@@ -12,6 +12,6 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor;
 /**
  * @internal
  */
-export function KnownArgumentNamesOnDirectivesRule(
+export function KnownArgumentNamesOnDirectives(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

@@ -19,7 +19,7 @@ import { isType, isRequiredArgument } from "../../type/definition.mjs";
  * default value) field arguments have been provided.
  */
 export function ProvidedRequiredArgumentsRule(context) {
-  return _objectSpread({}, ProvidedRequiredArgumentsOnDirectivesRule(context), {
+  return _objectSpread({}, ProvidedRequiredArgumentsOnDirectives(context), {
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
       leave: function leave(fieldNode) {
@@ -55,7 +55,7 @@ export function ProvidedRequiredArgumentsRule(context) {
  * @internal
  */
 
-export function ProvidedRequiredArgumentsOnDirectivesRule(context) {
+export function ProvidedRequiredArgumentsOnDirectives(context) {
   var requiredArgsMap = Object.create(null);
   var schema = context.getSchema();
   var definedDirectives = schema ? schema.getDirectives() : specifiedDirectives;
