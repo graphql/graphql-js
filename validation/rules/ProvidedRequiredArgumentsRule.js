@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.ProvidedRequiredArgumentsRule = ProvidedRequiredArgumentsRule;
-exports.ProvidedRequiredArgumentsOnDirectives = ProvidedRequiredArgumentsOnDirectives;
+exports.ProvidedRequiredArgumentsOnDirectivesRule = ProvidedRequiredArgumentsOnDirectivesRule;
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
@@ -35,7 +35,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * default value) field arguments have been provided.
  */
 function ProvidedRequiredArgumentsRule(context) {
-  return _objectSpread({}, ProvidedRequiredArgumentsOnDirectives(context), {
+  return _objectSpread({}, ProvidedRequiredArgumentsOnDirectivesRule(context), {
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
       leave: function leave(fieldNode) {
@@ -72,7 +72,7 @@ function ProvidedRequiredArgumentsRule(context) {
  */
 
 
-function ProvidedRequiredArgumentsOnDirectives(context) {
+function ProvidedRequiredArgumentsOnDirectivesRule(context) {
   var requiredArgsMap = Object.create(null);
   var schema = context.getSchema();
   var definedDirectives = schema ? schema.getDirectives() : _directives.specifiedDirectives;

@@ -27,7 +27,7 @@ export function ProvidedRequiredArgumentsRule(
   context: ValidationContext,
 ): ASTVisitor {
   return {
-    ...ProvidedRequiredArgumentsOnDirectives(context),
+    ...ProvidedRequiredArgumentsOnDirectivesRule(context),
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
       leave(fieldNode) {
@@ -59,7 +59,7 @@ export function ProvidedRequiredArgumentsRule(
 /**
  * @internal
  */
-export function ProvidedRequiredArgumentsOnDirectives(
+export function ProvidedRequiredArgumentsOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
   const requiredArgsMap = Object.create(null);
