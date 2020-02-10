@@ -1001,6 +1001,11 @@ babel-plugin-dynamic-import-node@^2.3.0:
   dependencies:
     object.assign "^4.1.0"
 
+babel-plugin-transform-require-extensions@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-require-extensions/-/babel-plugin-transform-require-extensions-2.0.0.tgz#29334575890d4a597726de2879f350834a945b9a"
+  integrity sha512-9Iqalv5LGLCV9D9UhoW3vLveb21ex6NL/gHpluAbJoQcSuSZax29D01DUKWByoC2PZhIrfS9M0U21eJPMg7SKA==
+
 balanced-match@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"

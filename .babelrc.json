@@ -2,7 +2,8 @@
   "presets": [["@babel/preset-env", { "targets": { "node": "current" } }]],
   "plugins": [
     "./resources/inline-invariant",
-    "@babel/plugin-transform-flow-strip-types"
+    "@babel/plugin-transform-flow-strip-types",
+    "transform-require-extensions"
   ],
   "overrides": [
     {
