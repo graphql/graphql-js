@@ -904,6 +904,8 @@ export function argsToArgsConfig(
       description: arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
+      deprecationReason: arg.deprecationReason,
+      isDeprecated: arg.deprecationReason != null,
       extensions: arg.extensions,
       astNode: arg.astNode,
     }),
@@ -981,6 +983,7 @@ export type GraphQLArgumentConfig = {|
   defaultValue?: mixed,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   deprecationReason?: ?string,
+  isDeprecated?: boolean,
   astNode?: ?InputValueDefinitionNode,
 |};
 
@@ -1584,11 +1587,12 @@ function defineInputFieldMap(
     );
 
     return {
-      isDeprecated: fieldConfig.deprecationReason != null,
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
+      deprecationReason: fieldConfig.deprecationReason,
+      isDeprecated: fieldConfig.deprecationReason != null,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode,
     };
