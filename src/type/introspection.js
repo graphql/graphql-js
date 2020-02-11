@@ -299,11 +299,11 @@ export const __Type = new GraphQLObjectType({
             defaultValue: false,
           },
         },
-        resolve(type, {includeDeprecated}) {
+        resolve(type, { includeDeprecated }) {
           if (isInputObjectType(type)) {
-            let values=objectValues(type.getFields());
+            let values = objectValues(type.getFields());
             if (!includeDeprecated) {
-              values=values.filter(value => !value.deprecationReason);
+              values = values.filter(value => !value.deprecationReason);
             }
             return values;
           }
@@ -340,11 +340,11 @@ export const __Field = new GraphQLObjectType({
           },
         },
         // resolve: field => field.args || [],
-        resolve(field, {includeDeprecated}) {
-          let args=field.args||[];
+        resolve(field, { includeDeprecated }) {
+          let args = field.args || [];
 
           if (!includeDeprecated) {
-            args=args.filter(arg => !arg.deprecationReason);
+            args = args.filter(arg => !arg.deprecationReason);
           }
 
           return args;

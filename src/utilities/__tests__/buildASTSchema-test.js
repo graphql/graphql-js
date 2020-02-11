@@ -826,7 +826,7 @@ describe('Schema Builder', () => {
     `);
 
     expect(printAllASTNodes(someScalar)).to.equal(scalarSDL);
-    const rootFields=assertObjectType(schema.getType('Query')).getFields();
+    const rootFields = assertObjectType(schema.getType('Query')).getFields();
 
     expect(rootFields.field2.isDeprecated).to.equal(true);
     expect(rootFields.field2.deprecationReason).to.equal('Because I said so');
