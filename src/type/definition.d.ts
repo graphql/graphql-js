@@ -546,6 +546,8 @@ export interface GraphQLArgumentConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: any;
+  isDeprecated?: boolean;
+  deprecationReason?: Maybe<string>;
   extensions?: Maybe<Readonly<GraphQLArgumentExtensions>>;
   astNode?: Maybe<InputValueDefinitionNode>;
 }

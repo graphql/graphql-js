@@ -854,7 +854,7 @@ function defineFieldMap<TSource, TContext>(
       type: argConfig.type,
       defaultValue: argConfig.defaultValue,
       extensions: argConfig.extensions && toObjMap(argConfig.extensions),
-      isDeprecated: Boolean(argConfig.deprecationReason),
+      isDeprecated: argConfig.deprecationReason != null,
       deprecationReason: argConfig.deprecationReason,
       astNode: argConfig.astNode,
     }));
@@ -1584,7 +1584,7 @@ function defineInputFieldMap(
     );
 
     return {
-      isDeprecated: Boolean(fieldConfig.deprecationReason),
+      isDeprecated: fieldConfig.deprecationReason != null,
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
