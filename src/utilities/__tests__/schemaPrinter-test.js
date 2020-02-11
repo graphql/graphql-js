@@ -678,7 +678,7 @@ describe('Type System Printer', () => {
         interfaces: [__Type!]
         possibleTypes: [__Type!]
         enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
-        inputFields: [__InputValue!]
+        inputFields(includeDeprecated: Boolean = false): [__InputValue!]
         ofType: __Type
       }
 
@@ -886,7 +886,7 @@ describe('Type System Printer', () => {
         interfaces: [__Type!]
         possibleTypes: [__Type!]
         enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
-        inputFields: [__InputValue!]
+        inputFields(includeDeprecated: Boolean = false): [__InputValue!]
         ofType: __Type
       }
 
@@ -921,7 +921,7 @@ describe('Type System Printer', () => {
       type __Field {
         name: String!
         description: String
-        args: [__InputValue!]!
+        args(includeDeprecated: Boolean = false): [__InputValue!]!
         type: __Type!
         isDeprecated: Boolean!
         deprecationReason: String

@@ -310,7 +310,7 @@ function printDirective(directive, options) {
 }
 
 function printDeprecated(fieldOrEnumVal) {
-  if (!fieldOrEnumVal.isDeprecated) {
+  if (fieldOrEnumVal.deprecationReason == null) {
     return '';
   }
   const reason = fieldOrEnumVal.deprecationReason;

@@ -695,7 +695,10 @@ const stdTypeMap = keyMap(
  * deprecation reason.
  */
 function getDeprecationReason(
-  node: EnumValueDefinitionNode | FieldDefinitionNode,
+  node:
+    | EnumValueDefinitionNode
+    | FieldDefinitionNode
+    | InputValueDefinitionNode,
 ): ?string {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   return (deprecated?.reason: any);

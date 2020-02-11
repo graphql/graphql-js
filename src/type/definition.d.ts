@@ -493,6 +493,8 @@ export interface GraphQLArgumentConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: any;
+  isDeprecated?: boolean;
+  deprecationReason?: Maybe<string>;
   extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<InputValueDefinitionNode>;
 }
