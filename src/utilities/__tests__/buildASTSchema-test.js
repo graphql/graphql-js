@@ -783,23 +783,33 @@ describe('Schema Builder', () => {
     ).getFields();
 
     const newInput = inputFields.newInput;
-    expect(newInput.isDeprecated).to.equal(false);
+    expect(newInput).to.include({
+      isDeprecated: false,
+    });
 
     const oldInput = inputFields.oldInput;
-    expect(oldInput.isDeprecated).to.equal(true);
-    expect(oldInput.deprecationReason).to.equal('No longer supported');
+    expect(oldInput).to.include({
+      isDeprecated: true,
+      deprecationReason: 'No longer supported',
+    });
 
     const otherInput = inputFields.otherInput;
-    expect(otherInput.isDeprecated).to.equal(true);
-    expect(otherInput.deprecationReason).to.equal('Use newInput');
+    expect(otherInput).to.include({
+      isDeprecated: true,
+      deprecationReason: 'Use newInput',
+    });
 
     const field3OldArg = rootFields.field3.args[0];
-    expect(field3OldArg.isDeprecated).to.equal(true);
-    expect(field3OldArg.deprecationReason).to.equal('No longer supported');
+    expect(field3OldArg).to.include({
+      isDeprecated: true,
+      deprecationReason: 'No longer supported',
+    });
 
     const field4OldArg = rootFields.field4.args[0];
-    expect(field4OldArg.isDeprecated).to.equal(true);
-    expect(field4OldArg.deprecationReason).to.equal('why not?');
+    expect(field4OldArg).to.include({
+      isDeprecated: true,
+      deprecationReason: 'Why not?',
+    });
   });
 
   it('Correctly extend scalar type', () => {
