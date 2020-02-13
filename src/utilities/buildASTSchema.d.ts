@@ -3,7 +3,7 @@ import { Source } from '../language/source';
 import { GraphQLSchema, GraphQLSchemaValidationOptions } from '../type/schema';
 import { ParseOptions } from '../language/parser';
 
-interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
+export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**
    * Descriptions are defined as preceding string literals, however an older
    * experimental version of the SDL supported preceding comments as
