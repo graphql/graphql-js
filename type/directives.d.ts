@@ -1,3 +1,6 @@
+// FIXME
+/* eslint-disable import/no-cycle */
+
 import Maybe from '../tsutils/Maybe';
 
 import { DirectiveDefinitionNode } from '../language/ast';
