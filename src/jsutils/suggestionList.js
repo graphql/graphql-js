@@ -87,7 +87,7 @@ class LexicalDistance {
         );
 
         if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
-          d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
+          d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
         }
       }
     }
