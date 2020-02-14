@@ -80,15 +80,18 @@ class LexicalDistance {
       for (let j = 1; j <= bLength; j++) {
         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
 
-        d[i][j] = Math.min(
-          d[i - 1][j] + 1,
-          d[i][j - 1] + 1,
-          d[i - 1][j - 1] + cost,
+        let currentCell = Math.min(
+          d[i - 1][j] + 1, // delete
+          d[i][j - 1] + 1, // insert
+          d[i - 1][j - 1] + cost, // substitute
         );
 
         if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
-          d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+          // transposition
+          currentCell = Math.min(currentCell, d[i - 2][j - 2] + 1);
         }
+
+        d[i][j] = currentCell;
       }
     }
 
