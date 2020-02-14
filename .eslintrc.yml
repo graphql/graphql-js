@@ -433,7 +433,6 @@ overrides:
       - plugin:import/typescript
     rules:
       flowtype/require-valid-file-annotation: off
-      import/named: off
 
       ##########################################################################
       # `@typescript-eslint/eslint-plugin` rule list based on `v2.17.x`
