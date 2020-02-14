@@ -42,12 +42,17 @@ export default function suggestionList(
 class LexicalDistance {
   _input: string;
   _inputLowerCase: string;
-  _cells: Array<Array<number>>;
+  _rows: [Array<number>, Array<number>, Array<number>];
 
   constructor(input: string) {
     this._input = input;
     this._inputLowerCase = input.toLowerCase();
-    this._cells = [];
+
+    this._rows = [
+      new Array(input.length + 1).fill(0),
+      new Array(input.length + 1).fill(0),
+      new Array(input.length + 1).fill(0),
+    ];
   }
 
   measure(option: string): number {
@@ -62,39 +67,40 @@ class LexicalDistance {
       return 1;
     }
 
-    const d = this._cells;
     const a = optionLowerCase;
     const b = this._inputLowerCase;
     const aLength = a.length;
     const bLength = b.length;
 
-    for (let i = 0; i <= aLength; i++) {
-      d[i] = [i];
-    }
-
-    for (let j = 1; j <= bLength; j++) {
-      d[0][j] = j;
+    const rows = this._rows;
+    for (let j = 0; j <= bLength; j++) {
+      rows[0][j] = j;
     }
 
     for (let i = 1; i <= aLength; i++) {
+      const upRow = rows[(i - 1) % 3];
+      const currentRow = rows[i % 3];
+
+      currentRow[0] = i;
       for (let j = 1; j <= bLength; j++) {
         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
 
         let currentCell = Math.min(
-          d[i - 1][j] + 1, // delete
-          d[i][j - 1] + 1, // insert
-          d[i - 1][j - 1] + cost, // substitute
+          upRow[j] + 1, // delete
+          currentRow[j - 1] + 1, // insert
+          upRow[j - 1] + cost, // substitute
         );
 
         if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
           // transposition
-          currentCell = Math.min(currentCell, d[i - 2][j - 2] + 1);
+          const doubleDiagonalCell = rows[(i - 2) % 3][j - 2];
+          currentCell = Math.min(currentCell, doubleDiagonalCell + 1);
         }
 
-        d[i][j] = currentCell;
+        currentRow[j] = currentCell;
       }
     }
 
-    return d[aLength][bLength];
+    return rows[aLength % 3][bLength];
   }
 }
