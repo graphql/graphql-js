@@ -23,6 +23,14 @@ describe('suggestionList', () => {
     expectSuggestions('green', ['greenish']).to.deep.equal(['greenish']);
   });
 
+  it('Rejects options with distance that exceeds threshold', () => {
+    expectSuggestions('aaaa', ['aaab']).to.deep.equal(['aaab']);
+    expectSuggestions('aaaa', ['aabb']).to.deep.equal(['aabb']);
+    expectSuggestions('aaaa', ['abbb']).to.deep.equal([]);
+
+    expectSuggestions('ab', ['ca']).to.deep.equal([]);
+  });
+
   it('Returns options with different case', () => {
     // cSpell:ignore verylongstring
     expectSuggestions('verylongstring', ['VERYLONGSTRING']).to.deep.equal([

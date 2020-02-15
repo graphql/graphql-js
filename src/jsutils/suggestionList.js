@@ -13,12 +13,13 @@ export default function suggestionList(
 
   const inputThreshold = input.length / 2;
   for (const option of options) {
-    const distance = lexicalDistance.measure(option);
     const threshold = Math.max(inputThreshold, option.length / 2, 1);
-    if (distance <= threshold) {
+    const distance = lexicalDistance.measure(option, threshold);
+    if (distance !== undefined) {
       optionsByDistance[option] = distance;
     }
   }
+
   return Object.keys(optionsByDistance).sort((a, b) => {
     const distanceDiff = optionsByDistance[a] - optionsByDistance[b];
     return distanceDiff !== 0 ? distanceDiff : a.localeCompare(b);
@@ -55,7 +56,7 @@ class LexicalDistance {
     ];
   }
 
-  measure(option: string): number {
+  measure(option: string, threshold: number): number | void {
     if (this._input === option) {
       return 0;
     }
@@ -69,8 +70,13 @@ class LexicalDistance {
 
     const a = optionLowerCase;
     const b = this._inputLowerCase;
+
     const aLength = a.length;
     const bLength = b.length;
+
+    if (Math.abs(aLength - bLength) > threshold) {
+      return undefined;
+    }
 
     const rows = this._rows;
     for (let j = 0; j <= bLength; j++) {
@@ -81,7 +87,7 @@ class LexicalDistance {
       const upRow = rows[(i - 1) % 3];
       const currentRow = rows[i % 3];
 
-      currentRow[0] = i;
+      let smallestCell = (currentRow[0] = i);
       for (let j = 1; j <= bLength; j++) {
         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
 
@@ -97,10 +103,20 @@ class LexicalDistance {
           currentCell = Math.min(currentCell, doubleDiagonalCell + 1);
         }
 
+        if (currentCell < smallestCell) {
+          smallestCell = currentCell;
+        }
+
         currentRow[j] = currentCell;
+      }
+
+      // Early exit, since distance can't go smaller than smallest element of the previous row.
+      if (smallestCell > threshold) {
+        return undefined;
       }
     }
 
-    return rows[aLength % 3][bLength];
+    const distance = rows[aLength % 3][bLength];
+    return distance <= threshold ? distance : undefined;
   }
 }
