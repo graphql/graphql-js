@@ -923,14 +923,14 @@ describe('Validate: Values of correct type', () => {
           complicatedArgs {
             complexArgField(complexArg: {
               requiredField: true,
-              unknownField: "value"
+              invalidField: "value"
             })
           }
         }
       `).to.deep.equal([
         {
           message:
-            'Field "unknownField" is not defined by type "ComplexInput". Did you mean "booleanField", "intField", or "nonNullField"?',
+            'Field "invalidField" is not defined by type "ComplexInput". Did you mean "intField"?',
           locations: [{ line: 6, column: 15 }],
         },
       ]);
