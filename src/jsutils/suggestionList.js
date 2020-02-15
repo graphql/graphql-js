@@ -13,7 +13,7 @@ export default function suggestionList(
 
   const inputThreshold = input.length / 2;
   for (const option of options) {
-    const threshold = Math.max(inputThreshold, option.length / 2, 1);
+    const threshold = Math.max(inputThreshold, option.length / 2, 1) | 0;
     const distance = lexicalDistance.measure(option, threshold);
     if (distance !== undefined) {
       optionsByDistance[option] = distance;
@@ -68,13 +68,17 @@ class LexicalDistance {
       return 1;
     }
 
-    const a = optionLowerCase;
-    const b = this._inputLowerCase;
+    let a = optionLowerCase;
+    let b = this._inputLowerCase;
+    if (a.length < b.length) {
+      a = b;
+      b = optionLowerCase;
+    }
 
     const aLength = a.length;
     const bLength = b.length;
 
-    if (Math.abs(aLength - bLength) > threshold) {
+    if (aLength - bLength > threshold) {
       return undefined;
     }
 
