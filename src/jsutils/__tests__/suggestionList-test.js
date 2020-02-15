@@ -52,7 +52,11 @@ describe('suggestionList', () => {
   });
 
   it('Returns options sorted based on lexical distance', () => {
-    expectSuggestions('abc', ['a', 'ab', 'abc']).to.deep.equal(['abc', 'ab']);
+    expectSuggestions('abc', ['a', 'ab', 'abc']).to.deep.equal([
+      'abc',
+      'ab',
+      'a',
+    ]);
   });
 
   it('Returns options with the same lexical distance sorted lexicographically', () => {

@@ -11,9 +11,8 @@ export default function suggestionList(
   const optionsByDistance = Object.create(null);
   const lexicalDistance = new LexicalDistance(input);
 
-  const inputThreshold = input.length / 2;
+  const threshold = Math.floor(input.length * 0.4) + 1;
   for (const option of options) {
-    const threshold = Math.max(inputThreshold, option.length / 2, 1) | 0;
     const distance = lexicalDistance.measure(option, threshold);
     if (distance !== undefined) {
       optionsByDistance[option] = distance;

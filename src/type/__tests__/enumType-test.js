@@ -178,7 +178,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Value "green" does not exist in "Color" enum. Did you mean the enum value "GREEN"?',
+            'Value "green" does not exist in "Color" enum. Did you mean the enum value "GREEN" or "RED"?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
