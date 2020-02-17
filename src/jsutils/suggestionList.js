@@ -42,11 +42,13 @@ export default function suggestionList(
 class LexicalDistance {
   _input: string;
   _inputLowerCase: string;
+  _inputArray: Array<number>;
   _rows: [Array<number>, Array<number>, Array<number>];
 
   constructor(input: string) {
     this._input = input;
     this._inputLowerCase = input.toLowerCase();
+    this._inputArray = stringToArray(this._inputLowerCase);
 
     this._rows = [
       new Array(input.length + 1).fill(0),
@@ -67,13 +69,14 @@ class LexicalDistance {
       return 1;
     }
 
-    let a = optionLowerCase;
-    let b = this._inputLowerCase;
-    if (a.length < b.length) {
-      a = b;
-      b = optionLowerCase;
-    }
+    let a = stringToArray(optionLowerCase);
+    let b = this._inputArray;
 
+    if (a.length < b.length) {
+      const tmp = a;
+      a = b;
+      b = tmp;
+    }
     const aLength = a.length;
     const bLength = b.length;
 
@@ -122,4 +125,13 @@ class LexicalDistance {
     const distance = rows[aLength % 3][bLength];
     return distance <= threshold ? distance : undefined;
   }
+}
+
+function stringToArray(str) {
+  const strLength = str.length;
+  const array = new Array(strLength);
+  for (let i = 0; i < strLength; ++i) {
+    array[i] = str.charCodeAt(i);
+  }
+  return array;
 }
