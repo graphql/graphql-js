@@ -241,8 +241,10 @@ export function isNullableType(type: any): type is GraphQLNullableType;
 export function assertNullableType(type: any): GraphQLNullableType;
 
 export function getNullableType(type: void): undefined;
+export function getNullableType<T extends GraphQLNullableType>(type: T): T;
 export function getNullableType<T extends GraphQLNullableType>(
-  type: GraphQLNonNull<T> | T,
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  type: GraphQLNonNull<T>,
 ): T;
 
 /**
