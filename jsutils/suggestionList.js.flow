@@ -9,14 +9,16 @@ export default function suggestionList(
   options: $ReadOnlyArray<string>,
 ): Array<string> {
   const optionsByDistance = Object.create(null);
-  const inputThreshold = input.length / 2;
+  const lexicalDistance = new LexicalDistance(input);
+
+  const threshold = Math.floor(input.length * 0.4) + 1;
   for (const option of options) {
-    const distance = lexicalDistance(input, option);
-    const threshold = Math.max(inputThreshold, option.length / 2, 1);
-    if (distance <= threshold) {
+    const distance = lexicalDistance.measure(option, threshold);
+    if (distance !== undefined) {
       optionsByDistance[option] = distance;
     }
   }
+
   return Object.keys(optionsByDistance).sort((a, b) => {
     const distanceDiff = optionsByDistance[a] - optionsByDistance[b];
     return distanceDiff !== 0 ? distanceDiff : a.localeCompare(b);
@@ -36,50 +38,100 @@ export default function suggestionList(
  * of 1.
  *
  * This distance can be useful for detecting typos in input or sorting
- *
- * @param {string} a
- * @param {string} b
- * @return {int} distance in number of edits
  */
-function lexicalDistance(aStr, bStr) {
-  if (aStr === bStr) {
-    return 0;
+class LexicalDistance {
+  _input: string;
+  _inputLowerCase: string;
+  _inputArray: Array<number>;
+  _rows: [Array<number>, Array<number>, Array<number>];
+
+  constructor(input: string) {
+    this._input = input;
+    this._inputLowerCase = input.toLowerCase();
+    this._inputArray = stringToArray(this._inputLowerCase);
+
+    this._rows = [
+      new Array(input.length + 1).fill(0),
+      new Array(input.length + 1).fill(0),
+      new Array(input.length + 1).fill(0),
+    ];
   }
 
-  const d = [];
-  const a = aStr.toLowerCase();
-  const b = bStr.toLowerCase();
-  const aLength = a.length;
-  const bLength = b.length;
+  measure(option: string, threshold: number): number | void {
+    if (this._input === option) {
+      return 0;
+    }
 
-  // Any case change counts as a single edit
-  if (a === b) {
-    return 1;
-  }
+    const optionLowerCase = option.toLowerCase();
 
-  for (let i = 0; i <= aLength; i++) {
-    d[i] = [i];
-  }
+    // Any case change counts as a single edit
+    if (this._inputLowerCase === optionLowerCase) {
+      return 1;
+    }
 
-  for (let j = 1; j <= bLength; j++) {
-    d[0][j] = j;
-  }
+    let a = stringToArray(optionLowerCase);
+    let b = this._inputArray;
 
-  for (let i = 1; i <= aLength; i++) {
-    for (let j = 1; j <= bLength; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+    if (a.length < b.length) {
+      const tmp = a;
+      a = b;
+      b = tmp;
+    }
+    const aLength = a.length;
+    const bLength = b.length;
 
-      d[i][j] = Math.min(
-        d[i - 1][j] + 1,
-        d[i][j - 1] + 1,
-        d[i - 1][j - 1] + cost,
-      );
+    if (aLength - bLength > threshold) {
+      return undefined;
+    }
 
-      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
-        d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
+    const rows = this._rows;
+    for (let j = 0; j <= bLength; j++) {
+      rows[0][j] = j;
+    }
+
+    for (let i = 1; i <= aLength; i++) {
+      const upRow = rows[(i - 1) % 3];
+      const currentRow = rows[i % 3];
+
+      let smallestCell = (currentRow[0] = i);
+      for (let j = 1; j <= bLength; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+
+        let currentCell = Math.min(
+          upRow[j] + 1, // delete
+          currentRow[j - 1] + 1, // insert
+          upRow[j - 1] + cost, // substitute
+        );
+
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+          // transposition
+          const doubleDiagonalCell = rows[(i - 2) % 3][j - 2];
+          currentCell = Math.min(currentCell, doubleDiagonalCell + 1);
+        }
+
+        if (currentCell < smallestCell) {
+          smallestCell = currentCell;
+        }
+
+        currentRow[j] = currentCell;
+      }
+
+      // Early exit, since distance can't go smaller than smallest element of the previous row.
+      if (smallestCell > threshold) {
+        return undefined;
       }
     }
-  }
 
-  return d[aLength][bLength];
+    const distance = rows[aLength % 3][bLength];
+    return distance <= threshold ? distance : undefined;
+  }
+}
+
+function stringToArray(str) {
+  const strLength = str.length;
+  const array = new Array(strLength);
+  for (let i = 0; i < strLength; ++i) {
+    array[i] = str.charCodeAt(i);
+  }
+  return array;
 }

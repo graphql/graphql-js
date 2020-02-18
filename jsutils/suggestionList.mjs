@@ -4,14 +4,14 @@
  */
 export default function suggestionList(input, options) {
   var optionsByDistance = Object.create(null);
-  var inputThreshold = input.length / 2;
+  var lexicalDistance = new LexicalDistance(input);
+  var threshold = Math.floor(input.length * 0.4) + 1;
 
   for (var _i2 = 0; _i2 < options.length; _i2++) {
     var option = options[_i2];
-    var distance = lexicalDistance(input, option);
-    var threshold = Math.max(inputThreshold, option.length / 2, 1);
+    var distance = lexicalDistance.measure(option, threshold);
 
-    if (distance <= threshold) {
+    if (distance !== undefined) {
       optionsByDistance[option] = distance;
     }
   }
@@ -34,45 +34,98 @@ export default function suggestionList(input, options) {
  * of 1.
  *
  * This distance can be useful for detecting typos in input or sorting
- *
- * @param {string} a
- * @param {string} b
- * @return {int} distance in number of edits
  */
 
-function lexicalDistance(aStr, bStr) {
-  if (aStr === bStr) {
-    return 0;
+var LexicalDistance =
+/*#__PURE__*/
+function () {
+  function LexicalDistance(input) {
+    this._input = input;
+    this._inputLowerCase = input.toLowerCase();
+    this._inputArray = stringToArray(this._inputLowerCase);
+    this._rows = [new Array(input.length + 1).fill(0), new Array(input.length + 1).fill(0), new Array(input.length + 1).fill(0)];
   }
 
-  var d = [];
-  var a = aStr.toLowerCase();
-  var b = bStr.toLowerCase();
-  var aLength = a.length;
-  var bLength = b.length; // Any case change counts as a single edit
+  var _proto = LexicalDistance.prototype;
 
-  if (a === b) {
-    return 1;
-  }
+  _proto.measure = function measure(option, threshold) {
+    if (this._input === option) {
+      return 0;
+    }
 
-  for (var i = 0; i <= aLength; i++) {
-    d[i] = [i];
-  }
+    var optionLowerCase = option.toLowerCase(); // Any case change counts as a single edit
 
-  for (var j = 1; j <= bLength; j++) {
-    d[0][j] = j;
-  }
+    if (this._inputLowerCase === optionLowerCase) {
+      return 1;
+    }
 
-  for (var _i3 = 1; _i3 <= aLength; _i3++) {
-    for (var _j = 1; _j <= bLength; _j++) {
-      var cost = a[_i3 - 1] === b[_j - 1] ? 0 : 1;
-      d[_i3][_j] = Math.min(d[_i3 - 1][_j] + 1, d[_i3][_j - 1] + 1, d[_i3 - 1][_j - 1] + cost);
+    var a = stringToArray(optionLowerCase);
+    var b = this._inputArray;
 
-      if (_i3 > 1 && _j > 1 && a[_i3 - 1] === b[_j - 2] && a[_i3 - 2] === b[_j - 1]) {
-        d[_i3][_j] = Math.min(d[_i3][_j], d[_i3 - 2][_j - 2] + cost);
+    if (a.length < b.length) {
+      var tmp = a;
+      a = b;
+      b = tmp;
+    }
+
+    var aLength = a.length;
+    var bLength = b.length;
+
+    if (aLength - bLength > threshold) {
+      return undefined;
+    }
+
+    var rows = this._rows;
+
+    for (var j = 0; j <= bLength; j++) {
+      rows[0][j] = j;
+    }
+
+    for (var i = 1; i <= aLength; i++) {
+      var upRow = rows[(i - 1) % 3];
+      var currentRow = rows[i % 3];
+      var smallestCell = currentRow[0] = i;
+
+      for (var _j = 1; _j <= bLength; _j++) {
+        var cost = a[i - 1] === b[_j - 1] ? 0 : 1;
+        var currentCell = Math.min(upRow[_j] + 1, // delete
+        currentRow[_j - 1] + 1, // insert
+        upRow[_j - 1] + cost // substitute
+        );
+
+        if (i > 1 && _j > 1 && a[i - 1] === b[_j - 2] && a[i - 2] === b[_j - 1]) {
+          // transposition
+          var doubleDiagonalCell = rows[(i - 2) % 3][_j - 2];
+          currentCell = Math.min(currentCell, doubleDiagonalCell + 1);
+        }
+
+        if (currentCell < smallestCell) {
+          smallestCell = currentCell;
+        }
+
+        currentRow[_j] = currentCell;
+      } // Early exit, since distance can't go smaller than smallest element of the previous row.
+
+
+      if (smallestCell > threshold) {
+        return undefined;
       }
     }
+
+    var distance = rows[aLength % 3][bLength];
+    return distance <= threshold ? distance : undefined;
+  };
+
+  return LexicalDistance;
+}();
+
+function stringToArray(str) {
+  var strLength = str.length;
+  var array = new Array(strLength);
+
+  for (var i = 0; i < strLength; ++i) {
+    array[i] = str.charCodeAt(i);
   }
 
-  return d[aLength][bLength];
+  return array;
 }
