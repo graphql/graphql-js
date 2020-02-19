@@ -423,6 +423,12 @@ describe('Lexer', () => {
       locations: [{ line: 1, column: 7 }],
     });
 
+    expectSyntaxError('"bad \\uD83D\\noEscape"').to.deep.equal({
+      message:
+        'Syntax Error: Invalid surrogate pair escape sequence: \\uD83D\\n.',
+      locations: [{ line: 1, column: 7 }],
+    });
+
     expectSyntaxError('"bad \\uD83D\\uDBFF esc"').to.deep.equal({
       message:
         'Syntax Error: Invalid surrogate pair escape sequence: \\uD83D\\uDBFF.',
