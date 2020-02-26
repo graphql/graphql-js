@@ -501,6 +501,7 @@ export function extendSchemaImpl(
         type,
         description: getDescription(arg, options),
         defaultValue: valueFromAST(arg.defaultValue, type),
+        deprecationReason: getDeprecationReason(arg),
         astNode: arg,
       };
     }

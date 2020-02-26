@@ -743,7 +743,7 @@ describe('Schema Builder', () => {
         field2: Int @deprecated(reason: "Because I said so")
         enum: MyEnum
         field3(oldArg: String @deprecated, arg: String): String
-        field4(oldArg: String @deprecated(reason: "why not?"), arg: String): String
+        field4(oldArg: String @deprecated(reason: "Why not?"), arg: String): String
         field5(arg: MyInput): String
       }
     `;
