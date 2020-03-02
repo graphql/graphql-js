@@ -433,7 +433,7 @@ overrides:
       flowtype/require-valid-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v2.17.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v2.21.x`
       ##########################################################################
 
       # Supported Rules

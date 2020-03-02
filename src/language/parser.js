@@ -17,6 +17,7 @@ import {
   type NameNode,
   type VariableNode,
   type DocumentNode,
+  type CommentNode,
   type DefinitionNode,
   type OperationDefinitionNode,
   type OperationTypeNode,
@@ -166,7 +167,7 @@ export function parseType(
 class Parser {
   _options: ?ParseOptions;
   _lexer: Lexer;
-
+  _comments: Array<CommentNode>;
   constructor(source: string | Source, options?: ParseOptions) {
     const sourceObj = typeof source === 'string' ? new Source(source) : source;
     devAssert(
@@ -176,6 +177,23 @@ class Parser {
 
     this._lexer = new Lexer(sourceObj);
     this._options = options;
+    this._comments = [];
+  }
+
+  advance(): Token {
+    let token = this._lexer.advance();
+    while (token.kind === TokenKind.COMMENT) {
+      this._lexer.advance();
+      this._comments.push({
+        kind: TokenKind.COMMENT,
+        // Since we don't store comment nodes in linked list, we use Location constructor
+        // instead of this.loc
+        loc: new Location(token, token, this._lexer.source),
+        value: token.value || '',
+      });
+      token = this._lexer.token;
+    }
+    return token;
   }
 
   /**
@@ -197,7 +215,7 @@ class Parser {
    */
   parseDocument(): DocumentNode {
     const start = this._lexer.token;
-    const astWithoutComments = {
+    const { kind, definitions, loc } = {
       kind: Kind.DOCUMENT,
       definitions: this.many(
         TokenKind.SOF,
@@ -205,10 +223,9 @@ class Parser {
         TokenKind.EOF,
       ),
       loc: this.loc(start),
-      comments: [],
     };
-    astWithoutComments.comments = this._lexer.commentsList;
-    return astWithoutComments;
+    const comments = this._comments;
+    return { kind, definitions, loc, comments };
   }
 
   /**
@@ -540,14 +557,14 @@ class Parser {
       case TokenKind.BRACE_L:
         return this.parseObject(isConst);
       case TokenKind.INT:
-        this._lexer.advance();
+        this.advance();
         return {
           kind: Kind.INT,
           value: ((token.value: any): string),
           loc: this.loc(token),
         };
       case TokenKind.FLOAT:
-        this._lexer.advance();
+        this.advance();
         return {
           kind: Kind.FLOAT,
           value: ((token.value: any): string),
@@ -557,7 +574,7 @@ class Parser {
       case TokenKind.BLOCK_STRING:
         return this.parseStringLiteral();
       case TokenKind.NAME:
-        this._lexer.advance();
+        this.advance();
         switch (token.value) {
           case 'true':
             return { kind: Kind.BOOLEAN, value: true, loc: this.loc(token) };
@@ -583,7 +600,7 @@ class Parser {
 
   parseStringLiteral(): StringValueNode {
     const token = this._lexer.token;
-    this._lexer.advance();
+    this.advance();
     return {
       kind: Kind.STRING,
       value: ((token.value: any): string),
@@ -881,8 +898,8 @@ class Parser {
       this.peek(TokenKind.BRACE_L) &&
       this._lexer.lookahead().kind === TokenKind.BRACE_R
     ) {
-      this._lexer.advance();
-      this._lexer.advance();
+      this.advance();
+      this.advance();
       return [];
     }
     return this.optionalMany(
@@ -1421,7 +1438,7 @@ class Parser {
   expectToken(kind: TokenKindEnum): Token {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advance();
       return token;
     }
 
@@ -1439,7 +1456,7 @@ class Parser {
   expectOptionalToken(kind: TokenKindEnum): ?Token {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advance();
       return token;
     }
     return undefined;
@@ -1452,7 +1469,7 @@ class Parser {
   expectKeyword(value: string) {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advance();
     } else {
       throw syntaxError(
         this._lexer.source,
@@ -1469,7 +1486,7 @@ class Parser {
   expectOptionalKeyword(value: string): boolean {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advance();
       return true;
     }
     return false;

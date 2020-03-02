@@ -2,7 +2,7 @@
 
 import { syntaxError } from '../error/syntaxError';
 
-import { Token, type CommentNode } from './ast';
+import { Token } from './ast';
 import { type Source } from './source';
 import { dedentBlockStringValue } from './blockString';
 import { type TokenKindEnum, TokenKind } from './tokenKind';
@@ -29,10 +29,6 @@ export class Lexer {
   token: Token;
 
   /**
-   * The list of comments token encountered so far
-   */
-  commentsList: Array<CommentNode>;
-  /**
    * The (1-indexed) line containing the current token.
    */
   line: number;
@@ -48,17 +44,19 @@ export class Lexer {
     this.source = source;
     this.lastToken = startOfFileToken;
     this.token = startOfFileToken;
-    this.commentsList = [];
     this.line = 1;
     this.lineStart = 0;
   }
 
   /**
-   * Advances the token stream to the next non-ignored token.
+   * Advances the token stream to the next token. Adds last non-ignored
+   * token as previous pointer to the linked list
    */
   advance(): Token {
-    this.lastToken = this.token;
-    const token = (this.token = this.lookahead());
+    if (this.token.kind !== TokenKind.COMMENT) {
+      this.lastToken = this.token;
+    }
+    const token = (this.token = this.lookahead(false));
     return token;
   }
 
@@ -66,36 +64,24 @@ export class Lexer {
    * Looks ahead and returns the next non-ignored token, but does not change
    * the state of Lexer.
    */
-  lookahead(): Token {
+  lookahead(ignoreComments: boolean = true): Token {
     let token = this.token;
     if (token.kind !== TokenKind.EOF) {
+      let endLoop = false;
       do {
         // Note: next is only mutable during parsing, so we cast to allow this.
         token = token.next ?? ((token: any).next = readToken(this, token));
-        if (token.kind === TokenKind.COMMENT) {
-          addCommentNodeToList(this, token);
-          continue;
+
+        // If comments are not ignored then:
+        //   return whatever token was found (comment/no-comment)
+        // else loop till next valid token(no-comment) is not found
+        if (!ignoreComments || token.kind !== TokenKind.COMMENT) {
+          endLoop = true;
         }
-      } while (token.kind === TokenKind.COMMENT);
+      } while (!endLoop);
     }
     return token;
   }
-}
-
-function addCommentNodeToList(lexer: Lexer, commentToken: Token) {
-  if (commentToken.kind !== TokenKind.COMMENT) {
-    return;
-  }
-  const { start, end, column, line, value } = commentToken;
-
-  lexer.commentsList.push({
-    kind: 'Comment',
-    start,
-    end,
-    column,
-    line,
-    value,
-  });
 }
 
 /**

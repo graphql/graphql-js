@@ -76,6 +76,10 @@ export function stripIgnoredCharacters(source: string | Source): string {
 
   let wasLastAddedTokenNonPunctuator = false;
   while (lexer.advance().kind !== TokenKind.EOF) {
+    if (lexer.token.kind === TokenKind.COMMENT) {
+      continue;
+    }
+
     const currentToken = lexer.token;
     const tokenKind = currentToken.kind;
 

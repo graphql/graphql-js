@@ -147,21 +147,57 @@ describe('Parser', () => {
     );
   });
 
-  it('Add comments from type in AST', () => {
-    const ast = parse(`
+  it('Add single comments in AST', () => {
+    const ast = parse(dedent`
       #This comment has a \u0A0A multi-byte character.
       type alpha{ field(arg: string):string }
     `);
 
-    expect(ast).to.have.nested.property(
-      'comments[0].value',
-      'This comment has a \u0A0A multi-byte character.',
-    );
-    expect(ast.comments).to.have.length(1);
+    expect(toJSONDeep(ast.comments)).to.deep.equal([
+      {
+        kind: 'Comment',
+        loc: { start: 0, end: 43 },
+        value: 'This comment has a ਊ multi-byte character.',
+      },
+    ]);
+  });
+
+  it('Ignore comments that comes when we peek for a token in AST', () => {
+    const ast = parse(dedent`
+      type #This is a comment that gets ignored
+      alpha{ field(arg: string):string }
+    `);
+
+    expect(toJSONDeep(ast.comments)).to.deep.equal([
+      {
+        kind: 'Comment',
+        loc: {
+          end: 41,
+          start: 5,
+        },
+        value: 'This is a comment that gets ignored',
+      },
+    ]);
+  });
+
+  it('Add empty comments from in AST', () => {
+    const ast = parse(dedent`
+      #
+      type alpha{ field(arg: string):string }
+    `);
+
+    expect(toJSONDeep(ast.comments)).to.deep.equal([
+      {
+        kind: 'Comment',
+        loc: { start: 0, end: 1 },
+        value: '',
+      },
+    ]);
   });
 
   it('Add multiple comments in AST', () => {
-    const ast = parse(`
+    const ast = parse(dedent`
+      #This is top comment
       type alpha{
         #This comment is demo comment.
         field(arg: string):string 
@@ -169,15 +205,23 @@ describe('Parser', () => {
       }
     `);
 
-    expect(ast).to.have.nested.property(
-      'comments[0].value',
-      'This comment is demo comment.',
-    );
-    expect(ast).to.have.nested.property(
-      'comments[1].value',
-      'This is another demo comment having # inside',
-    );
-    expect(ast.comments).to.have.length(2);
+    expect(toJSONDeep(ast.comments)).to.deep.equal([
+      {
+        kind: 'Comment',
+        loc: { start: 0, end: 20 },
+        value: 'This is top comment',
+      },
+      {
+        kind: 'Comment',
+        loc: { start: 35, end: 65 },
+        value: 'This comment is demo comment.',
+      },
+      {
+        kind: 'Comment',
+        loc: { start: 97, end: 142 },
+        value: 'This is another demo comment having # inside',
+      },
+    ]);
   });
 
   it('parses kitchen sink', () => {

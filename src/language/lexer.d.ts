@@ -22,7 +22,6 @@ export class Lexer {
    */
   token: Token;
 
-  commentsList: Array<CommentNode>;
   /**
    * The (1-indexed) line containing the current token.
    */

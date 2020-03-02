@@ -135,6 +135,7 @@ export function isNode(maybeNode: mixed): boolean %checks {
 export type ASTNode =
   | NameNode
   | DocumentNode
+  | CommentNode
   | OperationDefinitionNode
   | VariableDefinitionNode
   | VariableNode
@@ -183,6 +184,7 @@ export type ASTNode =
 export type ASTKindToNode = {|
   Name: NameNode,
   Document: DocumentNode,
+  Comment: CommentNode,
   OperationDefinition: OperationDefinitionNode,
   VariableDefinition: VariableDefinitionNode,
   Variable: VariableNode,
@@ -240,7 +242,7 @@ export type DocumentNode = {|
   +kind: 'Document',
   +loc?: Location,
   +definitions: $ReadOnlyArray<DefinitionNode>,
-  +comments: $ReadOnlyArray<CommentNode>,
+  +comments?: $ReadOnlyArray<CommentNode>,
 |};
 
 export type DefinitionNode =
@@ -250,11 +252,8 @@ export type DefinitionNode =
 
 export type CommentNode = {|
   +kind: 'Comment',
-  +start: number,
-  +end: number,
-  +column: number,
-  +line: number,
-  +value: string | void,
+  loc?: Location,
+  +value: string,
 |};
 
 export type ExecutableDefinitionNode =
