@@ -967,7 +967,7 @@ export type GraphQLField<
   args: Array<GraphQLArgument>,
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
-  isDeprecated?: boolean,
+  isDeprecated: boolean,
   deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?FieldDefinitionNode,
