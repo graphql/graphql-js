@@ -517,7 +517,7 @@ export interface GraphQLField<
   args: Array<GraphQLArgument>;
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
-  isDeprecated?: boolean;
+  isDeprecated: boolean;
   deprecationReason?: Maybe<string>;
   extensions: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<FieldDefinitionNode>;
@@ -739,7 +739,7 @@ export interface GraphQLEnumValue {
   name: string;
   description: Maybe<string>;
   value: any;
-  isDeprecated?: boolean;
+  isDeprecated: boolean;
   deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<EnumValueDefinitionNode>;
