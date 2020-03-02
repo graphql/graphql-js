@@ -197,7 +197,7 @@ class Parser {
    */
   parseDocument(): DocumentNode {
     const start = this._lexer.token;
-    return {
+    const astWithoutComments = {
       kind: Kind.DOCUMENT,
       definitions: this.many(
         TokenKind.SOF,
@@ -205,7 +205,10 @@ class Parser {
         TokenKind.EOF,
       ),
       loc: this.loc(start),
+      comments: [],
     };
+    astWithoutComments.comments = this._lexer.commentsList;
+    return astWithoutComments;
   }
 
   /**

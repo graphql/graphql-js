@@ -147,6 +147,39 @@ describe('Parser', () => {
     );
   });
 
+  it('Add comments from type in AST', () => {
+    const ast = parse(`
+      #This comment has a \u0A0A multi-byte character.
+      type alpha{ field(arg: string):string }
+    `);
+
+    expect(ast).to.have.nested.property(
+      'comments[0].value',
+      'This comment has a \u0A0A multi-byte character.',
+    );
+    expect(ast.comments).to.have.length(1);
+  });
+
+  it('Add multiple comments in AST', () => {
+    const ast = parse(`
+      type alpha{
+        #This comment is demo comment.
+        field(arg: string):string 
+        #This is another demo comment having # inside
+      }
+    `);
+
+    expect(ast).to.have.nested.property(
+      'comments[0].value',
+      'This comment is demo comment.',
+    );
+    expect(ast).to.have.nested.property(
+      'comments[1].value',
+      'This is another demo comment having # inside',
+    );
+    expect(ast.comments).to.have.length(2);
+  });
+
   it('parses kitchen sink', () => {
     expect(() => parse(kitchenSinkQuery)).to.not.throw();
   });
@@ -231,6 +264,7 @@ describe('Parser', () => {
 
     expect(toJSONDeep(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
+      comments: [],
       loc: { start: 0, end: 41 },
       definitions: [
         {
@@ -321,6 +355,7 @@ describe('Parser', () => {
 
     expect(toJSONDeep(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
+      comments: [],
       loc: { start: 0, end: 30 },
       definitions: [
         {

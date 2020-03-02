@@ -2,7 +2,7 @@
 
 import { syntaxError } from '../error/syntaxError';
 
-import { Token } from './ast';
+import { Token, type CommentNode } from './ast';
 import { type Source } from './source';
 import { dedentBlockStringValue } from './blockString';
 import { type TokenKindEnum, TokenKind } from './tokenKind';
@@ -29,6 +29,10 @@ export class Lexer {
   token: Token;
 
   /**
+   * The list of comments token encountered so far
+   */
+  commentsList: Array<CommentNode>;
+  /**
    * The (1-indexed) line containing the current token.
    */
   line: number;
@@ -44,6 +48,7 @@ export class Lexer {
     this.source = source;
     this.lastToken = startOfFileToken;
     this.token = startOfFileToken;
+    this.commentsList = [];
     this.line = 1;
     this.lineStart = 0;
   }
@@ -67,10 +72,30 @@ export class Lexer {
       do {
         // Note: next is only mutable during parsing, so we cast to allow this.
         token = token.next ?? ((token: any).next = readToken(this, token));
+        if (token.kind === TokenKind.COMMENT) {
+          addCommentNodeToList(this, token);
+          continue;
+        }
       } while (token.kind === TokenKind.COMMENT);
     }
     return token;
   }
+}
+
+function addCommentNodeToList(lexer: Lexer, commentToken: Token) {
+  if (commentToken.kind !== TokenKind.COMMENT) {
+    return;
+  }
+  const { start, end, column, line, value } = commentToken;
+
+  lexer.commentsList.push({
+    kind: 'Comment',
+    start,
+    end,
+    column,
+    line,
+    value,
+  });
 }
 
 /**

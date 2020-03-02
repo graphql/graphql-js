@@ -240,12 +240,22 @@ export type DocumentNode = {|
   +kind: 'Document',
   +loc?: Location,
   +definitions: $ReadOnlyArray<DefinitionNode>,
+  +comments: $ReadOnlyArray<CommentNode>,
 |};
 
 export type DefinitionNode =
   | ExecutableDefinitionNode
   | TypeSystemDefinitionNode
   | TypeSystemExtensionNode;
+
+export type CommentNode = {|
+  +kind: 'Comment',
+  +start: number,
+  +end: number,
+  +column: number,
+  +line: number,
+  +value: string | void,
+|};
 
 export type ExecutableDefinitionNode =
   | OperationDefinitionNode

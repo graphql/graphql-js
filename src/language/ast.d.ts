@@ -204,6 +204,16 @@ export interface DocumentNode {
   readonly kind: 'Document';
   readonly loc?: Location;
   readonly definitions: ReadonlyArray<DefinitionNode>;
+  readonly comments: ReadonlyArray<CommentNode>;
+}
+
+export interface CommentNode {
+  readonly kind: 'Comment';
+  readonly start: number;
+  readonly end: number;
+  readonly column: number;
+  readonly line: number;
+  readonly value: string | void;
 }
 
 export type DefinitionNode =

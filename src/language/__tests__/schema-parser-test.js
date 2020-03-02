@@ -79,6 +79,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
@@ -176,6 +177,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeExtension',
@@ -201,6 +203,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeExtension',
@@ -219,6 +222,7 @@ describe('Schema Parser', () => {
     const doc = parse('extend interface Hello implements Greeting');
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'InterfaceTypeExtension',
@@ -242,6 +246,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeExtension',
@@ -304,6 +309,7 @@ describe('Schema Parser', () => {
     `);
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'InterfaceTypeExtension',
@@ -376,6 +382,7 @@ describe('Schema Parser', () => {
     const doc = parse(body);
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'SchemaExtension',
@@ -400,6 +407,7 @@ describe('Schema Parser', () => {
     const doc = parse(body);
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'SchemaExtension',
@@ -442,6 +450,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
@@ -471,6 +480,7 @@ describe('Schema Parser', () => {
     const doc = parse('interface Hello implements World { field: String }');
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'InterfaceTypeDefinition',
@@ -497,6 +507,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
@@ -523,6 +534,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
@@ -551,6 +563,7 @@ describe('Schema Parser', () => {
     const doc = parse('interface Hello implements Wo & rld { field: String }');
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'InterfaceTypeDefinition',
@@ -580,6 +593,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
@@ -610,6 +624,7 @@ describe('Schema Parser', () => {
     );
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'InterfaceTypeDefinition',
@@ -639,6 +654,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'EnumTypeDefinition',
@@ -658,6 +674,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'EnumTypeDefinition',
@@ -684,6 +701,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'InterfaceTypeDefinition',
@@ -714,6 +732,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
@@ -752,6 +771,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
@@ -794,6 +814,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
@@ -836,6 +857,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
@@ -876,6 +898,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'UnionTypeDefinition',
@@ -895,6 +918,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'UnionTypeDefinition',
@@ -917,6 +941,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'UnionTypeDefinition',
@@ -967,6 +992,7 @@ describe('Schema Parser', () => {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'ScalarTypeDefinition',
@@ -988,6 +1014,7 @@ input Hello {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'InputObjectTypeDefinition',
@@ -1026,6 +1053,7 @@ input Hello {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'DirectiveDefinition',
@@ -1062,6 +1090,7 @@ input Hello {
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
+      comments: [],
       definitions: [
         {
           kind: 'DirectiveDefinition',
