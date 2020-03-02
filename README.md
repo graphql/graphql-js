@@ -13,7 +13,7 @@ Looking for help? Find resources [from the community](https://graphql.org/commun
 
 ## Getting Started
 
-An overview of GraphQL in general is available in the
+An overview of GraphQL, in general, is available in the
 [README](https://github.com/graphql/graphql-spec/blob/master/README.md) for the
 [Specification for GraphQL](https://github.com/graphql/graphql-spec). That overview
 describes a simple set of GraphQL examples that exist as [tests](src/__tests__)
@@ -30,16 +30,16 @@ With yarn:
 yarn add graphql
 ```
 
-or alternatively using npm:
+alternatively using npm:
 
 ```sh
 npm install --save graphql
 ```
 
 GraphQL.js provides two important capabilities: building a type schema, and
-serving queries against that type schema.
+serving queries against that type of schema.
 
-First, build a GraphQL type schema which maps to your code base.
+First, build a GraphQL type schema which maps to your codebase.
 
 ```js
 import {
@@ -66,8 +66,7 @@ var schema = new GraphQLSchema({
 
 This defines a simple schema with one type and one field, that resolves
 to a fixed value. The `resolve` function can return a value, a promise,
-or an array of promises. A more complex example is included in the top
-level [tests](src/__tests__) directory.
+or an array of promises. A more complex example is included in the top-level [tests](src/__tests__) directory.
 
 Then, serve the result of a query against that type schema.
 
@@ -84,7 +83,7 @@ graphql(schema, query).then(result => {
 ```
 
 This runs a query fetching the one field defined. The `graphql` function will
-first ensure the query is syntactically and semantically valid before executing
+first, ensure the query is syntactically and semantically valid before executing
 it, reporting errors otherwise.
 
 ```js
@@ -118,9 +117,9 @@ npm install graphql@git://github.com/graphql/graphql-js.git#npm
 
 ### Using in a Browser
 
-GraphQL.js is a general purpose library and can be used both in a Node server
+GraphQL.js is a general-purpose library and can be used both in a Node server
 and in the browser. As an example, the [GraphiQL](https://github.com/graphql/graphiql/)
-tool is built with GraphQL.js!
+the tool is built with GraphQL.js!
 
 Building a project using GraphQL.js with [webpack](https://webpack.js.org) or
 [rollup](https://github.com/rollup/rollup) should just work and only include

@@ -6,7 +6,7 @@ permalink: /graphql-js/object-types/
 next: /graphql-js/mutations-and-input-types/
 ---
 
-In many cases, you don't want to return a number or a string from an API. You want to return an object that has its own complex behavior. GraphQL is a perfect fit for this.
+In many cases, you don't want to return a number or a string from an API. You want to return an object that has its complex behavior. GraphQL is a perfect fit for this.
 
 In GraphQL schema language, the way you define a new object type is the same way we have been defining the `Query` type in our examples. Each object can have fields that return a particular type, and methods that take arguments. For example, in the [Passing Arguments](/graphql-js/passing-arguments/) documentation, we had a method to roll some random dice:
 
@@ -56,7 +56,7 @@ var root = {
 };
 ```
 
-For fields that don't use any arguments, you can use either properties on the object or instance methods. So for the example code above, both `numSides` and `rollOnce` can actually be used to implement GraphQL fields, so that code also implements the schema of:
+For fields that don't use any arguments, you can use either property on the object or instance methods. So for the example code above, both `numSides` and `rollOnce` can be used to implement GraphQL fields, so that code also implements the schema of:
 
 ```graphql
 type RandomDie {

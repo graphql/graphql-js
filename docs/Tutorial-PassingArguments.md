@@ -14,7 +14,7 @@ type Query {
 }
 ```
 
-Instead of hardcoding “three”, we might want a more general function that rolls `numDice` dice, each of which have `numSides` sides. We can add arguments to the GraphQL schema language like this:
+Instead of hardcoding “three”, we might want a more general function that rolls `numDice` dice, each of which has `numSides` sides. We can add arguments to the GraphQL schema language like this:
 
 ```graphql
 type Query {
@@ -38,7 +38,7 @@ var root = {
 };
 ```
 
-It's convenient to use [ES6 destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment) for these parameters, since you know what format they will be. So we can also write `rollDice` as
+It's convenient to use [ES6 destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment) for these parameters since you know what format they will be. So we can also write `rollDice` as
 
 ```js
 var root = {
@@ -103,7 +103,7 @@ When you call this API, you have to pass each argument by name. So for the serve
 
 If you run this code with `node server.js` and browse to http://localhost:4000/graphql you can try out this API.
 
-When you're passing arguments in code, it's generally better to avoid constructing the whole query string yourself. Instead, you can use `$` syntax to define variables in your query, and pass the variables as a separate map.
+When you're passing arguments in code, it's generally better to avoid constructing the whole query string yourself. Instead, you can use `$` syntax to define variables in your query and pass the variables as a separate map.
 
 For example, some JavaScript code that calls our server above is:
 
@@ -129,6 +129,6 @@ fetch('/graphql', {
   .then(data => console.log('data returned:', data));
 ```
 
-Using `$dice` and `$sides` as variables in GraphQL means we don't have to worry about escaping on the client side.
+Using `$dice` and `$sides` as variables in GraphQL means we don't have to worry about escaping on the client-side.
 
-With basic types and argument passing, you can implement anything you can implement in a REST API. But GraphQL supports even more powerful queries. You can replace multiple API calls with a single API call if you learn how to [define your own object types](/graphql-js/object-types/).
+With basic types and argument passing, you can implement anything you can implement in a REST API. But GraphQL supports even more powerful queries. You can replace multiple API calls with a single API call if you learn how to [define your object types](/graphql-js/object-types/).
