@@ -13,9 +13,7 @@ import devAssert from "../jsutils/devAssert.mjs";
  * be "Foo.graphql" and location to be `{ line: 40, column: 0 }`.
  * line and column in locationOffset are 1-indexed
  */
-export var Source =
-/*#__PURE__*/
-function () {
+export var Source = /*#__PURE__*/function () {
   function Source(body) {
     var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'GraphQL request';
     var locationOffset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {

@@ -11,9 +11,7 @@ import { typeFromAST } from "./typeFromAST.mjs";
  * AST during a recursive descent by calling `enter(node)` and `leave(node)`.
  */
 
-export var TypeInfo =
-/*#__PURE__*/
-function () {
+export var TypeInfo = /*#__PURE__*/function () {
   function TypeInfo(schema, // NOTE: this experimental optional second parameter is only needed in order
   // to support non-spec-compliant code bases. You should never need to use it.
   // It may disappear in the future.

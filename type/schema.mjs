@@ -93,9 +93,7 @@ export function assertSchema(schema) {
  *
  */
 
-export var GraphQLSchema =
-/*#__PURE__*/
-function () {
+export var GraphQLSchema = /*#__PURE__*/function () {
   // Used as a cache for validateSchema().
   function GraphQLSchema(config) {
     var _config$directives;

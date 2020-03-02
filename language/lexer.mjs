@@ -11,9 +11,7 @@ import { TokenKind } from "./tokenKind.mjs";
  * whenever called.
  */
 
-export var Lexer =
-/*#__PURE__*/
-function () {
+export var Lexer = /*#__PURE__*/function () {
   /**
    * The previously focused non-ignored token.
    */

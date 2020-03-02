@@ -22,9 +22,7 @@ var _tokenKind = require("./tokenKind");
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-var Lexer =
-/*#__PURE__*/
-function () {
+var Lexer = /*#__PURE__*/function () {
   /**
    * The previously focused non-ignored token.
    */

@@ -54,9 +54,7 @@ function assertDirective(directive) {
  */
 
 
-var GraphQLDirective =
-/*#__PURE__*/
-function () {
+var GraphQLDirective = /*#__PURE__*/function () {
   function GraphQLDirective(config) {
     var _config$isRepeatable, _config$args;
 

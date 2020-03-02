@@ -44,9 +44,7 @@ function suggestionList(input, options) {
  */
 
 
-var LexicalDistance =
-/*#__PURE__*/
-function () {
+var LexicalDistance = /*#__PURE__*/function () {
   function LexicalDistance(input) {
     this._input = input;
     this._inputLowerCase = input.toLowerCase();

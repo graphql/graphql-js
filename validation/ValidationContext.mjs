@@ -9,9 +9,7 @@ import { TypeInfo, visitWithTypeInfo } from "../utilities/TypeInfo.mjs";
  * allowing access to commonly useful contextual information from within a
  * validation rule.
  */
-export var ASTValidationContext =
-/*#__PURE__*/
-function () {
+export var ASTValidationContext = /*#__PURE__*/function () {
   function ASTValidationContext(ast, onError) {
     this._ast = ast;
     this._fragments = undefined;
@@ -108,9 +106,7 @@ function () {
 
   return ASTValidationContext;
 }();
-export var SDLValidationContext =
-/*#__PURE__*/
-function (_ASTValidationContext) {
+export var SDLValidationContext = /*#__PURE__*/function (_ASTValidationContext) {
   _inheritsLoose(SDLValidationContext, _ASTValidationContext);
 
   function SDLValidationContext(ast, schema, onError) {
@@ -129,9 +125,7 @@ function (_ASTValidationContext) {
 
   return SDLValidationContext;
 }(ASTValidationContext);
-export var ValidationContext =
-/*#__PURE__*/
-function (_ASTValidationContext2) {
+export var ValidationContext = /*#__PURE__*/function (_ASTValidationContext2) {
   _inheritsLoose(ValidationContext, _ASTValidationContext2);
 
   function ValidationContext(schema, ast, typeInfo, onError) {

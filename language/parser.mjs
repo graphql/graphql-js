@@ -56,9 +56,7 @@ export function parseType(source, options) {
   return type;
 }
 
-var Parser =
-/*#__PURE__*/
-function () {
+var Parser = /*#__PURE__*/function () {
   function Parser(source, options) {
     var sourceObj = typeof source === 'string' ? new Source(source) : source;
     sourceObj instanceof Source || devAssert(0, "Must provide Source. Received: ".concat(inspect(sourceObj), "."));

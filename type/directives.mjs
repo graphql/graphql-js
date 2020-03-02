@@ -33,9 +33,7 @@ export function assertDirective(directive) {
  * behavior. Type system creators will usually not create these directly.
  */
 
-export var GraphQLDirective =
-/*#__PURE__*/
-function () {
+export var GraphQLDirective = /*#__PURE__*/function () {
   function GraphQLDirective(config) {
     var _config$isRepeatable, _config$args;
 

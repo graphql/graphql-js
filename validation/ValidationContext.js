@@ -18,9 +18,7 @@ function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.crea
  * allowing access to commonly useful contextual information from within a
  * validation rule.
  */
-var ASTValidationContext =
-/*#__PURE__*/
-function () {
+var ASTValidationContext = /*#__PURE__*/function () {
   function ASTValidationContext(ast, onError) {
     this._ast = ast;
     this._fragments = undefined;
@@ -120,9 +118,7 @@ function () {
 
 exports.ASTValidationContext = ASTValidationContext;
 
-var SDLValidationContext =
-/*#__PURE__*/
-function (_ASTValidationContext) {
+var SDLValidationContext = /*#__PURE__*/function (_ASTValidationContext) {
   _inheritsLoose(SDLValidationContext, _ASTValidationContext);
 
   function SDLValidationContext(ast, schema, onError) {
@@ -144,9 +140,7 @@ function (_ASTValidationContext) {
 
 exports.SDLValidationContext = SDLValidationContext;
 
-var ValidationContext =
-/*#__PURE__*/
-function (_ASTValidationContext2) {
+var ValidationContext = /*#__PURE__*/function (_ASTValidationContext2) {
   _inheritsLoose(ValidationContext, _ASTValidationContext2);
 
   function ValidationContext(schema, ast, typeInfo, onError) {

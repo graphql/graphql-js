@@ -48,9 +48,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
  * and stack trace, it also includes information about the locations in a
  * GraphQL document and/or execution result that correspond to the Error.
  */
-var GraphQLError =
-/*#__PURE__*/
-function (_Error) {
+var GraphQLError = /*#__PURE__*/function (_Error) {
   _inherits(GraphQLError, _Error);
 
   /**
@@ -256,7 +254,7 @@ function (_Error) {
   }]);
 
   return GraphQLError;
-}(_wrapNativeSuper(Error));
+}( /*#__PURE__*/_wrapNativeSuper(Error));
 /**
  * Prints a GraphQLError to a string, representing useful location information
  * about the error's position in the source.

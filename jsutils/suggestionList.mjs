@@ -36,9 +36,7 @@ export default function suggestionList(input, options) {
  * This distance can be useful for detecting typos in input or sorting
  */
 
-var LexicalDistance =
-/*#__PURE__*/
-function () {
+var LexicalDistance = /*#__PURE__*/function () {
   function LexicalDistance(input) {
     this._input = input;
     this._inputLowerCase = input.toLowerCase();

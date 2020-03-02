@@ -497,9 +497,7 @@ function undefineIfEmpty(arr) {
  */
 
 
-var GraphQLScalarType =
-/*#__PURE__*/
-function () {
+var GraphQLScalarType = /*#__PURE__*/function () {
   function GraphQLScalarType(config) {
     var _config$parseValue, _config$serialize, _config$parseLiteral;
 
@@ -594,9 +592,7 @@ exports.GraphQLScalarType = GraphQLScalarType;
  *     });
  *
  */
-var GraphQLObjectType =
-/*#__PURE__*/
-function () {
+var GraphQLObjectType = /*#__PURE__*/function () {
   function GraphQLObjectType(config) {
     this.name = config.name;
     this.description = config.description;
@@ -764,9 +760,7 @@ function isRequiredArgument(arg) {
  *     });
  *
  */
-var GraphQLInterfaceType =
-/*#__PURE__*/
-function () {
+var GraphQLInterfaceType = /*#__PURE__*/function () {
   function GraphQLInterfaceType(config) {
     this.name = config.name;
     this.description = config.description;
@@ -854,9 +848,7 @@ exports.GraphQLInterfaceType = GraphQLInterfaceType;
  *     });
  *
  */
-var GraphQLUnionType =
-/*#__PURE__*/
-function () {
+var GraphQLUnionType = /*#__PURE__*/function () {
   function GraphQLUnionType(config) {
     this.name = config.name;
     this.description = config.description;
@@ -940,9 +932,7 @@ function defineTypes(config) {
  */
 var GraphQLEnumType
 /* <T> */
-=
-/*#__PURE__*/
-function () {
+= /*#__PURE__*/function () {
   function GraphQLEnumType(config) {
     this.name = config.name;
     this.description = config.description;
@@ -1105,9 +1095,7 @@ function defineEnumValues(typeName, valueMap) {
  *     });
  *
  */
-var GraphQLInputObjectType =
-/*#__PURE__*/
-function () {
+var GraphQLInputObjectType = /*#__PURE__*/function () {
   function GraphQLInputObjectType(config) {
     this.name = config.name;
     this.description = config.description;

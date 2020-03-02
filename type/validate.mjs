@@ -52,9 +52,7 @@ export function assertValidSchema(schema) {
   }
 }
 
-var SchemaValidationContext =
-/*#__PURE__*/
-function () {
+var SchemaValidationContext = /*#__PURE__*/function () {
   function SchemaValidationContext(schema) {
     this._errors = [];
     this.schema = schema;

@@ -37,9 +37,7 @@ import { printLocation, printSourceLocation } from "../language/printLocation.mj
  * GraphQL document and/or execution result that correspond to the Error.
  */
 
-export var GraphQLError =
-/*#__PURE__*/
-function (_Error) {
+export var GraphQLError = /*#__PURE__*/function (_Error) {
   _inherits(GraphQLError, _Error);
 
   /**
@@ -245,7 +243,7 @@ function (_Error) {
   }]);
 
   return GraphQLError;
-}(_wrapNativeSuper(Error));
+}( /*#__PURE__*/_wrapNativeSuper(Error));
 /**
  * Prints a GraphQLError to a string, representing useful location information
  * about the error's position in the source.

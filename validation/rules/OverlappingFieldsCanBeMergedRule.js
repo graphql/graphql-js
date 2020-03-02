@@ -540,9 +540,7 @@ function subfieldConflicts(conflicts, responseName, node1, node2) {
  */
 
 
-var PairSet =
-/*#__PURE__*/
-function () {
+var PairSet = /*#__PURE__*/function () {
   function PairSet() {
     this._data = Object.create(null);
   }

@@ -114,9 +114,7 @@ function assertSchema(schema) {
  */
 
 
-var GraphQLSchema =
-/*#__PURE__*/
-function () {
+var GraphQLSchema = /*#__PURE__*/function () {
   // Used as a cache for validateSchema().
   function GraphQLSchema(config) {
     var _config$directives;
