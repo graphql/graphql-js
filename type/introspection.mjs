@@ -495,6 +495,7 @@ export var SchemaMetaFieldDef = {
     var schema = _ref4.schema;
     return schema;
   },
+  isDeprecated: false,
   deprecationReason: undefined,
   extensions: undefined,
   astNode: undefined
@@ -516,6 +517,7 @@ export var TypeMetaFieldDef = {
     var schema = _ref6.schema;
     return schema.getType(name);
   },
+  isDeprecated: false,
   deprecationReason: undefined,
   extensions: undefined,
   astNode: undefined
@@ -529,6 +531,7 @@ export var TypeNameMetaFieldDef = {
     var parentType = _ref7.parentType;
     return parentType.name;
   },
+  isDeprecated: false,
   deprecationReason: undefined,
   extensions: undefined,
   astNode: undefined
