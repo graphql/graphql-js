@@ -518,7 +518,7 @@ export interface GraphQLField<
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   isDeprecated: boolean;
-  deprecationReason?: Maybe<string>;
+  deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<FieldDefinitionNode>;
 }
