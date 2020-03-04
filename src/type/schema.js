@@ -213,6 +213,11 @@ export class GraphQLSchema {
       }
 
       const typeName = namedType.name;
+      if (!typeName) {
+        throw new Error(
+          'One of the provided types for building the Schema is missing a name.',
+        );
+      }
       if (this._typeMap[typeName] !== undefined) {
         throw new Error(
           `Schema must contain uniquely named types but contains multiple types named "${typeName}".`,

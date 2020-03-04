@@ -357,6 +357,19 @@ describe('Type System: Schema', () => {
         );
       });
 
+      it('rejects a Schema when a provided type has no name', () => {
+        const query = new GraphQLObjectType({
+          name: 'Query',
+          fields: { foo: { type: GraphQLString } },
+        });
+        const types = [{}, query, {}];
+
+        // $DisableFlowOnNegativeTest
+        expect(() => new GraphQLSchema({ query, types })).to.throw(
+          'One of the provided types for building the Schema is missing a name.',
+        );
+      });
+
       it('rejects a Schema which defines an object type twice', () => {
         const types = [
           new GraphQLObjectType({ name: 'SameName', fields: {} }),
