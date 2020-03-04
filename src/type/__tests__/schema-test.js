@@ -261,7 +261,7 @@ describe('Type System: Schema', () => {
     });
   });
 
-  it('preserve order of use provided types', () => {
+  it('preserves the order of user provided types', () => {
     const aType = new GraphQLObjectType({
       name: 'A',
       fields: {
