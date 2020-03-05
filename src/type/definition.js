@@ -590,6 +590,14 @@ export class GraphQLScalarType {
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
 
     devAssert(typeof config.name === 'string', 'Must provide name.');
+
+    devAssert(
+      config.specifiedByUrl == null ||
+        typeof config.specifiedByUrl === 'string',
+      `${this.name} must provide "specifiedByUrl" as a string, ` +
+        `but got: ${inspect(config.specifiedByUrl)}.`,
+    );
+
     devAssert(
       config.serialize == null || typeof config.serialize === 'function',
       `${this.name} must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.`,
@@ -600,14 +608,6 @@ export class GraphQLScalarType {
         typeof config.parseValue === 'function' &&
           typeof config.parseLiteral === 'function',
         `${this.name} must provide both "parseValue" and "parseLiteral" functions.`,
-      );
-    }
-
-    if (config.specifiedByUrl != null) {
-      devAssert(
-        typeof config.specifiedByUrl === 'string',
-        `${this.name} must provide "specifiedByUrl" as a string, ` +
-          `but got: ${inspect(config.specifiedByUrl)}.`,
       );
     }
   }
