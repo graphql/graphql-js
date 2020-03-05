@@ -378,9 +378,7 @@ describe('extendSchema', () => {
     const extendedSchema = extendSchema(schema, parse(extensionSDL));
     const foo = assertScalarType(extendedSchema.getType('Foo'));
 
-    expect(foo.toConfig().specifiedByUrl).to.equal(
-      'https://example.com/foo_spec',
-    );
+    expect(foo.specifiedByUrl).to.equal('https://example.com/foo_spec');
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printExtensionNodes(foo)).to.deep.equal(extensionSDL);
