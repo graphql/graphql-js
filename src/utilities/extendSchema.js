@@ -334,8 +334,8 @@ export function extendSchemaImpl(
 
     return new GraphQLScalarType({
       ...config,
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
       specifiedByUrl,
+      extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
 
@@ -667,9 +667,9 @@ export function extendSchemaImpl(
         return new GraphQLScalarType({
           name,
           description,
+          specifiedByUrl: getSpecifiedByUrl(astNode),
           astNode,
           extensionASTNodes,
-          specifiedByUrl: getSpecifiedByUrl(astNode),
         });
       }
       case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
