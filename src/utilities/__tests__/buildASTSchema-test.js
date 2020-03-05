@@ -791,9 +791,7 @@ describe('Schema Builder', () => {
 
     const schema = buildSchema(sdl);
 
-    const foo = assertScalarType(schema.getType('Foo'));
-
-    expect(foo).to.include({
+    expect(schema.getType('Foo')).to.include({
       specifiedByUrl: 'https://example.com/foo_spec',
     });
   });
