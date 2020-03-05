@@ -568,18 +568,19 @@ function undefineIfEmpty<T>(arr: ?$ReadOnlyArray<T>): ?$ReadOnlyArray<T> {
 export class GraphQLScalarType {
   name: string;
   description: ?string;
+  specifiedByUrl: ?string;
   serialize: GraphQLScalarSerializer<mixed>;
   parseValue: GraphQLScalarValueParser<mixed>;
   parseLiteral: GraphQLScalarLiteralParser<mixed>;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
-  specifiedByUrl: ?string;
 
   constructor(config: $ReadOnly<GraphQLScalarTypeConfig<mixed, mixed>>): void {
     const parseValue = config.parseValue ?? identityFunc;
     this.name = config.name;
     this.description = config.description;
+    this.specifiedByUrl = config.specifiedByUrl;
     this.serialize = config.serialize ?? identityFunc;
     this.parseValue = parseValue;
     this.parseLiteral =
@@ -587,7 +588,6 @@ export class GraphQLScalarType {
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
-    this.specifiedByUrl = config.specifiedByUrl;
 
     devAssert(typeof config.name === 'string', 'Must provide name.');
     devAssert(
@@ -614,23 +614,23 @@ export class GraphQLScalarType {
 
   toConfig(): {|
     ...GraphQLScalarTypeConfig<mixed, mixed>,
+    specifiedByUrl: ?string,
     serialize: GraphQLScalarSerializer<mixed>,
     parseValue: GraphQLScalarValueParser<mixed>,
     parseLiteral: GraphQLScalarLiteralParser<mixed>,
     extensions: ?ReadOnlyObjMap<mixed>,
     extensionASTNodes: $ReadOnlyArray<ScalarTypeExtensionNode>,
-    specifiedByUrl: ?string,
   |} {
     return {
       name: this.name,
       description: this.description,
+      specifiedByUrl: this.specifiedByUrl,
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes ?? [],
-      specifiedByUrl: this.specifiedByUrl,
     };
   }
 
@@ -662,6 +662,7 @@ export type GraphQLScalarLiteralParser<TInternal> = (
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   name: string,
   description?: ?string,
+  specifiedByUrl?: ?string,
   // Serializes an internal value to include in a response.
   serialize?: GraphQLScalarSerializer<TExternal>,
   // Parses an externally provided value to use as an input.
@@ -671,7 +672,6 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?ScalarTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<ScalarTypeExtensionNode>,
-  specifiedByUrl?: ?string,
 |};
 
 /**
