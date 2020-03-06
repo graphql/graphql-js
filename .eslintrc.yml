@@ -451,6 +451,7 @@ overrides:
       '@typescript-eslint/explicit-module-boundary-types': off # TODO consider
       '@typescript-eslint/member-ordering': off # TODO consider
       '@typescript-eslint/naming-convention': off # TODO consider
+      '@typescript-eslint/no-base-to-string': error
       '@typescript-eslint/no-dynamic-delete': off
       '@typescript-eslint/no-empty-interface': error
       '@typescript-eslint/no-explicit-any': off # TODO error
@@ -486,6 +487,7 @@ overrides:
       '@typescript-eslint/prefer-nullish-coalescing': error
       '@typescript-eslint/prefer-optional-chain': error
       '@typescript-eslint/prefer-readonly': error
+      '@typescript-eslint/prefer-readonly-parameter-types': off # FIXME: crash eslint
       '@typescript-eslint/prefer-regexp-exec': error
       '@typescript-eslint/prefer-string-starts-ends-with': off # TODO switch to error after IE11 drop
       '@typescript-eslint/promise-function-async': off
