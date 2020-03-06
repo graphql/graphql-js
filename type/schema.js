@@ -188,6 +188,7 @@ var GraphQLSchema = /*#__PURE__*/function () {
       }
 
       var typeName = namedType.name;
+      typeName || (0, _devAssert.default)(0, 'One of the provided types for building the Schema is missing a name.');
 
       if (this._typeMap[typeName] !== undefined) {
         throw new Error("Schema must contain uniquely named types but contains multiple types named \"".concat(typeName, "\"."));
