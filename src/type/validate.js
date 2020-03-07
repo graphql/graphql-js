@@ -594,8 +594,8 @@ function getAllImplementsInterfaceNodes(
   type: GraphQLObjectType | GraphQLInterfaceType,
   iface: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
-  return getAllSubNodes(type, typeNode => typeNode.interfaces).filter(
-    ifaceNode => ifaceNode.name.value === iface.name,
+    iface && return getAllSubNodes(type, typeNode => typeNode.interfaces).filter(
+      ifaceNode => ifaceNode.name.value === iface.name,
   );
 }
 
