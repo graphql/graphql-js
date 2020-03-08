@@ -3,8 +3,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { addPath, pathToArray } from '../Path';
-import { type Path } from '../Path';
+import { type Path, addPath, pathToArray } from '../Path';
 
 describe('Path', () => {
   it('can add a new key to an existing Path', () => {
