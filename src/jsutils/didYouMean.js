@@ -19,12 +19,16 @@ export default function didYouMean(firstArg, secondArg) {
       ? [firstArg, secondArg]
       : [undefined, firstArg];
 
+  const suggestionsArgFromSet = Array.from(new Set(suggestionsArg)).filter(
+    x => x,
+  );
+  console.log({ suggestionsArgFromSet });
   let message = ' Did you mean ';
   if (subMessage) {
     message += subMessage + ' ';
   }
 
-  const suggestions = suggestionsArg.map(x => `"${x}"`);
+  const suggestions = suggestionsArgFromSet.map(x => `"${x}"`);
   switch (suggestions.length) {
     case 0:
       return '';

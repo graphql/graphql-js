@@ -35,4 +35,27 @@ describe('didYouMean', () => {
       ' Did you mean the letter "A"?',
     );
   });
+  // Test for handling Duplications
+  it('Handle duplicates, resulting in single unique element', () => {
+    expect(didYouMean(['A', 'A'])).to.equal(' Did you mean "A"?');
+  });
+  it('Handle duplicates, resulting in two elements', () => {
+    expect(didYouMean(['A', 'B', 'A', 'B'])).to.equal(
+      ' Did you mean "A" or "B"?',
+    );
+  });
+  it('Handle duplicates, resulting in more thentwo elements', () => {
+    expect(didYouMean(['A', 'B', 'C', 'C', 'B', 'A'])).to.equal(
+      ' Did you mean "A", "B", or "C"?',
+    );
+  });
+  // Test for filtering null, undefined, NaN...
+  it('should filter the broken values', () => {
+    expect(didYouMean(['A', 'B', 'C', 'C', undefined, null])).to.equal(
+      ' Did you mean "A", "B", or "C"?',
+    );
+  });
+  it('Does accept an empty list', () => {
+    expect(didYouMean([null, undefined, NaN])).to.equal('');
+  });
 });
