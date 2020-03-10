@@ -8,6 +8,7 @@ import { type TokenKindEnum } from './tokenKind';
 /**
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
+ * @internal
  */
 export class Location {
   /**
@@ -52,6 +53,7 @@ defineToJSON(Location, function() {
 /**
  * Represents a range of characters represented by a lexical token
  * within a Source.
+ * @internal
  */
 export class Token {
   /**
