@@ -37,6 +37,7 @@ export type SubscriptionArgs = {|
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
+  contextValueExecution?: ?(contextValue: mixed) => mixed,
 |};
 
 /**
@@ -74,6 +75,7 @@ declare function subscribe(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
+  contextValueExecution?: ?(contextValue: mixed) => mixed,
 ): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
 export function subscribe(
   argsOrSchema,
@@ -84,6 +86,7 @@ export function subscribe(
   operationName,
   fieldResolver,
   subscribeFieldResolver,
+  contextValueExecution,
 ) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
@@ -98,6 +101,7 @@ export function subscribe(
         operationName,
         fieldResolver,
         subscribeFieldResolver,
+        contextValueExecution,
       });
 }
 
@@ -125,6 +129,7 @@ function subscribeImpl(
     operationName,
     fieldResolver,
     subscribeFieldResolver,
+    contextValueExecution,
   } = args;
 
   const sourcePromise = createSourceEventStream(
@@ -143,16 +148,21 @@ function subscribeImpl(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = payload =>
-    execute({
+  const mapSourceToResponse = payload => {
+    const executeContextValue =
+      typeof contextValueExecution === 'function'
+        ? contextValueExecution(contextValue)
+        : contextValue;
+    return execute({
       schema,
       document,
       rootValue: payload,
-      contextValue,
+      contextValue: executeContextValue,
       variableValues,
       operationName,
       fieldResolver,
     });
+  };
 
   // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
