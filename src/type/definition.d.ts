@@ -275,7 +275,9 @@ export function getNamedType(type: GraphQLType): GraphQLNamedType;
  */
 export type Thunk<T> = (() => T) | T;
 
-export interface GraphQLScalarTypeExtensions {}
+export interface GraphQLScalarTypeExtensions {
+  [attributeName: string]: unknown;
+}
 
 /**
  * Scalar Type Definition
@@ -347,7 +349,9 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
 }
 
-export interface GraphQLObjectTypeExtensions {}
+export interface GraphQLObjectTypeExtensions {
+  [attributeName: string]: unknown;
+}
 
 /**
  * Object Type Definition
@@ -463,7 +467,9 @@ export interface GraphQLResolveInfo {
   readonly variableValues: { [variableName: string]: any };
 }
 
-export interface GraphQLFieldExtensions {}
+export interface GraphQLFieldExtensions {
+  [attributeName: string]: unknown;
+}
 
 export interface GraphQLFieldConfig<
   TSource,
@@ -484,7 +490,9 @@ export interface GraphQLFieldConfigArgumentMap {
   [key: string]: GraphQLArgumentConfig;
 }
 
-export interface GraphQLArgumentExtensions {}
+export interface GraphQLArgumentExtensions {
+  [attributeName: string]: unknown;
+}
 
 export interface GraphQLArgumentConfig {
   description?: Maybe<string>;
@@ -530,7 +538,9 @@ export interface GraphQLFieldMap<TSource, TContext> {
   [key: string]: GraphQLField<TSource, TContext>;
 }
 
-export interface GraphQLInterfaceTypeExtensions {}
+export interface GraphQLInterfaceTypeExtensions {
+  [attributeName: string]: unknown;
+}
 
 /**
  * Interface Type Definition
@@ -590,7 +600,9 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   extensionASTNodes?: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 }
 
-export interface GraphQLUnionTypeExtensions {}
+export interface GraphQLUnionTypeExtensions {
+  [attributeName: string]: unknown;
+}
 
 /**
  * Union Type Definition
@@ -652,7 +664,9 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
   extensionASTNodes?: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 }
 
-export interface GraphQLEnumTypeExtensions {}
+export interface GraphQLEnumTypeExtensions {
+  [attributeName: string]: unknown;
+}
 
 /**
  * Enum Type Definition
@@ -715,7 +729,9 @@ export interface GraphQLEnumValueConfigMap {
   [key: string]: GraphQLEnumValueConfig;
 }
 
-export interface GraphQLEnumValueExtensions {}
+export interface GraphQLEnumValueExtensions {
+  [attributeName: string]: unknown;
+}
 
 export interface GraphQLEnumValueConfig {
   description?: Maybe<string>;
@@ -735,7 +751,9 @@ export interface GraphQLEnumValue {
   astNode?: Maybe<EnumValueDefinitionNode>;
 }
 
-export interface GraphQLInputObjectTypeExtensions {}
+export interface GraphQLInputObjectTypeExtensions {
+  [attributeName: string]: unknown;
+}
 
 /**
  * Input Object Type Definition
@@ -787,7 +805,9 @@ export interface GraphQLInputObjectTypeConfig {
   extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
 }
 
-export interface GraphQLInputFieldExtensions {}
+export interface GraphQLInputFieldExtensions {
+  [attributeName: string]: unknown;
+}
 
 export interface GraphQLInputFieldConfig {
   description?: Maybe<string>;
