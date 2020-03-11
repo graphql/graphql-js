@@ -276,7 +276,7 @@ export function getNamedType(type: GraphQLType): GraphQLNamedType;
 export type Thunk<T> = (() => T) | T;
 
 export interface GraphQLScalarTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 /**
@@ -350,7 +350,7 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
 }
 
 export interface GraphQLObjectTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 /**
@@ -468,7 +468,7 @@ export interface GraphQLResolveInfo {
 }
 
 export interface GraphQLFieldExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 export interface GraphQLFieldConfig<
@@ -491,7 +491,7 @@ export interface GraphQLFieldConfigArgumentMap {
 }
 
 export interface GraphQLArgumentExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 export interface GraphQLArgumentConfig {
@@ -539,7 +539,7 @@ export interface GraphQLFieldMap<TSource, TContext> {
 }
 
 export interface GraphQLInterfaceTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 /**
@@ -601,7 +601,7 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
 }
 
 export interface GraphQLUnionTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 /**
@@ -665,7 +665,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
 }
 
 export interface GraphQLEnumTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 /**
@@ -730,7 +730,7 @@ export interface GraphQLEnumValueConfigMap {
 }
 
 export interface GraphQLEnumValueExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 export interface GraphQLEnumValueConfig {
@@ -752,7 +752,7 @@ export interface GraphQLEnumValue {
 }
 
 export interface GraphQLInputObjectTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 /**
@@ -806,7 +806,7 @@ export interface GraphQLInputObjectTypeConfig {
 }
 
 export interface GraphQLInputFieldExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string]: any;
 }
 
 export interface GraphQLInputFieldConfig {
