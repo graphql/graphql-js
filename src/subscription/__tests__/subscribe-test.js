@@ -100,6 +100,7 @@ async function createSubscription(
   pubsub,
   schema = emailSchema,
   document = defaultSubscriptionAST,
+  contextValueExecution = undefined,
 ) {
   const data = {
     inbox: {
@@ -132,7 +133,12 @@ async function createSubscription(
   return {
     sendImportantEmail,
     // $FlowFixMe
-    subscription: await subscribe({ schema, document, rootValue: data }),
+    subscription: await subscribe({
+      schema,
+      document,
+      rootValue: data,
+      contextValueExecution,
+    }),
   };
 }
 
@@ -1105,6 +1111,66 @@ describe('Subscription Publish Phase', () => {
     expect(payload3).to.deep.equal({
       done: true,
       value: undefined,
+    });
+  });
+
+  it('should produce a unique context per execution via contextValueExecution', async () => {
+    const contextExecutionSchema = emailSchemaWithResolvers(
+      async function*() {
+        yield { email: { subject: 'Hello' } };
+        yield { email: { subject: 'Hello' } };
+      },
+      (data, _args, ctx) => ({
+        email: { subject: `${data.email.subject} ${ctx.contextIndex}` },
+      }),
+    );
+
+    let contextIndex = 0;
+    const subscription = await subscribe({
+      schema: contextExecutionSchema,
+      document: parse(`
+        subscription {
+          importantEmail {
+            email {
+              subject
+            }
+          }
+        }
+      `),
+      contextValue: { test: true },
+      contextValueExecution: ctx => {
+        expect(ctx.test).to.equal(true);
+        return { ...ctx, contextIndex: contextIndex++ };
+      },
+    });
+
+    // $FlowFixMe
+    const payload1 = await subscription.next();
+    expect(payload1).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Hello 0',
+            },
+          },
+        },
+      },
+    });
+
+    const payload2 = await subscription.next();
+    expect(payload2).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Hello 1',
+            },
+          },
+        },
+      },
     });
   });
 });

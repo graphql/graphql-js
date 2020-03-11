@@ -37,7 +37,7 @@ export type SubscriptionArgs = {|
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
-  contextValueExecution?: ?(contextValue: mixed) => mixed,
+  contextValueExecution?: ?(contextValue: any) => mixed,
 |};
 
 /**
@@ -75,7 +75,7 @@ declare function subscribe(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
-  contextValueExecution?: ?(contextValue: mixed) => mixed,
+  contextValueExecution?: ?(contextValue: any) => mixed,
 ): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
 export function subscribe(
   argsOrSchema,
