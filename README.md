@@ -2,7 +2,7 @@
 <p align="center">
 <a href="https://badge.fury.io/js/graphql"><img src="https://badge.fury.io/js/graphql.svg" alt="npm version"></a>
 <a href="https://travis-ci.org/graphql/graphql-js?branch=master"><img src="https://travis-ci.org/graphql/graphql-js.svg?branch=master" alt="Build Status"></a>
-<a href="https://codecov.io/gh/graphql/graphql-js"><img src="https://codecov.io/gh/graphql/graphql-js/branch/master/graph/badge.svg" alt="codecov"></a>
+<a href="https://codecov.io/gh/graphql/graphql-js"><img src="https://codecov.io/gh/graphql/graphql-js/branch/master/graph/badge.svg" alt="Coverage Status"></a>
 </p>
 
 ## About GraphQL.js
