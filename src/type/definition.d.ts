@@ -375,11 +375,7 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
  *     });
  *
  */
-export class GraphQLObjectType<
-  TSource = any,
-  TContext = any,
-  TArgs = { [key: string]: any }
-> {
+export class GraphQLObjectType<TSource = any, TContext = any> {
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
@@ -387,11 +383,9 @@ export class GraphQLObjectType<
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 
-  constructor(
-    config: Readonly<GraphQLObjectTypeConfig<TSource, TContext, TArgs>>,
-  );
+  constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>);
 
-  getFields(): GraphQLFieldMap<any, TContext, TArgs>;
+  getFields(): GraphQLFieldMap<any, TContext>;
   getInterfaces(): Array<GraphQLInterfaceType>;
 
   toConfig(): GraphQLObjectTypeConfig<any, any> & {
@@ -410,35 +404,23 @@ export function argsToArgsConfig(
   args: ReadonlyArray<GraphQLArgument>,
 ): GraphQLFieldConfigArgumentMap;
 
-// TS_SPECIFIC: TArgs
-export interface GraphQLObjectTypeConfig<
-  TSource,
-  TContext,
-  TArgs = { [key: string]: any }
-> {
+export interface GraphQLObjectTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
   interfaces?: Thunk<Maybe<Array<GraphQLInterfaceType>>>;
-  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext, TArgs>>;
+  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
   extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 }
 
-// TS_SPECIFIC: TArgs
-export type GraphQLTypeResolver<
-  TSource,
-  TContext,
-  TArgs = { [key: string]: any }
-> = (
+export type GraphQLTypeResolver<TSource, TContext> = (
   value: TSource,
   context: TContext,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType,
-) => PromiseOrValue<
-  Maybe<GraphQLObjectType<TSource, TContext, TArgs> | string>
->;
+) => PromiseOrValue<Maybe<GraphQLObjectType<TSource, TContext> | string>>;
 
 export type GraphQLIsTypeOfFn<TSource, TContext> = (
   source: TSource,
@@ -497,13 +479,8 @@ export interface GraphQLArgumentConfig {
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
-// TS_SPECIFIC: TArgs
-export type GraphQLFieldConfigMap<
-  TSource,
-  TContext,
-  TArgs = { [key: string]: any }
-> = {
-  [key: string]: GraphQLFieldConfig<TSource, TContext, TArgs>;
+export type GraphQLFieldConfigMap<TSource, TContext> = {
+  [key: string]: GraphQLFieldConfig<TSource, TContext>;
 };
 
 export interface GraphQLField<
@@ -534,13 +511,8 @@ export interface GraphQLArgument {
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean;
 
-// TS_SPECIFIC: TArgs
-export type GraphQLFieldMap<
-  TSource,
-  TContext,
-  TArgs = { [key: string]: any }
-> = {
-  [key: string]: GraphQLField<TSource, TContext, TArgs>;
+export type GraphQLFieldMap<TSource, TContext> = {
+  [key: string]: GraphQLField<TSource, TContext>;
 };
 
 /**
@@ -585,22 +557,17 @@ export class GraphQLInterfaceType {
   inspect(): string;
 }
 
-// TS_SPECIFIC: TArgs
-export interface GraphQLInterfaceTypeConfig<
-  TSource,
-  TContext,
-  TArgs = { [key: string]: any }
-> {
+export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
   interfaces?: Thunk<Maybe<Array<GraphQLInterfaceType>>>;
-  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext, TArgs>>;
+  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: Maybe<GraphQLTypeResolver<TSource, TContext, TArgs>>;
+  resolveType?: Maybe<GraphQLTypeResolver<TSource, TContext>>;
   extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<InterfaceTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
