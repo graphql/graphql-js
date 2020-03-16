@@ -59,6 +59,9 @@ export type SubscriptionArgs = {|
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
+ * If a `perEventContextResolver` argument is provided, it will be invoked for
+ * each event and return a new context value specific to the event's execution.
+ *
  * Accepts either an object with named arguments, or individual arguments.
  */
 declare function subscribe(
@@ -148,6 +151,8 @@ function subscribeImpl(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
+  // If `perEventContextResolver` is provided, it is invoked with the original
+  // `contextValue` to return a new context unique to this `execute`.
   const mapSourceToResponse = payload => {
     const executeContextValue =
       typeof perEventContextResolver === 'function'
