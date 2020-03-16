@@ -2,10 +2,7 @@ import Maybe from './tsutils/Maybe';
 import { Source } from './language/source';
 import { GraphQLSchema } from './type/schema';
 import { GraphQLFieldResolver, GraphQLTypeResolver } from './type/definition';
-import {
-  ExecutionResult,
-  ExecutionResultDataDefault,
-} from './execution/execute';
+import { ExecutionResult } from './execution/execute';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -53,10 +50,8 @@ export interface GraphQLArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 
-export function graphql<TData = ExecutionResultDataDefault>(
-  args: GraphQLArgs,
-): Promise<ExecutionResult<TData>>;
-export function graphql<TData = ExecutionResultDataDefault>(
+export function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
+export function graphql(
   schema: GraphQLSchema,
   source: Source | string,
   rootValue?: any,
@@ -65,7 +60,7 @@ export function graphql<TData = ExecutionResultDataDefault>(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): Promise<ExecutionResult<TData>>;
+): Promise<ExecutionResult>;
 
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,
@@ -73,10 +68,8 @@ export function graphql<TData = ExecutionResultDataDefault>(
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
-export function graphqlSync<TData = ExecutionResultDataDefault>(
-  args: GraphQLArgs,
-): ExecutionResult<TData>;
-export function graphqlSync<TData = ExecutionResultDataDefault>(
+export function graphqlSync(args: GraphQLArgs): ExecutionResult;
+export function graphqlSync(
   schema: GraphQLSchema,
   source: Source | string,
   rootValue?: any,
@@ -85,4 +78,4 @@ export function graphqlSync<TData = ExecutionResultDataDefault>(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): ExecutionResult<TData>;
+): ExecutionResult;
