@@ -100,7 +100,7 @@ async function createSubscription(
   pubsub,
   schema = emailSchema,
   document = defaultSubscriptionAST,
-  contextValueExecution = undefined,
+  perEventContextResolver = undefined,
 ) {
   const data = {
     inbox: {
@@ -137,7 +137,7 @@ async function createSubscription(
       schema,
       document,
       rootValue: data,
-      contextValueExecution,
+      perEventContextResolver,
     }),
   };
 }
@@ -1114,7 +1114,7 @@ describe('Subscription Publish Phase', () => {
     });
   });
 
-  it('should produce a unique context per execution via contextValueExecution', async () => {
+  it('should produce a unique context per event via perEventContextResolver', async () => {
     const contextExecutionSchema = emailSchemaWithResolvers(
       async function*() {
         yield { email: { subject: 'Hello' } };
@@ -1138,7 +1138,7 @@ describe('Subscription Publish Phase', () => {
         }
       `),
       contextValue: { test: true },
-      contextValueExecution: ctx => {
+      perEventContextResolver: ctx => {
         expect(ctx.test).to.equal(true);
         return { ...ctx, contextIndex: contextIndex++ };
       },

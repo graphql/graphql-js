@@ -37,7 +37,7 @@ export type SubscriptionArgs = {|
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
-  contextValueExecution?: ?(contextValue: any) => mixed,
+  perEventContextResolver?: ?(contextValue: any) => mixed,
 |};
 
 /**
@@ -75,7 +75,7 @@ declare function subscribe(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
-  contextValueExecution?: ?(contextValue: any) => mixed,
+  perEventContextResolver?: ?(contextValue: any) => mixed,
 ): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
 export function subscribe(
   argsOrSchema,
@@ -86,7 +86,7 @@ export function subscribe(
   operationName,
   fieldResolver,
   subscribeFieldResolver,
-  contextValueExecution,
+  perEventContextResolver,
 ) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
@@ -101,7 +101,7 @@ export function subscribe(
         operationName,
         fieldResolver,
         subscribeFieldResolver,
-        contextValueExecution,
+        perEventContextResolver,
       });
 }
 
@@ -129,7 +129,7 @@ function subscribeImpl(
     operationName,
     fieldResolver,
     subscribeFieldResolver,
-    contextValueExecution,
+    perEventContextResolver,
   } = args;
 
   const sourcePromise = createSourceEventStream(
@@ -150,8 +150,8 @@ function subscribeImpl(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   const mapSourceToResponse = payload => {
     const executeContextValue =
-      typeof contextValueExecution === 'function'
-        ? contextValueExecution(contextValue)
+      typeof perEventContextResolver === 'function'
+        ? perEventContextResolver(contextValue)
         : contextValue;
     return execute({
       schema,

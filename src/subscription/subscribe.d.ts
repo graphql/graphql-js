@@ -16,7 +16,7 @@ export interface SubscriptionArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  contextValueExecution?: Maybe<(contextValue: any) => any>;
+  perEventContextResolver?: Maybe<(contextValue: any) => any>;
 }
 
 /**
@@ -54,7 +54,7 @@ export function subscribe<TData = ExecutionResultDataDefault>(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  contextValueExecution?: Maybe<(contextValue: any) => any>,
+  perEventContextResolver?: Maybe<(contextValue: any) => any>,
 ): Promise<
   AsyncIterableIterator<ExecutionResult<TData>> | ExecutionResult<TData>
 >;
@@ -85,5 +85,4 @@ export function createSourceEventStream<TData = ExecutionResultDataDefault>(
   variableValues?: { [key: string]: any },
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  contextValueExecution?: Maybe<(contextValue: any) => any>,
 ): Promise<AsyncIterable<any> | ExecutionResult<TData>>;
