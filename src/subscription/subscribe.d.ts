@@ -38,7 +38,7 @@ export interface SubscriptionArgs {
  * yields a stream of ExecutionResults representing the response stream.
  *
  * If a `perEventContextResolver` argument is provided, it will be invoked for
- * each event, and return a new context value specific to that event's execution.
+ * each event and return a new context value specific to that event's execution.
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
