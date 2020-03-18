@@ -1,9 +1,6 @@
 import Maybe from '../tsutils/Maybe';
 import { DocumentNode } from '../language/ast';
-import {
-  ExecutionResult,
-  ExecutionResultDataDefault,
-} from '../execution/execute';
+import { ExecutionResult } from '../execution/execute';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLFieldResolver } from '../type/definition';
 
@@ -38,13 +35,11 @@ export interface SubscriptionArgs {
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-export function subscribe<TData = ExecutionResultDataDefault>(
+export function subscribe(
   args: SubscriptionArgs,
-): Promise<
-  AsyncIterableIterator<ExecutionResult<TData>> | ExecutionResult<TData>
->;
+): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>;
 
-export function subscribe<TData = ExecutionResultDataDefault>(
+export function subscribe(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: any,
@@ -53,9 +48,7 @@ export function subscribe<TData = ExecutionResultDataDefault>(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): Promise<
-  AsyncIterableIterator<ExecutionResult<TData>> | ExecutionResult<TData>
->;
+): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>;
 
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
@@ -75,7 +68,7 @@ export function subscribe<TData = ExecutionResultDataDefault>(
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
-export function createSourceEventStream<TData = ExecutionResultDataDefault>(
+export function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: any,
@@ -83,4 +76,4 @@ export function createSourceEventStream<TData = ExecutionResultDataDefault>(
   variableValues?: { [key: string]: any },
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): Promise<AsyncIterable<any> | ExecutionResult<TData>>;
+): Promise<AsyncIterable<any> | ExecutionResult>;
