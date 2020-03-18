@@ -153,21 +153,21 @@ function subscribeImpl(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   // If `perEventContextResolver` is provided, it is invoked with the original
   // `contextValue` to return a new context unique to this `execute`.
-  const mapSourceToResponse = payload => {
-    const executeContextValue =
-      typeof perEventContextResolver === 'function'
-        ? perEventContextResolver(contextValue)
-        : contextValue;
-    return execute({
+  const perEventContextResolverFn =
+    typeof perEventContextResolver === 'function'
+      ? perEventContextResolver
+      : ctx => ctx;
+
+  const mapSourceToResponse = payload =>
+    execute({
       schema,
       document,
       rootValue: payload,
-      contextValue: executeContextValue,
+      contextValue: perEventContextResolverFn(contextValue),
       variableValues,
       operationName,
       fieldResolver,
     });
-  };
 
   // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
