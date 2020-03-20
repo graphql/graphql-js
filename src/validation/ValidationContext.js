@@ -38,6 +38,7 @@ type VariableUsage = {|
  * An instance of this class is passed as the "this" context to all validators,
  * allowing access to commonly useful contextual information from within a
  * validation rule.
+ * @internal
  */
 export class ASTValidationContext {
   _ast: DocumentNode;
@@ -133,6 +134,9 @@ export class ASTValidationContext {
 
 export type ASTValidationRule = ASTValidationContext => ASTVisitor;
 
+/**
+ * @internal
+ */
 export class SDLValidationContext extends ASTValidationContext {
   _schema: ?GraphQLSchema;
 
