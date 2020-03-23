@@ -37,20 +37,15 @@ export interface ExecutionContext {
   errors: Array<GraphQLError>;
 }
 
-export interface ExecutionResultDataDefault {
-  [key: string]: any;
-}
-
 /**
  * The result of GraphQL execution.
  *
  *   - `errors` is included when any errors occurred as a non-empty array.
  *   - `data` is the result of a successful execution of the query.
  */
-// TS_SPECIFIC: TData and ExecutionResultDataDefault
-export interface ExecutionResult<TData = ExecutionResultDataDefault> {
+export interface ExecutionResult {
   errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
+  data?: { [key: string]: any } | null;
 }
 
 export type ExecutionArgs = {
@@ -76,10 +71,8 @@ export type ExecutionArgs = {
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-export function execute<TData = ExecutionResultDataDefault>(
-  args: ExecutionArgs,
-): PromiseOrValue<ExecutionResult<TData>>;
-export function execute<TData = ExecutionResultDataDefault>(
+export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult>;
+export function execute(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: any,
@@ -88,7 +81,7 @@ export function execute<TData = ExecutionResultDataDefault>(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): PromiseOrValue<ExecutionResult<TData>>;
+): PromiseOrValue<ExecutionResult>;
 
 /**
  * Essential assertions before executing to provide developer feedback for
@@ -141,15 +134,18 @@ export function buildResolveInfo(
   path: Path,
 ): GraphQLResolveInfo;
 
-// Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
-// function. Returns the result of resolveFn or the abrupt-return Error object.
-// TS_SPECIFIC: TSource
-export function resolveFieldValueOrError<TSource>(
+/**
+ * Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
+ * function. Returns the result of resolveFn or the abrupt-return Error object.
+ *
+ * @internal
+ */
+export function resolveFieldValueOrError(
   exeContext: ExecutionContext,
-  fieldDef: GraphQLField<TSource, any>,
+  fieldDef: GraphQLField<any, any>,
   fieldNodes: ReadonlyArray<FieldNode>,
-  resolveFn: GraphQLFieldResolver<TSource, any>,
-  source: TSource,
+  resolveFn: GraphQLFieldResolver<any, any>,
+  source: any,
   info: GraphQLResolveInfo,
 ): Error | any;
 
