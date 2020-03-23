@@ -153,10 +153,7 @@ function subscribeImpl(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   // If `perEventContextResolver` is provided, it is invoked with the original
   // `contextValue` to return a new context unique to this `execute`.
-  const perEventContextResolverFn =
-    typeof perEventContextResolver === 'function'
-      ? perEventContextResolver
-      : ctx => ctx;
+  const perEventContextResolverFn = perEventContextResolver ?? (ctx => ctx);
 
   const mapSourceToResponse = payload =>
     execute({
