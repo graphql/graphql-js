@@ -19,7 +19,7 @@ rules:
   graphql-internal/no-dir-import: error
 
   ##############################################################################
-  # `eslint-plugin-flowtype` rule list based on `v4.6.x`
+  # `eslint-plugin-flowtype` rule list based on `v4.7.x`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
   ##############################################################################
 
@@ -439,9 +439,10 @@ overrides:
       - plugin:import/typescript
     rules:
       flowtype/require-valid-file-annotation: off
+      flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v2.21.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v2.26.x`
       ##########################################################################
 
       # Supported Rules
@@ -451,6 +452,7 @@ overrides:
       '@typescript-eslint/await-thenable': error
       '@typescript-eslint/ban-ts-comment': error
       '@typescript-eslint/ban-types': error
+      '@typescript-eslint/class-literal-property-style': off
       '@typescript-eslint/consistent-type-assertions':
         [error, { assertionStyle: as, objectLiteralTypeAssertions: never }]
       '@typescript-eslint/consistent-type-definitions': off # TODO consider
@@ -485,6 +487,9 @@ overrides:
       '@typescript-eslint/no-unnecessary-qualifier': error
       '@typescript-eslint/no-unnecessary-type-arguments': error
       '@typescript-eslint/no-unnecessary-type-assertion': error
+      '@typescript-eslint/no-unsafe-call': off # TODO consider
+      '@typescript-eslint/no-unsafe-member-access': off # TODO consider
+      '@typescript-eslint/no-unsafe-return': off # TODO consider
       '@typescript-eslint/no-unused-vars-experimental': off
       '@typescript-eslint/no-var-requires': error
       '@typescript-eslint/prefer-as-const': off # TODO consider
@@ -495,7 +500,7 @@ overrides:
       '@typescript-eslint/prefer-nullish-coalescing': error
       '@typescript-eslint/prefer-optional-chain': error
       '@typescript-eslint/prefer-readonly': error
-      '@typescript-eslint/prefer-readonly-parameter-types': off # FIXME: crash eslint
+      '@typescript-eslint/prefer-readonly-parameter-types': off # TODO consider
       '@typescript-eslint/prefer-regexp-exec': error
       '@typescript-eslint/prefer-string-starts-ends-with': off # TODO switch to error after IE11 drop
       '@typescript-eslint/promise-function-async': off
