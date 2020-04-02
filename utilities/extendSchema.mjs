@@ -58,7 +58,7 @@ export function extendSchema(schema, documentAST, options) {
  */
 
 export function extendSchemaImpl(schemaConfig, documentAST, options) {
-  var _schemaDef, _schemaDef$descriptio, _schemaDef2, _ref;
+  var _schemaDef, _schemaDef$descriptio, _schemaDef2, _options$assumeValid;
 
   // Collect the type definitions and extensions found in the document.
   var typeDefs = [];
@@ -125,7 +125,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     extensions: undefined,
     astNode: (_schemaDef2 = schemaDef) !== null && _schemaDef2 !== void 0 ? _schemaDef2 : schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
-    assumeValid: (_ref = options === null || options === void 0 ? void 0 : options.assumeValid) !== null && _ref !== void 0 ? _ref : false
+    assumeValid: (_options$assumeValid = options === null || options === void 0 ? void 0 : options.assumeValid) !== null && _options$assumeValid !== void 0 ? _options$assumeValid : false
   }); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
@@ -334,8 +334,8 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 
   function buildDirective(node) {
-    var locations = node.locations.map(function (_ref2) {
-      var value = _ref2.value;
+    var locations = node.locations.map(function (_ref) {
+      var value = _ref.value;
       return value;
     });
     return new GraphQLDirective({
