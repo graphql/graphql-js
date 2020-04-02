@@ -11,7 +11,7 @@ export default function mapAsyncIterator(iterable, callback, rejectCallback) {
   var iteratorMethod = iterable[SYMBOL_ASYNC_ITERATOR];
   var iterator = iteratorMethod.call(iterable);
   var $return;
-  var abruptClose; // $FlowFixMe(>=0.68.0)
+  var abruptClose;
 
   if (typeof iterator.return === 'function') {
     $return = iterator.return;
@@ -54,7 +54,6 @@ export default function mapAsyncIterator(iterable, callback, rejectCallback) {
       });
     },
     throw: function _throw(error) {
-      // $FlowFixMe(>=0.68.0)
       if (typeof iterator.throw === 'function') {
         return iterator.throw(error).then(mapResult, mapReject);
       }
