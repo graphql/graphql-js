@@ -45,7 +45,7 @@ export class Location {
 }
 
 // Print a simplified form when appearing in JSON/util.inspect.
-defineToJSON(Location, function() {
+defineToJSON(Location, function () {
   return { start: this.start, end: this.end };
 });
 
@@ -113,7 +113,7 @@ export class Token {
 }
 
 // Print a simplified form when appearing in JSON/util.inspect.
-defineToJSON(Token, function() {
+defineToJSON(Token, function () {
   return {
     kind: this.kind,
     value: this.value,

@@ -31,7 +31,7 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
-        const knownArgsNames = fieldDef.args.map(arg => arg.name);
+        const knownArgsNames = fieldDef.args.map((arg) => arg.name);
         const suggestions = suggestionList(argName, knownArgsNames);
         context.reportError(
           new GraphQLError(
@@ -58,7 +58,7 @@ export function KnownArgumentNamesOnDirectivesRule(
     ? schema.getDirectives()
     : specifiedDirectives;
   for (const directive of definedDirectives) {
-    directiveArgs[directive.name] = directive.args.map(arg => arg.name);
+    directiveArgs[directive.name] = directive.args.map((arg) => arg.name);
   }
 
   const astDefinitions = context.getDocument().definitions;
@@ -67,7 +67,7 @@ export function KnownArgumentNamesOnDirectivesRule(
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
       const argsNodes = def.arguments ?? [];
 
-      directiveArgs[def.name.value] = argsNodes.map(arg => arg.name.value);
+      directiveArgs[def.name.value] = argsNodes.map((arg) => arg.name.value);
     }
   }
 

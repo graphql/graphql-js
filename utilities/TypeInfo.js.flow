@@ -209,7 +209,7 @@ export class TypeInfo {
         if (fieldOrDirective) {
           argDef = find(
             fieldOrDirective.args,
-            arg => arg.name === node.name.value,
+            (arg) => arg.name === node.name.value,
           );
           if (argDef) {
             argType = argDef.type;

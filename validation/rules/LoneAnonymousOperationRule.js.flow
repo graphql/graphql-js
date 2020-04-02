@@ -20,7 +20,7 @@ export function LoneAnonymousOperationRule(
   return {
     Document(node) {
       operationCount = node.definitions.filter(
-        definition => definition.kind === Kind.OPERATION_DEFINITION,
+        (definition) => definition.kind === Kind.OPERATION_DEFINITION,
       ).length;
     },
     OperationDefinition(node) {

@@ -336,7 +336,7 @@ export class GraphQLSchema {
   }
 
   getDirective(name: string): ?GraphQLDirective {
-    return find(this.getDirectives(), directive => directive.name === name);
+    return find(this.getDirectives(), (directive) => directive.name === name);
   }
 
   toConfig(): GraphQLSchemaNormalizedConfig {

@@ -68,7 +68,7 @@ export function KnownTypeNamesRule(
   };
 }
 
-const specifiedScalarsNames = specifiedScalarTypes.map(type => type.name);
+const specifiedScalarsNames = specifiedScalarTypes.map((type) => type.name);
 function isSpecifiedScalarName(typeName) {
   return specifiedScalarsNames.indexOf(typeName) !== -1;
 }
