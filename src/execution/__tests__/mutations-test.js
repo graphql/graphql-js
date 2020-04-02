@@ -32,7 +32,7 @@ class Root {
   }
 
   promiseToChangeTheNumber(newNumber: number): Promise<NumberHolder> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       process.nextTick(() => {
         resolve(this.immediatelyChangeTheNumber(newNumber));
       });

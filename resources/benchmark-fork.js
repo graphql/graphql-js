@@ -43,15 +43,15 @@ function sampleModule(modulePath) {
     let message;
     let error;
 
-    child.on('message', msg => (message = msg));
-    child.on('error', e => (error = e));
+    child.on('message', (msg) => (message = msg));
+    child.on('error', (e) => (error = e));
     child.on('close', () => {
       if (message) {
         return resolve(message);
       }
       reject(error || new Error('Forked process closed without error'));
     });
-  }).then(result => {
+  }).then((result) => {
     global.gc();
     return result;
   });

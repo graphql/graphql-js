@@ -24,7 +24,7 @@ export default function eventEmitterAsyncIterator(
   }
 
   function pullValue() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       if (pushQueue.length !== 0) {
         resolve({ value: pushQueue.shift(), done: false });
       } else {

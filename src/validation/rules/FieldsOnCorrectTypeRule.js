@@ -124,7 +124,7 @@ function getSuggestedTypeNames(
 
       return typeA.name.localeCompare(typeB.name);
     })
-    .map(x => x.name);
+    .map((x) => x.name);
 }
 
 /**

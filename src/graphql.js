@@ -90,7 +90,7 @@ export function graphql(
 ) {
   /* eslint-enable no-redeclare */
   // Always return a Promise for a consistent API.
-  return new Promise(resolve =>
+  return new Promise((resolve) =>
     resolve(
       // Extract arguments from object args if provided.
       arguments.length === 1

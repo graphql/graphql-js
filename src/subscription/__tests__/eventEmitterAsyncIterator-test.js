@@ -28,8 +28,8 @@ describe('eventEmitterAsyncIterator', () => {
     });
 
     // Read ahead
-    const i3 = iterator.next().then(x => x);
-    const i4 = iterator.next().then(x => x);
+    const i3 = iterator.next().then((x) => x);
+    const i4 = iterator.next().then((x) => x);
 
     // Publish
     expect(emitter.emit('publish', 'Coconut')).to.equal(true);
@@ -40,7 +40,7 @@ describe('eventEmitterAsyncIterator', () => {
     expect(await i3).to.deep.equal({ done: false, value: 'Coconut' });
 
     // Read ahead
-    const i5 = iterator.next().then(x => x);
+    const i5 = iterator.next().then((x) => x);
 
     // Terminate emitter
     // $FlowFixMe

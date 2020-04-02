@@ -895,7 +895,7 @@ describe('Type System: build schema from introspection', () => {
       const introspection = introspectionFromSchema(schema);
 
       const fooIntrospection = introspection.__schema.types.find(
-        type => type.name === 'Foo',
+        (type) => type.name === 'Foo',
       );
       expect(fooIntrospection).to.deep.include({
         name: 'Foo',
@@ -919,7 +919,7 @@ describe('Type System: build schema from introspection', () => {
       const introspection = introspectionFromSchema(schema);
 
       const fooIntrospection = introspection.__schema.types.find(
-        type => type.name === 'Foo',
+        (type) => type.name === 'Foo',
       );
       expect(fooIntrospection).to.deep.include({
         name: 'Foo',

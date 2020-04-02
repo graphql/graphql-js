@@ -77,8 +77,8 @@ export function buildClientSchema(
   // Iterate through all types, getting the type definition for each.
   const typeMap = keyValMap(
     schemaIntrospection.types,
-    typeIntrospection => typeIntrospection.name,
-    typeIntrospection => buildType(typeIntrospection),
+    (typeIntrospection) => typeIntrospection.name,
+    (typeIntrospection) => buildType(typeIntrospection),
   );
 
   // Include standard types only if they are used.
@@ -279,8 +279,8 @@ export function buildClientSchema(
       description: enumIntrospection.description,
       values: keyValMap(
         enumIntrospection.enumValues,
-        valueIntrospection => valueIntrospection.name,
-        valueIntrospection => ({
+        (valueIntrospection) => valueIntrospection.name,
+        (valueIntrospection) => ({
           description: valueIntrospection.description,
           deprecationReason: valueIntrospection.deprecationReason,
         }),
@@ -313,7 +313,7 @@ export function buildClientSchema(
 
     return keyValMap(
       typeIntrospection.fields,
-      fieldIntrospection => fieldIntrospection.name,
+      (fieldIntrospection) => fieldIntrospection.name,
       buildField,
     );
   }
@@ -345,7 +345,7 @@ export function buildClientSchema(
   function buildInputValueDefMap(inputValueIntrospections) {
     return keyValMap(
       inputValueIntrospections,
-      inputValue => inputValue.name,
+      (inputValue) => inputValue.name,
       buildInputValue,
     );
   }

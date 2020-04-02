@@ -96,7 +96,7 @@ const DogType = new GraphQLObjectType({
     mother: { type: DogType },
     father: { type: DogType },
   }),
-  isTypeOf: value => value instanceof Dog,
+  isTypeOf: (value) => value instanceof Dog,
 });
 
 const CatType = new GraphQLObjectType({
@@ -109,7 +109,7 @@ const CatType = new GraphQLObjectType({
     mother: { type: CatType },
     father: { type: CatType },
   }),
-  isTypeOf: value => value instanceof Cat,
+  isTypeOf: (value) => value instanceof Cat,
 });
 
 const PetType = new GraphQLUnionType({
@@ -139,7 +139,7 @@ const PersonType = new GraphQLObjectType({
     mother: { type: PersonType },
     father: { type: PersonType },
   }),
-  isTypeOf: value => value instanceof Person,
+  isTypeOf: (value) => value instanceof Person,
 });
 
 const schema = new GraphQLSchema({

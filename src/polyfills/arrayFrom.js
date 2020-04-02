@@ -14,7 +14,7 @@ declare function arrayFrom<T: mixed>(
 // $FlowFixMe
 const arrayFrom =
   Array.from ||
-  function(obj, mapFn, thisArg) {
+  function (obj, mapFn, thisArg) {
     if (obj == null) {
       throw new TypeError(
         'Array.from requires an array-like object - not null or undefined',

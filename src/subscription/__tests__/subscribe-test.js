@@ -35,11 +35,11 @@ const InboxType = new GraphQLObjectType({
   fields: {
     total: {
       type: GraphQLInt,
-      resolve: inbox => inbox.emails.length,
+      resolve: (inbox) => inbox.emails.length,
     },
     unread: {
       type: GraphQLInt,
-      resolve: inbox => inbox.emails.filter(email => email.unread).length,
+      resolve: (inbox) => inbox.emails.filter((email) => email.unread).length,
     },
     emails: { type: GraphQLList(EmailType) },
   },
@@ -922,12 +922,12 @@ describe('Subscription Publish Phase', () => {
 
   it('should handle error during execution of source event', async () => {
     const erroringEmailSchema = emailSchemaWithResolvers(
-      async function*() {
+      async function* () {
         yield { email: { subject: 'Hello' } };
         yield { email: { subject: 'Goodbye' } };
         yield { email: { subject: 'Bonjour' } };
       },
-      event => {
+      (event) => {
         if (event.email.subject === 'Goodbye') {
           throw new Error('Never leave.');
         }
@@ -1000,11 +1000,11 @@ describe('Subscription Publish Phase', () => {
 
   it('should pass through error thrown in source event stream', async () => {
     const erroringEmailSchema = emailSchemaWithResolvers(
-      async function*() {
+      async function* () {
         yield { email: { subject: 'Hello' } };
         throw new Error('test error');
       },
-      email => email,
+      (email) => email,
     );
 
     const subscription = await subscribe({
@@ -1054,11 +1054,11 @@ describe('Subscription Publish Phase', () => {
 
   it('should resolve GraphQL error from source event stream', async () => {
     const erroringEmailSchema = emailSchemaWithResolvers(
-      async function*() {
+      async function* () {
         yield { email: { subject: 'Hello' } };
         throw new GraphQLError('test error');
       },
-      email => email,
+      (email) => email,
     );
 
     const subscription = await subscribe({

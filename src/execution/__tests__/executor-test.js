@@ -103,7 +103,7 @@ describe('Execute: Handles basic execution tasks', () => {
       e: () => 'Egg',
       f: 'Fish',
       // Called only by DataType::pic static resolver
-      pic: size => 'Pic of size: ' + size,
+      pic: (size) => 'Pic of size: ' + size,
       deep: () => deepData,
       promise: promiseData,
     };
@@ -116,7 +116,7 @@ describe('Execute: Handles basic execution tasks', () => {
     };
 
     function promiseData() {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         process.nextTick(() => {
           resolve(data);
         });
@@ -428,7 +428,7 @@ describe('Execute: Handles basic execution tasks', () => {
         ];
       },
       async() {
-        return new Promise(resolve => resolve('async'));
+        return new Promise((resolve) => resolve('async'));
       },
       asyncReject() {
         return new Promise((_, reject) =>
@@ -891,9 +891,9 @@ describe('Execute: Handles basic execution tasks', () => {
     const document = parse('{ a, b, c, d, e }');
     const rootValue = {
       a: () => 'a',
-      b: () => new Promise(resolve => resolve('b')),
+      b: () => new Promise((resolve) => resolve('b')),
       c: () => 'c',
-      d: () => new Promise(resolve => resolve('d')),
+      d: () => new Promise((resolve) => resolve('d')),
       e: () => 'e',
     };
 

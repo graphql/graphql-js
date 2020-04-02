@@ -38,7 +38,7 @@ export function ProvidedRequiredArgumentsRule(
 
         /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
         const argNodes = fieldNode.arguments ?? [];
-        const argNodeMap = keyMap(argNodes, arg => arg.name.value);
+        const argNodeMap = keyMap(argNodes, (arg) => arg.name.value);
         for (const argDef of fieldDef.args) {
           const argNode = argNodeMap[argDef.name];
           if (!argNode && isRequiredArgument(argDef)) {
@@ -71,7 +71,7 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
   for (const directive of definedDirectives) {
     requiredArgsMap[directive.name] = keyMap(
       directive.args.filter(isRequiredArgument),
-      arg => arg.name,
+      (arg) => arg.name,
     );
   }
 
@@ -83,7 +83,7 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
 
       requiredArgsMap[def.name.value] = keyMap(
         argNodes.filter(isRequiredArgumentNode),
-        arg => arg.name.value,
+        (arg) => arg.name.value,
       );
     }
   }
@@ -97,7 +97,7 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
         if (requiredArgs) {
           /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
           const argNodes = directiveNode.arguments ?? [];
-          const argNodeMap = keyMap(argNodes, arg => arg.name.value);
+          const argNodeMap = keyMap(argNodes, (arg) => arg.name.value);
           for (const argName of Object.keys(requiredArgs)) {
             if (!argNodeMap[argName]) {
               const argType = requiredArgs[argName].type;

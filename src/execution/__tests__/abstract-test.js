@@ -56,7 +56,7 @@ describe('Execute: Handles execution of abstract types', () => {
     const DogType = new GraphQLObjectType({
       name: 'Dog',
       interfaces: [PetType],
-      isTypeOf: obj => obj instanceof Dog,
+      isTypeOf: (obj) => obj instanceof Dog,
       fields: {
         name: { type: GraphQLString },
         woofs: { type: GraphQLBoolean },
@@ -66,7 +66,7 @@ describe('Execute: Handles execution of abstract types', () => {
     const CatType = new GraphQLObjectType({
       name: 'Cat',
       interfaces: [PetType],
-      isTypeOf: obj => obj instanceof Cat,
+      isTypeOf: (obj) => obj instanceof Cat,
       fields: {
         name: { type: GraphQLString },
         meows: { type: GraphQLBoolean },
@@ -123,7 +123,7 @@ describe('Execute: Handles execution of abstract types', () => {
   it('isTypeOf used to resolve runtime type for Union', () => {
     const DogType = new GraphQLObjectType({
       name: 'Dog',
-      isTypeOf: obj => obj instanceof Dog,
+      isTypeOf: (obj) => obj instanceof Dog,
       fields: {
         name: { type: GraphQLString },
         woofs: { type: GraphQLBoolean },
@@ -132,7 +132,7 @@ describe('Execute: Handles execution of abstract types', () => {
 
     const CatType = new GraphQLObjectType({
       name: 'Cat',
-      isTypeOf: obj => obj instanceof Cat,
+      isTypeOf: (obj) => obj instanceof Cat,
       fields: {
         name: { type: GraphQLString },
         meows: { type: GraphQLBoolean },

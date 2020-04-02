@@ -42,12 +42,12 @@ const throwingData = {
     return throwingData;
   },
   promiseNest() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       resolve(throwingData);
     });
   },
   promiseNonNullNest() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       resolve(throwingData);
     });
   },
@@ -61,12 +61,12 @@ const nullingData = {
     return null;
   },
   promise() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       resolve(null);
     });
   },
   promiseNonNull() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       resolve(null);
     });
   },
@@ -77,12 +77,12 @@ const nullingData = {
     return nullingData;
   },
   promiseNest() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       resolve(nullingData);
     });
   },
   promiseNonNullNest() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       resolve(nullingData);
     });
   },

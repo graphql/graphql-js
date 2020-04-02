@@ -53,7 +53,7 @@ export function validate(
     schema,
     documentAST,
     typeInfo,
-    error => {
+    (error) => {
       if (options.maxErrors != null && errors.length >= options.maxErrors) {
         errors.push(
           new GraphQLError(
@@ -68,7 +68,7 @@ export function validate(
 
   // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
-  const visitor = visitInParallel(rules.map(rule => rule(context)));
+  const visitor = visitInParallel(rules.map((rule) => rule(context)));
 
   // Visit the whole document with each instance of all provided rules.
   try {
@@ -93,12 +93,12 @@ export function validateSDL(
   const context = new SDLValidationContext(
     documentAST,
     schemaToExtend,
-    error => {
+    (error) => {
       errors.push(error);
     },
   );
 
-  const visitors = rules.map(rule => rule(context));
+  const visitors = rules.map((rule) => rule(context));
   visit(documentAST, visitInParallel(visitors));
   return errors;
 }
@@ -112,7 +112,7 @@ export function validateSDL(
 export function assertValidSDL(documentAST: DocumentNode): void {
   const errors = validateSDL(documentAST);
   if (errors.length !== 0) {
-    throw new Error(errors.map(error => error.message).join('\n\n'));
+    throw new Error(errors.map((error) => error.message).join('\n\n'));
   }
 }
 
@@ -128,6 +128,6 @@ export function assertValidSDLExtension(
 ): void {
   const errors = validateSDL(documentAST, schema);
   if (errors.length !== 0) {
-    throw new Error(errors.map(error => error.message).join('\n\n'));
+    throw new Error(errors.map((error) => error.message).join('\n\n'));
   }
 }

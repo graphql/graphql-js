@@ -582,7 +582,7 @@ export class GraphQLScalarType {
     this.serialize = config.serialize ?? identityFunc;
     this.parseValue = parseValue;
     this.parseLiteral =
-      config.parseLiteral ?? (node => parseValue(valueFromASTUntyped(node)));
+      config.parseLiteral ?? ((node) => parseValue(valueFromASTUntyped(node)));
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
@@ -848,7 +848,7 @@ function isPlainObj(obj) {
 }
 
 function fieldsToFieldsConfig(fields) {
-  return mapValue(fields, field => ({
+  return mapValue(fields, (field) => ({
     description: field.description,
     type: field.type,
     args: argsToArgsConfig(field.args),
@@ -868,8 +868,8 @@ export function argsToArgsConfig(
 ): GraphQLFieldConfigArgumentMap {
   return keyValMap(
     args,
-    arg => arg.name,
-    arg => ({
+    (arg) => arg.name,
+    (arg) => ({
       description: arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
@@ -1251,9 +1251,9 @@ export class GraphQLEnumType /* <T> */ {
 
     this._values = defineEnumValues(this.name, config.values);
     this._valueLookup = new Map(
-      this._values.map(enumValue => [enumValue.value, enumValue]),
+      this._values.map((enumValue) => [enumValue.value, enumValue]),
     );
-    this._nameLookup = keyMap(this._values, value => value.name);
+    this._nameLookup = keyMap(this._values, (value) => value.name);
 
     devAssert(typeof config.name === 'string', 'Must provide name.');
   }
@@ -1325,8 +1325,8 @@ export class GraphQLEnumType /* <T> */ {
   |} {
     const values = keyValMap(
       this.getValues(),
-      value => value.name,
-      value => ({
+      (value) => value.name,
+      (value) => ({
         description: value.description,
         value: value.value,
         deprecationReason: value.deprecationReason,
@@ -1361,7 +1361,7 @@ function didYouMeanEnumValue(
   enumType: GraphQLEnumType,
   unknownValueStr: string,
 ): string {
-  const allNames = enumType.getValues().map(value => value.name);
+  const allNames = enumType.getValues().map((value) => value.name);
   const suggestedValues = suggestionList(unknownValueStr, allNames);
 
   return didYouMean('the enum value', suggestedValues);
@@ -1479,7 +1479,7 @@ export class GraphQLInputObjectType {
     extensions: ?ReadOnlyObjMap<mixed>,
     extensionASTNodes: $ReadOnlyArray<InputObjectTypeExtensionNode>,
   |} {
-    const fields = mapValue(this.getFields(), field => ({
+    const fields = mapValue(this.getFields(), (field) => ({
       description: field.description,
       type: field.type,
       defaultValue: field.defaultValue,

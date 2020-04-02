@@ -56,7 +56,7 @@ type Options = {|
 export function printSchema(schema: GraphQLSchema, options?: Options): string {
   return printFilteredSchema(
     schema,
-    n => !isSpecifiedDirective(n),
+    (n) => !isSpecifiedDirective(n),
     isDefinedType,
     options,
   );
@@ -90,8 +90,8 @@ function printFilteredSchema(
   return (
     [printSchemaDefinition(schema)]
       .concat(
-        directives.map(directive => printDirective(directive, options)),
-        types.map(type => printType(type, options)),
+        directives.map((directive) => printDirective(directive, options)),
+        types.map((type) => printType(type, options)),
       )
       .filter(Boolean)
       .join('\n\n') + '\n'
@@ -189,7 +189,7 @@ function printImplementedInterfaces(
 ): string {
   const interfaces = type.getInterfaces();
   return interfaces.length
-    ? ' implements ' + interfaces.map(i => i.name).join(' & ')
+    ? ' implements ' + interfaces.map((i) => i.name).join(' & ')
     : '';
 }
 
@@ -267,7 +267,7 @@ function printArgs(options, args, indentation = '') {
   }
 
   // If every arg does not have a description, print them on one line.
-  if (args.every(arg => !arg.description)) {
+  if (args.every((arg) => !arg.description)) {
     return '(' + args.map(printInputValue).join(', ') + ')';
   }
 
@@ -348,7 +348,7 @@ function printDescriptionWithComments(description, indentation, firstInBlock) {
   const prefix = indentation && !firstInBlock ? '\n' : '';
   const comment = description
     .split('\n')
-    .map(line => indentation + (line !== '' ? '# ' + line : '#'))
+    .map((line) => indentation + (line !== '' ? '# ' + line : '#'))
     .join('\n');
 
   return prefix + comment + '\n';

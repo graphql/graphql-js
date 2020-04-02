@@ -77,8 +77,8 @@ function showStats() {
   stats.sort((a, b) => b[1] - a[1]);
   stats = stats.map(([type, size]) => [type, (size / 1024).toFixed(2) + ' KB']);
 
-  const typeMaxLength = Math.max(...stats.map(x => x[0].length));
-  const sizeMaxLength = Math.max(...stats.map(x => x[1].length));
+  const typeMaxLength = Math.max(...stats.map((x) => x[0].length));
+  const sizeMaxLength = Math.max(...stats.map((x) => x[1].length));
   for (const [type, size] of stats) {
     console.log(
       type.padStart(typeMaxLength) + ' | ' + size.padStart(sizeMaxLength),

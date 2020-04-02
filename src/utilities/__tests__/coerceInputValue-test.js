@@ -262,7 +262,7 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLInputObject with default value', () => {
-    const TestInputObject = defaultValue =>
+    const TestInputObject = (defaultValue) =>
       new GraphQLInputObjectType({
         name: 'TestInputObject',
         fields: {
@@ -290,9 +290,7 @@ describe('coerceInputValue', () => {
 
     it('returns NaN as value', () => {
       const result = coerceValue({}, TestInputObject(NaN));
-      expectValue(result)
-        .to.have.property('foo')
-        .that.satisfy(Number.isNaN);
+      expectValue(result).to.have.property('foo').that.satisfy(Number.isNaN);
     });
   });
 
