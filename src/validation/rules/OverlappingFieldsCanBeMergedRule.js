@@ -629,10 +629,10 @@ function sameArguments(
   if (arguments1.length !== arguments2.length) {
     return false;
   }
-  return arguments1.every(argument1 => {
+  return arguments1.every((argument1) => {
     const argument2 = find(
       arguments2,
-      argument => argument.name.value === argument1.name.value,
+      (argument) => argument.name.value === argument1.name.value,
     );
     if (!argument2) {
       return false;

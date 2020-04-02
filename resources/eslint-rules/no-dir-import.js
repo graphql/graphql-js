@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-module.exports = function(context) {
+module.exports = function (context) {
   return {
     ImportDeclaration: checkImporPath,
     ExportNamedDeclaration: checkImporPath,

@@ -894,7 +894,7 @@ describe('Lexer', () => {
       tokens.push(tok);
     }
 
-    expect(tokens.map(tok => tok.kind)).to.deep.equal([
+    expect(tokens.map((tok) => tok.kind)).to.deep.equal([
       TokenKind.SOF,
       TokenKind.BRACE_L,
       TokenKind.COMMENT,

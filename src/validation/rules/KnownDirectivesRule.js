@@ -42,7 +42,7 @@ export function KnownDirectivesRule(
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      locationsMap[def.name.value] = def.locations.map(name => name.value);
+      locationsMap[def.name.value] = def.locations.map((name) => name.value);
     }
   }
 

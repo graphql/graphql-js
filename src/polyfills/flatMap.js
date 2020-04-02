@@ -10,10 +10,10 @@ const flatMapMethod = Array.prototype.flatMap;
 /* eslint-disable no-redeclare */
 // $FlowFixMe
 const flatMap = flatMapMethod
-  ? function(list, fn) {
+  ? function (list, fn) {
       return flatMapMethod.call(list, fn);
     }
-  : function(list, fn) {
+  : function (list, fn) {
       let result = [];
       for (const item of list) {
         const value = fn(item);

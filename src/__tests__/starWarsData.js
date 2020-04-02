@@ -125,7 +125,7 @@ function getCharacter(id) {
  */
 export function getFriends(character: Character): Array<Promise<Character>> {
   // Notice that GraphQL accepts Arrays of Promises.
-  return character.friends.map(id => getCharacter(id));
+  return character.friends.map((id) => getCharacter(id));
 }
 
 /**

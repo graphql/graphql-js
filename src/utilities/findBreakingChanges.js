@@ -83,7 +83,7 @@ export function findBreakingChanges(
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const breakingChanges = findSchemaChanges(oldSchema, newSchema).filter(
-    change => change.type in BreakingChangeType,
+    (change) => change.type in BreakingChangeType,
   );
   return ((breakingChanges: any): Array<BreakingChange>);
 }
@@ -97,7 +97,7 @@ export function findDangerousChanges(
   newSchema: GraphQLSchema,
 ): Array<DangerousChange> {
   const dangerousChanges = findSchemaChanges(oldSchema, newSchema).filter(
-    change => change.type in DangerousChangeType,
+    (change) => change.type in DangerousChangeType,
   );
   return ((dangerousChanges: any): Array<DangerousChange>);
 }

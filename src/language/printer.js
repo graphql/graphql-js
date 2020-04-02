@@ -14,12 +14,12 @@ export function print(ast: ASTNode): string {
 
 // TODO: provide better type coverage in future
 const printDocASTReducer: any = {
-  Name: node => node.value,
-  Variable: node => '$' + node.name,
+  Name: (node) => node.value,
+  Variable: (node) => '$' + node.name,
 
   // Document
 
-  Document: node => join(node.definitions, '\n\n') + '\n',
+  Document: (node) => join(node.definitions, '\n\n') + '\n',
 
   OperationDefinition(node) {
     const op = node.operation;
@@ -248,7 +248,7 @@ const printDocASTReducer: any = {
 };
 
 function addDescription(cb) {
-  return node => join([node.description, cb(node)], '\n');
+  return (node) => join([node.description, cb(node)], '\n');
 }
 
 /**
@@ -256,7 +256,7 @@ function addDescription(cb) {
  * print all items together separated by separator if provided
  */
 function join(maybeArray: ?Array<string>, separator = '') {
-  return maybeArray?.filter(x => x).join(separator) ?? '';
+  return maybeArray?.filter((x) => x).join(separator) ?? '';
 }
 
 /**

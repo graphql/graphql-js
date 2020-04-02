@@ -40,12 +40,14 @@ export function valueFromASTUntyped(
     case Kind.BOOLEAN:
       return valueNode.value;
     case Kind.LIST:
-      return valueNode.values.map(node => valueFromASTUntyped(node, variables));
+      return valueNode.values.map((node) =>
+        valueFromASTUntyped(node, variables),
+      );
     case Kind.OBJECT:
       return keyValMap(
         valueNode.fields,
-        field => field.name.value,
-        field => valueFromASTUntyped(field.value, variables),
+        (field) => field.name.value,
+        (field) => valueFromASTUntyped(field.value, variables),
       );
     case Kind.VARIABLE:
       return variables?.[valueNode.name.value];

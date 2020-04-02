@@ -106,7 +106,7 @@ export function doTypesOverlap(
       // between possible concrete types of each.
       return schema
         .getPossibleTypes(typeA)
-        .some(type => schema.isSubType(typeB, type));
+        .some((type) => schema.isSubType(typeB, type));
     }
     // Determine if the latter type is a possible concrete type of the former.
     return schema.isSubType(typeA, typeB);

@@ -45,7 +45,7 @@ export const __Schema = new GraphQLObjectType({
     ({
       description: {
         type: GraphQLString,
-        resolve: schema => schema.description,
+        resolve: (schema) => schema.description,
       },
       types: {
         description: 'A list of all types supported by this server.',
@@ -57,24 +57,24 @@ export const __Schema = new GraphQLObjectType({
       queryType: {
         description: 'The type that query operations will be rooted at.',
         type: GraphQLNonNull(__Type),
-        resolve: schema => schema.getQueryType(),
+        resolve: (schema) => schema.getQueryType(),
       },
       mutationType: {
         description:
           'If this server supports mutation, the type that mutation operations will be rooted at.',
         type: __Type,
-        resolve: schema => schema.getMutationType(),
+        resolve: (schema) => schema.getMutationType(),
       },
       subscriptionType: {
         description:
           'If this server support subscription, the type that subscription operations will be rooted at.',
         type: __Type,
-        resolve: schema => schema.getSubscriptionType(),
+        resolve: (schema) => schema.getSubscriptionType(),
       },
       directives: {
         description: 'A list of all directives supported by this server.',
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__Directive))),
-        resolve: schema => schema.getDirectives(),
+        resolve: (schema) => schema.getDirectives(),
       },
     }: GraphQLFieldConfigMap<GraphQLSchema, mixed>),
 });
@@ -87,23 +87,23 @@ export const __Directive = new GraphQLObjectType({
     ({
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: directive => directive.name,
+        resolve: (directive) => directive.name,
       },
       description: {
         type: GraphQLString,
-        resolve: directive => directive.description,
+        resolve: (directive) => directive.description,
       },
       isRepeatable: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: directive => directive.isRepeatable,
+        resolve: (directive) => directive.isRepeatable,
       },
       locations: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation))),
-        resolve: directive => directive.locations,
+        resolve: (directive) => directive.locations,
       },
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
-        resolve: directive => directive.args,
+        resolve: (directive) => directive.args,
       },
     }: GraphQLFieldConfigMap<GraphQLDirective, mixed>),
 });
@@ -232,11 +232,11 @@ export const __Type = new GraphQLObjectType({
       },
       name: {
         type: GraphQLString,
-        resolve: type => (type.name !== undefined ? type.name : undefined),
+        resolve: (type) => (type.name !== undefined ? type.name : undefined),
       },
       description: {
         type: GraphQLString,
-        resolve: type =>
+        resolve: (type) =>
           type.description !== undefined ? type.description : undefined,
       },
       fields: {
@@ -248,7 +248,7 @@ export const __Type = new GraphQLObjectType({
           if (isObjectType(type) || isInterfaceType(type)) {
             let fields = objectValues(type.getFields());
             if (!includeDeprecated) {
-              fields = fields.filter(field => !field.isDeprecated);
+              fields = fields.filter((field) => !field.isDeprecated);
             }
             return fields;
           }
@@ -280,7 +280,7 @@ export const __Type = new GraphQLObjectType({
           if (isEnumType(type)) {
             let values = type.getValues();
             if (!includeDeprecated) {
-              values = values.filter(value => !value.isDeprecated);
+              values = values.filter((value) => !value.isDeprecated);
             }
             return values;
           }
@@ -296,7 +296,8 @@ export const __Type = new GraphQLObjectType({
       },
       ofType: {
         type: __Type,
-        resolve: type => (type.ofType !== undefined ? type.ofType : undefined),
+        resolve: (type) =>
+          type.ofType !== undefined ? type.ofType : undefined,
       },
     }: GraphQLFieldConfigMap<GraphQLType, mixed>),
 });
@@ -309,27 +310,27 @@ export const __Field = new GraphQLObjectType({
     ({
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: field => field.name,
+        resolve: (field) => field.name,
       },
       description: {
         type: GraphQLString,
-        resolve: field => field.description,
+        resolve: (field) => field.description,
       },
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
-        resolve: field => field.args,
+        resolve: (field) => field.args,
       },
       type: {
         type: GraphQLNonNull(__Type),
-        resolve: field => field.type,
+        resolve: (field) => field.type,
       },
       isDeprecated: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: field => field.isDeprecated,
+        resolve: (field) => field.isDeprecated,
       },
       deprecationReason: {
         type: GraphQLString,
-        resolve: field => field.deprecationReason,
+        resolve: (field) => field.deprecationReason,
       },
     }: GraphQLFieldConfigMap<GraphQLField<mixed, mixed>, mixed>),
 });
@@ -342,15 +343,15 @@ export const __InputValue = new GraphQLObjectType({
     ({
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: inputValue => inputValue.name,
+        resolve: (inputValue) => inputValue.name,
       },
       description: {
         type: GraphQLString,
-        resolve: inputValue => inputValue.description,
+        resolve: (inputValue) => inputValue.description,
       },
       type: {
         type: GraphQLNonNull(__Type),
-        resolve: inputValue => inputValue.type,
+        resolve: (inputValue) => inputValue.type,
       },
       defaultValue: {
         type: GraphQLString,
@@ -373,19 +374,19 @@ export const __EnumValue = new GraphQLObjectType({
     ({
       name: {
         type: GraphQLNonNull(GraphQLString),
-        resolve: enumValue => enumValue.name,
+        resolve: (enumValue) => enumValue.name,
       },
       description: {
         type: GraphQLString,
-        resolve: enumValue => enumValue.description,
+        resolve: (enumValue) => enumValue.description,
       },
       isDeprecated: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: enumValue => enumValue.isDeprecated,
+        resolve: (enumValue) => enumValue.isDeprecated,
       },
       deprecationReason: {
         type: GraphQLString,
-        resolve: enumValue => enumValue.deprecationReason,
+        resolve: (enumValue) => enumValue.deprecationReason,
       },
     }: GraphQLFieldConfigMap<GraphQLEnumValue, mixed>),
 });

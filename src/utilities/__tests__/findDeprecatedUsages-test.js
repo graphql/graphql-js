@@ -50,7 +50,7 @@ describe('findDeprecatedUsages', () => {
       parse('{ normalField, deprecatedField }'),
     );
 
-    const errorMessages = errors.map(err => err.message);
+    const errorMessages = errors.map((err) => err.message);
 
     expect(errorMessages).to.deep.equal([
       'The field "Query.deprecatedField" is deprecated. Some field reason.',
@@ -67,7 +67,7 @@ describe('findDeprecatedUsages', () => {
       `),
     );
 
-    const errorMessages = errors.map(err => err.message);
+    const errorMessages = errors.map((err) => err.message);
 
     expect(errorMessages).to.deep.equal([
       'The enum value "EnumType.DEPRECATED_VALUE" is deprecated. Some enum reason.',

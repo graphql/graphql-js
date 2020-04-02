@@ -229,7 +229,7 @@ function maxBy(array, fn) {
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
 async function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
-  const environments = revisions.map(revision => ({
+  const environments = revisions.map((revision) => ({
     revision,
     distPath: prepareRevision(revision),
   }));
@@ -269,8 +269,8 @@ async function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
 function matchBenchmarks(patterns) {
   let benchmarks = findFiles(LOCAL_DIR('src'), '*/__tests__/*-benchmark.js');
   if (patterns.length > 0) {
-    benchmarks = benchmarks.filter(benchmark =>
-      patterns.some(pattern => path.join('src', benchmark).includes(pattern)),
+    benchmarks = benchmarks.filter((benchmark) =>
+      patterns.some((pattern) => path.join('src', benchmark).includes(pattern)),
     );
   }
 

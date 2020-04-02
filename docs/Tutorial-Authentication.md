@@ -30,7 +30,7 @@ function loggingMiddleware(req, res, next) {
 }
 
 var root = {
-  ip: function(args, request) {
+  ip: function (args, request) {
     return request.ip;
   },
 };

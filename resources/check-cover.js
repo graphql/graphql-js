@@ -14,13 +14,13 @@ const {
 
 rmdirRecursive('./coverage/flow');
 getFullCoverage()
-  .then(fullCoverage =>
+  .then((fullCoverage) =>
     writeFile(
       './coverage/flow/full-coverage.json',
       JSON.stringify(fullCoverage),
     ),
   )
-  .catch(error => {
+  .catch((error) => {
     console.error(error.stack);
     process.exit(1);
   });
@@ -34,10 +34,10 @@ async function getFullCoverage() {
 
     // TODO: measure coverage for all files. ATM  missing types for chai & mocha
     const files = readdirRecursive('./src', { ignoreDir: /^__.*__$/ })
-      .filter(filepath => filepath.endsWith('.js'))
-      .map(filepath => path.join('src/', filepath));
+      .filter((filepath) => filepath.endsWith('.js'))
+      .map((filepath) => path.join('src/', filepath));
 
-    await Promise.all(files.map(getCoverage)).then(coverages => {
+    await Promise.all(files.map(getCoverage)).then((coverages) => {
       for (const coverage of coverages) {
         fullCoverage[coverage.path] = coverage;
       }

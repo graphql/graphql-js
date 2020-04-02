@@ -296,7 +296,7 @@ export function extendSchemaImpl(
     return new GraphQLInputObjectType({
       ...config,
       fields: () => ({
-        ...mapValue(config.fields, field => ({
+        ...mapValue(config.fields, (field) => ({
           ...field,
           type: replaceType(field.type),
         })),
@@ -686,7 +686,7 @@ export function extendSchemaImpl(
 
 const stdTypeMap = keyMap(
   specifiedScalarTypes.concat(introspectionTypes),
-  type => type.name,
+  (type) => type.name,
 );
 
 /**

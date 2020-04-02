@@ -59,8 +59,8 @@ if (repoURLMatch == null) {
 const [, githubOrg, githubRepo] = repoURLMatch;
 
 getChangeLog()
-  .then(changelog => process.stdout.write(changelog))
-  .catch(error => console.error(error));
+  .then((changelog) => process.stdout.write(changelog))
+  .catch((error) => console.error(error));
 
 function getChangeLog() {
   const { version } = packageJSON;
@@ -76,8 +76,8 @@ function getChangeLog() {
 
   const date = exec('git log -1 --format=%cd --date=short');
   return getCommitsInfo(commitsList.split('\n'))
-    .then(commitsInfo => getPRsInfo(commitsInfoToPRs(commitsInfo)))
-    .then(prsInfo => genChangeLog(tag, date, prsInfo));
+    .then((commitsInfo) => getPRsInfo(commitsInfoToPRs(commitsInfo)))
+    .then((prsInfo) => genChangeLog(tag, date, prsInfo));
 }
 
 function genChangeLog(tag, date, allPRs) {
@@ -86,8 +86,8 @@ function genChangeLog(tag, date, allPRs) {
 
   for (const pr of allPRs) {
     const labels = pr.labels.nodes
-      .map(label => label.name)
-      .filter(label => label.startsWith('PR: '));
+      .map((label) => label.name)
+      .filter((label) => label.startsWith('PR: '));
 
     if (labels.length === 0) {
       throw new Error(`PR is missing label. See ${pr.url}`);
@@ -153,12 +153,12 @@ function graphqlRequestImpl(query, variables, cb) {
     },
   });
 
-  req.on('response', res => {
+  req.on('response', (res) => {
     let responseBody = '';
 
     res.setEncoding('utf8');
-    res.on('data', d => (responseBody += d));
-    res.on('error', error => resultCB(error));
+    res.on('data', (d) => (responseBody += d));
+    res.on('error', (error) => resultCB(error));
 
     res.on('end', () => {
       if (res.statusCode !== 200) {
@@ -187,7 +187,7 @@ function graphqlRequestImpl(query, variables, cb) {
     });
   });
 
-  req.on('error', error => resultCB(error));
+  req.on('error', (error) => resultCB(error));
   req.write(JSON.stringify({ query, variables }));
   req.end();
 }
@@ -271,7 +271,7 @@ function commitsInfoToPRs(commits) {
   const prs = {};
   for (const commit of commits) {
     const associatedPRs = commit.associatedPullRequests.nodes.filter(
-      pr => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
+      (pr) => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
     );
     if (associatedPRs.length === 0) {
       const match = / \(#([0-9]+)\)$/m.exec(commit.message);

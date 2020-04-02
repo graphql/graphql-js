@@ -73,7 +73,7 @@ export function validateSchema(
 export function assertValidSchema(schema: GraphQLSchema): void {
   const errors = validateSchema(schema);
   if (errors.length !== 0) {
-    throw new Error(errors.map(error => error.message).join('\n\n'));
+    throw new Error(errors.map((error) => error.message).join('\n\n'));
   }
 }
 
@@ -141,7 +141,7 @@ function getOperationTypeNode(
   type: GraphQLObjectType,
   operation: string,
 ): ?ASTNode {
-  const operationNodes = getAllSubNodes(schema, node => node.operationTypes);
+  const operationNodes = getAllSubNodes(schema, (node) => node.operationTypes);
   for (const node of operationNodes) {
     if (node.operation === operation) {
       return node.type;
@@ -362,7 +362,7 @@ function validateTypeImplementsInterface(
     // Assert each interface field arg is implemented.
     for (const ifaceArg of ifaceField.args) {
       const argName = ifaceArg.name;
-      const typeArg = find(typeField.args, arg => arg.name === argName);
+      const typeArg = find(typeField.args, (arg) => arg.name === argName);
 
       // Assert interface field arg exists on object field.
       if (!typeArg) {
@@ -392,7 +392,7 @@ function validateTypeImplementsInterface(
     // Assert additional arguments must not be required.
     for (const typeArg of typeField.args) {
       const argName = typeArg.name;
-      const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
+      const ifaceArg = find(ifaceField.args, (arg) => arg.name === argName);
       if (!ifaceArg && isRequiredArgument(typeArg)) {
         context.reportError(
           `Object field ${type.name}.${fieldName} includes required argument ${argName} that is missing from the Interface field ${iface.name}.${fieldName}.`,
@@ -551,10 +551,10 @@ function createInputObjectCircularRefsValidator(
           detectCycleRecursive(fieldType);
         } else {
           const cyclePath = fieldPath.slice(cycleIndex);
-          const pathStr = cyclePath.map(fieldObj => fieldObj.name).join('.');
+          const pathStr = cyclePath.map((fieldObj) => fieldObj.name).join('.');
           context.reportError(
             `Cannot reference Input Object "${fieldType.name}" within itself through a series of non-null fields: "${pathStr}".`,
-            cyclePath.map(fieldObj => fieldObj.astNode),
+            cyclePath.map((fieldObj) => fieldObj.astNode),
           );
         }
         fieldPath.pop();
@@ -587,15 +587,15 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
   getter: (T | K) => ?(L | $ReadOnlyArray<L>),
 ): $ReadOnlyArray<L> {
   /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-  return flatMap(getAllNodes(object), item => getter(item) ?? []);
+  return flatMap(getAllNodes(object), (item) => getter(item) ?? []);
 }
 
 function getAllImplementsInterfaceNodes(
   type: GraphQLObjectType | GraphQLInterfaceType,
   iface: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
-  return getAllSubNodes(type, typeNode => typeNode.interfaces).filter(
-    ifaceNode => ifaceNode.name.value === iface.name,
+  return getAllSubNodes(type, (typeNode) => typeNode.interfaces).filter(
+    (ifaceNode) => ifaceNode.name.value === iface.name,
   );
 }
 
@@ -603,7 +603,7 @@ function getUnionMemberTypeNodes(
   union: GraphQLUnionType,
   typeName: string,
 ): ?$ReadOnlyArray<NamedTypeNode> {
-  return getAllSubNodes(union, unionNode => unionNode.types).filter(
-    typeNode => typeNode.name.value === typeName,
+  return getAllSubNodes(union, (unionNode) => unionNode.types).filter(
+    (typeNode) => typeNode.name.value === typeName,
   );
 }
