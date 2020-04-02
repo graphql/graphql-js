@@ -6,10 +6,18 @@ env:
   node: true
 reportUnusedDisableDirectives: true
 plugins:
+  - graphql-internal
   - flowtype
   - import
 
 rules:
+  ##############################################################################
+  # Internal rules located in 'resources/eslint-rules'.
+  # See './resources/eslint-rules/README.md'
+  ##############################################################################
+
+  graphql-internal/no-dir-import: error
+
   ##############################################################################
   # `eslint-plugin-flowtype` rule list based on `v4.6.x`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
