@@ -241,7 +241,7 @@ export const __Type = new GraphQLObjectType({
       },
       specifiedByUrl: {
         type: GraphQLString,
-        resolve: obj =>
+        resolve: (obj) =>
           obj.specifiedByUrl !== undefined ? obj.specifiedByUrl : undefined,
       },
       fields: {
