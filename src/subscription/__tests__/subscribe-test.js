@@ -160,11 +160,11 @@ describe('Subscription Initialization Phase', () => {
       // Empty
     }
 
+    // $FlowFixMe
     const ai = await subscribe(emailSchema, document, {
       importantEmail: emptyAsyncIterator,
     });
 
-    // $FlowFixMe
     ai.next();
     ai.return();
   });
@@ -215,6 +215,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema,
       document: parse(`
@@ -228,7 +229,6 @@ describe('Subscription Initialization Phase', () => {
       importantEmail: {},
     });
 
-    // $FlowFixMe
     await subscription.next();
   });
 
@@ -250,6 +250,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema,
       document: parse(`
@@ -263,7 +264,6 @@ describe('Subscription Initialization Phase', () => {
       importantEmail: {},
     });
 
-    // $FlowFixMe
     await subscription.next();
   });
 
@@ -297,6 +297,7 @@ describe('Subscription Initialization Phase', () => {
       subscription: SubscriptionTypeMultiple,
     });
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema,
       document: parse(`
@@ -307,7 +308,6 @@ describe('Subscription Initialization Phase', () => {
       `),
     });
 
-    // $FlowFixMe
     subscription.next(); // Ask for a result, but ignore it.
 
     expect(didResolveImportantEmail).to.equal(true);
@@ -935,6 +935,7 @@ describe('Subscription Publish Phase', () => {
       },
     );
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema: erroringEmailSchema,
       document: parse(`
@@ -948,7 +949,6 @@ describe('Subscription Publish Phase', () => {
       `),
     });
 
-    // $FlowFixMe
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
       done: false,
@@ -1007,6 +1007,7 @@ describe('Subscription Publish Phase', () => {
       (email) => email,
     );
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema: erroringEmailSchema,
       document: parse(`
@@ -1020,7 +1021,6 @@ describe('Subscription Publish Phase', () => {
       `),
     });
 
-    // $FlowFixMe
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
       done: false,
@@ -1061,6 +1061,7 @@ describe('Subscription Publish Phase', () => {
       (email) => email,
     );
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema: erroringEmailSchema,
       document: parse(`
@@ -1074,7 +1075,6 @@ describe('Subscription Publish Phase', () => {
       `),
     });
 
-    // $FlowFixMe
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
       done: false,

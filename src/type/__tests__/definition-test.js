@@ -336,8 +336,8 @@ describe('Type System: Objects', () => {
   it('rejects an Object type with a field function that returns incorrect type', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
+      // $DisableFlowOnNegativeTest
       fields() {
-        // $DisableFlowOnNegativeTest
         return [{ field: ScalarType }];
       },
     });
@@ -365,8 +365,8 @@ describe('Type System: Objects', () => {
   it('rejects an Object type with an isDeprecated instead of deprecationReason on field', () => {
     const OldObject = new GraphQLObjectType({
       name: 'OldObject',
+      // $DisableFlowOnNegativeTest
       fields: {
-        // $DisableFlowOnNegativeTest
         field: { type: ScalarType, isDeprecated: true },
       },
     });
@@ -405,8 +405,8 @@ describe('Type System: Objects', () => {
   it('rejects an empty Object field resolver', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
+      // $DisableFlowOnNegativeTest
       fields: {
-        // $DisableFlowOnNegativeTest
         field: { type: ScalarType, resolve: {} },
       },
     });
@@ -419,8 +419,8 @@ describe('Type System: Objects', () => {
   it('rejects a constant scalar value resolver', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
+      // $DisableFlowOnNegativeTest
       fields: {
-        // $DisableFlowOnNegativeTest
         field: { type: ScalarType, resolve: 0 },
       },
     });
@@ -724,8 +724,8 @@ describe('Type System: Enums', () => {
       () =>
         new GraphQLEnumType({
           name: 'SomeEnum',
+          // $DisableFlowOnNegativeTest
           values: {
-            // $DisableFlowOnNegativeTest
             FOO: { isDeprecated: true },
           },
         }),
@@ -809,8 +809,8 @@ describe('Type System: Input Objects', () => {
     it('rejects an Input Object type with resolvers', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
+        // $DisableFlowOnNegativeTest
         fields: {
-          // $DisableFlowOnNegativeTest
           f: { type: ScalarType, resolve: dummyFunc },
         },
       });
@@ -822,8 +822,8 @@ describe('Type System: Input Objects', () => {
     it('rejects an Input Object type with resolver constant', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
+        // $DisableFlowOnNegativeTest
         fields: {
-          // $DisableFlowOnNegativeTest
           f: { type: ScalarType, resolve: {} },
         },
       });

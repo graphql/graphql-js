@@ -149,13 +149,13 @@ describe('getOperationRootType', () => {
 
   it('Throws when operation not a valid operation kind', () => {
     const testSchema = new GraphQLSchema({});
-
     const doc = parse('{ field }');
     const operationNode = {
       ...getOperationNode(doc),
-      // $DisableFlowOnNegativeTest
       operation: 'non_existent_operation',
     };
+
+    // $DisableFlowOnNegativeTest
     expect(() => getOperationRootType(testSchema, operationNode)).to.throw(
       'Can only have query, mutation and subscription operations.',
     );
