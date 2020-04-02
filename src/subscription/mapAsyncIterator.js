@@ -15,10 +15,9 @@ export default function mapAsyncIterator<T, U>(
 ): AsyncGenerator<U, void, void> {
   // $FlowFixMe
   const iteratorMethod = iterable[SYMBOL_ASYNC_ITERATOR];
-  const iterator: AsyncIterator<T> = iteratorMethod.call(iterable);
-  let $return;
+  const iterator: any = iteratorMethod.call(iterable);
+  let $return: any;
   let abruptClose;
-  // $FlowFixMe(>=0.68.0)
   if (typeof iterator.return === 'function') {
     $return = iterator.return;
     abruptClose = (error) => {
@@ -53,7 +52,6 @@ export default function mapAsyncIterator<T, U>(
         : Promise.resolve({ value: undefined, done: true });
     },
     throw(error) {
-      // $FlowFixMe(>=0.68.0)
       if (typeof iterator.throw === 'function') {
         return iterator.throw(error).then(mapResult, mapReject);
       }

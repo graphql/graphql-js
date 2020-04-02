@@ -403,8 +403,8 @@ describe('Execute: Handles execution of abstract types', () => {
     const fooInterface = new GraphQLInterfaceType({
       name: 'FooInterface',
       fields: { bar: { type: GraphQLString } },
+      // $DisableFlowOnNegativeTest
       resolveType() {
-        // $DisableFlowOnNegativeTest
         return [];
       },
     });

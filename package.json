@@ -58,7 +58,7 @@
     "eslint-plugin-flowtype": "4.6.0",
     "eslint-plugin-graphql-internal": "link:./resources/eslint-rules",
     "eslint-plugin-import": "2.20.1",
-    "flow-bin": "0.120.1",
+    "flow-bin": "0.121.0",
     "mocha": "7.1.0",
     "nyc": "15.0.0",
     "prettier": "2.0.2",
