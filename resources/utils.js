@@ -31,10 +31,7 @@ function removeTrailingNewLine(str) {
     return str;
   }
 
-  return str
-    .split('\n')
-    .slice(0, -1)
-    .join('\n');
+  return str.split('\n').slice(0, -1).join('\n');
 }
 
 function mkdirRecursive(dirPath) {
@@ -68,7 +65,7 @@ function readdirRecursive(dirPath, opts = {}) {
     if (ignoreDir && ignoreDir.test(name)) {
       continue;
     }
-    const list = readdirRecursive(path.join(dirPath, name), opts).map(f =>
+    const list = readdirRecursive(path.join(dirPath, name), opts).map((f) =>
       path.join(name, f),
     );
     result.push(...list);

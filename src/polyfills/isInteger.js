@@ -7,7 +7,7 @@ declare function isInteger(value: mixed): boolean %checks(typeof value ===
 // $FlowFixMe workaround for: https://github.com/facebook/flow/issues/4441
 const isInteger =
   Number.isInteger ||
-  function(value) {
+  function (value) {
     return (
       typeof value === 'number' &&
       isFinite(value) &&

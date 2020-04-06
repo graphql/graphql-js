@@ -153,9 +153,9 @@ function subscribeImpl(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   // If `perEventContextResolver` is provided, it is invoked with the original
   // `contextValue` to return a new context unique to this `execute`.
-  const perEventContextResolverFn = perEventContextResolver ?? (ctx => ctx);
+  const perEventContextResolverFn = perEventContextResolver ?? ((ctx) => ctx);
 
-  const mapSourceToResponse = payload =>
+  const mapSourceToResponse = (payload) =>
     execute({
       schema,
       document,
@@ -168,7 +168,7 @@ function subscribeImpl(
 
   // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
-  return sourcePromise.then(resultOrStream =>
+  return sourcePromise.then((resultOrStream) =>
     // Note: Flow can't refine isAsyncIterable, so explicit casts are used.
     isAsyncIterable(resultOrStream)
       ? mapAsyncIterator(
@@ -282,7 +282,7 @@ export function createSourceEventStream(
     );
 
     // Coerce to Promise for easier error handling and consistent return type.
-    return Promise.resolve(result).then(eventStream => {
+    return Promise.resolve(result).then((eventStream) => {
       // If eventStream is an Error, rethrow a located error.
       if (eventStream instanceof Error) {
         return {

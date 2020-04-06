@@ -111,7 +111,7 @@ export function valueFromAST(
       return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
-    const fieldNodes = keyMap(valueNode.fields, field => field.name.value);
+    const fieldNodes = keyMap(valueNode.fields, (field) => field.name.value);
     for (const field of objectValues(type.getFields())) {
       const fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {

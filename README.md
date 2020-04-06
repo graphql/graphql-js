@@ -74,7 +74,7 @@ Then, serve the result of a query against that type schema.
 ```js
 var query = '{ hello }';
 
-graphql(schema, query).then(result => {
+graphql(schema, query).then((result) => {
   // Prints
   // {
   //   data: { hello: "world" }
@@ -90,7 +90,7 @@ it, reporting errors otherwise.
 ```js
 var query = '{ BoyHowdy }';
 
-graphql(schema, query).then(result => {
+graphql(schema, query).then((result) => {
   // Prints
   // {
   //   errors: [

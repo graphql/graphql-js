@@ -54,7 +54,7 @@ export function separateOperations(
     separatedDocumentASTs[operationName] = {
       kind: Kind.DOCUMENT,
       definitions: documentAST.definitions.filter(
-        node =>
+        (node) =>
           node === operation ||
           (node.kind === Kind.FRAGMENT_DEFINITION &&
             dependencies[node.name.value]),

@@ -1,11 +1,11 @@
 query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
   whoever123is: node(id: [123, 456]) {
-    id ,
+    id
     ... on User @onInlineFragment {
       field2 {
-        id ,
-        alias: field1(first:10, after:$foo,) @include(if: $foo) {
-          id,
+        id
+        alias: field1(first: 10, after: $foo) @include(if: $foo) {
+          id
           ...frag @onFragmentSpread
         }
       }
@@ -27,9 +27,8 @@ mutation likeStory @onMutation {
   }
 }
 
-subscription StoryLikeSubscription(
-  $input: StoryLikeSubscribeInput
-) @onSubscription {
+subscription StoryLikeSubscription($input: StoryLikeSubscribeInput)
+  @onSubscription {
   storyLikeSubscribe(input: $input) {
     story {
       likers {
@@ -43,16 +42,23 @@ subscription StoryLikeSubscription(
 }
 
 fragment frag on Friend @onFragmentDefinition {
-  foo(size: $size, bar: $b, obj: {key: "value", block: """
-
+  foo(
+    size: $size
+    bar: $b
+    obj: {
+      key: "value"
+      block: """
       block string uses \"""
-
-  """})
+      """
+    }
+  )
 }
 
 {
-  unnamed(truthy: true, falsy: false, nullish: null),
+  unnamed(truthy: true, falsy: false, nullish: null)
   query
 }
 
-query { __typename }
+query {
+  __typename
+}

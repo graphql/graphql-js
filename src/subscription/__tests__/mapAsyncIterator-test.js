@@ -18,7 +18,7 @@ describe('mapAsyncIterator', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterator(source(), x => x + x);
+    const doubles = mapAsyncIterator(source(), (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -45,7 +45,7 @@ describe('mapAsyncIterator', () => {
       },
     };
 
-    const doubles = mapAsyncIterator(iterator, x => x + x);
+    const doubles = mapAsyncIterator(iterator, (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -63,7 +63,7 @@ describe('mapAsyncIterator', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterator(source(), x => x + x);
+    const doubles = mapAsyncIterator(source(), (x) => x + x);
 
     const result = [];
     for await (const x of doubles) {
@@ -82,7 +82,7 @@ describe('mapAsyncIterator', () => {
     // Flow test: this is *not* AsyncIterator<Promise<number>>
     const doubles: AsyncIterator<number> = mapAsyncIterator(
       source(),
-      async x => (await x) + x,
+      async (x) => (await x) + x,
     );
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
@@ -103,7 +103,7 @@ describe('mapAsyncIterator', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterator(source(), x => x + x);
+    const doubles = mapAsyncIterator(source(), (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -141,7 +141,7 @@ describe('mapAsyncIterator', () => {
       },
     };
 
-    const doubles = mapAsyncIterator(iterator, x => x + x);
+    const doubles = mapAsyncIterator(iterator, (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -167,7 +167,7 @@ describe('mapAsyncIterator', () => {
       }
     }
 
-    const doubles = mapAsyncIterator(source(), x => x + x);
+    const doubles = mapAsyncIterator(source(), (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -205,7 +205,7 @@ describe('mapAsyncIterator', () => {
       },
     };
 
-    const doubles = mapAsyncIterator(iterator, x => x + x);
+    const doubles = mapAsyncIterator(iterator, (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -233,7 +233,7 @@ describe('mapAsyncIterator', () => {
       }
     }
 
-    const doubles = mapAsyncIterator(source(), x => x + x);
+    const doubles = mapAsyncIterator(source(), (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -260,7 +260,7 @@ describe('mapAsyncIterator', () => {
       throw new Error('Goodbye');
     }
 
-    const doubles = mapAsyncIterator(source(), x => x + x);
+    const doubles = mapAsyncIterator(source(), (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({
       value: 'HelloHello',
@@ -286,8 +286,8 @@ describe('mapAsyncIterator', () => {
 
     const doubles = mapAsyncIterator(
       source(),
-      x => x + x,
-      error => error,
+      (x) => x + x,
+      (error) => error,
     );
 
     expect(await doubles.next()).to.deep.equal({
@@ -345,7 +345,7 @@ describe('mapAsyncIterator', () => {
   }
 
   it('closes source if mapper throws an error', async () => {
-    await testClosesSourceWithMapper(x => {
+    await testClosesSourceWithMapper((x) => {
       if (x > 1) {
         throw new Error('Cannot count to ' + x);
       }
@@ -354,7 +354,7 @@ describe('mapAsyncIterator', () => {
   });
 
   it('closes source if mapper rejects', async () => {
-    await testClosesSourceWithMapper(x =>
+    await testClosesSourceWithMapper((x) =>
       x > 1
         ? Promise.reject(new Error('Cannot count to ' + x))
         : Promise.resolve(x),
@@ -367,7 +367,7 @@ describe('mapAsyncIterator', () => {
       throw new Error(2);
     }
 
-    const throwOver1 = mapAsyncIterator(source(), x => x, mapper);
+    const throwOver1 = mapAsyncIterator(source(), (x) => x, mapper);
 
     expect(await throwOver1.next()).to.deep.equal({ value: 1, done: false });
 
@@ -388,13 +388,13 @@ describe('mapAsyncIterator', () => {
   }
 
   it('closes source if mapper throws an error', async () => {
-    await testClosesSourceWithRejectMapper(error => {
+    await testClosesSourceWithRejectMapper((error) => {
       throw new Error('Cannot count to ' + error.message);
     });
   });
 
   it('closes source if mapper rejects', async () => {
-    await testClosesSourceWithRejectMapper(error =>
+    await testClosesSourceWithRejectMapper((error) =>
       Promise.reject(new Error('Cannot count to ' + error.message)),
     );
   });

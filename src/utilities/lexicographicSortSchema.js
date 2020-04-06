@@ -38,7 +38,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   const schemaConfig = schema.toConfig();
   const typeMap = keyValMap(
     sortByName(schemaConfig.types),
-    type => type.name,
+    (type) => type.name,
     sortNamedType,
   );
 
@@ -72,20 +72,20 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     const config = directive.toConfig();
     return new GraphQLDirective({
       ...config,
-      locations: sortBy(config.locations, x => x),
+      locations: sortBy(config.locations, (x) => x),
       args: sortArgs(config.args),
     });
   }
 
   function sortArgs(args) {
-    return sortObjMap(args, arg => ({
+    return sortObjMap(args, (arg) => ({
       ...arg,
       type: replaceType(arg.type),
     }));
   }
 
   function sortFields(fieldsMap) {
-    return sortObjMap(fieldsMap, field => ({
+    return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
       args: sortArgs(field.args),
@@ -93,7 +93,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 
   function sortInputFields(fieldsMap) {
-    return sortObjMap(fieldsMap, field => ({
+    return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
     }));
@@ -150,9 +150,9 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 }
 
-function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn?: T => R): ObjMap<R> {
+function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn?: (T) => R): ObjMap<R> {
   const sortedMap = Object.create(null);
-  const sortedKeys = sortBy(Object.keys(map), x => x);
+  const sortedKeys = sortBy(Object.keys(map), (x) => x);
   for (const key of sortedKeys) {
     const value = map[key];
     sortedMap[key] = sortValueFn ? sortValueFn(value) : value;
@@ -163,10 +163,13 @@ function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn?: T => R): ObjMap<R> {
 function sortByName<T: { +name: string, ... }>(
   array: $ReadOnlyArray<T>,
 ): Array<T> {
-  return sortBy(array, obj => obj.name);
+  return sortBy(array, (obj) => obj.name);
 }
 
-function sortBy<T>(array: $ReadOnlyArray<T>, mapToKey: T => string): Array<T> {
+function sortBy<T>(
+  array: $ReadOnlyArray<T>,
+  mapToKey: (T) => string,
+): Array<T> {
   return array.slice().sort((obj1, obj2) => {
     const key1 = mapToKey(obj1);
     const key2 = mapToKey(obj2);

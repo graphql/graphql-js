@@ -27,11 +27,11 @@ Both mutations and queries can be handled by root resolvers, so the root that im
 ```js
 var fakeDatabase = {};
 var root = {
-  setMessage: function({ message }) {
+  setMessage: function ({ message }) {
     fakeDatabase.message = message;
     return message;
   },
-  getMessage: function() {
+  getMessage: function () {
     return fakeDatabase.message;
   },
 };
@@ -112,22 +112,20 @@ class Message {
 var fakeDatabase = {};
 
 var root = {
-  getMessage: function({ id }) {
+  getMessage: function ({ id }) {
     if (!fakeDatabase[id]) {
       throw new Error('no message exists with id ' + id);
     }
     return new Message(id, fakeDatabase[id]);
   },
-  createMessage: function({ input }) {
+  createMessage: function ({ input }) {
     // Create a random id for our "database".
-    var id = require('crypto')
-      .randomBytes(10)
-      .toString('hex');
+    var id = require('crypto').randomBytes(10).toString('hex');
 
     fakeDatabase[id] = input;
     return new Message(id, input);
   },
-  updateMessage: function({ id, input }) {
+  updateMessage: function ({ id, input }) {
     if (!fakeDatabase[id]) {
       throw new Error('no message exists with id ' + id);
     }
@@ -188,8 +186,8 @@ fetch('/graphql', {
     },
   }),
 })
-  .then(r => r.json())
-  .then(data => console.log('data returned:', data));
+  .then((r) => r.json())
+  .then((data) => console.log('data returned:', data));
 ```
 
 One particular type of mutation is operations that change users, like signing up a new user. While you can implement this using GraphQL mutations, you can reuse many existing libraries if you learn about [GraphQL with authentication and Express middleware](/graphql-js/authentication-and-express-middleware/).

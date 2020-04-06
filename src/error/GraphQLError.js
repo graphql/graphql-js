@@ -117,7 +117,7 @@ export class GraphQLError extends Error {
 
     let _locations;
     if (positions && source) {
-      _locations = positions.map(pos => getLocation(source, pos));
+      _locations = positions.map((pos) => getLocation(source, pos));
     } else if (_nodes) {
       _locations = _nodes.reduce((list, node) => {
         if (node.loc) {

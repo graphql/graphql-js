@@ -18,7 +18,7 @@ export default function promiseReduce<T, U>(
   return values.reduce(
     (previous, value) =>
       isPromise(previous)
-        ? previous.then(resolved => callback(resolved, value))
+        ? previous.then((resolved) => callback(resolved, value))
         : callback(previous, value),
     initialValue,
   );

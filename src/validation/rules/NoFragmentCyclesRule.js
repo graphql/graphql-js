@@ -60,7 +60,7 @@ export function NoFragmentCyclesRule(
         const cyclePath = spreadPath.slice(cycleIndex);
         const viaPath = cyclePath
           .slice(0, -1)
-          .map(s => '"' + s.name.value + '"')
+          .map((s) => '"' + s.name.value + '"')
           .join(', ');
 
         context.reportError(

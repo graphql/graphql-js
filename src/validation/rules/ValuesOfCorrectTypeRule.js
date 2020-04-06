@@ -51,7 +51,7 @@ export function ValuesOfCorrectTypeRule(
         return false; // Don't traverse further.
       }
       // Ensure every required field exists.
-      const fieldNodeMap = keyMap(node.fields, field => field.name.value);
+      const fieldNodeMap = keyMap(node.fields, (field) => field.name.value);
       for (const fieldDef of objectValues(type.getFields())) {
         const fieldNode = fieldNodeMap[fieldDef.name];
         if (!fieldNode && isRequiredInputField(fieldDef)) {
@@ -93,11 +93,11 @@ export function ValuesOfCorrectTypeRule(
         );
       }
     },
-    EnumValue: node => isValidValueNode(context, node),
-    IntValue: node => isValidValueNode(context, node),
-    FloatValue: node => isValidValueNode(context, node),
-    StringValue: node => isValidValueNode(context, node),
-    BooleanValue: node => isValidValueNode(context, node),
+    EnumValue: (node) => isValidValueNode(context, node),
+    IntValue: (node) => isValidValueNode(context, node),
+    FloatValue: (node) => isValidValueNode(context, node),
+    StringValue: (node) => isValidValueNode(context, node),
+    BooleanValue: (node) => isValidValueNode(context, node),
   };
 }
 

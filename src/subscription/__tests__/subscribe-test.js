@@ -35,11 +35,11 @@ const InboxType = new GraphQLObjectType({
   fields: {
     total: {
       type: GraphQLInt,
-      resolve: inbox => inbox.emails.length,
+      resolve: (inbox) => inbox.emails.length,
     },
     unread: {
       type: GraphQLInt,
-      resolve: inbox => inbox.emails.filter(email => email.unread).length,
+      resolve: (inbox) => inbox.emails.filter((email) => email.unread).length,
     },
     emails: { type: GraphQLList(EmailType) },
   },
@@ -166,11 +166,11 @@ describe('Subscription Initialization Phase', () => {
       // Empty
     }
 
+    // $FlowFixMe
     const ai = await subscribe(emailSchema, document, {
       importantEmail: emptyAsyncIterator,
     });
 
-    // $FlowFixMe
     ai.next();
     ai.return();
   });
@@ -221,6 +221,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema,
       document: parse(`
@@ -234,7 +235,6 @@ describe('Subscription Initialization Phase', () => {
       importantEmail: {},
     });
 
-    // $FlowFixMe
     await subscription.next();
   });
 
@@ -256,6 +256,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema,
       document: parse(`
@@ -269,7 +270,6 @@ describe('Subscription Initialization Phase', () => {
       importantEmail: {},
     });
 
-    // $FlowFixMe
     await subscription.next();
   });
 
@@ -303,6 +303,7 @@ describe('Subscription Initialization Phase', () => {
       subscription: SubscriptionTypeMultiple,
     });
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema,
       document: parse(`
@@ -313,7 +314,6 @@ describe('Subscription Initialization Phase', () => {
       `),
     });
 
-    // $FlowFixMe
     subscription.next(); // Ask for a result, but ignore it.
 
     expect(didResolveImportantEmail).to.equal(true);
@@ -928,12 +928,12 @@ describe('Subscription Publish Phase', () => {
 
   it('should handle error during execution of source event', async () => {
     const erroringEmailSchema = emailSchemaWithResolvers(
-      async function*() {
+      async function* () {
         yield { email: { subject: 'Hello' } };
         yield { email: { subject: 'Goodbye' } };
         yield { email: { subject: 'Bonjour' } };
       },
-      event => {
+      (event) => {
         if (event.email.subject === 'Goodbye') {
           throw new Error('Never leave.');
         }
@@ -941,6 +941,7 @@ describe('Subscription Publish Phase', () => {
       },
     );
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema: erroringEmailSchema,
       document: parse(`
@@ -954,7 +955,6 @@ describe('Subscription Publish Phase', () => {
       `),
     });
 
-    // $FlowFixMe
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
       done: false,
@@ -1006,13 +1006,14 @@ describe('Subscription Publish Phase', () => {
 
   it('should pass through error thrown in source event stream', async () => {
     const erroringEmailSchema = emailSchemaWithResolvers(
-      async function*() {
+      async function* () {
         yield { email: { subject: 'Hello' } };
         throw new Error('test error');
       },
-      email => email,
+      (email) => email,
     );
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema: erroringEmailSchema,
       document: parse(`
@@ -1026,7 +1027,6 @@ describe('Subscription Publish Phase', () => {
       `),
     });
 
-    // $FlowFixMe
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
       done: false,
@@ -1060,13 +1060,14 @@ describe('Subscription Publish Phase', () => {
 
   it('should resolve GraphQL error from source event stream', async () => {
     const erroringEmailSchema = emailSchemaWithResolvers(
-      async function*() {
+      async function* () {
         yield { email: { subject: 'Hello' } };
         throw new GraphQLError('test error');
       },
-      email => email,
+      (email) => email,
     );
 
+    // $FlowFixMe
     const subscription = await subscribe({
       schema: erroringEmailSchema,
       document: parse(`
@@ -1080,7 +1081,6 @@ describe('Subscription Publish Phase', () => {
       `),
     });
 
-    // $FlowFixMe
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
       done: false,
@@ -1116,7 +1116,7 @@ describe('Subscription Publish Phase', () => {
 
   it('should produce a unique context per event via perEventContextResolver', async () => {
     const contextExecutionSchema = emailSchemaWithResolvers(
-      async function*() {
+      async function* () {
         yield { email: { subject: 'Hello' } };
         yield { email: { subject: 'Hello' } };
       },
@@ -1138,7 +1138,7 @@ describe('Subscription Publish Phase', () => {
         }
       `),
       contextValue: { test: true },
-      perEventContextResolver: ctx => {
+      perEventContextResolver: (ctx) => {
         expect(ctx.test).to.equal(true);
         return { ...ctx, contextIndex: contextIndex++ };
       },

@@ -12,6 +12,6 @@ import { type DocumentNode } from '../language/ast';
 export function concatAST(asts: $ReadOnlyArray<DocumentNode>): DocumentNode {
   return {
     kind: 'Document',
-    definitions: flatMap(asts, ast => ast.definitions),
+    definitions: flatMap(asts, (ast) => ast.definitions),
   };
 }

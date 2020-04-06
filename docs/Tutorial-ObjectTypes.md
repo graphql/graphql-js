@@ -50,7 +50,7 @@ class RandomDie {
 }
 
 var root = {
-  getDie: function({ numSides }) {
+  getDie: function ({ numSides }) {
     return new RandomDie(numSides || 6);
   },
 };
@@ -111,7 +111,7 @@ class RandomDie {
 
 // The root provides the top-level API endpoints
 var root = {
-  getDie: function({ numSides }) {
+  getDie: function ({ numSides }) {
     return new RandomDie(numSides || 6);
   },
 };

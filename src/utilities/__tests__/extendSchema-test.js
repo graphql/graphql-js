@@ -50,7 +50,7 @@ function printSchemaChanges(schema, extendedSchema) {
   return print({
     kind: Kind.DOCUMENT,
     definitions: ast.definitions.filter(
-      node => !schemaDefinitions.includes(print(node)),
+      (node) => !schemaDefinitions.includes(print(node)),
     ),
   });
 }
