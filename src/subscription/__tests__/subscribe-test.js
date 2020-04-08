@@ -505,24 +505,9 @@ describe('Subscription Initialization Phase', () => {
     // If we receive variables that cannot be coerced correctly, subscribe()
     // will resolve to an ExecutionResult that contains an informative error
     // description.
-    const ast = parse(`
-      subscription ($priority: Int) {
-        importantEmail(priority: $priority) {
-          email {
-            from
-            subject
-          }
-          inbox {
-            unread
-            total
-          }
-        }
-      }
-    `);
-
     const result = await subscribe({
       schema: emailSchema,
-      document: ast,
+      document: defaultSubscriptionAST,
       variableValues: { priority: 'meow' },
     });
 
@@ -531,7 +516,7 @@ describe('Subscription Initialization Phase', () => {
         {
           message:
             'Variable "$priority" got invalid value "meow"; Int cannot represent non-integer value: "meow"',
-          locations: [{ line: 2, column: 21 }],
+          locations: [{ line: 2, column: 17 }],
         },
       ],
     });
