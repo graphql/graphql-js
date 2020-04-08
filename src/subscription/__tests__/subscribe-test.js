@@ -147,6 +147,72 @@ async function expectPromiseToThrow(promise, message) {
   }
 }
 
+const fixtures = {
+  emailMessage: {
+    from: 'yuzhi@graphql.org',
+    subject: 'Alright',
+    message: 'Tests are good',
+    unread: true,
+  },
+  emailMessage2: {
+    from: 'hyo@graphql.org',
+    subject: 'Alright 2',
+    message: 'Tests are good 2',
+    unread: true,
+  },
+  payloadAfterSend1: {
+    done: false,
+    value: {
+      data: {
+        importantEmail: {
+          email: {
+            from: 'yuzhi@graphql.org',
+            subject: 'Alright',
+          },
+          inbox: {
+            unread: 1,
+            total: 2,
+          },
+        },
+      },
+    },
+  },
+  payloadAfterSend2: {
+    done: false,
+    value: {
+      data: {
+        importantEmail: {
+          email: {
+            from: 'hyo@graphql.org',
+            subject: 'Alright 2',
+          },
+          inbox: {
+            unread: 2,
+            total: 3,
+          },
+        },
+      },
+    },
+  },
+  documentEmailSubject: `
+    subscription {
+      importantEmail {
+        email {
+          subject
+        }
+      }
+    }
+  `,
+  payloadSubjectHello: {
+    done: false,
+    value: {
+      data: {
+        importantEmail: { email: { subject: 'Hello' } },
+      },
+    },
+  },
+};
+
 // Check all error cases when initializing the subscription.
 describe('Subscription Initialization Phase', () => {
   it('accepts positional arguments', async () => {
@@ -189,12 +255,7 @@ describe('Subscription Initialization Phase', () => {
       testSchema,
     );
 
-    sendImportantEmail({
-      from: 'yuzhi@graphql.org',
-      subject: 'Alright',
-      message: 'Tests are good',
-      unread: true,
-    });
+    sendImportantEmail(fixtures.emailMessage);
 
     await subscription.next();
   });
@@ -536,35 +597,10 @@ describe('Subscription Publish Phase', () => {
     const payload1 = subscription.next();
     const payload2 = second.subscription.next();
 
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Alright',
-        message: 'Tests are good',
-        unread: true,
-      }),
-    ).to.equal(true);
+    expect(sendImportantEmail(fixtures.emailMessage)).to.equal(true);
 
-    const expectedPayload = {
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              from: 'yuzhi@graphql.org',
-              subject: 'Alright',
-            },
-            inbox: {
-              unread: 1,
-              total: 2,
-            },
-          },
-        },
-      },
-    };
-
-    expect(await payload1).to.deep.equal(expectedPayload);
-    expect(await payload2).to.deep.equal(expectedPayload);
+    expect(await payload1).to.deep.equal(fixtures.payloadAfterSend1);
+    expect(await payload2).to.deep.equal(fixtures.payloadAfterSend1);
   });
 
   it('produces a payload per subscription event', async () => {
@@ -577,62 +613,16 @@ describe('Subscription Publish Phase', () => {
     const payload = subscription.next();
 
     // A new email arrives!
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Alright',
-        message: 'Tests are good',
-        unread: true,
-      }),
-    ).to.equal(true);
+    expect(sendImportantEmail(fixtures.emailMessage)).to.equal(true);
 
     // The previously waited on payload now has a value.
-    expect(await payload).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              from: 'yuzhi@graphql.org',
-              subject: 'Alright',
-            },
-            inbox: {
-              unread: 1,
-              total: 2,
-            },
-          },
-        },
-      },
-    });
+    expect(await payload).to.deep.equal(fixtures.payloadAfterSend1);
 
     // Another new email arrives, before subscription.next() is called.
-    expect(
-      sendImportantEmail({
-        from: 'hyo@graphql.org',
-        subject: 'Tools',
-        message: 'I <3 making things',
-        unread: true,
-      }),
-    ).to.equal(true);
+    expect(sendImportantEmail(fixtures.emailMessage2)).to.equal(true);
 
     // The next waited on payload will have a value.
-    expect(await subscription.next()).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              from: 'hyo@graphql.org',
-              subject: 'Tools',
-            },
-            inbox: {
-              unread: 2,
-              total: 3,
-            },
-          },
-        },
-      },
-    });
+    expect(await subscription.next()).to.deep.equal(fixtures.payloadAfterSend2);
 
     // The client decides to disconnect.
     expect(await subscription.return()).to.deep.equal({
@@ -665,62 +655,16 @@ describe('Subscription Publish Phase', () => {
     let payload = subscription.next();
 
     // A new email arrives!
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Alright',
-        message: 'Tests are good',
-        unread: true,
-      }),
-    ).to.equal(true);
+    expect(sendImportantEmail(fixtures.emailMessage)).to.equal(true);
 
-    expect(await payload).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              from: 'yuzhi@graphql.org',
-              subject: 'Alright',
-            },
-            inbox: {
-              unread: 1,
-              total: 2,
-            },
-          },
-        },
-      },
-    });
+    expect(await payload).to.deep.equal(fixtures.payloadAfterSend1);
 
     payload = subscription.next();
 
     // A new email arrives!
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Alright 2',
-        message: 'Tests are good 2',
-        unread: true,
-      }),
-    ).to.equal(true);
+    expect(sendImportantEmail(fixtures.emailMessage2)).to.equal(true);
 
-    expect(await payload).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              from: 'yuzhi@graphql.org',
-              subject: 'Alright 2',
-            },
-            inbox: {
-              unread: 2,
-              total: 3,
-            },
-          },
-        },
-      },
-    });
+    expect(await payload).to.deep.equal(fixtures.payloadAfterSend2);
   });
 
   it('should not trigger when subscription is already done', async () => {
@@ -731,45 +675,15 @@ describe('Subscription Publish Phase', () => {
     let payload = subscription.next();
 
     // A new email arrives!
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Alright',
-        message: 'Tests are good',
-        unread: true,
-      }),
-    ).to.equal(true);
+    expect(sendImportantEmail(fixtures.emailMessage)).to.equal(true);
 
-    expect(await payload).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              from: 'yuzhi@graphql.org',
-              subject: 'Alright',
-            },
-            inbox: {
-              unread: 1,
-              total: 2,
-            },
-          },
-        },
-      },
-    });
+    expect(await payload).to.deep.equal(fixtures.payloadAfterSend1);
 
     payload = subscription.next();
     subscription.return();
 
     // A new email arrives!
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Alright 2',
-        message: 'Tests are good 2',
-        unread: true,
-      }),
-    ).to.equal(false);
+    expect(sendImportantEmail(fixtures.emailMessage2)).to.equal(false);
 
     expect(await payload).to.deep.equal({
       done: true,
@@ -785,32 +699,9 @@ describe('Subscription Publish Phase', () => {
     let payload = subscription.next();
 
     // A new email arrives!
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Alright',
-        message: 'Tests are good',
-        unread: true,
-      }),
-    ).to.equal(true);
+    expect(sendImportantEmail(fixtures.emailMessage)).to.equal(true);
 
-    expect(await payload).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              from: 'yuzhi@graphql.org',
-              subject: 'Alright',
-            },
-            inbox: {
-              unread: 1,
-              total: 2,
-            },
-          },
-        },
-      },
-    });
+    expect(await payload).to.deep.equal(fixtures.payloadAfterSend1);
 
     payload = subscription.next();
 
@@ -824,14 +715,7 @@ describe('Subscription Publish Phase', () => {
     expect(caughtError).to.equal('ouch');
 
     // A new email arrives!
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Alright 2',
-        message: 'Tests are good 2',
-        unread: true,
-      }),
-    ).to.equal(false);
+    expect(sendImportantEmail(fixtures.emailMessage2)).to.equal(false);
 
     expect(await payload).to.deep.equal({
       done: true,
@@ -847,24 +731,10 @@ describe('Subscription Publish Phase', () => {
     let payload = subscription.next();
 
     // A new email arrives!
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Message',
-        message: 'Tests are good',
-        unread: true,
-      }),
-    ).to.equal(true);
+    expect(sendImportantEmail(fixtures.emailMessage)).to.equal(true);
 
     // A new email arrives!
-    expect(
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Message 2',
-        message: 'Tests are good 2',
-        unread: true,
-      }),
-    ).to.equal(true);
+    expect(sendImportantEmail(fixtures.emailMessage2)).to.equal(true);
 
     expect(await payload).to.deep.equal({
       done: false,
@@ -873,7 +743,7 @@ describe('Subscription Publish Phase', () => {
           importantEmail: {
             email: {
               from: 'yuzhi@graphql.org',
-              subject: 'Message',
+              subject: 'Alright',
             },
             inbox: {
               unread: 2,
@@ -886,23 +756,7 @@ describe('Subscription Publish Phase', () => {
 
     payload = subscription.next();
 
-    expect(await payload).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              from: 'yuzhi@graphql.org',
-              subject: 'Message 2',
-            },
-            inbox: {
-              unread: 2,
-              total: 3,
-            },
-          },
-        },
-      },
-    });
+    expect(await payload).to.deep.equal(fixtures.payloadAfterSend2);
   });
 
   it('should handle error during execution of source event', async () => {
@@ -923,30 +777,11 @@ describe('Subscription Publish Phase', () => {
     // $FlowFixMe
     const subscription = await subscribe({
       schema: erroringEmailSchema,
-      document: parse(`
-        subscription {
-          importantEmail {
-            email {
-              subject
-            }
-          }
-        }
-      `),
+      document: parse(fixtures.documentEmailSubject),
     });
 
     const payload1 = await subscription.next();
-    expect(payload1).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              subject: 'Hello',
-            },
-          },
-        },
-      },
-    });
+    expect(payload1).to.deep.equal(fixtures.payloadSubjectHello);
 
     // An error in execution is presented as such.
     const payload2 = await subscription.next();
@@ -956,7 +791,7 @@ describe('Subscription Publish Phase', () => {
         errors: [
           {
             message: 'Never leave.',
-            locations: [{ line: 3, column: 11 }],
+            locations: [{ line: 3, column: 7 }],
             path: ['importantEmail'],
           },
         ],
@@ -995,30 +830,11 @@ describe('Subscription Publish Phase', () => {
     // $FlowFixMe
     const subscription = await subscribe({
       schema: erroringEmailSchema,
-      document: parse(`
-        subscription {
-          importantEmail {
-            email {
-              subject
-            }
-          }
-        }
-      `),
+      document: parse(fixtures.documentEmailSubject),
     });
 
     const payload1 = await subscription.next();
-    expect(payload1).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              subject: 'Hello',
-            },
-          },
-        },
-      },
-    });
+    expect(payload1).to.deep.equal(fixtures.payloadSubjectHello);
 
     let expectedError;
     try {
@@ -1049,30 +865,11 @@ describe('Subscription Publish Phase', () => {
     // $FlowFixMe
     const subscription = await subscribe({
       schema: erroringEmailSchema,
-      document: parse(`
-        subscription {
-          importantEmail {
-            email {
-              subject
-            }
-          }
-        }
-      `),
+      document: parse(fixtures.documentEmailSubject),
     });
 
     const payload1 = await subscription.next();
-    expect(payload1).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              subject: 'Hello',
-            },
-          },
-        },
-      },
-    });
+    expect(payload1).to.deep.equal(fixtures.payloadSubjectHello);
 
     const payload2 = await subscription.next();
     expect(payload2).to.deep.equal({
