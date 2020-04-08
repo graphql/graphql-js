@@ -291,7 +291,7 @@ export type Thunk<T> = (() => T) | T;
 export class GraphQLScalarType {
   name: string;
   description: Maybe<string>;
-  specifiedByUrl?: Maybe<string>;
+  specifiedByUrl: Maybe<string>;
   serialize: GraphQLScalarSerializer<any>;
   parseValue: GraphQLScalarValueParser<any>;
   parseLiteral: GraphQLScalarLiteralParser<any>;
