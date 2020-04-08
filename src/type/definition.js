@@ -614,7 +614,6 @@ export class GraphQLScalarType {
 
   toConfig(): {|
     ...GraphQLScalarTypeConfig<mixed, mixed>,
-    specifiedByUrl: ?string,
     serialize: GraphQLScalarSerializer<mixed>,
     parseValue: GraphQLScalarValueParser<mixed>,
     parseLiteral: GraphQLScalarLiteralParser<mixed>,
