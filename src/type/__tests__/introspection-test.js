@@ -46,6 +46,7 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: 'QueryRoot',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'onlyField',
@@ -63,31 +64,31 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'SCALAR',
               name: 'String',
+              specifiedByUrl: null,
               fields: null,
               inputFields: null,
               interfaces: null,
               enumValues: null,
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'SCALAR',
               name: 'Boolean',
+              specifiedByUrl: null,
               fields: null,
               inputFields: null,
               interfaces: null,
               enumValues: null,
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
               name: '__Schema',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'description',
@@ -188,11 +189,11 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
               name: '__Type',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'kind',
@@ -373,11 +374,11 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'ENUM',
               name: '__TypeKind',
+              specifiedByUrl: null,
               fields: null,
               inputFields: null,
               interfaces: null,
@@ -424,11 +425,11 @@ describe('Introspection', () => {
                 },
               ],
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
               name: '__Field',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'name',
@@ -525,11 +526,11 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
               name: '__InputValue',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'name',
@@ -588,11 +589,11 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
               name: '__EnumValue',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'name',
@@ -651,7 +652,6 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'OBJECT',
@@ -754,6 +754,7 @@ describe('Introspection', () => {
             {
               kind: 'ENUM',
               name: '__DirectiveLocation',
+              specifiedByUrl: null,
               fields: null,
               inputFields: null,
               interfaces: null,
@@ -855,7 +856,6 @@ describe('Introspection', () => {
                 },
               ],
               possibleTypes: null,
-              specifiedByUrl: null,
             },
           ],
           directives: [
