@@ -313,11 +313,11 @@ export class GraphQLScalarType {
   inspect(): string;
 }
 
-export type GraphQLScalarSerializer<TExternal> = (
-  value: any,
+export type GraphQLScalarSerializer<TExternal, TInternal = any> = (
+  value: TInternal,
 ) => Maybe<TExternal>;
-export type GraphQLScalarValueParser<TInternal> = (
-  value: any,
+export type GraphQLScalarValueParser<TInternal, TExternal = any> = (
+  value: TExternal,
 ) => Maybe<TInternal>;
 export type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
@@ -328,9 +328,9 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   name: string;
   description?: Maybe<string>;
   // Serializes an internal value to include in a response.
-  serialize: GraphQLScalarSerializer<TExternal>;
+  serialize: GraphQLScalarSerializer<TExternal, TInternal>;
   // Parses an externally provided value to use as an input.
-  parseValue?: GraphQLScalarValueParser<TInternal>;
+  parseValue?: GraphQLScalarValueParser<TInternal, TExternal>;
   // Parses an externally provided literal value to use as an input.
   parseLiteral?: GraphQLScalarLiteralParser<TInternal>;
   extensions?: Maybe<Readonly<Record<string, any>>>;

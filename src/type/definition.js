@@ -634,12 +634,12 @@ export class GraphQLScalarType {
 
 defineToJSON(GraphQLScalarType);
 
-export type GraphQLScalarSerializer<TExternal> = (
-  outputValue: mixed,
+export type GraphQLScalarSerializer<TExternal, TInternal = mixed> = (
+  outputValue: TInternal,
 ) => ?TExternal;
 
-export type GraphQLScalarValueParser<TInternal> = (
-  inputValue: mixed,
+export type GraphQLScalarValueParser<TInternal, TExternal = mixed> = (
+  inputValue: TExternal,
 ) => ?TInternal;
 
 export type GraphQLScalarLiteralParser<TInternal> = (
@@ -651,9 +651,9 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   name: string,
   description?: ?string,
   // Serializes an internal value to include in a response.
-  serialize?: GraphQLScalarSerializer<TExternal>,
+  serialize?: GraphQLScalarSerializer<TExternal, TInternal>,
   // Parses an externally provided value to use as an input.
-  parseValue?: GraphQLScalarValueParser<TInternal>,
+  parseValue?: GraphQLScalarValueParser<TInternal, TExternal>,
   // Parses an externally provided literal value to use as an input.
   parseLiteral?: GraphQLScalarLiteralParser<TInternal>,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
