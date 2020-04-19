@@ -304,6 +304,20 @@ describe('Type System: Objects', () => {
     expect(() => objType.getFields()).to.not.throw();
   });
 
+  it('accepts a object with custom path to fields', () => {
+    const objType = new GraphQLObjectType({
+      name: 'SomeObject',
+      fields: {
+        f: {
+          type: ScalarType,
+          resolve: dummyFunc,
+        },
+      },
+      objectValueFieldsPath: 'data',
+    });
+    expect(() => objType.getFields()).to.not.throw();
+  });
+
   it('rejects an Object type without name', () => {
     // $DisableFlowOnNegativeTest
     expect(() => new GraphQLObjectType({})).to.throw('Must provide name.');

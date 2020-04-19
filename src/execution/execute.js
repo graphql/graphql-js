@@ -1043,29 +1043,45 @@ function completeObjectValue(
   path: Path,
   result: mixed,
 ): PromiseOrValue<ObjMap<mixed>> {
+  let fieldsValue = result;
+
+  // if there is objectValueFieldsPath value, try to find fields value in result
+  if (
+    typeof returnType.objectValueFieldsPath === 'string' &&
+    typeof fieldsValue === 'object' &&
+    fieldsValue !== null &&
+    fieldsValue[returnType.objectValueFieldsPath] !== undefined
+  ) {
+    fieldsValue = fieldsValue[returnType.objectValueFieldsPath];
+  }
+
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
   if (returnType.isTypeOf) {
-    const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
+    const isTypeOf = returnType.isTypeOf(
+      fieldsValue,
+      exeContext.contextValue,
+      info,
+    );
 
     if (isPromise(isTypeOf)) {
       return isTypeOf.then((resolvedIsTypeOf) => {
         if (!resolvedIsTypeOf) {
-          throw invalidReturnTypeError(returnType, result, fieldNodes);
+          throw invalidReturnTypeError(returnType, fieldsValue, fieldNodes);
         }
         return collectAndExecuteSubfields(
           exeContext,
           returnType,
           fieldNodes,
           path,
-          result,
+          fieldsValue,
         );
       });
     }
 
     if (!isTypeOf) {
-      throw invalidReturnTypeError(returnType, result, fieldNodes);
+      throw invalidReturnTypeError(returnType, fieldsValue, fieldNodes);
     }
   }
 
@@ -1074,7 +1090,7 @@ function completeObjectValue(
     returnType,
     fieldNodes,
     path,
-    result,
+    fieldsValue,
   );
 }
 
