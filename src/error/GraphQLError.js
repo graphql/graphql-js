@@ -1,8 +1,5 @@
 // @flow strict
 
-// FIXME:
-// flowlint uninitialized-instance-property:off
-
 import isObjectLike from '../jsutils/isObjectLike';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
