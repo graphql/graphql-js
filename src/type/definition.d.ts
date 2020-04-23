@@ -431,7 +431,7 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
 export type GraphQLFieldResolver<
   TSource,
   TContext,
-  TArgs = { [argName: string]: any }
+  TArgs = { [argName: string]: any } | any
 > = (
   source: TSource,
   args: TArgs,
