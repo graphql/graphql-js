@@ -6,6 +6,10 @@ export interface IntrospectionOptions {
   // Default: true
   descriptions: boolean;
 
+  // Whether to include `specifiedByUrl` in the introspection result.
+  // Default: false
+  specifiedByUrl?: boolean;
+
   // Whether to include `isRepeatable` flag on directives.
   // Default: false
   directiveIsRepeatable?: boolean;

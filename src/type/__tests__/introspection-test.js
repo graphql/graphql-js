@@ -31,6 +31,7 @@ describe('Introspection', () => {
     const source = getIntrospectionQuery({
       descriptions: false,
       directiveIsRepeatable: true,
+      specifiedByUrl: true,
     });
 
     const result = graphqlSync({ schema, source });
