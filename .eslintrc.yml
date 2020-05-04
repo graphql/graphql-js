@@ -460,7 +460,7 @@ overrides:
       '@typescript-eslint/explicit-member-accessibility': off # TODO consider
       '@typescript-eslint/explicit-module-boundary-types': off # TODO consider
       '@typescript-eslint/member-ordering': off # TODO consider
-      '@typescript-eslint/method-signature-style': off # TODO enable
+      '@typescript-eslint/method-signature-style': error
       '@typescript-eslint/naming-convention': off # TODO consider
       '@typescript-eslint/no-base-to-string': error
       '@typescript-eslint/no-dynamic-delete': off
