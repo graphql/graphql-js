@@ -172,9 +172,9 @@ export function assertAbstractType(type: any): GraphQLAbstractType;
  */
 interface GraphQLList<T extends GraphQLType> {
   readonly ofType: T;
-  toString(): string;
-  toJSON(): string;
-  inspect(): string;
+  toString: () => string;
+  toJSON: () => string;
+  inspect: () => string;
 }
 
 interface _GraphQLList<T extends GraphQLType> {
@@ -206,9 +206,9 @@ export const GraphQLList: _GraphQLList<GraphQLType>;
  */
 interface GraphQLNonNull<T extends GraphQLNullableType> {
   readonly ofType: T;
-  toString(): string;
-  toJSON(): string;
-  inspect(): string;
+  toString: () => string;
+  toJSON: () => string;
+  inspect: () => string;
 }
 
 interface _GraphQLNonNull<T extends GraphQLNullableType> {
