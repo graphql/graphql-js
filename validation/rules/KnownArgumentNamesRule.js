@@ -31,7 +31,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * that field.
  */
 function KnownArgumentNamesRule(context) {
-  return _objectSpread({}, KnownArgumentNamesOnDirectivesRule(context), {
+  return _objectSpread(_objectSpread({}, KnownArgumentNamesOnDirectivesRule(context)), {}, {
     Argument: function Argument(argNode) {
       var argDef = context.getArgument();
       var fieldDef = context.getFieldDef();

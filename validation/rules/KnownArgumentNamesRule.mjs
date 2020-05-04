@@ -17,7 +17,7 @@ import { specifiedDirectives } from "../../type/directives.mjs";
  * that field.
  */
 export function KnownArgumentNamesRule(context) {
-  return _objectSpread({}, KnownArgumentNamesOnDirectivesRule(context), {
+  return _objectSpread(_objectSpread({}, KnownArgumentNamesOnDirectivesRule(context)), {}, {
     Argument: function Argument(argNode) {
       var argDef = context.getArgument();
       var fieldDef = context.getFieldDef();

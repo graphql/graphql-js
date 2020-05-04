@@ -450,7 +450,7 @@ function stringifyValue(value, type) {
       var fields = [].concat(objectNode.fields).sort(function (fieldA, fieldB) {
         return fieldA.name.value.localeCompare(fieldB.name.value);
       });
-      return _objectSpread({}, objectNode, {
+      return _objectSpread(_objectSpread({}, objectNode), {}, {
         fields: fields
       });
     }

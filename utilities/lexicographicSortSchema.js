@@ -39,7 +39,7 @@ function lexicographicSortSchema(schema) {
   var typeMap = (0, _keyValMap.default)(sortByName(schemaConfig.types), function (type) {
     return type.name;
   }, sortNamedType);
-  return new _schema.GraphQLSchema(_objectSpread({}, schemaConfig, {
+  return new _schema.GraphQLSchema(_objectSpread(_objectSpread({}, schemaConfig), {}, {
     types: (0, _objectValues.default)(typeMap),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
     query: replaceMaybeType(schemaConfig.query),
@@ -67,7 +67,7 @@ function lexicographicSortSchema(schema) {
 
   function sortDirective(directive) {
     var config = directive.toConfig();
-    return new _directives.GraphQLDirective(_objectSpread({}, config, {
+    return new _directives.GraphQLDirective(_objectSpread(_objectSpread({}, config), {}, {
       locations: sortBy(config.locations, function (x) {
         return x;
       }),
@@ -77,7 +77,7 @@ function lexicographicSortSchema(schema) {
 
   function sortArgs(args) {
     return sortObjMap(args, function (arg) {
-      return _objectSpread({}, arg, {
+      return _objectSpread(_objectSpread({}, arg), {}, {
         type: replaceType(arg.type)
       });
     });
@@ -85,7 +85,7 @@ function lexicographicSortSchema(schema) {
 
   function sortFields(fieldsMap) {
     return sortObjMap(fieldsMap, function (field) {
-      return _objectSpread({}, field, {
+      return _objectSpread(_objectSpread({}, field), {}, {
         type: replaceType(field.type),
         args: sortArgs(field.args)
       });
@@ -94,7 +94,7 @@ function lexicographicSortSchema(schema) {
 
   function sortInputFields(fieldsMap) {
     return sortObjMap(fieldsMap, function (field) {
-      return _objectSpread({}, field, {
+      return _objectSpread(_objectSpread({}, field), {}, {
         type: replaceType(field.type)
       });
     });
@@ -111,7 +111,7 @@ function lexicographicSortSchema(schema) {
 
     if ((0, _definition.isObjectType)(type)) {
       var config = type.toConfig();
-      return new _definition.GraphQLObjectType(_objectSpread({}, config, {
+      return new _definition.GraphQLObjectType(_objectSpread(_objectSpread({}, config), {}, {
         interfaces: function interfaces() {
           return sortTypes(config.interfaces);
         },
@@ -124,7 +124,7 @@ function lexicographicSortSchema(schema) {
     if ((0, _definition.isInterfaceType)(type)) {
       var _config = type.toConfig();
 
-      return new _definition.GraphQLInterfaceType(_objectSpread({}, _config, {
+      return new _definition.GraphQLInterfaceType(_objectSpread(_objectSpread({}, _config), {}, {
         interfaces: function interfaces() {
           return sortTypes(_config.interfaces);
         },
@@ -137,7 +137,7 @@ function lexicographicSortSchema(schema) {
     if ((0, _definition.isUnionType)(type)) {
       var _config2 = type.toConfig();
 
-      return new _definition.GraphQLUnionType(_objectSpread({}, _config2, {
+      return new _definition.GraphQLUnionType(_objectSpread(_objectSpread({}, _config2), {}, {
         types: function types() {
           return sortTypes(_config2.types);
         }
@@ -147,7 +147,7 @@ function lexicographicSortSchema(schema) {
     if ((0, _definition.isEnumType)(type)) {
       var _config3 = type.toConfig();
 
-      return new _definition.GraphQLEnumType(_objectSpread({}, _config3, {
+      return new _definition.GraphQLEnumType(_objectSpread(_objectSpread({}, _config3), {}, {
         values: sortObjMap(_config3.values)
       }));
     }
@@ -156,7 +156,7 @@ function lexicographicSortSchema(schema) {
     if ((0, _definition.isInputObjectType)(type)) {
       var _config4 = type.toConfig();
 
-      return new _definition.GraphQLInputObjectType(_objectSpread({}, _config4, {
+      return new _definition.GraphQLInputObjectType(_objectSpread(_objectSpread({}, _config4), {}, {
         fields: function fields() {
           return sortInputFields(_config4.fields);
         }

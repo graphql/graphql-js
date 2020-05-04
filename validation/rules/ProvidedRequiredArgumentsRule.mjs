@@ -19,7 +19,7 @@ import { isType, isRequiredArgument } from "../../type/definition.mjs";
  * default value) field arguments have been provided.
  */
 export function ProvidedRequiredArgumentsRule(context) {
-  return _objectSpread({}, ProvidedRequiredArgumentsOnDirectivesRule(context), {
+  return _objectSpread(_objectSpread({}, ProvidedRequiredArgumentsOnDirectivesRule(context)), {}, {
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
       leave: function leave(fieldNode) {

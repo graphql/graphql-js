@@ -138,17 +138,17 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     typeMap[name] = (_stdTypeMap$name = stdTypeMap[name]) !== null && _stdTypeMap$name !== void 0 ? _stdTypeMap$name : buildType(typeNode);
   }
 
-  var operationTypes = _objectSpread({
+  var operationTypes = _objectSpread(_objectSpread({
     // Get the extended root operation types.
     query: schemaConfig.query && replaceNamedType(schemaConfig.query),
     mutation: schemaConfig.mutation && replaceNamedType(schemaConfig.mutation),
     subscription: schemaConfig.subscription && replaceNamedType(schemaConfig.subscription)
-  }, schemaDef && getOperationTypes([schemaDef]), {}, getOperationTypes(schemaExtensions)); // Then produce and return a Schema config with these types.
+  }, schemaDef && getOperationTypes([schemaDef])), getOperationTypes(schemaExtensions)); // Then produce and return a Schema config with these types.
 
 
-  return _objectSpread({
+  return _objectSpread(_objectSpread({
     description: (_schemaDef = schemaDef) === null || _schemaDef === void 0 ? void 0 : (_schemaDef$descriptio = _schemaDef.description) === null || _schemaDef$descriptio === void 0 ? void 0 : _schemaDef$descriptio.value
-  }, operationTypes, {
+  }, operationTypes), {}, {
     types: (0, _objectValues.default)(typeMap),
     directives: [].concat(schemaConfig.directives.map(replaceDirective), directiveDefs.map(buildDirective)),
     extensions: undefined,
@@ -177,7 +177,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
   function replaceDirective(directive) {
     var config = directive.toConfig();
-    return new _directives.GraphQLDirective(_objectSpread({}, config, {
+    return new _directives.GraphQLDirective(_objectSpread(_objectSpread({}, config), {}, {
       args: (0, _mapValue.default)(config.args, extendArg)
     }));
   }
@@ -223,13 +223,13 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     var config = type.toConfig();
     var extensions = (_typeExtensionsMap$co = typeExtensionsMap[config.name]) !== null && _typeExtensionsMap$co !== void 0 ? _typeExtensionsMap$co : [];
-    return new _definition.GraphQLInputObjectType(_objectSpread({}, config, {
+    return new _definition.GraphQLInputObjectType(_objectSpread(_objectSpread({}, config), {}, {
       fields: function fields() {
-        return _objectSpread({}, (0, _mapValue.default)(config.fields, function (field) {
-          return _objectSpread({}, field, {
+        return _objectSpread(_objectSpread({}, (0, _mapValue.default)(config.fields, function (field) {
+          return _objectSpread(_objectSpread({}, field), {}, {
             type: replaceType(field.type)
           });
-        }), {}, buildInputFieldMap(extensions));
+        })), buildInputFieldMap(extensions));
       },
       extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
@@ -240,8 +240,8 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     var config = type.toConfig();
     var extensions = (_typeExtensionsMap$ty = typeExtensionsMap[type.name]) !== null && _typeExtensionsMap$ty !== void 0 ? _typeExtensionsMap$ty : [];
-    return new _definition.GraphQLEnumType(_objectSpread({}, config, {
-      values: _objectSpread({}, config.values, {}, buildEnumValueMap(extensions)),
+    return new _definition.GraphQLEnumType(_objectSpread(_objectSpread({}, config), {}, {
+      values: _objectSpread(_objectSpread({}, config.values), buildEnumValueMap(extensions)),
       extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
   }
@@ -251,7 +251,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     var config = type.toConfig();
     var extensions = (_typeExtensionsMap$co2 = typeExtensionsMap[config.name]) !== null && _typeExtensionsMap$co2 !== void 0 ? _typeExtensionsMap$co2 : [];
-    return new _definition.GraphQLScalarType(_objectSpread({}, config, {
+    return new _definition.GraphQLScalarType(_objectSpread(_objectSpread({}, config), {}, {
       extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
   }
@@ -261,12 +261,12 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     var config = type.toConfig();
     var extensions = (_typeExtensionsMap$co3 = typeExtensionsMap[config.name]) !== null && _typeExtensionsMap$co3 !== void 0 ? _typeExtensionsMap$co3 : [];
-    return new _definition.GraphQLObjectType(_objectSpread({}, config, {
+    return new _definition.GraphQLObjectType(_objectSpread(_objectSpread({}, config), {}, {
       interfaces: function interfaces() {
         return [].concat(type.getInterfaces().map(replaceNamedType), buildInterfaces(extensions));
       },
       fields: function fields() {
-        return _objectSpread({}, (0, _mapValue.default)(config.fields, extendField), {}, buildFieldMap(extensions));
+        return _objectSpread(_objectSpread({}, (0, _mapValue.default)(config.fields, extendField)), buildFieldMap(extensions));
       },
       extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
@@ -277,12 +277,12 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     var config = type.toConfig();
     var extensions = (_typeExtensionsMap$co4 = typeExtensionsMap[config.name]) !== null && _typeExtensionsMap$co4 !== void 0 ? _typeExtensionsMap$co4 : [];
-    return new _definition.GraphQLInterfaceType(_objectSpread({}, config, {
+    return new _definition.GraphQLInterfaceType(_objectSpread(_objectSpread({}, config), {}, {
       interfaces: function interfaces() {
         return [].concat(type.getInterfaces().map(replaceNamedType), buildInterfaces(extensions));
       },
       fields: function fields() {
-        return _objectSpread({}, (0, _mapValue.default)(config.fields, extendField), {}, buildFieldMap(extensions));
+        return _objectSpread(_objectSpread({}, (0, _mapValue.default)(config.fields, extendField)), buildFieldMap(extensions));
       },
       extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
@@ -293,7 +293,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     var config = type.toConfig();
     var extensions = (_typeExtensionsMap$co5 = typeExtensionsMap[config.name]) !== null && _typeExtensionsMap$co5 !== void 0 ? _typeExtensionsMap$co5 : [];
-    return new _definition.GraphQLUnionType(_objectSpread({}, config, {
+    return new _definition.GraphQLUnionType(_objectSpread(_objectSpread({}, config), {}, {
       types: function types() {
         return [].concat(type.getTypes().map(replaceNamedType), buildUnionTypes(extensions));
       },
@@ -302,14 +302,14 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 
   function extendField(field) {
-    return _objectSpread({}, field, {
+    return _objectSpread(_objectSpread({}, field), {}, {
       type: replaceType(field.type),
       args: (0, _mapValue.default)(field.args, extendArg)
     });
   }
 
   function extendArg(arg) {
-    return _objectSpread({}, arg, {
+    return _objectSpread(_objectSpread({}, arg), {}, {
       type: replaceType(arg.type)
     });
   }
