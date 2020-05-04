@@ -442,7 +442,7 @@ overrides:
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v2.26.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v2.30.x`
       ##########################################################################
 
       # Supported Rules
@@ -460,6 +460,7 @@ overrides:
       '@typescript-eslint/explicit-member-accessibility': off # TODO consider
       '@typescript-eslint/explicit-module-boundary-types': off # TODO consider
       '@typescript-eslint/member-ordering': off # TODO consider
+      '@typescript-eslint/method-signature-style': off # TODO enable
       '@typescript-eslint/naming-convention': off # TODO consider
       '@typescript-eslint/no-base-to-string': error
       '@typescript-eslint/no-dynamic-delete': off
@@ -478,6 +479,7 @@ overrides:
       '@typescript-eslint/no-non-null-asserted-optional-chain': error
       '@typescript-eslint/no-non-null-assertion': error
       '@typescript-eslint/no-parameter-properties': error
+      '@typescript-eslint/no-invalid-void-type': off # TODO enable
       '@typescript-eslint/no-require-imports': error
       '@typescript-eslint/no-this-alias': error
       '@typescript-eslint/no-throw-literal': error
@@ -487,6 +489,7 @@ overrides:
       '@typescript-eslint/no-unnecessary-qualifier': error
       '@typescript-eslint/no-unnecessary-type-arguments': error
       '@typescript-eslint/no-unnecessary-type-assertion': error
+      '@typescript-eslint/no-unsafe-assignment': off # TODO consider
       '@typescript-eslint/no-unsafe-call': off # TODO consider
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
       '@typescript-eslint/no-unsafe-return': off # TODO consider
@@ -501,7 +504,9 @@ overrides:
       '@typescript-eslint/prefer-optional-chain': error
       '@typescript-eslint/prefer-readonly': error
       '@typescript-eslint/prefer-readonly-parameter-types': off # TODO consider
+      '@typescript-eslint/prefer-reduce-type-parameter': error
       '@typescript-eslint/prefer-regexp-exec': error
+      '@typescript-eslint/prefer-ts-expect-error': error
       '@typescript-eslint/prefer-string-starts-ends-with': off # TODO switch to error after IE11 drop
       '@typescript-eslint/promise-function-async': off
       '@typescript-eslint/require-array-sort-compare': error
@@ -540,6 +545,8 @@ overrides:
       '@typescript-eslint/return-await': error
 
       # Disable for JS, Flow and TS
+      '@typescript-eslint/dot-notation': off # TODO consider
+      '@typescript-eslint/init-declarations': off
       '@typescript-eslint/no-magic-numbers': off
       '@typescript-eslint/no-use-before-define': off
 
@@ -550,6 +557,7 @@ overrides:
       '@typescript-eslint/comma-spacing': off
       '@typescript-eslint/func-call-spacing': off
       '@typescript-eslint/indent': off
+      '@typescript-eslint/keyword-spacing': off
       '@typescript-eslint/member-delimiter-style': off
       '@typescript-eslint/no-extra-parens': off
       '@typescript-eslint/no-extra-semi': off
