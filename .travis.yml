@@ -24,7 +24,7 @@ jobs:
       if: type = push AND branch = master AND fork = false
       script: npm run gitpublish
       skip_cleanup: true
-      node_js: 14
+      node_js: 12
 
 notifications:
   irc:
