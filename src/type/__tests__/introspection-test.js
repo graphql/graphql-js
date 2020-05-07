@@ -30,6 +30,7 @@ describe('Introspection', () => {
     });
     const source = getIntrospectionQuery({
       descriptions: false,
+      specifiedByUrl: true,
       directiveIsRepeatable: true,
     });
 
@@ -46,6 +47,7 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: 'QueryRoot',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'onlyField',
@@ -67,6 +69,7 @@ describe('Introspection', () => {
             {
               kind: 'SCALAR',
               name: 'String',
+              specifiedByUrl: null,
               fields: null,
               inputFields: null,
               interfaces: null,
@@ -76,6 +79,7 @@ describe('Introspection', () => {
             {
               kind: 'SCALAR',
               name: 'Boolean',
+              specifiedByUrl: null,
               fields: null,
               inputFields: null,
               interfaces: null,
@@ -85,6 +89,7 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: '__Schema',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'description',
@@ -189,6 +194,7 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: '__Type',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'kind',
@@ -218,6 +224,17 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'description',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'specifiedByUrl',
                   args: [],
                   type: {
                     kind: 'SCALAR',
@@ -362,6 +379,7 @@ describe('Introspection', () => {
             {
               kind: 'ENUM',
               name: '__TypeKind',
+              specifiedByUrl: null,
               fields: null,
               inputFields: null,
               interfaces: null,
@@ -412,6 +430,7 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: '__Field',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'name',
@@ -512,6 +531,7 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: '__InputValue',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'name',
@@ -574,6 +594,7 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: '__EnumValue',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'name',
@@ -636,6 +657,7 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: '__Directive',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'name',
@@ -733,6 +755,7 @@ describe('Introspection', () => {
             {
               kind: 'ENUM',
               name: '__DirectiveLocation',
+              specifiedByUrl: null,
               fields: null,
               inputFields: null,
               interfaces: null,
@@ -889,6 +912,26 @@ describe('Introspection', () => {
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null,
+                  },
+                },
+              ],
+            },
+            {
+              name: 'specifiedBy',
+              isRepeatable: false,
+              locations: ['SCALAR'],
+              args: [
+                {
+                  defaultValue: null,
+                  name: 'url',
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'String',
+                      ofType: null,
+                    },
                   },
                 },
               ],

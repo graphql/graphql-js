@@ -33,7 +33,10 @@ import { introspectionFromSchema } from '../introspectionFromSchema';
  * returns that schema printed as SDL.
  */
 function cycleIntrospection(sdlString: string): string {
-  const options = { directiveIsRepeatable: true };
+  const options = {
+    specifiedByUrl: true,
+    directiveIsRepeatable: true,
+  };
 
   const serverSchema = buildSchema(sdlString);
   const initialIntrospection = introspectionFromSchema(serverSchema, options);
@@ -527,6 +530,18 @@ describe('Type System: build schema from introspection', () => {
 
       enum SomeEnum {
         SOME_VALUE @deprecated(reason: "")
+      }
+    `;
+
+    expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
+  it('builds a schema with specifiedBy url', () => {
+    const sdl = dedent`
+      scalar Foo @specifiedBy(url: "https://example.com/foo_spec")
+
+      type Query {
+        foo: Foo
       }
     `;
 

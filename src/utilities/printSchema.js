@@ -181,7 +181,11 @@ export function printType(type: GraphQLNamedType, options?: Options): string {
 }
 
 function printScalar(type: GraphQLScalarType, options): string {
-  return printDescription(options, type) + `scalar ${type.name}`;
+  return (
+    printDescription(options, type) +
+    `scalar ${type.name}` +
+    printSpecifiedByUrl(type)
+  );
 }
 
 function printImplementedInterfaces(
@@ -319,6 +323,19 @@ function printDeprecated(fieldOrEnumVal) {
     return ' @deprecated(reason: ' + print(reasonAST) + ')';
   }
   return ' @deprecated';
+}
+
+function printSpecifiedByUrl(scalar: GraphQLScalarType) {
+  if (scalar.specifiedByUrl == null) {
+    return '';
+  }
+  const url = scalar.specifiedByUrl;
+  const urlAST = astFromValue(url, GraphQLString);
+  invariant(
+    urlAST,
+    'Unexpected null value returned from `astFromValue` for specifiedByUrl',
+  );
+  return ' @specifiedBy(url: ' + print(urlAST) + ')';
 }
 
 function printDescription(

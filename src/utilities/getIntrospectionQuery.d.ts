@@ -6,6 +6,10 @@ export interface IntrospectionOptions {
   // Default: true
   descriptions: boolean;
 
+  // Whether to include `specifiedByUrl` in the introspection result.
+  // Default: false
+  specifiedByUrl?: boolean;
+
   // Whether to include `isRepeatable` flag on directives.
   // Default: false
   directiveIsRepeatable?: boolean;
@@ -53,6 +57,7 @@ export interface IntrospectionScalarType {
   readonly kind: 'SCALAR';
   readonly name: string;
   readonly description?: Maybe<string>;
+  readonly specifiedByUrl?: Maybe<string>;
 }
 
 export interface IntrospectionObjectType {

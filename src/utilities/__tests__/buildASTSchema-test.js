@@ -17,6 +17,7 @@ import {
   GraphQLSkipDirective,
   GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
+  GraphQLSpecifiedByDirective,
 } from '../../type/directives';
 import {
   GraphQLID,
@@ -215,14 +216,17 @@ describe('Schema Builder', () => {
     expect(cycleSDL(sdl, { commentDescriptions: true })).to.equal(sdl);
   });
 
-  it('Maintains @skip & @include', () => {
+  it('Maintains @include, @skip & @specifiedBy', () => {
     const schema = buildSchema('type Query');
 
-    expect(schema.getDirectives()).to.have.lengthOf(3);
+    expect(schema.getDirectives()).to.have.lengthOf(4);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
     expect(schema.getDirective('deprecated')).to.equal(
       GraphQLDeprecatedDirective,
+    );
+    expect(schema.getDirective('specifiedBy')).to.equal(
+      GraphQLSpecifiedByDirective,
     );
   });
 
@@ -231,9 +235,10 @@ describe('Schema Builder', () => {
       directive @skip on FIELD
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
+      directive @specifiedBy on FIELD_DEFINITION
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(3);
+    expect(schema.getDirectives()).to.have.lengthOf(4);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.not.equal(
       GraphQLIncludeDirective,
@@ -241,17 +246,21 @@ describe('Schema Builder', () => {
     expect(schema.getDirective('deprecated')).to.not.equal(
       GraphQLDeprecatedDirective,
     );
+    expect(schema.getDirective('specifiedBy')).to.not.equal(
+      GraphQLSpecifiedByDirective,
+    );
   });
 
-  it('Adding directives maintains @skip & @include', () => {
+  it('Adding directives maintains @include, @skip & @specifiedBy', () => {
     const schema = buildSchema(`
       directive @foo(arg: Int) on FIELD
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(4);
+    expect(schema.getDirectives()).to.have.lengthOf(5);
     expect(schema.getDirective('skip')).to.not.equal(undefined);
     expect(schema.getDirective('include')).to.not.equal(undefined);
     expect(schema.getDirective('deprecated')).to.not.equal(undefined);
+    expect(schema.getDirective('specifiedBy')).to.not.equal(undefined);
   });
 
   it('Type modifiers', () => {
@@ -767,6 +776,23 @@ describe('Schema Builder', () => {
     expect(rootFields.field2).to.include({
       isDeprecated: true,
       deprecationReason: 'Because I said so',
+    });
+  });
+
+  it('Supports @specifiedBy', () => {
+    const sdl = dedent`
+      scalar Foo @specifiedBy(url: "https://example.com/foo_spec")
+
+      type Query {
+        foo: Foo @deprecated
+      }
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+
+    const schema = buildSchema(sdl);
+
+    expect(schema.getType('Foo')).to.include({
+      specifiedByUrl: 'https://example.com/foo_spec',
     });
   });
 

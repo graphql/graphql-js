@@ -60,6 +60,11 @@ export const GraphQLIncludeDirective: GraphQLDirective;
 export const GraphQLSkipDirective: GraphQLDirective;
 
 /**
+ * Used to provide a URL for specifying the behavior of custom scalar definitions.
+ */
+export const GraphQLSpecifiedByDirective: GraphQLDirective;
+
+/**
  * Constant string used for default reason for a deprecation.
  */
 export const DEFAULT_DEPRECATION_REASON: 'No longer supported';
