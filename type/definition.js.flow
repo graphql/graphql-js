@@ -568,6 +568,7 @@ function undefineIfEmpty<T>(arr: ?$ReadOnlyArray<T>): ?$ReadOnlyArray<T> {
 export class GraphQLScalarType {
   name: string;
   description: ?string;
+  specifiedByUrl: ?string;
   serialize: GraphQLScalarSerializer<mixed>;
   parseValue: GraphQLScalarValueParser<mixed>;
   parseLiteral: GraphQLScalarLiteralParser<mixed>;
@@ -579,6 +580,7 @@ export class GraphQLScalarType {
     const parseValue = config.parseValue ?? identityFunc;
     this.name = config.name;
     this.description = config.description;
+    this.specifiedByUrl = config.specifiedByUrl;
     this.serialize = config.serialize ?? identityFunc;
     this.parseValue = parseValue;
     this.parseLiteral =
@@ -588,6 +590,14 @@ export class GraphQLScalarType {
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
 
     devAssert(typeof config.name === 'string', 'Must provide name.');
+
+    devAssert(
+      config.specifiedByUrl == null ||
+        typeof config.specifiedByUrl === 'string',
+      `${this.name} must provide "specifiedByUrl" as a string, ` +
+        `but got: ${inspect(config.specifiedByUrl)}.`,
+    );
+
     devAssert(
       config.serialize == null || typeof config.serialize === 'function',
       `${this.name} must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.`,
@@ -613,6 +623,7 @@ export class GraphQLScalarType {
     return {
       name: this.name,
       description: this.description,
+      specifiedByUrl: this.specifiedByUrl,
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
@@ -650,6 +661,7 @@ export type GraphQLScalarLiteralParser<TInternal> = (
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   name: string,
   description?: ?string,
+  specifiedByUrl?: ?string,
   // Serializes an internal value to include in a response.
   serialize?: GraphQLScalarSerializer<TExternal>,
   // Parses an externally provided value to use as an input.

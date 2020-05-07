@@ -251,7 +251,17 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     var config = type.toConfig();
     var extensions = (_typeExtensionsMap$co2 = typeExtensionsMap[config.name]) !== null && _typeExtensionsMap$co2 !== void 0 ? _typeExtensionsMap$co2 : [];
+    var specifiedByUrl = config.specifiedByUrl;
+
+    for (var _i8 = 0; _i8 < extensions.length; _i8++) {
+      var _getSpecifiedByUrl;
+
+      var extensionNode = extensions[_i8];
+      specifiedByUrl = (_getSpecifiedByUrl = getSpecifiedByUrl(extensionNode)) !== null && _getSpecifiedByUrl !== void 0 ? _getSpecifiedByUrl : specifiedByUrl;
+    }
+
     return new _definition.GraphQLScalarType(_objectSpread(_objectSpread({}, config), {}, {
+      specifiedByUrl: specifiedByUrl,
       extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
   }
@@ -317,16 +327,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function getOperationTypes(nodes) {
     var opTypes = {};
 
-    for (var _i8 = 0; _i8 < nodes.length; _i8++) {
+    for (var _i10 = 0; _i10 < nodes.length; _i10++) {
       var _node$operationTypes;
 
-      var node = nodes[_i8];
+      var node = nodes[_i10];
 
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
       var operationTypesNodes = (_node$operationTypes = node.operationTypes) !== null && _node$operationTypes !== void 0 ? _node$operationTypes : [];
 
-      for (var _i10 = 0; _i10 < operationTypesNodes.length; _i10++) {
-        var operationType = operationTypesNodes[_i10];
+      for (var _i12 = 0; _i12 < operationTypesNodes.length; _i12++) {
+        var operationType = operationTypesNodes[_i12];
         opTypes[operationType.operation] = getNamedType(operationType.type);
       }
     } // Note: While this could make early assertions to get the correctly
@@ -380,16 +390,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function buildFieldMap(nodes) {
     var fieldConfigMap = Object.create(null);
 
-    for (var _i12 = 0; _i12 < nodes.length; _i12++) {
+    for (var _i14 = 0; _i14 < nodes.length; _i14++) {
       var _node$fields;
 
-      var node = nodes[_i12];
+      var node = nodes[_i14];
 
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
       var nodeFields = (_node$fields = node.fields) !== null && _node$fields !== void 0 ? _node$fields : [];
 
-      for (var _i14 = 0; _i14 < nodeFields.length; _i14++) {
-        var field = nodeFields[_i14];
+      for (var _i16 = 0; _i16 < nodeFields.length; _i16++) {
+        var field = nodeFields[_i16];
         fieldConfigMap[field.name.value] = {
           // Note: While this could make assertions to get the correctly typed
           // value, that would throw immediately while type system validation
@@ -411,8 +421,8 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     var argsNodes = args !== null && args !== void 0 ? args : [];
     var argConfigMap = Object.create(null);
 
-    for (var _i16 = 0; _i16 < argsNodes.length; _i16++) {
-      var arg = argsNodes[_i16];
+    for (var _i18 = 0; _i18 < argsNodes.length; _i18++) {
+      var arg = argsNodes[_i18];
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
       // with validateSchema() will produce more actionable results.
@@ -431,16 +441,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function buildInputFieldMap(nodes) {
     var inputFieldMap = Object.create(null);
 
-    for (var _i18 = 0; _i18 < nodes.length; _i18++) {
+    for (var _i20 = 0; _i20 < nodes.length; _i20++) {
       var _node$fields2;
 
-      var node = nodes[_i18];
+      var node = nodes[_i20];
 
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
       var fieldsNodes = (_node$fields2 = node.fields) !== null && _node$fields2 !== void 0 ? _node$fields2 : [];
 
-      for (var _i20 = 0; _i20 < fieldsNodes.length; _i20++) {
-        var field = fieldsNodes[_i20];
+      for (var _i22 = 0; _i22 < fieldsNodes.length; _i22++) {
+        var field = fieldsNodes[_i22];
         // Note: While this could make assertions to get the correctly typed
         // value, that would throw immediately while type system validation
         // with validateSchema() will produce more actionable results.
@@ -460,16 +470,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function buildEnumValueMap(nodes) {
     var enumValueMap = Object.create(null);
 
-    for (var _i22 = 0; _i22 < nodes.length; _i22++) {
+    for (var _i24 = 0; _i24 < nodes.length; _i24++) {
       var _node$values;
 
-      var node = nodes[_i22];
+      var node = nodes[_i24];
 
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
       var valuesNodes = (_node$values = node.values) !== null && _node$values !== void 0 ? _node$values : [];
 
-      for (var _i24 = 0; _i24 < valuesNodes.length; _i24++) {
-        var value = valuesNodes[_i24];
+      for (var _i26 = 0; _i26 < valuesNodes.length; _i26++) {
+        var value = valuesNodes[_i26];
         enumValueMap[value.name.value] = {
           description: getDescription(value, options),
           deprecationReason: getDeprecationReason(value),
@@ -484,16 +494,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function buildInterfaces(nodes) {
     var interfaces = [];
 
-    for (var _i26 = 0; _i26 < nodes.length; _i26++) {
+    for (var _i28 = 0; _i28 < nodes.length; _i28++) {
       var _node$interfaces;
 
-      var node = nodes[_i26];
+      var node = nodes[_i28];
 
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
       var interfacesNodes = (_node$interfaces = node.interfaces) !== null && _node$interfaces !== void 0 ? _node$interfaces : [];
 
-      for (var _i28 = 0; _i28 < interfacesNodes.length; _i28++) {
-        var type = interfacesNodes[_i28];
+      for (var _i30 = 0; _i30 < interfacesNodes.length; _i30++) {
+        var type = interfacesNodes[_i30];
         // Note: While this could make assertions to get the correctly typed
         // values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable
@@ -508,16 +518,16 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function buildUnionTypes(nodes) {
     var types = [];
 
-    for (var _i30 = 0; _i30 < nodes.length; _i30++) {
+    for (var _i32 = 0; _i32 < nodes.length; _i32++) {
       var _node$types;
 
-      var node = nodes[_i30];
+      var node = nodes[_i32];
 
       /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
       var typeNodes = (_node$types = node.types) !== null && _node$types !== void 0 ? _node$types : [];
 
-      for (var _i32 = 0; _i32 < typeNodes.length; _i32++) {
-        var type = typeNodes[_i32];
+      for (var _i34 = 0; _i34 < typeNodes.length; _i34++) {
+        var type = typeNodes[_i34];
         // Note: While this could make assertions to get the correctly typed
         // values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable
@@ -613,6 +623,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
           return new _definition.GraphQLScalarType({
             name: name,
             description: description,
+            specifiedByUrl: getSpecifiedByUrl(astNode),
             astNode: astNode,
             extensionASTNodes: _extensionASTNodes4
           });
@@ -653,6 +664,15 @@ var stdTypeMap = (0, _keyMap.default)(_scalars.specifiedScalarTypes.concat(_intr
 function getDeprecationReason(node) {
   var deprecated = (0, _values.getDirectiveValues)(_directives.GraphQLDeprecatedDirective, node);
   return deprecated === null || deprecated === void 0 ? void 0 : deprecated.reason;
+}
+/**
+ * Given a scalar node, returns the string value for the specifiedByUrl.
+ */
+
+
+function getSpecifiedByUrl(node) {
+  var specifiedBy = (0, _values.getDirectiveValues)(_directives.GraphQLSpecifiedByDirective, node);
+  return specifiedBy === null || specifiedBy === void 0 ? void 0 : specifiedBy.url;
 }
 /**
  * Given an ast node, returns its string description.

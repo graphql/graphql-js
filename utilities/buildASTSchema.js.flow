@@ -17,6 +17,7 @@ import {
   GraphQLSkipDirective,
   GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
+  GraphQLSpecifiedByDirective,
 } from '../type/directives';
 
 import { extendSchemaImpl } from './extendSchema';
@@ -104,6 +105,10 @@ export function buildASTSchema(
 
   if (!directives.some((directive) => directive.name === 'deprecated')) {
     directives.push(GraphQLDeprecatedDirective);
+  }
+
+  if (!directives.some((directive) => directive.name === 'specifiedBy')) {
+    directives.push(GraphQLSpecifiedByDirective);
   }
 
   return new GraphQLSchema(config);

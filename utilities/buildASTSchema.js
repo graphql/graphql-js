@@ -90,6 +90,12 @@ function buildASTSchema(documentAST, options) {
     directives.push(_directives.GraphQLDeprecatedDirective);
   }
 
+  if (!directives.some(function (directive) {
+    return directive.name === 'specifiedBy';
+  })) {
+    directives.push(_directives.GraphQLSpecifiedByDirective);
+  }
+
   return new _schema.GraphQLSchema(config);
 }
 

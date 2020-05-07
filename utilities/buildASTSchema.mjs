@@ -3,7 +3,7 @@ import { Kind } from "../language/kinds.mjs";
 import { parse } from "../language/parser.mjs";
 import { assertValidSDL } from "../validation/validate.mjs";
 import { GraphQLSchema } from "../type/schema.mjs";
-import { GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective } from "../type/directives.mjs";
+import { GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective } from "../type/directives.mjs";
 import { extendSchemaImpl } from "./extendSchema.mjs";
 
 /**
@@ -72,6 +72,12 @@ export function buildASTSchema(documentAST, options) {
     return directive.name === 'deprecated';
   })) {
     directives.push(GraphQLDeprecatedDirective);
+  }
+
+  if (!directives.some(function (directive) {
+    return directive.name === 'specifiedBy';
+  })) {
+    directives.push(GraphQLSpecifiedByDirective);
   }
 
   return new GraphQLSchema(config);

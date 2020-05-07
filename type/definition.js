@@ -504,6 +504,7 @@ var GraphQLScalarType = /*#__PURE__*/function () {
     var parseValue = (_config$parseValue = config.parseValue) !== null && _config$parseValue !== void 0 ? _config$parseValue : _identityFunc.default;
     this.name = config.name;
     this.description = config.description;
+    this.specifiedByUrl = config.specifiedByUrl;
     this.serialize = (_config$serialize = config.serialize) !== null && _config$serialize !== void 0 ? _config$serialize : _identityFunc.default;
     this.parseValue = parseValue;
     this.parseLiteral = (_config$parseLiteral = config.parseLiteral) !== null && _config$parseLiteral !== void 0 ? _config$parseLiteral : function (node) {
@@ -513,6 +514,7 @@ var GraphQLScalarType = /*#__PURE__*/function () {
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
+    config.specifiedByUrl == null || typeof config.specifiedByUrl === 'string' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"specifiedByUrl\" as a string, ") + "but got: ".concat((0, _inspect.default)(config.specifiedByUrl), "."));
     config.serialize == null || typeof config.serialize === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar is also used as an input type, ensure \"parseValue\" and \"parseLiteral\" functions are also provided."));
 
     if (config.parseLiteral) {
@@ -528,6 +530,7 @@ var GraphQLScalarType = /*#__PURE__*/function () {
     return {
       name: this.name,
       description: this.description,
+      specifiedByUrl: this.specifiedByUrl,
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,

@@ -133,7 +133,7 @@ export function printType(type, options) {
 }
 
 function printScalar(type, options) {
-  return printDescription(options, type) + "scalar ".concat(type.name);
+  return printDescription(options, type) + "scalar ".concat(type.name) + printSpecifiedByUrl(type);
 }
 
 function printImplementedInterfaces(type) {
@@ -229,6 +229,19 @@ function printDeprecated(fieldOrEnumVal) {
   }
 
   return ' @deprecated';
+}
+
+function printSpecifiedByUrl(scalar) {
+  if (scalar.specifiedByUrl == null) {
+    return '';
+  }
+
+  var url = scalar.specifiedByUrl;
+  var urlAST = astFromValue(url, GraphQLString);
+
+  /* istanbul ignore next */
+  urlAST || invariant(0, 'Unexpected null value returned from `astFromValue` for specifiedByUrl');
+  return ' @specifiedBy(url: ' + print(urlAST) + ')';
 }
 
 function printDescription(options, def) {

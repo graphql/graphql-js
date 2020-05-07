@@ -291,6 +291,7 @@ export type Thunk<T> = (() => T) | T;
 export class GraphQLScalarType {
   name: string;
   description: Maybe<string>;
+  specifiedByUrl: Maybe<string>;
   serialize: GraphQLScalarSerializer<any>;
   parseValue: GraphQLScalarValueParser<any>;
   parseLiteral: GraphQLScalarLiteralParser<any>;
@@ -301,6 +302,7 @@ export class GraphQLScalarType {
   constructor(config: Readonly<GraphQLScalarTypeConfig<any, any>>);
 
   toConfig(): GraphQLScalarTypeConfig<any, any> & {
+    specifiedByUrl: Maybe<string>;
     serialize: GraphQLScalarSerializer<any>;
     parseValue: GraphQLScalarValueParser<any>;
     parseLiteral: GraphQLScalarLiteralParser<any>;
@@ -327,6 +329,7 @@ export type GraphQLScalarLiteralParser<TInternal> = (
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   name: string;
   description?: Maybe<string>;
+  specifiedByUrl?: Maybe<string>;
   // Serializes an internal value to include in a response.
   serialize: GraphQLScalarSerializer<TExternal>;
   // Parses an externally provided value to use as an input.

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.isDirective = isDirective;
 exports.assertDirective = assertDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
-exports.specifiedDirectives = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
+exports.specifiedDirectives = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
 
 var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
 
@@ -168,11 +168,27 @@ var GraphQLDeprecatedDirective = new GraphQLDirective({
   }
 });
 /**
- * The full list of specified directives.
+ * Used to provide a URL for specifying the behaviour of custom scalar definitions.
  */
 
 exports.GraphQLDeprecatedDirective = GraphQLDeprecatedDirective;
-var specifiedDirectives = Object.freeze([GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective]);
+var GraphQLSpecifiedByDirective = new GraphQLDirective({
+  name: 'specifiedBy',
+  description: 'Exposes a URL that specifies the behaviour of this scalar.',
+  locations: [_directiveLocation.DirectiveLocation.SCALAR],
+  args: {
+    url: {
+      type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLString),
+      description: 'The URL that specifies the behaviour of this scalar.'
+    }
+  }
+});
+/**
+ * The full list of specified directives.
+ */
+
+exports.GraphQLSpecifiedByDirective = GraphQLSpecifiedByDirective;
+var specifiedDirectives = Object.freeze([GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective]);
 exports.specifiedDirectives = specifiedDirectives;
 
 function isSpecifiedDirective(directive) {

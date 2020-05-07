@@ -142,10 +142,25 @@ export var GraphQLDeprecatedDirective = new GraphQLDirective({
   }
 });
 /**
+ * Used to provide a URL for specifying the behaviour of custom scalar definitions.
+ */
+
+export var GraphQLSpecifiedByDirective = new GraphQLDirective({
+  name: 'specifiedBy',
+  description: 'Exposes a URL that specifies the behaviour of this scalar.',
+  locations: [DirectiveLocation.SCALAR],
+  args: {
+    url: {
+      type: GraphQLNonNull(GraphQLString),
+      description: 'The URL that specifies the behaviour of this scalar.'
+    }
+  }
+});
+/**
  * The full list of specified directives.
  */
 
-export var specifiedDirectives = Object.freeze([GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective]);
+export var specifiedDirectives = Object.freeze([GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective]);
 export function isSpecifiedDirective(directive) {
   return specifiedDirectives.some(function (_ref2) {
     var name = _ref2.name;

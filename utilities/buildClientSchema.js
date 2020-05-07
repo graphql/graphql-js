@@ -162,7 +162,8 @@ function buildClientSchema(introspection, options) {
   function buildScalarDef(scalarIntrospection) {
     return new _definition.GraphQLScalarType({
       name: scalarIntrospection.name,
-      description: scalarIntrospection.description
+      description: scalarIntrospection.description,
+      specifiedByUrl: scalarIntrospection.specifiedByUrl
     });
   }
 
