@@ -103,12 +103,12 @@ export function buildASTSchema(
     directives.push(GraphQLIncludeDirective);
   }
 
-  if (!directives.some((directive) => directive.name === 'specifiedBy')) {
-    directives.push(GraphQLSpecifiedByDirective);
-  }
-
   if (!directives.some((directive) => directive.name === 'deprecated')) {
     directives.push(GraphQLDeprecatedDirective);
+  }
+
+  if (!directives.some((directive) => directive.name === 'specifiedBy')) {
+    directives.push(GraphQLSpecifiedByDirective);
   }
 
   return new GraphQLSchema(config);

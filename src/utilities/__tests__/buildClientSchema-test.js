@@ -34,8 +34,8 @@ import { introspectionFromSchema } from '../introspectionFromSchema';
  */
 function cycleIntrospection(sdlString: string): string {
   const options = {
-    directiveIsRepeatable: true,
     specifiedByUrl: true,
+    directiveIsRepeatable: true,
   };
 
   const serverSchema = buildSchema(sdlString);

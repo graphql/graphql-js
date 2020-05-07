@@ -327,10 +327,10 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
 
-    const specifiedByUrl = [
-      config.specifiedByUrl,
-      ...extensions.map(getSpecifiedByUrl),
-    ].filter(Boolean)[0];
+    let specifiedByUrl = config.specifiedByUrl;
+    for (const extensionNode of extensions) {
+      specifiedByUrl = getSpecifiedByUrl(extensionNode) ?? specifiedByUrl;
+    }
 
     return new GraphQLScalarType({
       ...config,

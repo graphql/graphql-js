@@ -644,12 +644,6 @@ describe('Type System Printer', () => {
         if: Boolean!
       ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
-      """Exposes a URL that specifies the behaviour of this scalar."""
-      directive @specifiedBy(
-        """The URL that specifies the behaviour of this scalar."""
-        url: String!
-      ) on SCALAR
-
       """Marks an element of a GraphQL schema as no longer supported."""
       directive @deprecated(
         """
@@ -657,6 +651,12 @@ describe('Type System Printer', () => {
         """
         reason: String = "No longer supported"
       ) on FIELD_DEFINITION | ENUM_VALUE
+
+      """Exposes a URL that specifies the behaviour of this scalar."""
+      directive @specifiedBy(
+        """The URL that specifies the behaviour of this scalar."""
+        url: String!
+      ) on SCALAR
 
       """
       A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
@@ -867,17 +867,17 @@ describe('Type System Printer', () => {
         if: Boolean!
       ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
-      # Exposes a URL that specifies the behaviour of this scalar.
-      directive @specifiedBy(
-        # The URL that specifies the behaviour of this scalar.
-        url: String!
-      ) on SCALAR
-
       # Marks an element of a GraphQL schema as no longer supported.
       directive @deprecated(
         # Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).
         reason: String = "No longer supported"
       ) on FIELD_DEFINITION | ENUM_VALUE
+
+      # Exposes a URL that specifies the behaviour of this scalar.
+      directive @specifiedBy(
+        # The URL that specifies the behaviour of this scalar.
+        url: String!
+      ) on SCALAR
 
       # A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
       type __Schema {

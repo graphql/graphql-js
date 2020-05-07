@@ -30,8 +30,8 @@ describe('Introspection', () => {
     });
     const source = getIntrospectionQuery({
       descriptions: false,
-      directiveIsRepeatable: true,
       specifiedByUrl: true,
+      directiveIsRepeatable: true,
     });
 
     const result = graphqlSync({ schema, source });
@@ -657,6 +657,7 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: '__Directive',
+              specifiedByUrl: null,
               fields: [
                 {
                   name: 'name',
@@ -750,7 +751,6 @@ describe('Introspection', () => {
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
-              specifiedByUrl: null,
             },
             {
               kind: 'ENUM',
@@ -901,6 +901,22 @@ describe('Introspection', () => {
               ],
             },
             {
+              name: 'deprecated',
+              isRepeatable: false,
+              locations: ['FIELD_DEFINITION', 'ENUM_VALUE'],
+              args: [
+                {
+                  defaultValue: '"No longer supported"',
+                  name: 'reason',
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
+                    ofType: null,
+                  },
+                },
+              ],
+            },
+            {
               name: 'specifiedBy',
               isRepeatable: false,
               locations: ['SCALAR'],
@@ -916,22 +932,6 @@ describe('Introspection', () => {
                       name: 'String',
                       ofType: null,
                     },
-                  },
-                },
-              ],
-            },
-            {
-              name: 'deprecated',
-              isRepeatable: false,
-              locations: ['FIELD_DEFINITION', 'ENUM_VALUE'],
-              args: [
-                {
-                  defaultValue: '"No longer supported"',
-                  name: 'reason',
-                  type: {
-                    kind: 'SCALAR',
-                    name: 'String',
-                    ofType: null,
                   },
                 },
               ],
