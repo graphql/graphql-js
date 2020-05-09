@@ -17,7 +17,7 @@ import instanceOf from '../jsutils/instanceOf';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import identityFunc from '../jsutils/identityFunc';
-import defineToJSON from '../jsutils/defineToJSON';
+import defineInspect from '../jsutils/defineInspect';
 import suggestionList from '../jsutils/suggestionList';
 import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 import {
@@ -373,13 +373,18 @@ export function GraphQLList(ofType) {
   return '[' + String(this.ofType) + ']';
 };
 
+(GraphQLList.prototype: any).toJSON = function toJSON() {
+  return this.toString();
+};
+
 Object.defineProperty(GraphQLList.prototype, SYMBOL_TO_STRING_TAG, {
   get() {
     return 'GraphQLList';
   },
 });
 
-defineToJSON(GraphQLList);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLList);
 
 /**
  * Non-Null Type Wrapper
@@ -424,13 +429,18 @@ export function GraphQLNonNull(ofType) {
   return String(this.ofType) + '!';
 };
 
+(GraphQLNonNull.prototype: any).toJSON = function toJSON() {
+  return this.toString();
+};
+
 Object.defineProperty(GraphQLNonNull.prototype, SYMBOL_TO_STRING_TAG, {
   get() {
     return 'GraphQLNonNull';
   },
 });
 
-defineToJSON(GraphQLNonNull);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLNonNull);
 
 /**
  * These types wrap and modify other types
@@ -637,13 +647,18 @@ export class GraphQLScalarType {
     return this.name;
   }
 
+  toJSON(): string {
+    return this.toString();
+  }
+
   // $FlowFixMe Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLScalarType';
   }
 }
 
-defineToJSON(GraphQLScalarType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLScalarType);
 
 export type GraphQLScalarSerializer<TExternal> = (
   outputValue: mixed,
@@ -776,13 +791,18 @@ export class GraphQLObjectType {
     return this.name;
   }
 
+  toJSON(): string {
+    return this.toString();
+  }
+
   // $FlowFixMe Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLObjectType';
   }
 }
 
-defineToJSON(GraphQLObjectType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLObjectType);
 
 function defineInterfaces(
   config: $ReadOnly<
@@ -1086,13 +1106,18 @@ export class GraphQLInterfaceType {
     return this.name;
   }
 
+  toJSON(): string {
+    return this.toString();
+  }
+
   // $FlowFixMe Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLInterfaceType';
   }
 }
 
-defineToJSON(GraphQLInterfaceType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLInterfaceType);
 
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {|
   name: string,
@@ -1188,13 +1213,18 @@ export class GraphQLUnionType {
     return this.name;
   }
 
+  toJSON(): string {
+    return this.toString();
+  }
+
   // $FlowFixMe Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLUnionType';
   }
 }
 
-defineToJSON(GraphQLUnionType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLUnionType);
 
 function defineTypes(
   config: $ReadOnly<GraphQLUnionTypeConfig<mixed, mixed>>,
@@ -1361,13 +1391,18 @@ export class GraphQLEnumType /* <T> */ {
     return this.name;
   }
 
+  toJSON(): string {
+    return this.toString();
+  }
+
   // $FlowFixMe Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLEnumType';
   }
 }
 
-defineToJSON(GraphQLEnumType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLEnumType);
 
 function didYouMeanEnumValue(
   enumType: GraphQLEnumType,
@@ -1513,13 +1548,18 @@ export class GraphQLInputObjectType {
     return this.name;
   }
 
+  toJSON(): string {
+    return this.toString();
+  }
+
   // $FlowFixMe Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLInputObjectType';
   }
 }
 
-defineToJSON(GraphQLInputObjectType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLInputObjectType);
 
 function defineInputFieldMap(
   config: $ReadOnly<GraphQLInputObjectTypeConfig>,
