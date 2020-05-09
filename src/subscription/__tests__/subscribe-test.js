@@ -1,8 +1,5 @@
 // @flow strict
 
-// FIXME temporary hack until https://github.com/eslint/eslint/pull/12484 is merged
-/* eslint-disable require-await */
-
 import EventEmitter from 'events';
 
 import { expect } from 'chai';

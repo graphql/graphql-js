@@ -123,7 +123,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v6.8.x`
+  # ESLint builtin rules list based on `v7.0.x`
   ##############################################################################
 
   # Possible Errors
@@ -162,6 +162,7 @@ rules:
   no-unreachable: error
   no-unsafe-finally: error
   no-unsafe-negation: error
+  no-useless-backreference: error
   require-atomic-updates: error
   use-isnan: error
   valid-typeof: error
@@ -177,6 +178,7 @@ rules:
   consistent-return: off
   curly: error
   default-case: off
+  default-case-last: error
   default-param-last: error
   dot-notation: off
   eqeqeq: [error, smart]
@@ -344,6 +346,7 @@ rules:
   no-dupe-class-members: error
   no-duplicate-imports: error
   no-new-symbol: error
+  no-restricted-exports: off
   no-restricted-imports: off
   no-this-before-super: error
   no-useless-computed-key: error
@@ -442,7 +445,7 @@ overrides:
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v2.30.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v2.31.x`
       ##########################################################################
 
       # Supported Rules
@@ -528,6 +531,7 @@ overrides:
       no-array-constructor: off
       no-dupe-class-members: off
       no-empty-function: off
+      no-invalid-this: off
       no-unused-expressions: off
       no-unused-vars: off
       no-useless-constructor: off
@@ -537,6 +541,7 @@ overrides:
       '@typescript-eslint/no-dupe-class-members': error
       '@typescript-eslint/no-array-constructor': error
       '@typescript-eslint/no-empty-function': error
+      '@typescript-eslint/no-invalid-this': error
       '@typescript-eslint/no-unused-expressions': error
       '@typescript-eslint/no-unused-vars':
         [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
