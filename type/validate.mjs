@@ -84,23 +84,29 @@ function validateRootTypes(context) {
   if (!queryType) {
     context.reportError('Query root type must be provided.', schema.astNode);
   } else if (!isObjectType(queryType)) {
-    context.reportError("Query root type must be Object type, it cannot be ".concat(inspect(queryType), "."), getOperationTypeNode(schema, queryType, 'query'));
+    var _getOperationTypeNode;
+
+    context.reportError("Query root type must be Object type, it cannot be ".concat(inspect(queryType), "."), (_getOperationTypeNode = getOperationTypeNode(schema, 'query')) !== null && _getOperationTypeNode !== void 0 ? _getOperationTypeNode : queryType.astNode);
   }
 
   var mutationType = schema.getMutationType();
 
   if (mutationType && !isObjectType(mutationType)) {
-    context.reportError('Mutation root type must be Object type if provided, it cannot be ' + "".concat(inspect(mutationType), "."), getOperationTypeNode(schema, mutationType, 'mutation'));
+    var _getOperationTypeNode2;
+
+    context.reportError('Mutation root type must be Object type if provided, it cannot be ' + "".concat(inspect(mutationType), "."), (_getOperationTypeNode2 = getOperationTypeNode(schema, 'mutation')) !== null && _getOperationTypeNode2 !== void 0 ? _getOperationTypeNode2 : mutationType.astNode);
   }
 
   var subscriptionType = schema.getSubscriptionType();
 
   if (subscriptionType && !isObjectType(subscriptionType)) {
-    context.reportError('Subscription root type must be Object type if provided, it cannot be ' + "".concat(inspect(subscriptionType), "."), getOperationTypeNode(schema, subscriptionType, 'subscription'));
+    var _getOperationTypeNode3;
+
+    context.reportError('Subscription root type must be Object type if provided, it cannot be ' + "".concat(inspect(subscriptionType), "."), (_getOperationTypeNode3 = getOperationTypeNode(schema, 'subscription')) !== null && _getOperationTypeNode3 !== void 0 ? _getOperationTypeNode3 : subscriptionType.astNode);
   }
 }
 
-function getOperationTypeNode(schema, type, operation) {
+function getOperationTypeNode(schema, operation) {
   var operationNodes = getAllSubNodes(schema, function (node) {
     return node.operationTypes;
   });
@@ -113,7 +119,7 @@ function getOperationTypeNode(schema, type, operation) {
     }
   }
 
-  return type.astNode;
+  return undefined;
 }
 
 function validateDirectives(context) {
