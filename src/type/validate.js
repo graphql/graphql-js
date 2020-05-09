@@ -9,7 +9,11 @@ import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
-import { type ASTNode, type NamedTypeNode } from '../language/ast';
+import {
+  type ASTNode,
+  type NamedTypeNode,
+  type OperationTypeNode,
+} from '../language/ast';
 
 import { isValidNameError } from '../utilities/assertValidName';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
@@ -113,7 +117,7 @@ function validateRootTypes(context) {
       `Query root type must be Object type, it cannot be ${inspect(
         queryType,
       )}.`,
-      getOperationTypeNode(schema, queryType, 'query'),
+      getOperationTypeNode(schema, 'query') ?? queryType.astNode,
     );
   }
 
@@ -122,7 +126,7 @@ function validateRootTypes(context) {
     context.reportError(
       'Mutation root type must be Object type if provided, it cannot be ' +
         `${inspect(mutationType)}.`,
-      getOperationTypeNode(schema, mutationType, 'mutation'),
+      getOperationTypeNode(schema, 'mutation') ?? mutationType.astNode,
     );
   }
 
@@ -131,15 +135,14 @@ function validateRootTypes(context) {
     context.reportError(
       'Subscription root type must be Object type if provided, it cannot be ' +
         `${inspect(subscriptionType)}.`,
-      getOperationTypeNode(schema, subscriptionType, 'subscription'),
+      getOperationTypeNode(schema, 'subscription') ?? subscriptionType.astNode,
     );
   }
 }
 
 function getOperationTypeNode(
   schema: GraphQLSchema,
-  type: GraphQLObjectType,
-  operation: string,
+  operation: OperationTypeNode,
 ): ?ASTNode {
   const operationNodes = getAllSubNodes(schema, (node) => node.operationTypes);
   for (const node of operationNodes) {
@@ -147,8 +150,7 @@ function getOperationTypeNode(
       return node.type;
     }
   }
-
-  return type.astNode;
+  return undefined;
 }
 
 function validateDirectives(context: SchemaValidationContext): void {
