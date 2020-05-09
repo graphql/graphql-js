@@ -20,9 +20,9 @@ var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
-var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
-
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
+var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect"));
 
 var _directiveLocation = require("../language/directiveLocation");
 
@@ -98,6 +98,10 @@ var GraphQLDirective = /*#__PURE__*/function () {
 
   _proto.toString = function toString() {
     return '@' + this.name;
+  };
+
+  _proto.toJSON = function toJSON() {
+    return this.toString();
   } // $FlowFixMe Flow doesn't support computed properties yet
   ;
 
@@ -109,10 +113,11 @@ var GraphQLDirective = /*#__PURE__*/function () {
   }]);
 
   return GraphQLDirective;
-}();
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
 
 exports.GraphQLDirective = GraphQLDirective;
-(0, _defineToJSON.default)(GraphQLDirective);
+(0, _defineInspect.default)(GraphQLDirective);
 
 /**
  * Used to conditionally include fields or fragments.

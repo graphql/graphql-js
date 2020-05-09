@@ -70,7 +70,7 @@ var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
 
 var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc"));
 
-var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
+var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect"));
 
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
 
@@ -330,12 +330,17 @@ GraphQLList.prototype.toString = function toString() {
   return '[' + String(this.ofType) + ']';
 };
 
+GraphQLList.prototype.toJSON = function toJSON() {
+  return this.toString();
+};
+
 Object.defineProperty(GraphQLList.prototype, _symbols.SYMBOL_TO_STRING_TAG, {
   get: function get() {
     return 'GraphQLList';
   }
-});
-(0, _defineToJSON.default)(GraphQLList);
+}); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
+(0, _defineInspect.default)(GraphQLList);
 /**
  * Non-Null Type Wrapper
  *
@@ -380,12 +385,17 @@ GraphQLNonNull.prototype.toString = function toString() {
   return String(this.ofType) + '!';
 };
 
+GraphQLNonNull.prototype.toJSON = function toJSON() {
+  return this.toString();
+};
+
 Object.defineProperty(GraphQLNonNull.prototype, _symbols.SYMBOL_TO_STRING_TAG, {
   get: function get() {
     return 'GraphQLNonNull';
   }
-});
-(0, _defineToJSON.default)(GraphQLNonNull);
+}); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
+(0, _defineInspect.default)(GraphQLNonNull);
 /**
  * These types wrap and modify other types
  */
@@ -542,6 +552,10 @@ var GraphQLScalarType = /*#__PURE__*/function () {
 
   _proto.toString = function toString() {
     return this.name;
+  };
+
+  _proto.toJSON = function toJSON() {
+    return this.toString();
   } // $FlowFixMe Flow doesn't support computed properties yet
   ;
 
@@ -553,10 +567,11 @@ var GraphQLScalarType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLScalarType;
-}();
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
 
 exports.GraphQLScalarType = GraphQLScalarType;
-(0, _defineToJSON.default)(GraphQLScalarType);
+(0, _defineInspect.default)(GraphQLScalarType);
 
 /**
  * Object Type Definition
@@ -642,6 +657,10 @@ var GraphQLObjectType = /*#__PURE__*/function () {
 
   _proto2.toString = function toString() {
     return this.name;
+  };
+
+  _proto2.toJSON = function toJSON() {
+    return this.toString();
   } // $FlowFixMe Flow doesn't support computed properties yet
   ;
 
@@ -653,10 +672,11 @@ var GraphQLObjectType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLObjectType;
-}();
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
 
 exports.GraphQLObjectType = GraphQLObjectType;
-(0, _defineToJSON.default)(GraphQLObjectType);
+(0, _defineInspect.default)(GraphQLObjectType);
 
 function defineInterfaces(config) {
   var _resolveThunk;
@@ -812,6 +832,10 @@ var GraphQLInterfaceType = /*#__PURE__*/function () {
 
   _proto3.toString = function toString() {
     return this.name;
+  };
+
+  _proto3.toJSON = function toJSON() {
+    return this.toString();
   } // $FlowFixMe Flow doesn't support computed properties yet
   ;
 
@@ -823,10 +847,11 @@ var GraphQLInterfaceType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLInterfaceType;
-}();
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
 
 exports.GraphQLInterfaceType = GraphQLInterfaceType;
-(0, _defineToJSON.default)(GraphQLInterfaceType);
+(0, _defineInspect.default)(GraphQLInterfaceType);
 
 /**
  * Union Type Definition
@@ -890,6 +915,10 @@ var GraphQLUnionType = /*#__PURE__*/function () {
 
   _proto4.toString = function toString() {
     return this.name;
+  };
+
+  _proto4.toJSON = function toJSON() {
+    return this.toString();
   } // $FlowFixMe Flow doesn't support computed properties yet
   ;
 
@@ -901,10 +930,11 @@ var GraphQLUnionType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLUnionType;
-}();
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
 
 exports.GraphQLUnionType = GraphQLUnionType;
-(0, _defineToJSON.default)(GraphQLUnionType);
+(0, _defineInspect.default)(GraphQLUnionType);
 
 function defineTypes(config) {
   var types = resolveThunk(config.types);
@@ -1035,6 +1065,10 @@ var GraphQLEnumType
 
   _proto5.toString = function toString() {
     return this.name;
+  };
+
+  _proto5.toJSON = function toJSON() {
+    return this.toString();
   } // $FlowFixMe Flow doesn't support computed properties yet
   ;
 
@@ -1046,10 +1080,11 @@ var GraphQLEnumType
   }]);
 
   return GraphQLEnumType;
-}();
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
 
 exports.GraphQLEnumType = GraphQLEnumType;
-(0, _defineToJSON.default)(GraphQLEnumType);
+(0, _defineInspect.default)(GraphQLEnumType);
 
 function didYouMeanEnumValue(enumType, unknownValueStr) {
   var allNames = enumType.getValues().map(function (value) {
@@ -1143,6 +1178,10 @@ var GraphQLInputObjectType = /*#__PURE__*/function () {
 
   _proto6.toString = function toString() {
     return this.name;
+  };
+
+  _proto6.toJSON = function toJSON() {
+    return this.toString();
   } // $FlowFixMe Flow doesn't support computed properties yet
   ;
 
@@ -1154,10 +1193,11 @@ var GraphQLInputObjectType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLInputObjectType;
-}();
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
 
 exports.GraphQLInputObjectType = GraphQLInputObjectType;
-(0, _defineToJSON.default)(GraphQLInputObjectType);
+(0, _defineInspect.default)(GraphQLInputObjectType);
 
 function defineInputFieldMap(config) {
   var fieldMap = resolveThunk(config.fields);

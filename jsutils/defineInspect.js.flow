@@ -1,16 +1,17 @@
 // @flow strict
 
+import invariant from './invariant';
 import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
 
 /**
- * The `defineToJSON()` function defines toJSON() and inspect() prototype
- * methods, if no function provided they become aliases for toString().
+ * The `defineInspect()` function defines `inspect()` prototype method as alias of `toJSON`
  */
-export default function defineToJSON(
+export default function defineInspect(
   classObject: Class<any> | ((...args: Array<any>) => mixed),
-  fn?: () => mixed = classObject.prototype.toString,
 ): void {
-  classObject.prototype.toJSON = fn;
+  const fn = classObject.prototype.toJSON;
+  invariant(typeof fn === 'function');
+
   classObject.prototype.inspect = fn;
 
   /* istanbul ignore else (See: https://github.com/graphql/graphql-js/issues/2317) */

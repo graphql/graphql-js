@@ -8,8 +8,8 @@ import inspect from "../jsutils/inspect.mjs";
 import toObjMap from "../jsutils/toObjMap.mjs";
 import devAssert from "../jsutils/devAssert.mjs";
 import instanceOf from "../jsutils/instanceOf.mjs";
-import defineToJSON from "../jsutils/defineToJSON.mjs";
 import isObjectLike from "../jsutils/isObjectLike.mjs";
+import defineInspect from "../jsutils/defineInspect.mjs";
 import { DirectiveLocation } from "../language/directiveLocation.mjs";
 import { GraphQLString, GraphQLBoolean } from "./scalars.mjs";
 import { argsToArgsConfig, GraphQLNonNull } from "./definition.mjs";
@@ -77,6 +77,10 @@ export var GraphQLDirective = /*#__PURE__*/function () {
 
   _proto.toString = function toString() {
     return '@' + this.name;
+  };
+
+  _proto.toJSON = function toJSON() {
+    return this.toString();
   } // $FlowFixMe Flow doesn't support computed properties yet
   ;
 
@@ -88,8 +92,9 @@ export var GraphQLDirective = /*#__PURE__*/function () {
   }]);
 
   return GraphQLDirective;
-}();
-defineToJSON(GraphQLDirective);
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+
+defineInspect(GraphQLDirective);
 
 /**
  * Used to conditionally include fields or fragments.

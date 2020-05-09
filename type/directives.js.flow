@@ -7,8 +7,8 @@ import inspect from '../jsutils/inspect';
 import toObjMap from '../jsutils/toObjMap';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
-import defineToJSON from '../jsutils/defineToJSON';
 import isObjectLike from '../jsutils/isObjectLike';
+import defineInspect from '../jsutils/defineInspect';
 import {
   type ReadOnlyObjMap,
   type ReadOnlyObjMapLike,
@@ -112,13 +112,18 @@ export class GraphQLDirective {
     return '@' + this.name;
   }
 
+  toJSON(): string {
+    return this.toString();
+  }
+
   // $FlowFixMe Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLDirective';
   }
 }
 
-defineToJSON(GraphQLDirective);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLDirective);
 
 export type GraphQLDirectiveConfig = {|
   name: string,

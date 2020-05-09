@@ -32,6 +32,8 @@ export class Location {
   readonly source: Source;
 
   constructor(startToken: Token, endToken: Token, source: Source);
+
+  toJSON(): { start: number; end: number };
 }
 
 /**
@@ -86,6 +88,13 @@ export class Token {
     prev: Token | null,
     value?: string,
   );
+
+  toJSON(): {
+    kind: TokenKindEnum;
+    value: string | undefined;
+    line: number;
+    column: number;
+  };
 }
 
 /**
