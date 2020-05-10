@@ -850,11 +850,14 @@ describe('extendSchema', () => {
   it('extends different types multiple times', () => {
     const schema = buildSchema(`
       type Query {
+        someScalar: SomeScalar
         someObject(someInput: SomeInput): SomeObject
         someInterface: SomeInterface
         someEnum: SomeEnum
         someUnion: SomeUnion
       }
+
+      scalar SomeScalar
 
       type SomeObject implements SomeInterface {
         oldField: String
@@ -875,8 +878,12 @@ describe('extendSchema', () => {
       }
     `);
     const newTypesSDL = dedent`
-      interface AnotherNewInterface {
-        anotherNewField: String
+      scalar NewScalar
+
+      scalar AnotherNewScalar
+
+      type NewObject {
+        foo: String
       }
 
       type AnotherNewObject {
@@ -887,11 +894,17 @@ describe('extendSchema', () => {
         newField: String
       }
 
-      type NewObject {
-        foo: String
+      interface AnotherNewInterface {
+        anotherNewField: String
       }`;
+    const schemaWithNewTypes = extendSchema(schema, parse(newTypesSDL));
+    expect(printSchemaChanges(schema, schemaWithNewTypes)).to.equal(
+      newTypesSDL + '\n',
+    );
+
     const extendAST = parse(`
-      ${newTypesSDL}
+      extend scalar SomeScalar @specifiedBy(url: "http://example.com/foo_spec")
+
       extend type SomeObject implements NewInterface {
         newField: String
       }
@@ -920,10 +933,12 @@ describe('extendSchema', () => {
         anotherNewField: String
       }
     `);
-    const extendedSchema = extendSchema(schema, extendAST);
+    const extendedSchema = extendSchema(schemaWithNewTypes, extendAST);
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
+      scalar SomeScalar @specifiedBy(url: "http://example.com/foo_spec")
+
       type SomeObject implements SomeInterface & NewInterface & AnotherNewInterface {
         oldField: String
         newField: String
