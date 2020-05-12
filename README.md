@@ -1,4 +1,4 @@
-# GraphQL.js
+# [GraphQL.js](https://graphql.org/)
 
 The JavaScript reference implementation for GraphQL, a query language for APIs created by Facebook.
 
