@@ -8,6 +8,7 @@ reportUnusedDisableDirectives: true
 plugins:
   - graphql-internal
   - flowtype
+  - node
   - import
 
 rules:
@@ -65,6 +66,58 @@ rules:
   flowtype/space-before-generic-bracket: off
   flowtype/space-before-type-colon: off
   flowtype/union-intersection-spacing: off
+
+  ##############################################################################
+  # `eslint-plugin-node` rule list based on `v11.1.x`
+  ##############################################################################
+
+  # Possible Errors
+  # https://github.com/mysticatea/eslint-plugin-node#possible-errors
+
+  node/handle-callback-err: [error, error]
+  node/no-callback-literal: error
+  node/no-exports-assign: error
+  node/no-extraneous-import: error
+  node/no-extraneous-require: error
+  node/no-missing-import: error
+  node/no-missing-require: error
+  node/no-new-require: error
+  node/no-path-concat: error
+  node/no-process-exit: off
+  node/no-unpublished-bin: error
+  node/no-unpublished-import: error
+  node/no-unpublished-require: error
+  node/no-unsupported-features/es-builtins: error
+  node/no-unsupported-features/es-syntax: off # TODO enable
+  node/no-unsupported-features/node-builtins: off # TODO enable
+  node/process-exit-as-throw: error
+  node/shebang: error
+
+  # Best Practices
+  # https://github.com/mysticatea/eslint-plugin-node#best-practices
+  node/no-deprecated-api: error
+
+  # Stylistic Issues
+  # https://github.com/mysticatea/eslint-plugin-node#stylistic-issues
+
+  node/callback-return: error
+  node/exports-style: off # TODO consider
+  node/file-extension-in-import: off # TODO consider
+  node/global-require: error
+  node/no-mixed-requires: error
+  node/no-process-env: off
+  node/no-restricted-import: off
+  node/no-restricted-require: off
+  node/no-sync: error
+  node/prefer-global/buffer: error
+  node/prefer-global/console: error
+  node/prefer-global/process: error
+  node/prefer-global/text-decoder: error
+  node/prefer-global/text-encoder: error
+  node/prefer-global/url-search-params: error
+  node/prefer-global/url: error
+  node/prefer-promises/dns: off
+  node/prefer-promises/fs: off
 
   ##############################################################################
   # `eslint-plugin-import` rule list based on `v2.20.x`
@@ -266,21 +319,6 @@ rules:
   no-unused-vars: [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
   no-use-before-define: off
 
-  # Node.js and CommonJS
-  # https://eslint.org/docs/rules/#nodejs-and-commonjs
-
-  callback-return: error
-  global-require: error
-  handle-callback-err: [error, error]
-  no-buffer-constructor: error
-  no-mixed-requires: error
-  no-new-require: error
-  no-path-concat: error
-  no-process-env: off
-  no-process-exit: off
-  no-restricted-modules: off
-  no-sync: error
-
   # Stylistic Issues
   # https://eslint.org/docs/rules/#stylistic-issues
 
@@ -440,6 +478,9 @@ overrides:
       - '@typescript-eslint'
     extends:
       - plugin:import/typescript
+    settings:
+      node:
+        tryExtensions: ['.js', '.json', '.node', '.ts', '.d.ts']
     rules:
       flowtype/require-valid-file-annotation: off
       flowtype/no-types-missing-file-annotation: off
@@ -574,6 +615,8 @@ overrides:
       '@typescript-eslint/type-annotation-spacing': off
   - files: '**/__*__/**'
     rules:
+      node/no-unpublished-import: off
+      node/no-unpublished-require: off
       import/no-extraneous-dependencies: off
       import/no-nodejs-modules: off
       no-restricted-syntax: off
@@ -581,6 +624,10 @@ overrides:
     parserOptions:
       sourceType: script
     rules:
+      node/no-unpublished-import: off
+      node/no-unpublished-require: off
+      node/no-sync: off
+      node/global-require: off
       import/no-dynamic-require: off
       import/no-extraneous-dependencies: off
       import/no-nodejs-modules: off
@@ -588,5 +635,3 @@ overrides:
       no-await-in-loop: off
       no-restricted-syntax: off
       no-console: off
-      no-sync: off
-      global-require: off
