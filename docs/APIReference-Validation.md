@@ -65,4 +65,4 @@ visit those fragments at every point a spread is encountered.
 var specifiedRules: Array<(context: ValidationContext): any>
 ```
 
-This set includes all validation rules defined by the GraphQL spec
+This set includes all validation rules defined by the GraphQL spec.
