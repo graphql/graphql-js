@@ -48,8 +48,8 @@
     "@babel/plugin-transform-flow-strip-types": "7.9.0",
     "@babel/preset-env": "7.9.6",
     "@babel/register": "7.9.0",
-    "@typescript-eslint/eslint-plugin": "2.31.0",
-    "@typescript-eslint/parser": "2.31.0",
+    "@typescript-eslint/eslint-plugin": "2.33.0",
+    "@typescript-eslint/parser": "2.33.0",
     "babel-eslint": "10.1.0",
     "chai": "4.2.0",
     "cspell": "4.0.61",
@@ -62,6 +62,6 @@
     "mocha": "7.1.2",
     "nyc": "15.0.1",
     "prettier": "2.0.5",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.2"
   }
 }

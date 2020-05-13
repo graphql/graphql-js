@@ -445,7 +445,7 @@ overrides:
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v2.31.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v2.33.x`
       ##########################################################################
 
       # Supported Rules
@@ -528,6 +528,7 @@ overrides:
 
       # Disable conflicting ESLint rules and enable TS-compatible ones
       default-param-last: off
+      lines-between-class-members: off
       no-array-constructor: off
       no-dupe-class-members: off
       no-empty-function: off
@@ -538,8 +539,10 @@ overrides:
       require-await: off
       no-return-await: off
       '@typescript-eslint/default-param-last': error
-      '@typescript-eslint/no-dupe-class-members': error
+      '@typescript-eslint/lines-between-class-members':
+        [error, always, { exceptAfterSingleLine: true }]
       '@typescript-eslint/no-array-constructor': error
+      '@typescript-eslint/no-dupe-class-members': error
       '@typescript-eslint/no-empty-function': error
       '@typescript-eslint/no-invalid-this': error
       '@typescript-eslint/no-unused-expressions': error
