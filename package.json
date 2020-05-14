@@ -56,7 +56,7 @@
     "dtslint": "3.6.0",
     "eslint": "7.0.0",
     "eslint-plugin-flowtype": "4.7.0",
-    "eslint-plugin-graphql-internal": "link:./resources/eslint-rules",
+    "eslint-plugin-graphql-internal": "file:./resources/eslint-rules",
     "eslint-plugin-import": "2.20.2",
     "eslint-plugin-node": "^11.1.0",
     "flow-bin": "0.124.0",
