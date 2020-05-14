@@ -35,7 +35,7 @@
     "check": "flow check",
     "check:ts": "dtslint src",
     "check:cover": "node resources/check-cover.js && nyc report --nycrc-path .nycflowrc.yml",
-    "check:spelling": "cspell \"./{src/**/,resources**/,}*.{js,ts,md,graphql}\"",
+    "check:spelling": "cspell \"./{src/**/,resources/**/}*.{js,ts,md,graphql}\"",
     "build": "node resources/build.js",
     "changelog": "node resources/gen-changelog.js",
     "preversion": ". ./resources/checkgit.sh && yarn check --integrity",
