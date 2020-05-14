@@ -21,6 +21,17 @@ if (require.main === module) {
   rmdirRecursive('./dist');
   mkdirRecursive('./dist');
 
+  const packageJSON = buildPackageJSON();
+  const versionJS = fs.readFileSync('src/version.js', 'utf-8');
+
+  // TODO: move this assert to integration tests
+  assert(
+    versionJS.includes(packageJSON.version),
+    'Version in package.json and version.js should match',
+  );
+
+  writeFile('./dist/package.json', JSON.stringify(packageJSON, null, 2));
+
   copyFile('./LICENSE', './dist/LICENSE');
   copyFile('./README.md', './dist/README.md');
 
@@ -36,13 +47,6 @@ if (require.main === module) {
     }
   }
 
-  const packageJSON = buildPackageJSON();
-  assert(
-    packageJSON.version === require('../dist/version').version,
-    'Version in package.json and version.js should match',
-  );
-
-  writeFile('./dist/package.json', JSON.stringify(packageJSON, null, 2));
   showStats();
 }
 

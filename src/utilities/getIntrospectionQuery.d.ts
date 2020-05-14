@@ -13,6 +13,10 @@ export interface IntrospectionOptions {
   // Whether to include `isRepeatable` flag on directives.
   // Default: false
   directiveIsRepeatable?: boolean;
+
+  // Whether to include `description` field on schema.
+  // Default: false
+  schemaDescription?: boolean;
 }
 
 export function getIntrospectionQuery(options?: IntrospectionOptions): string;
