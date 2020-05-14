@@ -1949,9 +1949,8 @@ eslint-plugin-flowtype@4.7.0:
   dependencies:
     lodash "^4.17.15"
 
-"eslint-plugin-graphql-internal@link:./resources/eslint-rules":
+"eslint-plugin-graphql-internal@file:./resources/eslint-rules":
   version "0.0.0"
-  uid ""
 
 eslint-plugin-import@2.20.2:
   version "2.20.2"
