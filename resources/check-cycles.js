@@ -12,7 +12,7 @@ const { exec } = require('./utils');
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flow-dep-graph'));
 const tmpFile = path.join(tmpDir, 'out.dot');
 
-exec(`yarn flow graph dep-graph --quiet --strip-root --out ${tmpFile}`);
+exec(`npx flow graph dep-graph --quiet --strip-root --out ${tmpFile}`);
 const dot = fs.readFileSync(tmpFile, 'utf-8');
 assert(dot.startsWith('digraph {\n') && dot.endsWith('\n}'));
 const dotLines = dot.split('\n').slice(1, -1);
