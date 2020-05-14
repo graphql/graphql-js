@@ -34,10 +34,6 @@ function removeTrailingNewLine(str) {
   return str.split('\n').slice(0, -1).join('\n');
 }
 
-function mkdirRecursive(dirPath) {
-  fs.mkdirSync(dirPath, { recursive: true });
-}
-
 function rmdirRecursive(dirPath) {
   if (fs.existsSync(dirPath)) {
     for (const dirent of fs.readdirSync(dirPath, { withFileTypes: true })) {
@@ -73,33 +69,9 @@ function readdirRecursive(dirPath, opts = {}) {
   return result;
 }
 
-function writeFile(destPath, data) {
-  mkdirRecursive(path.dirname(destPath));
-  fs.writeFileSync(destPath, data);
-}
-
-function copyFile(srcPath, destPath) {
-  mkdirRecursive(path.dirname(destPath));
-  fs.copyFileSync(srcPath, destPath);
-}
-
-function parseSemver(version) {
-  const match = /^(\d+)\.(\d+)\.(\d+)-?(.*)?$/.exec(version);
-  if (!match) {
-    throw new Error('Version does not match semver spec: ' + version);
-  }
-
-  const [, major, minor, patch, preReleaseTag] = match;
-  return { major, minor, patch, preReleaseTag };
-}
-
 module.exports = {
   exec,
   execAsync,
-  copyFile,
-  writeFile,
   rmdirRecursive,
-  mkdirRecursive,
   readdirRecursive,
-  parseSemver,
 };

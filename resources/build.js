@@ -8,46 +8,66 @@ const assert = require('assert');
 
 const babel = require('@babel/core');
 
-const {
-  copyFile,
-  writeFile,
-  rmdirRecursive,
-  mkdirRecursive,
-  readdirRecursive,
-  parseSemver,
-} = require('./utils');
+const { rmdirRecursive, readdirRecursive } = require('./utils');
 
 if (require.main === module) {
   rmdirRecursive('./dist');
-  mkdirRecursive('./dist');
-
-  const packageJSON = buildPackageJSON();
-  const versionJS = fs.readFileSync('src/version.js', 'utf-8');
-
-  // TODO: move this assert to integration tests
-  assert(
-    versionJS.includes(packageJSON.version),
-    'Version in package.json and version.js should match',
-  );
-
-  writeFile('./dist/package.json', JSON.stringify(packageJSON, null, 2));
-
-  copyFile('./LICENSE', './dist/LICENSE');
-  copyFile('./README.md', './dist/README.md');
+  fs.mkdirSync('./dist');
 
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
   for (const filepath of srcFiles) {
-    if (filepath.endsWith('.js')) {
-      buildJSFile(filepath);
-    } else if (filepath.endsWith('.d.ts')) {
-      const srcPath = path.join('./src', filepath);
-      const destPath = path.join('./dist', filepath);
+    const srcPath = path.join('./src', filepath);
+    const destPath = path.join('./dist', filepath);
 
-      copyFile(srcPath, destPath);
+    fs.mkdirSync(path.dirname(destPath), { recursive: true });
+    if (filepath.endsWith('.js')) {
+      fs.copyFileSync(srcPath, destPath + '.flow');
+
+      const cjs = babelBuild(srcPath, { envName: 'cjs' });
+      fs.writeFileSync(destPath, cjs);
+
+      const mjs = babelBuild(srcPath, { envName: 'mjs' });
+      fs.writeFileSync(destPath.replace(/\.js$/, '.mjs'), mjs);
+    } else if (filepath.endsWith('.d.ts')) {
+      fs.copyFileSync(srcPath, destPath);
     }
   }
 
+  fs.copyFileSync('./LICENSE', './dist/LICENSE');
+  fs.copyFileSync('./README.md', './dist/README.md');
+
+  // Should be done as the last step so only valid packages can be published
+  const packageJSON = buildPackageJSON();
+  fs.writeFileSync('./dist/package.json', JSON.stringify(packageJSON, null, 2));
+
   showStats();
+}
+
+function babelBuild(srcPath, options) {
+  return babel.transformFileSync(srcPath, options).code + '\n';
+}
+
+function buildPackageJSON() {
+  const packageJSON = require('../package.json');
+  delete packageJSON.private;
+  delete packageJSON.scripts;
+  delete packageJSON.devDependencies;
+
+  const versionJS = require('../dist/version.js');
+  assert(
+    versionJS.version === packageJSON.version,
+    'Version in package.json and version.js should match',
+  );
+
+  if (versionJS.preReleaseTag != null) {
+    const [tag] = versionJS.preReleaseTag.split('.');
+    assert(['alpha', 'beta', 'rc'].includes(tag), `"${tag}" tag is supported.`);
+
+    assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
+    packageJSON.publishConfig = { tag: tag || 'latest' };
+  }
+
+  return packageJSON;
 }
 
 function showStats() {
@@ -94,35 +114,4 @@ function showStats() {
   console.log(
     'Total'.padStart(typeMaxLength) + ' | ' + totalMB.padStart(sizeMaxLength),
   );
-}
-
-function babelBuild(srcPath, envName) {
-  return babel.transformFileSync(srcPath, { envName }).code + '\n';
-}
-
-function buildJSFile(filepath) {
-  const srcPath = path.join('./src', filepath);
-  const destPath = path.join('./dist', filepath);
-
-  copyFile(srcPath, destPath + '.flow');
-  writeFile(destPath, babelBuild(srcPath, 'cjs'));
-  writeFile(destPath.replace(/\.js$/, '.mjs'), babelBuild(srcPath, 'mjs'));
-}
-
-function buildPackageJSON() {
-  const packageJSON = require('../package.json');
-  delete packageJSON.private;
-  delete packageJSON.scripts;
-  delete packageJSON.devDependencies;
-
-  const { preReleaseTag } = parseSemver(packageJSON.version);
-  if (preReleaseTag != null) {
-    const [tag] = preReleaseTag.split('.');
-    assert(['alpha', 'beta', 'rc'].includes(tag), `"${tag}" tag is supported.`);
-
-    assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
-    packageJSON.publishConfig = { tag: tag || 'latest' };
-  }
-
-  return packageJSON;
 }

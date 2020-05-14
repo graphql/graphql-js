@@ -626,6 +626,7 @@ overrides:
     rules:
       node/no-unpublished-import: off
       node/no-unpublished-require: off
+      node/no-missing-require: off
       node/no-sync: off
       node/global-require: off
       import/no-dynamic-require: off
