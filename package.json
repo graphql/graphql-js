@@ -53,7 +53,7 @@
     "babel-eslint": "10.1.0",
     "chai": "4.2.0",
     "cspell": "4.0.61",
-    "dtslint": "3.5.2",
+    "dtslint": "3.6.0",
     "eslint": "7.0.0",
     "eslint-plugin-flowtype": "4.7.0",
     "eslint-plugin-graphql-internal": "link:./resources/eslint-rules",
