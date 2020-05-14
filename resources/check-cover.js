@@ -2,24 +2,25 @@
 
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 
 const {
   exec,
   execAsync,
-  writeFile,
   rmdirRecursive,
   readdirRecursive,
 } = require('./utils');
 
 rmdirRecursive('./coverage/flow');
 getFullCoverage()
-  .then((fullCoverage) =>
-    writeFile(
+  .then((fullCoverage) => {
+    fs.mkdirSync('./coverage/flow', { recursive: true });
+    fs.writeFileSync(
       './coverage/flow/full-coverage.json',
       JSON.stringify(fullCoverage),
-    ),
-  )
+    );
+  })
   .catch((error) => {
     console.error(error.stack);
     process.exit(1);

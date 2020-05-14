@@ -2,11 +2,17 @@
 
 'use strict';
 
+const fs = require('fs');
+
 const { version } = require('../package.json');
 
-const { writeFile, parseSemver } = require('./utils');
+const versionMatch = /^(\d+)\.(\d+)\.(\d+)-?(.*)?$/.exec(version);
+if (!versionMatch) {
+  throw new Error('Version does not match semver spec: ' + version);
+}
 
-const { major, minor, patch, preReleaseTag } = parseSemver(version);
+const [, major, minor, patch, preReleaseTag] = versionMatch;
+
 const body = `// @flow strict
 
 /**
@@ -31,5 +37,5 @@ export const versionInfo = Object.freeze({
 `;
 
 if (require.main === module) {
-  writeFile('./src/version.js', body);
+  fs.writeFileSync('./src/version.js', body);
 }
