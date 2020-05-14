@@ -40,7 +40,7 @@ function prepareRevision(revision) {
   fs.mkdirSync(dir);
 
   exec(`git archive "${hash}" | tar -xC "${dir}"`);
-  exec('yarn install', { cwd: dir });
+  exec('npm ci', { cwd: dir });
 
   for (const file of findFiles(LOCAL_DIR('src'), '*/__tests__/*')) {
     const from = LOCAL_DIR('src', file);

@@ -21,11 +21,12 @@
     "graphql-js"
   ],
   "engines": {
-    "node": ">= 10.x"
+    "node": ">= 10.x",
+    "yarn": "YARN NO LONGER USED - use npm instead."
   },
   "scripts": {
     "test": "npm run prettier:check && npm run lint && npm run check && npm run testonly && npm run check:ts && npm run check:spelling",
-    "test:ci": "yarn check --integrity && npm run prettier:check && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run check:ts && npm run check:spelling && npm run build",
+    "test:ci": "npm run prettier:check && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run check:ts && npm run check:spelling && npm run build",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc npm run testonly",
     "lint": "eslint --cache --ext .js,.ts src resources",
@@ -38,7 +39,7 @@
     "check:spelling": "cspell \"./{src/**/,resources/**/}*.{js,ts,md,graphql}\"",
     "build": "node resources/build.js",
     "changelog": "node resources/gen-changelog.js",
-    "preversion": ". ./resources/checkgit.sh && yarn check --integrity",
+    "preversion": ". ./resources/checkgit.sh && npm ci",
     "version": "node resources/gen-version.js && npm test && git add src/version.js",
     "gitpublish": ". ./resources/gitpublish.sh"
   },
