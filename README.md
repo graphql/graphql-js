@@ -24,16 +24,16 @@ through that README and the corresponding tests in parallel.
 
 Install GraphQL.js from npm
 
-With yarn:
-
-```sh
-yarn add graphql
-```
-
-or alternatively using npm:
+With npm:
 
 ```sh
 npm install --save graphql
+```
+
+or alternatively using yarn:
+
+```sh
+yarn add graphql
 ```
 
 GraphQL.js provides two important capabilities: building a type schema, and
