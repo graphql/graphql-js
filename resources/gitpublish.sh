@@ -9,8 +9,10 @@ trap "exit 1" ERR
 #     "graphql": "git://github.com/graphql/graphql-js.git#npm"
 #
 
-# Build
-npm run build
+if [ ! -d "./dist" ]; then
+ echo 'Directory `dist` does not  exist, please run `npm run build`!'
+ exit 1;
+fi;
 
 # Create empty npm directory
 rm -rf npm
@@ -29,8 +31,8 @@ echo $HEADREV
 
 # Deploy
 cd npm
-git config user.name "Travis CI"
-git config user.email "github@fb.com"
+git config user.name "GitHub Action Script"
+git config user.email "please@open.issue"
 git add -A .
 if git diff --staged --quiet; then
   echo "Nothing to publish"

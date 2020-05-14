@@ -1,0 +1,139 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  lint:
+    name: Lint source files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Lint Prettier
+        run: npm run prettier:check
+
+      - name: Lint ESLint
+        run: npm run lint
+
+      - name: Lint Flow
+        run: npm run check
+
+      - name: Cache TS versions
+        uses: actions/cache@v1
+        with:
+          path: ~/.dts
+          key: ${{ runner.OS }}-dts-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-dts-
+
+      - name: Lint TS typings
+        run: npm run check:ts
+
+      - name: Spellcheck
+        run: npm run check:spelling
+
+      - name: Build package
+        run: npm run build
+
+  coverage:
+    name: Measure test coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run tests and measure code coverage
+        run: npm run testonly:cover
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage/tests/coverage-final.json
+          fail_ci_if_error: true
+
+  test:
+    name: Run tests on Node v${{ matrix.node_version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [10, 12, 13, 14]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js v${{ matrix.node_version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node_version }}
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm run testonly
+
+  deploy-to-npm-branch:
+    name: Deploy to `npm` branch
+    runs-on: ubuntu-latest
+    if: github.event == 'push' && github.repository == 'graphql/graphql-js' && github.ref == 'master'
+    needs: [test, lint]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build package
+        run: npm run build
+
+      - name: Deploy to `npm` branch
+        run: npm run gitpublish
+        env:
+          GH_TOKEN: ${{ secrets.GH_NPM_BRANCH_PUBLISH_TOKEN }}
