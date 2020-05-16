@@ -110,7 +110,10 @@ jobs:
   deploy-to-npm-branch:
     name: Deploy to `npm` branch
     runs-on: ubuntu-latest
-    if: github.event == 'push' && github.repository == 'graphql/graphql-js' && github.ref == 'master'
+    if: |
+      github.event_name == 'push' &&
+      github.repository == 'graphql/graphql-js' &&
+      github.ref == 'refs/heads/master'
     needs: [test, lint]
     steps:
       - name: Checkout repo
