@@ -37,7 +37,7 @@ function prepareRevision(revision) {
 
   const dir = path.join(os.tmpdir(), 'graphql-js-benchmark', hash);
   rmdirRecursive(dir);
-  fs.mkdirSync(dir);
+  fs.mkdirSync(dir, { recursive: true });
 
   exec(`git archive "${hash}" | tar -xC "${dir}"`);
   exec('npm ci', { cwd: dir });
