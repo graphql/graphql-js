@@ -85,7 +85,8 @@ export function printBlockString(value) {
   var isSingleLine = value.indexOf('\n') === -1;
   var hasLeadingSpace = value[0] === ' ' || value[0] === '\t';
   var hasTrailingQuote = value[value.length - 1] === '"';
-  var printAsMultipleLines = !isSingleLine || hasTrailingQuote || preferMultipleLines;
+  var hasTrailingSlash = value[value.length - 1] === '\\';
+  var printAsMultipleLines = !isSingleLine || hasTrailingQuote || hasTrailingSlash || preferMultipleLines;
   var result = ''; // Format a multi-line block quote to account for leading space.
 
   if (printAsMultipleLines && !(isSingleLine && hasLeadingSpace)) {
