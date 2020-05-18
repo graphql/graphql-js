@@ -155,6 +155,13 @@ describe('printBlockString', () => {
     );
   });
 
+  it('correctly prints single-line with trailing backslash', () => {
+    const str = 'backslash \\';
+
+    expect(printBlockString(str)).to.equal('"""\nbackslash \\\n"""');
+    expect(printBlockString(str, '', true)).to.equal('"""\nbackslash \\\n"""');
+  });
+
   it('correctly prints string with a first line indentation', () => {
     const str = joinLines(
       '    first  ',
