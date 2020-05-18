@@ -20,7 +20,7 @@ rules:
   graphql-internal/no-dir-import: error
 
   ##############################################################################
-  # `eslint-plugin-flowtype` rule list based on `v4.7.x`
+  # `eslint-plugin-flowtype` rule list based on `v5.1.x`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
   ##############################################################################
 
@@ -486,7 +486,7 @@ overrides:
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v2.33.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v2.34.x`
       ##########################################################################
 
       # Supported Rules
