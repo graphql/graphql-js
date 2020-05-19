@@ -37,11 +37,12 @@ describe('inspect', () => {
 
   it('function', () => {
     const unnamedFuncStr = inspect(
-      /* istanbul ignore next */ () => invariant(false),
+      // istanbul ignore next (never called and used as a placeholder)
+      () => invariant(false),
     );
     expect(unnamedFuncStr).to.equal('[function]');
 
-    /* istanbul ignore next */
+    // istanbul ignore next (never called and used as a placeholder)
     function namedFunc() {
       invariant(false);
     }
@@ -107,7 +108,7 @@ describe('inspect', () => {
 
   it('custom symbol inspect is take precedence', () => {
     const object = {
-      /* istanbul ignore next */
+      // istanbul ignore next (never called and use just as a placeholder)
       inspect() {
         invariant(false);
       },

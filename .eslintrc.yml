@@ -9,6 +9,7 @@ plugins:
   - graphql-internal
   - flowtype
   - node
+  - istanbul
   - import
 
 rules:
@@ -66,6 +67,14 @@ rules:
   flowtype/space-before-generic-bracket: off
   flowtype/space-before-type-colon: off
   flowtype/union-intersection-spacing: off
+
+  ##############################################################################
+  # `eslint-plugin-istanbul` rule list based on `v0.1.1`
+  # https://github.com/istanbuljs/eslint-plugin-istanbul#rules
+  ##############################################################################
+
+  istanbul/no-ignore-file: error
+  istanbul/prefer-ignore-reason: error
 
   ##############################################################################
   # `eslint-plugin-node` rule list based on `v11.1.x`
