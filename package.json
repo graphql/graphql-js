@@ -59,11 +59,11 @@
     "eslint-plugin-flowtype": "5.1.0",
     "eslint-plugin-graphql-internal": "file:./resources/eslint-rules",
     "eslint-plugin-import": "2.20.2",
-    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-node": "11.1.0",
     "flow-bin": "0.125.1",
     "mocha": "7.1.2",
     "nyc": "15.0.1",
     "prettier": "2.0.5",
-    "typescript": "^3.9.2"
+    "typescript": "3.9.2"
   }
 }
