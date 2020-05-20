@@ -66,8 +66,7 @@ function lexValue(str) {
   return value;
 }
 
-// Called only to make error messages for failing tests
-/* istanbul ignore next */
+// istanbul ignore next (called only to make error messages for failing tests)
 function inspectStr(str) {
   return (JSON.stringify(str) ?? '')
     .replace(/^"|"$/g, '`')

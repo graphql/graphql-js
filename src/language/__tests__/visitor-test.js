@@ -1132,7 +1132,7 @@ describe('Visitor', () => {
                 return BREAK;
               }
             },
-            /* istanbul ignore next */
+            // istanbul ignore next (never called and used as a placeholder)
             leave() {
               invariant(false);
             },

@@ -30,7 +30,7 @@ describe('isCollection', () => {
     const iterator = { [Symbol.iterator]: identityFunc };
     expect(isCollection(iterator)).to.equal(true);
 
-    // istanbul ignore next
+    // istanbul ignore next (never called and use just as a placeholder)
     function* generatorFunc() {
       /* do nothing */
     }

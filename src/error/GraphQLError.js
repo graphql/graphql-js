@@ -196,7 +196,7 @@ export class GraphQLError extends Error {
       return;
     }
 
-    /* istanbul ignore next (See: https://github.com/graphql/graphql-js/issues/2317) */
+    // istanbul ignore next (See: https://github.com/graphql/graphql-js/issues/2317)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, GraphQLError);
     } else {

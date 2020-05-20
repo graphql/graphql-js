@@ -21,7 +21,7 @@ export default function dedent(
   for (let i = 0; i < strings.length; ++i) {
     str += strings[i];
     if (i < values.length) {
-      /* istanbul ignore next (ignore else inside Babel generated code) */
+      // istanbul ignore next (ignore else inside Babel generated code)
       const value = values[i];
 
       str += value; // interpolation
