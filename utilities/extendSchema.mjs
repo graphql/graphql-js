@@ -302,8 +302,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       var _node$operationTypes;
 
       var node = nodes[_i10];
-
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
       var operationTypesNodes = (_node$operationTypes = node.operationTypes) !== null && _node$operationTypes !== void 0 ? _node$operationTypes : [];
 
       for (var _i12 = 0; _i12 < operationTypesNodes.length; _i12++) {
@@ -365,8 +364,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       var _node$fields;
 
       var node = nodes[_i14];
-
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
       var nodeFields = (_node$fields = node.fields) !== null && _node$fields !== void 0 ? _node$fields : [];
 
       for (var _i16 = 0; _i16 < nodeFields.length; _i16++) {
@@ -388,7 +386,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 
   function buildArgumentMap(args) {
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
     var argsNodes = args !== null && args !== void 0 ? args : [];
     var argConfigMap = Object.create(null);
 
@@ -416,8 +414,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       var _node$fields2;
 
       var node = nodes[_i20];
-
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
       var fieldsNodes = (_node$fields2 = node.fields) !== null && _node$fields2 !== void 0 ? _node$fields2 : [];
 
       for (var _i22 = 0; _i22 < fieldsNodes.length; _i22++) {
@@ -445,8 +442,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       var _node$values;
 
       var node = nodes[_i24];
-
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
       var valuesNodes = (_node$values = node.values) !== null && _node$values !== void 0 ? _node$values : [];
 
       for (var _i26 = 0; _i26 < valuesNodes.length; _i26++) {
@@ -469,8 +465,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       var _node$interfaces;
 
       var node = nodes[_i28];
-
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
       var interfacesNodes = (_node$interfaces = node.interfaces) !== null && _node$interfaces !== void 0 ? _node$interfaces : [];
 
       for (var _i30 = 0; _i30 < interfacesNodes.length; _i30++) {
@@ -493,8 +488,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       var _node$types;
 
       var node = nodes[_i32];
-
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
       var typeNodes = (_node$types = node.types) !== null && _node$types !== void 0 ? _node$types : [];
 
       for (var _i34 = 0; _i34 < typeNodes.length; _i34++) {

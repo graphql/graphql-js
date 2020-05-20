@@ -25,8 +25,7 @@ var arrayFrom = Array.from || function (obj, mapFn, thisArg) {
     for (var i = 0; !(step = iterator.next()).done; ++i) {
       result.push(mapFn.call(thisArg, step.value, i)); // Infinite Iterators could cause forEach to run forever.
       // After a very large number of iterations, produce an error.
-
-      /* istanbul ignore if */
+      // istanbul ignore if (too big to actually test)
 
       if (i > 9999999) {
         throw new TypeError('Near-infinite iteration.');

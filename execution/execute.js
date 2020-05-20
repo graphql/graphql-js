@@ -182,8 +182,7 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
     }
 
     return [new _GraphQLError.GraphQLError('Must provide an operation.')];
-  }
-  /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+  } // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
 
 
   var variableDefinitions = (_operation$variableDe = operation.variableDefinitions) !== null && _operation$variableDe !== void 0 ? _operation$variableDe : [];

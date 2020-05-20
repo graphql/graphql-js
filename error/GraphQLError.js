@@ -226,8 +226,7 @@ var GraphQLError = /*#__PURE__*/function (_Error) {
         configurable: true
       });
       return _possibleConstructorReturn(_this);
-    }
-    /* istanbul ignore next (See: https://github.com/graphql/graphql-js/issues/2317) */
+    } // istanbul ignore next (See: https://github.com/graphql/graphql-js/issues/2317)
 
 
     if (Error.captureStackTrace) {

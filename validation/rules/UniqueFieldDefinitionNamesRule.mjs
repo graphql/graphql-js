@@ -26,8 +26,7 @@ export function UniqueFieldDefinitionNamesRule(context) {
 
     if (!knownFieldNames[typeName]) {
       knownFieldNames[typeName] = Object.create(null);
-    }
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    } // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
 
 
     var fieldNodes = (_node$fields = node.fields) !== null && _node$fields !== void 0 ? _node$fields : [];

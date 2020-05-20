@@ -361,12 +361,10 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
 
     if (name1 !== name2) {
       return [[responseName, "\"".concat(name1, "\" and \"").concat(name2, "\" are different fields")], [node1], [node2]];
-    }
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    } // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
 
 
-    var args1 = (_node1$arguments = node1.arguments) !== null && _node1$arguments !== void 0 ? _node1$arguments : [];
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    var args1 = (_node1$arguments = node1.arguments) !== null && _node1$arguments !== void 0 ? _node1$arguments : []; // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
 
     var args2 = (_node2$arguments = node2.arguments) !== null && _node2$arguments !== void 0 ? _node2$arguments : []; // Two field calls must have the same arguments.
 
