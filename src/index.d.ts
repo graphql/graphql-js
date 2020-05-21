@@ -55,6 +55,7 @@ export {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
+  GraphQLSpecifiedByDirective,
   // "Enum" of Type Kinds
   TypeKind,
   // Constant Deprecation Reason
