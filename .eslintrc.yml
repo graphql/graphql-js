@@ -138,7 +138,12 @@ rules:
   import/named: error
   import/default: error
   import/namespace: error
-  import/no-restricted-paths: off
+  import/no-restricted-paths:
+    - error
+    - basePath: './'
+      zones:
+        - { target: './src', from: 'src/__testUtils__' }
+        - { target: './src', from: 'src/__fixtures__' }
   import/no-absolute-path: error
   import/no-dynamic-require: error
   import/no-internal-modules: off
@@ -626,7 +631,8 @@ overrides:
     rules:
       node/no-unpublished-import: off
       node/no-unpublished-require: off
-      import/no-extraneous-dependencies: off
+      import/no-restricted-paths: off
+      import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
       no-restricted-syntax: off
   - files: 'resources/**'
@@ -639,7 +645,7 @@ overrides:
       node/no-sync: off
       node/global-require: off
       import/no-dynamic-require: off
-      import/no-extraneous-dependencies: off
+      import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
       import/no-commonjs: off
       no-await-in-loop: off
