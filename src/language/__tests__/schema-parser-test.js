@@ -333,7 +333,8 @@ describe('Schema Parser', () => {
         world: String
       }
     `).to.deep.equal({
-      message: 'Syntax Error: Unexpected Name "extend".',
+      message:
+        'Syntax Error: Unexpected Name "extend". Extension do not include descriptions.',
       locations: [{ line: 3, column: 7 }],
     });
 
@@ -354,7 +355,8 @@ describe('Schema Parser', () => {
         world: String
       }
     `).to.deep.equal({
-      message: 'Syntax Error: Unexpected Name "extend".',
+      message:
+        'Syntax Error: Unexpected Name "extend". Extension do not include descriptions.',
       locations: [{ line: 3, column: 7 }],
     });
 
