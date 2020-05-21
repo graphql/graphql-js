@@ -5,7 +5,8 @@ import { inspect as nodeInspect } from 'util';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import dedent from '../../__testUtils__/dedent';
+
 import inspect from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';

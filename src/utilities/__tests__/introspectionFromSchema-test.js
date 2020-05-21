@@ -3,7 +3,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import dedent from '../../__testUtils__/dedent';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
