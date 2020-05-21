@@ -29,7 +29,7 @@ export { graphql, graphqlSync } from "./graphql.mjs"; // Create and operate on G
 export { // Definitions
 GraphQLSchema, GraphQLDirective, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull // Standard GraphQL Scalars
 , specifiedScalarTypes, GraphQLInt, GraphQLFloat, GraphQLString, GraphQLBoolean, GraphQLID // Built-in Directives defined by the Spec
-, specifiedDirectives, GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective // "Enum" of Type Kinds
+, specifiedDirectives, GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective // "Enum" of Type Kinds
 , TypeKind // Constant Deprecation Reason
 , DEFAULT_DEPRECATION_REASON // GraphQL Types for introspection.
 , introspectionTypes, __Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind // Meta-field definitions.

@@ -147,6 +147,12 @@ Object.defineProperty(exports, "GraphQLDeprecatedDirective", {
     return _index.GraphQLDeprecatedDirective;
   }
 });
+Object.defineProperty(exports, "GraphQLSpecifiedByDirective", {
+  enumerable: true,
+  get: function get() {
+    return _index.GraphQLSpecifiedByDirective;
+  }
+});
 Object.defineProperty(exports, "TypeKind", {
   enumerable: true,
   get: function get() {

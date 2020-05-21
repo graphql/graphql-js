@@ -12,7 +12,7 @@ export { // Predicate
 isDirective // Assertion
 , assertDirective // Directives Definition
 , GraphQLDirective // Built-in Directives defined by the Spec
-, isSpecifiedDirective, specifiedDirectives, GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective // Constant Deprecation Reason
+, isSpecifiedDirective, specifiedDirectives, GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective // Constant Deprecation Reason
 , DEFAULT_DEPRECATION_REASON } from "./directives.mjs";
 // Common built-in scalar instances.
 export { // Predicate

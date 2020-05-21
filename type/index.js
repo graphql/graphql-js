@@ -345,6 +345,12 @@ Object.defineProperty(exports, "GraphQLDeprecatedDirective", {
     return _directives.GraphQLDeprecatedDirective;
   }
 });
+Object.defineProperty(exports, "GraphQLSpecifiedByDirective", {
+  enumerable: true,
+  get: function get() {
+    return _directives.GraphQLSpecifiedByDirective;
+  }
+});
 Object.defineProperty(exports, "DEFAULT_DEPRECATION_REASON", {
   enumerable: true,
   get: function get() {
