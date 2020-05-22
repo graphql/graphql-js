@@ -247,7 +247,7 @@ rules:
   default-case: off
   default-case-last: error
   default-param-last: error
-  dot-notation: off
+  dot-notation: error
   eqeqeq: [error, smart]
   grouped-accessor-pairs: error
   guard-for-in: error
@@ -583,6 +583,7 @@ overrides:
 
       # Disable conflicting ESLint rules and enable TS-compatible ones
       default-param-last: off
+      dot-notation: off
       lines-between-class-members: off
       no-array-constructor: off
       no-dupe-class-members: off
@@ -594,6 +595,7 @@ overrides:
       require-await: off
       no-return-await: off
       '@typescript-eslint/default-param-last': error
+      '@typescript-eslint/dot-notation': error
       '@typescript-eslint/lines-between-class-members':
         [error, always, { exceptAfterSingleLine: true }]
       '@typescript-eslint/no-array-constructor': error
@@ -608,7 +610,6 @@ overrides:
       '@typescript-eslint/return-await': error
 
       # Disable for JS, Flow and TS
-      '@typescript-eslint/dot-notation': off # TODO consider
       '@typescript-eslint/init-declarations': off
       '@typescript-eslint/no-magic-numbers': off
       '@typescript-eslint/no-use-before-define': off

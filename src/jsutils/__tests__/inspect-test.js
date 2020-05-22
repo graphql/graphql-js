@@ -81,8 +81,8 @@ describe('inspect', () => {
     expect(inspect({ a: { b: { c: 1 } } })).to.equal('{ a: { b: [Object] } }');
 
     const map = Object.create(null);
-    map['a'] = true;
-    map['b'] = null;
+    map.a = true;
+    map.b = null;
     expect(inspect(map)).to.equal('{ a: true, b: null }');
   });
 
