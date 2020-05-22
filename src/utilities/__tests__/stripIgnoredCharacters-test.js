@@ -4,6 +4,8 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import dedent from '../../__testUtils__/dedent';
+import inspectStr from '../../__testUtils__/inspectStr';
+import genFuzzStrings from '../../__testUtils__/genFuzzStrings';
 
 import invariant from '../../jsutils/invariant';
 
@@ -65,13 +67,6 @@ function lexValue(str) {
 
   invariant(lexer.advance().kind === '<EOF>', 'Expected EOF');
   return value;
-}
-
-// istanbul ignore next (called only to make error messages for failing tests)
-function inspectStr(str) {
-  return (JSON.stringify(str) ?? '')
-    .replace(/^"|"$/g, '`')
-    .replace(/\\"/g, '"');
 }
 
 function expectStripped(docString) {
@@ -441,45 +436,34 @@ describe('stripIgnoredCharacters', () => {
     expectStrippedString('"""\na\n b"""').toStayTheSame();
     expectStrippedString('"""\n a\n b"""').toEqual('"""a\nb"""');
     expectStrippedString('"""\na\n b\nc"""').toEqual('"""a\n b\nc"""');
+  });
 
+  it('strips ignored characters inside random block strings', () => {
     // Testing with length >5 is taking exponentially more time. However it is
     // highly recommended to test with increased limit if you make any change.
-    const maxCombinationLength = 5;
-    const possibleChars = ['\n', ' ', '"', 'a', '\\'];
-    const numPossibleChars = possibleChars.length;
-    let numCombinations = 1;
-    for (let length = 1; length < maxCombinationLength; ++length) {
-      numCombinations *= numPossibleChars;
-      for (let combination = 0; combination < numCombinations; ++combination) {
-        let testStr = '"""';
+    for (const fuzzStr of genFuzzStrings({
+      allowedChars: ['\n', '\t', ' ', '"', 'a', '\\'],
+      maxLength: 5,
+    })) {
+      const testStr = '"""' + fuzzStr + '"""';
 
-        let leftOver = combination;
-        for (let i = 0; i < length; ++i) {
-          const reminder = leftOver % numPossibleChars;
-          testStr += possibleChars[reminder];
-          leftOver = (leftOver - reminder) / numPossibleChars;
-        }
-
-        testStr += '"""';
-
-        let testValue;
-        try {
-          testValue = lexValue(testStr);
-        } catch (e) {
-          continue; // skip invalid values
-        }
-
-        const strippedValue = lexValue(stripIgnoredCharacters(testStr));
-
-        invariant(
-          testValue === strippedValue,
-          dedent`
-            Expected lexValue(stripIgnoredCharacters(${inspectStr(testStr)}))
-              to equal ${inspectStr(testValue)}
-              but got  ${inspectStr(strippedValue)}
-          `,
-        );
+      let testValue;
+      try {
+        testValue = lexValue(testStr);
+      } catch (e) {
+        continue; // skip invalid values
       }
+
+      const strippedValue = lexValue(stripIgnoredCharacters(testStr));
+
+      invariant(
+        testValue === strippedValue,
+        dedent`
+          Expected lexValue(stripIgnoredCharacters(${inspectStr(testStr)}))
+            to equal ${inspectStr(testValue)}
+            but got  ${inspectStr(strippedValue)}
+        `,
+      );
     }
   });
 

@@ -6,7 +6,11 @@
   ],
   "overrides": [
     {
-      "exclude": ["**/__tests__/**/*", "**/__fixtures__/**/*"],
+      "exclude": [
+        "src/__testUtils__/**/*",
+        "**/__tests__/**/*",
+        "**/__fixtures__/**/*"
+      ],
       "presets": ["@babel/preset-env"],
       "plugins": [
         ["@babel/plugin-transform-classes", { "loose": true }],
