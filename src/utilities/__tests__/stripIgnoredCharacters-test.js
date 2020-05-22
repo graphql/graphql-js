@@ -5,7 +5,6 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../__testUtils__/dedent';
 import inspectStr from '../../__testUtils__/inspectStr';
-import genFuzzStrings from '../../__testUtils__/genFuzzStrings';
 
 import invariant from '../../jsutils/invariant';
 
@@ -436,35 +435,6 @@ describe('stripIgnoredCharacters', () => {
     expectStrippedString('"""\na\n b"""').toStayTheSame();
     expectStrippedString('"""\n a\n b"""').toEqual('"""a\nb"""');
     expectStrippedString('"""\na\n b\nc"""').toEqual('"""a\n b\nc"""');
-  });
-
-  it('strips ignored characters inside random block strings', () => {
-    // Testing with length >5 is taking exponentially more time. However it is
-    // highly recommended to test with increased limit if you make any change.
-    for (const fuzzStr of genFuzzStrings({
-      allowedChars: ['\n', '\t', ' ', '"', 'a', '\\'],
-      maxLength: 5,
-    })) {
-      const testStr = '"""' + fuzzStr + '"""';
-
-      let testValue;
-      try {
-        testValue = lexValue(testStr);
-      } catch (e) {
-        continue; // skip invalid values
-      }
-
-      const strippedValue = lexValue(stripIgnoredCharacters(testStr));
-
-      invariant(
-        testValue === strippedValue,
-        dedent`
-          Expected lexValue(stripIgnoredCharacters(${inspectStr(testStr)}))
-            to equal ${inspectStr(testValue)}
-            but got  ${inspectStr(strippedValue)}
-        `,
-      );
-    }
   });
 
   it('strips kitchen sink query but maintains the exact same AST', () => {

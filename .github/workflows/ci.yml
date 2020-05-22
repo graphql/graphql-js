@@ -48,6 +48,32 @@ jobs:
       - name: Build package
         run: npm run build
 
+  fuzz:
+    name: Run fuzzing tests on Node v${{ matrix.node_version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js v${{ matrix.node_version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node_version }}
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm run fuzzonly
+
   coverage:
     name: Measure test coverage
     runs-on: ubuntu-latest
@@ -114,7 +140,7 @@ jobs:
       github.event_name == 'push' &&
       github.repository == 'graphql/graphql-js' &&
       github.ref == 'refs/heads/master'
-    needs: [test, lint]
+    needs: [test, fuzz, lint]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
