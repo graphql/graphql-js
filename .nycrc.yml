@@ -3,6 +3,7 @@ include:
   - 'src/'
 exclude:
   - 'src/polyfills'
+  - '**/*-fuzz.js'
   - '**/*-benchmark.js'
   - '**/*.d.ts'
   - 'src/validation/rules/ExecutableDefinitions.js'
