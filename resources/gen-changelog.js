@@ -37,7 +37,7 @@ const labelsConfig = {
     fold: true,
   },
 };
-const GH_TOKEN = process.env['GH_TOKEN'];
+const { GH_TOKEN } = process.env;
 
 if (!GH_TOKEN) {
   console.error('Must provide GH_TOKEN as environment variable!');
