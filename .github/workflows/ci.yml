@@ -131,6 +131,32 @@ jobs:
       - name: Run Tests
         run: npm run testonly
 
+  benchmark:
+    name: Run benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Benchmark
+        run: 'npm run benchmark -- --revs HEAD HEAD~1'
+
   deploy-to-npm-branch:
     name: Deploy to `npm` branch
     runs-on: ubuntu-latest
