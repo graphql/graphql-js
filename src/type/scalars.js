@@ -18,8 +18,8 @@ import { type GraphQLNamedType, GraphQLScalarType } from './definition';
 //
 // n.b. JavaScript's integers are safe between -(2^53 - 1) and 2^53 - 1 because
 // they are internally represented as IEEE 754 doubles.
-const MAX_INT = 2147483647;
-const MIN_INT = -2147483648;
+export const MAX_INT = 2147483647;
+export const MIN_INT = -2147483648;
 
 function serializeInt(outputValue: mixed): number {
   const coercedValue = serializeObject(outputValue);
@@ -41,7 +41,7 @@ function serializeInt(outputValue: mixed): number {
   if (num > MAX_INT || num < MIN_INT) {
     throw new GraphQLError(
       'Int cannot represent non 32-bit signed integer value: ' +
-        inspect(coercedValue),
+      inspect(coercedValue),
     );
   }
   return num;
@@ -266,7 +266,7 @@ export const GraphQLID = new GraphQLScalarType({
     if (valueNode.kind !== Kind.STRING && valueNode.kind !== Kind.INT) {
       throw new GraphQLError(
         'ID cannot represent a non-string and non-integer value: ' +
-          print(valueNode),
+        print(valueNode),
         valueNode,
       );
     }
@@ -282,6 +282,6 @@ export const specifiedScalarTypes = Object.freeze([
   GraphQLID,
 ]);
 
-export function isSpecifiedScalarType(type: GraphQLNamedType): boolean %checks {
+export function isSpecifiedScalarType(type: GraphQLNamedType): boolean % checks {
   return specifiedScalarTypes.some(({ name }) => type.name === name);
 }
