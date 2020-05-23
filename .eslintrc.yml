@@ -190,7 +190,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.0.x`
+  # ESLint builtin rules list based on `v7.1.x`
   ##############################################################################
 
   # Possible Errors
@@ -219,6 +219,7 @@ rules:
   no-inner-declarations: [error, both]
   no-invalid-regexp: error
   no-irregular-whitespace: error
+  no-loss-of-precision: error
   no-misleading-character-class: error
   no-obj-calls: error
   no-prototype-builtins: error
@@ -500,7 +501,7 @@ overrides:
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v2.34.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v3.0.x`
       ##########################################################################
 
       # Supported Rules
