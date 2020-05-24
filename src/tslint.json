@@ -3,7 +3,6 @@
   "rules": {
     // All are TODOs
     "array-type": false,
-    "interface-over-type-literal": false,
     "no-any-union": false,
     "no-unnecessary-generics": false,
     "strict-export-declare-modifiers": false,

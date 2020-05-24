@@ -1,7 +1,7 @@
-export type Path = {
+export interface Path {
   prev: Path | undefined;
   key: string | number;
-};
+}
 
 /**
  * Given a Path and a key, return a new Path containing the new key.

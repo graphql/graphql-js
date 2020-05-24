@@ -470,9 +470,9 @@ export interface GraphQLFieldConfig<
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
-export type GraphQLFieldConfigArgumentMap = {
+export interface GraphQLFieldConfigArgumentMap {
   [key: string]: GraphQLArgumentConfig;
-};
+}
 
 export interface GraphQLArgumentConfig {
   description?: Maybe<string>;
@@ -482,9 +482,9 @@ export interface GraphQLArgumentConfig {
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
-export type GraphQLFieldConfigMap<TSource, TContext> = {
+export interface GraphQLFieldConfigMap<TSource, TContext> {
   [key: string]: GraphQLFieldConfig<TSource, TContext>;
-};
+}
 
 export interface GraphQLField<
   TSource,
@@ -514,9 +514,9 @@ export interface GraphQLArgument {
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean;
 
-export type GraphQLFieldMap<TSource, TContext> = {
+export interface GraphQLFieldMap<TSource, TContext> {
   [key: string]: GraphQLField<TSource, TContext>;
-};
+}
 
 /**
  * Interface Type Definition
@@ -693,9 +693,9 @@ export interface GraphQLEnumTypeConfig {
   extensionASTNodes?: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 }
 
-export type GraphQLEnumValueConfigMap = {
+export interface GraphQLEnumValueConfigMap {
   [key: string]: GraphQLEnumValueConfig;
-};
+}
 
 export interface GraphQLEnumValueConfig {
   description?: Maybe<string>;
@@ -773,9 +773,9 @@ export interface GraphQLInputFieldConfig {
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
-export type GraphQLInputFieldConfigMap = {
+export interface GraphQLInputFieldConfigMap {
   [key: string]: GraphQLInputFieldConfig;
-};
+}
 
 export interface GraphQLInputField {
   name: string;
@@ -788,4 +788,6 @@ export interface GraphQLInputField {
 
 export function isRequiredInputField(field: GraphQLInputField): boolean;
 
-export type GraphQLInputFieldMap = { [key: string]: GraphQLInputField };
+export interface GraphQLInputFieldMap {
+  [key: string]: GraphQLInputField;
+}

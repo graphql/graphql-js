@@ -89,12 +89,14 @@ export class GraphQLSchema {
   };
 }
 
-type TypeMap = { [key: string]: GraphQLNamedType };
+interface TypeMap {
+  [key: string]: GraphQLNamedType;
+}
 
-type InterfaceImplementations = {
+interface InterfaceImplementations {
   objects: ReadonlyArray<GraphQLObjectType>;
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
-};
+}
 
 export interface GraphQLSchemaValidationOptions {
   /**

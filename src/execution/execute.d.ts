@@ -48,7 +48,7 @@ export interface ExecutionResult {
   data?: { [key: string]: any } | null;
 }
 
-export type ExecutionArgs = {
+export interface ExecutionArgs {
   schema: GraphQLSchema;
   document: DocumentNode;
   rootValue?: any;
@@ -57,7 +57,7 @@ export type ExecutionArgs = {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
-};
+}
 
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.

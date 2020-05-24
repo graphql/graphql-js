@@ -21,11 +21,11 @@ import {
 import { TypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
-type VariableUsage = {
+interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
   readonly defaultValue: Maybe<any>;
-};
+}
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
