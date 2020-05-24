@@ -1,4 +1,5 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../tsutils/Maybe';
+
 import { DocumentNode, OperationDefinitionNode } from '../language/ast';
 
 /**

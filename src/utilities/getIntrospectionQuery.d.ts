@@ -1,4 +1,5 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../tsutils/Maybe';
+
 import { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export interface IntrospectionOptions {
