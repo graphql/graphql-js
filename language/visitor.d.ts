@@ -31,7 +31,7 @@ type ShapeMapVisitor<KindToNode, Nodes> = {
  * during the visitor's traversal.
  */
 export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
-  /** The current node being visiting.*/
+  /** The current node being visiting. */
   node: TVisitedNode,
   /** The index or key to this node from the parent node or Array. */
   key: string | number | undefined,
@@ -39,7 +39,8 @@ export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
   parent: TAnyNode | ReadonlyArray<TAnyNode> | undefined,
   /** The key path to get to this node from the root node. */
   path: ReadonlyArray<string | number>,
-  /** All nodes and Arrays visited before reaching parent of this node.
+  /**
+   * All nodes and Arrays visited before reaching parent of this node.
    * These correspond to array indices in `path`.
    * Note: ancestors includes arrays which contain the parent of visited node.
    */
