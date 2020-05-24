@@ -535,12 +535,12 @@ export interface DirectiveDefinitionNode {
 
 export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 
-export type SchemaExtensionNode = {
+export interface SchemaExtensionNode {
   readonly kind: 'SchemaExtension';
   readonly loc?: Location;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly operationTypes?: ReadonlyArray<OperationTypeDefinitionNode>;
-};
+}
 
 // Type Extensions
 
