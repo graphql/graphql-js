@@ -1,11 +1,6 @@
 import { GraphQLSchema } from '../type/schema';
 
-export const BreakingChangeType: _BreakingChangeType;
-
-/**
- * @internal
- */
-type _BreakingChangeType = {
+export const BreakingChangeType: {
   TYPE_REMOVED: 'TYPE_REMOVED';
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND';
   TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION';
@@ -24,12 +19,7 @@ type _BreakingChangeType = {
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED';
 };
 
-export const DangerousChangeType: _DangerousChangeType;
-
-/**
- * @internal
- */
-type _DangerousChangeType = {
+export const DangerousChangeType: {
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM';
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION';
   OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED';
@@ -39,12 +29,12 @@ type _DangerousChangeType = {
 };
 
 export interface BreakingChange {
-  type: keyof _BreakingChangeType;
+  type: keyof typeof BreakingChangeType;
   description: string;
 }
 
 export interface DangerousChange {
-  type: keyof _DangerousChangeType;
+  type: keyof typeof DangerousChangeType;
   description: string;
 }
 
