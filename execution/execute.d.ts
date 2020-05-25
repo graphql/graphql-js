@@ -1,4 +1,5 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../tsutils/Maybe';
+
 import { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { Path } from '../jsutils/Path';
 
