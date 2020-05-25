@@ -148,7 +148,7 @@ export function resolveFieldValueOrError(
   resolveFn: GraphQLFieldResolver<any, any>,
   source: any,
   info: GraphQLResolveInfo,
-): Error | any;
+): any;
 
 /**
  * If a resolveType function is not given, then a default resolve behavior is

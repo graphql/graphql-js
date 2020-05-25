@@ -1,12 +1,9 @@
 {
   "extends": "dtslint/dtslint.json",
   "rules": {
-    // All are TODOs
     "array-type": false,
-    "no-any-union": false,
-    "no-unnecessary-generics": false,
     "strict-export-declare-modifiers": false,
-    "unified-signatures": false,
+    "no-unnecessary-generics": false,
     "void-return": false
   }
 }
