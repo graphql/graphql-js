@@ -1,4 +1,4 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../tsutils/Maybe';
 
 import { ASTNode } from '../language/ast';
 import { Source } from '../language/source';
