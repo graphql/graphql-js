@@ -241,12 +241,15 @@ export function isNullableType(type: any): type is GraphQLNullableType;
 
 export function assertNullableType(type: any): GraphQLNullableType;
 
+// FIXME Disabled because of https://github.com/yaacovCR/graphql-tools-fork/issues/40#issuecomment-586671219
+// tslint:disable:unified-signatures
 export function getNullableType(type: undefined): undefined;
 export function getNullableType<T extends GraphQLNullableType>(type: T): T;
 export function getNullableType<T extends GraphQLNullableType>(
   // eslint-disable-next-line @typescript-eslint/unified-signatures
   type: GraphQLNonNull<T>,
 ): T;
+// tslint:enable:unified-signatures
 
 /**
  * These named types do not include modifiers like List or NonNull.
