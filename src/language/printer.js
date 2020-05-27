@@ -2,7 +2,7 @@
 
 import { visit } from './visitor';
 import { type ASTNode } from './ast';
-import { printBlockString } from './blockString';
+import { printBlockString, isPrintableBlockString } from './blockString';
 
 /**
  * Converts an AST into a string, using one set of reasonable
@@ -84,7 +84,9 @@ const printDocASTReducer: any = {
   FloatValue: ({ value }) => value,
   StringValue: ({ value, block: isBlockString }, key) =>
     isBlockString
-      ? printBlockString(value, key === 'description' ? '' : '  ')
+      ? isPrintableBlockString(value)
+        ? printBlockString(value, key === 'description' ? '' : '  ')
+        : ''
       : JSON.stringify(value),
   BooleanValue: ({ value }) => (value ? 'true' : 'false'),
   NullValue: () => 'null',
