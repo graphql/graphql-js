@@ -20,8 +20,7 @@
     "graphql-js"
   ],
   "engines": {
-    "node": ">= 10.x",
-    "yarn": "YARN NO LONGER USED - use npm instead."
+    "node": ">= 10.x"
   },
   "dependencies": {}
 }
