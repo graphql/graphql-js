@@ -172,7 +172,9 @@ export {
 
 // Parse and operate on GraphQL language source files.
 export {
+  Token,
   Source,
+  Location,
   getLocation,
   // Print source location
   printLocation,
@@ -208,8 +210,6 @@ export {
 export {
   ParseOptions,
   SourceLocation,
-  Location,
-  Token,
   TokenKindEnum,
   KindEnum,
   DirectiveLocationEnum,
