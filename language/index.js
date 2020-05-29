@@ -93,6 +93,18 @@ Object.defineProperty(exports, "BREAK", {
     return _visitor.BREAK;
   }
 });
+Object.defineProperty(exports, "Location", {
+  enumerable: true,
+  get: function get() {
+    return _ast.Location;
+  }
+});
+Object.defineProperty(exports, "Token", {
+  enumerable: true,
+  get: function get() {
+    return _ast.Token;
+  }
+});
 Object.defineProperty(exports, "isDefinitionNode", {
   enumerable: true,
   get: function get() {
@@ -171,6 +183,8 @@ var _parser = require("./parser");
 var _printer = require("./printer");
 
 var _visitor = require("./visitor");
+
+var _ast = require("./ast");
 
 var _predicates = require("./predicates");
 

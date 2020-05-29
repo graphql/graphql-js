@@ -519,10 +519,22 @@ Object.defineProperty(exports, "assertValidSchema", {
     return _index.assertValidSchema;
   }
 });
+Object.defineProperty(exports, "Token", {
+  enumerable: true,
+  get: function get() {
+    return _index2.Token;
+  }
+});
 Object.defineProperty(exports, "Source", {
   enumerable: true,
   get: function get() {
     return _index2.Source;
+  }
+});
+Object.defineProperty(exports, "Location", {
+  enumerable: true,
+  get: function get() {
+    return _index2.Location;
   }
 });
 Object.defineProperty(exports, "getLocation", {

@@ -39,7 +39,7 @@ GraphQLSchema, GraphQLDirective, GraphQLScalarType, GraphQLObjectType, GraphQLIn
 , getNullableType, getNamedType // Validate GraphQL schema.
 , validateSchema, assertValidSchema } from "./type/index.mjs";
 // Parse and operate on GraphQL language source files.
-export { Source, getLocation // Print source location
+export { Token, Source, Location, getLocation // Print source location
 , printLocation, printSourceLocation // Lex
 , Lexer, TokenKind // Parse
 , parse, parseValue, parseType // Print
