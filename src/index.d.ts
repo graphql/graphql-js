@@ -335,6 +335,8 @@ export {
   UniqueFieldDefinitionNamesRule,
   UniqueDirectiveNamesRule,
   PossibleTypeExtensionsRule,
+  // Custom validation rules
+  NoSchemaIntrospectionCustomRule,
   ValidationRule,
 } from './validation/index';
 

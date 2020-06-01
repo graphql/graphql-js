@@ -94,3 +94,6 @@ export { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule';
 export { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule';
 export { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule';
 export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
+
+// Optional rules not defined by the GraphQL Specification
+export { NoSchemaIntrospectionCustomRule } from './rules/custom/NoSchemaIntrospectionCustomRule';
