@@ -12,7 +12,7 @@ jobs:
         uses: actions/setup-node@v1
 
       - name: Cache Node.js modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -32,7 +32,7 @@ jobs:
         run: npm run check
 
       - name: Cache TS versions
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.dts
           key: ${{ runner.OS }}-dts-${{ hashFiles('**/package-lock.json') }}
@@ -59,7 +59,7 @@ jobs:
         uses: actions/setup-node@v1
 
       - name: Cache Node.js modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -83,7 +83,7 @@ jobs:
         uses: actions/setup-node@v1
 
       - name: Cache Node.js modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -118,7 +118,7 @@ jobs:
           node-version: ${{ matrix.node_version }}
 
       - name: Cache Node.js modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -144,7 +144,7 @@ jobs:
         uses: actions/setup-node@v1
 
       - name: Cache Node.js modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -173,7 +173,7 @@ jobs:
         uses: actions/setup-node@v1
 
       - name: Cache Node.js modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
