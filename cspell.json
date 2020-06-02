@@ -18,6 +18,9 @@
     "Alderaan",
     "Tatooine",
     "astromech",
+    "structs",
+    "geocode",
+    "behaviour",
 
     // TODO: remove bellow words
     "Graphi", // GraphiQL

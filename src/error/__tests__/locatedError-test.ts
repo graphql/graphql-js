@@ -1,0 +1,37 @@
+import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
+import { GraphQLError } from '../GraphQLError';
+import { locatedError } from '../locatedError';
+
+describe('locatedError', () => {
+  it('passes GraphQLError through', () => {
+    const e = new GraphQLError('msg', null, null, null, [
+      'path',
+      3,
+      'to',
+      'field',
+    ]);
+
+    expect(locatedError(e, [], [])).to.deep.equal(e);
+  });
+
+  it('passes GraphQLError-ish through', () => {
+    const e = new Error('I have a different prototype chain');
+    (e as any).locations = [];
+    (e as any).path = [];
+    (e as any).nodes = [];
+    (e as any).source = null;
+    (e as any).positions = [];
+    (e as any).name = 'GraphQLError';
+
+    expect(locatedError(e, [], [])).to.deep.equal(e);
+  });
+
+  it('does not pass through elasticsearch-like errors', () => {
+    const e = new Error('I am from elasticsearch');
+    (e as any).path = '/something/feed/_search';
+
+    expect(locatedError(e, [], [])).to.not.deep.equal(e);
+  });
+});

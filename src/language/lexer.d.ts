@@ -1,6 +1,6 @@
 import { Token } from './ast';
-import { Source } from './source';
 import { TokenKindEnum } from './tokenKind';
+import { Source } from './source';
 
 /**
  * Given a Source object, this returns a Lexer for that source.

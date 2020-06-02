@@ -36,7 +36,6 @@ module.use_strict=true
 babel_loose_array_spread=true
 esproposal.optional_chaining=enable
 suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)?)\\)
-suppress_comment=\\(.\\|\n\\)*\\$DisableFlowOnNegativeTest
 
 [version]
 ^0.126.0
