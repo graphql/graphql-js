@@ -19,6 +19,10 @@ import {
 export function isSchema(schema: any): schema is GraphQLSchema;
 export function assertSchema(schema: any): GraphQLSchema;
 
+export interface GraphQLSchemaExtensions {
+  [attributeName: string]: any;
+}
+
 /**
  * Schema Definition
  *
@@ -47,7 +51,7 @@ export function assertSchema(schema: any): GraphQLSchema;
  */
 export class GraphQLSchema {
   description: Maybe<string>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 
@@ -83,7 +87,7 @@ export class GraphQLSchema {
   toConfig(): GraphQLSchemaConfig & {
     types: Array<GraphQLNamedType>;
     directives: Array<GraphQLDirective>;
-    extensions: Maybe<Readonly<Record<string, any>>>;
+    extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
     extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
     assumeValid: boolean;
   };
@@ -116,7 +120,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   subscription?: Maybe<GraphQLObjectType>;
   types?: Maybe<Array<GraphQLNamedType>>;
   directives?: Maybe<Array<GraphQLDirective>>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 }
@@ -128,7 +132,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
   types: Array<GraphQLNamedType>;
   directives: Array<GraphQLDirective>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;
   assumeValid: boolean;
 }

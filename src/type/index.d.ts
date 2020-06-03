@@ -8,6 +8,7 @@ export {
   // GraphQL Schema definition
   GraphQLSchema,
   GraphQLSchemaConfig,
+  GraphQLSchemaExtensions,
 } from './schema';
 
 export {
@@ -130,6 +131,7 @@ export {
   DEFAULT_DEPRECATION_REASON,
   // type
   GraphQLDirectiveConfig,
+  GraphQLDirectiveExtensions,
 } from './directives';
 
 // Common built-in scalar instances.
