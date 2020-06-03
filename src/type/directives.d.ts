@@ -14,6 +14,10 @@ import { GraphQLFieldConfigArgumentMap, GraphQLArgument } from './definition';
 export function isDirective(directive: any): directive is GraphQLDirective;
 export function assertDirective(directive: any): GraphQLDirective;
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLDirectiveExtensions {
   [attributeName: string]: any;
 }

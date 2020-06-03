@@ -19,6 +19,10 @@ import {
 export function isSchema(schema: any): schema is GraphQLSchema;
 export function assertSchema(schema: any): GraphQLSchema;
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLSchemaExtensions {
   [attributeName: string]: any;
 }

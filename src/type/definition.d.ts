@@ -275,6 +275,10 @@ export function getNamedType(type: GraphQLType): GraphQLNamedType;
  */
 export type Thunk<T> = (() => T) | T;
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLScalarTypeExtensions {
   [attributeName: string]: any;
 }
@@ -349,6 +353,10 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
 }
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLObjectTypeExtensions {
   [attributeName: string]: any;
 }
@@ -467,6 +475,10 @@ export interface GraphQLResolveInfo {
   readonly variableValues: { [variableName: string]: any };
 }
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLFieldExtensions {
   [attributeName: string]: any;
 }
@@ -490,6 +502,10 @@ export interface GraphQLFieldConfigArgumentMap {
   [key: string]: GraphQLArgumentConfig;
 }
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLArgumentExtensions {
   [attributeName: string]: any;
 }
@@ -538,6 +554,10 @@ export interface GraphQLFieldMap<TSource, TContext> {
   [key: string]: GraphQLField<TSource, TContext>;
 }
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLInterfaceTypeExtensions {
   [attributeName: string]: any;
 }
@@ -600,6 +620,10 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   extensionASTNodes?: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 }
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLUnionTypeExtensions {
   [attributeName: string]: any;
 }
@@ -664,6 +688,10 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
   extensionASTNodes?: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 }
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLEnumTypeExtensions {
   [attributeName: string]: any;
 }
@@ -729,6 +757,10 @@ export interface GraphQLEnumValueConfigMap {
   [key: string]: GraphQLEnumValueConfig;
 }
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLEnumValueExtensions {
   [attributeName: string]: any;
 }
@@ -751,6 +783,10 @@ export interface GraphQLEnumValue {
   astNode?: Maybe<EnumValueDefinitionNode>;
 }
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLInputObjectTypeExtensions {
   [attributeName: string]: any;
 }
@@ -805,6 +841,10 @@ export interface GraphQLInputObjectTypeConfig {
   extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
 }
 
+/**
+ * It's strongly recommended that you prefix each added attribute's name with an
+ * identifier unique to your project to avoid conflicts with other projects.
+ */
 export interface GraphQLInputFieldExtensions {
   [attributeName: string]: any;
 }
