@@ -548,6 +548,8 @@ function undefineIfEmpty<T>(arr: ?$ReadOnlyArray<T>): ?$ReadOnlyArray<T> {
   return arr && arr.length > 0 ? arr : undefined;
 }
 
+export type GraphQLScalarTypeExtensions = ReadOnlyObjMap<mixed>;
+
 /**
  * Scalar Type Definition
  *
@@ -579,7 +581,7 @@ export class GraphQLScalarType {
   serialize: GraphQLScalarSerializer<mixed>;
   parseValue: GraphQLScalarValueParser<mixed>;
   parseLiteral: GraphQLScalarLiteralParser<mixed>;
-  extensions: ?ReadOnlyObjMap<mixed>;
+  extensions: ?GraphQLScalarTypeExtensions;
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
@@ -624,7 +626,7 @@ export class GraphQLScalarType {
     serialize: GraphQLScalarSerializer<mixed>,
     parseValue: GraphQLScalarValueParser<mixed>,
     parseLiteral: GraphQLScalarLiteralParser<mixed>,
-    extensions: ?ReadOnlyObjMap<mixed>,
+    extensions: ?GraphQLScalarTypeExtensions,
     extensionASTNodes: $ReadOnlyArray<ScalarTypeExtensionNode>,
   |} {
     return {
@@ -680,10 +682,12 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   parseValue?: GraphQLScalarValueParser<TInternal>,
   // Parses an externally provided literal value to use as an input.
   parseLiteral?: GraphQLScalarLiteralParser<TInternal>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLScalarTypeExtensions,
   astNode?: ?ScalarTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<ScalarTypeExtensionNode>,
 |};
+
+export type GraphQLObjectTypeExtensions = ReadOnlyObjMap<mixed>;
 
 /**
  * Object Type Definition
@@ -726,7 +730,7 @@ export class GraphQLObjectType {
   name: string;
   description: ?string;
   isTypeOf: ?GraphQLIsTypeOfFn<any, any>;
-  extensions: ?ReadOnlyObjMap<mixed>;
+  extensions: ?GraphQLObjectTypeExtensions;
   astNode: ?ObjectTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
 
@@ -769,7 +773,7 @@ export class GraphQLObjectType {
     ...GraphQLObjectTypeConfig<any, any>,
     interfaces: Array<GraphQLInterfaceType>,
     fields: GraphQLFieldConfigMap<any, any>,
-    extensions: ?ReadOnlyObjMap<mixed>,
+    extensions: ?GraphQLObjectTypeExtensions,
     extensionASTNodes: $ReadOnlyArray<ObjectTypeExtensionNode>,
   |} {
     return {
@@ -914,7 +918,7 @@ export type GraphQLObjectTypeConfig<TSource, TContext> = {|
   interfaces?: Thunk<?Array<GraphQLInterfaceType>>,
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
   isTypeOf?: ?GraphQLIsTypeOfFn<TSource, TContext>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLObjectTypeExtensions,
   astNode?: ?ObjectTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<ObjectTypeExtensionNode>,
 |};
@@ -967,7 +971,7 @@ export type GraphQLFieldConfig<
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   deprecationReason?: ?string,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLFieldExtensions,
   astNode?: ?FieldDefinitionNode,
 |};
 
@@ -977,13 +981,15 @@ export type GraphQLArgumentConfig = {|
   description?: ?string,
   type: GraphQLInputType,
   defaultValue?: mixed,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLArgumentExtensions,
   astNode?: ?InputValueDefinitionNode,
 |};
 
 export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldConfig<TSource, TContext>,
 >;
+
+export type GraphQLFieldExtensions = ReadOnlyObjMap<mixed>;
 
 export type GraphQLField<
   TSource,
@@ -998,16 +1004,18 @@ export type GraphQLField<
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   isDeprecated: boolean,
   deprecationReason: ?string,
-  extensions: ?ReadOnlyObjMap<mixed>,
+  extensions: ?GraphQLFieldExtensions,
   astNode: ?FieldDefinitionNode,
 |};
+
+export type GraphQLArgumentExtensions = ReadOnlyObjMap<mixed>;
 
 export type GraphQLArgument = {|
   name: string,
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
-  extensions: ?ReadOnlyObjMap<mixed>,
+  extensions: ?GraphQLArgumentExtensions,
   astNode: ?InputValueDefinitionNode,
 |};
 
@@ -1018,6 +1026,8 @@ export function isRequiredArgument(arg: GraphQLArgument): boolean %checks {
 export type GraphQLFieldMap<TSource, TContext> = ObjMap<
   GraphQLField<TSource, TContext>,
 >;
+
+export type GraphQLInterfaceTypeExtensions = ReadOnlyObjMap<mixed>;
 
 /**
  * Interface Type Definition
@@ -1041,7 +1051,7 @@ export class GraphQLInterfaceType {
   name: string;
   description: ?string;
   resolveType: ?GraphQLTypeResolver<any, any>;
-  extensions: ?ReadOnlyObjMap<mixed>;
+  extensions: ?GraphQLInterfaceTypeExtensions;
   astNode: ?InterfaceTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<InterfaceTypeExtensionNode>;
 
@@ -1084,7 +1094,7 @@ export class GraphQLInterfaceType {
     ...GraphQLInterfaceTypeConfig<any, any>,
     interfaces: Array<GraphQLInterfaceType>,
     fields: GraphQLFieldConfigMap<any, any>,
-    extensions: ?ReadOnlyObjMap<mixed>,
+    extensions: ?GraphQLInterfaceTypeExtensions,
     extensionASTNodes: $ReadOnlyArray<InterfaceTypeExtensionNode>,
   |} {
     return {
@@ -1127,10 +1137,12 @@ export type GraphQLInterfaceTypeConfig<TSource, TContext> = {|
    * Object type.
    */
   resolveType?: ?GraphQLTypeResolver<TSource, TContext>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLInterfaceTypeExtensions,
   astNode?: ?InterfaceTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<InterfaceTypeExtensionNode>,
 |};
+
+export type GraphQLUnionTypeExtensions = ReadOnlyObjMap<mixed>;
 
 /**
  * Union Type Definition
@@ -1159,7 +1171,7 @@ export class GraphQLUnionType {
   name: string;
   description: ?string;
   resolveType: ?GraphQLTypeResolver<any, any>;
-  extensions: ?ReadOnlyObjMap<mixed>;
+  extensions: ?GraphQLUnionTypeExtensions;
   astNode: ?UnionTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<UnionTypeExtensionNode>;
 
@@ -1192,7 +1204,7 @@ export class GraphQLUnionType {
   toConfig(): {|
     ...GraphQLUnionTypeConfig<any, any>,
     types: Array<GraphQLObjectType>,
-    extensions: ?ReadOnlyObjMap<mixed>,
+    extensions: ?GraphQLUnionTypeExtensions,
     extensionASTNodes: $ReadOnlyArray<UnionTypeExtensionNode>,
   |} {
     return {
@@ -1244,10 +1256,12 @@ export type GraphQLUnionTypeConfig<TSource, TContext> = {|
    * Object type.
    */
   resolveType?: ?GraphQLTypeResolver<TSource, TContext>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLUnionTypeExtensions,
   astNode?: ?UnionTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<UnionTypeExtensionNode>,
 |};
+
+export type GraphQLEnumTypeExtensions = ReadOnlyObjMap<mixed>;
 
 /**
  * Enum Type Definition
@@ -1273,7 +1287,7 @@ export type GraphQLUnionTypeConfig<TSource, TContext> = {|
 export class GraphQLEnumType /* <T> */ {
   name: string;
   description: ?string;
-  extensions: ?ReadOnlyObjMap<mixed>;
+  extensions: ?GraphQLEnumTypeExtensions;
   astNode: ?EnumTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<EnumTypeExtensionNode>;
 
@@ -1359,7 +1373,7 @@ export class GraphQLEnumType /* <T> */ {
 
   toConfig(): {|
     ...GraphQLEnumTypeConfig,
-    extensions: ?ReadOnlyObjMap<mixed>,
+    extensions: ?GraphQLEnumTypeExtensions,
     extensionASTNodes: $ReadOnlyArray<EnumTypeExtensionNode>,
   |} {
     const values = keyValMap(
@@ -1445,7 +1459,7 @@ export type GraphQLEnumTypeConfig /* <T> */ = {|
   name: string,
   description?: ?string,
   values: GraphQLEnumValueConfigMap /* <T> */,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLEnumTypeExtensions,
   astNode?: ?EnumTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<EnumTypeExtensionNode>,
 |};
@@ -1456,9 +1470,11 @@ export type GraphQLEnumValueConfig /* <T> */ = {|
   description?: ?string,
   value?: any /* T */,
   deprecationReason?: ?string,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLEnumValueExtensions,
   astNode?: ?EnumValueDefinitionNode,
 |};
+
+export type GraphQLEnumValueExtensions = ReadOnlyObjMap<mixed>;
 
 export type GraphQLEnumValue /* <T> */ = {|
   name: string,
@@ -1466,9 +1482,11 @@ export type GraphQLEnumValue /* <T> */ = {|
   value: any /* T */,
   isDeprecated: boolean,
   deprecationReason: ?string,
-  extensions: ?ReadOnlyObjMap<mixed>,
+  extensions: ?GraphQLEnumValueExtensions,
   astNode: ?EnumValueDefinitionNode,
 |};
+
+export type GraphQLInputObjectTypeExtensions = ReadOnlyObjMap<mixed>;
 
 /**
  * Input Object Type Definition
@@ -1493,7 +1511,7 @@ export type GraphQLEnumValue /* <T> */ = {|
 export class GraphQLInputObjectType {
   name: string;
   description: ?string;
-  extensions: ?ReadOnlyObjMap<mixed>;
+  extensions: ?GraphQLInputObjectTypeExtensions;
   astNode: ?InputObjectTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<InputObjectTypeExtensionNode>;
 
@@ -1520,7 +1538,7 @@ export class GraphQLInputObjectType {
   toConfig(): {|
     ...GraphQLInputObjectTypeConfig,
     fields: GraphQLInputFieldConfigMap,
-    extensions: ?ReadOnlyObjMap<mixed>,
+    extensions: ?GraphQLInputObjectTypeExtensions,
     extensionASTNodes: $ReadOnlyArray<InputObjectTypeExtensionNode>,
   |} {
     const fields = mapValue(this.getFields(), (field) => ({
@@ -1587,7 +1605,7 @@ export type GraphQLInputObjectTypeConfig = {|
   name: string,
   description?: ?string,
   fields: Thunk<GraphQLInputFieldConfigMap>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLInputObjectTypeExtensions,
   astNode?: ?InputObjectTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<InputObjectTypeExtensionNode>,
 |};
@@ -1596,18 +1614,20 @@ export type GraphQLInputFieldConfig = {|
   description?: ?string,
   type: GraphQLInputType,
   defaultValue?: mixed,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?GraphQLInputFieldExtensions,
   astNode?: ?InputValueDefinitionNode,
 |};
 
 export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
+
+export type GraphQLInputFieldExtensions = ReadOnlyObjMap<mixed>;
 
 export type GraphQLInputField = {|
   name: string,
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
-  extensions: ?ReadOnlyObjMap<mixed>,
+  extensions: ?GraphQLInputFieldExtensions,
   astNode: ?InputValueDefinitionNode,
 |};
 
