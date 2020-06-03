@@ -10,7 +10,7 @@ export {
   // GraphQL Schema definition
   GraphQLSchema,
 } from './schema';
-export type { GraphQLSchemaConfig } from './schema';
+export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema';
 
 export {
   // Predicates
@@ -84,7 +84,10 @@ export {
   DEFAULT_DEPRECATION_REASON,
 } from './directives';
 
-export type { GraphQLDirectiveConfig } from './directives';
+export type {
+  GraphQLDirectiveConfig,
+  GraphQLDirectiveExtensions,
+} from './directives';
 
 // Common built-in scalar instances.
 export {
@@ -133,28 +136,38 @@ export type {
   Thunk,
   GraphQLArgument,
   GraphQLArgumentConfig,
+  GraphQLArgumentExtensions,
   GraphQLEnumTypeConfig,
+  GraphQLEnumTypeExtensions,
   GraphQLEnumValue,
   GraphQLEnumValueConfig,
+  GraphQLEnumValueExtensions,
   GraphQLEnumValueConfigMap,
   GraphQLField,
   GraphQLFieldConfig,
+  GraphQLFieldExtensions,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldMap,
   GraphQLFieldResolver,
   GraphQLInputField,
   GraphQLInputFieldConfig,
+  GraphQLInputFieldExtensions,
   GraphQLInputFieldConfigMap,
   GraphQLInputFieldMap,
   GraphQLInputObjectTypeConfig,
+  GraphQLInputObjectTypeExtensions,
   GraphQLInterfaceTypeConfig,
+  GraphQLInterfaceTypeExtensions,
   GraphQLIsTypeOfFn,
   GraphQLObjectTypeConfig,
+  GraphQLObjectTypeExtensions,
   GraphQLResolveInfo,
   GraphQLScalarTypeConfig,
+  GraphQLScalarTypeExtensions,
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
+  GraphQLUnionTypeExtensions,
   GraphQLScalarSerializer,
   GraphQLScalarValueParser,
   GraphQLScalarLiteralParser,
