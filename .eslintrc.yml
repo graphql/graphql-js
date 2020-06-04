@@ -14,8 +14,8 @@ plugins:
 
 rules:
   ##############################################################################
-  # Internal rules located in 'resources/eslint-rules'.
-  # See './resources/eslint-rules/README.md'
+  # Internal rules located in 'resources/eslint-internal-rules'.
+  # See './resources/eslint-internal-rules/README.md'
   ##############################################################################
 
   internal-rules/no-dir-import: error
