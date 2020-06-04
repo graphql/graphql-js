@@ -107,7 +107,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [10, 12, 13, 14]
+        node_version: [10, 12, 14]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
