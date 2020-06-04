@@ -45,6 +45,14 @@ function buildASTSchema(documentAST, options) {
     (0, _validate.assertValidSDL)(documentAST);
   }
 
+  var emptySchemaConfig = {
+    description: undefined,
+    types: [],
+    directives: [],
+    extensions: undefined,
+    extensionASTNodes: [],
+    assumeValid: false
+  };
   var config = (0, _extendSchema.extendSchemaImpl)(emptySchemaConfig, documentAST, options);
 
   if (config.astNode == null) {
@@ -98,14 +106,11 @@ function buildASTSchema(documentAST, options) {
 
   return new _schema.GraphQLSchema(config);
 }
-
-var emptySchemaConfig = new _schema.GraphQLSchema({
-  directives: []
-}).toConfig();
 /**
  * A helper function to build a GraphQLSchema directly from a source
  * document.
  */
+
 
 function buildSchema(source, options) {
   var document = (0, _parser.parse)(source, {
