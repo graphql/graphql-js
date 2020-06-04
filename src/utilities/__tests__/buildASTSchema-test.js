@@ -12,7 +12,7 @@ import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
 import { validateSchema } from '../../type/validate';
-import { __Schema } from '../../type/introspection';
+import { __Schema, __EnumValue } from '../../type/introspection';
 import {
   assertDirective,
   GraphQLSkipDirective,
@@ -1087,6 +1087,21 @@ describe('Schema Builder', () => {
 
     expect(schema.getType('ID')).to.equal(GraphQLID);
     expect(schema.getType('__Schema')).to.equal(__Schema);
+  });
+
+  it('Allows to reference introspection types', () => {
+    const schema = buildSchema(`
+      type Query {
+        introspectionField: __EnumValue
+      }
+    `);
+
+    const queryType = assertObjectType(schema.getType('Query'));
+    expect(queryType.getFields()).to.have.nested.property(
+      'introspectionField.type',
+      __EnumValue,
+    );
+    expect(schema.getType('__EnumValue')).to.equal(__EnumValue);
   });
 
   it('Rejects invalid SDL', () => {
