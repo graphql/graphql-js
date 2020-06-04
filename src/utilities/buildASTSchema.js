@@ -72,6 +72,14 @@ export function buildASTSchema(
     assertValidSDL(documentAST);
   }
 
+  const emptySchemaConfig = {
+    description: undefined,
+    types: [],
+    directives: [],
+    extensions: undefined,
+    extensionASTNodes: [],
+    assumeValid: false,
+  };
   const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
   if (config.astNode == null) {
@@ -113,8 +121,6 @@ export function buildASTSchema(
 
   return new GraphQLSchema(config);
 }
-
-const emptySchemaConfig = new GraphQLSchema({ directives: [] }).toConfig();
 
 /**
  * A helper function to build a GraphQLSchema directly from a source
