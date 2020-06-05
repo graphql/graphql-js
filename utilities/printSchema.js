@@ -141,16 +141,15 @@ function printType(type, options) {
 
   if ((0, _definition.isEnumType)(type)) {
     return printEnum(type, options);
-  }
+  } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-  /* istanbul ignore else */
+
   if ((0, _definition.isInputObjectType)(type)) {
     return printInputObject(type, options);
-  } // Not reachable. All possible types have been considered.
+  } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-  /* istanbul ignore next */
-  (0, _invariant.default)(false, 'Unexpected type: ' + (0, _inspect.default)(type));
+  false || (0, _invariant.default)(0, 'Unexpected type: ' + (0, _inspect.default)(type));
 }
 
 function printScalar(type, options) {
@@ -259,8 +258,6 @@ function printSpecifiedByUrl(scalar) {
 
   var url = scalar.specifiedByUrl;
   var urlAST = (0, _astFromValue.astFromValue)(url, _scalars.GraphQLString);
-
-  /* istanbul ignore next */
   urlAST || (0, _invariant.default)(0, 'Unexpected null value returned from `astFromValue` for specifiedByUrl');
   return ' @specifiedBy(url: ' + (0, _printer.print)(urlAST) + ')';
 }

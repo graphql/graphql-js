@@ -206,16 +206,15 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     if ((0, _definition.isEnumType)(type)) {
       return extendEnumType(type);
-    }
+    } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-    /* istanbul ignore else */
+
     if ((0, _definition.isInputObjectType)(type)) {
       return extendInputObjectType(type);
-    } // Not reachable. All possible types have been considered.
+    } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-    /* istanbul ignore next */
-    (0, _invariant.default)(false, 'Unexpected type: ' + (0, _inspect.default)(type));
+    false || (0, _invariant.default)(0, 'Unexpected type: ' + (0, _inspect.default)(type));
   }
 
   function extendInputObjectType(type) {
@@ -639,11 +638,10 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
             extensionASTNodes: _extensionASTNodes5
           });
         }
-    } // Not reachable. All possible type definition nodes have been considered.
+    } // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
 
 
-    /* istanbul ignore next */
-    (0, _invariant.default)(false, 'Unexpected type definition node: ' + (0, _inspect.default)(astNode));
+    false || (0, _invariant.default)(0, 'Unexpected type definition node: ' + (0, _inspect.default)(astNode));
   }
 }
 

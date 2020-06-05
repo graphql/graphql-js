@@ -212,16 +212,15 @@ export var __Type = new GraphQLObjectType({
 
           if (isListType(type)) {
             return TypeKind.LIST;
-          }
+          } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-          /* istanbul ignore else */
+
           if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
-          } // Not reachable. All possible types have been considered.
+          } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-          /* istanbul ignore next */
-          invariant(false, "Unexpected type: \"".concat(inspect(type), "\"."));
+          false || invariant(0, "Unexpected type: \"".concat(inspect(type), "\"."));
         }
       },
       name: {

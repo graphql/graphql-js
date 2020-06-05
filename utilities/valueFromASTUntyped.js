@@ -61,9 +61,8 @@ function valueFromASTUntyped(valueNode, variables) {
 
     case _kinds.Kind.VARIABLE:
       return variables === null || variables === void 0 ? void 0 : variables[valueNode.name.value];
-  } // Not reachable. All possible value nodes have been considered.
+  } // istanbul ignore next (Not reachable. All possible value nodes have been considered)
 
 
-  /* istanbul ignore next */
-  (0, _invariant.default)(false, 'Unexpected value node: ' + (0, _inspect.default)(valueNode));
+  false || (0, _invariant.default)(0, 'Unexpected value node: ' + (0, _inspect.default)(valueNode));
 }

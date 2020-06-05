@@ -153,9 +153,9 @@ function valueFromAST(valueNode, type, variables) {
     }
 
     return coercedObj;
-  }
+  } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-  /* istanbul ignore else */
+
   if ((0, _definition.isLeafType)(type)) {
     // Scalars and Enums fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
@@ -173,11 +173,10 @@ function valueFromAST(valueNode, type, variables) {
     }
 
     return result;
-  } // Not reachable. All possible input types have been considered.
+  } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
 
-  /* istanbul ignore next */
-  (0, _invariant.default)(false, 'Unexpected input type: ' + (0, _inspect.default)(type));
+  false || (0, _invariant.default)(0, 'Unexpected input type: ' + (0, _inspect.default)(type));
 } // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 

@@ -27,14 +27,13 @@ function typeFromAST(schema, typeNode) {
   if (typeNode.kind === _kinds.Kind.NON_NULL_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
     return innerType && (0, _definition.GraphQLNonNull)(innerType);
-  }
+  } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-  /* istanbul ignore else */
+
   if (typeNode.kind === _kinds.Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);
-  } // Not reachable. All possible type nodes have been considered.
+  } // istanbul ignore next (Not reachable. All possible type nodes have been considered)
 
 
-  /* istanbul ignore next */
-  (0, _invariant.default)(false, 'Unexpected type node: ' + (0, _inspect.default)(typeNode));
+  false || (0, _invariant.default)(0, 'Unexpected type node: ' + (0, _inspect.default)(typeNode));
 }

@@ -602,16 +602,15 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
   if ((0, _definition.isAbstractType)(returnType)) {
     return completeAbstractValue(exeContext, returnType, fieldNodes, info, path, result);
   } // If field type is Object, execute and complete all sub-selections.
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
 
-  /* istanbul ignore else */
   if ((0, _definition.isObjectType)(returnType)) {
     return completeObjectValue(exeContext, returnType, fieldNodes, info, path, result);
-  } // Not reachable. All possible output types have been considered.
+  } // istanbul ignore next (Not reachable. All possible output types have been considered)
 
 
-  /* istanbul ignore next */
-  (0, _invariant.default)(false, 'Cannot complete value of unexpected output type: ' + (0, _inspect.default)(returnType));
+  false || (0, _invariant.default)(0, 'Cannot complete value of unexpected output type: ' + (0, _inspect.default)(returnType));
 }
 /**
  * Complete a list value by completing each item in the list with the

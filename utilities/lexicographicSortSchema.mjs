@@ -134,9 +134,9 @@ export function lexicographicSortSchema(schema) {
       return new GraphQLEnumType(_objectSpread(_objectSpread({}, _config3), {}, {
         values: sortObjMap(_config3.values)
       }));
-    }
+    } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-    /* istanbul ignore else */
+
     if (isInputObjectType(type)) {
       var _config4 = type.toConfig();
 
@@ -145,11 +145,10 @@ export function lexicographicSortSchema(schema) {
           return sortInputFields(_config4.fields);
         }
       }));
-    } // Not reachable. All possible types have been considered.
+    } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-    /* istanbul ignore next */
-    invariant(false, 'Unexpected type: ' + inspect(type));
+    false || invariant(0, 'Unexpected type: ' + inspect(type));
   }
 }
 

@@ -54,8 +54,6 @@ export function KnownDirectivesRule(context) {
 
 function getDirectiveLocationForASTPath(ancestors) {
   var appliedTo = ancestors[ancestors.length - 1];
-
-  /* istanbul ignore next */
   !Array.isArray(appliedTo) || invariant(0);
 
   switch (appliedTo.kind) {
@@ -129,9 +127,8 @@ function getDirectiveLocationForOperation(operation) {
 
     case 'subscription':
       return DirectiveLocation.SUBSCRIPTION;
-  } // Not reachable. All possible types have been considered.
+  } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-  /* istanbul ignore next */
-  invariant(false, 'Unexpected operation: ' + inspect(operation));
+  false || invariant(0, 'Unexpected operation: ' + inspect(operation));
 }

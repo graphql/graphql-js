@@ -87,16 +87,15 @@ function typeToExtKind(type) {
 
   if (isEnumType(type)) {
     return Kind.ENUM_TYPE_EXTENSION;
-  }
+  } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-  /* istanbul ignore else */
+
   if (isInputObjectType(type)) {
     return Kind.INPUT_OBJECT_TYPE_EXTENSION;
-  } // Not reachable. All possible types have been considered.
+  } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-  /* istanbul ignore next */
-  invariant(false, 'Unexpected type: ' + inspect(type));
+  false || invariant(0, 'Unexpected type: ' + inspect(type));
 }
 
 function extensionKindToTypeName(kind) {
@@ -118,9 +117,8 @@ function extensionKindToTypeName(kind) {
 
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
-  } // Not reachable. All possible types have been considered.
+  } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-  /* istanbul ignore next */
-  invariant(false, 'Unexpected kind: ' + inspect(kind));
+  false || invariant(0, 'Unexpected kind: ' + inspect(kind));
 }

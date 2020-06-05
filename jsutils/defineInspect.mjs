@@ -6,8 +6,6 @@ import nodejsCustomInspectSymbol from "./nodejsCustomInspectSymbol.mjs";
 
 export default function defineInspect(classObject) {
   var fn = classObject.prototype.toJSON;
-
-  /* istanbul ignore next */
   typeof fn === 'function' || invariant(0);
   classObject.prototype.inspect = fn; // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2317')
 

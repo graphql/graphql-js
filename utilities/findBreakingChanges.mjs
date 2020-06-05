@@ -428,22 +428,19 @@ function typeKindName(type) {
 
   if (isEnumType(type)) {
     return 'an Enum type';
-  }
+  } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-  /* istanbul ignore else */
+
   if (isInputObjectType(type)) {
     return 'an Input type';
-  } // Not reachable. All possible named types have been considered.
+  } // istanbul ignore next (Not reachable. All possible named types have been considered)
 
 
-  /* istanbul ignore next */
-  invariant(false, 'Unexpected type: ' + inspect(type));
+  false || invariant(0, 'Unexpected type: ' + inspect(type));
 }
 
 function stringifyValue(value, type) {
   var ast = astFromValue(value, type);
-
-  /* istanbul ignore next */
   ast != null || invariant(0);
   var sortedAST = visit(ast, {
     ObjectValue: function ObjectValue(objectNode) {

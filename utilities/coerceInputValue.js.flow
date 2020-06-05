@@ -148,6 +148,7 @@ function coerceInputValueImpl(
     return coercedValue;
   }
 
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isLeafType(type)) {
     let parseResult;
 
@@ -185,6 +186,6 @@ function coerceInputValueImpl(
     return parseResult;
   }
 
-  // Not reachable. All possible input types have been considered.
+  // istanbul ignore next (Not reachable. All possible input types have been considered)
   invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
 }

@@ -177,16 +177,15 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     if (isEnumType(type)) {
       return extendEnumType(type);
-    }
+    } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-    /* istanbul ignore else */
+
     if (isInputObjectType(type)) {
       return extendInputObjectType(type);
-    } // Not reachable. All possible types have been considered.
+    } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-    /* istanbul ignore next */
-    invariant(false, 'Unexpected type: ' + inspect(type));
+    false || invariant(0, 'Unexpected type: ' + inspect(type));
   }
 
   function extendInputObjectType(type) {
@@ -610,11 +609,10 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
             extensionASTNodes: _extensionASTNodes5
           });
         }
-    } // Not reachable. All possible type definition nodes have been considered.
+    } // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
 
 
-    /* istanbul ignore next */
-    invariant(false, 'Unexpected type definition node: ' + inspect(astNode));
+    false || invariant(0, 'Unexpected type definition node: ' + inspect(astNode));
   }
 }
 var stdTypeMap = keyMap(specifiedScalarTypes.concat(introspectionTypes), function (type) {

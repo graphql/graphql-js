@@ -109,9 +109,9 @@ export function astFromValue(value, type) {
       kind: Kind.OBJECT,
       fields: fieldNodes
     };
-  }
+  } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-  /* istanbul ignore else */
+
   if (isLeafType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
@@ -165,11 +165,10 @@ export function astFromValue(value, type) {
     }
 
     throw new TypeError("Cannot convert value to AST: ".concat(inspect(serialized), "."));
-  } // Not reachable. All possible input types have been considered.
+  } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
 
-  /* istanbul ignore next */
-  invariant(false, 'Unexpected input type: ' + inspect(type));
+  false || invariant(0, 'Unexpected input type: ' + inspect(type));
 }
 /**
  * IntValue:

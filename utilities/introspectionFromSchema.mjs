@@ -30,8 +30,6 @@ export function introspectionFromSchema(schema, options) {
     schema: schema,
     document: document
   });
-
-  /* istanbul ignore next */
   !isPromise(result) && !result.errors && result.data || invariant(0);
   return result.data;
 }

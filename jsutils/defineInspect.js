@@ -16,8 +16,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function defineInspect(classObject) {
   var fn = classObject.prototype.toJSON;
-
-  /* istanbul ignore next */
   typeof fn === 'function' || (0, _invariant.default)(0);
   classObject.prototype.inspect = fn; // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2317')
 
