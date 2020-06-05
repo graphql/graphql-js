@@ -38,7 +38,7 @@ export function UniqueFieldDefinitionNamesRule(
       knownFieldNames[typeName] = Object.create(null);
     }
 
-    // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const fieldNodes = node.fields ?? [];
     const fieldNames = knownFieldNames[typeName];
 

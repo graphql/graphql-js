@@ -136,7 +136,7 @@ async function createSubscription(
 async function expectPromiseToThrow(promise, message) {
   try {
     await promise();
-    // istanbul ignore next(shouldn't be reached)
+    // istanbul ignore next (Shouldn't be reached)
     expect.fail('promise should have thrown but did not');
   } catch (error) {
     expect(error).to.be.an.instanceOf(Error);
@@ -280,7 +280,7 @@ describe('Subscription Initialization Phase', () => {
         },
         nonImportantEmail: {
           type: EmailEventType,
-          // istanbul ignore next (shouldn't be called)
+          // istanbul ignore next (Shouldn't be called)
           subscribe() {
             didResolveNonImportantEmail = true;
             return eventEmitterAsyncIterator(new EventEmitter(), 'event');

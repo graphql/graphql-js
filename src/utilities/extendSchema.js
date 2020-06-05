@@ -415,7 +415,7 @@ export function extendSchemaImpl(
   |} {
     const opTypes = {};
     for (const node of nodes) {
-      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const operationTypesNodes = node.operationTypes ?? [];
 
       for (const operationType of operationTypesNodes) {
@@ -474,7 +474,7 @@ export function extendSchemaImpl(
   ): GraphQLFieldConfigMap<mixed, mixed> {
     const fieldConfigMap = Object.create(null);
     for (const node of nodes) {
-      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const nodeFields = node.fields ?? [];
 
       for (const field of nodeFields) {
@@ -496,7 +496,7 @@ export function extendSchemaImpl(
   function buildArgumentMap(
     args: ?$ReadOnlyArray<InputValueDefinitionNode>,
   ): GraphQLFieldConfigArgumentMap {
-    // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const argsNodes = args ?? [];
 
     const argConfigMap = Object.create(null);
@@ -523,7 +523,7 @@ export function extendSchemaImpl(
   ): GraphQLInputFieldConfigMap {
     const inputFieldMap = Object.create(null);
     for (const node of nodes) {
-      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const fieldsNodes = node.fields ?? [];
 
       for (const field of fieldsNodes) {
@@ -548,7 +548,7 @@ export function extendSchemaImpl(
   ): GraphQLEnumValueConfigMap {
     const enumValueMap = Object.create(null);
     for (const node of nodes) {
-      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const valuesNodes = node.values ?? [];
 
       for (const value of valuesNodes) {
@@ -572,7 +572,7 @@ export function extendSchemaImpl(
   ): Array<GraphQLInterfaceType> {
     const interfaces = [];
     for (const node of nodes) {
-      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const interfacesNodes = node.interfaces ?? [];
 
       for (const type of interfacesNodes) {
@@ -591,7 +591,7 @@ export function extendSchemaImpl(
   ): Array<GraphQLObjectType> {
     const types = [];
     for (const node of nodes) {
-      // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const typeNodes = node.types ?? [];
 
       for (const type of typeNodes) {
