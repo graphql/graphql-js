@@ -282,11 +282,12 @@ export function extendSchemaImpl(
     if (isEnumType(type)) {
       return extendEnumType(type);
     }
+    // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
     if (isInputObjectType(type)) {
       return extendInputObjectType(type);
     }
 
-    // Not reachable. All possible types have been considered.
+    // istanbul ignore next (Not reachable. All possible types have been considered)
     invariant(false, 'Unexpected type: ' + inspect((type: empty)));
   }
 
@@ -686,7 +687,7 @@ export function extendSchemaImpl(
       }
     }
 
-    // Not reachable. All possible type definition nodes have been considered.
+    // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
     invariant(
       false,
       'Unexpected type definition node: ' + inspect((astNode: empty)),

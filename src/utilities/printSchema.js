@@ -172,11 +172,12 @@ export function printType(type: GraphQLNamedType, options?: Options): string {
   if (isEnumType(type)) {
     return printEnum(type, options);
   }
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isInputObjectType(type)) {
     return printInputObject(type, options);
   }
 
-  // Not reachable. All possible types have been considered.
+  // istanbul ignore next (Not reachable. All possible types have been considered)
   invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 

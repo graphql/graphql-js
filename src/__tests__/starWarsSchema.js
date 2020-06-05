@@ -130,11 +130,12 @@ const characterInterface = new GraphQLInterfaceType({
     if (character.type === 'Human') {
       return humanType;
     }
+    // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
     if (character.type === 'Droid') {
       return droidType;
     }
 
-    // Not reachable. All possible types have been considered.
+    // istanbul ignore next (Not reachable. All possible types have been considered)
     invariant(false);
   },
 });

@@ -199,11 +199,12 @@ describe('Execute: Handles execution of abstract types', () => {
         if (obj instanceof Cat) {
           return CatType;
         }
+        // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
         if (obj instanceof Human) {
           return HumanType;
         }
 
-        // Not reachable. All possible types have been considered.
+        // istanbul ignore next (Not reachable. All possible types have been considered)
         invariant(false);
       },
       fields: {
@@ -329,11 +330,12 @@ describe('Execute: Handles execution of abstract types', () => {
         if (obj instanceof Cat) {
           return CatType;
         }
+        // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
         if (obj instanceof Human) {
           return HumanType;
         }
 
-        // Not reachable. All possible types have been considered.
+        // istanbul ignore next (Not reachable. All possible types have been considered)
         invariant(false);
       },
       types: [DogType, CatType],
@@ -490,11 +492,12 @@ describe('Execute: Handles execution of abstract types', () => {
         if (obj instanceof Dog) {
           return 'Dog';
         }
+        // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
         if (obj instanceof Cat) {
           return 'Cat';
         }
 
-        // Not reachable. All possible types have been considered.
+        // istanbul ignore next (Not reachable. All possible types have been considered)
         invariant(false);
       },
       fields: {

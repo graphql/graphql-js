@@ -134,6 +134,6 @@ function getDirectiveLocationForOperation(
       return DirectiveLocation.SUBSCRIPTION;
   }
 
-  // Not reachable. All possible types have been considered.
+  // istanbul ignore next (Not reachable. All possible types have been considered)
   invariant(false, 'Unexpected operation: ' + inspect((operation: empty)));
 }
