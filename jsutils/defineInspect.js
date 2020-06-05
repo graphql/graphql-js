@@ -19,7 +19,7 @@ function defineInspect(classObject) {
 
   /* istanbul ignore next */
   typeof fn === 'function' || (0, _invariant.default)(0);
-  classObject.prototype.inspect = fn; // istanbul ignore else (See: https://github.com/graphql/graphql-js/issues/2317)
+  classObject.prototype.inspect = fn; // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2317')
 
   if (_nodejsCustomInspectSymbol.default) {
     classObject.prototype[_nodejsCustomInspectSymbol.default] = fn;

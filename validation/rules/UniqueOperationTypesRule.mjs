@@ -21,7 +21,7 @@ export function UniqueOperationTypesRule(context) {
   function checkOperationTypes(node) {
     var _node$operationTypes;
 
-    // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     var operationTypesNodes = (_node$operationTypes = node.operationTypes) !== null && _node$operationTypes !== void 0 ? _node$operationTypes : [];
 
     for (var _i2 = 0; _i2 < operationTypesNodes.length; _i2++) {

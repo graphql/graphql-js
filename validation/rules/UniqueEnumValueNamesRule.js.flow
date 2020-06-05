@@ -30,7 +30,7 @@ export function UniqueEnumValueNamesRule(
       knownValueNames[typeName] = Object.create(null);
     }
 
-    // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const valueNodes = node.values ?? [];
     const valueNames = knownValueNames[typeName];
 

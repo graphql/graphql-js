@@ -311,7 +311,7 @@ export function buildExecutionContext(
     return [new GraphQLError('Must provide an operation.')];
   }
 
-  // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   const variableDefinitions = operation.variableDefinitions ?? [];
 
   const coercedVariableValues = getVariableValues(

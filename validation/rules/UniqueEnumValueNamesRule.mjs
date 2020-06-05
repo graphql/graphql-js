@@ -22,7 +22,7 @@ export function UniqueEnumValueNamesRule(context) {
 
     if (!knownValueNames[typeName]) {
       knownValueNames[typeName] = Object.create(null);
-    } // istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203)
+    } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
 
 
     var valueNodes = (_node$values = node.values) !== null && _node$values !== void 0 ? _node$values : [];
