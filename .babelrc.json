@@ -1,9 +1,6 @@
 {
   "presets": [["@babel/preset-env", { "targets": { "node": "current" } }]],
-  "plugins": [
-    "./resources/inline-invariant",
-    "@babel/plugin-transform-flow-strip-types"
-  ],
+  "plugins": ["@babel/plugin-transform-flow-strip-types"],
   "overrides": [
     {
       "exclude": [
@@ -20,11 +17,15 @@
       ],
       "env": {
         "cjs": {
-          "presets": [["@babel/preset-env", { "modules": "commonjs" }]]
+          "presets": [["@babel/preset-env", { "modules": "commonjs" }]],
+          "plugins": ["./resources/inline-invariant"]
         },
         "mjs": {
           "presets": [["@babel/preset-env", { "modules": false }]],
-          "plugins": ["./resources/add-extension-to-import-paths"]
+          "plugins": [
+            "./resources/add-extension-to-import-paths",
+            "./resources/inline-invariant"
+          ]
         }
       }
     },

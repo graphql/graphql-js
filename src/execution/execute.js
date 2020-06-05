@@ -868,6 +868,7 @@ function completeValue(
   }
 
   // If field type is Object, execute and complete all sub-selections.
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isObjectType(returnType)) {
     return completeObjectValue(
       exeContext,
@@ -879,7 +880,7 @@ function completeValue(
     );
   }
 
-  // Not reachable. All possible output types have been considered.
+  // istanbul ignore next (Not reachable. All possible output types have been considered)
   invariant(
     false,
     'Cannot complete value of unexpected output type: ' +
