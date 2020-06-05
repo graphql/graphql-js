@@ -96,7 +96,7 @@ describe('mapAsyncIterator', () => {
       yield 1;
       yield 2;
 
-      // istanbul ignore next (shouldn't be reached)
+      // istanbul ignore next (Shouldn't be reached)
       yield 3;
     }
 
@@ -156,7 +156,7 @@ describe('mapAsyncIterator', () => {
         yield 1;
         yield 2;
 
-        // istanbul ignore next (shouldn't be reached)
+        // istanbul ignore next (Shouldn't be reached)
         yield 3;
       } finally {
         yield 'Done';
@@ -223,7 +223,7 @@ describe('mapAsyncIterator', () => {
         yield 1;
         yield 2;
 
-        // istanbul ignore next (shouldn't be reached)
+        // istanbul ignore next (Shouldn't be reached)
         yield 3;
       } catch (e) {
         yield e;
@@ -311,7 +311,7 @@ describe('mapAsyncIterator', () => {
         yield 1;
         yield 2;
 
-        // istanbul ignore next (shouldn't be reached)
+        // istanbul ignore next (Shouldn't be reached)
         yield 3;
       } finally {
         didVisitFinally = true;

@@ -39,7 +39,7 @@ const NonNullScalarType = GraphQLNonNull(ScalarType);
 const ListOfNonNullScalarsType = GraphQLList(NonNullScalarType);
 const NonNullListOfScalars = GraphQLNonNull(ListOfScalarsType);
 
-// istanbul ignore next (never called and used as a placeholder)
+// istanbul ignore next (Never called and used as a placeholder)
 const dummyFunc = () => {
   /* empty */
 };
