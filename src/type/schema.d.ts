@@ -1,7 +1,7 @@
 // FIXME
 /* eslint-disable import/no-cycle */
 
-import { Maybe } from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
 
 import { SchemaDefinitionNode, SchemaExtensionNode } from '../language/ast';
 
