@@ -1,5 +1,6 @@
 import { Token } from './ast';
 import { Source } from './source';
+import { TokenKindEnum } from './tokenKind';
 
 /**
  * Given a Source object, this returns a Lexer for that source.
@@ -50,3 +51,8 @@ export class Lexer {
  * @internal
  */
 export function isPunctuatorToken(token: Token): boolean;
+
+/**
+ * @internal
+ */
+export function isPunctuatorTokenKind(kind: TokenKindEnum): boolean;
