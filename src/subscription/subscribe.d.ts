@@ -1,4 +1,4 @@
-import { Maybe } from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
 
 import { DocumentNode } from '../language/ast';
 import { ExecutionResult } from '../execution/execute';
