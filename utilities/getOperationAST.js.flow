@@ -13,7 +13,7 @@ import {
  */
 export function getOperationAST(
   documentAST: DocumentNode,
-  operationName: ?string,
+  operationName?: ?string,
 ): ?OperationDefinitionNode {
   let operation = null;
   for (const definition of documentAST.definitions) {
