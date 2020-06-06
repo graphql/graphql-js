@@ -111,7 +111,7 @@ export interface GraphQLSchemaValidationOptions {
 
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   description?: Maybe<string>;
-  query: Maybe<GraphQLObjectType>;
+  query?: Maybe<GraphQLObjectType>;
   mutation?: Maybe<GraphQLObjectType>;
   subscription?: Maybe<GraphQLObjectType>;
   types?: Maybe<Array<GraphQLNamedType>>;
