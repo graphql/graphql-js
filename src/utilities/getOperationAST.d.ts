@@ -9,5 +9,5 @@ import { DocumentNode, OperationDefinitionNode } from '../language/ast';
  */
 export function getOperationAST(
   documentAST: DocumentNode,
-  operationName: Maybe<string>,
+  operationName?: Maybe<string>,
 ): Maybe<OperationDefinitionNode>;
