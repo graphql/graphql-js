@@ -5,7 +5,7 @@ import { DirectiveLocationEnum } from '../language/directiveLocation';
 export interface IntrospectionOptions {
   // Whether to include descriptions in the introspection result.
   // Default: true
-  descriptions: boolean;
+  descriptions?: boolean;
 
   // Whether to include `specifiedByUrl` in the introspection result.
   // Default: false
