@@ -1,4 +1,4 @@
-import { Maybe } from './tsutils/Maybe';
+import { Maybe } from './jsutils/Maybe';
 
 import { Source } from './language/source';
 import { GraphQLSchema } from './type/schema';

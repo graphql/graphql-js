@@ -1,4 +1,4 @@
-import { Maybe } from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { ASTVisitor } from '../language/visitor';
