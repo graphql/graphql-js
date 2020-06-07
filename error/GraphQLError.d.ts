@@ -13,7 +13,7 @@ import { SourceLocation } from '../language/location';
 export class GraphQLError extends Error {
   constructor(
     message: string,
-    nodes?: ReadonlyArray<ASTNode> | ASTNode,
+    nodes?: Maybe<ReadonlyArray<ASTNode> | ASTNode>,
     source?: Maybe<Source>,
     positions?: Maybe<ReadonlyArray<number>>,
     path?: Maybe<ReadonlyArray<string | number>>,
