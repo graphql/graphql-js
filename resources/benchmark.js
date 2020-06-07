@@ -309,5 +309,8 @@ function bold(str) {
 // Get the revisions and make things happen!
 if (require.main === module) {
   const { benchmarkPatterns, revisions } = getArguments(process.argv.slice(2));
-  prepareAndRunBenchmarks(benchmarkPatterns, revisions);
+  prepareAndRunBenchmarks(benchmarkPatterns, revisions).catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 }
