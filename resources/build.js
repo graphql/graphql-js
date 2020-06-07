@@ -53,6 +53,9 @@ function buildPackageJSON() {
   delete packageJSON.scripts;
   delete packageJSON.devDependencies;
 
+  packageJSON.engines = packageJSON.engines_on_npm;
+  delete packageJSON.engines_on_npm;
+
   const versionJS = require('../dist/version.js');
   assert(
     versionJS.version === packageJSON.version,

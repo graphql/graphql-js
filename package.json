@@ -21,6 +21,9 @@
     "graphql-js"
   ],
   "engines": {
+    "node": ">= 14.2"
+  },
+  "engines_on_npm": {
     "node": ">= 10.x"
   },
   "scripts": {
