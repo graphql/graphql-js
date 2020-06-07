@@ -2,3 +2,4 @@ throw-deprecation: true
 check-leaks: true
 require:
   - '@babel/register'
+  - ts-node/register

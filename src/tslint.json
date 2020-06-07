@@ -1,5 +1,8 @@
 {
   "extends": "dtslint/dtslint.json",
+  "linterOptions": {
+    "exclude": ["./**/__tests__/**/*.ts", "./**/__testUtils__/**/*.ts"]
+  },
   "rules": {
     "array-type": false,
     "strict-export-declare-modifiers": false
