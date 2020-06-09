@@ -49,13 +49,6 @@ function rmdirRecursive(dirPath) {
 }
 
 function readdirRecursive(dirPath, opts = {}) {
-  console.log('-------');
-  const result = readdirRecursive2(dirPath, opts);
-  console.log('+++++++');
-  return result;
-}
-
-function readdirRecursive2(dirPath, opts = {}) {
   const { ignoreDir } = opts;
   const result = [];
   for (const dirent of fs.readdirSync(dirPath, { withFileTypes: true })) {
@@ -68,7 +61,7 @@ function readdirRecursive2(dirPath, opts = {}) {
     if (ignoreDir && ignoreDir.test(name)) {
       continue;
     }
-    const list = readdirRecursive2(path.join(dirPath, name), opts).map((f) =>
+    const list = readdirRecursive(path.join(dirPath, name), opts).map((f) =>
       path.join(name, f),
     );
     result.push(...list);
