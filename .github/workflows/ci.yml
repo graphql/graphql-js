@@ -238,7 +238,7 @@ jobs:
       - name: Build Deno package
         run: npm run build:deno
 
-      - name: Deploy to `npm` branch
+      - name: Deploy to `deno` branch
         run: npm run gitpublish:deno
         env:
           GH_TOKEN: ${{ secrets.GH_NPM_BRANCH_PUBLISH_TOKEN }}

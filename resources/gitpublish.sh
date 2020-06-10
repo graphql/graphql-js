@@ -14,13 +14,18 @@ DIST_DIR=$2
 set -e
 
 if [ ! -d $DIST_DIR ]; then
- echo "Directory `${DIST_DIR}` does not  exist!"
+ echo "Directory '${DIST_DIR}' does not  exist!"
+ exit 1;
+fi;
+
+if [ -z "${GH_TOKEN}" ]; then
+ echo 'Must provide GH_TOKEN as environment variable!'
  exit 1;
 fi;
 
 # Create empty directory
 rm -rf $BRANCH
-git clone -b $BRANCH "https://${GH_TOKEN}@github.com/graphql/graphql-js.git" $BRANCH
+git clone -b $BRANCH -- "https://${GH_TOKEN}@github.com/graphql/graphql-js.git" $BRANCH
 
 # Remove existing files first
 rm -rf $BRANCH/**/*
@@ -41,7 +46,7 @@ git add -A .
 if git diff --staged --quiet; then
   echo "Nothing to publish"
 else
-  git commit -a -m "Deploy $HEADREV to `$BRANCH` branch"
+  git commit -a -m "Deploy $HEADREV to '$BRANCH' branch"
   git push > /dev/null 2>&1
   echo "Pushed"
 fi
