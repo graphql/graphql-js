@@ -5,4 +5,4 @@
  * or
  *   import { UniqueOperationTypesRule } from 'graphql/validation'
  */
-export { UniqueOperationTypesRule as UniqueOperationTypes } from "./UniqueOperationTypesRule.mjs";
+export { UniqueOperationTypesRule as UniqueOperationTypes } from "./UniqueOperationTypesRule.js";

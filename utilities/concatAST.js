@@ -1,4 +1,4 @@
-import flatMap from "../polyfills/flatMap.mjs";
+import flatMap from "../polyfills/flatMap.js";
 
 /**
  * Provided a collection of ASTs, presumably each from different files,

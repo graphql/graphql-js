@@ -1,5 +1,5 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { Kind } from "../../language/kinds.mjs";
+import { GraphQLError } from "../../error/GraphQLError.js";
+import { Kind } from "../../language/kinds.js";
 
 /**
  * Lone anonymous operation

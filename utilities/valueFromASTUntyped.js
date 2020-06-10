@@ -1,7 +1,7 @@
-import inspect from "../jsutils/inspect.mjs";
-import invariant from "../jsutils/invariant.mjs";
-import keyValMap from "../jsutils/keyValMap.mjs";
-import { Kind } from "../language/kinds.mjs";
+import inspect from "../jsutils/inspect.js";
+import invariant from "../jsutils/invariant.js";
+import keyValMap from "../jsutils/keyValMap.js";
+import { Kind } from "../language/kinds.js";
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.

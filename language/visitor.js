@@ -1,5 +1,5 @@
-import inspect from "../jsutils/inspect.mjs";
-import { isNode } from "./ast.mjs";
+import inspect from "../jsutils/inspect.js";
+import { isNode } from "./ast.js";
 /**
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.

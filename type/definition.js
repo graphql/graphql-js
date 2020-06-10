@@ -1,24 +1,24 @@
 // FIXME
 
 /* eslint-disable import/no-cycle */
-import objectEntries from "../polyfills/objectEntries.mjs";
-import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import keyMap from "../jsutils/keyMap.mjs";
-import mapValue from "../jsutils/mapValue.mjs";
-import toObjMap from "../jsutils/toObjMap.mjs";
-import devAssert from "../jsutils/devAssert.mjs";
-import keyValMap from "../jsutils/keyValMap.mjs";
-import instanceOf from "../jsutils/instanceOf.mjs";
-import didYouMean from "../jsutils/didYouMean.mjs";
-import isObjectLike from "../jsutils/isObjectLike.mjs";
-import identityFunc from "../jsutils/identityFunc.mjs";
-import defineInspect from "../jsutils/defineInspect.mjs";
-import suggestionList from "../jsutils/suggestionList.mjs";
-import { Kind } from "../language/kinds.mjs";
-import { print } from "../language/printer.mjs";
-import { GraphQLError } from "../error/GraphQLError.mjs";
-import { valueFromASTUntyped } from "../utilities/valueFromASTUntyped.mjs";
+import objectEntries from "../polyfills/objectEntries.js";
+import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
+import inspect from "../jsutils/inspect.js";
+import keyMap from "../jsutils/keyMap.js";
+import mapValue from "../jsutils/mapValue.js";
+import toObjMap from "../jsutils/toObjMap.js";
+import devAssert from "../jsutils/devAssert.js";
+import keyValMap from "../jsutils/keyValMap.js";
+import instanceOf from "../jsutils/instanceOf.js";
+import didYouMean from "../jsutils/didYouMean.js";
+import isObjectLike from "../jsutils/isObjectLike.js";
+import identityFunc from "../jsutils/identityFunc.js";
+import defineInspect from "../jsutils/defineInspect.js";
+import suggestionList from "../jsutils/suggestionList.js";
+import { Kind } from "../language/kinds.js";
+import { print } from "../language/printer.js";
+import { GraphQLError } from "../error/GraphQLError.js";
+import { valueFromASTUntyped } from "../utilities/valueFromASTUntyped.js";
 export function isType(type) {
   return isScalarType(type) || isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type) || isInputObjectType(type) || isListType(type) || isNonNullType(type);
 }

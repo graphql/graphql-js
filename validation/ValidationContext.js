@@ -1,6 +1,6 @@
-import { Kind } from "../language/kinds.mjs";
-import { visit } from "../language/visitor.mjs";
-import { TypeInfo, visitWithTypeInfo } from "../utilities/TypeInfo.mjs";
+import { Kind } from "../language/kinds.js";
+import { visit } from "../language/visitor.js";
+import { TypeInfo, visitWithTypeInfo } from "../utilities/TypeInfo.js";
 
 /**
  * An instance of this class is passed as the "this" context to all validators,

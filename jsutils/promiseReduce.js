@@ -1,4 +1,4 @@
-import isPromise from "./isPromise.mjs";
+import isPromise from "./isPromise.js";
 
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return

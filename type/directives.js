@@ -1,14 +1,14 @@
-import objectEntries from "../polyfills/objectEntries.mjs";
-import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import toObjMap from "../jsutils/toObjMap.mjs";
-import devAssert from "../jsutils/devAssert.mjs";
-import instanceOf from "../jsutils/instanceOf.mjs";
-import isObjectLike from "../jsutils/isObjectLike.mjs";
-import defineInspect from "../jsutils/defineInspect.mjs";
-import { DirectiveLocation } from "../language/directiveLocation.mjs";
-import { GraphQLString, GraphQLBoolean } from "./scalars.mjs";
-import { argsToArgsConfig, GraphQLNonNull } from "./definition.mjs";
+import objectEntries from "../polyfills/objectEntries.js";
+import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
+import inspect from "../jsutils/inspect.js";
+import toObjMap from "../jsutils/toObjMap.js";
+import devAssert from "../jsutils/devAssert.js";
+import instanceOf from "../jsutils/instanceOf.js";
+import isObjectLike from "../jsutils/isObjectLike.js";
+import defineInspect from "../jsutils/defineInspect.js";
+import { DirectiveLocation } from "../language/directiveLocation.js";
+import { GraphQLString, GraphQLBoolean } from "./scalars.js";
+import { argsToArgsConfig, GraphQLNonNull } from "./definition.js";
 /**
  * Test if the given value is a GraphQL directive.
  */

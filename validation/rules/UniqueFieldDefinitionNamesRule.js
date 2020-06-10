@@ -1,5 +1,5 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { isObjectType, isInterfaceType, isInputObjectType } from "../../type/definition.mjs";
+import { GraphQLError } from "../../error/GraphQLError.js";
+import { isObjectType, isInterfaceType, isInputObjectType } from "../../type/definition.js";
 
 /**
  * Unique field definition names

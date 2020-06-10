@@ -1,10 +1,10 @@
-import devAssert from "../jsutils/devAssert.mjs";
-import { Kind } from "../language/kinds.mjs";
-import { parse } from "../language/parser.mjs";
-import { assertValidSDL } from "../validation/validate.mjs";
-import { GraphQLSchema } from "../type/schema.mjs";
-import { GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective } from "../type/directives.mjs";
-import { extendSchemaImpl } from "./extendSchema.mjs";
+import devAssert from "../jsutils/devAssert.js";
+import { Kind } from "../language/kinds.js";
+import { parse } from "../language/parser.js";
+import { assertValidSDL } from "../validation/validate.js";
+import { GraphQLSchema } from "../type/schema.js";
+import { GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective } from "../type/directives.js";
+import { extendSchemaImpl } from "./extendSchema.js";
 
 /**
  * This takes the ast of a schema document produced by the parse function in

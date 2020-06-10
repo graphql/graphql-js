@@ -1,12 +1,12 @@
-import objectValues from "../polyfills/objectValues.mjs";
-import keyMap from "../jsutils/keyMap.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import invariant from "../jsutils/invariant.mjs";
-import { print } from "../language/printer.mjs";
-import { visit } from "../language/visitor.mjs";
-import { isSpecifiedScalarType } from "../type/scalars.mjs";
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from "../type/definition.mjs";
-import { astFromValue } from "./astFromValue.mjs";
+import objectValues from "../polyfills/objectValues.js";
+import keyMap from "../jsutils/keyMap.js";
+import inspect from "../jsutils/inspect.js";
+import invariant from "../jsutils/invariant.js";
+import { print } from "../language/printer.js";
+import { visit } from "../language/visitor.js";
+import { isSpecifiedScalarType } from "../type/scalars.js";
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from "../type/definition.js";
+import { astFromValue } from "./astFromValue.js";
 export const BreakingChangeType = Object.freeze({
   TYPE_REMOVED: 'TYPE_REMOVED',
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND',

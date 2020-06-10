@@ -1,11 +1,11 @@
-import inspect from "../../jsutils/inspect.mjs";
-import invariant from "../../jsutils/invariant.mjs";
-import didYouMean from "../../jsutils/didYouMean.mjs";
-import suggestionList from "../../jsutils/suggestionList.mjs";
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { Kind } from "../../language/kinds.mjs";
-import { isTypeDefinitionNode } from "../../language/predicates.mjs";
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../../type/definition.mjs";
+import inspect from "../../jsutils/inspect.js";
+import invariant from "../../jsutils/invariant.js";
+import didYouMean from "../../jsutils/didYouMean.js";
+import suggestionList from "../../jsutils/suggestionList.js";
+import { GraphQLError } from "../../error/GraphQLError.js";
+import { Kind } from "../../language/kinds.js";
+import { isTypeDefinitionNode } from "../../language/predicates.js";
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../../type/definition.js";
 
 /**
  * Possible type extension

@@ -1,7 +1,7 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { print } from "../../language/printer.mjs";
-import { isInputType } from "../../type/definition.mjs";
-import { typeFromAST } from "../../utilities/typeFromAST.mjs";
+import { GraphQLError } from "../../error/GraphQLError.js";
+import { print } from "../../language/printer.js";
+import { isInputType } from "../../type/definition.js";
+import { typeFromAST } from "../../utilities/typeFromAST.js";
 
 /**
  * Variables are input types

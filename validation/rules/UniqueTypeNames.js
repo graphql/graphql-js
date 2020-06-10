@@ -5,4 +5,4 @@
  * or
  *   import { UniqueTypeNamesRule } from 'graphql/validation'
  */
-export { UniqueTypeNamesRule as UniqueTypeNames } from "./UniqueTypeNamesRule.mjs";
+export { UniqueTypeNamesRule as UniqueTypeNames } from "./UniqueTypeNamesRule.js";

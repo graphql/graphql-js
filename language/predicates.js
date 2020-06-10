@@ -1,4 +1,4 @@
-import { Kind } from "./kinds.mjs";
+import { Kind } from "./kinds.js";
 export function isDefinitionNode(node) {
   return isExecutableDefinitionNode(node) || isTypeSystemDefinitionNode(node) || isTypeSystemExtensionNode(node);
 }

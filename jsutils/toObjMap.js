@@ -1,4 +1,4 @@
-import objectEntries from "../polyfills/objectEntries.mjs";
+import objectEntries from "../polyfills/objectEntries.js";
 export default function toObjMap(obj) {
   /* eslint-enable no-redeclare */
   if (Object.getPrototypeOf(obj) === null) {

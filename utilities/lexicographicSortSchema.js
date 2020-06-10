@@ -1,11 +1,11 @@
-import objectValues from "../polyfills/objectValues.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import invariant from "../jsutils/invariant.mjs";
-import keyValMap from "../jsutils/keyValMap.mjs";
-import { GraphQLSchema } from "../type/schema.mjs";
-import { GraphQLDirective } from "../type/directives.mjs";
-import { isIntrospectionType } from "../type/introspection.mjs";
-import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.mjs";
+import objectValues from "../polyfills/objectValues.js";
+import inspect from "../jsutils/inspect.js";
+import invariant from "../jsutils/invariant.js";
+import keyValMap from "../jsutils/keyValMap.js";
+import { GraphQLSchema } from "../type/schema.js";
+import { GraphQLDirective } from "../type/directives.js";
+import { isIntrospectionType } from "../type/introspection.js";
+import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.js";
 /**
  * Sort GraphQLSchema.
  *

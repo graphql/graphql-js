@@ -1,9 +1,9 @@
-import inspect from "../../jsutils/inspect.mjs";
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { Kind } from "../../language/kinds.mjs";
-import { isNonNullType } from "../../type/definition.mjs";
-import { typeFromAST } from "../../utilities/typeFromAST.mjs";
-import { isTypeSubTypeOf } from "../../utilities/typeComparators.mjs";
+import inspect from "../../jsutils/inspect.js";
+import { GraphQLError } from "../../error/GraphQLError.js";
+import { Kind } from "../../language/kinds.js";
+import { isNonNullType } from "../../type/definition.js";
+import { typeFromAST } from "../../utilities/typeFromAST.js";
+import { isTypeSubTypeOf } from "../../utilities/typeComparators.js";
 
 /**
  * Variables passed to field arguments conform to type

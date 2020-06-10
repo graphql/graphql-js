@@ -1,4 +1,4 @@
-import { Kind } from "../language/kinds.mjs";
+import { Kind } from "../language/kinds.js";
 
 /**
  * Returns an operation AST given a document AST and optionally an operation

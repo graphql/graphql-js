@@ -1,4 +1,4 @@
-import nodejsCustomInspectSymbol from "./nodejsCustomInspectSymbol.mjs";
+import nodejsCustomInspectSymbol from "./nodejsCustomInspectSymbol.js";
 const MAX_ARRAY_LENGTH = 10;
 const MAX_RECURSIVE_DEPTH = 2;
 /**

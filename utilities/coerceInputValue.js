@@ -1,15 +1,15 @@
-import arrayFrom from "../polyfills/arrayFrom.mjs";
-import objectValues from "../polyfills/objectValues.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import invariant from "../jsutils/invariant.mjs";
-import didYouMean from "../jsutils/didYouMean.mjs";
-import isObjectLike from "../jsutils/isObjectLike.mjs";
-import isCollection from "../jsutils/isCollection.mjs";
-import suggestionList from "../jsutils/suggestionList.mjs";
-import printPathArray from "../jsutils/printPathArray.mjs";
-import { addPath, pathToArray } from "../jsutils/Path.mjs";
-import { GraphQLError } from "../error/GraphQLError.mjs";
-import { isLeafType, isInputObjectType, isListType, isNonNullType } from "../type/definition.mjs";
+import arrayFrom from "../polyfills/arrayFrom.js";
+import objectValues from "../polyfills/objectValues.js";
+import inspect from "../jsutils/inspect.js";
+import invariant from "../jsutils/invariant.js";
+import didYouMean from "../jsutils/didYouMean.js";
+import isObjectLike from "../jsutils/isObjectLike.js";
+import isCollection from "../jsutils/isCollection.js";
+import suggestionList from "../jsutils/suggestionList.js";
+import printPathArray from "../jsutils/printPathArray.js";
+import { addPath, pathToArray } from "../jsutils/Path.js";
+import { GraphQLError } from "../error/GraphQLError.js";
+import { isLeafType, isInputObjectType, isListType, isNonNullType } from "../type/definition.js";
 
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.

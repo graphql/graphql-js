@@ -1,7 +1,7 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { print } from "../../language/printer.mjs";
-import { isCompositeType } from "../../type/definition.mjs";
-import { typeFromAST } from "../../utilities/typeFromAST.mjs";
+import { GraphQLError } from "../../error/GraphQLError.js";
+import { print } from "../../language/printer.js";
+import { isCompositeType } from "../../type/definition.js";
+import { typeFromAST } from "../../utilities/typeFromAST.js";
 
 /**
  * Fragments on composite type

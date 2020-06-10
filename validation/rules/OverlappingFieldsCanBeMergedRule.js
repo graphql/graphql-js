@@ -1,11 +1,11 @@
-import find from "../../polyfills/find.mjs";
-import objectEntries from "../../polyfills/objectEntries.mjs";
-import inspect from "../../jsutils/inspect.mjs";
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { Kind } from "../../language/kinds.mjs";
-import { print } from "../../language/printer.mjs";
-import { getNamedType, isNonNullType, isLeafType, isObjectType, isListType, isInterfaceType } from "../../type/definition.mjs";
-import { typeFromAST } from "../../utilities/typeFromAST.mjs";
+import find from "../../polyfills/find.js";
+import objectEntries from "../../polyfills/objectEntries.js";
+import inspect from "../../jsutils/inspect.js";
+import { GraphQLError } from "../../error/GraphQLError.js";
+import { Kind } from "../../language/kinds.js";
+import { print } from "../../language/printer.js";
+import { getNamedType, isNonNullType, isLeafType, isObjectType, isListType, isInterfaceType } from "../../type/definition.js";
+import { typeFromAST } from "../../utilities/typeFromAST.js";
 
 function reasonMessage(reason) {
   if (Array.isArray(reason)) {

@@ -1,15 +1,15 @@
-import find from "../polyfills/find.mjs";
-import arrayFrom from "../polyfills/arrayFrom.mjs";
-import objectValues from "../polyfills/objectValues.mjs";
-import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import toObjMap from "../jsutils/toObjMap.mjs";
-import devAssert from "../jsutils/devAssert.mjs";
-import instanceOf from "../jsutils/instanceOf.mjs";
-import isObjectLike from "../jsutils/isObjectLike.mjs";
-import { __Schema } from "./introspection.mjs";
-import { GraphQLDirective, isDirective, specifiedDirectives } from "./directives.mjs";
-import { isObjectType, isInterfaceType, isUnionType, isInputObjectType, getNamedType } from "./definition.mjs";
+import find from "../polyfills/find.js";
+import arrayFrom from "../polyfills/arrayFrom.js";
+import objectValues from "../polyfills/objectValues.js";
+import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
+import inspect from "../jsutils/inspect.js";
+import toObjMap from "../jsutils/toObjMap.js";
+import devAssert from "../jsutils/devAssert.js";
+import instanceOf from "../jsutils/instanceOf.js";
+import isObjectLike from "../jsutils/isObjectLike.js";
+import { __Schema } from "./introspection.js";
+import { GraphQLDirective, isDirective, specifiedDirectives } from "./directives.js";
+import { isObjectType, isInterfaceType, isUnionType, isInputObjectType, getNamedType } from "./definition.js";
 /**
  * Test if the given value is a GraphQL schema.
  */

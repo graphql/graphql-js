@@ -1,4 +1,4 @@
-import defineInspect from "../jsutils/defineInspect.mjs";
+import defineInspect from "../jsutils/defineInspect.js";
 
 /**
  * Contains a range of UTF-8 character offsets and token references that

@@ -1,4 +1,4 @@
-import { SYMBOL_ITERATOR } from "./symbols.mjs";
+import { SYMBOL_ITERATOR } from "./symbols.js";
 
 /* eslint-disable no-redeclare */
 // $FlowFixMe
