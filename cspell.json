@@ -19,6 +19,9 @@
     "Tatooine",
     "astromech",
 
+    // TODO: contribute upstream
+    "deno",
+
     // TODO: remove bellow words
     "Graphi", // GraphiQL
     "QL's", // GraphQL's

@@ -28,7 +28,7 @@
   },
   "scripts": {
     "test": "npm run prettier:check && npm run lint && npm run check && npm run testonly && npm run check:ts && npm run check:spelling",
-    "test:ci": "npm run prettier:check && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run check:ts && npm run check:spelling && npm run build",
+    "test:ci": "npm run prettier:check && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run check:ts && npm run check:spelling && npm run build:npm && npm run build:deno",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.js",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc npm run testonly",
@@ -40,11 +40,13 @@
     "check:ts": "dtslint src",
     "check:cover": "node resources/check-cover.js && nyc report --nycrc-path .nycflowrc.yml",
     "check:spelling": "cspell \"./{src/**/,resources/**/}*.{js,ts,md,graphql}\"",
-    "build": "node resources/build.js",
+    "build:npm": "node resources/build-npm.js",
+    "build:deno": "node resources/build-deno.js",
     "changelog": "node resources/gen-changelog.js",
     "preversion": ". ./resources/checkgit.sh && npm ci",
     "version": "node resources/gen-version.js && npm test && git add src/version.js",
-    "gitpublish": ". ./resources/gitpublish.sh"
+    "gitpublish:npm": "node ./resources/gitpublish.js npm npmDist",
+    "gitpublish:deno": "node ./resources/gitpublish.js deon denoDist"
   },
   "dependencies": {},
   "devDependencies": {

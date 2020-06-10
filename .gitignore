@@ -8,6 +8,8 @@
 .eslintcache
 node_modules
 coverage
-dist
+npmDist
+denoDist
 benchmarkDist
 npm
+deno

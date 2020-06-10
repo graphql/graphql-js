@@ -23,7 +23,10 @@
         "mjs": {
           "presets": [["@babel/preset-env", { "modules": false }]],
           "plugins": [
-            "./resources/add-extension-to-import-paths",
+            [
+              "./resources/add-extension-to-import-paths",
+              { "extension": "mjs" }
+            ],
             "./resources/inline-invariant"
           ]
         }
