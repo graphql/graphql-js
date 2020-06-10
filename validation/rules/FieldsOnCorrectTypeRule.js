@@ -1,8 +1,8 @@
-import arrayFrom from "../../polyfills/arrayFrom.js";
-import didYouMean from "../../jsutils/didYouMean.js";
-import suggestionList from "../../jsutils/suggestionList.js";
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { isObjectType, isInterfaceType, isAbstractType } from "../../type/definition.js";
+import arrayFrom from "../../polyfills/arrayFrom.mjs";
+import didYouMean from "../../jsutils/didYouMean.mjs";
+import suggestionList from "../../jsutils/suggestionList.mjs";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { isObjectType, isInterfaceType, isAbstractType } from "../../type/definition.mjs";
 
 /**
  * Fields on correct type

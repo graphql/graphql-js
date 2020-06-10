@@ -1,21 +1,21 @@
-import objectValues from "../polyfills/objectValues.js";
-import keyMap from "../jsutils/keyMap.js";
-import inspect from "../jsutils/inspect.js";
-import mapValue from "../jsutils/mapValue.js";
-import invariant from "../jsutils/invariant.js";
-import devAssert from "../jsutils/devAssert.js";
-import { Kind } from "../language/kinds.js";
-import { TokenKind } from "../language/tokenKind.js";
-import { dedentBlockStringValue } from "../language/blockString.js";
-import { isTypeDefinitionNode, isTypeExtensionNode } from "../language/predicates.js";
-import { assertValidSDLExtension } from "../validation/validate.js";
-import { getDirectiveValues } from "../execution/values.js";
-import { specifiedScalarTypes, isSpecifiedScalarType } from "../type/scalars.js";
-import { introspectionTypes, isIntrospectionType } from "../type/introspection.js";
-import { GraphQLDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective } from "../type/directives.js";
-import { assertSchema, GraphQLSchema } from "../type/schema.js";
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from "../type/definition.js";
-import { valueFromAST } from "./valueFromAST.js";
+import objectValues from "../polyfills/objectValues.mjs";
+import keyMap from "../jsutils/keyMap.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import mapValue from "../jsutils/mapValue.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import devAssert from "../jsutils/devAssert.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { TokenKind } from "../language/tokenKind.mjs";
+import { dedentBlockStringValue } from "../language/blockString.mjs";
+import { isTypeDefinitionNode, isTypeExtensionNode } from "../language/predicates.mjs";
+import { assertValidSDLExtension } from "../validation/validate.mjs";
+import { getDirectiveValues } from "../execution/values.mjs";
+import { specifiedScalarTypes, isSpecifiedScalarType } from "../type/scalars.mjs";
+import { introspectionTypes, isIntrospectionType } from "../type/introspection.mjs";
+import { GraphQLDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective } from "../type/directives.mjs";
+import { assertSchema, GraphQLSchema } from "../type/schema.mjs";
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from "../type/definition.mjs";
+import { valueFromAST } from "./valueFromAST.mjs";
 
 /**
  * Produces a new schema given an existing schema and a document which may

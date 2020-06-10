@@ -1,5 +1,5 @@
-import { Kind } from "../language/kinds.js";
-import { visit } from "../language/visitor.js";
+import { Kind } from "../language/kinds.mjs";
+import { visit } from "../language/visitor.mjs";
 
 /**
  * separateOperations accepts a single AST document which may contain many

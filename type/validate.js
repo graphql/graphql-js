@@ -1,15 +1,15 @@
-import find from "../polyfills/find.js";
-import flatMap from "../polyfills/flatMap.js";
-import objectValues from "../polyfills/objectValues.js";
-import inspect from "../jsutils/inspect.js";
-import { GraphQLError } from "../error/GraphQLError.js";
-import { locatedError } from "../error/locatedError.js";
-import { isValidNameError } from "../utilities/assertValidName.js";
-import { isEqualType, isTypeSubTypeOf } from "../utilities/typeComparators.js";
-import { isDirective } from "./directives.js";
-import { isIntrospectionType } from "./introspection.js";
-import { assertSchema } from "./schema.js";
-import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument } from "./definition.js";
+import find from "../polyfills/find.mjs";
+import flatMap from "../polyfills/flatMap.mjs";
+import objectValues from "../polyfills/objectValues.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { locatedError } from "../error/locatedError.mjs";
+import { isValidNameError } from "../utilities/assertValidName.mjs";
+import { isEqualType, isTypeSubTypeOf } from "../utilities/typeComparators.mjs";
+import { isDirective } from "./directives.mjs";
+import { isIntrospectionType } from "./introspection.mjs";
+import { assertSchema } from "./schema.mjs";
+import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument } from "./definition.mjs";
 /**
  * Implements the "Type Validation" sub-sections of the specification's
  * "Type System" section.

@@ -1,14 +1,14 @@
-import find from "../polyfills/find.js";
-import keyMap from "../jsutils/keyMap.js";
-import inspect from "../jsutils/inspect.js";
-import printPathArray from "../jsutils/printPathArray.js";
-import { GraphQLError } from "../error/GraphQLError.js";
-import { Kind } from "../language/kinds.js";
-import { print } from "../language/printer.js";
-import { isInputType, isNonNullType } from "../type/definition.js";
-import { typeFromAST } from "../utilities/typeFromAST.js";
-import { valueFromAST } from "../utilities/valueFromAST.js";
-import { coerceInputValue } from "../utilities/coerceInputValue.js";
+import find from "../polyfills/find.mjs";
+import keyMap from "../jsutils/keyMap.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import printPathArray from "../jsutils/printPathArray.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { print } from "../language/printer.mjs";
+import { isInputType, isNonNullType } from "../type/definition.mjs";
+import { typeFromAST } from "../utilities/typeFromAST.mjs";
+import { valueFromAST } from "../utilities/valueFromAST.mjs";
+import { coerceInputValue } from "../utilities/coerceInputValue.mjs";
 
 /**
  * Prepares an object map of variableValues of the correct type based on the

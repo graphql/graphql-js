@@ -1,13 +1,13 @@
-import isFinite from "../polyfills/isFinite.js";
-import arrayFrom from "../polyfills/arrayFrom.js";
-import objectValues from "../polyfills/objectValues.js";
-import inspect from "../jsutils/inspect.js";
-import invariant from "../jsutils/invariant.js";
-import isObjectLike from "../jsutils/isObjectLike.js";
-import isCollection from "../jsutils/isCollection.js";
-import { Kind } from "../language/kinds.js";
-import { GraphQLID } from "../type/scalars.js";
-import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from "../type/definition.js";
+import isFinite from "../polyfills/isFinite.mjs";
+import arrayFrom from "../polyfills/arrayFrom.mjs";
+import objectValues from "../polyfills/objectValues.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import isObjectLike from "../jsutils/isObjectLike.mjs";
+import isCollection from "../jsutils/isCollection.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { GraphQLID } from "../type/scalars.mjs";
+import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from "../type/definition.mjs";
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format

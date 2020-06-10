@@ -1,24 +1,24 @@
-import arrayFrom from "../polyfills/arrayFrom.js";
-import inspect from "../jsutils/inspect.js";
-import memoize3 from "../jsutils/memoize3.js";
-import invariant from "../jsutils/invariant.js";
-import devAssert from "../jsutils/devAssert.js";
-import isPromise from "../jsutils/isPromise.js";
-import isObjectLike from "../jsutils/isObjectLike.js";
-import isCollection from "../jsutils/isCollection.js";
-import promiseReduce from "../jsutils/promiseReduce.js";
-import promiseForObject from "../jsutils/promiseForObject.js";
-import { addPath, pathToArray } from "../jsutils/Path.js";
-import { GraphQLError } from "../error/GraphQLError.js";
-import { locatedError } from "../error/locatedError.js";
-import { Kind } from "../language/kinds.js";
-import { assertValidSchema } from "../type/validate.js";
-import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from "../type/introspection.js";
-import { GraphQLIncludeDirective, GraphQLSkipDirective } from "../type/directives.js";
-import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from "../type/definition.js";
-import { typeFromAST } from "../utilities/typeFromAST.js";
-import { getOperationRootType } from "../utilities/getOperationRootType.js";
-import { getVariableValues, getArgumentValues, getDirectiveValues } from "./values.js";
+import arrayFrom from "../polyfills/arrayFrom.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import memoize3 from "../jsutils/memoize3.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import devAssert from "../jsutils/devAssert.mjs";
+import isPromise from "../jsutils/isPromise.mjs";
+import isObjectLike from "../jsutils/isObjectLike.mjs";
+import isCollection from "../jsutils/isCollection.mjs";
+import promiseReduce from "../jsutils/promiseReduce.mjs";
+import promiseForObject from "../jsutils/promiseForObject.mjs";
+import { addPath, pathToArray } from "../jsutils/Path.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { locatedError } from "../error/locatedError.mjs";
+import { Kind } from "../language/kinds.mjs";
+import { assertValidSchema } from "../type/validate.mjs";
+import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from "../type/introspection.mjs";
+import { GraphQLIncludeDirective, GraphQLSkipDirective } from "../type/directives.mjs";
+import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from "../type/definition.mjs";
+import { typeFromAST } from "../utilities/typeFromAST.mjs";
+import { getOperationRootType } from "../utilities/getOperationRootType.mjs";
+import { getVariableValues, getArgumentValues, getDirectiveValues } from "./values.mjs";
 /**
  * Terminology
  *

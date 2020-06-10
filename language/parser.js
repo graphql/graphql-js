@@ -1,12 +1,12 @@
-import inspect from "../jsutils/inspect.js";
-import devAssert from "../jsutils/devAssert.js";
-import { syntaxError } from "../error/syntaxError.js";
-import { Kind } from "./kinds.js";
-import { Source } from "./source.js";
-import { DirectiveLocation } from "./directiveLocation.js";
-import { TokenKind } from "./tokenKind.js";
-import { Lexer, isPunctuatorTokenKind } from "./lexer.js";
-import { Location } from "./ast.js";
+import inspect from "../jsutils/inspect.mjs";
+import devAssert from "../jsutils/devAssert.mjs";
+import { syntaxError } from "../error/syntaxError.mjs";
+import { Kind } from "./kinds.mjs";
+import { Source } from "./source.mjs";
+import { DirectiveLocation } from "./directiveLocation.mjs";
+import { TokenKind } from "./tokenKind.mjs";
+import { Lexer, isPunctuatorTokenKind } from "./lexer.mjs";
+import { Location } from "./ast.mjs";
 /**
  * Configuration options to control parser behavior
  */

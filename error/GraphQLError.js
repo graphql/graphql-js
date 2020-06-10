@@ -26,10 +26,10 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 // FIXME:
 // flowlint uninitialized-instance-property:off
-import isObjectLike from "../jsutils/isObjectLike.js";
-import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
-import { getLocation } from "../language/location.js";
-import { printLocation, printSourceLocation } from "../language/printLocation.js";
+import isObjectLike from "../jsutils/isObjectLike.mjs";
+import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
+import { getLocation } from "../language/location.mjs";
+import { printLocation, printSourceLocation } from "../language/printLocation.mjs";
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message

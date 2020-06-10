@@ -1,8 +1,8 @@
-import didYouMean from "../../jsutils/didYouMean.js";
-import suggestionList from "../../jsutils/suggestionList.js";
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { isTypeDefinitionNode, isTypeSystemDefinitionNode, isTypeSystemExtensionNode } from "../../language/predicates.js";
-import { specifiedScalarTypes } from "../../type/scalars.js";
+import didYouMean from "../../jsutils/didYouMean.mjs";
+import suggestionList from "../../jsutils/suggestionList.mjs";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { isTypeDefinitionNode, isTypeSystemDefinitionNode, isTypeSystemExtensionNode } from "../../language/predicates.mjs";
+import { specifiedScalarTypes } from "../../type/scalars.mjs";
 
 /**
  * Known type names

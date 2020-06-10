@@ -1,4 +1,4 @@
-import { SYMBOL_ITERATOR } from "../polyfills/symbols.js";
+import { SYMBOL_ITERATOR } from "../polyfills/symbols.mjs";
 /**
  * Returns true if the provided object is an Object (i.e. not a string literal)
  * and is either Iterable or Array-like.

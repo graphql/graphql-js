@@ -1,11 +1,11 @@
-import objectValues from "../../polyfills/objectValues.js";
-import keyMap from "../../jsutils/keyMap.js";
-import inspect from "../../jsutils/inspect.js";
-import didYouMean from "../../jsutils/didYouMean.js";
-import suggestionList from "../../jsutils/suggestionList.js";
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { print } from "../../language/printer.js";
-import { isLeafType, isInputObjectType, isListType, isNonNullType, isRequiredInputField, getNullableType, getNamedType } from "../../type/definition.js";
+import objectValues from "../../polyfills/objectValues.mjs";
+import keyMap from "../../jsutils/keyMap.mjs";
+import inspect from "../../jsutils/inspect.mjs";
+import didYouMean from "../../jsutils/didYouMean.mjs";
+import suggestionList from "../../jsutils/suggestionList.mjs";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { print } from "../../language/printer.mjs";
+import { isLeafType, isInputObjectType, isListType, isNonNullType, isRequiredInputField, getNullableType, getNamedType } from "../../type/definition.mjs";
 
 /**
  * Value literals of correct type

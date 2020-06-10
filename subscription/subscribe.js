@@ -1,11 +1,11 @@
-import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.js";
-import inspect from "../jsutils/inspect.js";
-import { addPath, pathToArray } from "../jsutils/Path.js";
-import { GraphQLError } from "../error/GraphQLError.js";
-import { locatedError } from "../error/locatedError.js";
-import { assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError } from "../execution/execute.js";
-import { getOperationRootType } from "../utilities/getOperationRootType.js";
-import mapAsyncIterator from "./mapAsyncIterator.js";
+import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import { addPath, pathToArray } from "../jsutils/Path.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
+import { locatedError } from "../error/locatedError.mjs";
+import { assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError } from "../execution/execute.mjs";
+import { getOperationRootType } from "../utilities/getOperationRootType.mjs";
+import mapAsyncIterator from "./mapAsyncIterator.mjs";
 export function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.

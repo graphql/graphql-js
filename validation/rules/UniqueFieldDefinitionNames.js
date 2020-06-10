@@ -5,4 +5,4 @@
  * or
  *   import { UniqueFieldDefinitionNamesRule } from 'graphql/validation'
  */
-export { UniqueFieldDefinitionNamesRule as UniqueFieldDefinitionNames } from "./UniqueFieldDefinitionNamesRule.js";
+export { UniqueFieldDefinitionNamesRule as UniqueFieldDefinitionNames } from "./UniqueFieldDefinitionNamesRule.mjs";

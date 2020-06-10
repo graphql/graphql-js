@@ -1,8 +1,8 @@
-import inspect from "../../jsutils/inspect.js";
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { isCompositeType } from "../../type/definition.js";
-import { typeFromAST } from "../../utilities/typeFromAST.js";
-import { doTypesOverlap } from "../../utilities/typeComparators.js";
+import inspect from "../../jsutils/inspect.mjs";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { isCompositeType } from "../../type/definition.mjs";
+import { typeFromAST } from "../../utilities/typeFromAST.mjs";
+import { doTypesOverlap } from "../../utilities/typeComparators.mjs";
 
 /**
  * Possible fragment spread

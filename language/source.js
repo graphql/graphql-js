@@ -1,5 +1,5 @@
-import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
-import devAssert from "../jsutils/devAssert.js";
+import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
+import devAssert from "../jsutils/devAssert.mjs";
 
 /**
  * A representation of source input to GraphQL.

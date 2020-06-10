@@ -1,4 +1,4 @@
-import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.js";
+import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.mjs";
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator

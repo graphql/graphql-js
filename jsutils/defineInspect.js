@@ -1,5 +1,5 @@
-import invariant from "./invariant.js";
-import nodejsCustomInspectSymbol from "./nodejsCustomInspectSymbol.js";
+import invariant from "./invariant.mjs";
+import nodejsCustomInspectSymbol from "./nodejsCustomInspectSymbol.mjs";
 /**
  * The `defineInspect()` function defines `inspect()` prototype method as alias of `toJSON`
  */

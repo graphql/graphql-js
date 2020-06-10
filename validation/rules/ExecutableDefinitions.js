@@ -5,4 +5,4 @@
  * or
  *   import { ExecutableDefinitionsRule } from 'graphql/validation'
  */
-export { ExecutableDefinitionsRule as ExecutableDefinitions } from "./ExecutableDefinitionsRule.js";
+export { ExecutableDefinitionsRule as ExecutableDefinitions } from "./ExecutableDefinitionsRule.mjs";

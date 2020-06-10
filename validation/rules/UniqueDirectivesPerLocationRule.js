@@ -1,7 +1,7 @@
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { Kind } from "../../language/kinds.js";
-import { isTypeDefinitionNode, isTypeExtensionNode } from "../../language/predicates.js";
-import { specifiedDirectives } from "../../type/directives.js";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { Kind } from "../../language/kinds.mjs";
+import { isTypeDefinitionNode, isTypeExtensionNode } from "../../language/predicates.mjs";
+import { specifiedDirectives } from "../../type/directives.mjs";
 
 /**
  * Unique directive names per location

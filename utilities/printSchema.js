@@ -1,13 +1,13 @@
-import objectValues from "../polyfills/objectValues.js";
-import inspect from "../jsutils/inspect.js";
-import invariant from "../jsutils/invariant.js";
-import { print } from "../language/printer.js";
-import { printBlockString } from "../language/blockString.js";
-import { isIntrospectionType } from "../type/introspection.js";
-import { GraphQLString, isSpecifiedScalarType } from "../type/scalars.js";
-import { GraphQLDirective, DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from "../type/directives.js";
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.js";
-import { astFromValue } from "./astFromValue.js";
+import objectValues from "../polyfills/objectValues.mjs";
+import inspect from "../jsutils/inspect.mjs";
+import invariant from "../jsutils/invariant.mjs";
+import { print } from "../language/printer.mjs";
+import { printBlockString } from "../language/blockString.mjs";
+import { isIntrospectionType } from "../type/introspection.mjs";
+import { GraphQLString, isSpecifiedScalarType } from "../type/scalars.mjs";
+import { GraphQLDirective, DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from "../type/directives.mjs";
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.mjs";
+import { astFromValue } from "./astFromValue.mjs";
 
 /**
  * Accepts options as a second argument:

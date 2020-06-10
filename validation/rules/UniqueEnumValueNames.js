@@ -5,4 +5,4 @@
  * or
  *   import { UniqueEnumValueNamesRule } from 'graphql/validation'
  */
-export { UniqueEnumValueNamesRule as UniqueEnumValueNames } from "./UniqueEnumValueNamesRule.js";
+export { UniqueEnumValueNamesRule as UniqueEnumValueNames } from "./UniqueEnumValueNamesRule.mjs";

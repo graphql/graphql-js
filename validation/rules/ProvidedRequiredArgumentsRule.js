@@ -1,10 +1,10 @@
-import inspect from "../../jsutils/inspect.js";
-import keyMap from "../../jsutils/keyMap.js";
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { Kind } from "../../language/kinds.js";
-import { print } from "../../language/printer.js";
-import { specifiedDirectives } from "../../type/directives.js";
-import { isType, isRequiredArgument } from "../../type/definition.js";
+import inspect from "../../jsutils/inspect.mjs";
+import keyMap from "../../jsutils/keyMap.mjs";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { Kind } from "../../language/kinds.mjs";
+import { print } from "../../language/printer.mjs";
+import { specifiedDirectives } from "../../type/directives.mjs";
+import { isType, isRequiredArgument } from "../../type/definition.mjs";
 
 /**
  * Provided required arguments

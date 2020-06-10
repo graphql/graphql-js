@@ -5,4 +5,4 @@
  * or
  *   import { PossibleTypeExtensionsRule } from 'graphql/validation'
  */
-export { PossibleTypeExtensionsRule as PossibleTypeExtensions } from "./PossibleTypeExtensionsRule.js";
+export { PossibleTypeExtensionsRule as PossibleTypeExtensions } from "./PossibleTypeExtensionsRule.mjs";

@@ -1,4 +1,4 @@
-import { GraphQLError } from "../../error/GraphQLError.js";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
 
 /**
  * No unused variables

@@ -1,5 +1,5 @@
-import devAssert from "../jsutils/devAssert.js";
-import { GraphQLError } from "../error/GraphQLError.js";
+import devAssert from "../jsutils/devAssert.mjs";
+import { GraphQLError } from "../error/GraphQLError.mjs";
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 /**
  * Upholds the spec rules about naming.

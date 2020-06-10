@@ -22,9 +22,9 @@
  *     import { parse } from 'graphql/language';
  */
 // The GraphQL.js version info.
-export { version, versionInfo } from "./version.js"; // The primary entry point into fulfilling a GraphQL request.
+export { version, versionInfo } from "./version.mjs"; // The primary entry point into fulfilling a GraphQL request.
 
-export { graphql, graphqlSync } from "./graphql.js"; // Create and operate on GraphQL type definitions and schema.
+export { graphql, graphqlSync } from "./graphql.mjs"; // Create and operate on GraphQL type definitions and schema.
 
 export { // Definitions
 GraphQLSchema, GraphQLDirective, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull // Standard GraphQL Scalars
@@ -37,7 +37,7 @@ GraphQLSchema, GraphQLDirective, GraphQLScalarType, GraphQLObjectType, GraphQLIn
 , isSchema, isDirective, isType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isInputType, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isRequiredArgument, isRequiredInputField, isSpecifiedScalarType, isIntrospectionType, isSpecifiedDirective // Assertions
 , assertSchema, assertDirective, assertType, assertScalarType, assertObjectType, assertInterfaceType, assertUnionType, assertEnumType, assertInputObjectType, assertListType, assertNonNullType, assertInputType, assertOutputType, assertLeafType, assertCompositeType, assertAbstractType, assertWrappingType, assertNullableType, assertNamedType // Un-modifiers
 , getNullableType, getNamedType // Validate GraphQL schema.
-, validateSchema, assertValidSchema } from "./type/index.js";
+, validateSchema, assertValidSchema } from "./type/index.mjs";
 // Parse and operate on GraphQL language source files.
 export { Token, Source, Location, getLocation // Print source location
 , printLocation, printSourceLocation // Lex
@@ -45,17 +45,17 @@ export { Token, Source, Location, getLocation // Print source location
 , parse, parseValue, parseType // Print
 , print // Visit
 , visit, visitInParallel, getVisitFn, BREAK, Kind, DirectiveLocation // Predicates
-, isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from "./language/index.js";
+, isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from "./language/index.mjs";
 // Execute GraphQL queries.
-export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from "./execution/index.js";
-export { subscribe, createSourceEventStream } from "./subscription/index.js";
+export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from "./execution/index.mjs";
+export { subscribe, createSourceEventStream } from "./subscription/index.mjs";
 // Validate GraphQL documents.
 export { validate, ValidationContext // All validation rules in the GraphQL Specification.
 , specifiedRules // Individual validation rules.
 , ExecutableDefinitionsRule, FieldsOnCorrectTypeRule, FragmentsOnCompositeTypesRule, KnownArgumentNamesRule, KnownDirectivesRule, KnownFragmentNamesRule, KnownTypeNamesRule, LoneAnonymousOperationRule, NoFragmentCyclesRule, NoUndefinedVariablesRule, NoUnusedFragmentsRule, NoUnusedVariablesRule, OverlappingFieldsCanBeMergedRule, PossibleFragmentSpreadsRule, ProvidedRequiredArgumentsRule, ScalarLeafsRule, SingleFieldSubscriptionsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule, UniqueFragmentNamesRule, UniqueInputFieldNamesRule, UniqueOperationNamesRule, UniqueVariableNamesRule, ValuesOfCorrectTypeRule, VariablesAreInputTypesRule, VariablesInAllowedPositionRule // SDL-specific validation rules
-, LoneSchemaDefinitionRule, UniqueOperationTypesRule, UniqueTypeNamesRule, UniqueEnumValueNamesRule, UniqueFieldDefinitionNamesRule, UniqueDirectiveNamesRule, PossibleTypeExtensionsRule } from "./validation/index.js";
+, LoneSchemaDefinitionRule, UniqueOperationTypesRule, UniqueTypeNamesRule, UniqueEnumValueNamesRule, UniqueFieldDefinitionNamesRule, UniqueDirectiveNamesRule, PossibleTypeExtensionsRule } from "./validation/index.mjs";
 // Create, format, and print GraphQL errors.
-export { GraphQLError, syntaxError, locatedError, printError, formatError } from "./error/index.js";
+export { GraphQLError, syntaxError, locatedError, printError, formatError } from "./error/index.mjs";
 // Utilities for operating on GraphQL type schema and parsed sources.
 export { // Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.
@@ -90,4 +90,4 @@ getIntrospectionQuery // Gets the target Operation from a Document.
 , assertValidName // Determine if a string is a valid GraphQL name.
 , isValidNameError // Compares two GraphQLSchemas and detects breaking changes.
 , BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges // Report all deprecated usage within a GraphQL document.
-, findDeprecatedUsages } from "./utilities/index.js";
+, findDeprecatedUsages } from "./utilities/index.mjs";
