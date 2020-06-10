@@ -13,13 +13,23 @@ DIST_DIR=$2
 # Exit immediately if any subcommand terminated
 set -e
 
-if [ ! -d $DIST_DIR ]; then
- echo "Directory '${DIST_DIR}' does not  exist!"
+if [ -z "${BRANCH}" ]; then
+ echo 'Must provide BRANCH as first argument!'
+ exit 1;
+fi;
+
+if [ -z "${DIST_DIR}" ]; then
+ echo 'Must provide DIST_DIR as second argument!'
  exit 1;
 fi;
 
 if [ -z "${GH_TOKEN}" ]; then
  echo 'Must provide GH_TOKEN as environment variable!'
+ exit 1;
+fi;
+
+if [ ! -d $DIST_DIR ]; then
+ echo "Directory '${DIST_DIR}' does not  exist!"
  exit 1;
 fi;
 
