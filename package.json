@@ -45,8 +45,8 @@
     "changelog": "node resources/gen-changelog.js",
     "preversion": ". ./resources/checkgit.sh && npm ci",
     "version": "node resources/gen-version.js && npm test && git add src/version.js",
-    "gitpublish:npm": ". ./resources/gitpublish.sh npm npmDist",
-    "gitpublish:deno": ". ./resources/gitpublish.sh deno denoDist"
+    "gitpublish:npm": "bash ./resources/gitpublish.sh npm npmDist",
+    "gitpublish:deno": "bash ./resources/gitpublish.sh deno denoDist"
   },
   "dependencies": {},
   "devDependencies": {
