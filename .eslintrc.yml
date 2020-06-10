@@ -632,6 +632,18 @@ overrides:
       '@typescript-eslint/type-annotation-spacing': off
   - files: '**/__*__/**'
     rules:
+      '@typescript-eslint/consistent-type-assertions':
+        [error, { assertionStyle: as, objectLiteralTypeAssertions: allow }]
+      '@typescript-eslint/no-non-null-assertion': off
+      '@typescript-eslint/restrict-plus-operands': off
+      '@typescript-eslint/no-floating-promises': off
+      '@typescript-eslint/no-invalid-this': off
+      '@typescript-eslint/no-throw-literal': off
+      '@typescript-eslint/require-await': off
+      '@typescript-eslint/await-thenable': off
+      'prefer-promise-reject-errors': 0
+      'no-new-wrappers': 0
+      'no-throw-literal': 0
       node/no-unpublished-import: off
       node/no-unpublished-require: off
       import/no-restricted-paths: off
