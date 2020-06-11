@@ -43,11 +43,16 @@ export interface ExecutionContext {
  *
  *   - `errors` is included when any errors occurred as a non-empty array.
  *   - `data` is the result of a successful execution of the query.
+ *   - `extensions` is reserved for adding non-standard properties.
  */
-export interface ExecutionResult<TData = { [key: string]: any }> {
+export interface ExecutionResult<
+  TData = { [key: string]: any },
+  TExtensions = { [key: string]: any }
+> {
   errors?: ReadonlyArray<GraphQLError>;
   // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
   data?: TData | null;
+  extensions?: TExtensions;
 }
 
 export interface ExecutionArgs {
