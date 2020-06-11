@@ -109,10 +109,12 @@ export type ExecutionContext = {|
  *
  *   - `errors` is included when any errors occurred as a non-empty array.
  *   - `data` is the result of a successful execution of the query.
+ *   - `extensions` is reserved for adding non-standard properties.
  */
 export type ExecutionResult = {|
   errors?: $ReadOnlyArray<GraphQLError>,
   data?: ObjMap<mixed> | null,
+  extensions?: ObjMap<mixed>,
 |};
 
 export type ExecutionArgs = {|
