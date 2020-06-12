@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": ["es6", "esnext.asynciterable"],
+    "strict": true,
+    "noEmit": true,
+    "types": []
+  }
+}

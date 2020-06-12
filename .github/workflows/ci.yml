@@ -49,11 +49,37 @@ jobs:
       - name: Spellcheck
         run: npm run check:spelling
 
+  integrationTests:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
       - name: Build NPM package
         run: npm run build:npm
 
       - name: Build Deno package
         run: npm run build:deno
+
+      - name: Run Integration Tests
+        run: npm run check:integrations
 
   fuzz:
     name: Run fuzzing tests
@@ -178,7 +204,7 @@ jobs:
       github.event_name == 'push' &&
       github.repository == 'graphql/graphql-js' &&
       github.ref == 'refs/heads/master'
-    needs: [test, fuzz, lint]
+    needs: [test, fuzz, lint, integrationTests]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -214,7 +240,7 @@ jobs:
       github.event_name == 'push' &&
       github.repository == 'graphql/graphql-js' &&
       github.ref == 'refs/heads/master'
-    needs: [test, fuzz, lint]
+    needs: [test, fuzz, lint, integrationTests]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
