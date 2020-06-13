@@ -1,12 +1,9 @@
 {
   "version": "1.0.0",
   "scripts": {
-    "test": "node test.js",
-    "test-3.8": "tsc test.ts",
-    "test-3.9": "tsc test.ts"
+    "test": "node test.js"
   },
   "dependencies": {
-    "@types/node": "10.12.21",
     "graphql": "file:../../npmDist",
     "typescript-2.6": "npm:typescript@2.6.x",
     "typescript-2.7": "npm:typescript@2.7.x",
