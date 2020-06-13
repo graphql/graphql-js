@@ -35,17 +35,6 @@ jobs:
       - name: Lint Flow
         run: npm run check
 
-      - name: Cache TS versions
-        uses: actions/cache@v2
-        with:
-          path: ~/.dts
-          key: ${{ runner.OS }}-dts-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-dts-
-
-      - name: Lint TS typings
-        run: npm run check:ts
-
       - name: Spellcheck
         run: npm run check:spelling
 
