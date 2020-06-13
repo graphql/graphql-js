@@ -1,7 +1,0 @@
-{
-  "extends": "dtslint/dtslint.json",
-  "rules": {
-    "array-type": false,
-    "strict-export-declare-modifiers": false
-  }
-}
