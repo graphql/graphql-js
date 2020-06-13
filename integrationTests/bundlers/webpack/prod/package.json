@@ -1,0 +1,12 @@
+{
+  "name": "webpack-dev",
+  "scripts": {
+    "build": "rm -f output.js && webpack"
+  },
+  "private": true,
+  "dependencies": {
+    "graphql": "file:../../../../npmDist",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  }
+}
