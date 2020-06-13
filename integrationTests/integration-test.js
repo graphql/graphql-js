@@ -24,7 +24,7 @@ describe('Integration Tests', () => {
     exec(`cp -R ${path.join(__dirname, 'ts')} ${tmpDir}`);
 
     const cwd = path.join(tmpDir, 'ts');
-    exec('npm i', { cwd });
+    exec('npm install --silent', { cwd });
     exec('npm test', { cwd });
   }).timeout(40000);
 });
