@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node test.js",
+    "test-3.8": "tsc test.ts",
+    "test-3.9": "tsc test.ts"
+  },
+  "dependencies": {
+    "@types/node": "10.12.21",
+    "graphql": "file:../../npmDist",
+    "typescript-2.6": "npm:typescript@2.6.x",
+    "typescript-2.7": "npm:typescript@2.7.x",
+    "typescript-2.8": "npm:typescript@2.8.x",
+    "typescript-2.9": "npm:typescript@2.9.x",
+    "typescript-3.0": "npm:typescript@3.0.x",
+    "typescript-3.1": "npm:typescript@3.1.x",
+    "typescript-3.2": "npm:typescript@3.2.x",
+    "typescript-3.3": "npm:typescript@3.3.x",
+    "typescript-3.4": "npm:typescript@3.4.x",
+    "typescript-3.5": "npm:typescript@3.5.x",
+    "typescript-3.6": "npm:typescript@3.6.x",
+    "typescript-3.7": "npm:typescript@3.7.x",
+    "typescript-3.8": "npm:typescript@3.8.x",
+    "typescript-3.9": "npm:typescript@3.9.x"
+  }
+}

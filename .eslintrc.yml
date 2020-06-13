@@ -483,6 +483,7 @@ rules:
   wrap-regex: off
   yield-star-spacing: off
 
+ignorePatterns: 'integrationTests/ts/*.ts'
 overrides:
   - files: '**/*.ts'
     parser: '@typescript-eslint/parser'
@@ -640,6 +641,16 @@ overrides:
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
       no-restricted-syntax: off
+  - files: 'integrationTests/**'
+    parserOptions:
+      sourceType: script
+    rules:
+      node/no-unpublished-import: off
+      node/no-unpublished-require: off
+      node/no-sync: off
+      import/no-extraneous-dependencies: [error, { devDependencies: true }]
+      import/no-nodejs-modules: off
+      no-console: off
   - files: 'resources/**'
     parserOptions:
       sourceType: script
