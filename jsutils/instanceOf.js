@@ -11,7 +11,7 @@ exports.default = void 0;
  */
 // See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
 // See: https://webpack.js.org/guides/production/
-var _default = isProductionEnvironment() ? // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
+var _default = process.env.NODE_ENV === 'production' ? // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
 // eslint-disable-next-line no-shadow
 function instanceOf(value, constructor) {
   return value instanceof constructor;
@@ -32,29 +32,5 @@ function instanceOf(value, constructor) {
 
   return false;
 };
-/* global Deno */
-
-/* :: declare var Deno: any; */
-
 
 exports.default = _default;
-
-function isProductionEnvironment() {
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
-  try {
-    if (process.env.NODE_ENV === 'production') {
-      return true;
-    }
-  } catch (e) {} // ignore
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
-
-
-  try {
-    if (Deno.env.get('DENO_ENV') === 'production') {
-      return true;
-    }
-  } catch (e) {// ignore
-  }
-
-  return false;
-}
