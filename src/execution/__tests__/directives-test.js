@@ -30,7 +30,7 @@ const rootValue = {
   },
 };
 
-function executeTestQuery(query) {
+function executeTestQuery(query: string) {
   const document = parse(query);
   return execute({ schema, document, rootValue });
 }

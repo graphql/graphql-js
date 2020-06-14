@@ -87,14 +87,14 @@ describe('Execute: Handles execution with a complex schema', () => {
       query: BlogQuery,
     });
 
-    function article(id) {
+    function article(id: number) {
       return {
         id,
         isPublished: true,
         author: {
           id: 123,
           name: 'John Smith',
-          pic: (width, height) => getPic(123, width, height),
+          pic: (width: number, height: number) => getPic(123, width, height),
           recentArticle: () => article(1),
         },
         title: 'My Article ' + id,
@@ -104,7 +104,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       };
     }
 
-    function getPic(uid, width, height) {
+    function getPic(uid: number, width: number, height: number) {
       return {
         url: `cdn://${uid}`,
         width: `${width}`,

@@ -11,6 +11,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  type GraphQLOutputType,
 } from '../../type/definition';
 
 import { execute } from '../execute';
@@ -27,7 +28,7 @@ const rejected = Promise.reject.bind(Promise);
  * contains a rejection, testData should be a function that returns that
  * rejection so as not to trigger the "unhandled rejection" error watcher.
  */
-function check(testType, testData, expected) {
+function check(testType: GraphQLOutputType, testData: mixed, expected: mixed) {
   return async () => {
     const data = { test: testData };
 
@@ -71,7 +72,7 @@ describe('Execute: Accepts any iterable as list value', () => {
     }),
   );
 
-  function getArgs(...args) {
+  function getArgs(...args: Array<string>) {
     return args;
   }
 

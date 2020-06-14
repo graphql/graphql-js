@@ -20,7 +20,7 @@ class Dog {
   name: string;
   woofs: boolean;
 
-  constructor(name, woofs) {
+  constructor(name: string, woofs: boolean) {
     this.name = name;
     this.woofs = woofs;
   }
@@ -30,7 +30,7 @@ class Cat {
   name: string;
   meows: boolean;
 
-  constructor(name, meows) {
+  constructor(name: string, meows: boolean) {
     this.name = name;
     this.meows = meows;
   }
@@ -39,7 +39,7 @@ class Cat {
 class Human {
   name: string;
 
-  constructor(name) {
+  constructor(name: string) {
     this.name = name;
   }
 }

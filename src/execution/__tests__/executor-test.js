@@ -103,7 +103,7 @@ describe('Execute: Handles basic execution tasks', () => {
       e: () => 'Egg',
       f: 'Fish',
       // Called only by DataType::pic static resolver
-      pic: (size) => 'Pic of size: ' + size,
+      pic: (size: number) => 'Pic of size: ' + size,
       deep: () => deepData,
       promise: promiseData,
     };
@@ -1006,7 +1006,7 @@ describe('Execute: Handles basic execution tasks', () => {
     class Special {
       value: string;
 
-      constructor(value) {
+      constructor(value: string) {
         this.value = value;
       }
     }
@@ -1014,7 +1014,7 @@ describe('Execute: Handles basic execution tasks', () => {
     class NotSpecial {
       value: string;
 
-      constructor(value) {
+      constructor(value: string) {
         this.value = value;
       }
     }
@@ -1131,12 +1131,15 @@ describe('Execute: Handles basic execution tasks', () => {
     });
     const document = parse('{ foo }');
 
-    function fieldResolver(_source, _args, _context, info) {
-      // For the purposes of test, just return the name of the field!
-      return info.fieldName;
-    }
+    const result = execute({
+      schema,
+      document,
+      fieldResolver(_source, _args, _context, info) {
+        // For the purposes of test, just return the name of the field!
+        return info.fieldName;
+      },
+    });
 
-    const result = execute({ schema, document, fieldResolver });
     expect(result).to.deep.equal({ data: { foo: 'foo' } });
   });
 
@@ -1168,16 +1171,20 @@ describe('Execute: Handles basic execution tasks', () => {
       types: [fooObject],
     });
 
-    let possibleTypes;
-    function typeResolver(_source, _context, info, abstractType) {
-      // Resolver should be able to figure out all possible types on its own
-      possibleTypes = info.schema.getPossibleTypes(abstractType);
-
-      return 'FooObject';
-    }
-
     const rootValue = { foo: { bar: 'bar' } };
-    const result = execute({ schema, document, rootValue, typeResolver });
+
+    let possibleTypes;
+    const result = execute({
+      schema,
+      document,
+      rootValue,
+      typeResolver(_source, _context, info, abstractType) {
+        // Resolver should be able to figure out all possible types on its own
+        possibleTypes = info.schema.getPossibleTypes(abstractType);
+
+        return 'FooObject';
+      },
+    });
 
     expect(result).to.deep.equal({ data: { foo: { bar: 'bar' } } });
     expect(possibleTypes).to.deep.equal([fooObject]);
