@@ -21,11 +21,11 @@ import { execute } from '../execute';
 class Dog {
   name: string;
   barks: boolean;
-  mother: ?Dog;
-  father: ?Dog;
+  mother: Dog | null;
+  father: Dog | null;
   progeny: Array<Dog>;
 
-  constructor(name, barks) {
+  constructor(name: string, barks: boolean) {
     this.name = name;
     this.barks = barks;
     this.mother = null;

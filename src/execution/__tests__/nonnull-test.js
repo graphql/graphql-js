@@ -3,6 +3,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import invariant from '../../jsutils/invariant';
+
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -11,7 +13,7 @@ import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { execute } from '../execute';
+import { execute, type ExecutionResult } from '../execute';
 
 const syncError = new Error('sync');
 const syncNonNullError = new Error('syncNonNull');
@@ -105,24 +107,31 @@ const schema = buildSchema(`
   }
 `);
 
-function executeQuery(query, rootValue) {
+function executeQuery(
+  query: string,
+  rootValue: mixed,
+): ExecutionResult | Promise<ExecutionResult> {
   return execute({ schema, document: parse(query), rootValue });
 }
 
-// avoids also doing any nests
-function patch(data) {
-  return JSON.parse(
-    JSON.stringify(data)
-      .replace(/\bsync\b/g, 'promise')
-      .replace(/\bsyncNonNull\b/g, 'promiseNonNull'),
-  );
+function patch(str: string): string {
+  return str
+    .replace(/\bsync\b/g, 'promise')
+    .replace(/\bsyncNonNull\b/g, 'promiseNonNull');
 }
 
-async function executeSyncAndAsync(query, rootValue) {
+// avoids also doing any nests
+function patchData(data: ExecutionResult): ExecutionResult {
+  return JSON.parse(patch(JSON.stringify(data)));
+}
+
+async function executeSyncAndAsync(query: string, rootValue: mixed) {
   const syncResult = await executeQuery(query, rootValue);
+  invariant(!(syncResult instanceof Promise));
+
   const asyncResult = await executeQuery(patch(query), rootValue);
 
-  expect(asyncResult).to.deep.equal(patch(syncResult));
+  expect(asyncResult).to.deep.equal(patchData(syncResult));
   return syncResult;
 }
 

@@ -4,13 +4,16 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { GraphQLSchema } from '../../type/schema';
-import { GraphQLObjectType } from '../../type/definition';
 import { GraphQLInt, GraphQLString } from '../../type/scalars';
+import {
+  GraphQLObjectType,
+  type GraphQLFieldConfig,
+} from '../../type/definition';
 
 import { graphqlSync } from '../../graphql';
 
 describe('Execute: resolve function', () => {
-  function testSchema(testField) {
+  function testSchema(testField: GraphQLFieldConfig<any, any>) {
     return new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -59,12 +62,12 @@ describe('Execute: resolve function', () => {
     class Adder {
       _num: number;
 
-      constructor(num) {
+      constructor(num: number) {
         this._num = num;
       }
 
-      test({ addend1 }, context) {
-        return this._num + addend1 + context.addend2;
+      test(args: {| addend1: number |}, context: {| addend2: number |}) {
+        return this._num + args.addend1 + context.addend2;
       }
     }
     const rootValue = new Adder(700);
@@ -94,7 +97,7 @@ describe('Execute: resolve function', () => {
       resolve: (source, args) => JSON.stringify([source, args]),
     });
 
-    function execute(source, rootValue, contextValue) {
+    function execute(source: string, rootValue?: mixed, contextValue?: mixed) {
       return graphqlSync({ schema, source, rootValue, contextValue });
     }
 
