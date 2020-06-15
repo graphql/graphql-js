@@ -11,6 +11,11 @@ plugins:
   - node
   - istanbul
   - import
+settings:
+  flowtype:
+    onlyFilesWithFlowAnnotation: true
+  node:
+    tryExtensions: ['.js', '.json', '.node', '.ts', '.d.ts']
 
 rules:
   ##############################################################################
@@ -493,11 +498,7 @@ overrides:
       - '@typescript-eslint'
     extends:
       - plugin:import/typescript
-    settings:
-      node:
-        tryExtensions: ['.js', '.json', '.node', '.ts', '.d.ts']
     rules:
-      flowtype/require-valid-file-annotation: off
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
