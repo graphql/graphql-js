@@ -632,6 +632,14 @@ overrides:
       '@typescript-eslint/type-annotation-spacing': off
   - files: '**/__*__/**'
     rules:
+      node/no-unpublished-import: off
+      node/no-unpublished-require: off
+      import/no-restricted-paths: off
+      import/no-extraneous-dependencies: [error, { devDependencies: true }]
+      import/no-nodejs-modules: off
+      no-restricted-syntax: 0
+      # Below rules are disabled only for the migration period from Flow to TypeScript
+      # and they effect only tests files, to allow more flexible testing scenarios.
       '@typescript-eslint/consistent-type-assertions':
         [error, { assertionStyle: as, objectLiteralTypeAssertions: allow }]
       '@typescript-eslint/no-non-null-assertion': off
@@ -644,12 +652,6 @@ overrides:
       'prefer-promise-reject-errors': 0
       'no-new-wrappers': 0
       'no-throw-literal': 0
-      node/no-unpublished-import: off
-      node/no-unpublished-require: off
-      import/no-restricted-paths: off
-      import/no-extraneous-dependencies: [error, { devDependencies: true }]
-      import/no-nodejs-modules: off
-      no-restricted-syntax: off
   - files: 'resources/**'
     parserOptions:
       sourceType: script
