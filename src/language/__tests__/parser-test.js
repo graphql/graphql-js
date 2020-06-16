@@ -24,12 +24,12 @@ function expectSyntaxError(text) {
 
 describe('Parser', () => {
   it('asserts that a source to parse was provided', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => parse()).to.throw('Must provide Source. Received: undefined.');
   });
 
   it('asserts that an invalid source to parse was provided', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => parse({})).to.throw('Must provide Source. Received: {}.');
   });
 

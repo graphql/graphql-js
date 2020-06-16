@@ -16,7 +16,7 @@ import { testSchema } from './harness';
 
 describe('Validate: Supports full validation', () => {
   it('rejects invalid documents', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => validate(testSchema, null)).to.throw('Must provide document.');
   });
 

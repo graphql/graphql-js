@@ -1244,12 +1244,12 @@ describe('extendSchema', () => {
   it('Rejects invalid AST', () => {
     const schema = new GraphQLSchema({});
 
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => extendSchema(schema, null)).to.throw(
       'Must provide valid Document AST',
     );
 
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => extendSchema(schema, {})).to.throw(
       'Must provide valid Document AST',
     );

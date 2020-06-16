@@ -322,13 +322,13 @@ describe('Subscription Initialization Phase', () => {
     `);
 
     await expectPromiseToThrow(
-      // $DisableFlowOnNegativeTest
-      () => subscribe(null, document),
+      // $FlowExpectedError
+      () => subscribe({ schema: null, document }),
       'Expected null to be a GraphQL schema.',
     );
 
     await expectPromiseToThrow(
-      // $DisableFlowOnNegativeTest
+      // $FlowExpectedError
       () => subscribe({ document }),
       'Expected undefined to be a GraphQL schema.',
     );
@@ -336,13 +336,13 @@ describe('Subscription Initialization Phase', () => {
 
   it('throws an error if document is missing', async () => {
     await expectPromiseToThrow(
-      // $DisableFlowOnNegativeTest
-      () => subscribe(emailSchema, null),
+      // $FlowExpectedError
+      () => subscribe({ schema: emailSchema, document: null }),
       'Must provide document.',
     );
 
     await expectPromiseToThrow(
-      // $DisableFlowOnNegativeTest
+      // $FlowExpectedError
       () => subscribe({ schema: emailSchema }),
       'Must provide document.',
     );
@@ -372,7 +372,7 @@ describe('Subscription Initialization Phase', () => {
   it('should pass through unexpected errors thrown in subscribe', async () => {
     let expectedError;
     try {
-      // $DisableFlowOnNegativeTest
+      // $FlowExpectedError
       await subscribe({ schema: emailSchema, document: {} });
     } catch (error) {
       expectedError = error;

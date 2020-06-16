@@ -85,7 +85,7 @@ describe('Type System: Directive', () => {
   });
 
   it('rejects an unnamed directive', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => new GraphQLDirective({ locations: ['Query'] })).to.throw(
       'Directive must be named.',
     );
@@ -97,21 +97,21 @@ describe('Type System: Directive', () => {
         new GraphQLDirective({
           name: 'Foo',
           locations: ['QUERY'],
-          // $DisableFlowOnNegativeTest
+          // $FlowExpectedError
           args: [],
         }),
     ).to.throw('@Foo args must be an object with argument names as keys.');
   });
 
   it('rejects a directive with undefined locations', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => new GraphQLDirective({ name: 'Foo' })).to.throw(
       '@Foo locations must be an Array.',
     );
   });
 
   it('rejects a directive with incorrectly typed locations', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => new GraphQLDirective({ name: 'Foo', locations: {} })).to.throw(
       '@Foo locations must be an Array.',
     );

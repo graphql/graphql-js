@@ -1120,12 +1120,12 @@ describe('Schema Builder', () => {
   });
 
   it('Rejects invalid AST', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => buildASTSchema(null)).to.throw(
       'Must provide valid Document AST',
     );
 
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => buildASTSchema({})).to.throw(
       'Must provide valid Document AST',
     );

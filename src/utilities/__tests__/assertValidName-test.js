@@ -17,7 +17,7 @@ describe('assertValidName()', () => {
   });
 
   it('throws for non-strings', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => assertValidName({})).to.throw('Expected name to be a string.');
   });
 
