@@ -21,15 +21,13 @@ import { execute } from '../execute';
 class Dog {
   name: string;
   barks: boolean;
-  mother: Dog | null;
-  father: Dog | null;
+  mother: Dog | void;
+  father: Dog | void;
   progeny: Array<Dog>;
 
   constructor(name: string, barks: boolean) {
     this.name = name;
     this.barks = barks;
-    this.mother = null;
-    this.father = null;
     this.progeny = [];
   }
 }
@@ -37,25 +35,27 @@ class Dog {
 class Cat {
   name: string;
   meows: boolean;
-  mother: ?Cat;
-  father: ?Cat;
+  mother: Cat | void;
+  father: Cat | void;
   progeny: Array<Cat>;
 
-  constructor(name, meows) {
+  constructor(name: string, meows: boolean) {
     this.name = name;
     this.meows = meows;
-    this.mother = null;
-    this.father = null;
     this.progeny = [];
   }
 }
 
 class Person {
   name: string;
-  pets: ?Array<Dog | Cat>;
-  friends: ?Array<Dog | Cat | Person>;
+  pets: Array<Dog | Cat> | void;
+  friends: Array<Dog | Cat | Person> | void;
 
-  constructor(name, pets, friends) {
+  constructor(
+    name: string,
+    pets?: Array<Dog | Cat>,
+    friends?: Array<Dog | Cat | Person> | void,
+  ) {
     this.name = name;
     this.pets = pets;
     this.friends = friends;
