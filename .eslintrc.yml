@@ -502,7 +502,7 @@ overrides:
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v3.2.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v3.3.x`
       ##########################################################################
 
       # Supported Rules
