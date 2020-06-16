@@ -155,7 +155,7 @@ describe('getOperationRootType', () => {
       operation: 'non_existent_operation',
     };
 
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError
     expect(() => getOperationRootType(testSchema, operationNode)).to.throw(
       'Can only have query, mutation and subscription operations.',
     );
