@@ -66,8 +66,12 @@ function leadingWhitespace(str) {
   return i;
 }
 
-function isBlank(str) {
+export function isBlank(str: string): boolean {
   return leadingWhitespace(str) === str.length;
+}
+
+export function isPrintableBlockString(str: string): boolean {
+  return Boolean(dedentBlockStringValue(str));
 }
 
 /**
