@@ -49,11 +49,14 @@ export class Lexer {
   }
 
   /**
-   * Advances the token stream to the next non-ignored token.
+   * Advances the token stream to the next token. Adds last non-ignored
+   * token as previous pointer to the linked list
    */
   advance(): Token {
-    this.lastToken = this.token;
-    const token = (this.token = this.lookahead());
+    if (this.token.kind !== TokenKind.COMMENT) {
+      this.lastToken = this.token;
+    }
+    const token = (this.token = this.lookahead(false));
     return token;
   }
 
@@ -61,13 +64,21 @@ export class Lexer {
    * Looks ahead and returns the next non-ignored token, but does not change
    * the state of Lexer.
    */
-  lookahead(): Token {
+  lookahead(ignoreComments: boolean = true): Token {
     let token = this.token;
     if (token.kind !== TokenKind.EOF) {
+      let endLoop = false;
       do {
         // Note: next is only mutable during parsing, so we cast to allow this.
         token = token.next ?? ((token: any).next = readToken(this, token));
-      } while (token.kind === TokenKind.COMMENT);
+
+        // If comments are not ignored then:
+        //   return whatever token was found (comment/no-comment)
+        // else loop till next valid token(no-comment) is not found
+        if (!ignoreComments || token.kind !== TokenKind.COMMENT) {
+          endLoop = true;
+        }
+      } while (!endLoop);
     }
     return token;
   }

@@ -148,6 +148,83 @@ describe('Parser', () => {
     );
   });
 
+  it('Add single comments in AST', () => {
+    const ast = parse(dedent`
+      #This comment has a \u0A0A multi-byte character.
+      type alpha{ field(arg: string):string }
+    `);
+
+    expect(toJSONDeep(ast.comments)).to.deep.equal([
+      {
+        kind: 'Comment',
+        loc: { start: 0, end: 43 },
+        value: 'This comment has a ਊ multi-byte character.',
+      },
+    ]);
+  });
+
+  it('Ignore comments that comes when we peek for a token in AST', () => {
+    const ast = parse(dedent`
+      type #This is a comment that gets ignored
+      alpha{ field(arg: string):string }
+    `);
+
+    expect(toJSONDeep(ast.comments)).to.deep.equal([
+      {
+        kind: 'Comment',
+        loc: {
+          end: 41,
+          start: 5,
+        },
+        value: 'This is a comment that gets ignored',
+      },
+    ]);
+  });
+
+  it('Add empty comments from in AST', () => {
+    const ast = parse(dedent`
+      #
+      type alpha{ field(arg: string):string }
+    `);
+
+    expect(toJSONDeep(ast.comments)).to.deep.equal([
+      {
+        kind: 'Comment',
+        loc: { start: 0, end: 1 },
+        value: '',
+      },
+    ]);
+  });
+
+  it('Add multiple comments in AST', () => {
+    const ast = parse(dedent`
+      #This is top comment
+      type alpha{
+        #This comment is demo comment.
+        field(arg: string):string 
+        #This is another demo comment having # inside
+      }
+    `);
+
+    expect(toJSONDeep(ast.comments)).to.deep.equal([
+      {
+        kind: 'Comment',
+        loc: { start: 0, end: 20 },
+        value: 'This is top comment',
+      },
+      {
+        kind: 'Comment',
+        loc: { start: 35, end: 65 },
+        value: 'This comment is demo comment.',
+      },
+      {
+        kind: 'Comment',
+        loc: { start: 97, end: 142 },
+        value: 'This is another demo comment having # inside',
+      },
+    ]);
+  });
+
   it('parses kitchen sink', () => {
     expect(() => parse(kitchenSinkQuery)).to.not.throw();
   });
@@ -232,6 +309,7 @@ describe('Parser', () => {
 
     expect(toJSONDeep(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
+      comments: [],
       loc: { start: 0, end: 41 },
       definitions: [
         {
@@ -322,6 +400,7 @@ describe('Parser', () => {
 
     expect(toJSONDeep(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
+      comments: [],
       loc: { start: 0, end: 30 },
       definitions: [
         {

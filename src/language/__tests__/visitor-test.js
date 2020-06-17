@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import invariant from '../../jsutils/invariant';
+import dedent from '../../jsutils/dedent';
 
 import { Kind } from '../kinds';
 import { parse } from '../parser';
@@ -113,6 +114,43 @@ describe('Visitor', () => {
         visitedNodes.pop();
       },
     });
+  });
+
+  it('allows visiting multiple comments including comments in definitions', () => {
+    const ast = parse(
+      dedent`
+      #This is a comment
+      { 
+        #a is a field
+        a 
+      }
+    `,
+      { noLocation: true },
+    );
+    const visited = [];
+
+    visit(ast, {
+      enter: {
+        Comment(node) {
+          visited.push(['enter', node.kind]);
+          visited.push(['value', node.value]);
+        },
+      },
+      leave: {
+        Comment(node) {
+          visited.push(['leave', node.kind]);
+        },
+      },
+    });
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Comment'],
+      ['value', 'This is a comment'],
+      ['leave', 'Comment'],
+      ['enter', 'Comment'],
+      ['value', 'a is a field'],
+      ['leave', 'Comment'],
+    ]);
   });
 
   it('allows visiting only specified nodes', () => {

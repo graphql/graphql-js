@@ -51,13 +51,14 @@ export type VisitorKeyMap<KindToNode> = $ObjMap<
 export const QueryDocumentKeys: VisitorKeyMap<ASTKindToNode> = {
   Name: [],
 
-  Document: ['definitions'],
+  Document: ['definitions', 'comments'],
   OperationDefinition: [
     'name',
     'variableDefinitions',
     'directives',
     'selectionSet',
   ],
+  Comment: [],
   VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],

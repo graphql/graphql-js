@@ -108,6 +108,7 @@ export function isNode(maybeNode: any): maybeNode is ASTNode;
 export type ASTNode =
   | NameNode
   | DocumentNode
+  | CommentNode
   | OperationDefinitionNode
   | VariableDefinitionNode
   | VariableNode
@@ -156,6 +157,7 @@ export type ASTNode =
 export interface ASTKindToNode {
   Name: NameNode;
   Document: DocumentNode;
+  Comment: CommentNode;
   OperationDefinition: OperationDefinitionNode;
   VariableDefinition: VariableDefinitionNode;
   Variable: VariableNode;
@@ -213,6 +215,13 @@ export interface DocumentNode {
   readonly kind: 'Document';
   readonly loc?: Location;
   readonly definitions: ReadonlyArray<DefinitionNode>;
+  readonly comments?: ReadonlyArray<CommentNode>;
+}
+
+export interface CommentNode {
+  readonly kind: 'Comment';
+  readonly loc?: Location;
+  readonly value: string;
 }
 
 export type DefinitionNode =

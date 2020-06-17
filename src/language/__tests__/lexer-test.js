@@ -129,8 +129,7 @@ describe('Lexer', () => {
       '{ kind: "Name", value: "foo", line: 1, column: 1 }',
     );
   });
-
-  it('skips whitespace and comments', () => {
+  it('skips whitespace and commas', () => {
     expect(
       lexOne(`
 
@@ -142,18 +141,6 @@ describe('Lexer', () => {
       kind: TokenKind.NAME,
       start: 6,
       end: 9,
-      value: 'foo',
-    });
-
-    expect(
-      lexOne(`
-    #comment
-    foo#comment
-`),
-    ).to.contain({
-      kind: TokenKind.NAME,
-      start: 18,
-      end: 21,
       value: 'foo',
     });
 
@@ -182,7 +169,6 @@ describe('Lexer', () => {
       4 |
     `);
   });
-
   it('updates line numbers in error for file context', () => {
     let caughtError;
     try {
@@ -218,6 +204,19 @@ describe('Lexer', () => {
       1 |     ?
         |     ^
     `);
+  });
+  it('lexes comments', () => {
+    expect(
+      lexOne(
+        dedent`#this is a comment
+                a{}`,
+      ),
+    ).to.contain({
+      kind: TokenKind.COMMENT,
+      start: 0,
+      end: 18,
+      value: 'this is a comment',
+    });
   });
 
   it('lexes strings', () => {
@@ -878,9 +877,6 @@ describe('Lexer', () => {
     let endToken;
     do {
       endToken = lexer.advance();
-      // Lexer advances over ignored comment tokens to make writing parsers
-      // easier, but will include them in the linked list result.
-      expect(endToken.kind).to.not.equal(TokenKind.COMMENT);
     } while (endToken.kind !== TokenKind.EOF);
 
     expect(startToken.prev).to.equal(null);
