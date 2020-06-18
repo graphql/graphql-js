@@ -2,10 +2,11 @@
 
 import { syntaxError } from '../error/syntaxError';
 
+import type { Source } from './source';
+import type { TokenKindEnum } from './tokenKind';
 import { Token } from './ast';
-import { type Source } from './source';
+import { TokenKind } from './tokenKind';
 import { dedentBlockStringValue } from './blockString';
-import { type TokenKindEnum, TokenKind } from './tokenKind';
 
 /**
  * Given a Source object, creates a Lexer for that source.

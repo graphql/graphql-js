@@ -8,7 +8,16 @@ import invariant from '../jsutils/invariant';
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
 
-import { type GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
+import type {
+  GraphQLNamedType,
+  GraphQLScalarType,
+  GraphQLEnumType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLInputObjectType,
+} from '../type/definition';
 import { isIntrospectionType } from '../type/introspection';
 import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
 import {
@@ -17,13 +26,6 @@ import {
   isSpecifiedDirective,
 } from '../type/directives';
 import {
-  type GraphQLNamedType,
-  type GraphQLScalarType,
-  type GraphQLEnumType,
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
-  type GraphQLUnionType,
-  type GraphQLInputObjectType,
   isScalarType,
   isObjectType,
   isInterfaceType,

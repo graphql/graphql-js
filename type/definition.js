@@ -74,11 +74,11 @@ var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect"))
 
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
 
+var _GraphQLError = require("../error/GraphQLError");
+
 var _kinds = require("../language/kinds");
 
 var _printer = require("../language/printer");
-
-var _GraphQLError = require("../error/GraphQLError");
 
 var _valueFromASTUntyped = require("../utilities/valueFromASTUntyped");
 

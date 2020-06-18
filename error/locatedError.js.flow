@@ -1,6 +1,6 @@
 // @flow strict
 
-import { type ASTNode } from '../language/ast';
+import type { ASTNode } from '../language/ast';
 
 import { GraphQLError } from './GraphQLError';
 

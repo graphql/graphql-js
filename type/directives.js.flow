@@ -3,30 +3,24 @@
 import objectEntries from '../polyfills/objectEntries';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
+import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from '../jsutils/ObjMap';
 import inspect from '../jsutils/inspect';
 import toObjMap from '../jsutils/toObjMap';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import isObjectLike from '../jsutils/isObjectLike';
 import defineInspect from '../jsutils/defineInspect';
-import {
-  type ReadOnlyObjMap,
-  type ReadOnlyObjMapLike,
-} from '../jsutils/ObjMap';
 
-import { type DirectiveDefinitionNode } from '../language/ast';
-import {
-  DirectiveLocation,
-  type DirectiveLocationEnum,
-} from '../language/directiveLocation';
+import type { DirectiveDefinitionNode } from '../language/ast';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
+import { DirectiveLocation } from '../language/directiveLocation';
 
-import { GraphQLString, GraphQLBoolean } from './scalars';
-import {
-  type GraphQLFieldConfigArgumentMap,
-  type GraphQLArgument,
-  argsToArgsConfig,
-  GraphQLNonNull,
+import type {
+  GraphQLArgument,
+  GraphQLFieldConfigArgumentMap,
 } from './definition';
+import { GraphQLString, GraphQLBoolean } from './scalars';
+import { argsToArgsConfig, GraphQLNonNull } from './definition';
 
 /**
  * Test if the given value is a GraphQL directive.

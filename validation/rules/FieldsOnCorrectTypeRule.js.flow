@@ -7,20 +7,22 @@ import suggestionList from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import { type FieldNode } from '../../language/ast';
-import { type ASTVisitor } from '../../language/visitor';
+import type { FieldNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
-import { type GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema';
+import type {
+  GraphQLOutputType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+} from '../../type/definition';
 import {
-  type GraphQLOutputType,
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
   isObjectType,
   isInterfaceType,
   isAbstractType,
 } from '../../type/definition';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * Fields on correct type

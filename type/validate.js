@@ -22,11 +22,11 @@ var _assertValidName = require("../utilities/assertValidName");
 
 var _typeComparators = require("../utilities/typeComparators");
 
+var _schema = require("./schema");
+
 var _directives = require("./directives");
 
 var _introspection = require("./introspection");
-
-var _schema = require("./schema");
 
 var _definition = require("./definition");
 

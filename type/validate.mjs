@@ -6,9 +6,9 @@ import { GraphQLError } from "../error/GraphQLError.mjs";
 import { locatedError } from "../error/locatedError.mjs";
 import { isValidNameError } from "../utilities/assertValidName.mjs";
 import { isEqualType, isTypeSubTypeOf } from "../utilities/typeComparators.mjs";
+import { assertSchema } from "./schema.mjs";
 import { isDirective } from "./directives.mjs";
 import { isIntrospectionType } from "./introspection.mjs";
-import { assertSchema } from "./schema.mjs";
 import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument } from "./definition.mjs";
 /**
  * Implements the "Type Validation" sub-sections of the specification's

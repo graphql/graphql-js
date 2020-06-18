@@ -5,23 +5,31 @@ import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
+import type {
+  ObjMap,
+  ReadOnlyObjMap,
+  ReadOnlyObjMapLike,
+} from '../jsutils/ObjMap';
 import inspect from '../jsutils/inspect';
 import toObjMap from '../jsutils/toObjMap';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import isObjectLike from '../jsutils/isObjectLike';
-import {
-  type ObjMap,
-  type ReadOnlyObjMap,
-  type ReadOnlyObjMapLike,
-} from '../jsutils/ObjMap';
 
-import { type GraphQLError } from '../error/GraphQLError';
-import {
-  type SchemaDefinitionNode,
-  type SchemaExtensionNode,
+import type { GraphQLError } from '../error/GraphQLError';
+
+import type {
+  SchemaDefinitionNode,
+  SchemaExtensionNode,
 } from '../language/ast';
 
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLAbstractType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+} from './definition';
 import { __Schema } from './introspection';
 import {
   GraphQLDirective,
@@ -29,11 +37,6 @@ import {
   specifiedDirectives,
 } from './directives';
 import {
-  type GraphQLType,
-  type GraphQLNamedType,
-  type GraphQLAbstractType,
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
   isObjectType,
   isInterfaceType,
   isUnionType,

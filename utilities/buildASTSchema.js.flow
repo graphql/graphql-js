@@ -2,17 +2,16 @@
 
 import devAssert from '../jsutils/devAssert';
 
+import type { Source } from '../language/source';
+import type { DocumentNode } from '../language/ast';
+import type { ParseOptions } from '../language/parser';
 import { Kind } from '../language/kinds';
-import { type Source } from '../language/source';
-import { type DocumentNode } from '../language/ast';
-import { type ParseOptions, parse } from '../language/parser';
+import { parse } from '../language/parser';
 
 import { assertValidSDL } from '../validation/validate';
 
-import {
-  type GraphQLSchemaValidationOptions,
-  GraphQLSchema,
-} from '../type/schema';
+import type { GraphQLSchemaValidationOptions } from '../type/schema';
+import { GraphQLSchema } from '../type/schema';
 import {
   GraphQLSkipDirective,
   GraphQLIncludeDirective,

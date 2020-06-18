@@ -3,19 +3,17 @@
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 
-import { Kind } from '../language/kinds';
-import {
-  type NamedTypeNode,
-  type ListTypeNode,
-  type NonNullTypeNode,
+import type {
+  NamedTypeNode,
+  ListTypeNode,
+  NonNullTypeNode,
 } from '../language/ast';
 
-import { type GraphQLSchema } from '../type/schema';
-import {
-  type GraphQLNamedType,
-  GraphQLList,
-  GraphQLNonNull,
-} from '../type/definition';
+import { Kind } from '../language/kinds';
+
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLNamedType } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/definition';
 
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType

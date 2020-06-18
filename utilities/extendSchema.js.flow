@@ -8,45 +8,58 @@ import mapValue from '../jsutils/mapValue';
 import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
 
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
+import type {
+  Location,
+  DocumentNode,
+  StringValueNode,
+  TypeNode,
+  NamedTypeNode,
+  SchemaDefinitionNode,
+  SchemaExtensionNode,
+  TypeDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  InterfaceTypeExtensionNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
+  UnionTypeDefinitionNode,
+  UnionTypeExtensionNode,
+  FieldDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  InputObjectTypeExtensionNode,
+  InputValueDefinitionNode,
+  EnumTypeDefinitionNode,
+  EnumTypeExtensionNode,
+  EnumValueDefinitionNode,
+  DirectiveDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ScalarTypeExtensionNode,
+} from '../language/ast';
 import { Kind } from '../language/kinds';
 import { TokenKind } from '../language/tokenKind';
 import { dedentBlockStringValue } from '../language/blockString';
-import { type DirectiveLocationEnum } from '../language/directiveLocation';
 import {
   isTypeDefinitionNode,
   isTypeExtensionNode,
 } from '../language/predicates';
-import {
-  type Location,
-  type DocumentNode,
-  type StringValueNode,
-  type TypeNode,
-  type NamedTypeNode,
-  type SchemaDefinitionNode,
-  type SchemaExtensionNode,
-  type TypeDefinitionNode,
-  type InterfaceTypeDefinitionNode,
-  type InterfaceTypeExtensionNode,
-  type ObjectTypeDefinitionNode,
-  type ObjectTypeExtensionNode,
-  type UnionTypeDefinitionNode,
-  type UnionTypeExtensionNode,
-  type FieldDefinitionNode,
-  type InputObjectTypeDefinitionNode,
-  type InputObjectTypeExtensionNode,
-  type InputValueDefinitionNode,
-  type EnumTypeDefinitionNode,
-  type EnumTypeExtensionNode,
-  type EnumValueDefinitionNode,
-  type DirectiveDefinitionNode,
-  type ScalarTypeDefinitionNode,
-  type ScalarTypeExtensionNode,
-} from '../language/ast';
 
 import { assertValidSDLExtension } from '../validation/validate';
 
 import { getDirectiveValues } from '../execution/values';
 
+import type {
+  GraphQLSchemaValidationOptions,
+  GraphQLSchemaNormalizedConfig,
+} from '../type/schema';
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLFieldConfigMap,
+  GraphQLEnumValueConfigMap,
+  GraphQLInputFieldConfigMap,
+  GraphQLFieldConfigArgumentMap,
+} from '../type/definition';
+import { assertSchema, GraphQLSchema } from '../type/schema';
 import { specifiedScalarTypes, isSpecifiedScalarType } from '../type/scalars';
 import { introspectionTypes, isIntrospectionType } from '../type/introspection';
 import {
@@ -55,18 +68,6 @@ import {
   GraphQLSpecifiedByDirective,
 } from '../type/directives';
 import {
-  type GraphQLSchemaValidationOptions,
-  assertSchema,
-  GraphQLSchema,
-  type GraphQLSchemaNormalizedConfig,
-} from '../type/schema';
-import {
-  type GraphQLType,
-  type GraphQLNamedType,
-  type GraphQLFieldConfigMap,
-  type GraphQLEnumValueConfigMap,
-  type GraphQLInputFieldConfigMap,
-  type GraphQLFieldConfigArgumentMap,
   isScalarType,
   isObjectType,
   isInterfaceType,

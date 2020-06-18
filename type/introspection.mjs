@@ -1,6 +1,3 @@
-// FIXME
-
-/* eslint-disable import/no-cycle */
 import objectValues from "../polyfills/objectValues.mjs";
 import inspect from "../jsutils/inspect.mjs";
 import invariant from "../jsutils/invariant.mjs";

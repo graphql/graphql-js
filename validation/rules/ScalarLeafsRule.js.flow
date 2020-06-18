@@ -4,12 +4,12 @@ import inspect from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import { type FieldNode } from '../../language/ast';
-import { type ASTVisitor } from '../../language/visitor';
+import type { FieldNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 import { getNamedType, isLeafType } from '../../type/definition';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * Scalar leafs

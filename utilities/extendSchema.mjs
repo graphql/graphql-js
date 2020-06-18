@@ -16,10 +16,10 @@ import { dedentBlockStringValue } from "../language/blockString.mjs";
 import { isTypeDefinitionNode, isTypeExtensionNode } from "../language/predicates.mjs";
 import { assertValidSDLExtension } from "../validation/validate.mjs";
 import { getDirectiveValues } from "../execution/values.mjs";
+import { assertSchema, GraphQLSchema } from "../type/schema.mjs";
 import { specifiedScalarTypes, isSpecifiedScalarType } from "../type/scalars.mjs";
 import { introspectionTypes, isIntrospectionType } from "../type/introspection.mjs";
 import { GraphQLDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective } from "../type/directives.mjs";
-import { assertSchema, GraphQLSchema } from "../type/schema.mjs";
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from "../type/definition.mjs";
 import { valueFromAST } from "./valueFromAST.mjs";
 

@@ -1,21 +1,22 @@
 // @flow strict
 
+import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 import isPromise from './jsutils/isPromise';
-import { type PromiseOrValue } from './jsutils/PromiseOrValue';
 
+import type { Source } from './language/source';
 import { parse } from './language/parser';
-import { type Source } from './language/source';
 
 import { validate } from './validation/validate';
 
-import { validateSchema } from './type/validate';
-import { type GraphQLSchema } from './type/schema';
-import {
-  type GraphQLFieldResolver,
-  type GraphQLTypeResolver,
+import type {
+  GraphQLFieldResolver,
+  GraphQLTypeResolver,
 } from './type/definition';
+import type { GraphQLSchema } from './type/schema';
+import { validateSchema } from './type/validate';
 
-import { type ExecutionResult, execute } from './execution/execute';
+import type { ExecutionResult } from './execution/execute';
+import { execute } from './execution/execute';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations

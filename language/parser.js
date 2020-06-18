@@ -15,15 +15,15 @@ var _syntaxError = require("../error/syntaxError");
 
 var _kinds = require("./kinds");
 
-var _source = require("./source");
+var _ast = require("./ast");
 
-var _directiveLocation = require("./directiveLocation");
+var _source = require("./source");
 
 var _tokenKind = require("./tokenKind");
 
-var _lexer = require("./lexer");
+var _directiveLocation = require("./directiveLocation");
 
-var _ast = require("./ast");
+var _lexer = require("./lexer");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

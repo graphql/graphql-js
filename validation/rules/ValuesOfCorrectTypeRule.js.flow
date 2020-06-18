@@ -9,9 +9,9 @@ import suggestionList from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ValueNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 import { print } from '../../language/printer';
-import { type ValueNode } from '../../language/ast';
-import { type ASTVisitor } from '../../language/visitor';
 
 import {
   isLeafType,
@@ -23,7 +23,7 @@ import {
   getNamedType,
 } from '../../type/definition';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * Value literals of correct type

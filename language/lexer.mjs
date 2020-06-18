@@ -1,7 +1,7 @@
 import { syntaxError } from "../error/syntaxError.mjs";
 import { Token } from "./ast.mjs";
-import { dedentBlockStringValue } from "./blockString.mjs";
 import { TokenKind } from "./tokenKind.mjs";
+import { dedentBlockStringValue } from "./blockString.mjs";
 /**
  * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time

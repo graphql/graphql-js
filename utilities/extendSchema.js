@@ -31,13 +31,13 @@ var _validate = require("../validation/validate");
 
 var _values = require("../execution/values");
 
+var _schema = require("../type/schema");
+
 var _scalars = require("../type/scalars");
 
 var _introspection = require("../type/introspection");
 
 var _directives = require("../type/directives");
-
-var _schema = require("../type/schema");
 
 var _definition = require("../type/definition");
 

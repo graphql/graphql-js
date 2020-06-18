@@ -4,21 +4,17 @@ import devAssert from '../jsutils/devAssert';
 
 import { GraphQLError } from '../error/GraphQLError';
 
-import { type DocumentNode } from '../language/ast';
+import type { DocumentNode } from '../language/ast';
 import { visit, visitInParallel } from '../language/visitor';
 
-import { type GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
+import type { SDLValidationRule, ValidationRule } from './ValidationContext';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
-import {
-  type SDLValidationRule,
-  type ValidationRule,
-  SDLValidationContext,
-  ValidationContext,
-} from './ValidationContext';
+import { SDLValidationContext, ValidationContext } from './ValidationContext';
 
 /**
  * Implements the "Validation" section of the spec.

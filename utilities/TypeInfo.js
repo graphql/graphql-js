@@ -10,9 +10,9 @@ var _find = _interopRequireDefault(require("../polyfills/find"));
 
 var _kinds = require("../language/kinds");
 
-var _visitor = require("../language/visitor");
-
 var _ast = require("../language/ast");
+
+var _visitor = require("../language/visitor");
 
 var _definition = require("../type/definition");
 

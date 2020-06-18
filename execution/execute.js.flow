@@ -2,35 +2,47 @@
 
 import arrayFrom from '../polyfills/arrayFrom';
 
+import type { Path } from '../jsutils/Path';
+import type { ObjMap } from '../jsutils/ObjMap';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';
 import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
 import isPromise from '../jsutils/isPromise';
-import { type ObjMap } from '../jsutils/ObjMap';
 import isObjectLike from '../jsutils/isObjectLike';
 import isCollection from '../jsutils/isCollection';
 import promiseReduce from '../jsutils/promiseReduce';
 import promiseForObject from '../jsutils/promiseForObject';
-import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
-import { type Path, addPath, pathToArray } from '../jsutils/Path';
+import { addPath, pathToArray } from '../jsutils/Path';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
-import { Kind } from '../language/kinds';
-import {
-  type DocumentNode,
-  type OperationDefinitionNode,
-  type SelectionSetNode,
-  type FieldNode,
-  type FragmentSpreadNode,
-  type InlineFragmentNode,
-  type FragmentDefinitionNode,
+import type {
+  DocumentNode,
+  OperationDefinitionNode,
+  SelectionSetNode,
+  FieldNode,
+  FragmentSpreadNode,
+  InlineFragmentNode,
+  FragmentDefinitionNode,
 } from '../language/ast';
+import { Kind } from '../language/kinds';
 
+import type { GraphQLSchema } from '../type/schema';
+import type {
+  GraphQLObjectType,
+  GraphQLOutputType,
+  GraphQLLeafType,
+  GraphQLAbstractType,
+  GraphQLField,
+  GraphQLFieldResolver,
+  GraphQLResolveInfo,
+  GraphQLTypeResolver,
+  GraphQLList,
+} from '../type/definition';
 import { assertValidSchema } from '../type/validate';
-import { type GraphQLSchema } from '../type/schema';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
@@ -41,15 +53,6 @@ import {
   GraphQLSkipDirective,
 } from '../type/directives';
 import {
-  type GraphQLObjectType,
-  type GraphQLOutputType,
-  type GraphQLLeafType,
-  type GraphQLAbstractType,
-  type GraphQLField,
-  type GraphQLFieldResolver,
-  type GraphQLResolveInfo,
-  type GraphQLTypeResolver,
-  type GraphQLList,
   isObjectType,
   isAbstractType,
   isLeafType,
