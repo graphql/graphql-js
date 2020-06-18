@@ -1,10 +1,38 @@
 {
   "language": "en",
   "ignorePaths": [
+    // Copied from '.gitignore', please keep it in sync.
+    ".eslintcache",
+    "node_modules",
+    "coverage",
+    "npmDist",
+    "denoDist",
+    "benchmarkDist",
+    "integrationTmp",
+    "npm",
+    "deno",
+
+    // Excluded from spelling check
+    "cspell.json",
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
     "src/__fixtures__/github-schema.graphql",
     "src/__fixtures__/github-schema.json"
   ],
+  "overrides": [
+    {
+      "filename": "**/docs/APIReference-*.md",
+      "ignoreRegExpList": ["/href=\"[^\"]*\"/"]
+    }
+  ],
   "words": [
+    "graphiql",
+    "sublinks",
+    "subcommand",
+    "transpilation",
+    "instanceof",
+
     // Different names used inside tests
     "Skywalker",
     "Leia",
@@ -21,17 +49,20 @@
 
     // TODO: contribute upstream
     "deno",
+    "codecov",
 
     // TODO: remove bellow words
     "Graphi", // GraphiQL
     "QL's", // GraphQL's
     "QLIs", // GraphQLIs*
     "QLID", // GraphQLID
+    "QLJS", // GraphQLJS
     "iface",
     "Reqs",
     "ORing",
     "FXXX",
     "XXXF",
-    "bfnrt"
+    "bfnrt",
+    "wrds"
   ]
 }

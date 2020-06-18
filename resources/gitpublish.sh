@@ -5,7 +5,7 @@
 #
 #      "graphql": "git://github.com/graphql/graphql-js.git#npm"
 #
-#  Additionaly it use use to push Deno build to `deno` branch.
+#  Additionally it use use to push Deno build to `deno` branch.
 
 BRANCH=$1
 DIST_DIR=$2
@@ -45,8 +45,8 @@ rm -rf $BRANCH/*
 cp -r $DIST_DIR/* $BRANCH/
 
 # Reference current commit
-HEADREV=`git rev-parse HEAD`
-echo $HEADREV
+HEAD_REV=`git rev-parse HEAD`
+echo $HEAD_REV
 
 # Deploy
 cd $BRANCH
@@ -56,7 +56,7 @@ git add -A .
 if git diff --staged --quiet; then
   echo "Nothing to publish"
 else
-  git commit -a -m "Deploy $HEADREV to '$BRANCH' branch"
+  git commit -a -m "Deploy $HEAD_REV to '$BRANCH' branch"
   git push > /dev/null 2>&1
   echo "Pushed"
 fi
