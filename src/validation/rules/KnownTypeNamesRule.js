@@ -5,8 +5,8 @@ import suggestionList from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import { type ASTNode } from '../../language/ast';
-import { type ASTVisitor } from '../../language/visitor';
+import type { ASTNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 import {
   isTypeDefinitionNode,
   isTypeSystemDefinitionNode,
@@ -15,9 +15,9 @@ import {
 
 import { specifiedScalarTypes } from '../../type/scalars';
 
-import {
-  type ValidationContext,
-  type SDLValidationContext,
+import type {
+  ValidationContext,
+  SDLValidationContext,
 } from '../ValidationContext';
 
 /**

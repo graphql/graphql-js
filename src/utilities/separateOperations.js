@@ -1,13 +1,10 @@
 // @flow strict
 
-import { type ObjMap } from '../jsutils/ObjMap';
+import type { ObjMap } from '../jsutils/ObjMap';
 
+import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 import { visit } from '../language/visitor';
-import {
-  type DocumentNode,
-  type OperationDefinitionNode,
-} from '../language/ast';
 
 /**
  * separateOperations accepts a single AST document which may contain many

@@ -9,24 +9,27 @@ import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
-import {
-  type ASTNode,
-  type NamedTypeNode,
-  type OperationTypeNode,
+import type {
+  ASTNode,
+  NamedTypeNode,
+  OperationTypeNode,
 } from '../language/ast';
 
 import { isValidNameError } from '../utilities/assertValidName';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
+import type { GraphQLSchema } from './schema';
+import type {
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+} from './definition';
+import { assertSchema } from './schema';
 import { isDirective } from './directives';
 import { isIntrospectionType } from './introspection';
-import { type GraphQLSchema, assertSchema } from './schema';
 import {
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
-  type GraphQLUnionType,
-  type GraphQLEnumType,
-  type GraphQLInputObjectType,
   isObjectType,
   isInterfaceType,
   isUnionType,

@@ -2,26 +2,25 @@
 
 import find from '../polyfills/find';
 
+import type { Visitor } from '../language/visitor';
+import type { ASTNode, ASTKindToNode, FieldNode } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { type Visitor, getVisitFn } from '../language/visitor';
-import {
-  type ASTNode,
-  type ASTKindToNode,
-  type FieldNode,
-  isNode,
-} from '../language/ast';
+import { isNode } from '../language/ast';
+import { getVisitFn } from '../language/visitor';
 
-import { type GraphQLSchema } from '../type/schema';
-import { type GraphQLDirective } from '../type/directives';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type {
+  GraphQLType,
+  GraphQLInputType,
+  GraphQLOutputType,
+  GraphQLCompositeType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLInputField,
+  GraphQLEnumValue,
+} from '../type/definition';
 import {
-  type GraphQLType,
-  type GraphQLInputType,
-  type GraphQLOutputType,
-  type GraphQLCompositeType,
-  type GraphQLField,
-  type GraphQLArgument,
-  type GraphQLInputField,
-  type GraphQLEnumValue,
   isObjectType,
   isInterfaceType,
   isEnumType,

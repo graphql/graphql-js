@@ -5,13 +5,13 @@ import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
 
+import type { GraphQLOutputType } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString, GraphQLInt } from '../../type/scalars';
 import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  type GraphQLOutputType,
 } from '../../type/definition';
 
 import { execute } from '../execute';

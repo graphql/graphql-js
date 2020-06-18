@@ -1,10 +1,7 @@
 // @flow strict
 
+import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 import { Kind } from '../language/kinds';
-import {
-  type DocumentNode,
-  type OperationDefinitionNode,
-} from '../language/ast';
 
 /**
  * Returns an operation AST given a document AST and optionally an operation

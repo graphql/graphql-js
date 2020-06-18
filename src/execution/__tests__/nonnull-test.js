@@ -13,7 +13,8 @@ import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { execute, type ExecutionResult } from '../execute';
+import type { ExecutionResult } from '../execute';
+import { execute } from '../execute';
 
 const syncError = new Error('sync');
 const syncNonNullError = new Error('syncNonNull');

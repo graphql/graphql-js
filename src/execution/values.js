@@ -2,28 +2,25 @@
 
 import find from '../polyfills/find';
 
+import type { ObjMap } from '../jsutils/ObjMap';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
-import { type ObjMap } from '../jsutils/ObjMap';
 import printPathArray from '../jsutils/printPathArray';
 
 import { GraphQLError } from '../error/GraphQLError';
 
+import type {
+  FieldNode,
+  DirectiveNode,
+  VariableDefinitionNode,
+} from '../language/ast';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
-import {
-  type FieldNode,
-  type DirectiveNode,
-  type VariableDefinitionNode,
-} from '../language/ast';
 
-import { type GraphQLSchema } from '../type/schema';
-import { type GraphQLDirective } from '../type/directives';
-import {
-  type GraphQLField,
-  isInputType,
-  isNonNullType,
-} from '../type/definition';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLField } from '../type/definition';
+import type { GraphQLDirective } from '../type/directives';
+import { isInputType, isNonNullType } from '../type/definition';
 
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';

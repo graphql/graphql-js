@@ -1,6 +1,6 @@
 // @flow strict
 
-import { type ObjMap } from './ObjMap';
+import type { ObjMap } from './ObjMap';
 
 /**
  * This function transforms a JS object `ObjMap<Promise<T>>` into

@@ -1,7 +1,8 @@
 // @flow strict
 
+import type { PromiseOrValue } from './PromiseOrValue';
+
 import isPromise from './isPromise';
-import { type PromiseOrValue } from './PromiseOrValue';
 
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return

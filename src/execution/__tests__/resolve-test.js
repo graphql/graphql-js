@@ -3,12 +3,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type { GraphQLFieldConfig } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLInt, GraphQLString } from '../../type/scalars';
-import {
-  GraphQLObjectType,
-  type GraphQLFieldConfig,
-} from '../../type/definition';
+import { GraphQLObjectType } from '../../type/definition';
 
 import { graphqlSync } from '../../graphql';
 

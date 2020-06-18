@@ -2,10 +2,10 @@
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
 
-import { type ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 
 /**
  * Lone anonymous operation

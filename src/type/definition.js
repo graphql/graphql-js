@@ -1,16 +1,19 @@
 // @flow strict
 
-// FIXME
-/* eslint-disable import/no-cycle */
-
 import objectEntries from '../polyfills/objectEntries';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
+import type { Path } from '../jsutils/Path';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import type {
+  ObjMap,
+  ReadOnlyObjMap,
+  ReadOnlyObjMapLike,
+} from '../jsutils/ObjMap';
 import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
 import mapValue from '../jsutils/mapValue';
 import toObjMap from '../jsutils/toObjMap';
-import { type Path } from '../jsutils/Path';
 import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 import instanceOf from '../jsutils/instanceOf';
@@ -19,42 +22,36 @@ import isObjectLike from '../jsutils/isObjectLike';
 import identityFunc from '../jsutils/identityFunc';
 import defineInspect from '../jsutils/defineInspect';
 import suggestionList from '../jsutils/suggestionList';
-import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
-import {
-  type ObjMap,
-  type ReadOnlyObjMap,
-  type ReadOnlyObjMapLike,
-} from '../jsutils/ObjMap';
-
-import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
-import {
-  type ScalarTypeDefinitionNode,
-  type ObjectTypeDefinitionNode,
-  type FieldDefinitionNode,
-  type InputValueDefinitionNode,
-  type InterfaceTypeDefinitionNode,
-  type UnionTypeDefinitionNode,
-  type EnumTypeDefinitionNode,
-  type EnumValueDefinitionNode,
-  type InputObjectTypeDefinitionNode,
-  type ScalarTypeExtensionNode,
-  type ObjectTypeExtensionNode,
-  type InterfaceTypeExtensionNode,
-  type UnionTypeExtensionNode,
-  type EnumTypeExtensionNode,
-  type InputObjectTypeExtensionNode,
-  type OperationDefinitionNode,
-  type FieldNode,
-  type FragmentDefinitionNode,
-  type ValueNode,
-} from '../language/ast';
 
 import { GraphQLError } from '../error/GraphQLError';
 
+import { Kind } from '../language/kinds';
+import { print } from '../language/printer';
+import type {
+  ScalarTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+  FieldDefinitionNode,
+  InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  UnionTypeDefinitionNode,
+  EnumTypeDefinitionNode,
+  EnumValueDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  ScalarTypeExtensionNode,
+  ObjectTypeExtensionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
+  OperationDefinitionNode,
+  FieldNode,
+  FragmentDefinitionNode,
+  ValueNode,
+} from '../language/ast';
+
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 
-import { type GraphQLSchema } from './schema';
+import type { GraphQLSchema } from './schema';
 
 // Predicates & Assertions
 

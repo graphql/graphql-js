@@ -1,9 +1,10 @@
 // @flow strict
 
 import { GraphQLError } from '../../error/GraphQLError';
-import { type ASTVisitor } from '../../language/visitor';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from '../../language/visitor';
+
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * No unused variables

@@ -12,14 +12,16 @@ import { parse } from '../../language/parser';
 import { extendSchema } from '../../utilities/extendSchema';
 import { buildSchema } from '../../utilities/buildASTSchema';
 
+import type {
+  GraphQLNamedType,
+  GraphQLInputType,
+  GraphQLOutputType,
+} from '../definition';
 import { GraphQLSchema } from '../schema';
 import { GraphQLString } from '../scalars';
 import { validateSchema, assertValidSchema } from '../validate';
 import { GraphQLDirective, assertDirective } from '../directives';
 import {
-  type GraphQLNamedType,
-  type GraphQLInputType,
-  type GraphQLOutputType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
