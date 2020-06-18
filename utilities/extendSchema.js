@@ -10,10 +10,10 @@ import { dedentBlockStringValue } from "../language/blockString.js";
 import { isTypeDefinitionNode, isTypeExtensionNode } from "../language/predicates.js";
 import { assertValidSDLExtension } from "../validation/validate.js";
 import { getDirectiveValues } from "../execution/values.js";
+import { assertSchema, GraphQLSchema } from "../type/schema.js";
 import { specifiedScalarTypes, isSpecifiedScalarType } from "../type/scalars.js";
 import { introspectionTypes, isIntrospectionType } from "../type/introspection.js";
 import { GraphQLDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective } from "../type/directives.js";
-import { assertSchema, GraphQLSchema } from "../type/schema.js";
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from "../type/definition.js";
 import { valueFromAST } from "./valueFromAST.js";
 

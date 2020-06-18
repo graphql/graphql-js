@@ -1,6 +1,3 @@
-// FIXME
-
-/* eslint-disable import/no-cycle */
 import objectEntries from "../polyfills/objectEntries.js";
 import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
 import inspect from "../jsutils/inspect.js";
@@ -15,9 +12,9 @@ import isObjectLike from "../jsutils/isObjectLike.js";
 import identityFunc from "../jsutils/identityFunc.js";
 import defineInspect from "../jsutils/defineInspect.js";
 import suggestionList from "../jsutils/suggestionList.js";
+import { GraphQLError } from "../error/GraphQLError.js";
 import { Kind } from "../language/kinds.js";
 import { print } from "../language/printer.js";
-import { GraphQLError } from "../error/GraphQLError.js";
 import { valueFromASTUntyped } from "../utilities/valueFromASTUntyped.js";
 export function isType(type) {
   return isScalarType(type) || isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type) || isInputObjectType(type) || isListType(type) || isNonNullType(type);

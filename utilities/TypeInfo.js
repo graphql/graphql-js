@@ -1,7 +1,7 @@
 import find from "../polyfills/find.js";
 import { Kind } from "../language/kinds.js";
-import { getVisitFn } from "../language/visitor.js";
 import { isNode } from "../language/ast.js";
+import { getVisitFn } from "../language/visitor.js";
 import { isObjectType, isInterfaceType, isEnumType, isInputObjectType, isListType, isCompositeType, isInputType, isOutputType, getNullableType, getNamedType } from "../type/definition.js";
 import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from "../type/introspection.js";
 import { typeFromAST } from "./typeFromAST.js";

@@ -4,13 +4,12 @@ import devAssert from "../jsutils/devAssert.js";
 import keyValMap from "../jsutils/keyValMap.js";
 import isObjectLike from "../jsutils/isObjectLike.js";
 import { parseValue } from "../language/parser.js";
+import { GraphQLSchema } from "../type/schema.js";
 import { GraphQLDirective } from "../type/directives.js";
 import { specifiedScalarTypes } from "../type/scalars.js";
 import { introspectionTypes, TypeKind } from "../type/introspection.js";
-import { GraphQLSchema } from "../type/schema.js";
 import { isInputType, isOutputType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, assertNullableType, assertObjectType, assertInterfaceType } from "../type/definition.js";
 import { valueFromAST } from "./valueFromAST.js";
-
 /**
  * Build a GraphQLSchema for use by client tools.
  *
@@ -23,6 +22,7 @@ import { valueFromAST } from "./valueFromAST.js";
  * This function expects a complete introspection result. Don't forget to check
  * the "errors" field of a server response before calling this function.
  */
+
 export function buildClientSchema(introspection, options) {
   isObjectLike(introspection) && isObjectLike(introspection.__schema) || devAssert(0, `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${inspect(introspection)}.`); // Get the schema from the introspection result.
 
