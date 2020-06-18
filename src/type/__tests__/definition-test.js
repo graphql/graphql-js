@@ -8,9 +8,8 @@ import identityFunc from '../../jsutils/identityFunc';
 
 import { parseValue } from '../../language/parser';
 
+import type { GraphQLType, GraphQLNullableType } from '../definition';
 import {
-  type GraphQLType,
-  type GraphQLNullableType,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,

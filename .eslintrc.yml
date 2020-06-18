@@ -57,7 +57,7 @@ rules:
   flowtype/sort-keys: off
   flowtype/spread-exact-type: off
   flowtype/type-id-match: [error, '^[A-Z]']
-  flowtype/type-import-style: [error, identifier, { ignoreTypeDefault: true }]
+  flowtype/type-import-style: [error, declaration]
   flowtype/use-flow-type: error
 
   # Bellow rules are disabled because coflicts with Prettier, see:
@@ -402,7 +402,7 @@ rules:
   no-class-assign: error
   no-const-assign: error
   no-dupe-class-members: error
-  no-duplicate-imports: error
+  no-duplicate-imports: off # Superseded by `import/no-duplicates`
   no-new-symbol: error
   no-restricted-exports: off
   no-restricted-imports: off

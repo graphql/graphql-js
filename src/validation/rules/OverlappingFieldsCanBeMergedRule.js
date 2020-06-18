@@ -3,26 +3,28 @@
 import find from '../../polyfills/find';
 import objectEntries from '../../polyfills/objectEntries';
 
+import type { ObjMap } from '../../jsutils/ObjMap';
 import inspect from '../../jsutils/inspect';
-import { type ObjMap } from '../../jsutils/ObjMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
+import type {
+  SelectionSetNode,
+  FieldNode,
+  ArgumentNode,
+  FragmentDefinitionNode,
+} from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
-import { type ASTVisitor } from '../../language/visitor';
-import {
-  type SelectionSetNode,
-  type FieldNode,
-  type ArgumentNode,
-  type FragmentDefinitionNode,
-} from '../../language/ast';
 
+import type {
+  GraphQLNamedType,
+  GraphQLOutputType,
+  GraphQLCompositeType,
+  GraphQLField,
+} from '../../type/definition';
 import {
-  type GraphQLNamedType,
-  type GraphQLOutputType,
-  type GraphQLCompositeType,
-  type GraphQLField,
   getNamedType,
   isNonNullType,
   isLeafType,
@@ -33,7 +35,7 @@ import {
 
 import { typeFromAST } from '../../utilities/typeFromAST';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {

@@ -1,8 +1,5 @@
 // @flow strict
 
-// FIXME
-/* eslint-disable import/no-cycle */
-
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
@@ -12,16 +9,18 @@ import { print } from '../language/printer';
 import { DirectiveLocation } from '../language/directiveLocation';
 import { astFromValue } from '../utilities/astFromValue';
 
-import { type GraphQLSchema } from './schema';
-import { type GraphQLDirective } from './directives';
+import type { GraphQLSchema } from './schema';
+import type { GraphQLDirective } from './directives';
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLInputField,
+  GraphQLEnumValue,
+  GraphQLField,
+  GraphQLFieldConfigMap,
+} from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import {
-  type GraphQLType,
-  type GraphQLNamedType,
-  type GraphQLInputField,
-  type GraphQLEnumValue,
-  type GraphQLField,
-  type GraphQLFieldConfigMap,
   GraphQLObjectType,
   GraphQLEnumType,
   GraphQLList,

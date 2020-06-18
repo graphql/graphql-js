@@ -2,11 +2,13 @@
 
 import { GraphQLError } from '../error/GraphQLError';
 
+import type { DocumentNode } from '../language/ast';
+
 import { visit } from '../language/visitor';
-import { type DocumentNode } from '../language/ast';
+
+import type { GraphQLSchema } from '../type/schema';
 
 import { getNamedType } from '../type/definition';
-import { type GraphQLSchema } from '../type/schema';
 
 import { TypeInfo, visitWithTypeInfo } from './TypeInfo';
 

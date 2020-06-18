@@ -1,10 +1,12 @@
 // @flow strict
 
 import { GraphQLError } from '../../error/GraphQLError';
-import { type ASTVisitor } from '../../language/visitor';
+
+import type { ASTVisitor } from '../../language/visitor';
+
 import { isEnumType } from '../../type/definition';
 
-import { type SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext';
 
 /**
  * Unique enum value names

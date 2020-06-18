@@ -9,16 +9,13 @@ import isObjectLike from '../jsutils/isObjectLike';
 
 import { parseValue } from '../language/parser';
 
+import type { GraphQLSchemaValidationOptions } from '../type/schema';
+import type { GraphQLType, GraphQLNamedType } from '../type/definition';
+import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import { specifiedScalarTypes } from '../type/scalars';
 import { introspectionTypes, TypeKind } from '../type/introspection';
 import {
-  type GraphQLSchemaValidationOptions,
-  GraphQLSchema,
-} from '../type/schema';
-import {
-  type GraphQLType,
-  type GraphQLNamedType,
   isInputType,
   isOutputType,
   GraphQLScalarType,
@@ -34,19 +31,19 @@ import {
   assertInterfaceType,
 } from '../type/definition';
 
-import { valueFromAST } from './valueFromAST';
-import {
-  type IntrospectionQuery,
-  type IntrospectionType,
-  type IntrospectionScalarType,
-  type IntrospectionObjectType,
-  type IntrospectionInterfaceType,
-  type IntrospectionUnionType,
-  type IntrospectionEnumType,
-  type IntrospectionInputObjectType,
-  type IntrospectionTypeRef,
-  type IntrospectionNamedTypeRef,
+import type {
+  IntrospectionQuery,
+  IntrospectionType,
+  IntrospectionScalarType,
+  IntrospectionObjectType,
+  IntrospectionInterfaceType,
+  IntrospectionUnionType,
+  IntrospectionEnumType,
+  IntrospectionInputObjectType,
+  IntrospectionTypeRef,
+  IntrospectionNamedTypeRef,
 } from './getIntrospectionQuery';
+import { valueFromAST } from './valueFromAST';
 
 /**
  * Build a GraphQLSchema for use by client tools.

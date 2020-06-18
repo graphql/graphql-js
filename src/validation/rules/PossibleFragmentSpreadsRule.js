@@ -4,14 +4,14 @@ import inspect from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import { type ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from '../../language/visitor';
 
 import { isCompositeType } from '../../type/definition';
 
 import { typeFromAST } from '../../utilities/typeFromAST';
 import { doTypesOverlap } from '../../utilities/typeComparators';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * Possible fragment spread

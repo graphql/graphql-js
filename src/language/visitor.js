@@ -2,7 +2,8 @@
 
 import inspect from '../jsutils/inspect';
 
-import { type ASTNode, type ASTKindToNode, isNode } from './ast';
+import type { ASTNode, ASTKindToNode } from './ast';
+import { isNode } from './ast';
 
 /**
  * A visitor is provided to visit, it contains the collection of

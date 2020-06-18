@@ -9,18 +9,20 @@ import invariant from '../jsutils/invariant';
 import { print } from '../language/printer';
 import { visit } from '../language/visitor';
 
-import { type GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
+import type {
+  GraphQLField,
+  GraphQLType,
+  GraphQLInputType,
+  GraphQLNamedType,
+  GraphQLEnumType,
+  GraphQLUnionType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLInputObjectType,
+} from '../type/definition';
 import { isSpecifiedScalarType } from '../type/scalars';
 import {
-  type GraphQLField,
-  type GraphQLType,
-  type GraphQLInputType,
-  type GraphQLNamedType,
-  type GraphQLEnumType,
-  type GraphQLUnionType,
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
-  type GraphQLInputObjectType,
   isScalarType,
   isObjectType,
   isInterfaceType,

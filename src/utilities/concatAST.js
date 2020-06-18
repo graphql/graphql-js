@@ -2,7 +2,7 @@
 
 import flatMap from '../polyfills/flatMap';
 
-import { type DocumentNode } from '../language/ast';
+import type { DocumentNode } from '../language/ast';
 
 /**
  * Provided a collection of ASTs, presumably each from different files,

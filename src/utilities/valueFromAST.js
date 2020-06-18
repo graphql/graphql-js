@@ -2,16 +2,16 @@
 
 import objectValues from '../polyfills/objectValues';
 
+import type { ObjMap } from '../jsutils/ObjMap';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
-import { type ObjMap } from '../jsutils/ObjMap';
 
+import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { type ValueNode } from '../language/ast';
 
+import type { GraphQLInputType } from '../type/definition';
 import {
-  type GraphQLInputType,
   isLeafType,
   isInputObjectType,
   isListType,

@@ -5,19 +5,17 @@ import invariant from '../../jsutils/invariant';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
+import type { OperationTypeNode } from '../../language/ast';
+import type { DirectiveLocationEnum } from '../../language/directiveLocation';
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
-import { type OperationTypeNode } from '../../language/ast';
-import {
-  type DirectiveLocationEnum,
-  DirectiveLocation,
-} from '../../language/directiveLocation';
+import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { specifiedDirectives } from '../../type/directives';
 
-import {
-  type ValidationContext,
-  type SDLValidationContext,
+import type {
+  ValidationContext,
+  SDLValidationContext,
 } from '../ValidationContext';
 
 /**

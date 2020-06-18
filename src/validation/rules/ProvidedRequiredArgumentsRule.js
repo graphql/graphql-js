@@ -7,14 +7,14 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
-import { type ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from '../../language/visitor';
 
 import { specifiedDirectives } from '../../type/directives';
 import { isType, isRequiredArgument } from '../../type/definition';
 
-import {
-  type ValidationContext,
-  type SDLValidationContext,
+import type {
+  ValidationContext,
+  SDLValidationContext,
 } from '../ValidationContext';
 
 /**
