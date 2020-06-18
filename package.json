@@ -40,7 +40,7 @@
     "testonly:cover": "nyc npm run testonly",
     "prettier": "prettier --write --list-different .",
     "prettier:check": "prettier --check .",
-    "check:spelling": "cspell \"./{src/**/,resources/**/,integrationTests/**/}*.{js,ts,md,graphql}\"",
+    "check:spelling": "cspell '**/*'",
     "check:integrations": "mocha --full-trace integrationTests/*-test.js",
     "build:npm": "node resources/build-npm.js",
     "build:deno": "node resources/build-deno.js",
