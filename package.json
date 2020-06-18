@@ -33,7 +33,7 @@
     "changelog": "node resources/gen-changelog.js",
     "benchmark": "node --noconcurrent_sweeping --expose-gc --predictable ./resources/benchmark.js",
     "test": "npm run lint && npm run check && npm run testonly && npm run prettier:check && npm run check:spelling && npm run build:npm && npm run build:deno && npm run check:integrations",
-    "lint": "eslint --cache --ext .js,.ts src resources integrationTests",
+    "lint": "eslint --cache .",
     "check": "flow check",
     "check:cover": "node resources/check-cover.js && nyc report --nycrc-path .nycflowrc.yml",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",

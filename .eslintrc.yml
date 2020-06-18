@@ -488,7 +488,6 @@ rules:
   wrap-regex: off
   yield-star-spacing: off
 
-ignorePatterns: 'integrationTests/ts/*.ts'
 overrides:
   - files: '**/*.ts'
     parser: '@typescript-eslint/parser'
