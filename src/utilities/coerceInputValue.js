@@ -82,7 +82,7 @@ function coerceInputValueImpl(
     const itemType = type.ofType;
     if (isCollection(inputValue)) {
       return arrayFrom(inputValue, (itemValue, index) => {
-        const itemPath = addPath(path, index);
+        const itemPath = addPath(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
     }
@@ -126,7 +126,7 @@ function coerceInputValueImpl(
         fieldValue,
         field.type,
         onError,
-        addPath(path, field.name),
+        addPath(path, field.name, undefined),
       );
     }
 

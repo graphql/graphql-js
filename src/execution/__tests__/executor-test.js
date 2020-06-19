@@ -306,7 +306,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const field = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
       fieldNodes: [field],
-      path: { prev: undefined, key: 'result' },
+      path: { prev: undefined, key: 'result', parentType: 'Test' },
       variableValues: { var: 'abc' },
     });
   });
