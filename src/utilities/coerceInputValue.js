@@ -126,7 +126,7 @@ function coerceInputValueImpl(
         fieldValue,
         field.type,
         onError,
-        addPath(path, field.name, undefined),
+        addPath(path, field.name, type.name),
       );
     }
 
