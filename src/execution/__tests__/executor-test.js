@@ -17,6 +17,7 @@ import {
   GraphQLScalarType,
   GraphQLInterfaceType,
   GraphQLObjectType,
+  GraphQLUnionType,
 } from '../../type/definition';
 
 import { execute } from '../execute';
@@ -308,6 +309,60 @@ describe('Execute: Handles basic execution tasks', () => {
       fieldNodes: [field],
       path: { prev: undefined, key: 'result', parentType: 'Test' },
       variableValues: { var: 'abc' },
+    });
+  });
+
+  it('populates path correctly with complex types', () => {
+    let path;
+    const a = new GraphQLObjectType({
+      name: 'A',
+      fields: {
+        test: {
+          type: GraphQLString,
+          resolve(_val, _args, _ctx, info) {
+            path = info.path;
+          },
+        },
+      },
+    });
+    const testUnion = new GraphQLUnionType({
+      name: 'TestUnion',
+      types: [a],
+      resolveType() {
+        return a;
+      },
+    });
+    const testType = new GraphQLObjectType({
+      name: 'Test',
+      fields: {
+        test: {
+          type: new GraphQLNonNull(
+            new GraphQLList(new GraphQLNonNull(testUnion)),
+          ),
+          resolve(_val, _args, _ctx, _info) {
+            return [{ type: 'A' }];
+          },
+        },
+      },
+    });
+    const schema = new GraphQLSchema({ query: testType });
+
+    const document = parse('query { l1: test { ... on A { l2: test } } }');
+
+    execute({ schema, document });
+
+    expect(path).to.deep.equal({
+      key: 'l2',
+      parentType: 'A',
+      prev: {
+        key: 0,
+        parentType: undefined,
+        prev: {
+          key: 'l1',
+          parentType: 'Test',
+          prev: undefined,
+        },
+      },
     });
   });
 
