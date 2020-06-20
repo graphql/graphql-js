@@ -14,6 +14,7 @@ exclude:
   - 'src/validation/rules/UniqueFieldDefinitionNames.js'
   - 'src/validation/rules/UniqueTypeNames.js'
   - 'src/validation/rules/UniqueOperationTypes.js'
+  - 'src/utilities/findDeprecatedUsages.js'
 clean: true
 temp-directory: 'coverage/tests'
 report-dir: 'coverage/tests'
