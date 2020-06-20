@@ -15,6 +15,8 @@ var _predicates = require("../../language/predicates");
 
 var _scalars = require("../../type/scalars");
 
+var _introspection = require("../../type/introspection");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
@@ -47,23 +49,23 @@ function KnownTypeNamesRule(context) {
         var definitionNode = (_ancestors$ = ancestors[2]) !== null && _ancestors$ !== void 0 ? _ancestors$ : parent;
         var isSDL = definitionNode != null && isSDLNode(definitionNode);
 
-        if (isSDL && isSpecifiedScalarName(typeName)) {
+        if (isSDL && isStandardTypeName(typeName)) {
           return;
         }
 
-        var suggestedTypes = (0, _suggestionList.default)(typeName, isSDL ? specifiedScalarsNames.concat(typeNames) : typeNames);
+        var suggestedTypes = (0, _suggestionList.default)(typeName, isSDL ? standardTypeNames.concat(typeNames) : typeNames);
         context.reportError(new _GraphQLError.GraphQLError("Unknown type \"".concat(typeName, "\".") + (0, _didYouMean.default)(suggestedTypes), node));
       }
     }
   };
 }
 
-var specifiedScalarsNames = _scalars.specifiedScalarTypes.map(function (type) {
+var standardTypeNames = [].concat(_scalars.specifiedScalarTypes, _introspection.introspectionTypes).map(function (type) {
   return type.name;
 });
 
-function isSpecifiedScalarName(typeName) {
-  return specifiedScalarsNames.indexOf(typeName) !== -1;
+function isStandardTypeName(typeName) {
+  return standardTypeNames.indexOf(typeName) !== -1;
 }
 
 function isSDLNode(value) {
