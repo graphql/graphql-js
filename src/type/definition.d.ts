@@ -357,7 +357,7 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
  * It's strongly recommended that you prefix each added attribute's name with an
  * identifier unique to your project to avoid conflicts with other projects.
  */
-export interface GraphQLObjectTypeExtensions {
+export interface GraphQLObjectTypeExtensions<TSource = any, TContext = any> {
   [attributeName: string]: any;
 }
 
@@ -402,7 +402,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
-  extensions: Maybe<Readonly<GraphQLObjectTypeExtensions>>;
+  extensions: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 
@@ -414,7 +414,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   toConfig(): GraphQLObjectTypeConfig<any, any> & {
     interfaces: Array<GraphQLInterfaceType>;
     fields: GraphQLFieldConfigMap<any, any>;
-    extensions: Maybe<Readonly<GraphQLObjectTypeExtensions>>;
+    extensions: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
     extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
   };
 
@@ -433,7 +433,7 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
   interfaces?: Thunk<Maybe<Array<GraphQLInterfaceType>>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
-  extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions>>;
+  extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 }
@@ -479,7 +479,11 @@ export interface GraphQLResolveInfo {
  * It's strongly recommended that you prefix each added attribute's name with an
  * identifier unique to your project to avoid conflicts with other projects.
  */
-export interface GraphQLFieldExtensions {
+export interface GraphQLFieldExtensions<
+  TSource,
+  TContext,
+  TArgs = { [argName: string]: any }
+> {
   [attributeName: string]: any;
 }
 
@@ -494,7 +498,9 @@ export interface GraphQLFieldConfig<
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   deprecationReason?: Maybe<string>;
-  extensions?: Maybe<Readonly<GraphQLFieldExtensions>>;
+  extensions?: Maybe<
+    Readonly<GraphQLFieldExtensions<TSource, TContext, TArgs>>
+  >;
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
@@ -535,7 +541,7 @@ export interface GraphQLField<
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   isDeprecated: boolean;
   deprecationReason: Maybe<string>;
-  extensions: Maybe<Readonly<GraphQLFieldExtensions>>;
+  extensions: Maybe<Readonly<GraphQLFieldExtensions<TSource, TContext, TArgs>>>;
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
