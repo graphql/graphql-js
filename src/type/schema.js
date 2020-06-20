@@ -61,8 +61,6 @@ export function assertSchema(schema: mixed): GraphQLSchema {
   return schema;
 }
 
-export type GraphQLSchemaExtensions = ReadOnlyObjMap<mixed>;
-
 /**
  * Schema Definition
  *
@@ -128,7 +126,7 @@ export type GraphQLSchemaExtensions = ReadOnlyObjMap<mixed>;
  */
 export class GraphQLSchema {
   description: ?string;
-  extensions: ?GraphQLSchemaExtensions;
+  extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?SchemaDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>;
 
@@ -385,7 +383,7 @@ export type GraphQLSchemaConfig = {|
   subscription?: ?GraphQLObjectType,
   types?: ?Array<GraphQLNamedType>,
   directives?: ?Array<GraphQLDirective>,
-  extensions?: ?GraphQLSchemaExtensions,
+  extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?SchemaDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
   ...GraphQLSchemaValidationOptions,
@@ -399,7 +397,7 @@ export type GraphQLSchemaNormalizedConfig = {|
   description: ?string,
   types: Array<GraphQLNamedType>,
   directives: Array<GraphQLDirective>,
-  extensions: ?GraphQLSchemaExtensions,
+  extensions: ?ReadOnlyObjMap<mixed>,
   extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>,
   assumeValid: boolean,
 |};

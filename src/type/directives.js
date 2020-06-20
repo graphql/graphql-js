@@ -42,8 +42,6 @@ export function assertDirective(directive: mixed): GraphQLDirective {
   return directive;
 }
 
-export type GraphQLDirectiveExtensions = ReadOnlyObjMap<mixed>;
-
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
@@ -54,7 +52,7 @@ export class GraphQLDirective {
   locations: Array<DirectiveLocationEnum>;
   args: Array<GraphQLArgument>;
   isRepeatable: boolean;
-  extensions: ?GraphQLDirectiveExtensions;
+  extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?DirectiveDefinitionNode;
 
   constructor(config: $ReadOnly<GraphQLDirectiveConfig>): void {
@@ -91,7 +89,7 @@ export class GraphQLDirective {
     ...GraphQLDirectiveConfig,
     args: GraphQLFieldConfigArgumentMap,
     isRepeatable: boolean,
-    extensions: ?GraphQLDirectiveExtensions,
+    extensions: ?ReadOnlyObjMap<mixed>,
   |} {
     return {
       name: this.name,
@@ -127,7 +125,7 @@ export type GraphQLDirectiveConfig = {|
   locations: Array<DirectiveLocationEnum>,
   args?: ?GraphQLFieldConfigArgumentMap,
   isRepeatable?: ?boolean,
-  extensions?: ?GraphQLDirectiveExtensions,
+  extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?DirectiveDefinitionNode,
 |};
 
