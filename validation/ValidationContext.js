@@ -192,4 +192,8 @@ export class ValidationContext extends ASTValidationContext {
     return this._typeInfo.getArgument();
   }
 
+  getEnumValue() {
+    return this._typeInfo.getEnumValue();
+  }
+
 }

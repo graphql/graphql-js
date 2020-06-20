@@ -18,6 +18,7 @@ import {
   GraphQLCompositeType,
   GraphQLField,
   GraphQLArgument,
+  GraphQLEnumValue,
 } from '../type/definition';
 import { TypeInfo } from '../utilities/TypeInfo';
 
@@ -90,6 +91,8 @@ export class ValidationContext extends ASTValidationContext {
   getDirective(): Maybe<GraphQLDirective>;
 
   getArgument(): Maybe<GraphQLArgument>;
+
+  getEnumValue(): Maybe<GraphQLEnumValue>;
 }
 
 export type ValidationRule = (context: ValidationContext) => ASTVisitor;
