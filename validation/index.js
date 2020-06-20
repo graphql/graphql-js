@@ -219,6 +219,12 @@ Object.defineProperty(exports, "PossibleTypeExtensionsRule", {
     return _PossibleTypeExtensionsRule.PossibleTypeExtensionsRule;
   }
 });
+Object.defineProperty(exports, "NoSchemaIntrospectionCustomRule", {
+  enumerable: true,
+  get: function get() {
+    return _NoSchemaIntrospectionCustomRule.NoSchemaIntrospectionCustomRule;
+  }
+});
 
 var _validate = require("./validate");
 
@@ -291,3 +297,5 @@ var _UniqueFieldDefinitionNamesRule = require("./rules/UniqueFieldDefinitionName
 var _UniqueDirectiveNamesRule = require("./rules/UniqueDirectiveNamesRule");
 
 var _PossibleTypeExtensionsRule = require("./rules/PossibleTypeExtensionsRule");
+
+var _NoSchemaIntrospectionCustomRule = require("./rules/custom/NoSchemaIntrospectionCustomRule");

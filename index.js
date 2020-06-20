@@ -939,6 +939,12 @@ Object.defineProperty(exports, "PossibleTypeExtensionsRule", {
     return _index5.PossibleTypeExtensionsRule;
   }
 });
+Object.defineProperty(exports, "NoSchemaIntrospectionCustomRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.NoSchemaIntrospectionCustomRule;
+  }
+});
 Object.defineProperty(exports, "GraphQLError", {
   enumerable: true,
   get: function get() {
