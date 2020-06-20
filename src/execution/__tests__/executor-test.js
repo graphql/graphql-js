@@ -329,7 +329,7 @@ describe('Execute: Handles basic execution tasks', () => {
       name: 'TestUnion',
       types: [a],
       resolveType() {
-        return a;
+        return 'A';
       },
     });
     const testType = new GraphQLObjectType({
