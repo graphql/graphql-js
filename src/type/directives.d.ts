@@ -15,8 +15,13 @@ export function isDirective(directive: any): directive is GraphQLDirective;
 export function assertDirective(directive: any): GraphQLDirective;
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLDirectiveExtensions {
   [attributeName: string]: any;

@@ -276,8 +276,13 @@ export function getNamedType(type: GraphQLType): GraphQLNamedType;
 export type Thunk<T> = (() => T) | T;
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLScalarTypeExtensions {
   [attributeName: string]: any;
@@ -354,8 +359,13 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
 }
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLObjectTypeExtensions<TSource = any, TContext = any> {
   [attributeName: string]: any;
@@ -476,8 +486,13 @@ export interface GraphQLResolveInfo {
 }
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLFieldExtensions<
   TSource,
@@ -509,8 +524,13 @@ export interface GraphQLFieldConfigArgumentMap {
 }
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLArgumentExtensions {
   [attributeName: string]: any;
@@ -561,8 +581,13 @@ export interface GraphQLFieldMap<TSource, TContext> {
 }
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLInterfaceTypeExtensions {
   [attributeName: string]: any;
@@ -627,8 +652,13 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
 }
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLUnionTypeExtensions {
   [attributeName: string]: any;
@@ -695,8 +725,13 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
 }
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLEnumTypeExtensions {
   [attributeName: string]: any;
@@ -764,8 +799,13 @@ export interface GraphQLEnumValueConfigMap {
 }
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLEnumValueExtensions {
   [attributeName: string]: any;
@@ -790,8 +830,13 @@ export interface GraphQLEnumValue {
 }
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLInputObjectTypeExtensions {
   [attributeName: string]: any;
@@ -848,8 +893,13 @@ export interface GraphQLInputObjectTypeConfig {
 }
 
 /**
- * It's strongly recommended that you prefix each added attribute's name with an
- * identifier unique to your project to avoid conflicts with other projects.
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
  */
 export interface GraphQLInputFieldExtensions {
   [attributeName: string]: any;
