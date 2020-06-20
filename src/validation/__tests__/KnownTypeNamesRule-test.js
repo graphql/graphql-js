@@ -35,11 +35,16 @@ function expectValidSDL(sdlStr, schema) {
 describe('Validate: Known type names', () => {
   it('known type names are valid', () => {
     expectValid(`
-      query Foo($var: String, $required: [String!]!) {
+      query Foo(
+        $var: String
+        $required: [Int!]!
+        $introspectionType: __EnumValue
+      ) {
         user(id: 4) {
           pets { ... on Pet { name }, ...PetFields, ... { name } }
         }
       }
+
       fragment PetFields on Pet {
         name
       }
@@ -97,7 +102,7 @@ describe('Validate: Known type names', () => {
   });
 
   describe('within SDL', () => {
-    it('use standard scalars', () => {
+    it('use standard types', () => {
       expectValidSDL(`
         type Query {
           string: String
@@ -105,6 +110,7 @@ describe('Validate: Known type names', () => {
           float: Float
           boolean: Boolean
           id: ID
+          introspectionType: __EnumValue
         }
       `);
     });
@@ -239,7 +245,7 @@ describe('Validate: Known type names', () => {
       ]);
     });
 
-    it('reference standard scalars inside extension document', () => {
+    it('reference standard types inside extension document', () => {
       const schema = buildSchema('type Foo');
       const sdl = `
         type SomeType {
@@ -248,6 +254,7 @@ describe('Validate: Known type names', () => {
           float: Float
           boolean: Boolean
           id: ID
+          introspectionType: __EnumValue
         }
       `;
 
