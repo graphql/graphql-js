@@ -334,6 +334,7 @@ export {
   UniqueDirectiveNamesRule,
   PossibleTypeExtensionsRule,
   // Custom validation rules
+  NoDeprecatedCustomRule,
   NoSchemaIntrospectionCustomRule,
 } from './validation/index';
 
@@ -416,7 +417,7 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-  // Report all deprecated usage within a GraphQL document.
+  // @deprecated: Report all deprecated usage within a GraphQL document.
   findDeprecatedUsages,
 } from './utilities/index';
 
