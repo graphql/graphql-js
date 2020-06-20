@@ -314,8 +314,8 @@ describe('Execute: Handles basic execution tasks', () => {
 
   it('populates path correctly with complex types', () => {
     let path;
-    const a = new GraphQLObjectType({
-      name: 'A',
+    const someObject = new GraphQLObjectType({
+      name: 'SomeObject',
       fields: {
         test: {
           type: GraphQLString,
@@ -325,41 +325,46 @@ describe('Execute: Handles basic execution tasks', () => {
         },
       },
     });
-    const testUnion = new GraphQLUnionType({
-      name: 'TestUnion',
-      types: [a],
+    const someUnion = new GraphQLUnionType({
+      name: 'SomeUnion',
+      types: [someObject],
       resolveType() {
-        return 'A';
+        return 'SomeObject';
       },
     });
     const testType = new GraphQLObjectType({
-      name: 'Test',
+      name: 'SomeQuery',
       fields: {
         test: {
           type: new GraphQLNonNull(
-            new GraphQLList(new GraphQLNonNull(testUnion)),
+            new GraphQLList(new GraphQLNonNull(someUnion)),
           ),
-          resolve(_val, _args, _ctx, _info) {
-            return [{ type: 'A' }];
-          },
         },
       },
     });
     const schema = new GraphQLSchema({ query: testType });
+    const rootValue = { test: [{}] };
+    const document = parse(`
+      query {
+        l1: test {
+          ... on SomeObject {
+            l2: test
+          }
+        }
+      }
+    `);
 
-    const document = parse('query { l1: test { ... on A { l2: test } } }');
-
-    execute({ schema, document });
+    execute({ schema, document, rootValue });
 
     expect(path).to.deep.equal({
       key: 'l2',
-      parentType: 'A',
+      parentType: 'SomeObject',
       prev: {
         key: 0,
         parentType: undefined,
         prev: {
           key: 'l1',
-          parentType: 'Test',
+          parentType: 'SomeQuery',
           prev: undefined,
         },
       },
