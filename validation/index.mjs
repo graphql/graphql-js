@@ -63,4 +63,5 @@ export { UniqueFieldDefinitionNamesRule } from "./rules/UniqueFieldDefinitionNam
 export { UniqueDirectiveNamesRule } from "./rules/UniqueDirectiveNamesRule.mjs";
 export { PossibleTypeExtensionsRule } from "./rules/PossibleTypeExtensionsRule.mjs"; // Optional rules not defined by the GraphQL Specification
 
+export { NoDeprecatedCustomRule } from "./rules/custom/NoDeprecatedCustomRule.mjs";
 export { NoSchemaIntrospectionCustomRule } from "./rules/custom/NoSchemaIntrospectionCustomRule.mjs";

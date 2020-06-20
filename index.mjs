@@ -54,7 +54,7 @@ export { validate, ValidationContext // All validation rules in the GraphQL Spec
 , specifiedRules // Individual validation rules.
 , ExecutableDefinitionsRule, FieldsOnCorrectTypeRule, FragmentsOnCompositeTypesRule, KnownArgumentNamesRule, KnownDirectivesRule, KnownFragmentNamesRule, KnownTypeNamesRule, LoneAnonymousOperationRule, NoFragmentCyclesRule, NoUndefinedVariablesRule, NoUnusedFragmentsRule, NoUnusedVariablesRule, OverlappingFieldsCanBeMergedRule, PossibleFragmentSpreadsRule, ProvidedRequiredArgumentsRule, ScalarLeafsRule, SingleFieldSubscriptionsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule, UniqueFragmentNamesRule, UniqueInputFieldNamesRule, UniqueOperationNamesRule, UniqueVariableNamesRule, ValuesOfCorrectTypeRule, VariablesAreInputTypesRule, VariablesInAllowedPositionRule // SDL-specific validation rules
 , LoneSchemaDefinitionRule, UniqueOperationTypesRule, UniqueTypeNamesRule, UniqueEnumValueNamesRule, UniqueFieldDefinitionNamesRule, UniqueDirectiveNamesRule, PossibleTypeExtensionsRule // Custom validation rules
-, NoSchemaIntrospectionCustomRule } from "./validation/index.mjs";
+, NoDeprecatedCustomRule, NoSchemaIntrospectionCustomRule } from "./validation/index.mjs";
 // Create, format, and print GraphQL errors.
 export { GraphQLError, syntaxError, locatedError, printError, formatError } from "./error/index.mjs";
 // Utilities for operating on GraphQL type schema and parsed sources.
@@ -90,5 +90,5 @@ getIntrospectionQuery // Gets the target Operation from a Document.
 , isEqualType, isTypeSubTypeOf, doTypesOverlap // Asserts a string is a valid GraphQL name.
 , assertValidName // Determine if a string is a valid GraphQL name.
 , isValidNameError // Compares two GraphQLSchemas and detects breaking changes.
-, BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges // Report all deprecated usage within a GraphQL document.
+, BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges // @deprecated: Report all deprecated usage within a GraphQL document.
 , findDeprecatedUsages } from "./utilities/index.mjs";

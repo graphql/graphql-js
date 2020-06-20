@@ -216,5 +216,9 @@ export var ValidationContext = /*#__PURE__*/function (_ASTValidationContext2) {
     return this._typeInfo.getArgument();
   };
 
+  _proto3.getEnumValue = function getEnumValue() {
+    return this._typeInfo.getEnumValue();
+  };
+
   return ValidationContext;
 }(ASTValidationContext);

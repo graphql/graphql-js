@@ -25,6 +25,7 @@ import type {
   GraphQLCompositeType,
   GraphQLField,
   GraphQLArgument,
+  GraphQLEnumValue,
 } from '../type/definition';
 
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
@@ -244,6 +245,10 @@ export class ValidationContext extends ASTValidationContext {
 
   getArgument(): ?GraphQLArgument {
     return this._typeInfo.getArgument();
+  }
+
+  getEnumValue(): ?GraphQLEnumValue {
+    return this._typeInfo.getEnumValue();
   }
 }
 

@@ -939,6 +939,12 @@ Object.defineProperty(exports, "PossibleTypeExtensionsRule", {
     return _index5.PossibleTypeExtensionsRule;
   }
 });
+Object.defineProperty(exports, "NoDeprecatedCustomRule", {
+  enumerable: true,
+  get: function get() {
+    return _index5.NoDeprecatedCustomRule;
+  }
+});
 Object.defineProperty(exports, "NoSchemaIntrospectionCustomRule", {
   enumerable: true,
   get: function get() {
