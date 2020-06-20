@@ -366,6 +366,9 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
  * your library or project. Do not use a shortened identifier as this increases
  * the risk of conflicts. We recommend you add at most one extension field,
  * an object which can contain all the values you need.
+ *
+ * We've provided these template arguments because this is an open type and
+ * you may find them useful.
  */
 export interface GraphQLObjectTypeExtensions<TSource = any, TContext = any> {
   [attributeName: string]: any;
@@ -493,6 +496,9 @@ export interface GraphQLResolveInfo {
  * your library or project. Do not use a shortened identifier as this increases
  * the risk of conflicts. We recommend you add at most one extension field,
  * an object which can contain all the values you need.
+ *
+ * We've provided these template arguments because this is an open type and
+ * you may find them useful.
  */
 export interface GraphQLFieldExtensions<
   TSource,
