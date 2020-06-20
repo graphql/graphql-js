@@ -307,7 +307,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const field = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
       fieldNodes: [field],
-      path: { prev: undefined, key: 'result', parentType: 'Test' },
+      path: { prev: undefined, key: 'result', typename: 'Test' },
       variableValues: { var: 'abc' },
     });
   });
@@ -358,13 +358,13 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(path).to.deep.equal({
       key: 'l2',
-      parentType: 'SomeObject',
+      typename: 'SomeObject',
       prev: {
         key: 0,
-        parentType: undefined,
+        typename: undefined,
         prev: {
           key: 'l1',
-          parentType: 'SomeQuery',
+          typename: 'SomeQuery',
           prev: undefined,
         },
       },

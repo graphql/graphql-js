@@ -1,7 +1,7 @@
 export interface Path {
   prev: Path | undefined;
   key: string | number;
-  parentType: string | undefined;
+  typename: string | undefined;
 }
 
 /**
@@ -10,7 +10,7 @@ export interface Path {
 export function addPath(
   prev: Path | undefined,
   key: string | number,
-  parentType: string | undefined,
+  typename: string | undefined,
 ): Path;
 
 /**

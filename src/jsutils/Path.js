@@ -3,7 +3,7 @@
 export type Path = {|
   +prev: Path | void,
   +key: string | number,
-  +parentType: string | void,
+  +typename: string | void,
 |};
 
 /**
@@ -12,9 +12,9 @@ export type Path = {|
 export function addPath(
   prev: $ReadOnly<Path> | void,
   key: string | number,
-  parentType: string | void,
+  typename: string | void,
 ): Path {
-  return { prev, key, parentType };
+  return { prev, key, typename };
 }
 
 /**
