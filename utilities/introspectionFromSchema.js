@@ -1,7 +1,6 @@
 import invariant from "../jsutils/invariant.js";
-import isPromise from "../jsutils/isPromise.js";
 import { parse } from "../language/parser.js";
-import { execute } from "../execution/execute.js";
+import { executeSync } from "../execution/execute.js";
 import { getIntrospectionQuery } from "./getIntrospectionQuery.js";
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
@@ -20,10 +19,10 @@ export function introspectionFromSchema(schema, options) {
     ...options
   };
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
-  const result = execute({
+  const result = executeSync({
     schema,
     document
   });
-  !isPromise(result) && !result.errors && result.data || invariant(0);
+  !result.errors && result.data || invariant(0);
   return result.data;
 }
