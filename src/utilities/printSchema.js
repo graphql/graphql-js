@@ -9,6 +9,7 @@ import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
 
 import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
 import type {
   GraphQLNamedType,
   GraphQLScalarType,
@@ -21,7 +22,6 @@ import type {
 import { isIntrospectionType } from '../type/introspection';
 import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
 import {
-  GraphQLDirective,
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
 } from '../type/directives';
