@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.execute = execute;
+exports.executeSync = executeSync;
 exports.assertValidExecutionArguments = assertValidExecutionArguments;
 exports.buildExecutionContext = buildExecutionContext;
 exports.collectFields = collectFields;
@@ -69,6 +70,22 @@ function execute(argsOrSchema, document, rootValue, contextValue, variableValues
     fieldResolver: fieldResolver,
     typeResolver: typeResolver
   });
+}
+/**
+ * Also implements the "Evaluating requests" section of the GraphQL specification.
+ * However, it guarantees to complete synchronously (or throw an error) assuming
+ * that all field resolvers are also synchronous.
+ */
+
+
+function executeSync(args) {
+  var result = executeImpl(args); // Assert that the execution was synchronous.
+
+  if ((0, _isPromise.default)(result)) {
+    throw new Error('GraphQL execution failed to complete synchronously.');
+  }
+
+  return result;
 }
 
 function executeImpl(args) {

@@ -60,6 +60,21 @@ export function execute(argsOrSchema, document, rootValue, contextValue, variabl
     typeResolver: typeResolver
   });
 }
+/**
+ * Also implements the "Evaluating requests" section of the GraphQL specification.
+ * However, it guarantees to complete synchronously (or throw an error) assuming
+ * that all field resolvers are also synchronous.
+ */
+
+export function executeSync(args) {
+  var result = executeImpl(args); // Assert that the execution was synchronous.
+
+  if (isPromise(result)) {
+    throw new Error('GraphQL execution failed to complete synchronously.');
+  }
+
+  return result;
+}
 
 function executeImpl(args) {
   var schema = args.schema,

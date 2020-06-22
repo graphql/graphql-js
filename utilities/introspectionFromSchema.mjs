@@ -5,9 +5,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 import invariant from "../jsutils/invariant.mjs";
-import isPromise from "../jsutils/isPromise.mjs";
 import { parse } from "../language/parser.mjs";
-import { execute } from "../execution/execute.mjs";
+import { executeSync } from "../execution/execute.mjs";
 import { getIntrospectionQuery } from "./getIntrospectionQuery.mjs";
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
@@ -26,10 +25,10 @@ export function introspectionFromSchema(schema, options) {
   }, options);
 
   var document = parse(getIntrospectionQuery(optionsWithDefaults));
-  var result = execute({
+  var result = executeSync({
     schema: schema,
     document: document
   });
-  !isPromise(result) && !result.errors && result.data || invariant(0);
+  !result.errors && result.data || invariant(0);
   return result.data;
 }

@@ -687,6 +687,12 @@ Object.defineProperty(exports, "execute", {
     return _index3.execute;
   }
 });
+Object.defineProperty(exports, "executeSync", {
+  enumerable: true,
+  get: function get() {
+    return _index3.executeSync;
+  }
+});
 Object.defineProperty(exports, "defaultFieldResolver", {
   enumerable: true,
   get: function get() {

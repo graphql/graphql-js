@@ -15,6 +15,12 @@ Object.defineProperty(exports, "execute", {
     return _execute.execute;
   }
 });
+Object.defineProperty(exports, "executeSync", {
+  enumerable: true,
+  get: function get() {
+    return _execute.executeSync;
+  }
+});
 Object.defineProperty(exports, "defaultFieldResolver", {
   enumerable: true,
   get: function get() {

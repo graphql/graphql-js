@@ -47,7 +47,7 @@ export { Token, Source, Location, getLocation // Print source location
 , visit, visitInParallel, getVisitFn, BREAK, Kind, DirectiveLocation // Predicates
 , isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from "./language/index.mjs";
 // Execute GraphQL queries.
-export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from "./execution/index.mjs";
+export { execute, executeSync, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from "./execution/index.mjs";
 export { subscribe, createSourceEventStream } from "./subscription/index.mjs";
 // Validate GraphQL documents.
 export { validate, ValidationContext // All validation rules in the GraphQL Specification.
