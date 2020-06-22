@@ -1,13 +1,12 @@
 // @flow strict
 
 import invariant from '../jsutils/invariant';
-import isPromise from '../jsutils/isPromise';
 
 import { parse } from '../language/parser';
 
 import type { GraphQLSchema } from '../type/schema';
 
-import { execute } from '../execution/execute';
+import { executeSync } from '../execution/execute';
 
 import type {
   IntrospectionQuery,
@@ -35,7 +34,7 @@ export function introspectionFromSchema(
   };
 
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
-  const result = execute({ schema, document });
-  invariant(!isPromise(result) && !result.errors && result.data);
+  const result = executeSync({ schema, document });
+  invariant(!result.errors && result.data);
   return (result.data: any);
 }

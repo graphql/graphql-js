@@ -16,7 +16,7 @@ import {
   GraphQLUnionType,
 } from '../../type/definition';
 
-import { execute } from '../execute';
+import { executeSync } from '../execute';
 
 class Dog {
   name: string;
@@ -193,7 +193,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document })).to.deep.equal({
+    expect(executeSync({ schema, document })).to.deep.equal({
       data: {
         Named: {
           kind: 'INTERFACE',
@@ -241,7 +241,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -281,7 +281,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -316,7 +316,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -361,7 +361,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -404,7 +404,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -469,7 +469,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -533,7 +533,7 @@ describe('Execute: Union and intersection types', () => {
     const rootValue = new Person('John', [], [liz]);
     const contextValue = { authToken: '123abc' };
 
-    const result = execute({
+    const result = executeSync({
       schema: schema2,
       document,
       rootValue,

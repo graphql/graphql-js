@@ -91,6 +91,13 @@ export function execute(
 ): PromiseOrValue<ExecutionResult>;
 
 /**
+ * Also implements the "Evaluating requests" section of the GraphQL specification.
+ * However, it guarantees to complete synchronously (or throw an error) assuming
+ * that all field resolvers are also synchronous.
+ */
+export function executeSync(args: ExecutionArgs): ExecutionResult;
+
+/**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
  */

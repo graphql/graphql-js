@@ -280,6 +280,7 @@ export {
 // Execute GraphQL queries.
 export {
   execute,
+  executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,

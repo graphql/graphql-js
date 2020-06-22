@@ -3,12 +3,15 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { parse } from '../../language/parser';
+
 import type { GraphQLFieldConfig } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
 
-import { graphqlSync } from '../../graphql';
+import type { ExecutionResult } from '../execute';
+import { executeSync } from '../execute';
 
 describe('Execute: resolve function', () => {
   function testSchema(testField: GraphQLFieldConfig<any, any>) {
@@ -23,9 +26,9 @@ describe('Execute: resolve function', () => {
   }
 
   it('default function accesses properties', () => {
-    const result = graphqlSync({
+    const result = executeSync({
       schema: testSchema({ type: GraphQLString }),
-      source: '{ test }',
+      document: parse('{ test }'),
       rootValue: { test: 'testValue' },
     });
 
@@ -44,9 +47,9 @@ describe('Execute: resolve function', () => {
       },
     };
 
-    const result = graphqlSync({
+    const result = executeSync({
       schema: testSchema({ type: GraphQLString }),
-      source: '{ test }',
+      document: parse('{ test }'),
       rootValue,
     });
     expect(result).to.deep.equal({
@@ -77,9 +80,9 @@ describe('Execute: resolve function', () => {
       },
     });
     const contextValue = { addend2: 9 };
-    const source = '{ test(addend1: 80) }';
+    const document = parse('{ test(addend1: 80) }');
 
-    const result = graphqlSync({ schema, source, rootValue, contextValue });
+    const result = executeSync({ schema, document, rootValue, contextValue });
     expect(result).to.deep.equal({
       data: { test: 789 },
     });
@@ -95,30 +98,31 @@ describe('Execute: resolve function', () => {
       resolve: (source, args) => JSON.stringify([source, args]),
     });
 
-    function execute(source: string, rootValue?: mixed, contextValue?: mixed) {
-      return graphqlSync({ schema, source, rootValue, contextValue });
+    function executeQuery(query: string, rootValue?: mixed): ExecutionResult {
+      const document = parse(query);
+      return executeSync({ schema, document, rootValue });
     }
 
-    expect(execute('{ test }')).to.deep.equal({
+    expect(executeQuery('{ test }')).to.deep.equal({
       data: {
         test: '[null,{}]',
       },
     });
 
-    expect(execute('{ test }', 'Source!')).to.deep.equal({
+    expect(executeQuery('{ test }', 'Source!')).to.deep.equal({
       data: {
         test: '["Source!",{}]',
       },
     });
 
-    expect(execute('{ test(aStr: "String!") }', 'Source!')).to.deep.equal({
+    expect(executeQuery('{ test(aStr: "String!") }', 'Source!')).to.deep.equal({
       data: {
         test: '["Source!",{"aStr":"String!"}]',
       },
     });
 
     expect(
-      execute('{ test(aInt: -123, aStr: "String!") }', 'Source!'),
+      executeQuery('{ test(aInt: -123, aStr: "String!") }', 'Source!'),
     ).to.deep.equal({
       data: {
         test: '["Source!",{"aStr":"String!","aInt":-123}]',
