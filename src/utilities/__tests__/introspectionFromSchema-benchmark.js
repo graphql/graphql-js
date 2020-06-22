@@ -1,7 +1,7 @@
 // @flow strict
 
 import { parse } from '../../language/parser';
-import { execute } from '../../execution/execute';
+import { executeSync } from '../../execution/execute';
 
 import { buildSchema } from '../buildASTSchema';
 import { getIntrospectionQuery } from '../getIntrospectionQuery';
@@ -14,5 +14,5 @@ const document = parse(getIntrospectionQuery());
 export const name = 'Execute Introspection Query';
 export const count = 10;
 export function measure() {
-  execute({ schema, document });
+  executeSync({ schema, document });
 }

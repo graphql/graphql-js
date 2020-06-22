@@ -3,8 +3,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import invariant from '../../jsutils/invariant';
-
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -14,7 +12,7 @@ import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import type { ExecutionResult } from '../execute';
-import { execute } from '../execute';
+import { execute, executeSync } from '../execute';
 
 const syncError = new Error('sync');
 const syncNonNullError = new Error('syncNonNull');
@@ -127,10 +125,12 @@ function patchData(data: ExecutionResult): ExecutionResult {
 }
 
 async function executeSyncAndAsync(query: string, rootValue: mixed) {
-  const syncResult = await executeQuery(query, rootValue);
-  invariant(!(syncResult instanceof Promise));
-
-  const asyncResult = await executeQuery(patch(query), rootValue);
+  const syncResult = executeSync({ schema, document: parse(query), rootValue });
+  const asyncResult = await execute({
+    schema,
+    document: parse(patch(query)),
+    rootValue,
+  });
 
   expect(asyncResult).to.deep.equal(patchData(syncResult));
   return syncResult;
@@ -166,7 +166,7 @@ describe('Execute: handles non-nullable types', () => {
     });
   });
 
-  describe('nulls a synchronously returned object that contains a non-nullable field', () => {
+  describe('nulls a returned object that contains a non-nullable field', () => {
     const query = `
       {
         syncNest {
@@ -198,45 +198,6 @@ describe('Execute: handles non-nullable types', () => {
           {
             message: syncNonNullError.message,
             path: ['syncNest', 'syncNonNull'],
-            locations: [{ line: 4, column: 11 }],
-          },
-        ],
-      });
-    });
-  });
-
-  describe('nulls an object returned in a promise that contains a non-nullable field', () => {
-    const query = `
-      {
-        promiseNest {
-          syncNonNull,
-        }
-      }
-    `;
-
-    it('that returns null', async () => {
-      const result = await executeSyncAndAsync(query, nullingData);
-      expect(result).to.deep.equal({
-        data: { promiseNest: null },
-        errors: [
-          {
-            message:
-              'Cannot return null for non-nullable field DataType.syncNonNull.',
-            path: ['promiseNest', 'syncNonNull'],
-            locations: [{ line: 4, column: 11 }],
-          },
-        ],
-      });
-    });
-
-    it('that throws', async () => {
-      const result = await executeSyncAndAsync(query, throwingData);
-      expect(result).to.deep.equal({
-        data: { promiseNest: null },
-        errors: [
-          {
-            message: syncNonNullError.message,
-            path: ['promiseNest', 'syncNonNull'],
             locations: [{ line: 4, column: 11 }],
           },
         ],
@@ -582,7 +543,7 @@ describe('Execute: handles non-nullable types', () => {
     });
 
     it('succeeds when passed non-null literal value', () => {
-      const result = execute({
+      const result = executeSync({
         schema: schemaWithNonNullArg,
         document: parse(`
           query {
@@ -599,7 +560,7 @@ describe('Execute: handles non-nullable types', () => {
     });
 
     it('succeeds when passed non-null variable value', () => {
-      const result = execute({
+      const result = executeSync({
         schema: schemaWithNonNullArg,
         document: parse(`
           query ($testVar: String!) {
@@ -619,7 +580,7 @@ describe('Execute: handles non-nullable types', () => {
     });
 
     it('succeeds when missing variable has default value', () => {
-      const result = execute({
+      const result = executeSync({
         schema: schemaWithNonNullArg,
         document: parse(`
           query ($testVar: String = "default value") {
@@ -641,7 +602,7 @@ describe('Execute: handles non-nullable types', () => {
     it('field error when missing non-null arg', () => {
       // Note: validation should identify this issue first (missing args rule)
       // however execution should still protect against this.
-      const result = execute({
+      const result = executeSync({
         schema: schemaWithNonNullArg,
         document: parse(`
           query {
@@ -668,7 +629,7 @@ describe('Execute: handles non-nullable types', () => {
     it('field error when non-null arg provided null', () => {
       // Note: validation should identify this issue first (values of correct
       // type rule) however execution should still protect against this.
-      const result = execute({
+      const result = executeSync({
         schema: schemaWithNonNullArg,
         document: parse(`
           query {
@@ -695,7 +656,7 @@ describe('Execute: handles non-nullable types', () => {
     it('field error when non-null arg not provided variable value', () => {
       // Note: validation should identify this issue first (variables in allowed
       // position rule) however execution should still protect against this.
-      const result = execute({
+      const result = executeSync({
         schema: schemaWithNonNullArg,
         document: parse(`
           query ($testVar: String) {
@@ -723,7 +684,7 @@ describe('Execute: handles non-nullable types', () => {
     });
 
     it('field error when non-null arg provided variable with explicit null value', () => {
-      const result = execute({
+      const result = executeSync({
         schema: schemaWithNonNullArg,
         document: parse(`
           query ($testVar: String = "default value") {

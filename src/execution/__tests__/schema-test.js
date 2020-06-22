@@ -18,7 +18,7 @@ import {
   GraphQLBoolean,
 } from '../../type/scalars';
 
-import { execute } from '../execute';
+import { executeSync } from '../execute';
 
 describe('Execute: Handles execution with a complex schema', () => {
   it('executes using a schema', () => {
@@ -148,7 +148,7 @@ describe('Execute: Handles execution with a complex schema', () => {
 
     // Note: this is intentionally not validating to ensure appropriate
     // behavior occurs when executing an invalid query.
-    expect(execute({ schema: BlogSchema, document })).to.deep.equal({
+    expect(executeSync({ schema: BlogSchema, document })).to.deep.equal({
       data: {
         feed: [
           { id: '1', title: 'My Article 1' },

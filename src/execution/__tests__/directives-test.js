@@ -9,7 +9,8 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
 
-import { execute } from '../execute';
+import type { ExecutionResult } from '../execute';
+import { executeSync } from '../execute';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -30,9 +31,9 @@ const rootValue = {
   },
 };
 
-function executeTestQuery(query: string) {
+function executeTestQuery(query: string): ExecutionResult {
   const document = parse(query);
-  return execute({ schema, document, rootValue });
+  return executeSync({ schema, document, rootValue });
 }
 
 describe('Execute: handles directives', () => {
