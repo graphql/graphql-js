@@ -5,7 +5,7 @@ import { print } from "../language/printer.js";
 import { printBlockString } from "../language/blockString.js";
 import { isIntrospectionType } from "../type/introspection.js";
 import { GraphQLString, isSpecifiedScalarType } from "../type/scalars.js";
-import { GraphQLDirective, DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from "../type/directives.js";
+import { DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from "../type/directives.js";
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.js";
 import { astFromValue } from "./astFromValue.js";
 

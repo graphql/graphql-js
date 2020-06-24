@@ -1,4 +1,3 @@
-import { GraphQLError } from "../error/GraphQLError.js";
 import { validate } from "../validation/validate.js";
 import { NoDeprecatedCustomRule } from "../validation/rules/custom/NoDeprecatedCustomRule.js";
 /**
