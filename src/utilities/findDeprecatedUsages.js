@@ -1,6 +1,6 @@
 // @flow strict
 
-import { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLError } from '../error/GraphQLError';
 
 import type { DocumentNode } from '../language/ast';
 
