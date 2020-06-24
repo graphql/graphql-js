@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.findDeprecatedUsages = findDeprecatedUsages;
 
-var _GraphQLError = require("../error/GraphQLError");
-
 var _validate = require("../validation/validate");
 
 var _NoDeprecatedCustomRule = require("../validation/rules/custom/NoDeprecatedCustomRule");

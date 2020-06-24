@@ -5,7 +5,7 @@ import { print } from "../language/printer.mjs";
 import { printBlockString } from "../language/blockString.mjs";
 import { isIntrospectionType } from "../type/introspection.mjs";
 import { GraphQLString, isSpecifiedScalarType } from "../type/scalars.mjs";
-import { GraphQLDirective, DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from "../type/directives.mjs";
+import { DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from "../type/directives.mjs";
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.mjs";
 import { astFromValue } from "./astFromValue.mjs";
 
