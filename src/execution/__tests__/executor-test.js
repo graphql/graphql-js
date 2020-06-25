@@ -354,7 +354,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     `);
 
-    execute({ schema, document, rootValue });
+    executeSync({ schema, document, rootValue });
 
     expect(path).to.deep.equal({
       key: 'l2',
