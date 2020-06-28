@@ -729,6 +729,7 @@ export class GraphQLObjectType {
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?ObjectTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
+  objectValueFieldsPath: ?string;
 
   _fields: Thunk<GraphQLFieldMap<any, any>>;
   _interfaces: Thunk<Array<GraphQLInterfaceType>>;
@@ -740,6 +741,7 @@ export class GraphQLObjectType {
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.objectValueFieldsPath = config.objectValueFieldsPath;
 
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
@@ -769,6 +771,7 @@ export class GraphQLObjectType {
     ...GraphQLObjectTypeConfig<any, any>,
     interfaces: Array<GraphQLInterfaceType>,
     fields: GraphQLFieldConfigMap<any, any>,
+    objectValueFieldsPath: ?string,
     extensions: ?ReadOnlyObjMap<mixed>,
     extensionASTNodes: $ReadOnlyArray<ObjectTypeExtensionNode>,
   |} {
@@ -777,6 +780,7 @@ export class GraphQLObjectType {
       description: this.description,
       interfaces: this.getInterfaces(),
       fields: fieldsToFieldsConfig(this.getFields()),
+      objectValueFieldsPath: this.objectValueFieldsPath,
       isTypeOf: this.isTypeOf,
       extensions: this.extensions,
       astNode: this.astNode,
@@ -913,6 +917,7 @@ export type GraphQLObjectTypeConfig<TSource, TContext> = {|
   description?: ?string,
   interfaces?: Thunk<?Array<GraphQLInterfaceType>>,
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
+  objectValueFieldsPath?: ?string,
   isTypeOf?: ?GraphQLIsTypeOfFn<TSource, TContext>,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?ObjectTypeDefinitionNode,

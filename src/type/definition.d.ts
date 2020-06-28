@@ -389,6 +389,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   extensions: Maybe<Readonly<Record<string, any>>>;
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
+  objectValueFieldsPath: Maybe<string>;
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>);
 
@@ -398,6 +399,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   toConfig(): GraphQLObjectTypeConfig<any, any> & {
     interfaces: Array<GraphQLInterfaceType>;
     fields: GraphQLFieldConfigMap<any, any>;
+    objectValueFieldsPath: Maybe<string>;
     extensions: Maybe<Readonly<Record<string, any>>>;
     extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
   };
@@ -416,6 +418,7 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
   description?: Maybe<string>;
   interfaces?: Thunk<Maybe<Array<GraphQLInterfaceType>>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
+  objectValueFieldsPath: Maybe<string>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
   extensions?: Maybe<Readonly<Record<string, any>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
