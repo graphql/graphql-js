@@ -262,7 +262,7 @@ function executeOperation(exeContext, operation, rootValue) {
 function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields) {
   return (0, _promiseReduce.default)(Object.keys(fields), function (results, responseName) {
     var fieldNodes = fields[responseName];
-    var fieldPath = (0, _Path.addPath)(path, responseName);
+    var fieldPath = (0, _Path.addPath)(path, responseName, parentType.name);
     var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
 
     if (result === undefined) {
@@ -293,7 +293,7 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
   for (var _i4 = 0, _Object$keys2 = Object.keys(fields); _i4 < _Object$keys2.length; _i4++) {
     var responseName = _Object$keys2[_i4];
     var fieldNodes = fields[responseName];
-    var fieldPath = (0, _Path.addPath)(path, responseName);
+    var fieldPath = (0, _Path.addPath)(path, responseName, parentType.name);
     var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
 
     if (result !== undefined) {
@@ -647,7 +647,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
   var completedResults = (0, _arrayFrom.default)(result, function (item, index) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    var fieldPath = (0, _Path.addPath)(path, index);
+    var fieldPath = (0, _Path.addPath)(path, index, undefined);
     var completedItem = completeValueCatchingError(exeContext, itemType, fieldNodes, info, fieldPath, item);
 
     if (!containsPromise && (0, _isPromise.default)(completedItem)) {

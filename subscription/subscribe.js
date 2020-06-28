@@ -157,7 +157,7 @@ function createSourceEventStream(schema, document, rootValue, contextValue, vari
 
 
     var resolveFn = (_fieldDef$subscribe = fieldDef.subscribe) !== null && _fieldDef$subscribe !== void 0 ? _fieldDef$subscribe : exeContext.fieldResolver;
-    var path = (0, _Path.addPath)(undefined, responseName);
+    var path = (0, _Path.addPath)(undefined, responseName, type.name);
     var info = (0, _execute.buildResolveInfo)(exeContext, fieldDef, fieldNodes, type, path); // resolveFieldValueOrError implements the "ResolveFieldEventStream"
     // algorithm from GraphQL specification. It differs from
     // "ResolveFieldValue" due to providing a different `resolveFn`.

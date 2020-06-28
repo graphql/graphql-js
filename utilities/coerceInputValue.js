@@ -70,7 +70,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
     if ((0, _isCollection.default)(inputValue)) {
       return (0, _arrayFrom.default)(inputValue, function (itemValue, index) {
-        var itemPath = (0, _Path.addPath)(path, index);
+        var itemPath = (0, _Path.addPath)(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
     } // Lists accept a non-list value as a list of one.
@@ -103,7 +103,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
         continue;
       }
 
-      coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, (0, _Path.addPath)(path, field.name));
+      coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, (0, _Path.addPath)(path, field.name, type.name));
     } // Ensure every provided field is defined.
 
 
