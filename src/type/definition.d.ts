@@ -276,6 +276,19 @@ export function getNamedType(type: GraphQLType): GraphQLNamedType;
 export type Thunk<T> = (() => T) | T;
 
 /**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLScalarTypeExtensions {
+  [attributeName: string]: any;
+}
+
+/**
  * Scalar Type Definition
  *
  * The leaf values of any request and input values to arguments are
@@ -299,7 +312,7 @@ export class GraphQLScalarType {
   serialize: GraphQLScalarSerializer<any>;
   parseValue: GraphQLScalarValueParser<any>;
   parseLiteral: GraphQLScalarLiteralParser<any>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
 
@@ -310,7 +323,7 @@ export class GraphQLScalarType {
     serialize: GraphQLScalarSerializer<any>;
     parseValue: GraphQLScalarValueParser<any>;
     parseLiteral: GraphQLScalarLiteralParser<any>;
-    extensions: Maybe<Readonly<Record<string, any>>>;
+    extensions: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
     extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
   };
 
@@ -340,9 +353,25 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   parseValue?: GraphQLScalarValueParser<TInternal>;
   // Parses an externally provided literal value to use as an input.
   parseLiteral?: GraphQLScalarLiteralParser<TInternal>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
   astNode?: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
+}
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ *
+ * We've provided these template arguments because this is an open type and
+ * you may find them useful.
+ */
+export interface GraphQLObjectTypeExtensions<TSource = any, TContext = any> {
+  [attributeName: string]: any;
 }
 
 /**
@@ -386,7 +415,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 
@@ -398,7 +427,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   toConfig(): GraphQLObjectTypeConfig<any, any> & {
     interfaces: Array<GraphQLInterfaceType>;
     fields: GraphQLFieldConfigMap<any, any>;
-    extensions: Maybe<Readonly<Record<string, any>>>;
+    extensions: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
     extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
   };
 
@@ -417,7 +446,7 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
   interfaces?: Thunk<Maybe<Array<GraphQLInterfaceType>>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 }
@@ -459,6 +488,26 @@ export interface GraphQLResolveInfo {
   readonly variableValues: { [variableName: string]: any };
 }
 
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ *
+ * We've provided these template arguments because this is an open type and
+ * you may find them useful.
+ */
+export interface GraphQLFieldExtensions<
+  TSource,
+  TContext,
+  TArgs = { [argName: string]: any }
+> {
+  [attributeName: string]: any;
+}
+
 export interface GraphQLFieldConfig<
   TSource,
   TContext,
@@ -470,7 +519,9 @@ export interface GraphQLFieldConfig<
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   deprecationReason?: Maybe<string>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<
+    Readonly<GraphQLFieldExtensions<TSource, TContext, TArgs>>
+  >;
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
@@ -478,11 +529,24 @@ export interface GraphQLFieldConfigArgumentMap {
   [key: string]: GraphQLArgumentConfig;
 }
 
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLArgumentExtensions {
+  [attributeName: string]: any;
+}
+
 export interface GraphQLArgumentConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: any;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLArgumentExtensions>>;
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
@@ -503,7 +567,7 @@ export interface GraphQLField<
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   isDeprecated: boolean;
   deprecationReason: Maybe<string>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLFieldExtensions<TSource, TContext, TArgs>>>;
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
@@ -512,7 +576,7 @@ export interface GraphQLArgument {
   description: Maybe<string>;
   type: GraphQLInputType;
   defaultValue: any;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLArgumentExtensions>>;
   astNode: Maybe<InputValueDefinitionNode>;
 }
 
@@ -520,6 +584,19 @@ export function isRequiredArgument(arg: GraphQLArgument): boolean;
 
 export interface GraphQLFieldMap<TSource, TContext> {
   [key: string]: GraphQLField<TSource, TContext>;
+}
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLInterfaceTypeExtensions {
+  [attributeName: string]: any;
 }
 
 /**
@@ -544,7 +621,7 @@ export class GraphQLInterfaceType {
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLInterfaceTypeExtensions>>;
   astNode?: Maybe<InterfaceTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 
@@ -555,7 +632,7 @@ export class GraphQLInterfaceType {
   toConfig(): GraphQLInterfaceTypeConfig<any, any> & {
     interfaces: Array<GraphQLInterfaceType>;
     fields: GraphQLFieldConfigMap<any, any>;
-    extensions: Maybe<Readonly<Record<string, any>>>;
+    extensions: Maybe<Readonly<GraphQLInterfaceTypeExtensions>>;
     extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
   };
 
@@ -575,9 +652,22 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
    * Object type.
    */
   resolveType?: Maybe<GraphQLTypeResolver<TSource, TContext>>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLInterfaceTypeExtensions>>;
   astNode?: Maybe<InterfaceTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
+}
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLUnionTypeExtensions {
+  [attributeName: string]: any;
 }
 
 /**
@@ -607,7 +697,7 @@ export class GraphQLUnionType {
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLUnionTypeExtensions>>;
   astNode: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 
@@ -616,7 +706,7 @@ export class GraphQLUnionType {
 
   toConfig(): GraphQLUnionTypeConfig<any, any> & {
     types: Array<GraphQLObjectType>;
-    extensions: Maybe<Readonly<Record<string, any>>>;
+    extensions: Maybe<Readonly<GraphQLUnionTypeExtensions>>;
     extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
   };
 
@@ -635,9 +725,22 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
    * Object type.
    */
   resolveType?: Maybe<GraphQLTypeResolver<TSource, TContext>>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLUnionTypeExtensions>>;
   astNode?: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
+}
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLEnumTypeExtensions {
+  [attributeName: string]: any;
 }
 
 /**
@@ -664,7 +767,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
 export class GraphQLEnumType {
   name: string;
   description: Maybe<string>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLEnumTypeExtensions>>;
   astNode: Maybe<EnumTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 
@@ -679,7 +782,7 @@ export class GraphQLEnumType {
   ): Maybe<any>;
 
   toConfig(): GraphQLEnumTypeConfig & {
-    extensions: Maybe<Readonly<Record<string, any>>>;
+    extensions: Maybe<Readonly<GraphQLEnumTypeExtensions>>;
     extensionASTNodes: ReadonlyArray<EnumTypeExtensionNode>;
   };
 
@@ -692,7 +795,7 @@ export interface GraphQLEnumTypeConfig {
   name: string;
   description?: Maybe<string>;
   values: GraphQLEnumValueConfigMap;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLEnumTypeExtensions>>;
   astNode?: Maybe<EnumTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 }
@@ -701,11 +804,24 @@ export interface GraphQLEnumValueConfigMap {
   [key: string]: GraphQLEnumValueConfig;
 }
 
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLEnumValueExtensions {
+  [attributeName: string]: any;
+}
+
 export interface GraphQLEnumValueConfig {
   description?: Maybe<string>;
   value?: any;
   deprecationReason?: Maybe<string>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLEnumValueExtensions>>;
   astNode?: Maybe<EnumValueDefinitionNode>;
 }
 
@@ -715,8 +831,21 @@ export interface GraphQLEnumValue {
   value: any;
   isDeprecated: boolean;
   deprecationReason: Maybe<string>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLEnumValueExtensions>>;
   astNode?: Maybe<EnumValueDefinitionNode>;
+}
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLInputObjectTypeExtensions {
+  [attributeName: string]: any;
 }
 
 /**
@@ -742,7 +871,7 @@ export interface GraphQLEnumValue {
 export class GraphQLInputObjectType {
   name: string;
   description: Maybe<string>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLInputObjectTypeExtensions>>;
   astNode: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
 
@@ -751,7 +880,7 @@ export class GraphQLInputObjectType {
 
   toConfig(): GraphQLInputObjectTypeConfig & {
     fields: GraphQLInputFieldConfigMap;
-    extensions: Maybe<Readonly<Record<string, any>>>;
+    extensions: Maybe<Readonly<GraphQLInputObjectTypeExtensions>>;
     extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
   };
 
@@ -764,16 +893,29 @@ export interface GraphQLInputObjectTypeConfig {
   name: string;
   description?: Maybe<string>;
   fields: Thunk<GraphQLInputFieldConfigMap>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLInputObjectTypeExtensions>>;
   astNode?: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
+}
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLInputFieldExtensions {
+  [attributeName: string]: any;
 }
 
 export interface GraphQLInputFieldConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: any;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLInputFieldExtensions>>;
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
@@ -786,7 +928,7 @@ export interface GraphQLInputField {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: any;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLInputFieldExtensions>>;
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
