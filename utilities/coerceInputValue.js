@@ -49,7 +49,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
     if (isCollection(inputValue)) {
       return arrayFrom(inputValue, (itemValue, index) => {
-        const itemPath = addPath(path, index);
+        const itemPath = addPath(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
     } // Lists accept a non-list value as a list of one.
@@ -81,7 +81,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
         continue;
       }
 
-      coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, addPath(path, field.name));
+      coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, addPath(path, field.name, type.name));
     } // Ensure every provided field is defined.
 
 
