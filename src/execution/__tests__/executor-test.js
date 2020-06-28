@@ -17,6 +17,7 @@ import {
   GraphQLScalarType,
   GraphQLInterfaceType,
   GraphQLObjectType,
+  GraphQLUnionType,
 } from '../../type/definition';
 
 import { execute, executeSync } from '../execute';
@@ -306,8 +307,67 @@ describe('Execute: Handles basic execution tasks', () => {
     const field = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
       fieldNodes: [field],
-      path: { prev: undefined, key: 'result' },
+      path: { prev: undefined, key: 'result', typename: 'Test' },
       variableValues: { var: 'abc' },
+    });
+  });
+
+  it('populates path correctly with complex types', () => {
+    let path;
+    const someObject = new GraphQLObjectType({
+      name: 'SomeObject',
+      fields: {
+        test: {
+          type: GraphQLString,
+          resolve(_val, _args, _ctx, info) {
+            path = info.path;
+          },
+        },
+      },
+    });
+    const someUnion = new GraphQLUnionType({
+      name: 'SomeUnion',
+      types: [someObject],
+      resolveType() {
+        return 'SomeObject';
+      },
+    });
+    const testType = new GraphQLObjectType({
+      name: 'SomeQuery',
+      fields: {
+        test: {
+          type: new GraphQLNonNull(
+            new GraphQLList(new GraphQLNonNull(someUnion)),
+          ),
+        },
+      },
+    });
+    const schema = new GraphQLSchema({ query: testType });
+    const rootValue = { test: [{}] };
+    const document = parse(`
+      query {
+        l1: test {
+          ... on SomeObject {
+            l2: test
+          }
+        }
+      }
+    `);
+
+    executeSync({ schema, document, rootValue });
+
+    expect(path).to.deep.equal({
+      key: 'l2',
+      typename: 'SomeObject',
+      prev: {
+        key: 0,
+        typename: undefined,
+        prev: {
+          key: 'l1',
+          typename: 'SomeQuery',
+          prev: undefined,
+        },
+      },
     });
   });
 

@@ -253,7 +253,7 @@ export function createSourceEventStream(
     // AsyncIterable yielding raw payloads.
     const resolveFn = fieldDef.subscribe ?? exeContext.fieldResolver;
 
-    const path = addPath(undefined, responseName);
+    const path = addPath(undefined, responseName, type.name);
 
     const info = buildResolveInfo(exeContext, fieldDef, fieldNodes, type, path);
 
