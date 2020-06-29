@@ -74,7 +74,7 @@ rules:
   flowtype/union-intersection-spacing: off
 
   ##############################################################################
-  # `eslint-plugin-istanbul` rule list based on `v0.1.1`
+  # `eslint-plugin-istanbul` rule list based on `v0.1.2`
   # https://github.com/istanbuljs/eslint-plugin-istanbul#rules
   ##############################################################################
 
@@ -134,7 +134,7 @@ rules:
   node/prefer-promises/fs: off
 
   ##############################################################################
-  # `eslint-plugin-import` rule list based on `v2.21.x`
+  # `eslint-plugin-import` rule list based on `v2.22.x`
   ##############################################################################
 
   # Static analysis
@@ -195,7 +195,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.2.x`
+  # ESLint builtin rules list based on `v7.3.x`
   ##############################################################################
 
   # Possible Errors
@@ -227,12 +227,14 @@ rules:
   no-loss-of-precision: error
   no-misleading-character-class: error
   no-obj-calls: error
+  no-promise-executor-return: off # TODO
   no-prototype-builtins: error
   no-regex-spaces: error
   no-setter-return: error
   no-sparse-arrays: error
   no-template-curly-in-string: error
   no-unreachable: error
+  no-unreachable-loop: error
   no-unsafe-finally: error
   no-unsafe-negation: error
   no-useless-backreference: error
@@ -501,7 +503,7 @@ overrides:
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v3.3.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v3.4.x`
       ##########################################################################
 
       # Supported Rules
@@ -593,6 +595,7 @@ overrides:
       no-dupe-class-members: off
       no-empty-function: off
       no-invalid-this: off
+      no-loss-of-precision: off
       no-unused-expressions: off
       no-unused-vars: off
       no-useless-constructor: off
@@ -606,6 +609,7 @@ overrides:
       '@typescript-eslint/no-dupe-class-members': error
       '@typescript-eslint/no-empty-function': error
       '@typescript-eslint/no-invalid-this': error
+      '@typescript-eslint/no-loss-of-precision': error
       '@typescript-eslint/no-unused-expressions': error
       '@typescript-eslint/no-unused-vars':
         [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
