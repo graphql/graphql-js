@@ -29,6 +29,12 @@ implicit-inexact-object=error
 ambiguous-object-type=error
 uninitialized-instance-property=error
 unsafe-addition=error
+default-import-access=error
+invalid-import-star-use=error
+non-const-var-export=error
+this-in-exported-function=error
+mixed-import-and-require=error
+export-renamed-default=error
 
 [options]
 include_warnings=true
@@ -37,4 +43,4 @@ babel_loose_array_spread=true
 esproposal.optional_chaining=enable
 
 [version]
-^0.127.0
+^0.128.0
