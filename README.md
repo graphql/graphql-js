@@ -130,8 +130,7 @@ custom build configurations look for `.mjs` files!
 
 ### Contributing
 
-We actively welcome pull requests, learn how to
-[contribute](https://github.com/graphql/graphql-js/blob/master/.github/CONTRIBUTING.md).
+We actively welcome pull requests, learn how to [contribute](./.github/CONTRIBUTING.md).
 
 ### Changelog
 
@@ -139,7 +138,7 @@ Changes are tracked as [GitHub releases](https://github.com/graphql/graphql-js/r
 
 ### License
 
-GraphQL.js is [MIT-licensed](https://github.com/graphql/graphql-js/blob/master/LICENSE).
+GraphQL.js is [MIT-licensed](./LICENSE).
 
 ### Credits
 
