@@ -13,7 +13,7 @@ Looking for help? Find resources [from the community](https://graphql.org/commun
 
 ## Getting Started
 
-An overview of GraphQL, in general, is available in the
+A general overview of GraphQL is available in the
 [README](https://github.com/graphql/graphql-spec/blob/master/README.md) for the
 [Specification for GraphQL](https://github.com/graphql/graphql-spec). That overview
 describes a simple set of GraphQL examples that exist as [tests](src/__tests__)
@@ -141,7 +141,7 @@ GraphQL.js is [MIT-licensed](./LICENSE).
 
 ### Credits
 
-The `*.d.ts` files in this project are based on [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/54712a7e28090c5b1253b746d1878003c954f3ff/types/graphql). Definitions written by:
+The `*.d.ts` files in this project are based on [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/54712a7e28090c5b1253b746d1878003c954f3ff/types/graphql) definitions written by:
 
 <!--- spell-checker:disable -->
 

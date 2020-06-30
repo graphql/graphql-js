@@ -106,7 +106,7 @@ export class Source {
 ```
 
 A representation of source input to GraphQL. The name is optional,
-but is most useful for clients who store GraphQL documents in
+but is useful for clients who store GraphQL documents in
 source files; for example, if the GraphQL input is in a file Foo.graphql,
 it might be useful for `name` to be "Foo.graphql".
 
@@ -230,7 +230,7 @@ var editedAST = visit(ast, {
 
 Alternatively to providing enter() and leave() functions, a visitor can
 instead provide functions named the same as the kinds of AST nodes, or
-enter/leave visitors at a named key, leading to four permutations of
+enter/leave visitors at a named key, leading to four permutations of the
 visitor API:
 
 1. Named visitors triggered when entering a node of a specific kind.
