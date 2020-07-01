@@ -101,14 +101,20 @@ _Printer_
 
 ```js
 export class Source {
-  constructor(body: string, name?: string)
+  constructor(body: string, name?: string, locationOffset?: Location)
+}
+
+type Location = {
+  line: number;
+  column: number;
 }
 ```
 
-A representation of source input to GraphQL. The name is optional,
-but it is useful for clients who store GraphQL documents in
-source files; for example, if the GraphQL input is in a file Foo.graphql,
-it might be useful for `name` to be "Foo.graphql".
+A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
+optional, but they are useful for clients who store GraphQL documents in source files.
+For example, if the GraphQL input starts at line 40 in a file named `Foo.graphql`, it might
+be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
+The `line` and `column` properties in `locationOffset` are 1-indexed.
 
 ### getLocation
 
