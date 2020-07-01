@@ -151,7 +151,7 @@ export const QueryDocumentKeys: {
 export const BREAK: any;
 
 /**
- * visit() will walk through an AST using a depth first traversal, calling
+ * visit() will walk through an AST using a depth-first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the
  * leave function after visiting that node and all of its child nodes.
  *
@@ -185,10 +185,10 @@ export const BREAK: any;
  *
  * Alternatively to providing enter() and leave() functions, a visitor can
  * instead provide functions named the same as the kinds of AST nodes, or
- * enter/leave visitors at a named key, leading to four permutations of
+ * enter/leave visitors at a named key, leading to four permutations of the
  * visitor API:
  *
- * 1) Named visitors triggered when entering a node a specific kind.
+ * 1) Named visitors triggered when entering a node of a specific kind.
  *
  *     visit(ast, {
  *       Kind(node) {

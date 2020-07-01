@@ -16,12 +16,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 /**
- * A representation of source input to GraphQL.
- * `name` and `locationOffset` are optional. They are useful for clients who
- * store GraphQL documents in source files; for example, if the GraphQL input
- * starts at line 40 in a file named Foo.graphql, it might be useful for name to
- * be "Foo.graphql" and location to be `{ line: 40, column: 0 }`.
- * line and column in locationOffset are 1-indexed
+ * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
+ * optional, but they are useful for clients who store GraphQL documents in source files.
+ * For example, if the GraphQL input starts at line 40 in a file named `Foo.graphql`, it might
+ * be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
+ * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 var Source = /*#__PURE__*/function () {
   function Source(body) {
