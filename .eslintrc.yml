@@ -26,7 +26,7 @@ rules:
   internal-rules/no-dir-import: error
 
   ##############################################################################
-  # `eslint-plugin-flowtype` rule list based on `v5.1.x`
+  # `eslint-plugin-flowtype` rule list based on `v5.2.x`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
   ##############################################################################
 
@@ -503,7 +503,7 @@ overrides:
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v3.4.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v3.5.x`
       ##########################################################################
 
       # Supported Rules
