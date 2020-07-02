@@ -399,6 +399,22 @@ describe('Type System: Objects', () => {
     );
   });
 
+  it('allows an Object type with an isDeprecated field if a deprecationReason field is present', () => {
+    const OldObject = new GraphQLObjectType({
+      name: 'OldObject',
+      // $DisableFlowOnNegativeTest
+      fields: {
+        field: {
+          type: ScalarType,
+          isDeprecated: false,
+          deprecationReason: undefined,
+        },
+      },
+    });
+
+    expect(() => OldObject.getFields()).not.to.throw();
+  });
+
   it('rejects an Object type with incorrectly typed interfaces', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
@@ -755,6 +771,19 @@ describe('Type System: Enums', () => {
     ).to.throw(
       'SomeEnum.FOO should provide "deprecationReason" instead of "isDeprecated".',
     );
+  });
+
+  it('allows an Enum type with an isDeprecated field if a deprecationReason field is present', () => {
+    expect(
+      () =>
+        new GraphQLEnumType({
+          name: 'SomeEnum',
+          // $DisableFlowOnNegativeTest
+          values: {
+            FOO: { isDeprecated: true, deprecationReason: 'deprecated' },
+          },
+        }),
+    ).not.to.throw();
   });
 });
 
