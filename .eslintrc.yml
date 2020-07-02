@@ -511,9 +511,8 @@ overrides:
       '@typescript-eslint/adjacent-overload-signatures': error
       '@typescript-eslint/array-type': [error, { default: generic }]
       '@typescript-eslint/await-thenable': error
-      '@typescript-eslint/ban-ts-comment':
-        [error, { 'ts-expect-error': 'allow-with-description' }]
-      '@typescript-eslint/ban-tslint-comment': off # TODO error
+      '@typescript-eslint/ban-ts-comment': [error, { 'ts-expect-error': false }]
+      '@typescript-eslint/ban-tslint-comment': error
       '@typescript-eslint/ban-types': error
       '@typescript-eslint/class-literal-property-style': off
       '@typescript-eslint/consistent-type-assertions':
