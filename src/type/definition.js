@@ -836,7 +836,7 @@ function defineFieldMap<TSource, TContext>(
       `${config.name}.${fieldName} field config must be an object.`,
     );
     devAssert(
-      !('isDeprecated' in fieldConfig),
+      !('isDeprecated' in fieldConfig) || 'deprecationReason' in fieldConfig,
       `${config.name}.${fieldName} should provide "deprecationReason" instead of "isDeprecated".`,
     );
     devAssert(
@@ -1428,8 +1428,9 @@ function defineEnumValues(
       `${typeName}.${valueName} must refer to an object with a "value" key ` +
         `representing an internal value but got: ${inspect(valueConfig)}.`,
     );
+
     devAssert(
-      !('isDeprecated' in valueConfig),
+      !('isDeprecated' in valueConfig) || 'deprecationReason' in valueConfig,
       `${typeName}.${valueName} should provide "deprecationReason" instead of "isDeprecated".`,
     );
     return {
