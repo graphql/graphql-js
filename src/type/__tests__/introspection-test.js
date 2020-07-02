@@ -951,8 +951,8 @@ describe('Introspection', () => {
               isRepeatable: false,
               locations: [
                 'FIELD_DEFINITION',
-                'ENUM_VALUE',
                 'ARGUMENT_DEFINITION',
+                'ENUM_VALUE',
                 'INPUT_FIELD_DEFINITION',
               ],
               args: [

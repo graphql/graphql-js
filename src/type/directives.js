@@ -75,14 +75,23 @@ export class GraphQLDirective {
       `@${config.name} args must be an object with argument names as keys.`,
     );
 
-    this.args = objectEntries(args).map(([argName, argConfig]) => ({
-      name: argName,
-      description: argConfig.description,
-      type: argConfig.type,
-      defaultValue: argConfig.defaultValue,
-      extensions: argConfig.extensions && toObjMap(argConfig.extensions),
-      astNode: argConfig.astNode,
-    }));
+    this.args = objectEntries(args).map(([argName, argConfig]) => {
+      devAssert(
+        !('isDeprecated' in argConfig),
+        `@${config.name}.${argName} should provide "deprecationReason" instead of "isDeprecated".`,
+      );
+
+      return {
+        name: argName,
+        description: argConfig.description,
+        type: argConfig.type,
+        defaultValue: argConfig.defaultValue,
+        isDeprecated: argConfig.deprecationReason != null,
+        deprecationReason: argConfig.deprecationReason,
+        extensions: argConfig.extensions && toObjMap(argConfig.extensions),
+        astNode: argConfig.astNode,
+      };
+    });
   }
 
   toConfig(): {|
@@ -182,8 +191,8 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
   description: 'Marks an element of a GraphQL schema as no longer supported.',
   locations: [
     DirectiveLocation.FIELD_DEFINITION,
-    DirectiveLocation.ENUM_VALUE,
     DirectiveLocation.ARGUMENT_DEFINITION,
+    DirectiveLocation.ENUM_VALUE,
     DirectiveLocation.INPUT_FIELD_DEFINITION,
   ],
   args: {

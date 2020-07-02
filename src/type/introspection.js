@@ -512,6 +512,8 @@ export const TypeMetaFieldDef: GraphQLField<mixed, mixed> = {
       description: undefined,
       type: GraphQLNonNull(GraphQLString),
       defaultValue: undefined,
+      isDeprecated: false,
+      deprecationReason: undefined,
       extensions: undefined,
       astNode: undefined,
     },

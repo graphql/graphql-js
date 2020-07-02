@@ -629,7 +629,7 @@ describe('Type System Printer', () => {
         Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).
         """
         reason: String = "No longer supported"
-      ) on FIELD_DEFINITION | ENUM_VALUE | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+      ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
 
       """Exposes a URL that specifies the behaviour of this scalar."""
       directive @specifiedBy(
@@ -852,7 +852,7 @@ describe('Type System Printer', () => {
       directive @deprecated(
         # Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).
         reason: String = "No longer supported"
-      ) on FIELD_DEFINITION | ENUM_VALUE | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+      ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
 
       # Exposes a URL that specifies the behaviour of this scalar.
       directive @specifiedBy(

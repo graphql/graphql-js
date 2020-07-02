@@ -232,7 +232,7 @@ function printEnum(type: GraphQLEnumType, options): string {
         printDescription(options, value, '  ', !i) +
         '  ' +
         value.name +
-        printDeprecated(value),
+        printDeprecated(value.deprecationReason),
     );
 
   return (
@@ -259,7 +259,7 @@ function printFields(options, type) {
       printArgs(options, f.args, '  ') +
       ': ' +
       String(f.type) +
-      printDeprecated(f),
+      printDeprecated(f.deprecationReason),
   );
   return printBlock(fields);
 }
@@ -301,7 +301,7 @@ function printInputValue(arg) {
   if (defaultAST) {
     argDecl += ` = ${print(defaultAST)}`;
   }
-  return argDecl + printDeprecated(arg);
+  return argDecl + printDeprecated(arg.deprecationReason);
 }
 
 function printDirective(directive, options) {
@@ -316,11 +316,10 @@ function printDirective(directive, options) {
   );
 }
 
-function printDeprecated(fieldOrEnumVal) {
-  if (fieldOrEnumVal.deprecationReason == null) {
+function printDeprecated(reason) {
+  if (reason == null) {
     return '';
   }
-  const reason = fieldOrEnumVal.deprecationReason;
   const reasonAST = astFromValue(reason, GraphQLString);
   if (reasonAST && reason !== DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + print(reasonAST) + ')';

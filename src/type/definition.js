@@ -848,16 +848,23 @@ function defineFieldMap<TSource, TContext>(
       `${config.name}.${fieldName} args must be an object with argument names as keys.`,
     );
 
-    const args = objectEntries(argsConfig).map(([argName, argConfig]) => ({
-      name: argName,
-      description: argConfig.description,
-      type: argConfig.type,
-      defaultValue: argConfig.defaultValue,
-      extensions: argConfig.extensions && toObjMap(argConfig.extensions),
-      isDeprecated: argConfig.deprecationReason != null,
-      deprecationReason: argConfig.deprecationReason,
-      astNode: argConfig.astNode,
-    }));
+    const args = objectEntries(argsConfig).map(([argName, argConfig]) => {
+      devAssert(
+        !('isDeprecated' in argConfig),
+        `${config.name}.${fieldName}.${argName} should provide "deprecationReason" instead of "isDeprecated".`,
+      );
+
+      return {
+        name: argName,
+        description: argConfig.description,
+        type: argConfig.type,
+        defaultValue: argConfig.defaultValue,
+        isDeprecated: argConfig.deprecationReason != null,
+        deprecationReason: argConfig.deprecationReason,
+        extensions: argConfig.extensions && toObjMap(argConfig.extensions),
+        astNode: argConfig.astNode,
+      };
+    });
 
     return {
       name: fieldName,
@@ -905,7 +912,6 @@ export function argsToArgsConfig(
       type: arg.type,
       defaultValue: arg.defaultValue,
       deprecationReason: arg.deprecationReason,
-      isDeprecated: arg.deprecationReason != null,
       extensions: arg.extensions,
       astNode: arg.astNode,
     }),
@@ -983,7 +989,6 @@ export type GraphQLArgumentConfig = {|
   defaultValue?: mixed,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   deprecationReason?: ?string,
-  isDeprecated?: boolean,
   astNode?: ?InputValueDefinitionNode,
 |};
 
@@ -1013,8 +1018,8 @@ export type GraphQLArgument = {|
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
-  isDeprecated?: boolean,
-  deprecationReason?: ?string,
+  isDeprecated: boolean,
+  deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?InputValueDefinitionNode,
 |};
@@ -1582,8 +1587,7 @@ function defineInputFieldMap(
     );
     devAssert(
       !('isDeprecated' in fieldConfig),
-      `${config.name}.${fieldName} should provide "deprecationReason" ` +
-        'instead of "isDeprecated".',
+      `${config.name}.${fieldName} should provide "deprecationReason" instead of "isDeprecated".`,
     );
 
     return {
@@ -1591,8 +1595,8 @@ function defineInputFieldMap(
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
-      deprecationReason: fieldConfig.deprecationReason,
       isDeprecated: fieldConfig.deprecationReason != null,
+      deprecationReason: fieldConfig.deprecationReason,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode,
     };
@@ -1624,8 +1628,8 @@ export type GraphQLInputField = {|
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
-  isDeprecated?: boolean,
-  deprecationReason?: ?string,
+  isDeprecated: boolean,
+  deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?InputValueDefinitionNode,
 |};
