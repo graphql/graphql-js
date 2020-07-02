@@ -303,7 +303,7 @@ export const __Type = new GraphQLObjectType({
           if (isInputObjectType(type)) {
             let values = objectValues(type.getFields());
             if (!includeDeprecated) {
-              values = values.filter(value => !value.deprecationReason);
+              values = values.filter((value) => !value.deprecationReason);
             }
             return values;
           }
@@ -344,7 +344,7 @@ export const __Field = new GraphQLObjectType({
           let args = field.args || [];
 
           if (!includeDeprecated) {
-            args = args.filter(arg => !arg.deprecationReason);
+            args = args.filter((arg) => !arg.deprecationReason);
           }
 
           return args;
@@ -395,11 +395,11 @@ export const __InputValue = new GraphQLObjectType({
       },
       isDeprecated: {
         type: GraphQLNonNull(GraphQLBoolean),
-        resolve: obj => obj.isDeprecated,
+        resolve: (obj) => obj.isDeprecated,
       },
       deprecationReason: {
         type: GraphQLString,
-        resolve: obj => obj.deprecationReason,
+        resolve: (obj) => obj.deprecationReason,
       },
     }: GraphQLFieldConfigMap<GraphQLInputField, mixed>),
 });
