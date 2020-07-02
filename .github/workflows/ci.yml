@@ -38,6 +38,23 @@ jobs:
       - name: Spellcheck
         run: npm run check:spelling
 
+  checkForCommonlyIgnoredFiles:
+    name: Check for commonly ignored files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Check if commit contains files that should be ignored
+        run: |
+          git clone --depth 1 https://github.com/github/gitignore.git &&
+          cat gitignore/Node.gitignore $(find gitignore/Global -name "*.gitignore" | grep -v ModelSim) > all.gitignore &&
+          if  [[ "$(git ls-files -iX all.gitignore)" != "" ]]; then
+            echo "::error::Please remove these files:"
+            git ls-files -iX all.gitignore
+            exit 1
+          fi
+
   integrationTests:
     name: Run integration tests
     runs-on: ubuntu-latest
@@ -187,7 +204,7 @@ jobs:
       github.event_name == 'push' &&
       github.repository == 'graphql/graphql-js' &&
       github.ref == 'refs/heads/master'
-    needs: [test, fuzz, lint, integrationTests]
+    needs: [test, fuzz, lint, checkForCommonlyIgnoredFiles, integrationTests]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -223,7 +240,7 @@ jobs:
       github.event_name == 'push' &&
       github.repository == 'graphql/graphql-js' &&
       github.ref == 'refs/heads/master'
-    needs: [test, fuzz, lint, integrationTests]
+    needs: [test, fuzz, lint, checkForCommonlyIgnoredFiles, integrationTests]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
