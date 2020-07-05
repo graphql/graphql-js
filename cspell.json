@@ -8,7 +8,6 @@
     "npmDist",
     "denoDist",
     "benchmarkDist",
-    "integrationTmp",
     "npm",
     "deno",
 

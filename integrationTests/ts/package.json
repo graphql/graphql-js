@@ -3,7 +3,7 @@
     "test": "node test.js"
   },
   "dependencies": {
-    "graphql": "file:../../npmDist",
+    "graphql": "file:../graphql.tgz",
     "typescript-2.6": "npm:typescript@2.6.x",
     "typescript-2.7": "npm:typescript@2.7.x",
     "typescript-2.8": "npm:typescript@2.8.x",
