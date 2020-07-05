@@ -8,6 +8,11 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
 } from './execute';
-export type { ExecutionArgs, ExecutionResult } from './execute';
+
+export type {
+  ExecutionArgs,
+  ExecutionResult,
+  FormattedExecutionResult,
+} from './execute';
 
 export { getDirectiveValues } from './values';
