@@ -299,6 +299,7 @@ export {
   getDirectiveValues,
   ExecutionArgs,
   ExecutionResult,
+  FormattedExecutionResult,
 } from './execution/index';
 
 export {

@@ -4,6 +4,7 @@ import { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { Path } from '../jsutils/Path';
 
 import { GraphQLError } from '../error/GraphQLError';
+import { GraphQLFormattedError } from '../error/formatError';
 
 import {
   DocumentNode,
@@ -50,6 +51,16 @@ export interface ExecutionResult<
   TExtensions = { [key: string]: any }
 > {
   errors?: ReadonlyArray<GraphQLError>;
+  // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
+  data?: TData | null;
+  extensions?: TExtensions;
+}
+
+export interface FormattedExecutionResult<
+  TData = { [key: string]: any },
+  TExtensions = { [key: string]: any }
+> {
+  errors?: ReadonlyArray<GraphQLFormattedError>;
   // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
   data?: TData | null;
   extensions?: TExtensions;
