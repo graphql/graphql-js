@@ -288,7 +288,11 @@ export {
   getDirectiveValues,
 } from './execution';
 
-export type { ExecutionArgs, ExecutionResult } from './execution';
+export type {
+  ExecutionArgs,
+  ExecutionResult,
+  FormattedExecutionResult,
+} from './execution';
 
 export { subscribe, createSourceEventStream } from './subscription';
 export type { SubscriptionArgs } from './subscription';

@@ -6,6 +6,7 @@ export {
   defaultTypeResolver,
   ExecutionArgs,
   ExecutionResult,
+  FormattedExecutionResult,
 } from './execute';
 
 export { getDirectiveValues } from './values';

@@ -287,6 +287,7 @@ export {
   getDirectiveValues,
   ExecutionArgs,
   ExecutionResult,
+  FormattedExecutionResult,
 } from './execution';
 
 export {

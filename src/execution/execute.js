@@ -16,6 +16,7 @@ import promiseForObject from '../jsutils/promiseForObject';
 import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { type Path, addPath, pathToArray } from '../jsutils/Path';
 
+import { type GraphQLFormattedError } from '../error/formatError';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
@@ -116,6 +117,12 @@ export type ExecutionResult = {
   data?: ObjMap<mixed> | null,
   ...
 };
+
+export type FormattedExecutionResult = {|
+  errors?: $ReadOnlyArray<GraphQLFormattedError>,
+  data?: ObjMap<mixed> | null,
+  extensions?: ObjMap<mixed>,
+|};
 
 export type ExecutionArgs = {|
   schema: GraphQLSchema,

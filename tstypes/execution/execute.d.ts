@@ -3,7 +3,7 @@ import { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { Path, addPath, pathToArray } from '../jsutils/Path';
 
 import { GraphQLError } from '../error/GraphQLError';
-import { locatedError } from '../error/locatedError';
+import { GraphQLFormattedError } from '../error/formatError';
 
 import {
   DirectiveNode,
@@ -53,6 +53,12 @@ export interface ExecutionResultDataDefault {
 // TS_SPECIFIC: TData and ExecutionResultDataDefault
 export interface ExecutionResult<TData = ExecutionResultDataDefault> {
   errors?: ReadonlyArray<GraphQLError>;
+  data?: TData | null;
+}
+
+export interface FormattedExecutionResult<TData = ExecutionResultDataDefault> {
+  errors?: ReadonlyArray<GraphQLFormattedError>;
+  // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
   data?: TData | null;
 }
 
