@@ -58,7 +58,7 @@
     "babel-eslint": "10.1.0",
     "chai": "4.2.0",
     "cspell": "4.0.63",
-    "eslint": "7.3.1",
+    "eslint": "7.4.0",
     "eslint-plugin-flowtype": "5.2.0",
     "eslint-plugin-import": "2.22.0",
     "eslint-plugin-internal-rules": "file:./resources/eslint-internal-rules",
