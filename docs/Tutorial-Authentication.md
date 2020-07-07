@@ -15,7 +15,7 @@ For example, let's say we wanted our server to log the IP address of every reque
 
 ```js
 var express = require('express');
-var graphqlHTTP = require('express-graphql');
+var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 
 var schema = buildSchema(`
