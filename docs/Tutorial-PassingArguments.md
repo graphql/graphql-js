@@ -58,7 +58,7 @@ The entire code for a server that hosts this `rollDice` API is:
 
 ```js
 var express = require('express');
-var graphqlHTTP = require('express-graphql');
+var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
