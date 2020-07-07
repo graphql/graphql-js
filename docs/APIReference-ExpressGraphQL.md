@@ -10,8 +10,8 @@ next: /graphql-js/graphql/
 The `express-graphql` module provides a simple way to create an [Express](https://expressjs.com/) server that runs a GraphQL API.
 
 ```js
-import graphqlHTTP from 'express-graphql'; // ES6
-var graphqlHTTP = require('express-graphql'); // CommonJS
+import { graphqlHTTP } from 'express-graphql'; // ES6
+var { graphqlHTTP } = require('express-graphql'); // CommonJS
 ```
 
 ### graphqlHTTP
