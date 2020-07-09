@@ -110,6 +110,77 @@ describe('Type System: Specified scalar types', () => {
         'Int cannot represent non-integer value: $var',
       );
     });
+
+    it('serialize', () => {
+      function serialize(value) {
+        return GraphQLInt.serialize(value);
+      }
+
+      expect(serialize(1)).to.equal(1);
+      expect(serialize('123')).to.equal(123);
+      expect(serialize(0)).to.equal(0);
+      expect(serialize(-1)).to.equal(-1);
+      expect(serialize(1e5)).to.equal(100000);
+      expect(serialize(false)).to.equal(0);
+      expect(serialize(true)).to.equal(1);
+
+      const customValueOfObj = {
+        value: 5,
+        valueOf() {
+          return this.value;
+        },
+      };
+      expect(serialize(customValueOfObj)).to.equal(5);
+
+      // The GraphQL specification does not allow serializing non-integer values
+      // as Int to avoid accidental data loss.
+      expect(() => serialize(0.1)).to.throw(
+        'Int cannot represent non-integer value: 0.1',
+      );
+      expect(() => serialize(1.1)).to.throw(
+        'Int cannot represent non-integer value: 1.1',
+      );
+      expect(() => serialize(-1.1)).to.throw(
+        'Int cannot represent non-integer value: -1.1',
+      );
+      expect(() => serialize('-1.1')).to.throw(
+        'Int cannot represent non-integer value: "-1.1"',
+      );
+
+      // Maybe a safe JavaScript int, but bigger than 2^32, so not
+      // representable as a GraphQL Int
+      expect(() => serialize(9876504321)).to.throw(
+        'Int cannot represent non 32-bit signed integer value: 9876504321',
+      );
+      expect(() => serialize(-9876504321)).to.throw(
+        'Int cannot represent non 32-bit signed integer value: -9876504321',
+      );
+
+      // Too big to represent as an Int in JavaScript or GraphQL
+      expect(() => serialize(1e100)).to.throw(
+        'Int cannot represent non 32-bit signed integer value: 1e+100',
+      );
+      expect(() => serialize(-1e100)).to.throw(
+        'Int cannot represent non 32-bit signed integer value: -1e+100',
+      );
+      expect(() => serialize('one')).to.throw(
+        'Int cannot represent non-integer value: "one"',
+      );
+
+      // Doesn't represent number
+      expect(() => serialize('')).to.throw(
+        'Int cannot represent non-integer value: ""',
+      );
+      expect(() => serialize(NaN)).to.throw(
+        'Int cannot represent non-integer value: NaN',
+      );
+      expect(() => serialize(Infinity)).to.throw(
+        'Int cannot represent non-integer value: Infinity',
+      );
+      expect(() => serialize([5])).to.throw(
+        'Int cannot represent non-integer value: [5]',
+      );
+    });
   });
 
   describe('GraphQLFloat', () => {
@@ -199,6 +270,47 @@ describe('Type System: Specified scalar types', () => {
         'Float cannot represent non numeric value: $var',
       );
     });
+
+    it('serialize', () => {
+      function serialize(value) {
+        return GraphQLFloat.serialize(value);
+      }
+
+      expect(serialize(1)).to.equal(1.0);
+      expect(serialize(0)).to.equal(0.0);
+      expect(serialize('123.5')).to.equal(123.5);
+      expect(serialize(-1)).to.equal(-1.0);
+      expect(serialize(0.1)).to.equal(0.1);
+      expect(serialize(1.1)).to.equal(1.1);
+      expect(serialize(-1.1)).to.equal(-1.1);
+      expect(serialize('-1.1')).to.equal(-1.1);
+      expect(serialize(false)).to.equal(0.0);
+      expect(serialize(true)).to.equal(1.0);
+
+      const customValueOfObj = {
+        value: 5.5,
+        valueOf() {
+          return this.value;
+        },
+      };
+      expect(serialize(customValueOfObj)).to.equal(5.5);
+
+      expect(() => serialize(NaN)).to.throw(
+        'Float cannot represent non numeric value: NaN',
+      );
+      expect(() => serialize(Infinity)).to.throw(
+        'Float cannot represent non numeric value: Infinity',
+      );
+      expect(() => serialize('one')).to.throw(
+        'Float cannot represent non numeric value: "one"',
+      );
+      expect(() => serialize('')).to.throw(
+        'Float cannot represent non numeric value: ""',
+      );
+      expect(() => serialize([5])).to.throw(
+        'Float cannot represent non numeric value: [5]',
+      );
+    });
   });
 
   describe('GraphQLString', () => {
@@ -263,6 +375,45 @@ describe('Type System: Specified scalar types', () => {
       );
       expect(() => parseLiteral('$var')).to.throw(
         'String cannot represent a non string value: $var',
+      );
+    });
+
+    it('serialize', () => {
+      function serialize(value) {
+        return GraphQLString.serialize(value);
+      }
+
+      expect(serialize('string')).to.equal('string');
+      expect(serialize(1)).to.equal('1');
+      expect(serialize(-1.1)).to.equal('-1.1');
+      expect(serialize(true)).to.equal('true');
+      expect(serialize(false)).to.equal('false');
+
+      const valueOf = () => 'valueOf string';
+      const toJSON = () => 'toJSON string';
+
+      const valueOfAndToJSONValue = { valueOf, toJSON };
+      expect(serialize(valueOfAndToJSONValue)).to.equal('valueOf string');
+
+      const onlyToJSONValue = { toJSON };
+      expect(serialize(onlyToJSONValue)).to.equal('toJSON string');
+
+      expect(() => serialize(NaN)).to.throw(
+        'String cannot represent value: NaN',
+      );
+
+      expect(() => serialize([1])).to.throw(
+        'String cannot represent value: [1]',
+      );
+
+      const badObjValue = {};
+      expect(() => serialize(badObjValue)).to.throw(
+        'String cannot represent value: {}',
+      );
+
+      const badValueOfObjValue = { valueOf: 'valueOf string' };
+      expect(() => serialize(badValueOfObjValue)).to.throw(
+        'String cannot represent value: { valueOf: "valueOf string" }',
       );
     });
   });
@@ -344,6 +495,41 @@ describe('Type System: Specified scalar types', () => {
         'Boolean cannot represent a non boolean value: $var',
       );
     });
+
+    it('serialize', () => {
+      function serialize(value) {
+        return GraphQLBoolean.serialize(value);
+      }
+
+      expect(serialize(1)).to.equal(true);
+      expect(serialize(0)).to.equal(false);
+      expect(serialize(true)).to.equal(true);
+      expect(serialize(false)).to.equal(false);
+      expect(
+        serialize({
+          value: true,
+          valueOf() {
+            return this.value;
+          },
+        }),
+      ).to.equal(true);
+
+      expect(() => serialize(NaN)).to.throw(
+        'Boolean cannot represent a non boolean value: NaN',
+      );
+      expect(() => serialize('')).to.throw(
+        'Boolean cannot represent a non boolean value: ""',
+      );
+      expect(() => serialize('true')).to.throw(
+        'Boolean cannot represent a non boolean value: "true"',
+      );
+      expect(() => serialize([false])).to.throw(
+        'Boolean cannot represent a non boolean value: [false]',
+      );
+      expect(() => serialize({})).to.throw(
+        'Boolean cannot represent a non boolean value: {}',
+      );
+    });
   });
 
   describe('GraphQLID', () => {
@@ -422,6 +608,48 @@ describe('Type System: Specified scalar types', () => {
       );
       expect(() => parseLiteral('$var')).to.throw(
         'ID cannot represent a non-string and non-integer value: $var',
+      );
+    });
+
+    it('serialize', () => {
+      function serialize(value) {
+        return GraphQLID.serialize(value);
+      }
+
+      expect(serialize('string')).to.equal('string');
+      expect(serialize('false')).to.equal('false');
+      expect(serialize('')).to.equal('');
+      expect(serialize(123)).to.equal('123');
+      expect(serialize(0)).to.equal('0');
+      expect(serialize(-1)).to.equal('-1');
+
+      const valueOf = () => 'valueOf ID';
+      const toJSON = () => 'toJSON ID';
+
+      const valueOfAndToJSONValue = { valueOf, toJSON };
+      expect(serialize(valueOfAndToJSONValue)).to.equal('valueOf ID');
+
+      const onlyToJSONValue = { toJSON };
+      expect(serialize(onlyToJSONValue)).to.equal('toJSON ID');
+
+      const badObjValue = {
+        _id: false,
+        valueOf() {
+          return this._id;
+        },
+      };
+      expect(() => serialize(badObjValue)).to.throw(
+        'ID cannot represent value: { _id: false, valueOf: [function valueOf] }',
+      );
+
+      expect(() => serialize(true)).to.throw('ID cannot represent value: true');
+
+      expect(() => serialize(3.14)).to.throw('ID cannot represent value: 3.14');
+
+      expect(() => serialize({})).to.throw('ID cannot represent value: {}');
+
+      expect(() => serialize(['abc'])).to.throw(
+        'ID cannot represent value: ["abc"]',
       );
     });
   });
