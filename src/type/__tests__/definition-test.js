@@ -91,6 +91,9 @@ describe('Type System: Scalars', () => {
     expect(scalar.parseLiteral(parseValue('{ foo: "bar" }'))).to.equal(
       'parseValue: { foo: "bar" }',
     );
+    expect(
+      scalar.parseLiteral(parseValue('{ foo: { bar: $var } }'), { var: 'baz' }),
+    ).to.equal('parseValue: { foo: { bar: "baz" } }');
   });
 
   it('rejects a Scalar type without name', () => {
