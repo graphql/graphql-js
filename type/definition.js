@@ -408,7 +408,7 @@ export class GraphQLScalarType {
     this.serialize = config.serialize ?? identityFunc;
     this.parseValue = parseValue;
 
-    this.parseLiteral = config.parseLiteral ?? (node => parseValue(valueFromASTUntyped(node)));
+    this.parseLiteral = config.parseLiteral ?? ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
 
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
