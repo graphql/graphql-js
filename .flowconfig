@@ -43,4 +43,4 @@ babel_loose_array_spread=true
 esproposal.optional_chaining=enable
 
 [version]
-^0.128.0
+^0.129.0
