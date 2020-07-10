@@ -30,20 +30,18 @@ const rejected = Promise.reject.bind(Promise);
  */
 function check(testType: GraphQLOutputType, testData: mixed, expected: mixed) {
   return async () => {
-    const data = { test: testData };
-
     const dataType = new GraphQLObjectType({
       name: 'DataType',
       fields: () => ({
         test: { type: testType },
-        nest: { type: dataType, resolve: () => data },
+        nest: { type: dataType },
       }),
     });
 
     const response = await execute({
       schema: new GraphQLSchema({ query: dataType }),
       document: parse('{ nest { test } }'),
-      contextValue: { test: testData },
+      rootValue: { nest: { test: testData } },
     });
     expect(response).to.deep.equal(expected);
   };
