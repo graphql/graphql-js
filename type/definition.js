@@ -517,8 +517,8 @@ var GraphQLScalarType = /*#__PURE__*/function () {
     this.specifiedByUrl = config.specifiedByUrl;
     this.serialize = (_config$serialize = config.serialize) !== null && _config$serialize !== void 0 ? _config$serialize : _identityFunc.default;
     this.parseValue = parseValue;
-    this.parseLiteral = (_config$parseLiteral = config.parseLiteral) !== null && _config$parseLiteral !== void 0 ? _config$parseLiteral : function (node) {
-      return parseValue((0, _valueFromASTUntyped.valueFromASTUntyped)(node));
+    this.parseLiteral = (_config$parseLiteral = config.parseLiteral) !== null && _config$parseLiteral !== void 0 ? _config$parseLiteral : function (node, variables) {
+      return parseValue((0, _valueFromASTUntyped.valueFromASTUntyped)(node, variables));
     };
     this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
     this.astNode = config.astNode;

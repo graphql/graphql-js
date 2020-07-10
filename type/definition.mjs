@@ -411,8 +411,8 @@ export var GraphQLScalarType = /*#__PURE__*/function () {
     this.specifiedByUrl = config.specifiedByUrl;
     this.serialize = (_config$serialize = config.serialize) !== null && _config$serialize !== void 0 ? _config$serialize : identityFunc;
     this.parseValue = parseValue;
-    this.parseLiteral = (_config$parseLiteral = config.parseLiteral) !== null && _config$parseLiteral !== void 0 ? _config$parseLiteral : function (node) {
-      return parseValue(valueFromASTUntyped(node));
+    this.parseLiteral = (_config$parseLiteral = config.parseLiteral) !== null && _config$parseLiteral !== void 0 ? _config$parseLiteral : function (node, variables) {
+      return parseValue(valueFromASTUntyped(node, variables));
     };
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
