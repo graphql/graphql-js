@@ -237,14 +237,15 @@ function printDirective(directive, options) {
 }
 
 function printDeprecated(fieldOrEnumVal) {
-  if (!fieldOrEnumVal.isDeprecated) {
+  var deprecationReason = fieldOrEnumVal.deprecationReason;
+
+  if (deprecationReason == null) {
     return '';
   }
 
-  var reason = fieldOrEnumVal.deprecationReason;
-  var reasonAST = (0, _astFromValue.astFromValue)(reason, _scalars.GraphQLString);
+  var reasonAST = (0, _astFromValue.astFromValue)(deprecationReason, _scalars.GraphQLString);
 
-  if (reasonAST && reason !== _directives.DEFAULT_DEPRECATION_REASON) {
+  if (reasonAST && deprecationReason !== _directives.DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + (0, _printer.print)(reasonAST) + ')';
   }
 

@@ -216,14 +216,15 @@ function printDirective(directive, options) {
 }
 
 function printDeprecated(fieldOrEnumVal) {
-  if (!fieldOrEnumVal.isDeprecated) {
+  var deprecationReason = fieldOrEnumVal.deprecationReason;
+
+  if (deprecationReason == null) {
     return '';
   }
 
-  var reason = fieldOrEnumVal.deprecationReason;
-  var reasonAST = astFromValue(reason, GraphQLString);
+  var reasonAST = astFromValue(deprecationReason, GraphQLString);
 
-  if (reasonAST && reason !== DEFAULT_DEPRECATION_REASON) {
+  if (reasonAST && deprecationReason !== DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + print(reasonAST) + ')';
   }
 

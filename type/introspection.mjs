@@ -254,7 +254,7 @@ export var __Type = new GraphQLObjectType({
 
             if (!includeDeprecated) {
               fields = fields.filter(function (field) {
-                return !field.isDeprecated;
+                return field.deprecationReason == null;
               });
             }
 
@@ -298,7 +298,7 @@ export var __Type = new GraphQLObjectType({
 
             if (!includeDeprecated) {
               values = values.filter(function (value) {
-                return !value.isDeprecated;
+                return value.deprecationReason == null;
               });
             }
 
@@ -355,7 +355,7 @@ export var __Field = new GraphQLObjectType({
       isDeprecated: {
         type: GraphQLNonNull(GraphQLBoolean),
         resolve: function resolve(field) {
-          return field.isDeprecated;
+          return field.deprecationReason != null;
         }
       },
       deprecationReason: {
@@ -423,7 +423,7 @@ export var __EnumValue = new GraphQLObjectType({
       isDeprecated: {
         type: GraphQLNonNull(GraphQLBoolean),
         resolve: function resolve(enumValue) {
-          return enumValue.isDeprecated;
+          return enumValue.deprecationReason != null;
         }
       },
       deprecationReason: {

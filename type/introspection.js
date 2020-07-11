@@ -281,7 +281,7 @@ var __Type = new _definition.GraphQLObjectType({
 
             if (!includeDeprecated) {
               fields = fields.filter(function (field) {
-                return !field.isDeprecated;
+                return field.deprecationReason == null;
               });
             }
 
@@ -325,7 +325,7 @@ var __Type = new _definition.GraphQLObjectType({
 
             if (!includeDeprecated) {
               values = values.filter(function (value) {
-                return !value.isDeprecated;
+                return value.deprecationReason == null;
               });
             }
 
@@ -385,7 +385,7 @@ var __Field = new _definition.GraphQLObjectType({
       isDeprecated: {
         type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
         resolve: function resolve(field) {
-          return field.isDeprecated;
+          return field.deprecationReason != null;
         }
       },
       deprecationReason: {
@@ -459,7 +459,7 @@ var __EnumValue = new _definition.GraphQLObjectType({
       isDeprecated: {
         type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
         resolve: function resolve(enumValue) {
-          return enumValue.isDeprecated;
+          return enumValue.deprecationReason != null;
         }
       },
       deprecationReason: {
