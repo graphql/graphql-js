@@ -278,17 +278,10 @@ var __Type = new _definition.GraphQLObjectType({
 
           if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
             var fields = (0, _objectValues.default)(type.getFields());
-
-            if (!includeDeprecated) {
-              fields = fields.filter(function (field) {
-                return field.deprecationReason == null;
-              });
-            }
-
-            return fields;
+            return includeDeprecated ? fields : fields.filter(function (field) {
+              return field.deprecationReason == null;
+            });
           }
-
-          return null;
         }
       },
       interfaces: {
@@ -322,14 +315,9 @@ var __Type = new _definition.GraphQLObjectType({
 
           if ((0, _definition.isEnumType)(type)) {
             var values = type.getValues();
-
-            if (!includeDeprecated) {
-              values = values.filter(function (value) {
-                return value.deprecationReason == null;
-              });
-            }
-
-            return values;
+            return includeDeprecated ? values : values.filter(function (field) {
+              return field.deprecationReason == null;
+            });
           }
         }
       },
