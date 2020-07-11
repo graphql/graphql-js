@@ -997,10 +997,12 @@ export type GraphQLField<
   args: Array<GraphQLArgument>,
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
-  isDeprecated: boolean,
   deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?FieldDefinitionNode,
+
+  // @deprecated and will be removed in v16
+  isDeprecated: boolean,
 |};
 
 export type GraphQLArgument = {|
@@ -1465,10 +1467,12 @@ export type GraphQLEnumValue /* <T> */ = {|
   name: string,
   description: ?string,
   value: any /* T */,
-  isDeprecated: boolean,
   deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?EnumValueDefinitionNode,
+
+  // @deprecated and will be removed in v16
+  isDeprecated: boolean,
 |};
 
 /**

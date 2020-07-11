@@ -563,10 +563,12 @@ export interface GraphQLField<
   args: Array<GraphQLArgument>;
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
-  isDeprecated: boolean;
   deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLFieldExtensions<TSource, TContext, TArgs>>>;
   astNode?: Maybe<FieldDefinitionNode>;
+
+  // @deprecated and will be removed in v16
+  isDeprecated: boolean;
 }
 
 export interface GraphQLArgument {
@@ -827,10 +829,12 @@ export interface GraphQLEnumValue {
   name: string;
   description: Maybe<string>;
   value: any;
-  isDeprecated: boolean;
   deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLEnumValueExtensions>>;
   astNode?: Maybe<EnumValueDefinitionNode>;
+
+  // @deprecated and will be removed in v16
+  isDeprecated: boolean;
 }
 
 /**
