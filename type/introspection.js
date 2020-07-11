@@ -224,16 +224,9 @@ export const __Type = new GraphQLObjectType({
         includeDeprecated
       }) {
         if (isObjectType(type) || isInterfaceType(type)) {
-          let fields = objectValues(type.getFields());
-
-          if (!includeDeprecated) {
-            fields = fields.filter(field => field.deprecationReason == null);
-          }
-
-          return fields;
+          const fields = objectValues(type.getFields());
+          return includeDeprecated ? fields : fields.filter(field => field.deprecationReason == null);
         }
-
-        return null;
       }
 
     },
@@ -272,13 +265,8 @@ export const __Type = new GraphQLObjectType({
         includeDeprecated
       }) {
         if (isEnumType(type)) {
-          let values = type.getValues();
-
-          if (!includeDeprecated) {
-            values = values.filter(value => value.deprecationReason == null);
-          }
-
-          return values;
+          const values = type.getValues();
+          return includeDeprecated ? values : values.filter(field => field.deprecationReason == null);
         }
       }
 
