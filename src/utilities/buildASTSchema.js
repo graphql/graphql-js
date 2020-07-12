@@ -12,12 +12,7 @@ import { assertValidSDL } from '../validation/validate';
 
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
 import { GraphQLSchema } from '../type/schema';
-import {
-  GraphQLSkipDirective,
-  GraphQLIncludeDirective,
-  GraphQLDeprecatedDirective,
-  GraphQLSpecifiedByDirective,
-} from '../type/directives';
+import { specifiedDirectives } from '../type/directives';
 
 import { extendSchemaImpl } from './extendSchema';
 
@@ -102,20 +97,10 @@ export function buildASTSchema(
 
   const { directives } = config;
   // If specified directives were not explicitly declared, add them.
-  if (!directives.some((directive) => directive.name === 'skip')) {
-    directives.push(GraphQLSkipDirective);
-  }
-
-  if (!directives.some((directive) => directive.name === 'include')) {
-    directives.push(GraphQLIncludeDirective);
-  }
-
-  if (!directives.some((directive) => directive.name === 'deprecated')) {
-    directives.push(GraphQLDeprecatedDirective);
-  }
-
-  if (!directives.some((directive) => directive.name === 'specifiedBy')) {
-    directives.push(GraphQLSpecifiedByDirective);
+  for (const stdDirective of specifiedDirectives) {
+    if (directives.every((directive) => directive.name !== stdDirective.name)) {
+      directives.push(stdDirective);
+    }
   }
 
   return new GraphQLSchema(config);

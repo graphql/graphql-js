@@ -11,6 +11,7 @@ import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
+import { GraphQLSchema } from '../../type/schema';
 import { validateSchema } from '../../type/validate';
 import { __Schema, __EnumValue } from '../../type/introspection';
 import {
@@ -112,6 +113,21 @@ describe('Schema Builder', () => {
       }
     `;
     expect(() => buildSchema(sdl)).to.not.throw();
+  });
+
+  it('Match order of default types and directives', () => {
+    const schema = new GraphQLSchema({});
+    const sdlSchema = buildASTSchema({
+      kind: Kind.DOCUMENT,
+      definitions: [],
+    });
+
+    expect(sdlSchema.getDirectives()).to.deep.equal(schema.getDirectives());
+
+    expect(sdlSchema.getTypeMap()).to.deep.equal(schema.getTypeMap());
+    expect(Object.keys(sdlSchema.getTypeMap())).to.deep.equal(
+      Object.keys(schema.getTypeMap()),
+    );
   });
 
   it('Empty type', () => {
