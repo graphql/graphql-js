@@ -1252,20 +1252,40 @@ describe('Introspection', () => {
     });
   });
 
-  it('exposes descriptions on types and fields', () => {
+  it('exposes descriptions', () => {
     const schema = buildSchema(`
-      type Query {
-        someField: String
+      """Enum description"""
+      enum SomeEnum {
+        """Value description"""
+        VALUE
+      }
+
+      """Object description"""
+      type SomeObject {
+        """Field description"""
+        someField(arg: SomeEnum): String
+      }
+
+      """Schema description"""
+      schema {
+        query: SomeObject
       }
     `);
 
     const source = `
       {
-        schemaType: __type(name: "__Schema") {
-          name,
+        Schema: __schema { description }
+        SomeObject: __type(name: "SomeObject") {
           description,
           fields {
-            name,
+            name
+            description
+          }
+        }
+        SomeEnum: __type(name: "SomeEnum") {
+          description
+          enumValues {
+            name
             description
           }
         }
@@ -1274,108 +1294,24 @@ describe('Introspection', () => {
 
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
-        schemaType: {
-          name: '__Schema',
-          description:
-            'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.',
-          fields: [
+        Schema: {
+          description: 'Schema description',
+        },
+        SomeEnum: {
+          description: 'Enum description',
+          enumValues: [
             {
-              name: 'description',
-              description: null,
-            },
-            {
-              name: 'types',
-              description: 'A list of all types supported by this server.',
-            },
-            {
-              name: 'queryType',
-              description: 'The type that query operations will be rooted at.',
-            },
-            {
-              name: 'mutationType',
-              description:
-                'If this server supports mutation, the type that mutation operations will be rooted at.',
-            },
-            {
-              name: 'subscriptionType',
-              description:
-                'If this server support subscription, the type that subscription operations will be rooted at.',
-            },
-            {
-              name: 'directives',
-              description: 'A list of all directives supported by this server.',
+              name: 'VALUE',
+              description: 'Value description',
             },
           ],
         },
-      },
-    });
-  });
-
-  it('exposes descriptions on enums', () => {
-    const schema = buildSchema(`
-      type Query {
-        someField: String
-      }
-    `);
-
-    const source = `
-      {
-        typeKindType: __type(name: "__TypeKind") {
-          name,
-          description,
-          enumValues {
-            name,
-            description
-          }
-        }
-      }
-    `;
-
-    expect(graphqlSync({ schema, source })).to.deep.equal({
-      data: {
-        typeKindType: {
-          name: '__TypeKind',
-          description:
-            'An enum describing what kind of type a given `__Type` is.',
-          enumValues: [
+        SomeObject: {
+          description: 'Object description',
+          fields: [
             {
-              name: 'SCALAR',
-              description: 'Indicates this type is a scalar.',
-            },
-            {
-              name: 'OBJECT',
-              description:
-                'Indicates this type is an object. `fields` and `interfaces` are valid fields.',
-            },
-            {
-              name: 'INTERFACE',
-              description:
-                'Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields.',
-            },
-            {
-              name: 'UNION',
-              description:
-                'Indicates this type is a union. `possibleTypes` is a valid field.',
-            },
-            {
-              name: 'ENUM',
-              description:
-                'Indicates this type is an enum. `enumValues` is a valid field.',
-            },
-            {
-              name: 'INPUT_OBJECT',
-              description:
-                'Indicates this type is an input object. `inputFields` is a valid field.',
-            },
-            {
-              name: 'LIST',
-              description:
-                'Indicates this type is a list. `ofType` is a valid field.',
-            },
-            {
-              name: 'NON_NULL',
-              description:
-                'Indicates this type is a non-null. `ofType` is a valid field.',
+              name: 'someField',
+              description: 'Field description',
             },
           ],
         },
