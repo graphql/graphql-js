@@ -5,29 +5,23 @@ import { describe, it } from 'mocha';
 
 import invariant from '../../jsutils/invariant';
 
-import { graphqlSync } from '../../graphql';
+import { buildSchema } from '../../utilities/buildASTSchema';
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 
-import { GraphQLSchema } from '../schema';
-import { GraphQLString } from '../scalars';
-import {
-  GraphQLList,
-  GraphQLObjectType,
-  GraphQLInputObjectType,
-  GraphQLEnumType,
-} from '../definition';
+import { graphqlSync } from '../../graphql';
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {
-    const schema = new GraphQLSchema({
-      description: 'Sample schema',
-      query: new GraphQLObjectType({
-        name: 'QueryRoot',
-        fields: {
-          onlyField: { type: GraphQLString },
-        },
-      }),
-    });
+    const schema = buildSchema(`
+      type SomeObject {
+        someField: String
+      }
+
+      schema {
+        query: SomeObject
+      }
+    `);
+
     const source = getIntrospectionQuery({
       descriptions: false,
       specifiedByUrl: true,
@@ -38,19 +32,17 @@ describe('Introspection', () => {
     expect(result).to.deep.equal({
       data: {
         __schema: {
+          queryType: { name: 'SomeObject' },
           mutationType: null,
           subscriptionType: null,
-          queryType: {
-            name: 'QueryRoot',
-          },
           types: [
             {
               kind: 'OBJECT',
-              name: 'QueryRoot',
+              name: 'SomeObject',
               specifiedByUrl: null,
               fields: [
                 {
-                  name: 'onlyField',
+                  name: 'someField',
                   args: [],
                   type: {
                     kind: 'SCALAR',
@@ -943,29 +935,21 @@ describe('Introspection', () => {
   });
 
   it('introspects on input object', () => {
-    const TestInputObject = new GraphQLInputObjectType({
-      name: 'TestInputObject',
-      fields: {
-        a: { type: GraphQLString, defaultValue: 'tes\t de\fault' },
-        b: { type: GraphQLList(GraphQLString) },
-        c: { type: GraphQLString, defaultValue: null },
-      },
-    });
+    const schema = buildSchema(`
+      input SomeInputObject {
+        a: String = "tes\\t de\\fault"
+        b: [String]
+        c: String = null
+      }
 
-    const TestType = new GraphQLObjectType({
-      name: 'TestType',
-      fields: {
-        field: {
-          type: GraphQLString,
-          args: { complex: { type: TestInputObject } },
-        },
-      },
-    });
+      type Query {
+        someField(someArg: SomeInputObject): String
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: TestType });
     const source = `
       {
-        __type(name: "TestInputObject") {
+        __type(name: "SomeInputObject") {
           kind
           name
           inputFields {
@@ -998,7 +982,7 @@ describe('Introspection', () => {
       data: {
         __type: {
           kind: 'INPUT_OBJECT',
-          name: 'TestInputObject',
+          name: 'SomeInputObject',
           inputFields: [
             {
               name: 'a',
@@ -1038,19 +1022,15 @@ describe('Introspection', () => {
   });
 
   it('supports the __type root field', () => {
-    const TestType = new GraphQLObjectType({
-      name: 'TestType',
-      fields: {
-        testField: {
-          type: GraphQLString,
-        },
-      },
-    });
+    const schema = buildSchema(`
+      type Query {
+        someField: String
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: TestType });
     const source = `
       {
-        __type(name: "TestType") {
+        __type(name: "Query") {
           name
         }
       }
@@ -1058,36 +1038,23 @@ describe('Introspection', () => {
 
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
-        __type: {
-          name: 'TestType',
-        },
+        __type: { name: 'Query' },
       },
     });
   });
 
   it('identifies deprecated fields', () => {
-    const TestType = new GraphQLObjectType({
-      name: 'TestType',
-      fields: {
-        nonDeprecated: {
-          type: GraphQLString,
-        },
-        deprecated: {
-          type: GraphQLString,
-          deprecationReason: 'Removed in 1.0',
-        },
-        deprecatedWithEmptyReason: {
-          type: GraphQLString,
-          deprecationReason: '',
-        },
-      },
-    });
+    const schema = buildSchema(`
+      type Query {
+        nonDeprecated: String
+        deprecated: String @deprecated(reason: "Removed in 1.0")
+        deprecatedWithEmptyReason: String @deprecated(reason: "")
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: TestType });
     const source = `
       {
-        __type(name: "TestType") {
-          name
+        __type(name: "Query") {
           fields(includeDeprecated: true) {
             name
             isDeprecated,
@@ -1100,7 +1067,6 @@ describe('Introspection', () => {
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
-          name: 'TestType',
           fields: [
             {
               name: 'nonDeprecated',
@@ -1124,24 +1090,16 @@ describe('Introspection', () => {
   });
 
   it('respects the includeDeprecated parameter for fields', () => {
-    const TestType = new GraphQLObjectType({
-      name: 'TestType',
-      fields: {
-        nonDeprecated: {
-          type: GraphQLString,
-        },
-        deprecated: {
-          type: GraphQLString,
-          deprecationReason: 'Removed in 1.0',
-        },
-      },
-    });
+    const schema = buildSchema(`
+      type Query {
+        nonDeprecated: String
+        deprecated: String @deprecated(reason: "Removed in 1.0")
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: TestType });
     const source = `
       {
-        __type(name: "TestType") {
-          name
+        __type(name: "Query") {
           trueFields: fields(includeDeprecated: true) {
             name
           }
@@ -1158,54 +1116,30 @@ describe('Introspection', () => {
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
-          name: 'TestType',
-          trueFields: [
-            {
-              name: 'nonDeprecated',
-            },
-            {
-              name: 'deprecated',
-            },
-          ],
-          falseFields: [
-            {
-              name: 'nonDeprecated',
-            },
-          ],
-          omittedFields: [
-            {
-              name: 'nonDeprecated',
-            },
-          ],
+          trueFields: [{ name: 'nonDeprecated' }, { name: 'deprecated' }],
+          falseFields: [{ name: 'nonDeprecated' }],
+          omittedFields: [{ name: 'nonDeprecated' }],
         },
       },
     });
   });
 
   it('identifies deprecated enum values', () => {
-    const TestEnum = new GraphQLEnumType({
-      name: 'TestEnum',
-      values: {
-        NON_DEPRECATED: { value: 0 },
-        DEPRECATED: { value: 1, deprecationReason: 'Removed in 1.0' },
-        ALSO_NON_DEPRECATED: { value: 2 },
-      },
-    });
+    const schema = buildSchema(`
+      enum SomeEnum {
+        NON_DEPRECATED
+        DEPRECATED @deprecated(reason: "Removed in 1.0")
+        ALSO_NON_DEPRECATED
+      }
 
-    const TestType = new GraphQLObjectType({
-      name: 'TestType',
-      fields: {
-        testEnum: {
-          type: TestEnum,
-        },
-      },
-    });
+      type Query {
+        someField(someArg: SomeEnum): String
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: TestType });
     const source = `
       {
-        __type(name: "TestEnum") {
-          name
+        __type(name: "SomeEnum") {
           enumValues(includeDeprecated: true) {
             name
             isDeprecated,
@@ -1218,7 +1152,6 @@ describe('Introspection', () => {
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __type: {
-          name: 'TestEnum',
           enumValues: [
             {
               name: 'NON_DEPRECATED',
@@ -1242,29 +1175,22 @@ describe('Introspection', () => {
   });
 
   it('respects the includeDeprecated parameter for enum values', () => {
-    const TestEnum = new GraphQLEnumType({
-      name: 'TestEnum',
-      values: {
-        NON_DEPRECATED: {},
-        DEPRECATED: { deprecationReason: 'Removed in 1.0' },
-        DEPRECATED_WITH_EMPTY_REASON: { deprecationReason: '' },
-        ALSO_NON_DEPRECATED: {},
-      },
-    });
+    const schema = buildSchema(`
+      enum SomeEnum {
+        NON_DEPRECATED
+        DEPRECATED @deprecated(reason: "Removed in 1.0")
+        DEPRECATED_WITH_EMPTY_REASON @deprecated(reason: "")
+        ALSO_NON_DEPRECATED
+      }
 
-    const TestType = new GraphQLObjectType({
-      name: 'TestType',
-      fields: {
-        testEnum: {
-          type: TestEnum,
-        },
-      },
-    });
+      type Query {
+        someField(someArg: SomeEnum): String
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: TestType });
     const source = `
       {
-        __type(name: "TestEnum") {
+        __type(name: "SomeEnum") {
           trueValues: enumValues(includeDeprecated: true) {
             name
           }
@@ -1301,16 +1227,12 @@ describe('Introspection', () => {
   });
 
   it('fails as expected on the __type root field without an arg', () => {
-    const TestType = new GraphQLObjectType({
-      name: 'TestType',
-      fields: {
-        testField: {
-          type: GraphQLString,
-        },
-      },
-    });
+    const schema = buildSchema(`
+      type Query {
+        someField: String
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: TestType });
     const source = `
       {
         __type {
@@ -1331,14 +1253,12 @@ describe('Introspection', () => {
   });
 
   it('exposes descriptions on types and fields', () => {
-    const QueryRoot = new GraphQLObjectType({
-      name: 'QueryRoot',
-      fields: {
-        onlyField: { type: GraphQLString },
-      },
-    });
+    const schema = buildSchema(`
+      type Query {
+        someField: String
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: QueryRoot });
     const source = `
       {
         schemaType: __type(name: "__Schema") {
@@ -1392,14 +1312,12 @@ describe('Introspection', () => {
   });
 
   it('exposes descriptions on enums', () => {
-    const QueryRoot = new GraphQLObjectType({
-      name: 'QueryRoot',
-      fields: {
-        onlyField: { type: GraphQLString },
-      },
-    });
+    const schema = buildSchema(`
+      type Query {
+        someField: String
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: QueryRoot });
     const source = `
       {
         typeKindType: __type(name: "__TypeKind") {
@@ -1421,43 +1339,43 @@ describe('Introspection', () => {
             'An enum describing what kind of type a given `__Type` is.',
           enumValues: [
             {
-              description: 'Indicates this type is a scalar.',
               name: 'SCALAR',
+              description: 'Indicates this type is a scalar.',
             },
             {
+              name: 'OBJECT',
               description:
                 'Indicates this type is an object. `fields` and `interfaces` are valid fields.',
-              name: 'OBJECT',
             },
             {
+              name: 'INTERFACE',
               description:
                 'Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields.',
-              name: 'INTERFACE',
             },
             {
+              name: 'UNION',
               description:
                 'Indicates this type is a union. `possibleTypes` is a valid field.',
-              name: 'UNION',
             },
             {
+              name: 'ENUM',
               description:
                 'Indicates this type is an enum. `enumValues` is a valid field.',
-              name: 'ENUM',
             },
             {
+              name: 'INPUT_OBJECT',
               description:
                 'Indicates this type is an input object. `inputFields` is a valid field.',
-              name: 'INPUT_OBJECT',
             },
             {
+              name: 'LIST',
               description:
                 'Indicates this type is a list. `ofType` is a valid field.',
-              name: 'LIST',
             },
             {
+              name: 'NON_NULL',
               description:
                 'Indicates this type is a non-null. `ofType` is a valid field.',
-              name: 'NON_NULL',
             },
           ],
         },
@@ -1466,14 +1384,12 @@ describe('Introspection', () => {
   });
 
   it('executes an introspection query without calling global fieldResolver', () => {
-    const QueryRoot = new GraphQLObjectType({
-      name: 'QueryRoot',
-      fields: {
-        onlyField: { type: GraphQLString },
-      },
-    });
+    const schema = buildSchema(`
+      type Query {
+        someField: String
+      }
+    `);
 
-    const schema = new GraphQLSchema({ query: QueryRoot });
     const source = getIntrospectionQuery({ directiveIsRepeatable: true });
 
     // istanbul ignore next (Called only to fail test)
