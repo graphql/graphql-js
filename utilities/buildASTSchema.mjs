@@ -3,7 +3,7 @@ import { Kind } from "../language/kinds.mjs";
 import { parse } from "../language/parser.mjs";
 import { assertValidSDL } from "../validation/validate.mjs";
 import { GraphQLSchema } from "../type/schema.mjs";
-import { GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective, GraphQLSpecifiedByDirective } from "../type/directives.mjs";
+import { specifiedDirectives } from "../type/directives.mjs";
 import { extendSchemaImpl } from "./extendSchema.mjs";
 
 /**
@@ -64,28 +64,18 @@ export function buildASTSchema(documentAST, options) {
 
   var directives = config.directives; // If specified directives were not explicitly declared, add them.
 
-  if (!directives.some(function (directive) {
-    return directive.name === 'skip';
-  })) {
-    directives.push(GraphQLSkipDirective);
-  }
+  var _loop = function _loop(_i4) {
+    var stdDirective = specifiedDirectives[_i4];
 
-  if (!directives.some(function (directive) {
-    return directive.name === 'include';
-  })) {
-    directives.push(GraphQLIncludeDirective);
-  }
+    if (directives.every(function (directive) {
+      return directive.name !== stdDirective.name;
+    })) {
+      directives.push(stdDirective);
+    }
+  };
 
-  if (!directives.some(function (directive) {
-    return directive.name === 'deprecated';
-  })) {
-    directives.push(GraphQLDeprecatedDirective);
-  }
-
-  if (!directives.some(function (directive) {
-    return directive.name === 'specifiedBy';
-  })) {
-    directives.push(GraphQLSpecifiedByDirective);
+  for (var _i4 = 0; _i4 < specifiedDirectives.length; _i4++) {
+    _loop(_i4);
   }
 
   return new GraphQLSchema(config);

@@ -80,28 +80,18 @@ function buildASTSchema(documentAST, options) {
 
   var directives = config.directives; // If specified directives were not explicitly declared, add them.
 
-  if (!directives.some(function (directive) {
-    return directive.name === 'skip';
-  })) {
-    directives.push(_directives.GraphQLSkipDirective);
-  }
+  var _loop = function _loop(_i4) {
+    var stdDirective = _directives.specifiedDirectives[_i4];
 
-  if (!directives.some(function (directive) {
-    return directive.name === 'include';
-  })) {
-    directives.push(_directives.GraphQLIncludeDirective);
-  }
+    if (directives.every(function (directive) {
+      return directive.name !== stdDirective.name;
+    })) {
+      directives.push(stdDirective);
+    }
+  };
 
-  if (!directives.some(function (directive) {
-    return directive.name === 'deprecated';
-  })) {
-    directives.push(_directives.GraphQLDeprecatedDirective);
-  }
-
-  if (!directives.some(function (directive) {
-    return directive.name === 'specifiedBy';
-  })) {
-    directives.push(_directives.GraphQLSpecifiedByDirective);
+  for (var _i4 = 0; _i4 < _directives.specifiedDirectives.length; _i4++) {
+    _loop(_i4);
   }
 
   return new _schema.GraphQLSchema(config);
