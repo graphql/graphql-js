@@ -183,6 +183,23 @@ function readToken(lexer: Lexer, prev: Token): Token {
         return new Token(TokenKind.PIPE, pos, pos + 1, line, col, prev);
       case 125: // }
         return new Token(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
+      case 34: //  "
+        if (body.charCodeAt(pos + 1) === 34 && body.charCodeAt(pos + 2) === 34) {
+          return readBlockString(source, pos, line, col, prev, lexer);
+        }
+        return readString(source, pos, line, col, prev);
+      case 45: //  -
+      case 48: //  0
+      case 49: //  1
+      case 50: //  2
+      case 51: //  3
+      case 52: //  4
+      case 53: //  5
+      case 54: //  6
+      case 55: //  7
+      case 56: //  8
+      case 57: //  9
+        return readNumber(source, pos, code, line, col, prev);
       case 65: //  A
       case 66: //  B
       case 67: //  C
@@ -237,23 +254,6 @@ function readToken(lexer: Lexer, prev: Token): Token {
       case 121: // y
       case 122: // z
         return readName(source, pos, line, col, prev);
-      case 45: //  -
-      case 48: //  0
-      case 49: //  1
-      case 50: //  2
-      case 51: //  3
-      case 52: //  4
-      case 53: //  5
-      case 54: //  6
-      case 55: //  7
-      case 56: //  8
-      case 57: //  9
-        return readNumber(source, pos, code, line, col, prev);
-      case 34: //  "
-        if (body.charCodeAt(pos + 1) === 34 && body.charCodeAt(pos + 2) === 34) {
-          return readBlockString(source, pos, line, col, prev, lexer);
-        }
-        return readString(source, pos, line, col, prev);
     }
 
     throw syntaxError(source, pos, unexpectedCharacterMessage(code));
