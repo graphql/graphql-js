@@ -163,7 +163,10 @@ function readToken(lexer: Lexer, prev: Token): Token {
       case 41: //  )
         return new Token(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
       case 46: //  .
-        if (body.charCodeAt(pos + 1) === 46 && body.charCodeAt(pos + 2) === 46) {
+        if (
+          body.charCodeAt(pos + 1) === 46 &&
+          body.charCodeAt(pos + 2) === 46
+        ) {
           return new Token(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
         }
         break;
@@ -184,7 +187,10 @@ function readToken(lexer: Lexer, prev: Token): Token {
       case 125: // }
         return new Token(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
       case 34: //  "
-        if (body.charCodeAt(pos + 1) === 34 && body.charCodeAt(pos + 2) === 34) {
+        if (
+          body.charCodeAt(pos + 1) === 34 &&
+          body.charCodeAt(pos + 2) === 34
+        ) {
           return readBlockString(source, pos, line, col, prev, lexer);
         }
         return readString(source, pos, line, col, prev);
