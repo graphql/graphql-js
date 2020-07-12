@@ -1319,20 +1319,36 @@ describe('Introspection', () => {
     });
   });
 
-  it('executes an introspection query without calling global fieldResolver', () => {
+  it('executes an introspection query without calling global resolvers', () => {
     const schema = buildSchema(`
       type Query {
         someField: String
       }
     `);
 
-    const source = getIntrospectionQuery({ directiveIsRepeatable: true });
+    const source = getIntrospectionQuery({
+      specifiedByUrl: true,
+      directiveIsRepeatable: true,
+      schemaDescription: true,
+    });
 
     // istanbul ignore next (Called only to fail test)
     function fieldResolver(_1, _2, _3, info) {
       invariant(false, `Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
-    expect(() => graphqlSync({ schema, source, fieldResolver })).to.not.throw();
+    // istanbul ignore next (Called only to fail test)
+    function typeResolver(_1, _2, info) {
+      invariant(false, `Called on ${info.parentType.name}::${info.fieldName}`);
+    }
+
+    expect(() =>
+      graphqlSync({
+        schema,
+        source,
+        fieldResolver,
+        typeResolver,
+      }),
+    ).to.not.throw();
   });
 });
