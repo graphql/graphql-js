@@ -562,6 +562,24 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
   });
 
+  it('should not flag args changing from String or Int to ID as breaking', () => {
+    const oldSchema = buildSchema(`
+      type Type1 {
+        field1(arg1: String): Int
+        field2(arg1: Int): Int
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      type Type1 {
+        field1(arg1: ID): Int
+        field2(arg1: ID): Int
+      }
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
+  });
+
   it('should consider args that move away from NonNull as non-breaking', () => {
     const oldSchema = buildSchema(`
       type Type1 {
