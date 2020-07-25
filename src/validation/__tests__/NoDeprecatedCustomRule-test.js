@@ -8,112 +8,127 @@ import { NoDeprecatedCustomRule } from '../rules/custom/NoDeprecatedCustomRule';
 
 import { expectValidationErrorsWithSchema } from './harness';
 
-function expectErrors(queryStr) {
-  return expectValidationErrorsWithSchema(
-    schema,
-    NoDeprecatedCustomRule,
-    queryStr,
-  );
-}
+function buildAssertion(sdlStr: string) {
+  const schema = buildSchema(sdlStr);
+  return { expectErrors, expectValid };
 
-function expectValid(queryStr) {
-  expectErrors(queryStr).to.deep.equal([]);
-}
-
-const schema = buildSchema(`
-  enum EnumType {
-    NORMAL_VALUE
-    DEPRECATED_VALUE @deprecated(reason: "Some enum reason.")
-    DEPRECATED_VALUE_WITH_NO_REASON @deprecated
+  function expectErrors(queryStr: string) {
+    return expectValidationErrorsWithSchema(
+      schema,
+      NoDeprecatedCustomRule,
+      queryStr,
+    );
   }
 
-  type Query {
-    normalField(enumArg: [EnumType]): String
-    deprecatedField: String @deprecated(reason: "Some field reason.")
-    deprecatedFieldWithNoReason: String @deprecated
+  function expectValid(queryStr: string) {
+    expectErrors(queryStr).to.deep.equal([]);
   }
-`);
+}
 
 describe('Validate: no deprecated', () => {
-  it('ignores fields and enum values that are not deprecated', () => {
-    expectValid(`
-      {
-        normalField(enumArg: [NORMAL_VALUE])
+  describe('no deprecated fields', () => {
+    const { expectValid, expectErrors } = buildAssertion(`
+      type Query {
+        normalField: String
+        deprecatedField: String @deprecated(reason: "Some field reason.")
       }
     `);
+
+    it('ignores fields that are not deprecated', () => {
+      expectValid(`
+        {
+          normalField
+        }
+      `);
+    });
+
+    it('ignores unknown fields', () => {
+      expectValid(`
+        {
+          unknownField
+        }
+
+        fragment UnknownFragment on UnknownType {
+          unknownField
+        }
+      `);
+    });
+
+    it('reports error when a deprecated field is selected', () => {
+      const message =
+        'The field Query.deprecatedField is deprecated. Some field reason.';
+
+      expectErrors(`
+        {
+          deprecatedField
+        }
+
+        fragment QueryFragment on Query {
+          deprecatedField
+        }
+      `).to.deep.equal([
+        { message, locations: [{ line: 3, column: 11 }] },
+        { message, locations: [{ line: 7, column: 11 }] },
+      ]);
+    });
   });
 
-  it('ignores unknown fields and enum values', () => {
-    expectValid(`
-      fragment UnknownFragment on UnknownType {
-        unknownField(unknownArg: UNKNOWN_VALUE)
+  describe('no deprecated enum values', () => {
+    const { expectValid, expectErrors } = buildAssertion(`
+      enum EnumType {
+        NORMAL_VALUE
+        DEPRECATED_VALUE @deprecated(reason: "Some enum reason.")
       }
 
-      fragment QueryFragment on Query {
-        unknownField(unknownArg: UNKNOWN_VALUE)
-        normalField(enumArg: UNKNOWN_VALUE)
+      type Query {
+        someField(enumArg: EnumType): String
       }
     `);
-  });
 
-  it('reports error when a deprecated field is selected', () => {
-    expectErrors(`
-      {
-        normalField
-        deprecatedField
-        deprecatedFieldWithNoReason
-      }
-    `).to.deep.equal([
-      {
-        message:
-          'The field Query.deprecatedField is deprecated. Some field reason.',
-        locations: [{ line: 4, column: 9 }],
-      },
-      {
-        message:
-          'The field Query.deprecatedFieldWithNoReason is deprecated. No longer supported',
-        locations: [{ line: 5, column: 9 }],
-      },
-    ]);
-  });
+    it('ignores enum values that are not deprecated', () => {
+      expectValid(`
+        {
+          normalField(enumArg: NORMAL_VALUE)
+        }
+      `);
+    });
 
-  it('reports error when a deprecated enum value is used', () => {
-    expectErrors(`
-      {
-        normalField(enumArg: [NORMAL_VALUE, DEPRECATED_VALUE])
-        normalField(enumArg: [DEPRECATED_VALUE_WITH_NO_REASON])
-      }
-    `).to.deep.equal([
-      {
-        message:
-          'The enum value "EnumType.DEPRECATED_VALUE" is deprecated. Some enum reason.',
-        locations: [{ line: 3, column: 45 }],
-      },
-      {
-        message:
-          'The enum value "EnumType.DEPRECATED_VALUE_WITH_NO_REASON" is deprecated. No longer supported',
-        locations: [{ line: 4, column: 31 }],
-      },
-    ]);
-  });
+    it('ignores unknown enum values', () => {
+      expectValid(`
+        query (
+          $unknownValue: EnumType = UNKNOWN_VALUE
+          $unknownType: UnknownType = UNKNOWN_VALUE
+        ) {
+          someField(enumArg: UNKNOWN_VALUE)
+          someField(unknownArg: UNKNOWN_VALUE)
+          unknownField(unknownArg: UNKNOWN_VALUE)
+        }
 
-  it('reports error when a deprecated field is selected or an enum value is used inside a fragment', () => {
-    expectErrors(`
-      fragment QueryFragment on Query {
-        deprecatedField
-        normalField(enumArg: [NORMAL_VALUE, DEPRECATED_VALUE])
-      }
-    `).to.deep.equal([
-      {
-        message:
-          'The field Query.deprecatedField is deprecated. Some field reason.',
-        locations: [{ line: 3, column: 9 }],
-      },
-      {
-        message:
-          'The enum value "EnumType.DEPRECATED_VALUE" is deprecated. Some enum reason.',
-        locations: [{ line: 4, column: 45 }],
-      },
-    ]);
+        fragment SomeFragment on Query {
+          someField(enumArg: UNKNOWN_VALUE)
+        }
+      `);
+    });
+
+    it('reports error when a deprecated enum value is used', () => {
+      const message =
+        'The enum value "EnumType.DEPRECATED_VALUE" is deprecated. Some enum reason.';
+
+      expectErrors(`
+        query (
+          $variable: EnumType = DEPRECATED_VALUE
+        ) {
+          someField(enumArg: DEPRECATED_VALUE)
+        }
+
+        fragment QueryFragment on Query {
+          someField(enumArg: DEPRECATED_VALUE)
+        }
+      `).to.deep.equal([
+        { message, locations: [{ line: 3, column: 33 }] },
+        { message, locations: [{ line: 5, column: 30 }] },
+        { message, locations: [{ line: 9, column: 30 }] },
+      ]);
+    });
   });
 });
