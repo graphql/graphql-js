@@ -195,7 +195,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.4.x`
+  # ESLint builtin rules list based on `v7.5.x`
   ##############################################################################
 
   # Possible Errors
@@ -350,7 +350,7 @@ rules:
   func-name-matching: off
   func-names: off
   func-style: off
-  id-blacklist: off
+  id-denylist: off
   id-length: off
   id-match: [error, '^(?:_?[a-zA-Z0-9]*)|[_A-Z0-9]+$']
   line-comment-position: off
@@ -503,7 +503,7 @@ overrides:
       flowtype/no-types-missing-file-annotation: off
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v3.6.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v3.7.x`
       ##########################################################################
 
       # Supported Rules
