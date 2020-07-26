@@ -1,5 +1,3 @@
-// @flow strict
-
 import { inspect as nodeInspect } from 'util';
 
 import { expect } from 'chai';

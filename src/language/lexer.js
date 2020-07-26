@@ -1,5 +1,3 @@
-// @flow strict
-
 import { syntaxError } from '../error/syntaxError';
 
 import type { Source } from './source';

@@ -1,5 +1,3 @@
-// @flow strict
-
 import invariant from '../jsutils/invariant';
 
 import { GraphQLSchema } from '../type/schema';

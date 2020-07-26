@@ -1,5 +1,3 @@
-// @flow strict
-
 export default function invariant(condition: mixed, message?: string): void {
   const booleanCondition = Boolean(condition);
   // istanbul ignore else (See transformation done in './resources/inlineInvariant.js')

@@ -1,5 +1,3 @@
-// @flow strict
-
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export type IntrospectionOptions = {|

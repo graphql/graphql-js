@@ -1,5 +1,3 @@
-// @flow strict
-
 declare function isFinitePolyfill(
   value: mixed,
 ): boolean %checks(typeof value === 'number');

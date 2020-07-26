@@ -1,5 +1,3 @@
-// @flow strict
-
 export type Path = {|
   +prev: Path | void,
   +key: string | number,

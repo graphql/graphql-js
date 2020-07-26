@@ -1,5 +1,3 @@
-// @flow strict
-
 import devAssert from '../jsutils/devAssert';
 
 import type { SourceLocation } from '../language/location';

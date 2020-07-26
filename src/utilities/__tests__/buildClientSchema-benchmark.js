@@ -1,5 +1,3 @@
-// @flow strict
-
 import { buildClientSchema } from '../buildClientSchema';
 
 import { bigSchemaIntrospectionResult } from '../../__fixtures__/index';

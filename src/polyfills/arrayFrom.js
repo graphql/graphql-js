@@ -1,5 +1,3 @@
-// @flow strict
-
 import { SYMBOL_ITERATOR } from './symbols';
 
 declare function arrayFrom<T>(arrayLike: Iterable<T>): Array<T>;

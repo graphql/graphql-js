@@ -1,5 +1,3 @@
-// @flow strict
-
 import type { ObjMap } from './ObjMap';
 
 /**

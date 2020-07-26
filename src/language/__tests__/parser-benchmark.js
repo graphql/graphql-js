@@ -1,5 +1,3 @@
-// @flow strict
-
 import { parse } from '../parser';
 
 import { kitchenSinkQuery } from '../../__fixtures__/index';

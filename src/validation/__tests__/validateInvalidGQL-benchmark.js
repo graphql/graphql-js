@@ -1,5 +1,3 @@
-// @flow strict
-
 import { parse } from '../../language/parser';
 import { buildSchema } from '../../utilities/buildASTSchema';
 

@@ -1,5 +1,3 @@
-// @flow strict
-
 import { describe, it } from 'mocha';
 
 import inspect from '../../jsutils/inspect';

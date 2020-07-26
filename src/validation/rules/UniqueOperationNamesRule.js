@@ -1,5 +1,3 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ASTVisitor } from '../../language/visitor';

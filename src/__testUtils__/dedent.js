@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * An ES6 string tag that fixes indentation. Also removes leading newlines
  * and trailing spaces and tabs, but keeps trailing newlines.

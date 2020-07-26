@@ -1,5 +1,3 @@
-// @flow strict
-
 import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
 
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';

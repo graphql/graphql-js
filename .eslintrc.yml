@@ -1,19 +1,16 @@
-parser: babel-eslint
 parserOptions:
-  sourceType: module
+  sourceType: script
+  ecmaVersion: 2020
 env:
   es6: true
   node: true
 reportUnusedDisableDirectives: true
 plugins:
   - internal-rules
-  - flowtype
   - node
   - istanbul
   - import
 settings:
-  flowtype:
-    onlyFilesWithFlowAnnotation: true
   node:
     tryExtensions: ['.js', '.json', '.node', '.ts', '.d.ts']
 
@@ -24,54 +21,6 @@ rules:
   ##############################################################################
 
   internal-rules/no-dir-import: error
-
-  ##############################################################################
-  # `eslint-plugin-flowtype` rule list based on `v5.2.x`
-  # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
-  ##############################################################################
-
-  flowtype/array-style-complex-type: error
-  flowtype/array-style-simple-type: error
-  flowtype/define-flow-type: error
-  flowtype/newline-after-flow-annotation: error
-  flowtype/no-dupe-keys: error
-  flowtype/no-existential-type: off # checked by Flow
-  flowtype/no-flow-fix-me-comments: off
-  flowtype/no-mixed: off
-  flowtype/no-mutable-array: off
-  flowtype/no-primitive-constructor-types: error
-  flowtype/no-types-missing-file-annotation: error
-  flowtype/no-unused-expressions: off
-  flowtype/no-weak-types: [error, { any: false }]
-  flowtype/require-compound-type-alias: off
-  flowtype/require-exact-type: off
-  flowtype/require-indexer-name: error
-  flowtype/require-inexact-type: off # checked by Flow
-  flowtype/require-parameter-type: off
-  flowtype/require-readonly-react-props: off
-  flowtype/require-return-type: off
-  flowtype/require-types-at-top: off
-  flowtype/require-valid-file-annotation:
-    [error, always, { annotationStyle: line, strict: true }]
-  flowtype/require-variable-type: off
-  flowtype/sort-keys: off
-  flowtype/spread-exact-type: off
-  flowtype/type-id-match: [error, '^[A-Z]']
-  flowtype/type-import-style: [error, declaration]
-  flowtype/use-flow-type: error
-
-  # Bellow rules are disabled because coflicts with Prettier, see:
-  # https://github.com/prettier/eslint-config-prettier/blob/master/flowtype.js
-  flowtype/arrow-parens: off
-  flowtype/boolean-style: off
-  flowtype/delimiter-dangle: off
-  flowtype/generic-spacing: off
-  flowtype/object-type-delimiter: off
-  flowtype/semi: off
-  flowtype/space-after-type-colon: off
-  flowtype/space-before-generic-bracket: off
-  flowtype/space-before-type-colon: off
-  flowtype/union-intersection-spacing: off
 
   ##############################################################################
   # `eslint-plugin-istanbul` rule list based on `v0.1.2`
@@ -491,17 +440,70 @@ rules:
   yield-star-spacing: off
 
 overrides:
+  - files: 'src/**/*.js'
+    parser: babel-eslint
+    parserOptions:
+      sourceType: module
+    plugins:
+      - flowtype
+
+    rules:
+      ##############################################################################
+      # `eslint-plugin-flowtype` rule list based on `v5.2.x`
+      # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
+      ##############################################################################
+
+      flowtype/array-style-complex-type: error
+      flowtype/array-style-simple-type: error
+      flowtype/define-flow-type: error
+      flowtype/newline-after-flow-annotation: error
+      flowtype/no-dupe-keys: error
+      flowtype/no-existential-type: off # checked by Flow
+      flowtype/no-flow-fix-me-comments: off
+      flowtype/no-mixed: off
+      flowtype/no-mutable-array: off
+      flowtype/no-primitive-constructor-types: error
+      flowtype/no-types-missing-file-annotation: off
+      flowtype/no-unused-expressions: off
+      flowtype/no-weak-types: [error, { any: false }]
+      flowtype/require-compound-type-alias: off
+      flowtype/require-exact-type: off
+      flowtype/require-indexer-name: error
+      flowtype/require-inexact-type: off # checked by Flow
+      flowtype/require-parameter-type: off
+      flowtype/require-readonly-react-props: off
+      flowtype/require-return-type: off
+      flowtype/require-types-at-top: off
+      flowtype/require-valid-file-annotation: off
+      flowtype/require-variable-type: off
+      flowtype/sort-keys: off
+      flowtype/spread-exact-type: off
+      flowtype/type-id-match: [error, '^[A-Z]']
+      flowtype/type-import-style: [error, declaration]
+      flowtype/use-flow-type: error
+
+      # Bellow rules are disabled because coflicts with Prettier, see:
+      # https://github.com/prettier/eslint-config-prettier/blob/master/flowtype.js
+      flowtype/arrow-parens: off
+      flowtype/boolean-style: off
+      flowtype/delimiter-dangle: off
+      flowtype/generic-spacing: off
+      flowtype/object-type-delimiter: off
+      flowtype/semi: off
+      flowtype/space-after-type-colon: off
+      flowtype/space-before-generic-bracket: off
+      flowtype/space-before-type-colon: off
+      flowtype/union-intersection-spacing: off
   - files: '**/*.ts'
     parser: '@typescript-eslint/parser'
     parserOptions:
+      sourceType: module
       project: ['tsconfig.json']
     plugins:
       - '@typescript-eslint'
     extends:
       - plugin:import/typescript
     rules:
-      flowtype/no-types-missing-file-annotation: off
-
       ##########################################################################
       # `@typescript-eslint/eslint-plugin` rule list based on `v3.7.x`
       ##########################################################################
@@ -645,8 +647,6 @@ overrides:
       import/no-nodejs-modules: off
       no-restricted-syntax: off
   - files: 'integrationTests/**'
-    parserOptions:
-      sourceType: script
     rules:
       node/no-unpublished-import: off
       node/no-unpublished-require: off
@@ -655,8 +655,6 @@ overrides:
       import/no-nodejs-modules: off
       no-console: off
   - files: 'resources/**'
-    parserOptions:
-      sourceType: script
     rules:
       node/no-unpublished-import: off
       node/no-unpublished-require: off

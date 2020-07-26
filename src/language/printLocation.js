@@ -1,5 +1,3 @@
-// @flow strict
-
 import type { Source } from './source';
 import type { Location } from './ast';
 import type { SourceLocation } from './location';
