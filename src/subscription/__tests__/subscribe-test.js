@@ -1,5 +1,3 @@
-// @flow strict
-
 import EventEmitter from 'events';
 
 import { expect } from 'chai';

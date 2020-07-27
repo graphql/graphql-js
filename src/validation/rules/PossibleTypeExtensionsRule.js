@@ -1,5 +1,3 @@
-// @flow strict
-
 import inspect from '../../jsutils/inspect';
 import invariant from '../../jsutils/invariant';
 import didYouMean from '../../jsutils/didYouMean';

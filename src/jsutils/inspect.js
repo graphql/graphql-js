@@ -1,5 +1,3 @@
-// @flow strict
-
 import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
 
 const MAX_ARRAY_LENGTH = 10;

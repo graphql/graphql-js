@@ -1,5 +1,3 @@
-// @flow strict
-
 import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
 
 import inspect from '../jsutils/inspect';

@@ -1,5 +1,3 @@
-// @flow strict
-
 // FIXME:
 // flowlint uninitialized-instance-property:off
 

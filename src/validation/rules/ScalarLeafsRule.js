@@ -1,5 +1,3 @@
-// @flow strict
-
 import inspect from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';

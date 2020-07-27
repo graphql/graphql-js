@@ -1,5 +1,3 @@
-// @flow strict
-
 export { validate } from './validate';
 
 export { ValidationContext } from './ValidationContext';

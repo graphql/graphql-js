@@ -1,5 +1,3 @@
-// @flow strict
-
 import invariant from './invariant';
 import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
 

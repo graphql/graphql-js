@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * Returns the first argument it receives.
  */

@@ -1,5 +1,3 @@
-// @flow strict
-
 export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 
 export {

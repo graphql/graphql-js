@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * Special inspect function to produce readable string literal for error messages in tests
  */

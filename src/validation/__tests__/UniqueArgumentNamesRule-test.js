@@ -1,5 +1,3 @@
-// @flow strict
-
 import { describe, it } from 'mocha';
 
 import { UniqueArgumentNamesRule } from '../rules/UniqueArgumentNamesRule';

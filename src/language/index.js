@@ -1,5 +1,3 @@
-// @flow strict
-
 export { Source } from './source';
 
 export { getLocation } from './location';

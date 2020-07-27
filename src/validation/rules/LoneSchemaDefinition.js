@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * @deprecated and will be removed in v16
  * Please use either:

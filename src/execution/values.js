@@ -1,5 +1,3 @@
-// @flow strict
-
 import find from '../polyfills/find';
 
 import type { ObjMap } from '../jsutils/ObjMap';

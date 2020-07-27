@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * The set of allowed kind values for AST nodes.
  */

@@ -1,5 +1,3 @@
-// @flow strict
-
 export type { Path as ResponsePath } from '../jsutils/Path';
 
 export {

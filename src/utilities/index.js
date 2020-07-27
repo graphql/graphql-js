@@ -1,5 +1,3 @@
-// @flow strict
-
 // Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.
 export { getIntrospectionQuery } from './getIntrospectionQuery';

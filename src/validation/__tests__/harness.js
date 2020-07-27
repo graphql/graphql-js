@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 
 import { parse } from '../../language/parser';
@@ -148,13 +146,16 @@ export function expectValidationErrorsWithSchema(
   schema: GraphQLSchema,
   rule: ValidationRule,
   queryStr: string,
-) {
+): any {
   const doc = parse(queryStr);
   const errors = validate(schema, doc, [rule]);
   return expect(errors);
 }
 
-export function expectValidationErrors(rule: ValidationRule, queryStr: string) {
+export function expectValidationErrors(
+  rule: ValidationRule,
+  queryStr: string,
+): any {
   return expectValidationErrorsWithSchema(testSchema, rule, queryStr);
 }
 
@@ -162,7 +163,7 @@ export function expectSDLValidationErrors(
   schema: ?GraphQLSchema,
   rule: SDLValidationRule,
   sdlStr: string,
-) {
+): any {
   const doc = parse(sdlStr);
   const errors = validateSDL(doc, schema, [rule]);
   return expect(errors);

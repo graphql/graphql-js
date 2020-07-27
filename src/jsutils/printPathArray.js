@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * Build a string describing the path.
  */

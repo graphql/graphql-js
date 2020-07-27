@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * Generator that produces all possible combinations of allowed characters.
  */

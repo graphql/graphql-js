@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * These are types which correspond to the schema.
  * They represent the shape of the data visited during field resolution.

@@ -1,5 +1,3 @@
-// @flow strict
-
 import devAssert from '../jsutils/devAssert';
 
 import { GraphQLError } from '../error/GraphQLError';

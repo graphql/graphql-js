@@ -1,5 +1,3 @@
-// @flow strict
-
 import isFinite from '../polyfills/isFinite';
 import isInteger from '../polyfills/isInteger';
 

@@ -1,5 +1,3 @@
-// @flow strict
-
 import type { ObjMap } from '../jsutils/ObjMap';
 
 import type { DocumentNode, OperationDefinitionNode } from '../language/ast';

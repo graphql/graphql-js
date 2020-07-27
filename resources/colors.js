@@ -1,5 +1,3 @@
-// @noflow
-
 'use strict';
 
 function red(str) {

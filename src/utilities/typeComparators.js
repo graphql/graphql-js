@@ -1,5 +1,3 @@
-// @flow strict
-
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLType, GraphQLCompositeType } from '../type/definition';
 import {

@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * Memoizes the provided three-argument function.
  */

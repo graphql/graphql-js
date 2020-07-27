@@ -1,5 +1,3 @@
-// @flow strict
-
 import type { ObjMap } from '../jsutils/ObjMap';
 
 declare function objectValues<T>(obj: ObjMap<T>): Array<T>;

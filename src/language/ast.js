@@ -1,5 +1,3 @@
-// @flow strict
-
 import defineInspect from '../jsutils/defineInspect';
 
 import type { Source } from './source';

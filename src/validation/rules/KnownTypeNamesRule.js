@@ -1,5 +1,3 @@
-// @flow strict
-
 import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 

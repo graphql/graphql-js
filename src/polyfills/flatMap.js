@@ -1,5 +1,3 @@
-// @flow strict
-
 declare function flatMap<T, U>(
   list: $ReadOnlyArray<T>,
   fn: (item: T, index: number) => $ReadOnlyArray<U> | U,
