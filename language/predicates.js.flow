@@ -1,5 +1,3 @@
-// @flow strict
-
 import type { ASTNode } from './ast';
 import { Kind } from './kinds';
 

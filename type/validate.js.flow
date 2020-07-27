@@ -1,5 +1,3 @@
-// @flow strict
-
 import find from '../polyfills/find';
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';

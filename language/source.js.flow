@@ -1,5 +1,3 @@
-// @flow strict
-
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
 import devAssert from '../jsutils/devAssert';

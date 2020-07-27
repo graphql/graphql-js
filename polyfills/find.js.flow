@@ -1,5 +1,3 @@
-// @flow strict
-
 declare function find<T>(
   list: $ReadOnlyArray<T>,
   predicate: (item: T) => boolean,

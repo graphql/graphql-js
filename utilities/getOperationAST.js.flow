@@ -1,5 +1,3 @@
-// @flow strict
-
 import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 

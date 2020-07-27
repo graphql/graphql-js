@@ -1,5 +1,3 @@
-// @flow strict
-
 import arrayFrom from '../polyfills/arrayFrom';
 
 import type { Path } from '../jsutils/Path';

@@ -1,5 +1,3 @@
-// @flow strict
-
 import objectValues from '../../polyfills/objectValues';
 
 import keyMap from '../../jsutils/keyMap';

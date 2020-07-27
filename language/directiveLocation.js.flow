@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * The set of allowed directive location values.
  */

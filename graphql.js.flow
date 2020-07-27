@@ -1,5 +1,3 @@
-// @flow strict
-
 import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 import isPromise from './jsutils/isPromise';
 

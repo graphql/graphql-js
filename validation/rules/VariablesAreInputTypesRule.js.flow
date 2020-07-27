@@ -1,5 +1,3 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
 
 import { print } from '../../language/printer';

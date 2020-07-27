@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * Produces the value of a block string from its parsed raw value, similar to
  * CoffeeScript's block string, Python's docstring trim or Ruby's strip_heredoc.

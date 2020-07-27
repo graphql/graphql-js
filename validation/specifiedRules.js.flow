@@ -1,5 +1,3 @@
-// @flow strict
-
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
 
