@@ -171,17 +171,27 @@ function validateDirectives(context: SchemaValidationContext): void {
     // TODO: Ensure proper locations.
 
     // Ensure the arguments are valid.
+    const knownArgNames = Object.create(null);
     for (const arg of directive.args) {
       // Ensure they are named correctly.
       validateName(context, arg);
-
+      const argName = arg.name;
       // Ensure the type is an input type.
       if (!isInputType(arg.type)) {
         context.reportError(
-          `The type of @${directive.name}(${arg.name}:) must be Input Type ` +
-            `but got: ${inspect(arg.type)}.`,
+          `The type of @${directive.name}(${argName}:) must be Input Type ` +
+          `but got: ${inspect(arg.type)}.`,
           arg.astNode,
         );
+      }
+      // Ensure the argument must have a unique name.
+      if (knownArgNames[argName]) {
+        context.reportError(
+          `There can be only one argument named "${argName}".`,
+          directive.astNode,
+        );
+      } else {
+        knownArgNames[argName] = argName;
       }
     }
   }
@@ -274,6 +284,7 @@ function validateFields(
     }
 
     // Ensure the arguments are valid
+    const knownArgNames = Object.create(null);
     for (const arg of field.args) {
       const argName = arg.name;
 
@@ -287,6 +298,16 @@ function validateFields(
             `Type but got: ${inspect(arg.type)}.`,
           arg.astNode?.type,
         );
+      }
+
+      // Ensure the argument must have a unique name.
+      if (knownArgNames[argName]) {
+        context.reportError(
+          `There can be only one argument named ${argName}.`,
+          field.astNode?.type,
+        );
+      } else {
+        knownArgNames[argName] = argName;
       }
     }
   }
