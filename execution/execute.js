@@ -280,7 +280,7 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
     if (result !== undefined) {
       results[responseName] = result;
 
-      if (!containsPromise && isPromise(result)) {
+      if (isPromise(result)) {
         containsPromise = true;
       }
     }
@@ -620,7 +620,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
     const fieldPath = addPath(path, index, undefined);
     const completedItem = completeValueCatchingError(exeContext, itemType, fieldNodes, info, fieldPath, item);
 
-    if (!containsPromise && isPromise(completedItem)) {
+    if (isPromise(completedItem)) {
       containsPromise = true;
     }
 
