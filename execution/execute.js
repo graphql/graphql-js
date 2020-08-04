@@ -299,7 +299,7 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
     if (result !== undefined) {
       results[responseName] = result;
 
-      if (!containsPromise && (0, _isPromise.default)(result)) {
+      if ((0, _isPromise.default)(result)) {
         containsPromise = true;
       }
     }
@@ -650,7 +650,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
     var fieldPath = (0, _Path.addPath)(path, index, undefined);
     var completedItem = completeValueCatchingError(exeContext, itemType, fieldNodes, info, fieldPath, item);
 
-    if (!containsPromise && (0, _isPromise.default)(completedItem)) {
+    if ((0, _isPromise.default)(completedItem)) {
       containsPromise = true;
     }
 
