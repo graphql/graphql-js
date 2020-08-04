@@ -472,7 +472,7 @@ function executeFields(
 
     if (result !== undefined) {
       results[responseName] = result;
-      if (!containsPromise && isPromise(result)) {
+      if (isPromise(result)) {
         containsPromise = true;
       }
     }
@@ -949,7 +949,7 @@ function completeListValue(
       item,
     );
 
-    if (!containsPromise && isPromise(completedItem)) {
+    if (isPromise(completedItem)) {
       containsPromise = true;
     }
 
