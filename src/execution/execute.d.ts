@@ -160,21 +160,6 @@ export function buildResolveInfo(
 ): GraphQLResolveInfo;
 
 /**
- * Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
- * function. Returns the result of resolveFn or the abrupt-return Error object.
- *
- * @internal
- */
-export function resolveFieldValueOrError(
-  exeContext: ExecutionContext,
-  fieldDef: GraphQLField<any, any>,
-  fieldNodes: ReadonlyArray<FieldNode>,
-  resolveFn: GraphQLFieldResolver<any, any>,
-  source: any,
-  info: GraphQLResolveInfo,
-): any;
-
-/**
  * If a resolveType function is not given, then a default resolve behavior is
  * used which attempts two strategies:
  *
