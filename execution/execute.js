@@ -216,8 +216,6 @@ function executeOperation(exeContext, operation, rootValue) {
   const path = undefined; // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
-  //
-  // Similar to completeValueCatchingError.
 
   try {
     const result = operation.operation === 'mutation' ? executeFieldsSerially(exeContext, type, rootValue, path, fields) : executeFields(exeContext, type, rootValue, path, fields);
@@ -429,12 +427,38 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
     return;
   }
 
+  const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
-  const info = buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path); // Get the resolve function, regardless of if its result is normal
-  // or abrupt (error).
+  const info = buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path); // Get the resolve function, regardless of if its result is normal or abrupt (error).
 
-  const result = resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, source, info);
-  return completeValueCatchingError(exeContext, fieldDef.type, fieldNodes, info, path, result);
+  try {
+    // Build a JS object of arguments from the field.arguments AST, using the
+    // variables scope to fulfill any variable references.
+    // TODO: find a way to memoize, in case this field is within a List type.
+    const args = getArgumentValues(fieldDef, fieldNodes[0], exeContext.variableValues); // The resolve function's optional third argument is a context value that
+    // is provided to every resolve function within an execution. It is commonly
+    // used to represent an authenticated user, or request-specific caches.
+
+    const contextValue = exeContext.contextValue;
+    const result = resolveFn(source, args, contextValue, info);
+    let completed;
+
+    if (isPromise(result)) {
+      completed = result.then(resolved => completeValue(exeContext, returnType, fieldNodes, info, path, resolved));
+    } else {
+      completed = completeValue(exeContext, returnType, fieldNodes, info, path, result);
+    }
+
+    if (isPromise(completed)) {
+      // Note: we don't rely on a `catch` method, but we do expect "thenable"
+      // to take a second callback for the error case.
+      return completed.then(undefined, error => handleFieldError(error, fieldNodes, path, returnType, exeContext));
+    }
+
+    return completed;
+  } catch (error) {
+    return handleFieldError(error, fieldNodes, path, returnType, exeContext);
+  }
 }
 /**
  * @internal
@@ -457,65 +481,9 @@ export function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, p
     variableValues: exeContext.variableValues
   };
 }
-/**
- * Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
- * function. Returns the result of resolveFn or the abrupt-return Error object.
- *
- * @internal
- */
-
-export function resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, source, info) {
-  try {
-    // Build a JS object of arguments from the field.arguments AST, using the
-    // variables scope to fulfill any variable references.
-    // TODO: find a way to memoize, in case this field is within a List type.
-    const args = getArgumentValues(fieldDef, fieldNodes[0], exeContext.variableValues); // The resolve function's optional third argument is a context value that
-    // is provided to every resolve function within an execution. It is commonly
-    // used to represent an authenticated user, or request-specific caches.
-
-    const contextValue = exeContext.contextValue;
-    const result = resolveFn(source, args, contextValue, info);
-    return isPromise(result) ? result.then(undefined, asErrorInstance) : result;
-  } catch (error) {
-    return asErrorInstance(error);
-  }
-} // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a
-// consistent Error interface.
-
-function asErrorInstance(error) {
-  if (error instanceof Error) {
-    return error;
-  }
-
-  return new Error('Unexpected error value: ' + inspect(error));
-} // This is a small wrapper around completeValue which detects and logs errors
-// in the execution context.
-
-
-function completeValueCatchingError(exeContext, returnType, fieldNodes, info, path, result) {
-  try {
-    let completed;
-
-    if (isPromise(result)) {
-      completed = result.then(resolved => completeValue(exeContext, returnType, fieldNodes, info, path, resolved));
-    } else {
-      completed = completeValue(exeContext, returnType, fieldNodes, info, path, result);
-    }
-
-    if (isPromise(completed)) {
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      return completed.then(undefined, error => handleFieldError(error, fieldNodes, path, returnType, exeContext));
-    }
-
-    return completed;
-  } catch (error) {
-    return handleFieldError(error, fieldNodes, path, returnType, exeContext);
-  }
-}
 
 function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
-  const error = locatedError(asErrorInstance(rawError), fieldNodes, pathToArray(path)); // If the field type is non-nullable, then it is resolved without any
+  const error = locatedError(rawError, fieldNodes, pathToArray(path)); // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
 
   if (isNonNullType(returnType)) {
@@ -617,14 +585,28 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
   const completedResults = arrayFrom(result, (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    const fieldPath = addPath(path, index, undefined);
-    const completedItem = completeValueCatchingError(exeContext, itemType, fieldNodes, info, fieldPath, item);
+    const itemPath = addPath(path, index, undefined);
 
-    if (isPromise(completedItem)) {
-      containsPromise = true;
+    try {
+      let completedItem;
+
+      if (isPromise(item)) {
+        completedItem = item.then(resolved => completeValue(exeContext, itemType, fieldNodes, info, itemPath, resolved));
+      } else {
+        completedItem = completeValue(exeContext, itemType, fieldNodes, info, itemPath, item);
+      }
+
+      if (isPromise(completedItem)) {
+        containsPromise = true; // Note: we don't rely on a `catch` method, but we do expect "thenable"
+        // to take a second callback for the error case.
+
+        return completedItem.then(undefined, error => handleFieldError(error, fieldNodes, itemPath, itemType, exeContext));
+      }
+
+      return completedItem;
+    } catch (error) {
+      return handleFieldError(error, fieldNodes, itemPath, itemType, exeContext);
     }
-
-    return completedItem;
   });
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }
