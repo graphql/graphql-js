@@ -9,7 +9,6 @@ exports.assertValidExecutionArguments = assertValidExecutionArguments;
 exports.buildExecutionContext = buildExecutionContext;
 exports.collectFields = collectFields;
 exports.buildResolveInfo = buildResolveInfo;
-exports.resolveFieldValueOrError = resolveFieldValueOrError;
 exports.getFieldDef = getFieldDef;
 exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
 
@@ -234,8 +233,6 @@ function executeOperation(exeContext, operation, rootValue) {
   var path = undefined; // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
-  //
-  // Similar to completeValueCatchingError.
 
   try {
     var result = operation.operation === 'mutation' ? executeFieldsSerially(exeContext, type, rootValue, path, fields) : executeFields(exeContext, type, rootValue, path, fields);
@@ -453,43 +450,10 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
     return;
   }
 
+  var returnType = fieldDef.type;
   var resolveFn = (_fieldDef$resolve = fieldDef.resolve) !== null && _fieldDef$resolve !== void 0 ? _fieldDef$resolve : exeContext.fieldResolver;
-  var info = buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path); // Get the resolve function, regardless of if its result is normal
-  // or abrupt (error).
+  var info = buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path); // Get the resolve function, regardless of if its result is normal or abrupt (error).
 
-  var result = resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, source, info);
-  return completeValueCatchingError(exeContext, fieldDef.type, fieldNodes, info, path, result);
-}
-/**
- * @internal
- */
-
-
-function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path) {
-  // The resolve function's optional fourth argument is a collection of
-  // information about the current execution state.
-  return {
-    fieldName: fieldDef.name,
-    fieldNodes: fieldNodes,
-    returnType: fieldDef.type,
-    parentType: parentType,
-    path: path,
-    schema: exeContext.schema,
-    fragments: exeContext.fragments,
-    rootValue: exeContext.rootValue,
-    operation: exeContext.operation,
-    variableValues: exeContext.variableValues
-  };
-}
-/**
- * Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
- * function. Returns the result of resolveFn or the abrupt-return Error object.
- *
- * @internal
- */
-
-
-function resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, source, info) {
   try {
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
@@ -500,26 +464,6 @@ function resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, s
 
     var _contextValue = exeContext.contextValue;
     var result = resolveFn(source, args, _contextValue, info);
-    return (0, _isPromise.default)(result) ? result.then(undefined, asErrorInstance) : result;
-  } catch (error) {
-    return asErrorInstance(error);
-  }
-} // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a
-// consistent Error interface.
-
-
-function asErrorInstance(error) {
-  if (error instanceof Error) {
-    return error;
-  }
-
-  return new Error('Unexpected error value: ' + (0, _inspect.default)(error));
-} // This is a small wrapper around completeValue which detects and logs errors
-// in the execution context.
-
-
-function completeValueCatchingError(exeContext, returnType, fieldNodes, info, path, result) {
-  try {
     var completed;
 
     if ((0, _isPromise.default)(result)) {
@@ -543,9 +487,30 @@ function completeValueCatchingError(exeContext, returnType, fieldNodes, info, pa
     return handleFieldError(error, fieldNodes, path, returnType, exeContext);
   }
 }
+/**
+ * @internal
+ */
+
+
+function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path) {
+  // The resolve function's optional fourth argument is a collection of
+  // information about the current execution state.
+  return {
+    fieldName: fieldDef.name,
+    fieldNodes: fieldNodes,
+    returnType: fieldDef.type,
+    parentType: parentType,
+    path: path,
+    schema: exeContext.schema,
+    fragments: exeContext.fragments,
+    rootValue: exeContext.rootValue,
+    operation: exeContext.operation,
+    variableValues: exeContext.variableValues
+  };
+}
 
 function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
-  var error = (0, _locatedError.locatedError)(asErrorInstance(rawError), fieldNodes, (0, _Path.pathToArray)(path)); // If the field type is non-nullable, then it is resolved without any
+  var error = (0, _locatedError.locatedError)(rawError, fieldNodes, (0, _Path.pathToArray)(path)); // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
 
   if ((0, _definition.isNonNullType)(returnType)) {
@@ -647,14 +612,32 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
   var completedResults = (0, _arrayFrom.default)(result, function (item, index) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    var fieldPath = (0, _Path.addPath)(path, index, undefined);
-    var completedItem = completeValueCatchingError(exeContext, itemType, fieldNodes, info, fieldPath, item);
+    var itemPath = (0, _Path.addPath)(path, index, undefined);
 
-    if ((0, _isPromise.default)(completedItem)) {
-      containsPromise = true;
+    try {
+      var completedItem;
+
+      if ((0, _isPromise.default)(item)) {
+        completedItem = item.then(function (resolved) {
+          return completeValue(exeContext, itemType, fieldNodes, info, itemPath, resolved);
+        });
+      } else {
+        completedItem = completeValue(exeContext, itemType, fieldNodes, info, itemPath, item);
+      }
+
+      if ((0, _isPromise.default)(completedItem)) {
+        containsPromise = true; // Note: we don't rely on a `catch` method, but we do expect "thenable"
+        // to take a second callback for the error case.
+
+        return completedItem.then(undefined, function (error) {
+          return handleFieldError(error, fieldNodes, itemPath, itemType, exeContext);
+        });
+      }
+
+      return completedItem;
+    } catch (error) {
+      return handleFieldError(error, fieldNodes, itemPath, itemType, exeContext);
     }
-
-    return completedItem;
   });
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }
