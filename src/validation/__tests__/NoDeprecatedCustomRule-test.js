@@ -47,7 +47,7 @@ describe('Validate: no deprecated', () => {
         }
 
         fragment UnknownFragment on UnknownType {
-          unknownField
+          deprecatedField
         }
       `);
     });
@@ -67,6 +67,151 @@ describe('Validate: no deprecated', () => {
       `).to.deep.equal([
         { message, locations: [{ line: 3, column: 11 }] },
         { message, locations: [{ line: 7, column: 11 }] },
+      ]);
+    });
+  });
+
+  describe('no deprecated arguments on fields', () => {
+    const { expectValid, expectErrors } = buildAssertion(`
+      type Query {
+        someField(
+          normalArg: String,
+          deprecatedArg: String @deprecated(reason: "Some arg reason."),
+        ): String
+      }
+    `);
+
+    it('ignores arguments that are not deprecated', () => {
+      expectValid(`
+        {
+          normalField(normalArg: "")
+        }
+      `);
+    });
+
+    it('ignores unknown arguments', () => {
+      expectValid(`
+        {
+          someField(unknownArg: "")
+          unknownField(deprecatedArg: "")
+        }
+      `);
+    });
+
+    it('reports error when a deprecated argument is used', () => {
+      expectErrors(`
+        {
+          someField(deprecatedArg: "")
+        }
+      `).to.deep.equal([
+        {
+          message:
+            'Field "Query.someField" argument "deprecatedArg" is deprecated. Some arg reason.',
+          locations: [{ line: 3, column: 21 }],
+        },
+      ]);
+    });
+  });
+
+  describe('no deprecated arguments on directives', () => {
+    const { expectValid, expectErrors } = buildAssertion(`
+      type Query {
+        someField: String
+      }
+
+      directive @someDirective(
+        normalArg: String,
+        deprecatedArg: String @deprecated(reason: "Some arg reason."),
+      ) on FIELD
+    `);
+
+    it('ignores arguments that are not deprecated', () => {
+      expectValid(`
+        {
+          someField @someDirective(normalArg: "")
+        }
+      `);
+    });
+
+    it('ignores unknown arguments', () => {
+      expectValid(`
+        {
+          someField @someDirective(unknownArg: "")
+          someField @unknownDirective(deprecatedArg: "")
+        }
+      `);
+    });
+
+    it('reports error when a deprecated argument is used', () => {
+      expectErrors(`
+        {
+          someField @someDirective(deprecatedArg: "")
+        }
+      `).to.deep.equal([
+        {
+          message:
+            'Directive "@someDirective" argument "deprecatedArg" is deprecated. Some arg reason.',
+          locations: [{ line: 3, column: 36 }],
+        },
+      ]);
+    });
+  });
+
+  describe('no deprecated input fields', () => {
+    const { expectValid, expectErrors } = buildAssertion(`
+      input InputType {
+        normalField: String
+        deprecatedField: String @deprecated(reason: "Some input field reason.")
+      }
+
+      type Query {
+        someField(someArg: InputType): String
+      }
+
+      directive @someDirective(someArg: InputType) on FIELD
+    `);
+
+    it('ignores input fields that are not deprecated', () => {
+      expectValid(`
+        {
+          someField(
+            someArg: { normalField: "" }
+          ) @someDirective(someArg: { normalField: "" })
+        }
+      `);
+    });
+
+    it('ignores unknown input fields', () => {
+      expectValid(`
+        {
+          someField(
+            someArg: { unknownField: "" }
+          )
+
+          someField(
+            unknownArg: { unknownField: "" }
+          )
+
+          unknownField(
+            unknownArg: { unknownField: "" }
+          )
+        }
+      `);
+    });
+
+    it('reports error when a deprecated input field is used', () => {
+      const message =
+        'The input field InputType.deprecatedField is deprecated. Some input field reason.';
+
+      expectErrors(`
+        {
+          someField(
+            someArg: { deprecatedField: "" }
+          ) @someDirective(someArg: { deprecatedField: "" })
+        }
+      `).to.deep.equal([
+        { message, locations: [{ line: 4, column: 24 }] },
+        { message, locations: [{ line: 5, column: 39 }] },
       ]);
     });
   });
@@ -118,14 +263,9 @@ describe('Validate: no deprecated', () => {
         ) {
           someField(enumArg: DEPRECATED_VALUE)
         }
-
-        fragment QueryFragment on Query {
-          someField(enumArg: DEPRECATED_VALUE)
-        }
       `).to.deep.equal([
         { message, locations: [{ line: 3, column: 33 }] },
         { message, locations: [{ line: 5, column: 30 }] },
-        { message, locations: [{ line: 9, column: 30 }] },
       ]);
     });
   });

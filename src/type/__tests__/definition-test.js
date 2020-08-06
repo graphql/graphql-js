@@ -282,6 +282,7 @@ describe('Type System: Objects', () => {
             description: undefined,
             type: ScalarType,
             defaultValue: undefined,
+            deprecationReason: undefined,
             extensions: undefined,
             astNode: undefined,
           },
@@ -771,6 +772,7 @@ describe('Type System: Input Objects', () => {
           description: undefined,
           type: ScalarType,
           defaultValue: undefined,
+          deprecationReason: undefined,
           extensions: undefined,
           astNode: undefined,
         },
@@ -791,6 +793,7 @@ describe('Type System: Input Objects', () => {
           type: ScalarType,
           defaultValue: undefined,
           extensions: undefined,
+          deprecationReason: undefined,
           astNode: undefined,
         },
       });
