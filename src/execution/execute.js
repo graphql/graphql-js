@@ -386,8 +386,6 @@ function executeOperation(
   // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
-  //
-  // Similar to completeValueCatchingError.
   try {
     const result =
       operation.operation === 'mutation'
@@ -643,6 +641,7 @@ function resolveField(
     return;
   }
 
+  const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(
@@ -653,67 +652,7 @@ function resolveField(
     path,
   );
 
-  // Get the resolve function, regardless of if its result is normal
-  // or abrupt (error).
-  const result = resolveFieldValueOrError(
-    exeContext,
-    fieldDef,
-    fieldNodes,
-    resolveFn,
-    source,
-    info,
-  );
-
-  return completeValueCatchingError(
-    exeContext,
-    fieldDef.type,
-    fieldNodes,
-    info,
-    path,
-    result,
-  );
-}
-
-/**
- * @internal
- */
-export function buildResolveInfo(
-  exeContext: ExecutionContext,
-  fieldDef: GraphQLField<mixed, mixed>,
-  fieldNodes: $ReadOnlyArray<FieldNode>,
-  parentType: GraphQLObjectType,
-  path: Path,
-): GraphQLResolveInfo {
-  // The resolve function's optional fourth argument is a collection of
-  // information about the current execution state.
-  return {
-    fieldName: fieldDef.name,
-    fieldNodes,
-    returnType: fieldDef.type,
-    parentType,
-    path,
-    schema: exeContext.schema,
-    fragments: exeContext.fragments,
-    rootValue: exeContext.rootValue,
-    operation: exeContext.operation,
-    variableValues: exeContext.variableValues,
-  };
-}
-
-/**
- * Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
- * function. Returns the result of resolveFn or the abrupt-return Error object.
- *
- * @internal
- */
-export function resolveFieldValueOrError(
-  exeContext: ExecutionContext,
-  fieldDef: GraphQLField<mixed, mixed>,
-  fieldNodes: $ReadOnlyArray<FieldNode>,
-  resolveFn: GraphQLFieldResolver<mixed, mixed>,
-  source: mixed,
-  info: GraphQLResolveInfo,
-): Error | mixed {
+  // Get the resolve function, regardless of if its result is normal or abrupt (error).
   try {
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
@@ -730,32 +669,7 @@ export function resolveFieldValueOrError(
     const contextValue = exeContext.contextValue;
 
     const result = resolveFn(source, args, contextValue, info);
-    return isPromise(result) ? result.then(undefined, asErrorInstance) : result;
-  } catch (error) {
-    return asErrorInstance(error);
-  }
-}
 
-// Sometimes a non-error is thrown, wrap it as an Error instance to ensure a
-// consistent Error interface.
-function asErrorInstance(error: mixed): Error {
-  if (error instanceof Error) {
-    return error;
-  }
-  return new Error('Unexpected error value: ' + inspect(error));
-}
-
-// This is a small wrapper around completeValue which detects and logs errors
-// in the execution context.
-function completeValueCatchingError(
-  exeContext: ExecutionContext,
-  returnType: GraphQLOutputType,
-  fieldNodes: $ReadOnlyArray<FieldNode>,
-  info: GraphQLResolveInfo,
-  path: Path,
-  result: mixed,
-): PromiseOrValue<mixed> {
-  try {
     let completed;
     if (isPromise(result)) {
       completed = result.then((resolved) =>
@@ -785,12 +699,34 @@ function completeValueCatchingError(
   }
 }
 
-function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
-  const error = locatedError(
-    asErrorInstance(rawError),
+/**
+ * @internal
+ */
+export function buildResolveInfo(
+  exeContext: ExecutionContext,
+  fieldDef: GraphQLField<mixed, mixed>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
+  parentType: GraphQLObjectType,
+  path: Path,
+): GraphQLResolveInfo {
+  // The resolve function's optional fourth argument is a collection of
+  // information about the current execution state.
+  return {
+    fieldName: fieldDef.name,
     fieldNodes,
-    pathToArray(path),
-  );
+    returnType: fieldDef.type,
+    parentType,
+    path,
+    schema: exeContext.schema,
+    fragments: exeContext.fragments,
+    rootValue: exeContext.rootValue,
+    operation: exeContext.operation,
+    variableValues: exeContext.variableValues,
+  };
+}
+
+function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
+  const error = locatedError(rawError, fieldNodes, pathToArray(path));
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
@@ -939,21 +875,49 @@ function completeListValue(
   const completedResults = arrayFrom(result, (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    const fieldPath = addPath(path, index, undefined);
-    const completedItem = completeValueCatchingError(
-      exeContext,
-      itemType,
-      fieldNodes,
-      info,
-      fieldPath,
-      item,
-    );
+    const itemPath = addPath(path, index, undefined);
+    try {
+      let completedItem;
+      if (isPromise(item)) {
+        completedItem = item.then((resolved) =>
+          completeValue(
+            exeContext,
+            itemType,
+            fieldNodes,
+            info,
+            itemPath,
+            resolved,
+          ),
+        );
+      } else {
+        completedItem = completeValue(
+          exeContext,
+          itemType,
+          fieldNodes,
+          info,
+          itemPath,
+          item,
+        );
+      }
 
-    if (isPromise(completedItem)) {
-      containsPromise = true;
+      if (isPromise(completedItem)) {
+        containsPromise = true;
+        // Note: we don't rely on a `catch` method, but we do expect "thenable"
+        // to take a second callback for the error case.
+        return completedItem.then(undefined, (error) =>
+          handleFieldError(error, fieldNodes, itemPath, itemType, exeContext),
+        );
+      }
+      return completedItem;
+    } catch (error) {
+      return handleFieldError(
+        error,
+        fieldNodes,
+        itemPath,
+        itemType,
+        exeContext,
+      );
     }
-
-    return completedItem;
   });
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
