@@ -28,18 +28,19 @@ const rejected = Promise.reject.bind(Promise);
  */
 function check(testType: GraphQLOutputType, testData: mixed, expected: mixed) {
   return async () => {
-    const dataType = new GraphQLObjectType({
-      name: 'DataType',
-      fields: () => ({
-        test: { type: testType },
-        nest: { type: dataType },
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: () => ({
+          listField: { type: testType },
+        }),
       }),
     });
 
     const response = await execute({
-      schema: new GraphQLSchema({ query: dataType }),
-      document: parse('{ nest { test } }'),
-      rootValue: { nest: { test: testData } },
+      schema,
+      document: parse('{ listField }'),
+      rootValue: { listField: testData },
     });
     expect(response).to.deep.equal(expected);
   };
@@ -51,7 +52,7 @@ describe('Execute: Accepts any iterable as list value', () => {
     check(
       GraphQLList(GraphQLString),
       new Set(['apple', 'banana', 'apple', 'coconut']),
-      { data: { nest: { test: ['apple', 'banana', 'coconut'] } } },
+      { data: { listField: ['apple', 'banana', 'coconut'] } },
     ),
   );
 
@@ -64,7 +65,7 @@ describe('Execute: Accepts any iterable as list value', () => {
   it(
     'Accepts an Generator function as a List value',
     check(GraphQLList(GraphQLString), yieldItems(), {
-      data: { nest: { test: ['one', '2', 'true'] } },
+      data: { listField: ['one', '2', 'true'] },
     }),
   );
 
@@ -75,20 +76,20 @@ describe('Execute: Accepts any iterable as list value', () => {
   it(
     'Accepts function arguments as a List value',
     check(GraphQLList(GraphQLString), getArgs('one', 'two'), {
-      data: { nest: { test: ['one', 'two'] } },
+      data: { listField: ['one', 'two'] },
     }),
   );
 
   it(
     'Does not accept (Iterable) String-literal as a List value',
     check(GraphQLList(GraphQLString), 'Singular', {
-      data: { nest: { test: null } },
+      data: { listField: null },
       errors: [
         {
           message:
-            'Expected Iterable, but did not find one for field "DataType.test".',
-          locations: [{ line: 1, column: 10 }],
-          path: ['nest', 'test'],
+            'Expected Iterable, but did not find one for field "Query.listField".',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField'],
         },
       ],
     }),
@@ -102,44 +103,44 @@ describe('Execute: Handles list nullability', () => {
     describe('Array<T>', () => {
       it(
         'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
+        check(type, [1, 2], { data: { listField: [1, 2] } }),
       );
 
       it(
         'Contains null',
-        check(type, [1, null, 2], { data: { nest: { test: [1, null, 2] } } }),
+        check(type, [1, null, 2], { data: { listField: [1, null, 2] } }),
       );
 
-      it('Returns null', check(type, null, { data: { nest: { test: null } } }));
+      it('Returns null', check(type, null, { data: { listField: null } }));
     });
 
     describe('Promise<Array<T>>', () => {
       it(
         'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
+        check(type, resolved([1, 2]), { data: { listField: [1, 2] } }),
       );
 
       it(
         'Contains null',
         check(type, resolved([1, null, 2]), {
-          data: { nest: { test: [1, null, 2] } },
+          data: { listField: [1, null, 2] },
         }),
       );
 
       it(
         'Returns null',
-        check(type, resolved(null), { data: { nest: { test: null } } }),
+        check(type, resolved(null), { data: { listField: null } }),
       );
 
       it(
         'Rejected',
         check(type, () => rejected(new Error('bad')), {
-          data: { nest: { test: null } },
+          data: { listField: null },
           errors: [
             {
               message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField'],
             },
           ],
         }),
@@ -150,14 +151,14 @@ describe('Execute: Handles list nullability', () => {
       it(
         'Contains values',
         check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
+          data: { listField: [1, 2] },
         }),
       );
 
       it(
         'Contains null',
         check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: { test: [1, null, 2] } },
+          data: { listField: [1, null, 2] },
         }),
       );
 
@@ -167,12 +168,12 @@ describe('Execute: Handles list nullability', () => {
           type,
           () => [resolved(1), rejected(new Error('bad')), resolved(2)],
           {
-            data: { nest: { test: [1, null, 2] } },
+            data: { listField: [1, null, 2] },
             errors: [
               {
                 message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
+                locations: [{ line: 1, column: 3 }],
+                path: ['listField', 1],
               },
             ],
           },
@@ -187,24 +188,24 @@ describe('Execute: Handles list nullability', () => {
     describe('Array<T>', () => {
       it(
         'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
+        check(type, [1, 2], { data: { listField: [1, 2] } }),
       );
 
       it(
         'Contains null',
-        check(type, [1, null, 2], { data: { nest: { test: [1, null, 2] } } }),
+        check(type, [1, null, 2], { data: { listField: [1, null, 2] } }),
       );
 
       it(
         'Returns null',
         check(type, null, {
-          data: { nest: null },
+          data: null,
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField'],
             },
           ],
         }),
@@ -214,26 +215,26 @@ describe('Execute: Handles list nullability', () => {
     describe('Promise<Array<T>>', () => {
       it(
         'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
+        check(type, resolved([1, 2]), { data: { listField: [1, 2] } }),
       );
 
       it(
         'Contains null',
         check(type, resolved([1, null, 2]), {
-          data: { nest: { test: [1, null, 2] } },
+          data: { listField: [1, null, 2] },
         }),
       );
 
       it(
         'Returns null',
         check(type, resolved(null), {
-          data: { nest: null },
+          data: null,
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField'],
             },
           ],
         }),
@@ -242,12 +243,12 @@ describe('Execute: Handles list nullability', () => {
       it(
         'Rejected',
         check(type, () => rejected(new Error('bad')), {
-          data: { nest: null },
+          data: null,
           errors: [
             {
               message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField'],
             },
           ],
         }),
@@ -258,14 +259,14 @@ describe('Execute: Handles list nullability', () => {
       it(
         'Contains values',
         check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
+          data: { listField: [1, 2] },
         }),
       );
 
       it(
         'Contains null',
         check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: { test: [1, null, 2] } },
+          data: { listField: [1, null, 2] },
         }),
       );
 
@@ -275,12 +276,12 @@ describe('Execute: Handles list nullability', () => {
           type,
           () => [resolved(1), rejected(new Error('bad')), resolved(2)],
           {
-            data: { nest: { test: [1, null, 2] } },
+            data: { listField: [1, null, 2] },
             errors: [
               {
                 message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
+                locations: [{ line: 1, column: 3 }],
+                path: ['listField', 1],
               },
             ],
           },
@@ -295,43 +296,43 @@ describe('Execute: Handles list nullability', () => {
     describe('Array<T>', () => {
       it(
         'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
+        check(type, [1, 2], { data: { listField: [1, 2] } }),
       );
 
       it(
         'Contains null',
         check(type, [1, null, 2], {
-          data: { nest: { test: null } },
+          data: { listField: null },
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField', 1],
             },
           ],
         }),
       );
 
-      it('Returns null', check(type, null, { data: { nest: { test: null } } }));
+      it('Returns null', check(type, null, { data: { listField: null } }));
     });
 
     describe('Promise<Array<T>>', () => {
       it(
         'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
+        check(type, resolved([1, 2]), { data: { listField: [1, 2] } }),
       );
 
       it(
         'Contains null',
         check(type, resolved([1, null, 2]), {
-          data: { nest: { test: null } },
+          data: { listField: null },
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField', 1],
             },
           ],
         }),
@@ -339,18 +340,18 @@ describe('Execute: Handles list nullability', () => {
 
       it(
         'Returns null',
-        check(type, resolved(null), { data: { nest: { test: null } } }),
+        check(type, resolved(null), { data: { listField: null } }),
       );
 
       it(
         'Rejected',
         check(type, () => rejected(new Error('bad')), {
-          data: { nest: { test: null } },
+          data: { listField: null },
           errors: [
             {
               message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField'],
             },
           ],
         }),
@@ -361,20 +362,20 @@ describe('Execute: Handles list nullability', () => {
       it(
         'Contains values',
         check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
+          data: { listField: [1, 2] },
         }),
       );
 
       it(
         'Contains null',
         check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: { test: null } },
+          data: { listField: null },
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField', 1],
             },
           ],
         }),
@@ -386,12 +387,12 @@ describe('Execute: Handles list nullability', () => {
           type,
           () => [resolved(1), rejected(new Error('bad')), resolved(2)],
           {
-            data: { nest: { test: null } },
+            data: { listField: null },
             errors: [
               {
                 message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
+                locations: [{ line: 1, column: 3 }],
+                path: ['listField', 1],
               },
             ],
           },
@@ -406,19 +407,19 @@ describe('Execute: Handles list nullability', () => {
     describe('Array<T>', () => {
       it(
         'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
+        check(type, [1, 2], { data: { listField: [1, 2] } }),
       );
 
       it(
         'Contains null',
         check(type, [1, null, 2], {
-          data: { nest: null },
+          data: null,
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField', 1],
             },
           ],
         }),
@@ -427,13 +428,13 @@ describe('Execute: Handles list nullability', () => {
       it(
         'Returns null',
         check(type, null, {
-          data: { nest: null },
+          data: null,
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField'],
             },
           ],
         }),
@@ -443,19 +444,19 @@ describe('Execute: Handles list nullability', () => {
     describe('Promise<Array<T>>', () => {
       it(
         'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
+        check(type, resolved([1, 2]), { data: { listField: [1, 2] } }),
       );
 
       it(
         'Contains null',
         check(type, resolved([1, null, 2]), {
-          data: { nest: null },
+          data: null,
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField', 1],
             },
           ],
         }),
@@ -464,13 +465,13 @@ describe('Execute: Handles list nullability', () => {
       it(
         'Returns null',
         check(type, resolved(null), {
-          data: { nest: null },
+          data: null,
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField'],
             },
           ],
         }),
@@ -479,12 +480,12 @@ describe('Execute: Handles list nullability', () => {
       it(
         'Rejected',
         check(type, () => rejected(new Error('bad')), {
-          data: { nest: null },
+          data: null,
           errors: [
             {
               message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField'],
             },
           ],
         }),
@@ -495,20 +496,20 @@ describe('Execute: Handles list nullability', () => {
       it(
         'Contains values',
         check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
+          data: { listField: [1, 2] },
         }),
       );
 
       it(
         'Contains null',
         check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: null },
+          data: null,
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
+                'Cannot return null for non-nullable field Query.listField.',
+              locations: [{ line: 1, column: 3 }],
+              path: ['listField', 1],
             },
           ],
         }),
@@ -520,12 +521,12 @@ describe('Execute: Handles list nullability', () => {
           type,
           () => [resolved(1), rejected(new Error('bad')), resolved(2)],
           {
-            data: { nest: null },
+            data: null,
             errors: [
               {
                 message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
+                locations: [{ line: 1, column: 3 }],
+                path: ['listField', 1],
               },
             ],
           },
