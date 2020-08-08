@@ -3,9 +3,9 @@ import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
 
-import { execute } from '../execute';
-
 import { buildSchema } from '../../utilities/buildASTSchema';
+
+import { execute } from '../execute';
 
 describe('Execute: Accepts any iterable as list value', () => {
   function complete(rootValue: mixed) {
@@ -66,555 +66,158 @@ describe('Execute: Accepts any iterable as list value', () => {
 });
 
 describe('Execute: Handles list nullability', () => {
-  describe('[T]', () => {
-    function complete(rootValue: mixed) {
-      return execute({
-        schema: buildSchema('type Query { listField: [Int] }'),
-        document: parse('{ listField }'),
-        rootValue,
-      });
+  async function complete({ listField, as }) {
+    const schema = buildSchema(`type Query { listField: ${as} }`);
+    const document = parse('{ listField }');
+
+    const result = await executeQuery(listField);
+    // Promise<Array<T>> === Array<T>
+    expect(await executeQuery(promisify(listField))).to.deep.equal(result);
+    if (Array.isArray(listField)) {
+      const listOfPromises = listField.map(promisify);
+
+      // Array<Promise<T>> === Array<T>
+      expect(await executeQuery(listOfPromises)).to.deep.equal(result);
+      // Promise<Array<Promise<T>>> === Array<T>
+      expect(await executeQuery(promisify(listOfPromises))).to.deep.equal(
+        result,
+      );
+    }
+    return result;
+
+    function executeQuery(listValue) {
+      return execute({ schema, document, rootValue: { listField: listValue } });
     }
 
-    describe('Array<T>', () => {
-      it('Contains values', async () => {
-        const listField = [1, 2];
+    function promisify(value: mixed): Promise<mixed> {
+      return value instanceof Error
+        ? Promise.reject(value)
+        : Promise.resolve(value);
+    }
+  }
 
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
+  it('Contains values', async () => {
+    const listField = [1, 2];
 
-      it('Contains null', async () => {
-        const listField = [1, null, 2];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, null, 2] },
-        });
-      });
-
-      it('Returns null', async () => {
-        const listField = null;
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-        });
-      });
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: [1, 2] },
     });
-
-    describe('Promise<Array<T>>', () => {
-      it('Contains values', async () => {
-        const listField = Promise.resolve([1, 2]);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = Promise.resolve([1, null, 2]);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, null, 2] },
-        });
-      });
-
-      it('Returns null', async () => {
-        const listField = Promise.resolve(null);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-        });
-      });
-
-      it('Rejected', async () => {
-        const listField = Promise.reject(new Error('bad'));
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField'],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: { listField: [1, 2] },
     });
-
-    describe('Array<Promise<T>>', () => {
-      it('Contains values', async () => {
-        const listField = [Promise.resolve(1), Promise.resolve(2)];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = [
-          Promise.resolve(1),
-          Promise.resolve(null),
-          Promise.resolve(2),
-        ];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, null, 2] },
-        });
-      });
-
-      it('Contains reject', async () => {
-        const listField = [
-          Promise.resolve(1),
-          Promise.reject(new Error('bad')),
-          Promise.resolve(2),
-        ];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, null, 2] },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: [1, 2] },
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: { listField: [1, 2] },
     });
   });
 
-  describe('[T]!', () => {
-    function complete(rootValue: mixed) {
-      return execute({
-        schema: buildSchema('type Query { listField: [Int]! }'),
-        document: parse('{ listField }'),
-        rootValue,
-      });
-    }
+  it('Contains null', async () => {
+    const listField = [1, null, 2];
+    const errors = [
+      {
+        message: 'Cannot return null for non-nullable field Query.listField.',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField', 1],
+      },
+    ];
 
-    describe('Array<T>', () => {
-      it('Contains values', async () => {
-        const listField = [1, 2];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = [1, null, 2];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, null, 2] },
-        });
-      });
-
-      it('Returns null', async () => {
-        const listField = null;
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField'],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: [1, null, 2] },
     });
-
-    describe('Promise<Array<T>>', () => {
-      it('Contains values', async () => {
-        const listField = Promise.resolve([1, 2]);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = Promise.resolve([1, null, 2]);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, null, 2] },
-        });
-      });
-
-      it('Returns null', async () => {
-        const listField = Promise.resolve(null);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField'],
-            },
-          ],
-        });
-      });
-
-      it('Rejected', async () => {
-        const listField = Promise.reject(new Error('bad'));
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField'],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: { listField: [1, null, 2] },
     });
-
-    describe('Array<Promise<T>>', () => {
-      it('Contains values', async () => {
-        const listField = [Promise.resolve(1), Promise.resolve(2)];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = [
-          Promise.resolve(1),
-          Promise.resolve(null),
-          Promise.resolve(2),
-        ];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, null, 2] },
-        });
-      });
-
-      it('Contains reject', async () => {
-        const listField = [
-          Promise.resolve(1),
-          Promise.reject(new Error('bad')),
-          Promise.resolve(2),
-        ];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, null, 2] },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: null },
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: null,
+      errors,
     });
   });
 
-  describe('[T!]', () => {
-    function complete(rootValue: mixed) {
-      return execute({
-        schema: buildSchema('type Query { listField: [Int!] }'),
-        document: parse('{ listField }'),
-        rootValue,
-      });
-    }
+  it('Returns null', async () => {
+    const listField = null;
+    const errors = [
+      {
+        message: 'Cannot return null for non-nullable field Query.listField.',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField'],
+      },
+    ];
 
-    describe('Array<T>', () => {
-      it('Contains values', async () => {
-        const listField = [1, 2];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = [1, null, 2];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
-
-      it('Returns null', async () => {
-        const listField = null;
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-        });
-      });
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: null },
     });
-
-    describe('Promise<Array<T>>', () => {
-      it('Contains values', async () => {
-        const listField = Promise.resolve([1, 2]);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = Promise.resolve([1, null, 2]);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
-
-      it('Returns null', async () => {
-        const listField = Promise.resolve(null);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-        });
-      });
-
-      it('Rejected', async () => {
-        const listField = Promise.reject(new Error('bad'));
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField'],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: null,
+      errors,
     });
-
-    describe('Array<Promise<T>>', () => {
-      it('Contains values', async () => {
-        const listField = [Promise.resolve(1), Promise.resolve(2)];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = [
-          Promise.resolve(1),
-          Promise.resolve(null),
-          Promise.resolve(2),
-        ];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
-
-      it('Contains reject', async () => {
-        const listField = [
-          Promise.resolve(1),
-          Promise.reject(new Error('bad')),
-          Promise.resolve(2),
-        ];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: null },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: null },
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: null,
+      errors,
     });
   });
 
-  describe('[T!]!', () => {
-    function complete(rootValue: mixed) {
-      return execute({
-        schema: buildSchema('type Query { listField: [Int!]! }'),
-        document: parse('{ listField }'),
-        rootValue,
-      });
-    }
+  it('Contains error', async () => {
+    const listField = [1, new Error('bad'), 2];
+    const errors = [
+      {
+        message: 'bad',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField', 1],
+      },
+    ];
 
-    describe('Array<T>', () => {
-      it('Contains values', async () => {
-        const listField = [1, 2];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = [1, null, 2];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
-
-      it('Returns null', async () => {
-        const listField = null;
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField'],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: [1, null, 2] },
+      errors,
     });
-
-    describe('Promise<Array<T>>', () => {
-      it('Contains values', async () => {
-        const listField = Promise.resolve([1, 2]);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = Promise.resolve([1, null, 2]);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
-
-      it('Returns null', async () => {
-        const listField = Promise.resolve(null);
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField'],
-            },
-          ],
-        });
-      });
-
-      it('Rejected', async () => {
-        const listField = Promise.reject(new Error('bad'));
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField'],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: { listField: [1, null, 2] },
+      errors,
     });
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: null },
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: null,
+      errors,
+    });
+  });
 
-    describe('Array<Promise<T>>', () => {
-      it('Contains values', async () => {
-        const listField = [Promise.resolve(1), Promise.resolve(2)];
+  it('Results in error', async () => {
+    const listField = new Error('bad');
+    const errors = [
+      {
+        message: 'bad',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField'],
+      },
+    ];
 
-        expect(await complete({ listField })).to.deep.equal({
-          data: { listField: [1, 2] },
-        });
-      });
-
-      it('Contains null', async () => {
-        const listField = [
-          Promise.resolve(1),
-          Promise.resolve(null),
-          Promise.resolve(2),
-        ];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field Query.listField.',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
-
-      it('Contains reject', async () => {
-        const listField = [
-          Promise.resolve(1),
-          Promise.reject(new Error('bad')),
-          Promise.resolve(2),
-        ];
-
-        expect(await complete({ listField })).to.deep.equal({
-          data: null,
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 3 }],
-              path: ['listField', 1],
-            },
-          ],
-        });
-      });
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: null },
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: null,
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: null },
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: null,
+      errors,
     });
   });
 });
