@@ -144,7 +144,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.5.x`
+  # ESLint builtin rules list based on `v7.6.x`
   ##############################################################################
 
   # Possible Errors
@@ -505,7 +505,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v3.7.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v3.9.x`
       ##########################################################################
 
       # Supported Rules
@@ -561,6 +561,7 @@ overrides:
       '@typescript-eslint/no-unused-vars-experimental': off
       '@typescript-eslint/no-var-requires': error
       '@typescript-eslint/prefer-as-const': off # TODO consider
+      '@typescript-eslint/prefer-enum-initializers': off # TODO consider
       '@typescript-eslint/prefer-for-of': off # TODO switch to error after TS migration
       '@typescript-eslint/prefer-function-type': error
       '@typescript-eslint/prefer-includes': off # TODO switch to error after IE11 drop
