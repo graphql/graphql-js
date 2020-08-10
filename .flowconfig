@@ -16,7 +16,6 @@ untyped-import=error
 unclear-type=off
 deprecated-type=error
 deprecated-utility=error
-dynamic-export=off
 unsafe-getters-setters=error
 unnecessary-optional-chain=error
 unnecessary-invariant=error
@@ -41,4 +40,4 @@ experimental.const_params=true
 include_warnings=true
 
 [version]
-^0.130.0
+^0.131.0
