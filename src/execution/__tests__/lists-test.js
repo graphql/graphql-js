@@ -62,6 +62,39 @@ describe('Execute: Accepts any iterable as list value', () => {
       ],
     });
   });
+
+  it('Accepts an AsyncGenerator function as a List value', async () => {
+    async function* yieldAsyncItems() {
+      yield await 'two';
+      yield await 4;
+      yield await false;
+    }
+    const listField = yieldAsyncItems();
+
+    expect(await complete({ listField })).to.deep.equal({
+      data: { listField: ['two', '4', 'false'] },
+    });
+  });
+
+  it('Handles an AsyncGenerator function that throws', async () => {
+    async function* yieldAsyncItemsError() {
+      yield await 'two';
+      yield await 4;
+      throw new Error('bad');
+    }
+    const listField = yieldAsyncItemsError();
+
+    expect(await complete({ listField })).to.deep.equal({
+      data: { listField: ['two', '4', null] },
+      errors: [
+        {
+          message: 'bad',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField', 2],
+        },
+      ],
+    });
+  });
 });
 
 describe('Execute: Handles list nullability', () => {
