@@ -55,8 +55,19 @@ export function parseType(source, options) {
   parser.expectToken(TokenKind.EOF);
   return type;
 }
+/**
+ * This class is exported only to assist people in implementing their own parsers
+ * without duplicating too much code and should be used only as last resort for cases
+ * such as experimental syntax or if certain features could not be contributed upstream.
+ *
+ * It is still part of the internal API and is versioned, so any changes to it are never
+ * considered breaking changes. If you still need to support multiple versions of the
+ * library, please use the `versionInfo` variable for version detection.
+ *
+ * @internal
+ */
 
-var Parser = /*#__PURE__*/function () {
+export var Parser = /*#__PURE__*/function () {
   function Parser(source, options) {
     var sourceObj = typeof source === 'string' ? new Source(source) : source;
     sourceObj instanceof Source || devAssert(0, "Must provide Source. Received: ".concat(inspect(sourceObj), "."));
@@ -1527,7 +1538,6 @@ var Parser = /*#__PURE__*/function () {
 /**
  * A helper function to describe a token as a string for debugging
  */
-
 
 function getTokenDesc(token) {
   var value = token.value;
