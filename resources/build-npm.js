@@ -57,14 +57,16 @@ function buildPackageJSON() {
   packageJSON.engines = packageJSON.engines_on_npm;
   delete packageJSON.engines_on_npm;
 
-  const versionJS = require('../npmDist/version.js');
-  assert(
-    versionJS.version === packageJSON.version,
-    'Version in package.json and version.js should match',
-  );
+  const { version } = packageJSON;
+  const versionMatch = /^\d+\.\d+\.\d+-?(.*)?$/.exec(version);
+  if (!versionMatch) {
+    throw new Error('Version does not match semver spec: ' + version);
+  }
 
-  if (versionJS.preReleaseTag != null) {
-    const [tag] = versionJS.preReleaseTag.split('.');
+  const [, preReleaseTag] = versionMatch;
+
+  if (preReleaseTag != null) {
+    const [tag] = preReleaseTag.split('.');
     assert(['alpha', 'beta', 'rc'].includes(tag), `"${tag}" tag is supported.`);
 
     assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');

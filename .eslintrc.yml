@@ -639,21 +639,18 @@ overrides:
       '@typescript-eslint/semi': off
       '@typescript-eslint/space-before-function-paren': off
       '@typescript-eslint/type-annotation-spacing': off
-  - files: '**/__*__/**'
-    rules:
-      node/no-unpublished-import: off
-      node/no-unpublished-require: off
-      import/no-restricted-paths: off
-      import/no-extraneous-dependencies: [error, { devDependencies: true }]
-      import/no-nodejs-modules: off
-      no-restricted-syntax: off
-  - files: 'integrationTests/**'
+  - files: ['src/**/__*__/**', 'integrationTests/**']
     rules:
       node/no-unpublished-import: off
       node/no-unpublished-require: off
       node/no-sync: off
+      import/no-restricted-paths: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
+      no-restricted-syntax: off
+  - files: 'integrationTests/*/**'
+    rules:
+      node/no-missing-require: off
       no-console: off
   - files: 'resources/**'
     rules:

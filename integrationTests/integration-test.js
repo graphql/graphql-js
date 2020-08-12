@@ -29,4 +29,12 @@ describe('Integration Tests', () => {
     exec('npm install --silent', { cwd });
     exec('npm test', { cwd });
   }).timeout(40000);
+
+  it('Should work on all supported node versions', () => {
+    exec(`cp -R ${path.join(__dirname, 'node')} ${tmpDir}`);
+
+    const cwd = path.join(tmpDir, 'node');
+    exec('npm install', { cwd });
+    exec('npm test', { cwd });
+  }).timeout(40000);
 });
