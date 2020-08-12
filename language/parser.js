@@ -55,8 +55,19 @@ export function parseType(source, options) {
   parser.expectToken(TokenKind.EOF);
   return type;
 }
+/**
+ * This class is exported only to assist people in implementing their own parsers
+ * without duplicating too much code and should be used only as last resort for cases
+ * such as experimental syntax or if certain features could not be contributed upstream.
+ *
+ * It is still part of the internal API and is versioned, so any changes to it are never
+ * considered breaking changes. If you still need to support multiple versions of the
+ * library, please use the `versionInfo` variable for version detection.
+ *
+ * @internal
+ */
 
-class Parser {
+export class Parser {
   constructor(source, options) {
     const sourceObj = typeof source === 'string' ? new Source(source) : source;
     sourceObj instanceof Source || devAssert(0, `Must provide Source. Received: ${inspect(sourceObj)}.`);
@@ -1508,7 +1519,6 @@ class Parser {
 /**
  * A helper function to describe a token as a string for debugging
  */
-
 
 function getTokenDesc(token) {
   const value = token.value;
