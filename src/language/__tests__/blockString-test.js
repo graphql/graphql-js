@@ -127,6 +127,11 @@ describe('getBlockStringIndentation', () => {
 });
 
 describe('printBlockString', () => {
+  it('do not escape characters', () => {
+    const str = '" \\ / \b \f \n \r \t';
+    expect(printBlockString(str)).to.equal('"""\n' + str + '\n"""');
+  });
+
   it('by default print block strings as single line', () => {
     const str = 'one liner';
     expect(printBlockString(str)).to.equal('"""one liner"""');
