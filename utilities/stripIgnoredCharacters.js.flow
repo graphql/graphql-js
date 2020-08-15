@@ -107,8 +107,7 @@ function dedentBlockString(blockStr) {
   const rawStr = blockStr.slice(3, -3);
   let body = dedentBlockStringValue(rawStr);
 
-  const lines = body.split(/\r\n|[\n\r]/g);
-  if (getBlockStringIndentation(lines) > 0) {
+  if (getBlockStringIndentation(body) > 0) {
     body = '\n' + body;
   }
 

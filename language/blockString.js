@@ -19,7 +19,7 @@ function dedentBlockStringValue(rawString) {
   // Expand a block string's raw value into independent lines.
   var lines = rawString.split(/\r\n|[\n\r]/g); // Remove common indentation from all lines but first.
 
-  var commonIndent = getBlockStringIndentation(lines);
+  var commonIndent = getBlockStringIndentation(rawString);
 
   if (commonIndent !== 0) {
     for (var i = 1; i < lines.length; i++) {
@@ -28,57 +28,78 @@ function dedentBlockStringValue(rawString) {
   } // Remove leading and trailing blank lines.
 
 
-  while (lines.length > 0 && isBlank(lines[0])) {
-    lines.shift();
+  var startLine = 0;
+
+  while (startLine < lines.length && isBlank(lines[startLine])) {
+    ++startLine;
   }
 
-  while (lines.length > 0 && isBlank(lines[lines.length - 1])) {
-    lines.pop();
+  var endLine = lines.length;
+
+  while (endLine > startLine && isBlank(lines[endLine - 1])) {
+    --endLine;
   } // Return a string of the lines joined with U+000A.
 
 
-  return lines.join('\n');
+  return lines.slice(startLine, endLine).join('\n');
+}
+
+function isBlank(str) {
+  for (var i = 0; i < str.length; ++i) {
+    if (str[i] !== ' ' && str[i] !== '\t') {
+      return false;
+    }
+  }
+
+  return true;
 }
 /**
  * @internal
  */
 
 
-function getBlockStringIndentation(lines) {
+function getBlockStringIndentation(value) {
+  var _commonIndent;
+
+  var isFirstLine = true;
+  var isEmptyLine = true;
+  var indent = 0;
   var commonIndent = null;
 
-  for (var i = 1; i < lines.length; i++) {
-    var line = lines[i];
-    var indent = leadingWhitespace(line);
+  for (var i = 0; i < value.length; ++i) {
+    switch (value.charCodeAt(i)) {
+      case 13:
+        //  \r
+        if (value.charCodeAt(i + 1) === 10) {
+          ++i; // skip \r\n as one symbol
+        }
 
-    if (indent === line.length) {
-      continue; // skip empty lines
-    }
+      // falls through
 
-    if (commonIndent === null || indent < commonIndent) {
-      commonIndent = indent;
-
-      if (commonIndent === 0) {
+      case 10:
+        //  \n
+        isFirstLine = false;
+        isEmptyLine = true;
+        indent = 0;
         break;
-      }
+
+      case 9: //   \t
+
+      case 32:
+        //  <space>
+        ++indent;
+        break;
+
+      default:
+        if (isEmptyLine && !isFirstLine && (commonIndent === null || indent < commonIndent)) {
+          commonIndent = indent;
+        }
+
+        isEmptyLine = false;
     }
   }
 
-  return commonIndent === null ? 0 : commonIndent;
-}
-
-function leadingWhitespace(str) {
-  var i = 0;
-
-  while (i < str.length && (str[i] === ' ' || str[i] === '\t')) {
-    i++;
-  }
-
-  return i;
-}
-
-function isBlank(str) {
-  return leadingWhitespace(str) === str.length;
+  return (_commonIndent = commonIndent) !== null && _commonIndent !== void 0 ? _commonIndent : 0;
 }
 /**
  * Print a block string in the indented block form by adding a leading and

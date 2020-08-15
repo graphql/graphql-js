@@ -116,9 +116,8 @@ function dedentBlockString(blockStr) {
   // skip leading and trailing triple quotations
   var rawStr = blockStr.slice(3, -3);
   var body = (0, _blockString.dedentBlockStringValue)(rawStr);
-  var lines = body.split(/\r\n|[\n\r]/g);
 
-  if ((0, _blockString.getBlockStringIndentation)(lines) > 0) {
+  if ((0, _blockString.getBlockStringIndentation)(body) > 0) {
     body = '\n' + body;
   }
 
