@@ -213,8 +213,10 @@ export interface DocumentNode<
   TData = Record<string, any>,
   TVariables = Record<string, any>
 > {
-  readonly __resultType?: TData; 
-  readonly __variablesType?: TVariables; 
+  // __resultType and __variablesType are unused, and defined only to enforce TS structural
+  // types and make sure they are not being stripped.
+  readonly __resultType?: TData;
+  readonly __variablesType?: TVariables;
   readonly kind: 'Document';
   readonly loc?: Location;
   readonly definitions: ReadonlyArray<DefinitionNode>;
