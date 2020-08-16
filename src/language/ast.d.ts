@@ -209,7 +209,12 @@ export interface NameNode {
 
 // Document
 
-export interface DocumentNode {
+export interface DocumentNode<
+  TData = Record<string, any>,
+  TVariables = Record<string, any>
+> {
+  readonly __resultType?: TData; 
+  readonly __variablesType?: TVariables; 
   readonly kind: 'Document';
   readonly loc?: Location;
   readonly definitions: ReadonlyArray<DefinitionNode>;
