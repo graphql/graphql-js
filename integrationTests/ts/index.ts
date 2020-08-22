@@ -1,6 +1,7 @@
+import { parse } from 'graphql/language';
 import { GraphQLString, GraphQLSchema, GraphQLObjectType } from 'graphql/type';
-import { ExecutionResult } from 'graphql/execution';
-import { graphqlSync } from 'graphql';
+import { ExecutionResult, execute } from 'graphql/execution';
+import { TypedQueryDocumentNode, graphqlSync } from 'graphql';
 
 interface SomeExtension {
   number: number;
@@ -69,3 +70,28 @@ const result: ExecutionResult = graphqlSync({
   `,
   variableValues: { who: 'Dolly' },
 });
+
+// Tests for TS specific TypedQueryDocumentNode type
+const queryDocument = parse(`
+  query helloWho($who: String){
+    test(who: $who)
+  }
+`);
+
+type ResponseData = { test: string };
+const typedQueryDocument = queryDocument as TypedQueryDocumentNode<
+  ResponseData,
+  {}
+>;
+
+// Supports conversion to DocumentNode
+execute({ schema, document: typedQueryDocument });
+
+function wrappedExecute<T>(document: TypedQueryDocumentNode<T>) {
+  return execute({ schema, document }) as ExecutionResult<T>;
+}
+
+const { data } = wrappedExecute(typedQueryDocument);
+if (data != null) {
+  const typedData: ResponseData = data;
+}
