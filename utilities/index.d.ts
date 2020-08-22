@@ -112,5 +112,8 @@ export {
   DangerousChange,
 } from './findBreakingChanges';
 
+// Wrapper type that contains DocumentNode and types that can be deduced from it.
+export { TypedQueryDocumentNode } from './typedQueryDocumentNode';
+
 // @deprecated: Report all deprecated usage within a GraphQL document.
 export { findDeprecatedUsages } from './findDeprecatedUsages';
