@@ -461,4 +461,5 @@ export {
   BuildSchemaOptions,
   BreakingChange,
   DangerousChange,
+  TypedQueryDocumentNode,
 } from './utilities/index';
