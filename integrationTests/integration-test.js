@@ -22,19 +22,19 @@ describe('Integration Tests', () => {
   const distDir = path.resolve('./npmDist');
   exec(`npm pack ${distDir} && cp graphql-*.tgz graphql.tgz`, { cwd: tmpDir });
 
-  it('Should compile with all supported TS versions', () => {
-    exec(`cp -R ${path.join(__dirname, 'ts')} ${tmpDir}`);
+  function testOnNodeProject(projectName) {
+    exec(`cp -R ${path.join(__dirname, projectName)} ${tmpDir}`);
 
-    const cwd = path.join(tmpDir, 'ts');
-    exec('npm install --silent', { cwd });
+    const cwd = path.join(tmpDir, projectName);
+    exec('npm install --quiet', { cwd });
     exec('npm test', { cwd });
+  }
+
+  it('Should compile with all supported TS versions', () => {
+    testOnNodeProject('ts');
   }).timeout(40000);
 
   it('Should work on all supported node versions', () => {
-    exec(`cp -R ${path.join(__dirname, 'node')} ${tmpDir}`);
-
-    const cwd = path.join(tmpDir, 'node');
-    exec('npm install', { cwd });
-    exec('npm test', { cwd });
+    testOnNodeProject('node');
   }).timeout(40000);
 });
