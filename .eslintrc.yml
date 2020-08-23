@@ -144,7 +144,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.6.x`
+  # ESLint builtin rules list based on `v7.7.x`
   ##############################################################################
 
   # Possible Errors
@@ -333,7 +333,7 @@ rules:
         runtime dependencies. Instead, use explicit Promises.
   no-tabs: error
   no-ternary: off
-  no-underscore-dangle: off
+  no-underscore-dangle: off # TODO
   no-unneeded-ternary: error
   one-var: [error, never]
   operator-assignment: error
