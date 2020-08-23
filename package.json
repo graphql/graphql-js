@@ -64,7 +64,7 @@
     "eslint-plugin-internal-rules": "file:./resources/eslint-internal-rules",
     "eslint-plugin-istanbul": "0.1.2",
     "eslint-plugin-node": "11.1.0",
-    "flow-bin": "0.131.0",
+    "flow-bin": "0.132.0",
     "mocha": "8.1.1",
     "nyc": "15.1.0",
     "prettier": "2.0.5",

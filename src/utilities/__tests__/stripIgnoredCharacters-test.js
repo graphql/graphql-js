@@ -99,14 +99,14 @@ function expectStripped(docString) {
 
 describe('stripIgnoredCharacters', () => {
   it('asserts that a source was provided', () => {
-    // $FlowExpectedError
+    // $FlowExpectedError[incompatible-call]
     expect(() => stripIgnoredCharacters()).to.throw(
       'Must provide string or Source. Received: undefined.',
     );
   });
 
   it('asserts that a valid source was provided', () => {
-    // $FlowExpectedError
+    // $FlowExpectedError[incompatible-call]
     expect(() => stripIgnoredCharacters({})).to.throw(
       'Must provide string or Source. Received: {}.',
     );

@@ -26,7 +26,7 @@ describe('mapAsyncIterator', () => {
     const items = [1, 2, 3];
 
     const iterator: any = {
-      // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
+      // $FlowFixMe[prop-missing] Blocked by https://github.com/facebook/flow/issues/3258
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -122,7 +122,7 @@ describe('mapAsyncIterator', () => {
     const items = [1, 2, 3];
 
     const iterator: any = {
-      // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
+      // $FlowFixMe[prop-missing] Blocked by https://github.com/facebook/flow/issues/3258
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -186,7 +186,7 @@ describe('mapAsyncIterator', () => {
     const items = [1, 2, 3];
 
     const iterator: any = {
-      // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
+      // $FlowFixMe[prop-missing] Blocked by https://github.com/facebook/flow/issues/3258
       [Symbol.asyncIterator]() {
         return this;
       },

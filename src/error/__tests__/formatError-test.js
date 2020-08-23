@@ -6,7 +6,7 @@ import { GraphQLError } from '../GraphQLError';
 
 describe('formatError: default error formatter', () => {
   it('uses default message', () => {
-    // $FlowExpectedError
+    // $FlowExpectedError[incompatible-call]
     const e = new GraphQLError();
 
     expect(formatError(e)).to.deep.equal({
@@ -45,12 +45,12 @@ describe('formatError: default error formatter', () => {
   });
 
   it('rejects null and undefined errors', () => {
-    // $FlowExpectedError
+    // $FlowExpectedError[incompatible-call]
     expect(() => formatError(undefined)).to.throw(
       'Received null or undefined error.',
     );
 
-    // $FlowExpectedError
+    // $FlowExpectedError[incompatible-call]
     expect(() => formatError(null)).to.throw(
       'Received null or undefined error.',
     );

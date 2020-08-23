@@ -538,7 +538,7 @@ export function getNamedType(type) {
 export type Thunk<+T> = (() => T) | T;
 
 function resolveThunk<+T>(thunk: Thunk<T>): T {
-  // $FlowFixMe(>=0.90.0)
+  // $FlowFixMe[incompatible-use]
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -647,7 +647,7 @@ export class GraphQLScalarType {
     return this.toString();
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLScalarType';
   }
@@ -791,7 +791,7 @@ export class GraphQLObjectType {
     return this.toString();
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLObjectType';
   }
@@ -1108,7 +1108,7 @@ export class GraphQLInterfaceType {
     return this.toString();
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLInterfaceType';
   }
@@ -1215,7 +1215,7 @@ export class GraphQLUnionType {
     return this.toString();
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLUnionType';
   }
@@ -1393,7 +1393,7 @@ export class GraphQLEnumType /* <T> */ {
     return this.toString();
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLEnumType';
   }
@@ -1552,7 +1552,7 @@ export class GraphQLInputObjectType {
     return this.toString();
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLInputObjectType';
   }
