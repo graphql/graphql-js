@@ -25,12 +25,11 @@ describe('Execute: Accepts any iterable as list value', () => {
   });
 
   it('Accepts an Generator function as a List value', () => {
-    function* yieldItems() {
+    function* listField() {
       yield 'one';
       yield 2;
       yield true;
     }
-    const listField = yieldItems();
 
     expect(complete({ listField })).to.deep.equal({
       data: { listField: ['one', '2', 'true'] },
