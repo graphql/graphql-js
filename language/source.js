@@ -18,7 +18,7 @@ export class Source {
     this.locationOffset = locationOffset;
     this.locationOffset.line > 0 || devAssert(0, 'line in locationOffset is 1-indexed and must be positive.');
     this.locationOffset.column > 0 || devAssert(0, 'column in locationOffset is 1-indexed and must be positive.');
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
   get [SYMBOL_TO_STRING_TAG]() {

@@ -5,7 +5,7 @@ import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.js";
  * which produces values mapped via calling the callback function.
  */
 export default function mapAsyncIterator(iterable, callback, rejectCallback) {
-  // $FlowFixMe
+  // $FlowFixMe[prop-missing]
   const iteratorMethod = iterable[SYMBOL_ASYNC_ITERATOR];
   const iterator = iteratorMethod.call(iterable);
   let $return;

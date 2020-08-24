@@ -69,7 +69,7 @@ export class GraphQLDirective {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
   get [SYMBOL_TO_STRING_TAG]() {

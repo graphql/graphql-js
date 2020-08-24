@@ -366,7 +366,7 @@ export function getNamedType(type) {
  */
 
 function resolveThunk(thunk) {
-  // $FlowFixMe(>=0.90.0)
+  // $FlowFixMe[incompatible-use]
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -442,7 +442,7 @@ export class GraphQLScalarType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
   get [SYMBOL_TO_STRING_TAG]() {
@@ -539,7 +539,7 @@ export class GraphQLObjectType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
   get [SYMBOL_TO_STRING_TAG]() {
@@ -689,7 +689,7 @@ export class GraphQLInterfaceType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
   get [SYMBOL_TO_STRING_TAG]() {
@@ -762,7 +762,7 @@ export class GraphQLUnionType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
   get [SYMBOL_TO_STRING_TAG]() {
@@ -893,7 +893,7 @@ export class GraphQLEnumType
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
   get [SYMBOL_TO_STRING_TAG]() {
@@ -990,7 +990,7 @@ export class GraphQLInputObjectType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
   get [SYMBOL_TO_STRING_TAG]() {

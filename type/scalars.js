@@ -129,7 +129,7 @@ function serializeObject(outputValue) {
     }
 
     if (typeof outputValue.toJSON === 'function') {
-      // $FlowFixMe(>=0.90.0)
+      // $FlowFixMe[incompatible-use]
       return outputValue.toJSON();
     }
   }
