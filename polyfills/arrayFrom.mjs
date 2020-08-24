@@ -1,7 +1,7 @@
 import { SYMBOL_ITERATOR } from "./symbols.mjs";
 
 /* eslint-disable no-redeclare */
-// $FlowFixMe
+// $FlowFixMe[name-already-bound]
 var arrayFrom = Array.from || function (obj, mapFn, thisArg) {
   if (obj == null) {
     throw new TypeError('Array.from requires an array-like object - not null or undefined');

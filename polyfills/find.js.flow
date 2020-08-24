@@ -4,7 +4,7 @@ declare function find<T>(
 ): T | void;
 
 /* eslint-disable no-redeclare */
-// $FlowFixMe
+// $FlowFixMe[name-already-bound]
 const find = Array.prototype.find
   ? function (list, predicate) {
       return Array.prototype.find.call(list, predicate);

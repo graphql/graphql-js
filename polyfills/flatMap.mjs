@@ -1,6 +1,6 @@
 var flatMapMethod = Array.prototype.flatMap;
 /* eslint-disable no-redeclare */
-// $FlowFixMe
+// $FlowFixMe[name-already-bound]
 
 var flatMap = flatMapMethod ? function (list, fn) {
   return flatMapMethod.call(list, fn);

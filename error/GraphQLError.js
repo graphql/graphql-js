@@ -247,7 +247,7 @@ var GraphQLError = /*#__PURE__*/function (_Error) {
     value: function toString() {
       return printError(this);
     } // FIXME: workaround to not break chai comparisons, should be remove in v16
-    // $FlowFixMe Flow doesn't support computed properties yet
+    // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
   }, {
     key: _symbols.SYMBOL_TO_STRING_TAG,

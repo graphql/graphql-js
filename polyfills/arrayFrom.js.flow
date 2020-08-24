@@ -9,7 +9,7 @@ declare function arrayFrom<T: mixed>(
 ): Array<T>;
 
 /* eslint-disable no-redeclare */
-// $FlowFixMe
+// $FlowFixMe[name-already-bound]
 const arrayFrom =
   Array.from ||
   function (obj, mapFn, thisArg) {

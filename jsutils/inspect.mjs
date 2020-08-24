@@ -40,7 +40,7 @@ function formatObjectValue(value, previouslySeenValues) {
   var customInspectFn = getCustomFn(value);
 
   if (customInspectFn !== undefined) {
-    // $FlowFixMe(>=0.90.0)
+    // $FlowFixMe[incompatible-use]
     var customValue = customInspectFn.call(value); // check for infinite recursion
 
     if (customValue !== value) {

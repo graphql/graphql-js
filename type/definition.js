@@ -474,7 +474,7 @@ function getNamedType(type) {
 
 
 function resolveThunk(thunk) {
-  // $FlowFixMe(>=0.90.0)
+  // $FlowFixMe[incompatible-use]
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -556,7 +556,7 @@ var GraphQLScalarType = /*#__PURE__*/function () {
 
   _proto.toJSON = function toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
 
   _createClass(GraphQLScalarType, [{
@@ -661,7 +661,7 @@ var GraphQLObjectType = /*#__PURE__*/function () {
 
   _proto2.toJSON = function toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
 
   _createClass(GraphQLObjectType, [{
@@ -836,7 +836,7 @@ var GraphQLInterfaceType = /*#__PURE__*/function () {
 
   _proto3.toJSON = function toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
 
   _createClass(GraphQLInterfaceType, [{
@@ -919,7 +919,7 @@ var GraphQLUnionType = /*#__PURE__*/function () {
 
   _proto4.toJSON = function toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
 
   _createClass(GraphQLUnionType, [{
@@ -1069,7 +1069,7 @@ var GraphQLEnumType
 
   _proto5.toJSON = function toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
 
   _createClass(GraphQLEnumType, [{
@@ -1182,7 +1182,7 @@ var GraphQLInputObjectType = /*#__PURE__*/function () {
 
   _proto6.toJSON = function toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
 
   _createClass(GraphQLInputObjectType, [{

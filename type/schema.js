@@ -331,7 +331,7 @@ var GraphQLSchema = /*#__PURE__*/function () {
       extensionASTNodes: (_this$extensionASTNod = this.extensionASTNodes) !== null && _this$extensionASTNod !== void 0 ? _this$extensionASTNod : [],
       assumeValid: this.__validationErrors !== undefined
     };
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
 
   _createClass(GraphQLSchema, [{

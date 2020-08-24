@@ -14,7 +14,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * which produces values mapped via calling the callback function.
  */
 function mapAsyncIterator(iterable, callback, rejectCallback) {
-  // $FlowFixMe
+  // $FlowFixMe[prop-missing]
   var iteratorMethod = iterable[_symbols.SYMBOL_ASYNC_ITERATOR];
   var iterator = iteratorMethod.call(iterable);
   var $return;

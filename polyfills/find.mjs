@@ -1,5 +1,5 @@
 /* eslint-disable no-redeclare */
-// $FlowFixMe
+// $FlowFixMe[name-already-bound]
 var find = Array.prototype.find ? function (list, predicate) {
   return Array.prototype.find.call(list, predicate);
 } : function (list, predicate) {

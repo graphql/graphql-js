@@ -34,7 +34,7 @@ var Source = /*#__PURE__*/function () {
     this.locationOffset = locationOffset;
     this.locationOffset.line > 0 || (0, _devAssert.default)(0, 'line in locationOffset is 1-indexed and must be positive.');
     this.locationOffset.column > 0 || (0, _devAssert.default)(0, 'column in locationOffset is 1-indexed and must be positive.');
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
   _createClass(Source, [{

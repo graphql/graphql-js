@@ -212,7 +212,7 @@ export class GraphQLError extends Error {
   }
 
   // FIXME: workaround to not break chai comparisons, should be remove in v16
-  // $FlowFixMe Flow doesn't support computed properties yet
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG](): string {
     return 'Object';
   }

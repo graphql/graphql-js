@@ -81,7 +81,7 @@ export var GraphQLDirective = /*#__PURE__*/function () {
 
   _proto.toJSON = function toJSON() {
     return this.toString();
-  } // $FlowFixMe Flow doesn't support computed properties yet
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
 
   _createClass(GraphQLDirective, [{
