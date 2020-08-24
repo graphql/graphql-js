@@ -5,26 +5,26 @@ import { parse } from '../../language/parser';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { execute } from '../execute';
+import { execute, executeSync } from '../execute';
 
 describe('Execute: Accepts any iterable as list value', () => {
   function complete(rootValue: mixed) {
-    return execute({
+    return executeSync({
       schema: buildSchema('type Query { listField: [String] }'),
       document: parse('{ listField }'),
       rootValue,
     });
   }
 
-  it('Accepts a Set as a List value', async () => {
+  it('Accepts a Set as a List value', () => {
     const listField = new Set(['apple', 'banana', 'apple', 'coconut']);
 
-    expect(await complete({ listField })).to.deep.equal({
+    expect(complete({ listField })).to.deep.equal({
       data: { listField: ['apple', 'banana', 'coconut'] },
     });
   });
 
-  it('Accepts an Generator function as a List value', async () => {
+  it('Accepts an Generator function as a List value', () => {
     function* yieldItems() {
       yield 'one';
       yield 2;
@@ -32,26 +32,26 @@ describe('Execute: Accepts any iterable as list value', () => {
     }
     const listField = yieldItems();
 
-    expect(await complete({ listField })).to.deep.equal({
+    expect(complete({ listField })).to.deep.equal({
       data: { listField: ['one', '2', 'true'] },
     });
   });
 
-  it('Accepts function arguments as a List value', async () => {
+  it('Accepts function arguments as a List value', () => {
     function getArgs(...args: Array<string>) {
       return args;
     }
     const listField = getArgs('one', 'two');
 
-    expect(await complete({ listField })).to.deep.equal({
+    expect(complete({ listField })).to.deep.equal({
       data: { listField: ['one', 'two'] },
     });
   });
 
-  it('Does not accept (Iterable) String-literal as a List value', async () => {
+  it('Does not accept (Iterable) String-literal as a List value', () => {
     const listField = 'Singular';
 
-    expect(await complete({ listField })).to.deep.equal({
+    expect(complete({ listField })).to.deep.equal({
       data: { listField: null },
       errors: [
         {
