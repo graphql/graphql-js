@@ -1149,12 +1149,12 @@ describe('Schema Builder', () => {
   });
 
   it('Rejects invalid AST', () => {
-    // $FlowExpectedError
+    // $FlowExpectedError[incompatible-call]
     expect(() => buildASTSchema(null)).to.throw(
       'Must provide valid Document AST',
     );
 
-    // $FlowExpectedError
+    // $FlowExpectedError[prop-missing]
     expect(() => buildASTSchema({})).to.throw(
       'Must provide valid Document AST',
     );

@@ -329,11 +329,11 @@ describe('Type System: Schema', () => {
       });
 
       it('checks the configuration for mistakes', () => {
-        // $FlowExpectedError
+        // $FlowExpectedError[incompatible-exact]
         expect(() => new GraphQLSchema(JSON.parse)).to.throw();
-        // $FlowExpectedError
+        // $FlowExpectedError[incompatible-call]
         expect(() => new GraphQLSchema({ types: {} })).to.throw();
-        // $FlowExpectedError
+        // $FlowExpectedError[incompatible-call]
         expect(() => new GraphQLSchema({ directives: {} })).to.throw();
       });
     });
@@ -362,7 +362,7 @@ describe('Type System: Schema', () => {
         });
         const types = [{}, query, {}];
 
-        // $FlowExpectedError
+        // $FlowExpectedError[incompatible-call]
         expect(() => new GraphQLSchema({ query, types })).to.throw(
           'One of the provided types for building the Schema is missing a name.',
         );

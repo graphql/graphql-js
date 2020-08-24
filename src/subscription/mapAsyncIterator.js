@@ -11,7 +11,7 @@ export default function mapAsyncIterator<T, U>(
   callback: (T) => PromiseOrValue<U>,
   rejectCallback?: (any) => PromiseOrValue<U>,
 ): AsyncGenerator<U, void, void> {
-  // $FlowFixMe
+  // $FlowFixMe[prop-missing]
   const iteratorMethod = iterable[SYMBOL_ASYNC_ITERATOR];
   const iterator: any = iteratorMethod.call(iterable);
   let $return: any;
