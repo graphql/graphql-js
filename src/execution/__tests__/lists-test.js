@@ -62,14 +62,23 @@ describe('Execute: Accepts any iterable as list value', () => {
       ],
     });
   });
+});
+
+describe('Execute: Accepts async iterables as list value', () => {
+  function complete(rootValue: mixed) {
+    return execute({
+      schema: buildSchema('type Query { listField: [String] }'),
+      document: parse('{ listField }'),
+      rootValue,
+    });
+  }
 
   it('Accepts an AsyncGenerator function as a List value', async () => {
-    async function* yieldAsyncItems() {
+    async function* listField() {
       yield await 'two';
       yield await 4;
       yield await false;
     }
-    const listField = yieldAsyncItems();
 
     expect(await complete({ listField })).to.deep.equal({
       data: { listField: ['two', '4', 'false'] },
@@ -77,12 +86,11 @@ describe('Execute: Accepts any iterable as list value', () => {
   });
 
   it('Handles an AsyncGenerator function that throws', async () => {
-    async function* yieldAsyncItemsError() {
+    async function* listField() {
       yield await 'two';
       yield await 4;
       throw new Error('bad');
     }
-    const listField = yieldAsyncItemsError();
 
     expect(await complete({ listField })).to.deep.equal({
       data: { listField: ['two', '4', null] },
