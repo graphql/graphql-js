@@ -64,6 +64,47 @@ describe('Execute: Accepts any iterable as list value', () => {
   });
 });
 
+describe('Execute: Accepts async iterables as list value', () => {
+  function complete(rootValue: mixed) {
+    return execute({
+      schema: buildSchema('type Query { listField: [String] }'),
+      document: parse('{ listField }'),
+      rootValue,
+    });
+  }
+
+  it('Accepts an AsyncGenerator function as a List value', async () => {
+    async function* listField() {
+      yield await 'two';
+      yield await 4;
+      yield await false;
+    }
+
+    expect(await complete({ listField })).to.deep.equal({
+      data: { listField: ['two', '4', 'false'] },
+    });
+  });
+
+  it('Handles an AsyncGenerator function that throws', async () => {
+    async function* listField() {
+      yield await 'two';
+      yield await 4;
+      throw new Error('bad');
+    }
+
+    expect(await complete({ listField })).to.deep.equal({
+      data: { listField: ['two', '4', null] },
+      errors: [
+        {
+          message: 'bad',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField', 2],
+        },
+      ],
+    });
+  });
+});
+
 describe('Execute: Handles list nullability', () => {
   async function complete({ listField, as }) {
     const schema = buildSchema(`type Query { listField: ${as} }`);

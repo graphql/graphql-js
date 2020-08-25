@@ -1,6 +1,5 @@
-import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
-
 import inspect from '../jsutils/inspect';
+import isAsyncIterable from '../jsutils/isAsyncIterable';
 import { addPath, pathToArray } from '../jsutils/Path';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -158,7 +157,7 @@ function subscribeImpl(
     // Note: Flow can't refine isAsyncIterable, so explicit casts are used.
     isAsyncIterable(resultOrStream)
       ? mapAsyncIterator(
-          ((resultOrStream: any): AsyncIterable<mixed>),
+          resultOrStream,
           mapSourceToResponse,
           reportGraphQLError,
         )
@@ -289,24 +288,10 @@ function executeSubscription(
             `Received: ${inspect(eventStream)}.`,
         );
       }
-
-      // Note: isAsyncIterable above ensures this will be correct.
-      return ((eventStream: any): AsyncIterable<mixed>);
+      return eventStream;
     },
     (error) => {
       throw locatedError(error, fieldNodes, pathToArray(path));
     },
   );
-}
-
-/**
- * Returns true if the provided object implements the AsyncIterator protocol via
- * either implementing a `Symbol.asyncIterator` or `"@@asyncIterator"` method.
- */
-function isAsyncIterable(maybeAsyncIterable: mixed): boolean {
-  if (maybeAsyncIterable == null || typeof maybeAsyncIterable !== 'object') {
-    return false;
-  }
-
-  return typeof maybeAsyncIterable[SYMBOL_ASYNC_ITERATOR] === 'function';
 }
