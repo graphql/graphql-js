@@ -1401,8 +1401,7 @@ export class Parser {
   // Core parsing utility functions
 
   /**
-   * Returns a location object, used to identify the place in
-   * the source that created a given parsed object.
+   * Returns a location object, used to identify the place in the source that created a given parsed object.
    */
   loc(startToken: Token): Location | void {
     if (this._options?.noLocation !== true) {
@@ -1422,8 +1421,8 @@ export class Parser {
   }
 
   /**
-   * If the next token is of the given kind, return that token after advancing
-   * the lexer. Otherwise, do not change the parser state and throw an error.
+   * If the next token is of the given kind, return that token after advancing the lexer.
+   * Otherwise, do not change the parser state and throw an error.
    */
   expectToken(kind: TokenKindEnum): Token {
     const token = this._lexer.token;
@@ -1440,8 +1439,8 @@ export class Parser {
   }
 
   /**
-   * If the next token is of the given kind, return that token after advancing
-   * the lexer. Otherwise, do not change the parser state and return undefined.
+   * If the next token is of the given kind, return that token after advancing the lexer.
+   * Otherwise, do not change the parser state and return undefined.
    */
   expectOptionalToken(kind: TokenKindEnum): ?Token {
     const token = this._lexer.token;
@@ -1470,8 +1469,8 @@ export class Parser {
   }
 
   /**
-   * If the next token is a given keyword, return "true" after advancing
-   * the lexer. Otherwise, do not change the parser state and return "false".
+   * If the next token is a given keyword, return "true" after advancing the lexer.
+   * Otherwise, do not change the parser state and return "false".
    */
   expectOptionalKeyword(value: string): boolean {
     const token = this._lexer.token;
@@ -1483,8 +1482,7 @@ export class Parser {
   }
 
   /**
-   * Helper function for creating an error when an unexpected lexed token
-   * is encountered.
+   * Helper function for creating an error when an unexpected lexed token is encountered.
    */
   unexpected(atToken?: ?Token): GraphQLError {
     const token = atToken ?? this._lexer.token;
@@ -1496,10 +1494,9 @@ export class Parser {
   }
 
   /**
-   * Returns a possibly empty list of parse nodes, determined by
-   * the parseFn. This list begins with a lex token of openKind
-   * and ends with a lex token of closeKind. Advances the parser
-   * to the next lex token after the closing token.
+   * Returns a possibly empty list of parse nodes, determined by the parseFn.
+   * This list begins with a lex token of openKind and ends with a lex token of closeKind.
+   * Advances the parser to the next lex token after the closing token.
    */
   any<T>(
     openKind: TokenKindEnum,
@@ -1516,10 +1513,9 @@ export class Parser {
 
   /**
    * Returns a list of parse nodes, determined by the parseFn.
-   * It can be empty only if open token is missing otherwise it will always
-   * return non-empty list that begins with a lex token of openKind and ends
-   * with a lex token of closeKind. Advances the parser to the next lex token
-   * after the closing token.
+   * It can be empty only if open token is missing otherwise it will always return non-empty list
+   * that begins with a lex token of openKind and ends with a lex token of closeKind.
+   * Advances the parser to the next lex token after the closing token.
    */
   optionalMany<T>(
     openKind: TokenKindEnum,
@@ -1537,10 +1533,9 @@ export class Parser {
   }
 
   /**
-   * Returns a non-empty list of parse nodes, determined by
-   * the parseFn. This list begins with a lex token of openKind
-   * and ends with a lex token of closeKind. Advances the parser
-   * to the next lex token after the closing token.
+   * Returns a non-empty list of parse nodes, determined by the parseFn.
+   * This list begins with a lex token of openKind and ends with a lex token of closeKind.
+   * Advances the parser to the next lex token after the closing token.
    */
   many<T>(
     openKind: TokenKindEnum,
@@ -1557,7 +1552,7 @@ export class Parser {
 }
 
 /**
- * A helper function to describe a token as a string for debugging
+ * A helper function to describe a token as a string for debugging.
  */
 function getTokenDesc(token: Token): string {
   const value = token.value;
@@ -1565,7 +1560,7 @@ function getTokenDesc(token: Token): string {
 }
 
 /**
- * A helper function to describe a token kind as a string for debugging
+ * A helper function to describe a token kind as a string for debugging.
  */
 function getTokenKindDesc(kind: TokenKindEnum): string {
   return isPunctuatorTokenKind(kind) ? `"${kind}"` : kind;
