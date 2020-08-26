@@ -569,9 +569,6 @@ export interface GraphQLField<
   deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLFieldExtensions<TSource, TContext, TArgs>>>;
   astNode?: Maybe<FieldDefinitionNode>;
-
-  // @deprecated and will be removed in v16
-  isDeprecated: boolean;
 }
 
 export interface GraphQLArgument {
@@ -836,9 +833,6 @@ export interface GraphQLEnumValue {
   deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLEnumValueExtensions>>;
   astNode?: Maybe<EnumValueDefinitionNode>;
-
-  // @deprecated and will be removed in v16
-  isDeprecated: boolean;
 }
 
 /**
