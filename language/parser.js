@@ -803,19 +803,23 @@ export class Parser {
 
 
   parseImplementsInterfaces() {
-    const types = [];
+    if (!this.expectOptionalKeyword('implements')) {
+      return [];
+    }
 
-    if (this.expectOptionalKeyword('implements')) {
-      // Optional leading ampersand
+    if (this._options?.allowLegacySDLImplementsInterfaces === true) {
+      const types = []; // Optional leading ampersand
+
       this.expectOptionalToken(TokenKind.AMP);
 
       do {
         types.push(this.parseNamedType());
-      } while (this.expectOptionalToken(TokenKind.AMP) || // Legacy support for the SDL?
-      this._options?.allowLegacySDLImplementsInterfaces === true && this.peek(TokenKind.NAME));
+      } while (this.expectOptionalToken(TokenKind.AMP) || this.peek(TokenKind.NAME));
+
+      return types;
     }
 
-    return types;
+    return this.delimitedMany(TokenKind.AMP, this.parseNamedType);
   }
   /**
    * FieldsDefinition : { FieldDefinition+ }
@@ -949,18 +953,7 @@ export class Parser {
 
 
   parseUnionMemberTypes() {
-    const types = [];
-
-    if (this.expectOptionalToken(TokenKind.EQUALS)) {
-      // Optional leading pipe
-      this.expectOptionalToken(TokenKind.PIPE);
-
-      do {
-        types.push(this.parseNamedType());
-      } while (this.expectOptionalToken(TokenKind.PIPE));
-    }
-
-    return types;
+    return this.expectOptionalToken(TokenKind.EQUALS) ? this.delimitedMany(TokenKind.PIPE, this.parseNamedType) : [];
   }
   /**
    * EnumTypeDefinition :
@@ -1311,15 +1304,7 @@ export class Parser {
 
 
   parseDirectiveLocations() {
-    // Optional leading pipe
-    this.expectOptionalToken(TokenKind.PIPE);
-    const locations = [];
-
-    do {
-      locations.push(this.parseDirectiveLocation());
-    } while (this.expectOptionalToken(TokenKind.PIPE));
-
-    return locations;
+    return this.delimitedMany(TokenKind.PIPE, this.parseDirectiveLocation);
   }
   /*
    * DirectiveLocation :
@@ -1506,6 +1491,23 @@ export class Parser {
     do {
       nodes.push(parseFn.call(this));
     } while (!this.expectOptionalToken(closeKind));
+
+    return nodes;
+  }
+  /**
+   * Returns a non-empty list of parse nodes, determined by the parseFn.
+   * This list may begin with a lex token of delimiterKind followed by items separated by lex tokens of tokenKind.
+   * Advances the parser to the next lex token after last item in the list.
+   */
+
+
+  delimitedMany(delimiterKind, parseFn) {
+    this.expectOptionalToken(delimiterKind);
+    const nodes = [];
+
+    do {
+      nodes.push(parseFn.call(this));
+    } while (this.expectOptionalToken(delimiterKind));
 
     return nodes;
   }
