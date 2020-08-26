@@ -1362,8 +1362,7 @@ export class Parser {
   } // Core parsing utility functions
 
   /**
-   * Returns a location object, used to identify the place in
-   * the source that created a given parsed object.
+   * Returns a location object, used to identify the place in the source that created a given parsed object.
    */
 
 
@@ -1381,8 +1380,8 @@ export class Parser {
     return this._lexer.token.kind === kind;
   }
   /**
-   * If the next token is of the given kind, return that token after advancing
-   * the lexer. Otherwise, do not change the parser state and throw an error.
+   * If the next token is of the given kind, return that token after advancing the lexer.
+   * Otherwise, do not change the parser state and throw an error.
    */
 
 
@@ -1398,8 +1397,8 @@ export class Parser {
     throw syntaxError(this._lexer.source, token.start, `Expected ${getTokenKindDesc(kind)}, found ${getTokenDesc(token)}.`);
   }
   /**
-   * If the next token is of the given kind, return that token after advancing
-   * the lexer. Otherwise, do not change the parser state and return undefined.
+   * If the next token is of the given kind, return that token after advancing the lexer.
+   * Otherwise, do not change the parser state and return undefined.
    */
 
 
@@ -1430,8 +1429,8 @@ export class Parser {
     }
   }
   /**
-   * If the next token is a given keyword, return "true" after advancing
-   * the lexer. Otherwise, do not change the parser state and return "false".
+   * If the next token is a given keyword, return "true" after advancing the lexer.
+   * Otherwise, do not change the parser state and return "false".
    */
 
 
@@ -1447,8 +1446,7 @@ export class Parser {
     return false;
   }
   /**
-   * Helper function for creating an error when an unexpected lexed token
-   * is encountered.
+   * Helper function for creating an error when an unexpected lexed token is encountered.
    */
 
 
@@ -1457,10 +1455,9 @@ export class Parser {
     return syntaxError(this._lexer.source, token.start, `Unexpected ${getTokenDesc(token)}.`);
   }
   /**
-   * Returns a possibly empty list of parse nodes, determined by
-   * the parseFn. This list begins with a lex token of openKind
-   * and ends with a lex token of closeKind. Advances the parser
-   * to the next lex token after the closing token.
+   * Returns a possibly empty list of parse nodes, determined by the parseFn.
+   * This list begins with a lex token of openKind and ends with a lex token of closeKind.
+   * Advances the parser to the next lex token after the closing token.
    */
 
 
@@ -1476,10 +1473,9 @@ export class Parser {
   }
   /**
    * Returns a list of parse nodes, determined by the parseFn.
-   * It can be empty only if open token is missing otherwise it will always
-   * return non-empty list that begins with a lex token of openKind and ends
-   * with a lex token of closeKind. Advances the parser to the next lex token
-   * after the closing token.
+   * It can be empty only if open token is missing otherwise it will always return non-empty list
+   * that begins with a lex token of openKind and ends with a lex token of closeKind.
+   * Advances the parser to the next lex token after the closing token.
    */
 
 
@@ -1497,10 +1493,9 @@ export class Parser {
     return [];
   }
   /**
-   * Returns a non-empty list of parse nodes, determined by
-   * the parseFn. This list begins with a lex token of openKind
-   * and ends with a lex token of closeKind. Advances the parser
-   * to the next lex token after the closing token.
+   * Returns a non-empty list of parse nodes, determined by the parseFn.
+   * This list begins with a lex token of openKind and ends with a lex token of closeKind.
+   * Advances the parser to the next lex token after the closing token.
    */
 
 
@@ -1517,7 +1512,7 @@ export class Parser {
 
 }
 /**
- * A helper function to describe a token as a string for debugging
+ * A helper function to describe a token as a string for debugging.
  */
 
 function getTokenDesc(token) {
@@ -1525,7 +1520,7 @@ function getTokenDesc(token) {
   return getTokenKindDesc(token.kind) + (value != null ? ` "${value}"` : '');
 }
 /**
- * A helper function to describe a token kind as a string for debugging
+ * A helper function to describe a token kind as a string for debugging.
  */
 
 
