@@ -1106,29 +1106,4 @@ input Hello {
   it('parses kitchen sink schema', () => {
     expect(() => parse(kitchenSinkSDL)).to.not.throw();
   });
-
-  it('Option: allowLegacySDLEmptyFields supports type with empty fields', () => {
-    const body = 'type Hello { }';
-    expectSyntaxError(body).to.include({
-      message: 'Syntax Error: Expected Name, found "}".',
-    });
-
-    const doc = parse(body, { allowLegacySDLEmptyFields: true });
-    expect(doc).to.have.deep.nested.property('definitions[0].fields', []);
-  });
-
-  it('Option: allowLegacySDLImplementsInterfaces', () => {
-    const body = 'type Hello implements Wo rld { field: String }';
-    expectSyntaxError(body).to.include({
-      message: 'Syntax Error: Unexpected Name "rld".',
-    });
-
-    const doc = parse(body, { allowLegacySDLImplementsInterfaces: true });
-    expect(
-      toJSONDeep(doc),
-    ).to.have.deep.nested.property('definitions[0].interfaces', [
-      typeNode('Wo', { start: 22, end: 24 }),
-      typeNode('rld', { start: 25, end: 28 }),
-    ]);
-  });
 });
