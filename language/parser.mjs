@@ -815,21 +815,25 @@ export var Parser = /*#__PURE__*/function () {
   ;
 
   _proto.parseImplementsInterfaces = function parseImplementsInterfaces() {
-    var types = [];
+    var _this$_options2;
 
-    if (this.expectOptionalKeyword('implements')) {
-      // Optional leading ampersand
+    if (!this.expectOptionalKeyword('implements')) {
+      return [];
+    }
+
+    if (((_this$_options2 = this._options) === null || _this$_options2 === void 0 ? void 0 : _this$_options2.allowLegacySDLImplementsInterfaces) === true) {
+      var types = []; // Optional leading ampersand
+
       this.expectOptionalToken(TokenKind.AMP);
 
       do {
-        var _this$_options2;
-
         types.push(this.parseNamedType());
-      } while (this.expectOptionalToken(TokenKind.AMP) || // Legacy support for the SDL?
-      ((_this$_options2 = this._options) === null || _this$_options2 === void 0 ? void 0 : _this$_options2.allowLegacySDLImplementsInterfaces) === true && this.peek(TokenKind.NAME));
+      } while (this.expectOptionalToken(TokenKind.AMP) || this.peek(TokenKind.NAME));
+
+      return types;
     }
 
-    return types;
+    return this.delimitedMany(TokenKind.AMP, this.parseNamedType);
   }
   /**
    * FieldsDefinition : { FieldDefinition+ }
@@ -965,18 +969,7 @@ export var Parser = /*#__PURE__*/function () {
   ;
 
   _proto.parseUnionMemberTypes = function parseUnionMemberTypes() {
-    var types = [];
-
-    if (this.expectOptionalToken(TokenKind.EQUALS)) {
-      // Optional leading pipe
-      this.expectOptionalToken(TokenKind.PIPE);
-
-      do {
-        types.push(this.parseNamedType());
-      } while (this.expectOptionalToken(TokenKind.PIPE));
-    }
-
-    return types;
+    return this.expectOptionalToken(TokenKind.EQUALS) ? this.delimitedMany(TokenKind.PIPE, this.parseNamedType) : [];
   }
   /**
    * EnumTypeDefinition :
@@ -1327,15 +1320,7 @@ export var Parser = /*#__PURE__*/function () {
   ;
 
   _proto.parseDirectiveLocations = function parseDirectiveLocations() {
-    // Optional leading pipe
-    this.expectOptionalToken(TokenKind.PIPE);
-    var locations = [];
-
-    do {
-      locations.push(this.parseDirectiveLocation());
-    } while (this.expectOptionalToken(TokenKind.PIPE));
-
-    return locations;
+    return this.delimitedMany(TokenKind.PIPE, this.parseDirectiveLocation);
   }
   /*
    * DirectiveLocation :
@@ -1524,6 +1509,23 @@ export var Parser = /*#__PURE__*/function () {
     do {
       nodes.push(parseFn.call(this));
     } while (!this.expectOptionalToken(closeKind));
+
+    return nodes;
+  }
+  /**
+   * Returns a non-empty list of parse nodes, determined by the parseFn.
+   * This list may begin with a lex token of delimiterKind followed by items separated by lex tokens of tokenKind.
+   * Advances the parser to the next lex token after last item in the list.
+   */
+  ;
+
+  _proto.delimitedMany = function delimitedMany(delimiterKind, parseFn) {
+    this.expectOptionalToken(delimiterKind);
+    var nodes = [];
+
+    do {
+      nodes.push(parseFn.call(this));
+    } while (this.expectOptionalToken(delimiterKind));
 
     return nodes;
   };
