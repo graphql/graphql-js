@@ -530,13 +530,11 @@ describe('extendSchema', () => {
 
     const someType = assertObjectType(extendedSchema.getType('SomeObject'));
     expect(someType.getFields().deprecatedField).to.include({
-      isDeprecated: true,
       deprecationReason: 'not used anymore',
     });
 
     const someEnum = assertEnumType(extendedSchema.getType('SomeEnum'));
     expect(someEnum.getValue('DEPRECATED_VALUE')).to.include({
-      isDeprecated: true,
       deprecationReason: 'do not use',
     });
   });
@@ -552,7 +550,6 @@ describe('extendSchema', () => {
 
     const someType = assertObjectType(extendedSchema.getType('SomeObject'));
     expect(someType.getFields().deprecatedField).to.include({
-      isDeprecated: true,
       deprecationReason: 'not used anymore',
     });
   });
@@ -568,7 +565,6 @@ describe('extendSchema', () => {
 
     const someEnum = assertEnumType(extendedSchema.getType('SomeEnum'));
     expect(someEnum.getValue('DEPRECATED_VALUE')).to.include({
-      isDeprecated: true,
       deprecationReason: 'do not use',
     });
   });
