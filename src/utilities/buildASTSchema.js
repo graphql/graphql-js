@@ -98,9 +98,6 @@ export function buildSchema(
 ): GraphQLSchema {
   const document = parse(source, {
     noLocation: options?.noLocation,
-    allowLegacySDLEmptyFields: options?.allowLegacySDLEmptyFields,
-    allowLegacySDLImplementsInterfaces:
-      options?.allowLegacySDLImplementsInterfaces,
     experimentalFragmentVariables: options?.experimentalFragmentVariables,
   });
 
