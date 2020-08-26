@@ -47,12 +47,8 @@ import { buildASTSchema, buildSchema } from '../buildASTSchema';
  * the SDL, parsed in a schema AST, materializing that schema AST into an
  * in-memory GraphQLSchema, and then finally printing that object into the SDL
  */
-function cycleSDL(sdl: string, options): string {
-  const ast = parse(sdl);
-  const schema = buildASTSchema(ast, options);
-
-  const commentDescriptions = options?.commentDescriptions;
-  return printSchema(schema, { commentDescriptions });
+function cycleSDL(sdl: string): string {
+  return printSchema(buildSchema(sdl));
 }
 
 function printASTNode(obj: ?{ +astNode: ?ASTNode, ... }): string {
@@ -223,32 +219,6 @@ describe('Schema Builder', () => {
       }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);
-  });
-
-  it('Supports option for comment descriptions', () => {
-    const sdl = dedent`
-      # This is a directive
-      directive @foo(
-        # It has an argument
-        arg: Int
-      ) on FIELD
-
-      # With an enum
-      enum Color {
-        RED
-
-        # Not a creative color
-        GREEN
-        BLUE
-      }
-
-      # What a great type
-      type Query {
-        # And a field to boot
-        str: String
-      }
-    `;
-    expect(cycleSDL(sdl, { commentDescriptions: true })).to.equal(sdl);
   });
 
   it('Maintains @include, @skip & @specifiedBy', () => {
