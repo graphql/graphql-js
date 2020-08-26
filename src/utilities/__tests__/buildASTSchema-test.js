@@ -645,27 +645,23 @@ describe('Schema Builder', () => {
     const myEnum = assertEnumType(schema.getType('MyEnum'));
 
     const value = myEnum.getValue('VALUE');
-    expect(value).to.include({ isDeprecated: false });
+    expect(value).to.include({ deprecationReason: undefined });
 
     const oldValue = myEnum.getValue('OLD_VALUE');
     expect(oldValue).to.include({
-      isDeprecated: true,
       deprecationReason: 'No longer supported',
     });
 
     const otherValue = myEnum.getValue('OTHER_VALUE');
     expect(otherValue).to.include({
-      isDeprecated: true,
       deprecationReason: 'Terrible reasons',
     });
 
     const rootFields = assertObjectType(schema.getType('Query')).getFields();
     expect(rootFields.field1).to.include({
-      isDeprecated: true,
       deprecationReason: 'No longer supported',
     });
     expect(rootFields.field2).to.include({
-      isDeprecated: true,
       deprecationReason: 'Because I said so',
     });
 
