@@ -132,70 +132,6 @@ describe('extendSchema', () => {
     `);
   });
 
-  it('can describe the extended fields with legacy comments', () => {
-    const schema = buildSchema('type Query');
-    const extendAST = parse(`
-      extend type Query {
-        # New field description.
-        newField: String
-      }
-    `);
-    const extendedSchema = extendSchema(schema, extendAST, {
-      commentDescriptions: true,
-    });
-
-    expect(validateSchema(extendedSchema)).to.deep.equal([]);
-    expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
-      type Query {
-        """New field description."""
-        newField: String
-      }
-    `);
-  });
-
-  it('describes extended fields with strings when present', () => {
-    const schema = buildSchema('type Query');
-    const extendAST = parse(`
-      extend type Query {
-        # New field description.
-        "Actually use this description."
-        newField: String
-      }
-    `);
-    const extendedSchema = extendSchema(schema, extendAST, {
-      commentDescriptions: true,
-    });
-
-    expect(validateSchema(extendedSchema)).to.deep.equal([]);
-    expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
-      type Query {
-        """Actually use this description."""
-        newField: String
-      }
-    `);
-  });
-
-  it('ignores comment description on extended fields if location is not provided', () => {
-    const schema = buildSchema('type Query');
-    const extendSDL = `
-      extend type Query {
-        # New field description.
-        newField: String
-      }
-    `;
-    const extendAST = parse(extendSDL, { noLocation: true });
-    const extendedSchema = extendSchema(schema, extendAST, {
-      commentDescriptions: true,
-    });
-
-    expect(validateSchema(extendedSchema)).to.deep.equal([]);
-    expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
-      type Query {
-        newField: String
-      }
-    `);
-  });
-
   it('extends objects with standard type fields', () => {
     const schema = buildSchema('type Query');
 
@@ -1195,24 +1131,6 @@ describe('extendSchema', () => {
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printSchemaChanges(schema, extendedSchema)).to.equal(extensionSDL);
-  });
-
-  it('sets correct description using legacy comments', () => {
-    const schema = buildSchema(`
-      type Query {
-        foo: String
-      }
-    `);
-    const extendAST = parse(`
-      # new directive
-      directive @new on QUERY
-    `);
-    const extendedSchema = extendSchema(schema, extendAST, {
-      commentDescriptions: true,
-    });
-
-    const newDirective = extendedSchema.getDirective('new');
-    expect(newDirective).to.include({ description: 'new directive' });
   });
 
   it('Rejects invalid SDL', () => {
