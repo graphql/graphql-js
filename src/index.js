@@ -371,9 +371,6 @@ export {
   buildASTSchema,
   // Build a GraphQLSchema from a GraphQL schema language document.
   buildSchema,
-  // @deprecated: Get the description from a schema AST node and supports legacy
-  // syntax for specifying descriptions - will be removed in v16.
-  getDescription,
   // Extends an existing GraphQLSchema from a parsed GraphQL Schema
   // language AST.
   extendSchema,
