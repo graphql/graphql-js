@@ -313,7 +313,7 @@ rules:
   max-statements: off
   max-statements-per-line: off
   multiline-comment-style: off
-  new-cap: off # TODO
+  new-cap: error
   no-array-constructor: error
   no-bitwise: off
   no-continue: off

@@ -17,7 +17,7 @@ const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 const minSamples = 5;
 
-function LOCAL_DIR(...paths) {
+function localDir(...paths) {
   return path.join(__dirname, '..', ...paths);
 }
 
@@ -27,7 +27,7 @@ function prepareRevision(revision) {
   console.log(`🍳  Preparing ${revision}...`);
 
   if (revision === LOCAL) {
-    return babelBuild(LOCAL_DIR());
+    return babelBuild(localDir());
   }
 
   // Returns the complete git hash for a given git revision reference.
@@ -40,12 +40,12 @@ function prepareRevision(revision) {
   exec(`git archive "${hash}" | tar -xC "${dir}"`);
   exec('npm ci', { cwd: dir });
 
-  for (const file of findFiles(LOCAL_DIR('src'), '*/__tests__/*')) {
-    const from = LOCAL_DIR('src', file);
+  for (const file of findFiles(localDir('src'), '*/__tests__/*')) {
+    const from = localDir('src', file);
     const to = path.join(dir, 'src', file);
     fs.copyFileSync(from, to);
   }
-  exec(`cp -R "${LOCAL_DIR()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`);
+  exec(`cp -R "${localDir()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`);
 
   return babelBuild(dir);
 }
@@ -259,7 +259,7 @@ async function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
 
 // Find all benchmark tests to be run.
 function matchBenchmarks(patterns) {
-  let benchmarks = findFiles(LOCAL_DIR('src'), '*/__tests__/*-benchmark.js');
+  let benchmarks = findFiles(localDir('src'), '*/__tests__/*-benchmark.js');
   if (patterns.length > 0) {
     benchmarks = benchmarks.filter((benchmark) =>
       patterns.some((pattern) => path.join('src', benchmark).includes(pattern)),
