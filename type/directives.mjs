@@ -105,7 +105,7 @@ export var GraphQLIncludeDirective = new GraphQLDirective({
   locations: [DirectiveLocation.FIELD, DirectiveLocation.FRAGMENT_SPREAD, DirectiveLocation.INLINE_FRAGMENT],
   args: {
     if: {
-      type: GraphQLNonNull(GraphQLBoolean),
+      type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Included when true.'
     }
   }
@@ -120,7 +120,7 @@ export var GraphQLSkipDirective = new GraphQLDirective({
   locations: [DirectiveLocation.FIELD, DirectiveLocation.FRAGMENT_SPREAD, DirectiveLocation.INLINE_FRAGMENT],
   args: {
     if: {
-      type: GraphQLNonNull(GraphQLBoolean),
+      type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Skipped when true.'
     }
   }
@@ -156,7 +156,7 @@ export var GraphQLSpecifiedByDirective = new GraphQLDirective({
   locations: [DirectiveLocation.SCALAR],
   args: {
     url: {
-      type: GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(GraphQLString),
       description: 'The URL that specifies the behaviour of this scalar.'
     }
   }

@@ -18,12 +18,12 @@ export function typeFromAST(schema, typeNode) {
 
   if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
-    return innerType && GraphQLList(innerType);
+    return innerType && new GraphQLList(innerType);
   }
 
   if (typeNode.kind === Kind.NON_NULL_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
-    return innerType && GraphQLNonNull(innerType);
+    return innerType && new GraphQLNonNull(innerType);
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
 

@@ -204,8 +204,8 @@ export function assertAbstractType(type) {
  *     const PersonType = new GraphQLObjectType({
  *       name: 'Person',
  *       fields: () => ({
- *         parents: { type: GraphQLList(PersonType) },
- *         children: { type: GraphQLList(PersonType) },
+ *         parents: { type: new GraphQLList(PersonType) },
+ *         children: { type: new GraphQLList(PersonType) },
  *       })
  *     })
  *
@@ -222,6 +222,7 @@ declare class GraphQLList<+T: GraphQLType> {
 */
 
 export function GraphQLList(ofType) {
+  // istanbul ignore else (to be removed in v16.0.0)
   if (this instanceof GraphQLList) {
     this.ofType = assertType(ofType);
   } else {
@@ -258,7 +259,7 @@ defineInspect(GraphQLList);
  *     const RowType = new GraphQLObjectType({
  *       name: 'Row',
  *       fields: () => ({
- *         id: { type: GraphQLNonNull(GraphQLString) },
+ *         id: { type: new GraphQLNonNull(GraphQLString) },
  *       })
  *     })
  *
@@ -276,6 +277,7 @@ declare class GraphQLNonNull<+T: GraphQLNullableType> {
 */
 
 export function GraphQLNonNull(ofType) {
+  // istanbul ignore else (to be removed in v16.0.0)
   if (this instanceof GraphQLNonNull) {
     this.ofType = assertNullableType(ofType);
   } else {
@@ -1009,8 +1011,8 @@ function defineEnumValues(typeName, valueMap) {
  *     const GeoPoint = new GraphQLInputObjectType({
  *       name: 'GeoPoint',
  *       fields: {
- *         lat: { type: GraphQLNonNull(GraphQLFloat) },
- *         lon: { type: GraphQLNonNull(GraphQLFloat) },
+ *         lat: { type: new GraphQLNonNull(GraphQLFloat) },
+ *         lon: { type: new GraphQLNonNull(GraphQLFloat) },
  *         alt: { type: GraphQLFloat, defaultValue: 0 },
  *       }
  *     });

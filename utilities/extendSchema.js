@@ -160,8 +160,12 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
   function replaceType(type) {
     if ((0, _definition.isListType)(type)) {
+      // $FlowFixMe[incompatible-return]
       return new _definition.GraphQLList(replaceType(type.ofType));
-    } else if ((0, _definition.isNonNullType)(type)) {
+    }
+
+    if ((0, _definition.isNonNullType)(type)) {
+      // $FlowFixMe[incompatible-return]
       return new _definition.GraphQLNonNull(replaceType(type.ofType));
     }
 

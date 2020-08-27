@@ -8,7 +8,7 @@ import { GraphQLSchema } from "../type/schema.mjs";
 import { GraphQLDirective } from "../type/directives.mjs";
 import { specifiedScalarTypes } from "../type/scalars.mjs";
 import { introspectionTypes, TypeKind } from "../type/introspection.mjs";
-import { isInputType, isOutputType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, assertNullableType, assertObjectType, assertInterfaceType } from "../type/definition.mjs";
+import { isInputType, isOutputType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, assertNullableType, assertObjectType, assertInterfaceType } from "../type/definition.mjs";
 import { valueFromAST } from "./valueFromAST.mjs";
 /**
  * Build a GraphQLSchema for use by client tools.
@@ -69,7 +69,7 @@ export function buildClientSchema(introspection, options) {
         throw new Error('Decorated type deeper than introspection query.');
       }
 
-      return GraphQLList(getType(itemRef));
+      return new GraphQLList(getType(itemRef));
     }
 
     if (typeRef.kind === TypeKind.NON_NULL) {
@@ -80,7 +80,7 @@ export function buildClientSchema(introspection, options) {
       }
 
       var nullableType = getType(nullableRef);
-      return GraphQLNonNull(assertNullableType(nullableType));
+      return new GraphQLNonNull(assertNullableType(nullableType));
     }
 
     return getNamedType(typeRef);

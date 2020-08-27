@@ -141,7 +141,7 @@ export const GraphQLIncludeDirective = new GraphQLDirective({
   ],
   args: {
     if: {
-      type: GraphQLNonNull(GraphQLBoolean),
+      type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Included when true.',
     },
   },
@@ -161,7 +161,7 @@ export const GraphQLSkipDirective = new GraphQLDirective({
   ],
   args: {
     if: {
-      type: GraphQLNonNull(GraphQLBoolean),
+      type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Skipped when true.',
     },
   },
@@ -198,7 +198,7 @@ export const GraphQLSpecifiedByDirective = new GraphQLDirective({
   locations: [DirectiveLocation.SCALAR],
   args: {
     url: {
-      type: GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(GraphQLString),
       description: 'The URL that specifies the behaviour of this scalar.',
     },
   },

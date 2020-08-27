@@ -89,7 +89,7 @@ function buildClientSchema(introspection, options) {
         throw new Error('Decorated type deeper than introspection query.');
       }
 
-      return (0, _definition.GraphQLList)(getType(itemRef));
+      return new _definition.GraphQLList(getType(itemRef));
     }
 
     if (typeRef.kind === _introspection.TypeKind.NON_NULL) {
@@ -100,7 +100,7 @@ function buildClientSchema(introspection, options) {
       }
 
       var nullableType = getType(nullableRef);
-      return (0, _definition.GraphQLNonNull)((0, _definition.assertNullableType)(nullableType));
+      return new _definition.GraphQLNonNull((0, _definition.assertNullableType)(nullableType));
     }
 
     return getNamedType(typeRef);
