@@ -8,14 +8,14 @@ import { parseValue } from '../../language/parser';
 
 import type { GraphQLType, GraphQLNullableType } from '../definition';
 import {
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
 } from '../definition';
 
 const ScalarType = new GraphQLScalarType({ name: 'Scalar' });
@@ -31,10 +31,10 @@ const InputObjectType = new GraphQLInputObjectType({
   fields: {},
 });
 
-const ListOfScalarsType = GraphQLList(ScalarType);
-const NonNullScalarType = GraphQLNonNull(ScalarType);
-const ListOfNonNullScalarsType = GraphQLList(NonNullScalarType);
-const NonNullListOfScalars = GraphQLNonNull(ListOfScalarsType);
+const ListOfScalarsType = new GraphQLList(ScalarType);
+const NonNullScalarType = new GraphQLNonNull(ScalarType);
+const ListOfNonNullScalarsType = new GraphQLList(NonNullScalarType);
+const NonNullListOfScalars = new GraphQLNonNull(ListOfScalarsType);
 
 // istanbul ignore next (Never called and used as a placeholder)
 const dummyFunc = () => {
@@ -859,7 +859,7 @@ describe('Type System: Input Objects', () => {
 
 describe('Type System: List', () => {
   function expectList(type: GraphQLType) {
-    return expect(() => GraphQLList(type));
+    return expect(() => new GraphQLList(type));
   }
 
   it('accepts an type as item type of list', () => {
@@ -889,7 +889,7 @@ describe('Type System: List', () => {
 
 describe('Type System: Non-Null', () => {
   function expectNonNull(type: GraphQLNullableType) {
-    return expect(() => GraphQLNonNull(type));
+    return expect(() => new GraphQLNonNull(type));
   }
 
   it('accepts an type as nullable type of non-null', () => {
@@ -938,7 +938,7 @@ describe('Type System: test utility methods', () => {
     expect(String(ListOfScalarsType)).to.equal('[Scalar]');
     expect(String(NonNullListOfScalars)).to.equal('[Scalar]!');
     expect(String(ListOfNonNullScalarsType)).to.equal('[Scalar!]');
-    expect(String(GraphQLList(ListOfScalarsType))).to.equal('[[Scalar]]');
+    expect(String(new GraphQLList(ListOfScalarsType))).to.equal('[[Scalar]]');
   });
 
   it('JSON.stringifies types', () => {
@@ -953,7 +953,7 @@ describe('Type System: test utility methods', () => {
     expect(JSON.stringify(ListOfScalarsType)).to.equal('"[Scalar]"');
     expect(JSON.stringify(NonNullListOfScalars)).to.equal('"[Scalar]!"');
     expect(JSON.stringify(ListOfNonNullScalarsType)).to.equal('"[Scalar!]"');
-    expect(JSON.stringify(GraphQLList(ListOfScalarsType))).to.equal(
+    expect(JSON.stringify(new GraphQLList(ListOfScalarsType))).to.equal(
       '"[[Scalar]]"',
     );
   });

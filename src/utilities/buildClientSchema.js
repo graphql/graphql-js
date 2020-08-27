@@ -16,14 +16,14 @@ import { introspectionTypes, TypeKind } from '../type/introspection';
 import {
   isInputType,
   isOutputType,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
   assertNullableType,
   assertObjectType,
   assertInterfaceType,
@@ -121,7 +121,7 @@ export function buildClientSchema(
       if (!itemRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
-      return GraphQLList(getType(itemRef));
+      return new GraphQLList(getType(itemRef));
     }
     if (typeRef.kind === TypeKind.NON_NULL) {
       const nullableRef = typeRef.ofType;
@@ -129,7 +129,7 @@ export function buildClientSchema(
         throw new Error('Decorated type deeper than introspection query.');
       }
       const nullableType = getType(nullableRef);
-      return GraphQLNonNull(assertNullableType(nullableType));
+      return new GraphQLNonNull(assertNullableType(nullableType));
     }
     return getNamedType(typeRef);
   }

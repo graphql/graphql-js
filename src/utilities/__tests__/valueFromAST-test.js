@@ -16,11 +16,11 @@ import {
   GraphQLID,
 } from '../../type/scalars';
 import {
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
 } from '../../type/definition';
 
 import { valueFromAST } from '../valueFromAST';
@@ -120,15 +120,15 @@ describe('valueFromAST', () => {
   });
 
   // Boolean!
-  const nonNullBool = GraphQLNonNull(GraphQLBoolean);
+  const nonNullBool = new GraphQLNonNull(GraphQLBoolean);
   // [Boolean]
-  const listOfBool = GraphQLList(GraphQLBoolean);
+  const listOfBool = new GraphQLList(GraphQLBoolean);
   // [Boolean!]
-  const listOfNonNullBool = GraphQLList(nonNullBool);
+  const listOfNonNullBool = new GraphQLList(nonNullBool);
   // [Boolean]!
-  const nonNullListOfBool = GraphQLNonNull(listOfBool);
+  const nonNullListOfBool = new GraphQLNonNull(listOfBool);
   // [Boolean!]!
-  const nonNullListOfNonNullBool = GraphQLNonNull(listOfNonNullBool);
+  const nonNullListOfNonNullBool = new GraphQLNonNull(listOfNonNullBool);
 
   it('coerces to null unless non-null', () => {
     expectValueFrom('null', GraphQLBoolean).to.equal(null);

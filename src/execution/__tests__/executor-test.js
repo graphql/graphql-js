@@ -146,8 +146,8 @@ describe('Execute: Handles basic execution tasks', () => {
       fields: {
         a: { type: GraphQLString },
         b: { type: GraphQLString },
-        c: { type: GraphQLList(GraphQLString) },
-        deeper: { type: GraphQLList(DataType) },
+        c: { type: new GraphQLList(GraphQLString) },
+        deeper: { type: new GraphQLList(DataType) },
       },
     });
 
@@ -431,7 +431,7 @@ describe('Execute: Handles basic execution tasks', () => {
           syncError: { type: GraphQLString },
           syncRawError: { type: GraphQLString },
           syncReturnError: { type: GraphQLString },
-          syncReturnErrorList: { type: GraphQLList(GraphQLString) },
+          syncReturnErrorList: { type: new GraphQLList(GraphQLString) },
           async: { type: GraphQLString },
           asyncReject: { type: GraphQLString },
           asyncRejectWithExtensions: { type: GraphQLString },
@@ -612,7 +612,7 @@ describe('Execute: Handles basic execution tasks', () => {
         name: 'Query',
         fields: {
           foods: {
-            type: GraphQLList(
+            type: new GraphQLList(
               new GraphQLObjectType({
                 name: 'Food',
                 fields: {
@@ -659,11 +659,11 @@ describe('Execute: Handles basic execution tasks', () => {
           resolve: () => ({}),
         },
         nonNullA: {
-          type: GraphQLNonNull(A),
+          type: new GraphQLNonNull(A),
           resolve: () => ({}),
         },
         throws: {
-          type: GraphQLNonNull(GraphQLString),
+          type: new GraphQLNonNull(GraphQLString),
           resolve: () => {
             throw new Error('Catch me if you can');
           },
@@ -1090,7 +1090,7 @@ describe('Execute: Handles basic execution tasks', () => {
       query: new GraphQLObjectType({
         name: 'Query',
         fields: {
-          specials: { type: GraphQLList(SpecialType) },
+          specials: { type: new GraphQLList(SpecialType) },
         },
       }),
     });
