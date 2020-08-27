@@ -25,6 +25,7 @@ export function ProvidedRequiredArgumentsRule(
   context: ValidationContext,
 ): ASTVisitor {
   return {
+    // eslint-disable-next-line new-cap
     ...ProvidedRequiredArgumentsOnDirectivesRule(context),
     Field: {
       // Validate on leave to allow for deeper errors to appear first.

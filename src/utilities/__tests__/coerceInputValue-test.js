@@ -260,7 +260,7 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLInputObject with default value', () => {
-    const TestInputObject = (defaultValue) =>
+    const makeTestInputObject = (defaultValue) =>
       new GraphQLInputObjectType({
         name: 'TestInputObject',
         fields: {
@@ -272,22 +272,22 @@ describe('coerceInputValue', () => {
       });
 
     it('returns no errors for valid input value', () => {
-      const result = coerceValue({ foo: 5 }, TestInputObject(7));
+      const result = coerceValue({ foo: 5 }, makeTestInputObject(7));
       expectValue(result).to.deep.equal({ foo: 5 });
     });
 
     it('returns object with default value', () => {
-      const result = coerceValue({}, TestInputObject(7));
+      const result = coerceValue({}, makeTestInputObject(7));
       expectValue(result).to.deep.equal({ foo: 7 });
     });
 
     it('returns null as value', () => {
-      const result = coerceValue({}, TestInputObject(null));
+      const result = coerceValue({}, makeTestInputObject(null));
       expectValue(result).to.deep.equal({ foo: null });
     });
 
     it('returns NaN as value', () => {
-      const result = coerceValue({}, TestInputObject(NaN));
+      const result = coerceValue({}, makeTestInputObject(NaN));
       expectValue(result).to.have.property('foo').that.satisfy(Number.isNaN);
     });
   });

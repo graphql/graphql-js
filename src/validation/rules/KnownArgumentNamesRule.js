@@ -21,6 +21,7 @@ import type {
  */
 export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
   return {
+    // eslint-disable-next-line new-cap
     ...KnownArgumentNamesOnDirectivesRule(context),
     Argument(argNode) {
       const argDef = context.getArgument();
