@@ -13,7 +13,8 @@ import { isType, isRequiredArgument } from "../../type/definition.js";
  * default value) field arguments have been provided.
  */
 export function ProvidedRequiredArgumentsRule(context) {
-  return { ...ProvidedRequiredArgumentsOnDirectivesRule(context),
+  return { // eslint-disable-next-line new-cap
+    ...ProvidedRequiredArgumentsOnDirectivesRule(context),
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
       leave(fieldNode) {
