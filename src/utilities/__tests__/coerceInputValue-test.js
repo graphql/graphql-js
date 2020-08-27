@@ -172,7 +172,7 @@ describe('coerceInputValue', () => {
     const TestInputObject = new GraphQLInputObjectType({
       name: 'TestInputObject',
       fields: {
-        foo: { type: GraphQLNonNull(GraphQLInt) },
+        foo: { type: new GraphQLNonNull(GraphQLInt) },
         bar: { type: GraphQLInt },
       },
     });
@@ -293,7 +293,7 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLList', () => {
-    const TestList = GraphQLList(GraphQLInt);
+    const TestList = new GraphQLList(GraphQLInt);
 
     it('returns no error for a valid input', () => {
       const result = coerceValue([1, 2, 3], TestList);
@@ -339,7 +339,7 @@ describe('coerceInputValue', () => {
   });
 
   describe('for nested GraphQLList', () => {
-    const TestNestedList = GraphQLList(GraphQLList(GraphQLInt));
+    const TestNestedList = new GraphQLList(new GraphQLList(GraphQLInt));
 
     it('returns no error for a valid input', () => {
       const result = coerceValue([[1], [2, 3]], TestNestedList);
@@ -369,14 +369,19 @@ describe('coerceInputValue', () => {
 
   describe('with default onError', () => {
     it('throw error without path', () => {
-      expect(() => coerceInputValue(null, GraphQLNonNull(GraphQLInt))).to.throw(
+      expect(() =>
+        coerceInputValue(null, new GraphQLNonNull(GraphQLInt)),
+      ).to.throw(
         'Invalid value null: Expected non-nullable type "Int!" not to be null.',
       );
     });
 
     it('throw error with path', () => {
       expect(() =>
-        coerceInputValue([null], GraphQLList(GraphQLNonNull(GraphQLInt))),
+        coerceInputValue(
+          [null],
+          new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+        ),
       ).to.throw(
         'Invalid value null at "value[0]": Expected non-nullable type "Int!" not to be null.',
       );

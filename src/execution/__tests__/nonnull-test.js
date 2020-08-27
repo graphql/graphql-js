@@ -531,7 +531,7 @@ describe('Execute: handles non-nullable types', () => {
             type: GraphQLString,
             args: {
               cannotBeNull: {
-                type: GraphQLNonNull(GraphQLString),
+                type: new GraphQLNonNull(GraphQLString),
               },
             },
             resolve: (_, args) => 'Passed: ' + String(args.cannotBeNull),

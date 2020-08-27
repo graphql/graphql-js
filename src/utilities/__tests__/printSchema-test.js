@@ -48,7 +48,10 @@ describe('Type System Printer', () => {
   });
 
   it('Prints [String] Field', () => {
-    const schema = buildSingleFieldSchema({ type: GraphQLList(GraphQLString) });
+    const schema = buildSingleFieldSchema({
+      type: new GraphQLList(GraphQLString),
+    });
+
     expectPrintedSchema(schema).to.equal(dedent`
       type Query {
         singleField: [String]
@@ -58,7 +61,7 @@ describe('Type System Printer', () => {
 
   it('Prints String! Field', () => {
     const schema = buildSingleFieldSchema({
-      type: GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(GraphQLString),
     });
 
     expectPrintedSchema(schema).to.equal(dedent`
@@ -70,7 +73,7 @@ describe('Type System Printer', () => {
 
   it('Prints [String]! Field', () => {
     const schema = buildSingleFieldSchema({
-      type: GraphQLNonNull(GraphQLList(GraphQLString)),
+      type: new GraphQLNonNull(new GraphQLList(GraphQLString)),
     });
 
     expectPrintedSchema(schema).to.equal(dedent`
@@ -82,7 +85,7 @@ describe('Type System Printer', () => {
 
   it('Prints [String!] Field', () => {
     const schema = buildSingleFieldSchema({
-      type: GraphQLList(GraphQLNonNull(GraphQLString)),
+      type: new GraphQLList(new GraphQLNonNull(GraphQLString)),
     });
 
     expectPrintedSchema(schema).to.equal(dedent`
@@ -94,7 +97,9 @@ describe('Type System Printer', () => {
 
   it('Prints [String!]! Field', () => {
     const schema = buildSingleFieldSchema({
-      type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))),
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLString)),
+      ),
     });
 
     expectPrintedSchema(schema).to.equal(dedent`
@@ -176,7 +181,7 @@ describe('Type System Printer', () => {
   it('Prints String Field With Int! Arg', () => {
     const schema = buildSingleFieldSchema({
       type: GraphQLString,
-      args: { argOne: { type: GraphQLNonNull(GraphQLInt) } },
+      args: { argOne: { type: new GraphQLNonNull(GraphQLInt) } },
     });
 
     expectPrintedSchema(schema).to.equal(dedent`

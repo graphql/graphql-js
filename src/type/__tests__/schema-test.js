@@ -59,7 +59,7 @@ describe('Type System: Schema', () => {
           type: BlogArticle,
         },
         feed: {
-          type: GraphQLList(BlogArticle),
+          type: new GraphQLList(BlogArticle),
         },
       },
     });

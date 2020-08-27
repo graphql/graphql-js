@@ -36,7 +36,7 @@ const InboxType = new GraphQLObjectType({
       type: GraphQLInt,
       resolve: (inbox) => inbox.emails.filter((email) => email.unread).length,
     },
-    emails: { type: GraphQLList(EmailType) },
+    emails: { type: new GraphQLList(EmailType) },
   },
 });
 

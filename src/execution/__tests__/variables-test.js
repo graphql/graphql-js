@@ -37,8 +37,8 @@ const TestInputObject = new GraphQLInputObjectType({
   name: 'TestInputObject',
   fields: {
     a: { type: GraphQLString },
-    b: { type: GraphQLList(GraphQLString) },
-    c: { type: GraphQLNonNull(GraphQLString) },
+    b: { type: new GraphQLList(GraphQLString) },
+    c: { type: new GraphQLNonNull(GraphQLString) },
     d: { type: TestComplexScalar },
   },
 });
@@ -46,8 +46,8 @@ const TestInputObject = new GraphQLInputObjectType({
 const TestNestedInputObject = new GraphQLInputObjectType({
   name: 'TestNestedInputObject',
   fields: {
-    na: { type: GraphQLNonNull(TestInputObject) },
-    nb: { type: GraphQLNonNull(GraphQLString) },
+    na: { type: new GraphQLNonNull(TestInputObject) },
+    nb: { type: new GraphQLNonNull(GraphQLString) },
   },
 });
 
@@ -80,34 +80,36 @@ const TestType = new GraphQLObjectType({
   fields: {
     fieldWithEnumInput: fieldWithInputArg({ type: TestEnum }),
     fieldWithNonNullableEnumInput: fieldWithInputArg({
-      type: GraphQLNonNull(TestEnum),
+      type: new GraphQLNonNull(TestEnum),
     }),
     fieldWithObjectInput: fieldWithInputArg({ type: TestInputObject }),
     fieldWithNullableStringInput: fieldWithInputArg({ type: GraphQLString }),
     fieldWithNonNullableStringInput: fieldWithInputArg({
-      type: GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(GraphQLString),
     }),
     fieldWithDefaultArgumentValue: fieldWithInputArg({
       type: GraphQLString,
       defaultValue: 'Hello World',
     }),
     fieldWithNonNullableStringInputAndDefaultArgumentValue: fieldWithInputArg({
-      type: GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(GraphQLString),
       defaultValue: 'Hello World',
     }),
     fieldWithNestedInputObject: fieldWithInputArg({
       type: TestNestedInputObject,
       defaultValue: 'Hello World',
     }),
-    list: fieldWithInputArg({ type: GraphQLList(GraphQLString) }),
+    list: fieldWithInputArg({ type: new GraphQLList(GraphQLString) }),
     nnList: fieldWithInputArg({
-      type: GraphQLNonNull(GraphQLList(GraphQLString)),
+      type: new GraphQLNonNull(new GraphQLList(GraphQLString)),
     }),
     listNN: fieldWithInputArg({
-      type: GraphQLList(GraphQLNonNull(GraphQLString)),
+      type: new GraphQLList(new GraphQLNonNull(GraphQLString)),
     }),
     nnListNN: fieldWithInputArg({
-      type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))),
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLString)),
+      ),
     }),
   },
 });

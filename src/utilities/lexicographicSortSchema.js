@@ -5,18 +5,18 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 
-import type { GraphQLNamedType } from '../type/definition';
+import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import { isIntrospectionType } from '../type/introspection';
 import {
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
   isListType,
   isNonNullType,
   isScalarType,
@@ -49,10 +49,12 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     subscription: replaceMaybeType(schemaConfig.subscription),
   });
 
-  function replaceType(type) {
+  function replaceType<T: GraphQLType>(type: T): T {
     if (isListType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
     } else if (isNonNullType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLNonNull(replaceType(type.ofType));
     }
     return replaceNamedType(type);

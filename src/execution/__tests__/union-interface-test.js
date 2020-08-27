@@ -9,9 +9,9 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
   GraphQLList,
+  GraphQLUnionType,
   GraphQLObjectType,
   GraphQLInterfaceType,
-  GraphQLUnionType,
 } from '../../type/definition';
 
 import { executeSync } from '../execute';
@@ -70,7 +70,7 @@ const NamedType = new GraphQLInterfaceType({
 const LifeType = new GraphQLInterfaceType({
   name: 'Life',
   fields: () => ({
-    progeny: { type: GraphQLList(LifeType) },
+    progeny: { type: new GraphQLList(LifeType) },
   }),
 });
 
@@ -78,7 +78,7 @@ const MammalType = new GraphQLInterfaceType({
   name: 'Mammal',
   interfaces: [LifeType],
   fields: () => ({
-    progeny: { type: GraphQLList(MammalType) },
+    progeny: { type: new GraphQLList(MammalType) },
     mother: { type: MammalType },
     father: { type: MammalType },
   }),
@@ -90,7 +90,7 @@ const DogType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     barks: { type: GraphQLBoolean },
-    progeny: { type: GraphQLList(DogType) },
+    progeny: { type: new GraphQLList(DogType) },
     mother: { type: DogType },
     father: { type: DogType },
   }),
@@ -103,7 +103,7 @@ const CatType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     meows: { type: GraphQLBoolean },
-    progeny: { type: GraphQLList(CatType) },
+    progeny: { type: new GraphQLList(CatType) },
     mother: { type: CatType },
     father: { type: CatType },
   }),
@@ -132,9 +132,9 @@ const PersonType = new GraphQLObjectType({
   interfaces: [NamedType, MammalType, LifeType],
   fields: () => ({
     name: { type: GraphQLString },
-    pets: { type: GraphQLList(PetType) },
-    friends: { type: GraphQLList(NamedType) },
-    progeny: { type: GraphQLList(PersonType) },
+    pets: { type: new GraphQLList(PetType) },
+    friends: { type: new GraphQLList(NamedType) },
+    progeny: { type: new GraphQLList(PersonType) },
     mother: { type: PersonType },
     father: { type: PersonType },
   }),
@@ -523,7 +523,7 @@ describe('Execute: Union and intersection types', () => {
       interfaces: [NamedType2],
       fields: {
         name: { type: GraphQLString },
-        friends: { type: GraphQLList(NamedType2) },
+        friends: { type: new GraphQLList(NamedType2) },
       },
     });
     const schema2 = new GraphQLSchema({ query: PersonType2 });

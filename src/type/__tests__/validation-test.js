@@ -73,9 +73,9 @@ function withModifiers<T: GraphQLNamedType>(
 ): Array<T | GraphQLList<T> | GraphQLNonNull<T | GraphQLList<T>>> {
   return [
     type,
-    GraphQLList(type),
-    GraphQLNonNull(type),
-    GraphQLNonNull(GraphQLList(type)),
+    new GraphQLList(type),
+    new GraphQLNonNull(type),
+    new GraphQLNonNull(new GraphQLList(type)),
   ];
 }
 

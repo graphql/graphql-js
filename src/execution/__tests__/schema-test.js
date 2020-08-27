@@ -46,12 +46,12 @@ describe('Execute: Handles execution with a complex schema', () => {
     const BlogArticle = new GraphQLObjectType({
       name: 'Article',
       fields: {
-        id: { type: GraphQLNonNull(GraphQLString) },
+        id: { type: new GraphQLNonNull(GraphQLString) },
         isPublished: { type: GraphQLBoolean },
         author: { type: BlogAuthor },
         title: { type: GraphQLString },
         body: { type: GraphQLString },
-        keywords: { type: GraphQLList(GraphQLString) },
+        keywords: { type: new GraphQLList(GraphQLString) },
       },
     });
 
@@ -64,7 +64,7 @@ describe('Execute: Handles execution with a complex schema', () => {
           resolve: (_, { id }) => article(id),
         },
         feed: {
-          type: GraphQLList(BlogArticle),
+          type: new GraphQLList(BlogArticle),
           resolve: () => [
             article(1),
             article(2),
