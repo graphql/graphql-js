@@ -5,7 +5,7 @@ import keyValMap from "../jsutils/keyValMap.js";
 import { GraphQLSchema } from "../type/schema.js";
 import { GraphQLDirective } from "../type/directives.js";
 import { isIntrospectionType } from "../type/introspection.js";
-import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.js";
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.js";
 /**
  * Sort GraphQLSchema.
  *
@@ -25,8 +25,10 @@ export function lexicographicSortSchema(schema) {
 
   function replaceType(type) {
     if (isListType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
     } else if (isNonNullType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLNonNull(replaceType(type.ofType));
     }
 

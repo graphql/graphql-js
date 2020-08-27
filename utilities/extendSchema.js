@@ -119,8 +119,12 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
 
   function replaceType(type) {
     if (isListType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
-    } else if (isNonNullType(type)) {
+    }
+
+    if (isNonNullType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLNonNull(replaceType(type.ofType));
     }
 
