@@ -695,6 +695,20 @@ describe('Type System: build schema from introspection', () => {
       expect(printSchema(clientSchema)).to.equal(printSchema(dummySchema));
     });
 
+    it('Legacy support for interfaces with missing interfaces field', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const someInterfaceIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'SomeInterface',
+      );
+
+      expect(someInterfaceIntrospection).to.have.property('interfaces');
+      delete (someInterfaceIntrospection: any).interfaces;
+      expect(someInterfaceIntrospection).to.not.have.property('interfaces');
+
+      const clientSchema = buildClientSchema(introspection);
+      expect(printSchema(clientSchema)).to.equal(printSchema(dummySchema));
+    });
+
     it('throws when missing fields', () => {
       const introspection = introspectionFromSchema(dummySchema);
       const queryTypeIntrospection = introspection.__schema.types.find(
