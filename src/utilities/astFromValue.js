@@ -1,4 +1,3 @@
-import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
@@ -67,7 +66,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
       const valuesNodes = [];
       // Since we transpile for-of in loose mode it doesn't support iterators
       // and it's required to first convert iteratable into array
-      for (const item of arrayFrom(value)) {
+      for (const item of Array.from(value)) {
         const itemNode = astFromValue(item, itemType);
         if (itemNode != null) {
           valuesNodes.push(itemNode);
