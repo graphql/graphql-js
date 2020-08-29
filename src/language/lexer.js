@@ -675,8 +675,8 @@ function readName(
     position !== bodyLength &&
     !isNaN((code = body.charCodeAt(position))) &&
     (code === 95 || // _
-    (code >= 48 && code <= 57) || // 0-9
-    (code >= 65 && code <= 90) || // A-Z
+      (code >= 48 && code <= 57) || // 0-9
+      (code >= 65 && code <= 90) || // A-Z
       (code >= 97 && code <= 122)) // a-z
   ) {
     ++position;

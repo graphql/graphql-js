@@ -80,11 +80,11 @@ const tarkin: Human = {
 };
 
 const humanData: {| [id: string]: Human |} = {
-  '1000': luke,
-  '1001': vader,
-  '1002': han,
-  '1003': leia,
-  '1004': tarkin,
+  [luke.id]: luke,
+  [vader.id]: vader,
+  [han.id]: han,
+  [leia.id]: leia,
+  [tarkin.id]: tarkin,
 };
 
 const threepio: Droid = {
@@ -106,8 +106,8 @@ const artoo: Droid = {
 };
 
 const droidData: {| [id: string]: Droid |} = {
-  '2000': threepio,
-  '2001': artoo,
+  [threepio.id]: threepio,
+  [artoo.id]: artoo,
 };
 
 /**

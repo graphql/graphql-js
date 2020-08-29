@@ -17,12 +17,12 @@ describe('isCollection', () => {
     }
     expect(isCollection(getArguments())).to.equal(true);
 
-    const arrayLike = {
-      length: 3,
-      '0': 'Alpha',
-      '1': 'Bravo',
-      '2': 'Charlie',
-    };
+    const arrayLike = {};
+    arrayLike[0] = 'Alpha';
+    arrayLike[1] = 'Bravo';
+    arrayLike[2] = 'Charlie';
+    arrayLike.length = 3;
+
     expect(isCollection(arrayLike)).to.equal(true);
 
     const iterator = { [Symbol.iterator]: identityFunc };
