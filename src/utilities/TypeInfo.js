@@ -1,5 +1,3 @@
-import find from '../polyfills/find';
-
 import type { Visitor } from '../language/visitor';
 import type { ASTNode, ASTKindToNode, FieldNode } from '../language/ast';
 import { Kind } from '../language/kinds';
@@ -204,8 +202,7 @@ export class TypeInfo {
         let argType: mixed;
         const fieldOrDirective = this.getDirective() ?? this.getFieldDef();
         if (fieldOrDirective) {
-          argDef = find(
-            fieldOrDirective.args,
+          argDef = fieldOrDirective.args.find(
             (arg) => arg.name === node.name.value,
           );
           if (argDef) {

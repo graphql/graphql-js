@@ -1,4 +1,3 @@
-import find from '../../polyfills/find';
 import objectEntries from '../../polyfills/objectEntries';
 
 import type { ObjMap } from '../../jsutils/ObjMap';
@@ -631,8 +630,7 @@ function sameArguments(
     return false;
   }
   return arguments1.every((argument1) => {
-    const argument2 = find(
-      arguments2,
+    const argument2 = arguments2.find(
       (argument) => argument.name.value === argument1.name.value,
     );
     if (!argument2) {
