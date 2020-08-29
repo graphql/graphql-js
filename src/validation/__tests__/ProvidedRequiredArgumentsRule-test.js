@@ -1,5 +1,7 @@
 import { describe, it } from 'mocha';
 
+import type { GraphQLSchema } from '../../type/schema';
+
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import {
@@ -9,15 +11,15 @@ import {
 
 import { expectValidationErrors, expectSDLValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(ProvidedRequiredArgumentsRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 
-function expectSDLErrors(sdlStr, schema) {
+function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(
     schema,
     ProvidedRequiredArgumentsOnDirectivesRule,
@@ -25,7 +27,7 @@ function expectSDLErrors(sdlStr, schema) {
   );
 }
 
-function expectValidSDL(sdlStr) {
+function expectValidSDL(sdlStr: string) {
   expectSDLErrors(sdlStr).to.deep.equal([]);
 }
 

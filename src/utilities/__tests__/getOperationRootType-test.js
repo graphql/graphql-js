@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import invariant from '../../jsutils/invariant';
 
+import type { DocumentNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
@@ -33,7 +34,7 @@ const subscriptionType = new GraphQLObjectType({
   }),
 });
 
-function getOperationNode(doc) {
+function getOperationNode(doc: DocumentNode) {
   const operationNode = doc.definitions[0];
   invariant(operationNode && operationNode.kind === Kind.OPERATION_DEFINITION);
   return operationNode;

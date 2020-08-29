@@ -152,7 +152,10 @@ export function valueFromAST(
 
 // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
-function isMissingVariable(valueNode, variables) {
+function isMissingVariable(
+  valueNode: ValueNode,
+  variables: ?ObjMap<mixed>,
+): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&
     (variables == null || variables[valueNode.name.value] === undefined)

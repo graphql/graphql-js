@@ -364,9 +364,7 @@ describe('Type System: Objects', () => {
         return [{ field: ScalarType }];
       },
     });
-    expect(() => objType.getFields()).to.throw(
-      'SomeObject fields must be an object with field names as keys or a function which returns such an object.',
-    );
+    expect(() => objType.getFields()).to.throw();
   });
 
   it('rejects an Object type with incorrectly typed field args', () => {
@@ -959,7 +957,7 @@ describe('Type System: test utility methods', () => {
   });
 
   it('Object.toStringifies types', () => {
-    function toString(obj) {
+    function toString(obj: mixed): string {
       return Object.prototype.toString.call(obj);
     }
 

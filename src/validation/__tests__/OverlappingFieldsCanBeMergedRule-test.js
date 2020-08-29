@@ -1,5 +1,7 @@
 import { describe, it } from 'mocha';
 
+import type { GraphQLSchema } from '../../type/schema';
+
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { OverlappingFieldsCanBeMergedRule } from '../rules/OverlappingFieldsCanBeMergedRule';
@@ -9,15 +11,15 @@ import {
   expectValidationErrorsWithSchema,
 } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(OverlappingFieldsCanBeMergedRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 
-function expectErrorsWithSchema(schema, queryStr) {
+function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
   return expectValidationErrorsWithSchema(
     schema,
     OverlappingFieldsCanBeMergedRule,
@@ -25,7 +27,7 @@ function expectErrorsWithSchema(schema, queryStr) {
   );
 }
 
-function expectValidWithSchema(schema, queryStr) {
+function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
   expectErrorsWithSchema(schema, queryStr).to.deep.equal([]);
 }
 

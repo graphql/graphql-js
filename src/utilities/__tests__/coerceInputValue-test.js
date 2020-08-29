@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import invariant from '../../jsutils/invariant';
 
+import type { GraphQLInputType } from '../../type/definition';
 import { GraphQLInt } from '../../type/scalars';
 import {
   GraphQLList,
@@ -14,25 +15,27 @@ import {
 
 import { coerceInputValue } from '../coerceInputValue';
 
-function expectValue(result) {
+function expectValue(result: any) {
   expect(result.errors).to.deep.equal([]);
   return expect(result.value);
 }
 
-function expectErrors(result) {
+function expectErrors(result: any) {
   return expect(result.errors);
 }
 
 describe('coerceInputValue', () => {
-  function coerceValue(inputValue, type) {
+  function coerceValue(inputValue: mixed, type: GraphQLInputType) {
     const errors = [];
+    const value = coerceInputValue(
+      inputValue,
+      type,
+      (path, invalidValue, error) => {
+        errors.push({ path, value: invalidValue, error: error.message });
+      },
+    );
 
-    const value = coerceInputValue(inputValue, type, onError);
     return { errors, value };
-
-    function onError(path, invalidValue, error) {
-      errors.push({ path, value: invalidValue, error: error.message });
-    }
   }
 
   describe('for GraphQLNonNull', () => {

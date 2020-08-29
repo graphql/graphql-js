@@ -112,7 +112,10 @@ const schema = new GraphQLSchema({
   subscription: SubscriptionType,
 });
 
-function executeQuery(source, variableValues) {
+function executeQuery(
+  source: string,
+  variableValues?: { +[variable: string]: mixed, ... },
+) {
   return graphqlSync({ schema, source, variableValues });
 }
 

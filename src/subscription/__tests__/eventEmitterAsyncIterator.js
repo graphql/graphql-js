@@ -13,7 +13,7 @@ export default function eventEmitterAsyncIterator(
   let listening = true;
   eventEmitter.addListener(eventName, pushValue);
 
-  function pushValue(event) {
+  function pushValue(event: mixed) {
     if (pullQueue.length !== 0) {
       pullQueue.shift()({ value: event, done: false });
     } else {
@@ -53,7 +53,7 @@ export default function eventEmitterAsyncIterator(
       emptyQueue();
       return Promise.resolve({ value: undefined, done: true });
     },
-    throw(error) {
+    throw(error: mixed) {
       emptyQueue();
       return Promise.reject(error);
     },

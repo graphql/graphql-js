@@ -5,10 +5,12 @@ import dedent from '../../__testUtils__/dedent';
 
 import invariant from '../../jsutils/invariant';
 
+import type { ASTNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
+import type { GraphQLNamedType } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { validateSchema } from '../../type/validate';
 import { __Schema, __EnumValue } from '../../type/introspection';
@@ -45,7 +47,7 @@ import { buildASTSchema, buildSchema } from '../buildASTSchema';
  * the SDL, parsed in a schema AST, materializing that schema AST into an
  * in-memory GraphQLSchema, and then finally printing that object into the SDL
  */
-function cycleSDL(sdl, options) {
+function cycleSDL(sdl: string, options): string {
   const ast = parse(sdl);
   const schema = buildASTSchema(ast, options);
 
@@ -53,12 +55,12 @@ function cycleSDL(sdl, options) {
   return printSchema(schema, { commentDescriptions });
 }
 
-function printASTNode(obj) {
+function printASTNode(obj: ?{ +astNode: ?ASTNode, ... }): string {
   invariant(obj?.astNode != null);
   return print(obj.astNode);
 }
 
-function printAllASTNodes(obj) {
+function printAllASTNodes(obj: GraphQLNamedType): string {
   invariant(obj.astNode != null && obj.extensionASTNodes != null);
   return print({
     kind: Kind.DOCUMENT,

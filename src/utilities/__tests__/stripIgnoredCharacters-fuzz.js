@@ -11,7 +11,7 @@ import { Source } from '../../language/source';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
 
-function lexValue(str) {
+function lexValue(str: string) {
   const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 

@@ -1,12 +1,14 @@
 import { describe, it } from 'mocha';
 
+import type { GraphQLSchema } from '../../type/schema';
+
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { UniqueFieldDefinitionNamesRule } from '../rules/UniqueFieldDefinitionNamesRule';
 
 import { expectSDLValidationErrors } from './harness';
 
-function expectSDLErrors(sdlStr, schema) {
+function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(
     schema,
     UniqueFieldDefinitionNamesRule,
@@ -14,7 +16,7 @@ function expectSDLErrors(sdlStr, schema) {
   );
 }
 
-function expectValidSDL(sdlStr, schema) {
+function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
 }
 

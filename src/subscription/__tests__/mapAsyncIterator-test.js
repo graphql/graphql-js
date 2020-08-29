@@ -301,7 +301,7 @@ describe('mapAsyncIterator', () => {
     });
   });
 
-  async function testClosesSourceWithMapper(mapper) {
+  async function testClosesSourceWithMapper<T>(mapper: (number) => T) {
     let didVisitFinally = false;
 
     async function* source() {
@@ -357,7 +357,7 @@ describe('mapAsyncIterator', () => {
     );
   });
 
-  async function testClosesSourceWithRejectMapper(mapper) {
+  async function testClosesSourceWithRejectMapper<T>(mapper: (Error) => T) {
     async function* source() {
       yield 1;
       throw new Error(2);

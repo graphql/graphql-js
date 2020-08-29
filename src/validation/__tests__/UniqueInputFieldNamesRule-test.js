@@ -4,11 +4,11 @@ import { UniqueInputFieldNamesRule } from '../rules/UniqueInputFieldNamesRule';
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(UniqueInputFieldNamesRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 

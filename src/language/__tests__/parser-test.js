@@ -16,7 +16,7 @@ import { kitchenSinkQuery } from '../../__fixtures__/index';
 
 import toJSONDeep from './toJSONDeep';
 
-function expectSyntaxError(text) {
+function expectSyntaxError(text: string) {
   return expect(() => parse(text)).to.throw();
 }
 

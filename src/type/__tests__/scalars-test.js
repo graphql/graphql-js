@@ -14,7 +14,7 @@ import {
 describe('Type System: Specified scalar types', () => {
   describe('GraphQLInt', () => {
     it('parseValue', () => {
-      function parseValue(value) {
+      function parseValue(value: mixed) {
         return GraphQLInt.parseValue(value);
       }
 
@@ -65,7 +65,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('parseLiteral', () => {
-      function parseLiteral(str) {
+      function parseLiteral(str: string) {
         return GraphQLInt.parseLiteral(parseValueToAST(str));
       }
 
@@ -110,7 +110,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value) {
+      function serialize(value: mixed) {
         return GraphQLInt.serialize(value);
       }
 
@@ -183,7 +183,7 @@ describe('Type System: Specified scalar types', () => {
 
   describe('GraphQLFloat', () => {
     it('parseValue', () => {
-      function parseValue(value) {
+      function parseValue(value: mixed) {
         return GraphQLFloat.parseValue(value);
       }
 
@@ -230,7 +230,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('parseLiteral', () => {
-      function parseLiteral(str) {
+      function parseLiteral(str: string) {
         return GraphQLFloat.parseLiteral(parseValueToAST(str));
       }
 
@@ -270,7 +270,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value) {
+      function serialize(value: mixed) {
         return GraphQLFloat.serialize(value);
       }
 
@@ -313,7 +313,7 @@ describe('Type System: Specified scalar types', () => {
 
   describe('GraphQLString', () => {
     it('parseValue', () => {
-      function parseValue(value) {
+      function parseValue(value: mixed) {
         return GraphQLString.parseValue(value);
       }
 
@@ -343,7 +343,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('parseLiteral', () => {
-      function parseLiteral(str) {
+      function parseLiteral(str: string) {
         return GraphQLString.parseLiteral(parseValueToAST(str));
       }
 
@@ -377,7 +377,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value) {
+      function serialize(value: mixed) {
         return GraphQLString.serialize(value);
       }
 
@@ -418,7 +418,7 @@ describe('Type System: Specified scalar types', () => {
 
   describe('GraphQLBoolean', () => {
     it('parseValue', () => {
-      function parseValue(value) {
+      function parseValue(value: mixed) {
         return GraphQLBoolean.parseValue(value);
       }
 
@@ -455,7 +455,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('parseLiteral', () => {
-      function parseLiteral(str) {
+      function parseLiteral(str: string) {
         return GraphQLBoolean.parseLiteral(parseValueToAST(str));
       }
 
@@ -495,7 +495,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value) {
+      function serialize(value: mixed) {
         return GraphQLBoolean.serialize(value);
       }
 
@@ -532,7 +532,7 @@ describe('Type System: Specified scalar types', () => {
 
   describe('GraphQLID', () => {
     it('parseValue', () => {
-      function parseValue(value) {
+      function parseValue(value: mixed) {
         return GraphQLID.parseValue(value);
       }
 
@@ -570,7 +570,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('parseLiteral', () => {
-      function parseLiteral(str) {
+      function parseLiteral(str: string) {
         return GraphQLID.parseLiteral(parseValueToAST(str));
       }
 
@@ -610,7 +610,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value) {
+      function serialize(value: mixed) {
         return GraphQLID.serialize(value);
       }
 

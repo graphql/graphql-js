@@ -58,7 +58,7 @@ const nonPunctuatorTokens = [
   '"""block\nstring\nvalue"""', // StringValue(BlockString)
 ];
 
-function lexValue(str) {
+function lexValue(str: string): ?string {
   const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 
@@ -66,9 +66,9 @@ function lexValue(str) {
   return value;
 }
 
-function expectStripped(docString) {
+function expectStripped(docString: string) {
   return {
-    toEqual(expected) {
+    toEqual(expected: string): void {
       const stripped = stripIgnoredCharacters(docString);
 
       invariant(
@@ -91,7 +91,7 @@ function expectStripped(docString) {
         `,
       );
     },
-    toStayTheSame() {
+    toStayTheSame(): void {
       this.toEqual(docString);
     },
   };
@@ -398,7 +398,7 @@ describe('stripIgnoredCharacters', () => {
   });
 
   it('strips ignored characters inside block strings', () => {
-    function expectStrippedString(blockStr) {
+    function expectStrippedString(blockStr: string) {
       const originalValue = lexValue(blockStr);
       const strippedValue = lexValue(stripIgnoredCharacters(blockStr));
 

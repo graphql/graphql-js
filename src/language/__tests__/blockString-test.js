@@ -7,7 +7,7 @@ import {
   printBlockString,
 } from '../blockString';
 
-function joinLines(...args) {
+function joinLines(...args: Array<string>) {
   return args.join('\n');
 }
 

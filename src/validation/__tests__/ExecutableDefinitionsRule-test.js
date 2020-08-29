@@ -4,11 +4,11 @@ import { ExecutableDefinitionsRule } from '../rules/ExecutableDefinitionsRule';
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(ExecutableDefinitionsRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 

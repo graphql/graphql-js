@@ -4,11 +4,11 @@ import { LoneAnonymousOperationRule } from '../rules/LoneAnonymousOperationRule'
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(LoneAnonymousOperationRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 

@@ -3,9 +3,10 @@ import keyMap from '../../jsutils/keyMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
+import type { InputValueDefinitionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
-import type { ASTVisitor } from '../../language/visitor';
 
 import { specifiedDirectives } from '../../type/directives';
 import { isType, isRequiredArgument } from '../../type/definition';
@@ -118,6 +119,6 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
   };
 }
 
-function isRequiredArgumentNode(arg) {
+function isRequiredArgumentNode(arg: InputValueDefinitionNode): boolean {
   return arg.type.kind === Kind.NON_NULL_TYPE && arg.defaultValue == null;
 }

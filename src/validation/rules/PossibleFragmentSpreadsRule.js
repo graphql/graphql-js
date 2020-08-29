@@ -4,6 +4,7 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ASTVisitor } from '../../language/visitor';
 
+import type { GraphQLCompositeType } from '../../type/definition';
 import { isCompositeType } from '../../type/definition';
 
 import { typeFromAST } from '../../utilities/typeFromAST';
@@ -62,7 +63,10 @@ export function PossibleFragmentSpreadsRule(
   };
 }
 
-function getFragmentType(context, name) {
+function getFragmentType(
+  context: ValidationContext,
+  name: string,
+): ?GraphQLCompositeType {
   const frag = context.getFragment(name);
   if (frag) {
     const type = typeFromAST(context.getSchema(), frag.typeCondition);

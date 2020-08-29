@@ -9,6 +9,7 @@ import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 import type {
   SelectionSetNode,
+  ValueNode,
   FieldNode,
   ArgumentNode,
   FragmentDefinitionNode,
@@ -641,7 +642,7 @@ function sameArguments(
   });
 }
 
-function sameValue(value1, value2) {
+function sameValue(value1: ValueNode, value2: ValueNode): boolean {
   return print(value1) === print(value2);
 }
 
@@ -796,11 +797,11 @@ function subfieldConflicts(
 class PairSet {
   _data: ObjMap<ObjMap<boolean>>;
 
-  constructor(): void {
+  constructor() {
     this._data = Object.create(null);
   }
 
-  has(a: string, b: string, areMutuallyExclusive: boolean) {
+  has(a: string, b: string, areMutuallyExclusive: boolean): boolean {
     const first = this._data[a];
     const result = first && first[b];
     if (result === undefined) {
@@ -815,17 +816,17 @@ class PairSet {
     return true;
   }
 
-  add(a: string, b: string, areMutuallyExclusive: boolean) {
-    _pairSetAdd(this._data, a, b, areMutuallyExclusive);
-    _pairSetAdd(this._data, b, a, areMutuallyExclusive);
+  add(a: string, b: string, areMutuallyExclusive: boolean): void {
+    this._pairSetAdd(a, b, areMutuallyExclusive);
+    this._pairSetAdd(b, a, areMutuallyExclusive);
   }
-}
 
-function _pairSetAdd(data, a, b, areMutuallyExclusive) {
-  let map = data[a];
-  if (!map) {
-    map = Object.create(null);
-    data[a] = map;
+  _pairSetAdd(a: string, b: string, areMutuallyExclusive: boolean): void {
+    let map = this._data[a];
+    if (!map) {
+      map = Object.create(null);
+      this._data[a] = map;
+    }
+    map[b] = areMutuallyExclusive;
   }
-  map[b] = areMutuallyExclusive;
 }

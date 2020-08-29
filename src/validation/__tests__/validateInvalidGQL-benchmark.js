@@ -22,6 +22,6 @@ const queryAST = parse(`
 
 export const name = 'Validate Invalid Query';
 export const count = 50;
-export function measure() {
+export function measure(): void {
   validate(schema, queryAST);
 }

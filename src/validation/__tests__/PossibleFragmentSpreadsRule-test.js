@@ -4,11 +4,11 @@ import { PossibleFragmentSpreadsRule } from '../rules/PossibleFragmentSpreadsRul
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(PossibleFragmentSpreadsRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 
