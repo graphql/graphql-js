@@ -1,4 +1,3 @@
-import find from '../polyfills/find';
 import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
@@ -329,7 +328,7 @@ export class GraphQLSchema {
   }
 
   getDirective(name: string): ?GraphQLDirective {
-    return find(this.getDirectives(), (directive) => directive.name === name);
+    return this.getDirectives().find((directive) => directive.name === name);
   }
 
   toConfig(): GraphQLSchemaNormalizedConfig {

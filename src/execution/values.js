@@ -1,5 +1,3 @@
-import find from '../polyfills/find';
-
 import type { ObjMap } from '../jsutils/ObjMap';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
@@ -249,12 +247,10 @@ export function getDirectiveValues(
   node: { +directives?: $ReadOnlyArray<DirectiveNode>, ... },
   variableValues?: ?ObjMap<mixed>,
 ): void | { [argument: string]: mixed, ... } {
-  const directiveNode =
-    node.directives &&
-    find(
-      node.directives,
-      (directive) => directive.name.value === directiveDef.name,
-    );
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  const directiveNode = node.directives?.find(
+    (directive) => directive.name.value === directiveDef.name,
+  );
 
   if (directiveNode) {
     return getArgumentValues(directiveDef, directiveNode, variableValues);
