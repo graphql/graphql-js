@@ -280,7 +280,7 @@ function join(maybeArray) {
 
 
 function block(array) {
-  return array && array.length !== 0 ? '{\n' + indent(join(array, '\n')) + '\n}' : '';
+  return wrap('{\n', indent(join(array, '\n')), '\n}');
 }
 /**
  * If maybeString is not null or empty, then wrap with start and end, otherwise print an empty string.
@@ -293,7 +293,7 @@ function wrap(start, maybeString) {
 }
 
 function indent(str) {
-  return str !== '' ? '  ' + str.replace(/\n/g, '\n  ') : '';
+  return wrap('  ', str.replace(/\n/g, '\n  '));
 }
 
 function isMultiline(str) {
