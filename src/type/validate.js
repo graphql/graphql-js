@@ -1,4 +1,3 @@
-import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
@@ -393,7 +392,7 @@ function validateTypeImplementsInterface(
     // Assert each interface field arg is implemented.
     for (const ifaceArg of ifaceField.args) {
       const argName = ifaceArg.name;
-      const typeArg = find(typeField.args, (arg) => arg.name === argName);
+      const typeArg = typeField.args.find((arg) => arg.name === argName);
 
       // Assert interface field arg exists on object field.
       if (!typeArg) {
@@ -428,7 +427,7 @@ function validateTypeImplementsInterface(
     // Assert additional arguments must not be required.
     for (const typeArg of typeField.args) {
       const argName = typeArg.name;
-      const ifaceArg = find(ifaceField.args, (arg) => arg.name === argName);
+      const ifaceArg = ifaceField.args.find((arg) => arg.name === argName);
       if (!ifaceArg && isRequiredArgument(typeArg)) {
         context.reportError(
           `Object field ${type.name}.${fieldName} includes required argument ${argName} that is missing from the Interface field ${iface.name}.${fieldName}.`,
