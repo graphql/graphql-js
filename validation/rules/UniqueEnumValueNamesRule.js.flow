@@ -1,6 +1,10 @@
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ASTVisitor } from '../../language/visitor';
+import type {
+  EnumTypeDefinitionNode,
+  EnumTypeExtensionNode,
+} from '../../language/ast';
 
 import { isEnumType } from '../../type/definition';
 
@@ -23,7 +27,9 @@ export function UniqueEnumValueNamesRule(
     EnumTypeExtension: checkValueUniqueness,
   };
 
-  function checkValueUniqueness(node) {
+  function checkValueUniqueness(
+    node: EnumTypeDefinitionNode | EnumTypeExtensionNode,
+  ) {
     const typeName = node.name.value;
 
     if (!knownValueNames[typeName]) {

@@ -12,11 +12,11 @@ declare function instanceOf(
 export default process.env.NODE_ENV === 'production'
   ? // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
     // eslint-disable-next-line no-shadow
-    function instanceOf(value: mixed, constructor: mixed) {
+    function instanceOf(value: mixed, constructor: mixed): boolean {
       return value instanceof constructor;
     }
   : // eslint-disable-next-line no-shadow
-    function instanceOf(value: any, constructor: any) {
+    function instanceOf(value: any, constructor: any): boolean {
       if (value instanceof constructor) {
         return true;
       }

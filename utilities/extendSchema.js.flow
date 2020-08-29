@@ -52,10 +52,12 @@ import type {
 import type {
   GraphQLType,
   GraphQLNamedType,
+  GraphQLFieldConfig,
   GraphQLFieldConfigMap,
+  GraphQLArgumentConfig,
+  GraphQLFieldConfigArgumentMap,
   GraphQLEnumValueConfigMap,
   GraphQLInputFieldConfigMap,
-  GraphQLFieldConfigArgumentMap,
 } from '../type/definition';
 import { assertSchema, GraphQLSchema } from '../type/schema';
 import { specifiedScalarTypes, isSpecifiedScalarType } from '../type/scalars';
@@ -394,15 +396,18 @@ export function extendSchemaImpl(
     });
   }
 
-  function extendField(field) {
+  function extendField(
+    field: GraphQLFieldConfig<mixed, mixed>,
+  ): GraphQLFieldConfig<mixed, mixed> {
     return {
       ...field,
       type: replaceType(field.type),
+      // $FlowFixMe[incompatible-call]
       args: mapValue(field.args, extendArg),
     };
   }
 
-  function extendArg(arg) {
+  function extendArg(arg: GraphQLArgumentConfig) {
     return {
       ...arg,
       type: replaceType(arg.type),

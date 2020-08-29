@@ -463,14 +463,16 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
     if (isPromise(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return completed.then(undefined, function (error) {
-        return handleFieldError(error, fieldNodes, path, returnType, exeContext);
+      return completed.then(undefined, function (rawError) {
+        var error = locatedError(rawError, fieldNodes, pathToArray(path));
+        return handleFieldError(error, returnType, exeContext);
       });
     }
 
     return completed;
-  } catch (error) {
-    return handleFieldError(error, fieldNodes, path, returnType, exeContext);
+  } catch (rawError) {
+    var error = locatedError(rawError, fieldNodes, pathToArray(path));
+    return handleFieldError(error, returnType, exeContext);
   }
 }
 /**
@@ -495,10 +497,9 @@ export function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, p
   };
 }
 
-function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
-  var error = locatedError(rawError, fieldNodes, pathToArray(path)); // If the field type is non-nullable, then it is resolved without any
+function handleFieldError(error, returnType, exeContext) {
+  // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
-
   if (isNonNullType(returnType)) {
     throw error;
   } // Otherwise, error protection is applied, logging the error and resolving
@@ -615,14 +616,16 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
         containsPromise = true; // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
 
-        return completedItem.then(undefined, function (error) {
-          return handleFieldError(error, fieldNodes, itemPath, itemType, exeContext);
+        return completedItem.then(undefined, function (rawError) {
+          var error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+          return handleFieldError(error, itemType, exeContext);
         });
       }
 
       return completedItem;
-    } catch (error) {
-      return handleFieldError(error, fieldNodes, itemPath, itemType, exeContext);
+    } catch (rawError) {
+      var error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+      return handleFieldError(error, itemType, exeContext);
     }
   });
   return containsPromise ? Promise.all(completedResults) : completedResults;

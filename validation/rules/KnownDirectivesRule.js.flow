@@ -4,7 +4,7 @@ import invariant from '../../jsutils/invariant';
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ASTVisitor } from '../../language/visitor';
-import type { OperationTypeNode } from '../../language/ast';
+import type { ASTNode, OperationTypeNode } from '../../language/ast';
 import type { DirectiveLocationEnum } from '../../language/directiveLocation';
 import { Kind } from '../../language/kinds';
 import { DirectiveLocation } from '../../language/directiveLocation';
@@ -67,7 +67,9 @@ export function KnownDirectivesRule(
   };
 }
 
-function getDirectiveLocationForASTPath(ancestors) {
+function getDirectiveLocationForASTPath(
+  ancestors: $ReadOnlyArray<ASTNode | $ReadOnlyArray<ASTNode>>,
+): DirectiveLocationEnum | void {
   const appliedTo = ancestors[ancestors.length - 1];
   invariant(!Array.isArray(appliedTo));
 

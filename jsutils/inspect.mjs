@@ -1,5 +1,6 @@
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+/* eslint-disable flowtype/no-weak-types */
 import nodejsCustomInspectSymbol from "./nodejsCustomInspectSymbol.mjs";
 var MAX_ARRAY_LENGTH = 10;
 var MAX_RECURSIVE_DEPTH = 2;
@@ -40,7 +41,6 @@ function formatObjectValue(value, previouslySeenValues) {
   var customInspectFn = getCustomFn(value);
 
   if (customInspectFn !== undefined) {
-    // $FlowFixMe[incompatible-use]
     var customValue = customInspectFn.call(value); // check for infinite recursion
 
     if (customValue !== value) {

@@ -51,7 +51,7 @@ export function UniqueFieldDefinitionNamesRule(context) {
 
 function hasField(type, fieldName) {
   if (isObjectType(type) || isInterfaceType(type) || isInputObjectType(type)) {
-    return type.getFields()[fieldName];
+    return type.getFields()[fieldName] != null;
   }
 
   return false;

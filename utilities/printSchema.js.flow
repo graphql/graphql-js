@@ -10,8 +10,12 @@ import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLDirective } from '../type/directives';
 import type {
   GraphQLNamedType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLInputField,
   GraphQLScalarType,
   GraphQLEnumType,
+  GraphQLEnumValue,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -248,7 +252,10 @@ function printInputObject(type: GraphQLInputObjectType, options): string {
   );
 }
 
-function printFields(options, type) {
+function printFields(
+  options,
+  type: GraphQLObjectType | GraphQLInterfaceType,
+): string {
   const fields = objectValues(type.getFields()).map(
     (f, i) =>
       printDescription(options, f, '  ', !i) +
@@ -262,11 +269,15 @@ function printFields(options, type) {
   return printBlock(fields);
 }
 
-function printBlock(items) {
+function printBlock(items: $ReadOnlyArray<string>): string {
   return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
 }
 
-function printArgs(options, args, indentation = '') {
+function printArgs(
+  options,
+  args: Array<GraphQLArgument>,
+  indentation: string = '',
+): string {
   if (args.length === 0) {
     return '';
   }
@@ -293,7 +304,7 @@ function printArgs(options, args, indentation = '') {
   );
 }
 
-function printInputValue(arg) {
+function printInputValue(arg: GraphQLInputField): string {
   const defaultAST = astFromValue(arg.defaultValue, arg.type);
   let argDecl = arg.name + ': ' + String(arg.type);
   if (defaultAST) {
@@ -302,7 +313,7 @@ function printInputValue(arg) {
   return argDecl;
 }
 
-function printDirective(directive, options) {
+function printDirective(directive: GraphQLDirective, options): string {
   return (
     printDescription(options, directive) +
     'directive @' +
@@ -314,7 +325,9 @@ function printDirective(directive, options) {
   );
 }
 
-function printDeprecated(fieldOrEnumVal) {
+function printDeprecated(
+  fieldOrEnumVal: GraphQLEnumValue | GraphQLField<mixed, mixed>,
+): string {
   const { deprecationReason } = fieldOrEnumVal;
   if (deprecationReason == null) {
     return '';
@@ -326,7 +339,7 @@ function printDeprecated(fieldOrEnumVal) {
   return ' @deprecated';
 }
 
-function printSpecifiedByUrl(scalar: GraphQLScalarType) {
+function printSpecifiedByUrl(scalar: GraphQLScalarType): string {
   if (scalar.specifiedByUrl == null) {
     return '';
   }
@@ -341,9 +354,9 @@ function printSpecifiedByUrl(scalar: GraphQLScalarType) {
 
 function printDescription(
   options,
-  def,
-  indentation = '',
-  firstInBlock = true,
+  def: { +description: ?string, ... },
+  indentation: string = '',
+  firstInBlock: boolean = true,
 ): string {
   const { description } = def;
   if (description == null) {

@@ -5,7 +5,13 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 
-import type { GraphQLType, GraphQLNamedType } from '../type/definition';
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLFieldConfigMap,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLInputFieldConfigMap,
+} from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import { isIntrospectionType } from '../type/introspection';
@@ -64,11 +70,11 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return ((typeMap[type.name]: any): T);
   }
 
-  function replaceMaybeType(maybeType) {
+  function replaceMaybeType<T: ?GraphQLNamedType>(maybeType: T): T {
     return maybeType && replaceNamedType(maybeType);
   }
 
-  function sortDirective(directive) {
+  function sortDirective(directive: GraphQLDirective) {
     const config = directive.toConfig();
     return new GraphQLDirective({
       ...config,
@@ -77,14 +83,14 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     });
   }
 
-  function sortArgs(args) {
+  function sortArgs(args: GraphQLFieldConfigArgumentMap) {
     return sortObjMap(args, (arg) => ({
       ...arg,
       type: replaceType(arg.type),
     }));
   }
 
-  function sortFields(fieldsMap) {
+  function sortFields(fieldsMap: GraphQLFieldConfigMap<mixed, mixed>) {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
@@ -92,7 +98,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }));
   }
 
-  function sortInputFields(fieldsMap) {
+  function sortInputFields(fieldsMap: GraphQLInputFieldConfigMap) {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
@@ -103,7 +109,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return sortByName(arr).map(replaceNamedType);
   }
 
-  function sortNamedType(type) {
+  function sortNamedType<T: GraphQLNamedType>(type: T) {
     if (isScalarType(type) || isIntrospectionType(type)) {
       return type;
     }

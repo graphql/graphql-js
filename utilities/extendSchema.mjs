@@ -288,6 +288,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   function extendField(field) {
     return _objectSpread(_objectSpread({}, field), {}, {
       type: replaceType(field.type),
+      // $FlowFixMe[incompatible-call]
       args: mapValue(field.args, extendArg)
     });
   }

@@ -29,7 +29,7 @@ export function NoFragmentCyclesRule(
   // This does a straight-forward DFS to find cycles.
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
-  function detectCycleRecursive(fragment: FragmentDefinitionNode) {
+  function detectCycleRecursive(fragment: FragmentDefinitionNode): void {
     if (visitedFrags[fragment.name.value]) {
       return;
     }

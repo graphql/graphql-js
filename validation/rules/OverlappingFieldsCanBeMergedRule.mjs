@@ -548,21 +548,21 @@ var PairSet = /*#__PURE__*/function () {
   };
 
   _proto.add = function add(a, b, areMutuallyExclusive) {
-    _pairSetAdd(this._data, a, b, areMutuallyExclusive);
+    this._pairSetAdd(a, b, areMutuallyExclusive);
 
-    _pairSetAdd(this._data, b, a, areMutuallyExclusive);
+    this._pairSetAdd(b, a, areMutuallyExclusive);
+  };
+
+  _proto._pairSetAdd = function _pairSetAdd(a, b, areMutuallyExclusive) {
+    var map = this._data[a];
+
+    if (!map) {
+      map = Object.create(null);
+      this._data[a] = map;
+    }
+
+    map[b] = areMutuallyExclusive;
   };
 
   return PairSet;
 }();
-
-function _pairSetAdd(data, a, b, areMutuallyExclusive) {
-  var map = data[a];
-
-  if (!map) {
-    map = Object.create(null);
-    data[a] = map;
-  }
-
-  map[b] = areMutuallyExclusive;
-}

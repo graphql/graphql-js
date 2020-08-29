@@ -102,7 +102,7 @@ export function stripIgnoredCharacters(source: string | Source): string {
   return strippedBody;
 }
 
-function dedentBlockString(blockStr) {
+function dedentBlockString(blockStr: string): string {
   // skip leading and trailing triple quotations
   const rawStr = blockStr.slice(3, -3);
   let body = dedentBlockStringValue(rawStr);

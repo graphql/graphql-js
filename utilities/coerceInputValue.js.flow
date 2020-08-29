@@ -42,7 +42,7 @@ function defaultOnError(
   path: $ReadOnlyArray<string | number>,
   invalidValue: mixed,
   error: GraphQLError,
-) {
+): void {
   let errorPrefix = 'Invalid value ' + inspect(invalidValue);
   if (path.length > 0) {
     errorPrefix += ` at "value${printPathArray(path)}"`;

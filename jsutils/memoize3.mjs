@@ -3,8 +3,7 @@
  */
 export default function memoize3(fn) {
   var cache0;
-
-  function memoized(a1, a2, a3) {
+  return function memoized(a1, a2, a3) {
     if (!cache0) {
       cache0 = new WeakMap();
     }
@@ -35,7 +34,5 @@ export default function memoize3(fn) {
     var newValue = fn(a1, a2, a3);
     cache2.set(a3, newValue);
     return newValue;
-  }
-
-  return memoized;
+  };
 }

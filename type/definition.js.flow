@@ -873,11 +873,13 @@ function defineFieldMap<TSource, TContext>(
   });
 }
 
-function isPlainObj(obj) {
+function isPlainObj(obj: mixed): boolean {
   return isObjectLike(obj) && !Array.isArray(obj);
 }
 
-function fieldsToFieldsConfig(fields) {
+function fieldsToFieldsConfig(
+  fields: GraphQLFieldMap<mixed, mixed>,
+): GraphQLFieldConfigMap<mixed, mixed> {
   return mapValue(fields, (field) => ({
     description: field.description,
     type: field.type,

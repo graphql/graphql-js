@@ -71,7 +71,7 @@ const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(
   (type) => type.name,
 );
 
-function isStandardTypeName(typeName) {
+function isStandardTypeName(typeName: string): boolean {
   return standardTypeNames.indexOf(typeName) !== -1;
 }
 
