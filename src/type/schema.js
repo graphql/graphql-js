@@ -1,4 +1,3 @@
-import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
@@ -207,7 +206,7 @@ export class GraphQLSchema {
     // Keep track of all implementations by interface name.
     this._implementationsMap = Object.create(null);
 
-    for (const namedType of arrayFrom(allReferencedTypes)) {
+    for (const namedType of Array.from(allReferencedTypes)) {
       if (namedType == null) {
         continue;
       }

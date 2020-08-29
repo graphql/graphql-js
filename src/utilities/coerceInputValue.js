@@ -1,4 +1,3 @@
-import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 
 import type { Path } from '../jsutils/Path';
@@ -79,7 +78,7 @@ function coerceInputValueImpl(
   if (isListType(type)) {
     const itemType = type.ofType;
     if (isCollection(inputValue)) {
-      return arrayFrom(inputValue, (itemValue, index) => {
+      return Array.from(inputValue, (itemValue, index) => {
         const itemPath = addPath(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
