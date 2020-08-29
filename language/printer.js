@@ -231,23 +231,22 @@ function block(array) {
   return array && array.length !== 0 ? '{\n' + indent(join(array, '\n')) + '\n}' : '';
 }
 /**
- * If maybeString is not null or empty, then wrap with start and end, otherwise
- * print an empty string.
+ * If maybeString is not null or empty, then wrap with start and end, otherwise print an empty string.
  */
 
 
 function wrap(start, maybeString, end = '') {
-  return maybeString ? start + maybeString + end : '';
+  return maybeString != null && maybeString !== '' ? start + maybeString + end : '';
 }
 
-function indent(maybeString) {
-  return maybeString && '  ' + maybeString.replace(/\n/g, '\n  ');
+function indent(str) {
+  return str !== '' ? '  ' + str.replace(/\n/g, '\n  ') : '';
 }
 
-function isMultiline(string) {
-  return string.indexOf('\n') !== -1;
+function isMultiline(str) {
+  return str.indexOf('\n') !== -1;
 }
 
 function hasMultilineItems(maybeArray) {
-  return maybeArray && maybeArray.some(isMultiline);
+  return maybeArray != null && maybeArray.some(isMultiline);
 }

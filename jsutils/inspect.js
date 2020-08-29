@@ -1,3 +1,4 @@
+/* eslint-disable flowtype/no-weak-types */
 import nodejsCustomInspectSymbol from "./nodejsCustomInspectSymbol.js";
 const MAX_ARRAY_LENGTH = 10;
 const MAX_RECURSIVE_DEPTH = 2;
@@ -38,7 +39,6 @@ function formatObjectValue(value, previouslySeenValues) {
   const customInspectFn = getCustomFn(value);
 
   if (customInspectFn !== undefined) {
-    // $FlowFixMe[incompatible-use]
     const customValue = customInspectFn.call(value); // check for infinite recursion
 
     if (customValue !== value) {

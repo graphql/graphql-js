@@ -493,20 +493,20 @@ class PairSet {
   }
 
   add(a, b, areMutuallyExclusive) {
-    _pairSetAdd(this._data, a, b, areMutuallyExclusive);
+    this._pairSetAdd(a, b, areMutuallyExclusive);
 
-    _pairSetAdd(this._data, b, a, areMutuallyExclusive);
+    this._pairSetAdd(b, a, areMutuallyExclusive);
   }
 
-}
+  _pairSetAdd(a, b, areMutuallyExclusive) {
+    let map = this._data[a];
 
-function _pairSetAdd(data, a, b, areMutuallyExclusive) {
-  let map = data[a];
+    if (!map) {
+      map = Object.create(null);
+      this._data[a] = map;
+    }
 
-  if (!map) {
-    map = Object.create(null);
-    data[a] = map;
+    map[b] = areMutuallyExclusive;
   }
 
-  map[b] = areMutuallyExclusive;
 }
