@@ -1,6 +1,3 @@
-import isFinite from '../polyfills/isFinite';
-import isInteger from '../polyfills/isInteger';
-
 import inspect from '../jsutils/inspect';
 import isObjectLike from '../jsutils/isObjectLike';
 
@@ -32,7 +29,7 @@ function serializeInt(outputValue: mixed): number {
     num = Number(coercedValue);
   }
 
-  if (!isInteger(num)) {
+  if (typeof num !== 'number' || !Number.isInteger(num)) {
     throw new GraphQLError(
       `Int cannot represent non-integer value: ${inspect(coercedValue)}`,
     );
@@ -47,7 +44,7 @@ function serializeInt(outputValue: mixed): number {
 }
 
 function coerceInt(inputValue: mixed): number {
-  if (!isInteger(inputValue)) {
+  if (typeof inputValue !== 'number' || !Number.isInteger(inputValue)) {
     throw new GraphQLError(
       `Int cannot represent non-integer value: ${inspect(inputValue)}`,
     );
@@ -96,7 +93,7 @@ function serializeFloat(outputValue: mixed): number {
     num = Number(coercedValue);
   }
 
-  if (!isFinite(num)) {
+  if (typeof num !== 'number' || !Number.isFinite(num)) {
     throw new GraphQLError(
       `Float cannot represent non numeric value: ${inspect(coercedValue)}`,
     );
@@ -105,7 +102,7 @@ function serializeFloat(outputValue: mixed): number {
 }
 
 function coerceFloat(inputValue: mixed): number {
-  if (!isFinite(inputValue)) {
+  if (typeof inputValue !== 'number' || !Number.isFinite(inputValue)) {
     throw new GraphQLError(
       `Float cannot represent non numeric value: ${inspect(inputValue)}`,
     );
@@ -160,7 +157,7 @@ function serializeString(outputValue: mixed): string {
   if (typeof coercedValue === 'boolean') {
     return coercedValue ? 'true' : 'false';
   }
-  if (isFinite(coercedValue)) {
+  if (typeof coercedValue === 'number' && Number.isFinite(coercedValue)) {
     return coercedValue.toString();
   }
   throw new GraphQLError(
@@ -200,7 +197,7 @@ function serializeBoolean(outputValue: mixed): boolean {
   if (typeof coercedValue === 'boolean') {
     return coercedValue;
   }
-  if (isFinite(coercedValue)) {
+  if (Number.isFinite(coercedValue)) {
     return coercedValue !== 0;
   }
   throw new GraphQLError(
@@ -239,7 +236,7 @@ function serializeID(outputValue: mixed): string {
   if (typeof coercedValue === 'string') {
     return coercedValue;
   }
-  if (isInteger(coercedValue)) {
+  if (Number.isInteger(coercedValue)) {
     return String(coercedValue);
   }
   throw new GraphQLError(`ID cannot represent value: ${inspect(outputValue)}`);
@@ -249,7 +246,7 @@ function coerceID(inputValue: mixed): string {
   if (typeof inputValue === 'string') {
     return inputValue;
   }
-  if (isInteger(inputValue)) {
+  if (typeof inputValue === 'number' && Number.isInteger(inputValue)) {
     return inputValue.toString();
   }
   throw new GraphQLError(`ID cannot represent value: ${inspect(inputValue)}`);
