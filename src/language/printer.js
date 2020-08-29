@@ -263,9 +263,7 @@ function join(maybeArray: ?Array<string>, separator = ''): string {
  * indented "{ }" block.
  */
 function block(array: ?Array<string>): string {
-  return array && array.length !== 0
-    ? '{\n' + indent(join(array, '\n')) + '\n}'
-    : '';
+  return wrap('{\n', indent(join(array, '\n')), '\n}');
 }
 
 /**
@@ -278,7 +276,7 @@ function wrap(start: string, maybeString: ?string, end: string = ''): string {
 }
 
 function indent(str: string): string {
-  return str !== '' ? '  ' + str.replace(/\n/g, '\n  ') : '';
+  return wrap('  ', str.replace(/\n/g, '\n  '));
 }
 
 function isMultiline(str: string): boolean {
