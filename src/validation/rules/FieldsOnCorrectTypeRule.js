@@ -1,5 +1,3 @@
-import arrayFrom from '../../polyfills/arrayFrom';
-
 import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 import naturalCompare from '../../jsutils/naturalCompare';
@@ -107,7 +105,7 @@ function getSuggestedTypeNames(
     }
   }
 
-  return arrayFrom(suggestedTypes)
+  return Array.from(suggestedTypes)
     .sort((typeA, typeB) => {
       // Suggest both interface and object types based on how common they are.
       const usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];
