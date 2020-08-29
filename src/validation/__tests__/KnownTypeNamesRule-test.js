@@ -1,5 +1,7 @@
 import { describe, it } from 'mocha';
 
+import type { GraphQLSchema } from '../../type/schema';
+
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { KnownTypeNamesRule } from '../rules/KnownTypeNamesRule';
@@ -10,23 +12,23 @@ import {
   expectSDLValidationErrors,
 } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(KnownTypeNamesRule, queryStr);
 }
 
-function expectErrorsWithSchema(schema, queryStr) {
+function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
   return expectValidationErrorsWithSchema(schema, KnownTypeNamesRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 
-function expectSDLErrors(sdlStr, schema) {
+function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(schema, KnownTypeNamesRule, sdlStr);
 }
 
-function expectValidSDL(sdlStr, schema) {
+function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
 }
 

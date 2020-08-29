@@ -94,7 +94,7 @@ export function isPunctuatorTokenKind(kind: TokenKindEnum): boolean %checks {
   );
 }
 
-function printCharCode(code) {
+function printCharCode(code: number): string {
   return (
     // NaN/undefined represents access beyond the end of the file.
     isNaN(code)
@@ -271,7 +271,7 @@ function readToken(lexer: Lexer, prev: Token): Token {
 /**
  * Report a message that an unexpected character was encountered.
  */
-function unexpectedCharacterMessage(code) {
+function unexpectedCharacterMessage(code: number): string {
   if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
     return `Cannot contain the invalid character ${printCharCode(code)}.`;
   }
@@ -289,7 +289,13 @@ function unexpectedCharacterMessage(code) {
  *
  * #[\u0009\u0020-\uFFFF]*
  */
-function readComment(source, start, line, col, prev): Token {
+function readComment(
+  source: Source,
+  start: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+): Token {
   const body = source.body;
   let code;
   let position = start;
@@ -320,7 +326,14 @@ function readComment(source, start, line, col, prev): Token {
  * Int:   -?(0|[1-9][0-9]*)
  * Float: -?(0|[1-9][0-9]*)(\.[0-9]+)?((E|e)(+|-)?[0-9]+)?
  */
-function readNumber(source, start, firstCode, line, col, prev): Token {
+function readNumber(
+  source: Source,
+  start: number,
+  firstCode: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+): Token {
   const body = source.body;
   let code = firstCode;
   let position = start;
@@ -391,7 +404,7 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
 /**
  * Returns the new position in the source after reading digits.
  */
-function readDigits(source, start, firstCode) {
+function readDigits(source: Source, start: number, firstCode: number): number {
   const body = source.body;
   let position = start;
   let code = firstCode;
@@ -414,7 +427,13 @@ function readDigits(source, start, firstCode) {
  *
  * "([^"\\\u000A\u000D]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
  */
-function readString(source, start, line, col, prev): Token {
+function readString(
+  source: Source,
+  start: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+): Token {
   const body = source.body;
   let position = start + 1;
   let chunkStart = position;
@@ -523,7 +542,14 @@ function readString(source, start, line, col, prev): Token {
  *
  * """("?"?(\\"""|\\(?!=""")|[^"\\]))*"""
  */
-function readBlockString(source, start, line, col, prev, lexer): Token {
+function readBlockString(
+  source: Source,
+  start: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+  lexer: Lexer,
+): Token {
   const body = source.body;
   let position = start + 3;
   let chunkStart = position;
@@ -605,7 +631,7 @@ function readBlockString(source, start, line, col, prev, lexer): Token {
  * This is implemented by noting that char2hex() returns -1 on error,
  * which means the result of ORing the char2hex() will also be negative.
  */
-function uniCharCode(a, b, c, d) {
+function uniCharCode(a: number, b: number, c: number, d: number): number {
   return (
     (char2hex(a) << 12) | (char2hex(b) << 8) | (char2hex(c) << 4) | char2hex(d)
   );
@@ -619,7 +645,7 @@ function uniCharCode(a, b, c, d) {
  *
  * Returns -1 on error.
  */
-function char2hex(a) {
+function char2hex(a: number): number {
   return a >= 48 && a <= 57
     ? a - 48 // 0-9
     : a >= 65 && a <= 70
@@ -634,7 +660,13 @@ function char2hex(a) {
  *
  * [_A-Za-z][_0-9A-Za-z]*
  */
-function readName(source, start, line, col, prev): Token {
+function readName(
+  source: Source,
+  start: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+): Token {
   const body = source.body;
   const bodyLength = body.length;
   let position = start + 1;
@@ -661,7 +693,7 @@ function readName(source, start, line, col, prev): Token {
 }
 
 // _ A-Z a-z
-function isNameStart(code): boolean {
+function isNameStart(code: number): boolean {
   return (
     code === 95 || (code >= 65 && code <= 90) || (code >= 97 && code <= 122)
   );

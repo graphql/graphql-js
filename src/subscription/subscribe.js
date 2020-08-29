@@ -104,7 +104,7 @@ export function subscribe(
  * an ExecutionResult, containing only errors and no data. Otherwise treat the
  * error as a system-class error and re-throw it.
  */
-function reportGraphQLError(error) {
+function reportGraphQLError(error: mixed): ExecutionResult {
   if (error instanceof GraphQLError) {
     return { errors: [error] };
   }

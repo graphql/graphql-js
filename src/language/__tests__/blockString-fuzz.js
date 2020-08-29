@@ -10,7 +10,7 @@ import { Lexer } from '../lexer';
 import { Source } from '../source';
 import { printBlockString } from '../blockString';
 
-function lexValue(str) {
+function lexValue(str: string) {
   const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 

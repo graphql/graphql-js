@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type { GraphQLArgument, GraphQLInputField } from '../definition';
 import {
   GraphQLDirective,
   GraphQLSkipDirective,
@@ -295,7 +296,7 @@ describe('Type predicates', () => {
   });
 
   describe('isInputType', () => {
-    function expectInputType(type) {
+    function expectInputType(type: mixed) {
       expect(isInputType(type)).to.equal(true);
       expect(() => assertInputType(type)).to.not.throw();
     }
@@ -316,7 +317,7 @@ describe('Type predicates', () => {
       expectInputType(new GraphQLNonNull(InputObjectType));
     });
 
-    function expectNonInputType(type) {
+    function expectNonInputType(type: mixed) {
       expect(isInputType(type)).to.equal(false);
       expect(() => assertInputType(type)).to.throw();
     }
@@ -339,7 +340,7 @@ describe('Type predicates', () => {
   });
 
   describe('isOutputType', () => {
-    function expectOutputType(type) {
+    function expectOutputType(type: mixed) {
       expect(isOutputType(type)).to.equal(true);
       expect(() => assertOutputType(type)).to.not.throw();
     }
@@ -366,7 +367,7 @@ describe('Type predicates', () => {
       expectOutputType(new GraphQLNonNull(EnumType));
     });
 
-    function expectNonOutputType(type) {
+    function expectNonOutputType(type: mixed) {
       expect(isOutputType(type)).to.equal(false);
       expect(() => assertOutputType(type)).to.throw();
     }
@@ -558,7 +559,7 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredArgument', () => {
-    function buildArg(config) {
+    function buildArg(config: $Shape<GraphQLArgument>) {
       return {
         name: 'someArg',
         description: undefined,
@@ -602,7 +603,7 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredInputField', () => {
-    function buildInputField(config) {
+    function buildInputField(config: $Shape<GraphQLInputField>) {
       return {
         name: 'someInputField',
         description: undefined,

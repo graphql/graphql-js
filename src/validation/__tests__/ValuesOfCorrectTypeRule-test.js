@@ -13,11 +13,11 @@ import {
   expectValidationErrorsWithSchema,
 } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(ValuesOfCorrectTypeRule, queryStr);
 }
 
-function expectErrorsWithSchema(schema, queryStr) {
+function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
   return expectValidationErrorsWithSchema(
     schema,
     ValuesOfCorrectTypeRule,
@@ -25,11 +25,11 @@ function expectErrorsWithSchema(schema, queryStr) {
   );
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 
-function expectValidWithSchema(schema, queryStr) {
+function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
   expectErrorsWithSchema(schema, queryStr).to.deep.equal([]);
 }
 

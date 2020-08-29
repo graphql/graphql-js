@@ -4,11 +4,11 @@ import { SingleFieldSubscriptionsRule } from '../rules/SingleFieldSubscriptionsR
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(SingleFieldSubscriptionsRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 

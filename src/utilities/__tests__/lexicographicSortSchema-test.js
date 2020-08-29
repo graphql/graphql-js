@@ -7,7 +7,7 @@ import { printSchema } from '../printSchema';
 import { buildSchema } from '../buildASTSchema';
 import { lexicographicSortSchema } from '../lexicographicSortSchema';
 
-function sortSDL(sdl) {
+function sortSDL(sdl: string): string {
   const schema = buildSchema(sdl);
   return printSchema(lexicographicSortSchema(schema));
 }

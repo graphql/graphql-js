@@ -108,7 +108,7 @@ class SchemaValidationContext {
   }
 }
 
-function validateRootTypes(context) {
+function validateRootTypes(context: SchemaValidationContext): void {
   const schema = context.schema;
   const queryType = schema.getQueryType();
   if (!queryType) {
@@ -528,7 +528,7 @@ function validateInputFields(
 
 function createInputObjectCircularRefsValidator(
   context: SchemaValidationContext,
-) {
+): (GraphQLInputObjectType) => void {
   // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
   // Tracks already visited types to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
@@ -545,7 +545,7 @@ function createInputObjectCircularRefsValidator(
   // This does a straight-forward DFS to find cycles.
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
-  function detectCycleRecursive(inputObj: GraphQLInputObjectType) {
+  function detectCycleRecursive(inputObj: GraphQLInputObjectType): void {
     if (visitedTypes[inputObj.name]) {
       return;
     }

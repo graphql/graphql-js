@@ -125,7 +125,7 @@ class LexicalDistance {
   }
 }
 
-function stringToArray(str) {
+function stringToArray(str: string): Array<number> {
   const strLength = str.length;
   const array = new Array(strLength);
   for (let i = 0; i < strLength; ++i) {

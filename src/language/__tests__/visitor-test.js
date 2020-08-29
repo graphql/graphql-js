@@ -3,13 +3,14 @@ import { describe, it } from 'mocha';
 
 import invariant from '../../jsutils/invariant';
 
+import type { ASTNode } from '../ast';
 import { Kind } from '../kinds';
 import { parse } from '../parser';
 import { visit, visitInParallel, BREAK, QueryDocumentKeys } from '../visitor';
 
 import { kitchenSinkQuery } from '../../__fixtures__/index';
 
-function checkVisitorFnArgs(ast, args, isEdited) {
+function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
   const [node, key, parent, path, ancestors] = args;
 
   expect(node).to.be.an.instanceof(Object);
@@ -50,7 +51,7 @@ function checkVisitorFnArgs(ast, args, isEdited) {
   }
 }
 
-function getValue(node) {
+function getValue(node: ASTNode) {
   return node.value != null ? node.value : undefined;
 }
 

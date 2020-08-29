@@ -5,6 +5,7 @@ import dedent from '../../__testUtils__/dedent';
 
 import { DirectiveLocation } from '../../language/directiveLocation';
 
+import type { GraphQLFieldConfig } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLDirective } from '../../type/directives';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
@@ -22,14 +23,14 @@ import {
 import { buildSchema } from '../buildASTSchema';
 import { printSchema, printIntrospectionSchema } from '../printSchema';
 
-function expectPrintedSchema(schema) {
+function expectPrintedSchema(schema: GraphQLSchema) {
   const schemaText = printSchema(schema);
   // keep printSchema and buildSchema in sync
   expect(printSchema(buildSchema(schemaText))).to.equal(schemaText);
   return expect(schemaText);
 }
 
-function buildSingleFieldSchema(fieldConfig) {
+function buildSingleFieldSchema(fieldConfig: GraphQLFieldConfig<mixed, mixed>) {
   const Query = new GraphQLObjectType({
     name: 'Query',
     fields: { singleField: fieldConfig },

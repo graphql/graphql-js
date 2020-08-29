@@ -5,10 +5,13 @@ import suggestionList from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { KindEnum } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
+import type { TypeExtensionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { isTypeDefinitionNode } from '../../language/predicates';
 
+import type { GraphQLNamedType } from '../../type/definition';
 import {
   isScalarType,
   isObjectType,
@@ -46,7 +49,7 @@ export function PossibleTypeExtensionsRule(
     InputObjectTypeExtension: checkExtension,
   };
 
-  function checkExtension(node) {
+  function checkExtension(node: TypeExtensionNode): void {
     const typeName = node.name.value;
     const defNode = definedTypes[typeName];
     const existingType = schema?.getType(typeName);
@@ -95,7 +98,7 @@ const defKindToExtKind = {
   [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION,
 };
 
-function typeToExtKind(type) {
+function typeToExtKind(type: GraphQLNamedType): KindEnum {
   if (isScalarType(type)) {
     return Kind.SCALAR_TYPE_EXTENSION;
   }
@@ -120,7 +123,7 @@ function typeToExtKind(type) {
   invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 
-function extensionKindToTypeName(kind) {
+function extensionKindToTypeName(kind: KindEnum): string {
   switch (kind) {
     case Kind.SCALAR_TYPE_EXTENSION:
       return 'scalar';

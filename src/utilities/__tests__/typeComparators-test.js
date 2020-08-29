@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type { GraphQLFieldConfigMap } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString, GraphQLInt, GraphQLFloat } from '../../type/scalars';
 import {
@@ -52,7 +53,7 @@ describe('typeComparators', () => {
   });
 
   describe('isTypeSubTypeOf', () => {
-    function testSchema(fields) {
+    function testSchema(fields: GraphQLFieldConfigMap<mixed, mixed>) {
       return new GraphQLSchema({
         query: new GraphQLObjectType({
           name: 'Query',

@@ -11,7 +11,7 @@ describe('Source', () => {
   });
 
   it('rejects invalid locationOffset', () => {
-    function createSource(locationOffset) {
+    function createSource(locationOffset: {| line: number, column: number |}) {
       return new Source('', '', locationOffset);
     }
 

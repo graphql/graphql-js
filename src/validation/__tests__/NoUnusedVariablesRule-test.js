@@ -4,11 +4,11 @@ import { NoUnusedVariablesRule } from '../rules/NoUnusedVariablesRule';
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(NoUnusedVariablesRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 

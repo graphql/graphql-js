@@ -254,7 +254,7 @@ function addDescription(cb) {
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print all items together separated by separator if provided
  */
-function join(maybeArray: ?Array<string>, separator = '') {
+function join(maybeArray: ?Array<string>, separator = ''): string {
   return maybeArray?.filter((x) => x).join(separator) ?? '';
 }
 
@@ -262,28 +262,29 @@ function join(maybeArray: ?Array<string>, separator = '') {
  * Given array, print each item on its own line, wrapped in an
  * indented "{ }" block.
  */
-function block(array) {
+function block(array: ?Array<string>): string {
   return array && array.length !== 0
     ? '{\n' + indent(join(array, '\n')) + '\n}'
     : '';
 }
 
 /**
- * If maybeString is not null or empty, then wrap with start and end, otherwise
- * print an empty string.
+ * If maybeString is not null or empty, then wrap with start and end, otherwise print an empty string.
  */
-function wrap(start, maybeString, end = '') {
-  return maybeString ? start + maybeString + end : '';
+function wrap(start: string, maybeString: ?string, end: string = ''): string {
+  return maybeString != null && maybeString !== ''
+    ? start + maybeString + end
+    : '';
 }
 
-function indent(maybeString) {
-  return maybeString && '  ' + maybeString.replace(/\n/g, '\n  ');
+function indent(str: string): string {
+  return str !== '' ? '  ' + str.replace(/\n/g, '\n  ') : '';
 }
 
-function isMultiline(string) {
-  return string.indexOf('\n') !== -1;
+function isMultiline(str: string): boolean {
+  return str.indexOf('\n') !== -1;
 }
 
-function hasMultilineItems(maybeArray) {
-  return maybeArray && maybeArray.some(isMultiline);
+function hasMultilineItems(maybeArray: ?Array<string>): boolean {
+  return maybeArray != null && maybeArray.some(isMultiline);
 }

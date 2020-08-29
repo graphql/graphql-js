@@ -7,7 +7,6 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
 
-import type { ExecutionResult } from '../execute';
 import { executeSync } from '../execute';
 
 const schema = new GraphQLSchema({
@@ -29,7 +28,7 @@ const rootValue = {
   },
 };
 
-function executeTestQuery(query: string): ExecutionResult {
+function executeTestQuery(query: string) {
   const document = parse(query);
   return executeSync({ schema, document, rootValue });
 }

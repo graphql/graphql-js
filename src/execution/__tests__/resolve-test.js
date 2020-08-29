@@ -8,7 +8,6 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
 
-import type { ExecutionResult } from '../execute';
 import { executeSync } from '../execute';
 
 describe('Execute: resolve function', () => {
@@ -96,7 +95,7 @@ describe('Execute: resolve function', () => {
       resolve: (source, args) => JSON.stringify([source, args]),
     });
 
-    function executeQuery(query: string, rootValue?: mixed): ExecutionResult {
+    function executeQuery(query: string, rootValue?: mixed) {
       const document = parse(query);
       return executeSync({ schema, document, rootValue });
     }

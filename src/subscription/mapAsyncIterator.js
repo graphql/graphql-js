@@ -18,13 +18,13 @@ export default function mapAsyncIterator<T, U>(
   let abruptClose;
   if (typeof iterator.return === 'function') {
     $return = iterator.return;
-    abruptClose = (error) => {
+    abruptClose = (error: mixed) => {
       const rethrow = () => Promise.reject(error);
       return $return.call(iterator).then(rethrow, rethrow);
     };
   }
 
-  function mapResult(result) {
+  function mapResult(result: IteratorResult<T, void>) {
     return result.done
       ? result
       : asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
@@ -34,14 +34,14 @@ export default function mapAsyncIterator<T, U>(
   if (rejectCallback) {
     // Capture rejectCallback to ensure it cannot be null.
     const reject = rejectCallback;
-    mapReject = (error) =>
+    mapReject = (error: mixed) =>
       asyncMapValue(error, reject).then(iteratorResult, abruptClose);
   }
 
   /* TODO: Flow doesn't support symbols as keys:
      https://github.com/facebook/flow/issues/3258 */
   return ({
-    next() {
+    next(): Promise<IteratorResult<U, void>> {
       return iterator.next().then(mapResult, mapReject);
     },
     return() {
@@ -49,7 +49,7 @@ export default function mapAsyncIterator<T, U>(
         ? $return.call(iterator).then(mapResult, mapReject)
         : Promise.resolve({ value: undefined, done: true });
     },
-    throw(error) {
+    throw(error?: mixed): Promise<IteratorResult<U, void>> {
       if (typeof iterator.throw === 'function') {
         return iterator.throw(error).then(mapResult, mapReject);
       }

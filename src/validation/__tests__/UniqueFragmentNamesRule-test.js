@@ -4,11 +4,11 @@ import { UniqueFragmentNamesRule } from '../rules/UniqueFragmentNamesRule';
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(UniqueFragmentNamesRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 

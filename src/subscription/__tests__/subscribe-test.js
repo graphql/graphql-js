@@ -3,6 +3,7 @@ import EventEmitter from 'events';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type { DocumentNode } from '../../language/ast';
 import { parse } from '../../language/parser';
 
 import { GraphQLError } from '../../error/GraphQLError';
@@ -57,7 +58,10 @@ const EmailEventType = new GraphQLObjectType({
 
 const emailSchema = emailSchemaWithResolvers();
 
-function emailSchemaWithResolvers(subscribeFn, resolveFn) {
+function emailSchemaWithResolvers<T: mixed>(
+  subscribeFn?: (T) => mixed,
+  resolveFn?: (T) => mixed,
+) {
   return new GraphQLSchema({
     query: QueryType,
     subscription: new GraphQLObjectType({
@@ -92,9 +96,9 @@ const defaultSubscriptionAST = parse(`
 `);
 
 async function createSubscription(
-  pubsub,
-  schema = emailSchema,
-  document = defaultSubscriptionAST,
+  pubsub: EventEmitter,
+  schema: GraphQLSchema = emailSchema,
+  document: DocumentNode = defaultSubscriptionAST,
 ) {
   const data = {
     inbox: {
@@ -112,7 +116,7 @@ async function createSubscription(
     },
   };
 
-  function sendImportantEmail(newEmail) {
+  function sendImportantEmail(newEmail: mixed) {
     data.inbox.emails.push(newEmail);
     // Returns true if the event was consumed by a subscriber.
     return pubsub.emit('importantEmail', {
@@ -131,7 +135,10 @@ async function createSubscription(
   };
 }
 
-async function expectPromiseToThrow(promise, message) {
+async function expectPromiseToThrow(
+  promise: () => Promise<mixed>,
+  message: string,
+) {
   try {
     await promise();
     // istanbul ignore next (Shouldn't be reached)
@@ -425,7 +432,7 @@ describe('Subscription Initialization Phase', () => {
     );
     await testReportsError(subscriptionRejectingErrorSchema);
 
-    async function testReportsError(schema) {
+    async function testReportsError(schema: GraphQLSchema) {
       // Promise<AsyncIterable<ExecutionResult> | ExecutionResult>
       const result = await subscribe({
         schema,
@@ -473,7 +480,7 @@ describe('Subscription Initialization Phase', () => {
     );
     await testReportsError(subscriptionRejectingErrorSchema);
 
-    async function testReportsError(schema) {
+    async function testReportsError(schema: GraphQLSchema) {
       // Promise<AsyncIterable<ExecutionResult> | ExecutionResult>
       const result = await createSourceEventStream(
         schema,

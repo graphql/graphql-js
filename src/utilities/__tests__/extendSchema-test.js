@@ -5,12 +5,14 @@ import dedent from '../../__testUtils__/dedent';
 
 import invariant from '../../jsutils/invariant';
 
+import type { ASTNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
 import { graphqlSync } from '../../graphql';
 
+import type { GraphQLNamedType } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { validateSchema } from '../../type/validate';
 import { assertDirective } from '../../type/directives';
@@ -35,7 +37,7 @@ import { printSchema } from '../printSchema';
 import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
 
-function printExtensionNodes(obj) {
+function printExtensionNodes(obj: ?GraphQLNamedType | GraphQLSchema): string {
   invariant(obj?.extensionASTNodes != null);
   return print({
     kind: Kind.DOCUMENT,
@@ -43,7 +45,10 @@ function printExtensionNodes(obj) {
   });
 }
 
-function printSchemaChanges(schema, extendedSchema) {
+function printSchemaChanges(
+  schema: GraphQLSchema,
+  extendedSchema: GraphQLSchema,
+): string {
   const schemaDefinitions = parse(printSchema(schema)).definitions.map(print);
   const ast = parse(printSchema(extendedSchema));
   return print({
@@ -54,7 +59,7 @@ function printSchemaChanges(schema, extendedSchema) {
   });
 }
 
-function printASTNode(obj) {
+function printASTNode(obj: ?{ +astNode: ?ASTNode, ... }): string {
   invariant(obj?.astNode != null);
   return print(obj.astNode);
 }

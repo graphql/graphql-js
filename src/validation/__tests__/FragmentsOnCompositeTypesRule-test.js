@@ -4,11 +4,11 @@ import { FragmentsOnCompositeTypesRule } from '../rules/FragmentsOnCompositeType
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(FragmentsOnCompositeTypesRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 

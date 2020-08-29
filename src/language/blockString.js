@@ -34,7 +34,7 @@ export function dedentBlockStringValue(rawString: string): string {
   return lines.slice(startLine, endLine).join('\n');
 }
 
-function isBlank(str) {
+function isBlank(str: string): boolean {
   for (let i = 0; i < str.length; ++i) {
     if (str[i] !== ' ' && str[i] !== '\t') {
       return false;
