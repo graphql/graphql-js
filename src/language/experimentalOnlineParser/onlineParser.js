@@ -1,64 +1,133 @@
 import { Lexer } from '../lexer';
 import { Source } from '../source';
 
-import Language from './language';
-import { RuleKind, TokenKind } from './types';
+import GraphQLGrammar from './rules';
 import type {
-  Token,
-  LexerToken,
-  Styles,
-  ParserRule,
-  ParserState,
-  ParserConfig,
-  ParserConfigOption,
-  Rule,
-  RuleName,
-  RuleConstraint,
-  TokenParserRule,
-  OfTypeParserRule,
-  ListOfTypeParserRule,
-  PeekParserRule,
-  ConstraintsSetRule,
-  OfTypeConstraint,
-  ListOfTypeConstraint,
-  TokenConstraint,
-  PeekConstraint,
-  ConstraintsSet,
-} from './types';
+  GraphQLGrammarRule,
+  GraphQLGrammarRuleName,
+  GraphQLGrammarRuleConstraint,
+  GraphQLGrammarTokenConstraint,
+  GraphQLGrammarOfTypeConstraint,
+  GraphQLGrammarListOfTypeConstraint,
+  GraphQLGrammarPeekConstraint,
+  GraphQLGrammarConstraintsSet,
+} from './grammarTypes';
 
-export class Parser {
-  state: ParserState;
-  lexer: Lexer;
-  styles: Styles;
-  config: ParserConfig;
+export const TokenKind = {
+  NAME: 'Name',
+  INT: 'Int',
+  FLOAT: 'Float',
+  STRING: 'String',
+  BLOCK_STRING: 'BlockString',
+  COMMENT: 'Comment',
+  PUNCTUATION: 'Punctuation',
+  EOF: '<EOF>',
+  INVALID: 'Invalid',
+};
 
-  constructor({
-    state,
-    styles,
-    config,
-    source,
-  }: {|
-    state: ?ParserState,
-    styles: ?Styles,
-    config: ?ParserConfigOption,
+export const RuleKind = {
+  TOKEN_CONSTRAINT: 'TokenConstraint',
+  OF_TYPE_CONSTRAINT: 'OfTypeConstraint',
+  LIST_OF_TYPE_CONSTRAINT: 'ListOfTypeConstraint',
+  PEEK_CONSTRAINT: 'PeekConstraint',
+  CONSTRAINTS_SET: 'ConstraintsSet',
+  CONSTRAINTS_SET_ROOT: 'ConstraintsSetRoot',
+  RULE_NAME: 'RuleName',
+  INVALID: 'Invalid',
+};
+
+interface BaseOnlineParserRule {
+  kind: string;
+  name?: string;
+  depth: number;
+  step: number;
+  expanded: boolean;
+  state: string;
+  optional?: boolean;
+  eatNextOnFail?: boolean;
+}
+interface TokenOnlineParserRule
+  extends BaseOnlineParserRule,
+    GraphQLGrammarTokenConstraint {}
+interface OfTypeOnlineParserRule
+  extends BaseOnlineParserRule,
+    GraphQLGrammarOfTypeConstraint {}
+interface ListOfTypeOnlineParserRule
+  extends BaseOnlineParserRule,
+    GraphQLGrammarListOfTypeConstraint {}
+interface PeekOnlineParserRule
+  extends BaseOnlineParserRule,
+    GraphQLGrammarPeekConstraint {
+  index: number;
+  matched: boolean;
+}
+interface ConstraintsSetOnlineParserRule extends BaseOnlineParserRule {
+  constraintsSet: boolean;
+  constraints: GraphQLGrammarConstraintsSet;
+}
+
+type OnlineParserRule =
+  | TokenOnlineParserRule
+  | OfTypeOnlineParserRule
+  | ListOfTypeOnlineParserRule
+  | PeekOnlineParserRule
+  | ConstraintsSetOnlineParserRule;
+
+type OnlineParserState = {|
+  rules: Array<OnlineParserRule>,
+  kind: () => string,
+  step: () => number,
+  levels: Array<number>,
+  indentLevel: number,
+  name: string | null,
+  type: string | null,
+|};
+
+type Token = {|
+  kind: string,
+  value: string,
+  tokenName?: ?string,
+  ruleName?: ?string,
+|};
+
+type LexerToken = {|
+  kind: string,
+  value: ?string,
+|};
+
+type OnlineParserConfig = {|
+  tabSize: number,
+|};
+
+type OnlineParserConfigOption = {|
+  tabSize: ?number,
+|};
+
+export class OnlineParser {
+  state: OnlineParserState;
+  _lexer: Lexer;
+  _config: OnlineParserConfig;
+
+  constructor(
     source: string,
-  |}) {
-    this.state = state || Parser.startState();
-    this.styles = styles || {};
-    this.config = {
-      tabSize: typeof config?.tabSize === 'number' ? config.tabSize : 2,
+    state?: OnlineParserState,
+    config?: OnlineParserConfigOption,
+  ) {
+    this.state = state || OnlineParser.startState();
+    this._config = {
+      tabSize: config?.tabSize ?? 2,
     };
-    this.lexer = new Lexer(new Source(source));
+    this._lexer = new Lexer(new Source(source));
   }
 
-  static startState(): ParserState {
+  static startState(): OnlineParserState {
     return {
       rules: [
         {
           name: 'Document',
           state: 'Document',
           kind: 'ListOfTypeConstraint',
-          ...Language.rules.Document,
+          ...GraphQLGrammar.rules.Document,
           expanded: false,
           depth: 1,
           step: 1,
@@ -77,7 +146,7 @@ export class Parser {
     };
   }
 
-  static copyState(state: ParserState): ParserState {
+  static copyState(state: OnlineParserState): OnlineParserState {
     return {
       name: state.name,
       type: state.type,
@@ -95,59 +164,58 @@ export class Parser {
 
   sol(): boolean {
     return (
-      this.lexer.source.locationOffset.line === 1 &&
-      this.lexer.source.locationOffset.column === 1
+      this._lexer.source.locationOffset.line === 1 &&
+      this._lexer.source.locationOffset.column === 1
     );
   }
 
   parseToken(): Token {
-    const rule = (this.getNextRule(): any);
+    const rule = (this._getNextRule(): any);
 
     if (this.sol()) {
       this.state.indentLevel = Math.floor(
-        this.indentation() / this.config.tabSize,
+        this.indentation() / this._config.tabSize,
       );
     }
 
     if (!rule) {
       return {
         kind: TokenKind.INVALID,
-        style: this.styles[TokenKind.INVALID],
         value: '',
       };
     }
 
     let token;
 
-    if (this.lookAhead().kind === '<EOF>') {
+    if (this._lookAhead().kind === '<EOF>') {
       return {
         kind: TokenKind.EOF,
-        style: this.styles[TokenKind.EOF],
         value: '',
+        ruleName: rule.name,
       };
     }
 
     switch (rule.kind) {
       case RuleKind.TOKEN_CONSTRAINT:
-        token = this.parseTokenConstraint(rule);
+        token = this._parseTokenConstraint(rule);
         break;
       case RuleKind.LIST_OF_TYPE_CONSTRAINT:
-        token = this.parseListOfTypeConstraint(rule);
+        token = this._parseListOfTypeConstraint(rule);
         break;
       case RuleKind.OF_TYPE_CONSTRAINT:
-        token = this.parseOfTypeConstraint(rule);
+        token = this._parseOfTypeConstraint(rule);
         break;
       case RuleKind.PEEK_CONSTRAINT:
-        token = this.parsePeekConstraint(rule);
+        token = this._parsePeekConstraint(rule);
         break;
       case RuleKind.CONSTRAINTS_SET_ROOT:
-        token = this.parseConstraintsSetRule(rule);
+        token = this._parseConstraintsSetRule(rule);
         break;
       default:
         return {
           kind: TokenKind.INVALID,
-          style: this.styles[TokenKind.INVALID],
           value: '',
+          ruleName: rule.name,
         };
     }
 
@@ -155,7 +223,7 @@ export class Parser {
       if (rule.optional === true) {
         this.state.rules.pop();
       } else {
-        this.rollbackRule();
+        this._rollbackRule();
       }
 
       return this.parseToken() || token;
@@ -165,7 +233,7 @@ export class Parser {
   }
 
   indentation(): number {
-    const match = this.lexer.source.body.match(/\s*/);
+    const match = this._lexer.source.body.match(/\s*/);
     let indent = 0;
 
     if (match && match.length === 0) {
@@ -184,29 +252,30 @@ export class Parser {
     return indent;
   }
 
-  parseTokenConstraint(rule: TokenParserRule): Token {
+  _parseTokenConstraint(rule: TokenOnlineParserRule): Token {
     rule.expanded = true;
 
-    const token = this.lookAhead();
+    const token = this._lookAhead();
 
-    if (!this.matchToken(token, rule)) {
+    if (!this._matchToken(token, rule)) {
       return {
         kind: TokenKind.INVALID,
-        style: this.styles[TokenKind.INVALID],
         value: '',
+        tokenName: rule.tokenName,
+        ruleName: rule.name,
       };
     }
 
-    this.advanceToken();
-    const parserToken = this.transformLexerToken(token, rule);
-    this.popMatchedRule(parserToken);
+    this._advanceToken();
+    const parserToken = this._transformLexerToken(token, rule);
+    this._popMatchedRule(parserToken);
 
     return parserToken;
   }
 
-  parseListOfTypeConstraint(rule: ListOfTypeParserRule): Token {
-    this.pushRule(
-      Language.rules[rule.listOfType],
+  _parseListOfTypeConstraint(rule: ListOfTypeOnlineParserRule): Token {
+    this._pushRule(
+      GraphQLGrammar.rules[rule.listOfType],
       rule.depth + 1,
       rule.listOfType,
       1,
@@ -220,13 +289,13 @@ export class Parser {
     return token;
   }
 
-  parseOfTypeConstraint(rule: OfTypeParserRule): Token {
+  _parseOfTypeConstraint(rule: OfTypeOnlineParserRule): Token {
     if (rule.expanded) {
-      this.popMatchedRule();
+      this._popMatchedRule();
       return this.parseToken();
     }
 
-    this.pushRule(rule.ofType, rule.depth + 1, rule.tokenName, 1, rule.state);
+    this._pushRule(rule.ofType, rule.depth + 1, rule.tokenName, 1, rule.state);
     rule.expanded = true;
 
     const token = this.parseToken();
@@ -234,9 +303,9 @@ export class Parser {
     return token;
   }
 
-  parsePeekConstraint(rule: PeekParserRule): Token {
+  _parsePeekConstraint(rule: PeekOnlineParserRule): Token {
     if (rule.expanded) {
-      this.popMatchedRule();
+      this._popMatchedRule();
       return this.parseToken();
     }
 
@@ -246,14 +315,14 @@ export class Parser {
 
       let { ifCondition } = constraint;
       if (typeof ifCondition === 'string') {
-        ifCondition = Language.rules[ifCondition];
+        ifCondition = GraphQLGrammar.rules[ifCondition];
       }
 
-      let token = this.lookAhead();
-      if (ifCondition && this.matchToken(token, ifCondition)) {
+      let token = this._lookAhead();
+      if (ifCondition && this._matchToken(token, ifCondition)) {
         rule.matched = true;
         rule.expanded = true;
-        this.pushRule(constraint.expect, rule.depth + 1, '', 1, rule.state);
+        this._pushRule(constraint.expect, rule.depth + 1, '', 1, rule.state);
 
         token = this.parseToken();
 
@@ -263,19 +332,19 @@ export class Parser {
 
     return {
       kind: TokenKind.INVALID,
-      style: this.styles[TokenKind.INVALID],
       value: '',
+      ruleName: rule.name,
     };
   }
 
-  parseConstraintsSetRule(rule: ConstraintsSetRule): Token {
+  _parseConstraintsSetRule(rule: ConstraintsSetOnlineParserRule): Token {
     if (rule.expanded) {
-      this.popMatchedRule();
+      this._popMatchedRule();
       return this.parseToken();
     }
 
     for (let index = rule.constraints.length - 1; index >= 0; index--) {
-      this.pushRule(
+      this._pushRule(
         rule.constraints[index],
         rule.depth + 1,
         '',
@@ -288,7 +357,10 @@ export class Parser {
     return this.parseToken();
   }
 
-  matchToken(token: Token | LexerToken, rule: TokenConstraint): boolean {
+  _matchToken(
+    token: Token | LexerToken,
+    rule: GraphQLGrammarTokenConstraint,
+  ): boolean {
     if (typeof token.value === 'string') {
       if (
         (typeof rule.ofValue === 'string' && token.value !== rule.ofValue) ||
@@ -300,23 +372,26 @@ export class Parser {
         return false;
       }
 
-      return this.butNot(token, rule);
+      return this._butNot(token, rule);
     }
 
     if (token.kind !== rule.token) {
       return false;
     }
 
-    return this.butNot(token, rule);
+    return this._butNot(token, rule);
   }
 
-  butNot(token: Token | LexerToken, rule: RuleConstraint): boolean {
+  _butNot(
+    token: Token | LexerToken,
+    rule: GraphQLGrammarRuleConstraint,
+  ): boolean {
     if (rule.butNot) {
       if (Array.isArray(rule.butNot)) {
         if (
           rule.butNot.reduce(
             (matched, constraint) =>
-              matched || this.matchToken(token, constraint),
+              matched || this._matchToken(token, constraint),
             false,
           )
         ) {
@@ -326,13 +401,13 @@ export class Parser {
         return true;
       }
 
-      return !this.matchToken(token, rule.butNot);
+      return !this._matchToken(token, rule.butNot);
     }
 
     return true;
   }
 
-  transformLexerToken(lexerToken: LexerToken, rule: any): Token {
+  _transformLexerToken(lexerToken: LexerToken, rule: any): Token {
     let token;
     const ruleName = rule.name || '';
     const tokenName = rule.tokenName || '';
@@ -341,10 +416,8 @@ export class Parser {
       token = {
         kind: lexerToken.kind,
         value: lexerToken.value || '',
-        style:
-          this.styles[tokenName] ||
-          this.styles[ruleName] ||
-          this.styles[lexerToken.kind],
+        tokenName,
+        ruleName,
       };
 
       if (token.kind === TokenKind.STRING) {
@@ -356,10 +429,8 @@ export class Parser {
       token = {
         kind: TokenKind.PUNCTUATION,
         value: lexerToken.kind,
-        style:
-          this.styles[tokenName] ||
-          this.styles[ruleName] ||
-          this.styles[TokenKind.PUNCTUATION],
+        tokenName,
+        ruleName,
       };
 
       if (/^[{([]/.test(token.value)) {
@@ -376,11 +447,11 @@ export class Parser {
     return token;
   }
 
-  getNextRule(): ParserRule | null {
+  _getNextRule(): OnlineParserRule | null {
     return this.state.rules[this.state.rules.length - 1] || null;
   }
 
-  popMatchedRule(token: ?Token) {
+  _popMatchedRule(token: ?Token) {
     const rule = this.state.rules.pop();
     if (!rule) {
       return;
@@ -395,7 +466,7 @@ export class Parser {
       }
     }
 
-    const nextRule = this.getNextRule();
+    const nextRule = this._getNextRule();
     if (!nextRule) {
       return;
     }
@@ -418,7 +489,7 @@ export class Parser {
     }
   }
 
-  rollbackRule() {
+  _rollbackRule() {
     if (!this.state.rules.length) {
       return;
     }
@@ -437,7 +508,7 @@ export class Parser {
     }
 
     let popped = 0;
-    let nextRule = this.getNextRule();
+    let nextRule = this._getNextRule();
     while (
       nextRule &&
       (poppedRule.kind !== RuleKind.LIST_OF_TYPE_CONSTRAINT ||
@@ -446,7 +517,7 @@ export class Parser {
     ) {
       this.state.rules.pop();
       popped++;
-      nextRule = this.getNextRule();
+      nextRule = this._getNextRule();
     }
 
     if (nextRule && nextRule.expanded) {
@@ -460,12 +531,12 @@ export class Parser {
           this.state.rules.pop();
           return;
         }
-        this.rollbackRule();
+        this._rollbackRule();
       }
     }
   }
 
-  pushRule(
+  _pushRule(
     baseRule: any,
     depth: number,
     name?: string,
@@ -476,11 +547,11 @@ export class Parser {
     this.state.type = null;
     let rule = baseRule;
 
-    switch (this.getRuleKind(rule)) {
+    switch (this._getRuleKind(rule)) {
       case RuleKind.RULE_NAME:
-        rule = (rule: RuleName);
-        this.pushRule(
-          Language.rules[rule],
+        rule = (rule: GraphQLGrammarRuleName);
+        this._pushRule(
+          GraphQLGrammar.rules[rule],
           depth,
           (typeof name === 'string' ? name : undefined) || rule,
           step,
@@ -488,7 +559,7 @@ export class Parser {
         );
         break;
       case RuleKind.CONSTRAINTS_SET:
-        rule = (rule: ConstraintsSet);
+        rule = (rule: GraphQLGrammarConstraintsSet);
         this.state.rules.push({
           name: name || '',
           depth,
@@ -499,16 +570,16 @@ export class Parser {
           state:
             (typeof name === 'string' ? name : undefined) ||
             (typeof state === 'string' ? state : undefined) ||
-            this.getNextRule()?.state ||
+            this._getNextRule()?.state ||
             '',
           step:
             typeof step === 'number'
               ? step
-              : (this.getNextRule()?.step || 0) + 1,
+              : (this._getNextRule()?.step || 0) + 1,
         });
         break;
       case RuleKind.OF_TYPE_CONSTRAINT:
-        rule = (rule: OfTypeConstraint);
+        rule = (rule: GraphQLGrammarOfTypeConstraint);
         this.state.rules.push({
           name: name || '',
           ofType: rule.ofType,
@@ -522,16 +593,16 @@ export class Parser {
             (typeof rule.tokenName === 'string' ? rule.tokenName : undefined) ||
             (typeof name === 'string' ? name : undefined) ||
             (typeof state === 'string' ? state : undefined) ||
-            this.getNextRule()?.state ||
+            this._getNextRule()?.state ||
             '',
           step:
             typeof step === 'number'
               ? step
-              : (this.getNextRule()?.step || 0) + 1,
+              : (this._getNextRule()?.step || 0) + 1,
         });
         break;
       case RuleKind.LIST_OF_TYPE_CONSTRAINT:
-        rule = (rule: ListOfTypeConstraint);
+        rule = (rule: GraphQLGrammarListOfTypeConstraint);
         this.state.rules.push({
           listOfType: rule.listOfType,
           optional: Boolean(rule.optional),
@@ -544,16 +615,16 @@ export class Parser {
           state:
             (typeof name === 'string' ? name : undefined) ||
             (typeof state === 'string' ? state : undefined) ||
-            this.getNextRule()?.state ||
+            this._getNextRule()?.state ||
             '',
           step:
             typeof step === 'number'
               ? step
-              : (this.getNextRule()?.step || 0) + 1,
+              : (this._getNextRule()?.step || 0) + 1,
         });
         break;
       case RuleKind.TOKEN_CONSTRAINT:
-        rule = (rule: TokenConstraint);
+        rule = (rule: GraphQLGrammarTokenConstraint);
         this.state.rules.push({
           token: rule.token,
           ofValue: rule.ofValue,
@@ -570,16 +641,16 @@ export class Parser {
           state:
             (typeof rule.tokenName === 'string' ? rule.tokenName : undefined) ||
             (typeof state === 'string' ? state : undefined) ||
-            this.getNextRule()?.state ||
+            this._getNextRule()?.state ||
             '',
           step:
             typeof step === 'number'
               ? step
-              : (this.getNextRule()?.step || 0) + 1,
+              : (this._getNextRule()?.step || 0) + 1,
         });
         break;
       case RuleKind.PEEK_CONSTRAINT:
-        rule = (rule: PeekConstraint);
+        rule = (rule: GraphQLGrammarPeekConstraint);
         this.state.rules.push({
           peek: rule.peek,
           optional: Boolean(rule.optional),
@@ -593,18 +664,18 @@ export class Parser {
           kind: RuleKind.PEEK_CONSTRAINT,
           state:
             (typeof state === 'string' ? state : undefined) ||
-            this.getNextRule()?.state ||
+            this._getNextRule()?.state ||
             '',
           step:
             typeof step === 'number'
               ? step
-              : (this.getNextRule()?.step || 0) + 1,
+              : (this._getNextRule()?.step || 0) + 1,
         });
         break;
     }
   }
 
-  getRuleKind(rule: Rule | ParserRule): string {
+  _getRuleKind(rule: GraphQLGrammarRule | OnlineParserRule): string {
     if (Array.isArray(rule)) {
       return RuleKind.CONSTRAINTS_SET;
     }
@@ -636,13 +707,13 @@ export class Parser {
     return RuleKind.INVALID;
   }
 
-  advanceToken(): LexerToken {
-    return (this.lexer.advance(): any);
+  _advanceToken(): LexerToken {
+    return (this._lexer.advance(): any);
   }
 
-  lookAhead(): LexerToken {
+  _lookAhead(): LexerToken {
     try {
-      return (this.lexer.lookahead(): any);
+      return (this._lexer.lookahead(): any);
     } catch (err) {
       return { kind: TokenKind.INVALID, value: '' };
     }
