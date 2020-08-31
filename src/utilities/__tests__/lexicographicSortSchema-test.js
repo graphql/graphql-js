@@ -6,6 +6,14 @@ import dedent from '../../__testUtils__/dedent';
 import { printSchema } from '../printSchema';
 import { buildSchema } from '../buildASTSchema';
 import { lexicographicSortSchema } from '../lexicographicSortSchema';
+import {
+  GraphQLObjectType,
+  GraphQLUnionType,
+  GraphQLList,
+} from '../../type/definition';
+import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
+import { graphql } from '../../graphql';
+import { GraphQLSchema } from '../../type/schema';
 
 function sortSDL(sdl: string): string {
   const schema = buildSchema(sdl);
@@ -355,5 +363,79 @@ describe('lexicographicSortSchema', () => {
         fooC: FooC
       }
     `);
+  });
+
+  it('should correctly replace resolved types', async () => {
+    const DogType = new GraphQLObjectType({
+      name: 'Dog',
+      fields: {
+        name: { type: GraphQLString },
+        woofs: { type: GraphQLBoolean },
+      },
+    });
+    const CatType = new GraphQLObjectType({
+      name: 'Cat',
+      fields: {
+        name: { type: GraphQLString },
+        meows: { type: GraphQLBoolean },
+      },
+    });
+    const someUnion = new GraphQLUnionType({
+      name: 'SomeUnion',
+      types: [CatType, DogType],
+      resolveType(obj) {
+        return typeof obj.woofs !== 'undefined'
+          ? Promise.resolve(DogType)
+          : Promise.resolve(CatType);
+      },
+    });
+    const schema = lexicographicSortSchema(
+      new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'Query',
+          fields: {
+            pets: {
+              type: new GraphQLList(someUnion),
+              resolve() {
+                return [
+                  { name: 'Odie', woofs: true },
+                  { name: 'Garfield', meows: false },
+                ];
+              },
+            },
+          },
+        }),
+        types: [DogType, CatType],
+      }),
+    );
+    const source = `
+      {
+        pets {
+          ... on Dog {
+            name
+            woofs
+          }
+          ... on Cat {
+            name
+            meows
+          }
+        }
+      }
+    `;
+    const result = await graphql({ schema, source });
+    expect(result).to.deep.equal({
+      data: {
+        pets: [
+          {
+            name: 'Odie',
+            woofs: true,
+          },
+          {
+            name: 'Garfield',
+            meows: false,
+          },
+        ],
+      },
+    });
   });
 });
