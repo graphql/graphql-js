@@ -1,5 +1,4 @@
 import find from '../polyfills/find';
-import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
@@ -599,8 +598,12 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
   object: SDLDefinedObject<T, K>,
   getter: (T | K) => ?(L | $ReadOnlyArray<L>),
 ): $ReadOnlyArray<L> {
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return flatMap(getAllNodes(object), (item) => getter(item) ?? []);
+  let subNodes = [];
+  for (const node of getAllNodes(object)) {
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    subNodes = subNodes.concat(getter(node) ?? []);
+  }
+  return subNodes;
 }
 
 function getAllImplementsInterfaceNodes(
