@@ -33,6 +33,9 @@ describe('isCollection', () => {
       /* do nothing */
     }
     expect(isCollection(generatorFunc())).to.equal(true);
+
+    // But generator function itself is not iteratable
+    expect(isCollection(generatorFunc)).to.equal(false);
   });
 
   it('should return `false` for non-collections', () => {
@@ -60,9 +63,9 @@ describe('isCollection', () => {
     const iteratorWithoutSymbol = { next: identityFunc };
     expect(isCollection(iteratorWithoutSymbol)).to.equal(false);
 
-    const iteratorWithInvalidTypedSymbol = {
+    const invalidIteratable = {
       [Symbol.iterator]: { next: identityFunc },
     };
-    expect(isCollection(iteratorWithInvalidTypedSymbol)).to.equal(false);
+    expect(isCollection(invalidIteratable)).to.equal(false);
   });
 });
