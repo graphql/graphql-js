@@ -1,5 +1,3 @@
-import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
-
 import inspect from '../jsutils/inspect';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
@@ -45,7 +43,7 @@ export class Source {
   }
 
   // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'Source';
   }
 }

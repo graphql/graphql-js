@@ -1,5 +1,4 @@
 import objectEntries from '../polyfills/objectEntries';
-import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
 import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from '../jsutils/ObjMap';
 import inspect from '../jsutils/inspect';
@@ -105,7 +104,7 @@ export class GraphQLDirective {
   }
 
   // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLDirective';
   }
 }

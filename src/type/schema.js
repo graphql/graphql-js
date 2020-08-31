@@ -1,5 +1,4 @@
 import objectValues from '../polyfills/objectValues';
-import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
 import type {
   ObjMap,
@@ -346,7 +345,7 @@ export class GraphQLSchema {
   }
 
   // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLSchema';
   }
 }
