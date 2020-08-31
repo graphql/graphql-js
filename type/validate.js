@@ -1,5 +1,4 @@
 import find from "../polyfills/find.js";
-import flatMap from "../polyfills/flatMap.js";
 import objectValues from "../polyfills/objectValues.js";
 import inspect from "../jsutils/inspect.js";
 import { GraphQLError } from "../error/GraphQLError.js";
@@ -408,8 +407,14 @@ function getAllNodes(object) {
 }
 
 function getAllSubNodes(object, getter) {
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return flatMap(getAllNodes(object), item => getter(item) ?? []);
+  let subNodes = [];
+
+  for (const node of getAllNodes(object)) {
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    subNodes = subNodes.concat(getter(node) ?? []);
+  }
+
+  return subNodes;
 }
 
 function getAllImplementsInterfaceNodes(type, iface) {
