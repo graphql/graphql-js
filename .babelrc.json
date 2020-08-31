@@ -18,7 +18,13 @@
       "env": {
         "cjs": {
           "presets": [["@babel/preset-env", { "modules": "commonjs" }]],
-          "plugins": ["./resources/inline-invariant"]
+          "plugins": [
+            [
+              "./resources/add-extension-to-import-paths",
+              { "extension": "js" }
+            ],
+            "./resources/inline-invariant"
+          ]
         },
         "mjs": {
           "presets": [["@babel/preset-env", { "modules": false }]],
