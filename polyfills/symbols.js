@@ -10,10 +10,8 @@ var SYMBOL_ITERATOR = typeof Symbol === 'function' ? Symbol.iterator : '@@iterat
 // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
 
 exports.SYMBOL_ITERATOR = SYMBOL_ITERATOR;
-var SYMBOL_ASYNC_ITERATOR = // $FlowFixMe[prop-missing] Flow doesn't define `Symbol.asyncIterator` yet
-typeof Symbol === 'function' ? Symbol.asyncIterator : '@@asyncIterator'; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
+var SYMBOL_ASYNC_ITERATOR = typeof Symbol === 'function' ? Symbol.asyncIterator : '@@asyncIterator'; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
 
 exports.SYMBOL_ASYNC_ITERATOR = SYMBOL_ASYNC_ITERATOR;
-var SYMBOL_TO_STRING_TAG = // $FlowFixMe[incompatible-type] Flow doesn't define `Symbol.toStringTag` yet
-typeof Symbol === 'function' ? Symbol.toStringTag : '@@toStringTag';
+var SYMBOL_TO_STRING_TAG = typeof Symbol === 'function' ? Symbol.toStringTag : '@@toStringTag';
 exports.SYMBOL_TO_STRING_TAG = SYMBOL_TO_STRING_TAG;
