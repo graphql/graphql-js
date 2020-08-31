@@ -1,5 +1,5 @@
-import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.js";
 import inspect from "../jsutils/inspect.js";
+import isAsyncIterable from "../jsutils/isAsyncIterable.js";
 import { addPath, pathToArray } from "../jsutils/Path.js";
 import { GraphQLError } from "../error/GraphQLError.js";
 import { locatedError } from "../error/locatedError.js";
@@ -160,24 +160,10 @@ function executeSubscription(exeContext) {
 
     if (!isAsyncIterable(eventStream)) {
       throw new Error('Subscription field must return Async Iterable. ' + `Received: ${inspect(eventStream)}.`);
-    } // Note: isAsyncIterable above ensures this will be correct.
-
+    }
 
     return eventStream;
   }, error => {
     throw locatedError(error, fieldNodes, pathToArray(path));
   });
-}
-/**
- * Returns true if the provided object implements the AsyncIterator protocol via
- * either implementing a `Symbol.asyncIterator` or `"@@asyncIterator"` method.
- */
-
-
-function isAsyncIterable(maybeAsyncIterable) {
-  if (maybeAsyncIterable == null || typeof maybeAsyncIterable !== 'object') {
-    return false;
-  }
-
-  return typeof maybeAsyncIterable[SYMBOL_ASYNC_ITERATOR] === 'function';
 }
