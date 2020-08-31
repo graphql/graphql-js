@@ -10,4 +10,4 @@ Object.defineProperty(exports, "UniqueOperationTypes", {
   }
 });
 
-var _UniqueOperationTypesRule = require("./UniqueOperationTypesRule");
+var _UniqueOperationTypesRule = require("./UniqueOperationTypesRule.js");

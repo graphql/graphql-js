@@ -7,29 +7,29 @@ exports.isSchema = isSchema;
 exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
 
-var _find = _interopRequireDefault(require("../polyfills/find"));
+var _find = _interopRequireDefault(require("../polyfills/find.js"));
 
-var _arrayFrom3 = _interopRequireDefault(require("../polyfills/arrayFrom"));
+var _arrayFrom3 = _interopRequireDefault(require("../polyfills/arrayFrom.js"));
 
-var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _symbols = require("../polyfills/symbols");
+var _symbols = require("../polyfills/symbols.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap"));
+var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap.js"));
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
-var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
+var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _introspection = require("./introspection");
+var _introspection = require("./introspection.js");
 
-var _directives = require("./directives");
+var _directives = require("./directives.js");
 
-var _definition = require("./definition");
+var _definition = require("./definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

@@ -5,21 +5,21 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 
-var _find = _interopRequireDefault(require("../../polyfills/find"));
+var _find = _interopRequireDefault(require("../../polyfills/find.js"));
 
-var _objectEntries3 = _interopRequireDefault(require("../../polyfills/objectEntries"));
+var _objectEntries3 = _interopRequireDefault(require("../../polyfills/objectEntries.js"));
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _kinds = require("../../language/kinds");
+var _kinds = require("../../language/kinds.js");
 
-var _printer = require("../../language/printer");
+var _printer = require("../../language/printer.js");
 
-var _definition = require("../../type/definition");
+var _definition = require("../../type/definition.js");
 
-var _typeFromAST = require("../../utilities/typeFromAST");
+var _typeFromAST = require("../../utilities/typeFromAST.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

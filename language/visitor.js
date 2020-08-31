@@ -8,9 +8,9 @@ exports.visitInParallel = visitInParallel;
 exports.getVisitFn = getVisitFn;
 exports.BREAK = exports.QueryDocumentKeys = void 0;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _ast = require("./ast");
+var _ast = require("./ast.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

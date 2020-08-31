@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.SingleFieldSubscriptionsRule = SingleFieldSubscriptionsRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
 /**
  * Subscriptions must only include one field.

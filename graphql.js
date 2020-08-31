@@ -6,15 +6,15 @@ Object.defineProperty(exports, "__esModule", {
 exports.graphql = graphql;
 exports.graphqlSync = graphqlSync;
 
-var _isPromise = _interopRequireDefault(require("./jsutils/isPromise"));
+var _isPromise = _interopRequireDefault(require("./jsutils/isPromise.js"));
 
-var _parser = require("./language/parser");
+var _parser = require("./language/parser.js");
 
-var _validate = require("./validation/validate");
+var _validate = require("./validation/validate.js");
 
-var _validate2 = require("./type/validate");
+var _validate2 = require("./type/validate.js");
 
-var _execute = require("./execution/execute");
+var _execute = require("./execution/execute.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

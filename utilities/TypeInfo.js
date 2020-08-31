@@ -6,19 +6,19 @@ Object.defineProperty(exports, "__esModule", {
 exports.visitWithTypeInfo = visitWithTypeInfo;
 exports.TypeInfo = void 0;
 
-var _find = _interopRequireDefault(require("../polyfills/find"));
+var _find = _interopRequireDefault(require("../polyfills/find.js"));
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _ast = require("../language/ast");
+var _ast = require("../language/ast.js");
 
-var _visitor = require("../language/visitor");
+var _visitor = require("../language/visitor.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
-var _introspection = require("../type/introspection");
+var _introspection = require("../type/introspection.js");
 
-var _typeFromAST = require("./typeFromAST");
+var _typeFromAST = require("./typeFromAST.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

@@ -46,41 +46,41 @@ exports.isRequiredArgument = isRequiredArgument;
 exports.isRequiredInputField = isRequiredInputField;
 exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.GraphQLObjectType = exports.GraphQLScalarType = void 0;
 
-var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
+var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries.js"));
 
-var _symbols = require("../polyfills/symbols");
+var _symbols = require("../polyfills/symbols.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
 
-var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
+var _mapValue = _interopRequireDefault(require("../jsutils/mapValue.js"));
 
-var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap"));
+var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap.js"));
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
-var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
+var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap.js"));
 
-var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
+var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
 
-var _didYouMean = _interopRequireDefault(require("../jsutils/didYouMean"));
+var _didYouMean = _interopRequireDefault(require("../jsutils/didYouMean.js"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc"));
+var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc.js"));
 
-var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect"));
+var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect.js"));
 
-var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
+var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList.js"));
 
-var _GraphQLError = require("../error/GraphQLError");
+var _GraphQLError = require("../error/GraphQLError.js");
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _printer = require("../language/printer");
+var _printer = require("../language/printer.js");
 
-var _valueFromASTUntyped = require("../utilities/valueFromASTUntyped");
+var _valueFromASTUntyped = require("../utilities/valueFromASTUntyped.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

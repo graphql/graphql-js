@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.NoSchemaIntrospectionCustomRule = NoSchemaIntrospectionCustomRule;
 
-var _GraphQLError = require("../../../error/GraphQLError");
+var _GraphQLError = require("../../../error/GraphQLError.js");
 
-var _definition = require("../../../type/definition");
+var _definition = require("../../../type/definition.js");
 
-var _introspection = require("../../../type/introspection");
+var _introspection = require("../../../type/introspection.js");
 
 /**
  * Prohibit introspection queries

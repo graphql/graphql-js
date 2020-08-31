@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.NoUnusedVariablesRule = NoUnusedVariablesRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
 /**
  * No unused variables

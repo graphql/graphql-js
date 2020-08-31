@@ -8,27 +8,27 @@ exports.assertDirective = assertDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
 exports.specifiedDirectives = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
 
-var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
+var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries.js"));
 
-var _symbols = require("../polyfills/symbols");
+var _symbols = require("../polyfills/symbols.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap"));
+var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap.js"));
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
-var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
+var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect"));
+var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect.js"));
 
-var _directiveLocation = require("../language/directiveLocation");
+var _directiveLocation = require("../language/directiveLocation.js");
 
-var _scalars = require("./scalars");
+var _scalars = require("./scalars.js");
 
-var _definition = require("./definition");
+var _definition = require("./definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

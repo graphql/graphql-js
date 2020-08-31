@@ -6,13 +6,13 @@ Object.defineProperty(exports, "__esModule", {
 exports.isPunctuatorTokenKind = isPunctuatorTokenKind;
 exports.Lexer = void 0;
 
-var _syntaxError = require("../error/syntaxError");
+var _syntaxError = require("../error/syntaxError.js");
 
-var _ast = require("./ast");
+var _ast = require("./ast.js");
 
-var _tokenKind = require("./tokenKind");
+var _tokenKind = require("./tokenKind.js");
 
-var _blockString = require("./blockString");
+var _blockString = require("./blockString.js");
 
 /**
  * Given a Source object, creates a Lexer for that source.

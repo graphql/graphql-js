@@ -6,21 +6,21 @@ Object.defineProperty(exports, "__esModule", {
 exports.isSpecifiedScalarType = isSpecifiedScalarType;
 exports.specifiedScalarTypes = exports.GraphQLID = exports.GraphQLBoolean = exports.GraphQLString = exports.GraphQLFloat = exports.GraphQLInt = void 0;
 
-var _isFinite = _interopRequireDefault(require("../polyfills/isFinite"));
+var _isFinite = _interopRequireDefault(require("../polyfills/isFinite.js"));
 
-var _isInteger = _interopRequireDefault(require("../polyfills/isInteger"));
+var _isInteger = _interopRequireDefault(require("../polyfills/isInteger.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _printer = require("../language/printer");
+var _printer = require("../language/printer.js");
 
-var _GraphQLError = require("../error/GraphQLError");
+var _GraphQLError = require("../error/GraphQLError.js");
 
-var _definition = require("./definition");
+var _definition = require("./definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

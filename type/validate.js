@@ -6,29 +6,29 @@ Object.defineProperty(exports, "__esModule", {
 exports.validateSchema = validateSchema;
 exports.assertValidSchema = assertValidSchema;
 
-var _find = _interopRequireDefault(require("../polyfills/find"));
+var _find = _interopRequireDefault(require("../polyfills/find.js"));
 
-var _flatMap = _interopRequireDefault(require("../polyfills/flatMap"));
+var _flatMap = _interopRequireDefault(require("../polyfills/flatMap.js"));
 
-var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _GraphQLError = require("../error/GraphQLError");
+var _GraphQLError = require("../error/GraphQLError.js");
 
-var _locatedError = require("../error/locatedError");
+var _locatedError = require("../error/locatedError.js");
 
-var _assertValidName = require("../utilities/assertValidName");
+var _assertValidName = require("../utilities/assertValidName.js");
 
-var _typeComparators = require("../utilities/typeComparators");
+var _typeComparators = require("../utilities/typeComparators.js");
 
-var _schema = require("./schema");
+var _schema = require("./schema.js");
 
-var _directives = require("./directives");
+var _directives = require("./directives.js");
 
-var _introspection = require("./introspection");
+var _introspection = require("./introspection.js");
 
-var _definition = require("./definition");
+var _definition = require("./definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

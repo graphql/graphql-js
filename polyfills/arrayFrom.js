@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _symbols = require("./symbols");
+var _symbols = require("./symbols.js");
 
 /* eslint-disable no-redeclare */
 // $FlowFixMe[name-already-bound]

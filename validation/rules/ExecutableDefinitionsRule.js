@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ExecutableDefinitionsRule = ExecutableDefinitionsRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _kinds = require("../../language/kinds");
+var _kinds = require("../../language/kinds.js");
 
-var _predicates = require("../../language/predicates");
+var _predicates = require("../../language/predicates.js");
 
 /**
  * Executable definitions

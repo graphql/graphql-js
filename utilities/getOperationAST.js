@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getOperationAST = getOperationAST;
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
 /**
  * Returns an operation AST given a document AST and optionally an operation

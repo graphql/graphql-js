@@ -12,47 +12,47 @@ exports.buildResolveInfo = buildResolveInfo;
 exports.getFieldDef = getFieldDef;
 exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
 
-var _arrayFrom = _interopRequireDefault(require("../polyfills/arrayFrom"));
+var _arrayFrom = _interopRequireDefault(require("../polyfills/arrayFrom.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _memoize = _interopRequireDefault(require("../jsutils/memoize3"));
+var _memoize = _interopRequireDefault(require("../jsutils/memoize3.js"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
-var _isPromise = _interopRequireDefault(require("../jsutils/isPromise"));
+var _isPromise = _interopRequireDefault(require("../jsutils/isPromise.js"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _isCollection = _interopRequireDefault(require("../jsutils/isCollection"));
+var _isCollection = _interopRequireDefault(require("../jsutils/isCollection.js"));
 
-var _promiseReduce = _interopRequireDefault(require("../jsutils/promiseReduce"));
+var _promiseReduce = _interopRequireDefault(require("../jsutils/promiseReduce.js"));
 
-var _promiseForObject = _interopRequireDefault(require("../jsutils/promiseForObject"));
+var _promiseForObject = _interopRequireDefault(require("../jsutils/promiseForObject.js"));
 
-var _Path = require("../jsutils/Path");
+var _Path = require("../jsutils/Path.js");
 
-var _GraphQLError = require("../error/GraphQLError");
+var _GraphQLError = require("../error/GraphQLError.js");
 
-var _locatedError = require("../error/locatedError");
+var _locatedError = require("../error/locatedError.js");
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _validate = require("../type/validate");
+var _validate = require("../type/validate.js");
 
-var _introspection = require("../type/introspection");
+var _introspection = require("../type/introspection.js");
 
-var _directives = require("../type/directives");
+var _directives = require("../type/directives.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
-var _typeFromAST = require("../utilities/typeFromAST");
+var _typeFromAST = require("../utilities/typeFromAST.js");
 
-var _getOperationRootType = require("../utilities/getOperationRootType");
+var _getOperationRootType = require("../utilities/getOperationRootType.js");
 
-var _values = require("./values");
+var _values = require("./values.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

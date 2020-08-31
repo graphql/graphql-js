@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.print = print;
 
-var _visitor = require("./visitor");
+var _visitor = require("./visitor.js");
 
-var _blockString = require("./blockString");
+var _blockString = require("./blockString.js");
 
 /**
  * Converts an AST into a string, using one set of reasonable

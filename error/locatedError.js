@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.locatedError = locatedError;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _GraphQLError = require("./GraphQLError");
+var _GraphQLError = require("./GraphQLError.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

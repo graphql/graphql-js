@@ -5,17 +5,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.KnownDirectivesRule = KnownDirectivesRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
 
-var _invariant = _interopRequireDefault(require("../../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../../jsutils/invariant.js"));
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _kinds = require("../../language/kinds");
+var _kinds = require("../../language/kinds.js");
 
-var _directiveLocation = require("../../language/directiveLocation");
+var _directiveLocation = require("../../language/directiveLocation.js");
 
-var _directives = require("../../type/directives");
+var _directives = require("../../type/directives.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

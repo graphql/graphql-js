@@ -10,4 +10,4 @@ Object.defineProperty(exports, "UniqueDirectiveNames", {
   }
 });
 
-var _UniqueDirectiveNamesRule = require("./UniqueDirectiveNamesRule");
+var _UniqueDirectiveNamesRule = require("./UniqueDirectiveNamesRule.js");

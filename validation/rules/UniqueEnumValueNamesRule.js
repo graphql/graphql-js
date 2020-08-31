@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.UniqueEnumValueNamesRule = UniqueEnumValueNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _definition = require("../../type/definition");
+var _definition = require("../../type/definition.js");
 
 /**
  * Unique enum value names

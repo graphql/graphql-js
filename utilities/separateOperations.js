@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.separateOperations = separateOperations;
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _visitor = require("../language/visitor");
+var _visitor = require("../language/visitor.js");
 
 /**
  * separateOperations accepts a single AST document which may contain many

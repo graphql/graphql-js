@@ -40,8 +40,8 @@ Object.defineProperty(exports, "getDirectiveValues", {
   }
 });
 
-var _Path = require("../jsutils/Path");
+var _Path = require("../jsutils/Path.js");
 
-var _execute = require("./execute");
+var _execute = require("./execute.js");
 
-var _values = require("./values");
+var _values = require("./values.js");

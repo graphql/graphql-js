@@ -496,14 +496,14 @@ Object.defineProperty(exports, "assertValidSchema", {
   }
 });
 
-var _schema = require("./schema");
+var _schema = require("./schema.js");
 
-var _definition = require("./definition");
+var _definition = require("./definition.js");
 
-var _directives = require("./directives");
+var _directives = require("./directives.js");
 
-var _scalars = require("./scalars");
+var _scalars = require("./scalars.js");
 
-var _introspection = require("./introspection");
+var _introspection = require("./introspection.js");
 
-var _validate = require("./validate");
+var _validate = require("./validate.js");

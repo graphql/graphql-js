@@ -5,21 +5,21 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PossibleTypeExtensionsRule = PossibleTypeExtensionsRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
 
-var _invariant = _interopRequireDefault(require("../../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../../jsutils/invariant.js"));
 
-var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
+var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"));
 
-var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
+var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _kinds = require("../../language/kinds");
+var _kinds = require("../../language/kinds.js");
 
-var _predicates = require("../../language/predicates");
+var _predicates = require("../../language/predicates.js");
 
-var _definition = require("../../type/definition");
+var _definition = require("../../type/definition.js");
 
 var _defKindToExtKind;
 

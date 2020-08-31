@@ -6,21 +6,21 @@ Object.defineProperty(exports, "__esModule", {
 exports.isIntrospectionType = isIntrospectionType;
 exports.introspectionTypes = exports.TypeNameMetaFieldDef = exports.TypeMetaFieldDef = exports.SchemaMetaFieldDef = exports.__TypeKind = exports.TypeKind = exports.__EnumValue = exports.__InputValue = exports.__Field = exports.__Type = exports.__DirectiveLocation = exports.__Directive = exports.__Schema = void 0;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _printer = require("../language/printer");
+var _printer = require("../language/printer.js");
 
-var _directiveLocation = require("../language/directiveLocation");
+var _directiveLocation = require("../language/directiveLocation.js");
 
-var _astFromValue = require("../utilities/astFromValue");
+var _astFromValue = require("../utilities/astFromValue.js");
 
-var _scalars = require("./scalars");
+var _scalars = require("./scalars.js");
 
-var _definition = require("./definition");
+var _definition = require("./definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

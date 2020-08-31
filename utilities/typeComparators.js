@@ -7,7 +7,7 @@ exports.isEqualType = isEqualType;
 exports.isTypeSubTypeOf = isTypeSubTypeOf;
 exports.doTypesOverlap = doTypesOverlap;
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
 /**
  * Provided two types, return true if the types are equal (invariant).

@@ -8,23 +8,23 @@ exports.parseValue = parseValue;
 exports.parseType = parseType;
 exports.Parser = void 0;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
-var _syntaxError = require("../error/syntaxError");
+var _syntaxError = require("../error/syntaxError.js");
 
-var _kinds = require("./kinds");
+var _kinds = require("./kinds.js");
 
-var _ast = require("./ast");
+var _ast = require("./ast.js");
 
-var _source = require("./source");
+var _source = require("./source.js");
 
-var _tokenKind = require("./tokenKind");
+var _tokenKind = require("./tokenKind.js");
 
-var _directiveLocation = require("./directiveLocation");
+var _directiveLocation = require("./directiveLocation.js");
 
-var _lexer = require("./lexer");
+var _lexer = require("./lexer.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

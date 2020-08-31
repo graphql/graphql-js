@@ -6,23 +6,23 @@ Object.defineProperty(exports, "__esModule", {
 exports.subscribe = subscribe;
 exports.createSourceEventStream = createSourceEventStream;
 
-var _symbols = require("../polyfills/symbols");
+var _symbols = require("../polyfills/symbols.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _Path = require("../jsutils/Path");
+var _Path = require("../jsutils/Path.js");
 
-var _GraphQLError = require("../error/GraphQLError");
+var _GraphQLError = require("../error/GraphQLError.js");
 
-var _locatedError = require("../error/locatedError");
+var _locatedError = require("../error/locatedError.js");
 
-var _values = require("../execution/values");
+var _values = require("../execution/values.js");
 
-var _execute = require("../execution/execute");
+var _execute = require("../execution/execute.js");
 
-var _getOperationRootType = require("../utilities/getOperationRootType");
+var _getOperationRootType = require("../utilities/getOperationRootType.js");
 
-var _mapAsyncIterator = _interopRequireDefault(require("./mapAsyncIterator"));
+var _mapAsyncIterator = _interopRequireDefault(require("./mapAsyncIterator.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

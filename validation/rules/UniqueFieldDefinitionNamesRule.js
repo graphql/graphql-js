@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.UniqueFieldDefinitionNamesRule = UniqueFieldDefinitionNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _definition = require("../../type/definition");
+var _definition = require("../../type/definition.js");
 
 /**
  * Unique field definition names

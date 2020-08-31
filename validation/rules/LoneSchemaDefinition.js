@@ -10,4 +10,4 @@ Object.defineProperty(exports, "LoneSchemaDefinition", {
   }
 });
 
-var _LoneSchemaDefinitionRule = require("./LoneSchemaDefinitionRule");
+var _LoneSchemaDefinitionRule = require("./LoneSchemaDefinitionRule.js");

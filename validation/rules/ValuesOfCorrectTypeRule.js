@@ -5,21 +5,21 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ValuesOfCorrectTypeRule = ValuesOfCorrectTypeRule;
 
-var _objectValues3 = _interopRequireDefault(require("../../polyfills/objectValues"));
+var _objectValues3 = _interopRequireDefault(require("../../polyfills/objectValues.js"));
 
-var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
+var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap.js"));
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
 
-var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
+var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"));
 
-var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
+var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _printer = require("../../language/printer");
+var _printer = require("../../language/printer.js");
 
-var _definition = require("../../type/definition");
+var _definition = require("../../type/definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

@@ -10,4 +10,4 @@ Object.defineProperty(exports, "PossibleTypeExtensions", {
   }
 });
 
-var _PossibleTypeExtensionsRule = require("./PossibleTypeExtensionsRule");
+var _PossibleTypeExtensionsRule = require("./PossibleTypeExtensionsRule.js");

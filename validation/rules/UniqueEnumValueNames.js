@@ -10,4 +10,4 @@ Object.defineProperty(exports, "UniqueEnumValueNames", {
   }
 });
 
-var _UniqueEnumValueNamesRule = require("./UniqueEnumValueNamesRule");
+var _UniqueEnumValueNamesRule = require("./UniqueEnumValueNamesRule.js");

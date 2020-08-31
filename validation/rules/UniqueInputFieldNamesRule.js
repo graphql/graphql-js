@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.UniqueInputFieldNamesRule = UniqueInputFieldNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
 /**
  * Unique input field names

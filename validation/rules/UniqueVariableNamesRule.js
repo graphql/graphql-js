@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.UniqueVariableNamesRule = UniqueVariableNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
 /**
  * Unique variable names

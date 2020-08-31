@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.UniqueOperationNamesRule = UniqueOperationNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
 /**
  * Unique operation names

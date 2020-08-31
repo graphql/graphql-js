@@ -5,17 +5,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.VariablesInAllowedPositionRule = VariablesInAllowedPositionRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _kinds = require("../../language/kinds");
+var _kinds = require("../../language/kinds.js");
 
-var _definition = require("../../type/definition");
+var _definition = require("../../type/definition.js");
 
-var _typeFromAST = require("../../utilities/typeFromAST");
+var _typeFromAST = require("../../utilities/typeFromAST.js");
 
-var _typeComparators = require("../../utilities/typeComparators");
+var _typeComparators = require("../../utilities/typeComparators.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

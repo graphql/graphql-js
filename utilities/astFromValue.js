@@ -5,25 +5,25 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.astFromValue = astFromValue;
 
-var _isFinite = _interopRequireDefault(require("../polyfills/isFinite"));
+var _isFinite = _interopRequireDefault(require("../polyfills/isFinite.js"));
 
-var _arrayFrom3 = _interopRequireDefault(require("../polyfills/arrayFrom"));
+var _arrayFrom3 = _interopRequireDefault(require("../polyfills/arrayFrom.js"));
 
-var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _isCollection = _interopRequireDefault(require("../jsutils/isCollection"));
+var _isCollection = _interopRequireDefault(require("../jsutils/isCollection.js"));
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _scalars = require("../type/scalars");
+var _scalars = require("../type/scalars.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

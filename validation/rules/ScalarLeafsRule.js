@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ScalarLeafsRule = ScalarLeafsRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _definition = require("../../type/definition");
+var _definition = require("../../type/definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

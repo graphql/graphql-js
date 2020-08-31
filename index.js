@@ -1186,20 +1186,20 @@ Object.defineProperty(exports, "findDeprecatedUsages", {
   }
 });
 
-var _version = require("./version");
+var _version = require("./version.js");
 
-var _graphql = require("./graphql");
+var _graphql = require("./graphql.js");
 
-var _index = require("./type/index");
+var _index = require("./type/index.js");
 
-var _index2 = require("./language/index");
+var _index2 = require("./language/index.js");
 
-var _index3 = require("./execution/index");
+var _index3 = require("./execution/index.js");
 
-var _index4 = require("./subscription/index");
+var _index4 = require("./subscription/index.js");
 
-var _index5 = require("./validation/index");
+var _index5 = require("./validation/index.js");
 
-var _index6 = require("./error/index");
+var _index6 = require("./error/index.js");
 
-var _index7 = require("./utilities/index");
+var _index7 = require("./utilities/index.js");

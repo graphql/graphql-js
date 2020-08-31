@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = defineInspect;
 
-var _invariant = _interopRequireDefault(require("./invariant"));
+var _invariant = _interopRequireDefault(require("./invariant.js"));
 
-var _nodejsCustomInspectSymbol = _interopRequireDefault(require("./nodejsCustomInspectSymbol"));
+var _nodejsCustomInspectSymbol = _interopRequireDefault(require("./nodejsCustomInspectSymbol.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

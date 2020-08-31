@@ -5,13 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.valueFromASTUntyped = valueFromASTUntyped;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
+var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap.js"));
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

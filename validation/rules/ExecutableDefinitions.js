@@ -10,4 +10,4 @@ Object.defineProperty(exports, "ExecutableDefinitions", {
   }
 });
 
-var _ExecutableDefinitionsRule = require("./ExecutableDefinitionsRule");
+var _ExecutableDefinitionsRule = require("./ExecutableDefinitionsRule.js");

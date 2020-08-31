@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ValidationContext = exports.SDLValidationContext = exports.ASTValidationContext = void 0;
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _visitor = require("../language/visitor");
+var _visitor = require("../language/visitor.js");
 
-var _TypeInfo = require("../utilities/TypeInfo");
+var _TypeInfo = require("../utilities/TypeInfo.js");
 
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 

@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.NoFragmentCyclesRule = NoFragmentCyclesRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
 function NoFragmentCyclesRule(context) {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles

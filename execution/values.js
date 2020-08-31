@@ -7,27 +7,27 @@ exports.getVariableValues = getVariableValues;
 exports.getArgumentValues = getArgumentValues;
 exports.getDirectiveValues = getDirectiveValues;
 
-var _find = _interopRequireDefault(require("../polyfills/find"));
+var _find = _interopRequireDefault(require("../polyfills/find.js"));
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _printPathArray = _interopRequireDefault(require("../jsutils/printPathArray"));
+var _printPathArray = _interopRequireDefault(require("../jsutils/printPathArray.js"));
 
-var _GraphQLError = require("../error/GraphQLError");
+var _GraphQLError = require("../error/GraphQLError.js");
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _printer = require("../language/printer");
+var _printer = require("../language/printer.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
-var _typeFromAST = require("../utilities/typeFromAST");
+var _typeFromAST = require("../utilities/typeFromAST.js");
 
-var _valueFromAST = require("../utilities/valueFromAST");
+var _valueFromAST = require("../utilities/valueFromAST.js");
 
-var _coerceInputValue = require("../utilities/coerceInputValue");
+var _coerceInputValue = require("../utilities/coerceInputValue.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

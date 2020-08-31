@@ -5,21 +5,21 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.lexicographicSortSchema = lexicographicSortSchema;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
+var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap.js"));
 
-var _schema = require("../type/schema");
+var _schema = require("../type/schema.js");
 
-var _directives = require("../type/directives");
+var _directives = require("../type/directives.js");
 
-var _introspection = require("../type/introspection");
+var _introspection = require("../type/introspection.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

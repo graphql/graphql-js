@@ -7,25 +7,25 @@ exports.printSchema = printSchema;
 exports.printIntrospectionSchema = printIntrospectionSchema;
 exports.printType = printType;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _printer = require("../language/printer");
+var _printer = require("../language/printer.js");
 
-var _blockString = require("../language/blockString");
+var _blockString = require("../language/blockString.js");
 
-var _introspection = require("../type/introspection");
+var _introspection = require("../type/introspection.js");
 
-var _scalars = require("../type/scalars");
+var _scalars = require("../type/scalars.js");
 
-var _directives = require("../type/directives");
+var _directives = require("../type/directives.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
-var _astFromValue = require("./astFromValue");
+var _astFromValue = require("./astFromValue.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.NoDeprecatedCustomRule = NoDeprecatedCustomRule;
 
-var _GraphQLError = require("../../../error/GraphQLError");
+var _GraphQLError = require("../../../error/GraphQLError.js");
 
-var _definition = require("../../../type/definition");
+var _definition = require("../../../type/definition.js");
 
 /**
  * No deprecated

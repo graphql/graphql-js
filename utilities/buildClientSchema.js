@@ -5,29 +5,29 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.buildClientSchema = buildClientSchema;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
-var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
+var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap.js"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _parser = require("../language/parser");
+var _parser = require("../language/parser.js");
 
-var _schema = require("../type/schema");
+var _schema = require("../type/schema.js");
 
-var _directives = require("../type/directives");
+var _directives = require("../type/directives.js");
 
-var _scalars = require("../type/scalars");
+var _scalars = require("../type/scalars.js");
 
-var _introspection = require("../type/introspection");
+var _introspection = require("../type/introspection.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
-var _valueFromAST = require("./valueFromAST");
+var _valueFromAST = require("./valueFromAST.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

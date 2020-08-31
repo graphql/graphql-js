@@ -6,19 +6,19 @@ Object.defineProperty(exports, "__esModule", {
 exports.ProvidedRequiredArgumentsRule = ProvidedRequiredArgumentsRule;
 exports.ProvidedRequiredArgumentsOnDirectivesRule = ProvidedRequiredArgumentsOnDirectivesRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
 
-var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
+var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap.js"));
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _kinds = require("../../language/kinds");
+var _kinds = require("../../language/kinds.js");
 
-var _printer = require("../../language/printer");
+var _printer = require("../../language/printer.js");
 
-var _directives = require("../../type/directives");
+var _directives = require("../../type/directives.js");
 
-var _definition = require("../../type/definition");
+var _definition = require("../../type/definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

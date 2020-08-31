@@ -7,23 +7,23 @@ exports.findBreakingChanges = findBreakingChanges;
 exports.findDangerousChanges = findDangerousChanges;
 exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _printer = require("../language/printer");
+var _printer = require("../language/printer.js");
 
-var _visitor = require("../language/visitor");
+var _visitor = require("../language/visitor.js");
 
-var _scalars = require("../type/scalars");
+var _scalars = require("../type/scalars.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
-var _astFromValue = require("./astFromValue");
+var _astFromValue = require("./astFromValue.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

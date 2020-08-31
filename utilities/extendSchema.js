@@ -7,41 +7,41 @@ exports.extendSchema = extendSchema;
 exports.extendSchemaImpl = extendSchemaImpl;
 exports.getDescription = getDescription;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
+var _mapValue = _interopRequireDefault(require("../jsutils/mapValue.js"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _tokenKind = require("../language/tokenKind");
+var _tokenKind = require("../language/tokenKind.js");
 
-var _blockString = require("../language/blockString");
+var _blockString = require("../language/blockString.js");
 
-var _predicates = require("../language/predicates");
+var _predicates = require("../language/predicates.js");
 
-var _validate = require("../validation/validate");
+var _validate = require("../validation/validate.js");
 
-var _values = require("../execution/values");
+var _values = require("../execution/values.js");
 
-var _schema = require("../type/schema");
+var _schema = require("../type/schema.js");
 
-var _scalars = require("../type/scalars");
+var _scalars = require("../type/scalars.js");
 
-var _introspection = require("../type/introspection");
+var _introspection = require("../type/introspection.js");
 
-var _directives = require("../type/directives");
+var _directives = require("../type/directives.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
-var _valueFromAST = require("./valueFromAST");
+var _valueFromAST = require("./valueFromAST.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

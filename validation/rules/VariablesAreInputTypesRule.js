@@ -5,13 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.VariablesAreInputTypesRule = VariablesAreInputTypesRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _printer = require("../../language/printer");
+var _printer = require("../../language/printer.js");
 
-var _definition = require("../../type/definition");
+var _definition = require("../../type/definition.js");
 
-var _typeFromAST = require("../../utilities/typeFromAST");
+var _typeFromAST = require("../../utilities/typeFromAST.js");
 
 /**
  * Variables are input types

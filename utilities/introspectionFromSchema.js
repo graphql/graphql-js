@@ -5,13 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.introspectionFromSchema = introspectionFromSchema;
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _parser = require("../language/parser");
+var _parser = require("../language/parser.js");
 
-var _execute = require("../execution/execute");
+var _execute = require("../execution/execute.js");
 
-var _getIntrospectionQuery = require("./getIntrospectionQuery");
+var _getIntrospectionQuery = require("./getIntrospectionQuery.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

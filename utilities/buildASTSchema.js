@@ -6,19 +6,19 @@ Object.defineProperty(exports, "__esModule", {
 exports.buildASTSchema = buildASTSchema;
 exports.buildSchema = buildSchema;
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _parser = require("../language/parser");
+var _parser = require("../language/parser.js");
 
-var _validate = require("../validation/validate");
+var _validate = require("../validation/validate.js");
 
-var _schema = require("../type/schema");
+var _schema = require("../type/schema.js");
 
-var _directives = require("../type/directives");
+var _directives = require("../type/directives.js");
 
-var _extendSchema = require("./extendSchema");
+var _extendSchema = require("./extendSchema.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

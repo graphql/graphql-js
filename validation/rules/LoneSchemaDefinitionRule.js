@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.LoneSchemaDefinitionRule = LoneSchemaDefinitionRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
 /**
  * Lone Schema definition

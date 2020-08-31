@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.concatAST = concatAST;
 
-var _flatMap = _interopRequireDefault(require("../polyfills/flatMap"));
+var _flatMap = _interopRequireDefault(require("../polyfills/flatMap.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

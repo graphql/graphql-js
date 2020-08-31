@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.isNode = isNode;
 exports.Token = exports.Location = void 0;
 
-var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect"));
+var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

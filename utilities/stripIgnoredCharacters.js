@@ -5,15 +5,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.stripIgnoredCharacters = stripIgnoredCharacters;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _source = require("../language/source");
+var _source = require("../language/source.js");
 
-var _tokenKind = require("../language/tokenKind");
+var _tokenKind = require("../language/tokenKind.js");
 
-var _lexer = require("../language/lexer");
+var _lexer = require("../language/lexer.js");
 
-var _blockString = require("../language/blockString");
+var _blockString = require("../language/blockString.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

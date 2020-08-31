@@ -202,46 +202,46 @@ Object.defineProperty(exports, "findDeprecatedUsages", {
   }
 });
 
-var _getIntrospectionQuery = require("./getIntrospectionQuery");
+var _getIntrospectionQuery = require("./getIntrospectionQuery.js");
 
-var _getOperationAST = require("./getOperationAST");
+var _getOperationAST = require("./getOperationAST.js");
 
-var _getOperationRootType = require("./getOperationRootType");
+var _getOperationRootType = require("./getOperationRootType.js");
 
-var _introspectionFromSchema = require("./introspectionFromSchema");
+var _introspectionFromSchema = require("./introspectionFromSchema.js");
 
-var _buildClientSchema = require("./buildClientSchema");
+var _buildClientSchema = require("./buildClientSchema.js");
 
-var _buildASTSchema = require("./buildASTSchema");
+var _buildASTSchema = require("./buildASTSchema.js");
 
-var _extendSchema = require("./extendSchema");
+var _extendSchema = require("./extendSchema.js");
 
-var _lexicographicSortSchema = require("./lexicographicSortSchema");
+var _lexicographicSortSchema = require("./lexicographicSortSchema.js");
 
-var _printSchema = require("./printSchema");
+var _printSchema = require("./printSchema.js");
 
-var _typeFromAST = require("./typeFromAST");
+var _typeFromAST = require("./typeFromAST.js");
 
-var _valueFromAST = require("./valueFromAST");
+var _valueFromAST = require("./valueFromAST.js");
 
-var _valueFromASTUntyped = require("./valueFromASTUntyped");
+var _valueFromASTUntyped = require("./valueFromASTUntyped.js");
 
-var _astFromValue = require("./astFromValue");
+var _astFromValue = require("./astFromValue.js");
 
-var _TypeInfo = require("./TypeInfo");
+var _TypeInfo = require("./TypeInfo.js");
 
-var _coerceInputValue = require("./coerceInputValue");
+var _coerceInputValue = require("./coerceInputValue.js");
 
-var _concatAST = require("./concatAST");
+var _concatAST = require("./concatAST.js");
 
-var _separateOperations = require("./separateOperations");
+var _separateOperations = require("./separateOperations.js");
 
-var _stripIgnoredCharacters = require("./stripIgnoredCharacters");
+var _stripIgnoredCharacters = require("./stripIgnoredCharacters.js");
 
-var _typeComparators = require("./typeComparators");
+var _typeComparators = require("./typeComparators.js");
 
-var _assertValidName = require("./assertValidName");
+var _assertValidName = require("./assertValidName.js");
 
-var _findBreakingChanges = require("./findBreakingChanges");
+var _findBreakingChanges = require("./findBreakingChanges.js");
 
-var _findDeprecatedUsages = require("./findDeprecatedUsages");
+var _findDeprecatedUsages = require("./findDeprecatedUsages.js");

@@ -10,4 +10,4 @@ Object.defineProperty(exports, "UniqueTypeNames", {
   }
 });
 
-var _UniqueTypeNamesRule = require("./UniqueTypeNamesRule");
+var _UniqueTypeNamesRule = require("./UniqueTypeNamesRule.js");

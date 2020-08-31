@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.LoneAnonymousOperationRule = LoneAnonymousOperationRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _kinds = require("../../language/kinds");
+var _kinds = require("../../language/kinds.js");
 
 /**
  * Lone anonymous operation

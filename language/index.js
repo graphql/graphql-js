@@ -166,26 +166,26 @@ Object.defineProperty(exports, "DirectiveLocation", {
   }
 });
 
-var _source = require("./source");
+var _source = require("./source.js");
 
-var _location = require("./location");
+var _location = require("./location.js");
 
-var _printLocation = require("./printLocation");
+var _printLocation = require("./printLocation.js");
 
-var _kinds = require("./kinds");
+var _kinds = require("./kinds.js");
 
-var _tokenKind = require("./tokenKind");
+var _tokenKind = require("./tokenKind.js");
 
-var _lexer = require("./lexer");
+var _lexer = require("./lexer.js");
 
-var _parser = require("./parser");
+var _parser = require("./parser.js");
 
-var _printer = require("./printer");
+var _printer = require("./printer.js");
 
-var _visitor = require("./visitor");
+var _visitor = require("./visitor.js");
 
-var _ast = require("./ast");
+var _ast = require("./ast.js");
 
-var _predicates = require("./predicates");
+var _predicates = require("./predicates.js");
 
-var _directiveLocation = require("./directiveLocation");
+var _directiveLocation = require("./directiveLocation.js");

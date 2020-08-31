@@ -6,13 +6,13 @@ Object.defineProperty(exports, "__esModule", {
 exports.printError = printError;
 exports.GraphQLError = void 0;
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _symbols = require("../polyfills/symbols");
+var _symbols = require("../polyfills/symbols.js");
 
-var _location = require("../language/location");
+var _location = require("../language/location.js");
 
-var _printLocation = require("../language/printLocation");
+var _printLocation = require("../language/printLocation.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

@@ -10,4 +10,4 @@ Object.defineProperty(exports, "UniqueFieldDefinitionNames", {
   }
 });
 
-var _UniqueFieldDefinitionNamesRule = require("./UniqueFieldDefinitionNamesRule");
+var _UniqueFieldDefinitionNamesRule = require("./UniqueFieldDefinitionNamesRule.js");

@@ -8,19 +8,19 @@ exports.validateSDL = validateSDL;
 exports.assertValidSDL = assertValidSDL;
 exports.assertValidSDLExtension = assertValidSDLExtension;
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
-var _GraphQLError = require("../error/GraphQLError");
+var _GraphQLError = require("../error/GraphQLError.js");
 
-var _visitor = require("../language/visitor");
+var _visitor = require("../language/visitor.js");
 
-var _validate = require("../type/validate");
+var _validate = require("../type/validate.js");
 
-var _TypeInfo = require("../utilities/TypeInfo");
+var _TypeInfo = require("../utilities/TypeInfo.js");
 
-var _specifiedRules = require("./specifiedRules");
+var _specifiedRules = require("./specifiedRules.js");
 
-var _ValidationContext = require("./ValidationContext");
+var _ValidationContext = require("./ValidationContext.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

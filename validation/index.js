@@ -232,78 +232,78 @@ Object.defineProperty(exports, "NoSchemaIntrospectionCustomRule", {
   }
 });
 
-var _validate = require("./validate");
+var _validate = require("./validate.js");
 
-var _ValidationContext = require("./ValidationContext");
+var _ValidationContext = require("./ValidationContext.js");
 
-var _specifiedRules = require("./specifiedRules");
+var _specifiedRules = require("./specifiedRules.js");
 
-var _ExecutableDefinitionsRule = require("./rules/ExecutableDefinitionsRule");
+var _ExecutableDefinitionsRule = require("./rules/ExecutableDefinitionsRule.js");
 
-var _FieldsOnCorrectTypeRule = require("./rules/FieldsOnCorrectTypeRule");
+var _FieldsOnCorrectTypeRule = require("./rules/FieldsOnCorrectTypeRule.js");
 
-var _FragmentsOnCompositeTypesRule = require("./rules/FragmentsOnCompositeTypesRule");
+var _FragmentsOnCompositeTypesRule = require("./rules/FragmentsOnCompositeTypesRule.js");
 
-var _KnownArgumentNamesRule = require("./rules/KnownArgumentNamesRule");
+var _KnownArgumentNamesRule = require("./rules/KnownArgumentNamesRule.js");
 
-var _KnownDirectivesRule = require("./rules/KnownDirectivesRule");
+var _KnownDirectivesRule = require("./rules/KnownDirectivesRule.js");
 
-var _KnownFragmentNamesRule = require("./rules/KnownFragmentNamesRule");
+var _KnownFragmentNamesRule = require("./rules/KnownFragmentNamesRule.js");
 
-var _KnownTypeNamesRule = require("./rules/KnownTypeNamesRule");
+var _KnownTypeNamesRule = require("./rules/KnownTypeNamesRule.js");
 
-var _LoneAnonymousOperationRule = require("./rules/LoneAnonymousOperationRule");
+var _LoneAnonymousOperationRule = require("./rules/LoneAnonymousOperationRule.js");
 
-var _NoFragmentCyclesRule = require("./rules/NoFragmentCyclesRule");
+var _NoFragmentCyclesRule = require("./rules/NoFragmentCyclesRule.js");
 
-var _NoUndefinedVariablesRule = require("./rules/NoUndefinedVariablesRule");
+var _NoUndefinedVariablesRule = require("./rules/NoUndefinedVariablesRule.js");
 
-var _NoUnusedFragmentsRule = require("./rules/NoUnusedFragmentsRule");
+var _NoUnusedFragmentsRule = require("./rules/NoUnusedFragmentsRule.js");
 
-var _NoUnusedVariablesRule = require("./rules/NoUnusedVariablesRule");
+var _NoUnusedVariablesRule = require("./rules/NoUnusedVariablesRule.js");
 
-var _OverlappingFieldsCanBeMergedRule = require("./rules/OverlappingFieldsCanBeMergedRule");
+var _OverlappingFieldsCanBeMergedRule = require("./rules/OverlappingFieldsCanBeMergedRule.js");
 
-var _PossibleFragmentSpreadsRule = require("./rules/PossibleFragmentSpreadsRule");
+var _PossibleFragmentSpreadsRule = require("./rules/PossibleFragmentSpreadsRule.js");
 
-var _ProvidedRequiredArgumentsRule = require("./rules/ProvidedRequiredArgumentsRule");
+var _ProvidedRequiredArgumentsRule = require("./rules/ProvidedRequiredArgumentsRule.js");
 
-var _ScalarLeafsRule = require("./rules/ScalarLeafsRule");
+var _ScalarLeafsRule = require("./rules/ScalarLeafsRule.js");
 
-var _SingleFieldSubscriptionsRule = require("./rules/SingleFieldSubscriptionsRule");
+var _SingleFieldSubscriptionsRule = require("./rules/SingleFieldSubscriptionsRule.js");
 
-var _UniqueArgumentNamesRule = require("./rules/UniqueArgumentNamesRule");
+var _UniqueArgumentNamesRule = require("./rules/UniqueArgumentNamesRule.js");
 
-var _UniqueDirectivesPerLocationRule = require("./rules/UniqueDirectivesPerLocationRule");
+var _UniqueDirectivesPerLocationRule = require("./rules/UniqueDirectivesPerLocationRule.js");
 
-var _UniqueFragmentNamesRule = require("./rules/UniqueFragmentNamesRule");
+var _UniqueFragmentNamesRule = require("./rules/UniqueFragmentNamesRule.js");
 
-var _UniqueInputFieldNamesRule = require("./rules/UniqueInputFieldNamesRule");
+var _UniqueInputFieldNamesRule = require("./rules/UniqueInputFieldNamesRule.js");
 
-var _UniqueOperationNamesRule = require("./rules/UniqueOperationNamesRule");
+var _UniqueOperationNamesRule = require("./rules/UniqueOperationNamesRule.js");
 
-var _UniqueVariableNamesRule = require("./rules/UniqueVariableNamesRule");
+var _UniqueVariableNamesRule = require("./rules/UniqueVariableNamesRule.js");
 
-var _ValuesOfCorrectTypeRule = require("./rules/ValuesOfCorrectTypeRule");
+var _ValuesOfCorrectTypeRule = require("./rules/ValuesOfCorrectTypeRule.js");
 
-var _VariablesAreInputTypesRule = require("./rules/VariablesAreInputTypesRule");
+var _VariablesAreInputTypesRule = require("./rules/VariablesAreInputTypesRule.js");
 
-var _VariablesInAllowedPositionRule = require("./rules/VariablesInAllowedPositionRule");
+var _VariablesInAllowedPositionRule = require("./rules/VariablesInAllowedPositionRule.js");
 
-var _LoneSchemaDefinitionRule = require("./rules/LoneSchemaDefinitionRule");
+var _LoneSchemaDefinitionRule = require("./rules/LoneSchemaDefinitionRule.js");
 
-var _UniqueOperationTypesRule = require("./rules/UniqueOperationTypesRule");
+var _UniqueOperationTypesRule = require("./rules/UniqueOperationTypesRule.js");
 
-var _UniqueTypeNamesRule = require("./rules/UniqueTypeNamesRule");
+var _UniqueTypeNamesRule = require("./rules/UniqueTypeNamesRule.js");
 
-var _UniqueEnumValueNamesRule = require("./rules/UniqueEnumValueNamesRule");
+var _UniqueEnumValueNamesRule = require("./rules/UniqueEnumValueNamesRule.js");
 
-var _UniqueFieldDefinitionNamesRule = require("./rules/UniqueFieldDefinitionNamesRule");
+var _UniqueFieldDefinitionNamesRule = require("./rules/UniqueFieldDefinitionNamesRule.js");
 
-var _UniqueDirectiveNamesRule = require("./rules/UniqueDirectiveNamesRule");
+var _UniqueDirectiveNamesRule = require("./rules/UniqueDirectiveNamesRule.js");
 
-var _PossibleTypeExtensionsRule = require("./rules/PossibleTypeExtensionsRule");
+var _PossibleTypeExtensionsRule = require("./rules/PossibleTypeExtensionsRule.js");
 
-var _NoDeprecatedCustomRule = require("./rules/custom/NoDeprecatedCustomRule");
+var _NoDeprecatedCustomRule = require("./rules/custom/NoDeprecatedCustomRule.js");
 
-var _NoSchemaIntrospectionCustomRule = require("./rules/custom/NoSchemaIntrospectionCustomRule");
+var _NoSchemaIntrospectionCustomRule = require("./rules/custom/NoSchemaIntrospectionCustomRule.js");

@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.syntaxError = syntaxError;
 
-var _GraphQLError = require("./GraphQLError");
+var _GraphQLError = require("./GraphQLError.js");
 
 /**
  * Produces a GraphQLError representing a syntax error, containing useful

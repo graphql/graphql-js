@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.findDeprecatedUsages = findDeprecatedUsages;
 
-var _validate = require("../validation/validate");
+var _validate = require("../validation/validate.js");
 
-var _NoDeprecatedCustomRule = require("../validation/rules/custom/NoDeprecatedCustomRule");
+var _NoDeprecatedCustomRule = require("../validation/rules/custom/NoDeprecatedCustomRule.js");
 
 /**
  * A validation rule which reports deprecated usages.

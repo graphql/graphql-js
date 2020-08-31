@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.KnownFragmentNamesRule = KnownFragmentNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
 /**
  * Known fragment names

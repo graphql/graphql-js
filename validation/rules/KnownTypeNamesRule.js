@@ -5,17 +5,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.KnownTypeNamesRule = KnownTypeNamesRule;
 
-var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
+var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"));
 
-var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
+var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _GraphQLError = require("../../error/GraphQLError.js");
 
-var _predicates = require("../../language/predicates");
+var _predicates = require("../../language/predicates.js");
 
-var _scalars = require("../../type/scalars");
+var _scalars = require("../../type/scalars.js");
 
-var _introspection = require("../../type/introspection");
+var _introspection = require("../../type/introspection.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

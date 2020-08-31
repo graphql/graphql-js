@@ -34,10 +34,10 @@ Object.defineProperty(exports, "formatError", {
   }
 });
 
-var _GraphQLError = require("./GraphQLError");
+var _GraphQLError = require("./GraphQLError.js");
 
-var _syntaxError = require("./syntaxError");
+var _syntaxError = require("./syntaxError.js");
 
-var _locatedError = require("./locatedError");
+var _locatedError = require("./locatedError.js");
 
-var _formatError = require("./formatError");
+var _formatError = require("./formatError.js");

@@ -5,17 +5,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.valueFromAST = valueFromAST;
 
-var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues"));
+var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
-var _kinds = require("../language/kinds");
+var _kinds = require("../language/kinds.js");
 
-var _definition = require("../type/definition");
+var _definition = require("../type/definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
