@@ -57,7 +57,6 @@ export default function eventEmitterAsyncIterator(
       emptyQueue();
       return Promise.reject(error);
     },
-    // $FlowFixMe[prop-missing] Blocked by https://github.com/facebook/flow/issues/3258
     [Symbol.asyncIterator]() {
       return this;
     },
