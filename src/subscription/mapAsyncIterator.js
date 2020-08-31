@@ -1,5 +1,3 @@
-import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
-
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 /**
@@ -12,7 +10,7 @@ export default function mapAsyncIterator<T, U>(
   rejectCallback?: (any) => PromiseOrValue<U>,
 ): AsyncGenerator<U, void, void> {
   // $FlowFixMe[prop-missing]
-  const iteratorMethod = iterable[SYMBOL_ASYNC_ITERATOR];
+  const iteratorMethod = iterable[Symbol.asyncIterator];
   const iterator: any = iteratorMethod.call(iterable);
   let $return: any;
   let abruptClose;
@@ -55,7 +53,7 @@ export default function mapAsyncIterator<T, U>(
       }
       return Promise.reject(error).catch(abruptClose);
     },
-    [SYMBOL_ASYNC_ITERATOR]() {
+    [Symbol.asyncIterator]() {
       return this;
     },
   }: $FlowFixMe);
