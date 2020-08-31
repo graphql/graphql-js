@@ -1,7 +1,5 @@
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.mjs";
 import inspect from "../jsutils/inspect.mjs";
+import isAsyncIterable from "../jsutils/isAsyncIterable.mjs";
 import { addPath, pathToArray } from "../jsutils/Path.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { locatedError } from "../error/locatedError.mjs";
@@ -165,24 +163,10 @@ function executeSubscription(exeContext) {
 
     if (!isAsyncIterable(eventStream)) {
       throw new Error('Subscription field must return Async Iterable. ' + "Received: ".concat(inspect(eventStream), "."));
-    } // Note: isAsyncIterable above ensures this will be correct.
-
+    }
 
     return eventStream;
   }, function (error) {
     throw locatedError(error, fieldNodes, pathToArray(path));
   });
-}
-/**
- * Returns true if the provided object implements the AsyncIterator protocol via
- * either implementing a `Symbol.asyncIterator` or `"@@asyncIterator"` method.
- */
-
-
-function isAsyncIterable(maybeAsyncIterable) {
-  if (maybeAsyncIterable == null || _typeof(maybeAsyncIterable) !== 'object') {
-    return false;
-  }
-
-  return typeof maybeAsyncIterable[SYMBOL_ASYNC_ITERATOR] === 'function';
 }

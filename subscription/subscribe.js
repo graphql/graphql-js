@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.subscribe = subscribe;
 exports.createSourceEventStream = createSourceEventStream;
 
-var _symbols = require("../polyfills/symbols.js");
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+
+var _isAsyncIterable = _interopRequireDefault(require("../jsutils/isAsyncIterable.js"));
 
 var _Path = require("../jsutils/Path.js");
 
@@ -25,8 +25,6 @@ var _getOperationRootType = require("../utilities/getOperationRootType.js");
 var _mapAsyncIterator = _interopRequireDefault(require("./mapAsyncIterator.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
   /* eslint-enable no-redeclare */
@@ -91,7 +89,7 @@ function subscribeImpl(args) {
 
   return sourcePromise.then(function (resultOrStream) {
     return (// Note: Flow can't refine isAsyncIterable, so explicit casts are used.
-      isAsyncIterable(resultOrStream) ? (0, _mapAsyncIterator.default)(resultOrStream, mapSourceToResponse, reportGraphQLError) : resultOrStream
+      (0, _isAsyncIterable.default)(resultOrStream) ? (0, _mapAsyncIterator.default)(resultOrStream, mapSourceToResponse, reportGraphQLError) : resultOrStream
     );
   });
 }
@@ -183,26 +181,12 @@ function executeSubscription(exeContext) {
     } // Assert field returned an event stream, otherwise yield an error.
 
 
-    if (!isAsyncIterable(eventStream)) {
+    if (!(0, _isAsyncIterable.default)(eventStream)) {
       throw new Error('Subscription field must return Async Iterable. ' + "Received: ".concat((0, _inspect.default)(eventStream), "."));
-    } // Note: isAsyncIterable above ensures this will be correct.
-
+    }
 
     return eventStream;
   }, function (error) {
     throw (0, _locatedError.locatedError)(error, fieldNodes, (0, _Path.pathToArray)(path));
   });
-}
-/**
- * Returns true if the provided object implements the AsyncIterator protocol via
- * either implementing a `Symbol.asyncIterator` or `"@@asyncIterator"` method.
- */
-
-
-function isAsyncIterable(maybeAsyncIterable) {
-  if (maybeAsyncIterable == null || _typeof(maybeAsyncIterable) !== 'object') {
-    return false;
-  }
-
-  return typeof maybeAsyncIterable[_symbols.SYMBOL_ASYNC_ITERATOR] === 'function';
 }
