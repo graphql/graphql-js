@@ -115,11 +115,7 @@ describe('Execute: Handles basic execution tasks', () => {
     };
 
     function promiseData() {
-      return new Promise((resolve) => {
-        process.nextTick(() => {
-          resolve(data);
-        });
-      });
+      return Promise.resolve(data);
     }
 
     const DataType = new GraphQLObjectType({
