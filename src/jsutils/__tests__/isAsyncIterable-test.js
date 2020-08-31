@@ -6,7 +6,6 @@ import isAsyncIterable from '../isAsyncIterable';
 
 describe('isAsyncIterable', () => {
   it('should return `true` for AsyncIterable', () => {
-    // $FlowFixMe[prop-missing] Flow doesn't support Symbol.asyncIterator
     const asyncIteratable = { [Symbol.asyncIterator]: identityFunc };
     expect(isAsyncIterable(asyncIteratable)).to.equal(true);
 
@@ -45,7 +44,6 @@ describe('isAsyncIterable', () => {
     expect(isAsyncIterable(generatorFunc())).to.equal(false);
 
     const invalidAsyncIteratable = {
-      // $FlowFixMe[prop-missing] Flow doesn't support Symbol.asyncIterator
       [Symbol.asyncIterator]: { next: identityFunc },
     };
     expect(isAsyncIterable(invalidAsyncIteratable)).to.equal(false);
