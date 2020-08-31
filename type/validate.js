@@ -8,8 +8,6 @@ exports.assertValidSchema = assertValidSchema;
 
 var _find = _interopRequireDefault(require("../polyfills/find.js"));
 
-var _flatMap = _interopRequireDefault(require("../polyfills/flatMap.js"));
-
 var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
@@ -491,12 +489,17 @@ function getAllNodes(object) {
 }
 
 function getAllSubNodes(object, getter) {
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return (0, _flatMap.default)(getAllNodes(object), function (item) {
+  var subNodes = [];
+
+  for (var _i32 = 0, _getAllNodes2 = getAllNodes(object); _i32 < _getAllNodes2.length; _i32++) {
     var _getter;
 
-    return (_getter = getter(item)) !== null && _getter !== void 0 ? _getter : [];
-  });
+    var node = _getAllNodes2[_i32];
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    subNodes = subNodes.concat((_getter = getter(node)) !== null && _getter !== void 0 ? _getter : []);
+  }
+
+  return subNodes;
 }
 
 function getAllImplementsInterfaceNodes(type, iface) {
