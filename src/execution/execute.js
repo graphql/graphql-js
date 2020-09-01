@@ -1006,7 +1006,9 @@ function ensureValidRuntimeType(
   const runtimeType =
     typeof runtimeTypeOrName === 'string'
       ? exeContext.schema.getType(runtimeTypeOrName)
-      : runtimeTypeOrName;
+      : (runtimeTypeOrName &&
+          exeContext.schema.getType(runtimeTypeOrName.name)) ||
+        runtimeTypeOrName;
 
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(

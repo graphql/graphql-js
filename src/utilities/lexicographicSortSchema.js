@@ -11,7 +11,6 @@ import type {
   GraphQLFieldConfigMap,
   GraphQLFieldConfigArgumentMap,
   GraphQLInputFieldConfigMap,
-  GraphQLTypeResolver,
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
@@ -75,20 +74,6 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return maybeType && replaceNamedType(maybeType);
   }
 
-  function replaceResolvedType(
-    maybeTypeResolver: ?GraphQLTypeResolver<mixed, mixed>,
-  ) {
-    return (
-      maybeTypeResolver &&
-      ((...args) =>
-        Promise.resolve(maybeTypeResolver(...args)).then((resolvedType) =>
-          isObjectType(resolvedType)
-            ? replaceNamedType(resolvedType)
-            : resolvedType,
-        ))
-    );
-  }
-
   function sortDirective(directive: GraphQLDirective) {
     const config = directive.toConfig();
     return new GraphQLDirective({
@@ -142,7 +127,6 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
         ...config,
         interfaces: () => sortTypes(config.interfaces),
         fields: () => sortFields(config.fields),
-        resolveType: replaceResolvedType(config.resolveType),
       });
     }
     if (isUnionType(type)) {
@@ -150,7 +134,6 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       return new GraphQLUnionType({
         ...config,
         types: () => sortTypes(config.types),
-        resolveType: replaceResolvedType(config.resolveType),
       });
     }
     if (isEnumType(type)) {
