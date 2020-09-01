@@ -365,77 +365,97 @@ describe('lexicographicSortSchema', () => {
     `);
   });
 
-  it('should correctly replace resolved types', async () => {
-    const DogType = new GraphQLObjectType({
-      name: 'Dog',
-      fields: {
-        name: { type: GraphQLString },
-        woofs: { type: GraphQLBoolean },
-      },
-    });
-    const CatType = new GraphQLObjectType({
-      name: 'Cat',
-      fields: {
-        name: { type: GraphQLString },
-        meows: { type: GraphQLBoolean },
-      },
-    });
-    const someUnion = new GraphQLUnionType({
-      name: 'SomeUnion',
-      types: [CatType, DogType],
-      resolveType(obj) {
-        return typeof obj.woofs !== 'undefined'
-          ? Promise.resolve(DogType)
-          : Promise.resolve(CatType);
-      },
-    });
-    const schema = lexicographicSortSchema(
-      new GraphQLSchema({
-        query: new GraphQLObjectType({
-          name: 'Query',
-          fields: {
-            pets: {
-              type: new GraphQLList(someUnion),
-              resolve() {
-                return [
-                  { name: 'Odie', woofs: true },
-                  { name: 'Garfield', meows: false },
-                ];
+  describe('resolved type replacement', () => {
+    const makeCatAndDogTypes = () => {
+      const DogType = new GraphQLObjectType({
+        name: 'Dog',
+        fields: {
+          name: { type: GraphQLString },
+          woofs: { type: GraphQLBoolean },
+        },
+      });
+      const CatType = new GraphQLObjectType({
+        name: 'Cat',
+        fields: {
+          name: { type: GraphQLString },
+          meows: { type: GraphQLBoolean },
+        },
+      });
+      return [CatType, DogType];
+    };
+    const expectResolvedTypeResult = async (union, types) => {
+      const schema = lexicographicSortSchema(
+        new GraphQLSchema({
+          query: new GraphQLObjectType({
+            name: 'Query',
+            fields: {
+              pets: {
+                type: new GraphQLList(union),
+                resolve() {
+                  return [
+                    { name: 'Odie', woofs: true },
+                    { name: 'Garfield', meows: false },
+                  ];
+                },
               },
             },
-          },
+          }),
+          types,
         }),
-        types: [DogType, CatType],
-      }),
-    );
-    const source = `
-      {
-        pets {
-          ... on Dog {
-            name
-            woofs
-          }
-          ... on Cat {
-            name
-            meows
+      );
+      const source = `
+        {
+          pets {
+            ... on Dog {
+              name
+              woofs
+            }
+            ... on Cat {
+              name
+              meows
+            }
           }
         }
-      }
-    `;
-    const result = await graphql({ schema, source });
-    expect(result).to.deep.equal({
-      data: {
-        pets: [
-          {
-            name: 'Odie',
-            woofs: true,
-          },
-          {
-            name: 'Garfield',
-            meows: false,
-          },
-        ],
-      },
+      `;
+      const result = await graphql({ schema, source });
+      expect(result).to.deep.equal({
+        data: {
+          pets: [
+            {
+              name: 'Odie',
+              woofs: true,
+            },
+            {
+              name: 'Garfield',
+              meows: false,
+            },
+          ],
+        },
+      });
+    };
+    it('should correctly replace resolved types', async () => {
+      const [CatType, DogType] = makeCatAndDogTypes();
+      const someUnion = new GraphQLUnionType({
+        name: 'SomeUnion',
+        types: [CatType, DogType],
+        resolveType(obj) {
+          return typeof obj.woofs !== 'undefined'
+            ? Promise.resolve(DogType)
+            : Promise.resolve(CatType);
+        },
+      });
+      await expectResolvedTypeResult(someUnion, [DogType, CatType]);
+    });
+    it('should correctly replace resolved types with type name', async () => {
+      const [CatType, DogType] = makeCatAndDogTypes();
+      const someUnion = new GraphQLUnionType({
+        name: 'SomeUnion',
+        types: [CatType, DogType],
+        resolveType(obj) {
+          return typeof obj.woofs !== 'undefined' ? 'Dog' : 'Cat';
+        },
+      });
+      await expectResolvedTypeResult(someUnion, [DogType, CatType]);
     });
   });
 });
