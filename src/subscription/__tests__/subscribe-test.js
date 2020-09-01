@@ -3,6 +3,8 @@ import EventEmitter from 'events';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import resolveOnNextTick from '../../__testUtils__/resolveOnNextTick';
+
 import type { DocumentNode } from '../../language/ast';
 import { parse } from '../../language/parser';
 
@@ -244,7 +246,7 @@ describe('Subscription Initialization Phase', () => {
           importantEmail: {
             type: GraphQLString,
             subscribe: async () => {
-              await new Promise(setImmediate);
+              await resolveOnNextTick();
               return eventEmitterAsyncIterator(pubsub, 'importantEmail');
             },
           },
@@ -261,6 +263,8 @@ describe('Subscription Initialization Phase', () => {
         }
       `),
     });
+
+    expect(subscription).to.have.property('next');
 
     pubsub.emit('importantEmail', {
       importantEmail: {},

@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import resolveOnNextTick from '../../__testUtils__/resolveOnNextTick';
+
 import { parse } from '../../language/parser';
 
 import { GraphQLInt } from '../../type/scalars';
@@ -29,24 +31,18 @@ class Root {
     return this.numberHolder;
   }
 
-  promiseToChangeTheNumber(newNumber: number): Promise<NumberHolder> {
-    return new Promise((resolve) => {
-      process.nextTick(() => {
-        resolve(this.immediatelyChangeTheNumber(newNumber));
-      });
-    });
+  async promiseToChangeTheNumber(newNumber: number): Promise<NumberHolder> {
+    await resolveOnNextTick();
+    return this.immediatelyChangeTheNumber(newNumber);
   }
 
   failToChangeTheNumber(): NumberHolder {
     throw new Error('Cannot change the number');
   }
 
-  promiseAndFailToChangeTheNumber(): Promise<NumberHolder> {
-    return new Promise((_resolve, reject) => {
-      process.nextTick(() => {
-        reject(new Error('Cannot change the number'));
-      });
-    });
+  async promiseAndFailToChangeTheNumber(): Promise<NumberHolder> {
+    await resolveOnNextTick();
+    throw new Error('Cannot change the number');
   }
 }
 
