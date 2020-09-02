@@ -144,7 +144,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.7.x`
+  # ESLint builtin rules list based on `v7.8.x`
   ##############################################################################
 
   # Possible Errors
@@ -505,8 +505,10 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v3.10.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.0.x`
       ##########################################################################
+
+      no-undef: off # FIXME: temporary disabled due to https://github.com/typescript-eslint/typescript-eslint/issues/2462
 
       # Supported Rules
       # https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#supported-rules
@@ -520,6 +522,7 @@ overrides:
       '@typescript-eslint/consistent-type-assertions':
         [error, { assertionStyle: as, objectLiteralTypeAssertions: never }]
       '@typescript-eslint/consistent-type-definitions': off # TODO consider
+      '@typescript-eslint/consistent-type-imports': off # TODO enable after TS conversion
       '@typescript-eslint/explicit-function-return-type': off # TODO consider
       '@typescript-eslint/explicit-member-accessibility': off # TODO consider
       '@typescript-eslint/explicit-module-boundary-types': off # TODO consider
@@ -559,7 +562,6 @@ overrides:
       '@typescript-eslint/no-unsafe-call': off # TODO consider
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
       '@typescript-eslint/no-unsafe-return': off # TODO consider
-      '@typescript-eslint/no-unused-vars-experimental': off
       '@typescript-eslint/no-var-requires': error
       '@typescript-eslint/prefer-as-const': off # TODO consider
       '@typescript-eslint/prefer-enum-initializers': off # TODO consider
@@ -600,6 +602,8 @@ overrides:
       no-empty-function: off
       no-invalid-this: off
       no-loss-of-precision: off
+      no-redeclare: off
+      no-shadow: off
       no-unused-expressions: off
       no-unused-vars: off
       no-useless-constructor: off
@@ -614,9 +618,19 @@ overrides:
       '@typescript-eslint/no-empty-function': error
       '@typescript-eslint/no-invalid-this': error
       '@typescript-eslint/no-loss-of-precision': error
+      '@typescript-eslint/no-redeclare': error
+      '@typescript-eslint/no-shadow': error
       '@typescript-eslint/no-unused-expressions': error
       '@typescript-eslint/no-unused-vars':
-        [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
+        [
+          error,
+          {
+            vars: all,
+            args: all,
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_T',
+          },
+        ]
       '@typescript-eslint/no-useless-constructor': error
       '@typescript-eslint/require-await': error
       '@typescript-eslint/return-await': error
