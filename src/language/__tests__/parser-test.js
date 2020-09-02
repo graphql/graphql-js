@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-nodejs-modules
-import { inspect as nodeInspect } from 'util';
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -379,7 +376,6 @@ describe('Parser', () => {
     const result = parse('{ id }');
 
     expect(JSON.stringify(result.loc)).to.equal('{"start":0,"end":6}');
-    expect(nodeInspect(result.loc)).to.equal('{ start: 0, end: 6 }');
     expect(inspect(result.loc)).to.equal('{ start: 0, end: 6 }');
   });
 

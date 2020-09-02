@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-nodejs-modules
-import { inspect as nodeInspect } from 'util';
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -120,9 +117,6 @@ describe('Lexer', () => {
     const token = lexOne('foo');
     expect(JSON.stringify(token)).to.equal(
       '{"kind":"Name","value":"foo","line":1,"column":1}',
-    );
-    expect(nodeInspect(token)).to.equal(
-      "{ kind: 'Name', value: 'foo', line: 1, column: 1 }",
     );
     expect(inspect(token)).to.equal(
       '{ kind: "Name", value: "foo", line: 1, column: 1 }',

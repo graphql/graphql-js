@@ -6,7 +6,6 @@ import toObjMap from '../jsutils/toObjMap';
 import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import isObjectLike from '../jsutils/isObjectLike';
-import defineInspect from '../jsutils/defineInspect';
 
 import type { DirectiveDefinitionNode } from '../language/ast';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
@@ -108,9 +107,6 @@ export class GraphQLDirective {
     return 'GraphQLDirective';
   }
 }
-
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(GraphQLDirective);
 
 export type GraphQLDirectiveConfig = {|
   name: string,
