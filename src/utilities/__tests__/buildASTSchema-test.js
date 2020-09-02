@@ -189,6 +189,24 @@ describe('Schema Builder', () => {
         arg: Int
       ) on FIELD
 
+      """Who knows what inside this scalar?"""
+      scalar MysteryScalar
+
+      """This is a input object type"""
+      input FooInput {
+        """It has a field"""
+        field: Int
+      }
+
+      """This is a interface type"""
+      interface Energy {
+        """It also has a field"""
+        str: String
+      }
+
+      """There is nothing inside!"""
+      union BlackHole
+
       """With an enum"""
       enum Color {
         RED
