@@ -1,5 +1,3 @@
-import defineInspect from '../jsutils/defineInspect';
-
 import type { Source } from './source';
 import type { TokenKindEnum } from './tokenKind';
 
@@ -45,9 +43,6 @@ export class Location {
     return { start: this.start, end: this.end };
   }
 }
-
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(Location);
 
 /**
  * Represents a range of characters represented by a lexical token
@@ -125,9 +120,6 @@ export class Token {
     };
   }
 }
-
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(Token);
 
 /**
  * @internal
