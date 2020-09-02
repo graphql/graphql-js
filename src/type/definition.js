@@ -17,7 +17,6 @@ import instanceOf from '../jsutils/instanceOf';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import identityFunc from '../jsutils/identityFunc';
-import defineInspect from '../jsutils/defineInspect';
 import suggestionList from '../jsutils/suggestionList';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -370,9 +369,6 @@ export class GraphQLList<+T: GraphQLType> {
   }
 }
 
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(GraphQLList);
-
 /**
  * Non-Null Type Wrapper
  *
@@ -418,9 +414,6 @@ export class GraphQLNonNull<+T: GraphQLNullableType> {
     return 'GraphQLNonNull';
   }
 }
-
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(GraphQLNonNull);
 
 /**
  * These types wrap and modify other types
@@ -631,9 +624,6 @@ export class GraphQLScalarType {
   }
 }
 
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(GraphQLScalarType);
-
 export type GraphQLScalarSerializer<TExternal> = (
   outputValue: mixed,
 ) => ?TExternal;
@@ -777,9 +767,6 @@ export class GraphQLObjectType {
     return 'GraphQLObjectType';
   }
 }
-
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(GraphQLObjectType);
 
 function defineInterfaces(
   config: $ReadOnly<
@@ -1098,9 +1085,6 @@ export class GraphQLInterfaceType {
   }
 }
 
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(GraphQLInterfaceType);
-
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {|
   name: string,
   description?: ?string,
@@ -1207,9 +1191,6 @@ export class GraphQLUnionType {
     return 'GraphQLUnionType';
   }
 }
-
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(GraphQLUnionType);
 
 function defineTypes(
   config: $ReadOnly<GraphQLUnionTypeConfig<mixed, mixed>>,
@@ -1389,9 +1370,6 @@ export class GraphQLEnumType /* <T> */ {
   }
 }
 
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(GraphQLEnumType);
-
 function didYouMeanEnumValue(
   enumType: GraphQLEnumType,
   unknownValueStr: string,
@@ -1540,9 +1518,6 @@ export class GraphQLInputObjectType {
     return 'GraphQLInputObjectType';
   }
 }
-
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(GraphQLInputObjectType);
 
 function defineInputFieldMap(
   config: $ReadOnly<GraphQLInputObjectTypeConfig>,
