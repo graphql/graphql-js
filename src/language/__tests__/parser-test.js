@@ -21,16 +21,6 @@ function expectSyntaxError(text: string) {
 }
 
 describe('Parser', () => {
-  it('asserts that a source to parse was provided', () => {
-    // $FlowExpectedError[incompatible-call]
-    expect(() => parse()).to.throw('Must provide Source. Received: undefined.');
-  });
-
-  it('asserts that an invalid source to parse was provided', () => {
-    // $FlowExpectedError[incompatible-call]
-    expect(() => parse({})).to.throw('Must provide Source. Received: {}.');
-  });
-
   it('parse provides useful errors', () => {
     let caughtError;
     try {
