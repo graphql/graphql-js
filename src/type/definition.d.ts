@@ -183,6 +183,7 @@ interface _GraphQLList<T extends GraphQLType> {
   new (type: T): GraphQLList<T>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GraphQLList: _GraphQLList<GraphQLType>;
 
 /**
@@ -217,6 +218,7 @@ interface _GraphQLNonNull<T extends GraphQLNullableType> {
   new (type: T): GraphQLNonNull<T>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GraphQLNonNull: _GraphQLNonNull<GraphQLNullableType>;
 
 export type GraphQLWrappingType = GraphQLList<any> | GraphQLNonNull<any>;
@@ -368,7 +370,7 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
  * We've provided these template arguments because this is an open type and
  * you may find them useful.
  */
-export interface GraphQLObjectTypeExtensions<TSource = any, TContext = any> {
+export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
   [attributeName: string]: any;
 }
 
@@ -499,9 +501,9 @@ export interface GraphQLResolveInfo {
  * you may find them useful.
  */
 export interface GraphQLFieldExtensions<
-  TSource,
-  TContext,
-  TArgs = { [argName: string]: any }
+  _TSource,
+  _TContext,
+  _TArgs = { [argName: string]: any }
 > {
   [attributeName: string]: any;
 }
