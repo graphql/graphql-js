@@ -1,5 +1,3 @@
-import defineInspect from '../jsutils/defineInspect';
-
 import type { Source } from './source';
 import type { TokenKindEnum } from './tokenKind';
 
@@ -44,10 +42,13 @@ export class Location {
   toJSON(): {| start: number, end: number |} {
     return { start: this.start, end: this.end };
   }
-}
 
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(Location);
+  // @deprecated: Will be removed in v17
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  [Symbol.for('nodejs.util.inspect.custom')](): mixed {
+    return this.toJSON();
+  }
+}
 
 /**
  * Represents a range of characters represented by a lexical token
@@ -124,10 +125,13 @@ export class Token {
       column: this.column,
     };
   }
-}
 
-// Print a simplified form when appearing in `inspect` and `util.inspect`.
-defineInspect(Token);
+  // @deprecated: Will be removed in v17
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  [Symbol.for('nodejs.util.inspect.custom')](): mixed {
+    return this.toJSON();
+  }
+}
 
 /**
  * @internal

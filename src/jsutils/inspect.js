@@ -1,5 +1,4 @@
 /* eslint-disable flowtype/no-weak-types */
-import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
 
 const MAX_ARRAY_LENGTH = 10;
 const MAX_RECURSIVE_DEPTH = 2;
@@ -36,16 +35,15 @@ function formatObjectValue(
   }
 
   const seenValues = [...previouslySeenValues, value];
-  const customInspectFn = getCustomFn(value);
 
-  if (customInspectFn !== undefined) {
-    const customValue = customInspectFn.call(value);
+  if (typeof value.toJSON === 'function') {
+    const jsonValue = value.toJSON(value);
 
     // check for infinite recursion
-    if (customValue !== value) {
-      return typeof customValue === 'string'
-        ? customValue
-        : formatValue(customValue, seenValues);
+    if (jsonValue !== value) {
+      return typeof jsonValue === 'string'
+        ? jsonValue
+        : formatValue(jsonValue, seenValues);
     }
   } else if (Array.isArray(value)) {
     return formatArray(value, seenValues);
@@ -96,18 +94,6 @@ function formatArray(array: Array<mixed>, seenValues: Array<mixed>): string {
   }
 
   return '[' + items.join(', ') + ']';
-}
-
-function getCustomFn(object: Object) {
-  const customInspectFn = object[String(nodejsCustomInspectSymbol)];
-
-  if (typeof customInspectFn === 'function') {
-    return customInspectFn;
-  }
-
-  if (typeof object.inspect === 'function') {
-    return object.inspect;
-  }
 }
 
 function getObjectTag(object: Object): string {
