@@ -1,10 +1,8 @@
-import inspect from "../jsutils/inspect.js";
-import devAssert from "../jsutils/devAssert.js";
 import { syntaxError } from "../error/syntaxError.js";
 import { Kind } from "./kinds.js";
 import { Location } from "./ast.js";
-import { Source } from "./source.js";
 import { TokenKind } from "./tokenKind.js";
+import { Source, isSource } from "./source.js";
 import { DirectiveLocation } from "./directiveLocation.js";
 import { Lexer, isPunctuatorTokenKind } from "./lexer.js";
 /**
@@ -69,8 +67,7 @@ export function parseType(source, options) {
 
 export class Parser {
   constructor(source, options) {
-    const sourceObj = typeof source === 'string' ? new Source(source) : source;
-    sourceObj instanceof Source || devAssert(0, `Must provide Source. Received: ${inspect(sourceObj)}.`);
+    const sourceObj = isSource(source) ? source : new Source(source);
     this._lexer = new Lexer(sourceObj);
     this._options = options;
   }

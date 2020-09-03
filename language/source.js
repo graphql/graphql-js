@@ -1,5 +1,7 @@
 import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
+import inspect from "../jsutils/inspect.js";
 import devAssert from "../jsutils/devAssert.js";
+import instanceOf from "../jsutils/instanceOf.js";
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -13,6 +15,7 @@ export class Source {
     line: 1,
     column: 1
   }) {
+    typeof body === 'string' || devAssert(0, `Body must be a string. Received: ${inspect(body)}.`);
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
@@ -25,4 +28,14 @@ export class Source {
     return 'Source';
   }
 
+}
+/**
+ * Test if the given value is a Source object.
+ *
+ * @internal
+ */
+
+// eslint-disable-next-line no-redeclare
+export function isSource(source) {
+  return instanceOf(source, Source);
 }

@@ -16,3 +16,10 @@ export class Source {
   locationOffset: Location;
   constructor(body: string, name?: string, locationOffset?: Location);
 }
+
+/**
+ * Test if the given value is a Source object.
+ *
+ * @internal
+ */
+export function isSource(source: any): source is Source;
