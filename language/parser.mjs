@@ -1,10 +1,8 @@
-import inspect from "../jsutils/inspect.mjs";
-import devAssert from "../jsutils/devAssert.mjs";
 import { syntaxError } from "../error/syntaxError.mjs";
 import { Kind } from "./kinds.mjs";
 import { Location } from "./ast.mjs";
-import { Source } from "./source.mjs";
 import { TokenKind } from "./tokenKind.mjs";
+import { Source, isSource } from "./source.mjs";
 import { DirectiveLocation } from "./directiveLocation.mjs";
 import { Lexer, isPunctuatorTokenKind } from "./lexer.mjs";
 /**
@@ -69,8 +67,7 @@ export function parseType(source, options) {
 
 export var Parser = /*#__PURE__*/function () {
   function Parser(source, options) {
-    var sourceObj = typeof source === 'string' ? new Source(source) : source;
-    sourceObj instanceof Source || devAssert(0, "Must provide Source. Received: ".concat(inspect(sourceObj), "."));
+    var sourceObj = isSource(source) ? source : new Source(source);
     this._lexer = new Lexer(sourceObj);
     this._options = options;
   }

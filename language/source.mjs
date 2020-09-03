@@ -3,7 +3,9 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
+import inspect from "../jsutils/inspect.mjs";
 import devAssert from "../jsutils/devAssert.mjs";
+import instanceOf from "../jsutils/instanceOf.mjs";
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -19,6 +21,7 @@ export var Source = /*#__PURE__*/function () {
       line: 1,
       column: 1
     };
+    typeof body === 'string' || devAssert(0, "Body must be a string. Received: ".concat(inspect(body), "."));
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
@@ -36,3 +39,13 @@ export var Source = /*#__PURE__*/function () {
 
   return Source;
 }();
+/**
+ * Test if the given value is a Source object.
+ *
+ * @internal
+ */
+
+// eslint-disable-next-line no-redeclare
+export function isSource(source) {
+  return instanceOf(source, Source);
+}

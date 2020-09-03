@@ -3,11 +3,16 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.isSource = isSource;
 exports.Source = void 0;
 
 var _symbols = require("../polyfills/symbols.js");
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
+
+var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -29,6 +34,7 @@ var Source = /*#__PURE__*/function () {
       line: 1,
       column: 1
     };
+    typeof body === 'string' || (0, _devAssert.default)(0, "Body must be a string. Received: ".concat((0, _inspect.default)(body), "."));
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
@@ -46,5 +52,16 @@ var Source = /*#__PURE__*/function () {
 
   return Source;
 }();
+/**
+ * Test if the given value is a Source object.
+ *
+ * @internal
+ */
+
 
 exports.Source = Source;
+
+// eslint-disable-next-line no-redeclare
+function isSource(source) {
+  return (0, _instanceOf.default)(source, Source);
+}

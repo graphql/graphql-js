@@ -1,6 +1,3 @@
-import inspect from '../jsutils/inspect';
-import devAssert from '../jsutils/devAssert';
-
 import type { GraphQLError } from '../error/GraphQLError';
 import { syntaxError } from '../error/syntaxError';
 
@@ -53,8 +50,8 @@ import type {
 } from './ast';
 import { Kind } from './kinds';
 import { Location } from './ast';
-import { Source } from './source';
 import { TokenKind } from './tokenKind';
+import { Source, isSource } from './source';
 import { DirectiveLocation } from './directiveLocation';
 import { Lexer, isPunctuatorTokenKind } from './lexer';
 
@@ -178,11 +175,7 @@ export class Parser {
   _lexer: Lexer;
 
   constructor(source: string | Source, options?: ParseOptions) {
-    const sourceObj = typeof source === 'string' ? new Source(source) : source;
-    devAssert(
-      sourceObj instanceof Source,
-      `Must provide Source. Received: ${inspect(sourceObj)}.`,
-    );
+    const sourceObj = isSource(source) ? source : new Source(source);
 
     this._lexer = new Lexer(sourceObj);
     this._options = options;

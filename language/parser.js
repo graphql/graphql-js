@@ -8,25 +8,19 @@ exports.parseValue = parseValue;
 exports.parseType = parseType;
 exports.Parser = void 0;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
-
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
-
 var _syntaxError = require("../error/syntaxError.js");
 
 var _kinds = require("./kinds.js");
 
 var _ast = require("./ast.js");
 
-var _source = require("./source.js");
-
 var _tokenKind = require("./tokenKind.js");
+
+var _source = require("./source.js");
 
 var _directiveLocation = require("./directiveLocation.js");
 
 var _lexer = require("./lexer.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -89,8 +83,7 @@ function parseType(source, options) {
 
 var Parser = /*#__PURE__*/function () {
   function Parser(source, options) {
-    var sourceObj = typeof source === 'string' ? new _source.Source(source) : source;
-    sourceObj instanceof _source.Source || (0, _devAssert.default)(0, "Must provide Source. Received: ".concat((0, _inspect.default)(sourceObj), "."));
+    var sourceObj = (0, _source.isSource)(source) ? source : new _source.Source(source);
     this._lexer = new _lexer.Lexer(sourceObj);
     this._options = options;
   }

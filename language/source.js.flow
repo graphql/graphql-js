@@ -1,6 +1,8 @@
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
+import inspect from '../jsutils/inspect';
 import devAssert from '../jsutils/devAssert';
+import instanceOf from '../jsutils/instanceOf';
 
 type Location = {|
   line: number,
@@ -24,6 +26,11 @@ export class Source {
     name: string = 'GraphQL request',
     locationOffset: Location = { line: 1, column: 1 },
   ): void {
+    devAssert(
+      typeof body === 'string',
+      `Body must be a string. Received: ${inspect(body)}.`,
+    );
+
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
@@ -41,4 +48,16 @@ export class Source {
   get [SYMBOL_TO_STRING_TAG]() {
     return 'Source';
   }
+}
+
+/**
+ * Test if the given value is a Source object.
+ *
+ * @internal
+ */
+declare function isSource(source: mixed): boolean %checks(source instanceof
+  Source);
+// eslint-disable-next-line no-redeclare
+export function isSource(source) {
+  return instanceOf(source, Source);
 }

@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.stripIgnoredCharacters = stripIgnoredCharacters;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
-
 var _source = require("../language/source.js");
 
 var _tokenKind = require("../language/tokenKind.js");
@@ -14,8 +12,6 @@ var _tokenKind = require("../language/tokenKind.js");
 var _lexer = require("../language/lexer.js");
 
 var _blockString = require("../language/blockString.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Strips characters that are not significant to the validity or execution
@@ -70,12 +66,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * """Type description""" type Foo{"""Field description""" bar:String}
  */
 function stripIgnoredCharacters(source) {
-  var sourceObj = typeof source === 'string' ? new _source.Source(source) : source;
-
-  if (!(sourceObj instanceof _source.Source)) {
-    throw new TypeError("Must provide string or Source. Received: ".concat((0, _inspect.default)(sourceObj), "."));
-  }
-
+  var sourceObj = (0, _source.isSource)(source) ? source : new _source.Source(source);
   var body = sourceObj.body;
   var lexer = new _lexer.Lexer(sourceObj);
   var strippedBody = '';

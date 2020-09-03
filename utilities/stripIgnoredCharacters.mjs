@@ -1,5 +1,4 @@
-import inspect from "../jsutils/inspect.mjs";
-import { Source } from "../language/source.mjs";
+import { Source, isSource } from "../language/source.mjs";
 import { TokenKind } from "../language/tokenKind.mjs";
 import { Lexer, isPunctuatorTokenKind } from "../language/lexer.mjs";
 import { dedentBlockStringValue, getBlockStringIndentation } from "../language/blockString.mjs";
@@ -57,12 +56,7 @@ import { dedentBlockStringValue, getBlockStringIndentation } from "../language/b
  */
 
 export function stripIgnoredCharacters(source) {
-  var sourceObj = typeof source === 'string' ? new Source(source) : source;
-
-  if (!(sourceObj instanceof Source)) {
-    throw new TypeError("Must provide string or Source. Received: ".concat(inspect(sourceObj), "."));
-  }
-
+  var sourceObj = isSource(source) ? source : new Source(source);
   var body = sourceObj.body;
   var lexer = new Lexer(sourceObj);
   var strippedBody = '';

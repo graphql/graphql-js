@@ -1,6 +1,4 @@
-import inspect from '../jsutils/inspect';
-
-import { Source } from '../language/source';
+import { Source, isSource } from '../language/source';
 import { TokenKind } from '../language/tokenKind';
 import { Lexer, isPunctuatorTokenKind } from '../language/lexer';
 import {
@@ -61,12 +59,7 @@ import {
  * """Type description""" type Foo{"""Field description""" bar:String}
  */
 export function stripIgnoredCharacters(source: string | Source): string {
-  const sourceObj = typeof source === 'string' ? new Source(source) : source;
-  if (!(sourceObj instanceof Source)) {
-    throw new TypeError(
-      `Must provide string or Source. Received: ${inspect(sourceObj)}.`,
-    );
-  }
+  const sourceObj = isSource(source) ? source : new Source(source);
 
   const body = sourceObj.body;
   const lexer = new Lexer(sourceObj);
