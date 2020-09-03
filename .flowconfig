@@ -23,7 +23,6 @@ signature-verification-failure=error
 implicit-inexact-object=error
 ambiguous-object-type=error
 uninitialized-instance-property=error
-unsafe-addition=error
 default-import-access=error
 invalid-import-star-use=error
 non-const-var-export=error
@@ -40,4 +39,4 @@ experimental.const_params=true
 include_warnings=true
 
 [version]
-^0.132.0
+^0.133.0
