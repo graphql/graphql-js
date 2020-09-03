@@ -6,9 +6,9 @@ import inspectStr from '../../__testUtils__/inspectStr';
 
 import invariant from '../../jsutils/invariant';
 
+import { Lexer } from '../../language/lexer';
 import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
-import { Lexer } from '../../language/lexer';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
 
@@ -98,20 +98,6 @@ function expectStripped(docString: string) {
 }
 
 describe('stripIgnoredCharacters', () => {
-  it('asserts that a source was provided', () => {
-    // $FlowExpectedError[incompatible-call]
-    expect(() => stripIgnoredCharacters()).to.throw(
-      'Must provide string or Source. Received: undefined.',
-    );
-  });
-
-  it('asserts that a valid source was provided', () => {
-    // $FlowExpectedError[incompatible-call]
-    expect(() => stripIgnoredCharacters({})).to.throw(
-      'Must provide string or Source. Received: {}.',
-    );
-  });
-
   it('strips ignored characters from GraphQL query document', () => {
     const query = dedent`
       query SomeQuery($foo: String!, $bar: String) {
@@ -128,6 +114,10 @@ describe('stripIgnoredCharacters', () => {
     expect(stripIgnoredCharacters(query)).to.equal(
       'query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}',
     );
+  });
+
+  it('accepts Source object', () => {
+    expect(stripIgnoredCharacters(new Source('{ a }'))).to.equal('{a}');
   });
 
   it('strips ignored characters from GraphQL SDL document', () => {
