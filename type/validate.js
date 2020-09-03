@@ -6,9 +6,9 @@ import { locatedError } from "../error/locatedError.js";
 import { isValidNameError } from "../utilities/assertValidName.js";
 import { isEqualType, isTypeSubTypeOf } from "../utilities/typeComparators.js";
 import { assertSchema } from "./schema.js";
-import { isDirective } from "./directives.js";
 import { isIntrospectionType } from "./introspection.js";
-import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument } from "./definition.js";
+import { isDirective, GraphQLDeprecatedDirective } from "./directives.js";
+import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument, isRequiredInputField } from "./definition.js";
 /**
  * Implements the "Type Validation" sub-sections of the specification's
  * "Type System" section.
@@ -125,6 +125,11 @@ function validateDirectives(context) {
       if (!isInputType(arg.type)) {
         context.reportError(`The type of @${directive.name}(${arg.name}:) must be Input Type ` + `but got: ${inspect(arg.type)}.`, arg.astNode);
       }
+
+      if (isRequiredArgument(arg) && arg.deprecationReason != null) {
+        context.reportError(`Required argument @${directive.name}(${arg.name}:) cannot be deprecated.`, [getDeprecatedDirectiveNode(arg.astNode), // istanbul ignore next (TODO need to write coverage tests)
+        arg.astNode?.type]);
+      }
     }
   }
 }
@@ -202,6 +207,11 @@ function validateFields(context, type) {
 
       if (!isInputType(arg.type)) {
         context.reportError(`The type of ${type.name}.${field.name}(${argName}:) must be Input ` + `Type but got: ${inspect(arg.type)}.`, arg.astNode?.type);
+      }
+
+      if (isRequiredArgument(arg) && arg.deprecationReason != null) {
+        context.reportError(`Required argument ${type.name}.${field.name}(${argName}:) cannot be deprecated.`, [getDeprecatedDirectiveNode(arg.astNode), // istanbul ignore next (TODO need to write coverage tests)
+        arg.astNode?.type]);
       }
     }
   }
@@ -351,6 +361,11 @@ function validateInputFields(context, inputObj) {
     if (!isInputType(field.type)) {
       context.reportError(`The type of ${inputObj.name}.${field.name} must be Input Type ` + `but got: ${inspect(field.type)}.`, field.astNode?.type);
     }
+
+    if (isRequiredInputField(field) && field.deprecationReason != null) {
+      context.reportError(`Required input field ${inputObj.name}.${field.name} cannot be deprecated.`, [getDeprecatedDirectiveNode(field.astNode), // istanbul ignore next (TODO need to write coverage tests)
+      field.astNode?.type]);
+    }
   }
 }
 
@@ -423,4 +438,9 @@ function getAllImplementsInterfaceNodes(type, iface) {
 
 function getUnionMemberTypeNodes(union, typeName) {
   return getAllSubNodes(union, unionNode => unionNode.types).filter(typeNode => typeNode.name.value === typeName);
+}
+
+function getDeprecatedDirectiveNode(definitionNode) {
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return definitionNode?.directives?.find(node => node.name.value === GraphQLDeprecatedDirective.name);
 }

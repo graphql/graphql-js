@@ -273,10 +273,19 @@ export const __Type = new GraphQLObjectType({
     },
     inputFields: {
       type: new GraphQLList(new GraphQLNonNull(__InputValue)),
+      args: {
+        includeDeprecated: {
+          type: GraphQLBoolean,
+          defaultValue: false
+        }
+      },
 
-      resolve(type) {
+      resolve(type, {
+        includeDeprecated
+      }) {
         if (isInputObjectType(type)) {
-          return objectValues(type.getFields());
+          const values = objectValues(type.getFields());
+          return includeDeprecated ? values : values.filter(field => field.deprecationReason == null);
         }
       }
 
@@ -301,7 +310,19 @@ export const __Field = new GraphQLObjectType({
     },
     args: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
-      resolve: field => field.args
+      args: {
+        includeDeprecated: {
+          type: GraphQLBoolean,
+          defaultValue: false
+        }
+      },
+
+      resolve(field, {
+        includeDeprecated
+      }) {
+        return includeDeprecated ? field.args : field.args.filter(arg => arg.deprecationReason == null);
+      }
+
     },
     type: {
       type: new GraphQLNonNull(__Type),
@@ -346,6 +367,14 @@ export const __InputValue = new GraphQLObjectType({
         return valueAST ? print(valueAST) : null;
       }
 
+    },
+    isDeprecated: {
+      type: new GraphQLNonNull(GraphQLBoolean),
+      resolve: field => field.deprecationReason != null
+    },
+    deprecationReason: {
+      type: GraphQLString,
+      resolve: obj => obj.deprecationReason
     }
   })
 });
@@ -446,6 +475,7 @@ export const TypeMetaFieldDef = {
     description: undefined,
     type: new GraphQLNonNull(GraphQLString),
     defaultValue: undefined,
+    deprecationReason: undefined,
     extensions: undefined,
     astNode: undefined
   }],

@@ -149,7 +149,7 @@ function printUnion(type, options) {
 }
 
 function printEnum(type, options) {
-  const values = type.getValues().map((value, i) => printDescription(options, value, '  ', !i) + '  ' + value.name + printDeprecated(value));
+  const values = type.getValues().map((value, i) => printDescription(options, value, '  ', !i) + '  ' + value.name + printDeprecated(value.deprecationReason));
   return printDescription(options, type) + `enum ${type.name}` + printBlock(values);
 }
 
@@ -159,7 +159,7 @@ function printInputObject(type, options) {
 }
 
 function printFields(options, type) {
-  const fields = objectValues(type.getFields()).map((f, i) => printDescription(options, f, '  ', !i) + '  ' + f.name + printArgs(options, f.args, '  ') + ': ' + String(f.type) + printDeprecated(f));
+  const fields = objectValues(type.getFields()).map((f, i) => printDescription(options, f, '  ', !i) + '  ' + f.name + printArgs(options, f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason));
   return printBlock(fields);
 }
 
@@ -188,25 +188,21 @@ function printInputValue(arg) {
     argDecl += ` = ${print(defaultAST)}`;
   }
 
-  return argDecl;
+  return argDecl + printDeprecated(arg.deprecationReason);
 }
 
 function printDirective(directive, options) {
   return printDescription(options, directive) + 'directive @' + directive.name + printArgs(options, directive.args) + (directive.isRepeatable ? ' repeatable' : '') + ' on ' + directive.locations.join(' | ');
 }
 
-function printDeprecated(fieldOrEnumVal) {
-  const {
-    deprecationReason
-  } = fieldOrEnumVal;
-
-  if (deprecationReason == null) {
+function printDeprecated(reason) {
+  if (reason == null) {
     return '';
   }
 
-  const reasonAST = astFromValue(deprecationReason, GraphQLString);
+  const reasonAST = astFromValue(reason, GraphQLString);
 
-  if (reasonAST && deprecationReason !== DEFAULT_DEPRECATION_REASON) {
+  if (reasonAST && reason !== DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + print(reasonAST) + ')';
   }
 
