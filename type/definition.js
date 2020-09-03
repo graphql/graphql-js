@@ -707,6 +707,7 @@ function defineFieldMap(config) {
         description: argConfig.description,
         type: argConfig.type,
         defaultValue: argConfig.defaultValue,
+        deprecationReason: argConfig.deprecationReason,
         extensions: argConfig.extensions && (0, _toObjMap.default)(argConfig.extensions),
         astNode: argConfig.astNode
       };
@@ -757,6 +758,7 @@ function argsToArgsConfig(args) {
       description: arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
+      deprecationReason: arg.deprecationReason,
       extensions: arg.extensions,
       astNode: arg.astNode
     };
@@ -1211,6 +1213,7 @@ function defineInputFieldMap(config) {
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
+      deprecationReason: fieldConfig.deprecationReason,
       extensions: fieldConfig.extensions && (0, _toObjMap.default)(fieldConfig.extensions),
       astNode: fieldConfig.astNode
     };

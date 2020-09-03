@@ -22,9 +22,9 @@ var _typeComparators = require("../utilities/typeComparators.js");
 
 var _schema = require("./schema.js");
 
-var _directives = require("./directives.js");
-
 var _introspection = require("./introspection.js");
+
+var _directives = require("./directives.js");
 
 var _definition = require("./definition.js");
 
@@ -164,6 +164,13 @@ function validateDirectives(context) {
       if (!(0, _definition.isInputType)(arg.type)) {
         context.reportError("The type of @".concat(directive.name, "(").concat(arg.name, ":) must be Input Type ") + "but got: ".concat((0, _inspect.default)(arg.type), "."), arg.astNode);
       }
+
+      if ((0, _definition.isRequiredArgument)(arg) && arg.deprecationReason != null) {
+        var _arg$astNode;
+
+        context.reportError("Required argument @".concat(directive.name, "(").concat(arg.name, ":) cannot be deprecated."), [getDeprecatedDirectiveNode(arg.astNode), // istanbul ignore next (TODO need to write coverage tests)
+        (_arg$astNode = arg.astNode) === null || _arg$astNode === void 0 ? void 0 : _arg$astNode.type]);
+      }
     }
   }
 }
@@ -246,9 +253,16 @@ function validateFields(context, type) {
       validateName(context, arg); // Ensure the type is an input type
 
       if (!(0, _definition.isInputType)(arg.type)) {
-        var _arg$astNode;
+        var _arg$astNode2;
 
-        context.reportError("The type of ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) must be Input ") + "Type but got: ".concat((0, _inspect.default)(arg.type), "."), (_arg$astNode = arg.astNode) === null || _arg$astNode === void 0 ? void 0 : _arg$astNode.type);
+        context.reportError("The type of ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) must be Input ") + "Type but got: ".concat((0, _inspect.default)(arg.type), "."), (_arg$astNode2 = arg.astNode) === null || _arg$astNode2 === void 0 ? void 0 : _arg$astNode2.type);
+      }
+
+      if ((0, _definition.isRequiredArgument)(arg) && arg.deprecationReason != null) {
+        var _arg$astNode3;
+
+        context.reportError("Required argument ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) cannot be deprecated."), [getDeprecatedDirectiveNode(arg.astNode), // istanbul ignore next (TODO need to write coverage tests)
+        (_arg$astNode3 = arg.astNode) === null || _arg$astNode3 === void 0 ? void 0 : _arg$astNode3.type]);
       }
     }
   }
@@ -429,6 +443,13 @@ function validateInputFields(context, inputObj) {
 
       context.reportError("The type of ".concat(inputObj.name, ".").concat(field.name, " must be Input Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), (_field$astNode2 = field.astNode) === null || _field$astNode2 === void 0 ? void 0 : _field$astNode2.type);
     }
+
+    if ((0, _definition.isRequiredInputField)(field) && field.deprecationReason != null) {
+      var _field$astNode3;
+
+      context.reportError("Required input field ".concat(inputObj.name, ".").concat(field.name, " cannot be deprecated."), [getDeprecatedDirectiveNode(field.astNode), // istanbul ignore next (TODO need to write coverage tests)
+      (_field$astNode3 = field.astNode) === null || _field$astNode3 === void 0 ? void 0 : _field$astNode3.type]);
+    }
   }
 }
 
@@ -515,5 +536,14 @@ function getUnionMemberTypeNodes(union, typeName) {
     return unionNode.types;
   }).filter(function (typeNode) {
     return typeNode.name.value === typeName;
+  });
+}
+
+function getDeprecatedDirectiveNode(definitionNode) {
+  var _definitionNode$direc;
+
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return definitionNode === null || definitionNode === void 0 ? void 0 : (_definitionNode$direc = definitionNode.directives) === null || _definitionNode$direc === void 0 ? void 0 : _definitionNode$direc.find(function (node) {
+    return node.name.value === _directives.GraphQLDeprecatedDirective.name;
   });
 }

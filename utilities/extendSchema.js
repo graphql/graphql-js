@@ -433,6 +433,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         type: type,
         description: getDescription(arg, options),
         defaultValue: (0, _valueFromAST.valueFromAST)(arg.defaultValue, type),
+        deprecationReason: getDeprecationReason(arg),
         astNode: arg
       };
     }
@@ -460,6 +461,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
           type: type,
           description: getDescription(field, options),
           defaultValue: (0, _valueFromAST.valueFromAST)(field.defaultValue, type),
+          deprecationReason: getDeprecationReason(field),
           astNode: field
         };
       }

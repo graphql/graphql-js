@@ -323,9 +323,20 @@ var __Type = new _definition.GraphQLObjectType({
       },
       inputFields: {
         type: new _definition.GraphQLList(new _definition.GraphQLNonNull(__InputValue)),
-        resolve: function resolve(type) {
+        args: {
+          includeDeprecated: {
+            type: _scalars.GraphQLBoolean,
+            defaultValue: false
+          }
+        },
+        resolve: function resolve(type, _ref4) {
+          var includeDeprecated = _ref4.includeDeprecated;
+
           if ((0, _definition.isInputObjectType)(type)) {
-            return (0, _objectValues.default)(type.getFields());
+            var values = (0, _objectValues.default)(type.getFields());
+            return includeDeprecated ? values : values.filter(function (field) {
+              return field.deprecationReason == null;
+            });
           }
         }
       },
@@ -360,8 +371,17 @@ var __Field = new _definition.GraphQLObjectType({
       },
       args: {
         type: new _definition.GraphQLNonNull(new _definition.GraphQLList(new _definition.GraphQLNonNull(__InputValue))),
-        resolve: function resolve(field) {
-          return field.args;
+        args: {
+          includeDeprecated: {
+            type: _scalars.GraphQLBoolean,
+            defaultValue: false
+          }
+        },
+        resolve: function resolve(field, _ref5) {
+          var includeDeprecated = _ref5.includeDeprecated;
+          return includeDeprecated ? field.args : field.args.filter(function (arg) {
+            return arg.deprecationReason == null;
+          });
         }
       },
       type: {
@@ -419,6 +439,18 @@ var __InputValue = new _definition.GraphQLObjectType({
               defaultValue = inputValue.defaultValue;
           var valueAST = (0, _astFromValue.astFromValue)(defaultValue, type);
           return valueAST ? (0, _printer.print)(valueAST) : null;
+        }
+      },
+      isDeprecated: {
+        type: new _definition.GraphQLNonNull(_scalars.GraphQLBoolean),
+        resolve: function resolve(field) {
+          return field.deprecationReason != null;
+        }
+      },
+      deprecationReason: {
+        type: _scalars.GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.deprecationReason;
         }
       }
     };
@@ -523,8 +555,8 @@ var SchemaMetaFieldDef = {
   type: new _definition.GraphQLNonNull(__Schema),
   description: 'Access the current type schema of this server.',
   args: [],
-  resolve: function resolve(_source, _args, _context, _ref4) {
-    var schema = _ref4.schema;
+  resolve: function resolve(_source, _args, _context, _ref6) {
+    var schema = _ref6.schema;
     return schema;
   },
   isDeprecated: false,
@@ -542,12 +574,13 @@ var TypeMetaFieldDef = {
     description: undefined,
     type: new _definition.GraphQLNonNull(_scalars.GraphQLString),
     defaultValue: undefined,
+    deprecationReason: undefined,
     extensions: undefined,
     astNode: undefined
   }],
-  resolve: function resolve(_source, _ref5, _context, _ref6) {
-    var name = _ref5.name;
-    var schema = _ref6.schema;
+  resolve: function resolve(_source, _ref7, _context, _ref8) {
+    var name = _ref7.name;
+    var schema = _ref8.schema;
     return schema.getType(name);
   },
   isDeprecated: false,
@@ -561,8 +594,8 @@ var TypeNameMetaFieldDef = {
   type: new _definition.GraphQLNonNull(_scalars.GraphQLString),
   description: 'The name of the current Object type at runtime.',
   args: [],
-  resolve: function resolve(_source, _args, _context, _ref7) {
-    var parentType = _ref7.parentType;
+  resolve: function resolve(_source, _args, _context, _ref9) {
+    var parentType = _ref9.parentType;
     return parentType.name;
   },
   isDeprecated: false,
@@ -575,8 +608,8 @@ var introspectionTypes = Object.freeze([__Schema, __Directive, __DirectiveLocati
 exports.introspectionTypes = introspectionTypes;
 
 function isIntrospectionType(type) {
-  return introspectionTypes.some(function (_ref8) {
-    var name = _ref8.name;
+  return introspectionTypes.some(function (_ref10) {
+    var name = _ref10.name;
     return type.name === name;
   });
 }

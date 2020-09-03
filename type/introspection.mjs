@@ -296,9 +296,20 @@ export var __Type = new GraphQLObjectType({
       },
       inputFields: {
         type: new GraphQLList(new GraphQLNonNull(__InputValue)),
-        resolve: function resolve(type) {
+        args: {
+          includeDeprecated: {
+            type: GraphQLBoolean,
+            defaultValue: false
+          }
+        },
+        resolve: function resolve(type, _ref4) {
+          var includeDeprecated = _ref4.includeDeprecated;
+
           if (isInputObjectType(type)) {
-            return objectValues(type.getFields());
+            var values = objectValues(type.getFields());
+            return includeDeprecated ? values : values.filter(function (field) {
+              return field.deprecationReason == null;
+            });
           }
         }
       },
@@ -330,8 +341,17 @@ export var __Field = new GraphQLObjectType({
       },
       args: {
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
-        resolve: function resolve(field) {
-          return field.args;
+        args: {
+          includeDeprecated: {
+            type: GraphQLBoolean,
+            defaultValue: false
+          }
+        },
+        resolve: function resolve(field, _ref5) {
+          var includeDeprecated = _ref5.includeDeprecated;
+          return includeDeprecated ? field.args : field.args.filter(function (arg) {
+            return arg.deprecationReason == null;
+          });
         }
       },
       type: {
@@ -386,6 +406,18 @@ export var __InputValue = new GraphQLObjectType({
               defaultValue = inputValue.defaultValue;
           var valueAST = astFromValue(defaultValue, type);
           return valueAST ? print(valueAST) : null;
+        }
+      },
+      isDeprecated: {
+        type: new GraphQLNonNull(GraphQLBoolean),
+        resolve: function resolve(field) {
+          return field.deprecationReason != null;
+        }
+      },
+      deprecationReason: {
+        type: GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.deprecationReason;
         }
       }
     };
@@ -481,8 +513,8 @@ export var SchemaMetaFieldDef = {
   type: new GraphQLNonNull(__Schema),
   description: 'Access the current type schema of this server.',
   args: [],
-  resolve: function resolve(_source, _args, _context, _ref4) {
-    var schema = _ref4.schema;
+  resolve: function resolve(_source, _args, _context, _ref6) {
+    var schema = _ref6.schema;
     return schema;
   },
   isDeprecated: false,
@@ -499,12 +531,13 @@ export var TypeMetaFieldDef = {
     description: undefined,
     type: new GraphQLNonNull(GraphQLString),
     defaultValue: undefined,
+    deprecationReason: undefined,
     extensions: undefined,
     astNode: undefined
   }],
-  resolve: function resolve(_source, _ref5, _context, _ref6) {
-    var name = _ref5.name;
-    var schema = _ref6.schema;
+  resolve: function resolve(_source, _ref7, _context, _ref8) {
+    var name = _ref7.name;
+    var schema = _ref8.schema;
     return schema.getType(name);
   },
   isDeprecated: false,
@@ -517,8 +550,8 @@ export var TypeNameMetaFieldDef = {
   type: new GraphQLNonNull(GraphQLString),
   description: 'The name of the current Object type at runtime.',
   args: [],
-  resolve: function resolve(_source, _args, _context, _ref7) {
-    var parentType = _ref7.parentType;
+  resolve: function resolve(_source, _args, _context, _ref9) {
+    var parentType = _ref9.parentType;
     return parentType.name;
   },
   isDeprecated: false,
@@ -528,8 +561,8 @@ export var TypeNameMetaFieldDef = {
 };
 export var introspectionTypes = Object.freeze([__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind]);
 export function isIntrospectionType(type) {
-  return introspectionTypes.some(function (_ref8) {
-    var name = _ref8.name;
+  return introspectionTypes.some(function (_ref10) {
+    var name = _ref10.name;
     return type.name === name;
   });
 }

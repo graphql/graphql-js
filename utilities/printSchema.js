@@ -179,7 +179,7 @@ function printUnion(type, options) {
 
 function printEnum(type, options) {
   var values = type.getValues().map(function (value, i) {
-    return printDescription(options, value, '  ', !i) + '  ' + value.name + printDeprecated(value);
+    return printDescription(options, value, '  ', !i) + '  ' + value.name + printDeprecated(value.deprecationReason);
   });
   return printDescription(options, type) + "enum ".concat(type.name) + printBlock(values);
 }
@@ -193,7 +193,7 @@ function printInputObject(type, options) {
 
 function printFields(options, type) {
   var fields = (0, _objectValues.default)(type.getFields()).map(function (f, i) {
-    return printDescription(options, f, '  ', !i) + '  ' + f.name + printArgs(options, f.args, '  ') + ': ' + String(f.type) + printDeprecated(f);
+    return printDescription(options, f, '  ', !i) + '  ' + f.name + printArgs(options, f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason);
   });
   return printBlock(fields);
 }
@@ -229,23 +229,21 @@ function printInputValue(arg) {
     argDecl += " = ".concat((0, _printer.print)(defaultAST));
   }
 
-  return argDecl;
+  return argDecl + printDeprecated(arg.deprecationReason);
 }
 
 function printDirective(directive, options) {
   return printDescription(options, directive) + 'directive @' + directive.name + printArgs(options, directive.args) + (directive.isRepeatable ? ' repeatable' : '') + ' on ' + directive.locations.join(' | ');
 }
 
-function printDeprecated(fieldOrEnumVal) {
-  var deprecationReason = fieldOrEnumVal.deprecationReason;
-
-  if (deprecationReason == null) {
+function printDeprecated(reason) {
+  if (reason == null) {
     return '';
   }
 
-  var reasonAST = (0, _astFromValue.astFromValue)(deprecationReason, _scalars.GraphQLString);
+  var reasonAST = (0, _astFromValue.astFromValue)(reason, _scalars.GraphQLString);
 
-  if (reasonAST && deprecationReason !== _directives.DEFAULT_DEPRECATION_REASON) {
+  if (reasonAST && reason !== _directives.DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + (0, _printer.print)(reasonAST) + ')';
   }
 

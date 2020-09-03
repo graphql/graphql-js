@@ -518,6 +518,7 @@ export function extendSchemaImpl(
         type,
         description: getDescription(arg, options),
         defaultValue: valueFromAST(arg.defaultValue, type),
+        deprecationReason: getDeprecationReason(arg),
         astNode: arg,
       };
     }
@@ -544,6 +545,7 @@ export function extendSchemaImpl(
           type,
           description: getDescription(field, options),
           defaultValue: valueFromAST(field.defaultValue, type),
+          deprecationReason: getDeprecationReason(field),
           astNode: field,
         };
       }
@@ -712,7 +714,10 @@ const stdTypeMap = keyMap(
  * deprecation reason.
  */
 function getDeprecationReason(
-  node: EnumValueDefinitionNode | FieldDefinitionNode,
+  node:
+    | EnumValueDefinitionNode
+    | FieldDefinitionNode
+    | InputValueDefinitionNode,
 ): ?string {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   return (deprecated?.reason: any);

@@ -9,6 +9,7 @@ import { locatedError } from '../error/locatedError';
 import type {
   ASTNode,
   NamedTypeNode,
+  DirectiveNode,
   OperationTypeNode,
 } from '../language/ast';
 
@@ -24,8 +25,8 @@ import type {
   GraphQLInputObjectType,
 } from './definition';
 import { assertSchema } from './schema';
-import { isDirective } from './directives';
 import { isIntrospectionType } from './introspection';
+import { isDirective, GraphQLDeprecatedDirective } from './directives';
 import {
   isObjectType,
   isInterfaceType,
@@ -37,6 +38,7 @@ import {
   isInputType,
   isOutputType,
   isRequiredArgument,
+  isRequiredInputField,
 } from './definition';
 
 /**
@@ -182,6 +184,17 @@ function validateDirectives(context: SchemaValidationContext): void {
           arg.astNode,
         );
       }
+
+      if (isRequiredArgument(arg) && arg.deprecationReason != null) {
+        context.reportError(
+          `Required argument @${directive.name}(${arg.name}:) cannot be deprecated.`,
+          [
+            getDeprecatedDirectiveNode(arg.astNode),
+            // istanbul ignore next (TODO need to write coverage tests)
+            arg.astNode?.type,
+          ],
+        );
+      }
     }
   }
 }
@@ -285,6 +298,17 @@ function validateFields(
           `The type of ${type.name}.${field.name}(${argName}:) must be Input ` +
             `Type but got: ${inspect(arg.type)}.`,
           arg.astNode?.type,
+        );
+      }
+
+      if (isRequiredArgument(arg) && arg.deprecationReason != null) {
+        context.reportError(
+          `Required argument ${type.name}.${field.name}(${argName}:) cannot be deprecated.`,
+          [
+            getDeprecatedDirectiveNode(arg.astNode),
+            // istanbul ignore next (TODO need to write coverage tests)
+            arg.astNode?.type,
+          ],
         );
       }
     }
@@ -522,6 +546,17 @@ function validateInputFields(
         field.astNode?.type,
       );
     }
+
+    if (isRequiredInputField(field) && field.deprecationReason != null) {
+      context.reportError(
+        `Required input field ${inputObj.name}.${field.name} cannot be deprecated.`,
+        [
+          getDeprecatedDirectiveNode(field.astNode),
+          // istanbul ignore next (TODO need to write coverage tests)
+          field.astNode?.type,
+        ],
+      );
+    }
   }
 }
 
@@ -621,5 +656,14 @@ function getUnionMemberTypeNodes(
 ): ?$ReadOnlyArray<NamedTypeNode> {
   return getAllSubNodes(union, (unionNode) => unionNode.types).filter(
     (typeNode) => typeNode.name.value === typeName,
+  );
+}
+
+function getDeprecatedDirectiveNode(
+  definitionNode: ?{ +directives?: $ReadOnlyArray<DirectiveNode>, ... },
+): ?DirectiveNode {
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return definitionNode?.directives?.find(
+    (node) => node.name.value === GraphQLDeprecatedDirective.name,
   );
 }

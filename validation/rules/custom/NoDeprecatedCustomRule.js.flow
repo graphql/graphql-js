@@ -1,9 +1,10 @@
+import invariant from '../../../jsutils/invariant';
+
 import { GraphQLError } from '../../../error/GraphQLError';
 
-import type { EnumValueNode, FieldNode } from '../../../language/ast';
 import type { ASTVisitor } from '../../../language/visitor';
 
-import { getNamedType } from '../../../type/definition';
+import { getNamedType, isInputObjectType } from '../../../type/definition';
 
 import type { ValidationContext } from '../../ValidationContext';
 
@@ -19,27 +20,70 @@ import type { ValidationContext } from '../../ValidationContext';
  */
 export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
   return {
-    Field(node: FieldNode) {
+    Field(node) {
       const fieldDef = context.getFieldDef();
-      const parentType = context.getParentType();
-      if (parentType && fieldDef?.deprecationReason != null) {
+      const deprecationReason = fieldDef?.deprecationReason;
+      if (fieldDef && deprecationReason != null) {
+        const parentType = context.getParentType();
+        invariant(parentType != null);
         context.reportError(
           new GraphQLError(
-            `The field ${parentType.name}.${fieldDef.name} is deprecated. ` +
-              fieldDef.deprecationReason,
+            `The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`,
             node,
           ),
         );
       }
     },
-    EnumValue(node: EnumValueNode) {
-      const type = getNamedType(context.getInputType());
-      const enumValue = context.getEnumValue();
-      if (type && enumValue?.deprecationReason != null) {
+    Argument(node) {
+      const argDef = context.getArgument();
+      const deprecationReason = argDef?.deprecationReason;
+      if (argDef && deprecationReason != null) {
+        const directiveDef = context.getDirective();
+        if (directiveDef != null) {
+          context.reportError(
+            new GraphQLError(
+              `Directive "@${directiveDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
+              node,
+            ),
+          );
+        } else {
+          const parentType = context.getParentType();
+          const fieldDef = context.getFieldDef();
+          invariant(parentType != null && fieldDef != null);
+          context.reportError(
+            new GraphQLError(
+              `Field "${parentType.name}.${fieldDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
+              node,
+            ),
+          );
+        }
+      }
+    },
+    ObjectField(node) {
+      const inputObjectDef = getNamedType(context.getParentInputType());
+      if (isInputObjectType(inputObjectDef)) {
+        const inputFieldDef = inputObjectDef.getFields()[node.name.value];
+        // flowlint-next-line unnecessary-optional-chain:off
+        const deprecationReason = inputFieldDef?.deprecationReason;
+        if (deprecationReason != null) {
+          context.reportError(
+            new GraphQLError(
+              `The input field ${inputObjectDef.name}.${inputFieldDef.name} is deprecated. ${deprecationReason}`,
+              node,
+            ),
+          );
+        }
+      }
+    },
+    EnumValue(node) {
+      const enumValueDef = context.getEnumValue();
+      const deprecationReason = enumValueDef?.deprecationReason;
+      if (enumValueDef && deprecationReason != null) {
+        const enumTypeDef = getNamedType(context.getInputType());
+        invariant(enumTypeDef != null);
         context.reportError(
           new GraphQLError(
-            `The enum value "${type.name}.${enumValue.name}" is deprecated. ` +
-              enumValue.deprecationReason,
+            `The enum value "${enumTypeDef.name}.${enumValueDef.name}" is deprecated. ${deprecationReason}`,
             node,
           ),
         );

@@ -10,12 +10,10 @@ import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLDirective } from '../type/directives';
 import type {
   GraphQLNamedType,
-  GraphQLField,
   GraphQLArgument,
   GraphQLInputField,
   GraphQLScalarType,
   GraphQLEnumType,
-  GraphQLEnumValue,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -234,7 +232,7 @@ function printEnum(type: GraphQLEnumType, options): string {
         printDescription(options, value, '  ', !i) +
         '  ' +
         value.name +
-        printDeprecated(value),
+        printDeprecated(value.deprecationReason),
     );
 
   return (
@@ -264,7 +262,7 @@ function printFields(
       printArgs(options, f.args, '  ') +
       ': ' +
       String(f.type) +
-      printDeprecated(f),
+      printDeprecated(f.deprecationReason),
   );
   return printBlock(fields);
 }
@@ -310,7 +308,7 @@ function printInputValue(arg: GraphQLInputField): string {
   if (defaultAST) {
     argDecl += ` = ${print(defaultAST)}`;
   }
-  return argDecl;
+  return argDecl + printDeprecated(arg.deprecationReason);
 }
 
 function printDirective(directive: GraphQLDirective, options): string {
@@ -325,15 +323,12 @@ function printDirective(directive: GraphQLDirective, options): string {
   );
 }
 
-function printDeprecated(
-  fieldOrEnumVal: GraphQLEnumValue | GraphQLField<mixed, mixed>,
-): string {
-  const { deprecationReason } = fieldOrEnumVal;
-  if (deprecationReason == null) {
+function printDeprecated(reason: ?string): string {
+  if (reason == null) {
     return '';
   }
-  const reasonAST = astFromValue(deprecationReason, GraphQLString);
-  if (reasonAST && deprecationReason !== DEFAULT_DEPRECATION_REASON) {
+  const reasonAST = astFromValue(reason, GraphQLString);
+  if (reasonAST && reason !== DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + print(reasonAST) + ')';
   }
   return ' @deprecated';
