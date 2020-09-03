@@ -173,7 +173,7 @@ export type IntrospectionScalarType = {|
   +kind: 'SCALAR',
   +name: string,
   +description?: ?string,
-  +specifiedByUrl: ?string,
+  +specifiedByUrl?: ?string,
 |};
 
 export type IntrospectionObjectType = {|
