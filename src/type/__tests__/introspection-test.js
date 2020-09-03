@@ -332,7 +332,17 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'inputFields',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'SCALAR',
+                        name: 'Boolean',
+                        ofType: null,
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'LIST',
                     name: null,
@@ -450,7 +460,17 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'args',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'SCALAR',
+                        name: 'Boolean',
+                        ofType: null,
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,
@@ -566,6 +586,32 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'defaultValue',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'isDeprecated',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'Boolean',
+                      ofType: null,
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'deprecationReason',
                   args: [],
                   type: {
                     kind: 'SCALAR',
@@ -893,7 +939,12 @@ describe('Introspection', () => {
             {
               name: 'deprecated',
               isRepeatable: false,
-              locations: ['FIELD_DEFINITION', 'ENUM_VALUE'],
+              locations: [
+                'FIELD_DEFINITION',
+                'ARGUMENT_DEFINITION',
+                'INPUT_FIELD_DEFINITION',
+                'ENUM_VALUE',
+              ],
               args: [
                 {
                   defaultValue: '"No longer supported"',
@@ -1122,6 +1173,103 @@ describe('Introspection', () => {
     });
   });
 
+  it('identifies deprecated args', () => {
+    const schema = buildSchema(`
+      type Query {
+        someField(
+          nonDeprecated: String
+          deprecated: String @deprecated(reason: "Removed in 1.0")
+          deprecatedWithEmptyReason: String @deprecated(reason: "")
+        ): String
+      }
+    `);
+
+    const source = `
+      {
+        __type(name: "Query") {
+          fields {
+            args(includeDeprecated: true) {
+              name
+              isDeprecated,
+              deprecationReason
+            }
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __type: {
+          fields: [
+            {
+              args: [
+                {
+                  name: 'nonDeprecated',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'deprecated',
+                  isDeprecated: true,
+                  deprecationReason: 'Removed in 1.0',
+                },
+                {
+                  name: 'deprecatedWithEmptyReason',
+                  isDeprecated: true,
+                  deprecationReason: '',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  it('respects the includeDeprecated parameter for args', () => {
+    const schema = buildSchema(`
+      type Query {
+        someField(
+          nonDeprecated: String
+          deprecated: String @deprecated(reason: "Removed in 1.0")
+        ): String
+      }
+    `);
+
+    const source = `
+      {
+        __type(name: "Query") {
+          fields {
+            trueArgs: args(includeDeprecated: true) {
+              name
+            }
+            falseArgs: args(includeDeprecated: false) {
+              name
+            }
+            omittedArgs: args {
+              name
+            }
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __type: {
+          fields: [
+            {
+              trueArgs: [{ name: 'nonDeprecated' }, { name: 'deprecated' }],
+              falseArgs: [{ name: 'nonDeprecated' }],
+              omittedArgs: [{ name: 'nonDeprecated' }],
+            },
+          ],
+        },
+      },
+    });
+  });
+
   it('identifies deprecated enum values', () => {
     const schema = buildSchema(`
       enum SomeEnum {
@@ -1219,6 +1367,95 @@ describe('Introspection', () => {
             { name: 'NON_DEPRECATED' },
             { name: 'ALSO_NON_DEPRECATED' },
           ],
+        },
+      },
+    });
+  });
+
+  it('identifies deprecated for input fields', () => {
+    const schema = buildSchema(`
+      input SomeInputObject {
+        nonDeprecated: String
+        deprecated: String @deprecated(reason: "Removed in 1.0")
+        deprecatedWithEmptyReason: String @deprecated(reason: "")
+      }
+
+      type Query {
+        someField(someArg: SomeInputObject): String
+      }
+    `);
+
+    const source = `
+      {
+        __type(name: "SomeInputObject") {
+          inputFields(includeDeprecated: true) {
+            name
+            isDeprecated,
+            deprecationReason
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __type: {
+          inputFields: [
+            {
+              name: 'nonDeprecated',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'deprecated',
+              isDeprecated: true,
+              deprecationReason: 'Removed in 1.0',
+            },
+            {
+              name: 'deprecatedWithEmptyReason',
+              isDeprecated: true,
+              deprecationReason: '',
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  it('respects the includeDeprecated parameter for input fields', () => {
+    const schema = buildSchema(`
+      input SomeInputObject {
+        nonDeprecated: String
+        deprecated: String @deprecated(reason: "Removed in 1.0")
+      }
+
+      type Query {
+        someField(someArg: SomeInputObject): String
+      }
+    `);
+
+    const source = `
+      {
+        __type(name: "SomeInputObject") {
+          trueFields: inputFields(includeDeprecated: true) {
+            name
+          }
+          falseFields: inputFields(includeDeprecated: false) {
+            name
+          }
+          omittedFields: inputFields {
+            name
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __type: {
+          trueFields: [{ name: 'nonDeprecated' }, { name: 'deprecated' }],
+          falseFields: [{ name: 'nonDeprecated' }],
+          omittedFields: [{ name: 'nonDeprecated' }],
         },
       },
     });

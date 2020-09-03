@@ -854,6 +854,7 @@ function defineFieldMap<TSource, TContext>(
       description: argConfig.description,
       type: argConfig.type,
       defaultValue: argConfig.defaultValue,
+      deprecationReason: argConfig.deprecationReason,
       extensions: argConfig.extensions && toObjMap(argConfig.extensions),
       astNode: argConfig.astNode,
     }));
@@ -905,6 +906,7 @@ export function argsToArgsConfig(
       description: arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
+      deprecationReason: arg.deprecationReason,
       extensions: arg.extensions,
       astNode: arg.astNode,
     }),
@@ -981,6 +983,7 @@ export type GraphQLArgumentConfig = {|
   type: GraphQLInputType,
   defaultValue?: mixed,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
+  deprecationReason?: ?string,
   astNode?: ?InputValueDefinitionNode,
 |};
 
@@ -1012,6 +1015,7 @@ export type GraphQLArgument = {|
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
+  deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?InputValueDefinitionNode,
 |};
@@ -1584,6 +1588,7 @@ function defineInputFieldMap(
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
+      deprecationReason: fieldConfig.deprecationReason,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode,
     };
@@ -1603,6 +1608,7 @@ export type GraphQLInputFieldConfig = {|
   description?: ?string,
   type: GraphQLInputType,
   defaultValue?: mixed,
+  deprecationReason?: ?string,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?InputValueDefinitionNode,
 |};
@@ -1614,6 +1620,7 @@ export type GraphQLInputField = {|
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
+  deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?InputValueDefinitionNode,
 |};

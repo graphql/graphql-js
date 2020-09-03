@@ -898,6 +898,30 @@ describe('Type System: Input Objects must have fields', () => {
       },
     ]);
   });
+
+  it('rejects an Input Object type with required argument that is deprecated', () => {
+    const schema = buildSchema(`
+      type Query {
+        field(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject {
+        badField: String! @deprecated
+        optionalField: String @deprecated
+        anotherOptionalField: String! = "" @deprecated
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message:
+          'Required input field SomeInputObject.badField cannot be deprecated.',
+        locations: [
+          { line: 7, column: 27 },
+          { line: 7, column: 19 },
+        ],
+      },
+    ]);
+  });
 });
 
 describe('Type System: Enum types must be well defined', () => {
@@ -1513,6 +1537,41 @@ describe('Type System: Arguments must have input types', () => {
       },
       {
         message: 'Expected GraphQL named type but got: [function Number].',
+      },
+    ]);
+  });
+
+  it('rejects an required argument that is deprecated', () => {
+    const schema = buildSchema(`
+      directive @BadDirective(
+        badArg: String! @deprecated
+        optionalArg: String @deprecated
+        anotherOptionalArg: String! = "" @deprecated
+      ) on FIELD
+
+      type Query {
+        test(
+          badArg: String! @deprecated
+          optionalArg: String @deprecated
+          anotherOptionalArg: String! = "" @deprecated
+        ): String
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message:
+          'Required argument @BadDirective(badArg:) cannot be deprecated.',
+        locations: [
+          { line: 3, column: 25 },
+          { line: 3, column: 17 },
+        ],
+      },
+      {
+        message: 'Required argument Query.test(badArg:) cannot be deprecated.',
+        locations: [
+          { line: 10, column: 27 },
+          { line: 10, column: 19 },
+        ],
       },
     ]);
   });
