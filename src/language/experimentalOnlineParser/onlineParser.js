@@ -73,7 +73,7 @@ type OnlineParserRule =
   | PeekOnlineParserRule
   | ConstraintsSetOnlineParserRule;
 
-type OnlineParserState = {|
+export type OnlineParserState = {|
   rules: Array<OnlineParserRule>,
   kind: () => string,
   step: () => number,
@@ -127,7 +127,7 @@ export class OnlineParser {
           name: 'Document',
           state: 'Document',
           kind: 'ListOfTypeConstraint',
-          ...GraphQLGrammar.rules.Document,
+          ...GraphQLGrammar.Document,
           expanded: false,
           depth: 1,
           step: 1,
@@ -275,7 +275,7 @@ export class OnlineParser {
 
   _parseListOfTypeConstraint(rule: ListOfTypeOnlineParserRule): Token {
     this._pushRule(
-      GraphQLGrammar.rules[rule.listOfType],
+      GraphQLGrammar[rule.listOfType],
       rule.depth + 1,
       rule.listOfType,
       1,
@@ -315,7 +315,7 @@ export class OnlineParser {
 
       let { ifCondition } = constraint;
       if (typeof ifCondition === 'string') {
-        ifCondition = GraphQLGrammar.rules[ifCondition];
+        ifCondition = GraphQLGrammar[ifCondition];
       }
 
       let token = this._lookAhead();
@@ -551,7 +551,7 @@ export class OnlineParser {
       case RuleKind.RULE_NAME:
         rule = (rule: GraphQLGrammarRuleName);
         this._pushRule(
-          GraphQLGrammar.rules[rule],
+          GraphQLGrammar[rule],
           depth,
           (typeof name === 'string' ? name : undefined) || rule,
           step,

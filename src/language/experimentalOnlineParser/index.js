@@ -1,1 +1,6 @@
-export { OnlineParser, RuleKind, TokenKind } from './onlineParser';
+export {
+  OnlineParser,
+  RuleKind,
+  TokenKind,
+  OnlineParserState,
+} from './onlineParser';

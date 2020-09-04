@@ -1,10 +1,4 @@
-// @flow
-
-export type GraphQLGrammarType = {|
-  rules: GraphQLGrammarRules,
-|};
-
-export interface GraphQLGrammarRules {
+export interface GraphQLGrammarType {
   [name: string]: GraphQLGrammarRule;
 }
 export type GraphQLGrammarRuleName = string;

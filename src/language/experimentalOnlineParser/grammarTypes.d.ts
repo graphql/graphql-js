@@ -1,25 +1,21 @@
 export interface GraphQLGrammarType {
-  rules: GraphQLGrammarRules;
-}
-
-export interface GraphQLGrammarRules {
   [name: string]: GraphQLGrammarRule;
 }
 
-export declare type GraphQLGrammarRule =
+export type GraphQLGrammarRule =
   | GraphQLGrammarRuleName
   | GraphQLGrammarRuleConstraint
   | GraphQLGrammarConstraintsSet;
 
-export declare type GraphQLGrammarRuleName = string;
+export type GraphQLGrammarRuleName = string;
 
-export declare type GraphQLGrammarRuleConstraint =
+export type GraphQLGrammarRuleConstraint =
   | GraphQLGrammarTokenConstraint
   | GraphQLGrammarOfTypeConstraint
   | GraphQLGrammarListOfTypeConstraint
   | GraphQLGrammarPeekConstraint;
 
-export declare type GraphQLGrammarConstraintsSet = Array<
+export type GraphQLGrammarConstraintsSet = Array<
   GraphQLGrammarRuleName | GraphQLGrammarRuleConstraint
 >;
 

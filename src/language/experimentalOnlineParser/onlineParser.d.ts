@@ -38,14 +38,14 @@ interface ConstraintsSetOnlineParserRule extends BaseOnlineParserRule {
   constraints: GraphQLGrammarConstraintsSet;
 }
 
-declare type OnlineParserRule =
+type OnlineParserRule =
   | TokenOnlineParserRule
   | OfTypeOnlineParserRule
   | ListOfTypeOnlineParserRule
   | PeekOnlineParserRule
   | ConstraintsSetOnlineParserRule;
 
-declare interface OnlineParserState {
+export interface OnlineParserState {
   rules: Array<OnlineParserRule>;
   kind: () => string;
   step: () => number;
@@ -55,22 +55,22 @@ declare interface OnlineParserState {
   type: string | null;
 }
 
-declare interface Token {
+interface Token {
   kind: string;
   value?: string;
   tokenName?: string | undefined;
   ruleName?: string | undefined;
 }
 
-declare type OnlineParserConfig = {
+type OnlineParserConfig = {
   tabSize: number;
 };
 
-declare type OnlineParserConfigOption = {
+type OnlineParserConfigOption = {
   tabSize?: number;
 };
 
-export declare class OnlineParser {
+export class OnlineParser {
   state: OnlineParserState;
   _lexer: Lexer;
   _config: OnlineParserConfig;
@@ -101,7 +101,7 @@ export declare class OnlineParser {
   private readonly _lookAhead;
 }
 
-export declare const TokenKind: {
+export const TokenKind: {
   NAME: string;
   INT: string;
   FLOAT: string;
@@ -113,7 +113,7 @@ export declare const TokenKind: {
   INVALID: string;
 };
 
-export declare const RuleKind: {
+export const RuleKind: {
   TOKEN_CONSTRAINT: string;
   OF_TYPE_CONSTRAINT: string;
   LIST_OF_TYPE_CONSTRAINT: string;
