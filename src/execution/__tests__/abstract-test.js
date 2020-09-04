@@ -14,19 +14,27 @@ import {
   GraphQLUnionType,
 } from '../../type/definition';
 
+import { buildSchema } from '../../utilities/buildASTSchema';
+
 import { executeSync, execute } from '../execute';
 
-async function executeQuery(args: {| schema: GraphQLSchema, query: string |}) {
-  const { schema, query } = args;
+async function executeQuery(args: {|
+  schema: GraphQLSchema,
+  query: string,
+  rootValue?: mixed,
+|}) {
+  const { schema, query, rootValue } = args;
   const document = parse(query);
   const result = executeSync({
     schema,
     document,
+    rootValue,
     contextValue: { async: false },
   });
   const asyncResult = await execute({
     schema,
     document,
+    rootValue,
     contextValue: { async: true },
   });
 
@@ -750,6 +758,136 @@ describe('Execute: Handles execution of abstract types', () => {
           path: ['pets', 1],
         },
       ],
+    });
+  });
+
+  it('resolve Union type using __typename on source object', async () => {
+    const schema = buildSchema(`
+      type Query {
+        pets: [Pet]
+      }
+
+      union Pet = Cat | Dog
+
+      type Cat {
+        name: String
+        meows: Boolean
+      }
+
+      type Dog {
+        name: String
+        woofs: Boolean
+      }
+    `);
+
+    const query = `
+      {
+        pets {
+          name
+          ... on Dog {
+            woofs
+          }
+          ... on Cat {
+            meows
+          }
+        }
+      }
+    `;
+
+    const rootValue = {
+      pets: [
+        {
+          __typename: 'Dog',
+          name: 'Odie',
+          woofs: true,
+        },
+        {
+          __typename: 'Cat',
+          name: 'Garfield',
+          meows: false,
+        },
+      ],
+    };
+
+    expect(await executeQuery({ schema, query, rootValue })).to.deep.equal({
+      data: {
+        pets: [
+          {
+            name: 'Odie',
+            woofs: true,
+          },
+          {
+            name: 'Garfield',
+            meows: false,
+          },
+        ],
+      },
+    });
+  });
+
+  it('resolve Interface type using __typename on source object', async () => {
+    const schema = buildSchema(`
+      type Query {
+        pets: [Pet]
+      }
+
+      interface Pet {
+        name: String
+        }
+
+      type Cat implements Pet {
+        name: String
+        meows: Boolean
+      }
+
+      type Dog implements Pet {
+        name: String
+        woofs: Boolean
+      }
+    `);
+
+    const query = `
+      {
+        pets {
+          name
+          ... on Dog {
+            woofs
+          }
+          ... on Cat {
+            meows
+          }
+        }
+      }
+    `;
+
+    const rootValue = {
+      pets: [
+        {
+          __typename: 'Dog',
+          name: 'Odie',
+          woofs: true,
+        },
+        {
+          __typename: 'Cat',
+          name: 'Garfield',
+          meows: false,
+        },
+      ],
+    };
+
+    expect(await executeQuery({ schema, query, rootValue })).to.deep.equal({
+      data: {
+        pets: [
+          {
+            name: 'Odie',
+            woofs: true,
+          },
+          {
+            name: 'Garfield',
+            meows: false,
+          },
+        ],
+      },
     });
   });
 });
