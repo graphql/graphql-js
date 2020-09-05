@@ -125,12 +125,11 @@ const characterInterface = new GraphQLInterfaceType({
     },
   }),
   resolveType(character) {
-    if (character.type === 'Human') {
-      return humanType;
-    }
-    // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
-    if (character.type === 'Droid') {
-      return droidType;
+    switch (character.type) {
+      case 'Human':
+        return humanType.name;
+      case 'Droid':
+        return droidType.name;
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)

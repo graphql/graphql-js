@@ -115,11 +115,11 @@ const PetType = new GraphQLUnionType({
   types: [DogType, CatType],
   resolveType(value) {
     if (value instanceof Dog) {
-      return DogType;
+      return DogType.name;
     }
     // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
     if (value instanceof Cat) {
-      return CatType;
+      return CatType.name;
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
@@ -514,7 +514,7 @@ describe('Execute: Union and intersection types', () => {
         encounteredContext = context;
         encounteredSchema = info.schema;
         encounteredRootValue = info.rootValue;
-        return PersonType2;
+        return PersonType2.name;
       },
     });
 
