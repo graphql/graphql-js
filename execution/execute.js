@@ -682,10 +682,25 @@ function completeAbstractValue(exeContext, returnType, fieldNodes, info, path, r
 }
 
 function ensureValidRuntimeType(runtimeTypeOrName, exeContext, returnType, fieldNodes, info, result) {
-  var runtimeType = typeof runtimeTypeOrName === 'string' ? exeContext.schema.getType(runtimeTypeOrName) : runtimeTypeOrName;
+  if (runtimeTypeOrName == null) {
+    throw new _GraphQLError.GraphQLError("Abstract type \"".concat(returnType.name, "\" must resolve to an Object type at runtime for field \"").concat(info.parentType.name, ".").concat(info.fieldName, "\". Either the \"").concat(returnType.name, "\" type should provide a \"resolveType\" function or each possible type should provide an \"isTypeOf\" function."), fieldNodes);
+  } // FIXME: temporary workaround until support for passing object types would be removed in v16.0.0
+
+
+  var runtimeTypeName = (0, _definition.isNamedType)(runtimeTypeOrName) ? runtimeTypeOrName.name : runtimeTypeOrName;
+
+  if (typeof runtimeTypeName !== 'string') {
+    throw new _GraphQLError.GraphQLError("Abstract type \"".concat(returnType.name, "\" must resolve to an Object type at runtime for field \"").concat(info.parentType.name, ".").concat(info.fieldName, "\" with ") + "value ".concat((0, _inspect.default)(result), ", received \"").concat((0, _inspect.default)(runtimeTypeOrName), "\"."));
+  }
+
+  var runtimeType = exeContext.schema.getType(runtimeTypeName);
+
+  if (runtimeType == null) {
+    throw new _GraphQLError.GraphQLError("Abstract type \"".concat(returnType.name, "\" was resolve to a type \"").concat(runtimeTypeName, "\" that does not exist inside schema."), fieldNodes);
+  }
 
   if (!(0, _definition.isObjectType)(runtimeType)) {
-    throw new _GraphQLError.GraphQLError("Abstract type \"".concat(returnType.name, "\" must resolve to an Object type at runtime for field \"").concat(info.parentType.name, ".").concat(info.fieldName, "\" with ") + "value ".concat((0, _inspect.default)(result), ", received \"").concat((0, _inspect.default)(runtimeType), "\". ") + "Either the \"".concat(returnType.name, "\" type should provide a \"resolveType\" function or each possible type should provide an \"isTypeOf\" function."), fieldNodes);
+    throw new _GraphQLError.GraphQLError("Abstract type \"".concat(returnType.name, "\" was resolve to a non-object type \"").concat(runtimeTypeName, "\"."), fieldNodes);
   }
 
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
@@ -787,7 +802,7 @@ var defaultTypeResolver = function defaultTypeResolver(value, contextValue, info
       if ((0, _isPromise.default)(isTypeOfResult)) {
         promisedIsTypeOfResults[i] = isTypeOfResult;
       } else if (isTypeOfResult) {
-        return type;
+        return type.name;
       }
     }
   }
@@ -796,7 +811,7 @@ var defaultTypeResolver = function defaultTypeResolver(value, contextValue, info
     return Promise.all(promisedIsTypeOfResults).then(function (isTypeOfResults) {
       for (var _i9 = 0; _i9 < isTypeOfResults.length; _i9++) {
         if (isTypeOfResults[_i9]) {
-          return possibleTypes[_i9];
+          return possibleTypes[_i9].name;
         }
       }
     });

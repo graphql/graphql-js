@@ -924,6 +924,9 @@ export type GraphQLObjectTypeConfig<TSource, TContext> = {|
   extensionASTNodes?: ?$ReadOnlyArray<ObjectTypeExtensionNode>,
 |};
 
+/**
+ * Note: returning GraphQLObjectType is deprecated and will be removed in v16.0.0
+ */
 export type GraphQLTypeResolver<TSource, TContext> = (
   value: TSource,
   context: TContext,
