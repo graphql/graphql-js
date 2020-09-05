@@ -931,7 +931,7 @@ export type GraphQLTypeResolver<TSource, TContext> = (
   context: TContext,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType,
-) => PromiseOrValue<?GraphQLObjectType | string>;
+) => PromiseOrValue<string | void>;
 
 export type GraphQLIsTypeOfFn<TSource, TContext> = (
   source: TSource,
