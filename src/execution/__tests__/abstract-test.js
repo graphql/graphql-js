@@ -62,14 +62,6 @@ class Cat {
   }
 }
 
-class Human {
-  name: string;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
 describe('Execute: Handles execution of abstract types', () => {
   it('isTypeOf used to resolve runtime type for Interface', async () => {
     const PetType = new GraphQLInterfaceType({
@@ -305,308 +297,16 @@ describe('Execute: Handles execution of abstract types', () => {
     });
   });
 
-  it('resolveType on Interface yields useful error', async () => {
+  it('deprecated(will be removed in v16.0.0): resolveType allows resolving with type object', async () => {
     const PetType = new GraphQLInterfaceType({
       name: 'Pet',
       resolveType(obj, context) {
         if (obj instanceof Dog) {
           return context.async ? Promise.resolve(DogType) : DogType;
         }
+        // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
         if (obj instanceof Cat) {
           return context.async ? Promise.resolve(CatType) : CatType;
-        }
-        // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
-        if (obj instanceof Human) {
-          return context.async ? Promise.resolve(HumanType) : HumanType;
-        }
-
-        // istanbul ignore next (Not reachable. All possible types have been considered)
-        invariant(false);
-      },
-      fields: {
-        name: { type: GraphQLString },
-      },
-    });
-
-    const HumanType = new GraphQLObjectType({
-      name: 'Human',
-      fields: {
-        name: { type: GraphQLString },
-      },
-    });
-
-    const DogType = new GraphQLObjectType({
-      name: 'Dog',
-      interfaces: [PetType],
-      fields: {
-        name: { type: GraphQLString },
-        woofs: { type: GraphQLBoolean },
-      },
-    });
-
-    const CatType = new GraphQLObjectType({
-      name: 'Cat',
-      interfaces: [PetType],
-      fields: {
-        name: { type: GraphQLString },
-        meows: { type: GraphQLBoolean },
-      },
-    });
-
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          pets: {
-            type: new GraphQLList(PetType),
-            resolve() {
-              return [
-                new Dog('Odie', true),
-                new Cat('Garfield', false),
-                new Human('Jon'),
-              ];
-            },
-          },
-        },
-      }),
-      types: [CatType, DogType],
-    });
-
-    const query = `
-      {
-        pets {
-          name
-          ... on Dog {
-            woofs
-          }
-          ... on Cat {
-            meows
-          }
-        }
-      }
-    `;
-
-    expect(await executeQuery({ schema, query })).to.deep.equal({
-      data: {
-        pets: [
-          {
-            name: 'Odie',
-            woofs: true,
-          },
-          {
-            name: 'Garfield',
-            meows: false,
-          },
-          null,
-        ],
-      },
-      errors: [
-        {
-          message:
-            'Runtime Object type "Human" is not a possible type for "Pet".',
-          locations: [{ line: 3, column: 9 }],
-          path: ['pets', 2],
-        },
-      ],
-    });
-  });
-
-  it('resolveType on Union yields useful error', async () => {
-    const HumanType = new GraphQLObjectType({
-      name: 'Human',
-      fields: {
-        name: { type: GraphQLString },
-      },
-    });
-
-    const DogType = new GraphQLObjectType({
-      name: 'Dog',
-      fields: {
-        name: { type: GraphQLString },
-        woofs: { type: GraphQLBoolean },
-      },
-    });
-
-    const CatType = new GraphQLObjectType({
-      name: 'Cat',
-      fields: {
-        name: { type: GraphQLString },
-        meows: { type: GraphQLBoolean },
-      },
-    });
-
-    const PetType = new GraphQLUnionType({
-      name: 'Pet',
-      resolveType(obj, context) {
-        if (obj instanceof Dog) {
-          return context.async ? Promise.resolve(DogType) : DogType;
-        }
-        if (obj instanceof Cat) {
-          return context.async ? Promise.resolve(CatType) : CatType;
-        }
-        // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
-        if (obj instanceof Human) {
-          return context.async ? Promise.resolve(HumanType) : HumanType;
-        }
-
-        // istanbul ignore next (Not reachable. All possible types have been considered)
-        invariant(false);
-      },
-      types: [DogType, CatType],
-    });
-
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          pets: {
-            type: new GraphQLList(PetType),
-            resolve() {
-              return [
-                new Dog('Odie', true),
-                new Cat('Garfield', false),
-                new Human('Jon'),
-              ];
-            },
-          },
-        },
-      }),
-    });
-
-    const query = `
-      {
-        pets {
-          ... on Dog {
-            name
-            woofs
-          }
-          ... on Cat {
-            name
-            meows
-          }
-        }
-      }
-    `;
-
-    expect(await executeQuery({ schema, query })).to.deep.equal({
-      data: {
-        pets: [
-          {
-            name: 'Odie',
-            woofs: true,
-          },
-          {
-            name: 'Garfield',
-            meows: false,
-          },
-          null,
-        ],
-      },
-      errors: [
-        {
-          message:
-            'Runtime Object type "Human" is not a possible type for "Pet".',
-          locations: [{ line: 3, column: 9 }],
-          path: ['pets', 2],
-        },
-      ],
-    });
-  });
-
-  it('returning invalid value from resolveType yields useful error', async () => {
-    const fooInterface = new GraphQLInterfaceType({
-      name: 'FooInterface',
-      fields: { bar: { type: GraphQLString } },
-      resolveType(_source, context) {
-        // $FlowExpectedError[incompatible-call]
-        return context.async ? Promise.resolve([]) : [];
-      },
-    });
-
-    const fooObject = new GraphQLObjectType({
-      name: 'FooObject',
-      fields: { bar: { type: GraphQLString } },
-      interfaces: [fooInterface],
-    });
-
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          foo: {
-            type: fooInterface,
-            resolve: () => 'dummy',
-          },
-        },
-      }),
-      types: [fooObject],
-    });
-
-    expect(
-      await executeQuery({ schema, query: '{ foo { bar } }' }),
-    ).to.deep.equal({
-      data: { foo: null },
-      errors: [
-        {
-          message:
-            'Abstract type "FooInterface" must resolve to an Object type at runtime for field "Query.foo" with value "dummy", received "[]". Either the "FooInterface" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
-          locations: [{ line: 1, column: 3 }],
-          path: ['foo'],
-        },
-      ],
-    });
-  });
-
-  it('missing both resolveType and isTypeOf yields useful error', async () => {
-    const fooInterface = new GraphQLInterfaceType({
-      name: 'FooInterface',
-      fields: { bar: { type: GraphQLString } },
-    });
-
-    const fooObject = new GraphQLObjectType({
-      name: 'FooObject',
-      fields: { bar: { type: GraphQLString } },
-      interfaces: [fooInterface],
-    });
-
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          foo: {
-            type: fooInterface,
-            resolve: () => 'dummy',
-          },
-        },
-      }),
-      types: [fooObject],
-    });
-
-    expect(
-      await executeQuery({ schema, query: '{ foo { bar } }' }),
-    ).to.deep.equal({
-      data: { foo: null },
-      errors: [
-        {
-          message:
-            'Abstract type "FooInterface" must resolve to an Object type at runtime for field "Query.foo" with value "dummy", received "undefined". Either the "FooInterface" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
-          locations: [{ line: 1, column: 3 }],
-          path: ['foo'],
-        },
-      ],
-    });
-  });
-
-  it('resolveType allows resolving with type name', async () => {
-    const PetType = new GraphQLInterfaceType({
-      name: 'Pet',
-      resolveType(obj, context) {
-        if (obj instanceof Dog) {
-          return context.async ? Promise.resolve('Dog') : 'Dog';
-        }
-        // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
-        if (obj instanceof Cat) {
-          return context.async ? Promise.resolve('Cat') : 'Cat';
         }
 
         // istanbul ignore next (Not reachable. All possible types have been considered)
@@ -889,5 +589,74 @@ describe('Execute: Handles execution of abstract types', () => {
         ],
       },
     });
+  });
+
+  it('resolveType on Interface yields useful error', () => {
+    const schema = buildSchema(`
+      type Query {
+        pet: Pet
+      }
+
+      interface Pet {
+        name: String
+      }
+
+      type Cat implements Pet {
+        name: String
+      }
+
+      type Dog implements Pet {
+        name: String
+      }
+    `);
+
+    const document = parse(`
+      {
+        pet {
+          name
+        }
+      }
+    `);
+
+    function expectError({ forTypeName }: {| forTypeName: mixed |}) {
+      const rootValue = { pet: { __typename: forTypeName } };
+      const result = executeSync({ schema, document, rootValue });
+      return {
+        toEqual(message: string) {
+          expect(result).to.deep.equal({
+            data: { pet: null },
+            errors: [
+              {
+                message,
+                locations: [{ line: 3, column: 9 }],
+                path: ['pet'],
+              },
+            ],
+          });
+        },
+      };
+    }
+
+    expectError({ forTypeName: undefined }).toEqual(
+      'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
+    );
+
+    expectError({ forTypeName: 'Human' }).toEqual(
+      'Abstract type "Pet" was resolve to a type "Human" that does not exist inside schema.',
+    );
+
+    expectError({ forTypeName: 'String' }).toEqual(
+      'Abstract type "Pet" was resolve to a non-object type "String".',
+    );
+
+    expectError({ forTypeName: '__Schema' }).toEqual(
+      'Runtime Object type "__Schema" is not a possible type for "Pet".',
+    );
+
+    // FIXME: workaround since we can't inject resolveType into SDL
+    (schema.getType('Pet'): any).resolveType = () => [];
+    expectError({ forTypeName: undefined }).toEqual(
+      'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet" with value { __typename: undefined }, received "[]".',
+    );
   });
 });
