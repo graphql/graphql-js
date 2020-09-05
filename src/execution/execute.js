@@ -52,7 +52,6 @@ import {
   GraphQLSkipDirective,
 } from '../type/directives';
 import {
-  isNamedType,
   isObjectType,
   isAbstractType,
   isLeafType,
@@ -954,29 +953,32 @@ function completeAbstractValue(
 }
 
 function ensureValidRuntimeType(
-  runtimeTypeOrName: mixed,
+  runtimeTypeName: mixed,
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   result: mixed,
 ): GraphQLObjectType {
-  if (runtimeTypeOrName == null) {
+  if (runtimeTypeName == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
       fieldNodes,
     );
   }
 
-  // FIXME: temporary workaround until support for passing object types would be removed in v16.0.0
-  const runtimeTypeName = isNamedType(runtimeTypeOrName)
-    ? runtimeTypeOrName.name
-    : runtimeTypeOrName;
+  // releases before 16.0.0 supported returning `GraphQLObjectType` from `resolveType`
+  // TODO: remove in 17.0.0 release
+  if (isObjectType(runtimeTypeName)) {
+    throw new GraphQLError(
+      'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
+    );
+  }
 
   if (typeof runtimeTypeName !== 'string') {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` +
-        `value ${inspect(result)}, received "${inspect(runtimeTypeOrName)}".`,
+        `value ${inspect(result)}, received "${inspect(runtimeTypeName)}".`,
     );
   }
 
