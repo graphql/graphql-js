@@ -15,7 +15,7 @@ import { Kind } from "../language/kinds.js";
 import { assertValidSchema } from "../type/validate.js";
 import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from "../type/introspection.js";
 import { GraphQLIncludeDirective, GraphQLSkipDirective } from "../type/directives.js";
-import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from "../type/definition.js";
+import { isNamedType, isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from "../type/definition.js";
 import { typeFromAST } from "../utilities/typeFromAST.js";
 import { getOperationRootType } from "../utilities/getOperationRootType.js";
 import { getVariableValues, getArgumentValues, getDirectiveValues } from "./values.js";
@@ -651,10 +651,25 @@ function completeAbstractValue(exeContext, returnType, fieldNodes, info, path, r
 }
 
 function ensureValidRuntimeType(runtimeTypeOrName, exeContext, returnType, fieldNodes, info, result) {
-  const runtimeType = typeof runtimeTypeOrName === 'string' ? exeContext.schema.getType(runtimeTypeOrName) : runtimeTypeOrName;
+  if (runtimeTypeOrName == null) {
+    throw new GraphQLError(`Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`, fieldNodes);
+  } // FIXME: temporary workaround until support for passing object types would be removed in v16.0.0
+
+
+  const runtimeTypeName = isNamedType(runtimeTypeOrName) ? runtimeTypeOrName.name : runtimeTypeOrName;
+
+  if (typeof runtimeTypeName !== 'string') {
+    throw new GraphQLError(`Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` + `value ${inspect(result)}, received "${inspect(runtimeTypeOrName)}".`);
+  }
+
+  const runtimeType = exeContext.schema.getType(runtimeTypeName);
+
+  if (runtimeType == null) {
+    throw new GraphQLError(`Abstract type "${returnType.name}" was resolve to a type "${runtimeTypeName}" that does not exist inside schema.`, fieldNodes);
+  }
 
   if (!isObjectType(runtimeType)) {
-    throw new GraphQLError(`Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` + `value ${inspect(result)}, received "${inspect(runtimeType)}". ` + `Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`, fieldNodes);
+    throw new GraphQLError(`Abstract type "${returnType.name}" was resolve to a non-object type "${runtimeTypeName}".`, fieldNodes);
   }
 
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
@@ -754,7 +769,7 @@ export const defaultTypeResolver = function (value, contextValue, info, abstract
       if (isPromise(isTypeOfResult)) {
         promisedIsTypeOfResults[i] = isTypeOfResult;
       } else if (isTypeOfResult) {
-        return type;
+        return type.name;
       }
     }
   }
@@ -763,7 +778,7 @@ export const defaultTypeResolver = function (value, contextValue, info, abstract
     return Promise.all(promisedIsTypeOfResults).then(isTypeOfResults => {
       for (let i = 0; i < isTypeOfResults.length; i++) {
         if (isTypeOfResults[i]) {
-          return possibleTypes[i];
+          return possibleTypes[i].name;
         }
       }
     });
