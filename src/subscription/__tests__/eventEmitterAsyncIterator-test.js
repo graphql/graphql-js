@@ -7,7 +7,7 @@ import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
 
 describe('eventEmitterAsyncIterator', () => {
   it('subscribe async-iterator mock', async () => {
-    // Create an AsyncIterator from an EventEmitter
+    // Create an AsyncGenerator from an EventEmitter
     const emitter = new EventEmitter();
     const iterator = eventEmitterAsyncIterator(emitter, 'publish');
 
@@ -41,7 +41,6 @@ describe('eventEmitterAsyncIterator', () => {
     const i5 = iterator.next().then((x) => x);
 
     // Terminate emitter
-    // $FlowFixMe[prop-missing]
     await iterator.return();
 
     // Publish is not caught after terminate
