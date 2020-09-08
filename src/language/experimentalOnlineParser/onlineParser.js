@@ -1,7 +1,7 @@
 import { Lexer } from '../lexer';
 import { Source } from '../source';
 
-import GraphQLGrammar from './rules';
+import GraphQLGrammar from './grammar';
 import type {
   GraphQLGrammarRule,
   GraphQLGrammarRuleName,
@@ -11,7 +11,7 @@ import type {
   GraphQLGrammarListOfTypeConstraint,
   GraphQLGrammarPeekConstraint,
   GraphQLGrammarConstraintsSet,
-} from './grammarTypes';
+} from './grammar';
 
 export const TokenKind = {
   NAME: 'Name',

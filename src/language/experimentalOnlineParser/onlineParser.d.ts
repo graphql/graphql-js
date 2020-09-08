@@ -6,7 +6,7 @@ import {
   GraphQLGrammarListOfTypeConstraint,
   GraphQLGrammarPeekConstraint,
   GraphQLGrammarConstraintsSet,
-} from './grammarTypes';
+} from './grammar';
 
 interface BaseOnlineParserRule {
   kind: string;
