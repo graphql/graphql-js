@@ -7,7 +7,7 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
  * which produces values mapped via calling the callback function.
  */
 export default function mapAsyncIterator<T, U>(
-  iterable: AsyncIterable<T>,
+  iterable: AsyncIterable<T> | AsyncGenerator<T, void, void>,
   callback: (T) => PromiseOrValue<U>,
   rejectCallback?: (any) => PromiseOrValue<U>,
 ): AsyncGenerator<U, void, void> {
@@ -58,7 +58,7 @@ export default function mapAsyncIterator<T, U>(
     [SYMBOL_ASYNC_ITERATOR]() {
       return this;
     },
-  }: any);
+  }: $FlowFixMe);
 }
 
 function asyncMapValue<T, U>(
