@@ -601,6 +601,7 @@ overrides:
       no-dupe-class-members: off
       no-empty-function: off
       no-invalid-this: off
+      no-loop-func: off
       no-loss-of-precision: off
       no-redeclare: off
       no-shadow: off
@@ -617,6 +618,7 @@ overrides:
       '@typescript-eslint/no-dupe-class-members': error
       '@typescript-eslint/no-empty-function': error
       '@typescript-eslint/no-invalid-this': error
+      '@typescript-eslint/no-loop-func': error
       '@typescript-eslint/no-loss-of-precision': error
       '@typescript-eslint/no-redeclare': error
       '@typescript-eslint/no-shadow': error
