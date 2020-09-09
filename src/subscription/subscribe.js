@@ -60,7 +60,7 @@ export type SubscriptionArgs = {|
 declare function subscribe(
   SubscriptionArgs,
   ..._: []
-): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
+): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function subscribe(
   schema: GraphQLSchema,
@@ -112,7 +112,7 @@ function reportGraphQLError(error: mixed): ExecutionResult {
 
 function subscribeImpl(
   args: SubscriptionArgs,
-): Promise<AsyncIterator<ExecutionResult> | ExecutionResult> {
+): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
   const {
     schema,
     document,

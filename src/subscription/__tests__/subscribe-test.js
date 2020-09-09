@@ -5,6 +5,9 @@ import { describe, it } from 'mocha';
 
 import resolveOnNextTick from '../../__testUtils__/resolveOnNextTick';
 
+import invariant from '../../jsutils/invariant';
+import isAsyncIterable from '../../jsutils/isAsyncIterable';
+
 import type { DocumentNode } from '../../language/ast';
 import { parse } from '../../language/parser';
 
@@ -130,11 +133,8 @@ async function createSubscription(
   }
 
   // `subscribe` returns Promise<AsyncIterator | ExecutionResult>
-  return {
-    sendImportantEmail,
-    // $FlowFixMe[incompatible-call]
-    subscription: await subscribe({ schema, document, rootValue: data }),
-  };
+  const subscription = await subscribe({ schema, document, rootValue: data });
+  return { sendImportantEmail, subscription };
 }
 
 async function expectPromiseToThrow(
@@ -192,6 +192,7 @@ describe('Subscription Initialization Phase', () => {
       pubsub,
       testSchema,
     );
+    invariant(isAsyncIterable(subscription));
 
     sendImportantEmail({
       from: 'yuzhi@graphql.org',
@@ -219,7 +220,6 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    // $FlowFixMe[incompatible-call]
     const subscription = await subscribe({
       schema,
       document: parse(`
@@ -228,6 +228,7 @@ describe('Subscription Initialization Phase', () => {
         }
       `),
     });
+    invariant(isAsyncIterable(subscription));
 
     pubsub.emit('importantEmail', {
       importantEmail: {},
@@ -254,7 +255,6 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    // $FlowFixMe[incompatible-call]
     const subscription = await subscribe({
       schema,
       document: parse(`
@@ -263,6 +263,7 @@ describe('Subscription Initialization Phase', () => {
         }
       `),
     });
+    invariant(isAsyncIterable(subscription));
 
     expect(subscription).to.have.property('next');
 
@@ -303,7 +304,6 @@ describe('Subscription Initialization Phase', () => {
       subscription: SubscriptionTypeMultiple,
     });
 
-    // $FlowFixMe[incompatible-call]
     const subscription = await subscribe({
       schema,
       document: parse(`
@@ -313,6 +313,7 @@ describe('Subscription Initialization Phase', () => {
         }
       `),
     });
+    invariant(isAsyncIterable(subscription));
 
     subscription.next(); // Ask for a result, but ignore it.
 
@@ -367,7 +368,6 @@ describe('Subscription Initialization Phase', () => {
     const pubsub = new EventEmitter();
 
     const { subscription } = await createSubscription(pubsub, emailSchema, ast);
-
     expect(subscription).to.deep.equal({
       errors: [
         {
@@ -552,10 +552,13 @@ describe('Subscription Publish Phase', () => {
     const { sendImportantEmail, subscription } = await createSubscription(
       pubsub,
     );
-    const second = await createSubscription(pubsub);
+    invariant(isAsyncIterable(subscription));
+
+    const secondSubscription = (await createSubscription(pubsub)).subscription;
+    invariant(isAsyncIterable(secondSubscription));
 
     const payload1 = subscription.next();
-    const payload2 = second.subscription.next();
+    const payload2 = secondSubscription.next();
 
     expect(
       sendImportantEmail({
@@ -593,6 +596,7 @@ describe('Subscription Publish Phase', () => {
     const { sendImportantEmail, subscription } = await createSubscription(
       pubsub,
     );
+    invariant(isAsyncIterable(subscription));
 
     // Wait for the next subscription payload.
     const payload = subscription.next();
@@ -683,6 +687,8 @@ describe('Subscription Publish Phase', () => {
     const { sendImportantEmail, subscription } = await createSubscription(
       pubsub,
     );
+    invariant(isAsyncIterable(subscription));
+
     let payload = subscription.next();
 
     // A new email arrives!
@@ -749,6 +755,8 @@ describe('Subscription Publish Phase', () => {
     const { sendImportantEmail, subscription } = await createSubscription(
       pubsub,
     );
+    invariant(isAsyncIterable(subscription));
+
     let payload = subscription.next();
 
     // A new email arrives!
@@ -803,6 +811,8 @@ describe('Subscription Publish Phase', () => {
     const { sendImportantEmail, subscription } = await createSubscription(
       pubsub,
     );
+    invariant(isAsyncIterable(subscription));
+
     let payload = subscription.next();
 
     // A new email arrives!
@@ -865,6 +875,8 @@ describe('Subscription Publish Phase', () => {
     const { sendImportantEmail, subscription } = await createSubscription(
       pubsub,
     );
+    invariant(isAsyncIterable(subscription));
+
     let payload = subscription.next();
 
     // A new email arrives!
@@ -941,7 +953,6 @@ describe('Subscription Publish Phase', () => {
       },
     );
 
-    // $FlowFixMe[incompatible-call]
     const subscription = await subscribe({
       schema: erroringEmailSchema,
       document: parse(`
@@ -954,6 +965,7 @@ describe('Subscription Publish Phase', () => {
         }
       `),
     });
+    invariant(isAsyncIterable(subscription));
 
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
@@ -1013,7 +1025,6 @@ describe('Subscription Publish Phase', () => {
       (email) => email,
     );
 
-    // $FlowFixMe[incompatible-call]
     const subscription = await subscribe({
       schema: erroringEmailSchema,
       document: parse(`
@@ -1026,6 +1037,7 @@ describe('Subscription Publish Phase', () => {
         }
       `),
     });
+    invariant(isAsyncIterable(subscription));
 
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
@@ -1067,7 +1079,6 @@ describe('Subscription Publish Phase', () => {
       (email) => email,
     );
 
-    // $FlowFixMe[incompatible-call]
     const subscription = await subscribe({
       schema: erroringEmailSchema,
       document: parse(`
@@ -1080,6 +1091,7 @@ describe('Subscription Publish Phase', () => {
         }
       `),
     });
+    invariant(isAsyncIterable(subscription));
 
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({

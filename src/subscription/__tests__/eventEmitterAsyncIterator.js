@@ -7,7 +7,7 @@ import type EventEmitter from 'events';
 export default function eventEmitterAsyncIterator(
   eventEmitter: EventEmitter,
   eventName: string,
-): AsyncIterator<mixed> {
+): AsyncGenerator<mixed, void, void> {
   const pullQueue = [];
   const pushQueue = [];
   let listening = true;
@@ -44,7 +44,7 @@ export default function eventEmitterAsyncIterator(
   }
 
   /* TODO: Flow doesn't support symbols as keys:
-     https://github.com/facebook/flow/issues/3258 */
+   https://github.com/facebook/flow/issues/3258 */
   return ({
     next() {
       return listening ? pullValue() : this.return();
@@ -60,5 +60,5 @@ export default function eventEmitterAsyncIterator(
     [Symbol.asyncIterator]() {
       return this;
     },
-  }: any);
+  }: $FlowFixMe);
 }
