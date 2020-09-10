@@ -1,5 +1,3 @@
-import EventEmitter from 'events';
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -19,7 +17,14 @@ import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
 import { createSourceEventStream, subscribe } from '../subscribe';
 
-import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
+import SimplePubSub from './simplePubSub';
+
+type Email = {|
+  from: string,
+  subject: string,
+  message: string,
+  unread: boolean,
+|};
 
 const EmailType = new GraphQLObjectType({
   name: 'Email',
@@ -100,41 +105,35 @@ const defaultSubscriptionAST = parse(`
   }
 `);
 
-async function createSubscription(
-  pubsub: EventEmitter,
+function createSubscription(
+  pubsub: SimplePubSub<Email>,
   schema: GraphQLSchema = emailSchema,
   document: DocumentNode = defaultSubscriptionAST,
 ) {
+  const emails = [
+    {
+      from: 'joe@graphql.org',
+      subject: 'Hello',
+      message: 'Hello World',
+      unread: false,
+    },
+  ];
+
   const data = {
-    inbox: {
-      emails: [
-        {
-          from: 'joe@graphql.org',
-          subject: 'Hello',
-          message: 'Hello World',
-          unread: false,
+    inbox: { emails },
+    importantEmail: pubsub.getSubscriber((newEmail) => {
+      emails.push(newEmail);
+
+      return {
+        importantEmail: {
+          email: newEmail,
+          inbox: data.inbox,
         },
-      ],
-    },
-    importantEmail() {
-      return eventEmitterAsyncIterator(pubsub, 'importantEmail');
-    },
+      };
+    }),
   };
 
-  function sendImportantEmail(newEmail: mixed) {
-    data.inbox.emails.push(newEmail);
-    // Returns true if the event was consumed by a subscriber.
-    return pubsub.emit('importantEmail', {
-      importantEmail: {
-        email: newEmail,
-        inbox: data.inbox,
-      },
-    });
-  }
-
-  // `subscribe` returns Promise<AsyncIterator | ExecutionResult>
-  const subscription = await subscribe({ schema, document, rootValue: data });
-  return { sendImportantEmail, subscription };
+  return subscribe({ schema, document, rootValue: data });
 }
 
 async function expectPromiseToThrow(
@@ -174,7 +173,7 @@ describe('Subscription Initialization Phase', () => {
   });
 
   it('accepts multiple subscription fields defined in schema', async () => {
-    const pubsub = new EventEmitter();
+    const pubsub = new SimplePubSub();
     const SubscriptionTypeMultiple = new GraphQLObjectType({
       name: 'Subscription',
       fields: {
@@ -188,13 +187,10 @@ describe('Subscription Initialization Phase', () => {
       subscription: SubscriptionTypeMultiple,
     });
 
-    const { subscription, sendImportantEmail } = await createSubscription(
-      pubsub,
-      testSchema,
-    );
+    const subscription = await createSubscription(pubsub, testSchema);
     invariant(isAsyncIterable(subscription));
 
-    sendImportantEmail({
+    pubsub.emit({
       from: 'yuzhi@graphql.org',
       subject: 'Alright',
       message: 'Tests are good',
@@ -205,7 +201,7 @@ describe('Subscription Initialization Phase', () => {
   });
 
   it('accepts type definition with sync subscribe function', async () => {
-    const pubsub = new EventEmitter();
+    const pubsub = new SimplePubSub();
     const schema = new GraphQLSchema({
       query: QueryType,
       subscription: new GraphQLObjectType({
@@ -213,8 +209,7 @@ describe('Subscription Initialization Phase', () => {
         fields: {
           importantEmail: {
             type: GraphQLString,
-            subscribe: () =>
-              eventEmitterAsyncIterator(pubsub, 'importantEmail'),
+            subscribe: () => pubsub.getSubscriber(),
           },
         },
       }),
@@ -230,15 +225,13 @@ describe('Subscription Initialization Phase', () => {
     });
     invariant(isAsyncIterable(subscription));
 
-    pubsub.emit('importantEmail', {
-      importantEmail: {},
-    });
+    pubsub.emit({ importantEmail: {} });
 
     await subscription.next();
   });
 
   it('accepts type definition with async subscribe function', async () => {
-    const pubsub = new EventEmitter();
+    const pubsub = new SimplePubSub();
     const schema = new GraphQLSchema({
       query: QueryType,
       subscription: new GraphQLObjectType({
@@ -248,7 +241,7 @@ describe('Subscription Initialization Phase', () => {
             type: GraphQLString,
             subscribe: async () => {
               await resolveOnNextTick();
-              return eventEmitterAsyncIterator(pubsub, 'importantEmail');
+              return pubsub.getSubscriber();
             },
           },
         },
@@ -267,10 +260,7 @@ describe('Subscription Initialization Phase', () => {
 
     expect(subscription).to.have.property('next');
 
-    pubsub.emit('importantEmail', {
-      importantEmail: {},
-    });
-
+    pubsub.emit({ importantEmail: {} });
     await subscription.next();
   });
 
@@ -285,7 +275,7 @@ describe('Subscription Initialization Phase', () => {
           type: EmailEventType,
           subscribe() {
             didResolveImportantEmail = true;
-            return eventEmitterAsyncIterator(new EventEmitter(), 'event');
+            return new SimplePubSub().getSubscriber();
           },
         },
         nonImportantEmail: {
@@ -293,7 +283,7 @@ describe('Subscription Initialization Phase', () => {
           // istanbul ignore next (Shouldn't be called)
           subscribe() {
             didResolveNonImportantEmail = true;
-            return eventEmitterAsyncIterator(new EventEmitter(), 'event');
+            return new SimplePubSub().getSubscriber();
           },
         },
       },
@@ -365,9 +355,9 @@ describe('Subscription Initialization Phase', () => {
       }
     `);
 
-    const pubsub = new EventEmitter();
+    const pubsub = new SimplePubSub();
+    const subscription = await createSubscription(pubsub, emailSchema, ast);
 
-    const { subscription } = await createSubscription(pubsub, emailSchema, ast);
     expect(subscription).to.deep.equal({
       errors: [
         {
@@ -403,7 +393,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const pubsub = new EventEmitter();
+    const pubsub = new SimplePubSub();
 
     await expectPromiseToThrow(
       () => createSubscription(pubsub, invalidEmailSchema),
@@ -544,24 +534,22 @@ describe('Subscription Initialization Phase', () => {
   });
 });
 
-// Once a subscription returns a valid AsyncIterator, it can still yield
-// errors.
+// Once a subscription returns a valid AsyncIterator, it can still yield errors.
 describe('Subscription Publish Phase', () => {
   it('produces a payload for multiple subscribe in same subscription', async () => {
-    const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = await createSubscription(
-      pubsub,
-    );
+    const pubsub = new SimplePubSub();
+
+    const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
-    const secondSubscription = (await createSubscription(pubsub)).subscription;
+    const secondSubscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(secondSubscription));
 
     const payload1 = subscription.next();
     const payload2 = secondSubscription.next();
 
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Alright',
         message: 'Tests are good',
@@ -592,10 +580,8 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('produces a payload per subscription event', async () => {
-    const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = await createSubscription(
-      pubsub,
-    );
+    const pubsub = new SimplePubSub();
+    const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
     // Wait for the next subscription payload.
@@ -603,7 +589,7 @@ describe('Subscription Publish Phase', () => {
 
     // A new email arrives!
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Alright',
         message: 'Tests are good',
@@ -632,7 +618,7 @@ describe('Subscription Publish Phase', () => {
 
     // Another new email arrives, before subscription.next() is called.
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'hyo@graphql.org',
         subject: 'Tools',
         message: 'I <3 making things',
@@ -667,7 +653,7 @@ describe('Subscription Publish Phase', () => {
 
     // Which may result in disconnecting upstream services as well.
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'adam@graphql.org',
         subject: 'Important',
         message: 'Read me please',
@@ -683,17 +669,15 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('produces a payload when there are multiple events', async () => {
-    const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = await createSubscription(
-      pubsub,
-    );
+    const pubsub = new SimplePubSub();
+    const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
     let payload = subscription.next();
 
     // A new email arrives!
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Alright',
         message: 'Tests are good',
@@ -723,7 +707,7 @@ describe('Subscription Publish Phase', () => {
 
     // A new email arrives!
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Alright 2',
         message: 'Tests are good 2',
@@ -751,17 +735,15 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should not trigger when subscription is already done', async () => {
-    const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = await createSubscription(
-      pubsub,
-    );
+    const pubsub = new SimplePubSub();
+    const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
     let payload = subscription.next();
 
     // A new email arrives!
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Alright',
         message: 'Tests are good',
@@ -792,7 +774,7 @@ describe('Subscription Publish Phase', () => {
 
     // A new email arrives!
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Alright 2',
         message: 'Tests are good 2',
@@ -807,17 +789,15 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should not trigger when subscription is thrown', async () => {
-    const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = await createSubscription(
-      pubsub,
-    );
+    const pubsub = new SimplePubSub();
+    const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
     let payload = subscription.next();
 
     // A new email arrives!
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Alright',
         message: 'Tests are good',
@@ -856,7 +836,7 @@ describe('Subscription Publish Phase', () => {
 
     // A new email arrives!
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Alright 2',
         message: 'Tests are good 2',
@@ -871,17 +851,15 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('event order is correct for multiple publishes', async () => {
-    const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = await createSubscription(
-      pubsub,
-    );
+    const pubsub = new SimplePubSub();
+    const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
     let payload = subscription.next();
 
     // A new email arrives!
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Message',
         message: 'Tests are good',
@@ -891,7 +869,7 @@ describe('Subscription Publish Phase', () => {
 
     // A new email arrives!
     expect(
-      sendImportantEmail({
+      pubsub.emit({
         from: 'yuzhi@graphql.org',
         subject: 'Message 2',
         message: 'Tests are good 2',
