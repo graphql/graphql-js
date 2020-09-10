@@ -44,7 +44,9 @@ const printDocASTReducer: any = {
   Field: ({ alias, name, arguments: args, directives, selectionSet }) =>
     join(
       [
-        wrap('', alias, ': ') + name + wrap('(', join(args, ', '), ')'),
+        wrap('', alias, ': ') +
+          name +
+          wrap('(\n', indent(join(args, ',\n')), '\n)'),
         join(directives, ' '),
         selectionSet,
       ],
@@ -89,7 +91,7 @@ const printDocASTReducer: any = {
   NullValue: () => 'null',
   EnumValue: ({ value }) => value,
   ListValue: ({ values }) => '[' + join(values, ', ') + ']',
-  ObjectValue: ({ fields }) => '{' + join(fields, ', ') + '}',
+  ObjectValue: ({ fields }) => block(fields),
   ObjectField: ({ name, value }) => name + ': ' + value,
 
   // Directive
