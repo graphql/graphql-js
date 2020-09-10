@@ -1,19 +1,16 @@
-import EventEmitter from 'events';
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
+import SimplePubSub from './simplePubSub';
 
-describe('eventEmitterAsyncIterator', () => {
+describe('SimplePubSub', () => {
   it('subscribe async-iterator mock', async () => {
-    // Create an AsyncGenerator from an EventEmitter
-    const emitter = new EventEmitter();
-    const iterator = eventEmitterAsyncIterator(emitter, 'publish');
+    const pubsub = new SimplePubSub();
+    const iterator = pubsub.getSubscriber();
 
     // Queue up publishes
-    expect(emitter.emit('publish', 'Apple')).to.equal(true);
-    expect(emitter.emit('publish', 'Banana')).to.equal(true);
+    expect(pubsub.emit('Apple')).to.equal(true);
+    expect(pubsub.emit('Banana')).to.equal(true);
 
     // Read payloads
     expect(await iterator.next()).to.deep.equal({
@@ -30,8 +27,8 @@ describe('eventEmitterAsyncIterator', () => {
     const i4 = iterator.next().then((x) => x);
 
     // Publish
-    expect(emitter.emit('publish', 'Coconut')).to.equal(true);
-    expect(emitter.emit('publish', 'Durian')).to.equal(true);
+    expect(pubsub.emit('Coconut')).to.equal(true);
+    expect(pubsub.emit('Durian')).to.equal(true);
 
     // Await out of order to get correct results
     expect(await i4).to.deep.equal({ done: false, value: 'Durian' });
@@ -40,11 +37,11 @@ describe('eventEmitterAsyncIterator', () => {
     // Read ahead
     const i5 = iterator.next().then((x) => x);
 
-    // Terminate emitter
+    // Terminate queue
     await iterator.return();
 
     // Publish is not caught after terminate
-    expect(emitter.emit('publish', 'Fig')).to.equal(false);
+    expect(pubsub.emit('Fig')).to.equal(false);
 
     // Find that cancelled read-ahead got a "done" result
     expect(await i5).to.deep.equal({ done: true, value: undefined });
