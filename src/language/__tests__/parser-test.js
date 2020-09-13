@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-nodejs-modules
 import { inspect as nodeInspect } from 'util';
 
 import { expect } from 'chai';
@@ -12,7 +13,7 @@ import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseType } from '../parser';
 
-import { kitchenSinkQuery } from '../../__fixtures__/index';
+import kitchenSinkQuery from '../../__fixtures__/kitchenSinkQuery';
 
 import toJSONDeep from './toJSONDeep';
 

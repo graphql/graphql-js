@@ -1,4 +1,5 @@
-{
+/* cSpell:disable */
+const bigSchemaIntrospectionResult: any = JSON.parse(`{
   "data": {
     "__schema": {
       "queryType": {
@@ -12,7 +13,7 @@
         {
           "kind": "SCALAR",
           "name": "Boolean",
-          "description": "Represents `true` or `false` values.",
+          "description": "Represents \`true\` or \`false\` values.",
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -746,7 +747,7 @@
                     "name": "SecurityAdvisoryOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"UPDATED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"UPDATED_AT",direction:"DESC"}"
                 },
                 {
                   "name": "identifier",
@@ -870,7 +871,7 @@
                     "name": "SecurityVulnerabilityOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"UPDATED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"UPDATED_AT",direction:"DESC"}"
                 },
                 {
                   "name": "ecosystem",
@@ -1530,7 +1531,7 @@
         {
           "kind": "SCALAR",
           "name": "ID",
-          "description": "Represents a unique identifier that is Base64 obfuscated. It is often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"VXNlci0xMA==\"`) or integer (such as `4`) input value will be accepted as an ID.",
+          "description": "Represents a unique identifier that is Base64 obfuscated. It is often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as \`"VXNlci0xMA=="\`) or integer (such as \`4\`) input value will be accepted as an ID.",
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -2849,7 +2850,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "ownerAffiliations",
@@ -2863,7 +2864,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "isLocked",
@@ -3298,7 +3299,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "ownerAffiliations",
@@ -3312,7 +3313,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "isLocked",
@@ -3762,7 +3763,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\", \"ORGANIZATION_MEMBER\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR", "ORGANIZATION_MEMBER"]"
                 },
                 {
                   "name": "ownerAffiliations",
@@ -3776,7 +3777,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "isLocked",
@@ -4515,7 +4516,7 @@
                     "name": "DeploymentOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"CREATED_AT\",direction:\"ASC\"}"
+                  "defaultValue": "{field:"CREATED_AT",direction:"ASC"}"
                 },
                 {
                   "name": "after",
@@ -4662,7 +4663,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "ownerAffiliations",
@@ -4676,7 +4677,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "isLocked",
@@ -5877,7 +5878,7 @@
               "args": [
                 {
                   "name": "qualifiedName",
-                  "description": "The ref to retrieve. Fully qualified matches are checked in order (`refs/heads/master`) before falling back onto checks for short name matches (`master`).",
+                  "description": "The ref to retrieve. Fully qualified matches are checked in order (\`refs/heads/master\`) before falling back onto checks for short name matches (\`master\`).",
                   "type": {
                     "kind": "NON_NULL",
                     "name": null,
@@ -5944,7 +5945,7 @@
                 },
                 {
                   "name": "refPrefix",
-                  "description": "A ref name prefix like `refs/heads/`, `refs/tags/`, etc.",
+                  "description": "A ref name prefix like \`refs/heads/\`, \`refs/tags/\`, etc.",
                   "type": {
                     "kind": "NON_NULL",
                     "name": null,
@@ -6761,7 +6762,7 @@
             },
             {
               "name": "closed",
-              "description": "`true` if the object is closed (definition of closed may depend on type)",
+              "description": "\`true\` if the object is closed (definition of closed may depend on type)",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -7004,7 +7005,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"ARCHIVED\", \"NOT_ARCHIVED\"]"
+                  "defaultValue": "["ARCHIVED", "NOT_ARCHIVED"]"
                 }
               ],
               "type": {
@@ -7128,7 +7129,7 @@
           "fields": [
             {
               "name": "closed",
-              "description": "`true` if the object is closed (definition of closed may depend on type)",
+              "description": "\`true\` if the object is closed (definition of closed may depend on type)",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -7457,7 +7458,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"ARCHIVED\", \"NOT_ARCHIVED\"]"
+                  "defaultValue": "["ARCHIVED", "NOT_ARCHIVED"]"
                 }
               ],
               "type": {
@@ -8166,7 +8167,7 @@
             },
             {
               "name": "closed",
-              "description": "`true` if the object is closed (definition of closed may depend on type)",
+              "description": "\`true\` if the object is closed (definition of closed may depend on type)",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -8404,7 +8405,7 @@
             },
             {
               "name": "locked",
-              "description": "`true` if the object is locked",
+              "description": "\`true\` if the object is locked",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -8559,7 +8560,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"ARCHIVED\", \"NOT_ARCHIVED\"]"
+                  "defaultValue": "["ARCHIVED", "NOT_ARCHIVED"]"
                 }
               ],
               "type": {
@@ -8737,7 +8738,7 @@
               "args": [
                 {
                   "name": "since",
-                  "description": "Allows filtering timeline events by a `since` timestamp.",
+                  "description": "Allows filtering timeline events by a \`since\` timestamp.",
                   "type": {
                     "kind": "SCALAR",
                     "name": "DateTime",
@@ -8804,7 +8805,7 @@
               "args": [
                 {
                   "name": "since",
-                  "description": "Filter timeline items by a `since` timestamp.",
+                  "description": "Filter timeline items by a \`since\` timestamp.",
                   "type": {
                     "kind": "SCALAR",
                     "name": "DateTime",
@@ -10851,20 +10852,20 @@
         {
           "kind": "ENUM",
           "name": "OrderDirection",
-          "description": "Possible directions in which to order a list of items when provided an `orderBy` argument.",
+          "description": "Possible directions in which to order a list of items when provided an \`orderBy\` argument.",
           "fields": null,
           "inputFields": null,
           "interfaces": null,
           "enumValues": [
             {
               "name": "ASC",
-              "description": "Specifies an ascending order for a given `orderBy` argument.",
+              "description": "Specifies an ascending order for a given \`orderBy\` argument.",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
               "name": "DESC",
-              "description": "Specifies a descending order for a given `orderBy` argument.",
+              "description": "Specifies a descending order for a given \`orderBy\` argument.",
               "isDeprecated": false,
               "deprecationReason": null
             }
@@ -10902,7 +10903,7 @@
           "inputFields": [
             {
               "name": "assignee",
-              "description": "List issues assigned to given name. Pass in `null` for issues with no assigned user, and `*` for issues assigned to any user.",
+              "description": "List issues assigned to given name. Pass in \`null\` for issues with no assigned user, and \`*\` for issues assigned to any user.",
               "type": {
                 "kind": "SCALAR",
                 "name": "String",
@@ -10950,7 +10951,7 @@
             },
             {
               "name": "milestone",
-              "description": "List issues by given milestone argument. If an string representation of an integer is passed, it should refer to a milestone by its number field. Pass in `null` for issues with no milestone, and `*` for issues that are assigned to any milestone.",
+              "description": "List issues by given milestone argument. If an string representation of an integer is passed, it should refer to a milestone by its number field. Pass in \`null\` for issues with no milestone, and \`*\` for issues that are assigned to any milestone.",
               "type": {
                 "kind": "SCALAR",
                 "name": "String",
@@ -11355,7 +11356,7 @@
             },
             {
               "name": "closed",
-              "description": "`true` if the pull request is closed",
+              "description": "\`true\` if the pull request is closed",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -11803,7 +11804,7 @@
             },
             {
               "name": "locked",
-              "description": "`true` if the pull request is locked",
+              "description": "\`true\` if the pull request is locked",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -12004,7 +12005,7 @@
             },
             {
               "name": "potentialMergeCommit",
-              "description": "The commit that GitHub automatically generated to test if this pull request could be merged. This field will not return a value if the pull request is merged, or if the test merge commit is still being generated. See the `mergeable` field for more details on the mergeability of the pull request.",
+              "description": "The commit that GitHub automatically generated to test if this pull request could be merged. This field will not return a value if the pull request is merged, or if the test merge commit is still being generated. See the \`mergeable\` field for more details on the mergeability of the pull request.",
               "args": [],
               "type": {
                 "kind": "OBJECT",
@@ -12070,7 +12071,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"ARCHIVED\", \"NOT_ARCHIVED\"]"
+                  "defaultValue": "["ARCHIVED", "NOT_ARCHIVED"]"
                 }
               ],
               "type": {
@@ -12491,7 +12492,7 @@
               "args": [
                 {
                   "name": "since",
-                  "description": "Allows filtering timeline events by a `since` timestamp.",
+                  "description": "Allows filtering timeline events by a \`since\` timestamp.",
                   "type": {
                     "kind": "SCALAR",
                     "name": "DateTime",
@@ -12558,7 +12559,7 @@
               "args": [
                 {
                   "name": "since",
-                  "description": "Filter timeline items by a `since` timestamp.",
+                  "description": "Filter timeline items by a \`since\` timestamp.",
                   "type": {
                     "kind": "SCALAR",
                     "name": "DateTime",
@@ -12950,7 +12951,7 @@
             },
             {
               "name": "locked",
-              "description": "`true` if the object is locked",
+              "description": "\`true\` if the object is locked",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -13343,7 +13344,7 @@
                 }
               },
               "isDeprecated": true,
-              "deprecationReason": "`hasApprovalBeenRequested` will be removed. Use `isVerificationPendingFromDraft` instead. Removal on 2019-10-01 UTC."
+              "deprecationReason": "\`hasApprovalBeenRequested\` will be removed. Use \`isVerificationPendingFromDraft\` instead. Removal on 2019-10-01 UTC."
             },
             {
               "name": "hasPublishedFreeTrialPlans",
@@ -13463,7 +13464,7 @@
                 }
               },
               "isDeprecated": true,
-              "deprecationReason": "`isApproved` will be removed. Use `isPublic` instead. Removal on 2019-10-01 UTC."
+              "deprecationReason": "\`isApproved\` will be removed. Use \`isPublic\` instead. Removal on 2019-10-01 UTC."
             },
             {
               "name": "isArchived",
@@ -13495,7 +13496,7 @@
                 }
               },
               "isDeprecated": true,
-              "deprecationReason": "`isDelisted` will be removed. Use `isArchived` instead. Removal on 2019-10-01 UTC."
+              "deprecationReason": "\`isDelisted\` will be removed. Use \`isArchived\` instead. Removal on 2019-10-01 UTC."
             },
             {
               "name": "isDraft",
@@ -14331,7 +14332,7 @@
                     "name": "UserStatusOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"UPDATED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"UPDATED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -14718,7 +14719,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "ownerAffiliations",
@@ -14732,7 +14733,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "isLocked",
@@ -14987,7 +14988,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "ownerAffiliations",
@@ -15001,7 +15002,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "isLocked",
@@ -15651,7 +15652,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "ownerAffiliations",
@@ -15665,7 +15666,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "isLocked",
@@ -15766,7 +15767,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "ownerAffiliations",
@@ -15780,7 +15781,7 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "[\"OWNER\", \"COLLABORATOR\"]"
+                  "defaultValue": "["OWNER", "COLLABORATOR"]"
                 },
                 {
                   "name": "isLocked",
@@ -16260,7 +16261,7 @@
                     "name": "UserStatusOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"UPDATED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"UPDATED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -21873,7 +21874,7 @@
             },
             {
               "name": "prefix",
-              "description": "The ref's prefix, such as `refs/heads/` or `refs/tags/`.",
+              "description": "The ref's prefix, such as \`refs/heads/\` or \`refs/tags/\`.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -22404,7 +22405,7 @@
                     "name": "PullRequestOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"CREATED_AT\",direction:\"ASC\"}"
+                  "defaultValue": "{field:"CREATED_AT",direction:"ASC"}"
                 }
               ],
               "type": {
@@ -22461,7 +22462,7 @@
             },
             {
               "name": "blame",
-              "description": "Fetches `git blame` information.",
+              "description": "Fetches \`git blame\` information.",
               "args": [
                 {
                   "name": "path",
@@ -22685,7 +22686,7 @@
                     "name": "DeploymentOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"CREATED_AT\",direction:\"ASC\"}"
+                  "defaultValue": "{field:"CREATED_AT",direction:"ASC"}"
                 },
                 {
                   "name": "after",
@@ -22738,7 +22739,7 @@
             },
             {
               "name": "history",
-              "description": "The linear commit history starting from (and including) this commit, in the same order as `git log`.",
+              "description": "The linear commit history starting from (and including) this commit, in the same order as \`git log\`.",
               "args": [
                 {
                   "name": "after",
@@ -24710,7 +24711,7 @@
             },
             {
               "name": "state",
-              "description": "The state of this signature. `VALID` if signature is valid and verified by GitHub, otherwise represents reason why signature is considered invalid.",
+              "description": "The state of this signature. \`VALID\` if signature is valid and verified by GitHub, otherwise represents reason why signature is considered invalid.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -27756,7 +27757,7 @@
                     "name": "UserStatusOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"UPDATED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"UPDATED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -30455,7 +30456,7 @@
           "fields": [
             {
               "name": "closed",
-              "description": "`true` if the object is closed (definition of closed may depend on type)",
+              "description": "\`true\` if the object is closed (definition of closed may depend on type)",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -34219,7 +34220,7 @@
         {
           "kind": "OBJECT",
           "name": "ClosedEvent",
-          "description": "Represents a 'closed' event on any `Closable`.",
+          "description": "Represents a 'closed' event on any \`Closable\`.",
           "fields": [
             {
               "name": "actor",
@@ -34345,7 +34346,7 @@
         {
           "kind": "UNION",
           "name": "Closer",
-          "description": "The object which triggered a `ClosedEvent`.",
+          "description": "The object which triggered a \`ClosedEvent\`.",
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -34366,7 +34367,7 @@
         {
           "kind": "OBJECT",
           "name": "ReopenedEvent",
-          "description": "Represents a 'reopened' event on any `Closable`.",
+          "description": "Represents a 'reopened' event on any \`Closable\`.",
           "fields": [
             {
               "name": "actor",
@@ -34443,7 +34444,7 @@
         {
           "kind": "OBJECT",
           "name": "SubscribedEvent",
-          "description": "Represents a 'subscribed' event on a given `Subscribable`.",
+          "description": "Represents a 'subscribed' event on a given \`Subscribable\`.",
           "fields": [
             {
               "name": "actor",
@@ -34520,7 +34521,7 @@
         {
           "kind": "OBJECT",
           "name": "UnsubscribedEvent",
-          "description": "Represents an 'unsubscribed' event on a given `Subscribable`.",
+          "description": "Represents an 'unsubscribed' event on a given \`Subscribable\`.",
           "fields": [
             {
               "name": "actor",
@@ -34613,7 +34614,7 @@
             },
             {
               "name": "commit",
-              "description": "Identifies the commit associated with the `merge` event.",
+              "description": "Identifies the commit associated with the \`merge\` event.",
               "args": [],
               "type": {
                 "kind": "OBJECT",
@@ -34657,7 +34658,7 @@
             },
             {
               "name": "mergeRef",
-              "description": "Identifies the Ref associated with the `merge` event.",
+              "description": "Identifies the Ref associated with the \`merge\` event.",
               "args": [],
               "type": {
                 "kind": "OBJECT",
@@ -34669,7 +34670,7 @@
             },
             {
               "name": "mergeRefName",
-              "description": "Identifies the name of the Ref associated with the `merge` event.",
+              "description": "Identifies the name of the Ref associated with the \`merge\` event.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -34751,7 +34752,7 @@
         {
           "kind": "OBJECT",
           "name": "ReferencedEvent",
-          "description": "Represents a 'referenced' event on a given `ReferencedSubject`.",
+          "description": "Represents a 'referenced' event on a given \`ReferencedSubject\`.",
           "fields": [
             {
               "name": "actor",
@@ -35329,7 +35330,7 @@
             },
             {
               "name": "labelable",
-              "description": "Identifies the `Labelable` associated with the event.",
+              "description": "Identifies the \`Labelable\` associated with the event.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -35422,7 +35423,7 @@
             },
             {
               "name": "labelable",
-              "description": "Identifies the `Labelable` associated with the event.",
+              "description": "Identifies the \`Labelable\` associated with the event.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -36196,7 +36197,7 @@
             },
             {
               "name": "headRef",
-              "description": "Identifies the Ref associated with the `head_ref_deleted` event.",
+              "description": "Identifies the Ref associated with the \`head_ref_deleted\` event.",
               "args": [],
               "type": {
                 "kind": "OBJECT",
@@ -36208,7 +36209,7 @@
             },
             {
               "name": "headRefName",
-              "description": "Identifies the name of the Ref associated with the `head_ref_deleted` event.",
+              "description": "Identifies the name of the Ref associated with the \`head_ref_deleted\` event.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -36846,7 +36847,7 @@
                 }
               },
               "isDeprecated": true,
-              "deprecationReason": "`message` is being removed because it not nullable, whereas the underlying field is optional. Use `dismissalMessage` instead. Removal on 2019-07-01 UTC."
+              "deprecationReason": "\`message\` is being removed because it not nullable, whereas the underlying field is optional. Use \`dismissalMessage\` instead. Removal on 2019-07-01 UTC."
             },
             {
               "name": "messageHtml",
@@ -36862,7 +36863,7 @@
                 }
               },
               "isDeprecated": true,
-              "deprecationReason": "`messageHtml` is being removed because it not nullable, whereas the underlying field is optional. Use `dismissalMessageHTML` instead. Removal on 2019-07-01 UTC."
+              "deprecationReason": "\`messageHtml\` is being removed because it not nullable, whereas the underlying field is optional. Use \`dismissalMessageHTML\` instead. Removal on 2019-07-01 UTC."
             },
             {
               "name": "previousReviewState",
@@ -37122,7 +37123,7 @@
             },
             {
               "name": "filteredCount",
-              "description": "Identifies the count of items after applying `before` and `after` filters.",
+              "description": "Identifies the count of items after applying \`before\` and \`after\` filters.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -37154,7 +37155,7 @@
             },
             {
               "name": "pageCount",
-              "description": "Identifies the count of items after applying `before`/`after` filters and `first`/`last`/`skip` slicing.",
+              "description": "Identifies the count of items after applying \`before\`/\`after\` filters and \`first\`/\`last\`/\`skip\` slicing.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -38613,7 +38614,7 @@
             },
             {
               "name": "CLOSED_EVENT",
-              "description": "Represents a 'closed' event on any `Closable`.",
+              "description": "Represents a 'closed' event on any \`Closable\`.",
               "isDeprecated": false,
               "deprecationReason": null
             },
@@ -38673,7 +38674,7 @@
             },
             {
               "name": "REFERENCED_EVENT",
-              "description": "Represents a 'referenced' event on a given `ReferencedSubject`.",
+              "description": "Represents a 'referenced' event on a given \`ReferencedSubject\`.",
               "isDeprecated": false,
               "deprecationReason": null
             },
@@ -38691,13 +38692,13 @@
             },
             {
               "name": "REOPENED_EVENT",
-              "description": "Represents a 'reopened' event on any `Closable`.",
+              "description": "Represents a 'reopened' event on any \`Closable\`.",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
               "name": "SUBSCRIBED_EVENT",
-              "description": "Represents a 'subscribed' event on a given `Subscribable`.",
+              "description": "Represents a 'subscribed' event on a given \`Subscribable\`.",
               "isDeprecated": false,
               "deprecationReason": null
             },
@@ -38739,7 +38740,7 @@
             },
             {
               "name": "UNSUBSCRIBED_EVENT",
-              "description": "Represents an 'unsubscribed' event on a given `Subscribable`.",
+              "description": "Represents an 'unsubscribed' event on a given \`Subscribable\`.",
               "isDeprecated": false,
               "deprecationReason": null
             }
@@ -39071,7 +39072,7 @@
             },
             {
               "name": "filteredCount",
-              "description": "Identifies the count of items after applying `before` and `after` filters.",
+              "description": "Identifies the count of items after applying \`before\` and \`after\` filters.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -39103,7 +39104,7 @@
             },
             {
               "name": "pageCount",
-              "description": "Identifies the count of items after applying `before`/`after` filters and `first`/`last`/`skip` slicing.",
+              "description": "Identifies the count of items after applying \`before\`/\`after\` filters and \`first\`/\`last\`/\`skip\` slicing.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -39385,7 +39386,7 @@
             },
             {
               "name": "CLOSED_EVENT",
-              "description": "Represents a 'closed' event on any `Closable`.",
+              "description": "Represents a 'closed' event on any \`Closable\`.",
               "isDeprecated": false,
               "deprecationReason": null
             },
@@ -39445,7 +39446,7 @@
             },
             {
               "name": "REFERENCED_EVENT",
-              "description": "Represents a 'referenced' event on a given `ReferencedSubject`.",
+              "description": "Represents a 'referenced' event on a given \`ReferencedSubject\`.",
               "isDeprecated": false,
               "deprecationReason": null
             },
@@ -39463,13 +39464,13 @@
             },
             {
               "name": "REOPENED_EVENT",
-              "description": "Represents a 'reopened' event on any `Closable`.",
+              "description": "Represents a 'reopened' event on any \`Closable\`.",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
               "name": "SUBSCRIBED_EVENT",
-              "description": "Represents a 'subscribed' event on a given `Subscribable`.",
+              "description": "Represents a 'subscribed' event on a given \`Subscribable\`.",
               "isDeprecated": false,
               "deprecationReason": null
             },
@@ -39511,7 +39512,7 @@
             },
             {
               "name": "UNSUBSCRIBED_EVENT",
-              "description": "Represents an 'unsubscribed' event on a given `Subscribable`.",
+              "description": "Represents an 'unsubscribed' event on a given \`Subscribable\`.",
               "isDeprecated": false,
               "deprecationReason": null
             }
@@ -41890,7 +41891,7 @@
                     "name": "SecurityVulnerabilityOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"UPDATED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"UPDATED_AT",direction:"DESC"}"
                 },
                 {
                   "name": "ecosystem",
@@ -42309,7 +42310,7 @@
             },
             {
               "name": "vulnerableVersionRange",
-              "description": "A string that describes the vulnerable package versions.\nThis string follows a basic syntax with a few forms.\n+ `= 0.2.0` denotes a single vulnerable version.\n+ `<= 1.0.8` denotes a version range up to and including the specified version\n+ `< 0.1.11` denotes a version range up to, but excluding, the specified version\n+ `>= 4.3.0, < 4.3.5` denotes a version range with a known minimum and maximum version.\n+ `>= 0.0.1` denotes a version range with a known minimum, but no known maximum\n",
+              "description": "A string that describes the vulnerable package versions.\nThis string follows a basic syntax with a few forms.\n+ \`= 0.2.0\` denotes a single vulnerable version.\n+ \`<= 1.0.8\` denotes a version range up to and including the specified version\n+ \`< 0.1.11\` denotes a version range up to, but excluding, the specified version\n+ \`>= 4.3.0, < 4.3.5\` denotes a version range with a known minimum and maximum version.\n+ \`>= 0.0.1\` denotes a version range with a known minimum, but no known maximum\n",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -42750,7 +42751,7 @@
               "args": [
                 {
                   "name": "ignoreTimeRange",
-                  "description": "If true, the first issue will be returned even if it was opened outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** `ignoreTimeRange` will be removed. Use a `ContributionsCollection` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
+                  "description": "If true, the first issue will be returned even if it was opened outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** \`ignoreTimeRange\` will be removed. Use a \`ContributionsCollection\` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
                   "type": {
                     "kind": "SCALAR",
                     "name": "Boolean",
@@ -42773,7 +42774,7 @@
               "args": [
                 {
                   "name": "ignoreTimeRange",
-                  "description": "If true, the first pull request will be returned even if it was opened outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** `ignoreTimeRange` will be removed. Use a `ContributionsCollection` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
+                  "description": "If true, the first pull request will be returned even if it was opened outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** \`ignoreTimeRange\` will be removed. Use a \`ContributionsCollection\` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
                   "type": {
                     "kind": "SCALAR",
                     "name": "Boolean",
@@ -42796,7 +42797,7 @@
               "args": [
                 {
                   "name": "ignoreTimeRange",
-                  "description": "If true, the first repository will be returned even if it was opened outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** `ignoreTimeRange` will be removed. Use a `ContributionsCollection` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
+                  "description": "If true, the first repository will be returned even if it was opened outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** \`ignoreTimeRange\` will be removed. Use a \`ContributionsCollection\` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
                   "type": {
                     "kind": "SCALAR",
                     "name": "Boolean",
@@ -42949,7 +42950,7 @@
                     "name": "ContributionOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"OCCURRED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"OCCURRED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -43025,7 +43026,7 @@
               "args": [
                 {
                   "name": "ignoreTimeRange",
-                  "description": "If true, the contribution will be returned even if the user signed up outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** `ignoreTimeRange` will be removed. Use a `ContributionsCollection` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
+                  "description": "If true, the contribution will be returned even if the user signed up outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** \`ignoreTimeRange\` will be removed. Use a \`ContributionsCollection\` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
                   "type": {
                     "kind": "SCALAR",
                     "name": "Boolean",
@@ -43174,7 +43175,7 @@
                     "name": "ContributionOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"OCCURRED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"OCCURRED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -43296,7 +43297,7 @@
                     "name": "ContributionOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"OCCURRED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"OCCURRED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -43408,7 +43409,7 @@
                     "name": "ContributionOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"OCCURRED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"OCCURRED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -45355,7 +45356,7 @@
                     "name": "ContributionOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"OCCURRED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"OCCURRED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -45449,7 +45450,7 @@
                     "name": "CommitContributionOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"OCCURRED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"OCCURRED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -45994,7 +45995,7 @@
                     "name": "ContributionOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"OCCURRED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"OCCURRED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -46088,7 +46089,7 @@
                     "name": "ContributionOrder",
                     "ofType": null
                   },
-                  "defaultValue": "{field:\"OCCURRED_AT\",direction:\"DESC\"}"
+                  "defaultValue": "{field:"OCCURRED_AT",direction:"DESC"}"
                 }
               ],
               "type": {
@@ -47117,7 +47118,7 @@
           "fields": [
             {
               "name": "gitHubServicesSha",
-              "description": "Returns a String that's a SHA of `github-services`",
+              "description": "Returns a String that's a SHA of \`github-services\`",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -47586,7 +47587,7 @@
             },
             {
               "name": "addProjectCard",
-              "description": "Adds a card to a ProjectColumn. Either `contentId` or `note` must be provided but **not** both.",
+              "description": "Adds a card to a ProjectColumn. Either \`contentId\` or \`note\` must be provided but **not** both.",
               "args": [
                 {
                   "name": "input",
@@ -52463,7 +52464,7 @@
             },
             {
               "name": "headRefName",
-              "description": "The name of the branch where your changes are implemented. For cross-repository pull requests\nin the same network, namespace `head_ref_name` with a user like this: `username:branch`.\n",
+              "description": "The name of the branch where your changes are implemented. For cross-repository pull requests\nin the same network, namespace \`head_ref_name\` with a user like this: \`username:branch\`.\n",
               "type": {
                 "kind": "NON_NULL",
                 "name": null,
@@ -55472,7 +55473,7 @@
         {
           "kind": "OBJECT",
           "name": "__Type",
-          "description": "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name and description, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.",
+          "description": "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the \`__TypeKind\` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name and description, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.",
           "fields": [
             {
               "name": "description",
@@ -55856,7 +55857,7 @@
                 }
               },
               "isDeprecated": true,
-              "deprecationReason": "Use `locations`."
+              "deprecationReason": "Use \`locations\`."
             },
             {
               "name": "onFragment",
@@ -55872,7 +55873,7 @@
                 }
               },
               "isDeprecated": true,
-              "deprecationReason": "Use `locations`."
+              "deprecationReason": "Use \`locations\`."
             },
             {
               "name": "onOperation",
@@ -55888,7 +55889,7 @@
                 }
               },
               "isDeprecated": true,
-              "deprecationReason": "Use `locations`."
+              "deprecationReason": "Use \`locations\`."
             }
           ],
           "inputFields": null,
@@ -56033,7 +56034,7 @@
         {
           "kind": "ENUM",
           "name": "__TypeKind",
-          "description": "An enum describing what kind of type a given `__Type` is.",
+          "description": "An enum describing what kind of type a given \`__Type\` is.",
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -56046,43 +56047,43 @@
             },
             {
               "name": "OBJECT",
-              "description": "Indicates this type is an object. `fields` and `interfaces` are valid fields.",
+              "description": "Indicates this type is an object. \`fields\` and \`interfaces\` are valid fields.",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
               "name": "INTERFACE",
-              "description": "Indicates this type is an interface. `fields` and `possibleTypes` are valid fields.",
+              "description": "Indicates this type is an interface. \`fields\` and \`possibleTypes\` are valid fields.",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
               "name": "UNION",
-              "description": "Indicates this type is a union. `possibleTypes` is a valid field.",
+              "description": "Indicates this type is a union. \`possibleTypes\` is a valid field.",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
               "name": "ENUM",
-              "description": "Indicates this type is an enum. `enumValues` is a valid field.",
+              "description": "Indicates this type is an enum. \`enumValues\` is a valid field.",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
               "name": "INPUT_OBJECT",
-              "description": "Indicates this type is an input object. `inputFields` is a valid field.",
+              "description": "Indicates this type is an input object. \`inputFields\` is a valid field.",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
               "name": "LIST",
-              "description": "Indicates this type is a list. `ofType` is a valid field.",
+              "description": "Indicates this type is a list. \`ofType\` is a valid field.",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
               "name": "NON_NULL",
-              "description": "Indicates this type is a non-null. `ofType` is a valid field.",
+              "description": "Indicates this type is a non-null. \`ofType\` is a valid field.",
               "isDeprecated": false,
               "deprecationReason": null
             }
@@ -56303,7 +56304,7 @@
             },
             {
               "name": "state",
-              "description": "The state of this signature. `VALID` if signature is valid and verified by GitHub, otherwise represents reason why signature is considered invalid.",
+              "description": "The state of this signature. \`VALID\` if signature is valid and verified by GitHub, otherwise represents reason why signature is considered invalid.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -56428,7 +56429,7 @@
             },
             {
               "name": "state",
-              "description": "The state of this signature. `VALID` if signature is valid and verified by GitHub, otherwise represents reason why signature is considered invalid.",
+              "description": "The state of this signature. \`VALID\` if signature is valid and verified by GitHub, otherwise represents reason why signature is considered invalid.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -56727,7 +56728,7 @@
             },
             {
               "name": "state",
-              "description": "The state of this signature. `VALID` if signature is valid and verified by GitHub, otherwise represents reason why signature is considered invalid.",
+              "description": "The state of this signature. \`VALID\` if signature is valid and verified by GitHub, otherwise represents reason why signature is considered invalid.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -56773,7 +56774,7 @@
       "directives": [
         {
           "name": "include",
-          "description": "Directs the executor to include this field or fragment only when the `if` argument is true.",
+          "description": "Directs the executor to include this field or fragment only when the \`if\` argument is true.",
           "locations": ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
           "args": [
             {
@@ -56794,7 +56795,7 @@
         },
         {
           "name": "skip",
-          "description": "Directs the executor to skip this field or fragment when the `if` argument is true.",
+          "description": "Directs the executor to skip this field or fragment when the \`if\` argument is true.",
           "locations": ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
           "args": [
             {
@@ -56826,11 +56827,13 @@
                 "name": "String",
                 "ofType": null
               },
-              "defaultValue": "\"No longer supported\""
+              "defaultValue": ""No longer supported""
             }
           ]
         }
       ]
     }
   }
-}
+}`);
+
+export default bigSchemaIntrospectionResult;

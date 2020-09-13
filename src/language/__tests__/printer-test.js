@@ -6,7 +6,7 @@ import dedent from '../../__testUtils__/dedent';
 import { parse } from '../parser';
 import { print } from '../printer';
 
-import { kitchenSinkQuery } from '../../__fixtures__/index';
+import kitchenSinkQuery from '../../__fixtures__/kitchenSinkQuery';
 
 describe('Printer: Query document', () => {
   it('does not alter ast', () => {

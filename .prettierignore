@@ -7,6 +7,3 @@
 /benchmarkDist
 /npm
 /deno
-
-# Don't touch GraphQL files.
-/src/**/*.graphql

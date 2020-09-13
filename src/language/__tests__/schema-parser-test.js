@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../__testUtils__/dedent';
 
-import { kitchenSinkSDL } from '../../__fixtures__/index';
+import kitchenSinkSDL from '../../__fixtures__/kitchenSinkSDL';
 
 import { parse } from '../parser';
 

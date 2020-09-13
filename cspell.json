@@ -15,9 +15,7 @@
     "cspell.json",
     "package.json",
     "package-lock.json",
-    "tsconfig.json",
-    "src/__fixtures__/github-schema.graphql",
-    "src/__fixtures__/github-schema.json"
+    "tsconfig.json"
   ],
   "overrides": [
     {

@@ -4,7 +4,7 @@ import { executeSync } from '../../execution/execute';
 import { buildSchema } from '../buildASTSchema';
 import { getIntrospectionQuery } from '../getIntrospectionQuery';
 
-import { bigSchemaSDL } from '../../__fixtures__/index';
+import bigSchemaSDL from '../../__fixtures__/bigSchemaSDL';
 
 const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
 const document = parse(getIntrospectionQuery());

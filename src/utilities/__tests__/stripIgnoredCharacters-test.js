@@ -12,7 +12,8 @@ import { Source } from '../../language/source';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
 
-import { kitchenSinkQuery, kitchenSinkSDL } from '../../__fixtures__/index';
+import kitchenSinkSDL from '../../__fixtures__/kitchenSinkSDL';
+import kitchenSinkQuery from '../../__fixtures__/kitchenSinkQuery';
 
 const ignoredTokens = [
   // UnicodeBOM ::

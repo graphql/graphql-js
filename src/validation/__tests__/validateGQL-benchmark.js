@@ -4,7 +4,7 @@ import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 
 import { validate } from '../validate';
 
-import { bigSchemaSDL } from '../../__fixtures__/index';
+import bigSchemaSDL from '../../__fixtures__/bigSchemaSDL';
 
 const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
 const queryAST = parse(getIntrospectionQuery());

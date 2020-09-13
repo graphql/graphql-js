@@ -1,6 +1,6 @@
 import { buildClientSchema } from '../buildClientSchema';
 
-import { bigSchemaIntrospectionResult } from '../../__fixtures__/index';
+import bigSchemaIntrospectionResult from '../../__fixtures__/bigSchemaIntrospectionResult';
 
 export const name = 'Build Schema from Introspection';
 export const count = 10;

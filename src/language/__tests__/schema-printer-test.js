@@ -6,7 +6,7 @@ import dedent from '../../__testUtils__/dedent';
 import { parse } from '../parser';
 import { print } from '../printer';
 
-import { kitchenSinkSDL } from '../../__fixtures__/index';
+import kitchenSinkSDL from '../../__fixtures__/kitchenSinkSDL';
 
 describe('Printer: SDL document', () => {
   it('prints minimal ast', () => {

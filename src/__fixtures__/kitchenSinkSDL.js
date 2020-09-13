@@ -1,3 +1,4 @@
+const kitchenSinkSDL: string = `
 """This is a description of the schema as a whole."""
 schema {
   query: QueryType
@@ -6,21 +7,21 @@ schema {
 
 """
 This is a description
-of the `Foo` type.
+of the \`Foo\` type.
 """
 type Foo implements Bar & Baz & Two {
-  "Description of the `one` field."
+  "Description of the \`one\` field."
   one: Type
   """
-  This is a description of the `two` field.
+  This is a description of the \`two\` field.
   """
   two(
     """
-    This is a description of the `argument` argument.
+    This is a description of the \`argument\` argument.
     """
     argument: InputType!
   ): Type
-  """This is a description of the `three` field."""
+  """This is a description of the \`three\` field."""
   three(argument: InputType, other: String): Int
   four(argument: String = "string"): String
   five(argument: [String] = ["string", "string"]): String
@@ -86,14 +87,14 @@ extend scalar CustomScalar @onScalar
 
 enum Site {
   """
-  This is a description of the `DESKTOP` value
+  This is a description of the \`DESKTOP\` value
   """
   DESKTOP
 
-  """This is a description of the `MOBILE` value"""
+  """This is a description of the \`MOBILE\` value"""
   MOBILE
 
-  "This is a description of the `WEB` value"
+  "This is a description of the \`WEB\` value"
   WEB
 }
 
@@ -128,10 +129,10 @@ extend input InputType {
 extend input InputType @onInputObject
 
 """
-This is a description of the `@skip` directive
+This is a description of the \`@skip\` directive
 """
 directive @skip(
-  """This is a description of the `if` argument"""
+  """This is a description of the \`if\` argument"""
   if: Boolean! @onArgumentDefinition
 ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
@@ -154,3 +155,6 @@ extend schema @onSchema
 extend schema @onSchema {
   subscription: SubscriptionType
 }
+`;
+
+export default kitchenSinkSDL;

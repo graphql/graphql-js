@@ -8,7 +8,7 @@ import { Kind } from '../kinds';
 import { parse } from '../parser';
 import { visit, visitInParallel, BREAK, QueryDocumentKeys } from '../visitor';
 
-import { kitchenSinkQuery } from '../../__fixtures__/index';
+import kitchenSinkQuery from '../../__fixtures__/kitchenSinkQuery';
 
 function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
   const [node, key, parent, path, ancestors] = args;
