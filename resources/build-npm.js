@@ -26,7 +26,7 @@ if (require.main === module) {
 
       const mjs = babelBuild(srcPath, { envName: 'mjs' });
       fs.writeFileSync(destPath.replace(/\.js$/, '.mjs'), mjs);
-    } else if (filepath.endsWith('.d.ts') || filepath.endsWith('.json')) {
+    } else if (filepath.endsWith('.d.ts')) {
       fs.copyFileSync(srcPath, destPath);
     }
   }

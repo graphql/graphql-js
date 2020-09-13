@@ -1,20 +1,28 @@
-export type GraphQLGrammarType = {
-  [string]: GraphQLGrammarRule,
-};
+export type GraphQLGrammarType = {|
+  [name: string]: GraphQLGrammarRule,
+|};
 export type GraphQLGrammarRuleName = string;
 export type GraphQLGrammarRuleConstraint =
   | GraphQLGrammarTokenConstraint
   | GraphQLGrammarOfTypeConstraint
   | GraphQLGrammarListOfTypeConstraint
   | GraphQLGrammarPeekConstraint;
-export type GraphQLGrammarConstraintsSet = Array<GraphQLGrammarRuleName | GraphQLGrammarRuleConstraint>;
-export type GraphQLGrammarRule = GraphQLGrammarRuleName | GraphQLGrammarRuleConstraint | GraphQLGrammarConstraintsSet;
+export type GraphQLGrammarConstraintsSet = Array<
+  GraphQLGrammarRuleName | GraphQLGrammarRuleConstraint,
+>;
+export type GraphQLGrammarRule =
+  | GraphQLGrammarRuleName
+  | GraphQLGrammarRuleConstraint
+  | GraphQLGrammarConstraintsSet;
 export interface GraphQLGrammarBaseRuleConstraint {
-  butNot?: ?GraphQLGrammarTokenConstraint | ?Array<GraphQLGrammarTokenConstraint>;
+  butNot?:
+    | ?GraphQLGrammarTokenConstraint
+    | ?Array<GraphQLGrammarTokenConstraint>;
   optional?: boolean;
   eatNextOnFail?: boolean;
 }
-export interface GraphQLGrammarTokenConstraint extends GraphQLGrammarBaseRuleConstraint {
+export interface GraphQLGrammarTokenConstraint
+  extends GraphQLGrammarBaseRuleConstraint {
   token:
     | '!'
     | '$'
@@ -42,14 +50,17 @@ export interface GraphQLGrammarTokenConstraint extends GraphQLGrammarBaseRuleCon
   definitionName?: boolean;
   typeName?: boolean;
 }
-export interface GraphQLGrammarOfTypeConstraint extends GraphQLGrammarBaseRuleConstraint {
+export interface GraphQLGrammarOfTypeConstraint
+  extends GraphQLGrammarBaseRuleConstraint {
   ofType: GraphQLGrammarRule;
   tokenName?: string;
 }
-export interface GraphQLGrammarListOfTypeConstraint extends GraphQLGrammarBaseRuleConstraint {
+export interface GraphQLGrammarListOfTypeConstraint
+  extends GraphQLGrammarBaseRuleConstraint {
   listOfType: GraphQLGrammarRuleName;
 }
-export interface GraphQLGrammarPeekConstraint extends GraphQLGrammarBaseRuleConstraint {
+export interface GraphQLGrammarPeekConstraint
+  extends GraphQLGrammarBaseRuleConstraint {
   peek: Array<GraphQLGrammarPeekConstraintCondition>;
 }
 export interface GraphQLGrammarPeekConstraintCondition {
@@ -58,10 +69,10 @@ export interface GraphQLGrammarPeekConstraintCondition {
   end?: boolean;
 }
 
-const grammar: GraphQLGrammarType = {
-  Name: ({ token: 'Name' }: GraphQLGrammarTokenConstraint),
-  String: ({ token: 'String' }: GraphQLGrammarTokenConstraint),
-  BlockString: ({ token: 'BlockString' }: GraphQLGrammarTokenConstraint),
+const grammar: GraphQLGrammarType = ({
+  Name: { token: 'Name' },
+  String: { token: 'String' },
+  BlockString: { token: 'BlockString' },
 
   Document: { listOfType: 'Definition' },
   Definition: {
@@ -80,7 +91,16 @@ const grammar: GraphQLGrammarType = {
       {
         ifCondition: {
           token: 'Name',
-          oneOf: ['schema', 'scalar', 'type', 'interface', 'union', 'enum', 'input', 'directive'],
+          oneOf: [
+            'schema',
+            'scalar',
+            'type',
+            'interface',
+            'union',
+            'enum',
+            'input',
+            'directive',
+          ],
         },
         expect: 'TypeSystemDefinition',
       },
@@ -103,7 +123,7 @@ const grammar: GraphQLGrammarType = {
     ],
   },
 
-  OperationDefinition: ({
+  OperationDefinition: {
     peek: [
       {
         ifCondition: { token: '{' },
@@ -128,7 +148,7 @@ const grammar: GraphQLGrammarType = {
         ],
       },
     ],
-  }: GraphQLGrammarPeekConstraint),
+  },
   OperationType: {
     ofType: 'OperationTypeName',
   },
@@ -165,9 +185,16 @@ const grammar: GraphQLGrammarType = {
   ],
 
   Arguments: [{ token: '(' }, { listOfType: 'Argument' }, { token: ')' }],
-  Argument: [{ token: 'Name', tokenName: 'ArgumentName', definitionName: true }, { token: ':' }, 'Value'],
+  Argument: [
+    { token: 'Name', tokenName: 'ArgumentName', definitionName: true },
+    { token: ':' },
+    'Value',
+  ],
 
-  Alias: [{ token: 'Name', tokenName: 'AliasName', definitionName: true }, { token: ':' }],
+  Alias: [
+    { token: 'Name', tokenName: 'AliasName', definitionName: true },
+    { token: ':' },
+  ],
 
   Fragment: [
     { token: '...' },
@@ -211,7 +238,10 @@ const grammar: GraphQLGrammarType = {
     definitionName: true,
   },
 
-  TypeCondition: [{ token: 'Name', ofValue: 'on', tokenName: 'OnKeyword' }, 'TypeName'],
+  TypeCondition: [
+    { token: 'Name', ofValue: 'on', tokenName: 'OnKeyword' },
+    'TypeName',
+  ],
 
   InlineFragment: [
     { ofType: 'TypeCondition', optional: true },
@@ -340,19 +370,44 @@ const grammar: GraphQLGrammarType = {
     tokenName: 'EnumValue',
   },
 
-  ListValue: [{ token: '[' }, { listOfType: 'Value', optional: true }, { token: ']' }],
+  ListValue: [
+    { token: '[' },
+    { listOfType: 'Value', optional: true },
+    { token: ']' },
+  ],
 
-  ConstListValue: [{ token: '[' }, { listOfType: 'ConstValue', optional: true }, { token: ']' }],
+  ConstListValue: [
+    { token: '[' },
+    { listOfType: 'ConstValue', optional: true },
+    { token: ']' },
+  ],
 
-  ObjectValue: [{ token: '{' }, { listOfType: 'ObjectField', optional: true }, { token: '}' }],
-  ObjectField: [{ token: 'Name', tokenName: 'ObjectFieldName' }, { token: ':' }, { ofType: 'ConstValue' }],
+  ObjectValue: [
+    { token: '{' },
+    { listOfType: 'ObjectField', optional: true },
+    { token: '}' },
+  ],
+  ObjectField: [
+    { token: 'Name', tokenName: 'ObjectFieldName' },
+    { token: ':' },
+    { ofType: 'ConstValue' },
+  ],
 
   Variable: [
     { token: '$', tokenName: 'VariableName' },
     { token: 'Name', tokenName: 'VariableName' },
   ],
-  VariableDefinitions: [{ token: '(' }, { listOfType: 'VariableDefinition' }, { token: ')' }],
-  VariableDefinition: ['Variable', { token: ':' }, 'Type', { ofType: 'DefaultValue', optional: true }],
+  VariableDefinitions: [
+    { token: '(' },
+    { listOfType: 'VariableDefinition' },
+    { token: ')' },
+  ],
+  VariableDefinition: [
+    'Variable',
+    { token: ':' },
+    'Type',
+    { ofType: 'DefaultValue', optional: true },
+  ],
   DefaultValue: [{ token: '=' }, 'ConstValue'],
 
   TypeName: { token: 'Name', tokenName: 'TypeName', typeName: true },
@@ -369,7 +424,12 @@ const grammar: GraphQLGrammarType = {
       },
     ],
   },
-  ListType: [{ token: '[' }, { listOfType: 'Type' }, { token: ']' }, { token: '!', optional: true }],
+  ListType: [
+    { token: '[' },
+    { listOfType: 'Type' },
+    { token: ']' },
+    { token: '!', optional: true },
+  ],
 
   Directives: { listOfType: 'Directive' },
   Directive: [
@@ -524,14 +584,22 @@ const grammar: GraphQLGrammarType = {
           expect: [
             'Directives',
             {
-              ofType: [{ token: '{' }, { listOfType: 'RootOperationTypeDefinition' }, { token: '}' }],
+              ofType: [
+                { token: '{' },
+                { listOfType: 'RootOperationTypeDefinition' },
+                { token: '}' },
+              ],
               optional: true,
             },
           ],
         },
         {
           ifCondition: { token: '{' },
-          expect: [{ token: '{' }, { listOfType: 'RootOperationTypeDefinition' }, { token: '}' }],
+          expect: [
+            { token: '{' },
+            { listOfType: 'RootOperationTypeDefinition' },
+            { token: '}' },
+          ],
         },
       ],
     },
@@ -591,7 +659,11 @@ const grammar: GraphQLGrammarType = {
     },
   ],
   ImplementsAdditionalInterfaceName: [{ token: '&' }, 'TypeName'],
-  FieldsDefinition: [{ token: '{' }, { listOfType: 'FieldDefinition' }, { token: '}' }],
+  FieldsDefinition: [
+    { token: '{' },
+    { listOfType: 'FieldDefinition' },
+    { token: '}' },
+  ],
   FieldDefinition: [
     { ofType: 'Description', optional: true },
     { token: 'Name', tokenName: 'AliasName', definitionName: true },
@@ -601,7 +673,11 @@ const grammar: GraphQLGrammarType = {
     { ofType: 'Directives', optional: true },
   ],
 
-  ArgumentsDefinition: [{ token: '(' }, { listOfType: 'InputValueDefinition' }, { token: ')' }],
+  ArgumentsDefinition: [
+    { token: '(' },
+    { listOfType: 'InputValueDefinition' },
+    { token: ')' },
+  ],
   InputValueDefinition: [
     { ofType: 'Description', optional: true },
     { token: 'Name', tokenName: 'ArgumentName' },
@@ -633,7 +709,10 @@ const grammar: GraphQLGrammarType = {
               peek: [
                 {
                   ifCondition: { token: '@' },
-                  expect: ['Directives', { ofType: 'FieldsDefinition', optional: true }],
+                  expect: [
+                    'Directives',
+                    { ofType: 'FieldsDefinition', optional: true },
+                  ],
                 },
                 {
                   ifCondition: { token: '{' },
@@ -646,7 +725,10 @@ const grammar: GraphQLGrammarType = {
         },
         {
           ifCondition: { token: '@' },
-          expect: ['Directives', { ofType: 'FieldsDefinition', optional: true }],
+          expect: [
+            'Directives',
+            { ofType: 'FieldsDefinition', optional: true },
+          ],
         },
         {
           ifCondition: { token: '{' },
@@ -684,7 +766,10 @@ const grammar: GraphQLGrammarType = {
       peek: [
         {
           ifCondition: { token: '@' },
-          expect: ['Directives', { ofType: 'FieldsDefinition', optional: true }],
+          expect: [
+            'Directives',
+            { ofType: 'FieldsDefinition', optional: true },
+          ],
         },
         {
           ifCondition: { token: '{' },
@@ -734,7 +819,10 @@ const grammar: GraphQLGrammarType = {
       peek: [
         {
           ifCondition: { token: '@' },
-          expect: ['Directives', { ofType: 'UnionMemberTypes', optional: true }],
+          expect: [
+            'Directives',
+            { ofType: 'UnionMemberTypes', optional: true },
+          ],
         },
         {
           ifCondition: { token: '=' },
@@ -755,7 +843,11 @@ const grammar: GraphQLGrammarType = {
     { ofType: 'Directives', optional: true },
     { ofType: 'EnumValuesDefinition', optional: true },
   ],
-  EnumValuesDefinition: [{ token: '{' }, { listOfType: 'EnumValueDefinition' }, { token: '}' }],
+  EnumValuesDefinition: [
+    { token: '{' },
+    { listOfType: 'EnumValueDefinition' },
+    { token: '}' },
+  ],
   EnumValueDefinition: [
     { ofType: 'Description', optional: true },
     'EnumValue',
@@ -778,7 +870,10 @@ const grammar: GraphQLGrammarType = {
       peek: [
         {
           ifCondition: { token: '@' },
-          expect: ['Directives', { ofType: 'EnumValuesDefinition', optional: true }],
+          expect: [
+            'Directives',
+            { ofType: 'EnumValuesDefinition', optional: true },
+          ],
         },
         {
           ifCondition: { token: '{' },
@@ -799,7 +894,11 @@ const grammar: GraphQLGrammarType = {
     { ofType: 'Directives', optional: true },
     { ofType: 'InputFieldsDefinition', optional: true },
   ],
-  InputFieldsDefinition: [{ token: '{' }, { listOfType: 'InputValueDefinition' }, { token: '}' }],
+  InputFieldsDefinition: [
+    { token: '{' },
+    { listOfType: 'InputValueDefinition' },
+    { token: '}' },
+  ],
 
   InputObjectTypeExtension: [
     {
@@ -817,7 +916,10 @@ const grammar: GraphQLGrammarType = {
       peek: [
         {
           ifCondition: { token: '@' },
-          expect: ['Directives', { ofType: 'InputFieldsDefinition', optional: true }],
+          expect: [
+            'Directives',
+            { ofType: 'InputFieldsDefinition', optional: true },
+          ],
         },
         {
           ifCondition: { token: '{' },
@@ -863,10 +965,18 @@ const grammar: GraphQLGrammarType = {
   },
   ExecutableDirectiveLocation: {
     token: 'Name',
-    oneOf: ['QUERY', 'MUTATION', 'SUBSCRIPTION', 'FIELD', 'FRAGMENT_DEFINITION', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
+    oneOf: [
+      'QUERY',
+      'MUTATION',
+      'SUBSCRIPTION',
+      'FIELD',
+      'FRAGMENT_DEFINITION',
+      'FRAGMENT_SPREAD',
+      'INLINE_FRAGMENT',
+    ],
     tokenName: 'EnumValue',
   },
-  TypeSystemDirectiveLocation: ({
+  TypeSystemDirectiveLocation: {
     token: 'Name',
     oneOf: [
       'SCHEMA',
@@ -882,7 +992,8 @@ const grammar: GraphQLGrammarType = {
       'INPUT_FIELD_DEFINITION',
     ],
     tokenName: 'EnumValue',
-  }: GraphQLGrammarTokenConstraint),
-};
+  },
+  // FIXME: enforce proper typing
+}: any);
 
 export default grammar;
