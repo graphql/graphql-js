@@ -32,6 +32,7 @@
     "transpilation",
     "instanceof",
     "flowtype",
+    "noconcurrent",
 
     // Different names used inside tests
     "Skywalker",

@@ -4,10 +4,10 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const cp = require('child_process');
 
 const { red, green, yellow, cyan, grey } = require('./colors');
 const { exec, rmdirRecursive, readdirRecursive } = require('./utils');
-const { sampleModule } = require('./benchmark-fork');
 
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
@@ -310,5 +310,65 @@ if (require.main === module) {
   prepareAndRunBenchmarks(benchmarkPatterns, revisions).catch((error) => {
     console.error(error);
     process.exit(1);
+  });
+}
+
+function sampleModule(modulePath) {
+  const sampleCode = `
+    const assert = require('assert');
+
+    assert(global.gc);
+    assert(process.send);
+    const module = require('${modulePath}');
+
+    clock(7, module.measure); // warm up
+    global.gc();
+    process.nextTick(() => {
+      const memBaseline = process.memoryUsage().heapUsed;
+      const clocked = clock(module.count, module.measure);
+      process.send({
+        name: module.name,
+        clocked: clocked / module.count,
+        memUsed: (process.memoryUsage().heapUsed - memBaseline) / module.count,
+      });
+    });
+
+    // Clocks the time taken to execute a test per cycle (secs).
+    function clock(count, fn) {
+      const start = process.hrtime.bigint();
+      for (let i = 0; i < count; ++i) {
+        fn();
+      }
+      return Number(process.hrtime.bigint() - start);
+    }
+  `;
+
+  return new Promise((resolve, reject) => {
+    const child = cp.spawn(
+      process.argv[0],
+      [
+        '--noconcurrent_sweeping',
+        '--predictable',
+        '--expose-gc',
+        '-e',
+        sampleCode,
+      ],
+      {
+        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+        env: { NODE_ENV: 'production' },
+      },
+    );
+
+    let message;
+    let error;
+
+    child.on('message', (msg) => (message = msg));
+    child.on('error', (e) => (error = e));
+    child.on('close', () => {
+      if (message) {
+        return resolve(message);
+      }
+      reject(error || new Error('Spawn process closed without error'));
+    });
   });
 }
