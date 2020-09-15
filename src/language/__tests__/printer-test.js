@@ -158,9 +158,13 @@ describe('Printer: Query document', () => {
       }
 
       fragment frag on Friend @onFragmentDefinition {
-        foo(size: $size, bar: $b, obj: {key: "value", block: """
-          block string uses \"""
-        """})
+        foo(
+          size: $size
+          bar: $b
+          obj: {key: "value", block: """
+            block string uses \"""
+          """}
+        )
       }
 
       {
@@ -198,9 +202,9 @@ describe('Printer: Query document', () => {
       dedent(String.raw`
       {
         trip(
-          wheelchair: false,
-          arriveBy: false,
-          includePlannedCancellations: true,
+          wheelchair: false
+          arriveBy: false
+          includePlannedCancellations: true
           transitDistanceReluctance: 2000
         ) {
           dateTime
