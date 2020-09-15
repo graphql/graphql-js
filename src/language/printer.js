@@ -91,7 +91,7 @@ const printDocASTReducer: any = {
   NullValue: () => 'null',
   EnumValue: ({ value }) => value,
   ListValue: ({ values }) => '[' + join(values, ', ') + ']',
-  ObjectValue: ({ fields }) => block(fields),
+  ObjectValue: ({ fields }) => '{' + join(fields, ', ') + '}',
   ObjectField: ({ name, value }) => name + ': ' + value,
 
   // Directive
