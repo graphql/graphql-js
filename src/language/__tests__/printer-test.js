@@ -180,7 +180,9 @@ describe('Printer: Query document', () => {
   });
 
   it('keeps arguments on one line if line is short (<= 80 chars)', () => {
-    const printed = print(parse('{trip(wheelchair:false arriveBy:false){dateTime}}'));
+    const printed = print(
+      parse('{trip(wheelchair:false arriveBy:false){dateTime}}'),
+    );
 
     expect(printed).to.equal(
       // $FlowFixMe[incompatible-call]
@@ -195,7 +197,11 @@ describe('Printer: Query document', () => {
   });
 
   it('keeps arguments on one line if line is long (> 80 chars)', () => {
-    const printed = print(parse('{trip(wheelchair:false arriveBy:false includePlannedCancellations:true transitDistanceReluctance:2000){dateTime}}'));
+    const printed = print(
+      parse(
+        '{trip(wheelchair:false arriveBy:false includePlannedCancellations:true transitDistanceReluctance:2000){dateTime}}',
+      ),
+    );
 
     expect(printed).to.equal(
       // $FlowFixMe[incompatible-call]
