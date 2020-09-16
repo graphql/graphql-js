@@ -85,14 +85,13 @@ describe('Printer: Query document', () => {
     );
 
     expect(printed).to.equal(
-      // $FlowFixMe[incompatible-call]
-      dedent(String.raw`
+      dedent`
       {
         trip(wheelchair: false, arriveBy: false) {
           dateTime
         }
       }
-    `),
+    `,
     );
   });
 
@@ -104,8 +103,7 @@ describe('Printer: Query document', () => {
     );
 
     expect(printed).to.equal(
-      // $FlowFixMe[incompatible-call]
-      dedent(String.raw`
+      dedent`
       {
         trip(
           wheelchair: false
@@ -116,7 +114,7 @@ describe('Printer: Query document', () => {
           dateTime
         }
       }
-    `),
+    `,
     );
   });
 
