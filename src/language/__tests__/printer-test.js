@@ -79,6 +79,47 @@ describe('Printer: Query document', () => {
     `);
   });
 
+  it('keeps arguments on one line if line is short (<= 80 chars)', () => {
+    const printed = print(
+      parse('{trip(wheelchair:false arriveBy:false){dateTime}}'),
+    );
+
+    expect(printed).to.equal(
+      // $FlowFixMe[incompatible-call]
+      dedent(String.raw`
+      {
+        trip(wheelchair: false, arriveBy: false) {
+          dateTime
+        }
+      }
+    `),
+    );
+  });
+
+  it('puts arguments on multiple lines if line is long (> 80 chars)', () => {
+    const printed = print(
+      parse(
+        '{trip(wheelchair:false arriveBy:false includePlannedCancellations:true transitDistanceReluctance:2000){dateTime}}',
+      ),
+    );
+
+    expect(printed).to.equal(
+      // $FlowFixMe[incompatible-call]
+      dedent(String.raw`
+      {
+        trip(
+          wheelchair: false
+          arriveBy: false
+          includePlannedCancellations: true
+          transitDistanceReluctance: 2000
+        ) {
+          dateTime
+        }
+      }
+    `),
+    );
+  });
+
   it('Experimental: prints fragment with variable directives', () => {
     const queryASTWithVariableDirective = parse(
       'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
@@ -174,47 +215,6 @@ describe('Printer: Query document', () => {
 
       {
         __typename
-      }
-    `),
-    );
-  });
-
-  it('keeps arguments on one line if line is short (<= 80 chars)', () => {
-    const printed = print(
-      parse('{trip(wheelchair:false arriveBy:false){dateTime}}'),
-    );
-
-    expect(printed).to.equal(
-      // $FlowFixMe[incompatible-call]
-      dedent(String.raw`
-      {
-        trip(wheelchair: false, arriveBy: false) {
-          dateTime
-        }
-      }
-    `),
-    );
-  });
-
-  it('puts arguments on multiple lines if line is long (> 80 chars)', () => {
-    const printed = print(
-      parse(
-        '{trip(wheelchair:false arriveBy:false includePlannedCancellations:true transitDistanceReluctance:2000){dateTime}}',
-      ),
-    );
-
-    expect(printed).to.equal(
-      // $FlowFixMe[incompatible-call]
-      dedent(String.raw`
-      {
-        trip(
-          wheelchair: false
-          arriveBy: false
-          includePlannedCancellations: true
-          transitDistanceReluctance: 2000
-        ) {
-          dateTime
-        }
       }
     `),
     );
