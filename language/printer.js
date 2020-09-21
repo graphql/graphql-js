@@ -9,7 +9,8 @@ export function print(ast) {
   return visit(ast, {
     leave: printDocASTReducer
   });
-} // TODO: provide better type coverage in future
+}
+const MAX_LINE_LENGTH = 80; // TODO: provide better type coverage in future
 
 const printDocASTReducer = {
   Name: node => node.value,
@@ -43,7 +44,16 @@ const printDocASTReducer = {
     arguments: args,
     directives,
     selectionSet
-  }) => join([wrap('', alias, ': ') + name + wrap('(', join(args, ', '), ')'), join(directives, ' '), selectionSet], ' '),
+  }) => {
+    const prefix = wrap('', alias, ': ') + name;
+    let argsLine = prefix + wrap('(', join(args, ', '), ')');
+
+    if (argsLine.length > MAX_LINE_LENGTH) {
+      argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+    }
+
+    return join([argsLine, join(directives, ' '), selectionSet], ' ');
+  },
   Argument: ({
     name,
     value
