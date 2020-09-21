@@ -17,8 +17,9 @@ function print(ast) {
   return (0, _visitor.visit)(ast, {
     leave: printDocASTReducer
   });
-} // TODO: provide better type coverage in future
+}
 
+var MAX_LINE_LENGTH = 80; // TODO: provide better type coverage in future
 
 var printDocASTReducer = {
   Name: function Name(node) {
@@ -58,7 +59,14 @@ var printDocASTReducer = {
         args = _ref3.arguments,
         directives = _ref3.directives,
         selectionSet = _ref3.selectionSet;
-    return join([wrap('', alias, ': ') + name + wrap('(', join(args, ', '), ')'), join(directives, ' '), selectionSet], ' ');
+    var prefix = wrap('', alias, ': ') + name;
+    var argsLine = prefix + wrap('(', join(args, ', '), ')');
+
+    if (argsLine.length > MAX_LINE_LENGTH) {
+      argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+    }
+
+    return join([argsLine, join(directives, ' '), selectionSet], ' ');
   },
   Argument: function Argument(_ref4) {
     var name = _ref4.name,
