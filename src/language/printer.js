@@ -11,6 +11,8 @@ export function print(ast: ASTNode): string {
   return visit(ast, { leave: printDocASTReducer });
 }
 
+const MAX_LINE_LENGTH = 80;
+
 // TODO: provide better type coverage in future
 const printDocASTReducer: any = {
   Name: (node) => node.value,
@@ -41,15 +43,16 @@ const printDocASTReducer: any = {
     wrap(' ', join(directives, ' ')),
   SelectionSet: ({ selections }) => block(selections),
 
-  Field: ({ alias, name, arguments: args, directives, selectionSet }) =>
-    join(
-      [
-        wrap('', alias, ': ') + name + wrap('(', join(args, ', '), ')'),
-        join(directives, ' '),
-        selectionSet,
-      ],
-      ' ',
-    ),
+  Field: ({ alias, name, arguments: args, directives, selectionSet }) => {
+    const prefix = wrap('', alias, ': ') + name;
+    let argsLine = prefix + wrap('(', join(args, ', '), ')');
+
+    if (argsLine.length > MAX_LINE_LENGTH) {
+      argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+    }
+
+    return join([argsLine, join(directives, ' '), selectionSet], ' ');
+  },
 
   Argument: ({ name, value }) => name + ': ' + value,
 
