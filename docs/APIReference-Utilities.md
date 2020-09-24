@@ -186,8 +186,8 @@ function buildASTSchema(
 ): GraphQLSchema
 ```
 
-This takes the ast of a schema document produced by `parseSchemaIntoAST` in
-`graphql/language/schema` and constructs a GraphQLSchema instance which can be
+This takes the ast of a schema document produced by `parse` in
+`graphql/language` and constructs a GraphQLSchema instance which can be
 then used with all GraphQL.js tools, but cannot be used to execute a query, as
 introspection does not represent the "resolver", "parse" or "serialize"
 functions or any other server-internal mechanisms.
