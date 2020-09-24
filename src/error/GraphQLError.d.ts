@@ -72,7 +72,7 @@ export class GraphQLError extends Error {
   /**
    * The original error thrown from a field resolver during execution.
    */
-  readonly originalError: Maybe<Error>;
+  readonly originalError?: Error;
 
   /**
    * Extension fields to add to the formatted error.
