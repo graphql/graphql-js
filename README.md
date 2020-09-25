@@ -1,15 +1,23 @@
-# GraphQL.js
-
-The JavaScript reference implementation for GraphQL, a query language for APIs created by Facebook.
-
-[![npm version](https://badge.fury.io/js/graphql.svg)](https://badge.fury.io/js/graphql)
-[![Build Status](https://github.com/graphql/graphql-js/workflows/CI/badge.svg?branch=master)](https://github.com/graphql/graphql-js/actions?query=branch%3Amaster)
-[![Coverage Status](https://codecov.io/gh/graphql/graphql-js/branch/master/graph/badge.svg)](https://codecov.io/gh/graphql/graphql-js)
-
-See more complete documentation at https://graphql.org/ and
-https://graphql.org/graphql-js/.
-
-Looking for help? Find resources [from the community](https://graphql.org/community/).
+<p align="center">
+  <img src="https://graphql.org/img/logo.svg" alt="logo" width="18%" />
+</p>
+<h1 align="center">GraphQL.js</h1>
+<p align="center">
+  <i>The JavaScript reference implementation for GraphQL, a query language for APIs created by Facebook.</i><br><br>
+  <a href="https://badge.fury.io/js/graphql">
+    <img src="https://badge.fury.io/js/graphql.svg" alt="npm version" />
+  </a>
+  <a href="https://github.com/graphql/graphql-js/actions?query=branch%3Amaster">
+    <img src="https://github.com/graphql/graphql-js/workflows/CI/badge.svg?branch=master" alt="Build Status" />
+  </a>
+  <a href="https://codecov.io/gh/graphql/graphql-js">
+    <img src="https://codecov.io/gh/graphql/graphql-js/branch/master/graph/badge.svg" alt="Coverage Status" />
+  </a>
+</p>
+<p align="center">
+  See more complete documentation at https://graphql.org/ and https://graphql.org/graphql-js/.<br> Looking for help? Find resources
+  <a href="https://graphql.org/community/">from the community</a>
+</p>
 
 ## Getting Started
 
