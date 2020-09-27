@@ -1,6 +1,7 @@
 [ignore]
 .*
 !<PROJECT_ROOT>/src
+<PROJECT_ROOT>/src/__fixtures__/github-schema.json
 
 [include]
 
@@ -32,11 +33,11 @@ export-renamed-default=error
 
 [options]
 all=true
+types_first=false
 module.use_strict=true
 babel_loose_array_spread=true
-esproposal.optional_chaining=enable
 experimental.const_params=true
 include_warnings=true
 
 [version]
-^0.133.0
+^0.134.0

@@ -144,7 +144,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.8.x`
+  # ESLint builtin rules list based on `v7.10.x`
   ##############################################################################
 
   # Possible Errors
@@ -505,7 +505,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.0.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.2.x`
       ##########################################################################
 
       no-undef: off # FIXME: temporary disabled due to https://github.com/typescript-eslint/typescript-eslint/issues/2462
@@ -646,6 +646,7 @@ overrides:
       # https://github.com/prettier/eslint-config-prettier/blob/master/%40typescript-eslint.js
       '@typescript-eslint/quotes': off
       '@typescript-eslint/brace-style': off
+      '@typescript-eslint/comma-dangle': off
       '@typescript-eslint/comma-spacing': off
       '@typescript-eslint/func-call-spacing': off
       '@typescript-eslint/indent': off
