@@ -103,6 +103,24 @@ describe('Execute: Accepts async iterables as list value', () => {
       ],
     });
   });
+
+  it('Handles errors from `completeValue` in AsyncIterables', async () => {
+    async function* listField() {
+      yield await 'two';
+      yield await {};
+    }
+
+    expect(await complete({ listField })).to.deep.equal({
+      data: { listField: ['two', null] },
+      errors: [
+        {
+          message: 'String cannot represent value: {}',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField', 1],
+        },
+      ],
+    });
+  });
 });
 
 describe('Execute: Handles list nullability', () => {
