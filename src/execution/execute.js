@@ -862,36 +862,53 @@ function completeAsyncIteratorValue(
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: Path,
-  index: number,
-  completedResults: Array<mixed>,
   iterator: AsyncIterator<mixed>,
 ): Promise<$ReadOnlyArray<mixed>> {
-  const fieldPath = addPath(path, index, undefined);
-  return iterator.next().then(
-    ({ value, done }) => {
-      if (done) {
-        return completedResults;
-      }
-      completedResults.push(
-        completeValue(exeContext, itemType, fieldNodes, info, fieldPath, value),
+  return new Promise((resolve) => {
+    function next(index, completedResults) {
+      const fieldPath = addPath(path, index, undefined);
+      iterator.next().then(
+        ({ value, done }) => {
+          if (done) {
+            resolve(completedResults);
+            return;
+          }
+          // TODO can the error checking logic be consolidated with completeListValue?
+          try {
+            completedResults.push(
+              completeValue(
+                exeContext,
+                itemType,
+                fieldNodes,
+                info,
+                fieldPath,
+                value,
+              ),
+            );
+          } catch (error) {
+            completedResults.push(null);
+            handleFieldError(
+              error,
+              fieldNodes,
+              fieldPath,
+              itemType,
+              exeContext,
+            );
+            resolve(completedResults);
+            return;
+          }
+
+          next(index + 1, completedResults);
+        },
+        (error) => {
+          completedResults.push(null);
+          handleFieldError(error, fieldNodes, fieldPath, itemType, exeContext);
+          resolve(completedResults);
+        },
       );
-      return completeAsyncIteratorValue(
-        exeContext,
-        itemType,
-        fieldNodes,
-        info,
-        path,
-        index + 1,
-        completedResults,
-        iterator,
-      );
-    },
-    (error) => {
-      completedResults.push(null);
-      handleFieldError(error, fieldNodes, fieldPath, itemType, exeContext);
-      return completedResults;
-    },
-  );
+    }
+    next(0, []);
+  });
 }
 
 /**
@@ -917,8 +934,6 @@ function completeListValue(
       fieldNodes,
       info,
       path,
-      0,
-      [],
       iterator,
     );
   }
