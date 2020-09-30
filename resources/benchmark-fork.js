@@ -4,31 +4,34 @@ const assert = require('assert');
 const cp = require('child_process');
 
 // Clocks the time taken to execute a test per cycle (secs).
-function clock(count, fn) {
+async function clock(count, fn) {
   const start = process.hrtime.bigint();
   for (let i = 0; i < count; ++i) {
-    fn();
+    await fn();
   }
   return Number(process.hrtime.bigint() - start);
 }
 
-if (require.main === module) {
+async function executeModule() {
   const modulePath = process.env.BENCHMARK_MODULE_PATH;
   assert(typeof modulePath === 'string');
   assert(process.send);
   const module = require(modulePath);
 
-  clock(7, module.measure); // warm up
+  await clock(7, module.measure); // warm up
   global.gc();
-  process.nextTick(() => {
-    const memBaseline = process.memoryUsage().heapUsed;
-    const clocked = clock(module.count, module.measure);
-    process.send({
-      name: module.name,
-      clocked: clocked / module.count,
-      memUsed: (process.memoryUsage().heapUsed - memBaseline) / module.count,
-    });
+  await Promise.resolve();
+  const memBaseline = process.memoryUsage().heapUsed;
+  const clocked = await clock(module.count, module.measure);
+  process.send({
+    name: module.name,
+    clocked: clocked / module.count,
+    memUsed: (process.memoryUsage().heapUsed - memBaseline) / module.count,
   });
+}
+
+if (require.main === module) {
+  executeModule();
 }
 
 function sampleModule(modulePath) {
