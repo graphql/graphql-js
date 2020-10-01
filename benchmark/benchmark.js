@@ -6,9 +6,6 @@ const path = require('path');
 const assert = require('assert');
 const cp = require('child_process');
 
-const { red, green, yellow, cyan, grey } = require('./colors');
-const { exec, rmdirRecursive, readdirRecursive } = require('./utils');
-
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
 
@@ -21,64 +18,76 @@ function localDir(...paths) {
   return path.join(__dirname, '..', ...paths);
 }
 
+function exec(command, options = {}) {
+  const result = cp.execSync(command, {
+    encoding: 'utf-8',
+    stdio: ['inherit', 'pipe', 'inherit'],
+    ...options,
+  });
+  return result && result.trimEnd();
+}
+
 // Build a benchmark-friendly environment for the given revision
 // and returns path to its 'dist' directory.
-function prepareRevision(revision) {
-  console.log(`🍳  Preparing ${revision}...`);
+function prepareBenchmarkProjects(revisionList) {
+  const tmpDir = path.join(os.tmpdir(), 'graphql-js-benchmark');
+  fs.mkdirSync(tmpDir, { recursive: true });
 
-  if (revision === LOCAL) {
-    return babelBuild(localDir());
-  }
+  const setupDir = path.join(tmpDir, 'setup');
+  fs.rmdirSync(setupDir, { recursive: true });
+  fs.mkdirSync(setupDir);
 
-  // Returns the complete git hash for a given git revision reference.
-  const hash = exec(`git rev-parse "${revision}"`);
+  return revisionList.map((revision) => {
+    console.log(`🍳  Preparing ${revision}...`);
+    const projectPath = path.join(setupDir, revision);
+    fs.rmdirSync(projectPath, { recursive: true });
+    fs.mkdirSync(projectPath);
 
-  const dir = path.join(os.tmpdir(), 'graphql-js-benchmark', hash);
-  rmdirRecursive(dir);
-  fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(projectPath, 'package.json'),
+      '{ "private": true }',
+    );
+    exec('npm --quiet install ' + prepareNPMPackage(revision), {
+      cwd: projectPath,
+    });
+    exec(`cp -R ${localDir('benchmark')} ${projectPath}`);
 
-  exec(`git archive "${hash}" | tar -xC "${dir}"`);
-  exec('npm ci', { cwd: dir });
+    return { revision, projectPath };
+  });
 
-  for (const file of findFiles(localDir('src'), '*/__tests__/*')) {
-    const from = localDir('src', file);
-    const to = path.join(dir, 'src', file);
-    fs.copyFileSync(from, to);
-  }
-  exec(`cp -R "${localDir()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`);
-
-  return babelBuild(dir);
-}
-
-function babelBuild(dir) {
-  const oldCWD = process.cwd();
-  process.chdir(dir);
-
-  rmdirRecursive('./benchmarkDist');
-  fs.mkdirSync('./benchmarkDist');
-
-  const babelPath = path.join(dir, 'node_modules', '@babel', 'core');
-  const babel = require(babelPath);
-  for (const filepath of readdirRecursive('./src')) {
-    const srcPath = path.join('./src', filepath);
-    const destPath = path.join('./benchmarkDist', filepath);
-
-    fs.mkdirSync(path.dirname(destPath), { recursive: true });
-    if (filepath.endsWith('.js')) {
-      const cjs = babel.transformFileSync(srcPath, { envName: 'cjs' }).code;
-      fs.writeFileSync(destPath, cjs);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
+  function prepareNPMPackage(revision) {
+    if (revision === LOCAL) {
+      const repoDir = localDir();
+      const archivePath = path.join(tmpDir, 'graphql-local.tgz');
+      fs.renameSync(buildNPMArchive(repoDir), archivePath);
+      return archivePath;
     }
+
+    // Returns the complete git hash for a given git revision reference.
+    const hash = exec(`git rev-parse "${revision}"`);
+
+    const archivePath = path.join(tmpDir, `graphql-${hash}.tgz`);
+    if (fs.existsSync(archivePath)) {
+      return archivePath;
+    }
+
+    const repoDir = path.join(tmpDir, hash);
+    fs.rmdirSync(repoDir, { recursive: true });
+    fs.mkdirSync(repoDir);
+    exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
+    exec('npm --quiet ci', { cwd: repoDir });
+    fs.renameSync(buildNPMArchive(repoDir), archivePath);
+    fs.rmdirSync(repoDir, { recursive: true });
+    return archivePath;
   }
 
-  process.chdir(oldCWD);
-  return path.join(dir, 'benchmarkDist');
-}
+  function buildNPMArchive(repoDir) {
+    exec('npm --quiet run build:npm', { cwd: repoDir });
 
-function findFiles(cwd, pattern) {
-  const out = exec(`find . -path '${pattern}'`, { cwd });
-  return out.split('\n').filter(Boolean);
+    const distDir = path.join(repoDir, 'npmDist');
+    const archiveName = exec(`npm --quiet pack ${distDir}`, { cwd: repoDir });
+    return path.join(repoDir, archiveName);
+  }
 }
 
 async function collectSamples(modulePath) {
@@ -220,17 +229,14 @@ function maxBy(array, fn) {
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
-async function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
-  const environments = revisions.map((revision) => ({
-    revision,
-    distPath: prepareRevision(revision),
-  }));
+async function runBenchmarks(benchmarks, revisions) {
+  const benchmarkProjects = prepareBenchmarkProjects(revisions);
 
-  for (const benchmark of matchBenchmarks(benchmarkPatterns)) {
+  for (const benchmark of benchmarks) {
     const results = [];
-    for (let i = 0; i < environments.length; ++i) {
-      const environment = environments[i];
-      const modulePath = path.join(environment.distPath, benchmark);
+    for (let i = 0; i < benchmarkProjects.length; ++i) {
+      const { revision, projectPath } = benchmarkProjects[i];
+      const modulePath = path.join(projectPath, benchmark);
 
       if (i === 0) {
         const { name } = await sampleModule(modulePath);
@@ -241,13 +247,13 @@ async function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
         const samples = await collectSamples(modulePath);
 
         results.push({
-          name: environment.revision,
+          name: revision,
           samples,
           ...computeStats(samples),
         });
         process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
       } catch (error) {
-        console.log('  ' + environment.revision + ': ' + red(String(error)));
+        console.log('  ' + revision + ': ' + red(String(error)));
       }
     }
     console.log('\n');
@@ -257,57 +263,74 @@ async function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
   }
 }
 
-// Find all benchmark tests to be run.
-function matchBenchmarks(patterns) {
-  let benchmarks = findFiles(localDir('src'), '*/__tests__/*-benchmark.js');
-  if (patterns.length > 0) {
-    benchmarks = benchmarks.filter((benchmark) =>
-      patterns.some((pattern) => path.join('src', benchmark).includes(pattern)),
-    );
-  }
-
-  if (benchmarks.length === 0) {
-    console.warn('No benchmarks matching: ' + patterns.map(bold).join(''));
-  }
-
-  return benchmarks;
-}
-
 function getArguments(argv) {
   const revsIdx = argv.indexOf('--revs');
   const revsArgs = revsIdx === -1 ? [] : argv.slice(revsIdx + 1);
-  const benchmarkPatterns = revsIdx === -1 ? argv : argv.slice(0, revsIdx);
+  const specificBenchmarks = revsIdx === -1 ? argv : argv.slice(0, revsIdx);
   let assumeArgs;
   let revisions;
   switch (revsArgs.length) {
     case 0:
-      assumeArgs = [...benchmarkPatterns, '--revs', 'local', 'HEAD'];
+      assumeArgs = [...specificBenchmarks, '--revs', 'local', 'HEAD'];
       revisions = [LOCAL, 'HEAD'];
       break;
     case 1:
-      assumeArgs = [...benchmarkPatterns, '--revs', 'local', revsArgs[0]];
+      assumeArgs = [...specificBenchmarks, '--revs', 'local', revsArgs[0]];
       revisions = [LOCAL, revsArgs[0]];
       break;
     default:
       revisions = revsArgs;
       break;
   }
+
   if (assumeArgs) {
     console.warn(
       'Assuming you meant: ' + bold('benchmark ' + assumeArgs.join(' ')),
     );
   }
-  return { benchmarkPatterns, revisions };
+
+  return { specificBenchmarks, revisions };
 }
 
 function bold(str) {
   return '\u001b[1m' + str + '\u001b[0m';
 }
 
+function red(str) {
+  return '\u001b[31m' + str + '\u001b[0m';
+}
+
+function green(str) {
+  return '\u001b[32m' + str + '\u001b[0m';
+}
+
+function yellow(str) {
+  return '\u001b[33m' + str + '\u001b[0m';
+}
+
+function cyan(str) {
+  return '\u001b[36m' + str + '\u001b[0m';
+}
+
+function grey(str) {
+  return '\u001b[90m' + str + '\u001b[0m';
+}
+
+function findAllBenchmarks() {
+  return fs
+    .readdirSync(localDir('benchmark'), { withFileTypes: true })
+    .filter((dirent) => dirent.isFile())
+    .map((dirent) => dirent.name)
+    .filter((name) => name.endsWith('-benchmark.js'))
+    .map((name) => path.join('benchmark', name));
+}
+
 // Get the revisions and make things happen!
 if (require.main === module) {
-  const { benchmarkPatterns, revisions } = getArguments(process.argv.slice(2));
-  prepareAndRunBenchmarks(benchmarkPatterns, revisions).catch((error) => {
+  const { specificBenchmarks, revisions } = getArguments(process.argv.slice(2));
+  const benchmarks =
+    specificBenchmarks.length > 0 ? specificBenchmarks : findAllBenchmarks();
+  runBenchmarks(benchmarks, revisions).catch((error) => {
     console.error(error);
     process.exit(1);
   });
@@ -350,7 +373,7 @@ function sampleModule(modulePath) {
         '--noconcurrent_sweeping',
         '--predictable',
         '--expose-gc',
-        '-e',
+        '--eval',
         sampleCode,
       ],
       {
