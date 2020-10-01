@@ -2,6 +2,9 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
+import { GraphQLList, GraphQLObjectType } from '../../type/definition';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
@@ -73,6 +76,38 @@ describe('Execute: Accepts async iterables as list value', () => {
     });
   }
 
+  function completeObjectList(resolve) {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          listField: {
+            resolve: async function* listField() {
+              yield await { index: 0 };
+              yield await { index: 1 };
+              yield await { index: 2 };
+            },
+            type: new GraphQLList(
+              new GraphQLObjectType({
+                name: 'ObjectWrapper',
+                fields: {
+                  index: {
+                    type: GraphQLString,
+                    resolve,
+                  },
+                },
+              }),
+            ),
+          },
+        },
+      }),
+    });
+    return execute({
+      schema,
+      document: parse('{ listField { index } }'),
+    });
+  }
+
   it('Accepts an AsyncGenerator function as a List value', async () => {
     async function* listField() {
       yield await 'two';
@@ -117,6 +152,33 @@ describe('Execute: Accepts async iterables as list value', () => {
           message: 'String cannot represent value: {}',
           locations: [{ line: 1, column: 3 }],
           path: ['listField', 1],
+        },
+      ],
+    });
+  });
+
+  it('Handles promises from `completeValue` in AsyncIterables', async () => {
+    expect(
+      await completeObjectList(({ index }) => Promise.resolve(index)),
+    ).to.deep.equal({
+      data: { listField: [{ index: '0' }, { index: '1' }, { index: '2' }] },
+    });
+  });
+  it('Handles rejected promises from `completeValue` in AsyncIterables', async () => {
+    expect(
+      await completeObjectList(({ index }) => {
+        if (index === 2) {
+          return Promise.reject(new Error('bad'));
+        }
+        return Promise.resolve(index);
+      }),
+    ).to.deep.equal({
+      data: { listField: [{ index: '0' }, { index: '1' }, { index: null }] },
+      errors: [
+        {
+          message: 'bad',
+          locations: [{ line: 1, column: 15 }],
+          path: ['listField', 2, 'index'],
         },
       ],
     });
