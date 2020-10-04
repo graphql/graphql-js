@@ -1,3 +1,5 @@
+// $FlowFixMe[incompatible-call]
+const kitchenSinkQuery: string = String.raw`
 query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
   whoever123is: node(id: [123, 456]) {
     id
@@ -62,3 +64,6 @@ fragment frag on Friend @onFragmentDefinition {
 query {
   __typename
 }
+`;
+
+export default kitchenSinkQuery;
