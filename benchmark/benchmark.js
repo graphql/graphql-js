@@ -346,9 +346,9 @@ function sampleModule(modulePath) {
 
     clock(7, module.measure); // warm up
     global.gc();
-    process.nextTick(() => {
+    process.nextTick(async () => {
       const memBaseline = process.memoryUsage().heapUsed;
-      const clocked = clock(module.count, module.measure);
+      const clocked = await clock(module.count, module.measure);
       process.send({
         name: module.name,
         clocked: clocked / module.count,
@@ -357,10 +357,10 @@ function sampleModule(modulePath) {
     });
 
     // Clocks the time taken to execute a test per cycle (secs).
-    function clock(count, fn) {
+    async function clock(count, fn) {
       const start = process.hrtime.bigint();
       for (let i = 0; i < count; ++i) {
-        fn();
+        await fn();
       }
       return Number(process.hrtime.bigint() - start);
     }
