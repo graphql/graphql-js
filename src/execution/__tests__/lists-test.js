@@ -2,6 +2,9 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
+import { GraphQLList, GraphQLObjectType } from '../../type/definition';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
@@ -58,6 +61,125 @@ describe('Execute: Accepts any iterable as list value', () => {
             'Expected Iterable, but did not find one for field "Query.listField".',
           locations: [{ line: 1, column: 3 }],
           path: ['listField'],
+        },
+      ],
+    });
+  });
+});
+
+describe('Execute: Accepts async iterables as list value', () => {
+  function complete(rootValue: mixed) {
+    return execute({
+      schema: buildSchema('type Query { listField: [String] }'),
+      document: parse('{ listField }'),
+      rootValue,
+    });
+  }
+
+  function completeObjectList(resolve) {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          listField: {
+            resolve: async function* listField() {
+              yield await { index: 0 };
+              yield await { index: 1 };
+              yield await { index: 2 };
+            },
+            type: new GraphQLList(
+              new GraphQLObjectType({
+                name: 'ObjectWrapper',
+                fields: {
+                  index: {
+                    type: GraphQLString,
+                    resolve,
+                  },
+                },
+              }),
+            ),
+          },
+        },
+      }),
+    });
+    return execute({
+      schema,
+      document: parse('{ listField { index } }'),
+    });
+  }
+
+  it('Accepts an AsyncGenerator function as a List value', async () => {
+    async function* listField() {
+      yield await 'two';
+      yield await 4;
+      yield await false;
+    }
+
+    expect(await complete({ listField })).to.deep.equal({
+      data: { listField: ['two', '4', 'false'] },
+    });
+  });
+
+  it('Handles an AsyncGenerator function that throws', async () => {
+    async function* listField() {
+      yield await 'two';
+      yield await 4;
+      throw new Error('bad');
+    }
+
+    expect(await complete({ listField })).to.deep.equal({
+      data: { listField: ['two', '4', null] },
+      errors: [
+        {
+          message: 'bad',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField', 2],
+        },
+      ],
+    });
+  });
+
+  it('Handles errors from `completeValue` in AsyncIterables', async () => {
+    async function* listField() {
+      yield await 'two';
+      yield await {};
+    }
+
+    expect(await complete({ listField })).to.deep.equal({
+      data: { listField: ['two', null] },
+      errors: [
+        {
+          message: 'String cannot represent value: {}',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField', 1],
+        },
+      ],
+    });
+  });
+
+  it('Handles promises from `completeValue` in AsyncIterables', async () => {
+    expect(
+      await completeObjectList(({ index }) => Promise.resolve(index)),
+    ).to.deep.equal({
+      data: { listField: [{ index: '0' }, { index: '1' }, { index: '2' }] },
+    });
+  });
+
+  it('Handles rejected promises from `completeValue` in AsyncIterables', async () => {
+    expect(
+      await completeObjectList(({ index }) => {
+        if (index === 2) {
+          return Promise.reject(new Error('bad'));
+        }
+        return Promise.resolve(index);
+      }),
+    ).to.deep.equal({
+      data: { listField: [{ index: '0' }, { index: '1' }, { index: null }] },
+      errors: [
+        {
+          message: 'bad',
+          locations: [{ line: 1, column: 15 }],
+          path: ['listField', 2, 'index'],
         },
       ],
     });

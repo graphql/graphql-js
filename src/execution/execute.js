@@ -1,4 +1,5 @@
 import arrayFrom from '../polyfills/arrayFrom';
+import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
 
 import type { Path } from '../jsutils/Path';
 import type { ObjMap } from '../jsutils/ObjMap';
@@ -8,6 +9,7 @@ import memoize3 from '../jsutils/memoize3';
 import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
 import isPromise from '../jsutils/isPromise';
+import isAsyncIterable from '../jsutils/isAsyncIterable';
 import isObjectLike from '../jsutils/isObjectLike';
 import isCollection from '../jsutils/isCollection';
 import promiseReduce from '../jsutils/promiseReduce';
@@ -856,6 +858,74 @@ function completeValue(
 }
 
 /**
+ * Complete a async iterator value by completing the result and calling
+ * recursively until all the results are completed.
+ */
+function completeAsyncIteratorValue(
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  path: Path,
+  iterator: AsyncIterator<mixed>,
+): Promise<$ReadOnlyArray<mixed>> {
+  let containsPromise = false;
+  return new Promise((resolve) => {
+    function next(index, completedResults) {
+      const fieldPath = addPath(path, index, undefined);
+      iterator.next().then(
+        ({ value, done }) => {
+          if (done) {
+            resolve(completedResults);
+            return;
+          }
+          // TODO can the error checking logic be consolidated with completeListValue?
+          try {
+            const completedItem = completeValue(
+              exeContext,
+              itemType,
+              fieldNodes,
+              info,
+              fieldPath,
+              value,
+            );
+            if (isPromise(completedItem)) {
+              containsPromise = true;
+            }
+            completedResults.push(completedItem);
+          } catch (rawError) {
+            completedResults.push(null);
+            const error = locatedError(
+              rawError,
+              fieldNodes,
+              pathToArray(fieldPath),
+            );
+            handleFieldError(error, itemType, exeContext);
+            resolve(completedResults);
+            return;
+          }
+
+          next(index + 1, completedResults);
+        },
+        (rawError) => {
+          completedResults.push(null);
+          const error = locatedError(
+            rawError,
+            fieldNodes,
+            pathToArray(fieldPath),
+          );
+          handleFieldError(error, itemType, exeContext);
+          resolve(completedResults);
+        },
+      );
+    }
+    next(0, []);
+  }).then((completedResults) =>
+    containsPromise ? Promise.all(completedResults) : completedResults,
+  );
+}
+
+/**
  * Complete a list value by completing each item in the list with the
  * inner type
  */
@@ -867,6 +937,21 @@ function completeListValue(
   path: Path,
   result: mixed,
 ): PromiseOrValue<$ReadOnlyArray<mixed>> {
+  const itemType = returnType.ofType;
+
+  if (isAsyncIterable(result)) {
+    const iterator = result[SYMBOL_ASYNC_ITERATOR]();
+
+    return completeAsyncIteratorValue(
+      exeContext,
+      itemType,
+      fieldNodes,
+      info,
+      path,
+      iterator,
+    );
+  }
+
   if (!isCollection(result)) {
     throw new GraphQLError(
       `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
@@ -875,7 +960,6 @@ function completeListValue(
 
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
-  const itemType = returnType.ofType;
   let containsPromise = false;
   const completedResults = arrayFrom(result, (item, index) => {
     // No need to modify the info object containing the path,
