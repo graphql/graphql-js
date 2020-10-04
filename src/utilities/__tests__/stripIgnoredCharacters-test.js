@@ -3,6 +3,8 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../__testUtils__/dedent';
 import inspectStr from '../../__testUtils__/inspectStr';
+import kitchenSinkSDL from '../../__testUtils__/kitchenSinkSDL';
+import kitchenSinkQuery from '../../__testUtils__/kitchenSinkQuery';
 
 import invariant from '../../jsutils/invariant';
 
@@ -11,8 +13,6 @@ import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
-
-import { kitchenSinkQuery, kitchenSinkSDL } from '../../__fixtures__/index';
 
 const ignoredTokens = [
   // UnicodeBOM ::

@@ -508,8 +508,6 @@ overrides:
       # `@typescript-eslint/eslint-plugin` rule list based on `v4.3.x`
       ##########################################################################
 
-      no-undef: off # FIXME: temporary disabled due to https://github.com/typescript-eslint/typescript-eslint/issues/2462
-
       # Supported Rules
       # https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#supported-rules
       '@typescript-eslint/adjacent-overload-signatures': error
@@ -657,18 +655,24 @@ overrides:
       '@typescript-eslint/semi': off
       '@typescript-eslint/space-before-function-paren': off
       '@typescript-eslint/type-annotation-spacing': off
-  - files: ['src/**/__*__/**', 'integrationTests/**']
+  - files: 'src/**/__*__/**'
     rules:
       node/no-unpublished-import: off
-      node/no-unpublished-require: off
-      node/no-sync: off
       import/no-restricted-paths: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
-      import/no-nodejs-modules: off
+      import/no-nodejs-modules: off # TODO remove
       no-restricted-syntax: off
+  - files: 'integrationTests/*'
+    rules:
+      node/no-unpublished-require: off
+      node/no-sync: off
+      import/no-extraneous-dependencies: [error, { devDependencies: true }]
+      import/no-nodejs-modules: off
   - files: 'integrationTests/*/**'
     rules:
+      node/no-sync: off
       node/no-missing-require: off
+      import/no-nodejs-modules: off
       no-console: off
   - files: 'benchmark/**'
     rules:

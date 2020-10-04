@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import dedent from '../../__testUtils__/dedent';
+import kitchenSinkQuery from '../../__testUtils__/kitchenSinkQuery';
 
 import inspect from '../../jsutils/inspect';
 
@@ -11,8 +12,6 @@ import { Kind } from '../kinds';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseType } from '../parser';
-
-import { kitchenSinkQuery } from '../../__fixtures__/index';
 
 import toJSONDeep from './toJSONDeep';
 
