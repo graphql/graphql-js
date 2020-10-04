@@ -869,6 +869,7 @@ function completeAsyncIteratorValue(
   path: Path,
   iterator: AsyncIterator<mixed>,
 ): Promise<$ReadOnlyArray<mixed>> {
+  let containsPromise = false;
   return new Promise((resolve) => {
     function next(index, completedResults) {
       const fieldPath = addPath(path, index, undefined);
@@ -880,16 +881,18 @@ function completeAsyncIteratorValue(
           }
           // TODO can the error checking logic be consolidated with completeListValue?
           try {
-            completedResults.push(
-              completeValue(
-                exeContext,
-                itemType,
-                fieldNodes,
-                info,
-                fieldPath,
-                value,
-              ),
+            const completedItem = completeValue(
+              exeContext,
+              itemType,
+              fieldNodes,
+              info,
+              fieldPath,
+              value,
             );
+            if (isPromise(completedItem)) {
+              containsPromise = true;
+            }
+            completedResults.push(completedItem);
           } catch (rawError) {
             completedResults.push(null);
             const error = locatedError(
@@ -917,7 +920,9 @@ function completeAsyncIteratorValue(
       );
     }
     next(0, []);
-  });
+  }).then((completedResults) =>
+    containsPromise ? Promise.all(completedResults) : completedResults,
+  );
 }
 
 /**
