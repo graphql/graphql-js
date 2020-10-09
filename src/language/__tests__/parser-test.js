@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-nodejs-modules
 import { inspect as nodeInspect } from 'util';
 
 import { expect } from 'chai';
