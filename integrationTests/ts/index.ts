@@ -96,27 +96,43 @@ if (data != null) {
   const typedData: ResponseData = data;
 }
 
-declare function runQueryA(q: TypedQueryDocumentNode<{ output: string }, { input: string | null }>): void;
+declare function runQueryA(
+  q: TypedQueryDocumentNode<{ output: string }, { input: string | null }>,
+): void;
 
 // valid
-declare const optionalInputRequiredOutput: TypedQueryDocumentNode<{ output: string }, { input: string | null }>;
+declare const optionalInputRequiredOutput: TypedQueryDocumentNode<
+  { output: string },
+  { input: string | null }
+>;
 runQueryA(optionalInputRequiredOutput);
 
-declare function runQueryB(q: TypedQueryDocumentNode<{ output: string | null }, { input: string }>): void;
+declare function runQueryB(
+  q: TypedQueryDocumentNode<{ output: string | null }, { input: string }>,
+): void;
 
 // still valid: We still accept {output: string} as a valid result.
 // We're now passing in {input: string} which is still assignable to {input: string | null}
 runQueryB(optionalInputRequiredOutput);
 
 // valid: we now accept {output: null} as a valid Result
-declare const optionalInputOptionalOutput: TypedQueryDocumentNode<{ output: string | null }, { input: string | null }>;
+declare const optionalInputOptionalOutput: TypedQueryDocumentNode<
+  { output: string | null },
+  { input: string | null }
+>;
 runQueryB(optionalInputOptionalOutput);
 
 // valid: we now only pass {input: string} to the query
-declare const requiredInputRequiredOutput: TypedQueryDocumentNode<{ output: string }, { input: string }>;
+declare const requiredInputRequiredOutput: TypedQueryDocumentNode<
+  { output: string },
+  { input: string }
+>;
 runQueryB(requiredInputRequiredOutput);
 
 // valid: we now accept {output: null} as a valid Result AND
 //        we now only pass {input: string} to the query
-declare const requiredInputOptionalOutput: TypedQueryDocumentNode<{ output: null }, { input: string }>;
+declare const requiredInputOptionalOutput: TypedQueryDocumentNode<
+  { output: null },
+  { input: string }
+>;
 runQueryB(requiredInputOptionalOutput);

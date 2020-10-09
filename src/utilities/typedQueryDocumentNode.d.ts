@@ -14,5 +14,7 @@ export interface TypedQueryDocumentNode<
    * and that the Result is assignable to whatever you pass your result to. The method is never actually
    * implemented, but the type is valid because we list it as optional
    */
-  __ensureTypesOfVariablesAndResultMatching?: (variables: TRequestVariables) => TResponseData;
+  __ensureTypesOfVariablesAndResultMatching?: (
+    variables: TRequestVariables,
+  ) => TResponseData;
 }
