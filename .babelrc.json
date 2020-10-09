@@ -3,11 +3,7 @@
   "plugins": ["@babel/plugin-transform-flow-strip-types"],
   "overrides": [
     {
-      "exclude": [
-        "src/__testUtils__/**/*",
-        "**/__tests__/**/*",
-        "**/__fixtures__/**/*"
-      ],
+      "exclude": ["src/__testUtils__/**/*", "**/__tests__/**/*"],
       "presets": ["@babel/preset-env"],
       "plugins": [
         ["@babel/plugin-transform-classes", { "loose": true }],

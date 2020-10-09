@@ -1,7 +1,6 @@
 [ignore]
 .*
 !<PROJECT_ROOT>/src
-<PROJECT_ROOT>/src/__fixtures__/github-schema.json
 
 [include]
 
