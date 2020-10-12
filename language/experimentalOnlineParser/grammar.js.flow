@@ -1,3 +1,4 @@
+// @flow strict
 export type GraphQLGrammarType = {|
   [name: string]: GraphQLGrammarRule,
 |};

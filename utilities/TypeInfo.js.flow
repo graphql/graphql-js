@@ -1,3 +1,4 @@
+// @flow strict
 import find from '../polyfills/find';
 
 import type { Visitor } from '../language/visitor';

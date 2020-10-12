@@ -1,3 +1,4 @@
+// @flow strict
 /* eslint-disable flowtype/no-weak-types */
 import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
 

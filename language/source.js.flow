@@ -1,3 +1,4 @@
+// @flow strict
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
 import inspect from '../jsutils/inspect';

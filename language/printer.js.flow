@@ -1,3 +1,4 @@
+// @flow strict
 import type { ASTNode } from './ast';
 
 import { visit } from './visitor';

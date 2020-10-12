@@ -1,3 +1,4 @@
+// @flow strict
 import isFinite from '../polyfills/isFinite';
 import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';

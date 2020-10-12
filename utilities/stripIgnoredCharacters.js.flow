@@ -1,3 +1,4 @@
+// @flow strict
 import { Source, isSource } from '../language/source';
 import { TokenKind } from '../language/tokenKind';
 import { Lexer, isPunctuatorTokenKind } from '../language/lexer';
