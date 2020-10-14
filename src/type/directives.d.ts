@@ -74,6 +74,11 @@ export const GraphQLIncludeDirective: GraphQLDirective;
 export const GraphQLSkipDirective: GraphQLDirective;
 
 /**
+ * Used to conditionally defer fragments.
+ */
+export const GraphQLDeferDirective: GraphQLDirective;
+
+/**
  * Used to provide a URL for specifying the behavior of custom scalar definitions.
  */
 export const GraphQLSpecifiedByDirective: GraphQLDirective;
