@@ -79,6 +79,11 @@ export const GraphQLSkipDirective: GraphQLDirective;
 export const GraphQLDeferDirective: GraphQLDirective;
 
 /**
+ * Used to conditionally stream list fields.
+ */
+export const GraphQLStreamDirective: GraphQLDirective;
+
+/**
  * Used to provide a URL for specifying the behavior of custom scalar definitions.
  */
 export const GraphQLSpecifiedByDirective: GraphQLDirective;
