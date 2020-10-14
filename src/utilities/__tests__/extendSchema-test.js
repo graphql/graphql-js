@@ -199,8 +199,7 @@ describe('extendSchema', () => {
   it('extends objects with standard type fields', () => {
     const schema = buildSchema('type Query');
 
-    // String and Boolean are always included through introspection types
-    expect(schema.getType('Int')).to.equal(undefined);
+    // String, Boolean, and Int are always included through introspection types
     expect(schema.getType('Float')).to.equal(undefined);
     expect(schema.getType('String')).to.equal(GraphQLString);
     expect(schema.getType('Boolean')).to.equal(GraphQLBoolean);
@@ -214,7 +213,6 @@ describe('extendSchema', () => {
     const extendedSchema = extendSchema(schema, extendAST);
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
-    expect(extendedSchema.getType('Int')).to.equal(undefined);
     expect(extendedSchema.getType('Float')).to.equal(undefined);
     expect(extendedSchema.getType('String')).to.equal(GraphQLString);
     expect(extendedSchema.getType('Boolean')).to.equal(GraphQLBoolean);

@@ -77,6 +77,16 @@ describe('Introspection', () => {
               possibleTypes: null,
             },
             {
+              kind: 'SCALAR',
+              name: 'Int',
+              specifiedByUrl: null,
+              fields: null,
+              inputFields: null,
+              interfaces: null,
+              enumValues: null,
+              possibleTypes: null,
+            },
+            {
               kind: 'OBJECT',
               name: '__Schema',
               specifiedByUrl: null,
@@ -957,6 +967,44 @@ describe('Introspection', () => {
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null,
+                  },
+                },
+              ],
+            },
+            {
+              name: 'stream',
+              isRepeatable: false,
+              locations: ['FIELD'],
+              args: [
+                {
+                  defaultValue: null,
+                  name: 'if',
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'Boolean',
+                    ofType: null,
+                  },
+                },
+                {
+                  defaultValue: null,
+                  name: 'label',
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
+                    ofType: null,
+                  },
+                },
+                {
+                  defaultValue: null,
+                  name: 'initialCount',
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'Int',
+                      ofType: null,
+                    },
                   },
                 },
               ],

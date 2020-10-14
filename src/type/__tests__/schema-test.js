@@ -295,6 +295,7 @@ describe('Type System: Schema', () => {
       'ASub',
       'Boolean',
       'String',
+      'Int',
       '__Schema',
       '__Type',
       '__TypeKind',
