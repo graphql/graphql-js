@@ -143,7 +143,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.10.x`
+  # ESLint builtin rules list based on `v7.11.x`
   ##############################################################################
 
   # Possible Errors
@@ -504,7 +504,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.3.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.5.x`
       ##########################################################################
 
       # Supported Rules
@@ -515,7 +515,8 @@ overrides:
       '@typescript-eslint/ban-ts-comment': [error, { 'ts-expect-error': false }]
       '@typescript-eslint/ban-tslint-comment': error
       '@typescript-eslint/ban-types': error
-      '@typescript-eslint/class-literal-property-style': off
+      '@typescript-eslint/class-literal-property-style': off # TODO enable after TS conversion
+      '@typescript-eslint/consistent-indexed-object-style': off # TODO enable after TS conversion
       '@typescript-eslint/consistent-type-assertions':
         [error, { assertionStyle: as, objectLiteralTypeAssertions: never }]
       '@typescript-eslint/consistent-type-definitions': off # TODO consider
@@ -638,6 +639,7 @@ overrides:
       '@typescript-eslint/init-declarations': off
       '@typescript-eslint/no-magic-numbers': off
       '@typescript-eslint/no-use-before-define': off
+      '@typescript-eslint/no-duplicate-imports': off # Superseded by `import/no-duplicates`
 
       # Bellow rules are disabled because coflicts with Prettier, see:
       # https://github.com/prettier/eslint-config-prettier/blob/master/%40typescript-eslint.js
