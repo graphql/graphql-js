@@ -40,7 +40,7 @@ type CoercedVariableValues =
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
-  inputs: { +[variable: string]: mixed, ... },
+  inputs: { readonly [variable: string]: mixed, ... },
   options?: { maxErrors?: number },
 ): CoercedVariableValues {
   const errors = [];
@@ -73,7 +73,7 @@ export function getVariableValues(
 function coerceVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
-  inputs: { +[variable: string]: mixed, ... },
+  inputs: { readonly [variable: string]: mixed, ... },
   onError: (GraphQLError) => void,
 ): { [variable: string]: mixed, ... } {
   const coercedValues = {};

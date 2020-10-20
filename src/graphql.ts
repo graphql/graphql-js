@@ -60,7 +60,7 @@ export type GraphQLArgs = {
   source: string | Source,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
+  variableValues?: ?{ readonly [variable: string]: mixed, ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,

@@ -35,7 +35,7 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  +locations: ReadonlyArray<SourceLocation> | void;
+  readonly locations: ReadonlyArray<SourceLocation> | void;
 
   /**
    * An array describing the JSON-path into the execution response which
@@ -43,12 +43,12 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  +path: ReadonlyArray<string | number> | void;
+  readonly path: ReadonlyArray<string | number> | void;
 
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
-  +nodes: ReadonlyArray<ASTNode> | void;
+  readonly nodes: ReadonlyArray<ASTNode> | void;
 
   /**
    * The source GraphQL document for the first location of this error.
@@ -56,23 +56,23 @@ export class GraphQLError extends Error {
    * Note that if this Error represents more than one node, the source may not
    * represent nodes after the first node.
    */
-  +source: Source | void;
+  readonly source: Source | void;
 
   /**
    * An array of character offsets within the source GraphQL document
    * which correspond to this error.
    */
-  +positions: ReadonlyArray<number> | void;
+  readonly positions: ReadonlyArray<number> | void;
 
   /**
    * The original error thrown from a field resolver during execution.
    */
-  +originalError: ?Error;
+  readonly originalError: ?Error;
 
   /**
    * Extension fields to add to the formatted error.
    */
-  +extensions: { [key: string]: mixed, ... } | void;
+  readonly extensions: { [key: string]: mixed, ... } | void;
 
   constructor(
     message: string,
@@ -80,7 +80,7 @@ export class GraphQLError extends Error {
     source?: ?Source,
     positions?: ?ReadonlyArray<number>,
     path?: ?ReadonlyArray<string | number>,
-    originalError?: ?(Error & { +extensions?: mixed, ... }),
+    originalError?: ?(Error & { readonly extensions?: mixed, ... }),
     extensions?: ?{ [key: string]: mixed, ... },
   ) {
     super(message);

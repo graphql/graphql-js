@@ -128,7 +128,7 @@ export type ExecutionArgs = {
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
+  variableValues?: ?{ readonly [variable: string]: mixed, ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
@@ -229,7 +229,7 @@ function buildResponse(
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: ?{ +[variable: string]: mixed, ... },
+  rawVariableValues: ?{ readonly [variable: string]: mixed, ... },
 ): void {
   devAssert(document, 'Must provide document.');
 
@@ -256,7 +256,7 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: mixed,
   contextValue: mixed,
-  rawVariableValues: ?{ +[variable: string]: mixed, ... },
+  rawVariableValues: ?{ readonly [variable: string]: mixed, ... },
   operationName: ?string,
   fieldResolver: ?GraphQLFieldResolver<mixed, mixed>,
   typeResolver?: ?GraphQLTypeResolver<mixed, mixed>,

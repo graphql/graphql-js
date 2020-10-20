@@ -148,16 +148,16 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
 }
 
 export type IntrospectionQuery = {
-  +__schema: IntrospectionSchema,
+  readonly __schema: IntrospectionSchema,
 };
 
 export type IntrospectionSchema = {
-  +description?: ?string,
-  +queryType: IntrospectionNamedTypeRef<IntrospectionObjectType>,
-  +mutationType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>,
-  +subscriptionType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>,
-  +types: ReadonlyArray<IntrospectionType>,
-  +directives: ReadonlyArray<IntrospectionDirective>,
+  readonly description?: ?string,
+  readonly queryType: IntrospectionNamedTypeRef<IntrospectionObjectType>,
+  readonly mutationType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>,
+  readonly subscriptionType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>,
+  readonly types: ReadonlyArray<IntrospectionType>,
+  readonly directives: ReadonlyArray<IntrospectionDirective>,
 };
 
 export type IntrospectionType =
@@ -181,70 +181,70 @@ export type IntrospectionInputType =
   | IntrospectionInputObjectType;
 
 export type IntrospectionScalarType = {
-  +kind: 'SCALAR',
-  +name: string,
-  +description?: ?string,
-  +specifiedByUrl?: ?string,
+  readonly kind: 'SCALAR',
+  readonly name: string,
+  readonly description?: ?string,
+  readonly specifiedByUrl?: ?string,
 };
 
 export type IntrospectionObjectType = {
-  +kind: 'OBJECT',
-  +name: string,
-  +description?: ?string,
-  +fields: ReadonlyArray<IntrospectionField>,
-  +interfaces: ReadonlyArray<
+  readonly kind: 'OBJECT',
+  readonly name: string,
+  readonly description?: ?string,
+  readonly fields: ReadonlyArray<IntrospectionField>,
+  readonly interfaces: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
   >,
 };
 
 export type IntrospectionInterfaceType = {
-  +kind: 'INTERFACE',
-  +name: string,
-  +description?: ?string,
-  +fields: ReadonlyArray<IntrospectionField>,
-  +interfaces: ReadonlyArray<
+  readonly kind: 'INTERFACE',
+  readonly name: string,
+  readonly description?: ?string,
+  readonly fields: ReadonlyArray<IntrospectionField>,
+  readonly interfaces: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
   >,
-  +possibleTypes: ReadonlyArray<
+  readonly possibleTypes: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>,
   >,
 };
 
 export type IntrospectionUnionType = {
-  +kind: 'UNION',
-  +name: string,
-  +description?: ?string,
-  +possibleTypes: ReadonlyArray<
+  readonly kind: 'UNION',
+  readonly name: string,
+  readonly description?: ?string,
+  readonly possibleTypes: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>,
   >,
 };
 
 export type IntrospectionEnumType = {
-  +kind: 'ENUM',
-  +name: string,
-  +description?: ?string,
-  +enumValues: ReadonlyArray<IntrospectionEnumValue>,
+  readonly kind: 'ENUM',
+  readonly name: string,
+  readonly description?: ?string,
+  readonly enumValues: ReadonlyArray<IntrospectionEnumValue>,
 };
 
 export type IntrospectionInputObjectType = {
-  +kind: 'INPUT_OBJECT',
-  +name: string,
-  +description?: ?string,
-  +inputFields: ReadonlyArray<IntrospectionInputValue>,
+  readonly kind: 'INPUT_OBJECT',
+  readonly name: string,
+  readonly description?: ?string,
+  readonly inputFields: ReadonlyArray<IntrospectionInputValue>,
 };
 
 export type IntrospectionListTypeRef<
   T: IntrospectionTypeRef = IntrospectionTypeRef,
 > = {
-  +kind: 'LIST',
-  +ofType: T,
+  readonly kind: 'LIST',
+  readonly ofType: T,
 };
 
 export type IntrospectionNonNullTypeRef<
   T: IntrospectionTypeRef = IntrospectionTypeRef,
 > = {
-  +kind: 'NON_NULL',
-  +ofType: T,
+  readonly kind: 'NON_NULL',
+  readonly ofType: T,
 };
 
 export type IntrospectionTypeRef =
@@ -273,39 +273,39 @@ export type IntrospectionInputTypeRef =
 export type IntrospectionNamedTypeRef<
   T: IntrospectionType = IntrospectionType,
 > = {
-  +kind: $PropertyType<T, 'kind'>,
-  +name: string,
+  readonly kind: $PropertyType<T, 'kind'>,
+  readonly name: string,
 };
 
 export type IntrospectionField = {
-  +name: string,
-  +description?: ?string,
-  +args: ReadonlyArray<IntrospectionInputValue>,
-  +type: IntrospectionOutputTypeRef,
-  +isDeprecated: boolean,
-  +deprecationReason: ?string,
+  readonly name: string,
+  readonly description?: ?string,
+  readonly args: ReadonlyArray<IntrospectionInputValue>,
+  readonly type: IntrospectionOutputTypeRef,
+  readonly isDeprecated: boolean,
+  readonly deprecationReason: ?string,
 };
 
 export type IntrospectionInputValue = {
-  +name: string,
-  +description?: ?string,
-  +type: IntrospectionInputTypeRef,
-  +defaultValue: ?string,
-  +isDeprecated?: boolean,
-  +deprecationReason?: ?string,
+  readonly name: string,
+  readonly description?: ?string,
+  readonly type: IntrospectionInputTypeRef,
+  readonly defaultValue: ?string,
+  readonly isDeprecated?: boolean,
+  readonly deprecationReason?: ?string,
 };
 
 export type IntrospectionEnumValue = {
-  +name: string,
-  +description?: ?string,
-  +isDeprecated: boolean,
-  +deprecationReason: ?string,
+  readonly name: string,
+  readonly description?: ?string,
+  readonly isDeprecated: boolean,
+  readonly deprecationReason: ?string,
 };
 
 export type IntrospectionDirective = {
-  +name: string,
-  +description?: ?string,
-  +isRepeatable?: boolean,
-  +locations: ReadonlyArray<DirectiveLocationEnum>,
-  +args: ReadonlyArray<IntrospectionInputValue>,
+  readonly name: string,
+  readonly description?: ?string,
+  readonly isRepeatable?: boolean,
+  readonly locations: ReadonlyArray<DirectiveLocationEnum>,
+  readonly args: ReadonlyArray<IntrospectionInputValue>,
 };

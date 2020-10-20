@@ -81,8 +81,8 @@ export function assertValidSchema(schema: GraphQLSchema): void {
 }
 
 class SchemaValidationContext {
-  +_errors: Array<GraphQLError>;
-  +schema: GraphQLSchema;
+  readonly _errors: Array<GraphQLError>;
+  readonly schema: GraphQLSchema;
 
   constructor(schema) {
     this._errors = [];
@@ -196,7 +196,7 @@ function validateDirectives(context: SchemaValidationContext): void {
 
 function validateName(
   context: SchemaValidationContext,
-  node: { +name: string, +astNode: ?ASTNode, ... },
+  node: { readonly name: string, readonly astNode: ?ASTNode, ... },
 ): void {
   // Ensure names are valid, however introspection types opt out.
   const error = isValidNameError(node.name);
@@ -636,7 +636,7 @@ function getUnionMemberTypeNodes(
 }
 
 function getDeprecatedDirectiveNode(
-  definitionNode: ?{ +directives?: ReadonlyArray<DirectiveNode>, ... },
+  definitionNode: ?{ readonly directives?: ReadonlyArray<DirectiveNode>, ... },
 ): ?DirectiveNode {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return definitionNode?.directives?.find(
