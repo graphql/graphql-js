@@ -28,9 +28,9 @@ import { mapAsyncIterator } from './mapAsyncIterator';
 export type SubscriptionArgs = {
   schema: GraphQLSchema;
   document: DocumentNode;
-  rootValue?: mixed;
-  contextValue?: mixed;
-  variableValues?: ?{ readonly [variable: string]: mixed; ... };
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: ?{ readonly [variable: string]: unknown; ... };
   operationName?: ?string;
   fieldResolver?: ?GraphQLFieldResolver<any, any>;
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>;
@@ -138,12 +138,12 @@ export async function subscribe(
 export async function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ readonly [variable: string]: mixed; ... },
+  rootValue?: unknown,
+  contextValue?: unknown,
+  variableValues?: ?{ readonly [variable: string]: unknown; ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
-): Promise<AsyncIterable<mixed> | ExecutionResult> {
+): Promise<AsyncIterable<unknown> | ExecutionResult> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);
@@ -188,7 +188,7 @@ export async function createSourceEventStream(
 
 async function executeSubscription(
   exeContext: ExecutionContext,
-): Promise<mixed> {
+): Promise<unknown> {
   const { schema, operation, variableValues, rootValue } = exeContext;
   const type = getOperationRootType(schema, operation);
   const fields = collectFields(

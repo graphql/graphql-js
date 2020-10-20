@@ -106,7 +106,7 @@ const schema = buildSchema(`
 
 function executeQuery(
   query: string,
-  rootValue: mixed,
+  rootValue: unknown,
 ): ExecutionResult | Promise<ExecutionResult> {
   return execute({ schema, document: parse(query), rootValue });
 }
@@ -122,7 +122,7 @@ function patchData(data: ExecutionResult): ExecutionResult {
   return JSON.parse(patch(JSON.stringify(data)));
 }
 
-async function executeSyncAndAsync(query: string, rootValue: mixed) {
+async function executeSyncAndAsync(query: string, rootValue: unknown) {
   const syncResult = executeSync({ schema, document: parse(query), rootValue });
   const asyncResult = await execute({
     schema,

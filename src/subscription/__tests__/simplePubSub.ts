@@ -47,7 +47,7 @@ export class SimplePubSub<T> {
         emptyQueue();
         return Promise.resolve({ value: undefined, done: true });
       },
-      throw(error: mixed) {
+      throw(error: unknown) {
         emptyQueue();
         return Promise.reject(error);
       },

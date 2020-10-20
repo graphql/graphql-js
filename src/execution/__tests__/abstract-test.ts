@@ -20,7 +20,7 @@ import { executeSync, execute } from '../execute';
 async function executeQuery(args: {
   schema: GraphQLSchema;
   query: string;
-  rootValue?: mixed;
+  rootValue?: unknown;
 }) {
   const { schema, query, rootValue } = args;
   const document = parse(query);
@@ -534,7 +534,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `);
 
-    function expectError({ forTypeName }: { forTypeName: mixed }) {
+    function expectError({ forTypeName }: { forTypeName: unknown }) {
       const rootValue = { pet: { __typename: forTypeName } };
       const result = executeSync({ schema, document, rootValue });
       return {

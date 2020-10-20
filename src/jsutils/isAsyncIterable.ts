@@ -3,7 +3,7 @@
  * implementing a `Symbol.asyncIterator` method.
  */
 declare function isAsyncIterable(
-  value: mixed,
+  value: unknown,
   // $FlowFixMe[invalid-in-rhs]
 ): boolean %checks(value instanceof AsyncIterable);
 

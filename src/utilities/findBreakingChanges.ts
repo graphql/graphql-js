@@ -378,8 +378,8 @@ function findFieldChanges(
 
 function findArgChanges(
   oldType: GraphQLObjectType | GraphQLInterfaceType,
-  oldField: GraphQLField<mixed, mixed>,
-  newField: GraphQLField<mixed, mixed>,
+  oldField: GraphQLField<unknown, unknown>,
+  newField: GraphQLField<unknown, unknown>,
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const argsDiff = diff(oldField.args, newField.args);
@@ -534,7 +534,7 @@ function typeKindName(type: GraphQLNamedType): string {
   invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 
-function stringifyValue(value: mixed, type: GraphQLInputType): string {
+function stringifyValue(value: unknown, type: GraphQLInputType): string {
   const ast = astFromValue(value, type);
   invariant(ast != null);
 

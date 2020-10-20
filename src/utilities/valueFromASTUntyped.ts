@@ -24,8 +24,8 @@ import type { ValueNode } from '../language/ast';
  */
 export function valueFromASTUntyped(
   valueNode: ValueNode,
-  variables?: ?ObjMap<mixed>,
-): mixed {
+  variables?: ?ObjMap<unknown>,
+): unknown {
   switch (valueNode.kind) {
     case Kind.NULL:
       return null;

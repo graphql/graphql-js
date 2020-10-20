@@ -8,7 +8,7 @@ import { parseValue } from '../../language/parser';
 import { valueFromASTUntyped } from '../valueFromASTUntyped';
 
 describe('valueFromASTUntyped', () => {
-  function expectValueFrom(valueText: string, variables?: ?ObjMap<mixed>) {
+  function expectValueFrom(valueText: string, variables?: ?ObjMap<unknown>) {
     const ast = parseValue(valueText);
     const value = valueFromASTUntyped(ast, variables);
     return expect(value);

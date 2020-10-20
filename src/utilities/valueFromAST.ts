@@ -30,15 +30,15 @@ import {
  * | Boolean              | Boolean       |
  * | String               | String        |
  * | Int / Float          | Number        |
- * | Enum Value           | Mixed         |
+ * | Enum Value           | unknown         |
  * | NullValue            | null          |
  *
  */
 export function valueFromAST(
   valueNode: ?ValueNode,
   type: GraphQLInputType,
-  variables?: ?ObjMap<mixed>,
-): mixed | void {
+  variables?: ?ObjMap<unknown>,
+): unknown | void {
   if (!valueNode) {
     // When there is no node, then there is also no value.
     // Importantly, this is different from returning the value null.
@@ -152,7 +152,7 @@ export function valueFromAST(
 // in the set of variables.
 function isMissingVariable(
   valueNode: ValueNode,
-  variables: ?ObjMap<mixed>,
+  variables: ?ObjMap<unknown>,
 ): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&

@@ -90,7 +90,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }));
   }
 
-  function sortFields(fieldsMap: GraphQLFieldConfigMap<mixed, mixed>) {
+  function sortFields(fieldsMap: GraphQLFieldConfigMap<unknown, unknown>) {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),

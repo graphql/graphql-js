@@ -32,7 +32,7 @@ type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 type VariableUsage = {
   readonly node: VariableNode;
   readonly type: ?GraphQLInputType;
-  readonly defaultValue: ?mixed;
+  readonly defaultValue: ?unknown;
 };
 
 /**
@@ -229,7 +229,7 @@ export class ValidationContext extends ASTValidationContext {
     return this._typeInfo.getParentInputType();
   }
 
-  getFieldDef(): ?GraphQLField<mixed, mixed> {
+  getFieldDef(): ?GraphQLField<unknown, unknown> {
     return this._typeInfo.getFieldDef();
   }
 

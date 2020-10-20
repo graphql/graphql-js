@@ -15,12 +15,12 @@
  * isIterableObject({ length: 1, 0: 'Alpha' }) // false
  */
 declare function isIterableObject(
-  value: mixed,
+  value: unknown,
   // $FlowFixMe[invalid-in-rhs]
 ): boolean %checks(value instanceof Iterable);
 
 // eslint-disable-next-line no-redeclare
-export function isIterableObject(maybeIterable: mixed): boolean {
+export function isIterableObject(maybeIterable: unknown): boolean {
   return (
     typeof maybeIterable === 'object' &&
     typeof maybeIterable?.[Symbol.iterator] === 'function'

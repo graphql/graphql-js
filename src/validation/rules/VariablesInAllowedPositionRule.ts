@@ -81,7 +81,7 @@ function allowedVariableUsage(
   varType: GraphQLType,
   varDefaultValue: ?ValueNode,
   locationType: GraphQLType,
-  locationDefaultValue: ?mixed,
+  locationDefaultValue: ?unknown,
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =

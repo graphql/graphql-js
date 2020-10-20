@@ -33,11 +33,11 @@ import {
  * | Boolean       | Boolean              |
  * | String        | String / Enum Value  |
  * | Number        | Int / Float          |
- * | Mixed         | Enum Value           |
+ * | unknown       | Enum Value           |
  * | null          | NullValue            |
  *
  */
-export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
+export function astFromValue(value: unknown, type: GraphQLInputType): ?ValueNode {
   if (isNonNullType(type)) {
     const astValue = astFromValue(value, type.ofType);
     if (astValue?.kind === Kind.NULL) {
