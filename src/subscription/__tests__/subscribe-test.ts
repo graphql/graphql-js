@@ -66,9 +66,9 @@ const EmailEventType = new GraphQLObjectType({
 
 const emailSchema = emailSchemaWithResolvers();
 
-function emailSchemaWithResolvers<T: mixed>(
-  subscribeFn?: (T) => mixed,
-  resolveFn?: (T) => mixed,
+function emailSchemaWithResolvers<T: unknown>(
+  subscribeFn?: (T) => unknown,
+  resolveFn?: (T) => unknown,
 ) {
   return new GraphQLSchema({
     query: QueryType,
@@ -135,7 +135,7 @@ function createSubscription(
 }
 
 async function expectPromiseToThrow(
-  promise: () => Promise<mixed>,
+  promise: () => Promise<unknown>,
   message: string,
 ) {
   try {

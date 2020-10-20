@@ -40,14 +40,14 @@ import {
 /**
  * Test if the given value is a GraphQL schema.
  */
-declare function isSchema(schema: mixed): boolean %checks(schema instanceof
+declare function isSchema(schema: unknown): boolean %checks(schema instanceof
   GraphQLSchema);
 // eslint-disable-next-line no-redeclare
 export function isSchema(schema) {
   return instanceOf(schema, GraphQLSchema);
 }
 
-export function assertSchema(schema: mixed): GraphQLSchema {
+export function assertSchema(schema: unknown): GraphQLSchema {
   if (!isSchema(schema)) {
     throw new Error(`Expected ${inspect(schema)} to be a GraphQL schema.`);
   }
@@ -119,7 +119,7 @@ export function assertSchema(schema: mixed): GraphQLSchema {
  */
 export class GraphQLSchema {
   description: ?string;
-  extensions: ?ReadOnlyObjMap<mixed>;
+  extensions: ?ReadOnlyObjMap<unknown>;
   astNode: ?SchemaDefinitionNode;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
 
@@ -368,7 +368,7 @@ export type GraphQLSchemaConfig = {
   subscription?: ?GraphQLObjectType,
   types?: ?Array<GraphQLNamedType>,
   directives?: ?Array<GraphQLDirective>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  extensions?: ?ReadOnlyObjMapLike<unknown>,
   astNode?: ?SchemaDefinitionNode,
   extensionASTNodes?: ?ReadonlyArray<SchemaExtensionNode>,
   ...GraphQLSchemaValidationOptions,
@@ -382,7 +382,7 @@ export type GraphQLSchemaNormalizedConfig = {
   description: ?string,
   types: Array<GraphQLNamedType>,
   directives: Array<GraphQLDirective>,
-  extensions: ?ReadOnlyObjMap<mixed>,
+  extensions: ?ReadOnlyObjMap<unknown>,
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>,
   assumeValid: boolean,
 };

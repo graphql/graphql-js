@@ -7,7 +7,7 @@
 export const instanceOf: (mixed, Constructor) => boolean =
   process.env.NODE_ENV === 'production'
     ? // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
-      function instanceOf(value: mixed, constructor: Constructor): boolean {
+      function instanceOf(value: unknown, constructor: Constructor): boolean {
         return value instanceof constructor;
       }
     : function instanceOf(value: any, constructor: Constructor): boolean {

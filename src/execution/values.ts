@@ -24,7 +24,7 @@ import { coerceInputValue } from '../utilities/coerceInputValue';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError> }
-  | { coerced: { [variable: string]: mixed, ... } };
+  | { coerced: { [variable: string]: unknown, ... } };
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -40,7 +40,7 @@ type CoercedVariableValues =
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
-  inputs: { readonly [variable: string]: mixed, ... },
+  inputs: { readonly [variable: string]: unknown, ... },
   options?: { maxErrors?: number },
 ): CoercedVariableValues {
   const errors = [];
@@ -73,9 +73,9 @@ export function getVariableValues(
 function coerceVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
-  inputs: { readonly [variable: string]: mixed, ... },
+  inputs: { readonly [variable: string]: unknown, ... },
   onError: (GraphQLError) => void,
-): { [variable: string]: mixed, ... } {
+): { [variable: string]: unknown, ... } {
   const coercedValues = {};
   for (const varDefNode of varDefNodes) {
     const varName = varDefNode.variable.name.value;
@@ -157,10 +157,10 @@ function coerceVariableValues(
  * @internal
  */
 export function getArgumentValues(
-  def: GraphQLField<mixed, mixed> | GraphQLDirective,
+  def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
-  variableValues?: ?ObjMap<mixed>,
-): { [argument: string]: mixed, ... } {
+  variableValues?: ?ObjMap<unknown>,
+): { [argument: string]: unknown, ... } {
   const coercedValues = {};
 
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
@@ -245,8 +245,8 @@ export function getArgumentValues(
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: { +directives?: ReadonlyArray<DirectiveNode>, ... },
-  variableValues?: ?ObjMap<mixed>,
-): void | { [argument: string]: mixed, ... } {
+  variableValues?: ?ObjMap<unknown>,
+): void | { [argument: string]: unknown, ... } {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   const directiveNode = node.directives?.find(
     (directive) => directive.name.value === directiveDef.name,
@@ -257,6 +257,6 @@ export function getDirectiveValues(
   }
 }
 
-function hasOwnProperty(obj: mixed, prop: string): boolean {
+function hasOwnProperty(obj: unknown, prop: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }

@@ -124,7 +124,7 @@ export class Token {
 /**
  * @internal
  */
-export function isNode(maybeNode: mixed): boolean %checks {
+export function isNode(maybeNode: unknown): boolean %checks {
   return maybeNode != null && typeof maybeNode.kind === 'string';
 }
 

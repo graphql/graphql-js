@@ -25,7 +25,7 @@ function expectErrors(result: any) {
 }
 
 describe('coerceInputValue', () => {
-  function coerceValue(inputValue: mixed, type: GraphQLInputType) {
+  function coerceValue(inputValue: unknown, type: GraphQLInputType) {
     const errors = [];
     const value = coerceInputValue(
       inputValue,

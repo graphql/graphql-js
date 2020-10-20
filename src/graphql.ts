@@ -58,9 +58,9 @@ import { execute } from './execution/execute';
 export type GraphQLArgs = {
   schema: GraphQLSchema,
   source: string | Source,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ readonly [variable: string]: mixed, ... },
+  rootValue?: unknown,
+  contextValue?: unknown,
+  variableValues?: ?{ readonly [variable: string]: unknown, ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,

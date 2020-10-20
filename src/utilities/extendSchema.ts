@@ -375,8 +375,8 @@ export function extendSchemaImpl(
   }
 
   function extendField(
-    field: GraphQLFieldConfig<mixed, mixed>,
-  ): GraphQLFieldConfig<mixed, mixed> {
+    field: GraphQLFieldConfig<unknown, unknown>,
+  ): GraphQLFieldConfig<unknown, unknown> {
     return {
       ...field,
       type: replaceType(field.type),
@@ -458,7 +458,7 @@ export function extendSchemaImpl(
       | ObjectTypeDefinitionNode
       | ObjectTypeExtensionNode,
     >,
-  ): GraphQLFieldConfigMap<mixed, mixed> {
+  ): GraphQLFieldConfigMap<unknown, unknown> {
     const fieldConfigMap = Object.create(null);
     for (const node of nodes) {
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')

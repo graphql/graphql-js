@@ -97,7 +97,7 @@ type ConflictReasonMessage = string | Array<ConflictReason>;
 type NodeAndDef = [
   GraphQLCompositeType,
   FieldNode,
-  ?GraphQLField<mixed, mixed>,
+  ?GraphQLField<unknown, unknown>,
 ];
 // Map of array of those.
 type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;

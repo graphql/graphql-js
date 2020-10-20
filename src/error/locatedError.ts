@@ -10,7 +10,7 @@ import { GraphQLError } from './GraphQLError';
  * document responsible for the original Error.
  */
 export function locatedError(
-  rawOriginalError: mixed,
+  rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | void | null,
   path?: ?ReadonlyArray<string | number>,
 ): GraphQLError {

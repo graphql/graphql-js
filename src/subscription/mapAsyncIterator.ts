@@ -12,7 +12,7 @@ export function mapAsyncIterator<T, U>(
   const iteratorMethod = iterable[Symbol.asyncIterator];
   const iterator: any = iteratorMethod.call(iterable);
 
-  async function abruptClose(error: mixed) {
+  async function abruptClose(error: unknown) {
     if (typeof iterator.return === 'function') {
       try {
         await iterator.return();
@@ -48,7 +48,7 @@ export function mapAsyncIterator<T, U>(
         ? mapResult(iterator.return())
         : Promise.resolve({ value: undefined, done: true });
     },
-    throw(error?: mixed): Promise<IteratorResult<U, void>> {
+    throw(error?: unknown): Promise<IteratorResult<U, void>> {
       if (typeof iterator.throw === 'function') {
         return mapResult(iterator.throw(error));
       }

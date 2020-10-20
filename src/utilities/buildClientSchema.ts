@@ -308,7 +308,7 @@ export function buildClientSchema(
 
   function buildFieldDefMap(
     typeIntrospection: IntrospectionObjectType | IntrospectionInterfaceType,
-  ): GraphQLFieldConfigMap<mixed, mixed> {
+  ): GraphQLFieldConfigMap<unknown, unknown> {
     if (!typeIntrospection.fields) {
       throw new Error(
         `Introspection result missing fields: ${inspect(typeIntrospection)}.`,
@@ -324,7 +324,7 @@ export function buildClientSchema(
 
   function buildField(
     fieldIntrospection: IntrospectionField,
-  ): GraphQLFieldConfig<mixed, mixed> {
+  ): GraphQLFieldConfig<unknown, unknown> {
     const type = getType(fieldIntrospection.type);
     if (!isOutputType(type)) {
       const typeStr = inspect(type);

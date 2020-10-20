@@ -30,7 +30,9 @@ function expectPrintedSchema(schema: GraphQLSchema) {
   return expect(schemaText);
 }
 
-function buildSingleFieldSchema(fieldConfig: GraphQLFieldConfig<mixed, mixed>) {
+function buildSingleFieldSchema(
+  fieldConfig: GraphQLFieldConfig<unknown, unknown>,
+) {
   const Query = new GraphQLObjectType({
     name: 'Query',
     fields: { singleField: fieldConfig },

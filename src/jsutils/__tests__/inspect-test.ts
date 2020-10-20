@@ -138,10 +138,10 @@ describe('inspect', () => {
 
     expect(inspect(array)).to.equal('[[Circular], [[Circular]]]');
 
-    const mixed = { array: [] };
-    mixed.array[0] = mixed;
+    const unknown = { array: [] };
+    unknown.array[0] = unknown;
 
-    expect(inspect(mixed)).to.equal('{ array: [[Circular]] }');
+    expect(inspect(unknown)).to.equal('{ array: [[Circular]] }');
 
     const customA = {
       toJSON: () => customB,

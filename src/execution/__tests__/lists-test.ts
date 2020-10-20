@@ -8,7 +8,7 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import { execute, executeSync } from '../execute';
 
 describe('Execute: Accepts any iterable as list value', () => {
-  function complete(rootValue: mixed) {
+  function complete(rootValue: unknown) {
     return executeSync({
       schema: buildSchema('type Query { listField: [String] }'),
       document: parse('{ listField }'),
@@ -65,7 +65,7 @@ describe('Execute: Accepts any iterable as list value', () => {
 });
 
 describe('Execute: Handles list nullability', () => {
-  async function complete(args: { listField: mixed; as: string }) {
+  async function complete(args: { listField: unknown; as: string }) {
     const { listField, as } = args;
     const schema = buildSchema(`type Query { listField: ${as} }`);
     const document = parse('{ listField }');
@@ -85,11 +85,11 @@ describe('Execute: Handles list nullability', () => {
     }
     return result;
 
-    function executeQuery(listValue: mixed) {
+    function executeQuery(listValue: unknown) {
       return execute({ schema, document, rootValue: { listField: listValue } });
     }
 
-    function promisify(value: mixed): Promise<mixed> {
+    function promisify(value: unknown): Promise<unknown> {
       return value instanceof Error
         ? Promise.reject(value)
         : Promise.resolve(value);

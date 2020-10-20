@@ -922,7 +922,7 @@ describe('Type System: test utility methods', () => {
   });
 
   it('Object.toStringifies types', () => {
-    function toString(obj: mixed): string {
+    function toString(obj: unknown): string {
       return Object.prototype.toString.call(obj);
     }
 
