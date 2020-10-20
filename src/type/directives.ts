@@ -48,7 +48,7 @@ export class GraphQLDirective {
   name: string;
   description: ?string;
   locations: Array<DirectiveLocationEnum>;
-  args: $ReadOnlyArray<GraphQLArgument>;
+  args: ReadonlyArray<GraphQLArgument>;
   isRepeatable: boolean;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?DirectiveDefinitionNode;
@@ -208,7 +208,7 @@ export const GraphQLSpecifiedByDirective: GraphQLDirective = new GraphQLDirectiv
 /**
  * The full list of specified directives.
  */
-export const specifiedDirectives: $ReadOnlyArray<GraphQLDirective> = Object.freeze(
+export const specifiedDirectives: ReadonlyArray<GraphQLDirective> = Object.freeze(
   [
     GraphQLIncludeDirective,
     GraphQLSkipDirective,

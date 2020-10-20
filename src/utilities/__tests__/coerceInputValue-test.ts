@@ -17,8 +17,8 @@ import { coerceInputValue } from '../coerceInputValue';
 
 type CoerceResult = {
   value: mixed;
-  errors: $ReadOnlyArray<{
-    path: $ReadOnlyArray<string | number>;
+  errors: ReadonlyArray<{
+    path: ReadonlyArray<string | number>;
     value: mixed;
     error: string;
   }>;

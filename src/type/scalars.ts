@@ -270,7 +270,7 @@ export const GraphQLID: GraphQLScalarType = new GraphQLScalarType({
   },
 });
 
-export const specifiedScalarTypes: $ReadOnlyArray<GraphQLScalarType> = Object.freeze(
+export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType> = Object.freeze(
   [GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID],
 );
 

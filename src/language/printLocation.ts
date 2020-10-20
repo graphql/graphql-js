@@ -66,7 +66,7 @@ export function printSourceLocation(
   );
 }
 
-function printPrefixedLines(lines: $ReadOnlyArray<[string, string]>): string {
+function printPrefixedLines(lines: ReadonlyArray<[string, string]>): string {
   const existingLines = lines.filter(([_, line]) => line !== undefined);
 
   const padLen = Math.max(...existingLines.map(([prefix]) => prefix.length));

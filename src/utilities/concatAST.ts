@@ -6,7 +6,7 @@ import type { DocumentNode } from '../language/ast';
  * GraphQL source files which together represent one conceptual application.
  */
 export function concatAST(
-  documents: $ReadOnlyArray<DocumentNode>,
+  documents: ReadonlyArray<DocumentNode>,
 ): DocumentNode {
   let definitions = [];
   for (const doc of documents) {

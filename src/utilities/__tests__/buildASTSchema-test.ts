@@ -56,7 +56,7 @@ function expectASTNode(obj: ?{ +astNode: ?ASTNode; ... }) {
 }
 
 function expectExtensionASTNodes(obj: {
-  +extensionASTNodes: $ReadOnlyArray<ASTNode>;
+  +extensionASTNodes: ReadonlyArray<ASTNode>;
   ...
 }) {
   return expect(obj.extensionASTNodes.map(print).join('\n\n'));

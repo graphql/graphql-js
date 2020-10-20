@@ -44,10 +44,10 @@ export class ASTValidationContext {
   _ast: DocumentNode;
   _onError: (error: GraphQLError) => void;
   _fragments: ?ObjMap<FragmentDefinitionNode>;
-  _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
+  _fragmentSpreads: Map<SelectionSetNode, ReadonlyArray<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
     OperationDefinitionNode,
-    $ReadOnlyArray<FragmentDefinitionNode>,
+    ReadonlyArray<FragmentDefinitionNode>,
   >;
 
   constructor(ast: DocumentNode, onError: (error: GraphQLError) => void) {
@@ -80,7 +80,7 @@ export class ASTValidationContext {
 
   getFragmentSpreads(
     node: SelectionSetNode,
-  ): $ReadOnlyArray<FragmentSpreadNode> {
+  ): ReadonlyArray<FragmentSpreadNode> {
     let spreads = this._fragmentSpreads.get(node);
     if (!spreads) {
       spreads = [];
@@ -102,7 +102,7 @@ export class ASTValidationContext {
 
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
-  ): $ReadOnlyArray<FragmentDefinitionNode> {
+  ): ReadonlyArray<FragmentDefinitionNode> {
     let fragments = this._recursivelyReferencedFragments.get(operation);
     if (!fragments) {
       fragments = [];
@@ -152,10 +152,10 @@ export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 export class ValidationContext extends ASTValidationContext {
   _schema: GraphQLSchema;
   _typeInfo: TypeInfo;
-  _variableUsages: Map<NodeWithSelectionSet, $ReadOnlyArray<VariableUsage>>;
+  _variableUsages: Map<NodeWithSelectionSet, ReadonlyArray<VariableUsage>>;
   _recursiveVariableUsages: Map<
     OperationDefinitionNode,
-    $ReadOnlyArray<VariableUsage>,
+    ReadonlyArray<VariableUsage>,
   >;
 
   constructor(
@@ -175,7 +175,7 @@ export class ValidationContext extends ASTValidationContext {
     return this._schema;
   }
 
-  getVariableUsages(node: NodeWithSelectionSet): $ReadOnlyArray<VariableUsage> {
+  getVariableUsages(node: NodeWithSelectionSet): ReadonlyArray<VariableUsage> {
     let usages = this._variableUsages.get(node);
     if (!usages) {
       const newUsages = [];
@@ -201,7 +201,7 @@ export class ValidationContext extends ASTValidationContext {
 
   getRecursiveVariableUsages(
     operation: OperationDefinitionNode,
-  ): $ReadOnlyArray<VariableUsage> {
+  ): ReadonlyArray<VariableUsage> {
     let usages = this._recursiveVariableUsages.get(operation);
     if (!usages) {
       usages = this.getVariableUsages(operation);

@@ -24,7 +24,7 @@ import type { ObjMap } from './ObjMap';
  *
  */
 export function keyMap<T>(
-  list: $ReadOnlyArray<T>,
+  list: ReadonlyArray<T>,
   keyFn: (item: T) => string,
 ): ObjMap<T> {
   const result = Object.create(null);

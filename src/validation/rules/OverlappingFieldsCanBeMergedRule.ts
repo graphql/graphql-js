@@ -620,8 +620,8 @@ function findConflict(
 }
 
 function sameArguments(
-  arguments1: $ReadOnlyArray<ArgumentNode>,
-  arguments2: $ReadOnlyArray<ArgumentNode>,
+  arguments1: ReadonlyArray<ArgumentNode>,
+  arguments2: ReadonlyArray<ArgumentNode>,
 ): boolean {
   if (arguments1.length !== arguments2.length) {
     return false;
@@ -766,7 +766,7 @@ function _collectFieldsAndFragmentNames(
 // Given a series of Conflicts which occurred between two sub-fields, generate
 // a single Conflict.
 function subfieldConflicts(
-  conflicts: $ReadOnlyArray<Conflict>,
+  conflicts: ReadonlyArray<Conflict>,
   responseName: string,
   node1: FieldNode,
   node2: FieldNode,
