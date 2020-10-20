@@ -11,8 +11,8 @@ import { GraphQLError } from './GraphQLError';
  */
 export function locatedError(
   rawOriginalError: mixed,
-  nodes: ASTNode | $ReadOnlyArray<ASTNode> | void | null,
-  path?: ?$ReadOnlyArray<string | number>,
+  nodes: ASTNode | ReadonlyArray<ASTNode> | void | null,
+  path?: ?ReadonlyArray<string | number>,
 ): GraphQLError {
   // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
   const originalError: Error | GraphQLError =

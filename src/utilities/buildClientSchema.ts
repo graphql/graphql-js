@@ -349,7 +349,7 @@ export function buildClientSchema(
   }
 
   function buildInputValueDefMap(
-    inputValueIntrospections: $ReadOnlyArray<IntrospectionInputValue>,
+    inputValueIntrospections: ReadonlyArray<IntrospectionInputValue>,
   ) {
     return keyValMap(
       inputValueIntrospections,

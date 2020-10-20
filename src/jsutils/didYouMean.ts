@@ -3,11 +3,11 @@ const MAX_SUGGESTIONS = 5;
 /**
  * Given [ A, B, C ] return ' Did you mean A, B, or C?'.
  */
-declare function didYouMean(suggestions: $ReadOnlyArray<string>): string;
+declare function didYouMean(suggestions: ReadonlyArray<string>): string;
 // eslint-disable-next-line no-redeclare
 declare function didYouMean(
   subMessage: string,
-  suggestions: $ReadOnlyArray<string>,
+  suggestions: ReadonlyArray<string>,
 ): string;
 
 // eslint-disable-next-line no-redeclare

@@ -29,13 +29,13 @@ export type ASTVisitFn<TVisitedNode: ASTNode> = (
   // The index or key to this node from the parent node or Array.
   key: string | number | void,
   // The parent immediately above this node, which may be an Array.
-  parent: ASTNode | $ReadOnlyArray<ASTNode> | void,
+  parent: ASTNode | ReadonlyArray<ASTNode> | void,
   // The key path to get to this node from the root node.
-  path: $ReadOnlyArray<string | number>,
+  path: ReadonlyArray<string | number>,
   // All nodes and Arrays visited before reaching parent of this node.
   // These correspond to array indices in `path`.
   // Note: ancestors includes arrays which contain the parent of visited node.
-  ancestors: $ReadOnlyArray<ASTNode | $ReadOnlyArray<ASTNode>>,
+  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
 
 const QueryDocumentKeys = {
@@ -327,7 +327,7 @@ export function visit(root: ASTNode, visitor: ASTVisitor): any {
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 export function visitInParallel(
-  visitors: $ReadOnlyArray<ASTVisitor>,
+  visitors: ReadonlyArray<ASTVisitor>,
 ): ASTVisitor {
   const skipping = new Array(visitors.length);
 

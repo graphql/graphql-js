@@ -528,7 +528,7 @@ export const TypeNameMetaFieldDef: GraphQLField<mixed, mixed> = {
   astNode: undefined,
 };
 
-export const introspectionTypes: $ReadOnlyArray<GraphQLNamedType> = Object.freeze(
+export const introspectionTypes: ReadonlyArray<GraphQLNamedType> = Object.freeze(
   [
     __Schema,
     __Directive,

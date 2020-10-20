@@ -554,8 +554,8 @@ function stringifyValue(value: mixed, type: GraphQLInputType): string {
 }
 
 function diff<T: { name: string, ... }>(
-  oldArray: $ReadOnlyArray<T>,
-  newArray: $ReadOnlyArray<T>,
+  oldArray: ReadonlyArray<T>,
+  newArray: ReadonlyArray<T>,
 ): {
   added: Array<T>,
   removed: Array<T>,

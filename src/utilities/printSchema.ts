@@ -223,7 +223,7 @@ function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
   return printBlock(fields);
 }
 
-function printBlock(items: $ReadOnlyArray<string>): string {
+function printBlock(items: ReadonlyArray<string>): string {
   return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
 }
 

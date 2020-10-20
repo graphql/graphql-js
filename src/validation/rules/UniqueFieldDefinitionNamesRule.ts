@@ -39,7 +39,7 @@ export function UniqueFieldDefinitionNamesRule(
 
   function checkFieldUniqueness(node: {
     +name: NameNode,
-    +fields?: $ReadOnlyArray<InputValueDefinitionNode | FieldDefinitionNode>,
+    +fields?: ReadonlyArray<InputValueDefinitionNode | FieldDefinitionNode>,
     ...
   }) {
     const typeName = node.name.value;

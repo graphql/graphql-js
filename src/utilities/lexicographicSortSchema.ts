@@ -104,7 +104,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }));
   }
 
-  function sortTypes<T: GraphQLNamedType>(arr: $ReadOnlyArray<T>): Array<T> {
+  function sortTypes<T: GraphQLNamedType>(arr: ReadonlyArray<T>): Array<T> {
     return sortByName(arr).map(replaceNamedType);
   }
 
@@ -166,13 +166,13 @@ function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn: (T) => R): ObjMap<R> {
 }
 
 function sortByName<T: { +name: string, ... }>(
-  array: $ReadOnlyArray<T>,
+  array: ReadonlyArray<T>,
 ): Array<T> {
   return sortBy(array, (obj) => obj.name);
 }
 
 function sortBy<T>(
-  array: $ReadOnlyArray<T>,
+  array: ReadonlyArray<T>,
   mapToKey: (T) => string,
 ): Array<T> {
   return array.slice().sort((obj1, obj2) => {

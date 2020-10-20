@@ -212,7 +212,7 @@ export const GraphQLSpecifiedByDirective: GraphQLDirective = new GraphQLDirectiv
 /**
  * The full list of specified directives.
  */
-export const specifiedDirectives: $ReadOnlyArray<GraphQLDirective> = Object.freeze(
+export const specifiedDirectives: ReadonlyArray<GraphQLDirective> = Object.freeze(
   [
     GraphQLIncludeDirective,
     GraphQLSkipDirective,

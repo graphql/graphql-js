@@ -10,7 +10,7 @@ import { isPromise } from './isPromise';
  * return a Promise.
  */
 export function promiseReduce<T, U>(
-  values: $ReadOnlyArray<T>,
+  values: ReadonlyArray<T>,
   callback: (U, T) => PromiseOrValue<U>,
   initialValue: PromiseOrValue<U>,
 ): PromiseOrValue<U> {

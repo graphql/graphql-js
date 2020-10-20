@@ -36,7 +36,7 @@ import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
 
 function expectExtensionASTNodes(obj: {
-  +extensionASTNodes: $ReadOnlyArray<ASTNode>,
+  +extensionASTNodes: ReadonlyArray<ASTNode>,
   ...
 }) {
   return expect(obj.extensionASTNodes.map(print).join('\n\n'));

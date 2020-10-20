@@ -23,7 +23,7 @@ import { valueFromAST } from '../utilities/valueFromAST';
 import { coerceInputValue } from '../utilities/coerceInputValue';
 
 type CoercedVariableValues =
-  | { errors: $ReadOnlyArray<GraphQLError> }
+  | { errors: ReadonlyArray<GraphQLError> }
   | { coerced: { [variable: string]: mixed, ... } };
 
 /**
@@ -39,7 +39,7 @@ type CoercedVariableValues =
  */
 export function getVariableValues(
   schema: GraphQLSchema,
-  varDefNodes: $ReadOnlyArray<VariableDefinitionNode>,
+  varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { +[variable: string]: mixed, ... },
   options?: { maxErrors?: number },
 ): CoercedVariableValues {
@@ -72,7 +72,7 @@ export function getVariableValues(
 
 function coerceVariableValues(
   schema: GraphQLSchema,
-  varDefNodes: $ReadOnlyArray<VariableDefinitionNode>,
+  varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { +[variable: string]: mixed, ... },
   onError: (GraphQLError) => void,
 ): { [variable: string]: mixed, ... } {
@@ -244,7 +244,7 @@ export function getArgumentValues(
  */
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
-  node: { +directives?: $ReadOnlyArray<DirectiveNode>, ... },
+  node: { +directives?: ReadonlyArray<DirectiveNode>, ... },
   variableValues?: ?ObjMap<mixed>,
 ): void | { [argument: string]: mixed, ... } {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')

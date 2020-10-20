@@ -393,7 +393,7 @@ export function extendSchemaImpl(
   }
 
   function getOperationTypes(
-    nodes: $ReadOnlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
+    nodes: ReadonlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
   ): {
     query: ?GraphQLObjectType,
     mutation: ?GraphQLObjectType,
@@ -452,7 +452,7 @@ export function extendSchemaImpl(
   }
 
   function buildFieldMap(
-    nodes: $ReadOnlyArray<
+    nodes: ReadonlyArray<
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
       | ObjectTypeDefinitionNode
@@ -481,7 +481,7 @@ export function extendSchemaImpl(
   }
 
   function buildArgumentMap(
-    args: ?$ReadOnlyArray<InputValueDefinitionNode>,
+    args: ?ReadonlyArray<InputValueDefinitionNode>,
   ): GraphQLFieldConfigArgumentMap {
     // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const argsNodes = args ?? [];
@@ -505,7 +505,7 @@ export function extendSchemaImpl(
   }
 
   function buildInputFieldMap(
-    nodes: $ReadOnlyArray<
+    nodes: ReadonlyArray<
       InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode,
     >,
   ): GraphQLInputFieldConfigMap {
@@ -533,7 +533,7 @@ export function extendSchemaImpl(
   }
 
   function buildEnumValueMap(
-    nodes: $ReadOnlyArray<EnumTypeDefinitionNode | EnumTypeExtensionNode>,
+    nodes: ReadonlyArray<EnumTypeDefinitionNode | EnumTypeExtensionNode>,
   ): GraphQLEnumValueConfigMap {
     const enumValueMap = Object.create(null);
     for (const node of nodes) {
@@ -552,7 +552,7 @@ export function extendSchemaImpl(
   }
 
   function buildInterfaces(
-    nodes: $ReadOnlyArray<
+    nodes: ReadonlyArray<
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
       | ObjectTypeDefinitionNode
@@ -576,7 +576,7 @@ export function extendSchemaImpl(
   }
 
   function buildUnionTypes(
-    nodes: $ReadOnlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode>,
+    nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode>,
   ): Array<GraphQLObjectType> {
     const types = [];
     for (const node of nodes) {

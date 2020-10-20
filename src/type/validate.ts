@@ -47,7 +47,7 @@ import {
  */
 export function validateSchema(
   schema: GraphQLSchema,
-): $ReadOnlyArray<GraphQLError> {
+): ReadonlyArray<GraphQLError> {
   // First check to ensure the provided value is in fact a GraphQLSchema.
   assertSchema(schema);
 
@@ -91,7 +91,7 @@ class SchemaValidationContext {
 
   reportError(
     message: string,
-    nodes?: $ReadOnlyArray<?ASTNode> | ?ASTNode,
+    nodes?: ReadonlyArray<?ASTNode> | ?ASTNode,
   ): void {
     const _nodes = Array.isArray(nodes) ? nodes.filter(Boolean) : nodes;
     this.addError(new GraphQLError(message, _nodes));
@@ -101,7 +101,7 @@ class SchemaValidationContext {
     this._errors.push(error);
   }
 
-  getErrors(): $ReadOnlyArray<GraphQLError> {
+  getErrors(): ReadonlyArray<GraphQLError> {
     return this._errors;
   }
 }
@@ -610,7 +610,7 @@ function createInputObjectCircularRefsValidator(
 function getAllImplementsInterfaceNodes(
   type: GraphQLObjectType | GraphQLInterfaceType,
   iface: GraphQLInterfaceType,
-): $ReadOnlyArray<NamedTypeNode> {
+): ReadonlyArray<NamedTypeNode> {
   const { astNode, extensionASTNodes } = type;
   const nodes =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
@@ -624,7 +624,7 @@ function getAllImplementsInterfaceNodes(
 function getUnionMemberTypeNodes(
   union: GraphQLUnionType,
   typeName: string,
-): ?$ReadOnlyArray<NamedTypeNode> {
+): ?ReadonlyArray<NamedTypeNode> {
   const { astNode, extensionASTNodes } = union;
   const nodes =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
@@ -636,7 +636,7 @@ function getUnionMemberTypeNodes(
 }
 
 function getDeprecatedDirectiveNode(
-  definitionNode: ?{ +directives?: $ReadOnlyArray<DirectiveNode>, ... },
+  definitionNode: ?{ +directives?: ReadonlyArray<DirectiveNode>, ... },
 ): ?DirectiveNode {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return definitionNode?.directives?.find(

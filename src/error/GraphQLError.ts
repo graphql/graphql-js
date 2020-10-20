@@ -35,7 +35,7 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  +locations: $ReadOnlyArray<SourceLocation> | void;
+  +locations: ReadonlyArray<SourceLocation> | void;
 
   /**
    * An array describing the JSON-path into the execution response which
@@ -43,12 +43,12 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  +path: $ReadOnlyArray<string | number> | void;
+  +path: ReadonlyArray<string | number> | void;
 
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
-  +nodes: $ReadOnlyArray<ASTNode> | void;
+  +nodes: ReadonlyArray<ASTNode> | void;
 
   /**
    * The source GraphQL document for the first location of this error.
@@ -62,7 +62,7 @@ export class GraphQLError extends Error {
    * An array of character offsets within the source GraphQL document
    * which correspond to this error.
    */
-  +positions: $ReadOnlyArray<number> | void;
+  +positions: ReadonlyArray<number> | void;
 
   /**
    * The original error thrown from a field resolver during execution.
@@ -76,10 +76,10 @@ export class GraphQLError extends Error {
 
   constructor(
     message: string,
-    nodes?: $ReadOnlyArray<ASTNode> | ASTNode | void | null,
+    nodes?: ReadonlyArray<ASTNode> | ASTNode | void | null,
     source?: ?Source,
-    positions?: ?$ReadOnlyArray<number>,
-    path?: ?$ReadOnlyArray<string | number>,
+    positions?: ?ReadonlyArray<number>,
+    path?: ?ReadonlyArray<string | number>,
     originalError?: ?(Error & { +extensions?: mixed, ... }),
     extensions?: ?{ [key: string]: mixed, ... },
   ) {

@@ -121,12 +121,12 @@ export class GraphQLSchema {
   description: ?string;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?SchemaDefinitionNode;
-  extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>;
+  extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
 
   _queryType: ?GraphQLObjectType;
   _mutationType: ?GraphQLObjectType;
   _subscriptionType: ?GraphQLObjectType;
-  _directives: $ReadOnlyArray<GraphQLDirective>;
+  _directives: ReadonlyArray<GraphQLDirective>;
   _typeMap: TypeMap;
   _subTypeMap: ObjMap<ObjMap<boolean>>;
   _implementationsMap: ObjMap<{
@@ -135,7 +135,7 @@ export class GraphQLSchema {
   }>;
 
   // Used as a cache for validateSchema().
-  __validationErrors: ?$ReadOnlyArray<GraphQLError>;
+  __validationErrors: ?ReadonlyArray<GraphQLError>;
 
   constructor(config: $ReadOnly<GraphQLSchemaConfig>) {
     // If this schema was built from a source known to be valid, then it may be
@@ -276,7 +276,7 @@ export class GraphQLSchema {
 
   getPossibleTypes(
     abstractType: GraphQLAbstractType,
-  ): $ReadOnlyArray<GraphQLObjectType> {
+  ): ReadonlyArray<GraphQLObjectType> {
     return isUnionType(abstractType)
       ? abstractType.getTypes()
       : this.getImplementations(abstractType).objects;
@@ -319,7 +319,7 @@ export class GraphQLSchema {
     return map[maybeSubType.name] !== undefined;
   }
 
-  getDirectives(): $ReadOnlyArray<GraphQLDirective> {
+  getDirectives(): ReadonlyArray<GraphQLDirective> {
     return this._directives;
   }
 
@@ -370,7 +370,7 @@ export type GraphQLSchemaConfig = {
   directives?: ?Array<GraphQLDirective>,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?SchemaDefinitionNode,
-  extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
+  extensionASTNodes?: ?ReadonlyArray<SchemaExtensionNode>,
   ...GraphQLSchemaValidationOptions,
 };
 
@@ -383,7 +383,7 @@ export type GraphQLSchemaNormalizedConfig = {
   types: Array<GraphQLNamedType>,
   directives: Array<GraphQLDirective>,
   extensions: ?ReadOnlyObjMap<mixed>,
-  extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>,
+  extensionASTNodes: ReadonlyArray<SchemaExtensionNode>,
   assumeValid: boolean,
 };
 
