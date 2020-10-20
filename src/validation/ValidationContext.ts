@@ -30,9 +30,9 @@ import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 type VariableUsage = {
-  +node: VariableNode;
-  +type: ?GraphQLInputType;
-  +defaultValue: ?mixed;
+  readonly node: VariableNode;
+  readonly type: ?GraphQLInputType;
+  readonly defaultValue: ?mixed;
 };
 
 /**
@@ -47,7 +47,7 @@ export class ASTValidationContext {
   _fragmentSpreads: Map<SelectionSetNode, ReadonlyArray<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
     OperationDefinitionNode,
-    ReadonlyArray<FragmentDefinitionNode>,
+    ReadonlyArray<FragmentDefinitionNode>
   >;
 
   constructor(ast: DocumentNode, onError: (error: GraphQLError) => void) {
@@ -155,7 +155,7 @@ export class ValidationContext extends ASTValidationContext {
   _variableUsages: Map<NodeWithSelectionSet, ReadonlyArray<VariableUsage>>;
   _recursiveVariableUsages: Map<
     OperationDefinitionNode,
-    ReadonlyArray<VariableUsage>,
+    ReadonlyArray<VariableUsage>
   >;
 
   constructor(

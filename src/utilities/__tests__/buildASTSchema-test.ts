@@ -50,13 +50,13 @@ function cycleSDL(sdl: string): string {
   return printSchema(buildSchema(sdl));
 }
 
-function expectASTNode(obj: ?{ +astNode: ?ASTNode; ... }) {
+function expectASTNode(obj: ?{ readonly astNode: ?ASTNode; ... }) {
   invariant(obj?.astNode != null);
   return expect(print(obj.astNode));
 }
 
 function expectExtensionASTNodes(obj: {
-  +extensionASTNodes: ReadonlyArray<ASTNode>;
+  readonly extensionASTNodes: ReadonlyArray<ASTNode>;
   ...
 }) {
   return expect(obj.extensionASTNodes.map(print).join('\n\n'));

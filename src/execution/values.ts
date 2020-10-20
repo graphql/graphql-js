@@ -40,7 +40,7 @@ type CoercedVariableValues =
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
-  inputs: { +[variable: string]: mixed; ... },
+  inputs: { readonly [variable: string]: mixed; ... },
   options?: { maxErrors?: number },
 ): CoercedVariableValues {
   const errors = [];
@@ -73,7 +73,7 @@ export function getVariableValues(
 function coerceVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
-  inputs: { +[variable: string]: mixed; ... },
+  inputs: { readonly [variable: string]: mixed; ... },
   onError: (error: GraphQLError) => void,
 ): { [variable: string]: mixed; ... } {
   const coercedValues = {};
@@ -244,7 +244,7 @@ export function getArgumentValues(
  */
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
-  node: { +directives?: ReadonlyArray<DirectiveNode>; ... },
+  node: { readonly directives?: ReadonlyArray<DirectiveNode>; ... },
   variableValues?: ?ObjMap<mixed>,
 ): void | { [argument: string]: mixed; ... } {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')

@@ -1,7 +1,7 @@
 export type Path = {
-  +prev: Path | void;
-  +key: string | number;
-  +typename: string | void;
+  readonly prev: Path | void;
+  readonly key: string | number;
+  readonly typename: string | void;
 };
 
 /**
