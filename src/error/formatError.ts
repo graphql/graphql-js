@@ -23,7 +23,7 @@ export function formatError(error: GraphQLError): GraphQLFormattedError {
 /**
  * @see https://github.com/graphql/graphql-spec/blob/master/spec/Section%207%20--%20Response.md#errors
  */
-export type GraphQLFormattedError = {|
+export type GraphQLFormattedError = {
   /**
    * A short, human-readable summary of the problem that **SHOULD NOT** change
    * from occurrence to occurrence of the problem, except for purposes of
@@ -47,4 +47,4 @@ export type GraphQLFormattedError = {|
    * and hence there are no additional restrictions on its contents.
    */
   +extensions?: { [key: string]: mixed, ... },
-|};
+};

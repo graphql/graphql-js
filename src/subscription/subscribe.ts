@@ -25,7 +25,7 @@ import { getOperationRootType } from '../utilities/getOperationRootType';
 
 import { mapAsyncIterator } from './mapAsyncIterator';
 
-export type SubscriptionArgs = {|
+export type SubscriptionArgs = {
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -34,7 +34,7 @@ export type SubscriptionArgs = {|
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
-|};
+};
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.

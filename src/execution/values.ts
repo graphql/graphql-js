@@ -23,8 +23,8 @@ import { valueFromAST } from '../utilities/valueFromAST';
 import { coerceInputValue } from '../utilities/coerceInputValue';
 
 type CoercedVariableValues =
-  | {| errors: $ReadOnlyArray<GraphQLError> |}
-  | {| coerced: { [variable: string]: mixed, ... } |};
+  | { errors: $ReadOnlyArray<GraphQLError> }
+  | { coerced: { [variable: string]: mixed, ... } };
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -41,7 +41,7 @@ export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: $ReadOnlyArray<VariableDefinitionNode>,
   inputs: { +[variable: string]: mixed, ... },
-  options?: {| maxErrors?: number |},
+  options?: { maxErrors?: number },
 ): CoercedVariableValues {
   const errors = [];
   const maxErrors = options?.maxErrors;

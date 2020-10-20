@@ -106,7 +106,7 @@ export class GraphQLDirective {
   }
 }
 
-export type GraphQLDirectiveConfig = {|
+export type GraphQLDirectiveConfig = {
   name: string,
   description?: ?string,
   locations: Array<DirectiveLocationEnum>,
@@ -114,14 +114,14 @@ export type GraphQLDirectiveConfig = {|
   isRepeatable?: ?boolean,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?DirectiveDefinitionNode,
-|};
+};
 
-type GraphQLDirectiveNormalizedConfig = {|
+type GraphQLDirectiveNormalizedConfig = {
   ...GraphQLDirectiveConfig,
   args: GraphQLFieldConfigArgumentMap,
   isRepeatable: boolean,
   extensions: ?ReadOnlyObjMap<mixed>,
-|};
+};
 
 /**
  * Used to conditionally include fields or fragments.

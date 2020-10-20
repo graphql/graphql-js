@@ -128,7 +128,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
   `;
   const doc = parse(query, { noLocation: true });
 
-  function validateDocument(options: {| maxErrors?: number |}) {
+  function validateDocument(options: { maxErrors?: number }) {
     return validate(testSchema, doc, undefined, options);
   }
 

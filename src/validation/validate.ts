@@ -34,7 +34,7 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules: $ReadOnlyArray<ValidationRule> = specifiedRules,
-  options: {| maxErrors?: number |} = { maxErrors: undefined },
+  options: { maxErrors?: number } = { maxErrors: undefined },
 
   // @deprecate will be removed in 17.0.0
   typeInfo: TypeInfo = new TypeInfo(schema),

@@ -58,7 +58,7 @@ import { Lexer, isPunctuatorTokenKind } from './lexer';
 /**
  * Configuration options to control parser behavior
  */
-export type ParseOptions = {|
+export type ParseOptions = {
   /**
    * By default, the parser creates AST nodes that know the location
    * in the source that they correspond to. This configuration flag
@@ -80,8 +80,8 @@ export type ParseOptions = {|
    *   }
    *
    */
-  allowLegacyFragmentVariables?: boolean,
-|};
+  allowLegacyFragmentVariables?: boolean;
+};
 
 /**
  * Given a GraphQL source, parses it into a Document.

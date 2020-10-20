@@ -16,11 +16,11 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { executeSync, execute } from '../execute';
 
-async function executeQuery(args: {|
+async function executeQuery(args: {
   schema: GraphQLSchema,
   query: string,
   rootValue?: mixed,
-|}) {
+}) {
   const { schema, query, rootValue } = args;
   const document = parse(query);
   const result = executeSync({
@@ -533,7 +533,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `);
 
-    function expectError({ forTypeName }: {| forTypeName: mixed |}) {
+    function expectError({ forTypeName }: { forTypeName: mixed }) {
       const rootValue = { pet: { __typename: forTypeName } };
       const result = executeSync({ schema, document, rootValue });
       return {

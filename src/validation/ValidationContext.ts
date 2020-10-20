@@ -29,11 +29,11 @@ import type {
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
-type VariableUsage = {|
+type VariableUsage = {
   +node: VariableNode,
   +type: ?GraphQLInputType,
   +defaultValue: ?mixed,
-|};
+};
 
 /**
  * An instance of this class is passed as the "this" context to all validators,

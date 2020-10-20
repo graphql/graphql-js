@@ -14,10 +14,10 @@ type KindVisitor = $ObjMap<
   <Node>(Node) => ASTVisitFn<Node> | EnterLeaveVisitor<Node>,
 >;
 
-type EnterLeaveVisitor<TVisitedNode: ASTNode> = {|
+type EnterLeaveVisitor<TVisitedNode: ASTNode> = {
   +enter?: ASTVisitFn<TVisitedNode>,
   +leave?: ASTVisitFn<TVisitedNode>,
-|};
+};
 
 /**
  * A visitor is comprised of visit functions, which are called on each node

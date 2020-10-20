@@ -1,8 +1,8 @@
-export type Path = {|
+export type Path = {
   +prev: Path | void,
   +key: string | number,
   +typename: string | void,
-|};
+};
 
 /**
  * Given a Path and a key, return a new Path containing the new key.

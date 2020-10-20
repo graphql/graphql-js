@@ -92,7 +92,7 @@ import {
  * Namely, schema of the type system that is currently executing,
  * and the fragments defined in the query document
  */
-export type ExecutionContext = {|
+export type ExecutionContext = {
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
   rootValue: mixed,
@@ -102,7 +102,7 @@ export type ExecutionContext = {|
   fieldResolver: GraphQLFieldResolver<any, any>,
   typeResolver: GraphQLTypeResolver<any, any>,
   errors: Array<GraphQLError>,
-|};
+};
 
 /**
  * The result of GraphQL execution.
@@ -111,19 +111,19 @@ export type ExecutionContext = {|
  *   - `data` is the result of a successful execution of the query.
  *   - `extensions` is reserved for adding non-standard properties.
  */
-export type ExecutionResult = {|
+export type ExecutionResult = {
   errors?: $ReadOnlyArray<GraphQLError>,
   data?: ObjMap<mixed> | null,
   extensions?: ObjMap<mixed>,
-|};
+};
 
-export type FormattedExecutionResult = {|
+export type FormattedExecutionResult = {
   errors?: $ReadOnlyArray<GraphQLFormattedError>,
   data?: ObjMap<mixed> | null,
   extensions?: ObjMap<mixed>,
-|};
+};
 
-export type ExecutionArgs = {|
+export type ExecutionArgs = {
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -132,7 +132,7 @@ export type ExecutionArgs = {|
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
-|};
+};
 
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.

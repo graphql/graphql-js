@@ -64,7 +64,7 @@ describe('Execute: resolve function', () => {
         this._num = num;
       }
 
-      test(args: {| addend1: number |}, context: {| addend2: number |}) {
+      test(args: { addend1: number }, context: { addend2: number }) {
         return this._num + args.addend1 + context.addend2;
       }
     }
