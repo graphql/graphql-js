@@ -266,7 +266,7 @@ export type IntrospectionInputTypeRef =
 export type IntrospectionNamedTypeRef<
   T extends IntrospectionType = IntrospectionType
 > = {
-  readonly kind: $PropertyType<T, 'kind'>;
+  readonly kind: T['kind'];
   readonly name: string;
 };
 
