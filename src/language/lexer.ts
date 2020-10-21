@@ -75,7 +75,9 @@ export class Lexer {
 /**
  * @internal
  */
-export function isPunctuatorTokenKind(kind: TokenKindEnum): boolean %checks {
+export function isPunctuatorTokenKind(
+  kind: TokenKindEnum,
+): boolean {
   return (
     kind === TokenKind.BANG ||
     kind === TokenKind.DOLLAR ||

@@ -41,10 +41,7 @@ import {
 /**
  * Test if the given value is a GraphQL schema.
  */
-declare function isSchema(schema: unknown): boolean %checks(schema instanceof
-  GraphQLSchema);
-// eslint-disable-next-line no-redeclare
-export function isSchema(schema) {
+export function isSchema(schema: unknown): schema is GraphQLSchema {
   return instanceOf(schema, GraphQLSchema);
 }
 

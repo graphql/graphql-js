@@ -20,11 +20,7 @@ import { argsToArgsConfig, GraphQLNonNull } from './definition';
 /**
  * Test if the given value is a GraphQL directive.
  */
-declare function isDirective(
-  directive: unknown,
-): boolean %checks(directive instanceof GraphQLDirective);
-// eslint-disable-next-line no-redeclare
-export function isDirective(directive) {
+export function isDirective(directive: unknown): directive is GraphQLDirective {
   return instanceOf(directive, GraphQLDirective);
 }
 
