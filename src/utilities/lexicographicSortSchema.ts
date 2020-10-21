@@ -55,7 +55,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     subscription: replaceMaybeType(schemaConfig.subscription),
   });
 
-  function replaceType<T: GraphQLType>(type: T): T {
+  function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
       // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
@@ -66,12 +66,12 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return replaceNamedType(type);
   }
 
-  function replaceNamedType<T: GraphQLNamedType>(type: T): T {
+  function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
     // $FlowFixMe[incompatible-return]
     return typeMap[type.name];
   }
 
-  function replaceMaybeType<T: Maybe<GraphQLNamedType>>(maybeType: T): T {
+  function replaceMaybeType<T extends Maybe<GraphQLNamedType>>(maybeType: T): T {
     return maybeType && replaceNamedType(maybeType);
   }
 
@@ -106,7 +106,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }));
   }
 
-  function sortTypes<T: GraphQLNamedType>(array: ReadonlyArray<T>): Array<T> {
+  function sortTypes<T extends GraphQLNamedType>(array: ReadonlyArray<T>): Array<T> {
     return sortByName(array).map(replaceNamedType);
   }
 
@@ -170,7 +170,7 @@ function sortObjMap<T, R>(
   return sortedMap;
 }
 
-function sortByName<T: { readonly name: string; }>(
+function sortByName<T extends { readonly name: string; }>(
   array: ReadonlyArray<T>,
 ): Array<T> {
   return sortBy(array, (obj) => obj.name);

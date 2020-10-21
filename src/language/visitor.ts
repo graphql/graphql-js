@@ -15,7 +15,7 @@ type KindVisitor = $ObjMap<
   <Node>(node: Node) => ASTVisitFn<Node> | EnterLeaveVisitor<Node>,
 >;
 
-type EnterLeaveVisitor<TVisitedNode: ASTNode> = {
+type EnterLeaveVisitor<TVisitedNode extends ASTNode> = {
   readonly enter?: ASTVisitFn<TVisitedNode>;
   readonly leave?: ASTVisitFn<TVisitedNode>;
 };
@@ -24,7 +24,7 @@ type EnterLeaveVisitor<TVisitedNode: ASTNode> = {
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
  */
-export type ASTVisitFn<TVisitedNode: ASTNode> = (
+export type ASTVisitFn<TVisitedNode extends ASTNode> = (
   // The current node being visiting.
   node: TVisitedNode,
   // The index or key to this node from the parent node or Array.

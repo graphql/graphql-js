@@ -68,7 +68,7 @@ const SomeInputObjectType = assertInputObjectType(
 
 const SomeDirective = assertDirective(SomeSchema.getDirective('SomeDirective'));
 
-function withModifiers<T: GraphQLNamedType>(
+function withModifiers<T extends GraphQLNamedType>(
   type: T,
 ): Array<T | GraphQLList<T> | GraphQLNonNull<T | GraphQLList<T>>> {
   return [

@@ -217,7 +217,7 @@ export function extendSchemaImpl(
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
-  function replaceType<T: GraphQLType>(type: T): T {
+  function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
       // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
@@ -229,7 +229,7 @@ export function extendSchemaImpl(
     return replaceNamedType(type);
   }
 
-  function replaceNamedType<T: GraphQLNamedType>(type: T): T {
+  function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
     // Note: While this could make early assertions to get the correctly
     // typed values, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
