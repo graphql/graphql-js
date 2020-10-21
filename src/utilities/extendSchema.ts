@@ -82,9 +82,7 @@ import {
 
 import { valueFromAST } from './valueFromAST';
 
-type Options = {
-  ...GraphQLSchemaValidationOptions;
-
+interface Options extends GraphQLSchemaValidationOptions {
   /**
    * Set to true to assume the SDL is valid.
    *
