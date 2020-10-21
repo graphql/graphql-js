@@ -17,7 +17,7 @@
 declare function isIterableObject(
   value: unknown,
   // $FlowFixMe[invalid-in-rhs]
-): boolean %checks(value instanceof Iterable);
+): value is Iterable<unknown>;
 
 // eslint-disable-next-line no-redeclare
 export function isIterableObject(maybeIterable: unknown): boolean {

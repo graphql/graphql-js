@@ -5,7 +5,7 @@
 declare function isAsyncIterable(
   value: unknown,
   // $FlowFixMe[invalid-in-rhs]
-): boolean %checks(value instanceof AsyncIterable);
+): value is AsyncIterable<unknown>;
 
 // eslint-disable-next-line no-redeclare
 export function isAsyncIterable(maybeAsyncIterable) {

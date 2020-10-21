@@ -53,9 +53,6 @@ export class Source {
  *
  * @internal
  */
-declare function isSource(source: unknown): boolean %checks(source instanceof
-  Source);
-// eslint-disable-next-line no-redeclare
-export function isSource(source) {
+export function isSource(source: unknown): source is Source {
   return instanceOf(source, Source);
 }
