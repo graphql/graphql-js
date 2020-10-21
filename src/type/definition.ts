@@ -342,7 +342,7 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  *     })
  *
  */
-export class GraphQLList<+T: GraphQLType> {
+export class GraphQLList<T extends GraphQLType> {
   readonly ofType: T;
 
   constructor(ofType: T) {
@@ -388,7 +388,7 @@ export class GraphQLList<+T: GraphQLType> {
  *
  * Note: the enforcement of non-nullability occurs within the executor.
  */
-export class GraphQLNonNull<+T: GraphQLNullableType> {
+export class GraphQLNonNull<T extends GraphQLNullableType> {
   readonly ofType: T;
 
   constructor(ofType: T) {
@@ -456,7 +456,7 @@ export function assertNullableType(type: unknown): GraphQLNullableType {
 
 /* eslint-disable no-redeclare */
 declare function getNullableType(type: void | null): void;
-declare function getNullableType<T: GraphQLNullableType>(type: T): T;
+declare function getNullableType<T extends GraphQLNullableType>(type: T): T;
 declare function getNullableType<T>(type: GraphQLNonNull<T>): T;
 export function getNullableType(type) {
   /* eslint-enable no-redeclare */
