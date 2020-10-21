@@ -359,7 +359,7 @@ export type GraphQLSchemaValidationOptions = {
   assumeValid?: boolean,
 };
 
-export type GraphQLSchemaConfig = {
+export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   description?: Maybe<string>,
   query?: Maybe<GraphQLObjectType>,
   mutation?: Maybe<GraphQLObjectType>,
@@ -369,21 +369,19 @@ export type GraphQLSchemaConfig = {
   extensions?: Maybe<ReadOnlyObjMapLike<unknown>>,
   astNode?: Maybe<SchemaDefinitionNode>,
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>,
-  ...GraphQLSchemaValidationOptions,
-};
+}
 
 /**
  * @internal
  */
-export type GraphQLSchemaNormalizedConfig = {
-  ...GraphQLSchemaConfig,
+export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>,
   types: Array<GraphQLNamedType>,
   directives: Array<GraphQLDirective>,
   extensions: Maybe<ReadOnlyObjMap<unknown>>,
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>,
   assumeValid: boolean,
-};
+}
 
 function collectReferencedTypes(
   type: GraphQLType,

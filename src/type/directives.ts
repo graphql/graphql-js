@@ -113,12 +113,11 @@ export type GraphQLDirectiveConfig = {
   astNode?: Maybe<DirectiveDefinitionNode>,
 };
 
-type GraphQLDirectiveNormalizedConfig = {
-  ...GraphQLDirectiveConfig,
-  args: GraphQLFieldConfigArgumentMap,
-  isRepeatable: boolean,
-  extensions: Maybe<ReadOnlyObjMap<unknown>>,
-};
+interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
+  args: GraphQLFieldConfigArgumentMap;
+  isRepeatable: boolean;
+  extensions: Maybe<ReadOnlyObjMap<unknown>>;
+}
 
 /**
  * Used to conditionally include fields or fragments.
