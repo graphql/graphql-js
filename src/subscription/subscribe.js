@@ -24,6 +24,7 @@ import type { GraphQLFieldResolver } from '../type/definition';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
 import mapAsyncIterator from './mapAsyncIterator';
+import flattenAsyncIterator from './flattenAsyncIterator';
 
 export type SubscriptionArgs = {|
   schema: GraphQLSchema,
@@ -140,8 +141,8 @@ function subscribeImpl(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = (payload) => {
-    const executionResult = execute({
+  const mapSourceToResponse = (payload) =>
+    execute({
       schema,
       document,
       rootValue: payload,
@@ -150,24 +151,18 @@ function subscribeImpl(
       operationName,
       fieldResolver,
     });
-    /* istanbul ignore if - TODO: implement support for defer/stream in subscriptions */
-    if (isAsyncIterable(executionResult)) {
-      throw new Error(
-        'TODO: implement support for defer/stream in subscriptions',
-      );
-    }
-    return executionResult;
-  };
 
   // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
   return sourcePromise.then((resultOrStream) =>
     // Note: Flow can't refine isAsyncIterable, so explicit casts are used.
     isAsyncIterable(resultOrStream)
-      ? mapAsyncIterator(
-          resultOrStream,
-          mapSourceToResponse,
-          reportGraphQLError,
+      ? flattenAsyncIterator(
+          mapAsyncIterator(
+            resultOrStream,
+            mapSourceToResponse,
+            reportGraphQLError,
+          ),
         )
       : ((resultOrStream: any): ExecutionResult),
   );
