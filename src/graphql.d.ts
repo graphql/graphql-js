@@ -3,7 +3,7 @@ import { Maybe } from './jsutils/Maybe';
 import { Source } from './language/source';
 import { GraphQLSchema } from './type/schema';
 import { GraphQLFieldResolver, GraphQLTypeResolver } from './type/definition';
-import { ExecutionResult } from './execution/execute';
+import { ExecutionResult, AsyncExecutionResult } from './execution/execute';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -51,7 +51,9 @@ export interface GraphQLArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 
-export function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
+export function graphql(
+  args: GraphQLArgs,
+): Promise<ExecutionResult | AsyncIterableIterator<AsyncExecutionResult>>;
 export function graphql(
   schema: GraphQLSchema,
   source: Source | string,
@@ -61,7 +63,7 @@ export function graphql(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): Promise<ExecutionResult>;
+): Promise<ExecutionResult | AsyncIterableIterator<AsyncExecutionResult>>;
 
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,

@@ -13,7 +13,10 @@ import type {
 import type { GraphQLSchema } from './type/schema';
 import { validateSchema } from './type/validate';
 
-import type { ExecutionResult } from './execution/execute';
+import type {
+  ExecutionResult,
+  AsyncExecutionResult,
+} from './execution/execute';
 import { execute } from './execution/execute';
 
 /**
@@ -65,7 +68,10 @@ export type GraphQLArgs = {|
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
 |};
-declare function graphql(GraphQLArgs, ..._: []): Promise<ExecutionResult>;
+declare function graphql(
+  GraphQLArgs,
+  ..._: []
+): PromiseOrValue<ExecutionResult | AsyncIterable<AsyncExecutionResult>>;
 /* eslint-disable no-redeclare */
 declare function graphql(
   schema: GraphQLSchema,
@@ -76,7 +82,7 @@ declare function graphql(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
-): Promise<ExecutionResult>;
+): PromiseOrValue<ExecutionResult | AsyncIterable<AsyncExecutionResult>>;
 export function graphql(
   argsOrSchema,
   source,
@@ -160,7 +166,9 @@ export function graphqlSync(
   return result;
 }
 
-function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
+function graphqlImpl(
+  args: GraphQLArgs,
+): PromiseOrValue<ExecutionResult | AsyncIterable<AsyncExecutionResult>> {
   const {
     schema,
     source,

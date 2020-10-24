@@ -140,8 +140,8 @@ function subscribeImpl(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = (payload) =>
-    execute({
+  const mapSourceToResponse = (payload) => {
+    const executionResult = execute({
       schema,
       document,
       rootValue: payload,
@@ -150,6 +150,14 @@ function subscribeImpl(
       operationName,
       fieldResolver,
     });
+    /* istanbul ignore if - TODO: implement support for defer/stream in subscriptions */
+    if (isAsyncIterable(executionResult)) {
+      throw new Error(
+        'TODO: implement support for defer/stream in subscriptions',
+      );
+    }
+    return executionResult;
+  };
 
   // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
@@ -233,11 +241,12 @@ function executeSubscription(
 ): Promise<AsyncIterable<mixed>> {
   const { schema, operation, variableValues, rootValue } = exeContext;
   const type = getOperationRootType(schema, operation);
-  const fields = collectFields(
+  const { fields } = collectFields(
     exeContext,
     type,
     operation.selectionSet,
     Object.create(null),
+    [],
     Object.create(null),
   );
   const responseNames = Object.keys(fields);
