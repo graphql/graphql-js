@@ -20,21 +20,19 @@ import { GraphQLList, GraphQLNonNull } from '../type/definition';
  * the type called "User" found in the schema. If a type called "User" is not
  * found in the schema, then undefined will be returned.
  */
-/* eslint-disable no-redeclare */
-declare function typeFromAST(
+export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NamedTypeNode,
 ): GraphQLNamedType | void;
-declare function typeFromAST(
+export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: ListTypeNode,
 ): GraphQLList<any> | void;
-declare function typeFromAST(
+export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NonNullTypeNode,
 ): GraphQLNonNull<any> | void;
 export function typeFromAST(schema, typeNode) {
-  /* eslint-enable no-redeclare */
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
