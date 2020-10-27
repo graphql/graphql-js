@@ -67,7 +67,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
-    return ((typeMap[type.name]: any): T);
+    return typeMap[type.name] as T;
   }
 
   function replaceMaybeType<T extends Maybe<GraphQLNamedType>>(maybeType: T): T {
@@ -153,7 +153,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+    invariant(false, 'Unexpected type: ' + inspect(type as never));
   }
 }
 

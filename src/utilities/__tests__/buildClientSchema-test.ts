@@ -72,7 +72,7 @@ describe('Type System: build schema from introspection', () => {
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
 
-    delete (introspection: any).__schema.queryType;
+    delete (introspection as any).__schema.queryType;
 
     const clientSchema = buildClientSchema(introspection);
     expect(clientSchema.getQueryType()).to.equal(null);
@@ -472,7 +472,7 @@ describe('Type System: build schema from introspection', () => {
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
 
-    delete (introspection: any).__schema.directives;
+    delete (introspection as any).__schema.directives;
 
     const clientSchema = buildClientSchema(introspection);
 
@@ -639,7 +639,7 @@ describe('Type System: build schema from introspection', () => {
     it('throws when referenced unknown type', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
-      (introspection: any).__schema.types = introspection.__schema.types.filter(
+      (introspection as any).__schema.types = introspection.__schema.types.filter(
         ({ name }) => name !== 'Query',
       );
 
@@ -656,7 +656,7 @@ describe('Type System: build schema from introspection', () => {
       `);
       const introspection = introspectionFromSchema(schema);
 
-      (introspection: any).__schema.types = introspection.__schema.types.filter(
+      (introspection as any).__schema.types = introspection.__schema.types.filter(
         ({ name }) => name !== 'Float',
       );
 
@@ -670,7 +670,7 @@ describe('Type System: build schema from introspection', () => {
 
       expect(introspection).to.have.nested.property('__schema.queryType.name');
 
-      delete (introspection: any).__schema.queryType.name;
+      delete (introspection as any).__schema.queryType.name;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Unknown type reference: {}.',
@@ -685,7 +685,7 @@ describe('Type System: build schema from introspection', () => {
 
       expect(queryTypeIntrospection).to.have.property('kind');
 
-      delete (queryTypeIntrospection: any).kind;
+      delete (queryTypeIntrospection as any).kind;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: { name: "Query", .* }\./,
@@ -700,7 +700,7 @@ describe('Type System: build schema from introspection', () => {
 
       expect(queryTypeIntrospection).to.have.property('interfaces');
 
-      delete (queryTypeIntrospection: any).interfaces;
+      delete (queryTypeIntrospection as any).interfaces;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing interfaces: { kind: "OBJECT", name: "Query", .* }\./,
@@ -714,7 +714,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someInterfaceIntrospection).to.have.property('interfaces');
-      (someInterfaceIntrospection: any).interfaces = null;
+      (someInterfaceIntrospection as any).interfaces = null;
 
       const clientSchema = buildClientSchema(introspection);
       expect(printSchema(clientSchema)).to.equal(printSchema(dummySchema));
@@ -727,7 +727,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(queryTypeIntrospection).to.have.property('fields');
-      delete (queryTypeIntrospection: any).fields;
+      delete (queryTypeIntrospection as any).fields;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing fields: { kind: "OBJECT", name: "Query", .* }\./,
@@ -741,7 +741,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(queryTypeIntrospection).to.have.nested.property('fields[0].args');
-      delete (queryTypeIntrospection: any).fields[0].args;
+      delete (queryTypeIntrospection as any).fields[0].args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing field args: { name: "foo", .* }\./,
@@ -758,7 +758,7 @@ describe('Type System: build schema from introspection', () => {
         'fields[0].args[0].type.name',
         'String',
       );
-      (queryTypeIntrospection: any).fields[0].args[0].type.name = 'SomeUnion';
+      (queryTypeIntrospection as any).fields[0].args[0].type.name = 'SomeUnion';
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Introspection must provide input type for arguments, but received: SomeUnion.',
@@ -775,7 +775,7 @@ describe('Type System: build schema from introspection', () => {
         'fields[0].type.name',
         'String',
       );
-      (queryTypeIntrospection: any).fields[0].type.name = 'SomeInputObject';
+      (queryTypeIntrospection as any).fields[0].type.name = 'SomeInputObject';
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Introspection must provide output type for fields, but received: SomeInputObject.',
@@ -789,7 +789,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someUnionIntrospection).to.have.property('possibleTypes');
-      delete (someUnionIntrospection: any).possibleTypes;
+      delete (someUnionIntrospection as any).possibleTypes;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing possibleTypes: { kind: "UNION", name: "SomeUnion",.* }\./,
@@ -803,7 +803,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someEnumIntrospection).to.have.property('enumValues');
-      delete (someEnumIntrospection: any).enumValues;
+      delete (someEnumIntrospection as any).enumValues;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing enumValues: { kind: "ENUM", name: "SomeEnum", .* }\./,
@@ -817,7 +817,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someInputObjectIntrospection).to.have.property('inputFields');
-      delete (someInputObjectIntrospection: any).inputFields;
+      delete (someInputObjectIntrospection as any).inputFields;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing inputFields: { kind: "INPUT_OBJECT", name: "SomeInputObject", .* }\./,
@@ -832,7 +832,7 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         locations: ['QUERY'],
       });
-      delete (someDirectiveIntrospection: any).locations;
+      delete (someDirectiveIntrospection as any).locations;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing directive locations: { name: "SomeDirective", .* }\./,
@@ -847,7 +847,7 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         args: [],
       });
-      delete (someDirectiveIntrospection: any).args;
+      delete (someDirectiveIntrospection as any).args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing directive args: { name: "SomeDirective", .* }\./,

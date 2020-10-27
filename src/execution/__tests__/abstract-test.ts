@@ -569,13 +569,13 @@ describe('Execute: Handles execution of abstract types', () => {
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    (schema.getType('Pet'): any).resolveType = () => [];
+    (schema.getType('Pet') as any).resolveType = () => [];
     expectError({ forTypeName: undefined }).toEqual(
       'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet" with value { __typename: undefined }, received "[]".',
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    (schema.getType('Pet'): any).resolveType = () => schema.getType('Cat');
+    (schema.getType('Pet') as any).resolveType = () => schema.getType('Cat');
     expectError({ forTypeName: undefined }).toEqual(
       'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
     );

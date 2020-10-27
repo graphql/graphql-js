@@ -232,7 +232,7 @@ export function extendSchemaImpl(
     // Note: While this could make early assertions to get the correctly
     // typed values, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    return ((typeMap[type.name]: any): T);
+    return typeMap[type.name] as T;
   }
 
   function replaceDirective(directive: GraphQLDirective): GraphQLDirective {
@@ -269,7 +269,7 @@ export function extendSchemaImpl(
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+    invariant(false, 'Unexpected type: ' + inspect(type as never));
   }
 
   function extendInputObjectType(
@@ -411,7 +411,7 @@ export function extendSchemaImpl(
     // Note: While this could make early assertions to get the correctly
     // typed values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    return (opTypes: any);
+    return opTypes as any;
   }
 
   function getNamedType(node: NamedTypeNode): GraphQLNamedType {
@@ -437,7 +437,7 @@ export function extendSchemaImpl(
 
   function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
     const locations = node.locations.map(
-      ({ value }) => ((value: any): DirectiveLocationEnum),
+      ({ value }) => value as DirectiveLocationEnum,
     );
 
     return new GraphQLDirective({
@@ -468,7 +468,7 @@ export function extendSchemaImpl(
           // Note: While this could make assertions to get the correctly typed
           // value, that would throw immediately while type system validation
           // with validateSchema() will produce more actionable results.
-          type: (getWrappedType(field.type): any),
+          type: getWrappedType(field.type) as any,
           description: field.description?.value,
           args: buildArgumentMap(field.arguments),
           deprecationReason: getDeprecationReason(field),
@@ -568,7 +568,7 @@ export function extendSchemaImpl(
         // values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable
         // results.
-        interfaces.push((getNamedType(type): any));
+        interfaces.push(getNamedType(type) as any);
       }
     }
     return interfaces;
@@ -587,7 +587,7 @@ export function extendSchemaImpl(
         // values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable
         // results.
-        types.push((getNamedType(type): any));
+        types.push(getNamedType(type) as any);
       }
     }
     return types;
@@ -599,7 +599,7 @@ export function extendSchemaImpl(
 
     switch (astNode.kind) {
       case Kind.OBJECT_TYPE_DEFINITION: {
-        const extensionASTNodes = (extensionNodes: any);
+        const extensionASTNodes = extensionNodes as any;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLObjectType({
@@ -612,7 +612,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.INTERFACE_TYPE_DEFINITION: {
-        const extensionASTNodes = (extensionNodes: any);
+        const extensionASTNodes = extensionNodes as any;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLInterfaceType({
@@ -625,7 +625,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.ENUM_TYPE_DEFINITION: {
-        const extensionASTNodes = (extensionNodes: any);
+        const extensionASTNodes = extensionNodes as any;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLEnumType({
@@ -637,7 +637,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.UNION_TYPE_DEFINITION: {
-        const extensionASTNodes = (extensionNodes: any);
+        const extensionASTNodes = extensionNodes as any;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLUnionType({
@@ -649,7 +649,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.SCALAR_TYPE_DEFINITION: {
-        const extensionASTNodes = (extensionNodes: any);
+        const extensionASTNodes = extensionNodes as any;
 
         return new GraphQLScalarType({
           name,
@@ -660,7 +660,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
-        const extensionASTNodes = (extensionNodes: any);
+        const extensionASTNodes = extensionNodes as any;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLInputObjectType({
@@ -676,7 +676,7 @@ export function extendSchemaImpl(
     // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
     invariant(
       false,
-      'Unexpected type definition node: ' + inspect((astNode: empty)),
+      'Unexpected type definition node: ' + inspect(astNode as never),
     );
   }
 }
@@ -697,7 +697,7 @@ function getDeprecationReason(
     | InputValueDefinitionNode,
 ): Maybe<string> {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
-  return (deprecated?.reason: any);
+  return deprecated?.reason as any;
 }
 
 /**
@@ -707,5 +707,5 @@ function getSpecifiedByUrl(
   node: ScalarTypeDefinitionNode | ScalarTypeExtensionNode,
 ): Maybe<string> {
   const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
-  return (specifiedBy?.url: any);
+  return specifiedBy?.url as any;
 }

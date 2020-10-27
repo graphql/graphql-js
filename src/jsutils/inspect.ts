@@ -38,7 +38,7 @@ function formatObjectValue(
   const seenValues = [...previouslySeenValues, value];
 
   if (typeof value.toJSON === 'function') {
-    const jsonValue = (value.toJSON: () => unknown)();
+    const jsonValue = (value.toJSON as () => unknown)();
 
     // check for infinite recursion
     if (jsonValue !== value) {

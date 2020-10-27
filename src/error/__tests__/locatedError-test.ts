@@ -18,19 +18,19 @@ describe('locatedError', () => {
 
   it('passes GraphQLError-ish through', () => {
     const e = new Error('I have a different prototype chain');
-    (e: any).locations = [];
-    (e: any).path = [];
-    (e: any).nodes = [];
-    (e: any).source = null;
-    (e: any).positions = [];
-    (e: any).name = 'GraphQLError';
+    (e as any).locations = [];
+    (e as any).path = [];
+    (e as any).nodes = [];
+    (e as any).source = null;
+    (e as any).positions = [];
+    (e as any).name = 'GraphQLError';
 
     expect(locatedError(e, [], [])).to.deep.equal(e);
   });
 
   it('does not pass through elasticsearch-like errors', () => {
     const e = new Error('I am from elasticsearch');
-    (e: any).path = '/something/feed/_search';
+    (e as any).path = '/something/feed/_search';
 
     expect(locatedError(e, [], [])).to.not.deep.equal(e);
   });

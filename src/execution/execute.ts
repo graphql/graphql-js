@@ -807,7 +807,7 @@ function completeValue(
   invariant(
     false,
     'Cannot complete value of unexpected output type: ' +
-      inspect((returnType: empty)),
+      inspect(returnType as never),
   );
 }
 

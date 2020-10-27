@@ -165,7 +165,7 @@ describe('inspect', () => {
 
     expect(inspect([[new Foo()]])).to.equal('[[[Foo]]]');
 
-    (Foo.prototype: any)[Symbol.toStringTag] = 'Bar';
+    (Foo.prototype as any)[Symbol.toStringTag] = 'Bar';
     expect(inspect([[new Foo()]])).to.equal('[[[Bar]]]');
 
     // eslint-disable-next-line func-names

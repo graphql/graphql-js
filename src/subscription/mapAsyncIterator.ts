@@ -39,7 +39,7 @@ export function mapAsyncIterator<T, U>(
 
   /* TODO: Flow doesn't support symbols as keys:
      https://github.com/facebook/flow/issues/3258 */
-  return ({
+  return {
     next(): Promise<IteratorResult<U, void>> {
       return mapResult(iterator.next());
     },
@@ -57,5 +57,5 @@ export function mapAsyncIterator<T, U>(
     [Symbol.asyncIterator]() {
       return this;
     },
-  }: $FlowFixMe);
+  } as any; // FIXME: removed $FlowFixMe in TS conversion
 }

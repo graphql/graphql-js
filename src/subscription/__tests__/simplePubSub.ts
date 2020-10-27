@@ -34,7 +34,7 @@ export class SimplePubSub<T> {
 
     /* TODO: Flow doesn't support symbols as keys:
        https://github.com/facebook/flow/issues/3258 */
-    return ({
+    return {
       next() {
         if (!listening) {
           return Promise.resolve({ value: undefined, done: true });
@@ -56,7 +56,7 @@ export class SimplePubSub<T> {
       [Symbol.asyncIterator]() {
         return this;
       },
-    }: any);
+    } as any;
 
     function pushValue(event: T): void {
       const value = transform != null ? transform(event) : event;

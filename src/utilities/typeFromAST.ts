@@ -48,5 +48,5 @@ export function typeFromAST(schema, typeNode) {
   }
 
   // istanbul ignore next (Not reachable. All possible type nodes have been considered)
-  invariant(false, 'Unexpected type node: ' + inspect((typeNode: empty)));
+  invariant(false, 'Unexpected type node: ' + inspect(typeNode as never));
 }

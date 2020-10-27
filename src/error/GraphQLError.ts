@@ -81,7 +81,7 @@ export class GraphQLError extends Error {
     source?: Maybe<Source>,
     positions?: Maybe<ReadonlyArray<number>>,
     path?: Maybe<ReadonlyArray<string | number>>,
-    originalError?: Maybe<(Error & { readonly extensions?: unknown })>,
+    originalError?: Maybe<Error & { readonly extensions?: unknown }>,
     extensions?: Maybe<{ [key: string]: unknown }>,
   ) {
     super(message);
@@ -134,7 +134,7 @@ export class GraphQLError extends Error {
       }
     }
 
-    Object.defineProperties((this: any), {
+    Object.defineProperties(this as any, {
       name: { value: 'GraphQLError' },
       message: {
         value: message,

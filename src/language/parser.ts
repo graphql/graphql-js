@@ -66,7 +66,7 @@ export type ParseOptions = {
    * in the source that they correspond to. This configuration flag
    * disables that behavior for performance or testing.
    */
-  noLocation?: boolean,
+  noLocation?: boolean;
 
   /**
    * @deprecated will be removed in the v17.0.0
@@ -168,7 +168,7 @@ export class Parser {
     const token = this.expectToken(TokenKind.NAME);
     return {
       kind: Kind.NAME,
-      value: ((token.value: any): string),
+      value: token.value as string,
       loc: this.loc(token),
     };
   }
@@ -523,14 +523,14 @@ export class Parser {
         this._lexer.advance();
         return {
           kind: Kind.INT,
-          value: ((token.value: any): string),
+          value: token.value as string,
           loc: this.loc(token),
         };
       case TokenKind.FLOAT:
         this._lexer.advance();
         return {
           kind: Kind.FLOAT,
-          value: ((token.value: any): string),
+          value: token.value as string,
           loc: this.loc(token),
         };
       case TokenKind.STRING:
@@ -548,7 +548,7 @@ export class Parser {
           default:
             return {
               kind: Kind.ENUM,
-              value: ((token.value: any): string),
+              value: token.value as string,
               loc: this.loc(token),
             };
         }
@@ -566,7 +566,7 @@ export class Parser {
     this._lexer.advance();
     return {
       kind: Kind.STRING,
-      value: ((token.value: any): string),
+      value: token.value as string,
       block: token.kind === TokenKind.BLOCK_STRING,
       loc: this.loc(token),
     };

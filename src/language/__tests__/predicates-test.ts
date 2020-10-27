@@ -16,7 +16,7 @@ import {
 } from '../predicates';
 
 const allASTNodes: Array<ASTNode> = Object.values(Kind).map(
-  (kind) => ({ kind }: any),
+  (kind) => ({ kind } as any),
 );
 
 function filterNodes(predicate: (ASTNode) => boolean): Array<string> {

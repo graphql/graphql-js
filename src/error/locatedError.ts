@@ -23,14 +23,14 @@ export function locatedError(
 
   // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
   if (Array.isArray(originalError.path)) {
-    return (originalError: any);
+    return originalError as any;
   }
 
   return new GraphQLError(
     originalError.message,
-    (originalError: any).nodes ?? nodes,
-    (originalError: any).source,
-    (originalError: any).positions,
+    (originalError as any).nodes ?? nodes,
+    (originalError as any).source,
+    (originalError as any).positions,
     path,
     originalError,
   );
