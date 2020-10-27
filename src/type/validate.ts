@@ -117,6 +117,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
       `Query root type must be Object type, it cannot be ${inspect(
         queryType,
       )}.`,
+      // @ts-expect-error FIXME: TS Conversion
       getOperationTypeNode(schema, 'query') ?? queryType.astNode,
     );
   }
@@ -126,6 +127,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     context.reportError(
       'Mutation root type must be Object type if provided, it cannot be ' +
         `${inspect(mutationType)}.`,
+      // @ts-expect-error FIXME: TS Conversion
       getOperationTypeNode(schema, 'mutation') ?? mutationType.astNode,
     );
   }
@@ -135,6 +137,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     context.reportError(
       'Subscription root type must be Object type if provided, it cannot be ' +
         `${inspect(subscriptionType)}.`,
+      // @ts-expect-error FIXME: TS Conversion
       getOperationTypeNode(schema, 'subscription') ?? subscriptionType.astNode,
     );
   }
@@ -145,10 +148,13 @@ function getOperationTypeNode(
   operation: OperationTypeNode,
 ): Maybe<ASTNode> {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return [schema.astNode]
-    .concat(schema.extensionASTNodes)
-    .flatMap((schemaNode) => schemaNode?.operationTypes ?? [])
-    .find((operationNode) => operationNode.operation === operation)?.type;
+  return (
+    [schema.astNode]
+      // @ts-expect-error FIXME: TS Conversion
+      .concat(schema.extensionASTNodes)
+      .flatMap((schemaNode) => schemaNode?.operationTypes ?? [])
+      .find((operationNode) => operationNode.operation === operation)?.type
+  );
 }
 
 function validateDirectives(context: SchemaValidationContext): void {
@@ -157,6 +163,7 @@ function validateDirectives(context: SchemaValidationContext): void {
     if (!isDirective(directive)) {
       context.reportError(
         `Expected directive but got: ${inspect(directive)}.`,
+        // @ts-expect-error FIXME: TS Conversion
         directive?.astNode,
       );
       continue;
@@ -211,6 +218,7 @@ function validateTypes(context: SchemaValidationContext): void {
     if (!isNamedType(type)) {
       context.reportError(
         `Expected GraphQL named type but got: ${inspect(type)}.`,
+        // @ts-expect-error FIXME: TS Conversion
         type.astNode,
       );
       continue;
