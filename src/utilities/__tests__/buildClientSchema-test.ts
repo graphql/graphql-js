@@ -629,7 +629,6 @@ describe('Type System: build schema from introspection', () => {
     `);
 
     it('throws when introspection is missing __schema property', () => {
-      // @ts-expect-error
       expect(() => buildClientSchema(null)).to.throw(
         'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: null.',
       );

@@ -45,12 +45,10 @@ describe('formatError: default error formatter', () => {
   });
 
   it('rejects null and undefined errors', () => {
-    // @ts-expect-error
     expect(() => formatError(undefined)).to.throw(
       'Received null or undefined error.',
     );
 
-    // @ts-expect-error
     expect(() => formatError(null)).to.throw(
       'Received null or undefined error.',
     );

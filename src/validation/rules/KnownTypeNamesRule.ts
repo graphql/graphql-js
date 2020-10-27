@@ -75,6 +75,7 @@ const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(
 function isSDLNode(value: ASTNode | ReadonlyArray<ASTNode>): boolean {
   return (
     !Array.isArray(value) &&
+    // @ts-expect-error FIXME: TS Conversion
     (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value))
   );
 }

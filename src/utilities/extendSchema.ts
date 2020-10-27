@@ -656,6 +656,7 @@ export function extendSchemaImpl(
 }
 
 const stdTypeMap = keyMap(
+  // @ts-expect-error FIXME: TS Conversion
   specifiedScalarTypes.concat(introspectionTypes),
   (type) => type.name,
 );

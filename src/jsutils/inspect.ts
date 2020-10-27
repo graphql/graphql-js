@@ -35,7 +35,9 @@ function formatObjectValue(
 
   const seenValues = [...previouslySeenValues, value];
 
+  // @ts-expect-error FIXME: TS Conversion
   if (typeof value.toJSON === 'function') {
+    // @ts-expect-error FIXME: TS Conversion
     const jsonValue = (value.toJSON as () => unknown)();
 
     // check for infinite recursion

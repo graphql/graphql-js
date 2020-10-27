@@ -83,9 +83,11 @@ describe('Type System: Scalars', () => {
       },
     });
 
+    // @ts-expect-error FIXME: TS Conversion
     expect(scalar.parseLiteral(parseValue('null'))).to.equal(
       'parseValue: null',
     );
+    // @ts-expect-error FIXME: TS Conversion
     expect(scalar.parseLiteral(parseValue('{ foo: "bar" }'))).to.equal(
       'parseValue: { foo: "bar" }',
     );
@@ -333,7 +335,6 @@ describe('Type System: Objects', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {
-        // @ts-expect-error
         f: undefined,
       },
     });
@@ -356,8 +357,8 @@ describe('Type System: Objects', () => {
   it('rejects an Object type with a field function that returns incorrect type', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
+      // @ts-expect-error FIXME: TS Conversion
       fields() {
-        // @ts-expect-error
         return [{ field: ScalarType }];
       },
     });
@@ -396,8 +397,8 @@ describe('Type System: Objects', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {},
+      // @ts-expect-error FIXME: TS Conversion
       interfaces() {
-        // @ts-expect-error
         return {};
       },
     });
@@ -409,8 +410,8 @@ describe('Type System: Objects', () => {
   it('rejects an empty Object field resolver', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
-      // @ts-expect-error
       fields: {
+        // @ts-expect-error FIXME: TS Conversion
         field: { type: ScalarType, resolve: {} },
       },
     });
@@ -423,8 +424,8 @@ describe('Type System: Objects', () => {
   it('rejects a constant scalar value resolver', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
-      // @ts-expect-error
       fields: {
+        // @ts-expect-error FIXME: TS Conversion
         field: { type: ScalarType, resolve: 0 },
       },
     });
@@ -499,8 +500,8 @@ describe('Type System: Interfaces', () => {
     const objType = new GraphQLInterfaceType({
       name: 'AnotherInterface',
       fields: {},
+      // @ts-expect-error FIXME: TS Conversion
       interfaces() {
-        // @ts-expect-error
         return {};
       },
     });
@@ -697,7 +698,6 @@ describe('Type System: Enums', () => {
       () =>
         new GraphQLEnumType({
           name: 'SomeEnum',
-          // @ts-expect-error
           values: { FOO: null },
         }),
     ).to.throw(
@@ -795,8 +795,8 @@ describe('Type System: Input Objects', () => {
     it('rejects an Input Object type with resolvers', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
-        // @ts-expect-error
         fields: {
+          // @ts-expect-error FIXME: TS Conversion
           f: { type: ScalarType, resolve: dummyFunc },
         },
       });
@@ -808,8 +808,8 @@ describe('Type System: Input Objects', () => {
     it('rejects an Input Object type with resolver constant', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
-        // @ts-expect-error
         fields: {
+          // @ts-expect-error FIXME: TS Conversion
           f: { type: ScalarType, resolve: {} },
         },
       });
@@ -843,9 +843,7 @@ describe('Type System: List', () => {
     expectList(String).to.throw(
       'Expected [function String] to be a GraphQL type.',
     );
-    // @ts-expect-error
     expectList(null).to.throw('Expected null to be a GraphQL type.');
-    // @ts-expect-error
     expectList(undefined).to.throw('Expected undefined to be a GraphQL type.');
   });
 });
@@ -867,7 +865,6 @@ describe('Type System: Non-Null', () => {
   });
 
   it('rejects a non-type as nullable type of non-null', () => {
-    // @ts-expect-error
     expectNonNull(NonNullScalarType).to.throw(
       'Expected Scalar! to be a GraphQL nullable type.',
     );
@@ -877,11 +874,9 @@ describe('Type System: Non-Null', () => {
     expectNonNull(String).to.throw(
       'Expected [function String] to be a GraphQL nullable type.',
     );
-    // @ts-expect-error
     expectNonNull(null).to.throw(
       'Expected null to be a GraphQL nullable type.',
     );
-    // @ts-expect-error
     expectNonNull(undefined).to.throw(
       'Expected undefined to be a GraphQL nullable type.',
     );
