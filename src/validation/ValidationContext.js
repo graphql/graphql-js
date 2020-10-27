@@ -50,7 +50,7 @@ export class ASTValidationContext {
     $ReadOnlyArray<FragmentDefinitionNode>,
   >;
 
-  constructor(ast: DocumentNode, onError: (err: GraphQLError) => void): void {
+  constructor(ast: DocumentNode, onError: (err: GraphQLError) => void) {
     this._ast = ast;
     this._fragments = undefined;
     this._fragmentSpreads = new Map();
@@ -141,7 +141,7 @@ export class SDLValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     schema: ?GraphQLSchema,
     onError: (err: GraphQLError) => void,
-  ): void {
+  ) {
     super(ast, onError);
     this._schema = schema;
   }
@@ -167,7 +167,7 @@ export class ValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (err: GraphQLError) => void,
-  ): void {
+  ) {
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;

@@ -53,7 +53,7 @@ export class GraphQLDirective {
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?DirectiveDefinitionNode;
 
-  constructor(config: $ReadOnly<GraphQLDirectiveConfig>): void {
+  constructor(config: $ReadOnly<GraphQLDirectiveConfig>) {
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
