@@ -68,7 +68,10 @@ function buildPackageJSON() {
 
   if (preReleaseTag != null) {
     const [tag] = preReleaseTag.split('.');
-    assert(['alpha', 'beta', 'rc'].includes(tag), `"${tag}" tag is supported.`);
+    assert(
+      tag.startsWith('experimental-') || ['alpha', 'beta', 'rc'].includes(tag),
+      `"${tag}" tag is supported.`,
+    );
 
     assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
     packageJSON.publishConfig = { tag: tag || 'latest' };
