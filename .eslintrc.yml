@@ -504,7 +504,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.5.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.6.x`
       ##########################################################################
 
       # Supported Rules
@@ -556,6 +556,7 @@ overrides:
       '@typescript-eslint/no-unnecessary-qualifier': error
       '@typescript-eslint/no-unnecessary-type-arguments': error
       '@typescript-eslint/no-unnecessary-type-assertion': error
+      '@typescript-eslint/no-unnecessary-type-constraint': off # TODO consider
       '@typescript-eslint/no-unsafe-assignment': off # TODO consider
       '@typescript-eslint/no-unsafe-call': off # TODO consider
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
@@ -655,6 +656,7 @@ overrides:
       '@typescript-eslint/no-extra-semi': off
       '@typescript-eslint/semi': off
       '@typescript-eslint/space-before-function-paren': off
+      '@typescript-eslint/space-infix-ops': off
       '@typescript-eslint/type-annotation-spacing': off
   - files: 'src/**/__*__/**'
     rules:
