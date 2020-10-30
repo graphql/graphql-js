@@ -4,7 +4,6 @@ include:
 exclude:
   - 'src/polyfills'
   - '**/*-fuzz.js'
-  - '**/*-benchmark.js'
   - '**/*.d.ts'
   - 'src/validation/rules/ExecutableDefinitions.js'
   - 'src/validation/rules/LoneSchemaDefinition.js'
@@ -16,8 +15,8 @@ exclude:
   - 'src/validation/rules/UniqueOperationTypes.js'
   - 'src/utilities/findDeprecatedUsages.js'
 clean: true
-temp-directory: 'coverage/tests'
-report-dir: 'coverage/tests'
+temp-directory: 'coverage'
+report-dir: 'coverage'
 skip-full: true
 reporter: [json, html, text]
 check-coverage: true

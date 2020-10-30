@@ -137,7 +137,7 @@ jobs:
         if: ${{ always() }}
         uses: codecov/codecov-action@v1
         with:
-          file: ./coverage/tests/coverage-final.json
+          file: ./coverage/coverage-final.json
           fail_ci_if_error: true
 
   test:
