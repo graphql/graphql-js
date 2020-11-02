@@ -1,4 +1,5 @@
 {
+  "exclude": ["integrationTests/ts/**/*"],
   "compilerOptions": {
     "module": "commonjs",
     "lib": ["es6", "esnext.asynciterable"],
