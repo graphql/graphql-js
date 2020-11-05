@@ -59,12 +59,12 @@ function buildPackageJSON() {
   delete packageJSON.engines_on_npm;
 
   const { version } = packageJSON;
-  const versionMatch = /^\d+\.\d+\.\d+-?(.*)?$/.exec(version);
+  const versionMatch = /^\d+\.\d+\.\d+-?(?<preReleaseTag>.*)?$/.exec(version);
   if (!versionMatch) {
     throw new Error('Version does not match semver spec: ' + version);
   }
 
-  const [, preReleaseTag] = versionMatch;
+  const { preReleaseTag } = versionMatch.groups;
 
   if (preReleaseTag != null) {
     const [tag] = preReleaseTag.split('.');
