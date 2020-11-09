@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import invariant from '../../jsutils/invariant';
 import isAsyncIterable from '../../jsutils/isAsyncIterable';
 import { parse } from '../../language/parser';
 
@@ -70,6 +71,36 @@ const query = new GraphQLObjectType({
       async *resolve() {
         yield friends[0].name;
         yield {};
+      },
+    },
+    asyncIterableListDelayed: {
+      type: new GraphQLList(friendType),
+      async *resolve() {
+        for (const friend of friends) {
+          // pause an additional ms before yielding to allow time
+          // for tests to return or throw before next value is processed.
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((r) => setTimeout(r, 1));
+          yield friend;
+        }
+      },
+    },
+    asyncIterableListNoReturn: {
+      type: new GraphQLList(friendType),
+      resolve() {
+        let i = 0;
+        return {
+          [Symbol.asyncIterator]: () => ({
+            async next() {
+              const friend = friends[i++];
+              if (friend) {
+                await new Promise((r) => setTimeout(r, 1));
+                return { value: friend, done: false };
+              }
+              return { value: undefined, done: true };
+            },
+          }),
+        };
       },
     },
     asyncIterableListDelayedClose: {
@@ -625,5 +656,115 @@ describe('Execute: stream directive', () => {
         hasNext: false,
       },
     ]);
+  });
+  it('Returns underlying async iterables when dispatcher is returned', async () => {
+    const document = parse(`
+      query { 
+        asyncIterableListDelayed @stream(initialCount: 1) {
+          name
+          id
+        }
+      }
+    `);
+    const schema = new GraphQLSchema({ query });
+
+    const executeResult = await execute(schema, document, {});
+    invariant(isAsyncIterable(executeResult));
+
+    const result1 = await executeResult.next();
+    expect(result1).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          asyncIterableListDelayed: [
+            {
+              id: '1',
+              name: 'Luke',
+            },
+          ],
+        },
+        hasNext: true,
+      },
+    });
+
+    executeResult.return();
+
+    // this result had started processing before return was called
+    const result2 = await executeResult.next();
+    expect(result2).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          id: '2',
+          name: 'Han',
+        },
+        hasNext: true,
+        path: ['asyncIterableListDelayed', 1],
+      },
+    });
+
+    // third result is not returned because async iterator has returned
+    const result3 = await executeResult.next();
+    expect(result3).to.deep.equal({
+      done: false,
+      value: {
+        hasNext: false,
+      },
+    });
+  });
+  it('Can return async iterable when underlying iterable does not have a return method', async () => {
+    const document = parse(`
+      query { 
+        asyncIterableListNoReturn @stream(initialCount: 1) {
+          name
+          id
+        }
+      }
+    `);
+    const schema = new GraphQLSchema({ query });
+
+    const executeResult = await execute(schema, document, {});
+    invariant(isAsyncIterable(executeResult));
+
+    const result1 = await executeResult.next();
+    expect(result1).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          asyncIterableListNoReturn: [
+            {
+              id: '1',
+              name: 'Luke',
+            },
+          ],
+        },
+        hasNext: true,
+      },
+    });
+
+    executeResult.return();
+
+    // this result had started processing before return was called
+    const result2 = await executeResult.next();
+    expect(result2).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          id: '2',
+          name: 'Han',
+        },
+        hasNext: true,
+        path: ['asyncIterableListNoReturn', 1],
+      },
+    });
+
+    // third result is not returned because async iterator has returned
+    const result3 = await executeResult.next();
+    expect(result3).to.deep.equal({
+      done: false,
+      value: {
+        hasNext: false,
+      },
+    });
   });
 });
