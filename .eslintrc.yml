@@ -143,7 +143,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.12.x`
+  # ESLint builtin rules list based on `v7.13.x`
   ##############################################################################
 
   # Possible Errors
@@ -504,7 +504,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.6.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.7.x`
       ##########################################################################
 
       # Supported Rules
@@ -529,6 +529,7 @@ overrides:
       '@typescript-eslint/naming-convention': off # TODO consider
       '@typescript-eslint/no-base-to-string': error
       '@typescript-eslint/no-confusing-non-null-assertion': error
+      '@typescript-eslint/no-confusing-void-expression': error
       '@typescript-eslint/no-dynamic-delete': off
       '@typescript-eslint/no-empty-interface': error
       '@typescript-eslint/no-explicit-any': off # TODO error
