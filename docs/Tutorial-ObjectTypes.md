@@ -74,7 +74,7 @@ Putting this all together, here is some sample code that runs a server with this
 
 ```js
 var express = require('express');
-var graphqlHTTP = require('express-graphql');
+var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language

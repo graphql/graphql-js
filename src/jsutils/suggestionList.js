@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
  * list of valid options sorted based on their similarity with the input.
@@ -127,7 +125,7 @@ class LexicalDistance {
   }
 }
 
-function stringToArray(str) {
+function stringToArray(str: string): Array<number> {
   const strLength = str.length;
   const array = new Array(strLength);
   for (let i = 0; i < strLength; ++i) {

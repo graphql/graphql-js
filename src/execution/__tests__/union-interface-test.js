@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -11,25 +9,23 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
   GraphQLList,
+  GraphQLUnionType,
   GraphQLObjectType,
   GraphQLInterfaceType,
-  GraphQLUnionType,
 } from '../../type/definition';
 
-import { execute } from '../execute';
+import { executeSync } from '../execute';
 
 class Dog {
   name: string;
   barks: boolean;
-  mother: ?Dog;
-  father: ?Dog;
+  mother: Dog | void;
+  father: Dog | void;
   progeny: Array<Dog>;
 
-  constructor(name, barks) {
+  constructor(name: string, barks: boolean) {
     this.name = name;
     this.barks = barks;
-    this.mother = null;
-    this.father = null;
     this.progeny = [];
   }
 }
@@ -37,25 +33,27 @@ class Dog {
 class Cat {
   name: string;
   meows: boolean;
-  mother: ?Cat;
-  father: ?Cat;
+  mother: Cat | void;
+  father: Cat | void;
   progeny: Array<Cat>;
 
-  constructor(name, meows) {
+  constructor(name: string, meows: boolean) {
     this.name = name;
     this.meows = meows;
-    this.mother = null;
-    this.father = null;
     this.progeny = [];
   }
 }
 
 class Person {
   name: string;
-  pets: ?Array<Dog | Cat>;
-  friends: ?Array<Dog | Cat | Person>;
+  pets: Array<Dog | Cat> | void;
+  friends: Array<Dog | Cat | Person> | void;
 
-  constructor(name, pets, friends) {
+  constructor(
+    name: string,
+    pets?: Array<Dog | Cat>,
+    friends?: Array<Dog | Cat | Person> | void,
+  ) {
     this.name = name;
     this.pets = pets;
     this.friends = friends;
@@ -72,7 +70,7 @@ const NamedType = new GraphQLInterfaceType({
 const LifeType = new GraphQLInterfaceType({
   name: 'Life',
   fields: () => ({
-    progeny: { type: GraphQLList(LifeType) },
+    progeny: { type: new GraphQLList(LifeType) },
   }),
 });
 
@@ -80,7 +78,7 @@ const MammalType = new GraphQLInterfaceType({
   name: 'Mammal',
   interfaces: [LifeType],
   fields: () => ({
-    progeny: { type: GraphQLList(MammalType) },
+    progeny: { type: new GraphQLList(MammalType) },
     mother: { type: MammalType },
     father: { type: MammalType },
   }),
@@ -92,7 +90,7 @@ const DogType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     barks: { type: GraphQLBoolean },
-    progeny: { type: GraphQLList(DogType) },
+    progeny: { type: new GraphQLList(DogType) },
     mother: { type: DogType },
     father: { type: DogType },
   }),
@@ -105,7 +103,7 @@ const CatType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     meows: { type: GraphQLBoolean },
-    progeny: { type: GraphQLList(CatType) },
+    progeny: { type: new GraphQLList(CatType) },
     mother: { type: CatType },
     father: { type: CatType },
   }),
@@ -117,13 +115,14 @@ const PetType = new GraphQLUnionType({
   types: [DogType, CatType],
   resolveType(value) {
     if (value instanceof Dog) {
-      return DogType;
+      return DogType.name;
     }
+    // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
     if (value instanceof Cat) {
-      return CatType;
+      return CatType.name;
     }
 
-    // Not reachable. All possible types have been considered.
+    // istanbul ignore next (Not reachable. All possible types have been considered)
     invariant(false);
   },
 });
@@ -133,9 +132,9 @@ const PersonType = new GraphQLObjectType({
   interfaces: [NamedType, MammalType, LifeType],
   fields: () => ({
     name: { type: GraphQLString },
-    pets: { type: GraphQLList(PetType) },
-    friends: { type: GraphQLList(NamedType) },
-    progeny: { type: GraphQLList(PersonType) },
+    pets: { type: new GraphQLList(PetType) },
+    friends: { type: new GraphQLList(NamedType) },
+    progeny: { type: new GraphQLList(PersonType) },
     mother: { type: PersonType },
     father: { type: PersonType },
   }),
@@ -192,7 +191,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document })).to.deep.equal({
+    expect(executeSync({ schema, document })).to.deep.equal({
       data: {
         Named: {
           kind: 'INTERFACE',
@@ -240,7 +239,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -280,7 +279,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -315,7 +314,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -360,7 +359,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -403,7 +402,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -468,7 +467,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    expect(execute({ schema, document, rootValue: john })).to.deep.equal({
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -515,7 +514,7 @@ describe('Execute: Union and intersection types', () => {
         encounteredContext = context;
         encounteredSchema = info.schema;
         encounteredRootValue = info.rootValue;
-        return PersonType2;
+        return PersonType2.name;
       },
     });
 
@@ -524,7 +523,7 @@ describe('Execute: Union and intersection types', () => {
       interfaces: [NamedType2],
       fields: {
         name: { type: GraphQLString },
-        friends: { type: GraphQLList(NamedType2) },
+        friends: { type: new GraphQLList(NamedType2) },
       },
     });
     const schema2 = new GraphQLSchema({ query: PersonType2 });
@@ -532,7 +531,7 @@ describe('Execute: Union and intersection types', () => {
     const rootValue = new Person('John', [], [liz]);
     const contextValue = { authToken: '123abc' };
 
-    const result = execute({
+    const result = executeSync({
       schema: schema2,
       document,
       rootValue,

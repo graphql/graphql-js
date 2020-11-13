@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * Memoizes the provided three-argument function.
  */
@@ -11,7 +9,7 @@ export default function memoize3<
 >(fn: (A1, A2, A3) => R): (A1, A2, A3) => R {
   let cache0;
 
-  function memoized(a1, a2, a3) {
+  return function memoized(a1, a2, a3) {
     if (!cache0) {
       cache0 = new WeakMap();
     }
@@ -36,7 +34,5 @@ export default function memoize3<
     const newValue = fn(a1, a2, a3);
     cache2.set(a3, newValue);
     return newValue;
-  }
-
-  return memoized;
+  };
 }

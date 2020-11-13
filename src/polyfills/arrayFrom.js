@@ -1,5 +1,3 @@
-// @flow strict
-
 import { SYMBOL_ITERATOR } from './symbols';
 
 declare function arrayFrom<T>(arrayLike: Iterable<T>): Array<T>;
@@ -11,7 +9,7 @@ declare function arrayFrom<T: mixed>(
 ): Array<T>;
 
 /* eslint-disable no-redeclare */
-// $FlowFixMe
+// $FlowFixMe[name-already-bound]
 const arrayFrom =
   Array.from ||
   function (obj, mapFn, thisArg) {
@@ -32,7 +30,7 @@ const arrayFrom =
         result.push(mapFn.call(thisArg, step.value, i));
         // Infinite Iterators could cause forEach to run forever.
         // After a very large number of iterations, produce an error.
-        /* istanbul ignore if */
+        // istanbul ignore if (Too big to actually test)
         if (i > 9999999) {
           throw new TypeError('Near-infinite iteration.');
         }

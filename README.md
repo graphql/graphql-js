@@ -3,7 +3,7 @@
 The JavaScript reference implementation for GraphQL, a query language for APIs created by Facebook.
 
 [![npm version](https://badge.fury.io/js/graphql.svg)](https://badge.fury.io/js/graphql)
-[![Build Status](https://travis-ci.org/graphql/graphql-js.svg?branch=master)](https://travis-ci.org/graphql/graphql-js?branch=master)
+[![Build Status](https://github.com/graphql/graphql-js/workflows/CI/badge.svg?branch=master)](https://github.com/graphql/graphql-js/actions?query=branch%3Amaster)
 [![Coverage Status](https://codecov.io/gh/graphql/graphql-js/branch/master/graph/badge.svg)](https://codecov.io/gh/graphql/graphql-js)
 
 See more complete documentation at https://graphql.org/ and
@@ -13,7 +13,7 @@ Looking for help? Find resources [from the community](https://graphql.org/commun
 
 ## Getting Started
 
-An overview of GraphQL in general is available in the
+A general overview of GraphQL is available in the
 [README](https://github.com/graphql/graphql-spec/blob/master/README.md) for the
 [Specification for GraphQL](https://github.com/graphql/graphql-spec). That overview
 describes a simple set of GraphQL examples that exist as [tests](src/__tests__)
@@ -24,22 +24,22 @@ through that README and the corresponding tests in parallel.
 
 Install GraphQL.js from npm
 
-With yarn:
-
-```sh
-yarn add graphql
-```
-
-or alternatively using npm:
+With npm:
 
 ```sh
 npm install --save graphql
 ```
 
-GraphQL.js provides two important capabilities: building a type schema, and
+or using yarn:
+
+```sh
+yarn add graphql
+```
+
+GraphQL.js provides two important capabilities: building a type schema and
 serving queries against that type schema.
 
-First, build a GraphQL type schema which maps to your code base.
+First, build a GraphQL type schema which maps to your codebase.
 
 ```js
 import {
@@ -64,10 +64,9 @@ var schema = new GraphQLSchema({
 });
 ```
 
-This defines a simple schema with one type and one field, that resolves
+This defines a simple schema, with one type and one field, that resolves
 to a fixed value. The `resolve` function can return a value, a promise,
-or an array of promises. A more complex example is included in the top
-level [tests](src/__tests__) directory.
+or an array of promises. A more complex example is included in the top-level [tests](src/__tests__) directory.
 
 Then, serve the result of a query against that type schema.
 
@@ -102,7 +101,7 @@ graphql(schema, query).then((result) => {
 });
 ```
 
-**Note**: Please don't forget to set `NODE_ENV=production` if you are running a production server it will disable some checks that can be useful during development but will significantly improve performance.
+**Note**: Please don't forget to set `NODE_ENV=production` if you are running a production server. It will disable some checks that can be useful during development but will significantly improve performance.
 
 ### Want to ride the bleeding edge?
 
@@ -118,7 +117,7 @@ npm install graphql@git://github.com/graphql/graphql-js.git#npm
 
 ### Using in a Browser
 
-GraphQL.js is a general purpose library and can be used both in a Node server
+GraphQL.js is a general-purpose library and can be used both in a Node server
 and in the browser. As an example, the [GraphiQL](https://github.com/graphql/graphiql/)
 tool is built with GraphQL.js!
 
@@ -130,8 +129,7 @@ custom build configurations look for `.mjs` files!
 
 ### Contributing
 
-We actively welcome pull requests, learn how to
-[contribute](https://github.com/graphql/graphql-js/blob/master/.github/CONTRIBUTING.md).
+We actively welcome pull requests. Learn how to [contribute](./.github/CONTRIBUTING.md).
 
 ### Changelog
 
@@ -139,7 +137,7 @@ Changes are tracked as [GitHub releases](https://github.com/graphql/graphql-js/r
 
 ### License
 
-GraphQL.js is [MIT-licensed](https://github.com/graphql/graphql-js/blob/master/LICENSE).
+GraphQL.js is [MIT-licensed](./LICENSE).
 
 ### Credits
 

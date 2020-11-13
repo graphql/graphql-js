@@ -1,5 +1,3 @@
-// @flow strict
-
 import inspect from '../../jsutils/inspect';
 import invariant from '../../jsutils/invariant';
 import didYouMean from '../../jsutils/didYouMean';
@@ -7,10 +5,13 @@ import suggestionList from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { KindEnum } from '../../language/kinds';
+import type { ASTVisitor } from '../../language/visitor';
+import type { TypeExtensionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
 import { isTypeDefinitionNode } from '../../language/predicates';
 
+import type { GraphQLNamedType } from '../../type/definition';
 import {
   isScalarType,
   isObjectType,
@@ -20,7 +21,7 @@ import {
   isInputObjectType,
 } from '../../type/definition';
 
-import { type SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext';
 
 /**
  * Possible type extension
@@ -48,7 +49,7 @@ export function PossibleTypeExtensionsRule(
     InputObjectTypeExtension: checkExtension,
   };
 
-  function checkExtension(node) {
+  function checkExtension(node: TypeExtensionNode): void {
     const typeName = node.name.value;
     const defNode = definedTypes[typeName];
     const existingType = schema?.getType(typeName);
@@ -97,7 +98,7 @@ const defKindToExtKind = {
   [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION,
 };
 
-function typeToExtKind(type) {
+function typeToExtKind(type: GraphQLNamedType): KindEnum {
   if (isScalarType(type)) {
     return Kind.SCALAR_TYPE_EXTENSION;
   }
@@ -113,15 +114,16 @@ function typeToExtKind(type) {
   if (isEnumType(type)) {
     return Kind.ENUM_TYPE_EXTENSION;
   }
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isInputObjectType(type)) {
     return Kind.INPUT_OBJECT_TYPE_EXTENSION;
   }
 
-  // Not reachable. All possible types have been considered.
+  // istanbul ignore next (Not reachable. All possible types have been considered)
   invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 
-function extensionKindToTypeName(kind) {
+function extensionKindToTypeName(kind: KindEnum): string {
   switch (kind) {
     case Kind.SCALAR_TYPE_EXTENSION:
       return 'scalar';
@@ -137,6 +139,6 @@ function extensionKindToTypeName(kind) {
       return 'input object';
   }
 
-  // Not reachable. All possible types have been considered.
+  // istanbul ignore next (Not reachable. All possible types have been considered)
   invariant(false, 'Unexpected kind: ' + inspect(kind));
 }

@@ -1,24 +1,28 @@
-// @flow strict
-
 import objectValues from '../polyfills/objectValues';
 
+import type { ObjMap } from '../jsutils/ObjMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
-import { type ObjMap } from '../jsutils/ObjMap';
 
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLFieldConfigMap,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLInputFieldConfigMap,
+} from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import { isIntrospectionType } from '../type/introspection';
 import {
-  type GraphQLNamedType,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
   isListType,
   isNonNullType,
   isScalarType,
@@ -51,10 +55,12 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     subscription: replaceMaybeType(schemaConfig.subscription),
   });
 
-  function replaceType(type) {
+  function replaceType<T: GraphQLType>(type: T): T {
     if (isListType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
     } else if (isNonNullType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLNonNull(replaceType(type.ofType));
     }
     return replaceNamedType(type);
@@ -64,11 +70,11 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return ((typeMap[type.name]: any): T);
   }
 
-  function replaceMaybeType(maybeType) {
+  function replaceMaybeType<T: ?GraphQLNamedType>(maybeType: T): T {
     return maybeType && replaceNamedType(maybeType);
   }
 
-  function sortDirective(directive) {
+  function sortDirective(directive: GraphQLDirective) {
     const config = directive.toConfig();
     return new GraphQLDirective({
       ...config,
@@ -77,14 +83,14 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     });
   }
 
-  function sortArgs(args) {
+  function sortArgs(args: GraphQLFieldConfigArgumentMap) {
     return sortObjMap(args, (arg) => ({
       ...arg,
       type: replaceType(arg.type),
     }));
   }
 
-  function sortFields(fieldsMap) {
+  function sortFields(fieldsMap: GraphQLFieldConfigMap<mixed, mixed>) {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
@@ -92,7 +98,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }));
   }
 
-  function sortInputFields(fieldsMap) {
+  function sortInputFields(fieldsMap: GraphQLInputFieldConfigMap) {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
@@ -103,7 +109,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return sortByName(arr).map(replaceNamedType);
   }
 
-  function sortNamedType(type) {
+  function sortNamedType<T: GraphQLNamedType>(type: T) {
     if (isScalarType(type) || isIntrospectionType(type)) {
       return type;
     }
@@ -137,6 +143,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
         values: sortObjMap(config.values),
       });
     }
+    // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
     if (isInputObjectType(type)) {
       const config = type.toConfig();
       return new GraphQLInputObjectType({
@@ -145,7 +152,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       });
     }
 
-    // Not reachable. All possible types have been considered.
+    // istanbul ignore next (Not reachable. All possible types have been considered)
     invariant(false, 'Unexpected type: ' + inspect((type: empty)));
   }
 }

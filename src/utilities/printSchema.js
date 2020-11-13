@@ -1,5 +1,3 @@
-// @flow strict
-
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
@@ -8,22 +6,26 @@ import invariant from '../jsutils/invariant';
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
 
-import { type GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type {
+  GraphQLNamedType,
+  GraphQLArgument,
+  GraphQLInputField,
+  GraphQLScalarType,
+  GraphQLEnumType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLInputObjectType,
+} from '../type/definition';
 import { isIntrospectionType } from '../type/introspection';
 import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
 import {
-  GraphQLDirective,
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
 } from '../type/directives';
 import {
-  type GraphQLNamedType,
-  type GraphQLScalarType,
-  type GraphQLEnumType,
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
-  type GraphQLUnionType,
-  type GraphQLInputObjectType,
   isScalarType,
   isObjectType,
   isInterfaceType,
@@ -172,16 +174,21 @@ export function printType(type: GraphQLNamedType, options?: Options): string {
   if (isEnumType(type)) {
     return printEnum(type, options);
   }
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isInputObjectType(type)) {
     return printInputObject(type, options);
   }
 
-  // Not reachable. All possible types have been considered.
+  // istanbul ignore next (Not reachable. All possible types have been considered)
   invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 
 function printScalar(type: GraphQLScalarType, options): string {
-  return printDescription(options, type) + `scalar ${type.name}`;
+  return (
+    printDescription(options, type) +
+    `scalar ${type.name}` +
+    printSpecifiedByUrl(type)
+  );
 }
 
 function printImplementedInterfaces(
@@ -225,7 +232,7 @@ function printEnum(type: GraphQLEnumType, options): string {
         printDescription(options, value, '  ', !i) +
         '  ' +
         value.name +
-        printDeprecated(value),
+        printDeprecated(value.deprecationReason),
     );
 
   return (
@@ -243,7 +250,10 @@ function printInputObject(type: GraphQLInputObjectType, options): string {
   );
 }
 
-function printFields(options, type) {
+function printFields(
+  options,
+  type: GraphQLObjectType | GraphQLInterfaceType,
+): string {
   const fields = objectValues(type.getFields()).map(
     (f, i) =>
       printDescription(options, f, '  ', !i) +
@@ -252,16 +262,20 @@ function printFields(options, type) {
       printArgs(options, f.args, '  ') +
       ': ' +
       String(f.type) +
-      printDeprecated(f),
+      printDeprecated(f.deprecationReason),
   );
   return printBlock(fields);
 }
 
-function printBlock(items) {
+function printBlock(items: $ReadOnlyArray<string>): string {
   return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
 }
 
-function printArgs(options, args, indentation = '') {
+function printArgs(
+  options,
+  args: Array<GraphQLArgument>,
+  indentation: string = '',
+): string {
   if (args.length === 0) {
     return '';
   }
@@ -288,16 +302,16 @@ function printArgs(options, args, indentation = '') {
   );
 }
 
-function printInputValue(arg) {
+function printInputValue(arg: GraphQLInputField): string {
   const defaultAST = astFromValue(arg.defaultValue, arg.type);
   let argDecl = arg.name + ': ' + String(arg.type);
   if (defaultAST) {
     argDecl += ` = ${print(defaultAST)}`;
   }
-  return argDecl;
+  return argDecl + printDeprecated(arg.deprecationReason);
 }
 
-function printDirective(directive, options) {
+function printDirective(directive: GraphQLDirective, options): string {
   return (
     printDescription(options, directive) +
     'directive @' +
@@ -309,11 +323,10 @@ function printDirective(directive, options) {
   );
 }
 
-function printDeprecated(fieldOrEnumVal) {
-  if (!fieldOrEnumVal.isDeprecated) {
+function printDeprecated(reason: ?string): string {
+  if (reason == null) {
     return '';
   }
-  const reason = fieldOrEnumVal.deprecationReason;
   const reasonAST = astFromValue(reason, GraphQLString);
   if (reasonAST && reason !== DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + print(reasonAST) + ')';
@@ -321,11 +334,24 @@ function printDeprecated(fieldOrEnumVal) {
   return ' @deprecated';
 }
 
+function printSpecifiedByUrl(scalar: GraphQLScalarType): string {
+  if (scalar.specifiedByUrl == null) {
+    return '';
+  }
+  const url = scalar.specifiedByUrl;
+  const urlAST = astFromValue(url, GraphQLString);
+  invariant(
+    urlAST,
+    'Unexpected null value returned from `astFromValue` for specifiedByUrl',
+  );
+  return ' @specifiedBy(url: ' + print(urlAST) + ')';
+}
+
 function printDescription(
   options,
-  def,
-  indentation = '',
-  firstInBlock = true,
+  def: { +description: ?string, ... },
+  indentation: string = '',
+  firstInBlock: boolean = true,
 ): string {
   const { description } = def;
   if (description == null) {

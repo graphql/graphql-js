@@ -1,11 +1,10 @@
-// @flow strict
-
 import { syntaxError } from '../error/syntaxError';
 
+import type { Source } from './source';
+import type { TokenKindEnum } from './tokenKind';
 import { Token } from './ast';
-import { type Source } from './source';
+import { TokenKind } from './tokenKind';
 import { dedentBlockStringValue } from './blockString';
-import { type TokenKindEnum, TokenKind } from './tokenKind';
 
 /**
  * Given a Source object, creates a Lexer for that source.
@@ -95,7 +94,7 @@ export function isPunctuatorTokenKind(kind: TokenKindEnum): boolean %checks {
   );
 }
 
-function printCharCode(code) {
+function printCharCode(code: number): string {
   return (
     // NaN/undefined represents access beyond the end of the file.
     isNaN(code)
@@ -120,149 +119,159 @@ function readToken(lexer: Lexer, prev: Token): Token {
   const body = source.body;
   const bodyLength = body.length;
 
-  const pos = positionAfterWhitespace(body, prev.end, lexer);
+  let pos = prev.end;
+  while (pos < bodyLength) {
+    const code = body.charCodeAt(pos);
+
+    const line = lexer.line;
+    const col = 1 + pos - lexer.lineStart;
+
+    // SourceCharacter
+    switch (code) {
+      case 0xfeff: // <BOM>
+      case 9: //   \t
+      case 32: //  <space>
+      case 44: //  ,
+        ++pos;
+        continue;
+      case 10: //  \n
+        ++pos;
+        ++lexer.line;
+        lexer.lineStart = pos;
+        continue;
+      case 13: //  \r
+        if (body.charCodeAt(pos + 1) === 10) {
+          pos += 2;
+        } else {
+          ++pos;
+        }
+        ++lexer.line;
+        lexer.lineStart = pos;
+        continue;
+      case 33: //  !
+        return new Token(TokenKind.BANG, pos, pos + 1, line, col, prev);
+      case 35: //  #
+        return readComment(source, pos, line, col, prev);
+      case 36: //  $
+        return new Token(TokenKind.DOLLAR, pos, pos + 1, line, col, prev);
+      case 38: //  &
+        return new Token(TokenKind.AMP, pos, pos + 1, line, col, prev);
+      case 40: //  (
+        return new Token(TokenKind.PAREN_L, pos, pos + 1, line, col, prev);
+      case 41: //  )
+        return new Token(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
+      case 46: //  .
+        if (
+          body.charCodeAt(pos + 1) === 46 &&
+          body.charCodeAt(pos + 2) === 46
+        ) {
+          return new Token(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
+        }
+        break;
+      case 58: //  :
+        return new Token(TokenKind.COLON, pos, pos + 1, line, col, prev);
+      case 61: //  =
+        return new Token(TokenKind.EQUALS, pos, pos + 1, line, col, prev);
+      case 64: //  @
+        return new Token(TokenKind.AT, pos, pos + 1, line, col, prev);
+      case 91: //  [
+        return new Token(TokenKind.BRACKET_L, pos, pos + 1, line, col, prev);
+      case 93: //  ]
+        return new Token(TokenKind.BRACKET_R, pos, pos + 1, line, col, prev);
+      case 123: // {
+        return new Token(TokenKind.BRACE_L, pos, pos + 1, line, col, prev);
+      case 124: // |
+        return new Token(TokenKind.PIPE, pos, pos + 1, line, col, prev);
+      case 125: // }
+        return new Token(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
+      case 34: //  "
+        if (
+          body.charCodeAt(pos + 1) === 34 &&
+          body.charCodeAt(pos + 2) === 34
+        ) {
+          return readBlockString(source, pos, line, col, prev, lexer);
+        }
+        return readString(source, pos, line, col, prev);
+      case 45: //  -
+      case 48: //  0
+      case 49: //  1
+      case 50: //  2
+      case 51: //  3
+      case 52: //  4
+      case 53: //  5
+      case 54: //  6
+      case 55: //  7
+      case 56: //  8
+      case 57: //  9
+        return readNumber(source, pos, code, line, col, prev);
+      case 65: //  A
+      case 66: //  B
+      case 67: //  C
+      case 68: //  D
+      case 69: //  E
+      case 70: //  F
+      case 71: //  G
+      case 72: //  H
+      case 73: //  I
+      case 74: //  J
+      case 75: //  K
+      case 76: //  L
+      case 77: //  M
+      case 78: //  N
+      case 79: //  O
+      case 80: //  P
+      case 81: //  Q
+      case 82: //  R
+      case 83: //  S
+      case 84: //  T
+      case 85: //  U
+      case 86: //  V
+      case 87: //  W
+      case 88: //  X
+      case 89: //  Y
+      case 90: //  Z
+      case 95: //  _
+      case 97: //  a
+      case 98: //  b
+      case 99: //  c
+      case 100: // d
+      case 101: // e
+      case 102: // f
+      case 103: // g
+      case 104: // h
+      case 105: // i
+      case 106: // j
+      case 107: // k
+      case 108: // l
+      case 109: // m
+      case 110: // n
+      case 111: // o
+      case 112: // p
+      case 113: // q
+      case 114: // r
+      case 115: // s
+      case 116: // t
+      case 117: // u
+      case 118: // v
+      case 119: // w
+      case 120: // x
+      case 121: // y
+      case 122: // z
+        return readName(source, pos, line, col, prev);
+    }
+
+    throw syntaxError(source, pos, unexpectedCharacterMessage(code));
+  }
+
   const line = lexer.line;
   const col = 1 + pos - lexer.lineStart;
-
-  if (pos >= bodyLength) {
-    return new Token(TokenKind.EOF, bodyLength, bodyLength, line, col, prev);
-  }
-
-  const code = body.charCodeAt(pos);
-
-  // SourceCharacter
-  switch (code) {
-    // !
-    case 33:
-      return new Token(TokenKind.BANG, pos, pos + 1, line, col, prev);
-    // #
-    case 35:
-      return readComment(source, pos, line, col, prev);
-    // $
-    case 36:
-      return new Token(TokenKind.DOLLAR, pos, pos + 1, line, col, prev);
-    // &
-    case 38:
-      return new Token(TokenKind.AMP, pos, pos + 1, line, col, prev);
-    // (
-    case 40:
-      return new Token(TokenKind.PAREN_L, pos, pos + 1, line, col, prev);
-    // )
-    case 41:
-      return new Token(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
-    // .
-    case 46:
-      if (body.charCodeAt(pos + 1) === 46 && body.charCodeAt(pos + 2) === 46) {
-        return new Token(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
-      }
-      break;
-    // :
-    case 58:
-      return new Token(TokenKind.COLON, pos, pos + 1, line, col, prev);
-    // =
-    case 61:
-      return new Token(TokenKind.EQUALS, pos, pos + 1, line, col, prev);
-    // @
-    case 64:
-      return new Token(TokenKind.AT, pos, pos + 1, line, col, prev);
-    // [
-    case 91:
-      return new Token(TokenKind.BRACKET_L, pos, pos + 1, line, col, prev);
-    // ]
-    case 93:
-      return new Token(TokenKind.BRACKET_R, pos, pos + 1, line, col, prev);
-    // {
-    case 123:
-      return new Token(TokenKind.BRACE_L, pos, pos + 1, line, col, prev);
-    // |
-    case 124:
-      return new Token(TokenKind.PIPE, pos, pos + 1, line, col, prev);
-    // }
-    case 125:
-      return new Token(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
-    // A-Z _ a-z
-    case 65:
-    case 66:
-    case 67:
-    case 68:
-    case 69:
-    case 70:
-    case 71:
-    case 72:
-    case 73:
-    case 74:
-    case 75:
-    case 76:
-    case 77:
-    case 78:
-    case 79:
-    case 80:
-    case 81:
-    case 82:
-    case 83:
-    case 84:
-    case 85:
-    case 86:
-    case 87:
-    case 88:
-    case 89:
-    case 90:
-    case 95:
-    case 97:
-    case 98:
-    case 99:
-    case 100:
-    case 101:
-    case 102:
-    case 103:
-    case 104:
-    case 105:
-    case 106:
-    case 107:
-    case 108:
-    case 109:
-    case 110:
-    case 111:
-    case 112:
-    case 113:
-    case 114:
-    case 115:
-    case 116:
-    case 117:
-    case 118:
-    case 119:
-    case 120:
-    case 121:
-    case 122:
-      return readName(source, pos, line, col, prev);
-    // - 0-9
-    case 45:
-    case 48:
-    case 49:
-    case 50:
-    case 51:
-    case 52:
-    case 53:
-    case 54:
-    case 55:
-    case 56:
-    case 57:
-      return readNumber(source, pos, code, line, col, prev);
-    // "
-    case 34:
-      if (body.charCodeAt(pos + 1) === 34 && body.charCodeAt(pos + 2) === 34) {
-        return readBlockString(source, pos, line, col, prev, lexer);
-      }
-      return readString(source, pos, line, col, prev);
-  }
-
-  throw syntaxError(source, pos, unexpectedCharacterMessage(code));
+  return new Token(TokenKind.EOF, bodyLength, bodyLength, line, col, prev);
 }
 
 /**
  * Report a message that an unexpected character was encountered.
  */
-function unexpectedCharacterMessage(code) {
+function unexpectedCharacterMessage(code: number): string {
   if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
     return `Cannot contain the invalid character ${printCharCode(code)}.`;
   }
@@ -276,48 +285,17 @@ function unexpectedCharacterMessage(code) {
 }
 
 /**
- * Reads from body starting at startPosition until it finds a non-whitespace
- * character, then returns the position of that character for lexing.
- */
-function positionAfterWhitespace(
-  body: string,
-  startPosition: number,
-  lexer: Lexer,
-): number {
-  const bodyLength = body.length;
-  let position = startPosition;
-  while (position < bodyLength) {
-    const code = body.charCodeAt(position);
-    // tab | space | comma | BOM
-    if (code === 9 || code === 32 || code === 44 || code === 0xfeff) {
-      ++position;
-    } else if (code === 10) {
-      // new line
-      ++position;
-      ++lexer.line;
-      lexer.lineStart = position;
-    } else if (code === 13) {
-      // carriage return
-      if (body.charCodeAt(position + 1) === 10) {
-        position += 2;
-      } else {
-        ++position;
-      }
-      ++lexer.line;
-      lexer.lineStart = position;
-    } else {
-      break;
-    }
-  }
-  return position;
-}
-
-/**
  * Reads a comment token from the source file.
  *
  * #[\u0009\u0020-\uFFFF]*
  */
-function readComment(source, start, line, col, prev): Token {
+function readComment(
+  source: Source,
+  start: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+): Token {
   const body = source.body;
   let code;
   let position = start;
@@ -348,7 +326,14 @@ function readComment(source, start, line, col, prev): Token {
  * Int:   -?(0|[1-9][0-9]*)
  * Float: -?(0|[1-9][0-9]*)(\.[0-9]+)?((E|e)(+|-)?[0-9]+)?
  */
-function readNumber(source, start, firstCode, line, col, prev): Token {
+function readNumber(
+  source: Source,
+  start: number,
+  firstCode: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+): Token {
   const body = source.body;
   let code = firstCode;
   let position = start;
@@ -419,7 +404,7 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
 /**
  * Returns the new position in the source after reading digits.
  */
-function readDigits(source, start, firstCode) {
+function readDigits(source: Source, start: number, firstCode: number): number {
   const body = source.body;
   let position = start;
   let code = firstCode;
@@ -442,7 +427,13 @@ function readDigits(source, start, firstCode) {
  *
  * "([^"\\\u000A\u000D]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
  */
-function readString(source, start, line, col, prev): Token {
+function readString(
+  source: Source,
+  start: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+): Token {
   const body = source.body;
   let position = start + 1;
   let chunkStart = position;
@@ -551,7 +542,14 @@ function readString(source, start, line, col, prev): Token {
  *
  * """("?"?(\\"""|\\(?!=""")|[^"\\]))*"""
  */
-function readBlockString(source, start, line, col, prev, lexer): Token {
+function readBlockString(
+  source: Source,
+  start: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+  lexer: Lexer,
+): Token {
   const body = source.body;
   let position = start + 3;
   let chunkStart = position;
@@ -633,7 +631,7 @@ function readBlockString(source, start, line, col, prev, lexer): Token {
  * This is implemented by noting that char2hex() returns -1 on error,
  * which means the result of ORing the char2hex() will also be negative.
  */
-function uniCharCode(a, b, c, d) {
+function uniCharCode(a: number, b: number, c: number, d: number): number {
   return (
     (char2hex(a) << 12) | (char2hex(b) << 8) | (char2hex(c) << 4) | char2hex(d)
   );
@@ -647,7 +645,7 @@ function uniCharCode(a, b, c, d) {
  *
  * Returns -1 on error.
  */
-function char2hex(a) {
+function char2hex(a: number): number {
   return a >= 48 && a <= 57
     ? a - 48 // 0-9
     : a >= 65 && a <= 70
@@ -662,7 +660,13 @@ function char2hex(a) {
  *
  * [_A-Za-z][_0-9A-Za-z]*
  */
-function readName(source, start, line, col, prev): Token {
+function readName(
+  source: Source,
+  start: number,
+  line: number,
+  col: number,
+  prev: Token | null,
+): Token {
   const body = source.body;
   const bodyLength = body.length;
   let position = start + 1;
@@ -671,8 +675,8 @@ function readName(source, start, line, col, prev): Token {
     position !== bodyLength &&
     !isNaN((code = body.charCodeAt(position))) &&
     (code === 95 || // _
-    (code >= 48 && code <= 57) || // 0-9
-    (code >= 65 && code <= 90) || // A-Z
+      (code >= 48 && code <= 57) || // 0-9
+      (code >= 65 && code <= 90) || // A-Z
       (code >= 97 && code <= 122)) // a-z
   ) {
     ++position;
@@ -689,7 +693,7 @@ function readName(source, start, line, col, prev): Token {
 }
 
 // _ A-Z a-z
-function isNameStart(code): boolean {
+function isNameStart(code: number): boolean {
   return (
     code === 95 || (code >= 65 && code <= 90) || (code >= 97 && code <= 122)
   );

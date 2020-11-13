@@ -1,9 +1,8 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
-import { type ASTVisitor } from '../../language/visitor';
 
-import { type ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from '../../language/visitor';
+
+import type { ASTValidationContext } from '../ValidationContext';
 
 /**
  * Unique fragment names

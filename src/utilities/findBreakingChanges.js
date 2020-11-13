@@ -1,5 +1,3 @@
-// @flow strict
-
 import objectValues from '../polyfills/objectValues';
 
 import keyMap from '../jsutils/keyMap';
@@ -9,18 +7,20 @@ import invariant from '../jsutils/invariant';
 import { print } from '../language/printer';
 import { visit } from '../language/visitor';
 
-import { type GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
+import type {
+  GraphQLField,
+  GraphQLType,
+  GraphQLInputType,
+  GraphQLNamedType,
+  GraphQLEnumType,
+  GraphQLUnionType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLInputObjectType,
+} from '../type/definition';
 import { isSpecifiedScalarType } from '../type/scalars';
 import {
-  type GraphQLField,
-  type GraphQLType,
-  type GraphQLInputType,
-  type GraphQLNamedType,
-  type GraphQLEnumType,
-  type GraphQLUnionType,
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
-  type GraphQLInputObjectType,
   isScalarType,
   isObjectType,
   isInterfaceType,
@@ -526,11 +526,12 @@ function typeKindName(type: GraphQLNamedType): string {
   if (isEnumType(type)) {
     return 'an Enum type';
   }
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isInputObjectType(type)) {
     return 'an Input type';
   }
 
-  // Not reachable. All possible named types have been considered.
+  // istanbul ignore next (Not reachable. All possible named types have been considered)
   invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 

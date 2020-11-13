@@ -1,0 +1,14 @@
+{
+  "exclude": ["integrationTests/ts/**/*"],
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": ["es6", "esnext.asynciterable"],
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "types": [],
+    "noEmit": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

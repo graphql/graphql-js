@@ -1,11 +1,9 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
 
-import { type ASTVisitor } from '../../language/visitor';
-import { type VariableDefinitionNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
+import type { VariableDefinitionNode } from '../../language/ast';
 
-import { type ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 
 /**
  * Unique variable names

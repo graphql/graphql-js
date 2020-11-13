@@ -1,10 +1,8 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type { ObjMapLike } from '../ObjMap';
 import toObjMap from '../toObjMap';
-import { type ObjMapLike } from '../ObjMap';
 
 // Workaround to make both ESLint and Flow happy
 const __proto__: string = '__proto__';

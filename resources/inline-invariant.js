@@ -1,5 +1,3 @@
-// @noflow
-
 'use strict';
 
 /**
@@ -21,7 +19,6 @@ module.exports = function inlineInvariant(context) {
     (%%cond%%) || devAssert(0, %%args%%)
   `);
 
-  const t = context.types;
   return {
     visitor: {
       CallExpression(path) {
@@ -40,13 +37,7 @@ module.exports = function inlineInvariant(context) {
         if (calleeName === 'invariant') {
           const [cond, args] = node.arguments;
 
-          // Check if it is unreachable invariant: "invariant(false, ...)"
-          if (cond.type === 'BooleanLiteral' && cond.value === false) {
-            addIstanbulIgnoreElse(path);
-          } else {
-            path.replaceWith(invariantTemplate({ cond, args }));
-          }
-          path.addComment('leading', ' istanbul ignore next ');
+          path.replaceWith(invariantTemplate({ cond, args }));
         } else if (calleeName === 'devAssert') {
           const [cond, args] = node.arguments;
           path.replaceWith(assertTemplate({ cond, args }));
@@ -54,17 +45,4 @@ module.exports = function inlineInvariant(context) {
       },
     },
   };
-
-  function addIstanbulIgnoreElse(path) {
-    const parentStatement = path.getStatementParent();
-    const previousStatement =
-      parentStatement.container[parentStatement.key - 1];
-    if (
-      previousStatement != null &&
-      previousStatement.type === 'IfStatement' &&
-      previousStatement.alternate == null
-    ) {
-      t.addComment(previousStatement, 'leading', ' istanbul ignore else ');
-    }
-  }
 };

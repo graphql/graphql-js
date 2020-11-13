@@ -1,5 +1,3 @@
-// @flow strict
-
 export type { Path as ResponsePath } from '../jsutils/Path';
 
 export {
@@ -79,6 +77,7 @@ export {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
+  GraphQLSpecifiedByDirective,
   // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
 } from './directives';

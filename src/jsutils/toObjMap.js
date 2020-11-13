@@ -1,12 +1,10 @@
-// @flow strict
-
 import objectEntries from '../polyfills/objectEntries';
 
-import {
-  type ObjMap,
-  type ObjMapLike,
-  type ReadOnlyObjMap,
-  type ReadOnlyObjMapLike,
+import type {
+  ObjMap,
+  ObjMapLike,
+  ReadOnlyObjMap,
+  ReadOnlyObjMapLike,
 } from './ObjMap';
 
 /* eslint-disable no-redeclare */

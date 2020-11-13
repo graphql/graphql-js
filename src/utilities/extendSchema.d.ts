@@ -1,4 +1,5 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
+
 import { Location, DocumentNode, StringValueNode } from '../language/ast';
 import {
   GraphQLSchemaValidationOptions,

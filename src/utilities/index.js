@@ -1,5 +1,3 @@
-// @flow strict
-
 // Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.
 export { getIntrospectionQuery } from './getIntrospectionQuery';
@@ -111,5 +109,5 @@ export {
 } from './findBreakingChanges';
 export type { BreakingChange, DangerousChange } from './findBreakingChanges';
 
-// Report all deprecated usage within a GraphQL document.
+// @deprecated: Report all deprecated usage within a GraphQL document.
 export { findDeprecatedUsages } from './findDeprecatedUsages';

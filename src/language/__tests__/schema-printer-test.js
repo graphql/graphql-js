@@ -1,14 +1,11 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import dedent from '../../__testUtils__/dedent';
+import kitchenSinkSDL from '../../__testUtils__/kitchenSinkSDL';
 
 import { parse } from '../parser';
 import { print } from '../printer';
-
-import { kitchenSinkSDL } from '../../__fixtures__/index';
 
 describe('Printer: SDL document', () => {
   it('prints minimal ast', () => {
@@ -21,7 +18,8 @@ describe('Printer: SDL document', () => {
 
   it('produces helpful error messages', () => {
     const badAST = { random: 'Data' };
-    // $DisableFlowOnNegativeTest
+
+    // $FlowExpectedError[incompatible-call]
     expect(() => print(badAST)).to.throw(
       'Invalid AST Node: { random: "Data" }.',
     );

@@ -1,4 +1,5 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
+
 import { ValueNode } from '../language/ast';
 
 /**

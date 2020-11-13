@@ -32,6 +32,8 @@ export class Location {
   readonly source: Source;
 
   constructor(startToken: Token, endToken: Token, source: Source);
+
+  toJSON(): { start: number; end: number };
 }
 
 /**
@@ -86,6 +88,13 @@ export class Token {
     prev: Token | null,
     value?: string,
   );
+
+  toJSON(): {
+    kind: TokenKindEnum;
+    value: string | undefined;
+    line: number;
+    column: number;
+  };
 }
 
 /**
@@ -526,12 +535,12 @@ export interface DirectiveDefinitionNode {
 
 export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 
-export type SchemaExtensionNode = {
+export interface SchemaExtensionNode {
   readonly kind: 'SchemaExtension';
   readonly loc?: Location;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly operationTypes?: ReadonlyArray<OperationTypeDefinitionNode>;
-};
+}
 
 // Type Extensions
 

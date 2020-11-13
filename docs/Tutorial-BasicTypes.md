@@ -18,7 +18,7 @@ Each of these types maps straightforwardly to JavaScript, so you can just return
 
 ```js
 var express = require('express');
-var graphqlHTTP = require('express-graphql');
+var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language

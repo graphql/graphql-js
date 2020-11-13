@@ -6,7 +6,7 @@ permalink: /graphql-js/passing-arguments/
 next: /graphql-js/object-types/
 ---
 
-Just like a REST API, it's common to pass arguments to an endpoint in a GraphQL API. By defining the arguments in the schema language, typechecking happens automatically. Each argument must be named and have a type. For example, in the [Basic Types documentation](/graphql-js/basic-types/) we had an endpoint called `rollThreeDice`:
+Just like a REST API, it's common to pass arguments to an endpoint in a GraphQL API. By defining the arguments in the schema language, type checking happens automatically. Each argument must be named and have a type. For example, in the [Basic Types documentation](/graphql-js/basic-types/) we had an endpoint called `rollThreeDice`:
 
 ```graphql
 type Query {
@@ -14,7 +14,7 @@ type Query {
 }
 ```
 
-Instead of hardcoding “three”, we might want a more general function that rolls `numDice` dice, each of which have `numSides` sides. We can add arguments to the GraphQL schema language like this:
+Instead of hard-coding “three”, we might want a more general function that rolls `numDice` dice, each of which have `numSides` sides. We can add arguments to the GraphQL schema language like this:
 
 ```graphql
 type Query {
@@ -58,7 +58,7 @@ The entire code for a server that hosts this `rollDice` API is:
 
 ```js
 var express = require('express');
-var graphqlHTTP = require('express-graphql');
+var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language

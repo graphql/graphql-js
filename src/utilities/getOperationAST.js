@@ -1,10 +1,5 @@
-// @flow strict
-
+import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 import { Kind } from '../language/kinds';
-import {
-  type DocumentNode,
-  type OperationDefinitionNode,
-} from '../language/ast';
 
 /**
  * Returns an operation AST given a document AST and optionally an operation
@@ -13,7 +8,7 @@ import {
  */
 export function getOperationAST(
   documentAST: DocumentNode,
-  operationName: ?string,
+  operationName?: ?string,
 ): ?OperationDefinitionNode {
   let operation = null;
   for (const definition of documentAST.definitions) {

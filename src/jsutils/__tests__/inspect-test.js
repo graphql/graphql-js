@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -37,11 +35,12 @@ describe('inspect', () => {
 
   it('function', () => {
     const unnamedFuncStr = inspect(
-      /* istanbul ignore next */ () => invariant(false),
+      // istanbul ignore next (Never called and used as a placeholder)
+      () => invariant(false),
     );
     expect(unnamedFuncStr).to.equal('[function]');
 
-    /* istanbul ignore next */
+    // istanbul ignore next (Never called and used as a placeholder)
     function namedFunc() {
       invariant(false);
     }
@@ -80,8 +79,8 @@ describe('inspect', () => {
     expect(inspect({ a: { b: { c: 1 } } })).to.equal('{ a: { b: [Object] } }');
 
     const map = Object.create(null);
-    map['a'] = true;
-    map['b'] = null;
+    map.a = true;
+    map.b = null;
     expect(inspect(map)).to.equal('{ a: true, b: null }');
   });
 
@@ -107,7 +106,7 @@ describe('inspect', () => {
 
   it('custom symbol inspect is take precedence', () => {
     const object = {
-      /* istanbul ignore next */
+      // istanbul ignore next (Never called and use just as a placeholder)
       inspect() {
         invariant(false);
       },
@@ -186,6 +185,7 @@ describe('inspect', () => {
     expect(inspect([[new Foo()]])).to.equal('[[[Bar]]]');
 
     const objectWithoutClassName = new (function () {
+      // eslint-disable-next-line no-invalid-this
       this.foo = 1;
     })();
     expect(inspect([[objectWithoutClassName]])).to.equal('[[[Object]]]');

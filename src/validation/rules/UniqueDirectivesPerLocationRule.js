@@ -1,9 +1,7 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
 
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from '../../language/visitor';
 import {
   isTypeDefinitionNode,
   isTypeExtensionNode,
@@ -11,9 +9,9 @@ import {
 
 import { specifiedDirectives } from '../../type/directives';
 
-import {
-  type SDLValidationContext,
-  type ValidationContext,
+import type {
+  SDLValidationContext,
+  ValidationContext,
 } from '../ValidationContext';
 
 /**

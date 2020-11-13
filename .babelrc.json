@@ -1,12 +1,9 @@
 {
   "presets": [["@babel/preset-env", { "targets": { "node": "current" } }]],
-  "plugins": [
-    "./resources/inline-invariant",
-    "@babel/plugin-transform-flow-strip-types"
-  ],
+  "plugins": ["@babel/plugin-transform-flow-strip-types"],
   "overrides": [
     {
-      "exclude": ["**/__tests__/**/*", "**/__fixtures__/**/*"],
+      "exclude": ["src/__testUtils__/**/*", "**/__tests__/**/*"],
       "presets": ["@babel/preset-env"],
       "plugins": [
         ["@babel/plugin-transform-classes", { "loose": true }],
@@ -16,11 +13,24 @@
       ],
       "env": {
         "cjs": {
-          "presets": [["@babel/preset-env", { "modules": "commonjs" }]]
+          "presets": [["@babel/preset-env", { "modules": "commonjs" }]],
+          "plugins": [
+            [
+              "./resources/add-extension-to-import-paths",
+              { "extension": "js" }
+            ],
+            "./resources/inline-invariant"
+          ]
         },
         "mjs": {
           "presets": [["@babel/preset-env", { "modules": false }]],
-          "plugins": ["./resources/add-extension-to-import-paths"]
+          "plugins": [
+            [
+              "./resources/add-extension-to-import-paths",
+              { "extension": "mjs" }
+            ],
+            "./resources/inline-invariant"
+          ]
         }
       }
     },

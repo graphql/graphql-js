@@ -21,9 +21,9 @@ _Introspection_
 
 <ul class="apiIndex">
   <li>
-    <a href="#introspectionquery">
-      <pre>var introspectionQuery</pre>
-      A GraphQL introspection query containing enough information to reproduce a type system.
+    <a href="#getintrospectionquery">
+      <pre>function getIntrospectionQuery</pre>
+      Builds a GraphQL introspection query containing enough information to reproduce a type system.
     </a>
   </li>
   <li>
@@ -105,13 +105,33 @@ _Value Validation_
 
 ## Introspection
 
-### introspectionQuery
+### getIntrospectionQuery
 
 ```js
-var introspectionQuery: string;
+interface IntrospectionOptions {
+  // Whether to include descriptions in the introspection result.
+  // Default: true
+  descriptions?: boolean;
+
+  // Whether to include `specifiedByUrl` in the introspection result.
+  // Default: false
+  specifiedByUrl?: boolean;
+
+  // Whether to include `isRepeatable` flag on directives.
+  // Default: false
+  directiveIsRepeatable?: boolean;
+
+  // Whether to include `description` field on schema.
+  // Default: false
+  schemaDescription?: boolean;
+}
+
+function getIntrospectionQuery(
+  options: IntrospectionOptions
+): string;
 ```
 
-A GraphQL query that queries a server's introspection system for enough
+Build a GraphQL query that queries a server's introspection system for enough
 information to reproduce that server's type system.
 
 ### buildClientSchema
@@ -166,8 +186,8 @@ function buildASTSchema(
 ): GraphQLSchema
 ```
 
-This takes the ast of a schema document produced by `parseSchemaIntoAST` in
-`graphql/language/schema` and constructs a GraphQLSchema instance which can be
+This takes the ast of a schema document produced by `parse` in
+`graphql/language` and constructs a GraphQLSchema instance which can be
 then used with all GraphQL.js tools, but cannot be used to execute a query, as
 introspection does not represent the "resolver", "parse" or "serialize"
 functions or any other server-internal mechanisms.

@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -114,7 +112,10 @@ const schema = new GraphQLSchema({
   subscription: SubscriptionType,
 });
 
-function executeQuery(source, variableValues) {
+function executeQuery(
+  source: string,
+  variableValues?: { +[variable: string]: mixed, ... },
+) {
   return graphqlSync({ schema, source, variableValues });
 }
 
@@ -365,7 +366,7 @@ describe('Type System: Enum Values', () => {
     const oneValue = ComplexEnum.getValue('ONE');
     expect(oneValue).to.include({ name: 'ONE', value: Complex1 });
 
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError[incompatible-call]
     const badUsage = ComplexEnum.getValue(Complex1);
     expect(badUsage).to.equal(undefined);
   });

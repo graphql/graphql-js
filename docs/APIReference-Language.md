@@ -101,14 +101,20 @@ _Printer_
 
 ```js
 export class Source {
-  constructor(body: string, name?: string)
+  constructor(body: string, name?: string, locationOffset?: Location)
+}
+
+type Location = {
+  line: number;
+  column: number;
 }
 ```
 
-A representation of source input to GraphQL. The name is optional,
-but is mostly useful for clients who store GraphQL documents in
-source files; for example, if the GraphQL input is in a file Foo.graphql,
-it might be useful for name to be "Foo.graphql".
+A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
+optional, but they are useful for clients who store GraphQL documents in source files.
+For example, if the GraphQL input starts at line 40 in a file named `Foo.graphql`, it might
+be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
+The `line` and `column` properties in `locationOffset` are 1-indexed.
 
 ### getLocation
 
@@ -142,13 +148,13 @@ export type Token = {
 ```
 
 Given a Source object, this returns a Lexer for that source.
-A Lexer is a function that acts like a generator in that every time
+A Lexer is a function that acts as a generator in that every time
 it is called, it returns the next token in the Source. Assuming the
 source lexes, the final Token emitted by the lexer will be of kind
 EOF, after which the lexer will repeatedly return EOF tokens whenever
 called.
 
-The argument to the lexer function is optional, and can be used to
+The argument to the lexer function is optional and can be used to
 rewind or fast forward the lexer to a new position in the source.
 
 ## Parser
@@ -194,7 +200,7 @@ An enum that describes the different kinds of AST nodes.
 function visit(root, visitor, keyMap)
 ```
 
-visit() will walk through an AST using a depth first traversal, calling
+visit() will walk through an AST using a depth-first traversal, calling
 the visitor's enter function at each node in the traversal, and calling the
 leave function after visiting that node and all of its child nodes.
 
@@ -230,10 +236,10 @@ var editedAST = visit(ast, {
 
 Alternatively to providing enter() and leave() functions, a visitor can
 instead provide functions named the same as the kinds of AST nodes, or
-enter/leave visitors at a named key, leading to four permutations of
+enter/leave visitors at a named key, leading to four permutations of the
 visitor API:
 
-1. Named visitors triggered when entering a node a specific kind.
+1. Named visitors triggered when entering a node of a specific kind.
 
 ```js
 visit(ast, {

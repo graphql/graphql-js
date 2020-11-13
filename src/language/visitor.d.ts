@@ -1,4 +1,4 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
 
 import { ASTNode, ASTKindToNode } from './ast';
 
@@ -31,7 +31,7 @@ type ShapeMapVisitor<KindToNode, Nodes> = {
  * during the visitor's traversal.
  */
 export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
-  /** The current node being visiting.*/
+  /** The current node being visiting. */
   node: TVisitedNode,
   /** The index or key to this node from the parent node or Array. */
   key: string | number | undefined,
@@ -39,7 +39,8 @@ export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
   parent: TAnyNode | ReadonlyArray<TAnyNode> | undefined,
   /** The key path to get to this node from the root node. */
   path: ReadonlyArray<string | number>,
-  /** All nodes and Arrays visited before reaching parent of this node.
+  /**
+   * All nodes and Arrays visited before reaching parent of this node.
    * These correspond to array indices in `path`.
    * Note: ancestors includes arrays which contain the parent of visited node.
    */
@@ -150,7 +151,7 @@ export const QueryDocumentKeys: {
 export const BREAK: any;
 
 /**
- * visit() will walk through an AST using a depth first traversal, calling
+ * visit() will walk through an AST using a depth-first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the
  * leave function after visiting that node and all of its child nodes.
  *
@@ -184,10 +185,10 @@ export const BREAK: any;
  *
  * Alternatively to providing enter() and leave() functions, a visitor can
  * instead provide functions named the same as the kinds of AST nodes, or
- * enter/leave visitors at a named key, leading to four permutations of
+ * enter/leave visitors at a named key, leading to four permutations of the
  * visitor API:
  *
- * 1) Named visitors triggered when entering a node a specific kind.
+ * 1) Named visitors triggered when entering a node of a specific kind.
  *
  *     visit(ast, {
  *       Kind(node) {

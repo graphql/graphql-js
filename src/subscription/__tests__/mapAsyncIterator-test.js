@@ -1,12 +1,5 @@
-// @flow strict
-
-// FIXME temporary hack until https://github.com/eslint/eslint/pull/12484 is merged
-/* eslint-disable require-await */
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-
-import invariant from '../../jsutils/invariant';
 
 import mapAsyncIterator from '../mapAsyncIterator';
 
@@ -33,7 +26,6 @@ describe('mapAsyncIterator', () => {
     const items = [1, 2, 3];
 
     const iterator: any = {
-      // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -99,7 +91,7 @@ describe('mapAsyncIterator', () => {
       yield 1;
       yield 2;
 
-      /* istanbul ignore next (shouldn't be reached) */
+      // istanbul ignore next (Shouldn't be reached)
       yield 3;
     }
 
@@ -129,7 +121,6 @@ describe('mapAsyncIterator', () => {
     const items = [1, 2, 3];
 
     const iterator: any = {
-      // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -159,7 +150,7 @@ describe('mapAsyncIterator', () => {
         yield 1;
         yield 2;
 
-        /* istanbul ignore next (shouldn't be reached) */
+        // istanbul ignore next (Shouldn't be reached)
         yield 3;
       } finally {
         yield 'Done';
@@ -193,7 +184,6 @@ describe('mapAsyncIterator', () => {
     const items = [1, 2, 3];
 
     const iterator: any = {
-      // $FlowFixMe Blocked by https://github.com/facebook/flow/issues/3258
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -226,7 +216,7 @@ describe('mapAsyncIterator', () => {
         yield 1;
         yield 2;
 
-        /* istanbul ignore next (shouldn't be reached) */
+        // istanbul ignore next (Shouldn't be reached)
         yield 3;
       } catch (e) {
         yield e;
@@ -274,8 +264,9 @@ describe('mapAsyncIterator', () => {
       caughtError = e;
     }
 
-    invariant(caughtError != null);
-    expect(caughtError.message).to.equal('Goodbye');
+    expect(caughtError)
+      .to.be.an.instanceOf(Error)
+      .with.property('message', 'Goodbye');
   });
 
   it('maps over thrown errors if second callback provided', async () => {
@@ -296,8 +287,9 @@ describe('mapAsyncIterator', () => {
     });
 
     const result = await doubles.next();
-    invariant(result.value instanceof Error);
-    expect(result.value.message).to.equal('Goodbye');
+    expect(result.value)
+      .to.be.an.instanceOf(Error)
+      .with.property('message', 'Goodbye');
     expect(result.done).to.equal(false);
 
     expect(await doubles.next()).to.deep.equal({
@@ -306,7 +298,7 @@ describe('mapAsyncIterator', () => {
     });
   });
 
-  async function testClosesSourceWithMapper(mapper) {
+  async function testClosesSourceWithMapper<T>(mapper: (number) => T) {
     let didVisitFinally = false;
 
     async function* source() {
@@ -314,7 +306,7 @@ describe('mapAsyncIterator', () => {
         yield 1;
         yield 2;
 
-        /* istanbul ignore next (shouldn't be reached) */
+        // istanbul ignore next (Shouldn't be reached)
         yield 3;
       } finally {
         didVisitFinally = true;
@@ -333,8 +325,9 @@ describe('mapAsyncIterator', () => {
       expectedError = error;
     }
 
-    invariant(expectedError instanceof Error);
-    expect(expectedError.message).to.equal('Cannot count to 2');
+    expect(expectedError)
+      .to.be.an.instanceOf(Error)
+      .with.property('message', 'Cannot count to 2');
 
     expect(await throwOver1.next()).to.deep.equal({
       value: undefined,
@@ -361,7 +354,7 @@ describe('mapAsyncIterator', () => {
     );
   });
 
-  async function testClosesSourceWithRejectMapper(mapper) {
+  async function testClosesSourceWithRejectMapper<T>(mapper: (Error) => T) {
     async function* source() {
       yield 1;
       throw new Error(2);
@@ -378,8 +371,9 @@ describe('mapAsyncIterator', () => {
       expectedError = error;
     }
 
-    invariant(expectedError instanceof Error);
-    expect(expectedError.message).to.equal('Cannot count to 2');
+    expect(expectedError)
+      .to.be.an.instanceOf(Error)
+      .with.property('message', 'Cannot count to 2');
 
     expect(await throwOver1.next()).to.deep.equal({
       value: undefined,

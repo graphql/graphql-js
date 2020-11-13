@@ -1,12 +1,13 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type { ObjMap } from '../../jsutils/ObjMap';
 import invariant from '../../jsutils/invariant';
 import identityFunc from '../../jsutils/identityFunc';
 
 import { parseValue } from '../../language/parser';
+
+import type { GraphQLInputType } from '../../type/definition';
 import {
   GraphQLInt,
   GraphQLFloat,
@@ -15,17 +16,21 @@ import {
   GraphQLID,
 } from '../../type/scalars';
 import {
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
 } from '../../type/definition';
 
 import { valueFromAST } from '../valueFromAST';
 
 describe('valueFromAST', () => {
-  function expectValueFrom(valueText, type, variables) {
+  function expectValueFrom(
+    valueText: string,
+    type: GraphQLInputType,
+    variables: ?ObjMap<mixed>,
+  ) {
     const ast = parseValue(valueText);
     const value = valueFromAST(ast, type, variables);
     return expect(value);
@@ -115,15 +120,15 @@ describe('valueFromAST', () => {
   });
 
   // Boolean!
-  const nonNullBool = GraphQLNonNull(GraphQLBoolean);
+  const nonNullBool = new GraphQLNonNull(GraphQLBoolean);
   // [Boolean]
-  const listOfBool = GraphQLList(GraphQLBoolean);
+  const listOfBool = new GraphQLList(GraphQLBoolean);
   // [Boolean!]
-  const listOfNonNullBool = GraphQLList(nonNullBool);
+  const listOfNonNullBool = new GraphQLList(nonNullBool);
   // [Boolean]!
-  const nonNullListOfBool = GraphQLNonNull(listOfBool);
+  const nonNullListOfBool = new GraphQLNonNull(listOfBool);
   // [Boolean!]!
-  const nonNullListOfNonNullBool = GraphQLNonNull(listOfNonNullBool);
+  const nonNullListOfNonNullBool = new GraphQLNonNull(listOfNonNullBool);
 
   it('coerces to null unless non-null', () => {
     expectValueFrom('null', GraphQLBoolean).to.equal(null);

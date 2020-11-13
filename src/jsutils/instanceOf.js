@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
@@ -12,13 +10,13 @@ declare function instanceOf(
 // See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
 // See: https://webpack.js.org/guides/production/
 export default process.env.NODE_ENV === 'production'
-  ? /* istanbul ignore next (See: https://github.com/graphql/graphql-js/issues/2317) */
+  ? // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
     // eslint-disable-next-line no-shadow
-    function instanceOf(value: mixed, constructor: mixed) {
+    function instanceOf(value: mixed, constructor: mixed): boolean {
       return value instanceof constructor;
     }
   : // eslint-disable-next-line no-shadow
-    function instanceOf(value: any, constructor: any) {
+    function instanceOf(value: any, constructor: any): boolean {
       if (value instanceof constructor) {
         return true;
       }

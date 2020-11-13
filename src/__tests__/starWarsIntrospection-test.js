@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -7,7 +5,7 @@ import { graphqlSync } from '../graphql';
 
 import { StarWarsSchema } from './starWarsSchema';
 
-function queryStarWars(source) {
+function queryStarWars(source: string) {
   const result = graphqlSync({ schema: StarWarsSchema, source });
   expect(Object.keys(result)).to.deep.equal(['data']);
   return result.data;

@@ -1,14 +1,11 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import dedent from '../../__testUtils__/dedent';
+import kitchenSinkQuery from '../../__testUtils__/kitchenSinkQuery';
 
 import { parse } from '../parser';
 import { print } from '../printer';
-
-import { kitchenSinkQuery } from '../../__fixtures__/index';
 
 describe('Printer: Query document', () => {
   it('does not alter ast', () => {
@@ -25,7 +22,8 @@ describe('Printer: Query document', () => {
 
   it('produces helpful error messages', () => {
     const badAST = { random: 'Data' };
-    // $DisableFlowOnNegativeTest
+
+    // $FlowExpectedError[incompatible-call]
     expect(() => print(badAST)).to.throw(
       'Invalid AST Node: { random: "Data" }.',
     );
@@ -80,6 +78,45 @@ describe('Printer: Query document', () => {
     `);
   });
 
+  it('keeps arguments on one line if line is short (<= 80 chars)', () => {
+    const printed = print(
+      parse('{trip(wheelchair:false arriveBy:false){dateTime}}'),
+    );
+
+    expect(printed).to.equal(
+      dedent`
+      {
+        trip(wheelchair: false, arriveBy: false) {
+          dateTime
+        }
+      }
+    `,
+    );
+  });
+
+  it('puts arguments on multiple lines if line is long (> 80 chars)', () => {
+    const printed = print(
+      parse(
+        '{trip(wheelchair:false arriveBy:false includePlannedCancellations:true transitDistanceReluctance:2000){dateTime}}',
+      ),
+    );
+
+    expect(printed).to.equal(
+      dedent`
+      {
+        trip(
+          wheelchair: false
+          arriveBy: false
+          includePlannedCancellations: true
+          transitDistanceReluctance: 2000
+        ) {
+          dateTime
+        }
+      }
+    `,
+    );
+  });
+
   it('Experimental: prints fragment with variable directives', () => {
     const queryASTWithVariableDirective = parse(
       'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
@@ -114,7 +151,7 @@ describe('Printer: Query document', () => {
     const printed = print(parse(kitchenSinkQuery));
 
     expect(printed).to.equal(
-      // $FlowFixMe
+      // $FlowFixMe[incompatible-call]
       dedent(String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         whoever123is: node(id: [123, 456]) {
@@ -159,9 +196,13 @@ describe('Printer: Query document', () => {
       }
 
       fragment frag on Friend @onFragmentDefinition {
-        foo(size: $size, bar: $b, obj: {key: "value", block: """
-          block string uses \"""
-        """})
+        foo(
+          size: $size
+          bar: $b
+          obj: {key: "value", block: """
+            block string uses \"""
+          """}
+        )
       }
 
       {

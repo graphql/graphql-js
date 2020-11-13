@@ -1,5 +1,4 @@
-// @flow strict
-
+/* eslint-disable flowtype/no-weak-types */
 import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
 
 const MAX_ARRAY_LENGTH = 10;
@@ -12,7 +11,7 @@ export default function inspect(value: mixed): string {
   return formatValue(value, []);
 }
 
-function formatValue(value, seenValues) {
+function formatValue(value: mixed, seenValues: Array<mixed>): string {
   switch (typeof value) {
     case 'string':
       return JSON.stringify(value);
@@ -28,7 +27,10 @@ function formatValue(value, seenValues) {
   }
 }
 
-function formatObjectValue(value, previouslySeenValues) {
+function formatObjectValue(
+  value: Object,
+  previouslySeenValues: Array<mixed>,
+): string {
   if (previouslySeenValues.indexOf(value) !== -1) {
     return '[Circular]';
   }
@@ -37,7 +39,6 @@ function formatObjectValue(value, previouslySeenValues) {
   const customInspectFn = getCustomFn(value);
 
   if (customInspectFn !== undefined) {
-    // $FlowFixMe(>=0.90.0)
     const customValue = customInspectFn.call(value);
 
     // check for infinite recursion
@@ -53,7 +54,7 @@ function formatObjectValue(value, previouslySeenValues) {
   return formatObject(value, seenValues);
 }
 
-function formatObject(object, seenValues) {
+function formatObject(object: Object, seenValues: Array<mixed>): string {
   const keys = Object.keys(object);
   if (keys.length === 0) {
     return '{}';
@@ -71,7 +72,7 @@ function formatObject(object, seenValues) {
   return '{ ' + properties.join(', ') + ' }';
 }
 
-function formatArray(array, seenValues) {
+function formatArray(array: Array<mixed>, seenValues: Array<mixed>): string {
   if (array.length === 0) {
     return '[]';
   }
@@ -97,7 +98,7 @@ function formatArray(array, seenValues) {
   return '[' + items.join(', ') + ']';
 }
 
-function getCustomFn(object) {
+function getCustomFn(object: Object) {
   const customInspectFn = object[String(nodejsCustomInspectSymbol)];
 
   if (typeof customInspectFn === 'function') {
@@ -109,7 +110,7 @@ function getCustomFn(object) {
   }
 }
 
-function getObjectTag(object) {
+function getObjectTag(object: Object): string {
   const tag = Object.prototype.toString
     .call(object)
     .replace(/^\[object /, '')

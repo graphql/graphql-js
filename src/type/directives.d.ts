@@ -1,7 +1,7 @@
 // FIXME
 /* eslint-disable import/no-cycle */
 
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
 
 import { DirectiveDefinitionNode } from '../language/ast';
 import { DirectiveLocationEnum } from '../language/directiveLocation';
@@ -13,6 +13,20 @@ import { GraphQLFieldConfigArgumentMap, GraphQLArgument } from './definition';
  */
 export function isDirective(directive: any): directive is GraphQLDirective;
 export function assertDirective(directive: any): GraphQLDirective;
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLDirectiveExtensions {
+  [attributeName: string]: any;
+}
+
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
@@ -23,7 +37,7 @@ export class GraphQLDirective {
   locations: Array<DirectiveLocationEnum>;
   isRepeatable: boolean;
   args: Array<GraphQLArgument>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>);
@@ -31,7 +45,7 @@ export class GraphQLDirective {
   toConfig(): GraphQLDirectiveConfig & {
     args: GraphQLFieldConfigArgumentMap;
     isRepeatable: boolean;
-    extensions: Maybe<Readonly<Record<string, any>>>;
+    extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   };
 
   toString(): string;
@@ -45,7 +59,7 @@ export interface GraphQLDirectiveConfig {
   locations: Array<DirectiveLocationEnum>;
   args?: Maybe<GraphQLFieldConfigArgumentMap>;
   isRepeatable?: Maybe<boolean>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
 
@@ -58,6 +72,11 @@ export const GraphQLIncludeDirective: GraphQLDirective;
  * Used to conditionally skip (exclude) fields or fragments.
  */
 export const GraphQLSkipDirective: GraphQLDirective;
+
+/**
+ * Used to provide a URL for specifying the behavior of custom scalar definitions.
+ */
+export const GraphQLSpecifiedByDirective: GraphQLDirective;
 
 /**
  * Constant string used for default reason for a deprecation.

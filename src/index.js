@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * GraphQL.js provides a reference implementation for the GraphQL specification
  * but is also a useful utility for operating on GraphQL files and building
@@ -56,6 +54,7 @@ export {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
+  GraphQLSpecifiedByDirective,
   // "Enum" of Type Kinds
   TypeKind,
   // Constant Deprecation Reason
@@ -172,7 +171,9 @@ export type {
 
 // Parse and operate on GraphQL language source files.
 export {
+  Token,
   Source,
+  Location,
   getLocation,
   // Print source location
   printLocation,
@@ -208,8 +209,6 @@ export {
 export type {
   ParseOptions,
   SourceLocation,
-  Location,
-  Token,
   TokenKindEnum,
   KindEnum,
   DirectiveLocationEnum,
@@ -280,13 +279,18 @@ export type {
 // Execute GraphQL queries.
 export {
   execute,
+  executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,
   getDirectiveValues,
 } from './execution/index';
 
-export type { ExecutionArgs, ExecutionResult } from './execution/index';
+export type {
+  ExecutionArgs,
+  ExecutionResult,
+  FormattedExecutionResult,
+} from './execution/index';
 
 export { subscribe, createSourceEventStream } from './subscription/index';
 export type { SubscriptionArgs } from './subscription/index';
@@ -332,6 +336,9 @@ export {
   UniqueFieldDefinitionNamesRule,
   UniqueDirectiveNamesRule,
   PossibleTypeExtensionsRule,
+  // Custom validation rules
+  NoDeprecatedCustomRule,
+  NoSchemaIntrospectionCustomRule,
 } from './validation/index';
 
 export type { ValidationRule } from './validation/index';
@@ -413,7 +420,7 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-  // Report all deprecated usage within a GraphQL document.
+  // @deprecated: Report all deprecated usage within a GraphQL document.
   findDeprecatedUsages,
 } from './utilities/index';
 

@@ -1,14 +1,23 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
+
 import { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export interface IntrospectionOptions {
   // Whether to include descriptions in the introspection result.
   // Default: true
-  descriptions: boolean;
+  descriptions?: boolean;
+
+  // Whether to include `specifiedByUrl` in the introspection result.
+  // Default: false
+  specifiedByUrl?: boolean;
 
   // Whether to include `isRepeatable` flag on directives.
   // Default: false
   directiveIsRepeatable?: boolean;
+
+  // Whether to include `description` field on schema.
+  // Default: false
+  schemaDescription?: boolean;
 }
 
 export function getIntrospectionQuery(options?: IntrospectionOptions): string;
@@ -53,6 +62,7 @@ export interface IntrospectionScalarType {
   readonly kind: 'SCALAR';
   readonly name: string;
   readonly description?: Maybe<string>;
+  readonly specifiedByUrl?: Maybe<string>;
 }
 
 export interface IntrospectionObjectType {

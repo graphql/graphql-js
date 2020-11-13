@@ -1,7 +1,7 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
+import resolveOnNextTick from '../../__testUtils__/resolveOnNextTick';
 
 import { parse } from '../../language/parser';
 
@@ -9,7 +9,7 @@ import { GraphQLInt } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLObjectType } from '../../type/definition';
 
-import { execute } from '../execute';
+import { execute, executeSync } from '../execute';
 
 class NumberHolder {
   theNumber: number;
@@ -31,24 +31,18 @@ class Root {
     return this.numberHolder;
   }
 
-  promiseToChangeTheNumber(newNumber: number): Promise<NumberHolder> {
-    return new Promise((resolve) => {
-      process.nextTick(() => {
-        resolve(this.immediatelyChangeTheNumber(newNumber));
-      });
-    });
+  async promiseToChangeTheNumber(newNumber: number): Promise<NumberHolder> {
+    await resolveOnNextTick();
+    return this.immediatelyChangeTheNumber(newNumber);
   }
 
   failToChangeTheNumber(): NumberHolder {
     throw new Error('Cannot change the number');
   }
 
-  promiseAndFailToChangeTheNumber(): Promise<NumberHolder> {
-    return new Promise((_resolve, reject) => {
-      process.nextTick(() => {
-        reject(new Error('Cannot change the number'));
-      });
-    });
+  async promiseAndFailToChangeTheNumber(): Promise<NumberHolder> {
+    await resolveOnNextTick();
+    throw new Error('Cannot change the number');
   }
 }
 
@@ -140,7 +134,7 @@ describe('Execute: Handles mutation execution ordering', () => {
   it('does not include illegal mutation fields in output', () => {
     const document = parse('mutation { thisIsIllegalDoNotIncludeMe }');
 
-    const result = execute({ schema, document });
+    const result = executeSync({ schema, document });
     expect(result).to.deep.equal({
       data: {},
     });

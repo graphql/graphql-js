@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -8,7 +6,7 @@ import { GraphQLError } from '../GraphQLError';
 
 describe('formatError: default error formatter', () => {
   it('uses default message', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError[incompatible-call]
     const e = new GraphQLError();
 
     expect(formatError(e)).to.deep.equal({
@@ -47,12 +45,12 @@ describe('formatError: default error formatter', () => {
   });
 
   it('rejects null and undefined errors', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError[incompatible-call]
     expect(() => formatError(undefined)).to.throw(
       'Received null or undefined error.',
     );
 
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError[incompatible-call]
     expect(() => formatError(null)).to.throw(
       'Received null or undefined error.',
     );

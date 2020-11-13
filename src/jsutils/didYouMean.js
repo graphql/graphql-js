@@ -1,5 +1,3 @@
-// @flow strict
-
 const MAX_SUGGESTIONS = 5;
 
 /**

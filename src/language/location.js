@@ -1,6 +1,4 @@
-// @flow strict
-
-import { type Source } from './source';
+import type { Source } from './source';
 
 /**
  * Represents a location in a Source.

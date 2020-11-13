@@ -1,9 +1,7 @@
-// @flow strict
+import defineInspect from '../jsutils/defineInspect';
 
-import defineToJSON from '../jsutils/defineToJSON';
-
-import { type Source } from './source';
-import { type TokenKindEnum } from './tokenKind';
+import type { Source } from './source';
+import type { TokenKindEnum } from './tokenKind';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
@@ -42,12 +40,14 @@ export class Location {
     this.endToken = endToken;
     this.source = source;
   }
+
+  toJSON(): {| start: number, end: number |} {
+    return { start: this.start, end: this.end };
+  }
 }
 
-// Print a simplified form when appearing in JSON/util.inspect.
-defineToJSON(Location, function () {
-  return { start: this.start, end: this.end };
-});
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(Location);
 
 /**
  * Represents a range of characters represented by a lexical token
@@ -110,17 +110,24 @@ export class Token {
     this.prev = prev;
     this.next = null;
   }
+
+  toJSON(): {|
+    kind: TokenKindEnum,
+    value: string | void,
+    line: number,
+    column: number,
+  |} {
+    return {
+      kind: this.kind,
+      value: this.value,
+      line: this.line,
+      column: this.column,
+    };
+  }
 }
 
-// Print a simplified form when appearing in JSON/util.inspect.
-defineToJSON(Token, function () {
-  return {
-    kind: this.kind,
-    value: this.value,
-    line: this.line,
-    column: this.column,
-  };
-});
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(Token);
 
 /**
  * @internal

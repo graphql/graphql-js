@@ -1,23 +1,19 @@
-// @flow strict
-
 import inspect from '../../jsutils/inspect';
 import invariant from '../../jsutils/invariant';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
+import type { ASTNode, OperationTypeNode } from '../../language/ast';
+import type { DirectiveLocationEnum } from '../../language/directiveLocation';
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
-import { type OperationTypeNode } from '../../language/ast';
-import {
-  type DirectiveLocationEnum,
-  DirectiveLocation,
-} from '../../language/directiveLocation';
+import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { specifiedDirectives } from '../../type/directives';
 
-import {
-  type ValidationContext,
-  type SDLValidationContext,
+import type {
+  ValidationContext,
+  SDLValidationContext,
 } from '../ValidationContext';
 
 /**
@@ -71,7 +67,9 @@ export function KnownDirectivesRule(
   };
 }
 
-function getDirectiveLocationForASTPath(ancestors) {
+function getDirectiveLocationForASTPath(
+  ancestors: $ReadOnlyArray<ASTNode | $ReadOnlyArray<ASTNode>>,
+): DirectiveLocationEnum | void {
   const appliedTo = ancestors[ancestors.length - 1];
   invariant(!Array.isArray(appliedTo));
 
@@ -134,6 +132,6 @@ function getDirectiveLocationForOperation(
       return DirectiveLocation.SUBSCRIPTION;
   }
 
-  // Not reachable. All possible types have been considered.
+  // istanbul ignore next (Not reachable. All possible types have been considered)
   invariant(false, 'Unexpected operation: ' + inspect((operation: empty)));
 }

@@ -1,11 +1,9 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import suggestionList from '../suggestionList';
 
-function expectSuggestions(input, options) {
+function expectSuggestions(input: string, options: Array<string>) {
   return expect(suggestionList(input, options));
 }
 

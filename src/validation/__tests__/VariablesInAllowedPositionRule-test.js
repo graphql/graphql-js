@@ -1,16 +1,14 @@
-// @flow strict
-
 import { describe, it } from 'mocha';
 
 import { VariablesInAllowedPositionRule } from '../rules/VariablesInAllowedPositionRule';
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(VariablesInAllowedPositionRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 

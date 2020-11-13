@@ -1,21 +1,18 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
-
-import { kitchenSinkSDL } from '../../__fixtures__/index';
+import dedent from '../../__testUtils__/dedent';
+import kitchenSinkSDL from '../../__testUtils__/kitchenSinkSDL';
 
 import { parse } from '../parser';
 
 import toJSONDeep from './toJSONDeep';
 
-function expectSyntaxError(text) {
+function expectSyntaxError(text: string) {
   return expect(() => parse(text)).to.throw();
 }
 
-function typeNode(name, loc) {
+function typeNode(name: mixed, loc: mixed) {
   return {
     kind: 'NamedType',
     name: nameNode(name, loc),
@@ -23,7 +20,7 @@ function typeNode(name, loc) {
   };
 }
 
-function nameNode(name, loc) {
+function nameNode(name: mixed, loc: mixed) {
   return {
     kind: 'Name',
     value: name,
@@ -31,11 +28,11 @@ function nameNode(name, loc) {
   };
 }
 
-function fieldNode(name, type, loc) {
+function fieldNode(name: mixed, type: mixed, loc: mixed) {
   return fieldNodeWithArgs(name, type, [], loc);
 }
 
-function fieldNodeWithArgs(name, type, args, loc) {
+function fieldNodeWithArgs(name: mixed, type: mixed, args: mixed, loc: mixed) {
   return {
     kind: 'FieldDefinition',
     description: undefined,
@@ -47,7 +44,7 @@ function fieldNodeWithArgs(name, type, args, loc) {
   };
 }
 
-function enumValueNode(name, loc) {
+function enumValueNode(name: mixed, loc: mixed) {
   return {
     kind: 'EnumValueDefinition',
     name: nameNode(name, loc),
@@ -57,7 +54,12 @@ function enumValueNode(name, loc) {
   };
 }
 
-function inputValueNode(name, type, defaultValue, loc) {
+function inputValueNode(
+  name: mixed,
+  type: mixed,
+  defaultValue: mixed,
+  loc: mixed,
+) {
   return {
     kind: 'InputValueDefinition',
     name,
@@ -108,7 +110,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expect(toJSONDeep(doc)).to.nested.deep.property(
+    expect(toJSONDeep(doc)).to.deep.nested.property(
       'definitions[0].description',
       {
         kind: 'StringValue',
@@ -130,7 +132,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expect(toJSONDeep(doc)).to.nested.deep.property(
+    expect(toJSONDeep(doc)).to.deep.nested.property(
       'definitions[0].description',
       {
         kind: 'StringValue',
@@ -149,7 +151,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expect(toJSONDeep(doc)).to.nested.deep.property(
+    expect(toJSONDeep(doc)).to.deep.nested.property(
       'definitions[0].description',
       {
         kind: 'StringValue',

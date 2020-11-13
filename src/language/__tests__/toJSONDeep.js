@@ -1,5 +1,3 @@
-// @flow strict
-
 import isObjectLike from '../../jsutils/isObjectLike';
 
 /**
@@ -12,7 +10,7 @@ export default function toJSONDeep(value: mixed): mixed {
   }
 
   if (typeof value.toJSON === 'function') {
-    // $FlowFixMe(>=0.90.0)
+    // $FlowFixMe[incompatible-use]
     return value.toJSON();
   }
 

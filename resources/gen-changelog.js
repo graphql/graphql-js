@@ -1,5 +1,3 @@
-// @noflow
-
 'use strict';
 
 const util = require('util');
@@ -37,7 +35,7 @@ const labelsConfig = {
     fold: true,
   },
 };
-const GH_TOKEN = process.env['GH_TOKEN'];
+const { GH_TOKEN } = process.env;
 
 if (!GH_TOKEN) {
   console.error('Must provide GH_TOKEN as environment variable!');
@@ -49,18 +47,21 @@ if (!packageJSON.repository || typeof packageJSON.repository.url !== 'string') {
   process.exit(1);
 }
 
-const repoURLMatch = /https:\/\/github.com\/([^/]+)\/([^/]+).git/.exec(
+const repoURLMatch = /https:\/\/github.com\/(?<githubOrg>[^/]+)\/(?<githubRepo>[^/]+).git/.exec(
   packageJSON.repository.url,
 );
 if (repoURLMatch == null) {
   console.error('Cannot extract organization and repo name from repo URL!');
   process.exit(1);
 }
-const [, githubOrg, githubRepo] = repoURLMatch;
+const { githubOrg, githubRepo } = repoURLMatch.groups;
 
 getChangeLog()
   .then((changelog) => process.stdout.write(changelog))
-  .catch((error) => console.error(error));
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 
 function getChangeLog() {
   const { version } = packageJSON;
@@ -274,9 +275,9 @@ function commitsInfoToPRs(commits) {
       (pr) => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
     );
     if (associatedPRs.length === 0) {
-      const match = / \(#([0-9]+)\)$/m.exec(commit.message);
+      const match = / \(#(?<prNumber>[0-9]+)\)$/m.exec(commit.message);
       if (match) {
-        prs[parseInt(match[1], 10)] = true;
+        prs[parseInt(match.groups.prNumber, 10)] = true;
         continue;
       }
       throw new Error(

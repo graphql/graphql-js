@@ -1,28 +1,29 @@
-// @flow strict
+import type { ObjMap } from '../jsutils/ObjMap';
 
-import { type ObjMap } from '../jsutils/ObjMap';
+import type { GraphQLError } from '../error/GraphQLError';
 
-import { type GraphQLError } from '../error/GraphQLError';
-
-import { Kind } from '../language/kinds';
-import { type ASTVisitor, visit } from '../language/visitor';
-import {
-  type DocumentNode,
-  type OperationDefinitionNode,
-  type VariableNode,
-  type SelectionSetNode,
-  type FragmentSpreadNode,
-  type FragmentDefinitionNode,
+import type { ASTVisitor } from '../language/visitor';
+import type {
+  DocumentNode,
+  OperationDefinitionNode,
+  VariableNode,
+  SelectionSetNode,
+  FragmentSpreadNode,
+  FragmentDefinitionNode,
 } from '../language/ast';
 
-import { type GraphQLSchema } from '../type/schema';
-import { type GraphQLDirective } from '../type/directives';
-import {
-  type GraphQLInputType,
-  type GraphQLOutputType,
-  type GraphQLCompositeType,
-  type GraphQLField,
-  type GraphQLArgument,
+import { Kind } from '../language/kinds';
+import { visit } from '../language/visitor';
+
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type {
+  GraphQLInputType,
+  GraphQLOutputType,
+  GraphQLCompositeType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
 } from '../type/definition';
 
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
@@ -242,6 +243,10 @@ export class ValidationContext extends ASTValidationContext {
 
   getArgument(): ?GraphQLArgument {
     return this._typeInfo.getArgument();
+  }
+
+  getEnumValue(): ?GraphQLEnumValue {
+    return this._typeInfo.getEnumValue();
   }
 }
 

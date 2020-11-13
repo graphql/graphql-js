@@ -1,5 +1,3 @@
-// @flow strict
-
 import { SYMBOL_ITERATOR } from '../polyfills/symbols';
 
 /**

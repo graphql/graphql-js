@@ -1,14 +1,20 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
-import { type ASTVisitor } from '../../language/visitor';
+
+import type { ASTVisitor } from '../../language/visitor';
+import type {
+  NameNode,
+  FieldDefinitionNode,
+  InputValueDefinitionNode,
+} from '../../language/ast';
+
+import type { GraphQLNamedType } from '../../type/definition';
 import {
   isObjectType,
   isInterfaceType,
   isInputObjectType,
 } from '../../type/definition';
 
-import { type SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext';
 
 /**
  * Unique field definition names
@@ -31,14 +37,18 @@ export function UniqueFieldDefinitionNamesRule(
     ObjectTypeExtension: checkFieldUniqueness,
   };
 
-  function checkFieldUniqueness(node) {
+  function checkFieldUniqueness(node: {
+    +name: NameNode,
+    +fields?: $ReadOnlyArray<InputValueDefinitionNode | FieldDefinitionNode>,
+    ...
+  }) {
     const typeName = node.name.value;
 
     if (!knownFieldNames[typeName]) {
       knownFieldNames[typeName] = Object.create(null);
     }
 
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const fieldNodes = node.fields ?? [];
     const fieldNames = knownFieldNames[typeName];
 
@@ -68,9 +78,9 @@ export function UniqueFieldDefinitionNamesRule(
   }
 }
 
-function hasField(type, fieldName) {
+function hasField(type: GraphQLNamedType, fieldName: string): boolean {
   if (isObjectType(type) || isInterfaceType(type) || isInputObjectType(type)) {
-    return type.getFields()[fieldName];
+    return type.getFields()[fieldName] != null;
   }
   return false;
 }

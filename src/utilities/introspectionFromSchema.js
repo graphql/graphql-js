@@ -1,17 +1,16 @@
-// @flow strict
-
 import invariant from '../jsutils/invariant';
-import isPromise from '../jsutils/isPromise';
 
 import { parse } from '../language/parser';
-import { execute } from '../execution/execute';
-import { type GraphQLSchema } from '../type/schema';
 
-import {
-  type IntrospectionQuery,
-  type IntrospectionOptions,
-  getIntrospectionQuery,
+import type { GraphQLSchema } from '../type/schema';
+
+import { executeSync } from '../execution/execute';
+
+import type {
+  IntrospectionQuery,
+  IntrospectionOptions,
 } from './getIntrospectionQuery';
+import { getIntrospectionQuery } from './getIntrospectionQuery';
 
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
@@ -33,7 +32,7 @@ export function introspectionFromSchema(
   };
 
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
-  const result = execute({ schema, document });
-  invariant(!isPromise(result) && !result.errors && result.data);
+  const result = executeSync({ schema, document });
+  invariant(!result.errors && result.data);
   return (result.data: any);
 }

@@ -1,5 +1,3 @@
-// @flow strict
-
 import objectValues from '../polyfills/objectValues';
 
 import keyMap from '../jsutils/keyMap';
@@ -8,62 +6,68 @@ import mapValue from '../jsutils/mapValue';
 import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
 
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
+import type {
+  Location,
+  DocumentNode,
+  StringValueNode,
+  TypeNode,
+  NamedTypeNode,
+  SchemaDefinitionNode,
+  SchemaExtensionNode,
+  TypeDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  InterfaceTypeExtensionNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
+  UnionTypeDefinitionNode,
+  UnionTypeExtensionNode,
+  FieldDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  InputObjectTypeExtensionNode,
+  InputValueDefinitionNode,
+  EnumTypeDefinitionNode,
+  EnumTypeExtensionNode,
+  EnumValueDefinitionNode,
+  DirectiveDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ScalarTypeExtensionNode,
+} from '../language/ast';
 import { Kind } from '../language/kinds';
 import { TokenKind } from '../language/tokenKind';
 import { dedentBlockStringValue } from '../language/blockString';
-import { type DirectiveLocationEnum } from '../language/directiveLocation';
 import {
   isTypeDefinitionNode,
   isTypeExtensionNode,
 } from '../language/predicates';
-import {
-  type Location,
-  type DocumentNode,
-  type StringValueNode,
-  type TypeNode,
-  type NamedTypeNode,
-  type SchemaDefinitionNode,
-  type SchemaExtensionNode,
-  type TypeDefinitionNode,
-  type InterfaceTypeDefinitionNode,
-  type InterfaceTypeExtensionNode,
-  type ObjectTypeDefinitionNode,
-  type ObjectTypeExtensionNode,
-  type UnionTypeDefinitionNode,
-  type UnionTypeExtensionNode,
-  type FieldDefinitionNode,
-  type InputObjectTypeDefinitionNode,
-  type InputObjectTypeExtensionNode,
-  type InputValueDefinitionNode,
-  type EnumTypeDefinitionNode,
-  type EnumTypeExtensionNode,
-  type EnumValueDefinitionNode,
-  type DirectiveDefinitionNode,
-} from '../language/ast';
 
 import { assertValidSDLExtension } from '../validation/validate';
 
 import { getDirectiveValues } from '../execution/values';
 
+import type {
+  GraphQLSchemaValidationOptions,
+  GraphQLSchemaNormalizedConfig,
+} from '../type/schema';
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLFieldConfig,
+  GraphQLFieldConfigMap,
+  GraphQLArgumentConfig,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLEnumValueConfigMap,
+  GraphQLInputFieldConfigMap,
+} from '../type/definition';
+import { assertSchema, GraphQLSchema } from '../type/schema';
 import { specifiedScalarTypes, isSpecifiedScalarType } from '../type/scalars';
 import { introspectionTypes, isIntrospectionType } from '../type/introspection';
 import {
   GraphQLDirective,
   GraphQLDeprecatedDirective,
+  GraphQLSpecifiedByDirective,
 } from '../type/directives';
 import {
-  type GraphQLSchemaValidationOptions,
-  assertSchema,
-  GraphQLSchema,
-  type GraphQLSchemaNormalizedConfig,
-} from '../type/schema';
-import {
-  type GraphQLType,
-  type GraphQLNamedType,
-  type GraphQLFieldConfigMap,
-  type GraphQLEnumValueConfigMap,
-  type GraphQLInputFieldConfigMap,
-  type GraphQLFieldConfigArgumentMap,
   isScalarType,
   isObjectType,
   isInterfaceType,
@@ -235,10 +239,13 @@ export function extendSchemaImpl(
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
-  function replaceType(type) {
+  function replaceType<T: GraphQLType>(type: T): T {
     if (isListType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
-    } else if (isNonNullType(type)) {
+    }
+    if (isNonNullType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLNonNull(replaceType(type.ofType));
     }
     return replaceNamedType(type);
@@ -279,11 +286,12 @@ export function extendSchemaImpl(
     if (isEnumType(type)) {
       return extendEnumType(type);
     }
+    // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
     if (isInputObjectType(type)) {
       return extendInputObjectType(type);
     }
 
-    // Not reachable. All possible types have been considered.
+    // istanbul ignore next (Not reachable. All possible types have been considered)
     invariant(false, 'Unexpected type: ' + inspect((type: empty)));
   }
 
@@ -324,8 +332,14 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
 
+    let specifiedByUrl = config.specifiedByUrl;
+    for (const extensionNode of extensions) {
+      specifiedByUrl = getSpecifiedByUrl(extensionNode) ?? specifiedByUrl;
+    }
+
     return new GraphQLScalarType({
       ...config,
+      specifiedByUrl,
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
@@ -382,15 +396,18 @@ export function extendSchemaImpl(
     });
   }
 
-  function extendField(field) {
+  function extendField(
+    field: GraphQLFieldConfig<mixed, mixed>,
+  ): GraphQLFieldConfig<mixed, mixed> {
     return {
       ...field,
       type: replaceType(field.type),
+      // $FlowFixMe[incompatible-call]
       args: mapValue(field.args, extendArg),
     };
   }
 
-  function extendArg(arg) {
+  function extendArg(arg: GraphQLArgumentConfig) {
     return {
       ...arg,
       type: replaceType(arg.type),
@@ -406,7 +423,7 @@ export function extendSchemaImpl(
   |} {
     const opTypes = {};
     for (const node of nodes) {
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const operationTypesNodes = node.operationTypes ?? [];
 
       for (const operationType of operationTypesNodes) {
@@ -465,7 +482,7 @@ export function extendSchemaImpl(
   ): GraphQLFieldConfigMap<mixed, mixed> {
     const fieldConfigMap = Object.create(null);
     for (const node of nodes) {
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const nodeFields = node.fields ?? [];
 
       for (const field of nodeFields) {
@@ -487,7 +504,7 @@ export function extendSchemaImpl(
   function buildArgumentMap(
     args: ?$ReadOnlyArray<InputValueDefinitionNode>,
   ): GraphQLFieldConfigArgumentMap {
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const argsNodes = args ?? [];
 
     const argConfigMap = Object.create(null);
@@ -501,6 +518,7 @@ export function extendSchemaImpl(
         type,
         description: getDescription(arg, options),
         defaultValue: valueFromAST(arg.defaultValue, type),
+        deprecationReason: getDeprecationReason(arg),
         astNode: arg,
       };
     }
@@ -514,7 +532,7 @@ export function extendSchemaImpl(
   ): GraphQLInputFieldConfigMap {
     const inputFieldMap = Object.create(null);
     for (const node of nodes) {
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const fieldsNodes = node.fields ?? [];
 
       for (const field of fieldsNodes) {
@@ -527,6 +545,7 @@ export function extendSchemaImpl(
           type,
           description: getDescription(field, options),
           defaultValue: valueFromAST(field.defaultValue, type),
+          deprecationReason: getDeprecationReason(field),
           astNode: field,
         };
       }
@@ -539,7 +558,7 @@ export function extendSchemaImpl(
   ): GraphQLEnumValueConfigMap {
     const enumValueMap = Object.create(null);
     for (const node of nodes) {
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const valuesNodes = node.values ?? [];
 
       for (const value of valuesNodes) {
@@ -563,7 +582,7 @@ export function extendSchemaImpl(
   ): Array<GraphQLInterfaceType> {
     const interfaces = [];
     for (const node of nodes) {
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const interfacesNodes = node.interfaces ?? [];
 
       for (const type of interfacesNodes) {
@@ -582,7 +601,7 @@ export function extendSchemaImpl(
   ): Array<GraphQLObjectType> {
     const types = [];
     for (const node of nodes) {
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const typeNodes = node.types ?? [];
 
       for (const type of typeNodes) {
@@ -658,6 +677,7 @@ export function extendSchemaImpl(
         return new GraphQLScalarType({
           name,
           description,
+          specifiedByUrl: getSpecifiedByUrl(astNode),
           astNode,
           extensionASTNodes,
         });
@@ -676,7 +696,7 @@ export function extendSchemaImpl(
       }
     }
 
-    // Not reachable. All possible type definition nodes have been considered.
+    // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
     invariant(
       false,
       'Unexpected type definition node: ' + inspect((astNode: empty)),
@@ -694,10 +714,23 @@ const stdTypeMap = keyMap(
  * deprecation reason.
  */
 function getDeprecationReason(
-  node: EnumValueDefinitionNode | FieldDefinitionNode,
+  node:
+    | EnumValueDefinitionNode
+    | FieldDefinitionNode
+    | InputValueDefinitionNode,
 ): ?string {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   return (deprecated?.reason: any);
+}
+
+/**
+ * Given a scalar node, returns the string value for the specifiedByUrl.
+ */
+function getSpecifiedByUrl(
+  node: ScalarTypeDefinitionNode | ScalarTypeExtensionNode,
+): ?string {
+  const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
+  return (specifiedBy?.url: any);
 }
 
 /**

@@ -1,9 +1,8 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import dedent from '../../__testUtils__/dedent';
+
 import inspect from '../../jsutils/inspect';
 
 import { parse } from '../../language/parser';
@@ -11,14 +10,20 @@ import { parse } from '../../language/parser';
 import { extendSchema } from '../../utilities/extendSchema';
 import { buildSchema } from '../../utilities/buildASTSchema';
 
+import type {
+  GraphQLNamedType,
+  GraphQLInputType,
+  GraphQLOutputType,
+  GraphQLFieldConfig,
+  GraphQLArgumentConfig,
+  GraphQLInputFieldConfig,
+  GraphQLEnumValueConfigMap,
+} from '../definition';
 import { GraphQLSchema } from '../schema';
 import { GraphQLString } from '../scalars';
 import { validateSchema, assertValidSchema } from '../validate';
 import { GraphQLDirective, assertDirective } from '../directives';
 import {
-  type GraphQLNamedType,
-  type GraphQLInputType,
-  type GraphQLOutputType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -68,9 +73,9 @@ function withModifiers<T: GraphQLNamedType>(
 ): Array<T | GraphQLList<T> | GraphQLNonNull<T | GraphQLList<T>>> {
   return [
     type,
-    GraphQLList(type),
-    GraphQLNonNull(type),
-    GraphQLNonNull(GraphQLList(type)),
+    new GraphQLList(type),
+    new GraphQLNonNull(type),
+    new GraphQLNonNull(new GraphQLList(type)),
   ];
 }
 
@@ -100,13 +105,12 @@ const notInputTypes: Array<GraphQLOutputType> = [
   ...withModifiers(SomeInterfaceType),
 ];
 
-function schemaWithFieldType(type) {
+function schemaWithFieldType(type: GraphQLOutputType): GraphQLSchema {
   return new GraphQLSchema({
     query: new GraphQLObjectType({
       name: 'Query',
       fields: { f: { type } },
     }),
-    types: [type],
   });
 }
 
@@ -387,7 +391,7 @@ describe('Type System: A Schema must have Object root types', () => {
   it('rejects a Schema whose types are incorrectly typed', () => {
     const schema = new GraphQLSchema({
       query: SomeObjectType,
-      // $DisableFlowOnNegativeTest
+      // $FlowExpectedError[incompatible-call]
       types: [{ name: 'SomeType' }, SomeDirective],
     });
     expect(validateSchema(schema)).to.deep.equal([
@@ -404,7 +408,7 @@ describe('Type System: A Schema must have Object root types', () => {
   it('rejects a Schema whose directives are incorrectly typed', () => {
     const schema = new GraphQLSchema({
       query: SomeObjectType,
-      // $DisableFlowOnNegativeTest
+      // $FlowExpectedError[incompatible-call]
       directives: [null, 'SomeDirective', SomeScalarType],
     });
     expect(validateSchema(schema)).to.deep.equal([
@@ -513,18 +517,20 @@ describe('Type System: Fields args must be properly named', () => {
   });
 
   it('rejects field arg with invalid names', () => {
-    const QueryType = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {
-        badField: {
-          type: GraphQLString,
-          args: {
-            'bad-name-with-dashes': { type: GraphQLString },
+    const schema = schemaWithFieldType(
+      new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          badField: {
+            type: GraphQLString,
+            args: {
+              'bad-name-with-dashes': { type: GraphQLString },
+            },
           },
         },
-      },
-    });
-    const schema = new GraphQLSchema({ query: QueryType });
+      }),
+    );
+
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
@@ -682,7 +688,7 @@ describe('Type System: Union types must be valid', () => {
     for (const memberType of badUnionMemberTypes) {
       const badUnion = new GraphQLUnionType({
         name: 'BadUnion',
-        // $DisableFlowOnNegativeTest
+        // $FlowExpectedError[incompatible-call]
         types: [memberType],
       });
       const badSchema = schemaWithFieldType(badUnion);
@@ -892,6 +898,30 @@ describe('Type System: Input Objects must have fields', () => {
       },
     ]);
   });
+
+  it('rejects an Input Object type with required argument that is deprecated', () => {
+    const schema = buildSchema(`
+      type Query {
+        field(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject {
+        badField: String! @deprecated
+        optionalField: String @deprecated
+        anotherOptionalField: String! = "" @deprecated
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message:
+          'Required input field SomeInputObject.badField cannot be deprecated.',
+        locations: [
+          { line: 7, column: 27 },
+          { line: 7, column: 19 },
+        ],
+      },
+    ]);
+  });
 });
 
 describe('Type System: Enum types must be well defined', () => {
@@ -925,7 +955,7 @@ describe('Type System: Enum types must be well defined', () => {
   });
 
   it('rejects an Enum type with incorrectly named values', () => {
-    function schemaWithEnum(values) {
+    function schemaWithEnum(values: GraphQLEnumValueConfigMap): GraphQLSchema {
       return schemaWithFieldType(
         new GraphQLEnumType({
           name: 'SomeEnum',
@@ -976,11 +1006,13 @@ describe('Type System: Enum types must be well defined', () => {
 });
 
 describe('Type System: Object fields must have output types', () => {
-  function schemaWithObjectFieldOfType(fieldType: GraphQLOutputType) {
+  function schemaWithObjectField(
+    fieldConfig: GraphQLFieldConfig<mixed, mixed>,
+  ): GraphQLSchema {
     const BadObjectType = new GraphQLObjectType({
       name: 'BadObject',
       fields: {
-        badField: { type: fieldType },
+        badField: fieldConfig,
       },
     });
 
@@ -998,14 +1030,14 @@ describe('Type System: Object fields must have output types', () => {
   for (const type of outputTypes) {
     const typeName = inspect(type);
     it(`accepts an output type as an Object field type: ${typeName}`, () => {
-      const schema = schemaWithObjectFieldOfType(type);
+      const schema = schemaWithObjectField({ type });
       expect(validateSchema(schema)).to.deep.equal([]);
     });
   }
 
   it('rejects an empty Object field type', () => {
-    // $DisableFlowOnNegativeTest
-    const schema = schemaWithObjectFieldOfType(undefined);
+    // $FlowExpectedError[incompatible-call]
+    const schema = schemaWithObjectField({ type: undefined });
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
@@ -1017,8 +1049,8 @@ describe('Type System: Object fields must have output types', () => {
   for (const type of notOutputTypes) {
     const typeStr = inspect(type);
     it(`rejects a non-output type as an Object field type: ${typeStr}`, () => {
-      // $DisableFlowOnNegativeTest
-      const schema = schemaWithObjectFieldOfType(type);
+      // $FlowExpectedError[incompatible-call]
+      const schema = schemaWithObjectField({ type });
       expect(validateSchema(schema)).to.deep.equal([
         {
           message: `The type of BadObject.badField must be Output Type but got: ${typeStr}.`,
@@ -1028,8 +1060,8 @@ describe('Type System: Object fields must have output types', () => {
   }
 
   it('rejects a non-type value as an Object field type', () => {
-    // $DisableFlowOnNegativeTest
-    const schema = schemaWithObjectFieldOfType(Number);
+    // $FlowExpectedError[incompatible-call]
+    const schema = schemaWithObjectField({ type: Number });
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
@@ -1066,7 +1098,7 @@ describe('Type System: Objects can only implement unique interfaces', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'BadObject',
-        // $DisableFlowOnNegativeTest
+        // $FlowExpectedError[incompatible-call]
         interfaces: [undefined],
         fields: { f: { type: GraphQLString } },
       }),
@@ -1289,20 +1321,20 @@ describe('Type System: Interface extensions should be valid', () => {
 });
 
 describe('Type System: Interface fields must have output types', () => {
-  function schemaWithInterfaceFieldOfType(fieldType: GraphQLOutputType) {
+  function schemaWithInterfaceField(
+    fieldConfig: GraphQLFieldConfig<mixed, mixed>,
+  ): GraphQLSchema {
+    const fields = { badField: fieldConfig };
+
     const BadInterfaceType = new GraphQLInterfaceType({
       name: 'BadInterface',
-      fields: {
-        badField: { type: fieldType },
-      },
+      fields,
     });
 
     const BadImplementingType = new GraphQLObjectType({
       name: 'BadImplementing',
       interfaces: [BadInterfaceType],
-      fields: {
-        badField: { type: fieldType },
-      },
+      fields,
     });
 
     return new GraphQLSchema({
@@ -1319,14 +1351,14 @@ describe('Type System: Interface fields must have output types', () => {
   for (const type of outputTypes) {
     const typeName = inspect(type);
     it(`accepts an output type as an Interface field type: ${typeName}`, () => {
-      const schema = schemaWithInterfaceFieldOfType(type);
+      const schema = schemaWithInterfaceField({ type });
       expect(validateSchema(schema)).to.deep.equal([]);
     });
   }
 
   it('rejects an empty Interface field type', () => {
-    // $DisableFlowOnNegativeTest
-    const schema = schemaWithInterfaceFieldOfType(undefined);
+    // $FlowExpectedError[incompatible-call]
+    const schema = schemaWithInterfaceField({ type: undefined });
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
@@ -1342,8 +1374,8 @@ describe('Type System: Interface fields must have output types', () => {
   for (const type of notOutputTypes) {
     const typeStr = inspect(type);
     it(`rejects a non-output type as an Interface field type: ${typeStr}`, () => {
-      // $DisableFlowOnNegativeTest
-      const schema = schemaWithInterfaceFieldOfType(type);
+      // $FlowExpectedError[incompatible-call]
+      const schema = schemaWithInterfaceField({ type });
       expect(validateSchema(schema)).to.deep.equal([
         {
           message: `The type of BadImplementing.badField must be Output Type but got: ${typeStr}.`,
@@ -1356,8 +1388,8 @@ describe('Type System: Interface fields must have output types', () => {
   }
 
   it('rejects a non-type value as an Interface field type', () => {
-    // $DisableFlowOnNegativeTest
-    const schema = schemaWithInterfaceFieldOfType(Number);
+    // $FlowExpectedError[incompatible-call]
+    const schema = schemaWithInterfaceField({ type: Number });
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
@@ -1420,14 +1452,14 @@ describe('Type System: Interface fields must have output types', () => {
 });
 
 describe('Type System: Arguments must have input types', () => {
-  function schemaWithArgOfType(argType: GraphQLInputType) {
+  function schemaWithArg(argConfig: GraphQLArgumentConfig): GraphQLSchema {
     const BadObjectType = new GraphQLObjectType({
       name: 'BadObject',
       fields: {
         badField: {
           type: GraphQLString,
           args: {
-            badArg: { type: argType },
+            badArg: argConfig,
           },
         },
       },
@@ -1444,7 +1476,7 @@ describe('Type System: Arguments must have input types', () => {
         new GraphQLDirective({
           name: 'BadDirective',
           args: {
-            badArg: { type: argType },
+            badArg: argConfig,
           },
           locations: ['QUERY'],
         }),
@@ -1455,14 +1487,14 @@ describe('Type System: Arguments must have input types', () => {
   for (const type of inputTypes) {
     const typeName = inspect(type);
     it(`accepts an input type as a field arg type: ${typeName}`, () => {
-      const schema = schemaWithArgOfType(type);
+      const schema = schemaWithArg({ type });
       expect(validateSchema(schema)).to.deep.equal([]);
     });
   }
 
   it('rejects an empty field arg type', () => {
-    // $DisableFlowOnNegativeTest
-    const schema = schemaWithArgOfType(undefined);
+    // $FlowExpectedError[incompatible-call]
+    const schema = schemaWithArg({ type: undefined });
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
@@ -1478,8 +1510,8 @@ describe('Type System: Arguments must have input types', () => {
   for (const type of notInputTypes) {
     const typeStr = inspect(type);
     it(`rejects a non-input type as a field arg type: ${typeStr}`, () => {
-      // $DisableFlowOnNegativeTest
-      const schema = schemaWithArgOfType(type);
+      // $FlowExpectedError[incompatible-call]
+      const schema = schemaWithArg({ type });
       expect(validateSchema(schema)).to.deep.equal([
         {
           message: `The type of @BadDirective(badArg:) must be Input Type but got: ${typeStr}.`,
@@ -1492,8 +1524,8 @@ describe('Type System: Arguments must have input types', () => {
   }
 
   it('rejects a non-type value as a field arg type', () => {
-    // $DisableFlowOnNegativeTest
-    const schema = schemaWithArgOfType(Number);
+    // $FlowExpectedError[incompatible-call]
+    const schema = schemaWithArg({ type: Number });
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
@@ -1505,6 +1537,41 @@ describe('Type System: Arguments must have input types', () => {
       },
       {
         message: 'Expected GraphQL named type but got: [function Number].',
+      },
+    ]);
+  });
+
+  it('rejects an required argument that is deprecated', () => {
+    const schema = buildSchema(`
+      directive @BadDirective(
+        badArg: String! @deprecated
+        optionalArg: String @deprecated
+        anotherOptionalArg: String! = "" @deprecated
+      ) on FIELD
+
+      type Query {
+        test(
+          badArg: String! @deprecated
+          optionalArg: String @deprecated
+          anotherOptionalArg: String! = "" @deprecated
+        ): String
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message:
+          'Required argument @BadDirective(badArg:) cannot be deprecated.',
+        locations: [
+          { line: 3, column: 25 },
+          { line: 3, column: 17 },
+        ],
+      },
+      {
+        message: 'Required argument Query.test(badArg:) cannot be deprecated.',
+        locations: [
+          { line: 10, column: 27 },
+          { line: 10, column: 19 },
+        ],
       },
     ]);
   });
@@ -1530,11 +1597,13 @@ describe('Type System: Arguments must have input types', () => {
 });
 
 describe('Type System: Input Object fields must have input types', () => {
-  function schemaWithInputFieldOfType(inputFieldType: GraphQLInputType) {
+  function schemaWithInputField(
+    inputFieldConfig: GraphQLInputFieldConfig,
+  ): GraphQLSchema {
     const BadInputObjectType = new GraphQLInputObjectType({
       name: 'BadInputObject',
       fields: {
-        badField: { type: inputFieldType },
+        badField: inputFieldConfig,
       },
     });
 
@@ -1556,14 +1625,14 @@ describe('Type System: Input Object fields must have input types', () => {
   for (const type of inputTypes) {
     const typeName = inspect(type);
     it(`accepts an input type as an input field type: ${typeName}`, () => {
-      const schema = schemaWithInputFieldOfType(type);
+      const schema = schemaWithInputField({ type });
       expect(validateSchema(schema)).to.deep.equal([]);
     });
   }
 
   it('rejects an empty input field type', () => {
-    // $DisableFlowOnNegativeTest
-    const schema = schemaWithInputFieldOfType(undefined);
+    // $FlowExpectedError[incompatible-call]
+    const schema = schemaWithInputField({ type: undefined });
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
@@ -1575,8 +1644,8 @@ describe('Type System: Input Object fields must have input types', () => {
   for (const type of notInputTypes) {
     const typeStr = inspect(type);
     it(`rejects a non-input type as an input field type: ${typeStr}`, () => {
-      // $DisableFlowOnNegativeTest
-      const schema = schemaWithInputFieldOfType(type);
+      // $FlowExpectedError[incompatible-call]
+      const schema = schemaWithInputField({ type });
       expect(validateSchema(schema)).to.deep.equal([
         {
           message: `The type of BadInputObject.badField must be Input Type but got: ${typeStr}.`,
@@ -1586,8 +1655,8 @@ describe('Type System: Input Object fields must have input types', () => {
   }
 
   it('rejects a non-type value as an input field type', () => {
-    // $DisableFlowOnNegativeTest
-    const schema = schemaWithInputFieldOfType(Number);
+    // $FlowExpectedError[incompatible-call]
+    const schema = schemaWithInputField({ type: Number });
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:

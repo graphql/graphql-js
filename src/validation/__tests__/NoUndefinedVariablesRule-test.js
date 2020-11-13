@@ -1,16 +1,14 @@
-// @flow strict
-
 import { describe, it } from 'mocha';
 
 import { NoUndefinedVariablesRule } from '../rules/NoUndefinedVariablesRule';
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(NoUndefinedVariablesRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 

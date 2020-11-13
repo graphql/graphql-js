@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -13,7 +11,7 @@ import { GraphQLObjectType } from '../../type/definition';
 
 import { graphqlSync } from '../../graphql';
 
-import { execute } from '../execute';
+import { execute, executeSync } from '../execute';
 
 describe('Execute: synchronously when possible', () => {
   const schema = new GraphQLSchema({
@@ -89,6 +87,29 @@ describe('Execute: synchronously when possible', () => {
     expect(result).to.be.instanceOf(Promise);
     expect(await result).to.deep.equal({
       data: { syncField: 'rootValue', asyncField: 'rootValue' },
+    });
+  });
+
+  describe('executeSync', () => {
+    it('does not return a Promise for sync execution', () => {
+      const doc = 'query Example { syncField }';
+      const result = executeSync({
+        schema,
+        document: parse(doc),
+        rootValue: 'rootValue',
+      });
+      expect(result).to.deep.equal({ data: { syncField: 'rootValue' } });
+    });
+
+    it('throws if encountering async execution', () => {
+      const doc = 'query Example { syncField, asyncField }';
+      expect(() => {
+        executeSync({
+          schema,
+          document: parse(doc),
+          rootValue: 'rootValue',
+        });
+      }).to.throw('GraphQL execution failed to complete synchronously.');
     });
   });
 

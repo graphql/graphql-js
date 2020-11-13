@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -9,6 +7,7 @@ import invariant from '../../jsutils/invariant';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
+import type { GraphQLArgumentConfig } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
 import {
@@ -20,7 +19,7 @@ import {
   GraphQLEnumType,
 } from '../../type/definition';
 
-import { execute } from '../execute';
+import { executeSync } from '../execute';
 import { getVariableValues } from '../values';
 
 const TestComplexScalar = new GraphQLScalarType({
@@ -39,8 +38,8 @@ const TestInputObject = new GraphQLInputObjectType({
   name: 'TestInputObject',
   fields: {
     a: { type: GraphQLString },
-    b: { type: GraphQLList(GraphQLString) },
-    c: { type: GraphQLNonNull(GraphQLString) },
+    b: { type: new GraphQLList(GraphQLString) },
+    c: { type: new GraphQLNonNull(GraphQLString) },
     d: { type: TestComplexScalar },
   },
 });
@@ -48,8 +47,8 @@ const TestInputObject = new GraphQLInputObjectType({
 const TestNestedInputObject = new GraphQLInputObjectType({
   name: 'TestNestedInputObject',
   fields: {
-    na: { type: GraphQLNonNull(TestInputObject) },
-    nb: { type: GraphQLNonNull(GraphQLString) },
+    na: { type: new GraphQLNonNull(TestInputObject) },
+    nb: { type: new GraphQLNonNull(GraphQLString) },
   },
 });
 
@@ -65,7 +64,7 @@ const TestEnum = new GraphQLEnumType({
   },
 });
 
-function fieldWithInputArg(inputArg) {
+function fieldWithInputArg(inputArg: GraphQLArgumentConfig) {
   return {
     type: GraphQLString,
     args: { input: inputArg },
@@ -82,43 +81,48 @@ const TestType = new GraphQLObjectType({
   fields: {
     fieldWithEnumInput: fieldWithInputArg({ type: TestEnum }),
     fieldWithNonNullableEnumInput: fieldWithInputArg({
-      type: GraphQLNonNull(TestEnum),
+      type: new GraphQLNonNull(TestEnum),
     }),
     fieldWithObjectInput: fieldWithInputArg({ type: TestInputObject }),
     fieldWithNullableStringInput: fieldWithInputArg({ type: GraphQLString }),
     fieldWithNonNullableStringInput: fieldWithInputArg({
-      type: GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(GraphQLString),
     }),
     fieldWithDefaultArgumentValue: fieldWithInputArg({
       type: GraphQLString,
       defaultValue: 'Hello World',
     }),
     fieldWithNonNullableStringInputAndDefaultArgumentValue: fieldWithInputArg({
-      type: GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(GraphQLString),
       defaultValue: 'Hello World',
     }),
     fieldWithNestedInputObject: fieldWithInputArg({
       type: TestNestedInputObject,
       defaultValue: 'Hello World',
     }),
-    list: fieldWithInputArg({ type: GraphQLList(GraphQLString) }),
+    list: fieldWithInputArg({ type: new GraphQLList(GraphQLString) }),
     nnList: fieldWithInputArg({
-      type: GraphQLNonNull(GraphQLList(GraphQLString)),
+      type: new GraphQLNonNull(new GraphQLList(GraphQLString)),
     }),
     listNN: fieldWithInputArg({
-      type: GraphQLList(GraphQLNonNull(GraphQLString)),
+      type: new GraphQLList(new GraphQLNonNull(GraphQLString)),
     }),
     nnListNN: fieldWithInputArg({
-      type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))),
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLString)),
+      ),
     }),
   },
 });
 
 const schema = new GraphQLSchema({ query: TestType });
 
-function executeQuery(query, variableValues) {
+function executeQuery(
+  query: string,
+  variableValues?: { [variable: string]: mixed, ... },
+) {
   const document = parse(query);
-  return execute({ schema, document, variableValues });
+  return executeSync({ schema, document, variableValues });
 }
 
 describe('Execute: Handles inputs', () => {
@@ -1010,7 +1014,7 @@ describe('Execute: Handles inputs', () => {
 
     const inputValue = { input: [0, 1, 2] };
 
-    function invalidValueError(value, index) {
+    function invalidValueError(value: number, index: number) {
       return {
         message: `Variable "$input" got invalid value ${value} at "input[${index}]"; String cannot represent a non string value: ${value}`,
         locations: [{ line: 2, column: 14 }],

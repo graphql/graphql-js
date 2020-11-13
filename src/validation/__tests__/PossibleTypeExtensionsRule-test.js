@@ -1,6 +1,6 @@
-// @flow strict
-
 import { describe, it } from 'mocha';
+
+import type { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
@@ -8,11 +8,11 @@ import { PossibleTypeExtensionsRule } from '../rules/PossibleTypeExtensionsRule'
 
 import { expectSDLValidationErrors } from './harness';
 
-function expectSDLErrors(sdlStr, schema) {
+function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(schema, PossibleTypeExtensionsRule, sdlStr);
 }
 
-function expectValidSDL(sdlStr, schema) {
+function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
 }
 

@@ -1,4 +1,5 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
+
 import { Visitor } from '../language/visitor';
 import { ASTNode, ASTKindToNode, FieldNode } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';

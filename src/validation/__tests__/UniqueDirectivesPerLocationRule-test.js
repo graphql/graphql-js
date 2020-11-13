@@ -1,8 +1,9 @@
-// @flow strict
-
 import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
+
+import type { GraphQLSchema } from '../../type/schema';
+
 import { extendSchema } from '../../utilities/extendSchema';
 
 import { UniqueDirectivesPerLocationRule } from '../rules/UniqueDirectivesPerLocationRule';
@@ -21,7 +22,7 @@ const extensionSDL = `
 `;
 const schemaWithDirectives = extendSchema(testSchema, parse(extensionSDL));
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrorsWithSchema(
     schemaWithDirectives,
     UniqueDirectivesPerLocationRule,
@@ -29,11 +30,11 @@ function expectErrors(queryStr) {
   );
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 
-function expectSDLErrors(sdlStr, schema) {
+function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(
     schema,
     UniqueDirectivesPerLocationRule,

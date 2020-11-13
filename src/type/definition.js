@@ -1,60 +1,55 @@
-// @flow strict
-
-// FIXME
-/* eslint-disable import/no-cycle */
-
 import objectEntries from '../polyfills/objectEntries';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
+import type { Path } from '../jsutils/Path';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import type {
+  ObjMap,
+  ReadOnlyObjMap,
+  ReadOnlyObjMapLike,
+} from '../jsutils/ObjMap';
 import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
 import mapValue from '../jsutils/mapValue';
 import toObjMap from '../jsutils/toObjMap';
-import { type Path } from '../jsutils/Path';
 import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 import instanceOf from '../jsutils/instanceOf';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import identityFunc from '../jsutils/identityFunc';
-import defineToJSON from '../jsutils/defineToJSON';
+import defineInspect from '../jsutils/defineInspect';
 import suggestionList from '../jsutils/suggestionList';
-import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
-import {
-  type ObjMap,
-  type ReadOnlyObjMap,
-  type ReadOnlyObjMapLike,
-} from '../jsutils/ObjMap';
-
-import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
-import {
-  type ScalarTypeDefinitionNode,
-  type ObjectTypeDefinitionNode,
-  type FieldDefinitionNode,
-  type InputValueDefinitionNode,
-  type InterfaceTypeDefinitionNode,
-  type UnionTypeDefinitionNode,
-  type EnumTypeDefinitionNode,
-  type EnumValueDefinitionNode,
-  type InputObjectTypeDefinitionNode,
-  type ScalarTypeExtensionNode,
-  type ObjectTypeExtensionNode,
-  type InterfaceTypeExtensionNode,
-  type UnionTypeExtensionNode,
-  type EnumTypeExtensionNode,
-  type InputObjectTypeExtensionNode,
-  type OperationDefinitionNode,
-  type FieldNode,
-  type FragmentDefinitionNode,
-  type ValueNode,
-} from '../language/ast';
 
 import { GraphQLError } from '../error/GraphQLError';
 
+import { Kind } from '../language/kinds';
+import { print } from '../language/printer';
+import type {
+  ScalarTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+  FieldDefinitionNode,
+  InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  UnionTypeDefinitionNode,
+  EnumTypeDefinitionNode,
+  EnumValueDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  ScalarTypeExtensionNode,
+  ObjectTypeExtensionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
+  OperationDefinitionNode,
+  FieldNode,
+  FragmentDefinitionNode,
+  ValueNode,
+} from '../language/ast';
+
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 
-import { type GraphQLSchema } from './schema';
+import type { GraphQLSchema } from './schema';
 
 // Predicates & Assertions
 
@@ -344,8 +339,8 @@ export function assertAbstractType(type: mixed): GraphQLAbstractType {
  *     const PersonType = new GraphQLObjectType({
  *       name: 'Person',
  *       fields: () => ({
- *         parents: { type: GraphQLList(PersonType) },
- *         children: { type: GraphQLList(PersonType) },
+ *         parents: { type: new GraphQLList(PersonType) },
+ *         children: { type: new GraphQLList(PersonType) },
  *       })
  *     })
  *
@@ -361,6 +356,7 @@ declare class GraphQLList<+T: GraphQLType> {
 */
 
 export function GraphQLList(ofType) {
+  // istanbul ignore else (to be removed in v16.0.0)
   if (this instanceof GraphQLList) {
     this.ofType = assertType(ofType);
   } else {
@@ -373,13 +369,18 @@ export function GraphQLList(ofType) {
   return '[' + String(this.ofType) + ']';
 };
 
+(GraphQLList.prototype: any).toJSON = function toJSON() {
+  return this.toString();
+};
+
 Object.defineProperty(GraphQLList.prototype, SYMBOL_TO_STRING_TAG, {
   get() {
     return 'GraphQLList';
   },
 });
 
-defineToJSON(GraphQLList);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLList);
 
 /**
  * Non-Null Type Wrapper
@@ -395,7 +396,7 @@ defineToJSON(GraphQLList);
  *     const RowType = new GraphQLObjectType({
  *       name: 'Row',
  *       fields: () => ({
- *         id: { type: GraphQLNonNull(GraphQLString) },
+ *         id: { type: new GraphQLNonNull(GraphQLString) },
  *       })
  *     })
  *
@@ -412,6 +413,7 @@ declare class GraphQLNonNull<+T: GraphQLNullableType> {
 */
 
 export function GraphQLNonNull(ofType) {
+  // istanbul ignore else (to be removed in v16.0.0)
   if (this instanceof GraphQLNonNull) {
     this.ofType = assertNullableType(ofType);
   } else {
@@ -424,13 +426,18 @@ export function GraphQLNonNull(ofType) {
   return String(this.ofType) + '!';
 };
 
+(GraphQLNonNull.prototype: any).toJSON = function toJSON() {
+  return this.toString();
+};
+
 Object.defineProperty(GraphQLNonNull.prototype, SYMBOL_TO_STRING_TAG, {
   get() {
     return 'GraphQLNonNull';
   },
 });
 
-defineToJSON(GraphQLNonNull);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLNonNull);
 
 /**
  * These types wrap and modify other types
@@ -533,7 +540,7 @@ export function getNamedType(type) {
 export type Thunk<+T> = (() => T) | T;
 
 function resolveThunk<+T>(thunk: Thunk<T>): T {
-  // $FlowFixMe(>=0.90.0)
+  // $FlowFixMe[incompatible-use]
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -568,6 +575,7 @@ function undefineIfEmpty<T>(arr: ?$ReadOnlyArray<T>): ?$ReadOnlyArray<T> {
 export class GraphQLScalarType {
   name: string;
   description: ?string;
+  specifiedByUrl: ?string;
   serialize: GraphQLScalarSerializer<mixed>;
   parseValue: GraphQLScalarValueParser<mixed>;
   parseLiteral: GraphQLScalarLiteralParser<mixed>;
@@ -579,15 +587,25 @@ export class GraphQLScalarType {
     const parseValue = config.parseValue ?? identityFunc;
     this.name = config.name;
     this.description = config.description;
+    this.specifiedByUrl = config.specifiedByUrl;
     this.serialize = config.serialize ?? identityFunc;
     this.parseValue = parseValue;
     this.parseLiteral =
-      config.parseLiteral ?? ((node) => parseValue(valueFromASTUntyped(node)));
+      config.parseLiteral ??
+      ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
 
     devAssert(typeof config.name === 'string', 'Must provide name.');
+
+    devAssert(
+      config.specifiedByUrl == null ||
+        typeof config.specifiedByUrl === 'string',
+      `${this.name} must provide "specifiedByUrl" as a string, ` +
+        `but got: ${inspect(config.specifiedByUrl)}.`,
+    );
+
     devAssert(
       config.serialize == null || typeof config.serialize === 'function',
       `${this.name} must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.`,
@@ -613,6 +631,7 @@ export class GraphQLScalarType {
     return {
       name: this.name,
       description: this.description,
+      specifiedByUrl: this.specifiedByUrl,
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
@@ -626,13 +645,18 @@ export class GraphQLScalarType {
     return this.name;
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  toJSON(): string {
+    return this.toString();
+  }
+
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLScalarType';
   }
 }
 
-defineToJSON(GraphQLScalarType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLScalarType);
 
 export type GraphQLScalarSerializer<TExternal> = (
   outputValue: mixed,
@@ -650,6 +674,7 @@ export type GraphQLScalarLiteralParser<TInternal> = (
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   name: string,
   description?: ?string,
+  specifiedByUrl?: ?string,
   // Serializes an internal value to include in a response.
   serialize?: GraphQLScalarSerializer<TExternal>,
   // Parses an externally provided value to use as an input.
@@ -764,13 +789,18 @@ export class GraphQLObjectType {
     return this.name;
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  toJSON(): string {
+    return this.toString();
+  }
+
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLObjectType';
   }
 }
 
-defineToJSON(GraphQLObjectType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLObjectType);
 
 function defineInterfaces(
   config: $ReadOnly<
@@ -824,6 +854,7 @@ function defineFieldMap<TSource, TContext>(
       description: argConfig.description,
       type: argConfig.type,
       defaultValue: argConfig.defaultValue,
+      deprecationReason: argConfig.deprecationReason,
       extensions: argConfig.extensions && toObjMap(argConfig.extensions),
       astNode: argConfig.astNode,
     }));
@@ -843,11 +874,13 @@ function defineFieldMap<TSource, TContext>(
   });
 }
 
-function isPlainObj(obj) {
+function isPlainObj(obj: mixed): boolean {
   return isObjectLike(obj) && !Array.isArray(obj);
 }
 
-function fieldsToFieldsConfig(fields) {
+function fieldsToFieldsConfig(
+  fields: GraphQLFieldMap<mixed, mixed>,
+): GraphQLFieldConfigMap<mixed, mixed> {
   return mapValue(fields, (field) => ({
     description: field.description,
     type: field.type,
@@ -873,6 +906,7 @@ export function argsToArgsConfig(
       description: arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
+      deprecationReason: arg.deprecationReason,
       extensions: arg.extensions,
       astNode: arg.astNode,
     }),
@@ -890,6 +924,9 @@ export type GraphQLObjectTypeConfig<TSource, TContext> = {|
   extensionASTNodes?: ?$ReadOnlyArray<ObjectTypeExtensionNode>,
 |};
 
+/**
+ * Note: returning GraphQLObjectType is deprecated and will be removed in v16.0.0
+ */
 export type GraphQLTypeResolver<TSource, TContext> = (
   value: TSource,
   context: TContext,
@@ -949,6 +986,7 @@ export type GraphQLArgumentConfig = {|
   type: GraphQLInputType,
   defaultValue?: mixed,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
+  deprecationReason?: ?string,
   astNode?: ?InputValueDefinitionNode,
 |};
 
@@ -967,10 +1005,12 @@ export type GraphQLField<
   args: Array<GraphQLArgument>,
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
-  isDeprecated: boolean,
   deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?FieldDefinitionNode,
+
+  // @deprecated and will be removed in v16
+  isDeprecated: boolean,
 |};
 
 export type GraphQLArgument = {|
@@ -978,6 +1018,7 @@ export type GraphQLArgument = {|
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
+  deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?InputValueDefinitionNode,
 |};
@@ -1074,13 +1115,18 @@ export class GraphQLInterfaceType {
     return this.name;
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  toJSON(): string {
+    return this.toString();
+  }
+
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLInterfaceType';
   }
 }
 
-defineToJSON(GraphQLInterfaceType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLInterfaceType);
 
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {|
   name: string,
@@ -1176,13 +1222,18 @@ export class GraphQLUnionType {
     return this.name;
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  toJSON(): string {
+    return this.toString();
+  }
+
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLUnionType';
   }
 }
 
-defineToJSON(GraphQLUnionType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLUnionType);
 
 function defineTypes(
   config: $ReadOnly<GraphQLUnionTypeConfig<mixed, mixed>>,
@@ -1349,13 +1400,18 @@ export class GraphQLEnumType /* <T> */ {
     return this.name;
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  toJSON(): string {
+    return this.toString();
+  }
+
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLEnumType';
   }
 }
 
-defineToJSON(GraphQLEnumType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLEnumType);
 
 function didYouMeanEnumValue(
   enumType: GraphQLEnumType,
@@ -1420,10 +1476,12 @@ export type GraphQLEnumValue /* <T> */ = {|
   name: string,
   description: ?string,
   value: any /* T */,
-  isDeprecated: boolean,
   deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?EnumValueDefinitionNode,
+
+  // @deprecated and will be removed in v16
+  isDeprecated: boolean,
 |};
 
 /**
@@ -1439,8 +1497,8 @@ export type GraphQLEnumValue /* <T> */ = {|
  *     const GeoPoint = new GraphQLInputObjectType({
  *       name: 'GeoPoint',
  *       fields: {
- *         lat: { type: GraphQLNonNull(GraphQLFloat) },
- *         lon: { type: GraphQLNonNull(GraphQLFloat) },
+ *         lat: { type: new GraphQLNonNull(GraphQLFloat) },
+ *         lon: { type: new GraphQLNonNull(GraphQLFloat) },
  *         alt: { type: GraphQLFloat, defaultValue: 0 },
  *       }
  *     });
@@ -1501,13 +1559,18 @@ export class GraphQLInputObjectType {
     return this.name;
   }
 
-  // $FlowFixMe Flow doesn't support computed properties yet
+  toJSON(): string {
+    return this.toString();
+  }
+
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLInputObjectType';
   }
 }
 
-defineToJSON(GraphQLInputObjectType);
+// Print a simplified form when appearing in `inspect` and `util.inspect`.
+defineInspect(GraphQLInputObjectType);
 
 function defineInputFieldMap(
   config: $ReadOnly<GraphQLInputObjectTypeConfig>,
@@ -1528,6 +1591,7 @@ function defineInputFieldMap(
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
+      deprecationReason: fieldConfig.deprecationReason,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode,
     };
@@ -1547,6 +1611,7 @@ export type GraphQLInputFieldConfig = {|
   description?: ?string,
   type: GraphQLInputType,
   defaultValue?: mixed,
+  deprecationReason?: ?string,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?InputValueDefinitionNode,
 |};
@@ -1558,6 +1623,7 @@ export type GraphQLInputField = {|
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
+  deprecationReason: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?InputValueDefinitionNode,
 |};

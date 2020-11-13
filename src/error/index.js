@@ -1,5 +1,3 @@
-// @flow strict
-
 export { GraphQLError, printError } from './GraphQLError';
 
 export { syntaxError } from './syntaxError';

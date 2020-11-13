@@ -1,21 +1,17 @@
-// @flow strict
-
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 
-import { Kind } from '../language/kinds';
-import {
-  type NamedTypeNode,
-  type ListTypeNode,
-  type NonNullTypeNode,
+import type {
+  NamedTypeNode,
+  ListTypeNode,
+  NonNullTypeNode,
 } from '../language/ast';
 
-import { type GraphQLSchema } from '../type/schema';
-import {
-  type GraphQLNamedType,
-  GraphQLList,
-  GraphQLNonNull,
-} from '../type/definition';
+import { Kind } from '../language/kinds';
+
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLNamedType } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/definition';
 
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType
@@ -42,16 +38,17 @@ export function typeFromAST(schema, typeNode) {
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
-    return innerType && GraphQLList(innerType);
+    return innerType && new GraphQLList(innerType);
   }
   if (typeNode.kind === Kind.NON_NULL_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
-    return innerType && GraphQLNonNull(innerType);
+    return innerType && new GraphQLNonNull(innerType);
   }
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (typeNode.kind === Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);
   }
 
-  // Not reachable. All possible type nodes have been considered.
+  // istanbul ignore next (Not reachable. All possible type nodes have been considered)
   invariant(false, 'Unexpected type node: ' + inspect((typeNode: empty)));
 }

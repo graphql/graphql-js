@@ -1,17 +1,18 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import dedent from '../../__testUtils__/dedent';
+
 import invariant from '../../jsutils/invariant';
 
+import type { ASTNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
 import { graphqlSync } from '../../graphql';
 
+import type { GraphQLNamedType } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { validateSchema } from '../../type/validate';
 import { assertDirective } from '../../type/directives';
@@ -36,7 +37,7 @@ import { printSchema } from '../printSchema';
 import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
 
-function printExtensionNodes(obj) {
+function printExtensionNodes(obj: ?GraphQLNamedType | GraphQLSchema): string {
   invariant(obj?.extensionASTNodes != null);
   return print({
     kind: Kind.DOCUMENT,
@@ -44,7 +45,10 @@ function printExtensionNodes(obj) {
   });
 }
 
-function printSchemaChanges(schema, extendedSchema) {
+function printSchemaChanges(
+  schema: GraphQLSchema,
+  extendedSchema: GraphQLSchema,
+): string {
   const schemaDefinitions = parse(printSchema(schema)).definitions.map(print);
   const ast = parse(printSchema(extendedSchema));
   return print({
@@ -55,7 +59,7 @@ function printSchemaChanges(schema, extendedSchema) {
   });
 }
 
-function printASTNode(obj) {
+function printASTNode(obj: ?{ +astNode: ?ASTNode, ... }): string {
   invariant(obj?.astNode != null);
   return print(obj.astNode);
 }
@@ -357,6 +361,31 @@ describe('extendSchema', () => {
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printExtensionNodes(someScalar)).to.deep.equal(extensionSDL);
+  });
+
+  it('extends scalars by adding specifiedBy directive', () => {
+    const schema = buildSchema(`
+      type Query {
+        foo: Foo
+      }
+
+      scalar Foo
+
+      directive @foo on SCALAR
+    `);
+    const extensionSDL = dedent`
+      extend scalar Foo @foo
+
+      extend scalar Foo @specifiedBy(url: "https://example.com/foo_spec")
+    `;
+
+    const extendedSchema = extendSchema(schema, parse(extensionSDL));
+    const foo = assertScalarType(extendedSchema.getType('Foo'));
+
+    expect(foo.specifiedByUrl).to.equal('https://example.com/foo_spec');
+
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    expect(printExtensionNodes(foo)).to.deep.equal(extensionSDL);
   });
 
   it('correctly assign AST nodes to new and extended types', () => {
@@ -825,11 +854,14 @@ describe('extendSchema', () => {
   it('extends different types multiple times', () => {
     const schema = buildSchema(`
       type Query {
+        someScalar: SomeScalar
         someObject(someInput: SomeInput): SomeObject
         someInterface: SomeInterface
         someEnum: SomeEnum
         someUnion: SomeUnion
       }
+
+      scalar SomeScalar
 
       type SomeObject implements SomeInterface {
         oldField: String
@@ -850,8 +882,12 @@ describe('extendSchema', () => {
       }
     `);
     const newTypesSDL = dedent`
-      interface AnotherNewInterface {
-        anotherNewField: String
+      scalar NewScalar
+
+      scalar AnotherNewScalar
+
+      type NewObject {
+        foo: String
       }
 
       type AnotherNewObject {
@@ -862,11 +898,17 @@ describe('extendSchema', () => {
         newField: String
       }
 
-      type NewObject {
-        foo: String
+      interface AnotherNewInterface {
+        anotherNewField: String
       }`;
+    const schemaWithNewTypes = extendSchema(schema, parse(newTypesSDL));
+    expect(printSchemaChanges(schema, schemaWithNewTypes)).to.equal(
+      newTypesSDL + '\n',
+    );
+
     const extendAST = parse(`
-      ${newTypesSDL}
+      extend scalar SomeScalar @specifiedBy(url: "http://example.com/foo_spec")
+
       extend type SomeObject implements NewInterface {
         newField: String
       }
@@ -895,10 +937,12 @@ describe('extendSchema', () => {
         anotherNewField: String
       }
     `);
-    const extendedSchema = extendSchema(schema, extendAST);
+    const extendedSchema = extendSchema(schemaWithNewTypes, extendAST);
 
     expect(validateSchema(extendedSchema)).to.deep.equal([]);
     expect(printSchemaChanges(schema, extendedSchema)).to.equal(dedent`
+      scalar SomeScalar @specifiedBy(url: "http://example.com/foo_spec")
+
       type SomeObject implements SomeInterface & NewInterface & AnotherNewInterface {
         oldField: String
         newField: String
@@ -1203,12 +1247,12 @@ describe('extendSchema', () => {
   it('Rejects invalid AST', () => {
     const schema = new GraphQLSchema({});
 
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError[incompatible-call]
     expect(() => extendSchema(schema, null)).to.throw(
       'Must provide valid Document AST',
     );
 
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError[prop-missing]
     expect(() => extendSchema(schema, {})).to.throw(
       'Must provide valid Document AST',
     );

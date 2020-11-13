@@ -1,19 +1,18 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import dedent from '../../__testUtils__/dedent';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
 
+import type { IntrospectionQuery } from '../getIntrospectionQuery';
 import { printSchema } from '../printSchema';
 import { buildClientSchema } from '../buildClientSchema';
 import { introspectionFromSchema } from '../introspectionFromSchema';
 
-function introspectionToSDL(introspection) {
+function introspectionToSDL(introspection: IntrospectionQuery): string {
   return printSchema(buildClientSchema(introspection));
 }
 

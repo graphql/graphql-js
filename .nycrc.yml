@@ -3,7 +3,7 @@ include:
   - 'src/'
 exclude:
   - 'src/polyfills'
-  - '**/*-benchmark.js'
+  - '**/*-fuzz.js'
   - '**/*.d.ts'
   - 'src/validation/rules/ExecutableDefinitions.js'
   - 'src/validation/rules/LoneSchemaDefinition.js'
@@ -13,8 +13,14 @@ exclude:
   - 'src/validation/rules/UniqueFieldDefinitionNames.js'
   - 'src/validation/rules/UniqueTypeNames.js'
   - 'src/validation/rules/UniqueOperationTypes.js'
+  - 'src/utilities/findDeprecatedUsages.js'
 clean: true
-temp-directory: 'coverage/tests'
-report-dir: 'coverage/tests'
+temp-directory: 'coverage'
+report-dir: 'coverage'
 skip-full: true
 reporter: [json, html, text]
+check-coverage: true
+branches: 100
+lines: 100
+functions: 100
+statements: 100

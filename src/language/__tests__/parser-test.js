@@ -1,11 +1,12 @@
-// @flow strict
-
+// eslint-disable-next-line import/no-nodejs-modules
 import { inspect as nodeInspect } from 'util';
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import dedent from '../../__testUtils__/dedent';
+import kitchenSinkQuery from '../../__testUtils__/kitchenSinkQuery';
+
 import inspect from '../../jsutils/inspect';
 
 import { Kind } from '../kinds';
@@ -13,25 +14,13 @@ import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseType } from '../parser';
 
-import { kitchenSinkQuery } from '../../__fixtures__/index';
-
 import toJSONDeep from './toJSONDeep';
 
-function expectSyntaxError(text) {
+function expectSyntaxError(text: string) {
   return expect(() => parse(text)).to.throw();
 }
 
 describe('Parser', () => {
-  it('asserts that a source to parse was provided', () => {
-    // $DisableFlowOnNegativeTest
-    expect(() => parse()).to.throw('Must provide Source. Received: undefined.');
-  });
-
-  it('asserts that an invalid source to parse was provided', () => {
-    // $DisableFlowOnNegativeTest
-    expect(() => parse({})).to.throw('Must provide Source. Received: {}.');
-  });
-
   it('parse provides useful errors', () => {
     let caughtError;
     try {

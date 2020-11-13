@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -50,5 +48,17 @@ describe('getIntrospectionQuery', () => {
     expect(
       getIntrospectionQuery({ descriptions: false, schemaDescription: true }),
     ).to.not.match(/\bdescription\b/);
+  });
+
+  it('include "specifiedByUrl" field', () => {
+    expect(getIntrospectionQuery()).to.not.match(/\bspecifiedByUrl\b/);
+
+    expect(getIntrospectionQuery({ specifiedByUrl: true })).to.match(
+      /\bspecifiedByUrl\b/,
+    );
+
+    expect(getIntrospectionQuery({ specifiedByUrl: false })).to.not.match(
+      /\bspecifiedByUrl\b/,
+    );
   });
 });

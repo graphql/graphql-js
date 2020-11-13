@@ -1,7 +1,7 @@
 // FIXME
 /* eslint-disable import/no-cycle */
 
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
 
 import { SchemaDefinitionNode, SchemaExtensionNode } from '../language/ast';
 
@@ -18,6 +18,19 @@ import {
  */
 export function isSchema(schema: any): schema is GraphQLSchema;
 export function assertSchema(schema: any): GraphQLSchema;
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLSchemaExtensions {
+  [attributeName: string]: any;
+}
 
 /**
  * Schema Definition
@@ -47,7 +60,7 @@ export function assertSchema(schema: any): GraphQLSchema;
  */
 export class GraphQLSchema {
   description: Maybe<string>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 
@@ -83,18 +96,20 @@ export class GraphQLSchema {
   toConfig(): GraphQLSchemaConfig & {
     types: Array<GraphQLNamedType>;
     directives: Array<GraphQLDirective>;
-    extensions: Maybe<Readonly<Record<string, any>>>;
+    extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
     extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
     assumeValid: boolean;
   };
 }
 
-type TypeMap = { [key: string]: GraphQLNamedType };
+interface TypeMap {
+  [key: string]: GraphQLNamedType;
+}
 
-type InterfaceImplementations = {
+interface InterfaceImplementations {
   objects: ReadonlyArray<GraphQLObjectType>;
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
-};
+}
 
 export interface GraphQLSchemaValidationOptions {
   /**
@@ -109,12 +124,12 @@ export interface GraphQLSchemaValidationOptions {
 
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   description?: Maybe<string>;
-  query: Maybe<GraphQLObjectType>;
+  query?: Maybe<GraphQLObjectType>;
   mutation?: Maybe<GraphQLObjectType>;
   subscription?: Maybe<GraphQLObjectType>;
   types?: Maybe<Array<GraphQLNamedType>>;
   directives?: Maybe<Array<GraphQLDirective>>;
-  extensions?: Maybe<Readonly<Record<string, any>>>;
+  extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 }
@@ -126,7 +141,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
   types: Array<GraphQLNamedType>;
   directives: Array<GraphQLDirective>;
-  extensions: Maybe<Readonly<Record<string, any>>>;
+  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;
   assumeValid: boolean;
 }

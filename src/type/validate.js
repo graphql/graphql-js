@@ -1,7 +1,4 @@
-// @flow strict
-
 import find from '../polyfills/find';
-import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
@@ -9,20 +6,28 @@ import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
-import { type ASTNode, type NamedTypeNode } from '../language/ast';
+import type {
+  ASTNode,
+  NamedTypeNode,
+  DirectiveNode,
+  OperationTypeNode,
+} from '../language/ast';
 
 import { isValidNameError } from '../utilities/assertValidName';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
-import { isDirective } from './directives';
+import type { GraphQLSchema } from './schema';
+import type {
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+} from './definition';
+import { assertSchema } from './schema';
 import { isIntrospectionType } from './introspection';
-import { type GraphQLSchema, assertSchema } from './schema';
+import { isDirective, GraphQLDeprecatedDirective } from './directives';
 import {
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
-  type GraphQLUnionType,
-  type GraphQLEnumType,
-  type GraphQLInputObjectType,
   isObjectType,
   isInterfaceType,
   isUnionType,
@@ -33,6 +38,7 @@ import {
   isInputType,
   isOutputType,
   isRequiredArgument,
+  isRequiredInputField,
 } from './definition';
 
 /**
@@ -103,7 +109,7 @@ class SchemaValidationContext {
   }
 }
 
-function validateRootTypes(context) {
+function validateRootTypes(context: SchemaValidationContext): void {
   const schema = context.schema;
   const queryType = schema.getQueryType();
   if (!queryType) {
@@ -113,7 +119,7 @@ function validateRootTypes(context) {
       `Query root type must be Object type, it cannot be ${inspect(
         queryType,
       )}.`,
-      getOperationTypeNode(schema, queryType, 'query'),
+      getOperationTypeNode(schema, 'query') ?? queryType.astNode,
     );
   }
 
@@ -122,7 +128,7 @@ function validateRootTypes(context) {
     context.reportError(
       'Mutation root type must be Object type if provided, it cannot be ' +
         `${inspect(mutationType)}.`,
-      getOperationTypeNode(schema, mutationType, 'mutation'),
+      getOperationTypeNode(schema, 'mutation') ?? mutationType.astNode,
     );
   }
 
@@ -131,15 +137,14 @@ function validateRootTypes(context) {
     context.reportError(
       'Subscription root type must be Object type if provided, it cannot be ' +
         `${inspect(subscriptionType)}.`,
-      getOperationTypeNode(schema, subscriptionType, 'subscription'),
+      getOperationTypeNode(schema, 'subscription') ?? subscriptionType.astNode,
     );
   }
 }
 
 function getOperationTypeNode(
   schema: GraphQLSchema,
-  type: GraphQLObjectType,
-  operation: string,
+  operation: OperationTypeNode,
 ): ?ASTNode {
   const operationNodes = getAllSubNodes(schema, (node) => node.operationTypes);
   for (const node of operationNodes) {
@@ -147,8 +152,7 @@ function getOperationTypeNode(
       return node.type;
     }
   }
-
-  return type.astNode;
+  return undefined;
 }
 
 function validateDirectives(context: SchemaValidationContext): void {
@@ -178,6 +182,17 @@ function validateDirectives(context: SchemaValidationContext): void {
           `The type of @${directive.name}(${arg.name}:) must be Input Type ` +
             `but got: ${inspect(arg.type)}.`,
           arg.astNode,
+        );
+      }
+
+      if (isRequiredArgument(arg) && arg.deprecationReason != null) {
+        context.reportError(
+          `Required argument @${directive.name}(${arg.name}:) cannot be deprecated.`,
+          [
+            getDeprecatedDirectiveNode(arg.astNode),
+            // istanbul ignore next (TODO need to write coverage tests)
+            arg.astNode?.type,
+          ],
         );
       }
     }
@@ -285,6 +300,17 @@ function validateFields(
           arg.astNode?.type,
         );
       }
+
+      if (isRequiredArgument(arg) && arg.deprecationReason != null) {
+        context.reportError(
+          `Required argument ${type.name}.${field.name}(${argName}:) cannot be deprecated.`,
+          [
+            getDeprecatedDirectiveNode(arg.astNode),
+            // istanbul ignore next (TODO need to write coverage tests)
+            arg.astNode?.type,
+          ],
+        );
+      }
     }
   }
 }
@@ -355,7 +381,12 @@ function validateTypeImplementsInterface(
         `Interface field ${iface.name}.${fieldName} expects type ` +
           `${inspect(ifaceField.type)} but ${type.name}.${fieldName} ` +
           `is type ${inspect(typeField.type)}.`,
-        [ifaceField.astNode.type, typeField.astNode.type],
+        [
+          // istanbul ignore next (TODO need to write coverage tests)
+          ifaceField.astNode?.type,
+          // istanbul ignore next (TODO need to write coverage tests)
+          typeField.astNode?.type,
+        ],
       );
     }
 
@@ -382,7 +413,12 @@ function validateTypeImplementsInterface(
             `expects type ${inspect(ifaceArg.type)} but ` +
             `${type.name}.${fieldName}(${argName}:) is type ` +
             `${inspect(typeArg.type)}.`,
-          [ifaceArg.astNode.type, typeArg.astNode.type],
+          [
+            // istanbul ignore next (TODO need to write coverage tests)
+            ifaceArg.astNode?.type,
+            // istanbul ignore next (TODO need to write coverage tests)
+            typeArg.astNode?.type,
+          ],
         );
       }
 
@@ -510,12 +546,23 @@ function validateInputFields(
         field.astNode?.type,
       );
     }
+
+    if (isRequiredInputField(field) && field.deprecationReason != null) {
+      context.reportError(
+        `Required input field ${inputObj.name}.${field.name} cannot be deprecated.`,
+        [
+          getDeprecatedDirectiveNode(field.astNode),
+          // istanbul ignore next (TODO need to write coverage tests)
+          field.astNode?.type,
+        ],
+      );
+    }
   }
 }
 
 function createInputObjectCircularRefsValidator(
   context: SchemaValidationContext,
-) {
+): (GraphQLInputObjectType) => void {
   // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
   // Tracks already visited types to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
@@ -532,7 +579,7 @@ function createInputObjectCircularRefsValidator(
   // This does a straight-forward DFS to find cycles.
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
-  function detectCycleRecursive(inputObj: GraphQLInputObjectType) {
+  function detectCycleRecursive(inputObj: GraphQLInputObjectType): void {
     if (visitedTypes[inputObj.name]) {
       return;
     }
@@ -586,8 +633,12 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
   object: SDLDefinedObject<T, K>,
   getter: (T | K) => ?(L | $ReadOnlyArray<L>),
 ): $ReadOnlyArray<L> {
-  /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
-  return flatMap(getAllNodes(object), (item) => getter(item) ?? []);
+  let subNodes = [];
+  for (const node of getAllNodes(object)) {
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    subNodes = subNodes.concat(getter(node) ?? []);
+  }
+  return subNodes;
 }
 
 function getAllImplementsInterfaceNodes(
@@ -605,5 +656,14 @@ function getUnionMemberTypeNodes(
 ): ?$ReadOnlyArray<NamedTypeNode> {
   return getAllSubNodes(union, (unionNode) => unionNode.types).filter(
     (typeNode) => typeNode.name.value === typeName,
+  );
+}
+
+function getDeprecatedDirectiveNode(
+  definitionNode: ?{ +directives?: $ReadOnlyArray<DirectiveNode>, ... },
+): ?DirectiveNode {
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return definitionNode?.directives?.find(
+    (node) => node.name.value === GraphQLDeprecatedDirective.name,
   );
 }

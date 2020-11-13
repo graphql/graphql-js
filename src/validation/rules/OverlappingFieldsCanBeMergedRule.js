@@ -1,28 +1,29 @@
-// @flow strict
-
 import find from '../../polyfills/find';
 import objectEntries from '../../polyfills/objectEntries';
 
+import type { ObjMap } from '../../jsutils/ObjMap';
 import inspect from '../../jsutils/inspect';
-import { type ObjMap } from '../../jsutils/ObjMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
+import type {
+  SelectionSetNode,
+  ValueNode,
+  FieldNode,
+  ArgumentNode,
+  FragmentDefinitionNode,
+} from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
-import { type ASTVisitor } from '../../language/visitor';
-import {
-  type SelectionSetNode,
-  type FieldNode,
-  type ArgumentNode,
-  type FragmentDefinitionNode,
-} from '../../language/ast';
 
+import type {
+  GraphQLNamedType,
+  GraphQLOutputType,
+  GraphQLCompositeType,
+  GraphQLField,
+} from '../../type/definition';
 import {
-  type GraphQLNamedType,
-  type GraphQLOutputType,
-  type GraphQLCompositeType,
-  type GraphQLField,
   getNamedType,
   isNonNullType,
   isLeafType,
@@ -33,7 +34,7 @@ import {
 
 import { typeFromAST } from '../../utilities/typeFromAST';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
@@ -571,9 +572,9 @@ function findConflict(
       ];
     }
 
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const args1 = node1.arguments ?? [];
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const args2 = node2.arguments ?? [];
     // Two field calls must have the same arguments.
     if (!sameArguments(args1, args2)) {
@@ -641,7 +642,7 @@ function sameArguments(
   });
 }
 
-function sameValue(value1, value2) {
+function sameValue(value1: ValueNode, value2: ValueNode): boolean {
   return print(value1) === print(value2);
 }
 
@@ -796,11 +797,11 @@ function subfieldConflicts(
 class PairSet {
   _data: ObjMap<ObjMap<boolean>>;
 
-  constructor(): void {
+  constructor() {
     this._data = Object.create(null);
   }
 
-  has(a: string, b: string, areMutuallyExclusive: boolean) {
+  has(a: string, b: string, areMutuallyExclusive: boolean): boolean {
     const first = this._data[a];
     const result = first && first[b];
     if (result === undefined) {
@@ -815,17 +816,17 @@ class PairSet {
     return true;
   }
 
-  add(a: string, b: string, areMutuallyExclusive: boolean) {
-    _pairSetAdd(this._data, a, b, areMutuallyExclusive);
-    _pairSetAdd(this._data, b, a, areMutuallyExclusive);
+  add(a: string, b: string, areMutuallyExclusive: boolean): void {
+    this._pairSetAdd(a, b, areMutuallyExclusive);
+    this._pairSetAdd(b, a, areMutuallyExclusive);
   }
-}
 
-function _pairSetAdd(data, a, b, areMutuallyExclusive) {
-  let map = data[a];
-  if (!map) {
-    map = Object.create(null);
-    data[a] = map;
+  _pairSetAdd(a: string, b: string, areMutuallyExclusive: boolean): void {
+    let map = this._data[a];
+    if (!map) {
+      map = Object.create(null);
+      this._data[a] = map;
+    }
+    map[b] = areMutuallyExclusive;
   }
-  map[b] = areMutuallyExclusive;
 }

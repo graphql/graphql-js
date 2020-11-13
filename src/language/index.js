@@ -1,5 +1,3 @@
-// @flow strict
-
 export { Source } from './source';
 
 export { getLocation } from './location';
@@ -23,9 +21,8 @@ export { print } from './printer';
 export { visit, visitInParallel, getVisitFn, BREAK } from './visitor';
 export type { ASTVisitor, Visitor, VisitFn, VisitorKeyMap } from './visitor';
 
+export { Location, Token } from './ast';
 export type {
-  Location,
-  Token,
   ASTNode,
   ASTKindToNode,
   // Each kind of AST node

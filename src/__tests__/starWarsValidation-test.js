@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -13,7 +11,7 @@ import { StarWarsSchema } from './starWarsSchema';
 /**
  * Helper function to test a query and the expected response.
  */
-function validationErrors(query) {
+function validationErrors(query: string) {
   const source = new Source(query, 'StarWars.graphql');
   const ast = parse(source);
   return validate(StarWarsSchema, ast);

@@ -1,11 +1,13 @@
-// @flow strict
-
-import { type DirectiveLocationEnum } from '../language/directiveLocation';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export type IntrospectionOptions = {|
   // Whether to include descriptions in the introspection result.
   // Default: true
   descriptions?: boolean,
+
+  // Whether to include `specifiedByUrl` in the introspection result.
+  // Default: false
+  specifiedByUrl?: boolean,
 
   // Whether to include `isRepeatable` field on directives.
   // Default: false
@@ -19,12 +21,16 @@ export type IntrospectionOptions = {|
 export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   const optionsWithDefault = {
     descriptions: true,
+    specifiedByUrl: false,
     directiveIsRepeatable: false,
     schemaDescription: false,
     ...options,
   };
 
   const descriptions = optionsWithDefault.descriptions ? 'description' : '';
+  const specifiedByUrl = optionsWithDefault.specifiedByUrl
+    ? 'specifiedByUrl'
+    : '';
   const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable
     ? 'isRepeatable'
     : '';
@@ -58,6 +64,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
       kind
       name
       ${descriptions}
+      ${specifiedByUrl}
       fields(includeDeprecated: true) {
         name
         ${descriptions}
@@ -166,6 +173,7 @@ export type IntrospectionScalarType = {|
   +kind: 'SCALAR',
   +name: string,
   +description?: ?string,
+  +specifiedByUrl?: ?string,
 |};
 
 export type IntrospectionObjectType = {|

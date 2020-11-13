@@ -1,60 +1,63 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
+import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { parseValue } from '../../language/parser';
 
 import { valueFromASTUntyped } from '../valueFromASTUntyped';
 
 describe('valueFromASTUntyped', () => {
-  function testCase(valueText, expected) {
-    expect(valueFromASTUntyped(parseValue(valueText))).to.deep.equal(expected);
-  }
-
-  function testCaseWithVars(valueText, variables, expected) {
-    expect(valueFromASTUntyped(parseValue(valueText), variables)).to.deep.equal(
-      expected,
-    );
+  function expectValueFrom(valueText: string, variables?: ?ObjMap<mixed>) {
+    const ast = parseValue(valueText);
+    const value = valueFromASTUntyped(ast, variables);
+    return expect(value);
   }
 
   it('parses simple values', () => {
-    testCase('null', null);
-    testCase('true', true);
-    testCase('false', false);
-    testCase('123', 123);
-    testCase('123.456', 123.456);
-    testCase('"abc123"', 'abc123');
+    expectValueFrom('null').to.equal(null);
+    expectValueFrom('true').to.equal(true);
+    expectValueFrom('false').to.equal(false);
+    expectValueFrom('123').to.equal(123);
+    expectValueFrom('123.456').to.equal(123.456);
+    expectValueFrom('"abc123"').to.equal('abc123');
   });
 
   it('parses lists of values', () => {
-    testCase('[true, false]', [true, false]);
-    testCase('[true, 123.45]', [true, 123.45]);
-    testCase('[true, null]', [true, null]);
-    testCase('[true, ["foo", 1.2]]', [true, ['foo', 1.2]]);
+    expectValueFrom('[true, false]').to.deep.equal([true, false]);
+    expectValueFrom('[true, 123.45]').to.deep.equal([true, 123.45]);
+    expectValueFrom('[true, null]').to.deep.equal([true, null]);
+    expectValueFrom('[true, ["foo", 1.2]]').to.deep.equal([true, ['foo', 1.2]]);
   });
 
   it('parses input objects', () => {
-    testCase('{ int: 123, bool: false }', { int: 123, bool: false });
-    testCase('{ foo: [ { bar: "baz"} ] }', { foo: [{ bar: 'baz' }] });
+    expectValueFrom('{ int: 123, bool: false }').to.deep.equal({
+      int: 123,
+      bool: false,
+    });
+    expectValueFrom('{ foo: [ { bar: "baz"} ] }').to.deep.equal({
+      foo: [{ bar: 'baz' }],
+    });
   });
 
   it('parses enum values as plain strings', () => {
-    testCase('TEST_ENUM_VALUE', 'TEST_ENUM_VALUE');
-    testCase('[TEST_ENUM_VALUE]', ['TEST_ENUM_VALUE']);
+    expectValueFrom('TEST_ENUM_VALUE').to.equal('TEST_ENUM_VALUE');
+    expectValueFrom('[TEST_ENUM_VALUE]').to.deep.equal(['TEST_ENUM_VALUE']);
   });
 
   it('parses variables', () => {
-    testCaseWithVars('$testVariable', { testVariable: 'foo' }, 'foo');
-    testCaseWithVars('[$testVariable]', { testVariable: 'foo' }, ['foo']);
-    testCaseWithVars(
-      '{a:[$testVariable]}',
-      { testVariable: 'foo' },
-      { a: ['foo'] },
+    expectValueFrom('$testVariable', { testVariable: 'foo' }).to.equal('foo');
+    expectValueFrom('[$testVariable]', { testVariable: 'foo' }).to.deep.equal([
+      'foo',
+    ]);
+    expectValueFrom('{a:[$testVariable]}', {
+      testVariable: 'foo',
+    }).to.deep.equal({ a: ['foo'] });
+    expectValueFrom('$testVariable', { testVariable: null }).to.equal(null);
+    expectValueFrom('$testVariable', { testVariable: NaN }).to.satisfy(
+      Number.isNaN,
     );
-    testCaseWithVars('$testVariable', { testVariable: null }, null);
-    testCaseWithVars('$testVariable', { testVariable: NaN }, NaN);
-    testCaseWithVars('$testVariable', {}, undefined);
-    testCaseWithVars('$testVariable', null, undefined);
+    expectValueFrom('$testVariable', {}).to.equal(undefined);
+    expectValueFrom('$testVariable', null).to.equal(undefined);
   });
 });

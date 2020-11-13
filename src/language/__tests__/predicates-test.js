@@ -1,10 +1,8 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type { ASTNode } from '../ast';
 import { Kind } from '../kinds';
-import { type ASTNode } from '../ast';
 import {
   isDefinitionNode,
   isExecutableDefinitionNode,

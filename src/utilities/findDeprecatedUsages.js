@@ -1,58 +1,28 @@
-// @flow strict
+import type { GraphQLError } from '../error/GraphQLError';
 
-import { GraphQLError } from '../error/GraphQLError';
+import type { DocumentNode } from '../language/ast';
 
-import { visit } from '../language/visitor';
-import { type DocumentNode } from '../language/ast';
+import type { GraphQLSchema } from '../type/schema';
 
-import { getNamedType } from '../type/definition';
-import { type GraphQLSchema } from '../type/schema';
-
-import { TypeInfo, visitWithTypeInfo } from './TypeInfo';
+import { validate } from '../validation/validate';
+import { NoDeprecatedCustomRule } from '../validation/rules/custom/NoDeprecatedCustomRule';
 
 /**
  * A validation rule which reports deprecated usages.
  *
  * Returns a list of GraphQLError instances describing each deprecated use.
+ *
+ * @deprecated Please use `validate` with `NoDeprecatedCustomRule` instead:
+ *
+ * ```
+ * import { validate, NoDeprecatedCustomRule } from 'graphql'
+ *
+ * const errors = validate(schema, document, [NoDeprecatedCustomRule])
+ * ```
  */
 export function findDeprecatedUsages(
   schema: GraphQLSchema,
   ast: DocumentNode,
-): Array<GraphQLError> {
-  const errors = [];
-  const typeInfo = new TypeInfo(schema);
-
-  visit(
-    ast,
-    visitWithTypeInfo(typeInfo, {
-      Field(node) {
-        const parentType = typeInfo.getParentType();
-        const fieldDef = typeInfo.getFieldDef();
-        if (parentType && fieldDef?.deprecationReason != null) {
-          errors.push(
-            new GraphQLError(
-              `The field "${parentType.name}.${fieldDef.name}" is deprecated. ` +
-                fieldDef.deprecationReason,
-              node,
-            ),
-          );
-        }
-      },
-      EnumValue(node) {
-        const type = getNamedType(typeInfo.getInputType());
-        const enumVal = typeInfo.getEnumValue();
-        if (type && enumVal?.deprecationReason != null) {
-          errors.push(
-            new GraphQLError(
-              `The enum value "${type.name}.${enumVal.name}" is deprecated. ` +
-                enumVal.deprecationReason,
-              node,
-            ),
-          );
-        }
-      },
-    }),
-  );
-
-  return errors;
+): $ReadOnlyArray<GraphQLError> {
+  return validate(schema, ast, [NoDeprecatedCustomRule]);
 }
