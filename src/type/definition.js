@@ -48,6 +48,7 @@ import type {
 } from '../language/ast';
 
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
+import { coerceInputValue } from '../utilities/coerceInputValue';
 
 import type { GraphQLSchema } from './schema';
 
@@ -853,7 +854,7 @@ function defineFieldMap<TSource, TContext>(
       name: argName,
       description: argConfig.description,
       type: argConfig.type,
-      defaultValue: argConfig.defaultValue,
+      defaultValue: coerceInputValue(argConfig.defaultValue, argConfig.type),
       deprecationReason: argConfig.deprecationReason,
       extensions: argConfig.extensions && toObjMap(argConfig.extensions),
       astNode: argConfig.astNode,
@@ -1590,7 +1591,10 @@ function defineInputFieldMap(
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
-      defaultValue: fieldConfig.defaultValue,
+      defaultValue: coerceInputValue(
+        fieldConfig.defaultValue,
+        fieldConfig.type,
+      ),
       deprecationReason: fieldConfig.deprecationReason,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode,
