@@ -13,6 +13,7 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLList, GraphQLObjectType } from '../../type/definition';
+import type { GraphQLFieldResolver } from '../../type/definition';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
 import { createSourceEventStream, subscribe } from '../subscribe';
@@ -68,9 +69,9 @@ const EmailEventType = new GraphQLObjectType({
 
 const emailSchema = emailSchemaWithResolvers();
 
-function emailSchemaWithResolvers<T: mixed>(
+function emailSchemaWithResolvers<T: mixed, R: mixed, C: mixed>(
   subscribeFn?: (T) => mixed,
-  resolveFn?: (T) => mixed,
+  resolveFn?: GraphQLFieldResolver<R, C>,
 ) {
   return new GraphQLSchema({
     query: QueryType,
@@ -1133,8 +1134,8 @@ describe('Subscription Publish Phase', () => {
         return { ...ctx, contextIndex: contextIndex++ };
       },
     });
+    invariant(isAsyncIterable(subscription));
 
-    // $FlowFixMe
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
       done: false,
