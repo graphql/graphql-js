@@ -303,6 +303,17 @@ describe('coerceInputValue', () => {
       expectValue(result).to.deep.equal([1, 2, 3]);
     });
 
+    it('returns no error for a valid iterable input', () => {
+      function* listGenerator() {
+        yield 1;
+        yield 2;
+        yield 3;
+      }
+
+      const result = coerceValue(listGenerator(), TestList);
+      expectValue(result).to.deep.equal([1, 2, 3]);
+    });
+
     it('returns an error for an invalid input', () => {
       const result = coerceValue([1, 'b', true, 4], TestList);
       expectErrors(result).to.deep.equal([
