@@ -293,6 +293,23 @@ describe('astFromValue', () => {
         { kind: 'EnumValue', value: 'GOODBYE' },
       ],
     });
+
+    function* listGenerator() {
+      yield 1;
+      yield 2;
+      yield 3;
+    }
+
+    expect(
+      astFromValue(listGenerator(), new GraphQLList(GraphQLInt)),
+    ).to.deep.equal({
+      kind: 'ListValue',
+      values: [
+        { kind: 'IntValue', value: '1' },
+        { kind: 'IntValue', value: '2' },
+        { kind: 'IntValue', value: '3' },
+      ],
+    });
   });
 
   it('converts list singletons', () => {
