@@ -115,6 +115,16 @@ directly on this branch:
 npm install graphql@git://github.com/graphql/graphql-js.git#npm
 ```
 
+### Experimental features
+
+Each release of GraphQL.js will be accompanied by an experimental release containing support for the `@defer` and `@stream` directive proposal. We are hoping to get community feedback on these releases before the proposal is accepted into the GraphQL specification. You can use this experimental release of GraphQL.js by adding the following to your project's `package.json` file.
+
+```
+"graphql": "experimental-stream-defer"
+```
+
+Community feedback on this experimental release is much appreciated and can be provided on the [issue created for this purpose](https://github.com/graphql/graphql-js/issues/2848).
+
 ### Using in a Browser
 
 GraphQL.js is a general-purpose library and can be used both in a Node server
