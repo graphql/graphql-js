@@ -504,7 +504,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.7.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.8.x`
       ##########################################################################
 
       # Supported Rules
