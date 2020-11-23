@@ -161,4 +161,53 @@ describe('separateOperations', () => {
       }
     `);
   });
+
+  it('only includes fragments that are used', () => {
+    const ast = parse(`
+      fragment One on T {
+        oneField
+        ...Three
+      }
+      
+      fragment Two on T {
+        twoField
+      }
+
+      fragment Three on T {
+        threeField
+      }
+
+      query One {
+        ...Two
+      }
+    
+      query Ones {
+        ...One
+      }
+
+      query Twos {
+        ...One
+        ...Two
+      }
+    `);
+
+    const separatedASTs = separateOperations(ast);
+
+    expect(separatedASTs).to.have.all.keys('One', 'Ones', 'Twos');
+
+    expect(print(separatedASTs.Ones)).to.equal(dedent`
+      fragment One on T {
+        oneField
+        ...Three
+      }
+
+      fragment Three on T {
+        threeField
+      }
+
+      query Ones {
+        ...One
+      }
+    `);
+  });
 });

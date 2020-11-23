@@ -20,14 +20,14 @@ export function separateOperations(
   // Populate metadata and build a dependency graph.
   visit(documentAST, {
     OperationDefinition(node) {
-      fromName = opName(node);
+      fromName = opSuffix(opName(node));
       operations.push(node);
     },
     FragmentDefinition(node) {
-      fromName = node.name.value;
+      fromName = fragSuffix(node.name.value);
     },
     FragmentSpread(node) {
-      const toName = node.name.value;
+      const toName = fragSuffix(node.name.value);
       let dependents = depGraph[fromName];
       if (dependents === undefined) {
         dependents = depGraph[fromName] = Object.create(null);
@@ -42,7 +42,11 @@ export function separateOperations(
   for (const operation of operations) {
     const operationName = opName(operation);
     const dependencies = Object.create(null);
-    collectTransitiveDependencies(dependencies, depGraph, operationName);
+    collectTransitiveDependencies(
+      dependencies,
+      depGraph,
+      opSuffix(operationName),
+    );
 
     // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
@@ -52,7 +56,7 @@ export function separateOperations(
         (node) =>
           node === operation ||
           (node.kind === Kind.FRAGMENT_DEFINITION &&
-            dependencies[node.name.value]),
+            dependencies[fragSuffix(node.name.value)]),
       ),
     };
   }
@@ -65,6 +69,16 @@ type DepGraph = ObjMap<ObjMap<boolean>>;
 // Provides the empty string for anonymous operations.
 function opName(operation: OperationDefinitionNode): string {
   return operation.name ? operation.name.value : '';
+}
+
+// Adds a suffix to differentiate operations
+function opSuffix(operationName: string): string {
+  return `${operationName}${Kind.OPERATION_DEFINITION}`;
+}
+
+// Adds a suffix to differentiate fragments
+function fragSuffix(fragmentName: string): string {
+  return `${fragmentName}${Kind.FRAGMENT_DEFINITION}`;
 }
 
 // From a dependency graph, collects a list of transitive dependencies by
