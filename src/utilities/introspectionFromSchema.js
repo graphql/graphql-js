@@ -26,6 +26,7 @@ export function introspectionFromSchema(
   options?: IntrospectionOptions,
 ): IntrospectionQuery {
   const optionsWithDefaults = {
+    specifiedByUrl: true,
     directiveIsRepeatable: true,
     schemaDescription: true,
     ...options,
