@@ -31,15 +31,10 @@ import { introspectionFromSchema } from '../introspectionFromSchema';
  * returns that schema printed as SDL.
  */
 function cycleIntrospection(sdlString: string): string {
-  const options = {
-    specifiedByUrl: true,
-    directiveIsRepeatable: true,
-  };
-
   const serverSchema = buildSchema(sdlString);
-  const initialIntrospection = introspectionFromSchema(serverSchema, options);
+  const initialIntrospection = introspectionFromSchema(serverSchema);
   const clientSchema = buildClientSchema(initialIntrospection);
-  const secondIntrospection = introspectionFromSchema(clientSchema, options);
+  const secondIntrospection = introspectionFromSchema(clientSchema);
 
   /**
    * If the client then runs the introspection query against the client-side

@@ -18,6 +18,7 @@ function introspectionToSDL(introspection: IntrospectionQuery): string {
 
 describe('introspectionFromSchema', () => {
   const schema = new GraphQLSchema({
+    description: 'This is a simple schema',
     query: new GraphQLObjectType({
       name: 'Simple',
       description: 'This is a simple type',
@@ -34,6 +35,7 @@ describe('introspectionFromSchema', () => {
     const introspection = introspectionFromSchema(schema);
 
     expect(introspectionToSDL(introspection)).to.deep.equal(dedent`
+      """This is a simple schema"""
       schema {
         query: Simple
       }
