@@ -14,6 +14,7 @@ import { getIntrospectionQuery } from "./getIntrospectionQuery.js";
 
 export function introspectionFromSchema(schema, options) {
   const optionsWithDefaults = {
+    specifiedByUrl: true,
     directiveIsRepeatable: true,
     schemaDescription: true,
     ...options
