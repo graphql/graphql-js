@@ -32,6 +32,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 function introspectionFromSchema(schema, options) {
   var optionsWithDefaults = _objectSpread({
+    specifiedByUrl: true,
     directiveIsRepeatable: true,
     schemaDescription: true
   }, options);

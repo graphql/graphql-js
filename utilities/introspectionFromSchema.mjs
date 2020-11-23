@@ -20,6 +20,7 @@ import { getIntrospectionQuery } from "./getIntrospectionQuery.mjs";
 
 export function introspectionFromSchema(schema, options) {
   var optionsWithDefaults = _objectSpread({
+    specifiedByUrl: true,
     directiveIsRepeatable: true,
     schemaDescription: true
   }, options);
