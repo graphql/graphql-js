@@ -261,7 +261,8 @@ export function buildClientSchema(introspection, options) {
     return {
       description: inputValueIntrospection.description,
       type,
-      defaultValue
+      defaultValue,
+      deprecationReason: inputValueIntrospection.deprecationReason
     };
   }
 

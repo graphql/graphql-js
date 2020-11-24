@@ -4,12 +4,18 @@ export function getIntrospectionQuery(options) {
     specifiedByUrl: false,
     directiveIsRepeatable: false,
     schemaDescription: false,
+    inputValueDeprecation: false,
     ...options
   };
   const descriptions = optionsWithDefault.descriptions ? 'description' : '';
   const specifiedByUrl = optionsWithDefault.specifiedByUrl ? 'specifiedByUrl' : '';
   const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable ? 'isRepeatable' : '';
   const schemaDescription = optionsWithDefault.schemaDescription ? descriptions : '';
+
+  function inputDeprecation(str) {
+    return optionsWithDefault.inputValueDeprecation ? str : '';
+  }
+
   return `
     query IntrospectionQuery {
       __schema {
@@ -25,7 +31,7 @@ export function getIntrospectionQuery(options) {
           ${descriptions}
           ${directiveIsRepeatable}
           locations
-          args {
+          args${inputDeprecation('(includeDeprecated: true)')} {
             ...InputValue
           }
         }
@@ -40,7 +46,7 @@ export function getIntrospectionQuery(options) {
       fields(includeDeprecated: true) {
         name
         ${descriptions}
-        args {
+        args${inputDeprecation('(includeDeprecated: true)')} {
           ...InputValue
         }
         type {
@@ -49,7 +55,7 @@ export function getIntrospectionQuery(options) {
         isDeprecated
         deprecationReason
       }
-      inputFields {
+      inputFields${inputDeprecation('(includeDeprecated: true)')} {
         ...InputValue
       }
       interfaces {
@@ -71,6 +77,8 @@ export function getIntrospectionQuery(options) {
       ${descriptions}
       type { ...TypeRef }
       defaultValue
+      ${inputDeprecation('isDeprecated')}
+      ${inputDeprecation('deprecationReason')}
     }
 
     fragment TypeRef on __Type {
