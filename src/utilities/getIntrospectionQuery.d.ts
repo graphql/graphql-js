@@ -18,6 +18,10 @@ export interface IntrospectionOptions {
   // Whether to include `description` field on schema.
   // Default: false
   schemaDescription?: boolean;
+
+  // Whether target GraphQL server support deprecation of input values.
+  // Default: false
+  inputValueDeprecation?: boolean;
 }
 
 export function getIntrospectionQuery(options?: IntrospectionOptions): string;
@@ -169,6 +173,8 @@ export interface IntrospectionInputValue {
   readonly description?: Maybe<string>;
   readonly type: IntrospectionInputTypeRef;
   readonly defaultValue?: Maybe<string>;
+  readonly isDeprecated?: boolean;
+  readonly deprecationReason?: Maybe<string>;
 }
 
 export interface IntrospectionEnumValue {

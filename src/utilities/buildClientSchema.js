@@ -377,6 +377,7 @@ export function buildClientSchema(
       description: inputValueIntrospection.description,
       type,
       defaultValue,
+      deprecationReason: inputValueIntrospection.deprecationReason,
     };
   }
 

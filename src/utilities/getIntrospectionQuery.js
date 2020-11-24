@@ -16,6 +16,10 @@ export type IntrospectionOptions = {|
   // Whether to include `description` field on schema.
   // Default: false
   schemaDescription?: boolean,
+
+  // Whether target GraphQL server support deprecation of input values.
+  // Default: false
+  inputValueDeprecation?: boolean,
 |};
 
 export function getIntrospectionQuery(options?: IntrospectionOptions): string {
@@ -24,6 +28,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     specifiedByUrl: false,
     directiveIsRepeatable: false,
     schemaDescription: false,
+    inputValueDeprecation: false,
     ...options,
   };
 
@@ -37,6 +42,10 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   const schemaDescription = optionsWithDefault.schemaDescription
     ? descriptions
     : '';
+
+  function inputDeprecation(str) {
+    return optionsWithDefault.inputValueDeprecation ? str : '';
+  }
 
   return `
     query IntrospectionQuery {
@@ -53,7 +62,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
           ${descriptions}
           ${directiveIsRepeatable}
           locations
-          args {
+          args${inputDeprecation('(includeDeprecated: true)')} {
             ...InputValue
           }
         }
@@ -68,7 +77,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
       fields(includeDeprecated: true) {
         name
         ${descriptions}
-        args {
+        args${inputDeprecation('(includeDeprecated: true)')} {
           ...InputValue
         }
         type {
@@ -77,7 +86,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         isDeprecated
         deprecationReason
       }
-      inputFields {
+      inputFields${inputDeprecation('(includeDeprecated: true)')} {
         ...InputValue
       }
       interfaces {
@@ -99,6 +108,8 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
       ${descriptions}
       type { ...TypeRef }
       defaultValue
+      ${inputDeprecation('isDeprecated')}
+      ${inputDeprecation('deprecationReason')}
     }
 
     fragment TypeRef on __Type {
@@ -280,6 +291,8 @@ export type IntrospectionInputValue = {|
   +description?: ?string,
   +type: IntrospectionInputTypeRef,
   +defaultValue: ?string,
+  +isDeprecated?: boolean,
+  +deprecationReason?: ?string,
 |};
 
 export type IntrospectionEnumValue = {|
