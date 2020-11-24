@@ -9,72 +9,76 @@ import { visit } from "../language/visitor.mjs";
 
 export function separateOperations(documentAST) {
   var operations = [];
-  var depGraph = Object.create(null);
-  var fromName; // Populate metadata and build a dependency graph.
+  var depGraph = Object.create(null); // Populate metadata and build a dependency graph.
 
-  visit(documentAST, {
-    OperationDefinition: function OperationDefinition(node) {
-      fromName = opName(node);
-      operations.push(node);
-    },
-    FragmentDefinition: function FragmentDefinition(node) {
-      fromName = node.name.value;
-    },
-    FragmentSpread: function FragmentSpread(node) {
-      var toName = node.name.value;
-      var dependents = depGraph[fromName];
+  for (var _i2 = 0, _documentAST$definiti2 = documentAST.definitions; _i2 < _documentAST$definiti2.length; _i2++) {
+    var definitionNode = _documentAST$definiti2[_i2];
 
-      if (dependents === undefined) {
-        dependents = depGraph[fromName] = Object.create(null);
-      }
+    switch (definitionNode.kind) {
+      case Kind.OPERATION_DEFINITION:
+        operations.push(definitionNode);
+        break;
 
-      dependents[toName] = true;
+      case Kind.FRAGMENT_DEFINITION:
+        depGraph[definitionNode.name.value] = collectDependencies(definitionNode.selectionSet);
+        break;
     }
-  }); // For each operation, produce a new synthesized AST which includes only what
+  } // For each operation, produce a new synthesized AST which includes only what
   // is necessary for completing that operation.
+
 
   var separatedDocumentASTs = Object.create(null);
 
-  var _loop = function _loop(_i2) {
-    var operation = operations[_i2];
-    var operationName = opName(operation);
-    var dependencies = Object.create(null);
-    collectTransitiveDependencies(dependencies, depGraph, operationName); // The list of definition nodes to be included for this operation, sorted
+  var _loop = function _loop(_i4) {
+    var operation = operations[_i4];
+    var dependencies = new Set();
+
+    for (var _i6 = 0, _collectDependencies2 = collectDependencies(operation.selectionSet); _i6 < _collectDependencies2.length; _i6++) {
+      var fragmentName = _collectDependencies2[_i6];
+      collectTransitiveDependencies(dependencies, depGraph, fragmentName);
+    } // Provides the empty string for anonymous operations.
+
+
+    var operationName = operation.name ? operation.name.value : ''; // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
 
     separatedDocumentASTs[operationName] = {
       kind: Kind.DOCUMENT,
       definitions: documentAST.definitions.filter(function (node) {
-        return node === operation || node.kind === Kind.FRAGMENT_DEFINITION && dependencies[node.name.value];
+        return node === operation || node.kind === Kind.FRAGMENT_DEFINITION && dependencies.has(node.name.value);
       })
     };
   };
 
-  for (var _i2 = 0; _i2 < operations.length; _i2++) {
-    _loop(_i2);
+  for (var _i4 = 0; _i4 < operations.length; _i4++) {
+    _loop(_i4);
   }
 
   return separatedDocumentASTs;
 }
 
-// Provides the empty string for anonymous operations.
-function opName(operation) {
-  return operation.name ? operation.name.value : '';
-} // From a dependency graph, collects a list of transitive dependencies by
+// From a dependency graph, collects a list of transitive dependencies by
 // recursing through a dependency graph.
-
-
 function collectTransitiveDependencies(collected, depGraph, fromName) {
-  var immediateDeps = depGraph[fromName];
+  if (!collected.has(fromName)) {
+    collected.add(fromName);
+    var immediateDeps = depGraph[fromName];
 
-  if (immediateDeps) {
-    for (var _i4 = 0, _Object$keys2 = Object.keys(immediateDeps); _i4 < _Object$keys2.length; _i4++) {
-      var toName = _Object$keys2[_i4];
-
-      if (!collected[toName]) {
-        collected[toName] = true;
+    if (immediateDeps !== undefined) {
+      for (var _i8 = 0; _i8 < immediateDeps.length; _i8++) {
+        var toName = immediateDeps[_i8];
         collectTransitiveDependencies(collected, depGraph, toName);
       }
     }
   }
+}
+
+function collectDependencies(selectionSet) {
+  var dependencies = [];
+  visit(selectionSet, {
+    FragmentSpread: function FragmentSpread(node) {
+      dependencies.push(node.name.value);
+    }
+  });
+  return dependencies;
 }
