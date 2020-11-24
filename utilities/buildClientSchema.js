@@ -307,7 +307,8 @@ function buildClientSchema(introspection, options) {
     return {
       description: inputValueIntrospection.description,
       type: type,
-      defaultValue: defaultValue
+      defaultValue: defaultValue,
+      deprecationReason: inputValueIntrospection.deprecationReason
     };
   }
 

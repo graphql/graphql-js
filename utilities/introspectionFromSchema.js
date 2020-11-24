@@ -34,7 +34,8 @@ function introspectionFromSchema(schema, options) {
   var optionsWithDefaults = _objectSpread({
     specifiedByUrl: true,
     directiveIsRepeatable: true,
-    schemaDescription: true
+    schemaDescription: true,
+    inputValueDeprecation: true
   }, options);
 
   var document = (0, _parser.parse)((0, _getIntrospectionQuery.getIntrospectionQuery)(optionsWithDefaults));
