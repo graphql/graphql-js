@@ -158,4 +158,73 @@ describe('separateOperations', () => {
       `,
     });
   });
+
+  it('distinguish query and fragment names', () => {
+    const ast = parse(`
+      {
+        ...NameClash
+      }
+
+      fragment NameClash on T {
+        oneField
+      }
+
+      query NameClash {
+        ...ShouldBeSkippedInFirstQuery
+      }
+
+      fragment ShouldBeSkippedInFirstQuery on T {
+        twoField
+      }
+    `);
+
+    const separatedASTs = mapValue(separateOperations(ast), print);
+    expect(separatedASTs).to.deep.equal({
+      '': dedent`
+        {
+          ...NameClash
+        }
+
+        fragment NameClash on T {
+          oneField
+        }
+      `,
+      NameClash: dedent`
+        query NameClash {
+          ...ShouldBeSkippedInFirstQuery
+        }
+
+        fragment ShouldBeSkippedInFirstQuery on T {
+          twoField
+        }
+      `,
+    });
+  });
+
+  it('handles unknown fragments', () => {
+    const ast = parse(`
+      {
+        ...Unknown
+        ...Known
+      }
+
+      fragment Known on T {
+        someField
+      }
+    `);
+
+    const separatedASTs = mapValue(separateOperations(ast), print);
+    expect(separatedASTs).to.deep.equal({
+      '': dedent`
+        {
+          ...Unknown
+          ...Known
+        }
+
+        fragment Known on T {
+          someField
+        }
+      `,
+    });
+  });
 });
