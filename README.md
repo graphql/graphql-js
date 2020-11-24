@@ -6,8 +6,7 @@ The JavaScript reference implementation for GraphQL, a query language for APIs c
 [![Build Status](https://github.com/graphql/graphql-js/workflows/CI/badge.svg?branch=master)](https://github.com/graphql/graphql-js/actions?query=branch%3Amaster)
 [![Coverage Status](https://codecov.io/gh/graphql/graphql-js/branch/master/graph/badge.svg)](https://codecov.io/gh/graphql/graphql-js)
 
-See more complete documentation at https://graphql.org/ and
-https://graphql.org/graphql-js/.
+See more complete documentation at [GraphQL🎉](https://graphql.org/) and [GrapQL-Javascript 🎉](https://graphql.org/graphql-js/.)
 
 Looking for help? Find resources [from the community](https://graphql.org/community/).
 
@@ -155,23 +154,23 @@ The `*.d.ts` files in this project are based on [DefinitelyTyped](https://github
 
 <!--- spell-checker:disable -->
 
-- TonyYang https://github.com/TonyPythoneer
-- Caleb Meredith https://github.com/calebmer
-- Dominic Watson https://github.com/intellix
-- Firede https://github.com/firede
-- Kepennar https://github.com/kepennar
-- Mikhail Novikov https://github.com/freiksenet
-- Ivan Goncharov https://github.com/IvanGoncharov
-- Hagai Cohen https://github.com/DxCx
-- Ricardo Portugal https://github.com/rportugal
-- Tim Griesser https://github.com/tgriesser
-- Dylan Stewart https://github.com/dyst5422
-- Alessio Dionisi https://github.com/adnsio
-- Divyendu Singh https://github.com/divyenduz
-- Brad Zacher https://github.com/bradzacher
-- Curtis Layne https://github.com/clayne11
-- Jonathan Cardoso https://github.com/JCMais
-- Pavel Lang https://github.com/langpavel
-- Mark Caudill https://github.com/mc0
-- Martijn Walraven https://github.com/martijnwalraven
-- Jed Mao https://github.com/jedmao
+- [TonyYang](https://github.com/TonyPythoneer)
+- [Caleb Meredith](https://github.com/calebmer)
+- [Dominic Watson](https://github.com/intellix)
+- [Firede](https://github.com/firede)
+- [Kepennar](https://github.com/kepennar)
+- [Mikhail Novikov](https://github.com/freiksenet)
+- [Ivan Goncharov](https://github.com/IvanGoncharov)
+- [Hagai Cohen](https://github.com/DxCx)
+- [Ricardo Portugal](https://github.com/rportugal)
+- [Tim Griesser](https://github.com/tgriesser)
+- [Dylan Stewart](https://github.com/dyst5422)
+- [Alessio Dionisi](https://github.com/adnsio)
+- [Divyendu Singh](https://github.com/divyenduz)
+- [Brad Zacher](https://github.com/bradzacher)
+- [Curtis Layne](https://github.com/clayne11)
+- [Jonathan Cardoso](https://github.com/JCMais)
+- [Pavel Lang](https://github.com/langpavel)
+- [Mark Caudill](https://github.com/mc0)
+- [Martijn Walraven](https://github.com/martijnwalraven)
+- [Jed Mao](https://github.com/jedmao)
