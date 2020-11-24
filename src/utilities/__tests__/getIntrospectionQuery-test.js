@@ -74,4 +74,46 @@ describe('getIntrospectionQuery', () => {
       'specifiedByUrl',
     );
   });
+
+  it('include "isDeprecated" field on input values', () => {
+    expectIntrospectionQuery().toMatch('isDeprecated', 2);
+
+    expectIntrospectionQuery({ inputValueDeprecation: true }).toMatch(
+      'isDeprecated',
+      3,
+    );
+
+    expectIntrospectionQuery({ inputValueDeprecation: false }).toMatch(
+      'isDeprecated',
+      2,
+    );
+  });
+
+  it('include "deprecationReason" field on input values', () => {
+    expectIntrospectionQuery().toMatch('deprecationReason', 2);
+
+    expectIntrospectionQuery({ inputValueDeprecation: true }).toMatch(
+      'deprecationReason',
+      3,
+    );
+
+    expectIntrospectionQuery({ inputValueDeprecation: false }).toMatch(
+      'deprecationReason',
+      2,
+    );
+  });
+
+  it('include deprecated input field and args', () => {
+    expectIntrospectionQuery().toMatch('includeDeprecated: true', 2);
+
+    expectIntrospectionQuery({ inputValueDeprecation: true }).toMatch(
+      'includeDeprecated: true',
+      5,
+    );
+
+    expectIntrospectionQuery({ inputValueDeprecation: false }).toMatch(
+      'includeDeprecated: true',
+      2,
+    );
+  });
 });
