@@ -89,8 +89,14 @@ export interface ExecutionArgs {
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult>;
-export function execute(
+export function execute<
+  TData = { [key: string]: any },
+  TExtensions = { [key: string]: any }
+>(args: ExecutionArgs): PromiseOrValue<ExecutionResult<TData, TExtensions>>;
+export function execute<
+  TData = { [key: string]: any },
+  TExtensions = { [key: string]: any }
+>(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: any,
@@ -99,14 +105,17 @@ export function execute(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): PromiseOrValue<ExecutionResult>;
+): PromiseOrValue<ExecutionResult<TData, TExtensions>>;
 
 /**
  * Also implements the "Evaluating requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
-export function executeSync(args: ExecutionArgs): ExecutionResult;
+export function executeSync<
+  TData = { [key: string]: any },
+  TExtensions = { [key: string]: any }
+>(args: ExecutionArgs): ExecutionResult<TData, TExtensions>;
 
 /**
  * Essential assertions before executing to provide developer feedback for
