@@ -83,4 +83,32 @@ describe('Validate: Subscriptions with single field', () => {
       },
     ]);
   });
+
+  it('fails with introspection field', () => {
+    expectErrors(`
+      subscription ImportantEmails {
+        __typename
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Subscription "ImportantEmails" must not select an introspection top level field.',
+        locations: [{ line: 3, column: 9 }],
+      },
+    ]);
+  });
+
+  it('fails with introspection field in anonymous subscription', () => {
+    expectErrors(`
+      subscription {
+        __typename
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Anonymous Subscription must not select an introspection top level field.',
+        locations: [{ line: 3, column: 9 }],
+      },
+    ]);
+  });
 });
