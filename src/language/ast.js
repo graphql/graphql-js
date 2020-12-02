@@ -41,8 +41,8 @@ export class Location {
     this.source = source;
   }
 
-  toJSON(): {| start: number, end: number |} {
-    return { start: this.start, end: this.end };
+  toJSON(): {| start: number, end: number, source: Source |} {
+    return { start: this.start, end: this.end, source: this.source };
   }
 }
 

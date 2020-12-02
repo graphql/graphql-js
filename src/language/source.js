@@ -48,6 +48,13 @@ export class Source {
   get [SYMBOL_TO_STRING_TAG]() {
     return 'Source';
   }
+
+  toJSON(): {| body: string, name: string |} {
+    return {
+      body: this.body,
+      name: this.name,
+    };
+  }
 }
 
 /**
