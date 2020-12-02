@@ -140,9 +140,7 @@ export function buildClientSchema(
     return getNamedType(typeRef);
   }
 
-  function getNamedType(
-    typeRef: IntrospectionNamedTypeRef<>,
-  ): GraphQLNamedType {
+  function getNamedType(typeRef: IntrospectionNamedTypeRef): GraphQLNamedType {
     const typeName = typeRef.name;
     if (!typeName) {
       throw new Error(`Unknown type reference: ${inspect(typeRef)}.`);
