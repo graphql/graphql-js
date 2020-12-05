@@ -45,7 +45,7 @@ describe('Validate: Subscriptions with single field', () => {
     `).to.deep.equal([
       {
         message:
-          'Subscription "ImportantEmails" must select only one top level field.',
+          'Subscription "ImportantEmails" must not select an introspection top level field.',
         locations: [{ line: 4, column: 9 }],
       },
     ]);
