@@ -21,6 +21,41 @@ describe('Validate: Subscriptions with single field', () => {
     `);
   });
 
+  it('valid subscription with fragment', () => {
+    // From https://spec.graphql.org/draft/#example-13061
+    expectValid(`
+      subscription sub {
+        ...newMessageFields
+      }
+
+      fragment newMessageFields on Subscription {
+        newMessage {
+          body
+          sender
+        }
+      }
+    `);
+  });
+
+  it('valid subscription with fragment and field', () => {
+    // From https://spec.graphql.org/draft/#example-13061
+    expectValid(`
+      subscription sub {
+        newMessage {
+          body
+        }
+        ...newMessageFields
+      }
+
+      fragment newMessageFields on Subscription {
+        newMessage {
+          body
+          sender
+        }
+      }
+    `);
+  });
+
   it('fails with more than one root field', () => {
     expectErrors(`
       subscription ImportantEmails {
@@ -65,6 +100,35 @@ describe('Validate: Subscriptions with single field', () => {
         locations: [
           { line: 4, column: 9 },
           { line: 5, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('fails with many more than one root field via fragments', () => {
+    expectErrors(`
+      subscription ImportantEmails {
+        importantEmails
+        ... {
+          moreImportantEmails
+        }
+        ...NotImportantEmails
+      }
+      fragment NotImportantEmails on Subscription {
+        notImportantEmails
+        ...SpamEmails
+      }
+      fragment SpamEmails on Subscription {
+        spamEmails
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Subscription "ImportantEmails" must select only one top level field.',
+        locations: [
+          { line: 5, column: 11 },
+          { line: 10, column: 9 },
+          { line: 14, column: 9 },
         ],
       },
     ]);
