@@ -160,25 +160,33 @@ describe('Validate: Subscriptions with single field', () => {
         importantEmails
         ... {
           more: moreImportantEmails
+          ...NotImportantEmails
         }
         ...NotImportantEmails
       }
       fragment NotImportantEmails on Subscription {
         notImportantEmails
         deleted: deletedEmails
+        ... {
+          ... {
+            archivedEmails
+          }
+        }
         ...SpamEmails
       }
       fragment SpamEmails on Subscription {
         spamEmails
+        ...NonExistantFragment
       }
     `).to.deep.equal([
       {
         message: 'Anonymous Subscription must select only one top level field.',
         locations: [
           { line: 5, column: 11 },
-          { line: 10, column: 9 },
           { line: 11, column: 9 },
-          { line: 15, column: 9 },
+          { line: 12, column: 9 },
+          { line: 15, column: 13 },
+          { line: 21, column: 9 },
         ],
       },
     ]);
