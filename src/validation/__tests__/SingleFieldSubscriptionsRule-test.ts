@@ -176,7 +176,7 @@ describe('Validate: Subscriptions with single field', () => {
       }
       fragment SpamEmails on Subscription {
         spamEmails
-        ...NonExistantFragment
+        ...NonExistentFragment
       }
     `).to.deep.equal([
       {
