@@ -86,6 +86,24 @@ describe('Validate: Subscriptions with single field', () => {
     ]);
   });
 
+  it('fails with more than one root field including aliased introspection via fragment', () => {
+    expectErrors(`
+      subscription ImportantEmails {
+        importantEmails
+        ...Introspection
+      }
+      fragment Introspection on Subscription {
+        typename: __typename
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Subscription "ImportantEmails" must not select an introspection top level field.',
+        locations: [{ line: 7, column: 9 }],
+      },
+    ]);
+  });
+
   it('fails with many more than one root field', () => {
     expectErrors(`
       subscription ImportantEmails {
@@ -110,12 +128,13 @@ describe('Validate: Subscriptions with single field', () => {
       subscription ImportantEmails {
         importantEmails
         ... {
-          moreImportantEmails
+          more: moreImportantEmails
         }
         ...NotImportantEmails
       }
       fragment NotImportantEmails on Subscription {
         notImportantEmails
+        deleted: deletedEmails
         ...SpamEmails
       }
       fragment SpamEmails on Subscription {
@@ -128,7 +147,38 @@ describe('Validate: Subscriptions with single field', () => {
         locations: [
           { line: 5, column: 11 },
           { line: 10, column: 9 },
-          { line: 14, column: 9 },
+          { line: 11, column: 9 },
+          { line: 15, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('fails with many more than one root field via fragments (anonymous)', () => {
+    expectErrors(`
+      subscription {
+        importantEmails
+        ... {
+          more: moreImportantEmails
+        }
+        ...NotImportantEmails
+      }
+      fragment NotImportantEmails on Subscription {
+        notImportantEmails
+        deleted: deletedEmails
+        ...SpamEmails
+      }
+      fragment SpamEmails on Subscription {
+        spamEmails
+      }
+    `).to.deep.equal([
+      {
+        message: 'Anonymous Subscription must select only one top level field.',
+        locations: [
+          { line: 5, column: 11 },
+          { line: 10, column: 9 },
+          { line: 11, column: 9 },
+          { line: 15, column: 9 },
         ],
       },
     ]);
