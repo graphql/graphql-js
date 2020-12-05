@@ -117,19 +117,6 @@ export function SingleFieldSubscriptionsRule(
             ),
           );
         }
-
-        // Currently an empty selection set cannot be parsed so this should
-        // never happen; however that may change in future.
-        if (responseKeys.size === 0) {
-          context.reportError(
-            new GraphQLError(
-              operationName != null
-                ? `Subscription "${operationName}" must select a top level field.`
-                : 'Anonymous Subscription must select a top level field.',
-              node.selectionSet,
-            ),
-          );
-        }
       }
     },
   };
