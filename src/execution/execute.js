@@ -467,15 +467,17 @@ function executeFields(
     // If a custom resolve field function is provided by the execution context, use it
     // This allows for more application specific resolve logic such as caching by specific
     // document types and execution context values
-    if (exeContext.contextValue ?? exeContext.contextValue.customResolveField) {
-      result = exeContext.contextValue.customResolveField(
+    const customResolveField = (exeContext.contextValue: any)
+      .customResolveField;
+    if (typeof customResolveField === 'function') {
+      result = customResolveField(
         exeContext,
         parentType,
         sourceValue,
         fieldNodes,
-        fieldPath
+        fieldPath,
       );
-    } 
+    }
     // otherwise fall back on resolveField
     else {
       result = resolveField(
