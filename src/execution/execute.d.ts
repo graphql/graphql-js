@@ -193,3 +193,11 @@ export function getFieldDef(
   parentType: GraphQLObjectType,
   fieldName: string,
 ): Maybe<GraphQLField<any, any>>;
+
+export function resolveField(
+  exeContext: ExecutionContext,
+  parentType: GraphQLObjectType,
+  source: any,
+  fieldNodes: FieldNode[],
+  path: Path,
+): Promise<any> | any;
