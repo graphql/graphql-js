@@ -198,6 +198,6 @@ export function resolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: any,
-  fieldNodes: FieldNode[],
+  fieldNodes: Array<FieldNode>,
   path: Path,
 ): Promise<any> | any;
