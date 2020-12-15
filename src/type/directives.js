@@ -84,12 +84,7 @@ export class GraphQLDirective {
     }));
   }
 
-  toConfig(): {|
-    ...GraphQLDirectiveConfig,
-    args: GraphQLFieldConfigArgumentMap,
-    isRepeatable: boolean,
-    extensions: ?ReadOnlyObjMap<mixed>,
-  |} {
+  toConfig(): GraphQLDirectiveNormalizedConfig {
     return {
       name: this.name,
       description: this.description,
@@ -126,6 +121,13 @@ export type GraphQLDirectiveConfig = {|
   isRepeatable?: ?boolean,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?DirectiveDefinitionNode,
+|};
+
+type GraphQLDirectiveNormalizedConfig = {|
+  ...GraphQLDirectiveConfig,
+  args: GraphQLFieldConfigArgumentMap,
+  isRepeatable: boolean,
+  extensions: ?ReadOnlyObjMap<mixed>,
 |};
 
 /**
