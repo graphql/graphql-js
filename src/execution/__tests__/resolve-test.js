@@ -130,7 +130,7 @@ describe('Execute: resolve function', () => {
   it('context value custom resolve field is called', () => {
     const rootValue = {
       test() {
-        return 'fail';
+        return 'default';
       },
     };
 
@@ -139,12 +139,24 @@ describe('Execute: resolve function', () => {
       document: parse('{ test }'),
       rootValue,
       contextValue: {
-        customResolveField: () => 'success',
+        customResolveField: () => 'custom',
       },
     });
     expect(result).to.deep.equal({
       data: {
-        test: 'success',
+        test: 'custom',
+      },
+    });
+
+    const defaultResult = executeSync({
+      schema: testSchema({ type: GraphQLString }),
+      document: parse('{ test }'),
+      rootValue,
+      contextValue: {},
+    });
+    expect(defaultResult).to.deep.equal({
+      data: {
+        test: 'default',
       },
     });
   });
