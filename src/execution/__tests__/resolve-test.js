@@ -126,4 +126,26 @@ describe('Execute: resolve function', () => {
       },
     });
   });
+
+  it('context value custom resolve field is called', () => {
+    const rootValue = {
+      test() {
+        return 'fail';
+      },
+    };
+
+    const result = executeSync({
+      schema: testSchema({ type: GraphQLString }),
+      document: parse('{ test }'),
+      rootValue,
+      contextValue: {
+        customResolveField: () => 'success',
+      },
+    });
+    expect(result).to.deep.equal({
+      data: {
+        test: 'success',
+      },
+    });
+  });
 });
