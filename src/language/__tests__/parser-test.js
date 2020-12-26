@@ -372,6 +372,128 @@ describe('Parser', () => {
     expect(() => parse(document)).to.throw('Syntax Error');
   });
 
+  it('Legacy: allows parsing fragment spread arguments if `allowLegacyFragmentVariables` is enabled', () => {
+    const fragmentSpread = '{ ...Foo(v: $v) }';
+
+    expect(() =>
+      parse(fragmentSpread, { allowLegacyFragmentVariables: true }),
+    ).to.not.throw();
+    expect(() => parse(fragmentSpread)).to.throw('Syntax Error');
+  });
+
+  it('Legacy: does not parse arguments on inline fragments', () => {
+    const inlineFragment = '{ ... on Foo(v: $v) { id } }';
+    expect(() =>
+      parse(inlineFragment, { allowLegacyFragmentVariables: true }),
+    ).to.throw('Syntax Error');
+  });
+
+  it('Legacy: parses fragment spread arguments', () => {
+    const document = parse('{ ...Foo(v: $v) }', {
+      allowLegacyFragmentVariables: true,
+    });
+
+    expect(toJSONDeep(document)).to.have.deep.nested.property(
+      'definitions[0].selectionSet.selections[0]',
+      {
+        arguments: [
+          {
+            kind: Kind.ARGUMENT,
+            loc: { end: 14, start: 9 },
+            name: {
+              kind: Kind.NAME,
+              loc: { end: 10, start: 9 },
+              value: 'v',
+            },
+            value: {
+              kind: Kind.VARIABLE,
+              loc: { end: 14, start: 12 },
+              name: {
+                kind: Kind.NAME,
+                loc: { end: 14, start: 13 },
+                value: 'v',
+              },
+            },
+          },
+        ],
+        directives: [],
+        kind: Kind.FRAGMENT_SPREAD,
+        loc: { end: 15, start: 2 },
+        name: {
+          kind: Kind.NAME,
+          loc: { end: 8, start: 5 },
+          value: 'Foo',
+        },
+      },
+    );
+  });
+
+  it('Legacy: parses fragment spread arguments and directives', () => {
+    const document = parse('{ ...Foo(v: $v) @skip(if: true) }', {
+      allowLegacyFragmentVariables: true,
+    });
+
+    expect(toJSONDeep(document)).to.have.deep.nested.property(
+      'definitions[0].selectionSet.selections[0]',
+      {
+        arguments: [
+          {
+            kind: Kind.ARGUMENT,
+            loc: { end: 14, start: 9 },
+            name: {
+              kind: Kind.NAME,
+              loc: { end: 10, start: 9 },
+              value: 'v',
+            },
+            value: {
+              kind: Kind.VARIABLE,
+              loc: { end: 14, start: 12 },
+              name: {
+                kind: Kind.NAME,
+                loc: { end: 14, start: 13 },
+                value: 'v',
+              },
+            },
+          },
+        ],
+        directives: [
+          {
+            arguments: [
+              {
+                kind: Kind.ARGUMENT,
+                loc: { end: 30, start: 22 },
+                name: {
+                  kind: Kind.NAME,
+                  loc: { end: 24, start: 22 },
+                  value: 'if',
+                },
+                value: {
+                  kind: Kind.BOOLEAN,
+                  loc: { end: 30, start: 26 },
+                  value: true,
+                },
+              },
+            ],
+            kind: Kind.DIRECTIVE,
+            loc: { end: 31, start: 16 },
+            name: {
+              kind: Kind.NAME,
+              loc: { end: 21, start: 17 },
+              value: 'skip',
+            },
+          },
+        ],
+        kind: Kind.FRAGMENT_SPREAD,
+        loc: { end: 31, start: 2 },
+        name: {
+          kind: Kind.NAME,
+          loc: { end: 8, start: 5 },
+          value: 'Foo',
+        },
+      },
+    );
+  });
+
   it('contains location information that only stringifies start/end', () => {
     const result = parse('{ id }');
 

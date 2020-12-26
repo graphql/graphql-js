@@ -282,6 +282,8 @@ export interface FragmentSpreadNode {
   readonly kind: 'FragmentSpread';
   readonly loc?: Location;
   readonly name: NameNode;
+  // Note: fragment variable definitions are deprecated and will removed in v17.0.0
+  readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
 }
 

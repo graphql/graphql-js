@@ -145,6 +145,49 @@ describe('Printer: Query document', () => {
     `);
   });
 
+  it('Legacy: correctly prints fragment spread arguments', () => {
+    const parsed = parse('{ ...Foo(bar: $bar) }', {
+      allowLegacyFragmentVariables: true,
+    });
+
+    expect(print(parsed)).to.equal(dedent`
+      {
+        ...Foo(bar: $bar)
+      }
+    `);
+  });
+
+  it('Legacy: correctly prints fragment spread arguments that exceed the max line length', () => {
+    const parsed = parse(
+      '{ ...Dogs(breads: ["Boston Terrier", "Poodle", "Beagle"], likesPets: true, likesToys: true) }',
+      {
+        allowLegacyFragmentVariables: true,
+      },
+    );
+
+    expect(print(parsed)).to.equal(dedent`
+      {
+        ...Dogs(
+          breads: ["Boston Terrier", "Poodle", "Beagle"]
+          likesPets: true
+          likesToys: true
+        )
+      }
+    `);
+  });
+
+  it('Legacy: correctly prints fragment spread arguments with directives', () => {
+    const parsed = parse('{ ...Foo(bar: $bar) @skip(if: $isBaz) }', {
+      allowLegacyFragmentVariables: true,
+    });
+
+    expect(print(parsed)).to.equal(dedent`
+      {
+        ...Foo(bar: $bar) @skip(if: $isBaz)
+      }
+    `);
+  });
+
   it('prints kitchen sink', () => {
     const printed = print(parse(kitchenSinkQuery));
 

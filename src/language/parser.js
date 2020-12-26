@@ -434,6 +434,12 @@ export class Parser {
       return {
         kind: Kind.FRAGMENT_SPREAD,
         name: this.parseFragmentName(),
+        // Legacy support for fragment variables changes the grammar of a
+        // FragmentSpreadNode.
+        arguments:
+          this._options?.allowLegacyFragmentVariables ?? false
+            ? this.parseArguments(false)
+            : undefined,
         directives: this.parseDirectives(false),
         loc: this.loc(start),
       };

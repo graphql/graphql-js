@@ -470,6 +470,53 @@ describe('Visitor', () => {
     ]);
   });
 
+  it('Legacy: visits fragment spread arguments', () => {
+    const ast = parse('{ ...Foo(v: $v) }', {
+      noLocation: true,
+      allowLegacyFragmentVariables: true,
+    });
+
+    const visited = [];
+
+    visit(ast, {
+      enter(node) {
+        checkVisitorFnArgs(ast, arguments);
+        visited.push(['enter', node.kind, getValue(node)]);
+      },
+      leave(node) {
+        checkVisitorFnArgs(ast, arguments);
+        visited.push(['leave', node.kind, getValue(node)]);
+      },
+    });
+
+    const argumentNode = {
+      kind: Kind.VARIABLE,
+      name: { kind: Kind.NAME, loc: undefined, value: 'v' },
+      loc: undefined,
+    };
+
+    expect(visited).to.deep.equal([
+      ['enter', Kind.DOCUMENT, undefined],
+      ['enter', Kind.OPERATION_DEFINITION, undefined],
+      ['enter', Kind.SELECTION_SET, undefined],
+      ['enter', Kind.FRAGMENT_SPREAD, undefined],
+      ['enter', Kind.NAME, 'Foo'],
+      ['leave', Kind.NAME, 'Foo'],
+      ['enter', Kind.ARGUMENT, argumentNode],
+      ['enter', Kind.NAME, 'v'],
+      ['leave', Kind.NAME, 'v'],
+      ['enter', Kind.VARIABLE, undefined],
+      ['enter', Kind.NAME, 'v'],
+      ['leave', Kind.NAME, 'v'],
+      ['leave', Kind.VARIABLE, undefined],
+      ['leave', Kind.ARGUMENT, argumentNode],
+      ['leave', Kind.FRAGMENT_SPREAD, undefined],
+      ['leave', Kind.SELECTION_SET, undefined],
+      ['leave', Kind.OPERATION_DEFINITION, undefined],
+      ['leave', Kind.DOCUMENT, undefined],
+    ]);
+  });
+
   it('visits kitchen sink', () => {
     const ast = parse(kitchenSinkQuery);
     const visited = [];

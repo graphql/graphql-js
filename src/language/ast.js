@@ -308,6 +308,8 @@ export type FragmentSpreadNode = {|
   +kind: 'FragmentSpread',
   +loc?: Location,
   +name: NameNode,
+  // Note: fragment variable definitions are deprecated and will removed in v17.0.0
+  +arguments?: $ReadOnlyArray<ArgumentNode>,
   +directives?: $ReadOnlyArray<DirectiveNode>,
 |};
 
