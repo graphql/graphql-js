@@ -154,6 +154,17 @@ describe('Validate: Subscriptions with single field', () => {
     ]);
   });
 
+  it('does not infinite loop on recursive fragments', () => {
+    expectErrors(`
+      subscription NoInfiniteLoop {
+        ...A
+      }
+      fragment A on Subscription {
+        ...A
+      }
+    `).to.deep.equal([]);
+  });
+
   it('fails with many more than one root field via fragments (anonymous)', () => {
     expectErrors(`
       subscription {
