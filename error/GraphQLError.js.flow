@@ -84,7 +84,7 @@ export class GraphQLError extends Error {
     path?: ?$ReadOnlyArray<string | number>,
     originalError?: ?(Error & { +extensions?: mixed, ... }),
     extensions?: ?{ [key: string]: mixed, ... },
-  ): void {
+  ) {
     super(message);
 
     // Compute list of blame nodes.

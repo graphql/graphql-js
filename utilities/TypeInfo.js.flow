@@ -65,7 +65,7 @@ export class TypeInfo {
     // Initial type may be provided in rare cases to facilitate traversals
     // beginning somewhere other than documents.
     initialType?: GraphQLType,
-  ): void {
+  ) {
     this._schema = schema;
     this._typeStack = [];
     this._parentTypeStack = [];
