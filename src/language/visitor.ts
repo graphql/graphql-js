@@ -8,7 +8,7 @@ import { isNode } from './ast';
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor = $Shape<EnterLeaveVisitor<ASTNode> & KindVisitor>;
+export type ASTVisitor = Partial<EnterLeaveVisitor<ASTNode> & KindVisitor>;
 
 type KindVisitor = $ObjMap<
   ASTKindToNode,
