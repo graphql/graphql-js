@@ -39,9 +39,9 @@ describe('Integration Tests', () => {
     testOnNodeProject('ts');
   }).timeout(40000);
 
-  it('Should compile with Flow', () => {
-    testOnNodeProject('flow');
-  }).timeout(10000);
+  // it('Should compile with Flow', () => {
+  //   testOnNodeProject('flow');
+  // }).timeout(10000);
 
   it('Should work on all supported node versions', () => {
     testOnNodeProject('node');
