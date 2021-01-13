@@ -34,7 +34,7 @@ type OnErrorCB = (
 export function coerceInputValue(
   inputValue: mixed,
   type: GraphQLInputType,
-  onError?: OnErrorCB = defaultOnError,
+  onError: OnErrorCB = defaultOnError,
 ): mixed {
   return coerceInputValueImpl(inputValue, type, onError);
 }
