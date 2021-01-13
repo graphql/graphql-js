@@ -1,5 +1,5 @@
 import type { PromiseOrValue } from './jsutils/PromiseOrValue';
-import isPromise from './jsutils/isPromise';
+import { isPromise } from './jsutils/isPromise';
 
 import type { Source } from './language/source';
 import { parse } from './language/parser';

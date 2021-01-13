@@ -1,9 +1,9 @@
 import objectValues from '../polyfills/objectValues';
 
-import inspect from '../jsutils/inspect';
-import devAssert from '../jsutils/devAssert';
-import keyValMap from '../jsutils/keyValMap';
-import isObjectLike from '../jsutils/isObjectLike';
+import { inspect } from '../jsutils/inspect';
+import { devAssert } from '../jsutils/devAssert';
+import { keyValMap } from '../jsutils/keyValMap';
+import { isObjectLike } from '../jsutils/isObjectLike';
 
 import { parseValue } from '../language/parser';
 

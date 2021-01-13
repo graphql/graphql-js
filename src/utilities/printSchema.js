@@ -1,7 +1,7 @@
 import objectValues from '../polyfills/objectValues';
 
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
 
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';

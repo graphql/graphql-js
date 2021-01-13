@@ -1,6 +1,6 @@
 import objectValues from '../polyfills/objectValues';
 
-import inspect from '../jsutils/inspect';
+import { inspect } from '../jsutils/inspect';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';

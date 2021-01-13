@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 import dedent from '../../__testUtils__/dedent';
 import kitchenSinkQuery from '../../__testUtils__/kitchenSinkQuery';
 
-import inspect from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect';
 
 import { Kind } from '../kinds';
 import { Source } from '../source';

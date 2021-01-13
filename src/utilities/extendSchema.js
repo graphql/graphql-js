@@ -1,10 +1,10 @@
 import objectValues from '../polyfills/objectValues';
 
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import mapValue from '../jsutils/mapValue';
-import invariant from '../jsutils/invariant';
-import devAssert from '../jsutils/devAssert';
+import { keyMap } from '../jsutils/keyMap';
+import { inspect } from '../jsutils/inspect';
+import { mapValue } from '../jsutils/mapValue';
+import { invariant } from '../jsutils/invariant';
+import { devAssert } from '../jsutils/devAssert';
 
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import type {

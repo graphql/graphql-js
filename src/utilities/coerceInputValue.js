@@ -1,13 +1,13 @@
 import objectValues from '../polyfills/objectValues';
 
 import type { Path } from '../jsutils/Path';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import didYouMean from '../jsutils/didYouMean';
-import isObjectLike from '../jsutils/isObjectLike';
-import isCollection from '../jsutils/isCollection';
-import suggestionList from '../jsutils/suggestionList';
-import printPathArray from '../jsutils/printPathArray';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { didYouMean } from '../jsutils/didYouMean';
+import { isObjectLike } from '../jsutils/isObjectLike';
+import { isCollection } from '../jsutils/isCollection';
+import { suggestionList } from '../jsutils/suggestionList';
+import { printPathArray } from '../jsutils/printPathArray';
 import { addPath, pathToArray } from '../jsutils/Path';
 
 import { GraphQLError } from '../error/GraphQLError';

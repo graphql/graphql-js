@@ -3,8 +3,8 @@ import { describe, it } from 'mocha';
 
 import resolveOnNextTick from '../../__testUtils__/resolveOnNextTick';
 
-import invariant from '../../jsutils/invariant';
-import isAsyncIterable from '../../jsutils/isAsyncIterable';
+import { invariant } from '../../jsutils/invariant';
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 
 import type { DocumentNode } from '../../language/ast';
 import { parse } from '../../language/parser';

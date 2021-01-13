@@ -4,7 +4,7 @@ import dedent from '../../__testUtils__/dedent';
 import inspectStr from '../../__testUtils__/inspectStr';
 import genFuzzStrings from '../../__testUtils__/genFuzzStrings';
 
-import invariant from '../../jsutils/invariant';
+import { invariant } from '../../jsutils/invariant';
 
 import { Lexer } from '../lexer';
 import { Source } from '../source';
