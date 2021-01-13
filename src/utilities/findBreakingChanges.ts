@@ -64,12 +64,12 @@ export const DangerousChangeType = Object.freeze({
 });
 
 export type BreakingChange = {
-  type: $Keys<typeof BreakingChangeType>;
+  type: keyof typeof BreakingChangeType;
   description: string;
 };
 
 export type DangerousChange = {
-  type: $Keys<typeof DangerousChangeType>;
+  type: keyof typeof DangerousChangeType;
   description: string;
 };
 
