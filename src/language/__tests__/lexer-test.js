@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../__testUtils__/dedent';
 
-import inspect from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';
 

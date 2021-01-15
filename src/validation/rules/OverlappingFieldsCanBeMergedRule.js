@@ -1,7 +1,7 @@
 import objectEntries from '../../polyfills/objectEntries';
 
 import type { ObjMap } from '../../jsutils/ObjMap';
-import inspect from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';
 

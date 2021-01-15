@@ -1,9 +1,9 @@
 import objectValues from '../polyfills/objectValues';
 
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import isObjectLike from '../jsutils/isObjectLike';
-import isCollection from '../jsutils/isCollection';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { isObjectLike } from '../jsutils/isObjectLike';
+import { isCollection } from '../jsutils/isCollection';
 
 import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';

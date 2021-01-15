@@ -11,7 +11,7 @@ import type {
 declare function toObjMap<T>(obj: ObjMapLike<T>): ObjMap<T>;
 declare function toObjMap<T>(obj: ReadOnlyObjMapLike<T>): ReadOnlyObjMap<T>;
 
-export default function toObjMap(obj) {
+export function toObjMap(obj) {
   /* eslint-enable no-redeclare */
   if (Object.getPrototypeOf(obj) === null) {
     return obj;

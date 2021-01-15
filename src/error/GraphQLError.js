@@ -1,7 +1,7 @@
 // FIXME:
 // flowlint uninitialized-instance-property:off
 
-import isObjectLike from '../jsutils/isObjectLike';
+import { isObjectLike } from '../jsutils/isObjectLike';
 
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';

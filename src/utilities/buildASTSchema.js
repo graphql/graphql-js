@@ -1,4 +1,4 @@
-import devAssert from '../jsutils/devAssert';
+import { devAssert } from '../jsutils/devAssert';
 
 import type { Source } from '../language/source';
 import type { DocumentNode } from '../language/ast';

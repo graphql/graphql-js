@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import kitchenSinkQuery from '../../__testUtils__/kitchenSinkQuery';
 
-import invariant from '../../jsutils/invariant';
+import { invariant } from '../../jsutils/invariant';
 
 import type { ASTNode } from '../ast';
 import { Kind } from '../kinds';

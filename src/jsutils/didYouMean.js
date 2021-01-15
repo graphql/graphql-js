@@ -11,7 +11,7 @@ declare function didYouMean(
 ): string;
 
 // eslint-disable-next-line no-redeclare
-export default function didYouMean(firstArg, secondArg) {
+export function didYouMean(firstArg, secondArg) {
   const [subMessage, suggestionsArg] =
     typeof firstArg === 'string'
       ? [firstArg, secondArg]

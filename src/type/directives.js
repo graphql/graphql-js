@@ -1,11 +1,11 @@
 import objectEntries from '../polyfills/objectEntries';
 
 import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from '../jsutils/ObjMap';
-import inspect from '../jsutils/inspect';
-import toObjMap from '../jsutils/toObjMap';
-import devAssert from '../jsutils/devAssert';
+import { inspect } from '../jsutils/inspect';
+import { toObjMap } from '../jsutils/toObjMap';
+import { devAssert } from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
-import isObjectLike from '../jsutils/isObjectLike';
+import { isObjectLike } from '../jsutils/isObjectLike';
 
 import type { DirectiveDefinitionNode } from '../language/ast';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';

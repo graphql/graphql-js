@@ -1,5 +1,5 @@
-import inspect from '../jsutils/inspect';
-import isAsyncIterable from '../jsutils/isAsyncIterable';
+import { inspect } from '../jsutils/inspect';
+import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { addPath, pathToArray } from '../jsutils/Path';
 
 import { GraphQLError } from '../error/GraphQLError';

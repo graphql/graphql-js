@@ -1,4 +1,4 @@
-import isObjectLike from '../../jsutils/isObjectLike';
+import { isObjectLike } from '../../jsutils/isObjectLike';
 
 /**
  * Deeply transforms an arbitrary value to a JSON-safe value by calling toJSON
