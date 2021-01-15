@@ -1,4 +1,4 @@
-import invariant from '../../../jsutils/invariant';
+import { invariant } from '../../../jsutils/invariant';
 
 import { GraphQLError } from '../../../error/GraphQLError';
 

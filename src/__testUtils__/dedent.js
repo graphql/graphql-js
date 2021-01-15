@@ -10,7 +10,7 @@
  * `;
  * str === "{\n  test\n}\n";
  */
-export default function dedent(
+export function dedent(
   strings: $ReadOnlyArray<string>,
   ...values: $ReadOnlyArray<string>
 ): string {

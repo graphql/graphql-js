@@ -1,5 +1,5 @@
-import inspect from '../jsutils/inspect';
-import isObjectLike from '../jsutils/isObjectLike';
+import { inspect } from '../jsutils/inspect';
+import { isObjectLike } from '../jsutils/isObjectLike';
 
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';

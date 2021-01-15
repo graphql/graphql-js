@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../__testUtils__/dedent';
-import kitchenSinkSDL from '../../__testUtils__/kitchenSinkSDL';
+import { dedent } from '../../__testUtils__/dedent';
+import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
 
 import { parse } from '../parser';
 import { print } from '../printer';

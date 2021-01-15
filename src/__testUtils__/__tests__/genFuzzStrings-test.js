@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import genFuzzStrings from '../genFuzzStrings';
+import { genFuzzStrings } from '../genFuzzStrings';
 
 function expectFuzzStrings(options: {|
   allowedChars: Array<string>,

@@ -1,7 +1,7 @@
-import inspect from '../../jsutils/inspect';
-import invariant from '../../jsutils/invariant';
-import didYouMean from '../../jsutils/didYouMean';
-import suggestionList from '../../jsutils/suggestionList';
+import { inspect } from '../../jsutils/inspect';
+import { invariant } from '../../jsutils/invariant';
+import { didYouMean } from '../../jsutils/didYouMean';
+import { suggestionList } from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
