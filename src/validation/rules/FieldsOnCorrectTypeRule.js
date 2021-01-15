@@ -2,6 +2,7 @@ import arrayFrom from '../../polyfills/arrayFrom';
 
 import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
+import naturalCompare from '../../jsutils/naturalCompare';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
@@ -122,7 +123,7 @@ function getSuggestedTypeNames(
         return 1;
       }
 
-      return typeA.name.localeCompare(typeB.name);
+      return naturalCompare(typeA.name, typeB.name);
     })
     .map((x) => x.name);
 }

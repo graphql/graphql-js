@@ -3,6 +3,7 @@ import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
+import naturalCompare from '../jsutils/naturalCompare';
 
 import { print } from '../language/printer';
 import { visit } from '../language/visitor';
@@ -541,8 +542,11 @@ function stringifyValue(value: mixed, type: GraphQLInputType): string {
 
   const sortedAST = visit(ast, {
     ObjectValue(objectNode) {
-      const fields = [...objectNode.fields].sort((fieldA, fieldB) =>
-        fieldA.name.value.localeCompare(fieldB.name.value),
+      // Make a copy since sort mutates array
+      const fields = [...objectNode.fields];
+
+      fields.sort((fieldA, fieldB) =>
+        naturalCompare(fieldA.name.value, fieldB.name.value),
       );
       return { ...objectNode, fields };
     },
