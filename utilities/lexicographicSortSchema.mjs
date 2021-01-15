@@ -8,6 +8,7 @@ import objectValues from "../polyfills/objectValues.mjs";
 import inspect from "../jsutils/inspect.mjs";
 import invariant from "../jsutils/invariant.mjs";
 import keyValMap from "../jsutils/keyValMap.mjs";
+import naturalCompare from "../jsutils/naturalCompare.mjs";
 import { GraphQLSchema } from "../type/schema.mjs";
 import { GraphQLDirective } from "../type/directives.mjs";
 import { isIntrospectionType } from "../type/introspection.mjs";
@@ -179,6 +180,6 @@ function sortBy(array, mapToKey) {
   return array.slice().sort(function (obj1, obj2) {
     var key1 = mapToKey(obj1);
     var key2 = mapToKey(obj2);
-    return key1.localeCompare(key2);
+    return naturalCompare(key1, key2);
   });
 }

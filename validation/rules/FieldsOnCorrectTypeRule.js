@@ -11,6 +11,8 @@ var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"))
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
 
+var _naturalCompare = _interopRequireDefault(require("../../jsutils/naturalCompare.js"));
+
 var _GraphQLError = require("../../error/GraphQLError.js");
 
 var _definition = require("../../type/definition.js");
@@ -108,7 +110,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
       return 1;
     }
 
-    return typeA.name.localeCompare(typeB.name);
+    return (0, _naturalCompare.default)(typeA.name, typeB.name);
   }).map(function (x) {
     return x.name;
   });

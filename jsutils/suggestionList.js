@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = suggestionList;
 
+var _naturalCompare = _interopRequireDefault(require("./naturalCompare.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
  * list of valid options sorted based on their similarity with the input.
@@ -25,7 +29,7 @@ function suggestionList(input, options) {
 
   return Object.keys(optionsByDistance).sort(function (a, b) {
     var distanceDiff = optionsByDistance[a] - optionsByDistance[b];
-    return distanceDiff !== 0 ? distanceDiff : a.localeCompare(b);
+    return distanceDiff !== 0 ? distanceDiff : (0, _naturalCompare.default)(a, b);
   });
 }
 /**

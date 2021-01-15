@@ -13,6 +13,8 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap.js"));
 
+var _naturalCompare = _interopRequireDefault(require("../jsutils/naturalCompare.js"));
+
 var _schema = require("../type/schema.js");
 
 var _directives = require("../type/directives.js");
@@ -195,6 +197,6 @@ function sortBy(array, mapToKey) {
   return array.slice().sort(function (obj1, obj2) {
     var key1 = mapToKey(obj1);
     var key2 = mapToKey(obj2);
-    return key1.localeCompare(key2);
+    return (0, _naturalCompare.default)(key1, key2);
   });
 }

@@ -5,6 +5,7 @@ import type { ObjMap } from '../jsutils/ObjMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
+import naturalCompare from '../jsutils/naturalCompare';
 
 import type {
   GraphQLType,
@@ -181,6 +182,6 @@ function sortBy<T>(
   return array.slice().sort((obj1, obj2) => {
     const key1 = mapToKey(obj1);
     const key2 = mapToKey(obj2);
-    return key1.localeCompare(key2);
+    return naturalCompare(key1, key2);
   });
 }

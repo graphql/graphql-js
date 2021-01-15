@@ -15,6 +15,8 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 
+var _naturalCompare = _interopRequireDefault(require("../jsutils/naturalCompare.js"));
+
 var _printer = require("../language/printer.js");
 
 var _visitor = require("../language/visitor.js");
@@ -467,8 +469,10 @@ function stringifyValue(value, type) {
   ast != null || (0, _invariant.default)(0);
   var sortedAST = (0, _visitor.visit)(ast, {
     ObjectValue: function ObjectValue(objectNode) {
-      var fields = [].concat(objectNode.fields).sort(function (fieldA, fieldB) {
-        return fieldA.name.value.localeCompare(fieldB.name.value);
+      // Make a copy since sort mutates array
+      var fields = [].concat(objectNode.fields);
+      fields.sort(function (fieldA, fieldB) {
+        return (0, _naturalCompare.default)(fieldA.name.value, fieldB.name.value);
       });
       return _objectSpread(_objectSpread({}, objectNode), {}, {
         fields: fields

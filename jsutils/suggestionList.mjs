@@ -1,7 +1,9 @@
+import naturalCompare from "./naturalCompare.mjs";
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
  * list of valid options sorted based on their similarity with the input.
  */
+
 export default function suggestionList(input, options) {
   var optionsByDistance = Object.create(null);
   var lexicalDistance = new LexicalDistance(input);
@@ -18,7 +20,7 @@ export default function suggestionList(input, options) {
 
   return Object.keys(optionsByDistance).sort(function (a, b) {
     var distanceDiff = optionsByDistance[a] - optionsByDistance[b];
-    return distanceDiff !== 0 ? distanceDiff : a.localeCompare(b);
+    return distanceDiff !== 0 ? distanceDiff : naturalCompare(a, b);
   });
 }
 /**
