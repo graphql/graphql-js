@@ -27,14 +27,14 @@ import { getOperationRootType } from '../utilities/getOperationRootType';
 import { mapAsyncIterator } from './mapAsyncIterator';
 
 export type SubscriptionArgs = {
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 };
 
 /**

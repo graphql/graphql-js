@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import type { Maybe } from '../../jsutils/Maybe';
 
+import type { Maybe } from '../../jsutils/Maybe';
 import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { parseValue } from '../../language/parser';

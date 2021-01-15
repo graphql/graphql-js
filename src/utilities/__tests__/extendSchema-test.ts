@@ -37,7 +37,7 @@ import { buildSchema } from '../buildASTSchema';
 import type { Maybe } from '../../jsutils/Maybe';
 
 function expectExtensionASTNodes(obj: {
-  readonly extensionASTNodes: ReadonlyArray<ASTNode>,
+  readonly extensionASTNodes: ReadonlyArray<ASTNode>;
 }) {
   return expect(obj.extensionASTNodes.map(print).join('\n\n'));
 }

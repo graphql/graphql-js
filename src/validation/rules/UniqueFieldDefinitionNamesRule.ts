@@ -38,8 +38,10 @@ export function UniqueFieldDefinitionNamesRule(
   };
 
   function checkFieldUniqueness(node: {
-    readonly name: NameNode,
-    readonly fields?: ReadonlyArray<InputValueDefinitionNode | FieldDefinitionNode>,
+    readonly name: NameNode;
+    readonly fields?: ReadonlyArray<
+      InputValueDefinitionNode | FieldDefinitionNode
+    >;
   }) {
     const typeName = node.name.value;
 

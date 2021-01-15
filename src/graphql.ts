@@ -57,14 +57,14 @@ import type { Maybe } from './jsutils/Maybe';
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 export type GraphQLArgs = {
-  schema: GraphQLSchema,
-  source: string | Source,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
+  schema: GraphQLSchema;
+  source: string | Source;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 };
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {

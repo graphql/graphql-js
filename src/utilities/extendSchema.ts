@@ -89,8 +89,8 @@ interface Options extends GraphQLSchemaValidationOptions {
    *
    * Default: false
    */
-  assumeValidSDL?: boolean,
-};
+  assumeValidSDL?: boolean;
+}
 
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -394,9 +394,9 @@ export function extendSchemaImpl(
   function getOperationTypes(
     nodes: ReadonlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
   ): {
-    query: Maybe<GraphQLObjectType>,
-    mutation: Maybe<GraphQLObjectType>,
-    subscription: Maybe<GraphQLObjectType>,
+    query: Maybe<GraphQLObjectType>;
+    mutation: Maybe<GraphQLObjectType>;
+    subscription: Maybe<GraphQLObjectType>;
   } {
     const opTypes = {};
     for (const node of nodes) {
@@ -455,7 +455,7 @@ export function extendSchemaImpl(
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
       | ObjectTypeDefinitionNode
-      | ObjectTypeExtensionNode,
+      | ObjectTypeExtensionNode
     >,
   ): GraphQLFieldConfigMap<unknown, unknown> {
     const fieldConfigMap = Object.create(null);
@@ -505,7 +505,7 @@ export function extendSchemaImpl(
 
   function buildInputFieldMap(
     nodes: ReadonlyArray<
-      InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode,
+      InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode
     >,
   ): GraphQLInputFieldConfigMap {
     const inputFieldMap = Object.create(null);
@@ -555,7 +555,7 @@ export function extendSchemaImpl(
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
       | ObjectTypeDefinitionNode
-      | ObjectTypeExtensionNode,
+      | ObjectTypeExtensionNode
     >,
   ): Array<GraphQLInterfaceType> {
     const interfaces = [];

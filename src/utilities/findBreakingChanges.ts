@@ -557,9 +557,9 @@ function diff<T extends { name: string }>(
   oldArray: ReadonlyArray<T>,
   newArray: ReadonlyArray<T>,
 ): {
-  added: Array<T>,
-  removed: Array<T>,
-  persisted: Array<[T, T]>,
+  added: Array<T>;
+  removed: Array<T>;
+  persisted: Array<[T, T]>;
 } {
   const added = [];
   const removed = [];

@@ -18,10 +18,10 @@ import { createSourceEventStream, subscribe } from '../subscribe';
 import { SimplePubSub } from './simplePubSub';
 
 type Email = {
-  from: string,
-  subject: string,
-  message: string,
-  unread: boolean,
+  from: string;
+  subject: string;
+  message: string;
+  unread: boolean;
 };
 
 const EmailType = new GraphQLObjectType({

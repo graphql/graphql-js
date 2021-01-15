@@ -94,15 +94,15 @@ import {
  * and the fragments defined in the query document
  */
 export type ExecutionContext = {
-  schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
-  rootValue: unknown,
-  contextValue: unknown,
-  operation: OperationDefinitionNode,
-  variableValues: { [variable: string]: unknown },
-  fieldResolver: GraphQLFieldResolver<any, any>,
-  typeResolver: GraphQLTypeResolver<any, any>,
-  errors: Array<GraphQLError>,
+  schema: GraphQLSchema;
+  fragments: ObjMap<FragmentDefinitionNode>;
+  rootValue: unknown;
+  contextValue: unknown;
+  operation: OperationDefinitionNode;
+  variableValues: { [variable: string]: unknown };
+  fieldResolver: GraphQLFieldResolver<any, any>;
+  typeResolver: GraphQLTypeResolver<any, any>;
+  errors: Array<GraphQLError>;
 };
 
 /**
@@ -113,26 +113,26 @@ export type ExecutionContext = {
  *   - `extensions` is reserved for adding non-standard properties.
  */
 export type ExecutionResult = {
-  errors?: ReadonlyArray<GraphQLError>,
-  data?: ObjMap<unknown> | null,
-  extensions?: ObjMap<unknown>,
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: ObjMap<unknown> | null;
+  extensions?: ObjMap<unknown>;
 };
 
 export type FormattedExecutionResult = {
-  errors?: ReadonlyArray<GraphQLFormattedError>,
-  data?: ObjMap<unknown> | null,
-  extensions?: ObjMap<unknown>,
+  errors?: ReadonlyArray<GraphQLFormattedError>;
+  data?: ObjMap<unknown> | null;
+  extensions?: ObjMap<unknown>;
 };
 
 export type ExecutionArgs = {
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 };
 
 /**
@@ -888,7 +888,10 @@ function completeListValue(
  * Complete a Scalar or Enum by serializing to a valid value, returning
  * null if serialization is not possible.
  */
-function completeLeafValue(returnType: GraphQLLeafType, result: unknown): unknown {
+function completeLeafValue(
+  returnType: GraphQLLeafType,
+  result: unknown,
+): unknown {
   const serializedResult = returnType.serialize(result);
   if (serializedResult === undefined) {
     throw new Error(
@@ -1113,12 +1116,10 @@ function _collectSubfields(
  * Otherwise, test each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
-export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> = function (
-  value,
-  contextValue,
-  info,
-  abstractType,
-) {
+export const defaultTypeResolver: GraphQLTypeResolver<
+  unknown,
+  unknown
+> = function (value, contextValue, info, abstractType) {
   // First, look for `__typename`.
   if (isObjectLike(value) && typeof value.__typename === 'string') {
     return value.__typename;
@@ -1161,7 +1162,7 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> = functi
  */
 export const defaultFieldResolver: GraphQLFieldResolver<
   unknown,
-  unknown,
+  unknown
 > = function (source: any, args, contextValue, info) {
   // ensure source is a value for which property access is acceptable.
   if (isObjectLike(source) || typeof source === 'function') {

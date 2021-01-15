@@ -3,8 +3,8 @@ import { devAssert } from '../jsutils/devAssert';
 import { instanceOf } from '../jsutils/instanceOf';
 
 type Location = {
-  line: number,
-  column: number,
+  line: number;
+  column: number;
 };
 
 /**
