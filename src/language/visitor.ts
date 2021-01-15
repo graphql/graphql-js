@@ -10,10 +10,11 @@ import { isNode } from './ast';
  */
 export type ASTVisitor = Partial<EnterLeaveVisitor<ASTNode> & KindVisitor>;
 
-type KindVisitor = $ObjMap<
-  ASTKindToNode,
-  <Node>(Node) => ASTVisitFn<Node> | EnterLeaveVisitor<Node>
->;
+type KindVisitor = {
+  readonly [K in keyof ASTKindToNode]?:
+    | ASTVisitFn<ASTKindToNode[K]>
+    | EnterLeaveVisitor<ASTKindToNode[K]>;
+};
 
 type EnterLeaveVisitor<TVisitedNode extends ASTNode> = {
   readonly enter?: ASTVisitFn<TVisitedNode>;
