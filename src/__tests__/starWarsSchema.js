@@ -1,4 +1,4 @@
-import invariant from '../jsutils/invariant';
+import { invariant } from '../jsutils/invariant';
 
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLString } from '../type/scalars';

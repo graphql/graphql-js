@@ -1,6 +1,6 @@
 import type { PromiseOrValue } from './PromiseOrValue';
 
-import isPromise from './isPromise';
+import { isPromise } from './isPromise';
 
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
@@ -9,7 +9,7 @@ import isPromise from './isPromise';
  * If the callback does not return a Promise, then this function will also not
  * return a Promise.
  */
-export default function promiseReduce<T, U>(
+export function promiseReduce<T, U>(
   values: $ReadOnlyArray<T>,
   callback: (U, T) => PromiseOrValue<U>,
   initialValue: PromiseOrValue<U>,

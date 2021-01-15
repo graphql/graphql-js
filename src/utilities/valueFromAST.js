@@ -1,9 +1,9 @@
 import objectValues from '../polyfills/objectValues';
 
 import type { ObjMap } from '../jsutils/ObjMap';
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import { keyMap } from '../jsutils/keyMap';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
 
 import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';

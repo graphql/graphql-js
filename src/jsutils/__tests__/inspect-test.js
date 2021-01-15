@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import inspect from '../inspect';
-import invariant from '../invariant';
+import { inspect } from '../inspect';
+import { invariant } from '../invariant';
 
 describe('inspect', () => {
   it('undefined', () => {

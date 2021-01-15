@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import identityFunc from '../identityFunc';
-import isCollection from '../isCollection';
+import { identityFunc } from '../identityFunc';
+import { isCollection } from '../isCollection';
 
 describe('isCollection', () => {
   it('should return `true` for collections', () => {
