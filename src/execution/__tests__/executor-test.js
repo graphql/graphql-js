@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import inspect from '../../jsutils/inspect';
-import invariant from '../../jsutils/invariant';
+import { inspect } from '../../jsutils/inspect';
+import { invariant } from '../../jsutils/invariant';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';

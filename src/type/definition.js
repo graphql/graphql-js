@@ -7,17 +7,17 @@ import type {
   ReadOnlyObjMap,
   ReadOnlyObjMapLike,
 } from '../jsutils/ObjMap';
-import inspect from '../jsutils/inspect';
-import keyMap from '../jsutils/keyMap';
-import mapValue from '../jsutils/mapValue';
-import toObjMap from '../jsutils/toObjMap';
-import devAssert from '../jsutils/devAssert';
-import keyValMap from '../jsutils/keyValMap';
+import { inspect } from '../jsutils/inspect';
+import { keyMap } from '../jsutils/keyMap';
+import { mapValue } from '../jsutils/mapValue';
+import { toObjMap } from '../jsutils/toObjMap';
+import { devAssert } from '../jsutils/devAssert';
+import { keyValMap } from '../jsutils/keyValMap';
 import instanceOf from '../jsutils/instanceOf';
-import didYouMean from '../jsutils/didYouMean';
-import isObjectLike from '../jsutils/isObjectLike';
-import identityFunc from '../jsutils/identityFunc';
-import suggestionList from '../jsutils/suggestionList';
+import { didYouMean } from '../jsutils/didYouMean';
+import { isObjectLike } from '../jsutils/isObjectLike';
+import { identityFunc } from '../jsutils/identityFunc';
+import { suggestionList } from '../jsutils/suggestionList';
 
 import { GraphQLError } from '../error/GraphQLError';
 

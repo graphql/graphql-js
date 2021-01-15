@@ -23,7 +23,7 @@ declare function isCollection(value: mixed): boolean %checks(value instanceof
   Iterable);
 
 // eslint-disable-next-line no-redeclare
-export default function isCollection(obj) {
+export function isCollection(obj) {
   if (obj == null || typeof obj !== 'object') {
     return false;
   }

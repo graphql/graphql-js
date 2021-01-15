@@ -1,9 +1,9 @@
 import objectValues from '../polyfills/objectValues';
 
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import naturalCompare from '../jsutils/naturalCompare';
+import { keyMap } from '../jsutils/keyMap';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { naturalCompare } from '../jsutils/naturalCompare';
 
 import { print } from '../language/printer';
 import { visit } from '../language/visitor';

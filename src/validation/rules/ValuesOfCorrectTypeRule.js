@@ -1,9 +1,9 @@
 import objectValues from '../../polyfills/objectValues';
 
-import keyMap from '../../jsutils/keyMap';
-import inspect from '../../jsutils/inspect';
-import didYouMean from '../../jsutils/didYouMean';
-import suggestionList from '../../jsutils/suggestionList';
+import { keyMap } from '../../jsutils/keyMap';
+import { inspect } from '../../jsutils/inspect';
+import { didYouMean } from '../../jsutils/didYouMean';
+import { suggestionList } from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 

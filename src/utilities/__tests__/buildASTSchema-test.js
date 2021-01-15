@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../__testUtils__/dedent';
 
-import invariant from '../../jsutils/invariant';
+import { invariant } from '../../jsutils/invariant';
 
 import type { ASTNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';

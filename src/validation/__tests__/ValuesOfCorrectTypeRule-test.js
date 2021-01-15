@@ -1,6 +1,6 @@
 import { describe, it } from 'mocha';
 
-import inspect from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';

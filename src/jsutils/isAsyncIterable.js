@@ -6,7 +6,7 @@ declare function isAsyncIterable(value: mixed): boolean %checks(value instanceof
   AsyncIterable);
 
 // eslint-disable-next-line no-redeclare
-export default function isAsyncIterable(maybeAsyncIterable) {
+export function isAsyncIterable(maybeAsyncIterable) {
   if (maybeAsyncIterable == null || typeof maybeAsyncIterable !== 'object') {
     return false;
   }

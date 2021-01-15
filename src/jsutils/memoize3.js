@@ -1,7 +1,7 @@
 /**
  * Memoizes the provided three-argument function.
  */
-export default function memoize3<
+export function memoize3<
   A1: { ... } | $ReadOnlyArray<mixed>,
   A2: { ... } | $ReadOnlyArray<mixed>,
   A3: { ... } | $ReadOnlyArray<mixed>,

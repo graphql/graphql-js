@@ -1,5 +1,5 @@
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
 
 import type {
   NamedTypeNode,
