@@ -2,6 +2,7 @@ import objectValues from "../polyfills/objectValues.js";
 import inspect from "../jsutils/inspect.js";
 import invariant from "../jsutils/invariant.js";
 import keyValMap from "../jsutils/keyValMap.js";
+import naturalCompare from "../jsutils/naturalCompare.js";
 import { GraphQLSchema } from "../type/schema.js";
 import { GraphQLDirective } from "../type/directives.js";
 import { isIntrospectionType } from "../type/introspection.js";
@@ -142,6 +143,6 @@ function sortBy(array, mapToKey) {
   return array.slice().sort((obj1, obj2) => {
     const key1 = mapToKey(obj1);
     const key2 = mapToKey(obj2);
-    return key1.localeCompare(key2);
+    return naturalCompare(key1, key2);
   });
 }

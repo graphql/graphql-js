@@ -1,6 +1,7 @@
 import arrayFrom from "../../polyfills/arrayFrom.js";
 import didYouMean from "../../jsutils/didYouMean.js";
 import suggestionList from "../../jsutils/suggestionList.js";
+import naturalCompare from "../../jsutils/naturalCompare.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
 import { isObjectType, isInterfaceType, isAbstractType } from "../../type/definition.js";
 
@@ -89,7 +90,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
       return 1;
     }
 
-    return typeA.name.localeCompare(typeB.name);
+    return naturalCompare(typeA.name, typeB.name);
   }).map(x => x.name);
 }
 /**

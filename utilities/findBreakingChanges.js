@@ -2,6 +2,7 @@ import objectValues from "../polyfills/objectValues.js";
 import keyMap from "../jsutils/keyMap.js";
 import inspect from "../jsutils/inspect.js";
 import invariant from "../jsutils/invariant.js";
+import naturalCompare from "../jsutils/naturalCompare.js";
 import { print } from "../language/printer.js";
 import { visit } from "../language/visitor.js";
 import { isSpecifiedScalarType } from "../type/scalars.js";
@@ -398,7 +399,9 @@ function stringifyValue(value, type) {
   ast != null || invariant(0);
   const sortedAST = visit(ast, {
     ObjectValue(objectNode) {
-      const fields = [...objectNode.fields].sort((fieldA, fieldB) => fieldA.name.value.localeCompare(fieldB.name.value));
+      // Make a copy since sort mutates array
+      const fields = [...objectNode.fields];
+      fields.sort((fieldA, fieldB) => naturalCompare(fieldA.name.value, fieldB.name.value));
       return { ...objectNode,
         fields
       };
