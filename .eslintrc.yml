@@ -136,7 +136,7 @@ rules:
   import/max-dependencies: off
   import/no-unassigned-import: error
   import/no-named-default: error
-  import/no-default-export: off
+  import/no-default-export: error
   import/no-named-export: off
   import/no-anonymous-default-export: error
   import/group-exports: off

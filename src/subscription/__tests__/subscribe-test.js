@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import resolveOnNextTick from '../../__testUtils__/resolveOnNextTick';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
 import { invariant } from '../../jsutils/invariant';
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
@@ -17,7 +17,7 @@ import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
 import { createSourceEventStream, subscribe } from '../subscribe';
 
-import SimplePubSub from './simplePubSub';
+import { SimplePubSub } from './simplePubSub';
 
 type Email = {|
   from: string,

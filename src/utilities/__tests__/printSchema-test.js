@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent';
 
 import { DirectiveLocation } from '../../language/directiveLocation';
 

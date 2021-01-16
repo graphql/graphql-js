@@ -1,4 +1,4 @@
-import objectEntries from '../polyfills/objectEntries';
+import { objectEntries } from '../polyfills/objectEntries';
 
 import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from '../jsutils/ObjMap';
 import { inspect } from '../jsutils/inspect';

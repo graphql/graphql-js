@@ -23,7 +23,7 @@ import type { GraphQLFieldResolver } from '../type/definition';
 
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
-import mapAsyncIterator from './mapAsyncIterator';
+import { mapAsyncIterator } from './mapAsyncIterator';
 
 export type SubscriptionArgs = {|
   schema: GraphQLSchema,

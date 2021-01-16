@@ -1,4 +1,4 @@
-import objectEntries from '../polyfills/objectEntries';
+import { objectEntries } from '../polyfills/objectEntries';
 
 import type { Path } from '../jsutils/Path';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';

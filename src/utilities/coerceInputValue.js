@@ -1,4 +1,4 @@
-import objectValues from '../polyfills/objectValues';
+import { objectValues } from '../polyfills/objectValues';
 
 import type { Path } from '../jsutils/Path';
 import { inspect } from '../jsutils/inspect';
