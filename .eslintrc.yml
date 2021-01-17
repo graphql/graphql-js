@@ -143,7 +143,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.13.x`
+  # ESLint builtin rules list based on `v7.18.x`
   ##############################################################################
 
   # Possible Errors
@@ -185,6 +185,7 @@ rules:
   no-unreachable-loop: error
   no-unsafe-finally: error
   no-unsafe-negation: error
+  no-unsafe-optional-chaining: [error, { disallowArithmeticOperators: true }]
   no-useless-backreference: error
   require-atomic-updates: error
   use-isnan: error
@@ -236,6 +237,7 @@ rules:
   no-new: error
   no-new-func: error
   no-new-wrappers: error
+  no-nonoctal-decimal-escape: error
   no-octal: error
   no-octal-escape: error
   no-param-reassign: error
@@ -504,7 +506,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.8.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.13.x`
       ##########################################################################
 
       # Supported Rules
@@ -563,6 +565,7 @@ overrides:
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
       '@typescript-eslint/no-unsafe-return': off # TODO consider
       '@typescript-eslint/no-var-requires': error
+      '@typescript-eslint/non-nullable-type-assertion-style': error
       '@typescript-eslint/prefer-as-const': off # TODO consider
       '@typescript-eslint/prefer-enum-initializers': off # TODO consider
       '@typescript-eslint/prefer-for-of': off # TODO switch to error after TS migration
@@ -583,6 +586,7 @@ overrides:
       '@typescript-eslint/restrict-plus-operands':
         [error, { checkCompoundAssignments: true }]
       '@typescript-eslint/restrict-template-expressions': error
+      '@typescript-eslint/sort-type-union-intersection-members': off # TODO consider
       '@typescript-eslint/strict-boolean-expressions': off # TODO consider
       '@typescript-eslint/switch-exhaustiveness-check': error
       '@typescript-eslint/triple-slash-reference': error

@@ -110,7 +110,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return sortByName(arr).map(replaceNamedType);
   }
 
-  function sortNamedType<T: GraphQLNamedType>(type: T) {
+  function sortNamedType(type: GraphQLNamedType): GraphQLNamedType {
     if (isScalarType(type) || isIntrospectionType(type)) {
       return type;
     }
