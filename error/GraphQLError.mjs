@@ -208,7 +208,7 @@ export var GraphQLError = /*#__PURE__*/function (_Error) {
       }
     }); // Include (non-enumerable) stack trace.
 
-    if (originalError === null || originalError === void 0 ? void 0 : originalError.stack) {
+    if (originalError !== null && originalError !== void 0 && originalError.stack) {
       Object.defineProperty(_assertThisInitialized(_this), 'stack', {
         value: originalError.stack,
         writable: true,

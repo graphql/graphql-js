@@ -21,6 +21,5 @@
   ],
   "engines": {
     "node": ">= 10.x"
-  },
-  "dependencies": {}
+  }
 }

@@ -12,7 +12,7 @@ export function UniqueDirectiveNamesRule(context) {
     DirectiveDefinition: function DirectiveDefinition(node) {
       var directiveName = node.name.value;
 
-      if (schema === null || schema === void 0 ? void 0 : schema.getDirective(directiveName)) {
+      if (schema !== null && schema !== void 0 && schema.getDirective(directiveName)) {
         context.reportError(new GraphQLError("Directive \"@".concat(directiveName, "\" already exists in the schema. It cannot be redefined."), node.name));
         return;
       }

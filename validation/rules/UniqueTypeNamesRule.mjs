@@ -20,7 +20,7 @@ export function UniqueTypeNamesRule(context) {
   function checkTypeName(node) {
     var typeName = node.name.value;
 
-    if (schema === null || schema === void 0 ? void 0 : schema.getType(typeName)) {
+    if (schema !== null && schema !== void 0 && schema.getType(typeName)) {
       context.reportError(new GraphQLError("Type \"".concat(typeName, "\" already exists in the schema. It cannot also be defined in this type definition."), node.name));
       return;
     }
