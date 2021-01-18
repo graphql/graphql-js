@@ -31,10 +31,10 @@ function exec(command, options = {}) {
 // and returns path to its 'dist' directory.
 function prepareBenchmarkProjects(revisionList) {
   const tmpDir = path.join(os.tmpdir(), 'graphql-js-benchmark');
-  fs.mkdirSync(tmpDir, { recursive: true });
+  fs.mkdirSync(tmpDir);
 
   const setupDir = path.join(tmpDir, 'setup');
-  fs.rmdirSync(setupDir, { recursive: true });
+  fs.rmdirSync(setupDir, { recursive: true, force: true });
   fs.mkdirSync(setupDir);
 
   return revisionList.map((revision) => {
@@ -72,12 +72,12 @@ function prepareBenchmarkProjects(revisionList) {
     }
 
     const repoDir = path.join(tmpDir, hash);
-    fs.rmdirSync(repoDir, { recursive: true });
+    fs.rmdirSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
     exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
     exec('npm --quiet ci', { cwd: repoDir });
     fs.renameSync(buildNPMArchive(repoDir), archivePath);
-    fs.rmdirSync(repoDir, { recursive: true });
+    fs.rmdirSync(repoDir, { recursive: true, force: true });
     return archivePath;
   }
 

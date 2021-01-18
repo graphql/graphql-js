@@ -32,20 +32,6 @@ function removeTrailingNewLine(str) {
   return str.split('\n').slice(0, -1).join('\n');
 }
 
-function rmdirRecursive(dirPath) {
-  if (fs.existsSync(dirPath)) {
-    for (const dirent of fs.readdirSync(dirPath, { withFileTypes: true })) {
-      const fullPath = path.join(dirPath, dirent.name);
-      if (dirent.isDirectory()) {
-        rmdirRecursive(fullPath);
-      } else {
-        fs.unlinkSync(fullPath);
-      }
-    }
-    fs.rmdirSync(dirPath);
-  }
-}
-
 function readdirRecursive(dirPath, opts = {}) {
   const { ignoreDir } = opts;
   const result = [];
@@ -116,7 +102,6 @@ function showDirStats(dirPath) {
 module.exports = {
   exec,
   execAsync,
-  rmdirRecursive,
   readdirRecursive,
   showDirStats,
 };
