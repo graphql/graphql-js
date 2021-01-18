@@ -6,10 +6,10 @@ const assert = require('assert');
 
 const babel = require('@babel/core');
 
-const { rmdirRecursive, readdirRecursive, showDirStats } = require('./utils');
+const { readdirRecursive, showDirStats } = require('./utils');
 
 if (require.main === module) {
-  rmdirRecursive('./npmDist');
+  fs.rmdirSync('./npmDist', { recursive: true, force: true });
   fs.mkdirSync('./npmDist');
 
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
