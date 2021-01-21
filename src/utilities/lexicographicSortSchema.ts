@@ -57,10 +57,8 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
 
   function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
-      // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
     } else if (isNonNullType(type)) {
-      // $FlowFixMe[incompatible-return]
       return new GraphQLNonNull(replaceType(type.ofType));
     }
     return replaceNamedType(type);

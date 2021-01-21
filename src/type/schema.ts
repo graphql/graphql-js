@@ -340,7 +340,6 @@ export class GraphQLSchema {
     };
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'GraphQLSchema';
   }

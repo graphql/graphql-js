@@ -159,7 +159,6 @@ describe('Type System Printer', () => {
     });
 
     expectPrintedSchema(schema).to.equal(
-      // $FlowFixMe[incompatible-call]
       dedent(String.raw`
         type Query {
           singleField(argOne: String = "tes\t de\fault"): String

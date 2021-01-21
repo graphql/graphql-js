@@ -1,6 +1,3 @@
-// FIXME:
-// flowlint uninitialized-instance-property:off
-
 import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
 
@@ -212,7 +209,6 @@ export class GraphQLError extends Error {
   }
 
   // FIXME: workaround to not break chai comparisons, should be remove in v16
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [Symbol.toStringTag](): string {
     return 'Object';
   }

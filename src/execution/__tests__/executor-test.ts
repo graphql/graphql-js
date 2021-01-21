@@ -31,14 +31,12 @@ describe('Execute: Handles basic execution tasks', () => {
       }),
     });
 
-    // $FlowExpectedError[prop-missing]
     expect(() => executeSync({ schema })).to.throw('Must provide document.');
   });
 
   it('throws if no schema is provided', () => {
     const document = parse('{ field }');
 
-    // $FlowExpectedError[prop-missing]
     expect(() => executeSync({ document })).to.throw(
       'Expected undefined to be a GraphQL schema.',
     );
@@ -63,7 +61,6 @@ describe('Execute: Handles basic execution tasks', () => {
     `);
     const variableValues = '{ "a": 1 }';
 
-    // $FlowExpectedError[incompatible-call]
     expect(() => executeSync({ schema, document, variableValues })).to.throw(
       'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
     );

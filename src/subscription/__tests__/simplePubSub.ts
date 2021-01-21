@@ -32,8 +32,6 @@ export class SimplePubSub<T> {
       pushQueue.length = 0;
     };
 
-    /* TODO: Flow doesn't support symbols as keys:
-       https://github.com/facebook/flow/issues/3258 */
     return {
       next() {
         if (!listening) {

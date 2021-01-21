@@ -15,7 +15,6 @@ describe('assertValidName()', () => {
   });
 
   it('throws for non-strings', () => {
-    // $FlowExpectedError[incompatible-call]
     expect(() => assertValidName({})).to.throw('Expected name to be a string.');
   });
 
