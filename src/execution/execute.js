@@ -1,5 +1,3 @@
-import arrayFrom from '../polyfills/arrayFrom';
-
 import type { Path } from '../jsutils/Path';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
@@ -9,7 +7,7 @@ import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
 import isPromise from '../jsutils/isPromise';
 import isObjectLike from '../jsutils/isObjectLike';
-import isCollection from '../jsutils/isCollection';
+import safeArrayFrom from '../jsutils/safeArrayFrom';
 import promiseReduce from '../jsutils/promiseReduce';
 import promiseForObject from '../jsutils/promiseForObject';
 import { addPath, pathToArray } from '../jsutils/Path';
@@ -867,17 +865,11 @@ function completeListValue(
   path: Path,
   result: mixed,
 ): PromiseOrValue<$ReadOnlyArray<mixed>> {
-  if (!isCollection(result)) {
-    throw new GraphQLError(
-      `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
-    );
-  }
-
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   const itemType = returnType.ofType;
   let containsPromise = false;
-  const completedResults = arrayFrom(result, (item, index) => {
+  const completedResults = safeArrayFrom(result, (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = addPath(path, index, undefined);
@@ -924,6 +916,12 @@ function completeListValue(
       return handleFieldError(error, itemType, exeContext);
     }
   });
+
+  if (completedResults == null) {
+    throw new GraphQLError(
+      `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
+    );
+  }
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }

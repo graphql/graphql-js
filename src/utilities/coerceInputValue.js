@@ -1,4 +1,3 @@
-import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 
 import type { Path } from '../jsutils/Path';
@@ -6,7 +5,7 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
-import isCollection from '../jsutils/isCollection';
+import safeArrayFrom from '../jsutils/safeArrayFrom';
 import suggestionList from '../jsutils/suggestionList';
 import printPathArray from '../jsutils/printPathArray';
 import { addPath, pathToArray } from '../jsutils/Path';
@@ -78,12 +77,16 @@ function coerceInputValueImpl(
 
   if (isListType(type)) {
     const itemType = type.ofType;
-    if (isCollection(inputValue)) {
-      return arrayFrom(inputValue, (itemValue, index) => {
-        const itemPath = addPath(path, index, undefined);
-        return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
-      });
+
+    const coercedList = safeArrayFrom(inputValue, (itemValue, index) => {
+      const itemPath = addPath(path, index, undefined);
+      return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
+    });
+
+    if (coercedList != null) {
+      return coercedList;
     }
+
     // Lists accept a non-list value as a list of one.
     return [coerceInputValueImpl(inputValue, itemType, onError, path)];
   }
