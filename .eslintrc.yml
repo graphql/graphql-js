@@ -649,6 +649,7 @@ overrides:
 
       # Bellow rules are disabled because coflicts with Prettier, see:
       # https://github.com/prettier/eslint-config-prettier/blob/master/%40typescript-eslint.js
+      '@typescript-eslint/object-curly-spacing': off
       '@typescript-eslint/quotes': off
       '@typescript-eslint/brace-style': off
       '@typescript-eslint/comma-dangle': off
