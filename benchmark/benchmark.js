@@ -31,6 +31,7 @@ function exec(command, options = {}) {
 // and returns path to its 'dist' directory.
 function prepareBenchmarkProjects(revisionList) {
   const tmpDir = path.join(os.tmpdir(), 'graphql-js-benchmark');
+  fs.rmdirSync(tmpDir, { recursive: true, force: true });
   fs.mkdirSync(tmpDir);
 
   const setupDir = path.join(tmpDir, 'setup');
