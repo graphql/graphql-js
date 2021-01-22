@@ -6,9 +6,5 @@ import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.js";
 
 // eslint-disable-next-line no-redeclare
 export default function isAsyncIterable(maybeAsyncIterable) {
-  if (maybeAsyncIterable == null || typeof maybeAsyncIterable !== 'object') {
-    return false;
-  }
-
-  return typeof maybeAsyncIterable[SYMBOL_ASYNC_ITERATOR] === 'function';
+  return typeof maybeAsyncIterable?.[SYMBOL_ASYNC_ITERATOR] === 'function';
 }
