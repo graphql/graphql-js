@@ -5,10 +5,10 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { didYouMean } from '../jsutils/didYouMean';
 import { isObjectLike } from '../jsutils/isObjectLike';
-import { isCollection } from '../jsutils/isCollection';
 import { suggestionList } from '../jsutils/suggestionList';
 import { printPathArray } from '../jsutils/printPathArray';
 import { addPath, pathToArray } from '../jsutils/Path';
+import { isIteratableObject } from '../jsutils/isIteratableObject';
 
 import { GraphQLError } from '../error/GraphQLError';
 
@@ -77,7 +77,7 @@ function coerceInputValueImpl(
 
   if (isListType(type)) {
     const itemType = type.ofType;
-    if (isCollection(inputValue)) {
+    if (isIteratableObject(inputValue)) {
       return Array.from(inputValue, (itemValue, index) => {
         const itemPath = addPath(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
