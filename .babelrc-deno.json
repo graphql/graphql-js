@@ -3,11 +3,5 @@
     "@babel/plugin-transform-flow-strip-types",
     ["./resources/add-extension-to-import-paths", { "extension": "js" }],
     "./resources/inline-invariant"
-  ],
-  "overrides": [
-    {
-      "include": "src/error/GraphQLError.js",
-      "plugins": [["@babel/plugin-transform-classes", { "loose": false }]]
-    }
   ]
 }
