@@ -150,7 +150,6 @@ describe('Type System: build schema from introspection', () => {
     const introspection = introspectionFromSchema(schema);
     const clientSchema = buildClientSchema(introspection);
 
-    expect(clientSchema.getType('Int')).to.equal(undefined);
     expect(clientSchema.getType('Float')).to.equal(undefined);
     expect(clientSchema.getType('ID')).to.equal(undefined);
   });
