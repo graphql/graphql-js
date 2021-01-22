@@ -46,7 +46,12 @@ if (require.main === module) {
 }
 
 function babelBuild(srcPath, options) {
-  return babel.transformFileSync(srcPath, options).code + '\n';
+  const { code } = babel.transformFileSync(srcPath, {
+    babelrc: false,
+    configFile: './.babelrc-npm.json',
+    ...options,
+  });
+  return code + '\n';
 }
 
 function buildPackageJSON() {
@@ -54,9 +59,6 @@ function buildPackageJSON() {
   delete packageJSON.private;
   delete packageJSON.scripts;
   delete packageJSON.devDependencies;
-
-  packageJSON.engines = packageJSON.engines_on_npm;
-  delete packageJSON.engines_on_npm;
 
   const { version } = packageJSON;
   const versionMatch = /^\d+\.\d+\.\d+-?(?<preReleaseTag>.*)?$/.exec(version);

@@ -1,42 +1,4 @@
 {
-  "presets": [["@babel/preset-env", { "targets": { "node": "current" } }]],
   "plugins": ["@babel/plugin-transform-flow-strip-types"],
-  "overrides": [
-    {
-      "exclude": ["src/__testUtils__/**/*", "**/__tests__/**/*"],
-      "presets": ["@babel/preset-env"],
-      "plugins": [
-        ["@babel/plugin-transform-classes", { "loose": true }],
-        ["@babel/plugin-transform-destructuring", { "loose": true }],
-        ["@babel/plugin-transform-spread", { "loose": true }],
-        ["@babel/plugin-transform-for-of", { "assumeArray": true }]
-      ],
-      "env": {
-        "cjs": {
-          "presets": [["@babel/preset-env", { "modules": "commonjs" }]],
-          "plugins": [
-            [
-              "./resources/add-extension-to-import-paths",
-              { "extension": "js" }
-            ],
-            "./resources/inline-invariant"
-          ]
-        },
-        "mjs": {
-          "presets": [["@babel/preset-env", { "modules": false }]],
-          "plugins": [
-            [
-              "./resources/add-extension-to-import-paths",
-              { "extension": "mjs" }
-            ],
-            "./resources/inline-invariant"
-          ]
-        }
-      }
-    },
-    {
-      "include": "src/error/GraphQLError.js",
-      "plugins": [["@babel/plugin-transform-classes", { "loose": false }]]
-    }
-  ]
+  "presets": [["@babel/preset-env", { "targets": { "node": "current" } }]]
 }
