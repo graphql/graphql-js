@@ -70,7 +70,7 @@ type Query {
 }
 ```
 
-Putting this all together, here is some sample code that runs a server with this GraphQL API:
+Putting this altogether, here is some sample code that runs a server with this GraphQL API:
 
 ```js
 var express = require('express');
