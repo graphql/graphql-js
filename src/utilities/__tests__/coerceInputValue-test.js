@@ -8,8 +8,8 @@ import { GraphQLInt } from '../../type/scalars';
 import {
   GraphQLList,
   GraphQLNonNull,
-  GraphQLScalarType,
   GraphQLEnumType,
+  GraphQLScalarType,
   GraphQLInputObjectType,
 } from '../../type/definition';
 
@@ -333,6 +333,20 @@ describe('coerceInputValue', () => {
     it('returns a list for a non-list value', () => {
       const result = coerceValue(42, TestList);
       expectValue(result).to.deep.equal([42]);
+    });
+
+    it('returns a list for a non-list object value', () => {
+      const TestListOfObjects = new GraphQLList(
+        new GraphQLInputObjectType({
+          name: 'TestObject',
+          fields: {
+            length: { type: GraphQLInt },
+          },
+        }),
+      );
+
+      const result = coerceValue({ length: 100500 }, TestListOfObjects);
+      expectValue(result).to.deep.equal([{ length: 100500 }]);
     });
 
     it('returns an error for a non-list invalid value', () => {

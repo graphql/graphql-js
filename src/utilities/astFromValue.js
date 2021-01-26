@@ -1,11 +1,10 @@
 import isFinite from '../polyfills/isFinite';
-import arrayFrom from '../polyfills/arrayFrom';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import isObjectLike from '../jsutils/isObjectLike';
-import isCollection from '../jsutils/isCollection';
+import safeArrayFrom from '../jsutils/safeArrayFrom';
 
 import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
@@ -64,11 +63,11 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   // the value is not an array, convert the value using the list's item type.
   if (isListType(type)) {
     const itemType = type.ofType;
-    if (isCollection(value)) {
+
+    const items = safeArrayFrom(value);
+    if (items != null) {
       const valuesNodes = [];
-      // Since we transpile for-of in loose mode it doesn't support iterators
-      // and it's required to first convert iteratable into array
-      for (const item of arrayFrom(value)) {
+      for (const item of items) {
         const itemNode = astFromValue(item, itemType);
         if (itemNode != null) {
           valuesNodes.push(itemNode);
@@ -76,6 +75,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
       }
       return { kind: Kind.LIST, values: valuesNodes };
     }
+
     return astFromValue(value, itemType);
   }
 
