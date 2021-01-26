@@ -1,11 +1,9 @@
 {
-  "plugins": [
-    "@babel/plugin-transform-flow-strip-types",
-    "./resources/inline-invariant"
-  ],
+  "plugins": ["./resources/inline-invariant"],
   "env": {
     "cjs": {
       "presets": [
+        "@babel/preset-typescript",
         [
           "@babel/preset-env",
           { "modules": "commonjs", "targets": { "node": "10" } }
@@ -17,6 +15,7 @@
     },
     "mjs": {
       "presets": [
+        "@babel/preset-typescript",
         ["@babel/preset-env", { "modules": false, "targets": { "node": "10" } }]
       ],
       "plugins": [

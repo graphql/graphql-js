@@ -1,0 +1,20 @@
+// @flow
+import type { ASTNode } from './ast';
+
+declare export function isDefinitionNode(node: ASTNode): boolean;
+
+declare export function isExecutableDefinitionNode(node: ASTNode): boolean;
+
+declare export function isSelectionNode(node: ASTNode): boolean;
+
+declare export function isValueNode(node: ASTNode): boolean;
+
+declare export function isTypeNode(node: ASTNode): boolean;
+
+declare export function isTypeSystemDefinitionNode(node: ASTNode): boolean;
+
+declare export function isTypeDefinitionNode(node: ASTNode): boolean;
+
+declare export function isTypeSystemExtensionNode(node: ASTNode): boolean;
+
+declare export function isTypeExtensionNode(node: ASTNode): boolean;

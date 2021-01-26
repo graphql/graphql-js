@@ -99,9 +99,14 @@ function showDirStats(dirPath) {
   );
 }
 
+function buildTypes(outDir) {
+  return exec(`tsc --emitDeclarationOnly --outDir ${outDir}`);
+}
+
 module.exports = {
   exec,
   execAsync,
   readdirRecursive,
+  buildTypes,
   showDirStats,
 };

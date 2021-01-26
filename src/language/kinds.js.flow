@@ -1,0 +1,65 @@
+// @flow
+
+/**
+ * The set of allowed kind values for AST nodes.
+ */
+declare export var Kind: $ReadOnly<{|
+  NAME: string,
+
+  DOCUMENT: string,
+  OPERATION_DEFINITION: string,
+  VARIABLE_DEFINITION: 'VariableDefinition',
+  SELECTION_SET: string,
+  FIELD: string,
+  ARGUMENT: string,
+
+  FRAGMENT_SPREAD: string,
+  INLINE_FRAGMENT: string,
+  FRAGMENT_DEFINITION: string,
+
+  VARIABLE: string,
+  INT: string,
+  FLOAT: string,
+  STRING: string,
+  BOOLEAN: string,
+  NULL: string,
+  ENUM: string,
+  LIST: string,
+  OBJECT: string,
+  OBJECT_FIELD: string,
+
+  DIRECTIVE: string,
+
+  NAMED_TYPE: string,
+  LIST_TYPE: string,
+  NON_NULL_TYPE: string,
+
+  SCHEMA_DEFINITION: string,
+  OPERATION_TYPE_DEFINITION: string,
+
+  SCALAR_TYPE_DEFINITION: string,
+  OBJECT_TYPE_DEFINITION: string,
+  FIELD_DEFINITION: string,
+  INPUT_VALUE_DEFINITION: string,
+  INTERFACE_TYPE_DEFINITION: string,
+  UNION_TYPE_DEFINITION: string,
+  ENUM_TYPE_DEFINITION: string,
+  ENUM_VALUE_DEFINITION: string,
+  INPUT_OBJECT_TYPE_DEFINITION: string,
+
+  DIRECTIVE_DEFINITION: string,
+
+  SCHEMA_EXTENSION: string,
+
+  SCALAR_TYPE_EXTENSION: string,
+  OBJECT_TYPE_EXTENSION: string,
+  INTERFACE_TYPE_EXTENSION: string,
+  UNION_TYPE_EXTENSION: string,
+  ENUM_TYPE_EXTENSION: string,
+  INPUT_OBJECT_TYPE_EXTENSION: string,
+|}>;
+
+/**
+ * The enum type representing the possible kind values of AST nodes.
+ */
+export type KindEnum = $Values<typeof Kind>;

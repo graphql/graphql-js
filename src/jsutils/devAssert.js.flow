@@ -1,0 +1,2 @@
+// @flow
+declare export function devAssert(condition: mixed, message: string): void;

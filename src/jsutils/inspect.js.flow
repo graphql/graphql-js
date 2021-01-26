@@ -1,0 +1,5 @@
+// @flow
+/**
+ * Used to print values in error messages.
+ */
+declare export function inspect(value: mixed): string;

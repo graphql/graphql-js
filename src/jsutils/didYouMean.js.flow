@@ -1,0 +1,10 @@
+// @flow
+/**
+ * Given [ A, B, C ] return ' Did you mean A, B, or C?'.
+ */
+declare export function didYouMean(suggestions: $ReadOnlyArray<string>): string;
+// eslint-disable-next-line no-redeclare
+declare export function didYouMean(
+  subMessage: string,
+  suggestions: $ReadOnlyArray<string>,
+): string;

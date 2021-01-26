@@ -1,0 +1,95 @@
+// @flow
+import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from '../jsutils/ObjMap';
+
+import type { DirectiveDefinitionNode } from '../language/ast';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
+
+import type {
+  GraphQLArgument,
+  GraphQLFieldConfigArgumentMap,
+} from './definition';
+
+/**
+ * Test if the given value is a GraphQL directive.
+ */
+declare export function isDirective(directive: mixed): boolean;
+
+declare export function assertDirective(directive: mixed): GraphQLDirective;
+
+/**
+ * Directives are used by the GraphQL runtime as a way of modifying execution
+ * behavior. Type system creators will usually not create these directly.
+ */
+declare export class GraphQLDirective {
+  name: string;
+  description: ?string;
+  locations: Array<DirectiveLocationEnum>;
+  args: Array<GraphQLArgument>;
+  isRepeatable: boolean;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  astNode: ?DirectiveDefinitionNode;
+
+  constructor(config: $ReadOnly<GraphQLDirectiveConfig>): void;
+
+  toConfig(): GraphQLDirectiveNormalizedConfig;
+
+  toString(): string;
+
+  toJSON(): string;
+}
+
+export type GraphQLDirectiveConfig = {|
+  name: string,
+  description?: ?string,
+  locations: Array<DirectiveLocationEnum>,
+  args?: ?GraphQLFieldConfigArgumentMap,
+  isRepeatable?: ?boolean,
+  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  astNode?: ?DirectiveDefinitionNode,
+|};
+
+type GraphQLDirectiveNormalizedConfig = {|
+  ...GraphQLDirectiveConfig,
+  args: GraphQLFieldConfigArgumentMap,
+  isRepeatable: boolean,
+  extensions: ?ReadOnlyObjMap<mixed>,
+|};
+
+/**
+ * Used to conditionally include fields or fragments.
+ */
+declare export var GraphQLIncludeDirective: GraphQLDirective;
+
+/**
+ * Used to conditionally skip (exclude) fields or fragments.
+ */
+declare export var GraphQLSkipDirective: GraphQLDirective;
+
+/**
+ * Constant string used for default reason for a deprecation.
+ */
+declare export var DEFAULT_DEPRECATION_REASON: string;
+
+/**
+ * Used to declare element of a GraphQL schema as deprecated.
+ */
+declare export var GraphQLDeprecatedDirective: GraphQLDirective;
+
+/**
+ * Used to provide a URL for specifying the behaviour of custom scalar definitions.
+ */
+declare export var GraphQLSpecifiedByDirective: GraphQLDirective;
+
+/**
+ * The full list of specified directives.
+ */
+declare export var specifiedDirectives: $ReadOnlyArray<
+  | typeof GraphQLIncludeDirective
+  | typeof GraphQLSkipDirective
+  | typeof GraphQLDeprecatedDirective
+  | typeof GraphQLSpecifiedByDirective,
+>;
+
+declare export function isSpecifiedDirective(
+  directive: GraphQLDirective,
+): boolean;

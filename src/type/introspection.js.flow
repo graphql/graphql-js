@@ -1,0 +1,46 @@
+// @flow
+import type { GraphQLNamedType, GraphQLField } from './definition';
+import { GraphQLObjectType, GraphQLEnumType } from './definition';
+
+declare export var __Schema: GraphQLObjectType;
+declare export var __Directive: GraphQLObjectType;
+declare export var __DirectiveLocation: GraphQLEnumType;
+declare export var __Type: GraphQLObjectType;
+declare export var __Field: GraphQLObjectType;
+declare export var __InputValue: GraphQLObjectType;
+declare export var __EnumValue: GraphQLObjectType;
+
+declare export var TypeKind: $ReadOnly<{|
+  SCALAR: string,
+  OBJECT: string,
+  INTERFACE: string,
+  UNION: string,
+  ENUM: string,
+  INPUT_OBJECT: string,
+  LIST: string,
+  NON_NULL: string,
+|}>;
+
+declare export var __TypeKind: GraphQLEnumType;
+
+/**
+ * Note that these are GraphQLField and not GraphQLFieldConfig,
+ * so the format for args is different.
+ */
+
+declare export var SchemaMetaFieldDef: GraphQLField<mixed, mixed>;
+declare export var TypeMetaFieldDef: GraphQLField<mixed, mixed>;
+declare export var TypeNameMetaFieldDef: GraphQLField<mixed, mixed>;
+
+declare export var introspectionTypes: $ReadOnlyArray<
+  | typeof __Schema
+  | typeof __Directive
+  | typeof __DirectiveLocation
+  | typeof __Type
+  | typeof __Field
+  | typeof __InputValue
+  | typeof __EnumValue
+  | typeof __TypeKind,
+>;
+
+declare export function isIntrospectionType(type: GraphQLNamedType): boolean;

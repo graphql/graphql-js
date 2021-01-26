@@ -1,0 +1,6 @@
+// @flow
+/**
+ * Returns true if the provided object implements the AsyncIterator protocol via
+ * either implementing a `Symbol.asyncIterator` or `"@@asyncIterator"` method.
+ */
+declare export function isAsyncIterable(value: mixed): boolean;

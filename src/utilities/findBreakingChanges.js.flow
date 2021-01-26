@@ -1,0 +1,58 @@
+// @flow
+import type { GraphQLSchema } from '../type/schema';
+
+declare export var BreakingChangeType: $ReadOnly<{|
+  TYPE_REMOVED: string,
+  TYPE_CHANGED_KIND: string,
+  TYPE_REMOVED_FROM_UNION: string,
+  VALUE_REMOVED_FROM_ENUM: string,
+  REQUIRED_INPUT_FIELD_ADDED: string,
+  IMPLEMENTED_INTERFACE_REMOVED: string,
+  FIELD_REMOVED: string,
+  FIELD_CHANGED_KIND: string,
+  REQUIRED_ARG_ADDED: string,
+  ARG_REMOVED: string,
+  ARG_CHANGED_KIND: string,
+  DIRECTIVE_REMOVED: string,
+  DIRECTIVE_ARG_REMOVED: string,
+  REQUIRED_DIRECTIVE_ARG_ADDED: string,
+  DIRECTIVE_REPEATABLE_REMOVED: string,
+  DIRECTIVE_LOCATION_REMOVED: string,
+|}>;
+
+declare export var DangerousChangeType: $ReadOnly<{|
+  VALUE_ADDED_TO_ENUM: string,
+  TYPE_ADDED_TO_UNION: string,
+  OPTIONAL_INPUT_FIELD_ADDED: string,
+  OPTIONAL_ARG_ADDED: string,
+  IMPLEMENTED_INTERFACE_ADDED: string,
+  ARG_DEFAULT_VALUE_CHANGE: string,
+|}>;
+
+export type BreakingChange = {|
+  type: $Keys<typeof BreakingChangeType>,
+  description: string,
+|};
+
+export type DangerousChange = {|
+  type: $Keys<typeof DangerousChangeType>,
+  description: string,
+|};
+
+/**
+ * Given two schemas, returns an Array containing descriptions of all the types
+ * of breaking changes covered by the other functions down below.
+ */
+declare export function findBreakingChanges(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange>;
+
+/**
+ * Given two schemas, returns an Array containing descriptions of all the types
+ * of potentially dangerous changes covered by the other functions down below.
+ */
+declare export function findDangerousChanges(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<DangerousChange>;

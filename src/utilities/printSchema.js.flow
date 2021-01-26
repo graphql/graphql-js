@@ -1,0 +1,9 @@
+// @flow
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLNamedType } from '../type/definition';
+
+declare export function printSchema(schema: GraphQLSchema): string;
+
+declare export function printIntrospectionSchema(schema: GraphQLSchema): string;
+
+declare export function printType(type: GraphQLNamedType): string;

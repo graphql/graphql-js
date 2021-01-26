@@ -1,0 +1,125 @@
+// @flow
+import type { ObjMap } from '../jsutils/ObjMap';
+
+import type { GraphQLError } from '../error/GraphQLError';
+
+import type { ASTVisitor } from '../language/visitor';
+import type {
+  DocumentNode,
+  OperationDefinitionNode,
+  SelectionSetNode,
+  FragmentSpreadNode,
+  FragmentDefinitionNode,
+  VariableNode,
+} from '../language/ast';
+
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type {
+  GraphQLInputType,
+  GraphQLOutputType,
+  GraphQLCompositeType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
+} from '../type/definition';
+
+import { TypeInfo } from '../utilities/TypeInfo';
+
+type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
+type VariableUsage = {|
+  +node: VariableNode,
+  +type: ?GraphQLInputType,
+  +defaultValue: ?mixed,
+|};
+
+/**
+ * An instance of this class is passed as the "this" context to all validators,
+ * allowing access to commonly useful contextual information from within a
+ * validation rule.
+ */
+declare export class ASTValidationContext {
+  _ast: DocumentNode;
+  _onError: (err: GraphQLError) => void;
+  _fragments: ?ObjMap<FragmentDefinitionNode>;
+  _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
+  _recursivelyReferencedFragments: Map<
+    OperationDefinitionNode,
+    $ReadOnlyArray<FragmentDefinitionNode>,
+  >;
+
+  constructor(ast: DocumentNode, onError: (err: GraphQLError) => void): void;
+
+  reportError(error: GraphQLError): void;
+
+  getDocument(): DocumentNode;
+
+  getFragment(name: string): ?FragmentDefinitionNode;
+
+  getFragmentSpreads(
+    node: SelectionSetNode,
+  ): $ReadOnlyArray<FragmentSpreadNode>;
+
+  getRecursivelyReferencedFragments(
+    operation: OperationDefinitionNode,
+  ): $ReadOnlyArray<FragmentDefinitionNode>;
+}
+
+export type ASTValidationRule = (ASTValidationContext) => ASTVisitor;
+
+declare export class SDLValidationContext extends ASTValidationContext {
+  _schema: ?GraphQLSchema;
+
+  constructor(
+    ast: DocumentNode,
+    schema: ?GraphQLSchema,
+    onError: (err: GraphQLError) => void,
+  ): void;
+
+  getSchema(): ?GraphQLSchema;
+}
+
+export type SDLValidationRule = (SDLValidationContext) => ASTVisitor;
+
+declare export class ValidationContext extends ASTValidationContext {
+  _schema: GraphQLSchema;
+  _typeInfo: TypeInfo;
+  _variableUsages: Map<NodeWithSelectionSet, $ReadOnlyArray<VariableUsage>>;
+  _recursiveVariableUsages: Map<
+    OperationDefinitionNode,
+    $ReadOnlyArray<VariableUsage>,
+  >;
+
+  constructor(
+    schema: GraphQLSchema,
+    ast: DocumentNode,
+    typeInfo: TypeInfo,
+    onError: (err: GraphQLError) => void,
+  ): void;
+
+  getSchema(): GraphQLSchema;
+
+  getVariableUsages(node: NodeWithSelectionSet): $ReadOnlyArray<VariableUsage>;
+
+  getRecursiveVariableUsages(
+    operation: OperationDefinitionNode,
+  ): $ReadOnlyArray<VariableUsage>;
+
+  getType(): ?GraphQLOutputType;
+
+  getParentType(): ?GraphQLCompositeType;
+
+  getInputType(): ?GraphQLInputType;
+
+  getParentInputType(): ?GraphQLInputType;
+
+  getFieldDef(): ?GraphQLField<mixed, mixed>;
+
+  getDirective(): ?GraphQLDirective;
+
+  getArgument(): ?GraphQLArgument;
+
+  getEnumValue(): ?GraphQLEnumValue;
+}
+
+export type ValidationRule = (ValidationContext) => ASTVisitor;

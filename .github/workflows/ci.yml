@@ -6,6 +6,7 @@ jobs:
   lint:
     name: Lint source files
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -29,7 +30,7 @@ jobs:
       - name: Lint ESLint
         run: npm run lint
 
-      - name: Lint Flow
+      - name: Check Types
         run: npm run check
 
       - name: Lint Prettier
@@ -41,6 +42,7 @@ jobs:
   checkForCommonlyIgnoredFiles:
     name: Check for commonly ignored files
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -58,6 +60,7 @@ jobs:
   integrationTests:
     name: Run integration tests
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -84,6 +87,7 @@ jobs:
   fuzz:
     name: Run fuzzing tests
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -110,6 +114,7 @@ jobs:
   coverage:
     name: Measure test coverage
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -143,6 +148,7 @@ jobs:
   test:
     name: Run tests on Node v${{ matrix.node_version_to_setup }}
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     strategy:
       matrix:
         node_version_to_setup: [10, 12, 14, 15]
@@ -172,6 +178,7 @@ jobs:
   benchmark:
     name: Run benchmark
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -200,6 +207,7 @@ jobs:
   deploy-to-npm-branch:
     name: Deploy to `npm` branch
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     if: |
       github.event_name == 'push' &&
       github.repository == 'graphql/graphql-js' &&
@@ -236,6 +244,7 @@ jobs:
   deploy-to-deno-branch:
     name: Deploy to `deno` branch
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     if: |
       github.event_name == 'push' &&
       github.repository == 'graphql/graphql-js' &&

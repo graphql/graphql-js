@@ -1,4 +1,6 @@
 {
-  "plugins": ["@babel/plugin-transform-flow-strip-types"],
-  "presets": [["@babel/preset-env", { "targets": { "node": "current" } }]]
+  "presets": [
+    "@babel/preset-typescript",
+    ["@babel/preset-env", { "targets": { "node": "current" } }]
+  ]
 }

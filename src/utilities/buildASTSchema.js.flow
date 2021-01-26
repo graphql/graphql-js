@@ -1,0 +1,43 @@
+// @flow
+import type { Source } from '../language/source';
+import type { DocumentNode } from '../language/ast';
+import type { ParseOptions } from '../language/parser';
+import type {
+  GraphQLSchema,
+  GraphQLSchemaValidationOptions,
+} from '../type/schema';
+
+export type BuildSchemaOptions = {|
+  ...GraphQLSchemaValidationOptions,
+
+  /**
+   * Set to true to assume the SDL is valid.
+   *
+   * Default: false
+   */
+  assumeValidSDL?: boolean,
+|};
+
+/**
+ * This takes the ast of a schema document produced by the parse function in
+ * src/language/parser.js.
+ *
+ * If no schema definition is provided, then it will look for types named Query
+ * and Mutation.
+ *
+ * Given that AST it constructs a GraphQLSchema. The resulting schema
+ * has no resolve methods, so execution will use default resolvers.
+ */
+declare export function buildASTSchema(
+  documentAST: DocumentNode,
+  options?: BuildSchemaOptions,
+): GraphQLSchema;
+
+/**
+ * A helper function to build a GraphQLSchema directly from a source
+ * document.
+ */
+declare export function buildSchema(
+  source: string | Source,
+  options?: {| ...BuildSchemaOptions, ...ParseOptions |},
+): GraphQLSchema;

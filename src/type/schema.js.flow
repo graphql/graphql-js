@@ -1,0 +1,186 @@
+// @flow
+import type {
+  ObjMap,
+  ReadOnlyObjMap,
+  ReadOnlyObjMapLike,
+} from '../jsutils/ObjMap';
+
+import type { GraphQLError } from '../error/GraphQLError';
+
+import type {
+  SchemaDefinitionNode,
+  SchemaExtensionNode,
+} from '../language/ast';
+
+import type {
+  GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLAbstractType,
+} from './definition';
+import { __Schema } from './introspection';
+import { GraphQLDirective } from './directives';
+
+/**
+ * Test if the given value is a GraphQL schema.
+ */
+declare export function isSchema(schema: mixed): boolean;
+
+declare export function assertSchema(schema: mixed): GraphQLSchema;
+
+/**
+ * Schema Definition
+ *
+ * A Schema is created by supplying the root types of each type of operation,
+ * query and mutation (optional). A schema definition is then supplied to the
+ * validator and executor.
+ *
+ * Example:
+ *
+ *     const MyAppSchema = new GraphQLSchema({
+ *       query: MyAppQueryRootType,
+ *       mutation: MyAppMutationRootType,
+ *     })
+ *
+ * Note: When the schema is constructed, by default only the types that are
+ * reachable by traversing the root types are included, other types must be
+ * explicitly referenced.
+ *
+ * Example:
+ *
+ *     const characterInterface = new GraphQLInterfaceType({
+ *       name: 'Character',
+ *       ...
+ *     });
+ *
+ *     const humanType = new GraphQLObjectType({
+ *       name: 'Human',
+ *       interfaces: [characterInterface],
+ *       ...
+ *     });
+ *
+ *     const droidType = new GraphQLObjectType({
+ *       name: 'Droid',
+ *       interfaces: [characterInterface],
+ *       ...
+ *     });
+ *
+ *     const schema = new GraphQLSchema({
+ *       query: new GraphQLObjectType({
+ *         name: 'Query',
+ *         fields: {
+ *           hero: { type: characterInterface, ... },
+ *         }
+ *       }),
+ *       ...
+ *       // Since this schema references only the `Character` interface it's
+ *       // necessary to explicitly list the types that implement it if
+ *       // you want them to be included in the final schema.
+ *       types: [humanType, droidType],
+ *     })
+ *
+ * Note: If an array of `directives` are provided to GraphQLSchema, that will be
+ * the exact list of directives represented and allowed. If `directives` is not
+ * provided then a default set of the specified directives (e.g. @include and
+ * @skip) will be used. If you wish to provide *additional* directives to these
+ * specified directives, you must explicitly declare them. Example:
+ *
+ *     const MyAppSchema = new GraphQLSchema({
+ *       ...
+ *       directives: specifiedDirectives.concat([ myCustomDirective ]),
+ *     })
+ *
+ */
+declare export class GraphQLSchema {
+  description: ?string;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  astNode: ?SchemaDefinitionNode;
+  extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>;
+
+  _queryType: ?GraphQLObjectType;
+  _mutationType: ?GraphQLObjectType;
+  _subscriptionType: ?GraphQLObjectType;
+  _directives: $ReadOnlyArray<GraphQLDirective>;
+  _typeMap: TypeMap;
+  _subTypeMap: ObjMap<ObjMap<boolean>>;
+  _implementationsMap: ObjMap<{|
+    objects: Array<GraphQLObjectType>,
+    interfaces: Array<GraphQLInterfaceType>,
+  |}>;
+
+  // Used as a cache for validateSchema().
+  __validationErrors: ?$ReadOnlyArray<GraphQLError>;
+
+  constructor(config: $ReadOnly<GraphQLSchemaConfig>): void;
+
+  getQueryType(): ?GraphQLObjectType;
+
+  getMutationType(): ?GraphQLObjectType;
+
+  getSubscriptionType(): ?GraphQLObjectType;
+
+  getTypeMap(): TypeMap;
+
+  getType(name: string): ?GraphQLNamedType;
+
+  getPossibleTypes(
+    abstractType: GraphQLAbstractType,
+  ): $ReadOnlyArray<GraphQLObjectType>;
+
+  getImplementations(
+    interfaceType: GraphQLInterfaceType,
+  ): {|
+    objects: /* $ReadOnly */ Array<GraphQLObjectType>,
+    interfaces: /* $ReadOnly */ Array<GraphQLInterfaceType>,
+  |};
+
+  isSubType(
+    abstractType: GraphQLAbstractType,
+    maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
+  ): boolean;
+
+  getDirectives(): $ReadOnlyArray<GraphQLDirective>;
+
+  getDirective(name: string): ?GraphQLDirective;
+
+  toConfig(): GraphQLSchemaNormalizedConfig;
+}
+
+type TypeMap = ObjMap<GraphQLNamedType>;
+
+export type GraphQLSchemaValidationOptions = {|
+  /**
+   * When building a schema from a GraphQL service's introspection result, it
+   * might be safe to assume the schema is valid. Set to true to assume the
+   * produced schema is valid.
+   *
+   * Default: false
+   */
+  assumeValid?: boolean,
+|};
+
+export type GraphQLSchemaConfig = {|
+  description?: ?string,
+  query?: ?GraphQLObjectType,
+  mutation?: ?GraphQLObjectType,
+  subscription?: ?GraphQLObjectType,
+  types?: ?Array<GraphQLNamedType>,
+  directives?: ?Array<GraphQLDirective>,
+  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  astNode?: ?SchemaDefinitionNode,
+  extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
+  ...GraphQLSchemaValidationOptions,
+|};
+
+/**
+ * @internal
+ */
+export type GraphQLSchemaNormalizedConfig = {|
+  ...GraphQLSchemaConfig,
+  description: ?string,
+  types: Array<GraphQLNamedType>,
+  directives: Array<GraphQLDirective>,
+  extensions: ?ReadOnlyObjMap<mixed>,
+  extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>,
+  assumeValid: boolean,
+|};

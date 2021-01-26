@@ -5,7 +5,7 @@ const path = require('path');
 
 const babel = require('@babel/core');
 
-const { readdirRecursive, showDirStats } = require('./utils');
+const { readdirRecursive, buildTypes, showDirStats } = require('./utils');
 
 if (require.main === module) {
   fs.rmdirSync('./denoDist', { recursive: true, force: true });
@@ -17,17 +17,17 @@ if (require.main === module) {
     const destPath = path.join('./denoDist', filepath);
 
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
-    if (filepath.endsWith('.js')) {
+
+    if (filepath.endsWith('.ts')) {
       const options = { babelrc: false, configFile: './.babelrc-deno.json' };
       const output = babel.transformFileSync(srcPath, options).code + '\n';
       fs.writeFileSync(destPath, output);
-    } else if (filepath.endsWith('.d.ts')) {
-      fs.copyFileSync(srcPath, destPath);
     }
   }
 
   fs.copyFileSync('./LICENSE', './denoDist/LICENSE');
   fs.copyFileSync('./README.md', './denoDist/README.md');
 
+  buildTypes('./denoDist');
   showDirStats('./denoDist');
 }

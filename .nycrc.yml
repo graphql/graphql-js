@@ -3,7 +3,7 @@ include:
   - 'src/'
 exclude:
   - 'src/polyfills'
-  - '**/*-fuzz.js'
+  - '**/*-fuzz.ts'
   - '**/*.d.ts'
 clean: true
 temp-directory: 'coverage'

@@ -1,0 +1,12 @@
+// @flow
+import type { GraphQLNamedType, GraphQLScalarType } from './definition';
+
+declare export var GraphQLInt: GraphQLScalarType;
+declare export var GraphQLFloat: GraphQLScalarType;
+declare export var GraphQLString: GraphQLScalarType;
+declare export var GraphQLBoolean: GraphQLScalarType;
+declare export var GraphQLID: GraphQLScalarType;
+
+declare export var specifiedScalarTypes: $ReadOnlyArray<GraphQLScalarType>;
+
+declare export function isSpecifiedScalarType(type: GraphQLNamedType): boolean;
