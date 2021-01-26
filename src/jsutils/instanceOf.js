@@ -1,3 +1,5 @@
+import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
+
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
@@ -15,9 +17,24 @@ export const instanceOf: (mixed, mixed) => boolean =
           return true;
         }
         if (value) {
-          const valueClass = value.constructor;
-          const className = constructor.name;
-          if (className && valueClass && valueClass.name === className) {
+          const proto = constructor && constructor.prototype;
+          const classTag = proto && proto[SYMBOL_TO_STRING_TAG];
+          const className = classTag || constructor.name;
+          // When the constructor class defines a Symbol.toStringTag
+          // property, as most classes exported by graphql-js do, use it
+          // instead of constructor.name and value.constructor.name to
+          // detect module/realm duplication, since the Symbol.toStringTag
+          // string is immune to minification. This code runs only when
+          // process.env.NODE_ENV !== 'production', but minification is
+          // often enabled in non-production environments like 'staging'.
+          // In these environments, this error can be thrown mistakenly if
+          // we rely on constructor.name and value.constructor.name, since
+          // they could be minified to the same short string, even though
+          // value is legitimately _not_ instanceof constructor.
+          const valueName = classTag
+                ? value[SYMBOL_TO_STRING_TAG]
+                : value.constructor && value.constructor.name;
+          if (typeof className === 'string' && valueName === className) {
             throw new Error(
               `Cannot use ${className} "${value}" from another module or realm.
 
