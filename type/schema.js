@@ -229,11 +229,6 @@ export class GraphQLSchema {
       objects: [],
       interfaces: []
     };
-  } // @deprecated: use isSubType instead - will be removed in v16.
-
-
-  isPossibleType(abstractType, possibleType) {
-    return this.isSubType(abstractType, possibleType);
   }
 
   isSubType(abstractType, maybeSubType) {
