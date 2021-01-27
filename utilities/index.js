@@ -45,5 +45,3 @@ export { isEqualType, isTypeSubTypeOf, doTypesOverlap } from "./typeComparators.
 export { assertValidName, isValidNameError } from "./assertValidName.js"; // Compares two GraphQLSchemas and detects breaking changes.
 
 export { BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges } from "./findBreakingChanges.js";
-// @deprecated: Report all deprecated usage within a GraphQL document.
-export { findDeprecatedUsages } from "./findDeprecatedUsages.js";
