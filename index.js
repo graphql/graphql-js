@@ -1179,12 +1179,6 @@ Object.defineProperty(exports, "findDangerousChanges", {
     return _index7.findDangerousChanges;
   }
 });
-Object.defineProperty(exports, "findDeprecatedUsages", {
-  enumerable: true,
-  get: function get() {
-    return _index7.findDeprecatedUsages;
-  }
-});
 
 var _version = require("./version.js");
 

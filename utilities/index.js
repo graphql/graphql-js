@@ -195,12 +195,6 @@ Object.defineProperty(exports, "findDangerousChanges", {
     return _findBreakingChanges.findDangerousChanges;
   }
 });
-Object.defineProperty(exports, "findDeprecatedUsages", {
-  enumerable: true,
-  get: function get() {
-    return _findDeprecatedUsages.findDeprecatedUsages;
-  }
-});
 
 var _getIntrospectionQuery = require("./getIntrospectionQuery.js");
 
@@ -243,5 +237,3 @@ var _typeComparators = require("./typeComparators.js");
 var _assertValidName = require("./assertValidName.js");
 
 var _findBreakingChanges = require("./findBreakingChanges.js");
-
-var _findDeprecatedUsages = require("./findDeprecatedUsages.js");

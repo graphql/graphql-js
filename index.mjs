@@ -90,5 +90,4 @@ getIntrospectionQuery // Gets the target Operation from a Document.
 , isEqualType, isTypeSubTypeOf, doTypesOverlap // Asserts a string is a valid GraphQL name.
 , assertValidName // Determine if a string is a valid GraphQL name.
 , isValidNameError // Compares two GraphQLSchemas and detects breaking changes.
-, BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges // @deprecated: Report all deprecated usage within a GraphQL document.
-, findDeprecatedUsages } from "./utilities/index.mjs";
+, BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges } from "./utilities/index.mjs";
