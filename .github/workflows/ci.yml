@@ -203,7 +203,7 @@ jobs:
     if: |
       github.event_name == 'push' &&
       github.repository == 'graphql/graphql-js' &&
-      github.ref == 'refs/heads/master'
+      github.ref == 'refs/heads/main'
     needs: [test, fuzz, lint, checkForCommonlyIgnoredFiles, integrationTests]
     steps:
       - name: Checkout repo
@@ -239,7 +239,7 @@ jobs:
     if: |
       github.event_name == 'push' &&
       github.repository == 'graphql/graphql-js' &&
-      github.ref == 'refs/heads/master'
+      github.ref == 'refs/heads/main'
     needs: [test, fuzz, lint, checkForCommonlyIgnoredFiles, integrationTests]
     steps:
       - name: Checkout repo
