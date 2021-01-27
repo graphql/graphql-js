@@ -247,11 +247,6 @@ export var GraphQLSchema = /*#__PURE__*/function () {
       objects: [],
       interfaces: []
     };
-  } // @deprecated: use isSubType instead - will be removed in v16.
-  ;
-
-  _proto.isPossibleType = function isPossibleType(abstractType, possibleType) {
-    return this.isSubType(abstractType, possibleType);
   };
 
   _proto.isSubType = function isSubType(abstractType, maybeSubType) {
