@@ -1,0 +1,30 @@
+// @flow
+/**
+ * The set of allowed directive location values.
+ */
+declare export var DirectiveLocation: $ReadOnly<{|
+  QUERY: string,
+  MUTATION: string,
+  SUBSCRIPTION: string,
+  FIELD: string,
+  FRAGMENT_DEFINITION: string,
+  FRAGMENT_SPREAD: string,
+  INLINE_FRAGMENT: string,
+  VARIABLE_DEFINITION: string,
+  SCHEMA: string,
+  SCALAR: string,
+  OBJECT: string,
+  FIELD_DEFINITION: string,
+  ARGUMENT_DEFINITION: string,
+  INTERFACE: string,
+  UNION: string,
+  ENUM: string,
+  ENUM_VALUE: string,
+  INPUT_OBJECT: string,
+  INPUT_FIELD_DEFINITION: string,
+|}>;
+
+/**
+ * The enum type representing the directive location values.
+ */
+export type DirectiveLocationEnum = $Values<typeof DirectiveLocation>;

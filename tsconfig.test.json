@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs"
+  },
+  "include": ["src/**/__tests__/**", "src/**/__testUtils__/**"],
+  "exclude": ["integrationTests"]
+}

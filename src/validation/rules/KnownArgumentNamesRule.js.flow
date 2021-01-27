@@ -1,0 +1,23 @@
+// @flow
+import type { ASTVisitor } from '../../language/visitor';
+import type {
+  ValidationContext,
+  SDLValidationContext,
+} from '../ValidationContext';
+
+/**
+ * Known argument names
+ *
+ * A GraphQL field is only valid if all supplied arguments are defined by
+ * that field.
+ */
+declare export function KnownArgumentNamesRule(
+  context: ValidationContext,
+): ASTVisitor;
+
+/**
+ * @internal
+ */
+declare export function KnownArgumentNamesOnDirectivesRule(
+  context: ValidationContext | SDLValidationContext,
+): ASTVisitor;

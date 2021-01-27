@@ -1,0 +1,34 @@
+// @flow
+/**
+ * An exported enum describing the different kinds of tokens that the
+ * lexer emits.
+ */
+declare export var TokenKind: $ReadOnly<{|
+  SOF: string,
+  EOF: string,
+  BANG: string,
+  DOLLAR: string,
+  AMP: string,
+  PAREN_L: string,
+  PAREN_R: string,
+  SPREAD: string,
+  COLON: string,
+  EQUALS: string,
+  AT: string,
+  BRACKET_L: string,
+  BRACKET_R: string,
+  BRACE_L: string,
+  PIPE: string,
+  BRACE_R: string,
+  NAME: string,
+  INT: string,
+  FLOAT: string,
+  STRING: string,
+  BLOCK_STRING: string,
+  COMMENT: string,
+|}>;
+
+/**
+ * The enum type representing the token kinds values.
+ */
+export type TokenKindEnum = $Values<typeof TokenKind>;

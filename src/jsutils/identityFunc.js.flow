@@ -1,0 +1,5 @@
+// @flow
+/**
+ * Returns the first argument it receives.
+ */
+declare export function identityFunc<T>(x: T): T;

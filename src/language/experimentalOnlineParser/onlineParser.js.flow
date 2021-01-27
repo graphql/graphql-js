@@ -1,0 +1,163 @@
+// @flow
+import type { Lexer } from '../lexer';
+import type {
+  GraphQLGrammarRule,
+  GraphQLGrammarRuleConstraint,
+  GraphQLGrammarTokenConstraint,
+  GraphQLGrammarOfTypeConstraint,
+  GraphQLGrammarListOfTypeConstraint,
+  GraphQLGrammarPeekConstraint,
+  GraphQLGrammarConstraintsSet,
+} from './grammar';
+
+export const TokenKind = {
+  NAME: 'Name',
+  INT: 'Int',
+  FLOAT: 'Float',
+  STRING: 'String',
+  BLOCK_STRING: 'BlockString',
+  COMMENT: 'Comment',
+  PUNCTUATION: 'Punctuation',
+  EOF: '<EOF>',
+  INVALID: 'Invalid',
+};
+
+export const RuleKind = {
+  TOKEN_CONSTRAINT: 'TokenConstraint',
+  OF_TYPE_CONSTRAINT: 'OfTypeConstraint',
+  LIST_OF_TYPE_CONSTRAINT: 'ListOfTypeConstraint',
+  PEEK_CONSTRAINT: 'PeekConstraint',
+  CONSTRAINTS_SET: 'ConstraintsSet',
+  CONSTRAINTS_SET_ROOT: 'ConstraintsSetRoot',
+  RULE_NAME: 'RuleName',
+  INVALID: 'Invalid',
+};
+
+interface BaseOnlineParserRule {
+  kind: string;
+  name?: string;
+  depth: number;
+  step: number;
+  expanded: boolean;
+  state: string;
+  optional?: boolean;
+  eatNextOnFail?: boolean;
+}
+interface TokenOnlineParserRule
+  extends BaseOnlineParserRule,
+    GraphQLGrammarTokenConstraint {}
+interface OfTypeOnlineParserRule
+  extends BaseOnlineParserRule,
+    GraphQLGrammarOfTypeConstraint {}
+interface ListOfTypeOnlineParserRule
+  extends BaseOnlineParserRule,
+    GraphQLGrammarListOfTypeConstraint {}
+interface PeekOnlineParserRule
+  extends BaseOnlineParserRule,
+    GraphQLGrammarPeekConstraint {
+  index: number;
+  matched: boolean;
+}
+interface ConstraintsSetOnlineParserRule extends BaseOnlineParserRule {
+  constraintsSet: boolean;
+  constraints: GraphQLGrammarConstraintsSet;
+}
+
+type OnlineParserRule =
+  | TokenOnlineParserRule
+  | OfTypeOnlineParserRule
+  | ListOfTypeOnlineParserRule
+  | PeekOnlineParserRule
+  | ConstraintsSetOnlineParserRule;
+
+export type OnlineParserState = {|
+  rules: Array<OnlineParserRule>,
+  kind: () => string,
+  step: () => number,
+  levels: Array<number>,
+  indentLevel: number,
+  name: string | null,
+  type: string | null,
+|};
+
+type Token = {|
+  kind: string,
+  value: string,
+  tokenName?: ?string,
+  ruleName?: ?string,
+|};
+
+type LexerToken = {|
+  kind: string,
+  value: ?string,
+|};
+
+type OnlineParserConfig = {|
+  tabSize: number,
+|};
+
+type OnlineParserConfigOption = {|
+  tabSize: ?number,
+|};
+
+declare export class OnlineParser {
+  state: OnlineParserState;
+  _lexer: Lexer;
+  _config: OnlineParserConfig;
+
+  constructor(
+    source: string,
+    state?: OnlineParserState,
+    config?: OnlineParserConfigOption,
+  ): void;
+
+  static startState(): OnlineParserState;
+
+  static copyState(state: OnlineParserState): OnlineParserState;
+
+  sol(): boolean;
+
+  parseToken(): Token;
+
+  indentation(): number;
+
+  _parseTokenConstraint(rule: TokenOnlineParserRule): Token;
+
+  _parseListOfTypeConstraint(rule: ListOfTypeOnlineParserRule): Token;
+
+  _parseOfTypeConstraint(rule: OfTypeOnlineParserRule): Token;
+
+  _parsePeekConstraint(rule: PeekOnlineParserRule): Token;
+
+  _parseConstraintsSetRule(rule: ConstraintsSetOnlineParserRule): Token;
+
+  _matchToken(
+    token: Token | LexerToken,
+    rule: GraphQLGrammarTokenConstraint,
+  ): boolean;
+
+  _butNot(
+    token: Token | LexerToken,
+    rule: GraphQLGrammarRuleConstraint,
+  ): boolean;
+
+  _transformLexerToken(lexerToken: LexerToken, rule: any): Token;
+
+  _getNextRule(): OnlineParserRule | null;
+
+  _popMatchedRule(token: ?Token): void;
+
+  _pushRule(
+    baseRule: any,
+    depth: number,
+    name?: string,
+    step?: number,
+    state?: string,
+  ): void;
+
+  _getRuleKind(rule: GraphQLGrammarRule | OnlineParserRule): string;
+
+  _advanceToken(): LexerToken;
+
+  _lookAhead(): LexerToken;
+}

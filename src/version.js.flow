@@ -1,0 +1,15 @@
+// @flow
+/**
+ * A string containing the version of the GraphQL.js library
+ */
+declare export var version: string;
+
+/**
+ * An object containing the components of the GraphQL.js version string
+ */
+declare export var versionInfo: $ReadOnly<{|
+  +major: number,
+  +minor: number,
+  +patch: number,
+  +preReleaseTag: mixed,
+|}>;

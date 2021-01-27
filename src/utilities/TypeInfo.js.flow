@@ -1,0 +1,81 @@
+// @flow
+import type { Visitor } from '../language/visitor';
+import type { ASTNode, ASTKindToNode, FieldNode } from '../language/ast';
+
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type {
+  GraphQLType,
+  GraphQLInputType,
+  GraphQLOutputType,
+  GraphQLCompositeType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
+} from '../type/definition';
+
+type GetFieldDef = (
+  schema: GraphQLSchema,
+  parentType: GraphQLType,
+  fieldNode: FieldNode,
+) => ?GraphQLField<mixed, mixed>;
+
+/**
+ * TypeInfo is a utility class which, given a GraphQL schema, can keep track
+ * of the current field and type definitions at any point in a GraphQL document
+ * AST during a recursive descent by calling `enter(node)` and `leave(node)`.
+ */
+declare export class TypeInfo {
+  _schema: GraphQLSchema;
+  _typeStack: Array<?GraphQLOutputType>;
+  _parentTypeStack: Array<?GraphQLCompositeType>;
+  _inputTypeStack: Array<?GraphQLInputType>;
+  _fieldDefStack: Array<?GraphQLField<mixed, mixed>>;
+  _defaultValueStack: Array<?mixed>;
+  _directive: ?GraphQLDirective;
+  _argument: ?GraphQLArgument;
+  _enumValue: ?GraphQLEnumValue;
+  _getFieldDef: GetFieldDef;
+
+  constructor(
+    schema: GraphQLSchema,
+    // NOTE: this experimental optional second parameter is only needed in order
+    // to support non-spec-compliant code bases. You should never need to use it.
+    // It may disappear in the future.
+    getFieldDefFn?: GetFieldDef,
+    // Initial type may be provided in rare cases to facilitate traversals
+    // beginning somewhere other than documents.
+    initialType?: GraphQLType,
+  ): void;
+
+  getType(): ?GraphQLOutputType;
+
+  getParentType(): ?GraphQLCompositeType;
+
+  getInputType(): ?GraphQLInputType;
+
+  getParentInputType(): ?GraphQLInputType;
+
+  getFieldDef(): ?GraphQLField<mixed, mixed>;
+
+  getDefaultValue(): ?mixed;
+
+  getDirective(): ?GraphQLDirective;
+
+  getArgument(): ?GraphQLArgument;
+
+  getEnumValue(): ?GraphQLEnumValue;
+
+  enter(node: ASTNode): void;
+
+  leave(node: ASTNode): void;
+}
+
+/**
+ * Creates a new visitor instance which maintains a provided TypeInfo instance
+ * along with visiting visitor.
+ */
+declare export function visitWithTypeInfo(
+  typeInfo: TypeInfo,
+  visitor: Visitor<ASTKindToNode>,
+): Visitor<ASTKindToNode>;

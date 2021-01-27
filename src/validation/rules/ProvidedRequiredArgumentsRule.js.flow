@@ -1,0 +1,23 @@
+// @flow
+import type { ASTVisitor } from '../../language/visitor';
+import type {
+  ValidationContext,
+  SDLValidationContext,
+} from '../ValidationContext';
+
+/**
+ * Provided required arguments
+ *
+ * A field or directive is only valid if all required (non-null without a
+ * default value) field arguments have been provided.
+ */
+declare export function ProvidedRequiredArgumentsRule(
+  context: ValidationContext,
+): ASTVisitor;
+
+/**
+ * @internal
+ */
+declare export function ProvidedRequiredArgumentsOnDirectivesRule(
+  context: ValidationContext | SDLValidationContext,
+): ASTVisitor;

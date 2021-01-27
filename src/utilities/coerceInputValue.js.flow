@@ -1,0 +1,18 @@
+// @flow
+import { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLInputType } from '../type/definition';
+
+type OnErrorCB = (
+  path: $ReadOnlyArray<string | number>,
+  invalidValue: mixed,
+  error: GraphQLError,
+) => void;
+
+/**
+ * Coerces a JavaScript value given a GraphQL Input Type.
+ */
+declare export function coerceInputValue(
+  inputValue: mixed,
+  type: GraphQLInputType,
+  onError?: ?OnErrorCB,
+): mixed;

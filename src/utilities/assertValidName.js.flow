@@ -1,0 +1,12 @@
+// @flow
+import { GraphQLError } from '../error/GraphQLError';
+
+/**
+ * Upholds the spec rules about naming.
+ */
+declare export function assertValidName(name: string): string;
+
+/**
+ * Returns an Error if a name is invalid.
+ */
+declare export function isValidNameError(name: string): GraphQLError | void;

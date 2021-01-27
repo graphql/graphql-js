@@ -1,0 +1,13 @@
+// @flow
+import type {
+  ObjMap,
+  ObjMapLike,
+  ReadOnlyObjMap,
+  ReadOnlyObjMapLike,
+} from './ObjMap';
+
+/* eslint-disable no-redeclare */
+declare export function toObjMap<T>(obj: ObjMapLike<T>): ObjMap<T>;
+declare export function toObjMap<T>(
+  obj: ReadOnlyObjMapLike<T>,
+): ReadOnlyObjMap<T>;

@@ -1,15 +1,21 @@
 {
-  "exclude": ["integrationTests/ts/**/*"],
   "compilerOptions": {
-    "module": "commonjs",
-    "lib": ["es2018"],
-    "target": "es2018",
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "types": [],
-    "noEmit": true,
+    "module": "es2020",
+    "target": "es2020",
+    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    // Ensure that .d.ts files are created by tsc, but not .js files
+    "declaration": true,
+    "lib": ["es2020"],
+    "types": ["node"],
+    // Others
+    "strict": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
     "forceConsistentCasingInFileNames": true
-  }
+  },
+  "include": ["src"],
+  "exclude": ["integrationTests"]
 }
