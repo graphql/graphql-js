@@ -431,8 +431,6 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-  // @deprecated: Report all deprecated usage within a GraphQL document.
-  findDeprecatedUsages,
 } from './utilities/index';
 
 export {
