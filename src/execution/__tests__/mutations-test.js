@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import resolveOnNextTick from '../../__testUtils__/resolveOnNextTick';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
 import { parse } from '../../language/parser';
 

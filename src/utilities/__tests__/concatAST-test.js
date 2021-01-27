@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent';
 
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';

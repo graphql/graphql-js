@@ -1,4 +1,4 @@
-import objectValues from '../polyfills/objectValues';
+import { objectValues } from '../polyfills/objectValues';
 
 import type { ObjMap } from '../jsutils/ObjMap';
 import { keyMap } from '../jsutils/keyMap';

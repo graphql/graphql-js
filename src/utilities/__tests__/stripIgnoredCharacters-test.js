@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../__testUtils__/dedent';
-import inspectStr from '../../__testUtils__/inspectStr';
-import kitchenSinkSDL from '../../__testUtils__/kitchenSinkSDL';
-import kitchenSinkQuery from '../../__testUtils__/kitchenSinkQuery';
+import { dedent } from '../../__testUtils__/dedent';
+import { inspectStr } from '../../__testUtils__/inspectStr';
+import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import { invariant } from '../../jsutils/invariant';
 

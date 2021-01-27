@@ -2,7 +2,7 @@
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
  * PubSub system for tests.
  */
-export default class SimplePubSub<T> {
+export class SimplePubSub<T> {
   _subscribers: Set<(T) => void>;
 
   constructor() {

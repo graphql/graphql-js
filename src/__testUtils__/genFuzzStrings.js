@@ -1,7 +1,7 @@
 /**
  * Generator that produces all possible combinations of allowed characters.
  */
-export default function* genFuzzStrings(options: {|
+export function* genFuzzStrings(options: {|
   allowedChars: Array<string>,
   maxLength: number,
 |}): Generator<string, void, void> {

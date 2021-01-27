@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import inspectStr from '../inspectStr';
+import { inspectStr } from '../inspectStr';
 
 describe('inspectStr', () => {
   it('handles null and undefined values', () => {

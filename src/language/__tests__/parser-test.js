@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../__testUtils__/dedent';
-import kitchenSinkQuery from '../../__testUtils__/kitchenSinkQuery';
+import { dedent } from '../../__testUtils__/dedent';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import { inspect } from '../../jsutils/inspect';
 
@@ -11,7 +11,7 @@ import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseType } from '../parser';
 
-import toJSONDeep from './toJSONDeep';
+import { toJSONDeep } from './toJSONDeep';
 
 function expectSyntaxError(text: string) {
   return expect(() => parse(text)).to.throw();
