@@ -13,6 +13,7 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLList, GraphQLObjectType } from '../../type/definition';
+import type { GraphQLFieldResolver } from '../../type/definition';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
 import { createSourceEventStream, subscribe } from '../subscribe';
@@ -68,9 +69,9 @@ const EmailEventType = new GraphQLObjectType({
 
 const emailSchema = emailSchemaWithResolvers();
 
-function emailSchemaWithResolvers<T: mixed>(
+function emailSchemaWithResolvers<T: mixed, R: mixed, C: mixed>(
   subscribeFn?: (T) => mixed,
-  resolveFn?: (T) => mixed,
+  resolveFn?: GraphQLFieldResolver<R, C>,
 ) {
   return new GraphQLSchema({
     query: QueryType,
@@ -1101,6 +1102,66 @@ describe('Subscription Publish Phase', () => {
     expect(payload3).to.deep.equal({
       done: true,
       value: undefined,
+    });
+  });
+
+  it('should produce a unique context per event via perEventContextResolver', async () => {
+    const contextExecutionSchema = emailSchemaWithResolvers(
+      async function* () {
+        yield { email: { subject: 'Hello' } };
+        yield { email: { subject: 'Hello' } };
+      },
+      (data, _args, ctx) => ({
+        email: { subject: `${data.email.subject} ${ctx.contextIndex}` },
+      }),
+    );
+
+    let contextIndex = 0;
+    const subscription = await subscribe({
+      schema: contextExecutionSchema,
+      document: parse(`
+        subscription {
+          importantEmail {
+            email {
+              subject
+            }
+          }
+        }
+      `),
+      contextValue: { test: true },
+      perEventContextResolver: (ctx) => {
+        expect(ctx.test).to.equal(true);
+        return { ...ctx, contextIndex: contextIndex++ };
+      },
+    });
+    invariant(isAsyncIterable(subscription));
+
+    const payload1 = await subscription.next();
+    expect(payload1).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Hello 0',
+            },
+          },
+        },
+      },
+    });
+
+    const payload2 = await subscription.next();
+    expect(payload2).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Hello 1',
+            },
+          },
+        },
+      },
     });
   });
 });

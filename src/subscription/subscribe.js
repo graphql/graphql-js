@@ -34,6 +34,7 @@ export type SubscriptionArgs = {|
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
+  perEventContextResolver?: ?(contextValue: any) => mixed,
 |};
 
 /**
@@ -55,6 +56,9 @@ export type SubscriptionArgs = {|
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
+ * If a `perEventContextResolver` argument is provided, it will be invoked for
+ * each event and return a new context value specific to the event's execution.
+ *
  * Accepts either an object with named arguments, or individual arguments.
  */
 declare function subscribe(
@@ -71,6 +75,7 @@ declare function subscribe(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
+  perEventContextResolver?: ?(contextValue: any) => mixed,
 ): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
 export function subscribe(
   argsOrSchema,
@@ -81,6 +86,7 @@ export function subscribe(
   operationName,
   fieldResolver,
   subscribeFieldResolver,
+  perEventContextResolver,
 ) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
@@ -95,6 +101,7 @@ export function subscribe(
         operationName,
         fieldResolver,
         subscribeFieldResolver,
+        perEventContextResolver,
       });
 }
 
@@ -122,6 +129,7 @@ function subscribeImpl(
     operationName,
     fieldResolver,
     subscribeFieldResolver,
+    perEventContextResolver,
   } = args;
 
   const sourcePromise = createSourceEventStream(
@@ -140,12 +148,16 @@ function subscribeImpl(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
+  // If `perEventContextResolver` is provided, it is invoked with the original
+  // `contextValue` to return a new context unique to this `execute`.
+  const perEventContextResolverFn = perEventContextResolver ?? ((ctx) => ctx);
+
   const mapSourceToResponse = (payload) =>
     execute({
       schema,
       document,
       rootValue: payload,
-      contextValue,
+      contextValue: perEventContextResolverFn(contextValue),
       variableValues,
       operationName,
       fieldResolver,

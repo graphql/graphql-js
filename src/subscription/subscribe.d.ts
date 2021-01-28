@@ -14,6 +14,7 @@ export interface SubscriptionArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  perEventContextResolver?: Maybe<(contextValue: any) => any>;
 }
 
 /**
@@ -34,6 +35,9 @@ export interface SubscriptionArgs {
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
+ * If a `perEventContextResolver` argument is provided, it will be invoked for
+ * each event and return a new context value specific to that event's execution.
+ *
  * Accepts either an object with named arguments, or individual arguments.
  */
 export function subscribe(
@@ -49,6 +53,7 @@ export function subscribe(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  perEventContextResolver?: Maybe<(contextValue: any) => any>,
 ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>;
 
 /**
