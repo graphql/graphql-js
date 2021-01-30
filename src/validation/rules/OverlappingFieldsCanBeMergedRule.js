@@ -551,9 +551,13 @@ function findConflict(
   // in aliased field or arguments used as they will not present any ambiguity
   // by differing.
   // It is known that two parent types could never overlap if they are
-  // different Object types. Interface or Union types might overlap - if not
+  // different Object types. Interface types might overlap - if not
   // in the current state of the schema, then perhaps in some future version,
-  // thus may not safely diverge.
+  // thus may not safely diverge. 
+  // The only field that can have a Union as parent is __typename which can't 
+  // conflict as it is a Scalar with no arguments. Therefore the condition 
+  // could be arguably changed to "isObjectOrUnionType", but this implementation
+  // follows the current spec.
   const areMutuallyExclusive =
     parentFieldsAreMutuallyExclusive ||
     (parentType1 !== parentType2 &&
