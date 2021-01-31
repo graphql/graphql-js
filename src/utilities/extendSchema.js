@@ -8,9 +8,7 @@ import devAssert from '../jsutils/devAssert';
 
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import type {
-  Location,
   DocumentNode,
-  StringValueNode,
   TypeNode,
   NamedTypeNode,
   SchemaDefinitionNode,
@@ -34,8 +32,6 @@ import type {
   ScalarTypeExtensionNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { TokenKind } from '../language/tokenKind';
-import { dedentBlockStringValue } from '../language/blockString';
 import {
   isTypeDefinitionNode,
   isTypeExtensionNode,
@@ -92,16 +88,6 @@ type Options = {|
   ...GraphQLSchemaValidationOptions,
 
   /**
-   * Descriptions are defined as preceding string literals, however an older
-   * experimental version of the SDL supported preceding comments as
-   * descriptions. Set to true to enable this deprecated behavior.
-   * This option is provided to ease adoption and will be removed in v16.
-   *
-   * Default: false
-   */
-  commentDescriptions?: boolean,
-
-  /**
    * Set to true to assume the SDL is valid.
    *
    * Default: false
@@ -120,12 +106,6 @@ type Options = {|
  *
  * This algorithm copies the provided schema, applying extensions while
  * producing the copy. The original schema remains unaltered.
- *
- * Accepts options as a third argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
  */
 export function extendSchema(
   schema: GraphQLSchema,
@@ -464,7 +444,7 @@ export function extendSchemaImpl(
 
     return new GraphQLDirective({
       name: node.name.value,
-      description: getDescription(node, options),
+      description: node.description?.value,
       locations,
       isRepeatable: node.repeatable,
       args: buildArgumentMap(node.arguments),
@@ -491,7 +471,7 @@ export function extendSchemaImpl(
           // value, that would throw immediately while type system validation
           // with validateSchema() will produce more actionable results.
           type: (getWrappedType(field.type): any),
-          description: getDescription(field, options),
+          description: field.description?.value,
           args: buildArgumentMap(field.arguments),
           deprecationReason: getDeprecationReason(field),
           astNode: field,
@@ -516,7 +496,7 @@ export function extendSchemaImpl(
 
       argConfigMap[arg.name.value] = {
         type,
-        description: getDescription(arg, options),
+        description: arg.description?.value,
         defaultValue: valueFromAST(arg.defaultValue, type),
         deprecationReason: getDeprecationReason(arg),
         astNode: arg,
@@ -543,7 +523,7 @@ export function extendSchemaImpl(
 
         inputFieldMap[field.name.value] = {
           type,
-          description: getDescription(field, options),
+          description: field.description?.value,
           defaultValue: valueFromAST(field.defaultValue, type),
           deprecationReason: getDeprecationReason(field),
           astNode: field,
@@ -563,7 +543,7 @@ export function extendSchemaImpl(
 
       for (const value of valuesNodes) {
         enumValueMap[value.name.value] = {
-          description: getDescription(value, options),
+          description: value.description?.value,
           deprecationReason: getDeprecationReason(value),
           astNode: value,
         };
@@ -617,7 +597,6 @@ export function extendSchemaImpl(
 
   function buildType(astNode: TypeDefinitionNode): GraphQLNamedType {
     const name = astNode.name.value;
-    const description = getDescription(astNode, options);
     const extensionNodes = typeExtensionsMap[name] ?? [];
 
     switch (astNode.kind) {
@@ -627,7 +606,7 @@ export function extendSchemaImpl(
 
         return new GraphQLObjectType({
           name,
-          description,
+          description: astNode.description?.value,
           interfaces: () => buildInterfaces(allNodes),
           fields: () => buildFieldMap(allNodes),
           astNode,
@@ -640,7 +619,7 @@ export function extendSchemaImpl(
 
         return new GraphQLInterfaceType({
           name,
-          description,
+          description: astNode.description?.value,
           interfaces: () => buildInterfaces(allNodes),
           fields: () => buildFieldMap(allNodes),
           astNode,
@@ -653,7 +632,7 @@ export function extendSchemaImpl(
 
         return new GraphQLEnumType({
           name,
-          description,
+          description: astNode.description?.value,
           values: buildEnumValueMap(allNodes),
           astNode,
           extensionASTNodes,
@@ -665,7 +644,7 @@ export function extendSchemaImpl(
 
         return new GraphQLUnionType({
           name,
-          description,
+          description: astNode.description?.value,
           types: () => buildUnionTypes(allNodes),
           astNode,
           extensionASTNodes,
@@ -676,7 +655,7 @@ export function extendSchemaImpl(
 
         return new GraphQLScalarType({
           name,
-          description,
+          description: astNode.description?.value,
           specifiedByUrl: getSpecifiedByUrl(astNode),
           astNode,
           extensionASTNodes,
@@ -688,7 +667,7 @@ export function extendSchemaImpl(
 
         return new GraphQLInputObjectType({
           name,
-          description,
+          description: astNode.description?.value,
           fields: () => buildInputFieldMap(allNodes),
           astNode,
           extensionASTNodes,
@@ -731,51 +710,4 @@ function getSpecifiedByUrl(
 ): ?string {
   const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
   return (specifiedBy?.url: any);
-}
-
-/**
- * Given an ast node, returns its string description.
- * @deprecated: provided to ease adoption and will be removed in v16.
- *
- * Accepts options as a second argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
- */
-export function getDescription(
-  node: { +description?: StringValueNode, +loc?: Location, ... },
-  options: ?{ commentDescriptions?: boolean, ... },
-): void | string {
-  if (node.description) {
-    return node.description.value;
-  }
-  if (options?.commentDescriptions === true) {
-    const rawValue = getLeadingCommentBlock(node);
-    if (rawValue !== undefined) {
-      return dedentBlockStringValue('\n' + rawValue);
-    }
-  }
-}
-
-function getLeadingCommentBlock(node): void | string {
-  const loc = node.loc;
-  if (!loc) {
-    return;
-  }
-  const comments = [];
-  let token = loc.startToken.prev;
-  while (
-    token != null &&
-    token.kind === TokenKind.COMMENT &&
-    token.next &&
-    token.prev &&
-    token.line + 1 === token.next.line &&
-    token.line !== token.prev.line
-  ) {
-    const value = String(token.value);
-    comments.push(value);
-    token = token.prev;
-  }
-  return comments.length > 0 ? comments.reverse().join('\n') : undefined;
 }
