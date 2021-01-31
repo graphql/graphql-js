@@ -828,25 +828,7 @@ var Parser = /*#__PURE__*/function () {
   ;
 
   _proto.parseImplementsInterfaces = function parseImplementsInterfaces() {
-    var _this$_options2;
-
-    if (!this.expectOptionalKeyword('implements')) {
-      return [];
-    }
-
-    if (((_this$_options2 = this._options) === null || _this$_options2 === void 0 ? void 0 : _this$_options2.allowLegacySDLImplementsInterfaces) === true) {
-      var types = []; // Optional leading ampersand
-
-      this.expectOptionalToken(_tokenKind.TokenKind.AMP);
-
-      do {
-        types.push(this.parseNamedType());
-      } while (this.expectOptionalToken(_tokenKind.TokenKind.AMP) || this.peek(_tokenKind.TokenKind.NAME));
-
-      return types;
-    }
-
-    return this.delimitedMany(_tokenKind.TokenKind.AMP, this.parseNamedType);
+    return this.expectOptionalKeyword('implements') ? this.delimitedMany(_tokenKind.TokenKind.AMP, this.parseNamedType) : [];
   }
   /**
    * FieldsDefinition : { FieldDefinition+ }
@@ -854,17 +836,6 @@ var Parser = /*#__PURE__*/function () {
   ;
 
   _proto.parseFieldsDefinition = function parseFieldsDefinition() {
-    var _this$_options3;
-
-    // Legacy support for the SDL?
-    if (((_this$_options3 = this._options) === null || _this$_options3 === void 0 ? void 0 : _this$_options3.allowLegacySDLEmptyFields) === true && this.peek(_tokenKind.TokenKind.BRACE_L) && this._lexer.lookahead().kind === _tokenKind.TokenKind.BRACE_R) {
-      this._lexer.advance();
-
-      this._lexer.advance();
-
-      return [];
-    }
-
     return this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseFieldDefinition, _tokenKind.TokenKind.BRACE_R);
   }
   /**
@@ -1381,9 +1352,9 @@ var Parser = /*#__PURE__*/function () {
   ;
 
   _proto.loc = function loc(startToken) {
-    var _this$_options4;
+    var _this$_options2;
 
-    if (((_this$_options4 = this._options) === null || _this$_options4 === void 0 ? void 0 : _this$_options4.noLocation) !== true) {
+    if (((_this$_options2 = this._options) === null || _this$_options2 === void 0 ? void 0 : _this$_options2.noLocation) !== true) {
       return new _ast.Location(startToken, this._lexer.lastToken, this._lexer.source);
     }
   }

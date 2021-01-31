@@ -99,8 +99,6 @@ function buildASTSchema(documentAST, options) {
 function buildSchema(source, options) {
   var document = (0, _parser.parse)(source, {
     noLocation: options === null || options === void 0 ? void 0 : options.noLocation,
-    allowLegacySDLEmptyFields: options === null || options === void 0 ? void 0 : options.allowLegacySDLEmptyFields,
-    allowLegacySDLImplementsInterfaces: options === null || options === void 0 ? void 0 : options.allowLegacySDLImplementsInterfaces,
     experimentalFragmentVariables: options === null || options === void 0 ? void 0 : options.experimentalFragmentVariables
   });
   return buildASTSchema(document, {
