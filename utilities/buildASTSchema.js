@@ -15,12 +15,6 @@ import { extendSchemaImpl } from "./extendSchema.js";
  *
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
- *
- * Accepts options as a second argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
  */
 export function buildASTSchema(documentAST, options) {
   documentAST != null && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST.');
@@ -85,7 +79,6 @@ export function buildSchema(source, options) {
     experimentalFragmentVariables: options?.experimentalFragmentVariables
   });
   return buildASTSchema(document, {
-    commentDescriptions: options?.commentDescriptions,
     assumeValidSDL: options?.assumeValidSDL,
     assumeValid: options?.assumeValid
   });

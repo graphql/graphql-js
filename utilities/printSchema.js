@@ -8,29 +8,21 @@ import { GraphQLString, isSpecifiedScalarType } from "../type/scalars.js";
 import { DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from "../type/directives.js";
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../type/definition.js";
 import { astFromValue } from "./astFromValue.js";
-
-/**
- * Accepts options as a second argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
- */
-export function printSchema(schema, options) {
-  return printFilteredSchema(schema, n => !isSpecifiedDirective(n), isDefinedType, options);
+export function printSchema(schema) {
+  return printFilteredSchema(schema, n => !isSpecifiedDirective(n), isDefinedType);
 }
-export function printIntrospectionSchema(schema, options) {
-  return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType, options);
+export function printIntrospectionSchema(schema) {
+  return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType);
 }
 
 function isDefinedType(type) {
   return !isSpecifiedScalarType(type) && !isIntrospectionType(type);
 }
 
-function printFilteredSchema(schema, directiveFilter, typeFilter, options) {
+function printFilteredSchema(schema, directiveFilter, typeFilter) {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = objectValues(schema.getTypeMap()).filter(typeFilter);
-  return [printSchemaDefinition(schema)].concat(directives.map(directive => printDirective(directive, options)), types.map(type => printType(type, options))).filter(Boolean).join('\n\n') + '\n';
+  return [printSchemaDefinition(schema)].concat(directives.map(directive => printDirective(directive)), types.map(type => printType(type))).filter(Boolean).join('\n\n') + '\n';
 }
 
 function printSchemaDefinition(schema) {
@@ -57,7 +49,7 @@ function printSchemaDefinition(schema) {
     operationTypes.push(`  subscription: ${subscriptionType.name}`);
   }
 
-  return printDescription({}, schema) + `schema {\n${operationTypes.join('\n')}\n}`;
+  return printDescription(schema) + `schema {\n${operationTypes.join('\n')}\n}`;
 }
 /**
  * GraphQL schema define root types for each type of operation. These types are
@@ -95,38 +87,38 @@ function isSchemaOfCommonNames(schema) {
   return true;
 }
 
-export function printType(type, options) {
+export function printType(type) {
   if (isScalarType(type)) {
-    return printScalar(type, options);
+    return printScalar(type);
   }
 
   if (isObjectType(type)) {
-    return printObject(type, options);
+    return printObject(type);
   }
 
   if (isInterfaceType(type)) {
-    return printInterface(type, options);
+    return printInterface(type);
   }
 
   if (isUnionType(type)) {
-    return printUnion(type, options);
+    return printUnion(type);
   }
 
   if (isEnumType(type)) {
-    return printEnum(type, options);
+    return printEnum(type);
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
 
   if (isInputObjectType(type)) {
-    return printInputObject(type, options);
+    return printInputObject(type);
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
   false || invariant(0, 'Unexpected type: ' + inspect(type));
 }
 
-function printScalar(type, options) {
-  return printDescription(options, type) + `scalar ${type.name}` + printSpecifiedByUrl(type);
+function printScalar(type) {
+  return printDescription(type) + `scalar ${type.name}` + printSpecifiedByUrl(type);
 }
 
 function printImplementedInterfaces(type) {
@@ -134,32 +126,32 @@ function printImplementedInterfaces(type) {
   return interfaces.length ? ' implements ' + interfaces.map(i => i.name).join(' & ') : '';
 }
 
-function printObject(type, options) {
-  return printDescription(options, type) + `type ${type.name}` + printImplementedInterfaces(type) + printFields(options, type);
+function printObject(type) {
+  return printDescription(type) + `type ${type.name}` + printImplementedInterfaces(type) + printFields(type);
 }
 
-function printInterface(type, options) {
-  return printDescription(options, type) + `interface ${type.name}` + printImplementedInterfaces(type) + printFields(options, type);
+function printInterface(type) {
+  return printDescription(type) + `interface ${type.name}` + printImplementedInterfaces(type) + printFields(type);
 }
 
-function printUnion(type, options) {
+function printUnion(type) {
   const types = type.getTypes();
   const possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
-  return printDescription(options, type) + 'union ' + type.name + possibleTypes;
+  return printDescription(type) + 'union ' + type.name + possibleTypes;
 }
 
-function printEnum(type, options) {
-  const values = type.getValues().map((value, i) => printDescription(options, value, '  ', !i) + '  ' + value.name + printDeprecated(value.deprecationReason));
-  return printDescription(options, type) + `enum ${type.name}` + printBlock(values);
+function printEnum(type) {
+  const values = type.getValues().map((value, i) => printDescription(value, '  ', !i) + '  ' + value.name + printDeprecated(value.deprecationReason));
+  return printDescription(type) + `enum ${type.name}` + printBlock(values);
 }
 
-function printInputObject(type, options) {
-  const fields = objectValues(type.getFields()).map((f, i) => printDescription(options, f, '  ', !i) + '  ' + printInputValue(f));
-  return printDescription(options, type) + `input ${type.name}` + printBlock(fields);
+function printInputObject(type) {
+  const fields = objectValues(type.getFields()).map((f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f));
+  return printDescription(type) + `input ${type.name}` + printBlock(fields);
 }
 
-function printFields(options, type) {
-  const fields = objectValues(type.getFields()).map((f, i) => printDescription(options, f, '  ', !i) + '  ' + f.name + printArgs(options, f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason));
+function printFields(type) {
+  const fields = objectValues(type.getFields()).map((f, i) => printDescription(f, '  ', !i) + '  ' + f.name + printArgs(f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason));
   return printBlock(fields);
 }
 
@@ -167,7 +159,7 @@ function printBlock(items) {
   return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
 }
 
-function printArgs(options, args, indentation = '') {
+function printArgs(args, indentation = '') {
   if (args.length === 0) {
     return '';
   } // If every arg does not have a description, print them on one line.
@@ -177,7 +169,7 @@ function printArgs(options, args, indentation = '') {
     return '(' + args.map(printInputValue).join(', ') + ')';
   }
 
-  return '(\n' + args.map((arg, i) => printDescription(options, arg, '  ' + indentation, !i) + '  ' + indentation + printInputValue(arg)).join('\n') + '\n' + indentation + ')';
+  return '(\n' + args.map((arg, i) => printDescription(arg, '  ' + indentation, !i) + '  ' + indentation + printInputValue(arg)).join('\n') + '\n' + indentation + ')';
 }
 
 function printInputValue(arg) {
@@ -191,8 +183,8 @@ function printInputValue(arg) {
   return argDecl + printDeprecated(arg.deprecationReason);
 }
 
-function printDirective(directive, options) {
-  return printDescription(options, directive) + 'directive @' + directive.name + printArgs(options, directive.args) + (directive.isRepeatable ? ' repeatable' : '') + ' on ' + directive.locations.join(' | ');
+function printDirective(directive) {
+  return printDescription(directive) + 'directive @' + directive.name + printArgs(directive.args) + (directive.isRepeatable ? ' repeatable' : '') + ' on ' + directive.locations.join(' | ');
 }
 
 function printDeprecated(reason) {
@@ -220,7 +212,7 @@ function printSpecifiedByUrl(scalar) {
   return ' @specifiedBy(url: ' + print(urlAST) + ')';
 }
 
-function printDescription(options, def, indentation = '', firstInBlock = true) {
+function printDescription(def, indentation = '', firstInBlock = true) {
   const {
     description
   } = def;
@@ -229,18 +221,8 @@ function printDescription(options, def, indentation = '', firstInBlock = true) {
     return '';
   }
 
-  if (options?.commentDescriptions === true) {
-    return printDescriptionWithComments(description, indentation, firstInBlock);
-  }
-
   const preferMultipleLines = description.length > 70;
   const blockString = printBlockString(description, '', preferMultipleLines);
   const prefix = indentation && !firstInBlock ? '\n' + indentation : indentation;
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
-}
-
-function printDescriptionWithComments(description, indentation, firstInBlock) {
-  const prefix = indentation && !firstInBlock ? '\n' : '';
-  const comment = description.split('\n').map(line => indentation + (line !== '' ? '# ' + line : '#')).join('\n');
-  return prefix + comment + '\n';
 }
