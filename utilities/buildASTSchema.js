@@ -74,8 +74,6 @@ export function buildASTSchema(documentAST, options) {
 export function buildSchema(source, options) {
   const document = parse(source, {
     noLocation: options?.noLocation,
-    allowLegacySDLEmptyFields: options?.allowLegacySDLEmptyFields,
-    allowLegacySDLImplementsInterfaces: options?.allowLegacySDLImplementsInterfaces,
     experimentalFragmentVariables: options?.experimentalFragmentVariables
   });
   return buildASTSchema(document, {

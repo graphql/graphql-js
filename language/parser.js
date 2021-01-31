@@ -800,23 +800,7 @@ export class Parser {
 
 
   parseImplementsInterfaces() {
-    if (!this.expectOptionalKeyword('implements')) {
-      return [];
-    }
-
-    if (this._options?.allowLegacySDLImplementsInterfaces === true) {
-      const types = []; // Optional leading ampersand
-
-      this.expectOptionalToken(TokenKind.AMP);
-
-      do {
-        types.push(this.parseNamedType());
-      } while (this.expectOptionalToken(TokenKind.AMP) || this.peek(TokenKind.NAME));
-
-      return types;
-    }
-
-    return this.delimitedMany(TokenKind.AMP, this.parseNamedType);
+    return this.expectOptionalKeyword('implements') ? this.delimitedMany(TokenKind.AMP, this.parseNamedType) : [];
   }
   /**
    * FieldsDefinition : { FieldDefinition+ }
@@ -824,15 +808,6 @@ export class Parser {
 
 
   parseFieldsDefinition() {
-    // Legacy support for the SDL?
-    if (this._options?.allowLegacySDLEmptyFields === true && this.peek(TokenKind.BRACE_L) && this._lexer.lookahead().kind === TokenKind.BRACE_R) {
-      this._lexer.advance();
-
-      this._lexer.advance();
-
-      return [];
-    }
-
     return this.optionalMany(TokenKind.BRACE_L, this.parseFieldDefinition, TokenKind.BRACE_R);
   }
   /**
