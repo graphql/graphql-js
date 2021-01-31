@@ -461,7 +461,6 @@ export const SchemaMetaFieldDef = {
   resolve: (_source, _args, _context, {
     schema
   }) => schema,
-  isDeprecated: false,
   deprecationReason: undefined,
   extensions: undefined,
   astNode: undefined
@@ -484,7 +483,6 @@ export const TypeMetaFieldDef = {
   }, _context, {
     schema
   }) => schema.getType(name),
-  isDeprecated: false,
   deprecationReason: undefined,
   extensions: undefined,
   astNode: undefined
@@ -497,7 +495,6 @@ export const TypeNameMetaFieldDef = {
   resolve: (_source, _args, _context, {
     parentType
   }) => parentType.name,
-  isDeprecated: false,
   deprecationReason: undefined,
   extensions: undefined,
   astNode: undefined

@@ -563,7 +563,6 @@ function defineFieldMap(config) {
   isPlainObj(fieldMap) || devAssert(0, `${config.name} fields must be an object with field names as keys or a function which returns such an object.`);
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     isPlainObj(fieldConfig) || devAssert(0, `${config.name}.${fieldName} field config must be an object.`);
-    !('isDeprecated' in fieldConfig) || devAssert(0, `${config.name}.${fieldName} should provide "deprecationReason" instead of "isDeprecated".`);
     fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function' || devAssert(0, `${config.name}.${fieldName} field resolver must be a function if ` + `provided, but got: ${inspect(fieldConfig.resolve)}.`);
     const argsConfig = fieldConfig.args ?? {};
     isPlainObj(argsConfig) || devAssert(0, `${config.name}.${fieldName} args must be an object with argument names as keys.`);
@@ -583,7 +582,6 @@ function defineFieldMap(config) {
       args,
       resolve: fieldConfig.resolve,
       subscribe: fieldConfig.subscribe,
-      isDeprecated: fieldConfig.deprecationReason != null,
       deprecationReason: fieldConfig.deprecationReason,
       extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode
@@ -918,12 +916,10 @@ function defineEnumValues(typeName, valueMap) {
   isPlainObj(valueMap) || devAssert(0, `${typeName} values must be an object with value names as keys.`);
   return objectEntries(valueMap).map(([valueName, valueConfig]) => {
     isPlainObj(valueConfig) || devAssert(0, `${typeName}.${valueName} must refer to an object with a "value" key ` + `representing an internal value but got: ${inspect(valueConfig)}.`);
-    !('isDeprecated' in valueConfig) || devAssert(0, `${typeName}.${valueName} should provide "deprecationReason" instead of "isDeprecated".`);
     return {
       name: valueName,
       description: valueConfig.description,
       value: valueConfig.value !== undefined ? valueConfig.value : valueName,
-      isDeprecated: valueConfig.deprecationReason != null,
       deprecationReason: valueConfig.deprecationReason,
       extensions: valueConfig.extensions && toObjMap(valueConfig.extensions),
       astNode: valueConfig.astNode
