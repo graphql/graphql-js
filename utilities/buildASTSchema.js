@@ -31,12 +31,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
- *
- * Accepts options as a second argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
  */
 function buildASTSchema(documentAST, options) {
   documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST.');
@@ -110,7 +104,6 @@ function buildSchema(source, options) {
     experimentalFragmentVariables: options === null || options === void 0 ? void 0 : options.experimentalFragmentVariables
   });
   return buildASTSchema(document, {
-    commentDescriptions: options === null || options === void 0 ? void 0 : options.commentDescriptions,
     assumeValidSDL: options === null || options === void 0 ? void 0 : options.assumeValidSDL,
     assumeValid: options === null || options === void 0 ? void 0 : options.assumeValid
   });

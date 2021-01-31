@@ -12,9 +12,7 @@ export { buildClientSchema } from "./buildClientSchema.mjs"; // Build a GraphQLS
 
 export { buildASTSchema, buildSchema } from "./buildASTSchema.mjs";
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
-export { extendSchema // @deprecated: Get the description from a schema AST node and supports legacy
-// syntax for specifying descriptions - will be removed in v16.
-, getDescription } from "./extendSchema.mjs"; // Sort a GraphQLSchema.
+export { extendSchema } from "./extendSchema.mjs"; // Sort a GraphQLSchema.
 
 export { lexicographicSortSchema } from "./lexicographicSortSchema.mjs"; // Print a GraphQLSchema to GraphQL Schema language.
 

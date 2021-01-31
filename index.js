@@ -1029,12 +1029,6 @@ Object.defineProperty(exports, "buildSchema", {
     return _index7.buildSchema;
   }
 });
-Object.defineProperty(exports, "getDescription", {
-  enumerable: true,
-  get: function get() {
-    return _index7.getDescription;
-  }
-});
 Object.defineProperty(exports, "extendSchema", {
   enumerable: true,
   get: function get() {

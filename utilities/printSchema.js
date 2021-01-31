@@ -29,34 +29,27 @@ var _astFromValue = require("./astFromValue.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Accepts options as a second argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
- */
-function printSchema(schema, options) {
+function printSchema(schema) {
   return printFilteredSchema(schema, function (n) {
     return !(0, _directives.isSpecifiedDirective)(n);
-  }, isDefinedType, options);
+  }, isDefinedType);
 }
 
-function printIntrospectionSchema(schema, options) {
-  return printFilteredSchema(schema, _directives.isSpecifiedDirective, _introspection.isIntrospectionType, options);
+function printIntrospectionSchema(schema) {
+  return printFilteredSchema(schema, _directives.isSpecifiedDirective, _introspection.isIntrospectionType);
 }
 
 function isDefinedType(type) {
   return !(0, _scalars.isSpecifiedScalarType)(type) && !(0, _introspection.isIntrospectionType)(type);
 }
 
-function printFilteredSchema(schema, directiveFilter, typeFilter, options) {
+function printFilteredSchema(schema, directiveFilter, typeFilter) {
   var directives = schema.getDirectives().filter(directiveFilter);
   var types = (0, _objectValues.default)(schema.getTypeMap()).filter(typeFilter);
   return [printSchemaDefinition(schema)].concat(directives.map(function (directive) {
-    return printDirective(directive, options);
+    return printDirective(directive);
   }), types.map(function (type) {
-    return printType(type, options);
+    return printType(type);
   })).filter(Boolean).join('\n\n') + '\n';
 }
 
@@ -84,7 +77,7 @@ function printSchemaDefinition(schema) {
     operationTypes.push("  subscription: ".concat(subscriptionType.name));
   }
 
-  return printDescription({}, schema) + "schema {\n".concat(operationTypes.join('\n'), "\n}");
+  return printDescription(schema) + "schema {\n".concat(operationTypes.join('\n'), "\n}");
 }
 /**
  * GraphQL schema define root types for each type of operation. These types are
@@ -122,38 +115,38 @@ function isSchemaOfCommonNames(schema) {
   return true;
 }
 
-function printType(type, options) {
+function printType(type) {
   if ((0, _definition.isScalarType)(type)) {
-    return printScalar(type, options);
+    return printScalar(type);
   }
 
   if ((0, _definition.isObjectType)(type)) {
-    return printObject(type, options);
+    return printObject(type);
   }
 
   if ((0, _definition.isInterfaceType)(type)) {
-    return printInterface(type, options);
+    return printInterface(type);
   }
 
   if ((0, _definition.isUnionType)(type)) {
-    return printUnion(type, options);
+    return printUnion(type);
   }
 
   if ((0, _definition.isEnumType)(type)) {
-    return printEnum(type, options);
+    return printEnum(type);
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
 
   if ((0, _definition.isInputObjectType)(type)) {
-    return printInputObject(type, options);
+    return printInputObject(type);
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
   false || (0, _invariant.default)(0, 'Unexpected type: ' + (0, _inspect.default)(type));
 }
 
-function printScalar(type, options) {
-  return printDescription(options, type) + "scalar ".concat(type.name) + printSpecifiedByUrl(type);
+function printScalar(type) {
+  return printDescription(type) + "scalar ".concat(type.name) + printSpecifiedByUrl(type);
 }
 
 function printImplementedInterfaces(type) {
@@ -163,37 +156,37 @@ function printImplementedInterfaces(type) {
   }).join(' & ') : '';
 }
 
-function printObject(type, options) {
-  return printDescription(options, type) + "type ".concat(type.name) + printImplementedInterfaces(type) + printFields(options, type);
+function printObject(type) {
+  return printDescription(type) + "type ".concat(type.name) + printImplementedInterfaces(type) + printFields(type);
 }
 
-function printInterface(type, options) {
-  return printDescription(options, type) + "interface ".concat(type.name) + printImplementedInterfaces(type) + printFields(options, type);
+function printInterface(type) {
+  return printDescription(type) + "interface ".concat(type.name) + printImplementedInterfaces(type) + printFields(type);
 }
 
-function printUnion(type, options) {
+function printUnion(type) {
   var types = type.getTypes();
   var possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
-  return printDescription(options, type) + 'union ' + type.name + possibleTypes;
+  return printDescription(type) + 'union ' + type.name + possibleTypes;
 }
 
-function printEnum(type, options) {
+function printEnum(type) {
   var values = type.getValues().map(function (value, i) {
-    return printDescription(options, value, '  ', !i) + '  ' + value.name + printDeprecated(value.deprecationReason);
+    return printDescription(value, '  ', !i) + '  ' + value.name + printDeprecated(value.deprecationReason);
   });
-  return printDescription(options, type) + "enum ".concat(type.name) + printBlock(values);
+  return printDescription(type) + "enum ".concat(type.name) + printBlock(values);
 }
 
-function printInputObject(type, options) {
+function printInputObject(type) {
   var fields = (0, _objectValues.default)(type.getFields()).map(function (f, i) {
-    return printDescription(options, f, '  ', !i) + '  ' + printInputValue(f);
+    return printDescription(f, '  ', !i) + '  ' + printInputValue(f);
   });
-  return printDescription(options, type) + "input ".concat(type.name) + printBlock(fields);
+  return printDescription(type) + "input ".concat(type.name) + printBlock(fields);
 }
 
-function printFields(options, type) {
+function printFields(type) {
   var fields = (0, _objectValues.default)(type.getFields()).map(function (f, i) {
-    return printDescription(options, f, '  ', !i) + '  ' + f.name + printArgs(options, f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason);
+    return printDescription(f, '  ', !i) + '  ' + f.name + printArgs(f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason);
   });
   return printBlock(fields);
 }
@@ -202,8 +195,8 @@ function printBlock(items) {
   return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
 }
 
-function printArgs(options, args) {
-  var indentation = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+function printArgs(args) {
+  var indentation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
   if (args.length === 0) {
     return '';
@@ -217,7 +210,7 @@ function printArgs(options, args) {
   }
 
   return '(\n' + args.map(function (arg, i) {
-    return printDescription(options, arg, '  ' + indentation, !i) + '  ' + indentation + printInputValue(arg);
+    return printDescription(arg, '  ' + indentation, !i) + '  ' + indentation + printInputValue(arg);
   }).join('\n') + '\n' + indentation + ')';
 }
 
@@ -232,8 +225,8 @@ function printInputValue(arg) {
   return argDecl + printDeprecated(arg.deprecationReason);
 }
 
-function printDirective(directive, options) {
-  return printDescription(options, directive) + 'directive @' + directive.name + printArgs(options, directive.args) + (directive.isRepeatable ? ' repeatable' : '') + ' on ' + directive.locations.join(' | ');
+function printDirective(directive) {
+  return printDescription(directive) + 'directive @' + directive.name + printArgs(directive.args) + (directive.isRepeatable ? ' repeatable' : '') + ' on ' + directive.locations.join(' | ');
 }
 
 function printDeprecated(reason) {
@@ -261,29 +254,17 @@ function printSpecifiedByUrl(scalar) {
   return ' @specifiedBy(url: ' + (0, _printer.print)(urlAST) + ')';
 }
 
-function printDescription(options, def) {
-  var indentation = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-  var firstInBlock = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+function printDescription(def) {
+  var indentation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  var firstInBlock = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
   var description = def.description;
 
   if (description == null) {
     return '';
   }
 
-  if ((options === null || options === void 0 ? void 0 : options.commentDescriptions) === true) {
-    return printDescriptionWithComments(description, indentation, firstInBlock);
-  }
-
   var preferMultipleLines = description.length > 70;
   var blockString = (0, _blockString.printBlockString)(description, '', preferMultipleLines);
   var prefix = indentation && !firstInBlock ? '\n' + indentation : indentation;
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
-}
-
-function printDescriptionWithComments(description, indentation, firstInBlock) {
-  var prefix = indentation && !firstInBlock ? '\n' : '';
-  var comment = description.split('\n').map(function (line) {
-    return indentation + (line !== '' ? '# ' + line : '#');
-  }).join('\n');
-  return prefix + comment + '\n';
 }

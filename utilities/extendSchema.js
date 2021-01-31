@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.extendSchema = extendSchema;
 exports.extendSchemaImpl = extendSchemaImpl;
-exports.getDescription = getDescription;
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
@@ -20,10 +19,6 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
 
 var _kinds = require("../language/kinds.js");
-
-var _tokenKind = require("../language/tokenKind.js");
-
-var _blockString = require("../language/blockString.js");
 
 var _predicates = require("../language/predicates.js");
 
@@ -62,12 +57,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  * This algorithm copies the provided schema, applying extensions while
  * producing the copy. The original schema remains unaltered.
- *
- * Accepts options as a third argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
  */
 function extendSchema(schema, documentAST, options) {
   (0, _schema.assertSchema)(schema);
@@ -376,13 +365,15 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 
   function buildDirective(node) {
+    var _node$description;
+
     var locations = node.locations.map(function (_ref) {
       var value = _ref.value;
       return value;
     });
     return new _directives.GraphQLDirective({
       name: node.name.value,
-      description: getDescription(node, options),
+      description: (_node$description = node.description) === null || _node$description === void 0 ? void 0 : _node$description.value,
       locations: locations,
       isRepeatable: node.repeatable,
       args: buildArgumentMap(node.arguments),
@@ -401,13 +392,15 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
       var nodeFields = (_node$fields = node.fields) !== null && _node$fields !== void 0 ? _node$fields : [];
 
       for (var _i16 = 0; _i16 < nodeFields.length; _i16++) {
+        var _field$description;
+
         var field = nodeFields[_i16];
         fieldConfigMap[field.name.value] = {
           // Note: While this could make assertions to get the correctly typed
           // value, that would throw immediately while type system validation
           // with validateSchema() will produce more actionable results.
           type: getWrappedType(field.type),
-          description: getDescription(field, options),
+          description: (_field$description = field.description) === null || _field$description === void 0 ? void 0 : _field$description.value,
           args: buildArgumentMap(field.arguments),
           deprecationReason: getDeprecationReason(field),
           astNode: field
@@ -424,6 +417,8 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     var argConfigMap = Object.create(null);
 
     for (var _i18 = 0; _i18 < argsNodes.length; _i18++) {
+      var _arg$description;
+
       var arg = argsNodes[_i18];
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
@@ -431,7 +426,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
       var type = getWrappedType(arg.type);
       argConfigMap[arg.name.value] = {
         type: type,
-        description: getDescription(arg, options),
+        description: (_arg$description = arg.description) === null || _arg$description === void 0 ? void 0 : _arg$description.value,
         defaultValue: (0, _valueFromAST.valueFromAST)(arg.defaultValue, type),
         deprecationReason: getDeprecationReason(arg),
         astNode: arg
@@ -452,6 +447,8 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
       var fieldsNodes = (_node$fields2 = node.fields) !== null && _node$fields2 !== void 0 ? _node$fields2 : [];
 
       for (var _i22 = 0; _i22 < fieldsNodes.length; _i22++) {
+        var _field$description2;
+
         var field = fieldsNodes[_i22];
         // Note: While this could make assertions to get the correctly typed
         // value, that would throw immediately while type system validation
@@ -459,7 +456,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         var type = getWrappedType(field.type);
         inputFieldMap[field.name.value] = {
           type: type,
-          description: getDescription(field, options),
+          description: (_field$description2 = field.description) === null || _field$description2 === void 0 ? void 0 : _field$description2.value,
           defaultValue: (0, _valueFromAST.valueFromAST)(field.defaultValue, type),
           deprecationReason: getDeprecationReason(field),
           astNode: field
@@ -481,9 +478,11 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
       var valuesNodes = (_node$values = node.values) !== null && _node$values !== void 0 ? _node$values : [];
 
       for (var _i26 = 0; _i26 < valuesNodes.length; _i26++) {
+        var _value$description;
+
         var value = valuesNodes[_i26];
         enumValueMap[value.name.value] = {
-          description: getDescription(value, options),
+          description: (_value$description = value.description) === null || _value$description === void 0 ? void 0 : _value$description.value,
           deprecationReason: getDeprecationReason(value),
           astNode: value
         };
@@ -543,17 +542,18 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     var _typeExtensionsMap$na;
 
     var name = astNode.name.value;
-    var description = getDescription(astNode, options);
     var extensionNodes = (_typeExtensionsMap$na = typeExtensionsMap[name]) !== null && _typeExtensionsMap$na !== void 0 ? _typeExtensionsMap$na : [];
 
     switch (astNode.kind) {
       case _kinds.Kind.OBJECT_TYPE_DEFINITION:
         {
+          var _astNode$description;
+
           var extensionASTNodes = extensionNodes;
           var allNodes = [astNode].concat(extensionASTNodes);
           return new _definition.GraphQLObjectType({
             name: name,
-            description: description,
+            description: (_astNode$description = astNode.description) === null || _astNode$description === void 0 ? void 0 : _astNode$description.value,
             interfaces: function interfaces() {
               return buildInterfaces(allNodes);
             },
@@ -567,13 +567,15 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
       case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
         {
+          var _astNode$description2;
+
           var _extensionASTNodes = extensionNodes;
 
           var _allNodes = [astNode].concat(_extensionASTNodes);
 
           return new _definition.GraphQLInterfaceType({
             name: name,
-            description: description,
+            description: (_astNode$description2 = astNode.description) === null || _astNode$description2 === void 0 ? void 0 : _astNode$description2.value,
             interfaces: function interfaces() {
               return buildInterfaces(_allNodes);
             },
@@ -587,13 +589,15 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
       case _kinds.Kind.ENUM_TYPE_DEFINITION:
         {
+          var _astNode$description3;
+
           var _extensionASTNodes2 = extensionNodes;
 
           var _allNodes2 = [astNode].concat(_extensionASTNodes2);
 
           return new _definition.GraphQLEnumType({
             name: name,
-            description: description,
+            description: (_astNode$description3 = astNode.description) === null || _astNode$description3 === void 0 ? void 0 : _astNode$description3.value,
             values: buildEnumValueMap(_allNodes2),
             astNode: astNode,
             extensionASTNodes: _extensionASTNodes2
@@ -602,13 +606,15 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
       case _kinds.Kind.UNION_TYPE_DEFINITION:
         {
+          var _astNode$description4;
+
           var _extensionASTNodes3 = extensionNodes;
 
           var _allNodes3 = [astNode].concat(_extensionASTNodes3);
 
           return new _definition.GraphQLUnionType({
             name: name,
-            description: description,
+            description: (_astNode$description4 = astNode.description) === null || _astNode$description4 === void 0 ? void 0 : _astNode$description4.value,
             types: function types() {
               return buildUnionTypes(_allNodes3);
             },
@@ -619,10 +625,12 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
       case _kinds.Kind.SCALAR_TYPE_DEFINITION:
         {
+          var _astNode$description5;
+
           var _extensionASTNodes4 = extensionNodes;
           return new _definition.GraphQLScalarType({
             name: name,
-            description: description,
+            description: (_astNode$description5 = astNode.description) === null || _astNode$description5 === void 0 ? void 0 : _astNode$description5.value,
             specifiedByUrl: getSpecifiedByUrl(astNode),
             astNode: astNode,
             extensionASTNodes: _extensionASTNodes4
@@ -631,13 +639,15 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
       case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
         {
+          var _astNode$description6;
+
           var _extensionASTNodes5 = extensionNodes;
 
           var _allNodes4 = [astNode].concat(_extensionASTNodes5);
 
           return new _definition.GraphQLInputObjectType({
             name: name,
-            description: description,
+            description: (_astNode$description6 = astNode.description) === null || _astNode$description6 === void 0 ? void 0 : _astNode$description6.value,
             fields: function fields() {
               return buildInputFieldMap(_allNodes4);
             },
@@ -672,48 +682,4 @@ function getDeprecationReason(node) {
 function getSpecifiedByUrl(node) {
   var specifiedBy = (0, _values.getDirectiveValues)(_directives.GraphQLSpecifiedByDirective, node);
   return specifiedBy === null || specifiedBy === void 0 ? void 0 : specifiedBy.url;
-}
-/**
- * Given an ast node, returns its string description.
- * @deprecated: provided to ease adoption and will be removed in v16.
- *
- * Accepts options as a second argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
- */
-
-
-function getDescription(node, options) {
-  if (node.description) {
-    return node.description.value;
-  }
-
-  if ((options === null || options === void 0 ? void 0 : options.commentDescriptions) === true) {
-    var rawValue = getLeadingCommentBlock(node);
-
-    if (rawValue !== undefined) {
-      return (0, _blockString.dedentBlockStringValue)('\n' + rawValue);
-    }
-  }
-}
-
-function getLeadingCommentBlock(node) {
-  var loc = node.loc;
-
-  if (!loc) {
-    return;
-  }
-
-  var comments = [];
-  var token = loc.startToken.prev;
-
-  while (token != null && token.kind === _tokenKind.TokenKind.COMMENT && token.next && token.prev && token.line + 1 === token.next.line && token.line !== token.prev.line) {
-    var value = String(token.value);
-    comments.push(value);
-    token = token.prev;
-  }
-
-  return comments.length > 0 ? comments.reverse().join('\n') : undefined;
 }
