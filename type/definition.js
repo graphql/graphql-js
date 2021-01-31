@@ -695,7 +695,6 @@ function defineFieldMap(config) {
     var _fieldConfig$args;
 
     isPlainObj(fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object."));
-    !('isDeprecated' in fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
     fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function' || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat((0, _inspect.default)(fieldConfig.resolve), "."));
     var argsConfig = (_fieldConfig$args = fieldConfig.args) !== null && _fieldConfig$args !== void 0 ? _fieldConfig$args : {};
     isPlainObj(argsConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument names as keys."));
@@ -719,7 +718,6 @@ function defineFieldMap(config) {
       args: args,
       resolve: fieldConfig.resolve,
       subscribe: fieldConfig.subscribe,
-      isDeprecated: fieldConfig.deprecationReason != null,
       deprecationReason: fieldConfig.deprecationReason,
       extensions: fieldConfig.extensions && (0, _toObjMap.default)(fieldConfig.extensions),
       astNode: fieldConfig.astNode
@@ -1104,12 +1102,10 @@ function defineEnumValues(typeName, valueMap) {
     var valueName = _ref2[0],
         valueConfig = _ref2[1];
     isPlainObj(valueConfig) || (0, _devAssert.default)(0, "".concat(typeName, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat((0, _inspect.default)(valueConfig), "."));
-    !('isDeprecated' in valueConfig) || (0, _devAssert.default)(0, "".concat(typeName, ".").concat(valueName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
     return {
       name: valueName,
       description: valueConfig.description,
       value: valueConfig.value !== undefined ? valueConfig.value : valueName,
-      isDeprecated: valueConfig.deprecationReason != null,
       deprecationReason: valueConfig.deprecationReason,
       extensions: valueConfig.extensions && (0, _toObjMap.default)(valueConfig.extensions),
       astNode: valueConfig.astNode
