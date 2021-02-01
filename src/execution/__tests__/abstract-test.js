@@ -1,8 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import invariant from '../../jsutils/invariant';
-
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -297,89 +295,6 @@ describe('Execute: Handles execution of abstract types', () => {
     });
   });
 
-  it('deprecated(will be removed in v16.0.0): resolveType allows resolving with type object', async () => {
-    const PetType = new GraphQLInterfaceType({
-      name: 'Pet',
-      resolveType(obj, context) {
-        if (obj instanceof Dog) {
-          return context.async ? Promise.resolve(DogType) : DogType;
-        }
-        // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
-        if (obj instanceof Cat) {
-          return context.async ? Promise.resolve(CatType) : CatType;
-        }
-
-        // istanbul ignore next (Not reachable. All possible types have been considered)
-        invariant(false);
-      },
-      fields: {
-        name: { type: GraphQLString },
-      },
-    });
-
-    const DogType = new GraphQLObjectType({
-      name: 'Dog',
-      interfaces: [PetType],
-      fields: {
-        name: { type: GraphQLString },
-        woofs: { type: GraphQLBoolean },
-      },
-    });
-
-    const CatType = new GraphQLObjectType({
-      name: 'Cat',
-      interfaces: [PetType],
-      fields: {
-        name: { type: GraphQLString },
-        meows: { type: GraphQLBoolean },
-      },
-    });
-
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          pets: {
-            type: new GraphQLList(PetType),
-            resolve() {
-              return [new Dog('Odie', true), new Cat('Garfield', false)];
-            },
-          },
-        },
-      }),
-      types: [CatType, DogType],
-    });
-
-    const query = `
-      {
-        pets {
-          name
-          ... on Dog {
-            woofs
-          }
-          ... on Cat {
-            meows
-          }
-        }
-      }
-    `;
-
-    expect(await executeQuery({ schema, query })).to.deep.equal({
-      data: {
-        pets: [
-          {
-            name: 'Odie',
-            woofs: true,
-          },
-          {
-            name: 'Garfield',
-            meows: false,
-          },
-        ],
-      },
-    });
-  });
-
   it('resolveType can throw', async () => {
     const PetType = new GraphQLInterfaceType({
       name: 'Pet',
@@ -657,6 +572,12 @@ describe('Execute: Handles execution of abstract types', () => {
     (schema.getType('Pet'): any).resolveType = () => [];
     expectError({ forTypeName: undefined }).toEqual(
       'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet" with value { __typename: undefined }, received "[]".',
+    );
+
+    // FIXME: workaround since we can't inject resolveType into SDL
+    (schema.getType('Pet'): any).resolveType = () => schema.getType('Cat');
+    expectError({ forTypeName: undefined }).toEqual(
+      'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
     );
   });
 });
