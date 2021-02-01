@@ -56,38 +56,17 @@ var _values = require("./values.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function execute(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
-  /* eslint-enable no-redeclare */
-  // Extract arguments from object args if provided.
-  return arguments.length === 1 ? executeImpl(argsOrSchema) : executeImpl({
-    schema: argsOrSchema,
-    document: document,
-    rootValue: rootValue,
-    contextValue: contextValue,
-    variableValues: variableValues,
-    operationName: operationName,
-    fieldResolver: fieldResolver,
-    typeResolver: typeResolver
-  });
-}
 /**
- * Also implements the "Evaluating requests" section of the GraphQL specification.
- * However, it guarantees to complete synchronously (or throw an error) assuming
- * that all field resolvers are also synchronous.
+ * Implements the "Evaluating requests" section of the GraphQL specification.
+ *
+ * Returns either a synchronous ExecutionResult (if all encountered resolvers
+ * are synchronous), or a Promise of an ExecutionResult that will eventually be
+ * resolved and never rejected.
+ *
+ * If the arguments to this function do not result in a legal execution context,
+ * a GraphQLError will be thrown immediately explaining the invalid input.
  */
-
-
-function executeSync(args) {
-  var result = executeImpl(args); // Assert that the execution was synchronous.
-
-  if ((0, _isPromise.default)(result)) {
-    throw new Error('GraphQL execution failed to complete synchronously.');
-  }
-
-  return result;
-}
-
-function executeImpl(args) {
+function execute(args) {
   var schema = args.schema,
       document = args.document,
       rootValue = args.rootValue,
@@ -117,6 +96,22 @@ function executeImpl(args) {
 
   var data = executeOperation(exeContext, exeContext.operation, rootValue);
   return buildResponse(exeContext, data);
+}
+/**
+ * Also implements the "Evaluating requests" section of the GraphQL specification.
+ * However, it guarantees to complete synchronously (or throw an error) assuming
+ * that all field resolvers are also synchronous.
+ */
+
+
+function executeSync(args) {
+  var result = execute(args); // Assert that the execution was synchronous.
+
+  if ((0, _isPromise.default)(result)) {
+    throw new Error('GraphQL execution failed to complete synchronously.');
+  }
+
+  return result;
 }
 /**
  * Given a completed execution context and data, build the { errors, data }
@@ -462,8 +457,8 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
     // is provided to every resolve function within an execution. It is commonly
     // used to represent an authenticated user, or request-specific caches.
 
-    var _contextValue = exeContext.contextValue;
-    var result = resolveFn(source, args, _contextValue, info);
+    var contextValue = exeContext.contextValue;
+    var result = resolveFn(source, args, contextValue, info);
     var completed;
 
     if ((0, _isPromise.default)(result)) {

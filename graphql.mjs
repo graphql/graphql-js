@@ -43,23 +43,10 @@ import { execute } from "./execution/execute.mjs";
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 
-export function graphql(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
-  var _arguments = arguments;
-
-  /* eslint-enable no-redeclare */
+export function graphql(args) {
   // Always return a Promise for a consistent API.
   return new Promise(function (resolve) {
-    return resolve( // Extract arguments from object args if provided.
-    _arguments.length === 1 ? graphqlImpl(argsOrSchema) : graphqlImpl({
-      schema: argsOrSchema,
-      source: source,
-      rootValue: rootValue,
-      contextValue: contextValue,
-      variableValues: variableValues,
-      operationName: operationName,
-      fieldResolver: fieldResolver,
-      typeResolver: typeResolver
-    }));
+    return resolve(graphqlImpl(args));
   });
 }
 /**
@@ -69,19 +56,8 @@ export function graphql(argsOrSchema, source, rootValue, contextValue, variableV
  * that all field resolvers are also synchronous.
  */
 
-export function graphqlSync(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
-  /* eslint-enable no-redeclare */
-  // Extract arguments from object args if provided.
-  var result = arguments.length === 1 ? graphqlImpl(argsOrSchema) : graphqlImpl({
-    schema: argsOrSchema,
-    source: source,
-    rootValue: rootValue,
-    contextValue: contextValue,
-    variableValues: variableValues,
-    operationName: operationName,
-    fieldResolver: fieldResolver,
-    typeResolver: typeResolver
-  }); // Assert that the execution was synchronous.
+export function graphqlSync(args) {
+  var result = graphqlImpl(args); // Assert that the execution was synchronous.
 
   if (isPromise(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
