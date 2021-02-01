@@ -46,37 +46,17 @@ import { getVariableValues, getArgumentValues, getDirectiveValues } from "./valu
  * and the fragments defined in the query document
  */
 
-export function execute(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
-  /* eslint-enable no-redeclare */
-  // Extract arguments from object args if provided.
-  return arguments.length === 1 ? executeImpl(argsOrSchema) : executeImpl({
-    schema: argsOrSchema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver
-  });
-}
 /**
- * Also implements the "Evaluating requests" section of the GraphQL specification.
- * However, it guarantees to complete synchronously (or throw an error) assuming
- * that all field resolvers are also synchronous.
+ * Implements the "Evaluating requests" section of the GraphQL specification.
+ *
+ * Returns either a synchronous ExecutionResult (if all encountered resolvers
+ * are synchronous), or a Promise of an ExecutionResult that will eventually be
+ * resolved and never rejected.
+ *
+ * If the arguments to this function do not result in a legal execution context,
+ * a GraphQLError will be thrown immediately explaining the invalid input.
  */
-
-export function executeSync(args) {
-  const result = executeImpl(args); // Assert that the execution was synchronous.
-
-  if (isPromise(result)) {
-    throw new Error('GraphQL execution failed to complete synchronously.');
-  }
-
-  return result;
-}
-
-function executeImpl(args) {
+export function execute(args) {
   const {
     schema,
     document,
@@ -110,10 +90,24 @@ function executeImpl(args) {
   return buildResponse(exeContext, data);
 }
 /**
+ * Also implements the "Evaluating requests" section of the GraphQL specification.
+ * However, it guarantees to complete synchronously (or throw an error) assuming
+ * that all field resolvers are also synchronous.
+ */
+
+export function executeSync(args) {
+  const result = execute(args); // Assert that the execution was synchronous.
+
+  if (isPromise(result)) {
+    throw new Error('GraphQL execution failed to complete synchronously.');
+  }
+
+  return result;
+}
+/**
  * Given a completed execution context and data, build the { errors, data }
  * response defined by the "Response" section of the GraphQL specification.
  */
-
 
 function buildResponse(exeContext, data) {
   if (isPromise(data)) {
