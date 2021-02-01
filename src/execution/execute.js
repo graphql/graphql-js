@@ -146,67 +146,8 @@ export type ExecutionArgs = {|
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
- *
- * Accepts either an object with named arguments, or individual arguments.
  */
-declare function execute(
-  ExecutionArgs,
-  ..._: []
-): PromiseOrValue<ExecutionResult>;
-/* eslint-disable no-redeclare */
-declare function execute(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  typeResolver?: ?GraphQLTypeResolver<any, any>,
-): PromiseOrValue<ExecutionResult>;
-export function execute(
-  argsOrSchema,
-  document,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver,
-  typeResolver,
-) {
-  /* eslint-enable no-redeclare */
-  // Extract arguments from object args if provided.
-  return arguments.length === 1
-    ? executeImpl(argsOrSchema)
-    : executeImpl({
-        schema: argsOrSchema,
-        document,
-        rootValue,
-        contextValue,
-        variableValues,
-        operationName,
-        fieldResolver,
-        typeResolver,
-      });
-}
-
-/**
- * Also implements the "Evaluating requests" section of the GraphQL specification.
- * However, it guarantees to complete synchronously (or throw an error) assuming
- * that all field resolvers are also synchronous.
- */
-export function executeSync(args: ExecutionArgs): ExecutionResult {
-  const result = executeImpl(args);
-
-  // Assert that the execution was synchronous.
-  if (isPromise(result)) {
-    throw new Error('GraphQL execution failed to complete synchronously.');
-  }
-
-  return result;
-}
-
-function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   const {
     schema,
     document,
@@ -248,6 +189,22 @@ function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   // resolved Promise.
   const data = executeOperation(exeContext, exeContext.operation, rootValue);
   return buildResponse(exeContext, data);
+}
+
+/**
+ * Also implements the "Evaluating requests" section of the GraphQL specification.
+ * However, it guarantees to complete synchronously (or throw an error) assuming
+ * that all field resolvers are also synchronous.
+ */
+export function executeSync(args: ExecutionArgs): ExecutionResult {
+  const result = execute(args);
+
+  // Assert that the execution was synchronous.
+  if (isPromise(result)) {
+    throw new Error('GraphQL execution failed to complete synchronously.');
+  }
+
+  return result;
 }
 
 /**
