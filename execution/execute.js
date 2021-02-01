@@ -15,7 +15,7 @@ import { Kind } from "../language/kinds.js";
 import { assertValidSchema } from "../type/validate.js";
 import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from "../type/introspection.js";
 import { GraphQLIncludeDirective, GraphQLSkipDirective } from "../type/directives.js";
-import { isNamedType, isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from "../type/definition.js";
+import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from "../type/definition.js";
 import { typeFromAST } from "../utilities/typeFromAST.js";
 import { getOperationRootType } from "../utilities/getOperationRootType.js";
 import { getVariableValues, getArgumentValues, getDirectiveValues } from "./values.js";
@@ -644,16 +644,19 @@ function completeAbstractValue(exeContext, returnType, fieldNodes, info, path, r
   return completeObjectValue(exeContext, ensureValidRuntimeType(runtimeType, exeContext, returnType, fieldNodes, info, result), fieldNodes, info, path, result);
 }
 
-function ensureValidRuntimeType(runtimeTypeOrName, exeContext, returnType, fieldNodes, info, result) {
-  if (runtimeTypeOrName == null) {
+function ensureValidRuntimeType(runtimeTypeName, exeContext, returnType, fieldNodes, info, result) {
+  if (runtimeTypeName == null) {
     throw new GraphQLError(`Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`, fieldNodes);
-  } // FIXME: temporary workaround until support for passing object types would be removed in v16.0.0
+  } // releases before 16.0.0 supported returning `GraphQLObjectType` from `resolveType`
+  // TODO: remove in 17.0.0 release
 
 
-  const runtimeTypeName = isNamedType(runtimeTypeOrName) ? runtimeTypeOrName.name : runtimeTypeOrName;
+  if (isObjectType(runtimeTypeName)) {
+    throw new GraphQLError('Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.');
+  }
 
   if (typeof runtimeTypeName !== 'string') {
-    throw new GraphQLError(`Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` + `value ${inspect(result)}, received "${inspect(runtimeTypeOrName)}".`);
+    throw new GraphQLError(`Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` + `value ${inspect(result)}, received "${inspect(runtimeTypeName)}".`);
   }
 
   const runtimeType = exeContext.schema.getType(runtimeTypeName);
