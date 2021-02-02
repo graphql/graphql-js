@@ -31,8 +31,6 @@ exports.isCompositeType = isCompositeType;
 exports.assertCompositeType = assertCompositeType;
 exports.isAbstractType = isAbstractType;
 exports.assertAbstractType = assertAbstractType;
-exports.GraphQLList = GraphQLList;
-exports.GraphQLNonNull = GraphQLNonNull;
 exports.isWrappingType = isWrappingType;
 exports.assertWrappingType = assertWrappingType;
 exports.isNullableType = isNullableType;
@@ -44,7 +42,7 @@ exports.getNamedType = getNamedType;
 exports.argsToArgsConfig = argsToArgsConfig;
 exports.isRequiredArgument = isRequiredArgument;
 exports.isRequiredInputField = isRequiredInputField;
-exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.GraphQLObjectType = exports.GraphQLScalarType = void 0;
+exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.GraphQLObjectType = exports.GraphQLScalarType = exports.GraphQLNonNull = exports.GraphQLList = void 0;
 
 var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries.js"));
 
@@ -305,42 +303,37 @@ function assertAbstractType(type) {
  *     })
  *
  */
-// FIXME: workaround to fix issue with Babel parser
-
-/* ::
-declare class GraphQLList<+T: GraphQLType> {
-  +ofType: T;
-  static <T>(ofType: T): GraphQLList<T>;
-  // Note: constructors cannot be used for covariant types. Drop the "new".
-  constructor(ofType: GraphQLType): void;
-}
-*/
 
 
-function GraphQLList(ofType) {
-  // istanbul ignore else (to be removed in v16.0.0)
-  if (this instanceof GraphQLList) {
-    this.ofType = assertType(ofType);
-  } else {
-    return new GraphQLList(ofType);
+var GraphQLList = /*#__PURE__*/function () {
+  function GraphQLList(ofType) {
+    isType(ofType) || (0, _devAssert.default)(0, "Expected ".concat((0, _inspect.default)(ofType), " to be a GraphQL type."));
+    this.ofType = ofType;
   }
-} // Need to cast through any to alter the prototype.
+
+  var _proto = GraphQLList.prototype;
+
+  _proto.toString = function toString() {
+    return '[' + String(this.ofType) + ']';
+  };
+
+  _proto.toJSON = function toJSON() {
+    return this.toString();
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLList, [{
+    key: _symbols.SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLList';
+    }
+  }]);
+
+  return GraphQLList;
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
 
 
-GraphQLList.prototype.toString = function toString() {
-  return '[' + String(this.ofType) + ']';
-};
-
-GraphQLList.prototype.toJSON = function toJSON() {
-  return this.toString();
-};
-
-Object.defineProperty(GraphQLList.prototype, _symbols.SYMBOL_TO_STRING_TAG, {
-  get: function get() {
-    return 'GraphQLList';
-  }
-}); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
+exports.GraphQLList = GraphQLList;
 (0, _defineInspect.default)(GraphQLList);
 /**
  * Non-Null Type Wrapper
@@ -362,41 +355,36 @@ Object.defineProperty(GraphQLList.prototype, _symbols.SYMBOL_TO_STRING_TAG, {
  *
  * Note: the enforcement of non-nullability occurs within the executor.
  */
-// FIXME: workaround to fix issue with Babel parser
 
-/* ::
-declare class GraphQLNonNull<+T: GraphQLNullableType> {
-  +ofType: T;
-  static <T>(ofType: T): GraphQLNonNull<T>;
-  // Note: constructors cannot be used for covariant types. Drop the "new".
-  constructor(ofType: GraphQLType): void;
-}
-*/
-
-function GraphQLNonNull(ofType) {
-  // istanbul ignore else (to be removed in v16.0.0)
-  if (this instanceof GraphQLNonNull) {
-    this.ofType = assertNullableType(ofType);
-  } else {
-    return new GraphQLNonNull(ofType);
+var GraphQLNonNull = /*#__PURE__*/function () {
+  function GraphQLNonNull(ofType) {
+    isNullableType(ofType) || (0, _devAssert.default)(0, "Expected ".concat((0, _inspect.default)(ofType), " to be a GraphQL nullable type."));
+    this.ofType = ofType;
   }
-} // Need to cast through any to alter the prototype.
+
+  var _proto2 = GraphQLNonNull.prototype;
+
+  _proto2.toString = function toString() {
+    return String(this.ofType) + '!';
+  };
+
+  _proto2.toJSON = function toJSON() {
+    return this.toString();
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  ;
+
+  _createClass(GraphQLNonNull, [{
+    key: _symbols.SYMBOL_TO_STRING_TAG,
+    get: function get() {
+      return 'GraphQLNonNull';
+    }
+  }]);
+
+  return GraphQLNonNull;
+}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
 
 
-GraphQLNonNull.prototype.toString = function toString() {
-  return String(this.ofType) + '!';
-};
-
-GraphQLNonNull.prototype.toJSON = function toJSON() {
-  return this.toString();
-};
-
-Object.defineProperty(GraphQLNonNull.prototype, _symbols.SYMBOL_TO_STRING_TAG, {
-  get: function get() {
-    return 'GraphQLNonNull';
-  }
-}); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
+exports.GraphQLNonNull = GraphQLNonNull;
 (0, _defineInspect.default)(GraphQLNonNull);
 /**
  * These types wrap and modify other types
@@ -534,9 +522,9 @@ var GraphQLScalarType = /*#__PURE__*/function () {
     }
   }
 
-  var _proto = GraphQLScalarType.prototype;
+  var _proto3 = GraphQLScalarType.prototype;
 
-  _proto.toConfig = function toConfig() {
+  _proto3.toConfig = function toConfig() {
     var _this$extensionASTNod;
 
     return {
@@ -552,11 +540,11 @@ var GraphQLScalarType = /*#__PURE__*/function () {
     };
   };
 
-  _proto.toString = function toString() {
+  _proto3.toString = function toString() {
     return this.name;
   };
 
-  _proto.toJSON = function toJSON() {
+  _proto3.toJSON = function toJSON() {
     return this.toString();
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
@@ -626,9 +614,9 @@ var GraphQLObjectType = /*#__PURE__*/function () {
     config.isTypeOf == null || typeof config.isTypeOf === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"isTypeOf\" as a function, ") + "but got: ".concat((0, _inspect.default)(config.isTypeOf), "."));
   }
 
-  var _proto2 = GraphQLObjectType.prototype;
+  var _proto4 = GraphQLObjectType.prototype;
 
-  _proto2.getFields = function getFields() {
+  _proto4.getFields = function getFields() {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
     }
@@ -636,7 +624,7 @@ var GraphQLObjectType = /*#__PURE__*/function () {
     return this._fields;
   };
 
-  _proto2.getInterfaces = function getInterfaces() {
+  _proto4.getInterfaces = function getInterfaces() {
     if (typeof this._interfaces === 'function') {
       this._interfaces = this._interfaces();
     }
@@ -644,7 +632,7 @@ var GraphQLObjectType = /*#__PURE__*/function () {
     return this._interfaces;
   };
 
-  _proto2.toConfig = function toConfig() {
+  _proto4.toConfig = function toConfig() {
     return {
       name: this.name,
       description: this.description,
@@ -657,11 +645,11 @@ var GraphQLObjectType = /*#__PURE__*/function () {
     };
   };
 
-  _proto2.toString = function toString() {
+  _proto4.toString = function toString() {
     return this.name;
   };
 
-  _proto2.toJSON = function toJSON() {
+  _proto4.toJSON = function toJSON() {
     return this.toString();
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
@@ -799,9 +787,9 @@ var GraphQLInterfaceType = /*#__PURE__*/function () {
     config.resolveType == null || typeof config.resolveType === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat((0, _inspect.default)(config.resolveType), "."));
   }
 
-  var _proto3 = GraphQLInterfaceType.prototype;
+  var _proto5 = GraphQLInterfaceType.prototype;
 
-  _proto3.getFields = function getFields() {
+  _proto5.getFields = function getFields() {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
     }
@@ -809,7 +797,7 @@ var GraphQLInterfaceType = /*#__PURE__*/function () {
     return this._fields;
   };
 
-  _proto3.getInterfaces = function getInterfaces() {
+  _proto5.getInterfaces = function getInterfaces() {
     if (typeof this._interfaces === 'function') {
       this._interfaces = this._interfaces();
     }
@@ -817,7 +805,7 @@ var GraphQLInterfaceType = /*#__PURE__*/function () {
     return this._interfaces;
   };
 
-  _proto3.toConfig = function toConfig() {
+  _proto5.toConfig = function toConfig() {
     var _this$extensionASTNod2;
 
     return {
@@ -832,11 +820,11 @@ var GraphQLInterfaceType = /*#__PURE__*/function () {
     };
   };
 
-  _proto3.toString = function toString() {
+  _proto5.toString = function toString() {
     return this.name;
   };
 
-  _proto3.toJSON = function toJSON() {
+  _proto5.toJSON = function toJSON() {
     return this.toString();
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
@@ -891,9 +879,9 @@ var GraphQLUnionType = /*#__PURE__*/function () {
     config.resolveType == null || typeof config.resolveType === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat((0, _inspect.default)(config.resolveType), "."));
   }
 
-  var _proto4 = GraphQLUnionType.prototype;
+  var _proto6 = GraphQLUnionType.prototype;
 
-  _proto4.getTypes = function getTypes() {
+  _proto6.getTypes = function getTypes() {
     if (typeof this._types === 'function') {
       this._types = this._types();
     }
@@ -901,7 +889,7 @@ var GraphQLUnionType = /*#__PURE__*/function () {
     return this._types;
   };
 
-  _proto4.toConfig = function toConfig() {
+  _proto6.toConfig = function toConfig() {
     var _this$extensionASTNod3;
 
     return {
@@ -915,11 +903,11 @@ var GraphQLUnionType = /*#__PURE__*/function () {
     };
   };
 
-  _proto4.toString = function toString() {
+  _proto6.toString = function toString() {
     return this.name;
   };
 
-  _proto4.toJSON = function toJSON() {
+  _proto6.toJSON = function toJSON() {
     return this.toString();
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
@@ -984,17 +972,17 @@ var GraphQLEnumType
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
   }
 
-  var _proto5 = GraphQLEnumType.prototype;
+  var _proto7 = GraphQLEnumType.prototype;
 
-  _proto5.getValues = function getValues() {
+  _proto7.getValues = function getValues() {
     return this._values;
   };
 
-  _proto5.getValue = function getValue(name) {
+  _proto7.getValue = function getValue(name) {
     return this._nameLookup[name];
   };
 
-  _proto5.serialize = function serialize(outputValue) {
+  _proto7.serialize = function serialize(outputValue) {
     var enumValue = this._valueLookup.get(outputValue);
 
     if (enumValue === undefined) {
@@ -1004,7 +992,7 @@ var GraphQLEnumType
     return enumValue.name;
   };
 
-  _proto5.parseValue = function parseValue(inputValue)
+  _proto7.parseValue = function parseValue(inputValue)
   /* T */
   {
     if (typeof inputValue !== 'string') {
@@ -1021,7 +1009,7 @@ var GraphQLEnumType
     return enumValue.value;
   };
 
-  _proto5.parseLiteral = function parseLiteral(valueNode, _variables)
+  _proto7.parseLiteral = function parseLiteral(valueNode, _variables)
   /* T */
   {
     // Note: variables will be resolved to a value before calling this function.
@@ -1041,7 +1029,7 @@ var GraphQLEnumType
     return enumValue.value;
   };
 
-  _proto5.toConfig = function toConfig() {
+  _proto7.toConfig = function toConfig() {
     var _this$extensionASTNod4;
 
     var values = (0, _keyValMap.default)(this.getValues(), function (value) {
@@ -1065,11 +1053,11 @@ var GraphQLEnumType
     };
   };
 
-  _proto5.toString = function toString() {
+  _proto7.toString = function toString() {
     return this.name;
   };
 
-  _proto5.toJSON = function toJSON() {
+  _proto7.toJSON = function toJSON() {
     return this.toString();
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;
@@ -1144,9 +1132,9 @@ var GraphQLInputObjectType = /*#__PURE__*/function () {
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
   }
 
-  var _proto6 = GraphQLInputObjectType.prototype;
+  var _proto8 = GraphQLInputObjectType.prototype;
 
-  _proto6.getFields = function getFields() {
+  _proto8.getFields = function getFields() {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
     }
@@ -1154,7 +1142,7 @@ var GraphQLInputObjectType = /*#__PURE__*/function () {
     return this._fields;
   };
 
-  _proto6.toConfig = function toConfig() {
+  _proto8.toConfig = function toConfig() {
     var _this$extensionASTNod5;
 
     var fields = (0, _mapValue.default)(this.getFields(), function (field) {
@@ -1176,11 +1164,11 @@ var GraphQLInputObjectType = /*#__PURE__*/function () {
     };
   };
 
-  _proto6.toString = function toString() {
+  _proto8.toString = function toString() {
     return this.name;
   };
 
-  _proto6.toJSON = function toJSON() {
+  _proto8.toJSON = function toJSON() {
     return this.toString();
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   ;

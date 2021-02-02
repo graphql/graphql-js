@@ -332,6 +332,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     }
 
     if (node.kind === Kind.NON_NULL_TYPE) {
+      // $FlowFixMe[incompatible-call]
       return new GraphQLNonNull(getWrappedType(node.type));
     }
 
