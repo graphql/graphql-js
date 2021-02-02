@@ -1,4 +1,3 @@
-import find from "../../polyfills/find.mjs";
 import objectEntries from "../../polyfills/objectEntries.mjs";
 import inspect from "../../jsutils/inspect.mjs";
 import { GraphQLError } from "../../error/GraphQLError.mjs";
@@ -383,7 +382,7 @@ function sameArguments(arguments1, arguments2) {
   }
 
   return arguments1.every(function (argument1) {
-    var argument2 = find(arguments2, function (argument) {
+    var argument2 = arguments2.find(function (argument) {
       return argument.name.value === argument1.name.value;
     });
 

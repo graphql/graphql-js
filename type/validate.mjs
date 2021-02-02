@@ -1,4 +1,3 @@
-import find from "../polyfills/find.mjs";
 import objectValues from "../polyfills/objectValues.mjs";
 import inspect from "../jsutils/inspect.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
@@ -301,7 +300,7 @@ function validateTypeImplementsInterface(context, type, iface) {
     var _loop = function _loop(_i18, _ifaceField$args2) {
       var ifaceArg = _ifaceField$args2[_i18];
       var argName = ifaceArg.name;
-      var typeArg = find(typeField.args, function (arg) {
+      var typeArg = typeField.args.find(function (arg) {
         return arg.name === argName;
       }); // Assert interface field arg exists on object field.
 
@@ -333,7 +332,7 @@ function validateTypeImplementsInterface(context, type, iface) {
     var _loop2 = function _loop2(_i20, _typeField$args2) {
       var typeArg = _typeField$args2[_i20];
       var argName = typeArg.name;
-      var ifaceArg = find(ifaceField.args, function (arg) {
+      var ifaceArg = ifaceField.args.find(function (arg) {
         return arg.name === argName;
       });
 

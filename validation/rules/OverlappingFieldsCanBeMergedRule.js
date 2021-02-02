@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 
-var _find = _interopRequireDefault(require("../../polyfills/find.js"));
-
 var _objectEntries3 = _interopRequireDefault(require("../../polyfills/objectEntries.js"));
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
@@ -399,7 +397,7 @@ function sameArguments(arguments1, arguments2) {
   }
 
   return arguments1.every(function (argument1) {
-    var argument2 = (0, _find.default)(arguments2, function (argument) {
+    var argument2 = arguments2.find(function (argument) {
       return argument.name.value === argument1.name.value;
     });
 

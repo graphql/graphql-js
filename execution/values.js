@@ -7,8 +7,6 @@ exports.getVariableValues = getVariableValues;
 exports.getArgumentValues = getArgumentValues;
 exports.getDirectiveValues = getDirectiveValues;
 
-var _find = _interopRequireDefault(require("../polyfills/find.js"));
-
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
@@ -214,7 +212,10 @@ function getArgumentValues(def, node, variableValues) {
 
 
 function getDirectiveValues(directiveDef, node, variableValues) {
-  var directiveNode = node.directives && (0, _find.default)(node.directives, function (directive) {
+  var _node$directives;
+
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  var directiveNode = (_node$directives = node.directives) === null || _node$directives === void 0 ? void 0 : _node$directives.find(function (directive) {
     return directive.name.value === directiveDef.name;
   });
 

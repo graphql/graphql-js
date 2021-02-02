@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.visitWithTypeInfo = visitWithTypeInfo;
 exports.TypeInfo = void 0;
 
-var _find = _interopRequireDefault(require("../polyfills/find.js"));
-
 var _kinds = require("../language/kinds.js");
 
 var _ast = require("../language/ast.js");
@@ -19,8 +17,6 @@ var _definition = require("../type/definition.js");
 var _introspection = require("../type/introspection.js");
 
 var _typeFromAST = require("./typeFromAST.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
@@ -203,7 +199,7 @@ var TypeInfo = /*#__PURE__*/function () {
           var fieldOrDirective = (_this$getDirective = this.getDirective()) !== null && _this$getDirective !== void 0 ? _this$getDirective : this.getFieldDef();
 
           if (fieldOrDirective) {
-            argDef = (0, _find.default)(fieldOrDirective.args, function (arg) {
+            argDef = fieldOrDirective.args.find(function (arg) {
               return arg.name === node.name.value;
             });
 

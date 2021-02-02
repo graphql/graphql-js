@@ -7,8 +7,6 @@ exports.isSchema = isSchema;
 exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
 
-var _find = _interopRequireDefault(require("../polyfills/find.js"));
-
 var _arrayFrom3 = _interopRequireDefault(require("../polyfills/arrayFrom.js"));
 
 var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues.js"));
@@ -306,7 +304,7 @@ var GraphQLSchema = /*#__PURE__*/function () {
   };
 
   _proto.getDirective = function getDirective(name) {
-    return (0, _find.default)(this.getDirectives(), function (directive) {
+    return this.getDirectives().find(function (directive) {
       return directive.name === name;
     });
   };

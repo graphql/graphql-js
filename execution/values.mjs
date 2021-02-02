@@ -1,4 +1,3 @@
-import find from "../polyfills/find.mjs";
 import keyMap from "../jsutils/keyMap.mjs";
 import inspect from "../jsutils/inspect.mjs";
 import printPathArray from "../jsutils/printPathArray.mjs";
@@ -192,7 +191,10 @@ export function getArgumentValues(def, node, variableValues) {
  */
 
 export function getDirectiveValues(directiveDef, node, variableValues) {
-  var directiveNode = node.directives && find(node.directives, function (directive) {
+  var _node$directives;
+
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  var directiveNode = (_node$directives = node.directives) === null || _node$directives === void 0 ? void 0 : _node$directives.find(function (directive) {
     return directive.name.value === directiveDef.name;
   });
 

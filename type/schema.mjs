@@ -2,7 +2,6 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-import find from "../polyfills/find.mjs";
 import arrayFrom from "../polyfills/arrayFrom.mjs";
 import objectValues from "../polyfills/objectValues.mjs";
 import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
@@ -285,7 +284,7 @@ export var GraphQLSchema = /*#__PURE__*/function () {
   };
 
   _proto.getDirective = function getDirective(name) {
-    return find(this.getDirectives(), function (directive) {
+    return this.getDirectives().find(function (directive) {
       return directive.name === name;
     });
   };
