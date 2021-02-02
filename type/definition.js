@@ -206,40 +206,27 @@ export function assertAbstractType(type) {
  *     })
  *
  */
-// FIXME: workaround to fix issue with Babel parser
 
-/* ::
-declare class GraphQLList<+T: GraphQLType> {
-  +ofType: T;
-  static <T>(ofType: T): GraphQLList<T>;
-  // Note: constructors cannot be used for covariant types. Drop the "new".
-  constructor(ofType: GraphQLType): void;
-}
-*/
-
-export function GraphQLList(ofType) {
-  // istanbul ignore else (to be removed in v16.0.0)
-  if (this instanceof GraphQLList) {
-    this.ofType = assertType(ofType);
-  } else {
-    return new GraphQLList(ofType);
+export class GraphQLList {
+  constructor(ofType) {
+    isType(ofType) || devAssert(0, `Expected ${inspect(ofType)} to be a GraphQL type.`);
+    this.ofType = ofType;
   }
-} // Need to cast through any to alter the prototype.
 
-GraphQLList.prototype.toString = function toString() {
-  return '[' + String(this.ofType) + ']';
-};
+  toString() {
+    return '[' + String(this.ofType) + ']';
+  }
 
-GraphQLList.prototype.toJSON = function toJSON() {
-  return this.toString();
-};
+  toJSON() {
+    return this.toString();
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
-Object.defineProperty(GraphQLList.prototype, SYMBOL_TO_STRING_TAG, {
-  get() {
+
+  get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLList';
   }
 
-}); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+} // Print a simplified form when appearing in `inspect` and `util.inspect`.
 
 defineInspect(GraphQLList);
 /**
@@ -262,40 +249,27 @@ defineInspect(GraphQLList);
  *
  * Note: the enforcement of non-nullability occurs within the executor.
  */
-// FIXME: workaround to fix issue with Babel parser
 
-/* ::
-declare class GraphQLNonNull<+T: GraphQLNullableType> {
-  +ofType: T;
-  static <T>(ofType: T): GraphQLNonNull<T>;
-  // Note: constructors cannot be used for covariant types. Drop the "new".
-  constructor(ofType: GraphQLType): void;
-}
-*/
-
-export function GraphQLNonNull(ofType) {
-  // istanbul ignore else (to be removed in v16.0.0)
-  if (this instanceof GraphQLNonNull) {
-    this.ofType = assertNullableType(ofType);
-  } else {
-    return new GraphQLNonNull(ofType);
+export class GraphQLNonNull {
+  constructor(ofType) {
+    isNullableType(ofType) || devAssert(0, `Expected ${inspect(ofType)} to be a GraphQL nullable type.`);
+    this.ofType = ofType;
   }
-} // Need to cast through any to alter the prototype.
 
-GraphQLNonNull.prototype.toString = function toString() {
-  return String(this.ofType) + '!';
-};
+  toString() {
+    return String(this.ofType) + '!';
+  }
 
-GraphQLNonNull.prototype.toJSON = function toJSON() {
-  return this.toString();
-};
+  toJSON() {
+    return this.toString();
+  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
-Object.defineProperty(GraphQLNonNull.prototype, SYMBOL_TO_STRING_TAG, {
-  get() {
+
+  get [SYMBOL_TO_STRING_TAG]() {
     return 'GraphQLNonNull';
   }
 
-}); // Print a simplified form when appearing in `inspect` and `util.inspect`.
+} // Print a simplified form when appearing in `inspect` and `util.inspect`.
 
 defineInspect(GraphQLNonNull);
 /**
