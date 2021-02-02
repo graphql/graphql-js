@@ -1,4 +1,3 @@
-import find from "../polyfills/find.js";
 import { Kind } from "../language/kinds.js";
 import { isNode } from "../language/ast.js";
 import { getVisitFn } from "../language/visitor.js";
@@ -183,7 +182,7 @@ export class TypeInfo {
           const fieldOrDirective = this.getDirective() ?? this.getFieldDef();
 
           if (fieldOrDirective) {
-            argDef = find(fieldOrDirective.args, arg => arg.name === node.name.value);
+            argDef = fieldOrDirective.args.find(arg => arg.name === node.name.value);
 
             if (argDef) {
               argType = argDef.type;

@@ -1,4 +1,3 @@
-import find from "../../polyfills/find.js";
 import objectEntries from "../../polyfills/objectEntries.js";
 import inspect from "../../jsutils/inspect.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
@@ -343,7 +342,7 @@ function sameArguments(arguments1, arguments2) {
   }
 
   return arguments1.every(argument1 => {
-    const argument2 = find(arguments2, argument => argument.name.value === argument1.name.value);
+    const argument2 = arguments2.find(argument => argument.name.value === argument1.name.value);
 
     if (!argument2) {
       return false;

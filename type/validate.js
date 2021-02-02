@@ -1,4 +1,3 @@
-import find from "../polyfills/find.js";
 import objectValues from "../polyfills/objectValues.js";
 import inspect from "../jsutils/inspect.js";
 import { GraphQLError } from "../error/GraphQLError.js";
@@ -265,7 +264,7 @@ function validateTypeImplementsInterface(context, type, iface) {
 
     for (const ifaceArg of ifaceField.args) {
       const argName = ifaceArg.name;
-      const typeArg = find(typeField.args, arg => arg.name === argName); // Assert interface field arg exists on object field.
+      const typeArg = typeField.args.find(arg => arg.name === argName); // Assert interface field arg exists on object field.
 
       if (!typeArg) {
         context.reportError(`Interface field argument ${iface.name}.${fieldName}(${argName}:) expected but ${type.name}.${fieldName} does not provide it.`, [ifaceArg.astNode, typeField.astNode]);
@@ -286,7 +285,7 @@ function validateTypeImplementsInterface(context, type, iface) {
 
     for (const typeArg of typeField.args) {
       const argName = typeArg.name;
-      const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
+      const ifaceArg = ifaceField.args.find(arg => arg.name === argName);
 
       if (!ifaceArg && isRequiredArgument(typeArg)) {
         context.reportError(`Object field ${type.name}.${fieldName} includes required argument ${argName} that is missing from the Interface field ${iface.name}.${fieldName}.`, [typeArg.astNode, ifaceField.astNode]);
