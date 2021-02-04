@@ -28,12 +28,15 @@ with this spec will be considered. If you have a change in mind which requires a
 change to the spec, please first open an
 [issue](https://github.com/graphql/graphql-spec/issues/) against the spec.
 
-### Contributor License Agreement ("CLA")
+### GraphQL Specification Membership Agreement
 
-In order to accept your pull request, we need you to submit a CLA. You only need
-to do this once to work on any of Facebook's open source projects.
+This repository is managed by EasyCLA. Project participants must sign the free ([GraphQL Specification Membership agreement](https://preview-spec-membership.graphql.org) before making a contribution. You only need to do this one time, and it can be signed by [individual contributors](http://individual-spec-membership.graphql.org/) or their [employers](http://corporate-spec-membership.graphql.org/).
 
-Complete your CLA here: <https://code.facebook.com/cla>
+To initiate the signature process please open a PR against this repo. The EasyCLA bot will block the merge if we still need a membership agreement from you.
+
+You can find [detailed information here](https://github.com/graphql/graphql-wg/tree/main/membership). If you have issues, please email [operations@graphql.org](mailto:operations@graphql.org).
+
+If your company benefits from GraphQL and you would like to provide essential financial support for the systems and people that power our community, please also consider membership in the [GraphQL Foundation](https://foundation.graphql.org/join).
 
 ### Getting Started
 
