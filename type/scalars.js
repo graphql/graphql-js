@@ -1,5 +1,3 @@
-import isFinite from "../polyfills/isFinite.js";
-import isInteger from "../polyfills/isInteger.js";
 import inspect from "../jsutils/inspect.js";
 import isObjectLike from "../jsutils/isObjectLike.js";
 import { Kind } from "../language/kinds.js";
@@ -27,7 +25,7 @@ function serializeInt(outputValue) {
     num = Number(coercedValue);
   }
 
-  if (!isInteger(num)) {
+  if (typeof num !== 'number' || !Number.isInteger(num)) {
     throw new GraphQLError(`Int cannot represent non-integer value: ${inspect(coercedValue)}`);
   }
 
@@ -39,7 +37,7 @@ function serializeInt(outputValue) {
 }
 
 function coerceInt(inputValue) {
-  if (!isInteger(inputValue)) {
+  if (typeof inputValue !== 'number' || !Number.isInteger(inputValue)) {
     throw new GraphQLError(`Int cannot represent non-integer value: ${inspect(inputValue)}`);
   }
 
@@ -85,7 +83,7 @@ function serializeFloat(outputValue) {
     num = Number(coercedValue);
   }
 
-  if (!isFinite(num)) {
+  if (typeof num !== 'number' || !Number.isFinite(num)) {
     throw new GraphQLError(`Float cannot represent non numeric value: ${inspect(coercedValue)}`);
   }
 
@@ -93,7 +91,7 @@ function serializeFloat(outputValue) {
 }
 
 function coerceFloat(inputValue) {
-  if (!isFinite(inputValue)) {
+  if (typeof inputValue !== 'number' || !Number.isFinite(inputValue)) {
     throw new GraphQLError(`Float cannot represent non numeric value: ${inspect(inputValue)}`);
   }
 
@@ -149,7 +147,7 @@ function serializeString(outputValue) {
     return coercedValue ? 'true' : 'false';
   }
 
-  if (isFinite(coercedValue)) {
+  if (typeof coercedValue === 'number' && Number.isFinite(coercedValue)) {
     return coercedValue.toString();
   }
 
@@ -187,7 +185,7 @@ function serializeBoolean(outputValue) {
     return coercedValue;
   }
 
-  if (isFinite(coercedValue)) {
+  if (Number.isFinite(coercedValue)) {
     return coercedValue !== 0;
   }
 
@@ -225,7 +223,7 @@ function serializeID(outputValue) {
     return coercedValue;
   }
 
-  if (isInteger(coercedValue)) {
+  if (Number.isInteger(coercedValue)) {
     return String(coercedValue);
   }
 
@@ -237,7 +235,7 @@ function coerceID(inputValue) {
     return inputValue;
   }
 
-  if (isInteger(inputValue)) {
+  if (typeof inputValue === 'number' && Number.isInteger(inputValue)) {
     return inputValue.toString();
   }
 
