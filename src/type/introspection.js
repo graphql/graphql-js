@@ -1,5 +1,3 @@
-import { objectValues } from '../polyfills/objectValues';
-
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 
@@ -48,7 +46,7 @@ export const __Schema = new GraphQLObjectType({
         description: 'A list of all types supported by this server.',
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__Type))),
         resolve(schema) {
-          return objectValues(schema.getTypeMap());
+          return Object.values(schema.getTypeMap());
         },
       },
       queryType: {
@@ -255,7 +253,7 @@ export const __Type = new GraphQLObjectType({
         },
         resolve(type, { includeDeprecated }) {
           if (isObjectType(type) || isInterfaceType(type)) {
-            const fields = objectValues(type.getFields());
+            const fields = Object.values(type.getFields());
             return includeDeprecated
               ? fields
               : fields.filter((field) => field.deprecationReason == null);
@@ -302,7 +300,7 @@ export const __Type = new GraphQLObjectType({
         },
         resolve(type, { includeDeprecated }) {
           if (isInputObjectType(type)) {
-            const values = objectValues(type.getFields());
+            const values = Object.values(type.getFields());
             return includeDeprecated
               ? values
               : values.filter((field) => field.deprecationReason == null);

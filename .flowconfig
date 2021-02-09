@@ -37,6 +37,7 @@ module.use_strict=true
 babel_loose_array_spread=true
 experimental.const_params=true
 include_warnings=true
+no_flowlib=true
 
 [version]
 ^0.142.0

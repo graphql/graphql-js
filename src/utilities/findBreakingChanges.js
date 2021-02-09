@@ -1,5 +1,3 @@
-import { objectValues } from '../polyfills/objectValues';
-
 import { keyMap } from '../jsutils/keyMap';
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
@@ -177,8 +175,8 @@ function findTypeChanges(
   const schemaChanges = [];
 
   const typesDiff = diff(
-    objectValues(oldSchema.getTypeMap()),
-    objectValues(newSchema.getTypeMap()),
+    Object.values(oldSchema.getTypeMap()),
+    Object.values(newSchema.getTypeMap()),
   );
 
   for (const oldType of typesDiff.removed) {
@@ -226,8 +224,8 @@ function findInputObjectTypeChanges(
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const fieldsDiff = diff(
-    objectValues(oldType.getFields()),
-    objectValues(newType.getFields()),
+    Object.values(oldType.getFields()),
+    Object.values(newType.getFields()),
   );
 
   for (const newField of fieldsDiff.added) {
@@ -347,8 +345,8 @@ function findFieldChanges(
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const fieldsDiff = diff(
-    objectValues(oldType.getFields()),
-    objectValues(newType.getFields()),
+    Object.values(oldType.getFields()),
+    Object.values(newType.getFields()),
   );
 
   for (const oldField of fieldsDiff.removed) {

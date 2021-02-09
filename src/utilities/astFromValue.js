@@ -1,5 +1,3 @@
-import { objectValues } from '../polyfills/objectValues';
-
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { isObjectLike } from '../jsutils/isObjectLike';
@@ -84,7 +82,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
       return null;
     }
     const fieldNodes = [];
-    for (const field of objectValues(type.getFields())) {
+    for (const field of Object.values(type.getFields())) {
       const fieldValue = astFromValue(value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({

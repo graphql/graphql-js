@@ -1,5 +1,3 @@
-import { objectValues } from '../polyfills/objectValues';
-
 import { keyMap } from '../jsutils/keyMap';
 import { inspect } from '../jsutils/inspect';
 import { mapValue } from '../jsutils/mapValue';
@@ -205,7 +203,7 @@ export function extendSchemaImpl(
   return {
     description: schemaDef?.description?.value,
     ...operationTypes,
-    types: objectValues(typeMap),
+    types: Object.values(typeMap),
     directives: [
       ...schemaConfig.directives.map(replaceDirective),
       ...directiveDefs.map(buildDirective),

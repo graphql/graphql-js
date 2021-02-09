@@ -1,5 +1,3 @@
-import { objectEntries } from '../polyfills/objectEntries';
-
 import type { Path } from '../jsutils/Path';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type {
@@ -811,7 +809,7 @@ function defineFieldMap<TSource, TContext>(
       `${config.name}.${fieldName} args must be an object with argument names as keys.`,
     );
 
-    const args = objectEntries(argsConfig).map(([argName, argConfig]) => ({
+    const args = Object.entries(argsConfig).map(([argName, argConfig]) => ({
       name: argName,
       description: argConfig.description,
       type: argConfig.type,
@@ -1388,7 +1386,7 @@ function defineEnumValues(
     isPlainObj(valueMap),
     `${typeName} values must be an object with value names as keys.`,
   );
-  return objectEntries(valueMap).map(([valueName, valueConfig]) => {
+  return Object.entries(valueMap).map(([valueName, valueConfig]) => {
     devAssert(
       isPlainObj(valueConfig),
       `${typeName}.${valueName} must refer to an object with a "value" key ` +

@@ -1,5 +1,3 @@
-import { objectEntries } from '../polyfills/objectEntries';
-
 import type {
   ObjMap,
   ObjMapLike,
@@ -18,7 +16,7 @@ export function toObjMap(obj) {
   }
 
   const map = Object.create(null);
-  for (const [key, value] of objectEntries(obj)) {
+  for (const [key, value] of Object.entries(obj)) {
     map[key] = value;
   }
   return map;

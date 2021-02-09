@@ -1,5 +1,3 @@
-import { objectValues } from '../polyfills/objectValues';
-
 import type { ObjMap } from '../jsutils/ObjMap';
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
@@ -49,7 +47,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
 
   return new GraphQLSchema({
     ...schemaConfig,
-    types: objectValues(typeMap),
+    types: Object.values(typeMap),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
     query: replaceMaybeType(schemaConfig.query),
     mutation: replaceMaybeType(schemaConfig.mutation),

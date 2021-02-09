@@ -1,5 +1,3 @@
-import { objectValues } from '../polyfills/objectValues';
-
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 
@@ -58,7 +56,7 @@ function printFilteredSchema(
   typeFilter: (type: GraphQLNamedType) => boolean,
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
-  const types = objectValues(schema.getTypeMap()).filter(typeFilter);
+  const types = Object.values(schema.getTypeMap()).filter(typeFilter);
 
   return (
     [printSchemaDefinition(schema)]
@@ -206,14 +204,14 @@ function printEnum(type: GraphQLEnumType): string {
 }
 
 function printInputObject(type: GraphQLInputObjectType): string {
-  const fields = objectValues(type.getFields()).map(
+  const fields = Object.values(type.getFields()).map(
     (f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f),
   );
   return printDescription(type) + `input ${type.name}` + printBlock(fields);
 }
 
 function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
-  const fields = objectValues(type.getFields()).map(
+  const fields = Object.values(type.getFields()).map(
     (f, i) =>
       printDescription(f, '  ', !i) +
       '  ' +
