@@ -151,7 +151,10 @@ function serializeObject(outputValue: mixed): mixed {
 
 function serializeString(outputValue: mixed): string {
   const coercedValue = serializeObject(outputValue);
-
+  
+  if (coercedValue instanceof Buffer) {
+    return coercedValue.toString('utf8');
+  }
   // Serialize string, boolean and number values to a string, but do not
   // attempt to coerce object, function, symbol, or other types as strings.
   if (typeof coercedValue === 'string') {
@@ -169,6 +172,9 @@ function serializeString(outputValue: mixed): string {
 }
 
 function coerceString(inputValue: mixed): string {
+  if (inputValue instanceof Buffer) {
+    return inputValue.toString('utf8');
+  }
   if (typeof inputValue !== 'string') {
     throw new GraphQLError(
       `String cannot represent a non string value: ${inspect(inputValue)}`,
@@ -239,6 +245,9 @@ function serializeID(outputValue: mixed): string {
   if (typeof coercedValue === 'string') {
     return coercedValue;
   }
+  if (coercedValue instanceof Buffer) {
+    return coercedValue.toString('utf8');
+  }
   if (isInteger(coercedValue)) {
     return String(coercedValue);
   }
@@ -248,6 +257,9 @@ function serializeID(outputValue: mixed): string {
 function coerceID(inputValue: mixed): string {
   if (typeof inputValue === 'string') {
     return inputValue;
+  }
+  if (inputValue instanceof Buffer) {
+    return inputValue.toString('utf8');
   }
   if (isInteger(inputValue)) {
     return inputValue.toString();
