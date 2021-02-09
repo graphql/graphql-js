@@ -6,10 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.isSpecifiedScalarType = isSpecifiedScalarType;
 exports.specifiedScalarTypes = exports.GraphQLID = exports.GraphQLBoolean = exports.GraphQLString = exports.GraphQLFloat = exports.GraphQLInt = void 0;
 
-var _isFinite = _interopRequireDefault(require("../polyfills/isFinite.js"));
-
-var _isInteger = _interopRequireDefault(require("../polyfills/isInteger.js"));
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
@@ -45,7 +41,7 @@ function serializeInt(outputValue) {
     num = Number(coercedValue);
   }
 
-  if (!(0, _isInteger.default)(num)) {
+  if (typeof num !== 'number' || !Number.isInteger(num)) {
     throw new _GraphQLError.GraphQLError("Int cannot represent non-integer value: ".concat((0, _inspect.default)(coercedValue)));
   }
 
@@ -57,7 +53,7 @@ function serializeInt(outputValue) {
 }
 
 function coerceInt(inputValue) {
-  if (!(0, _isInteger.default)(inputValue)) {
+  if (typeof inputValue !== 'number' || !Number.isInteger(inputValue)) {
     throw new _GraphQLError.GraphQLError("Int cannot represent non-integer value: ".concat((0, _inspect.default)(inputValue)));
   }
 
@@ -102,7 +98,7 @@ function serializeFloat(outputValue) {
     num = Number(coercedValue);
   }
 
-  if (!(0, _isFinite.default)(num)) {
+  if (typeof num !== 'number' || !Number.isFinite(num)) {
     throw new _GraphQLError.GraphQLError("Float cannot represent non numeric value: ".concat((0, _inspect.default)(coercedValue)));
   }
 
@@ -110,7 +106,7 @@ function serializeFloat(outputValue) {
 }
 
 function coerceFloat(inputValue) {
-  if (!(0, _isFinite.default)(inputValue)) {
+  if (typeof inputValue !== 'number' || !Number.isFinite(inputValue)) {
     throw new _GraphQLError.GraphQLError("Float cannot represent non numeric value: ".concat((0, _inspect.default)(inputValue)));
   }
 
@@ -166,7 +162,7 @@ function serializeString(outputValue) {
     return coercedValue ? 'true' : 'false';
   }
 
-  if ((0, _isFinite.default)(coercedValue)) {
+  if (typeof coercedValue === 'number' && Number.isFinite(coercedValue)) {
     return coercedValue.toString();
   }
 
@@ -203,7 +199,7 @@ function serializeBoolean(outputValue) {
     return coercedValue;
   }
 
-  if ((0, _isFinite.default)(coercedValue)) {
+  if (Number.isFinite(coercedValue)) {
     return coercedValue !== 0;
   }
 
@@ -240,7 +236,7 @@ function serializeID(outputValue) {
     return coercedValue;
   }
 
-  if ((0, _isInteger.default)(coercedValue)) {
+  if (Number.isInteger(coercedValue)) {
     return String(coercedValue);
   }
 
@@ -252,7 +248,7 @@ function coerceID(inputValue) {
     return inputValue;
   }
 
-  if ((0, _isInteger.default)(inputValue)) {
+  if (typeof inputValue === 'number' && Number.isInteger(inputValue)) {
     return inputValue.toString();
   }
 

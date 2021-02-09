@@ -1,4 +1,3 @@
-import isFinite from "../polyfills/isFinite.mjs";
 import arrayFrom from "../polyfills/arrayFrom.mjs";
 import objectValues from "../polyfills/objectValues.mjs";
 import inspect from "../jsutils/inspect.mjs";
@@ -130,7 +129,7 @@ export function astFromValue(value, type) {
     } // JavaScript numbers can be Int or Float values.
 
 
-    if (typeof serialized === 'number' && isFinite(serialized)) {
+    if (typeof serialized === 'number' && Number.isFinite(serialized)) {
       var stringNum = String(serialized);
       return integerStringRegExp.test(stringNum) ? {
         kind: Kind.INT,

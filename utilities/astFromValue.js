@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.astFromValue = astFromValue;
 
-var _isFinite = _interopRequireDefault(require("../polyfills/isFinite.js"));
-
 var _arrayFrom3 = _interopRequireDefault(require("../polyfills/arrayFrom.js"));
 
 var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues.js"));
@@ -148,7 +146,7 @@ function astFromValue(value, type) {
     } // JavaScript numbers can be Int or Float values.
 
 
-    if (typeof serialized === 'number' && (0, _isFinite.default)(serialized)) {
+    if (typeof serialized === 'number' && Number.isFinite(serialized)) {
       var stringNum = String(serialized);
       return integerStringRegExp.test(stringNum) ? {
         kind: _kinds.Kind.INT,
