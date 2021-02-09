@@ -20,6 +20,7 @@ import {
   GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
+  GraphQLDeferDirective,
 } from '../../type/directives';
 import {
   GraphQLID,
@@ -221,12 +222,13 @@ describe('Schema Builder', () => {
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
-  it('Maintains @include, @skip & @specifiedBy', () => {
+  it('Maintains specified directives', () => {
     const schema = buildSchema('type Query');
 
-    expect(schema.getDirectives()).to.have.lengthOf(4);
+    expect(schema.getDirectives()).to.have.lengthOf(5);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
+    expect(schema.getDirective('defer')).to.equal(GraphQLDeferDirective);
     expect(schema.getDirective('deprecated')).to.equal(
       GraphQLDeprecatedDirective,
     );
@@ -241,9 +243,10 @@ describe('Schema Builder', () => {
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
       directive @specifiedBy on FIELD_DEFINITION
+      directive @defer on FRAGMENT_SPREAD
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(4);
+    expect(schema.getDirectives()).to.have.lengthOf(5);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.not.equal(
       GraphQLIncludeDirective,
@@ -254,16 +257,18 @@ describe('Schema Builder', () => {
     expect(schema.getDirective('specifiedBy')).to.not.equal(
       GraphQLSpecifiedByDirective,
     );
+    expect(schema.getDirective('defer')).to.not.equal(GraphQLDeferDirective);
   });
 
-  it('Adding directives maintains @include, @skip & @specifiedBy', () => {
+  it('Adding directives maintains specified directives', () => {
     const schema = buildSchema(`
       directive @foo(arg: Int) on FIELD
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(5);
+    expect(schema.getDirectives()).to.have.lengthOf(6);
     expect(schema.getDirective('skip')).to.not.equal(undefined);
     expect(schema.getDirective('include')).to.not.equal(undefined);
+    expect(schema.getDirective('defer')).to.not.equal(undefined);
     expect(schema.getDirective('deprecated')).to.not.equal(undefined);
     expect(schema.getDirective('specifiedBy')).to.not.equal(undefined);
   });

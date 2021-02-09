@@ -76,6 +76,7 @@ export {
   specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+  GraphQLDeferDirective,
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
   // Constant Deprecation Reason

@@ -54,6 +54,7 @@ export {
   specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+  GraphQLDeferDirective,
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
   // "Enum" of Type Kinds
