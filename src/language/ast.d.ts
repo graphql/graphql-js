@@ -297,8 +297,7 @@ export interface FragmentDefinitionNode {
   readonly kind: 'FragmentDefinition';
   readonly loc?: Location;
   readonly name: NameNode;
-  // Note: fragment variable definitions are experimental and may be changed
-  // or removed in the future.
+  // Note: fragment variable definitions are deprecated and will removed in v17.0.0
   readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
   readonly typeCondition: NamedTypeNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;

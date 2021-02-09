@@ -117,12 +117,10 @@ describe('Printer: Query document', () => {
     );
   });
 
-  it('Experimental: prints fragment with variable directives', () => {
+  it('Legacy: prints fragment with variable directives', () => {
     const queryASTWithVariableDirective = parse(
       'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
-      {
-        experimentalFragmentVariables: true,
-      },
+      { allowLegacyFragmentVariables: true },
     );
     expect(print(queryASTWithVariableDirective)).to.equal(dedent`
       fragment Foo($foo: TestType @test) on TestType @testDirective {
@@ -131,14 +129,14 @@ describe('Printer: Query document', () => {
     `);
   });
 
-  it('Experimental: correctly prints fragment defined variables', () => {
+  it('Legacy: correctly prints fragment defined variables', () => {
     const fragmentWithVariable = parse(
       `
         fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
           id
         }
       `,
-      { experimentalFragmentVariables: true },
+      { allowLegacyFragmentVariables: true },
     );
     expect(print(fragmentWithVariable)).to.equal(dedent`
       fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
