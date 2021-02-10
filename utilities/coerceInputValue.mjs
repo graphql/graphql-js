@@ -1,4 +1,3 @@
-import arrayFrom from "../polyfills/arrayFrom.mjs";
 import objectValues from "../polyfills/objectValues.mjs";
 import inspect from "../jsutils/inspect.mjs";
 import invariant from "../jsutils/invariant.mjs";
@@ -49,7 +48,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     var itemType = type.ofType;
 
     if (isCollection(inputValue)) {
-      return arrayFrom(inputValue, function (itemValue, index) {
+      return Array.from(inputValue, function (itemValue, index) {
         var itemPath = addPath(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });

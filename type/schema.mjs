@@ -2,7 +2,6 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-import arrayFrom from "../polyfills/arrayFrom.mjs";
 import objectValues from "../polyfills/objectValues.mjs";
 import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
 import inspect from "../jsutils/inspect.mjs";
@@ -158,8 +157,8 @@ export var GraphQLSchema = /*#__PURE__*/function () {
 
     this._implementationsMap = Object.create(null);
 
-    for (var _i8 = 0, _arrayFrom2 = arrayFrom(allReferencedTypes); _i8 < _arrayFrom2.length; _i8++) {
-      var namedType = _arrayFrom2[_i8];
+    for (var _i8 = 0, _Array$from2 = Array.from(allReferencedTypes); _i8 < _Array$from2.length; _i8++) {
+      var namedType = _Array$from2[_i8];
 
       if (namedType == null) {
         continue;

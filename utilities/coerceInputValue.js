@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.coerceInputValue = coerceInputValue;
 
-var _arrayFrom = _interopRequireDefault(require("../polyfills/arrayFrom.js"));
-
 var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
@@ -69,7 +67,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     var itemType = type.ofType;
 
     if ((0, _isCollection.default)(inputValue)) {
-      return (0, _arrayFrom.default)(inputValue, function (itemValue, index) {
+      return Array.from(inputValue, function (itemValue, index) {
         var itemPath = (0, _Path.addPath)(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });

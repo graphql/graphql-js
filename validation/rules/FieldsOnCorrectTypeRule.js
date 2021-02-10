@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.FieldsOnCorrectTypeRule = FieldsOnCorrectTypeRule;
 
-var _arrayFrom = _interopRequireDefault(require("../../polyfills/arrayFrom.js"));
-
 var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"));
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
@@ -93,7 +91,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
     }
   }
 
-  return (0, _arrayFrom.default)(suggestedTypes).sort(function (typeA, typeB) {
+  return Array.from(suggestedTypes).sort(function (typeA, typeB) {
     // Suggest both interface and object types based on how common they are.
     var usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];
 

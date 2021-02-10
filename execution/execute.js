@@ -12,8 +12,6 @@ exports.buildResolveInfo = buildResolveInfo;
 exports.getFieldDef = getFieldDef;
 exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
 
-var _arrayFrom = _interopRequireDefault(require("../polyfills/arrayFrom.js"));
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
 var _memoize = _interopRequireDefault(require("../jsutils/memoize3.js"));
@@ -605,7 +603,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
 
   var itemType = returnType.ofType;
   var containsPromise = false;
-  var completedResults = (0, _arrayFrom.default)(result, function (item, index) {
+  var completedResults = Array.from(result, function (item, index) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     var itemPath = (0, _Path.addPath)(path, index, undefined);

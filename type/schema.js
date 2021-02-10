@@ -7,8 +7,6 @@ exports.isSchema = isSchema;
 exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
 
-var _arrayFrom3 = _interopRequireDefault(require("../polyfills/arrayFrom.js"));
-
 var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
 var _symbols = require("../polyfills/symbols.js");
@@ -178,8 +176,8 @@ var GraphQLSchema = /*#__PURE__*/function () {
 
     this._implementationsMap = Object.create(null);
 
-    for (var _i8 = 0, _arrayFrom2 = (0, _arrayFrom3.default)(allReferencedTypes); _i8 < _arrayFrom2.length; _i8++) {
-      var namedType = _arrayFrom2[_i8];
+    for (var _i8 = 0, _Array$from2 = Array.from(allReferencedTypes); _i8 < _Array$from2.length; _i8++) {
+      var namedType = _Array$from2[_i8];
 
       if (namedType == null) {
         continue;

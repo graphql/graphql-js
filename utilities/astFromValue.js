@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.astFromValue = astFromValue;
 
-var _arrayFrom3 = _interopRequireDefault(require("../polyfills/arrayFrom.js"));
-
 var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
@@ -78,8 +76,8 @@ function astFromValue(value, type) {
       var valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
       // and it's required to first convert iteratable into array
 
-      for (var _i2 = 0, _arrayFrom2 = (0, _arrayFrom3.default)(value); _i2 < _arrayFrom2.length; _i2++) {
-        var item = _arrayFrom2[_i2];
+      for (var _i2 = 0, _Array$from2 = Array.from(value); _i2 < _Array$from2.length; _i2++) {
+        var item = _Array$from2[_i2];
         var itemNode = astFromValue(item, itemType);
 
         if (itemNode != null) {

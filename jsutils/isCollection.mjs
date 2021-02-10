@@ -23,6 +23,7 @@ import { SYMBOL_ITERATOR } from "../polyfills/symbols.mjs";
  * @return {boolean} true if Iterable or Array-like Object.
  */
 
+// eslint-disable-next-line no-redeclare
 export default function isCollection(obj) {
   if (obj == null || _typeof(obj) !== 'object') {
     return false;
