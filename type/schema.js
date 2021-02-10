@@ -1,4 +1,3 @@
-import arrayFrom from "../polyfills/arrayFrom.js";
 import objectValues from "../polyfills/objectValues.js";
 import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
 import inspect from "../jsutils/inspect.js";
@@ -148,7 +147,7 @@ export class GraphQLSchema {
 
     this._implementationsMap = Object.create(null);
 
-    for (const namedType of arrayFrom(allReferencedTypes)) {
+    for (const namedType of Array.from(allReferencedTypes)) {
       if (namedType == null) {
         continue;
       }

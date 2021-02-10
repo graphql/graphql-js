@@ -1,4 +1,3 @@
-import arrayFrom from "../../polyfills/arrayFrom.js";
 import didYouMean from "../../jsutils/didYouMean.js";
 import suggestionList from "../../jsutils/suggestionList.js";
 import naturalCompare from "../../jsutils/naturalCompare.js";
@@ -73,7 +72,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
     }
   }
 
-  return arrayFrom(suggestedTypes).sort((typeA, typeB) => {
+  return Array.from(suggestedTypes).sort((typeA, typeB) => {
     // Suggest both interface and object types based on how common they are.
     const usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];
 

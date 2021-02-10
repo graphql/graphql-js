@@ -1,4 +1,3 @@
-import arrayFrom from "../polyfills/arrayFrom.js";
 import inspect from "../jsutils/inspect.js";
 import memoize3 from "../jsutils/memoize3.js";
 import invariant from "../jsutils/invariant.js";
@@ -579,7 +578,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
 
   const itemType = returnType.ofType;
   let containsPromise = false;
-  const completedResults = arrayFrom(result, (item, index) => {
+  const completedResults = Array.from(result, (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = addPath(path, index, undefined);
