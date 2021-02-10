@@ -21,7 +21,11 @@ import { SYMBOL_ITERATOR } from '../polyfills/symbols';
  *   An Object value which might implement the Iterable or Array-like protocols.
  * @return {boolean} true if Iterable or Array-like Object.
  */
-export default function isCollection(obj: mixed): boolean {
+declare function isCollection(value: mixed): boolean %checks(value instanceof
+  Iterable);
+
+// eslint-disable-next-line no-redeclare
+export default function isCollection(obj) {
   if (obj == null || typeof obj !== 'object') {
     return false;
   }
