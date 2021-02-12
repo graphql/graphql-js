@@ -9,8 +9,6 @@ exports.GraphQLSchema = void 0;
 
 var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues.js"));
 
-var _symbols = require("../polyfills/symbols.js");
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
 var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap.js"));
@@ -326,7 +324,7 @@ var GraphQLSchema = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLSchema, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLSchema';
     }

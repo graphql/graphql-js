@@ -3,7 +3,6 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 import objectEntries from "../polyfills/objectEntries.mjs";
-import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.mjs";
 import inspect from "../jsutils/inspect.mjs";
 import keyMap from "../jsutils/keyMap.mjs";
 import mapValue from "../jsutils/mapValue.mjs";
@@ -229,7 +228,7 @@ export var GraphQLList = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLList, [{
-    key: SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLList';
     }
@@ -278,7 +277,7 @@ export var GraphQLNonNull = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLNonNull, [{
-    key: SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLNonNull';
     }
@@ -444,7 +443,7 @@ export var GraphQLScalarType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLScalarType, [{
-    key: SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLScalarType';
     }
@@ -547,7 +546,7 @@ export var GraphQLObjectType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLObjectType, [{
-    key: SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLObjectType';
     }
@@ -719,7 +718,7 @@ export var GraphQLInterfaceType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLInterfaceType, [{
-    key: SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLInterfaceType';
     }
@@ -800,7 +799,7 @@ export var GraphQLUnionType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLUnionType, [{
-    key: SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLUnionType';
     }
@@ -948,7 +947,7 @@ export var GraphQLEnumType
   ;
 
   _createClass(GraphQLEnumType, [{
-    key: SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLEnumType';
     }
@@ -1057,7 +1056,7 @@ export var GraphQLInputObjectType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLInputObjectType, [{
-    key: SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLInputObjectType';
     }

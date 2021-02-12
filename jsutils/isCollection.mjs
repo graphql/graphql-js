@@ -1,6 +1,5 @@
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-import { SYMBOL_ITERATOR } from "../polyfills/symbols.mjs";
 /**
  * Returns true if the provided object is an Object (i.e. not a string literal)
  * and is either Iterable or Array-like.
@@ -22,7 +21,6 @@ import { SYMBOL_ITERATOR } from "../polyfills/symbols.mjs";
  *   An Object value which might implement the Iterable or Array-like protocols.
  * @return {boolean} true if Iterable or Array-like Object.
  */
-
 // eslint-disable-next-line no-redeclare
 export default function isCollection(obj) {
   if (obj == null || _typeof(obj) !== 'object') {
@@ -37,5 +35,5 @@ export default function isCollection(obj) {
   } // Is Iterable?
 
 
-  return typeof obj[SYMBOL_ITERATOR] === 'function';
+  return typeof obj[Symbol.iterator] === 'function';
 }

@@ -10,8 +10,6 @@ exports.GraphQLError = void 0;
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _symbols = require("../polyfills/symbols.js");
-
 var _location = require("../language/location.js");
 
 var _printLocation = require("../language/printLocation.js");
@@ -250,7 +248,7 @@ var GraphQLError = /*#__PURE__*/function (_Error) {
     // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
   }, {
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'Object';
     }

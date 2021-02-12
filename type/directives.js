@@ -10,8 +10,6 @@ exports.specifiedDirectives = exports.GraphQLSpecifiedByDirective = exports.Grap
 
 var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries.js"));
 
-var _symbols = require("../polyfills/symbols.js");
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
 var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap.js"));
@@ -107,7 +105,7 @@ var GraphQLDirective = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLDirective, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLDirective';
     }

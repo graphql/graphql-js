@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.isSource = isSource;
 exports.Source = void 0;
 
-var _symbols = require("../polyfills/symbols.js");
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
@@ -44,7 +42,7 @@ var Source = /*#__PURE__*/function () {
 
 
   _createClass(Source, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'Source';
     }

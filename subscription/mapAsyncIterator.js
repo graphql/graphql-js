@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = mapAsyncIterator;
 
-var _symbols = require("../polyfills/symbols.js");
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /**
@@ -15,7 +13,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 function mapAsyncIterator(iterable, callback, rejectCallback) {
   // $FlowFixMe[prop-missing]
-  var iteratorMethod = iterable[_symbols.SYMBOL_ASYNC_ITERATOR];
+  var iteratorMethod = iterable[Symbol.asyncIterator];
   var iterator = iteratorMethod.call(iterable);
   var $return;
   var abruptClose;
@@ -67,7 +65,7 @@ function mapAsyncIterator(iterable, callback, rejectCallback) {
 
       return Promise.reject(error).catch(abruptClose);
     }
-  }, _symbols.SYMBOL_ASYNC_ITERATOR, function () {
+  }, Symbol.asyncIterator, function () {
     return this;
   });
 }

@@ -46,8 +46,6 @@ exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionT
 
 var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries.js"));
 
-var _symbols = require("../polyfills/symbols.js");
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
 
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
@@ -323,7 +321,7 @@ var GraphQLList = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLList, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLList';
     }
@@ -374,7 +372,7 @@ var GraphQLNonNull = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLNonNull, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLNonNull';
     }
@@ -550,7 +548,7 @@ var GraphQLScalarType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLScalarType, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLScalarType';
     }
@@ -655,7 +653,7 @@ var GraphQLObjectType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLObjectType, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLObjectType';
     }
@@ -830,7 +828,7 @@ var GraphQLInterfaceType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLInterfaceType, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLInterfaceType';
     }
@@ -913,7 +911,7 @@ var GraphQLUnionType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLUnionType, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLUnionType';
     }
@@ -1063,7 +1061,7 @@ var GraphQLEnumType
   ;
 
   _createClass(GraphQLEnumType, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLEnumType';
     }
@@ -1174,7 +1172,7 @@ var GraphQLInputObjectType = /*#__PURE__*/function () {
   ;
 
   _createClass(GraphQLInputObjectType, [{
-    key: _symbols.SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function get() {
       return 'GraphQLInputObjectType';
     }
