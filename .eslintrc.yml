@@ -143,7 +143,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.18.x`
+  # ESLint builtin rules list based on `v7.19.x`
   ##############################################################################
 
   # Possible Errors
@@ -442,7 +442,7 @@ rules:
 
 overrides:
   - files: 'src/**/*.js'
-    parser: babel-eslint
+    parser: '@babel/eslint-parser'
     parserOptions:
       sourceType: module
     plugins:
@@ -506,7 +506,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.13.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.15.x`
       ##########################################################################
 
       # Supported Rules
