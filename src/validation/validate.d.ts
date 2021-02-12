@@ -30,8 +30,10 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules?: ReadonlyArray<ValidationRule>,
-  typeInfo?: TypeInfo,
   options?: { maxErrors?: number },
+
+  // @deprecate will be removed in 17.0.0
+  typeInfo?: TypeInfo,
 ): ReadonlyArray<GraphQLError>;
 
 /**

@@ -53,10 +53,9 @@ describe('Validate: Supports full validation', () => {
     ]);
   });
 
-  // NOTE: experimental
-  it('validates using a custom TypeInfo', () => {
+  it('Deprecated: validates using a custom TypeInfo', () => {
     // This TypeInfo will never return a valid field.
-    const typeInfo = new TypeInfo(testSchema, () => null);
+    const typeInfo = new TypeInfo(testSchema, null, () => null);
 
     const doc = parse(`
       query {
@@ -71,7 +70,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    const errors = validate(testSchema, doc, undefined, typeInfo);
+    const errors = validate(testSchema, doc, undefined, undefined, typeInfo);
     const errorMessages = errors.map((err) => err.message);
 
     expect(errorMessages).to.deep.equal([
@@ -130,7 +129,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
   const doc = parse(query, { noLocation: true });
 
   function validateDocument(options: {| maxErrors?: number |}) {
-    return validate(testSchema, doc, undefined, undefined, options);
+    return validate(testSchema, doc, undefined, options);
   }
 
   function invalidFieldError(fieldName: string) {
@@ -170,7 +169,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
       };
     }
     expect(() =>
-      validate(testSchema, doc, [customRule], undefined, { maxErrors: 1 }),
+      validate(testSchema, doc, [customRule], { maxErrors: 1 }),
     ).to.throw(/^Error from custom rule!$/);
   });
 });
