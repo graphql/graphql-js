@@ -2,7 +2,6 @@
 // flowlint uninitialized-instance-property:off
 
 import isObjectLike from '../jsutils/isObjectLike';
-import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
@@ -213,7 +212,7 @@ export class GraphQLError extends Error {
 
   // FIXME: workaround to not break chai comparisons, should be remove in v16
   // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-  get [SYMBOL_TO_STRING_TAG](): string {
+  get [Symbol.toStringTag](): string {
     return 'Object';
   }
 }
