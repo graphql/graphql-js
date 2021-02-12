@@ -1,5 +1,4 @@
 import objectValues from "../polyfills/objectValues.js";
-import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
 import inspect from "../jsutils/inspect.js";
 import toObjMap from "../jsutils/toObjMap.js";
 import devAssert from "../jsutils/devAssert.js";
@@ -281,7 +280,7 @@ export class GraphQLSchema {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLSchema';
   }
 

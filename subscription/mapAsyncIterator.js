@@ -1,12 +1,10 @@
-import { SYMBOL_ASYNC_ITERATOR } from "../polyfills/symbols.js";
-
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
 export default function mapAsyncIterator(iterable, callback, rejectCallback) {
   // $FlowFixMe[prop-missing]
-  const iteratorMethod = iterable[SYMBOL_ASYNC_ITERATOR];
+  const iteratorMethod = iterable[Symbol.asyncIterator];
   const iterator = iteratorMethod.call(iterable);
   let $return;
   let abruptClose;
@@ -57,7 +55,7 @@ export default function mapAsyncIterator(iterable, callback, rejectCallback) {
       return Promise.reject(error).catch(abruptClose);
     },
 
-    [SYMBOL_ASYNC_ITERATOR]() {
+    [Symbol.asyncIterator]() {
       return this;
     }
 

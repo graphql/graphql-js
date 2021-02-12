@@ -27,7 +27,6 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 // FIXME:
 // flowlint uninitialized-instance-property:off
 import isObjectLike from "../jsutils/isObjectLike.js";
-import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
 import { getLocation } from "../language/location.js";
 import { printLocation, printSourceLocation } from "../language/printLocation.js";
 /**
@@ -231,7 +230,7 @@ export let GraphQLError = /*#__PURE__*/function (_Error) {
     // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
   }, {
-    key: SYMBOL_TO_STRING_TAG,
+    key: Symbol.toStringTag,
     get: function () {
       return 'Object';
     }

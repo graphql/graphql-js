@@ -1,5 +1,4 @@
 import objectEntries from "../polyfills/objectEntries.js";
-import { SYMBOL_TO_STRING_TAG } from "../polyfills/symbols.js";
 import inspect from "../jsutils/inspect.js";
 import keyMap from "../jsutils/keyMap.js";
 import mapValue from "../jsutils/mapValue.js";
@@ -222,7 +221,7 @@ export class GraphQLList {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLList';
   }
 
@@ -265,7 +264,7 @@ export class GraphQLNonNull {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLNonNull';
   }
 
@@ -421,7 +420,7 @@ export class GraphQLScalarType {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLScalarType';
   }
 
@@ -518,7 +517,7 @@ export class GraphQLObjectType {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLObjectType';
   }
 
@@ -668,7 +667,7 @@ export class GraphQLInterfaceType {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLInterfaceType';
   }
 
@@ -741,7 +740,7 @@ export class GraphQLUnionType {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLUnionType';
   }
 
@@ -872,7 +871,7 @@ export class GraphQLEnumType
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLEnumType';
   }
 
@@ -967,7 +966,7 @@ export class GraphQLInputObjectType {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  get [SYMBOL_TO_STRING_TAG]() {
+  get [Symbol.toStringTag]() {
     return 'GraphQLInputObjectType';
   }
 

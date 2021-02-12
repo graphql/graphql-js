@@ -1,4 +1,3 @@
-import { SYMBOL_ITERATOR } from "../polyfills/symbols.js";
 /**
  * Returns true if the provided object is an Object (i.e. not a string literal)
  * and is either Iterable or Array-like.
@@ -20,7 +19,6 @@ import { SYMBOL_ITERATOR } from "../polyfills/symbols.js";
  *   An Object value which might implement the Iterable or Array-like protocols.
  * @return {boolean} true if Iterable or Array-like Object.
  */
-
 // eslint-disable-next-line no-redeclare
 export default function isCollection(obj) {
   if (obj == null || typeof obj !== 'object') {
@@ -35,5 +33,5 @@ export default function isCollection(obj) {
   } // Is Iterable?
 
 
-  return typeof obj[SYMBOL_ITERATOR] === 'function';
+  return typeof obj[Symbol.iterator] === 'function';
 }
