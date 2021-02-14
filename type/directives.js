@@ -20,8 +20,6 @@ var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
 
-var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect.js"));
-
 var _directiveLocation = require("../language/directiveLocation.js");
 
 var _scalars = require("./scalars.js");
@@ -112,11 +110,9 @@ var GraphQLDirective = /*#__PURE__*/function () {
   }]);
 
   return GraphQLDirective;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
+}();
 
 exports.GraphQLDirective = GraphQLDirective;
-(0, _defineInspect.default)(GraphQLDirective);
 
 /**
  * Used to conditionally include fields or fragments.

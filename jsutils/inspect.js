@@ -5,12 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = inspect;
 
-var _nodejsCustomInspectSymbol = _interopRequireDefault(require("./nodejsCustomInspectSymbol.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+/* eslint-disable flowtype/no-weak-types */
 var MAX_ARRAY_LENGTH = 10;
 var MAX_RECURSIVE_DEPTH = 2;
 /**
@@ -47,13 +44,12 @@ function formatObjectValue(value, previouslySeenValues) {
   }
 
   var seenValues = [].concat(previouslySeenValues, [value]);
-  var customInspectFn = getCustomFn(value);
 
-  if (customInspectFn !== undefined) {
-    var customValue = customInspectFn.call(value); // check for infinite recursion
+  if (typeof value.toJSON === 'function') {
+    var jsonValue = value.toJSON(value); // check for infinite recursion
 
-    if (customValue !== value) {
-      return typeof customValue === 'string' ? customValue : formatValue(customValue, seenValues);
+    if (jsonValue !== value) {
+      return typeof jsonValue === 'string' ? jsonValue : formatValue(jsonValue, seenValues);
     }
   } else if (Array.isArray(value)) {
     return formatArray(value, seenValues);
@@ -104,18 +100,6 @@ function formatArray(array, seenValues) {
   }
 
   return '[' + items.join(', ') + ']';
-}
-
-function getCustomFn(object) {
-  var customInspectFn = object[String(_nodejsCustomInspectSymbol.default)];
-
-  if (typeof customInspectFn === 'function') {
-    return customInspectFn;
-  }
-
-  if (typeof object.inspect === 'function') {
-    return object.inspect;
-  }
 }
 
 function getObjectTag(object) {

@@ -66,8 +66,6 @@ var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js")
 
 var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc.js"));
 
-var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect.js"));
-
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList.js"));
 
 var _GraphQLError = require("../error/GraphQLError.js");
@@ -328,11 +326,7 @@ var GraphQLList = /*#__PURE__*/function () {
   }]);
 
   return GraphQLList;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-
-exports.GraphQLList = GraphQLList;
-(0, _defineInspect.default)(GraphQLList);
+}();
 /**
  * Non-Null Type Wrapper
  *
@@ -353,6 +347,9 @@ exports.GraphQLList = GraphQLList;
  *
  * Note: the enforcement of non-nullability occurs within the executor.
  */
+
+
+exports.GraphQLList = GraphQLList;
 
 var GraphQLNonNull = /*#__PURE__*/function () {
   function GraphQLNonNull(ofType) {
@@ -379,14 +376,13 @@ var GraphQLNonNull = /*#__PURE__*/function () {
   }]);
 
   return GraphQLNonNull;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-
-exports.GraphQLNonNull = GraphQLNonNull;
-(0, _defineInspect.default)(GraphQLNonNull);
+}();
 /**
  * These types wrap and modify other types
  */
+
+
+exports.GraphQLNonNull = GraphQLNonNull;
 
 function isWrappingType(type) {
   return isListType(type) || isNonNullType(type);
@@ -555,11 +551,9 @@ var GraphQLScalarType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLScalarType;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
+}();
 
 exports.GraphQLScalarType = GraphQLScalarType;
-(0, _defineInspect.default)(GraphQLScalarType);
 
 /**
  * Object Type Definition
@@ -660,11 +654,9 @@ var GraphQLObjectType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLObjectType;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
+}();
 
 exports.GraphQLObjectType = GraphQLObjectType;
-(0, _defineInspect.default)(GraphQLObjectType);
 
 function defineInterfaces(config) {
   var _resolveThunk;
@@ -835,11 +827,9 @@ var GraphQLInterfaceType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLInterfaceType;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
+}();
 
 exports.GraphQLInterfaceType = GraphQLInterfaceType;
-(0, _defineInspect.default)(GraphQLInterfaceType);
 
 /**
  * Union Type Definition
@@ -918,11 +908,9 @@ var GraphQLUnionType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLUnionType;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
+}();
 
 exports.GraphQLUnionType = GraphQLUnionType;
-(0, _defineInspect.default)(GraphQLUnionType);
 
 function defineTypes(config) {
   var types = resolveThunk(config.types);
@@ -1068,11 +1056,9 @@ var GraphQLEnumType
   }]);
 
   return GraphQLEnumType;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
+}();
 
 exports.GraphQLEnumType = GraphQLEnumType;
-(0, _defineInspect.default)(GraphQLEnumType);
 
 function didYouMeanEnumValue(enumType, unknownValueStr) {
   var allNames = enumType.getValues().map(function (value) {
@@ -1179,11 +1165,9 @@ var GraphQLInputObjectType = /*#__PURE__*/function () {
   }]);
 
   return GraphQLInputObjectType;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
+}();
 
 exports.GraphQLInputObjectType = GraphQLInputObjectType;
-(0, _defineInspect.default)(GraphQLInputObjectType);
 
 function defineInputFieldMap(config) {
   var fieldMap = resolveThunk(config.fields);

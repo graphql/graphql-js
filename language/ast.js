@@ -6,10 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.isNode = isNode;
 exports.Token = exports.Location = void 0;
 
-var _defineInspect = _interopRequireDefault(require("../jsutils/defineInspect.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 /**
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
@@ -52,15 +48,14 @@ var Location = /*#__PURE__*/function () {
   };
 
   return Location;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-
-exports.Location = Location;
-(0, _defineInspect.default)(Location);
+}();
 /**
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
+
+
+exports.Location = Location;
 
 var Token = /*#__PURE__*/function () {
   /**
@@ -115,14 +110,13 @@ var Token = /*#__PURE__*/function () {
   };
 
   return Token;
-}(); // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-
-exports.Token = Token;
-(0, _defineInspect.default)(Token);
+}();
 /**
  * @internal
  */
+
+
+exports.Token = Token;
 
 function isNode(maybeNode) {
   return maybeNode != null && typeof maybeNode.kind === 'string';
