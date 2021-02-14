@@ -1,5 +1,3 @@
-import defineInspect from "../jsutils/defineInspect.js";
-
 /**
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
@@ -39,9 +37,7 @@ export class Location {
     };
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(Location);
+}
 /**
  * Represents a range of characters represented by a lexical token
  * within a Source.
@@ -97,9 +93,7 @@ export class Token {
     };
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(Token);
+}
 /**
  * @internal
  */

@@ -9,7 +9,6 @@ import instanceOf from "../jsutils/instanceOf.js";
 import didYouMean from "../jsutils/didYouMean.js";
 import isObjectLike from "../jsutils/isObjectLike.js";
 import identityFunc from "../jsutils/identityFunc.js";
-import defineInspect from "../jsutils/defineInspect.js";
 import suggestionList from "../jsutils/suggestionList.js";
 import { GraphQLError } from "../error/GraphQLError.js";
 import { Kind } from "../language/kinds.js";
@@ -225,9 +224,7 @@ export class GraphQLList {
     return 'GraphQLList';
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(GraphQLList);
+}
 /**
  * Non-Null Type Wrapper
  *
@@ -268,9 +265,7 @@ export class GraphQLNonNull {
     return 'GraphQLNonNull';
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(GraphQLNonNull);
+}
 /**
  * These types wrap and modify other types
  */
@@ -424,9 +419,7 @@ export class GraphQLScalarType {
     return 'GraphQLScalarType';
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(GraphQLScalarType);
+}
 
 /**
  * Object Type Definition
@@ -521,9 +514,7 @@ export class GraphQLObjectType {
     return 'GraphQLObjectType';
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(GraphQLObjectType);
+}
 
 function defineInterfaces(config) {
   const interfaces = resolveThunk(config.interfaces) ?? [];
@@ -671,9 +662,7 @@ export class GraphQLInterfaceType {
     return 'GraphQLInterfaceType';
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(GraphQLInterfaceType);
+}
 
 /**
  * Union Type Definition
@@ -744,9 +733,7 @@ export class GraphQLUnionType {
     return 'GraphQLUnionType';
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(GraphQLUnionType);
+}
 
 function defineTypes(config) {
   const types = resolveThunk(config.types);
@@ -875,9 +862,7 @@ export class GraphQLEnumType
     return 'GraphQLEnumType';
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(GraphQLEnumType);
+}
 
 function didYouMeanEnumValue(enumType, unknownValueStr) {
   const allNames = enumType.getValues().map(value => value.name);
@@ -970,9 +955,7 @@ export class GraphQLInputObjectType {
     return 'GraphQLInputObjectType';
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(GraphQLInputObjectType);
+}
 
 function defineInputFieldMap(config) {
   const fieldMap = resolveThunk(config.fields);

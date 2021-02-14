@@ -4,7 +4,6 @@ import toObjMap from "../jsutils/toObjMap.js";
 import devAssert from "../jsutils/devAssert.js";
 import instanceOf from "../jsutils/instanceOf.js";
 import isObjectLike from "../jsutils/isObjectLike.js";
-import defineInspect from "../jsutils/defineInspect.js";
 import { DirectiveLocation } from "../language/directiveLocation.js";
 import { GraphQLString, GraphQLBoolean } from "./scalars.js";
 import { argsToArgsConfig, GraphQLNonNull } from "./definition.js";
@@ -76,9 +75,7 @@ export class GraphQLDirective {
     return 'GraphQLDirective';
   }
 
-} // Print a simplified form when appearing in `inspect` and `util.inspect`.
-
-defineInspect(GraphQLDirective);
+}
 
 /**
  * Used to conditionally include fields or fragments.
