@@ -21,7 +21,7 @@
     "graphql-js"
   ],
   "engines": {
-    "node": ">= 10.x"
+    "node": "^12.20.0 || ^14.15.0 || >= 15.9.0"
   },
   "scripts": {
     "preversion": ". ./resources/checkgit.sh && npm ci",
