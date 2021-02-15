@@ -229,7 +229,7 @@ export interface OperationDefinitionNode {
   readonly loc?: Location;
   readonly operation: OperationTypeNode;
   readonly name?: NameNode;
-  readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
+  readonly variableDefinitions: ReadonlyArray<VariableDefinitionNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
 }
@@ -299,7 +299,7 @@ export interface FragmentDefinitionNode {
   readonly name: NameNode;
   // Note: fragment variable definitions are experimental and may be changed
   // or removed in the future.
-  readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
+  readonly variableDefinitions: ReadonlyArray<VariableDefinitionNode>;
   readonly typeCondition: NamedTypeNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
