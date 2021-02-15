@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.subscribe = subscribe;
 exports.createSourceEventStream = createSourceEventStream;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _isAsyncIterable = _interopRequireDefault(require("../jsutils/isAsyncIterable.js"));
+var _isAsyncIterable = require("../jsutils/isAsyncIterable.js");
 
 var _Path = require("../jsutils/Path.js");
 
@@ -22,9 +22,7 @@ var _execute = require("../execution/execute.js");
 
 var _getOperationRootType = require("../utilities/getOperationRootType.js");
 
-var _mapAsyncIterator = _interopRequireDefault(require("./mapAsyncIterator.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _mapAsyncIterator = require("./mapAsyncIterator.js");
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -79,7 +77,7 @@ function subscribe(args) {
 
   return sourcePromise.then(function (resultOrStream) {
     return (// Note: Flow can't refine isAsyncIterable, so explicit casts are used.
-      (0, _isAsyncIterable.default)(resultOrStream) ? (0, _mapAsyncIterator.default)(resultOrStream, mapSourceToResponse, reportGraphQLError) : resultOrStream
+      (0, _isAsyncIterable.isAsyncIterable)(resultOrStream) ? (0, _mapAsyncIterator.mapAsyncIterator)(resultOrStream, mapSourceToResponse, reportGraphQLError) : resultOrStream
     );
   });
 }
@@ -187,8 +185,8 @@ function executeSubscription(exeContext) {
     } // Assert field returned an event stream, otherwise yield an error.
 
 
-    if (!(0, _isAsyncIterable.default)(eventStream)) {
-      throw new Error('Subscription field must return Async Iterable. ' + "Received: ".concat((0, _inspect.default)(eventStream), "."));
+    if (!(0, _isAsyncIterable.isAsyncIterable)(eventStream)) {
+      throw new Error('Subscription field must return Async Iterable. ' + "Received: ".concat((0, _inspect.inspect)(eventStream), "."));
     }
 
     return eventStream;

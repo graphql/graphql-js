@@ -6,11 +6,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.isIntrospectionType = isIntrospectionType;
 exports.introspectionTypes = exports.TypeNameMetaFieldDef = exports.TypeMetaFieldDef = exports.SchemaMetaFieldDef = exports.__TypeKind = exports.TypeKind = exports.__EnumValue = exports.__InputValue = exports.__Field = exports.__Type = exports.__DirectiveLocation = exports.__Directive = exports.__Schema = void 0;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
+var _objectValues = require("../polyfills/objectValues.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
 var _printer = require("../language/printer.js");
 
@@ -21,8 +21,6 @@ var _astFromValue = require("../utilities/astFromValue.js");
 var _scalars = require("./scalars.js");
 
 var _definition = require("./definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var __Schema = new _definition.GraphQLObjectType({
   name: '__Schema',
@@ -39,7 +37,7 @@ var __Schema = new _definition.GraphQLObjectType({
         description: 'A list of all types supported by this server.',
         type: new _definition.GraphQLNonNull(new _definition.GraphQLList(new _definition.GraphQLNonNull(__Type))),
         resolve: function resolve(schema) {
-          return (0, _objectValues.default)(schema.getTypeMap());
+          return (0, _objectValues.objectValues)(schema.getTypeMap());
         }
       },
       queryType: {
@@ -244,7 +242,7 @@ var __Type = new _definition.GraphQLObjectType({
           } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-          false || (0, _invariant.default)(0, "Unexpected type: \"".concat((0, _inspect.default)(type), "\"."));
+          false || (0, _invariant.invariant)(0, "Unexpected type: \"".concat((0, _inspect.inspect)(type), "\"."));
         }
       },
       name: {
@@ -277,7 +275,7 @@ var __Type = new _definition.GraphQLObjectType({
           var includeDeprecated = _ref.includeDeprecated;
 
           if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
-            var fields = (0, _objectValues.default)(type.getFields());
+            var fields = (0, _objectValues.objectValues)(type.getFields());
             return includeDeprecated ? fields : fields.filter(function (field) {
               return field.deprecationReason == null;
             });
@@ -333,7 +331,7 @@ var __Type = new _definition.GraphQLObjectType({
           var includeDeprecated = _ref4.includeDeprecated;
 
           if ((0, _definition.isInputObjectType)(type)) {
-            var values = (0, _objectValues.default)(type.getFields());
+            var values = (0, _objectValues.objectValues)(type.getFields());
             return includeDeprecated ? values : values.filter(function (field) {
               return field.deprecationReason == null;
             });

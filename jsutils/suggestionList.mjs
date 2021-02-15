@@ -1,10 +1,10 @@
-import naturalCompare from "./naturalCompare.mjs";
+import { naturalCompare } from "./naturalCompare.mjs";
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
  * list of valid options sorted based on their similarity with the input.
  */
 
-export default function suggestionList(input, options) {
+export function suggestionList(input, options) {
   var optionsByDistance = Object.create(null);
   var lexicalDistance = new LexicalDistance(input);
   var threshold = Math.floor(input.length * 0.4) + 1;

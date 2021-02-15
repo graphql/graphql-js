@@ -5,17 +5,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.FieldsOnCorrectTypeRule = FieldsOnCorrectTypeRule;
 
-var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"));
+var _didYouMean = require("../../jsutils/didYouMean.js");
 
-var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
+var _suggestionList = require("../../jsutils/suggestionList.js");
 
-var _naturalCompare = _interopRequireDefault(require("../../jsutils/naturalCompare.js"));
+var _naturalCompare = require("../../jsutils/naturalCompare.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
 var _definition = require("../../type/definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Fields on correct type
@@ -36,10 +34,10 @@ function FieldsOnCorrectTypeRule(context) {
           var schema = context.getSchema();
           var fieldName = node.name.value; // First determine if there are any suggested types to condition on.
 
-          var suggestion = (0, _didYouMean.default)('to use an inline fragment on', getSuggestedTypeNames(schema, type, fieldName)); // If there are no suggested types, then perhaps this was a typo?
+          var suggestion = (0, _didYouMean.didYouMean)('to use an inline fragment on', getSuggestedTypeNames(schema, type, fieldName)); // If there are no suggested types, then perhaps this was a typo?
 
           if (suggestion === '') {
-            suggestion = (0, _didYouMean.default)(getSuggestedFieldNames(type, fieldName));
+            suggestion = (0, _didYouMean.didYouMean)(getSuggestedFieldNames(type, fieldName));
           } // Report an error, including helpful suggestions.
 
 
@@ -108,7 +106,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
       return 1;
     }
 
-    return (0, _naturalCompare.default)(typeA.name, typeB.name);
+    return (0, _naturalCompare.naturalCompare)(typeA.name, typeB.name);
   }).map(function (x) {
     return x.name;
   });
@@ -122,7 +120,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
 function getSuggestedFieldNames(type, fieldName) {
   if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
     var possibleFieldNames = Object.keys(type.getFields());
-    return (0, _suggestionList.default)(fieldName, possibleFieldNames);
+    return (0, _suggestionList.suggestionList)(fieldName, possibleFieldNames);
   } // Otherwise, must be a Union type, which does not define fields.
 
 

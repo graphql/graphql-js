@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = isAsyncIterable;
+exports.isAsyncIterable = isAsyncIterable;
 
 /**
  * Returns true if the provided object implements the AsyncIterator protocol via

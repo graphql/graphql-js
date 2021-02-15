@@ -1,6 +1,6 @@
-import keyMap from "../jsutils/keyMap.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import printPathArray from "../jsutils/printPathArray.mjs";
+import { keyMap } from "../jsutils/keyMap.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
+import { printPathArray } from "../jsutils/printPathArray.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { print } from "../language/printer.mjs";

@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 
-var _objectEntries3 = _interopRequireDefault(require("../../polyfills/objectEntries.js"));
+var _objectEntries3 = require("../../polyfills/objectEntries.js");
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
+var _inspect = require("../../jsutils/inspect.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
@@ -18,8 +18,6 @@ var _printer = require("../../language/printer.js");
 var _definition = require("../../type/definition.js");
 
 var _typeFromAST = require("../../utilities/typeFromAST.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function reasonMessage(reason) {
   if (Array.isArray(reason)) {
@@ -277,7 +275,7 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (var _i5 = 0, _objectEntries2 = (0, _objectEntries3.default)(fieldMap); _i5 < _objectEntries2.length; _i5++) {
+  for (var _i5 = 0, _objectEntries2 = (0, _objectEntries3.objectEntries)(fieldMap); _i5 < _objectEntries2.length; _i5++) {
     var _ref5 = _objectEntries2[_i5];
     var responseName = _ref5[0];
     var fields = _ref5[1];
@@ -376,7 +374,7 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
   var type2 = def2 === null || def2 === void 0 ? void 0 : def2.type;
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [[responseName, "they return conflicting types \"".concat((0, _inspect.default)(type1), "\" and \"").concat((0, _inspect.default)(type2), "\"")], [node1], [node2]];
+    return [[responseName, "they return conflicting types \"".concat((0, _inspect.inspect)(type1), "\" and \"").concat((0, _inspect.inspect)(type2), "\"")], [node1], [node2]];
   } // Collect and compare sub-fields. Use the same "visited fragment names" list
   // for both collections so fields in a fragment reference are never
   // compared to themselves.

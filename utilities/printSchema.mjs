@@ -1,6 +1,6 @@
-import objectValues from "../polyfills/objectValues.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import invariant from "../jsutils/invariant.mjs";
+import { objectValues } from "../polyfills/objectValues.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
+import { invariant } from "../jsutils/invariant.mjs";
 import { print } from "../language/printer.mjs";
 import { printBlockString } from "../language/blockString.mjs";
 import { isIntrospectionType } from "../type/introspection.mjs";

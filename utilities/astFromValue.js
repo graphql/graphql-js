@@ -5,23 +5,21 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.astFromValue = astFromValue;
 
-var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues.js"));
+var _objectValues3 = require("../polyfills/objectValues.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
+var _isObjectLike = require("../jsutils/isObjectLike.js");
 
-var _isCollection = _interopRequireDefault(require("../jsutils/isCollection.js"));
+var _isCollection = require("../jsutils/isCollection.js");
 
 var _kinds = require("../language/kinds.js");
 
 var _scalars = require("../type/scalars.js");
 
 var _definition = require("../type/definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
@@ -72,7 +70,7 @@ function astFromValue(value, type) {
   if ((0, _definition.isListType)(type)) {
     var itemType = type.ofType;
 
-    if ((0, _isCollection.default)(value)) {
+    if ((0, _isCollection.isCollection)(value)) {
       var valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
       // and it's required to first convert iteratable into array
 
@@ -97,13 +95,13 @@ function astFromValue(value, type) {
 
 
   if ((0, _definition.isInputObjectType)(type)) {
-    if (!(0, _isObjectLike.default)(value)) {
+    if (!(0, _isObjectLike.isObjectLike)(value)) {
       return null;
     }
 
     var fieldNodes = [];
 
-    for (var _i4 = 0, _objectValues2 = (0, _objectValues3.default)(type.getFields()); _i4 < _objectValues2.length; _i4++) {
+    for (var _i4 = 0, _objectValues2 = (0, _objectValues3.objectValues)(type.getFields()); _i4 < _objectValues2.length; _i4++) {
       var field = _objectValues2[_i4];
       var fieldValue = astFromValue(value[field.name], field.type);
 
@@ -178,11 +176,11 @@ function astFromValue(value, type) {
       };
     }
 
-    throw new TypeError("Cannot convert value to AST: ".concat((0, _inspect.default)(serialized), "."));
+    throw new TypeError("Cannot convert value to AST: ".concat((0, _inspect.inspect)(serialized), "."));
   } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Unexpected input type: ' + (0, _inspect.default)(type));
+  false || (0, _invariant.invariant)(0, 'Unexpected input type: ' + (0, _inspect.inspect)(type));
 }
 /**
  * IntValue:

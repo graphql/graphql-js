@@ -4,11 +4,11 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import objectValues from "../polyfills/objectValues.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import invariant from "../jsutils/invariant.mjs";
-import keyValMap from "../jsutils/keyValMap.mjs";
-import naturalCompare from "../jsutils/naturalCompare.mjs";
+import { objectValues } from "../polyfills/objectValues.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
+import { invariant } from "../jsutils/invariant.mjs";
+import { keyValMap } from "../jsutils/keyValMap.mjs";
+import { naturalCompare } from "../jsutils/naturalCompare.mjs";
 import { GraphQLSchema } from "../type/schema.mjs";
 import { GraphQLDirective } from "../type/directives.mjs";
 import { isIntrospectionType } from "../type/introspection.mjs";

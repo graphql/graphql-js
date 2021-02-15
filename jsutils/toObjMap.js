@@ -3,11 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = toObjMap;
+exports.toObjMap = toObjMap;
 
-var _objectEntries3 = _interopRequireDefault(require("../polyfills/objectEntries.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _objectEntries3 = require("../polyfills/objectEntries.js");
 
 function toObjMap(obj) {
   /* eslint-enable no-redeclare */
@@ -17,7 +15,7 @@ function toObjMap(obj) {
 
   var map = Object.create(null);
 
-  for (var _i2 = 0, _objectEntries2 = (0, _objectEntries3.default)(obj); _i2 < _objectEntries2.length; _i2++) {
+  for (var _i2 = 0, _objectEntries2 = (0, _objectEntries3.objectEntries)(obj); _i2 < _objectEntries2.length; _i2++) {
     var _ref2 = _objectEntries2[_i2];
     var key = _ref2[0];
     var value = _ref2[1];

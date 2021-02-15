@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = didYouMean;
+exports.didYouMean = didYouMean;
 var MAX_SUGGESTIONS = 5;
 /**
  * Given [ A, B, C ] return ' Did you mean A, B, or C?'.

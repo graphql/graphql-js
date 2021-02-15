@@ -1,4 +1,4 @@
-import inspect from "../jsutils/inspect.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
 import { GraphQLError } from "./GraphQLError.mjs";
 /**
  * Given an arbitrary value, presumably thrown while attempting to execute a

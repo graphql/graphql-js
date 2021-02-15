@@ -3,6 +3,6 @@
  * otherwise returns false.
  */
 // eslint-disable-next-line no-redeclare
-export default function isPromise(value) {
+export function isPromise(value) {
   return typeof (value === null || value === void 0 ? void 0 : value.then) === 'function';
 }

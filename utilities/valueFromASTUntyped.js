@@ -5,15 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.valueFromASTUntyped = valueFromASTUntyped;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
-var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap.js"));
+var _keyValMap = require("../jsutils/keyValMap.js");
 
 var _kinds = require("../language/kinds.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -53,7 +51,7 @@ function valueFromASTUntyped(valueNode, variables) {
       });
 
     case _kinds.Kind.OBJECT:
-      return (0, _keyValMap.default)(valueNode.fields, function (field) {
+      return (0, _keyValMap.keyValMap)(valueNode.fields, function (field) {
         return field.name.value;
       }, function (field) {
         return valueFromASTUntyped(field.value, variables);
@@ -64,5 +62,5 @@ function valueFromASTUntyped(valueNode, variables) {
   } // istanbul ignore next (Not reachable. All possible value nodes have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Unexpected value node: ' + (0, _inspect.default)(valueNode));
+  false || (0, _invariant.invariant)(0, 'Unexpected value node: ' + (0, _inspect.inspect)(valueNode));
 }

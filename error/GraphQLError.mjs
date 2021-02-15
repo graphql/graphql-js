@@ -28,7 +28,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 // FIXME:
 // flowlint uninitialized-instance-property:off
-import isObjectLike from "../jsutils/isObjectLike.mjs";
+import { isObjectLike } from "../jsutils/isObjectLike.mjs";
 import { getLocation } from "../language/location.mjs";
 import { printLocation, printSourceLocation } from "../language/printLocation.mjs";
 /**

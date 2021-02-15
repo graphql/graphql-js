@@ -6,7 +6,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 import { Lexer } from "../lexer.mjs";
 import { Source } from "../source.mjs";
-import GraphQLGrammar from "./grammar.mjs";
+import { grammar } from "./grammar.mjs";
 export var TokenKind = {
   NAME: 'Name',
   INT: 'Int',
@@ -46,7 +46,7 @@ export var OnlineParser = /*#__PURE__*/function () {
         name: 'Document',
         state: 'Document',
         kind: 'ListOfTypeConstraint'
-      }, GraphQLGrammar.Document), {}, {
+      }, grammar.Document), {}, {
         expanded: false,
         depth: 1,
         step: 1
@@ -207,7 +207,7 @@ export var OnlineParser = /*#__PURE__*/function () {
   };
 
   _proto._parseListOfTypeConstraint = function _parseListOfTypeConstraint(rule) {
-    this._pushRule(GraphQLGrammar[rule.listOfType], rule.depth + 1, rule.listOfType, 1, rule.state);
+    this._pushRule(grammar[rule.listOfType], rule.depth + 1, rule.listOfType, 1, rule.state);
 
     rule.expanded = true;
     var token = this.parseToken();
@@ -241,7 +241,7 @@ export var OnlineParser = /*#__PURE__*/function () {
       var ifCondition = constraint.ifCondition;
 
       if (typeof ifCondition === 'string') {
-        ifCondition = GraphQLGrammar[ifCondition];
+        ifCondition = grammar[ifCondition];
       }
 
       var token = this._lookAhead();
@@ -446,7 +446,7 @@ export var OnlineParser = /*#__PURE__*/function () {
       case RuleKind.RULE_NAME:
         rule = rule;
 
-        this._pushRule(GraphQLGrammar[rule], depth, (typeof name === 'string' ? name : undefined) || rule, step, state);
+        this._pushRule(grammar[rule], depth, (typeof name === 'string' ? name : undefined) || rule, step, state);
 
         break;
 

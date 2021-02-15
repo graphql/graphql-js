@@ -1,5 +1,5 @@
-import objectValues from "../polyfills/objectValues.mjs";
-import inspect from "../jsutils/inspect.mjs";
+import { objectValues } from "../polyfills/objectValues.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { locatedError } from "../error/locatedError.mjs";
 import { isValidNameError } from "../utilities/assertValidName.mjs";

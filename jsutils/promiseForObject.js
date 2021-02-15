@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = promiseForObject;
+exports.promiseForObject = promiseForObject;
 
 /**
  * This function transforms a JS object `ObjMap<Promise<T>>` into

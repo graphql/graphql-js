@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.isSource = isSource;
 exports.Source = void 0;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
+var _devAssert = require("../jsutils/devAssert.js");
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
 
@@ -32,12 +32,12 @@ var Source = /*#__PURE__*/function () {
       line: 1,
       column: 1
     };
-    typeof body === 'string' || (0, _devAssert.default)(0, "Body must be a string. Received: ".concat((0, _inspect.default)(body), "."));
+    typeof body === 'string' || (0, _devAssert.devAssert)(0, "Body must be a string. Received: ".concat((0, _inspect.inspect)(body), "."));
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
-    this.locationOffset.line > 0 || (0, _devAssert.default)(0, 'line in locationOffset is 1-indexed and must be positive.');
-    this.locationOffset.column > 0 || (0, _devAssert.default)(0, 'column in locationOffset is 1-indexed and must be positive.');
+    this.locationOffset.line > 0 || (0, _devAssert.devAssert)(0, 'line in locationOffset is 1-indexed and must be positive.');
+    this.locationOffset.column > 0 || (0, _devAssert.devAssert)(0, 'column in locationOffset is 1-indexed and must be positive.');
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 

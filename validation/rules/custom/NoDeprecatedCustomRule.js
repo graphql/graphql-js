@@ -5,13 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.NoDeprecatedCustomRule = NoDeprecatedCustomRule;
 
-var _invariant = _interopRequireDefault(require("../../../jsutils/invariant.js"));
+var _invariant = require("../../../jsutils/invariant.js");
 
 var _GraphQLError = require("../../../error/GraphQLError.js");
 
 var _definition = require("../../../type/definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * No deprecated
@@ -31,7 +29,7 @@ function NoDeprecatedCustomRule(context) {
 
       if (fieldDef && deprecationReason != null) {
         var parentType = context.getParentType();
-        parentType != null || (0, _invariant.default)(0);
+        parentType != null || (0, _invariant.invariant)(0);
         context.reportError(new _GraphQLError.GraphQLError("The field ".concat(parentType.name, ".").concat(fieldDef.name, " is deprecated. ").concat(deprecationReason), node));
       }
     },
@@ -47,7 +45,7 @@ function NoDeprecatedCustomRule(context) {
         } else {
           var parentType = context.getParentType();
           var fieldDef = context.getFieldDef();
-          parentType != null && fieldDef != null || (0, _invariant.default)(0);
+          parentType != null && fieldDef != null || (0, _invariant.invariant)(0);
           context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(parentType.name, ".").concat(fieldDef.name, "\" argument \"").concat(argDef.name, "\" is deprecated. ").concat(deprecationReason), node));
         }
       }
@@ -71,7 +69,7 @@ function NoDeprecatedCustomRule(context) {
 
       if (enumValueDef && deprecationReason != null) {
         var enumTypeDef = (0, _definition.getNamedType)(context.getInputType());
-        enumTypeDef != null || (0, _invariant.default)(0);
+        enumTypeDef != null || (0, _invariant.invariant)(0);
         context.reportError(new _GraphQLError.GraphQLError("The enum value \"".concat(enumTypeDef.name, ".").concat(enumValueDef.name, "\" is deprecated. ").concat(deprecationReason), node));
       }
     }

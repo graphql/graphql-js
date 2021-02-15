@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.isSpecifiedScalarType = isSpecifiedScalarType;
 exports.specifiedScalarTypes = exports.GraphQLID = exports.GraphQLBoolean = exports.GraphQLString = exports.GraphQLFloat = exports.GraphQLInt = void 0;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
+var _isObjectLike = require("../jsutils/isObjectLike.js");
 
 var _kinds = require("../language/kinds.js");
 
@@ -17,8 +17,6 @@ var _printer = require("../language/printer.js");
 var _GraphQLError = require("../error/GraphQLError.js");
 
 var _definition = require("./definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
@@ -42,11 +40,11 @@ function serializeInt(outputValue) {
   }
 
   if (typeof num !== 'number' || !Number.isInteger(num)) {
-    throw new _GraphQLError.GraphQLError("Int cannot represent non-integer value: ".concat((0, _inspect.default)(coercedValue)));
+    throw new _GraphQLError.GraphQLError("Int cannot represent non-integer value: ".concat((0, _inspect.inspect)(coercedValue)));
   }
 
   if (num > MAX_INT || num < MIN_INT) {
-    throw new _GraphQLError.GraphQLError('Int cannot represent non 32-bit signed integer value: ' + (0, _inspect.default)(coercedValue));
+    throw new _GraphQLError.GraphQLError('Int cannot represent non 32-bit signed integer value: ' + (0, _inspect.inspect)(coercedValue));
   }
 
   return num;
@@ -54,7 +52,7 @@ function serializeInt(outputValue) {
 
 function coerceInt(inputValue) {
   if (typeof inputValue !== 'number' || !Number.isInteger(inputValue)) {
-    throw new _GraphQLError.GraphQLError("Int cannot represent non-integer value: ".concat((0, _inspect.default)(inputValue)));
+    throw new _GraphQLError.GraphQLError("Int cannot represent non-integer value: ".concat((0, _inspect.inspect)(inputValue)));
   }
 
   if (inputValue > MAX_INT || inputValue < MIN_INT) {
@@ -99,7 +97,7 @@ function serializeFloat(outputValue) {
   }
 
   if (typeof num !== 'number' || !Number.isFinite(num)) {
-    throw new _GraphQLError.GraphQLError("Float cannot represent non numeric value: ".concat((0, _inspect.default)(coercedValue)));
+    throw new _GraphQLError.GraphQLError("Float cannot represent non numeric value: ".concat((0, _inspect.inspect)(coercedValue)));
   }
 
   return num;
@@ -107,7 +105,7 @@ function serializeFloat(outputValue) {
 
 function coerceFloat(inputValue) {
   if (typeof inputValue !== 'number' || !Number.isFinite(inputValue)) {
-    throw new _GraphQLError.GraphQLError("Float cannot represent non numeric value: ".concat((0, _inspect.default)(inputValue)));
+    throw new _GraphQLError.GraphQLError("Float cannot represent non numeric value: ".concat((0, _inspect.inspect)(inputValue)));
   }
 
   return inputValue;
@@ -132,11 +130,11 @@ var GraphQLFloat = new _definition.GraphQLScalarType({
 exports.GraphQLFloat = GraphQLFloat;
 
 function serializeObject(outputValue) {
-  if ((0, _isObjectLike.default)(outputValue)) {
+  if ((0, _isObjectLike.isObjectLike)(outputValue)) {
     if (typeof outputValue.valueOf === 'function') {
       var valueOfResult = outputValue.valueOf();
 
-      if (!(0, _isObjectLike.default)(valueOfResult)) {
+      if (!(0, _isObjectLike.isObjectLike)(valueOfResult)) {
         return valueOfResult;
       }
     }
@@ -166,12 +164,12 @@ function serializeString(outputValue) {
     return coercedValue.toString();
   }
 
-  throw new _GraphQLError.GraphQLError("String cannot represent value: ".concat((0, _inspect.default)(outputValue)));
+  throw new _GraphQLError.GraphQLError("String cannot represent value: ".concat((0, _inspect.inspect)(outputValue)));
 }
 
 function coerceString(inputValue) {
   if (typeof inputValue !== 'string') {
-    throw new _GraphQLError.GraphQLError("String cannot represent a non string value: ".concat((0, _inspect.default)(inputValue)));
+    throw new _GraphQLError.GraphQLError("String cannot represent a non string value: ".concat((0, _inspect.inspect)(inputValue)));
   }
 
   return inputValue;
@@ -203,12 +201,12 @@ function serializeBoolean(outputValue) {
     return coercedValue !== 0;
   }
 
-  throw new _GraphQLError.GraphQLError("Boolean cannot represent a non boolean value: ".concat((0, _inspect.default)(coercedValue)));
+  throw new _GraphQLError.GraphQLError("Boolean cannot represent a non boolean value: ".concat((0, _inspect.inspect)(coercedValue)));
 }
 
 function coerceBoolean(inputValue) {
   if (typeof inputValue !== 'boolean') {
-    throw new _GraphQLError.GraphQLError("Boolean cannot represent a non boolean value: ".concat((0, _inspect.default)(inputValue)));
+    throw new _GraphQLError.GraphQLError("Boolean cannot represent a non boolean value: ".concat((0, _inspect.inspect)(inputValue)));
   }
 
   return inputValue;
@@ -240,7 +238,7 @@ function serializeID(outputValue) {
     return String(coercedValue);
   }
 
-  throw new _GraphQLError.GraphQLError("ID cannot represent value: ".concat((0, _inspect.default)(outputValue)));
+  throw new _GraphQLError.GraphQLError("ID cannot represent value: ".concat((0, _inspect.inspect)(outputValue)));
 }
 
 function coerceID(inputValue) {
@@ -252,7 +250,7 @@ function coerceID(inputValue) {
     return inputValue.toString();
   }
 
-  throw new _GraphQLError.GraphQLError("ID cannot represent value: ".concat((0, _inspect.default)(inputValue)));
+  throw new _GraphQLError.GraphQLError("ID cannot represent value: ".concat((0, _inspect.inspect)(inputValue)));
 }
 
 var GraphQLID = new _definition.GraphQLScalarType({

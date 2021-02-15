@@ -1,5 +1,5 @@
-import inspect from "../../jsutils/inspect.mjs";
-import invariant from "../../jsutils/invariant.mjs";
+import { inspect } from "../../jsutils/inspect.mjs";
+import { invariant } from "../../jsutils/invariant.mjs";
 import { GraphQLError } from "../../error/GraphQLError.mjs";
 import { Kind } from "../../language/kinds.mjs";
 import { DirectiveLocation } from "../../language/directiveLocation.mjs";

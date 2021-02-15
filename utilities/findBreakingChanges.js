@@ -7,15 +7,15 @@ exports.findBreakingChanges = findBreakingChanges;
 exports.findDangerousChanges = findDangerousChanges;
 exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
+var _objectValues = require("../polyfills/objectValues.js");
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
+var _keyMap = require("../jsutils/keyMap.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
-var _naturalCompare = _interopRequireDefault(require("../jsutils/naturalCompare.js"));
+var _naturalCompare = require("../jsutils/naturalCompare.js");
 
 var _printer = require("../language/printer.js");
 
@@ -26,8 +26,6 @@ var _scalars = require("../type/scalars.js");
 var _definition = require("../type/definition.js");
 
 var _astFromValue = require("./astFromValue.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -152,7 +150,7 @@ function findDirectiveChanges(oldSchema, newSchema) {
 
 function findTypeChanges(oldSchema, newSchema) {
   var schemaChanges = [];
-  var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
+  var typesDiff = diff((0, _objectValues.objectValues)(oldSchema.getTypeMap()), (0, _objectValues.objectValues)(newSchema.getTypeMap()));
 
   for (var _i12 = 0, _typesDiff$removed2 = typesDiff.removed; _i12 < _typesDiff$removed2.length; _i12++) {
     var oldType = _typesDiff$removed2[_i12];
@@ -190,7 +188,7 @@ function findTypeChanges(oldSchema, newSchema) {
 
 function findInputObjectTypeChanges(oldType, newType) {
   var schemaChanges = [];
-  var fieldsDiff = diff((0, _objectValues.default)(oldType.getFields()), (0, _objectValues.default)(newType.getFields()));
+  var fieldsDiff = diff((0, _objectValues.objectValues)(oldType.getFields()), (0, _objectValues.objectValues)(newType.getFields()));
 
   for (var _i16 = 0, _fieldsDiff$added2 = fieldsDiff.added; _i16 < _fieldsDiff$added2.length; _i16++) {
     var newField = _fieldsDiff$added2[_i16];
@@ -304,7 +302,7 @@ function findImplementedInterfacesChanges(oldType, newType) {
 
 function findFieldChanges(oldType, newType) {
   var schemaChanges = [];
-  var fieldsDiff = diff((0, _objectValues.default)(oldType.getFields()), (0, _objectValues.default)(newType.getFields()));
+  var fieldsDiff = diff((0, _objectValues.objectValues)(oldType.getFields()), (0, _objectValues.objectValues)(newType.getFields()));
 
   for (var _i34 = 0, _fieldsDiff$removed4 = fieldsDiff.removed; _i34 < _fieldsDiff$removed4.length; _i34++) {
     var oldField = _fieldsDiff$removed4[_i34];
@@ -461,18 +459,18 @@ function typeKindName(type) {
   } // istanbul ignore next (Not reachable. All possible named types have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Unexpected type: ' + (0, _inspect.default)(type));
+  false || (0, _invariant.invariant)(0, 'Unexpected type: ' + (0, _inspect.inspect)(type));
 }
 
 function stringifyValue(value, type) {
   var ast = (0, _astFromValue.astFromValue)(value, type);
-  ast != null || (0, _invariant.default)(0);
+  ast != null || (0, _invariant.invariant)(0);
   var sortedAST = (0, _visitor.visit)(ast, {
     ObjectValue: function ObjectValue(objectNode) {
       // Make a copy since sort mutates array
       var fields = [].concat(objectNode.fields);
       fields.sort(function (fieldA, fieldB) {
-        return (0, _naturalCompare.default)(fieldA.name.value, fieldB.name.value);
+        return (0, _naturalCompare.naturalCompare)(fieldA.name.value, fieldB.name.value);
       });
       return _objectSpread(_objectSpread({}, objectNode), {}, {
         fields: fields
@@ -486,11 +484,11 @@ function diff(oldArray, newArray) {
   var added = [];
   var removed = [];
   var persisted = [];
-  var oldMap = (0, _keyMap.default)(oldArray, function (_ref11) {
+  var oldMap = (0, _keyMap.keyMap)(oldArray, function (_ref11) {
     var name = _ref11.name;
     return name;
   });
-  var newMap = (0, _keyMap.default)(newArray, function (_ref12) {
+  var newMap = (0, _keyMap.keyMap)(newArray, function (_ref12) {
     var name = _ref12.name;
     return name;
   });

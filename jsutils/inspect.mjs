@@ -7,7 +7,7 @@ var MAX_RECURSIVE_DEPTH = 2;
  * Used to print values in error messages.
  */
 
-export default function inspect(value) {
+export function inspect(value) {
   return formatValue(value, []);
 }
 

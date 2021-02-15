@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = memoize3;
+exports.memoize3 = memoize3;
 
 /**
  * Memoizes the provided three-argument function.

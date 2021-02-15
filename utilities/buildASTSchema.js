@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.buildASTSchema = buildASTSchema;
 exports.buildSchema = buildSchema;
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
+var _devAssert = require("../jsutils/devAssert.js");
 
 var _kinds = require("../language/kinds.js");
 
@@ -20,8 +20,6 @@ var _directives = require("../type/directives.js");
 
 var _extendSchema = require("./extendSchema.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 /**
  * This takes the ast of a schema document produced by the parse function in
  * src/language/parser.js.
@@ -33,7 +31,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * has no resolve methods, so execution will use default resolvers.
  */
 function buildASTSchema(documentAST, options) {
-  documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST.');
+  documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.devAssert)(0, 'Must provide valid Document AST.');
 
   if ((options === null || options === void 0 ? void 0 : options.assumeValid) !== true && (options === null || options === void 0 ? void 0 : options.assumeValidSDL) !== true) {
     (0, _validate.assertValidSDL)(documentAST);

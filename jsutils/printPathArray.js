@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = printPathArray;
+exports.printPathArray = printPathArray;
 
 /**
  * Build a string describing the path.

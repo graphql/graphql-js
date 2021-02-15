@@ -5,13 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ScalarLeafsRule = ScalarLeafsRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
+var _inspect = require("../../jsutils/inspect.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
 var _definition = require("../../type/definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Scalar leafs
@@ -29,13 +27,13 @@ function ScalarLeafsRule(context) {
         if ((0, _definition.isLeafType)((0, _definition.getNamedType)(type))) {
           if (selectionSet) {
             var fieldName = node.name.value;
-            var typeStr = (0, _inspect.default)(type);
+            var typeStr = (0, _inspect.inspect)(type);
             context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(fieldName, "\" must not have a selection since type \"").concat(typeStr, "\" has no subfields."), selectionSet));
           }
         } else if (!selectionSet) {
           var _fieldName = node.name.value;
 
-          var _typeStr = (0, _inspect.default)(type);
+          var _typeStr = (0, _inspect.inspect)(type);
 
           context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(_fieldName, "\" of type \"").concat(_typeStr, "\" must have a selection of subfields. Did you mean \"").concat(_fieldName, " { ... }\"?"), node));
         }

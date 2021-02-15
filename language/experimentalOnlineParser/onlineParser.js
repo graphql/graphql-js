@@ -9,9 +9,7 @@ var _lexer = require("../lexer.js");
 
 var _source = require("../source.js");
 
-var _grammar = _interopRequireDefault(require("./grammar.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _grammar = require("./grammar.js");
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -61,7 +59,7 @@ var OnlineParser = /*#__PURE__*/function () {
         name: 'Document',
         state: 'Document',
         kind: 'ListOfTypeConstraint'
-      }, _grammar.default.Document), {}, {
+      }, _grammar.grammar.Document), {}, {
         expanded: false,
         depth: 1,
         step: 1
@@ -222,7 +220,7 @@ var OnlineParser = /*#__PURE__*/function () {
   };
 
   _proto._parseListOfTypeConstraint = function _parseListOfTypeConstraint(rule) {
-    this._pushRule(_grammar.default[rule.listOfType], rule.depth + 1, rule.listOfType, 1, rule.state);
+    this._pushRule(_grammar.grammar[rule.listOfType], rule.depth + 1, rule.listOfType, 1, rule.state);
 
     rule.expanded = true;
     var token = this.parseToken();
@@ -256,7 +254,7 @@ var OnlineParser = /*#__PURE__*/function () {
       var ifCondition = constraint.ifCondition;
 
       if (typeof ifCondition === 'string') {
-        ifCondition = _grammar.default[ifCondition];
+        ifCondition = _grammar.grammar[ifCondition];
       }
 
       var token = this._lookAhead();
@@ -461,7 +459,7 @@ var OnlineParser = /*#__PURE__*/function () {
       case RuleKind.RULE_NAME:
         rule = rule;
 
-        this._pushRule(_grammar.default[rule], depth, (typeof name === 'string' ? name : undefined) || rule, step, state);
+        this._pushRule(_grammar.grammar[rule], depth, (typeof name === 'string' ? name : undefined) || rule, step, state);
 
         break;
 

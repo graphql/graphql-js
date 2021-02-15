@@ -8,11 +8,9 @@ exports.visitInParallel = visitInParallel;
 exports.getVisitFn = getVisitFn;
 exports.BREAK = exports.QueryDocumentKeys = void 0;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
 var _ast = require("./ast.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var QueryDocumentKeys = {
   Name: [],
@@ -234,7 +232,7 @@ function visit(root, visitor) {
 
     if (!Array.isArray(node)) {
       if (!(0, _ast.isNode)(node)) {
-        throw new Error("Invalid AST Node: ".concat((0, _inspect.default)(node), "."));
+        throw new Error("Invalid AST Node: ".concat((0, _inspect.inspect)(node), "."));
       }
 
       var visitFn = getVisitFn(visitor, node.kind, isLeaving);

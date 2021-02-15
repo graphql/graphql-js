@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.KnownTypeNamesRule = KnownTypeNamesRule;
 
-var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"));
+var _didYouMean = require("../../jsutils/didYouMean.js");
 
-var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
+var _suggestionList = require("../../jsutils/suggestionList.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
@@ -16,8 +16,6 @@ var _predicates = require("../../language/predicates.js");
 var _scalars = require("../../type/scalars.js");
 
 var _introspection = require("../../type/introspection.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Known type names
@@ -53,8 +51,8 @@ function KnownTypeNamesRule(context) {
           return;
         }
 
-        var suggestedTypes = (0, _suggestionList.default)(typeName, isSDL ? standardTypeNames.concat(typeNames) : typeNames);
-        context.reportError(new _GraphQLError.GraphQLError("Unknown type \"".concat(typeName, "\".") + (0, _didYouMean.default)(suggestedTypes), node));
+        var suggestedTypes = (0, _suggestionList.suggestionList)(typeName, isSDL ? standardTypeNames.concat(typeNames) : typeNames);
+        context.reportError(new _GraphQLError.GraphQLError("Unknown type \"".concat(typeName, "\".") + (0, _didYouMean.didYouMean)(suggestedTypes), node));
       }
     }
   };

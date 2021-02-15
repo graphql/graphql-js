@@ -7,17 +7,17 @@ exports.isSchema = isSchema;
 exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
 
-var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues.js"));
+var _objectValues5 = require("../polyfills/objectValues.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap.js"));
+var _toObjMap = require("../jsutils/toObjMap.js");
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
+var _devAssert = require("../jsutils/devAssert.js");
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
+var _isObjectLike = require("../jsutils/isObjectLike.js");
 
 var _introspection = require("./introspection.js");
 
@@ -38,7 +38,7 @@ function isSchema(schema) {
 
 function assertSchema(schema) {
   if (!isSchema(schema)) {
-    throw new Error("Expected ".concat((0, _inspect.default)(schema), " to be a GraphQL schema."));
+    throw new Error("Expected ".concat((0, _inspect.inspect)(schema), " to be a GraphQL schema."));
   }
 
   return schema;
@@ -117,11 +117,11 @@ var GraphQLSchema = /*#__PURE__*/function () {
     // marked with assumeValid to avoid an additional type system validation.
     this.__validationErrors = config.assumeValid === true ? [] : undefined; // Check for common mistakes during construction to produce early errors.
 
-    (0, _isObjectLike.default)(config) || (0, _devAssert.default)(0, 'Must provide configuration object.');
-    !config.types || Array.isArray(config.types) || (0, _devAssert.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), "."));
-    !config.directives || Array.isArray(config.directives) || (0, _devAssert.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), "."));
+    (0, _isObjectLike.isObjectLike)(config) || (0, _devAssert.devAssert)(0, 'Must provide configuration object.');
+    !config.types || Array.isArray(config.types) || (0, _devAssert.devAssert)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.inspect)(config.types), "."));
+    !config.directives || Array.isArray(config.directives) || (0, _devAssert.devAssert)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.inspect)(config.directives), "."));
     this.description = config.description;
-    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
+    this.extensions = config.extensions && (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     this._queryType = config.query;
@@ -182,7 +182,7 @@ var GraphQLSchema = /*#__PURE__*/function () {
       }
 
       var typeName = namedType.name;
-      typeName || (0, _devAssert.default)(0, 'One of the provided types for building the Schema is missing a name.');
+      typeName || (0, _devAssert.devAssert)(0, 'One of the provided types for building the Schema is missing a name.');
 
       if (this._typeMap[typeName] !== undefined) {
         throw new Error("Schema must contain uniquely named types but contains multiple types named \"".concat(typeName, "\"."));
@@ -313,7 +313,7 @@ var GraphQLSchema = /*#__PURE__*/function () {
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
-      types: (0, _objectValues5.default)(this.getTypeMap()),
+      types: (0, _objectValues5.objectValues)(this.getTypeMap()),
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
@@ -352,7 +352,7 @@ function collectReferencedTypes(type, typeSet) {
         collectReferencedTypes(interfaceType, typeSet);
       }
 
-      for (var _i24 = 0, _objectValues2 = (0, _objectValues5.default)(namedType.getFields()); _i24 < _objectValues2.length; _i24++) {
+      for (var _i24 = 0, _objectValues2 = (0, _objectValues5.objectValues)(namedType.getFields()); _i24 < _objectValues2.length; _i24++) {
         var field = _objectValues2[_i24];
         collectReferencedTypes(field.type, typeSet);
 
@@ -362,7 +362,7 @@ function collectReferencedTypes(type, typeSet) {
         }
       }
     } else if ((0, _definition.isInputObjectType)(namedType)) {
-      for (var _i28 = 0, _objectValues4 = (0, _objectValues5.default)(namedType.getFields()); _i28 < _objectValues4.length; _i28++) {
+      for (var _i28 = 0, _objectValues4 = (0, _objectValues5.objectValues)(namedType.getFields()); _i28 < _objectValues4.length; _i28++) {
         var _field = _objectValues4[_i28];
         collectReferencedTypes(_field.type, typeSet);
       }

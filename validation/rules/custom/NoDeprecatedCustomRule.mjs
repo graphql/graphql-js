@@ -1,4 +1,4 @@
-import invariant from "../../../jsutils/invariant.mjs";
+import { invariant } from "../../../jsutils/invariant.mjs";
 import { GraphQLError } from "../../../error/GraphQLError.mjs";
 import { getNamedType, isInputObjectType } from "../../../type/definition.mjs";
 

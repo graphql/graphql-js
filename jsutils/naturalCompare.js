@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = naturalCompare;
+exports.naturalCompare = naturalCompare;
 
 /**
  * Returns a number indicating whether a reference string comes before, or after,

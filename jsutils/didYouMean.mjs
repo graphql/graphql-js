@@ -4,7 +4,7 @@ var MAX_SUGGESTIONS = 5;
  */
 
 // eslint-disable-next-line no-redeclare
-export default function didYouMean(firstArg, secondArg) {
+export function didYouMean(firstArg, secondArg) {
   var _ref = typeof firstArg === 'string' ? [firstArg, secondArg] : [undefined, firstArg],
       subMessage = _ref[0],
       suggestionsArg = _ref[1];

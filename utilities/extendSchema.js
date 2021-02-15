@@ -6,17 +6,17 @@ Object.defineProperty(exports, "__esModule", {
 exports.extendSchema = extendSchema;
 exports.extendSchemaImpl = extendSchemaImpl;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
+var _objectValues = require("../polyfills/objectValues.js");
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
+var _keyMap = require("../jsutils/keyMap.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _mapValue = _interopRequireDefault(require("../jsutils/mapValue.js"));
+var _mapValue = require("../jsutils/mapValue.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
+var _devAssert = require("../jsutils/devAssert.js");
 
 var _kinds = require("../language/kinds.js");
 
@@ -38,8 +38,6 @@ var _definition = require("../type/definition.js");
 
 var _valueFromAST = require("./valueFromAST.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -60,7 +58,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 function extendSchema(schema, documentAST, options) {
   (0, _schema.assertSchema)(schema);
-  documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST.');
+  documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.devAssert)(0, 'Must provide valid Document AST.');
 
   if ((options === null || options === void 0 ? void 0 : options.assumeValid) !== true && (options === null || options === void 0 ? void 0 : options.assumeValidSDL) !== true) {
     (0, _validate.assertValidSDLExtension)(documentAST, schema);
@@ -138,7 +136,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   return _objectSpread(_objectSpread({
     description: (_schemaDef = schemaDef) === null || _schemaDef === void 0 ? void 0 : (_schemaDef$descriptio = _schemaDef.description) === null || _schemaDef$descriptio === void 0 ? void 0 : _schemaDef$descriptio.value
   }, operationTypes), {}, {
-    types: (0, _objectValues.default)(typeMap),
+    types: (0, _objectValues.objectValues)(typeMap),
     directives: [].concat(schemaConfig.directives.map(replaceDirective), directiveDefs.map(buildDirective)),
     extensions: undefined,
     astNode: (_schemaDef2 = schemaDef) !== null && _schemaDef2 !== void 0 ? _schemaDef2 : schemaConfig.astNode,
@@ -171,7 +169,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function replaceDirective(directive) {
     var config = directive.toConfig();
     return new _directives.GraphQLDirective(_objectSpread(_objectSpread({}, config), {}, {
-      args: (0, _mapValue.default)(config.args, extendArg)
+      args: (0, _mapValue.mapValue)(config.args, extendArg)
     }));
   }
 
@@ -207,7 +205,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-    false || (0, _invariant.default)(0, 'Unexpected type: ' + (0, _inspect.default)(type));
+    false || (0, _invariant.invariant)(0, 'Unexpected type: ' + (0, _inspect.inspect)(type));
   }
 
   function extendInputObjectType(type) {
@@ -217,7 +215,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     var extensions = (_typeExtensionsMap$co = typeExtensionsMap[config.name]) !== null && _typeExtensionsMap$co !== void 0 ? _typeExtensionsMap$co : [];
     return new _definition.GraphQLInputObjectType(_objectSpread(_objectSpread({}, config), {}, {
       fields: function fields() {
-        return _objectSpread(_objectSpread({}, (0, _mapValue.default)(config.fields, function (field) {
+        return _objectSpread(_objectSpread({}, (0, _mapValue.mapValue)(config.fields, function (field) {
           return _objectSpread(_objectSpread({}, field), {}, {
             type: replaceType(field.type)
           });
@@ -268,7 +266,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         return [].concat(type.getInterfaces().map(replaceNamedType), buildInterfaces(extensions));
       },
       fields: function fields() {
-        return _objectSpread(_objectSpread({}, (0, _mapValue.default)(config.fields, extendField)), buildFieldMap(extensions));
+        return _objectSpread(_objectSpread({}, (0, _mapValue.mapValue)(config.fields, extendField)), buildFieldMap(extensions));
       },
       extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
@@ -284,7 +282,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         return [].concat(type.getInterfaces().map(replaceNamedType), buildInterfaces(extensions));
       },
       fields: function fields() {
-        return _objectSpread(_objectSpread({}, (0, _mapValue.default)(config.fields, extendField)), buildFieldMap(extensions));
+        return _objectSpread(_objectSpread({}, (0, _mapValue.mapValue)(config.fields, extendField)), buildFieldMap(extensions));
       },
       extensionASTNodes: config.extensionASTNodes.concat(extensions)
     }));
@@ -307,7 +305,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     return _objectSpread(_objectSpread({}, field), {}, {
       type: replaceType(field.type),
       // $FlowFixMe[incompatible-call]
-      args: (0, _mapValue.default)(field.args, extendArg)
+      args: (0, _mapValue.mapValue)(field.args, extendArg)
     });
   }
 
@@ -659,11 +657,11 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     } // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
 
 
-    false || (0, _invariant.default)(0, 'Unexpected type definition node: ' + (0, _inspect.default)(astNode));
+    false || (0, _invariant.invariant)(0, 'Unexpected type definition node: ' + (0, _inspect.inspect)(astNode));
   }
 }
 
-var stdTypeMap = (0, _keyMap.default)(_scalars.specifiedScalarTypes.concat(_introspection.introspectionTypes), function (type) {
+var stdTypeMap = (0, _keyMap.keyMap)(_scalars.specifiedScalarTypes.concat(_introspection.introspectionTypes), function (type) {
   return type.name;
 });
 /**

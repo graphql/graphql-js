@@ -5,19 +5,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.valueFromAST = valueFromAST;
 
-var _objectValues3 = _interopRequireDefault(require("../polyfills/objectValues.js"));
+var _objectValues3 = require("../polyfills/objectValues.js");
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap.js"));
+var _keyMap = require("../jsutils/keyMap.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
 var _kinds = require("../language/kinds.js");
 
 var _definition = require("../type/definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -125,11 +123,11 @@ function valueFromAST(valueNode, type, variables) {
     }
 
     var coercedObj = Object.create(null);
-    var fieldNodes = (0, _keyMap.default)(valueNode.fields, function (field) {
+    var fieldNodes = (0, _keyMap.keyMap)(valueNode.fields, function (field) {
       return field.name.value;
     });
 
-    for (var _i4 = 0, _objectValues2 = (0, _objectValues3.default)(type.getFields()); _i4 < _objectValues2.length; _i4++) {
+    for (var _i4 = 0, _objectValues2 = (0, _objectValues3.objectValues)(type.getFields()); _i4 < _objectValues2.length; _i4++) {
       var field = _objectValues2[_i4];
       var fieldNode = fieldNodes[field.name];
 
@@ -176,7 +174,7 @@ function valueFromAST(valueNode, type, variables) {
   } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Unexpected input type: ' + (0, _inspect.default)(type));
+  false || (0, _invariant.invariant)(0, 'Unexpected input type: ' + (0, _inspect.inspect)(type));
 } // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 

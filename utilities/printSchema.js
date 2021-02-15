@@ -7,11 +7,11 @@ exports.printSchema = printSchema;
 exports.printIntrospectionSchema = printIntrospectionSchema;
 exports.printType = printType;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
+var _objectValues = require("../polyfills/objectValues.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
 var _printer = require("../language/printer.js");
 
@@ -26,8 +26,6 @@ var _directives = require("../type/directives.js");
 var _definition = require("../type/definition.js");
 
 var _astFromValue = require("./astFromValue.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function printSchema(schema) {
   return printFilteredSchema(schema, function (n) {
@@ -45,7 +43,7 @@ function isDefinedType(type) {
 
 function printFilteredSchema(schema, directiveFilter, typeFilter) {
   var directives = schema.getDirectives().filter(directiveFilter);
-  var types = (0, _objectValues.default)(schema.getTypeMap()).filter(typeFilter);
+  var types = (0, _objectValues.objectValues)(schema.getTypeMap()).filter(typeFilter);
   return [printSchemaDefinition(schema)].concat(directives.map(function (directive) {
     return printDirective(directive);
   }), types.map(function (type) {
@@ -142,7 +140,7 @@ function printType(type) {
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Unexpected type: ' + (0, _inspect.default)(type));
+  false || (0, _invariant.invariant)(0, 'Unexpected type: ' + (0, _inspect.inspect)(type));
 }
 
 function printScalar(type) {
@@ -178,14 +176,14 @@ function printEnum(type) {
 }
 
 function printInputObject(type) {
-  var fields = (0, _objectValues.default)(type.getFields()).map(function (f, i) {
+  var fields = (0, _objectValues.objectValues)(type.getFields()).map(function (f, i) {
     return printDescription(f, '  ', !i) + '  ' + printInputValue(f);
   });
   return printDescription(type) + "input ".concat(type.name) + printBlock(fields);
 }
 
 function printFields(type) {
-  var fields = (0, _objectValues.default)(type.getFields()).map(function (f, i) {
+  var fields = (0, _objectValues.objectValues)(type.getFields()).map(function (f, i) {
     return printDescription(f, '  ', !i) + '  ' + f.name + printArgs(f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason);
   });
   return printBlock(fields);
@@ -250,7 +248,7 @@ function printSpecifiedByUrl(scalar) {
 
   var url = scalar.specifiedByUrl;
   var urlAST = (0, _astFromValue.astFromValue)(url, _scalars.GraphQLString);
-  urlAST || (0, _invariant.default)(0, 'Unexpected null value returned from `astFromValue` for specifiedByUrl');
+  urlAST || (0, _invariant.invariant)(0, 'Unexpected null value returned from `astFromValue` for specifiedByUrl');
   return ' @specifiedBy(url: ' + (0, _printer.print)(urlAST) + ')';
 }
 

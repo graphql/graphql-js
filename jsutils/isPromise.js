@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = isPromise;
+exports.isPromise = isPromise;
 
 /**
  * Returns true if the value acts like a Promise, i.e. has a "then" function,

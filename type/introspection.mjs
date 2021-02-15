@@ -1,6 +1,6 @@
-import objectValues from "../polyfills/objectValues.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import invariant from "../jsutils/invariant.mjs";
+import { objectValues } from "../polyfills/objectValues.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
+import { invariant } from "../jsutils/invariant.mjs";
 import { print } from "../language/printer.mjs";
 import { DirectiveLocation } from "../language/directiveLocation.mjs";
 import { astFromValue } from "../utilities/astFromValue.mjs";

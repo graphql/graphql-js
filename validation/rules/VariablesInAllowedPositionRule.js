@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.VariablesInAllowedPositionRule = VariablesInAllowedPositionRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
+var _inspect = require("../../jsutils/inspect.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
@@ -16,8 +16,6 @@ var _definition = require("../../type/definition.js");
 var _typeFromAST = require("../../utilities/typeFromAST.js");
 
 var _typeComparators = require("../../utilities/typeComparators.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Variables passed to field arguments conform to type
@@ -50,8 +48,8 @@ function VariablesInAllowedPositionRule(context) {
             var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
 
             if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
-              var varTypeStr = (0, _inspect.default)(varType);
-              var typeStr = (0, _inspect.default)(type);
+              var varTypeStr = (0, _inspect.inspect)(varType);
+              var typeStr = (0, _inspect.inspect)(type);
               context.reportError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of type \"").concat(varTypeStr, "\" used in position expecting type \"").concat(typeStr, "\"."), [varDef, node]));
             }
           }

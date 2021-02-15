@@ -8,13 +8,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.printError = printError;
 exports.GraphQLError = void 0;
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
+var _isObjectLike = require("../jsutils/isObjectLike.js");
 
 var _location = require("../language/location.js");
 
 var _printLocation = require("../language/printLocation.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -159,7 +157,7 @@ var GraphQLError = /*#__PURE__*/function (_Error) {
     if (_extensions == null && originalError != null) {
       var originalExtensions = originalError.extensions;
 
-      if ((0, _isObjectLike.default)(originalExtensions)) {
+      if ((0, _isObjectLike.isObjectLike)(originalExtensions)) {
         _extensions = originalExtensions;
       }
     }

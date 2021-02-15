@@ -1,7 +1,7 @@
 /**
  * Memoizes the provided three-argument function.
  */
-export default function memoize3(fn) {
+export function memoize3(fn) {
   var cache0;
   return function memoized(a1, a2, a3) {
     if (!cache0) {

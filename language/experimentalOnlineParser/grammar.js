@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.grammar = void 0;
 var grammar = {
   Name: {
     token: 'Name'
@@ -983,5 +983,4 @@ var grammar = {
   } // FIXME: enforce proper typing
 
 };
-var _default = grammar;
-exports.default = _default;
+exports.grammar = grammar;

@@ -1,4 +1,4 @@
-import inspect from "../jsutils/inspect.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
 import { isNode } from "./ast.mjs";
 /**
  * A visitor is provided to visit, it contains the collection of

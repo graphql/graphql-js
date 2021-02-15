@@ -3,11 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = suggestionList;
+exports.suggestionList = suggestionList;
 
-var _naturalCompare = _interopRequireDefault(require("./naturalCompare.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _naturalCompare = require("./naturalCompare.js");
 
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
@@ -29,7 +27,7 @@ function suggestionList(input, options) {
 
   return Object.keys(optionsByDistance).sort(function (a, b) {
     var distanceDiff = optionsByDistance[a] - optionsByDistance[b];
-    return distanceDiff !== 0 ? distanceDiff : (0, _naturalCompare.default)(a, b);
+    return distanceDiff !== 0 ? distanceDiff : (0, _naturalCompare.naturalCompare)(a, b);
   });
 }
 /**

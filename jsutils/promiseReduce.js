@@ -3,11 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = promiseReduce;
+exports.promiseReduce = promiseReduce;
 
-var _isPromise = _interopRequireDefault(require("./isPromise.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _isPromise = require("./isPromise.js");
 
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
@@ -18,7 +16,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function promiseReduce(values, callback, initialValue) {
   return values.reduce(function (previous, value) {
-    return (0, _isPromise.default)(previous) ? previous.then(function (resolved) {
+    return (0, _isPromise.isPromise)(previous) ? previous.then(function (resolved) {
       return callback(resolved, value);
     }) : callback(previous, value);
   }, initialValue);

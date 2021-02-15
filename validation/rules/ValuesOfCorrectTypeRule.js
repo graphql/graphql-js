@@ -5,23 +5,21 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ValuesOfCorrectTypeRule = ValuesOfCorrectTypeRule;
 
-var _objectValues3 = _interopRequireDefault(require("../../polyfills/objectValues.js"));
+var _objectValues3 = require("../../polyfills/objectValues.js");
 
-var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap.js"));
+var _keyMap = require("../../jsutils/keyMap.js");
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
+var _inspect = require("../../jsutils/inspect.js");
 
-var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"));
+var _didYouMean = require("../../jsutils/didYouMean.js");
 
-var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
+var _suggestionList = require("../../jsutils/suggestionList.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
 var _printer = require("../../language/printer.js");
 
 var _definition = require("../../type/definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Value literals of correct type
@@ -50,16 +48,16 @@ function ValuesOfCorrectTypeRule(context) {
       } // Ensure every required field exists.
 
 
-      var fieldNodeMap = (0, _keyMap.default)(node.fields, function (field) {
+      var fieldNodeMap = (0, _keyMap.keyMap)(node.fields, function (field) {
         return field.name.value;
       });
 
-      for (var _i2 = 0, _objectValues2 = (0, _objectValues3.default)(type.getFields()); _i2 < _objectValues2.length; _i2++) {
+      for (var _i2 = 0, _objectValues2 = (0, _objectValues3.objectValues)(type.getFields()); _i2 < _objectValues2.length; _i2++) {
         var fieldDef = _objectValues2[_i2];
         var fieldNode = fieldNodeMap[fieldDef.name];
 
         if (!fieldNode && (0, _definition.isRequiredInputField)(fieldDef)) {
-          var typeStr = (0, _inspect.default)(fieldDef.type);
+          var typeStr = (0, _inspect.inspect)(fieldDef.type);
           context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(type.name, ".").concat(fieldDef.name, "\" of required type \"").concat(typeStr, "\" was not provided."), node));
         }
       }
@@ -69,15 +67,15 @@ function ValuesOfCorrectTypeRule(context) {
       var fieldType = context.getInputType();
 
       if (!fieldType && (0, _definition.isInputObjectType)(parentType)) {
-        var suggestions = (0, _suggestionList.default)(node.name.value, Object.keys(parentType.getFields()));
-        context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(node.name.value, "\" is not defined by type \"").concat(parentType.name, "\".") + (0, _didYouMean.default)(suggestions), node));
+        var suggestions = (0, _suggestionList.suggestionList)(node.name.value, Object.keys(parentType.getFields()));
+        context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(node.name.value, "\" is not defined by type \"").concat(parentType.name, "\".") + (0, _didYouMean.didYouMean)(suggestions), node));
       }
     },
     NullValue: function NullValue(node) {
       var type = context.getInputType();
 
       if ((0, _definition.isNonNullType)(type)) {
-        context.reportError(new _GraphQLError.GraphQLError("Expected value of type \"".concat((0, _inspect.default)(type), "\", found ").concat((0, _printer.print)(node), "."), node));
+        context.reportError(new _GraphQLError.GraphQLError("Expected value of type \"".concat((0, _inspect.inspect)(type), "\", found ").concat((0, _printer.print)(node), "."), node));
       }
     },
     EnumValue: function EnumValue(node) {
@@ -114,7 +112,7 @@ function isValidValueNode(context, node) {
   var type = (0, _definition.getNamedType)(locationType);
 
   if (!(0, _definition.isLeafType)(type)) {
-    var typeStr = (0, _inspect.default)(locationType);
+    var typeStr = (0, _inspect.inspect)(locationType);
     context.reportError(new _GraphQLError.GraphQLError("Expected value of type \"".concat(typeStr, "\", found ").concat((0, _printer.print)(node), "."), node));
     return;
   } // Scalars and Enums determine if a literal value is valid via parseLiteral(),
@@ -127,12 +125,12 @@ function isValidValueNode(context, node) {
     );
 
     if (parseResult === undefined) {
-      var _typeStr = (0, _inspect.default)(locationType);
+      var _typeStr = (0, _inspect.inspect)(locationType);
 
       context.reportError(new _GraphQLError.GraphQLError("Expected value of type \"".concat(_typeStr, "\", found ").concat((0, _printer.print)(node), "."), node));
     }
   } catch (error) {
-    var _typeStr2 = (0, _inspect.default)(locationType);
+    var _typeStr2 = (0, _inspect.inspect)(locationType);
 
     if (error instanceof _GraphQLError.GraphQLError) {
       context.reportError(error);

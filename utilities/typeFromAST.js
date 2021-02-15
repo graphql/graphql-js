@@ -5,15 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.typeFromAST = typeFromAST;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
 var _kinds = require("../language/kinds.js");
 
 var _definition = require("../type/definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function typeFromAST(schema, typeNode) {
   /* eslint-enable no-redeclare */
@@ -35,5 +33,5 @@ function typeFromAST(schema, typeNode) {
   } // istanbul ignore next (Not reachable. All possible type nodes have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Unexpected type node: ' + (0, _inspect.default)(typeNode));
+  false || (0, _invariant.invariant)(0, 'Unexpected type node: ' + (0, _inspect.inspect)(typeNode));
 }

@@ -8,7 +8,7 @@ exports.validateSDL = validateSDL;
 exports.assertValidSDL = assertValidSDL;
 exports.assertValidSDLExtension = assertValidSDLExtension;
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
+var _devAssert = require("../jsutils/devAssert.js");
 
 var _GraphQLError = require("../error/GraphQLError.js");
 
@@ -21,8 +21,6 @@ var _TypeInfo = require("../utilities/TypeInfo.js");
 var _specifiedRules = require("./specifiedRules.js");
 
 var _ValidationContext = require("./ValidationContext.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Implements the "Validation" section of the spec.
@@ -46,7 +44,7 @@ function validate(schema, documentAST) {
   var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
     maxErrors: undefined
   };
-  documentAST || (0, _devAssert.default)(0, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
+  documentAST || (0, _devAssert.devAssert)(0, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);
   var abortObj = Object.freeze({});

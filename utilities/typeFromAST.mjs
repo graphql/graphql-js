@@ -1,5 +1,5 @@
-import inspect from "../jsutils/inspect.mjs";
-import invariant from "../jsutils/invariant.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
+import { invariant } from "../jsutils/invariant.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { GraphQLList, GraphQLNonNull } from "../type/definition.mjs";
 /**

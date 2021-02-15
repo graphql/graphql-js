@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.graphql = graphql;
 exports.graphqlSync = graphqlSync;
 
-var _isPromise = _interopRequireDefault(require("./jsutils/isPromise.js"));
+var _isPromise = require("./jsutils/isPromise.js");
 
 var _parser = require("./language/parser.js");
 
@@ -15,8 +15,6 @@ var _validate = require("./validation/validate.js");
 var _validate2 = require("./type/validate.js");
 
 var _execute = require("./execution/execute.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function graphql(args) {
   // Always return a Promise for a consistent API.
@@ -35,7 +33,7 @@ function graphql(args) {
 function graphqlSync(args) {
   var result = graphqlImpl(args); // Assert that the execution was synchronous.
 
-  if ((0, _isPromise.default)(result)) {
+  if ((0, _isPromise.isPromise)(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 

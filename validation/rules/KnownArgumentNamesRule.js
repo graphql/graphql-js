@@ -6,17 +6,15 @@ Object.defineProperty(exports, "__esModule", {
 exports.KnownArgumentNamesRule = KnownArgumentNamesRule;
 exports.KnownArgumentNamesOnDirectivesRule = KnownArgumentNamesOnDirectivesRule;
 
-var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"));
+var _didYouMean = require("../../jsutils/didYouMean.js");
 
-var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
+var _suggestionList = require("../../jsutils/suggestionList.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
 var _kinds = require("../../language/kinds.js");
 
 var _directives = require("../../type/directives.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -42,8 +40,8 @@ function KnownArgumentNamesRule(context) {
         var knownArgsNames = fieldDef.args.map(function (arg) {
           return arg.name;
         });
-        var suggestions = (0, _suggestionList.default)(argName, knownArgsNames);
-        context.reportError(new _GraphQLError.GraphQLError("Unknown argument \"".concat(argName, "\" on field \"").concat(parentType.name, ".").concat(fieldDef.name, "\".") + (0, _didYouMean.default)(suggestions), argNode));
+        var suggestions = (0, _suggestionList.suggestionList)(argName, knownArgsNames);
+        context.reportError(new _GraphQLError.GraphQLError("Unknown argument \"".concat(argName, "\" on field \"").concat(parentType.name, ".").concat(fieldDef.name, "\".") + (0, _didYouMean.didYouMean)(suggestions), argNode));
       }
     }
   });
@@ -92,8 +90,8 @@ function KnownArgumentNamesOnDirectivesRule(context) {
           var argName = argNode.name.value;
 
           if (knownArgs.indexOf(argName) === -1) {
-            var suggestions = (0, _suggestionList.default)(argName, knownArgs);
-            context.reportError(new _GraphQLError.GraphQLError("Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".") + (0, _didYouMean.default)(suggestions), argNode));
+            var suggestions = (0, _suggestionList.suggestionList)(argName, knownArgs);
+            context.reportError(new _GraphQLError.GraphQLError("Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".") + (0, _didYouMean.didYouMean)(suggestions), argNode));
           }
         }
       }

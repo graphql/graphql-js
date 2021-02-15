@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.validateSchema = validateSchema;
 exports.assertValidSchema = assertValidSchema;
 
-var _objectValues5 = _interopRequireDefault(require("../polyfills/objectValues.js"));
+var _objectValues5 = require("../polyfills/objectValues.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
 var _GraphQLError = require("../error/GraphQLError.js");
 
@@ -25,8 +25,6 @@ var _introspection = require("./introspection.js");
 var _directives = require("./directives.js");
 
 var _definition = require("./definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's
@@ -104,7 +102,7 @@ function validateRootTypes(context) {
   } else if (!(0, _definition.isObjectType)(queryType)) {
     var _getOperationTypeNode;
 
-    context.reportError("Query root type must be Object type, it cannot be ".concat((0, _inspect.default)(queryType), "."), (_getOperationTypeNode = getOperationTypeNode(schema, 'query')) !== null && _getOperationTypeNode !== void 0 ? _getOperationTypeNode : queryType.astNode);
+    context.reportError("Query root type must be Object type, it cannot be ".concat((0, _inspect.inspect)(queryType), "."), (_getOperationTypeNode = getOperationTypeNode(schema, 'query')) !== null && _getOperationTypeNode !== void 0 ? _getOperationTypeNode : queryType.astNode);
   }
 
   var mutationType = schema.getMutationType();
@@ -112,7 +110,7 @@ function validateRootTypes(context) {
   if (mutationType && !(0, _definition.isObjectType)(mutationType)) {
     var _getOperationTypeNode2;
 
-    context.reportError('Mutation root type must be Object type if provided, it cannot be ' + "".concat((0, _inspect.default)(mutationType), "."), (_getOperationTypeNode2 = getOperationTypeNode(schema, 'mutation')) !== null && _getOperationTypeNode2 !== void 0 ? _getOperationTypeNode2 : mutationType.astNode);
+    context.reportError('Mutation root type must be Object type if provided, it cannot be ' + "".concat((0, _inspect.inspect)(mutationType), "."), (_getOperationTypeNode2 = getOperationTypeNode(schema, 'mutation')) !== null && _getOperationTypeNode2 !== void 0 ? _getOperationTypeNode2 : mutationType.astNode);
   }
 
   var subscriptionType = schema.getSubscriptionType();
@@ -120,7 +118,7 @@ function validateRootTypes(context) {
   if (subscriptionType && !(0, _definition.isObjectType)(subscriptionType)) {
     var _getOperationTypeNode3;
 
-    context.reportError('Subscription root type must be Object type if provided, it cannot be ' + "".concat((0, _inspect.default)(subscriptionType), "."), (_getOperationTypeNode3 = getOperationTypeNode(schema, 'subscription')) !== null && _getOperationTypeNode3 !== void 0 ? _getOperationTypeNode3 : subscriptionType.astNode);
+    context.reportError('Subscription root type must be Object type if provided, it cannot be ' + "".concat((0, _inspect.inspect)(subscriptionType), "."), (_getOperationTypeNode3 = getOperationTypeNode(schema, 'subscription')) !== null && _getOperationTypeNode3 !== void 0 ? _getOperationTypeNode3 : subscriptionType.astNode);
   }
 }
 
@@ -146,7 +144,7 @@ function validateDirectives(context) {
 
     // Ensure all directives are in fact GraphQL directives.
     if (!(0, _directives.isDirective)(directive)) {
-      context.reportError("Expected directive but got: ".concat((0, _inspect.default)(directive), "."), directive === null || directive === void 0 ? void 0 : directive.astNode);
+      context.reportError("Expected directive but got: ".concat((0, _inspect.inspect)(directive), "."), directive === null || directive === void 0 ? void 0 : directive.astNode);
       continue;
     } // Ensure they are named correctly.
 
@@ -160,7 +158,7 @@ function validateDirectives(context) {
       validateName(context, arg); // Ensure the type is an input type.
 
       if (!(0, _definition.isInputType)(arg.type)) {
-        context.reportError("The type of @".concat(directive.name, "(").concat(arg.name, ":) must be Input Type ") + "but got: ".concat((0, _inspect.default)(arg.type), "."), arg.astNode);
+        context.reportError("The type of @".concat(directive.name, "(").concat(arg.name, ":) must be Input Type ") + "but got: ".concat((0, _inspect.inspect)(arg.type), "."), arg.astNode);
       }
 
       if ((0, _definition.isRequiredArgument)(arg) && arg.deprecationReason != null) {
@@ -186,12 +184,12 @@ function validateTypes(context) {
   var validateInputObjectCircularRefs = createInputObjectCircularRefsValidator(context);
   var typeMap = context.schema.getTypeMap();
 
-  for (var _i8 = 0, _objectValues2 = (0, _objectValues5.default)(typeMap); _i8 < _objectValues2.length; _i8++) {
+  for (var _i8 = 0, _objectValues2 = (0, _objectValues5.objectValues)(typeMap); _i8 < _objectValues2.length; _i8++) {
     var type = _objectValues2[_i8];
 
     // Ensure all provided types are in fact GraphQL type.
     if (!(0, _definition.isNamedType)(type)) {
-      context.reportError("Expected GraphQL named type but got: ".concat((0, _inspect.default)(type), "."), type.astNode);
+      context.reportError("Expected GraphQL named type but got: ".concat((0, _inspect.inspect)(type), "."), type.astNode);
       continue;
     } // Ensure it is named correctly (excluding introspection types).
 
@@ -226,7 +224,7 @@ function validateTypes(context) {
 }
 
 function validateFields(context, type) {
-  var fields = (0, _objectValues5.default)(type.getFields()); // Objects and Interfaces both must define one or more fields.
+  var fields = (0, _objectValues5.objectValues)(type.getFields()); // Objects and Interfaces both must define one or more fields.
 
   if (fields.length === 0) {
     context.reportError("Type ".concat(type.name, " must define one or more fields."), getAllNodes(type));
@@ -240,7 +238,7 @@ function validateFields(context, type) {
     if (!(0, _definition.isOutputType)(field.type)) {
       var _field$astNode;
 
-      context.reportError("The type of ".concat(type.name, ".").concat(field.name, " must be Output Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), (_field$astNode = field.astNode) === null || _field$astNode === void 0 ? void 0 : _field$astNode.type);
+      context.reportError("The type of ".concat(type.name, ".").concat(field.name, " must be Output Type ") + "but got: ".concat((0, _inspect.inspect)(field.type), "."), (_field$astNode = field.astNode) === null || _field$astNode === void 0 ? void 0 : _field$astNode.type);
     } // Ensure the arguments are valid
 
 
@@ -253,7 +251,7 @@ function validateFields(context, type) {
       if (!(0, _definition.isInputType)(arg.type)) {
         var _arg$astNode2;
 
-        context.reportError("The type of ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) must be Input ") + "Type but got: ".concat((0, _inspect.default)(arg.type), "."), (_arg$astNode2 = arg.astNode) === null || _arg$astNode2 === void 0 ? void 0 : _arg$astNode2.type);
+        context.reportError("The type of ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) must be Input ") + "Type but got: ".concat((0, _inspect.inspect)(arg.type), "."), (_arg$astNode2 = arg.astNode) === null || _arg$astNode2 === void 0 ? void 0 : _arg$astNode2.type);
       }
 
       if ((0, _definition.isRequiredArgument)(arg) && arg.deprecationReason != null) {
@@ -273,7 +271,7 @@ function validateInterfaces(context, type) {
     var iface = _type$getInterfaces2[_i14];
 
     if (!(0, _definition.isInterfaceType)(iface)) {
-      context.reportError("Type ".concat((0, _inspect.default)(type), " must only implement Interface types, ") + "it cannot implement ".concat((0, _inspect.default)(iface), "."), getAllImplementsInterfaceNodes(type, iface));
+      context.reportError("Type ".concat((0, _inspect.inspect)(type), " must only implement Interface types, ") + "it cannot implement ".concat((0, _inspect.inspect)(iface), "."), getAllImplementsInterfaceNodes(type, iface));
       continue;
     }
 
@@ -296,7 +294,7 @@ function validateInterfaces(context, type) {
 function validateTypeImplementsInterface(context, type, iface) {
   var typeFieldMap = type.getFields(); // Assert each interface field is implemented.
 
-  for (var _i16 = 0, _objectValues4 = (0, _objectValues5.default)(iface.getFields()); _i16 < _objectValues4.length; _i16++) {
+  for (var _i16 = 0, _objectValues4 = (0, _objectValues5.objectValues)(iface.getFields()); _i16 < _objectValues4.length; _i16++) {
     var ifaceField = _objectValues4[_i16];
     var fieldName = ifaceField.name;
     var typeField = typeFieldMap[fieldName]; // Assert interface field exists on type.
@@ -311,7 +309,7 @@ function validateTypeImplementsInterface(context, type, iface) {
     if (!(0, _typeComparators.isTypeSubTypeOf)(context.schema, typeField.type, ifaceField.type)) {
       var _ifaceField$astNode, _typeField$astNode;
 
-      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expects type ") + "".concat((0, _inspect.default)(ifaceField.type), " but ").concat(type.name, ".").concat(fieldName, " ") + "is type ".concat((0, _inspect.default)(typeField.type), "."), [// istanbul ignore next (TODO need to write coverage tests)
+      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expects type ") + "".concat((0, _inspect.inspect)(ifaceField.type), " but ").concat(type.name, ".").concat(fieldName, " ") + "is type ".concat((0, _inspect.inspect)(typeField.type), "."), [// istanbul ignore next (TODO need to write coverage tests)
       (_ifaceField$astNode = ifaceField.astNode) === null || _ifaceField$astNode === void 0 ? void 0 : _ifaceField$astNode.type, // istanbul ignore next (TODO need to write coverage tests)
       (_typeField$astNode = typeField.astNode) === null || _typeField$astNode === void 0 ? void 0 : _typeField$astNode.type]);
     } // Assert each interface field arg is implemented.
@@ -335,7 +333,7 @@ function validateTypeImplementsInterface(context, type, iface) {
       if (!(0, _typeComparators.isEqualType)(ifaceArg.type, typeArg.type)) {
         var _ifaceArg$astNode, _typeArg$astNode;
 
-        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat((0, _inspect.default)(ifaceArg.type), " but ") + "".concat(type.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat((0, _inspect.default)(typeArg.type), "."), [// istanbul ignore next (TODO need to write coverage tests)
+        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat((0, _inspect.inspect)(ifaceArg.type), " but ") + "".concat(type.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat((0, _inspect.inspect)(typeArg.type), "."), [// istanbul ignore next (TODO need to write coverage tests)
         (_ifaceArg$astNode = ifaceArg.astNode) === null || _ifaceArg$astNode === void 0 ? void 0 : _ifaceArg$astNode.type, // istanbul ignore next (TODO need to write coverage tests)
         (_typeArg$astNode = typeArg.astNode) === null || _typeArg$astNode === void 0 ? void 0 : _typeArg$astNode.type]);
       } // TODO: validate default values?
@@ -399,7 +397,7 @@ function validateUnionMembers(context, union) {
     includedTypeNames[memberType.name] = true;
 
     if (!(0, _definition.isObjectType)(memberType)) {
-      context.reportError("Union type ".concat(union.name, " can only include Object types, ") + "it cannot include ".concat((0, _inspect.default)(memberType), "."), getUnionMemberTypeNodes(union, String(memberType)));
+      context.reportError("Union type ".concat(union.name, " can only include Object types, ") + "it cannot include ".concat((0, _inspect.inspect)(memberType), "."), getUnionMemberTypeNodes(union, String(memberType)));
     }
   }
 }
@@ -424,7 +422,7 @@ function validateEnumValues(context, enumType) {
 }
 
 function validateInputFields(context, inputObj) {
-  var fields = (0, _objectValues5.default)(inputObj.getFields());
+  var fields = (0, _objectValues5.objectValues)(inputObj.getFields());
 
   if (fields.length === 0) {
     context.reportError("Input Object type ".concat(inputObj.name, " must define one or more fields."), getAllNodes(inputObj));
@@ -439,7 +437,7 @@ function validateInputFields(context, inputObj) {
     if (!(0, _definition.isInputType)(field.type)) {
       var _field$astNode2;
 
-      context.reportError("The type of ".concat(inputObj.name, ".").concat(field.name, " must be Input Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), (_field$astNode2 = field.astNode) === null || _field$astNode2 === void 0 ? void 0 : _field$astNode2.type);
+      context.reportError("The type of ".concat(inputObj.name, ".").concat(field.name, " must be Input Type ") + "but got: ".concat((0, _inspect.inspect)(field.type), "."), (_field$astNode2 = field.astNode) === null || _field$astNode2 === void 0 ? void 0 : _field$astNode2.type);
     }
 
     if ((0, _definition.isRequiredInputField)(field) && field.deprecationReason != null) {
@@ -471,7 +469,7 @@ function createInputObjectCircularRefsValidator(context) {
 
     visitedTypes[inputObj.name] = true;
     fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
-    var fields = (0, _objectValues5.default)(inputObj.getFields());
+    var fields = (0, _objectValues5.objectValues)(inputObj.getFields());
 
     for (var _i30 = 0; _i30 < fields.length; _i30++) {
       var field = fields[_i30];

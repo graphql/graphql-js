@@ -5,15 +5,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.lexicographicSortSchema = lexicographicSortSchema;
 
-var _objectValues = _interopRequireDefault(require("../polyfills/objectValues.js"));
+var _objectValues = require("../polyfills/objectValues.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
-var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap.js"));
+var _keyValMap = require("../jsutils/keyValMap.js");
 
-var _naturalCompare = _interopRequireDefault(require("../jsutils/naturalCompare.js"));
+var _naturalCompare = require("../jsutils/naturalCompare.js");
 
 var _schema = require("../type/schema.js");
 
@@ -22,8 +22,6 @@ var _directives = require("../type/directives.js");
 var _introspection = require("../type/introspection.js");
 
 var _definition = require("../type/definition.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -38,11 +36,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 function lexicographicSortSchema(schema) {
   var schemaConfig = schema.toConfig();
-  var typeMap = (0, _keyValMap.default)(sortByName(schemaConfig.types), function (type) {
+  var typeMap = (0, _keyValMap.keyValMap)(sortByName(schemaConfig.types), function (type) {
     return type.name;
   }, sortNamedType);
   return new _schema.GraphQLSchema(_objectSpread(_objectSpread({}, schemaConfig), {}, {
-    types: (0, _objectValues.default)(typeMap),
+    types: (0, _objectValues.objectValues)(typeMap),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
     query: replaceMaybeType(schemaConfig.query),
     mutation: replaceMaybeType(schemaConfig.mutation),
@@ -168,7 +166,7 @@ function lexicographicSortSchema(schema) {
     } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-    false || (0, _invariant.default)(0, 'Unexpected type: ' + (0, _inspect.default)(type));
+    false || (0, _invariant.invariant)(0, 'Unexpected type: ' + (0, _inspect.inspect)(type));
   }
 }
 
@@ -197,6 +195,6 @@ function sortBy(array, mapToKey) {
   return array.slice().sort(function (obj1, obj2) {
     var key1 = mapToKey(obj1);
     var key2 = mapToKey(obj2);
-    return (0, _naturalCompare.default)(key1, key2);
+    return (0, _naturalCompare.naturalCompare)(key1, key2);
   });
 }

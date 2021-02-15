@@ -1,5 +1,5 @@
-import inspect from "../jsutils/inspect.mjs";
-import isObjectLike from "../jsutils/isObjectLike.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
+import { isObjectLike } from "../jsutils/isObjectLike.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { print } from "../language/printer.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";

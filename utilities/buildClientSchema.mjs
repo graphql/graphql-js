@@ -1,8 +1,8 @@
-import objectValues from "../polyfills/objectValues.mjs";
-import inspect from "../jsutils/inspect.mjs";
-import devAssert from "../jsutils/devAssert.mjs";
-import keyValMap from "../jsutils/keyValMap.mjs";
-import isObjectLike from "../jsutils/isObjectLike.mjs";
+import { objectValues } from "../polyfills/objectValues.mjs";
+import { inspect } from "../jsutils/inspect.mjs";
+import { devAssert } from "../jsutils/devAssert.mjs";
+import { keyValMap } from "../jsutils/keyValMap.mjs";
+import { isObjectLike } from "../jsutils/isObjectLike.mjs";
 import { parseValue } from "../language/parser.mjs";
 import { GraphQLSchema } from "../type/schema.mjs";
 import { GraphQLDirective } from "../type/directives.mjs";

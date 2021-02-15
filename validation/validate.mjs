@@ -1,4 +1,4 @@
-import devAssert from "../jsutils/devAssert.mjs";
+import { devAssert } from "../jsutils/devAssert.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { visit, visitInParallel } from "../language/visitor.mjs";
 import { assertValidSchema } from "../type/validate.mjs";

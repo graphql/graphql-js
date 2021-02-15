@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = keyValMap;
+exports.keyValMap = keyValMap;
 
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys

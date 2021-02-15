@@ -21,7 +21,7 @@
  *     const jennyEntry = entriesByName['Jenny']
  *
  */
-export default function keyMap(list, keyFn) {
+export function keyMap(list, keyFn) {
   return list.reduce(function (map, item) {
     map[keyFn(item)] = item;
     return map;

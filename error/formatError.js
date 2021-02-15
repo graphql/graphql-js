@@ -5,9 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.formatError = formatError;
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _devAssert = require("../jsutils/devAssert.js");
 
 /**
  * Given a GraphQLError, format it according to the rules described by the
@@ -16,7 +14,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function formatError(error) {
   var _error$message;
 
-  error || (0, _devAssert.default)(0, 'Received null or undefined error.');
+  error || (0, _devAssert.devAssert)(0, 'Received null or undefined error.');
   var message = (_error$message = error.message) !== null && _error$message !== void 0 ? _error$message : 'An unknown error occurred.';
   var locations = error.locations;
   var path = error.path;

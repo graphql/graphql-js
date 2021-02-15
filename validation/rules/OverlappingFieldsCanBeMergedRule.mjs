@@ -1,5 +1,5 @@
-import objectEntries from "../../polyfills/objectEntries.mjs";
-import inspect from "../../jsutils/inspect.mjs";
+import { objectEntries } from "../../polyfills/objectEntries.mjs";
+import { inspect } from "../../jsutils/inspect.mjs";
 import { GraphQLError } from "../../error/GraphQLError.mjs";
 import { Kind } from "../../language/kinds.mjs";
 import { print } from "../../language/printer.mjs";

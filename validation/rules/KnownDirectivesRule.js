@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.KnownDirectivesRule = KnownDirectivesRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
+var _inspect = require("../../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../../jsutils/invariant.js"));
+var _invariant = require("../../jsutils/invariant.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
@@ -16,8 +16,6 @@ var _kinds = require("../../language/kinds.js");
 var _directiveLocation = require("../../language/directiveLocation.js");
 
 var _directives = require("../../type/directives.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Known directives
@@ -68,7 +66,7 @@ function KnownDirectivesRule(context) {
 
 function getDirectiveLocationForASTPath(ancestors) {
   var appliedTo = ancestors[ancestors.length - 1];
-  !Array.isArray(appliedTo) || (0, _invariant.default)(0);
+  !Array.isArray(appliedTo) || (0, _invariant.invariant)(0);
 
   switch (appliedTo.kind) {
     case _kinds.Kind.OPERATION_DEFINITION:
@@ -144,5 +142,5 @@ function getDirectiveLocationForOperation(operation) {
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Unexpected operation: ' + (0, _inspect.default)(operation));
+  false || (0, _invariant.invariant)(0, 'Unexpected operation: ' + (0, _inspect.inspect)(operation));
 }

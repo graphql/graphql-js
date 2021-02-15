@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PossibleFragmentSpreadsRule = PossibleFragmentSpreadsRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
+var _inspect = require("../../jsutils/inspect.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
@@ -14,8 +14,6 @@ var _definition = require("../../type/definition.js");
 var _typeFromAST = require("../../utilities/typeFromAST.js");
 
 var _typeComparators = require("../../utilities/typeComparators.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Possible fragment spread
@@ -31,8 +29,8 @@ function PossibleFragmentSpreadsRule(context) {
       var parentType = context.getParentType();
 
       if ((0, _definition.isCompositeType)(fragType) && (0, _definition.isCompositeType)(parentType) && !(0, _typeComparators.doTypesOverlap)(context.getSchema(), fragType, parentType)) {
-        var parentTypeStr = (0, _inspect.default)(parentType);
-        var fragTypeStr = (0, _inspect.default)(fragType);
+        var parentTypeStr = (0, _inspect.inspect)(parentType);
+        var fragTypeStr = (0, _inspect.inspect)(fragType);
         context.reportError(new _GraphQLError.GraphQLError("Fragment cannot be spread here as objects of type \"".concat(parentTypeStr, "\" can never be of type \"").concat(fragTypeStr, "\"."), node));
       }
     },
@@ -42,8 +40,8 @@ function PossibleFragmentSpreadsRule(context) {
       var parentType = context.getParentType();
 
       if (fragType && parentType && !(0, _typeComparators.doTypesOverlap)(context.getSchema(), fragType, parentType)) {
-        var parentTypeStr = (0, _inspect.default)(parentType);
-        var fragTypeStr = (0, _inspect.default)(fragType);
+        var parentTypeStr = (0, _inspect.inspect)(parentType);
+        var fragTypeStr = (0, _inspect.inspect)(fragType);
         context.reportError(new _GraphQLError.GraphQLError("Fragment \"".concat(fragName, "\" cannot be spread here as objects of type \"").concat(parentTypeStr, "\" can never be of type \"").concat(fragTypeStr, "\"."), node));
       }
     }

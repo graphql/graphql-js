@@ -5,15 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.introspectionFromSchema = introspectionFromSchema;
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
 var _parser = require("../language/parser.js");
 
 var _execute = require("../execution/execute.js");
 
 var _getIntrospectionQuery = require("./getIntrospectionQuery.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -43,6 +41,6 @@ function introspectionFromSchema(schema, options) {
     schema: schema,
     document: document
   });
-  !result.errors && result.data || (0, _invariant.default)(0);
+  !result.errors && result.data || (0, _invariant.invariant)(0);
   return result.data;
 }

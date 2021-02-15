@@ -8,17 +8,17 @@ exports.assertDirective = assertDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
 exports.specifiedDirectives = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
 
-var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries.js"));
+var _objectEntries = require("../polyfills/objectEntries.js");
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _toObjMap = _interopRequireDefault(require("../jsutils/toObjMap.js"));
+var _toObjMap = require("../jsutils/toObjMap.js");
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
+var _devAssert = require("../jsutils/devAssert.js");
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
+var _isObjectLike = require("../jsutils/isObjectLike.js");
 
 var _directiveLocation = require("../language/directiveLocation.js");
 
@@ -39,7 +39,7 @@ function isDirective(directive) {
 
 function assertDirective(directive) {
   if (!isDirective(directive)) {
-    throw new Error("Expected ".concat((0, _inspect.default)(directive), " to be a GraphQL directive."));
+    throw new Error("Expected ".concat((0, _inspect.inspect)(directive), " to be a GraphQL directive."));
   }
 
   return directive;
@@ -58,13 +58,13 @@ var GraphQLDirective = /*#__PURE__*/function () {
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = (_config$isRepeatable = config.isRepeatable) !== null && _config$isRepeatable !== void 0 ? _config$isRepeatable : false;
-    this.extensions = config.extensions && (0, _toObjMap.default)(config.extensions);
+    this.extensions = config.extensions && (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
-    config.name || (0, _devAssert.default)(0, 'Directive must be named.');
-    Array.isArray(config.locations) || (0, _devAssert.default)(0, "@".concat(config.name, " locations must be an Array."));
+    config.name || (0, _devAssert.devAssert)(0, 'Directive must be named.');
+    Array.isArray(config.locations) || (0, _devAssert.devAssert)(0, "@".concat(config.name, " locations must be an Array."));
     var args = (_config$args = config.args) !== null && _config$args !== void 0 ? _config$args : {};
-    (0, _isObjectLike.default)(args) && !Array.isArray(args) || (0, _devAssert.default)(0, "@".concat(config.name, " args must be an object with argument names as keys."));
-    this.args = (0, _objectEntries.default)(args).map(function (_ref) {
+    (0, _isObjectLike.isObjectLike)(args) && !Array.isArray(args) || (0, _devAssert.devAssert)(0, "@".concat(config.name, " args must be an object with argument names as keys."));
+    this.args = (0, _objectEntries.objectEntries)(args).map(function (_ref) {
       var argName = _ref[0],
           argConfig = _ref[1];
       return {
@@ -73,7 +73,7 @@ var GraphQLDirective = /*#__PURE__*/function () {
         type: argConfig.type,
         defaultValue: argConfig.defaultValue,
         deprecationReason: argConfig.deprecationReason,
-        extensions: argConfig.extensions && (0, _toObjMap.default)(argConfig.extensions),
+        extensions: argConfig.extensions && (0, _toObjMap.toObjMap)(argConfig.extensions),
         astNode: argConfig.astNode
       };
     });

@@ -5,13 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PossibleTypeExtensionsRule = PossibleTypeExtensionsRule;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect.js"));
+var _inspect = require("../../jsutils/inspect.js");
 
-var _invariant = _interopRequireDefault(require("../../jsutils/invariant.js"));
+var _invariant = require("../../jsutils/invariant.js");
 
-var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean.js"));
+var _didYouMean = require("../../jsutils/didYouMean.js");
 
-var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList.js"));
+var _suggestionList = require("../../jsutils/suggestionList.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
 
@@ -22,8 +22,6 @@ var _predicates = require("../../language/predicates.js");
 var _definition = require("../../type/definition.js");
 
 var _defKindToExtKind;
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -77,8 +75,8 @@ function PossibleTypeExtensionsRule(context) {
         allTypeNames = allTypeNames.concat(Object.keys(schema.getTypeMap()));
       }
 
-      var suggestedTypes = (0, _suggestionList.default)(typeName, allTypeNames);
-      context.reportError(new _GraphQLError.GraphQLError("Cannot extend type \"".concat(typeName, "\" because it is not defined.") + (0, _didYouMean.default)(suggestedTypes), node.name));
+      var suggestedTypes = (0, _suggestionList.suggestionList)(typeName, allTypeNames);
+      context.reportError(new _GraphQLError.GraphQLError("Cannot extend type \"".concat(typeName, "\" because it is not defined.") + (0, _didYouMean.didYouMean)(suggestedTypes), node.name));
     }
   }
 }
@@ -112,7 +110,7 @@ function typeToExtKind(type) {
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Unexpected type: ' + (0, _inspect.default)(type));
+  false || (0, _invariant.invariant)(0, 'Unexpected type: ' + (0, _inspect.inspect)(type));
 }
 
 function extensionKindToTypeName(kind) {
@@ -137,5 +135,5 @@ function extensionKindToTypeName(kind) {
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Unexpected kind: ' + (0, _inspect.default)(kind));
+  false || (0, _invariant.invariant)(0, 'Unexpected kind: ' + (0, _inspect.inspect)(kind));
 }

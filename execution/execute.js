@@ -12,23 +12,23 @@ exports.buildResolveInfo = buildResolveInfo;
 exports.getFieldDef = getFieldDef;
 exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect.js"));
+var _inspect = require("../jsutils/inspect.js");
 
-var _memoize = _interopRequireDefault(require("../jsutils/memoize3.js"));
+var _memoize = require("../jsutils/memoize3.js");
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant.js"));
+var _invariant = require("../jsutils/invariant.js");
 
-var _devAssert = _interopRequireDefault(require("../jsutils/devAssert.js"));
+var _devAssert = require("../jsutils/devAssert.js");
 
-var _isPromise = _interopRequireDefault(require("../jsutils/isPromise.js"));
+var _isPromise = require("../jsutils/isPromise.js");
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike.js"));
+var _isObjectLike = require("../jsutils/isObjectLike.js");
 
-var _isCollection = _interopRequireDefault(require("../jsutils/isCollection.js"));
+var _isCollection = require("../jsutils/isCollection.js");
 
-var _promiseReduce = _interopRequireDefault(require("../jsutils/promiseReduce.js"));
+var _promiseReduce = require("../jsutils/promiseReduce.js");
 
-var _promiseForObject = _interopRequireDefault(require("../jsutils/promiseForObject.js"));
+var _promiseForObject = require("../jsutils/promiseForObject.js");
 
 var _Path = require("../jsutils/Path.js");
 
@@ -51,8 +51,6 @@ var _typeFromAST = require("../utilities/typeFromAST.js");
 var _getOperationRootType = require("../utilities/getOperationRootType.js");
 
 var _values = require("./values.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.
@@ -105,7 +103,7 @@ function execute(args) {
 function executeSync(args) {
   var result = execute(args); // Assert that the execution was synchronous.
 
-  if ((0, _isPromise.default)(result)) {
+  if ((0, _isPromise.isPromise)(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
@@ -118,7 +116,7 @@ function executeSync(args) {
 
 
 function buildResponse(exeContext, data) {
-  if ((0, _isPromise.default)(data)) {
+  if ((0, _isPromise.isPromise)(data)) {
     return data.then(function (resolved) {
       return buildResponse(exeContext, resolved);
     });
@@ -140,11 +138,11 @@ function buildResponse(exeContext, data) {
 
 
 function assertValidExecutionArguments(schema, document, rawVariableValues) {
-  document || (0, _devAssert.default)(0, 'Must provide document.'); // If the schema used for execution is invalid, throw an error.
+  document || (0, _devAssert.devAssert)(0, 'Must provide document.'); // If the schema used for execution is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema); // Variables, if provided, must be an object.
 
-  rawVariableValues == null || (0, _isObjectLike.default)(rawVariableValues) || (0, _devAssert.default)(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
+  rawVariableValues == null || (0, _isObjectLike.isObjectLike)(rawVariableValues) || (0, _devAssert.devAssert)(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -230,7 +228,7 @@ function executeOperation(exeContext, operation, rootValue) {
   try {
     var result = operation.operation === 'mutation' ? executeFieldsSerially(exeContext, type, rootValue, path, fields) : executeFields(exeContext, type, rootValue, path, fields);
 
-    if ((0, _isPromise.default)(result)) {
+    if ((0, _isPromise.isPromise)(result)) {
       return result.then(undefined, function (error) {
         exeContext.errors.push(error);
         return Promise.resolve(null);
@@ -250,7 +248,7 @@ function executeOperation(exeContext, operation, rootValue) {
 
 
 function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields) {
-  return (0, _promiseReduce.default)(Object.keys(fields), function (results, responseName) {
+  return (0, _promiseReduce.promiseReduce)(Object.keys(fields), function (results, responseName) {
     var fieldNodes = fields[responseName];
     var fieldPath = (0, _Path.addPath)(path, responseName, parentType.name);
     var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
@@ -259,7 +257,7 @@ function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields
       return results;
     }
 
-    if ((0, _isPromise.default)(result)) {
+    if ((0, _isPromise.isPromise)(result)) {
       return result.then(function (resolvedResult) {
         results[responseName] = resolvedResult;
         return results;
@@ -289,7 +287,7 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
     if (result !== undefined) {
       results[responseName] = result;
 
-      if ((0, _isPromise.default)(result)) {
+      if ((0, _isPromise.isPromise)(result)) {
         containsPromise = true;
       }
     }
@@ -303,7 +301,7 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
   // same map, but with any promises replaced with the values they resolved to.
 
 
-  return (0, _promiseForObject.default)(results);
+  return (0, _promiseForObject.promiseForObject)(results);
 }
 /**
  * Given a selectionSet, adds all of the fields in that selection to
@@ -459,7 +457,7 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
     var result = resolveFn(source, args, contextValue, info);
     var completed;
 
-    if ((0, _isPromise.default)(result)) {
+    if ((0, _isPromise.isPromise)(result)) {
       completed = result.then(function (resolved) {
         return completeValue(exeContext, returnType, fieldNodes, info, path, resolved);
       });
@@ -467,7 +465,7 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
       completed = completeValue(exeContext, returnType, fieldNodes, info, path, result);
     }
 
-    if ((0, _isPromise.default)(completed)) {
+    if ((0, _isPromise.isPromise)(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, function (rawError) {
@@ -586,7 +584,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
   } // istanbul ignore next (Not reachable. All possible output types have been considered)
 
 
-  false || (0, _invariant.default)(0, 'Cannot complete value of unexpected output type: ' + (0, _inspect.default)(returnType));
+  false || (0, _invariant.invariant)(0, 'Cannot complete value of unexpected output type: ' + (0, _inspect.inspect)(returnType));
 }
 /**
  * Complete a list value by completing each item in the list with the
@@ -595,7 +593,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
 
 function completeListValue(exeContext, returnType, fieldNodes, info, path, result) {
-  if (!(0, _isCollection.default)(result)) {
+  if (!(0, _isCollection.isCollection)(result)) {
     throw new _GraphQLError.GraphQLError("Expected Iterable, but did not find one for field \"".concat(info.parentType.name, ".").concat(info.fieldName, "\"."));
   } // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
@@ -611,7 +609,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
     try {
       var completedItem;
 
-      if ((0, _isPromise.default)(item)) {
+      if ((0, _isPromise.isPromise)(item)) {
         completedItem = item.then(function (resolved) {
           return completeValue(exeContext, itemType, fieldNodes, info, itemPath, resolved);
         });
@@ -619,7 +617,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
         completedItem = completeValue(exeContext, itemType, fieldNodes, info, itemPath, item);
       }
 
-      if ((0, _isPromise.default)(completedItem)) {
+      if ((0, _isPromise.isPromise)(completedItem)) {
         containsPromise = true; // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
 
@@ -647,7 +645,7 @@ function completeLeafValue(returnType, result) {
   var serializedResult = returnType.serialize(result);
 
   if (serializedResult === undefined) {
-    throw new Error("Expected a value of type \"".concat((0, _inspect.default)(returnType), "\" but ") + "received: ".concat((0, _inspect.default)(result)));
+    throw new Error("Expected a value of type \"".concat((0, _inspect.inspect)(returnType), "\" but ") + "received: ".concat((0, _inspect.inspect)(result)));
   }
 
   return serializedResult;
@@ -665,7 +663,7 @@ function completeAbstractValue(exeContext, returnType, fieldNodes, info, path, r
   var contextValue = exeContext.contextValue;
   var runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
-  if ((0, _isPromise.default)(runtimeType)) {
+  if ((0, _isPromise.isPromise)(runtimeType)) {
     return runtimeType.then(function (resolvedRuntimeType) {
       return completeObjectValue(exeContext, ensureValidRuntimeType(resolvedRuntimeType, exeContext, returnType, fieldNodes, info, result), fieldNodes, info, path, result);
     });
@@ -686,7 +684,7 @@ function ensureValidRuntimeType(runtimeTypeName, exeContext, returnType, fieldNo
   }
 
   if (typeof runtimeTypeName !== 'string') {
-    throw new _GraphQLError.GraphQLError("Abstract type \"".concat(returnType.name, "\" must resolve to an Object type at runtime for field \"").concat(info.parentType.name, ".").concat(info.fieldName, "\" with ") + "value ".concat((0, _inspect.default)(result), ", received \"").concat((0, _inspect.default)(runtimeTypeName), "\"."));
+    throw new _GraphQLError.GraphQLError("Abstract type \"".concat(returnType.name, "\" must resolve to an Object type at runtime for field \"").concat(info.parentType.name, ".").concat(info.fieldName, "\" with ") + "value ".concat((0, _inspect.inspect)(result), ", received \"").concat((0, _inspect.inspect)(runtimeTypeName), "\"."));
   }
 
   var runtimeType = exeContext.schema.getType(runtimeTypeName);
@@ -717,7 +715,7 @@ function completeObjectValue(exeContext, returnType, fieldNodes, info, path, res
   if (returnType.isTypeOf) {
     var isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
 
-    if ((0, _isPromise.default)(isTypeOf)) {
+    if ((0, _isPromise.isPromise)(isTypeOf)) {
       return isTypeOf.then(function (resolvedIsTypeOf) {
         if (!resolvedIsTypeOf) {
           throw invalidReturnTypeError(returnType, result, fieldNodes);
@@ -736,7 +734,7 @@ function completeObjectValue(exeContext, returnType, fieldNodes, info, path, res
 }
 
 function invalidReturnTypeError(returnType, result, fieldNodes) {
-  return new _GraphQLError.GraphQLError("Expected value of type \"".concat(returnType.name, "\" but got: ").concat((0, _inspect.default)(result), "."), fieldNodes);
+  return new _GraphQLError.GraphQLError("Expected value of type \"".concat(returnType.name, "\" but got: ").concat((0, _inspect.inspect)(result), "."), fieldNodes);
 }
 
 function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, result) {
@@ -751,7 +749,7 @@ function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, re
  */
 
 
-var collectSubfields = (0, _memoize.default)(_collectSubfields);
+var collectSubfields = (0, _memoize.memoize3)(_collectSubfields);
 
 function _collectSubfields(exeContext, returnType, fieldNodes) {
   var subFieldNodes = Object.create(null);
@@ -781,7 +779,7 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
 
 var defaultTypeResolver = function defaultTypeResolver(value, contextValue, info, abstractType) {
   // First, look for `__typename`.
-  if ((0, _isObjectLike.default)(value) && typeof value.__typename === 'string') {
+  if ((0, _isObjectLike.isObjectLike)(value) && typeof value.__typename === 'string') {
     return value.__typename;
   } // Otherwise, test each possible type.
 
@@ -795,7 +793,7 @@ var defaultTypeResolver = function defaultTypeResolver(value, contextValue, info
     if (type.isTypeOf) {
       var isTypeOfResult = type.isTypeOf(value, contextValue, info);
 
-      if ((0, _isPromise.default)(isTypeOfResult)) {
+      if ((0, _isPromise.isPromise)(isTypeOfResult)) {
         promisedIsTypeOfResults[i] = isTypeOfResult;
       } else if (isTypeOfResult) {
         return type.name;
@@ -825,7 +823,7 @@ exports.defaultTypeResolver = defaultTypeResolver;
 
 var defaultFieldResolver = function defaultFieldResolver(source, args, contextValue, info) {
   // ensure source is a value for which property access is acceptable.
-  if ((0, _isObjectLike.default)(source) || typeof source === 'function') {
+  if ((0, _isObjectLike.isObjectLike)(source) || typeof source === 'function') {
     var property = source[info.fieldName];
 
     if (typeof property === 'function') {
