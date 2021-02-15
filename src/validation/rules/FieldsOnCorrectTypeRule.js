@@ -1,6 +1,6 @@
-import didYouMean from '../../jsutils/didYouMean';
-import suggestionList from '../../jsutils/suggestionList';
-import naturalCompare from '../../jsutils/naturalCompare';
+import { didYouMean } from '../../jsutils/didYouMean';
+import { suggestionList } from '../../jsutils/suggestionList';
+import { naturalCompare } from '../../jsutils/naturalCompare';
 
 import { GraphQLError } from '../../error/GraphQLError';
 

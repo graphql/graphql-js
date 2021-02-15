@@ -1,4 +1,4 @@
-import inspect from '../jsutils/inspect';
+import { inspect } from '../jsutils/inspect';
 
 import type { ASTNode } from '../language/ast';
 

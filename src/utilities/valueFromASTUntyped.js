@@ -1,7 +1,7 @@
 import type { ObjMap } from '../jsutils/ObjMap';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import keyValMap from '../jsutils/keyValMap';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { keyValMap } from '../jsutils/keyValMap';
 
 import { Kind } from '../language/kinds';
 import type { ValueNode } from '../language/ast';

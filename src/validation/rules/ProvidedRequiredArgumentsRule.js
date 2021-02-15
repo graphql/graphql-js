@@ -1,5 +1,5 @@
-import inspect from '../../jsutils/inspect';
-import keyMap from '../../jsutils/keyMap';
+import { inspect } from '../../jsutils/inspect';
+import { keyMap } from '../../jsutils/keyMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 

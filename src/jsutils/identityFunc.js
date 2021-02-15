@@ -1,6 +1,6 @@
 /**
  * Returns the first argument it receives.
  */
-export default function identityFunc<T>(x: T): T {
+export function identityFunc<T>(x: T): T {
   return x;
 }

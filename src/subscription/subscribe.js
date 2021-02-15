@@ -1,5 +1,5 @@
-import inspect from '../jsutils/inspect';
-import isAsyncIterable from '../jsutils/isAsyncIterable';
+import { inspect } from '../jsutils/inspect';
+import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { addPath, pathToArray } from '../jsutils/Path';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -23,7 +23,7 @@ import type { GraphQLFieldResolver } from '../type/definition';
 
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
-import mapAsyncIterator from './mapAsyncIterator';
+import { mapAsyncIterator } from './mapAsyncIterator';
 
 export type SubscriptionArgs = {|
   schema: GraphQLSchema,

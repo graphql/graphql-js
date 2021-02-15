@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import invariant from '../../jsutils/invariant';
+import { invariant } from '../../jsutils/invariant';
 
 import type { DocumentNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';

@@ -1,15 +1,15 @@
 import type { Path } from '../jsutils/Path';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import inspect from '../jsutils/inspect';
-import memoize3 from '../jsutils/memoize3';
-import invariant from '../jsutils/invariant';
-import devAssert from '../jsutils/devAssert';
-import isPromise from '../jsutils/isPromise';
-import isObjectLike from '../jsutils/isObjectLike';
-import isCollection from '../jsutils/isCollection';
-import promiseReduce from '../jsutils/promiseReduce';
-import promiseForObject from '../jsutils/promiseForObject';
+import { inspect } from '../jsutils/inspect';
+import { memoize3 } from '../jsutils/memoize3';
+import { invariant } from '../jsutils/invariant';
+import { devAssert } from '../jsutils/devAssert';
+import { isPromise } from '../jsutils/isPromise';
+import { isObjectLike } from '../jsutils/isObjectLike';
+import { isCollection } from '../jsutils/isCollection';
+import { promiseReduce } from '../jsutils/promiseReduce';
+import { promiseForObject } from '../jsutils/promiseForObject';
 import { addPath, pathToArray } from '../jsutils/Path';
 
 import type { GraphQLFormattedError } from '../error/formatError';

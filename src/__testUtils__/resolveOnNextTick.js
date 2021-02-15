@@ -1,3 +1,3 @@
-export default function resolveOnNextTick(): Promise<void> {
+export function resolveOnNextTick(): Promise<void> {
   return Promise.resolve(undefined);
 }

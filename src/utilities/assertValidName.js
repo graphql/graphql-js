@@ -1,4 +1,4 @@
-import devAssert from '../jsutils/devAssert';
+import { devAssert } from '../jsutils/devAssert';
 
 import { GraphQLError } from '../error/GraphQLError';
 

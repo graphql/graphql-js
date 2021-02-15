@@ -1,4 +1,4 @@
-const kitchenSinkSDL: string = `
+export const kitchenSinkSDL: string = `
 """This is a description of the schema as a whole."""
 schema {
   query: QueryType
@@ -156,5 +156,3 @@ extend schema @onSchema {
   subscription: SubscriptionType
 }
 `;
-
-export default kitchenSinkSDL;

@@ -1,7 +1,7 @@
 import type { ObjMap } from '../jsutils/ObjMap';
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import printPathArray from '../jsutils/printPathArray';
+import { keyMap } from '../jsutils/keyMap';
+import { inspect } from '../jsutils/inspect';
+import { printPathArray } from '../jsutils/printPathArray';
 
 import { GraphQLError } from '../error/GraphQLError';
 

@@ -69,7 +69,7 @@ export interface GraphQLGrammarPeekConstraintCondition {
   end?: boolean;
 }
 
-const grammar: GraphQLGrammarType = ({
+export const grammar: GraphQLGrammarType = ({
   Name: { token: 'Name' },
   String: { token: 'String' },
   BlockString: { token: 'BlockString' },
@@ -995,5 +995,3 @@ const grammar: GraphQLGrammarType = ({
   },
   // FIXME: enforce proper typing
 }: any);
-
-export default grammar;
