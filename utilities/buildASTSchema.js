@@ -89,7 +89,7 @@ function buildASTSchema(documentAST, options) {
 function buildSchema(source, options) {
   const document = (0, _parser.parse)(source, {
     noLocation: options === null || options === void 0 ? void 0 : options.noLocation,
-    experimentalFragmentVariables: options === null || options === void 0 ? void 0 : options.experimentalFragmentVariables
+    allowLegacyFragmentVariables: options === null || options === void 0 ? void 0 : options.allowLegacyFragmentVariables
   });
   return buildASTSchema(document, {
     assumeValidSDL: options === null || options === void 0 ? void 0 : options.assumeValidSDL,
