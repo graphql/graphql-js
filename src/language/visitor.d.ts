@@ -78,8 +78,7 @@ export const QueryDocumentKeys: {
   // prettier-ignore
   FragmentDefinition: [
     'name',
-    // Note: fragment variable definitions are experimental and may be changed
-    // or removed in the future.
+    // Note: fragment variable definitions are deprecated and will removed in v17.0.0
     'variableDefinitions',
     'typeCondition',
     'directives',

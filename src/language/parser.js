@@ -67,7 +67,7 @@ export type ParseOptions = {|
   noLocation?: boolean,
 
   /**
-   * EXPERIMENTAL:
+   * @deprecated will be removed in the v17.0.0
    *
    * If enabled, the parser will understand and parse variable definitions
    * contained in a fragment definition. They'll be represented in the
@@ -79,10 +79,8 @@ export type ParseOptions = {|
    *     ...
    *   }
    *
-   * Note: this feature is experimental and may change or be removed in the
-   * future.
    */
-  experimentalFragmentVariables?: boolean,
+  allowLegacyFragmentVariables?: boolean,
 |};
 
 /**
@@ -458,10 +456,10 @@ export class Parser {
   parseFragmentDefinition(): FragmentDefinitionNode {
     const start = this._lexer.token;
     this.expectKeyword('fragment');
-    // Experimental support for defining variables within fragments changes
+    // Legacy support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options?.experimentalFragmentVariables === true) {
+    if (this._options?.allowLegacyFragmentVariables === true) {
       return {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),

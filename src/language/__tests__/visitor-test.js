@@ -438,10 +438,10 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('Experimental: visits variables defined in fragments', () => {
+  it('Legacy: visits variables defined in fragments', () => {
     const ast = parse('fragment a($v: Boolean = false) on t { f }', {
       noLocation: true,
-      experimentalFragmentVariables: true,
+      allowLegacyFragmentVariables: true,
     });
     const visited = [];
 

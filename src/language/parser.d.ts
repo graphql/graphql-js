@@ -13,7 +13,7 @@ export interface ParseOptions {
   noLocation?: boolean;
 
   /**
-   * EXPERIMENTAL:
+   * @deprecated will be removed in the v17.0.0
    *
    * If enabled, the parser will understand and parse variable definitions
    * contained in a fragment definition. They'll be represented in the
@@ -25,10 +25,8 @@ export interface ParseOptions {
    *     ...
    *   }
    *
-   * Note: this feature is experimental and may change or be removed in the
-   * future.
    */
-  experimentalFragmentVariables?: boolean;
+  allowLegacyFragmentVariables?: boolean;
 }
 
 /**

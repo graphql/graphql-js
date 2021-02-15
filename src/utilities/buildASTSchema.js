@@ -98,7 +98,7 @@ export function buildSchema(
 ): GraphQLSchema {
   const document = parse(source, {
     noLocation: options?.noLocation,
-    experimentalFragmentVariables: options?.experimentalFragmentVariables,
+    allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables,
   });
 
   return buildASTSchema(document, {
