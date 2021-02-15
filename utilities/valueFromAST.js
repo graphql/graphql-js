@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.valueFromAST = valueFromAST;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _keyMap = require("../jsutils/keyMap.js");
 
 var _inspect = require("../jsutils/inspect.js");
@@ -123,7 +121,7 @@ function valueFromAST(valueNode, type, variables) {
     const coercedObj = Object.create(null);
     const fieldNodes = (0, _keyMap.keyMap)(valueNode.fields, field => field.name.value);
 
-    for (const field of (0, _objectValues.objectValues)(type.getFields())) {
+    for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes[field.name];
 
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {

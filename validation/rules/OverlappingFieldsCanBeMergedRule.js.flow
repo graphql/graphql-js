@@ -1,6 +1,4 @@
 // @flow strict
-import { objectEntries } from '../../polyfills/objectEntries';
-
 import type { ObjMap } from '../../jsutils/ObjMap';
 import { inspect } from '../../jsutils/inspect';
 
@@ -464,7 +462,7 @@ function collectConflictsWithin(
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const [responseName, fields] of objectEntries(fieldMap)) {
+  for (const [responseName, fields] of Object.entries(fieldMap)) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.

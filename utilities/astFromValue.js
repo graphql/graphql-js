@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.astFromValue = astFromValue;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _invariant = require("../jsutils/invariant.js");
@@ -100,7 +98,7 @@ function astFromValue(value, type) {
 
     const fieldNodes = [];
 
-    for (const field of (0, _objectValues.objectValues)(type.getFields())) {
+    for (const field of Object.values(type.getFields())) {
       const fieldValue = astFromValue(value[field.name], field.type);
 
       if (fieldValue) {

@@ -7,8 +7,6 @@ exports.printSchema = printSchema;
 exports.printIntrospectionSchema = printIntrospectionSchema;
 exports.printType = printType;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _invariant = require("../jsutils/invariant.js");
@@ -41,7 +39,7 @@ function isDefinedType(type) {
 
 function printFilteredSchema(schema, directiveFilter, typeFilter) {
   const directives = schema.getDirectives().filter(directiveFilter);
-  const types = (0, _objectValues.objectValues)(schema.getTypeMap()).filter(typeFilter);
+  const types = Object.values(schema.getTypeMap()).filter(typeFilter);
   return [printSchemaDefinition(schema)].concat(directives.map(directive => printDirective(directive)), types.map(type => printType(type))).filter(Boolean).join('\n\n') + '\n';
 }
 
@@ -166,12 +164,12 @@ function printEnum(type) {
 }
 
 function printInputObject(type) {
-  const fields = (0, _objectValues.objectValues)(type.getFields()).map((f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f));
+  const fields = Object.values(type.getFields()).map((f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f));
   return printDescription(type) + `input ${type.name}` + printBlock(fields);
 }
 
 function printFields(type) {
-  const fields = (0, _objectValues.objectValues)(type.getFields()).map((f, i) => printDescription(f, '  ', !i) + '  ' + f.name + printArgs(f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason));
+  const fields = Object.values(type.getFields()).map((f, i) => printDescription(f, '  ', !i) + '  ' + f.name + printArgs(f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason));
   return printBlock(fields);
 }
 

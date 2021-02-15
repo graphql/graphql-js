@@ -8,8 +8,6 @@ exports.assertDirective = assertDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
 exports.specifiedDirectives = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
 
-var _objectEntries = require("../polyfills/objectEntries.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _toObjMap = require("../jsutils/toObjMap.js");
@@ -60,7 +58,7 @@ class GraphQLDirective {
     Array.isArray(config.locations) || (0, _devAssert.devAssert)(0, `@${config.name} locations must be an Array.`);
     const args = (_config$args = config.args) !== null && _config$args !== void 0 ? _config$args : {};
     (0, _isObjectLike.isObjectLike)(args) && !Array.isArray(args) || (0, _devAssert.devAssert)(0, `@${config.name} args must be an object with argument names as keys.`);
-    this.args = (0, _objectEntries.objectEntries)(args).map(([argName, argConfig]) => ({
+    this.args = Object.entries(args).map(([argName, argConfig]) => ({
       name: argName,
       description: argConfig.description,
       type: argConfig.type,

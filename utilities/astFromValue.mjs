@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.mjs";
 import { inspect } from "../jsutils/inspect.mjs";
 import { invariant } from "../jsutils/invariant.mjs";
 import { isObjectLike } from "../jsutils/isObjectLike.mjs";
@@ -86,7 +85,7 @@ export function astFromValue(value, type) {
 
     const fieldNodes = [];
 
-    for (const field of objectValues(type.getFields())) {
+    for (const field of Object.values(type.getFields())) {
       const fieldValue = astFromValue(value[field.name], field.type);
 
       if (fieldValue) {

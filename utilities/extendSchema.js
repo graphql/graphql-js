@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.extendSchema = extendSchema;
 exports.extendSchemaImpl = extendSchemaImpl;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _keyMap = require("../jsutils/keyMap.js");
 
 var _inspect = require("../jsutils/inspect.js");
@@ -128,7 +126,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   return {
     description: (_schemaDef = schemaDef) === null || _schemaDef === void 0 ? void 0 : (_schemaDef$descriptio = _schemaDef.description) === null || _schemaDef$descriptio === void 0 ? void 0 : _schemaDef$descriptio.value,
     ...operationTypes,
-    types: (0, _objectValues.objectValues)(typeMap),
+    types: Object.values(typeMap),
     directives: [...schemaConfig.directives.map(replaceDirective), ...directiveDefs.map(buildDirective)],
     extensions: undefined,
     astNode: (_schemaDef2 = schemaDef) !== null && _schemaDef2 !== void 0 ? _schemaDef2 : schemaConfig.astNode,

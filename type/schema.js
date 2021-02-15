@@ -7,8 +7,6 @@ exports.isSchema = isSchema;
 exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _toObjMap = require("../jsutils/toObjMap.js");
@@ -292,7 +290,7 @@ class GraphQLSchema {
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
-      types: (0, _objectValues.objectValues)(this.getTypeMap()),
+      types: Object.values(this.getTypeMap()),
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
@@ -325,7 +323,7 @@ function collectReferencedTypes(type, typeSet) {
         collectReferencedTypes(interfaceType, typeSet);
       }
 
-      for (const field of (0, _objectValues.objectValues)(namedType.getFields())) {
+      for (const field of Object.values(namedType.getFields())) {
         collectReferencedTypes(field.type, typeSet);
 
         for (const arg of field.args) {
@@ -333,7 +331,7 @@ function collectReferencedTypes(type, typeSet) {
         }
       }
     } else if ((0, _definition.isInputObjectType)(namedType)) {
-      for (const field of (0, _objectValues.objectValues)(namedType.getFields())) {
+      for (const field of Object.values(namedType.getFields())) {
         collectReferencedTypes(field.type, typeSet);
       }
     }

@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.validateSchema = validateSchema;
 exports.assertValidSchema = assertValidSchema;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _GraphQLError = require("../error/GraphQLError.js");
@@ -172,7 +170,7 @@ function validateTypes(context) {
   const validateInputObjectCircularRefs = createInputObjectCircularRefsValidator(context);
   const typeMap = context.schema.getTypeMap();
 
-  for (const type of (0, _objectValues.objectValues)(typeMap)) {
+  for (const type of Object.values(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.
     if (!(0, _definition.isNamedType)(type)) {
       context.reportError(`Expected GraphQL named type but got: ${(0, _inspect.inspect)(type)}.`, type.astNode);
@@ -210,7 +208,7 @@ function validateTypes(context) {
 }
 
 function validateFields(context, type) {
-  const fields = (0, _objectValues.objectValues)(type.getFields()); // Objects and Interfaces both must define one or more fields.
+  const fields = Object.values(type.getFields()); // Objects and Interfaces both must define one or more fields.
 
   if (fields.length === 0) {
     context.reportError(`Type ${type.name} must define one or more fields.`, getAllNodes(type));
@@ -276,7 +274,7 @@ function validateInterfaces(context, type) {
 function validateTypeImplementsInterface(context, type, iface) {
   const typeFieldMap = type.getFields(); // Assert each interface field is implemented.
 
-  for (const ifaceField of (0, _objectValues.objectValues)(iface.getFields())) {
+  for (const ifaceField of Object.values(iface.getFields())) {
     const fieldName = ifaceField.name;
     const typeField = typeFieldMap[fieldName]; // Assert interface field exists on type.
 
@@ -382,7 +380,7 @@ function validateEnumValues(context, enumType) {
 }
 
 function validateInputFields(context, inputObj) {
-  const fields = (0, _objectValues.objectValues)(inputObj.getFields());
+  const fields = Object.values(inputObj.getFields());
 
   if (fields.length === 0) {
     context.reportError(`Input Object type ${inputObj.name} must define one or more fields.`, getAllNodes(inputObj));
@@ -428,7 +426,7 @@ function createInputObjectCircularRefsValidator(context) {
 
     visitedTypes[inputObj.name] = true;
     fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
-    const fields = (0, _objectValues.objectValues)(inputObj.getFields());
+    const fields = Object.values(inputObj.getFields());
 
     for (const field of fields) {
       if ((0, _definition.isNonNullType)(field.type) && (0, _definition.isInputObjectType)(field.type.ofType)) {

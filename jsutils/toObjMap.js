@@ -5,8 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.toObjMap = toObjMap;
 
-var _objectEntries = require("../polyfills/objectEntries.js");
-
+/* eslint-disable no-redeclare */
 function toObjMap(obj) {
   /* eslint-enable no-redeclare */
   if (Object.getPrototypeOf(obj) === null) {
@@ -15,7 +14,7 @@ function toObjMap(obj) {
 
   const map = Object.create(null);
 
-  for (const [key, value] of (0, _objectEntries.objectEntries)(obj)) {
+  for (const [key, value] of Object.entries(obj)) {
     map[key] = value;
   }
 

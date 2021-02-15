@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.isIntrospectionType = isIntrospectionType;
 exports.introspectionTypes = exports.TypeNameMetaFieldDef = exports.TypeMetaFieldDef = exports.SchemaMetaFieldDef = exports.__TypeKind = exports.TypeKind = exports.__EnumValue = exports.__InputValue = exports.__Field = exports.__Type = exports.__DirectiveLocation = exports.__Directive = exports.__Schema = void 0;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _invariant = require("../jsutils/invariant.js");
@@ -35,7 +33,7 @@ const __Schema = new _definition.GraphQLObjectType({
       type: new _definition.GraphQLNonNull(new _definition.GraphQLList(new _definition.GraphQLNonNull(__Type))),
 
       resolve(schema) {
-        return (0, _objectValues.objectValues)(schema.getTypeMap());
+        return Object.values(schema.getTypeMap());
       }
 
     },
@@ -249,7 +247,7 @@ const __Type = new _definition.GraphQLObjectType({
         includeDeprecated
       }) {
         if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
-          const fields = (0, _objectValues.objectValues)(type.getFields());
+          const fields = Object.values(type.getFields());
           return includeDeprecated ? fields : fields.filter(field => field.deprecationReason == null);
         }
       }
@@ -309,7 +307,7 @@ const __Type = new _definition.GraphQLObjectType({
         includeDeprecated
       }) {
         if ((0, _definition.isInputObjectType)(type)) {
-          const values = (0, _objectValues.objectValues)(type.getFields());
+          const values = Object.values(type.getFields());
           return includeDeprecated ? values : values.filter(field => field.deprecationReason == null);
         }
       }

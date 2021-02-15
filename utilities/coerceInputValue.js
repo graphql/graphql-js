@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.coerceInputValue = coerceInputValue;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _invariant = require("../jsutils/invariant.js");
@@ -83,7 +81,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     const coercedValue = {};
     const fieldDefs = type.getFields();
 
-    for (const field of (0, _objectValues.objectValues)(fieldDefs)) {
+    for (const field of Object.values(fieldDefs)) {
       const fieldValue = inputValue[field.name];
 
       if (fieldValue === undefined) {

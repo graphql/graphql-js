@@ -1,4 +1,3 @@
-import { objectEntries } from "../polyfills/objectEntries.mjs";
 import { inspect } from "../jsutils/inspect.mjs";
 import { toObjMap } from "../jsutils/toObjMap.mjs";
 import { devAssert } from "../jsutils/devAssert.mjs";
@@ -41,7 +40,7 @@ export class GraphQLDirective {
     Array.isArray(config.locations) || devAssert(0, `@${config.name} locations must be an Array.`);
     const args = (_config$args = config.args) !== null && _config$args !== void 0 ? _config$args : {};
     isObjectLike(args) && !Array.isArray(args) || devAssert(0, `@${config.name} args must be an object with argument names as keys.`);
-    this.args = objectEntries(args).map(([argName, argConfig]) => ({
+    this.args = Object.entries(args).map(([argName, argConfig]) => ({
       name: argName,
       description: argConfig.description,
       type: argConfig.type,

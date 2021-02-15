@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.mjs";
 import { inspect } from "../jsutils/inspect.mjs";
 import { devAssert } from "../jsutils/devAssert.mjs";
 import { keyValMap } from "../jsutils/keyValMap.mjs";
@@ -49,7 +48,7 @@ export function buildClientSchema(introspection, options) {
     query: queryType,
     mutation: mutationType,
     subscription: subscriptionType,
-    types: objectValues(typeMap),
+    types: Object.values(typeMap),
     directives,
     assumeValid: options === null || options === void 0 ? void 0 : options.assumeValid
   }); // Given a type reference in introspection, return the GraphQLType instance.

@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ValuesOfCorrectTypeRule = ValuesOfCorrectTypeRule;
 
-var _objectValues = require("../../polyfills/objectValues.js");
-
 var _keyMap = require("../../jsutils/keyMap.js");
 
 var _inspect = require("../../jsutils/inspect.js");
@@ -51,7 +49,7 @@ function ValuesOfCorrectTypeRule(context) {
 
       const fieldNodeMap = (0, _keyMap.keyMap)(node.fields, field => field.name.value);
 
-      for (const fieldDef of (0, _objectValues.objectValues)(type.getFields())) {
+      for (const fieldDef of Object.values(type.getFields())) {
         const fieldNode = fieldNodeMap[fieldDef.name];
 
         if (!fieldNode && (0, _definition.isRequiredInputField)(fieldDef)) {

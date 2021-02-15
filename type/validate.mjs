@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.mjs";
 import { inspect } from "../jsutils/inspect.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { locatedError } from "../error/locatedError.mjs";
@@ -154,7 +153,7 @@ function validateTypes(context) {
   const validateInputObjectCircularRefs = createInputObjectCircularRefsValidator(context);
   const typeMap = context.schema.getTypeMap();
 
-  for (const type of objectValues(typeMap)) {
+  for (const type of Object.values(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.
     if (!isNamedType(type)) {
       context.reportError(`Expected GraphQL named type but got: ${inspect(type)}.`, type.astNode);
@@ -192,7 +191,7 @@ function validateTypes(context) {
 }
 
 function validateFields(context, type) {
-  const fields = objectValues(type.getFields()); // Objects and Interfaces both must define one or more fields.
+  const fields = Object.values(type.getFields()); // Objects and Interfaces both must define one or more fields.
 
   if (fields.length === 0) {
     context.reportError(`Type ${type.name} must define one or more fields.`, getAllNodes(type));
@@ -258,7 +257,7 @@ function validateInterfaces(context, type) {
 function validateTypeImplementsInterface(context, type, iface) {
   const typeFieldMap = type.getFields(); // Assert each interface field is implemented.
 
-  for (const ifaceField of objectValues(iface.getFields())) {
+  for (const ifaceField of Object.values(iface.getFields())) {
     const fieldName = ifaceField.name;
     const typeField = typeFieldMap[fieldName]; // Assert interface field exists on type.
 
@@ -364,7 +363,7 @@ function validateEnumValues(context, enumType) {
 }
 
 function validateInputFields(context, inputObj) {
-  const fields = objectValues(inputObj.getFields());
+  const fields = Object.values(inputObj.getFields());
 
   if (fields.length === 0) {
     context.reportError(`Input Object type ${inputObj.name} must define one or more fields.`, getAllNodes(inputObj));
@@ -410,7 +409,7 @@ function createInputObjectCircularRefsValidator(context) {
 
     visitedTypes[inputObj.name] = true;
     fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
-    const fields = objectValues(inputObj.getFields());
+    const fields = Object.values(inputObj.getFields());
 
     for (const field of fields) {
       if (isNonNullType(field.type) && isInputObjectType(field.type.ofType)) {

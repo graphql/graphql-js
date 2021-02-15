@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.mjs";
 import { keyMap } from "../jsutils/keyMap.mjs";
 import { inspect } from "../jsutils/inspect.mjs";
 import { mapValue } from "../jsutils/mapValue.mjs";
@@ -104,7 +103,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   return {
     description: (_schemaDef = schemaDef) === null || _schemaDef === void 0 ? void 0 : (_schemaDef$descriptio = _schemaDef.description) === null || _schemaDef$descriptio === void 0 ? void 0 : _schemaDef$descriptio.value,
     ...operationTypes,
-    types: objectValues(typeMap),
+    types: Object.values(typeMap),
     directives: [...schemaConfig.directives.map(replaceDirective), ...directiveDefs.map(buildDirective)],
     extensions: undefined,
     astNode: (_schemaDef2 = schemaDef) !== null && _schemaDef2 !== void 0 ? _schemaDef2 : schemaConfig.astNode,

@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.mjs";
 import { inspect } from "../jsutils/inspect.mjs";
 import { invariant } from "../jsutils/invariant.mjs";
 import { didYouMean } from "../jsutils/didYouMean.mjs";
@@ -66,7 +65,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     const coercedValue = {};
     const fieldDefs = type.getFields();
 
-    for (const field of objectValues(fieldDefs)) {
+    for (const field of Object.values(fieldDefs)) {
       const fieldValue = inputValue[field.name];
 
       if (fieldValue === undefined) {

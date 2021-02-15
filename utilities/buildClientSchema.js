@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.buildClientSchema = buildClientSchema;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _devAssert = require("../jsutils/devAssert.js");
@@ -67,7 +65,7 @@ function buildClientSchema(introspection, options) {
     query: queryType,
     mutation: mutationType,
     subscription: subscriptionType,
-    types: (0, _objectValues.objectValues)(typeMap),
+    types: Object.values(typeMap),
     directives,
     assumeValid: options === null || options === void 0 ? void 0 : options.assumeValid
   }); // Given a type reference in introspection, return the GraphQLType instance.

@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 
-var _objectEntries = require("../../polyfills/objectEntries.js");
-
 var _inspect = require("../../jsutils/inspect.js");
 
 var _GraphQLError = require("../../error/GraphQLError.js");
@@ -246,7 +244,7 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const [responseName, fields] of (0, _objectEntries.objectEntries)(fieldMap)) {
+  for (const [responseName, fields] of Object.entries(fieldMap)) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.

@@ -44,8 +44,6 @@ exports.isRequiredArgument = isRequiredArgument;
 exports.isRequiredInputField = isRequiredInputField;
 exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.GraphQLObjectType = exports.GraphQLScalarType = exports.GraphQLNonNull = exports.GraphQLList = void 0;
 
-var _objectEntries = require("../polyfills/objectEntries.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _keyMap = require("../jsutils/keyMap.js");
@@ -646,7 +644,7 @@ function defineFieldMap(config) {
     fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function' || (0, _devAssert.devAssert)(0, `${config.name}.${fieldName} field resolver must be a function if ` + `provided, but got: ${(0, _inspect.inspect)(fieldConfig.resolve)}.`);
     const argsConfig = (_fieldConfig$args = fieldConfig.args) !== null && _fieldConfig$args !== void 0 ? _fieldConfig$args : {};
     isPlainObj(argsConfig) || (0, _devAssert.devAssert)(0, `${config.name}.${fieldName} args must be an object with argument names as keys.`);
-    const args = (0, _objectEntries.objectEntries)(argsConfig).map(([argName, argConfig]) => ({
+    const args = Object.entries(argsConfig).map(([argName, argConfig]) => ({
       name: argName,
       description: argConfig.description,
       type: argConfig.type,
@@ -1001,7 +999,7 @@ function didYouMeanEnumValue(enumType, unknownValueStr) {
 
 function defineEnumValues(typeName, valueMap) {
   isPlainObj(valueMap) || (0, _devAssert.devAssert)(0, `${typeName} values must be an object with value names as keys.`);
-  return (0, _objectEntries.objectEntries)(valueMap).map(([valueName, valueConfig]) => {
+  return Object.entries(valueMap).map(([valueName, valueConfig]) => {
     isPlainObj(valueConfig) || (0, _devAssert.devAssert)(0, `${typeName}.${valueName} must refer to an object with a "value" key ` + `representing an internal value but got: ${(0, _inspect.inspect)(valueConfig)}.`);
     return {
       name: valueName,

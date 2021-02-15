@@ -7,8 +7,6 @@ exports.findBreakingChanges = findBreakingChanges;
 exports.findDangerousChanges = findDangerousChanges;
 exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _keyMap = require("../jsutils/keyMap.js");
 
 var _inspect = require("../jsutils/inspect.js");
@@ -131,7 +129,7 @@ function findDirectiveChanges(oldSchema, newSchema) {
 
 function findTypeChanges(oldSchema, newSchema) {
   const schemaChanges = [];
-  const typesDiff = diff((0, _objectValues.objectValues)(oldSchema.getTypeMap()), (0, _objectValues.objectValues)(newSchema.getTypeMap()));
+  const typesDiff = diff(Object.values(oldSchema.getTypeMap()), Object.values(newSchema.getTypeMap()));
 
   for (const oldType of typesDiff.removed) {
     schemaChanges.push({
@@ -164,7 +162,7 @@ function findTypeChanges(oldSchema, newSchema) {
 
 function findInputObjectTypeChanges(oldType, newType) {
   const schemaChanges = [];
-  const fieldsDiff = diff((0, _objectValues.objectValues)(oldType.getFields()), (0, _objectValues.objectValues)(newType.getFields()));
+  const fieldsDiff = diff(Object.values(oldType.getFields()), Object.values(newType.getFields()));
 
   for (const newField of fieldsDiff.added) {
     if ((0, _definition.isRequiredInputField)(newField)) {
@@ -266,7 +264,7 @@ function findImplementedInterfacesChanges(oldType, newType) {
 
 function findFieldChanges(oldType, newType) {
   const schemaChanges = [];
-  const fieldsDiff = diff((0, _objectValues.objectValues)(oldType.getFields()), (0, _objectValues.objectValues)(newType.getFields()));
+  const fieldsDiff = diff(Object.values(oldType.getFields()), Object.values(newType.getFields()));
 
   for (const oldField of fieldsDiff.removed) {
     schemaChanges.push({

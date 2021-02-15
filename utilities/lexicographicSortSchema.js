@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.lexicographicSortSchema = lexicographicSortSchema;
 
-var _objectValues = require("../polyfills/objectValues.js");
-
 var _inspect = require("../jsutils/inspect.js");
 
 var _invariant = require("../jsutils/invariant.js");
@@ -32,7 +30,7 @@ function lexicographicSortSchema(schema) {
   const schemaConfig = schema.toConfig();
   const typeMap = (0, _keyValMap.keyValMap)(sortByName(schemaConfig.types), type => type.name, sortNamedType);
   return new _schema.GraphQLSchema({ ...schemaConfig,
-    types: (0, _objectValues.objectValues)(typeMap),
+    types: Object.values(typeMap),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
     query: replaceMaybeType(schemaConfig.query),
     mutation: replaceMaybeType(schemaConfig.mutation),
