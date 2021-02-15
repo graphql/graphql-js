@@ -11,12 +11,10 @@ import { typeFromAST } from "./typeFromAST.js";
  */
 
 export class TypeInfo {
-  constructor(schema, // NOTE: this experimental optional second parameter is only needed in order
-  // to support non-spec-compliant code bases. You should never need to use it.
-  // It may disappear in the future.
-  getFieldDefFn, // Initial type may be provided in rare cases to facilitate traversals
+  constructor(schema, // Initial type may be provided in rare cases to facilitate traversals
   // beginning somewhere other than documents.
-  initialType) {
+  initialType, // @deprecated will be removed in 17.0.0
+  getFieldDefFn) {
     this._schema = schema;
     this._typeStack = [];
     this._parentTypeStack = [];
