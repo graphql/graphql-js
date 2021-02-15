@@ -1,4 +1,4 @@
-import inspect from "../../jsutils/inspect.js";
+import { inspect } from "../../jsutils/inspect.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
 import { isCompositeType } from "../../type/definition.js";
 import { typeFromAST } from "../../utilities/typeFromAST.js";

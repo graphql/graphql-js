@@ -1,4 +1,4 @@
-import devAssert from "../jsutils/devAssert.js";
+import { devAssert } from "../jsutils/devAssert.js";
 import { Kind } from "../language/kinds.js";
 import { parse } from "../language/parser.js";
 import { assertValidSDL } from "../validation/validate.js";

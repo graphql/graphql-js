@@ -1,7 +1,7 @@
-import objectValues from "../polyfills/objectValues.js";
-import keyMap from "../jsutils/keyMap.js";
-import inspect from "../jsutils/inspect.js";
-import invariant from "../jsutils/invariant.js";
+import { objectValues } from "../polyfills/objectValues.js";
+import { keyMap } from "../jsutils/keyMap.js";
+import { inspect } from "../jsutils/inspect.js";
+import { invariant } from "../jsutils/invariant.js";
 import { Kind } from "../language/kinds.js";
 import { isLeafType, isInputObjectType, isListType, isNonNullType } from "../type/definition.js";
 /**

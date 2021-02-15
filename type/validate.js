@@ -1,5 +1,5 @@
-import objectValues from "../polyfills/objectValues.js";
-import inspect from "../jsutils/inspect.js";
+import { objectValues } from "../polyfills/objectValues.js";
+import { inspect } from "../jsutils/inspect.js";
 import { GraphQLError } from "../error/GraphQLError.js";
 import { locatedError } from "../error/locatedError.js";
 import { isValidNameError } from "../utilities/assertValidName.js";

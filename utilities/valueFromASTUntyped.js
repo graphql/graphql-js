@@ -1,6 +1,6 @@
-import inspect from "../jsutils/inspect.js";
-import invariant from "../jsutils/invariant.js";
-import keyValMap from "../jsutils/keyValMap.js";
+import { inspect } from "../jsutils/inspect.js";
+import { invariant } from "../jsutils/invariant.js";
+import { keyValMap } from "../jsutils/keyValMap.js";
 import { Kind } from "../language/kinds.js";
 
 /**

@@ -1,5 +1,5 @@
-import objectEntries from "../../polyfills/objectEntries.js";
-import inspect from "../../jsutils/inspect.js";
+import { objectEntries } from "../../polyfills/objectEntries.js";
+import { inspect } from "../../jsutils/inspect.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
 import { Kind } from "../../language/kinds.js";
 import { print } from "../../language/printer.js";

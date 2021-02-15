@@ -1,4 +1,4 @@
-import isPromise from "./jsutils/isPromise.js";
+import { isPromise } from "./jsutils/isPromise.js";
 import { parse } from "./language/parser.js";
 import { validate } from "./validation/validate.js";
 import { validateSchema } from "./type/validate.js";

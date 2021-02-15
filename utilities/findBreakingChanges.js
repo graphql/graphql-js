@@ -1,8 +1,8 @@
-import objectValues from "../polyfills/objectValues.js";
-import keyMap from "../jsutils/keyMap.js";
-import inspect from "../jsutils/inspect.js";
-import invariant from "../jsutils/invariant.js";
-import naturalCompare from "../jsutils/naturalCompare.js";
+import { objectValues } from "../polyfills/objectValues.js";
+import { keyMap } from "../jsutils/keyMap.js";
+import { inspect } from "../jsutils/inspect.js";
+import { invariant } from "../jsutils/invariant.js";
+import { naturalCompare } from "../jsutils/naturalCompare.js";
 import { print } from "../language/printer.js";
 import { visit } from "../language/visitor.js";
 import { isSpecifiedScalarType } from "../type/scalars.js";

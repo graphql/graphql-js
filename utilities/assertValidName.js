@@ -1,4 +1,4 @@
-import devAssert from "../jsutils/devAssert.js";
+import { devAssert } from "../jsutils/devAssert.js";
 import { GraphQLError } from "../error/GraphQLError.js";
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 /**

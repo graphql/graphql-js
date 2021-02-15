@@ -1,8 +1,8 @@
-import objectValues from "../polyfills/objectValues.js";
-import inspect from "../jsutils/inspect.js";
-import invariant from "../jsutils/invariant.js";
-import keyValMap from "../jsutils/keyValMap.js";
-import naturalCompare from "../jsutils/naturalCompare.js";
+import { objectValues } from "../polyfills/objectValues.js";
+import { inspect } from "../jsutils/inspect.js";
+import { invariant } from "../jsutils/invariant.js";
+import { keyValMap } from "../jsutils/keyValMap.js";
+import { naturalCompare } from "../jsutils/naturalCompare.js";
 import { GraphQLSchema } from "../type/schema.js";
 import { GraphQLDirective } from "../type/directives.js";
 import { isIntrospectionType } from "../type/introspection.js";

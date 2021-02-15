@@ -1,4 +1,4 @@
-import invariant from "../jsutils/invariant.js";
+import { invariant } from "../jsutils/invariant.js";
 import { parse } from "../language/parser.js";
 import { executeSync } from "../execution/execute.js";
 import { getIntrospectionQuery } from "./getIntrospectionQuery.js";

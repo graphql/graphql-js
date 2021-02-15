@@ -77,7 +77,7 @@ export interface GraphQLGrammarPeekConstraintCondition {
   end?: boolean;
 }
 
-const grammar: GraphQLGrammarType = {
+export const grammar: GraphQLGrammarType = {
   Name: { token: 'Name' },
   String: { token: 'String' },
   BlockString: { token: 'BlockString' },
@@ -1002,5 +1002,3 @@ const grammar: GraphQLGrammarType = {
     tokenName: 'EnumValue',
   },
 };
-
-export default grammar;

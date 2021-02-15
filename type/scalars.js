@@ -1,5 +1,5 @@
-import inspect from "../jsutils/inspect.js";
-import isObjectLike from "../jsutils/isObjectLike.js";
+import { inspect } from "../jsutils/inspect.js";
+import { isObjectLike } from "../jsutils/isObjectLike.js";
 import { Kind } from "../language/kinds.js";
 import { print } from "../language/printer.js";
 import { GraphQLError } from "../error/GraphQLError.js";

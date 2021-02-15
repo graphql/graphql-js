@@ -1,4 +1,4 @@
-import inspect from "../../jsutils/inspect.js";
+import { inspect } from "../../jsutils/inspect.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
 import { Kind } from "../../language/kinds.js";
 import { isNonNullType } from "../../type/definition.js";

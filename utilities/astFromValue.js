@@ -1,8 +1,8 @@
-import objectValues from "../polyfills/objectValues.js";
-import inspect from "../jsutils/inspect.js";
-import invariant from "../jsutils/invariant.js";
-import isObjectLike from "../jsutils/isObjectLike.js";
-import isCollection from "../jsutils/isCollection.js";
+import { objectValues } from "../polyfills/objectValues.js";
+import { inspect } from "../jsutils/inspect.js";
+import { invariant } from "../jsutils/invariant.js";
+import { isObjectLike } from "../jsutils/isObjectLike.js";
+import { isCollection } from "../jsutils/isCollection.js";
 import { Kind } from "../language/kinds.js";
 import { GraphQLID } from "../type/scalars.js";
 import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from "../type/definition.js";

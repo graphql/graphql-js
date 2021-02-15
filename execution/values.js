@@ -1,6 +1,6 @@
-import keyMap from "../jsutils/keyMap.js";
-import inspect from "../jsutils/inspect.js";
-import printPathArray from "../jsutils/printPathArray.js";
+import { keyMap } from "../jsutils/keyMap.js";
+import { inspect } from "../jsutils/inspect.js";
+import { printPathArray } from "../jsutils/printPathArray.js";
 import { GraphQLError } from "../error/GraphQLError.js";
 import { Kind } from "../language/kinds.js";
 import { print } from "../language/printer.js";

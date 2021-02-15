@@ -1,5 +1,5 @@
-import inspect from "../jsutils/inspect.js";
-import devAssert from "../jsutils/devAssert.js";
+import { inspect } from "../jsutils/inspect.js";
+import { devAssert } from "../jsutils/devAssert.js";
 import instanceOf from "../jsutils/instanceOf.js";
 
 /**

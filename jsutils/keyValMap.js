@@ -15,7 +15,7 @@
  *     )
  *
  */
-export default function keyValMap(list, keyFn, valFn) {
+export function keyValMap(list, keyFn, valFn) {
   return list.reduce((map, item) => {
     map[keyFn(item)] = valFn(item);
     return map;

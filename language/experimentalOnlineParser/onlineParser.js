@@ -1,6 +1,6 @@
 import { Lexer } from "../lexer.js";
 import { Source } from "../source.js";
-import GraphQLGrammar from "./grammar.js";
+import { grammar } from "./grammar.js";
 export const TokenKind = {
   NAME: 'Name',
   INT: 'Int',
@@ -38,7 +38,7 @@ export class OnlineParser {
         name: 'Document',
         state: 'Document',
         kind: 'ListOfTypeConstraint',
-        ...GraphQLGrammar.Document,
+        ...grammar.Document,
         expanded: false,
         depth: 1,
         step: 1
@@ -195,7 +195,7 @@ export class OnlineParser {
   }
 
   _parseListOfTypeConstraint(rule) {
-    this._pushRule(GraphQLGrammar[rule.listOfType], rule.depth + 1, rule.listOfType, 1, rule.state);
+    this._pushRule(grammar[rule.listOfType], rule.depth + 1, rule.listOfType, 1, rule.state);
 
     rule.expanded = true;
     const token = this.parseToken();
@@ -231,7 +231,7 @@ export class OnlineParser {
       } = constraint;
 
       if (typeof ifCondition === 'string') {
-        ifCondition = GraphQLGrammar[ifCondition];
+        ifCondition = grammar[ifCondition];
       }
 
       let token = this._lookAhead();
@@ -428,7 +428,7 @@ export class OnlineParser {
       case RuleKind.RULE_NAME:
         rule = rule;
 
-        this._pushRule(GraphQLGrammar[rule], depth, (typeof name === 'string' ? name : undefined) || rule, step, state);
+        this._pushRule(grammar[rule], depth, (typeof name === 'string' ? name : undefined) || rule, step, state);
 
         break;
 

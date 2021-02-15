@@ -1,4 +1,4 @@
-const grammar = {
+export const grammar = {
   Name: {
     token: 'Name'
   },
@@ -977,4 +977,3 @@ const grammar = {
   } // FIXME: enforce proper typing
 
 };
-export default grammar;

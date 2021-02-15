@@ -1,6 +1,6 @@
-import objectValues from "../polyfills/objectValues.js";
-import inspect from "../jsutils/inspect.js";
-import invariant from "../jsutils/invariant.js";
+import { objectValues } from "../polyfills/objectValues.js";
+import { inspect } from "../jsutils/inspect.js";
+import { invariant } from "../jsutils/invariant.js";
 import { print } from "../language/printer.js";
 import { DirectiveLocation } from "../language/directiveLocation.js";
 import { astFromValue } from "../utilities/astFromValue.js";

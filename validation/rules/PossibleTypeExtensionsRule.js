@@ -1,7 +1,7 @@
-import inspect from "../../jsutils/inspect.js";
-import invariant from "../../jsutils/invariant.js";
-import didYouMean from "../../jsutils/didYouMean.js";
-import suggestionList from "../../jsutils/suggestionList.js";
+import { inspect } from "../../jsutils/inspect.js";
+import { invariant } from "../../jsutils/invariant.js";
+import { didYouMean } from "../../jsutils/didYouMean.js";
+import { suggestionList } from "../../jsutils/suggestionList.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
 import { Kind } from "../../language/kinds.js";
 import { isTypeDefinitionNode } from "../../language/predicates.js";

@@ -1,6 +1,6 @@
-import didYouMean from "../../jsutils/didYouMean.js";
-import suggestionList from "../../jsutils/suggestionList.js";
-import naturalCompare from "../../jsutils/naturalCompare.js";
+import { didYouMean } from "../../jsutils/didYouMean.js";
+import { suggestionList } from "../../jsutils/suggestionList.js";
+import { naturalCompare } from "../../jsutils/naturalCompare.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
 import { isObjectType, isInterfaceType, isAbstractType } from "../../type/definition.js";
 

@@ -5,7 +5,7 @@
  * See: https://en.wikipedia.org/wiki/Natural_sort_order
  *
  */
-export default function naturalCompare(aStr, bStr) {
+export function naturalCompare(aStr, bStr) {
   let aIdx = 0;
   let bIdx = 0;
 

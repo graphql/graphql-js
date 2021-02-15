@@ -1,8 +1,8 @@
-import objectValues from "../../polyfills/objectValues.js";
-import keyMap from "../../jsutils/keyMap.js";
-import inspect from "../../jsutils/inspect.js";
-import didYouMean from "../../jsutils/didYouMean.js";
-import suggestionList from "../../jsutils/suggestionList.js";
+import { objectValues } from "../../polyfills/objectValues.js";
+import { keyMap } from "../../jsutils/keyMap.js";
+import { inspect } from "../../jsutils/inspect.js";
+import { didYouMean } from "../../jsutils/didYouMean.js";
+import { suggestionList } from "../../jsutils/suggestionList.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
 import { print } from "../../language/printer.js";
 import { isLeafType, isInputObjectType, isListType, isNonNullType, isRequiredInputField, getNullableType, getNamedType } from "../../type/definition.js";

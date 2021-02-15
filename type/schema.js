@@ -1,9 +1,9 @@
-import objectValues from "../polyfills/objectValues.js";
-import inspect from "../jsutils/inspect.js";
-import toObjMap from "../jsutils/toObjMap.js";
-import devAssert from "../jsutils/devAssert.js";
+import { objectValues } from "../polyfills/objectValues.js";
+import { inspect } from "../jsutils/inspect.js";
+import { toObjMap } from "../jsutils/toObjMap.js";
+import { devAssert } from "../jsutils/devAssert.js";
 import instanceOf from "../jsutils/instanceOf.js";
-import isObjectLike from "../jsutils/isObjectLike.js";
+import { isObjectLike } from "../jsutils/isObjectLike.js";
 import { __Schema } from "./introspection.js";
 import { GraphQLDirective, isDirective, specifiedDirectives } from "./directives.js";
 import { isObjectType, isInterfaceType, isUnionType, isInputObjectType, getNamedType } from "./definition.js";

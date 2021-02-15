@@ -1,9 +1,9 @@
-import objectValues from "../polyfills/objectValues.js";
-import keyMap from "../jsutils/keyMap.js";
-import inspect from "../jsutils/inspect.js";
-import mapValue from "../jsutils/mapValue.js";
-import invariant from "../jsutils/invariant.js";
-import devAssert from "../jsutils/devAssert.js";
+import { objectValues } from "../polyfills/objectValues.js";
+import { keyMap } from "../jsutils/keyMap.js";
+import { inspect } from "../jsutils/inspect.js";
+import { mapValue } from "../jsutils/mapValue.js";
+import { invariant } from "../jsutils/invariant.js";
+import { devAssert } from "../jsutils/devAssert.js";
 import { Kind } from "../language/kinds.js";
 import { isTypeDefinitionNode, isTypeExtensionNode } from "../language/predicates.js";
 import { assertValidSDLExtension } from "../validation/validate.js";

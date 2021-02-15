@@ -1,5 +1,5 @@
-import didYouMean from "../../jsutils/didYouMean.js";
-import suggestionList from "../../jsutils/suggestionList.js";
+import { didYouMean } from "../../jsutils/didYouMean.js";
+import { suggestionList } from "../../jsutils/suggestionList.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
 import { Kind } from "../../language/kinds.js";
 import { specifiedDirectives } from "../../type/directives.js";
