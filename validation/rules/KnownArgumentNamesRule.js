@@ -16,12 +16,6 @@ var _kinds = require("../../language/kinds.js");
 
 var _directives = require("../../type/directives.js");
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Known argument names
  *
@@ -29,22 +23,23 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * that field.
  */
 function KnownArgumentNamesRule(context) {
-  return _objectSpread(_objectSpread({}, KnownArgumentNamesOnDirectivesRule(context)), {}, {
-    Argument: function Argument(argNode) {
-      var argDef = context.getArgument();
-      var fieldDef = context.getFieldDef();
-      var parentType = context.getParentType();
+  return { // eslint-disable-next-line new-cap
+    ...KnownArgumentNamesOnDirectivesRule(context),
+
+    Argument(argNode) {
+      const argDef = context.getArgument();
+      const fieldDef = context.getFieldDef();
+      const parentType = context.getParentType();
 
       if (!argDef && fieldDef && parentType) {
-        var argName = argNode.name.value;
-        var knownArgsNames = fieldDef.args.map(function (arg) {
-          return arg.name;
-        });
-        var suggestions = (0, _suggestionList.suggestionList)(argName, knownArgsNames);
-        context.reportError(new _GraphQLError.GraphQLError("Unknown argument \"".concat(argName, "\" on field \"").concat(parentType.name, ".").concat(fieldDef.name, "\".") + (0, _didYouMean.didYouMean)(suggestions), argNode));
+        const argName = argNode.name.value;
+        const knownArgsNames = fieldDef.args.map(arg => arg.name);
+        const suggestions = (0, _suggestionList.suggestionList)(argName, knownArgsNames);
+        context.reportError(new _GraphQLError.GraphQLError(`Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` + (0, _didYouMean.didYouMean)(suggestions), argNode));
       }
     }
-  });
+
+  };
 }
 /**
  * @internal
@@ -52,51 +47,44 @@ function KnownArgumentNamesRule(context) {
 
 
 function KnownArgumentNamesOnDirectivesRule(context) {
-  var directiveArgs = Object.create(null);
-  var schema = context.getSchema();
-  var definedDirectives = schema ? schema.getDirectives() : _directives.specifiedDirectives;
+  const directiveArgs = Object.create(null);
+  const schema = context.getSchema();
+  const definedDirectives = schema ? schema.getDirectives() : _directives.specifiedDirectives;
 
-  for (var _i2 = 0; _i2 < definedDirectives.length; _i2++) {
-    var directive = definedDirectives[_i2];
-    directiveArgs[directive.name] = directive.args.map(function (arg) {
-      return arg.name;
-    });
+  for (const directive of definedDirectives) {
+    directiveArgs[directive.name] = directive.args.map(arg => arg.name);
   }
 
-  var astDefinitions = context.getDocument().definitions;
+  const astDefinitions = context.getDocument().definitions;
 
-  for (var _i4 = 0; _i4 < astDefinitions.length; _i4++) {
-    var def = astDefinitions[_i4];
-
+  for (const def of astDefinitions) {
     if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
       var _def$arguments;
 
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      var argsNodes = (_def$arguments = def.arguments) !== null && _def$arguments !== void 0 ? _def$arguments : [];
-      directiveArgs[def.name.value] = argsNodes.map(function (arg) {
-        return arg.name.value;
-      });
+      const argsNodes = (_def$arguments = def.arguments) !== null && _def$arguments !== void 0 ? _def$arguments : [];
+      directiveArgs[def.name.value] = argsNodes.map(arg => arg.name.value);
     }
   }
 
   return {
-    Directive: function Directive(directiveNode) {
-      var directiveName = directiveNode.name.value;
-      var knownArgs = directiveArgs[directiveName];
+    Directive(directiveNode) {
+      const directiveName = directiveNode.name.value;
+      const knownArgs = directiveArgs[directiveName];
 
       if (directiveNode.arguments && knownArgs) {
-        for (var _i6 = 0, _directiveNode$argume2 = directiveNode.arguments; _i6 < _directiveNode$argume2.length; _i6++) {
-          var argNode = _directiveNode$argume2[_i6];
-          var argName = argNode.name.value;
+        for (const argNode of directiveNode.arguments) {
+          const argName = argNode.name.value;
 
           if (knownArgs.indexOf(argName) === -1) {
-            var suggestions = (0, _suggestionList.suggestionList)(argName, knownArgs);
-            context.reportError(new _GraphQLError.GraphQLError("Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".") + (0, _didYouMean.didYouMean)(suggestions), argNode));
+            const suggestions = (0, _suggestionList.suggestionList)(argName, knownArgs);
+            context.reportError(new _GraphQLError.GraphQLError(`Unknown argument "${argName}" on directive "@${directiveName}".` + (0, _didYouMean.didYouMean)(suggestions), argNode));
           }
         }
       }
 
       return false;
     }
+
   };
 }

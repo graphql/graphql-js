@@ -23,12 +23,13 @@ var _introspection = require("../../../type/introspection.js");
  */
 function NoSchemaIntrospectionCustomRule(context) {
   return {
-    Field: function Field(node) {
-      var type = (0, _definition.getNamedType)(context.getType());
+    Field(node) {
+      const type = (0, _definition.getNamedType)(context.getType());
 
       if (type && (0, _introspection.isIntrospectionType)(type)) {
-        context.reportError(new _GraphQLError.GraphQLError("GraphQL introspection has been disabled, but the requested query contained the field \"".concat(node.name.value, "\"."), node));
+        context.reportError(new _GraphQLError.GraphQLError(`GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`, node));
       }
     }
+
   };
 }

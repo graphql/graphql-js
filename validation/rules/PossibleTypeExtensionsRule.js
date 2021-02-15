@@ -21,22 +21,16 @@ var _predicates = require("../../language/predicates.js");
 
 var _definition = require("../../type/definition.js");
 
-var _defKindToExtKind;
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Possible type extension
  *
  * A type extension is only valid if the type is defined and has the same kind.
  */
 function PossibleTypeExtensionsRule(context) {
-  var schema = context.getSchema();
-  var definedTypes = Object.create(null);
+  const schema = context.getSchema();
+  const definedTypes = Object.create(null);
 
-  for (var _i2 = 0, _context$getDocument$2 = context.getDocument().definitions; _i2 < _context$getDocument$2.length; _i2++) {
-    var def = _context$getDocument$2[_i2];
-
+  for (const def of context.getDocument().definitions) {
     if ((0, _predicates.isTypeDefinitionNode)(def)) {
       definedTypes[def.name.value] = def;
     }
@@ -52,10 +46,10 @@ function PossibleTypeExtensionsRule(context) {
   };
 
   function checkExtension(node) {
-    var typeName = node.name.value;
-    var defNode = definedTypes[typeName];
-    var existingType = schema === null || schema === void 0 ? void 0 : schema.getType(typeName);
-    var expectedKind;
+    const typeName = node.name.value;
+    const defNode = definedTypes[typeName];
+    const existingType = schema === null || schema === void 0 ? void 0 : schema.getType(typeName);
+    let expectedKind;
 
     if (defNode) {
       expectedKind = defKindToExtKind[defNode.kind];
@@ -65,23 +59,30 @@ function PossibleTypeExtensionsRule(context) {
 
     if (expectedKind) {
       if (expectedKind !== node.kind) {
-        var kindStr = extensionKindToTypeName(node.kind);
-        context.reportError(new _GraphQLError.GraphQLError("Cannot extend non-".concat(kindStr, " type \"").concat(typeName, "\"."), defNode ? [defNode, node] : node));
+        const kindStr = extensionKindToTypeName(node.kind);
+        context.reportError(new _GraphQLError.GraphQLError(`Cannot extend non-${kindStr} type "${typeName}".`, defNode ? [defNode, node] : node));
       }
     } else {
-      var allTypeNames = Object.keys(definedTypes);
+      let allTypeNames = Object.keys(definedTypes);
 
       if (schema) {
         allTypeNames = allTypeNames.concat(Object.keys(schema.getTypeMap()));
       }
 
-      var suggestedTypes = (0, _suggestionList.suggestionList)(typeName, allTypeNames);
-      context.reportError(new _GraphQLError.GraphQLError("Cannot extend type \"".concat(typeName, "\" because it is not defined.") + (0, _didYouMean.didYouMean)(suggestedTypes), node.name));
+      const suggestedTypes = (0, _suggestionList.suggestionList)(typeName, allTypeNames);
+      context.reportError(new _GraphQLError.GraphQLError(`Cannot extend type "${typeName}" because it is not defined.` + (0, _didYouMean.didYouMean)(suggestedTypes), node.name));
     }
   }
 }
 
-var defKindToExtKind = (_defKindToExtKind = {}, _defineProperty(_defKindToExtKind, _kinds.Kind.SCALAR_TYPE_DEFINITION, _kinds.Kind.SCALAR_TYPE_EXTENSION), _defineProperty(_defKindToExtKind, _kinds.Kind.OBJECT_TYPE_DEFINITION, _kinds.Kind.OBJECT_TYPE_EXTENSION), _defineProperty(_defKindToExtKind, _kinds.Kind.INTERFACE_TYPE_DEFINITION, _kinds.Kind.INTERFACE_TYPE_EXTENSION), _defineProperty(_defKindToExtKind, _kinds.Kind.UNION_TYPE_DEFINITION, _kinds.Kind.UNION_TYPE_EXTENSION), _defineProperty(_defKindToExtKind, _kinds.Kind.ENUM_TYPE_DEFINITION, _kinds.Kind.ENUM_TYPE_EXTENSION), _defineProperty(_defKindToExtKind, _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION, _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION), _defKindToExtKind);
+const defKindToExtKind = {
+  [_kinds.Kind.SCALAR_TYPE_DEFINITION]: _kinds.Kind.SCALAR_TYPE_EXTENSION,
+  [_kinds.Kind.OBJECT_TYPE_DEFINITION]: _kinds.Kind.OBJECT_TYPE_EXTENSION,
+  [_kinds.Kind.INTERFACE_TYPE_DEFINITION]: _kinds.Kind.INTERFACE_TYPE_EXTENSION,
+  [_kinds.Kind.UNION_TYPE_DEFINITION]: _kinds.Kind.UNION_TYPE_EXTENSION,
+  [_kinds.Kind.ENUM_TYPE_DEFINITION]: _kinds.Kind.ENUM_TYPE_EXTENSION,
+  [_kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION]: _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION
+};
 
 function typeToExtKind(type) {
   if ((0, _definition.isScalarType)(type)) {

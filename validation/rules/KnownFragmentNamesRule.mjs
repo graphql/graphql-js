@@ -8,13 +8,14 @@ import { GraphQLError } from "../../error/GraphQLError.mjs";
  */
 export function KnownFragmentNamesRule(context) {
   return {
-    FragmentSpread: function FragmentSpread(node) {
-      var fragmentName = node.name.value;
-      var fragment = context.getFragment(fragmentName);
+    FragmentSpread(node) {
+      const fragmentName = node.name.value;
+      const fragment = context.getFragment(fragmentName);
 
       if (!fragment) {
-        context.reportError(new GraphQLError("Unknown fragment \"".concat(fragmentName, "\"."), node.name));
+        context.reportError(new GraphQLError(`Unknown fragment "${fragmentName}".`, node.name));
       }
     }
+
   };
 }

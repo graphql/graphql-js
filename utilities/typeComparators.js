@@ -96,9 +96,7 @@ function doTypesOverlap(schema, typeA, typeB) {
     if ((0, _definition.isAbstractType)(typeB)) {
       // If both types are abstract, then determine if there is any intersection
       // between possible concrete types of each.
-      return schema.getPossibleTypes(typeA).some(function (type) {
-        return schema.isSubType(typeB, type);
-      });
+      return schema.getPossibleTypes(typeA).some(type => schema.isSubType(typeB, type));
     } // Determine if the latter type is a possible concrete type of the former.
 
 

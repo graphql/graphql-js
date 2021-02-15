@@ -13,14 +13,10 @@ exports.promiseForObject = promiseForObject;
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
 function promiseForObject(object) {
-  var keys = Object.keys(object);
-  var valuesAndPromises = keys.map(function (name) {
-    return object[name];
-  });
-  return Promise.all(valuesAndPromises).then(function (values) {
-    return values.reduce(function (resolvedObject, value, i) {
-      resolvedObject[keys[i]] = value;
-      return resolvedObject;
-    }, Object.create(null));
-  });
+  const keys = Object.keys(object);
+  const valuesAndPromises = keys.map(name => object[name]);
+  return Promise.all(valuesAndPromises).then(values => values.reduce((resolvedObject, value, i) => {
+    resolvedObject[keys[i]] = value;
+    return resolvedObject;
+  }, Object.create(null)));
 }

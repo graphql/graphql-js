@@ -1,4 +1,4 @@
-export var grammar = {
+export const grammar = {
   Name: {
     token: 'Name'
   },

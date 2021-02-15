@@ -11,14 +11,15 @@ import { typeFromAST } from "../../utilities/typeFromAST.mjs";
  */
 export function VariablesAreInputTypesRule(context) {
   return {
-    VariableDefinition: function VariableDefinition(node) {
-      var type = typeFromAST(context.getSchema(), node.type);
+    VariableDefinition(node) {
+      const type = typeFromAST(context.getSchema(), node.type);
 
       if (type && !isInputType(type)) {
-        var variableName = node.variable.name.value;
-        var typeName = print(node.type);
-        context.reportError(new GraphQLError("Variable \"$".concat(variableName, "\" cannot be non-input type \"").concat(typeName, "\"."), node.type));
+        const variableName = node.variable.name.value;
+        const typeName = print(node.type);
+        context.reportError(new GraphQLError(`Variable "$${variableName}" cannot be non-input type "${typeName}".`, node.type));
       }
     }
+
   };
 }

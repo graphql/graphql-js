@@ -7,10 +7,6 @@ exports.objectValues = void 0;
 
 /* eslint-disable no-redeclare */
 // $FlowFixMe[name-already-bound] workaround for: https://github.com/facebook/flow/issues/4441
-var objectValues = Object.values || function (obj) {
-  return Object.keys(obj).map(function (key) {
-    return obj[key];
-  });
-};
+const objectValues = Object.values || (obj => Object.keys(obj).map(key => obj[key]));
 
 exports.objectValues = objectValues;

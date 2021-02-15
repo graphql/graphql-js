@@ -16,7 +16,7 @@
  *
  */
 export function keyValMap(list, keyFn, valFn) {
-  return list.reduce(function (map, item) {
+  return list.reduce((map, item) => {
     map[keyFn(item)] = valFn(item);
     return map;
   }, Object.create(null));

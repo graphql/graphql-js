@@ -8,7 +8,7 @@ exports.Kind = void 0;
 /**
  * The set of allowed kind values for AST nodes.
  */
-var Kind = Object.freeze({
+const Kind = Object.freeze({
   // Name
   NAME: 'Name',
   // Document

@@ -4,15 +4,14 @@
  * GraphQL source files which together represent one conceptual application.
  */
 export function concatAST(documents) {
-  var definitions = [];
+  let definitions = [];
 
-  for (var _i2 = 0; _i2 < documents.length; _i2++) {
-    var doc = documents[_i2];
+  for (const doc of documents) {
     definitions = definitions.concat(doc.definitions);
   }
 
   return {
     kind: 'Document',
-    definitions: definitions
+    definitions
   };
 }

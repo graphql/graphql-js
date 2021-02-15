@@ -2,20 +2,20 @@
  * Memoizes the provided three-argument function.
  */
 export function memoize3(fn) {
-  var cache0;
+  let cache0;
   return function memoized(a1, a2, a3) {
     if (!cache0) {
       cache0 = new WeakMap();
     }
 
-    var cache1 = cache0.get(a1);
-    var cache2;
+    let cache1 = cache0.get(a1);
+    let cache2;
 
     if (cache1) {
       cache2 = cache1.get(a2);
 
       if (cache2) {
-        var cachedValue = cache2.get(a3);
+        const cachedValue = cache2.get(a3);
 
         if (cachedValue !== undefined) {
           return cachedValue;
@@ -31,7 +31,7 @@ export function memoize3(fn) {
       cache1.set(a2, cache2);
     }
 
-    var newValue = fn(a1, a2, a3);
+    const newValue = fn(a1, a2, a3);
     cache2.set(a3, newValue);
     return newValue;
   };

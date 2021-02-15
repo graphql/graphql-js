@@ -4,26 +4,21 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.didYouMean = didYouMean;
-var MAX_SUGGESTIONS = 5;
+const MAX_SUGGESTIONS = 5;
 /**
  * Given [ A, B, C ] return ' Did you mean A, B, or C?'.
  */
 
 // eslint-disable-next-line no-redeclare
 function didYouMean(firstArg, secondArg) {
-  var _ref = typeof firstArg === 'string' ? [firstArg, secondArg] : [undefined, firstArg],
-      subMessage = _ref[0],
-      suggestionsArg = _ref[1];
-
-  var message = ' Did you mean ';
+  const [subMessage, suggestionsArg] = typeof firstArg === 'string' ? [firstArg, secondArg] : [undefined, firstArg];
+  let message = ' Did you mean ';
 
   if (subMessage) {
     message += subMessage + ' ';
   }
 
-  var suggestions = suggestionsArg.map(function (x) {
-    return "\"".concat(x, "\"");
-  });
+  const suggestions = suggestionsArg.map(x => `"${x}"`);
 
   switch (suggestions.length) {
     case 0:
@@ -36,7 +31,7 @@ function didYouMean(firstArg, secondArg) {
       return message + suggestions[0] + ' or ' + suggestions[1] + '?';
   }
 
-  var selected = suggestions.slice(0, MAX_SUGGESTIONS);
-  var lastItem = selected.pop();
+  const selected = suggestions.slice(0, MAX_SUGGESTIONS);
+  const lastItem = selected.pop();
   return message + selected.join(', ') + ', or ' + lastItem + '?';
 }

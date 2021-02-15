@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.coerceInputValue = coerceInputValue;
 
-var _objectValues3 = require("../polyfills/objectValues.js");
+var _objectValues = require("../polyfills/objectValues.js");
 
 var _inspect = require("../jsutils/inspect.js");
 
@@ -30,16 +30,15 @@ var _definition = require("../type/definition.js");
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
  */
-function coerceInputValue(inputValue, type) {
-  var onError = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : defaultOnError;
+function coerceInputValue(inputValue, type, onError = defaultOnError) {
   return coerceInputValueImpl(inputValue, type, onError);
 }
 
 function defaultOnError(path, invalidValue, error) {
-  var errorPrefix = 'Invalid value ' + (0, _inspect.inspect)(invalidValue);
+  let errorPrefix = 'Invalid value ' + (0, _inspect.inspect)(invalidValue);
 
   if (path.length > 0) {
-    errorPrefix += " at \"value".concat((0, _printPathArray.printPathArray)(path), "\"");
+    errorPrefix += ` at "value${(0, _printPathArray.printPathArray)(path)}"`;
   }
 
   error.message = errorPrefix + ': ' + error.message;
@@ -52,7 +51,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       return coerceInputValueImpl(inputValue, type.ofType, onError, path);
     }
 
-    onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected non-nullable type \"".concat((0, _inspect.inspect)(type), "\" not to be null.")));
+    onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Expected non-nullable type "${(0, _inspect.inspect)(type)}" not to be null.`));
     return;
   }
 
@@ -62,11 +61,11 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
   }
 
   if ((0, _definition.isListType)(type)) {
-    var itemType = type.ofType;
+    const itemType = type.ofType;
 
     if ((0, _isIteratableObject.isIteratableObject)(inputValue)) {
-      return Array.from(inputValue, function (itemValue, index) {
-        var itemPath = (0, _Path.addPath)(path, index, undefined);
+      return Array.from(inputValue, (itemValue, index) => {
+        const itemPath = (0, _Path.addPath)(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
     } // Lists accept a non-list value as a list of one.
@@ -77,23 +76,22 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
   if ((0, _definition.isInputObjectType)(type)) {
     if (!(0, _isObjectLike.isObjectLike)(inputValue)) {
-      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\" to be an object.")));
+      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Expected type "${type.name}" to be an object.`));
       return;
     }
 
-    var coercedValue = {};
-    var fieldDefs = type.getFields();
+    const coercedValue = {};
+    const fieldDefs = type.getFields();
 
-    for (var _i2 = 0, _objectValues2 = (0, _objectValues3.objectValues)(fieldDefs); _i2 < _objectValues2.length; _i2++) {
-      var field = _objectValues2[_i2];
-      var fieldValue = inputValue[field.name];
+    for (const field of (0, _objectValues.objectValues)(fieldDefs)) {
+      const fieldValue = inputValue[field.name];
 
       if (fieldValue === undefined) {
         if (field.defaultValue !== undefined) {
           coercedValue[field.name] = field.defaultValue;
         } else if ((0, _definition.isNonNullType)(field.type)) {
-          var typeStr = (0, _inspect.inspect)(field.type);
-          onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Field \"".concat(field.name, "\" of required type \"").concat(typeStr, "\" was not provided.")));
+          const typeStr = (0, _inspect.inspect)(field.type);
+          onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Field "${field.name}" of required type "${typeStr}" was not provided.`));
         }
 
         continue;
@@ -103,12 +101,10 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     } // Ensure every provided field is defined.
 
 
-    for (var _i4 = 0, _Object$keys2 = Object.keys(inputValue); _i4 < _Object$keys2.length; _i4++) {
-      var fieldName = _Object$keys2[_i4];
-
+    for (const fieldName of Object.keys(inputValue)) {
       if (!fieldDefs[fieldName]) {
-        var suggestions = (0, _suggestionList.suggestionList)(fieldName, Object.keys(type.getFields()));
-        onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Field \"".concat(fieldName, "\" is not defined by type \"").concat(type.name, "\".") + (0, _didYouMean.didYouMean)(suggestions)));
+        const suggestions = (0, _suggestionList.suggestionList)(fieldName, Object.keys(type.getFields()));
+        onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Field "${fieldName}" is not defined by type "${type.name}".` + (0, _didYouMean.didYouMean)(suggestions)));
       }
     }
 
@@ -117,7 +113,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
 
   if ((0, _definition.isLeafType)(type)) {
-    var parseResult; // Scalars and Enums determine if a input value is valid via parseValue(),
+    let parseResult; // Scalars and Enums determine if a input value is valid via parseValue(),
     // which can throw to indicate failure. If it throws, maintain a reference
     // to the original error.
 
@@ -127,14 +123,14 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       if (error instanceof _GraphQLError.GraphQLError) {
         onError((0, _Path.pathToArray)(path), inputValue, error);
       } else {
-        onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\". ") + error.message, undefined, undefined, undefined, undefined, error));
+        onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Expected type "${type.name}". ` + error.message, undefined, undefined, undefined, undefined, error));
       }
 
       return;
     }
 
     if (parseResult === undefined) {
-      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError("Expected type \"".concat(type.name, "\".")));
+      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Expected type "${type.name}".`));
     }
 
     return parseResult;

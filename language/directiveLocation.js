@@ -8,7 +8,7 @@ exports.DirectiveLocation = void 0;
 /**
  * The set of allowed directive location values.
  */
-var DirectiveLocation = Object.freeze({
+const DirectiveLocation = Object.freeze({
   // Request Definitions
   QUERY: 'QUERY',
   MUTATION: 'MUTATION',

@@ -27,7 +27,7 @@ var _lexer = require("./lexer.js");
  * Throws GraphQLError if a syntax error is encountered.
  */
 function parse(source, options) {
-  var parser = new Parser(source, options);
+  const parser = new Parser(source, options);
   return parser.parseDocument();
 }
 /**
@@ -43,9 +43,9 @@ function parse(source, options) {
 
 
 function parseValue(source, options) {
-  var parser = new Parser(source, options);
+  const parser = new Parser(source, options);
   parser.expectToken(_tokenKind.TokenKind.SOF);
-  var value = parser.parseValueLiteral(false);
+  const value = parser.parseValueLiteral(false);
   parser.expectToken(_tokenKind.TokenKind.EOF);
   return value;
 }
@@ -62,9 +62,9 @@ function parseValue(source, options) {
 
 
 function parseType(source, options) {
-  var parser = new Parser(source, options);
+  const parser = new Parser(source, options);
   parser.expectToken(_tokenKind.TokenKind.SOF);
-  var type = parser.parseTypeReference();
+  const type = parser.parseTypeReference();
   parser.expectToken(_tokenKind.TokenKind.EOF);
   return type;
 }
@@ -81,9 +81,9 @@ function parseType(source, options) {
  */
 
 
-var Parser = /*#__PURE__*/function () {
-  function Parser(source, options) {
-    var sourceObj = (0, _source.isSource)(source) ? source : new _source.Source(source);
+class Parser {
+  constructor(source, options) {
+    const sourceObj = (0, _source.isSource)(source) ? source : new _source.Source(source);
     this._lexer = new _lexer.Lexer(sourceObj);
     this._options = options;
   }
@@ -92,10 +92,8 @@ var Parser = /*#__PURE__*/function () {
    */
 
 
-  var _proto = Parser.prototype;
-
-  _proto.parseName = function parseName() {
-    var token = this.expectToken(_tokenKind.TokenKind.NAME);
+  parseName() {
+    const token = this.expectToken(_tokenKind.TokenKind.NAME);
     return {
       kind: _kinds.Kind.NAME,
       value: token.value,
@@ -106,10 +104,10 @@ var Parser = /*#__PURE__*/function () {
   /**
    * Document : Definition+
    */
-  ;
 
-  _proto.parseDocument = function parseDocument() {
-    var start = this._lexer.token;
+
+  parseDocument() {
+    const start = this._lexer.token;
     return {
       kind: _kinds.Kind.DOCUMENT,
       definitions: this.many(_tokenKind.TokenKind.SOF, this.parseDefinition, _tokenKind.TokenKind.EOF),
@@ -126,9 +124,9 @@ var Parser = /*#__PURE__*/function () {
    *   - OperationDefinition
    *   - FragmentDefinition
    */
-  ;
 
-  _proto.parseDefinition = function parseDefinition() {
+
+  parseDefinition() {
     if (this.peek(_tokenKind.TokenKind.NAME)) {
       switch (this._lexer.token.value) {
         case 'query':
@@ -166,10 +164,10 @@ var Parser = /*#__PURE__*/function () {
    *  - SelectionSet
    *  - OperationType Name? VariableDefinitions? Directives? SelectionSet
    */
-  ;
 
-  _proto.parseOperationDefinition = function parseOperationDefinition() {
-    var start = this._lexer.token;
+
+  parseOperationDefinition() {
+    const start = this._lexer.token;
 
     if (this.peek(_tokenKind.TokenKind.BRACE_L)) {
       return {
@@ -183,8 +181,8 @@ var Parser = /*#__PURE__*/function () {
       };
     }
 
-    var operation = this.parseOperationType();
-    var name;
+    const operation = this.parseOperationType();
+    let name;
 
     if (this.peek(_tokenKind.TokenKind.NAME)) {
       name = this.parseName();
@@ -192,8 +190,8 @@ var Parser = /*#__PURE__*/function () {
 
     return {
       kind: _kinds.Kind.OPERATION_DEFINITION,
-      operation: operation,
-      name: name,
+      operation,
+      name,
       variableDefinitions: this.parseVariableDefinitions(),
       directives: this.parseDirectives(false),
       selectionSet: this.parseSelectionSet(),
@@ -203,10 +201,10 @@ var Parser = /*#__PURE__*/function () {
   /**
    * OperationType : one of query mutation subscription
    */
-  ;
 
-  _proto.parseOperationType = function parseOperationType() {
-    var operationToken = this.expectToken(_tokenKind.TokenKind.NAME);
+
+  parseOperationType() {
+    const operationToken = this.expectToken(_tokenKind.TokenKind.NAME);
 
     switch (operationToken.value) {
       case 'query':
@@ -224,18 +222,18 @@ var Parser = /*#__PURE__*/function () {
   /**
    * VariableDefinitions : ( VariableDefinition+ )
    */
-  ;
 
-  _proto.parseVariableDefinitions = function parseVariableDefinitions() {
+
+  parseVariableDefinitions() {
     return this.optionalMany(_tokenKind.TokenKind.PAREN_L, this.parseVariableDefinition, _tokenKind.TokenKind.PAREN_R);
   }
   /**
    * VariableDefinition : Variable : Type DefaultValue? Directives[Const]?
    */
-  ;
 
-  _proto.parseVariableDefinition = function parseVariableDefinition() {
-    var start = this._lexer.token;
+
+  parseVariableDefinition() {
+    const start = this._lexer.token;
     return {
       kind: _kinds.Kind.VARIABLE_DEFINITION,
       variable: this.parseVariable(),
@@ -248,10 +246,10 @@ var Parser = /*#__PURE__*/function () {
   /**
    * Variable : $ Name
    */
-  ;
 
-  _proto.parseVariable = function parseVariable() {
-    var start = this._lexer.token;
+
+  parseVariable() {
+    const start = this._lexer.token;
     this.expectToken(_tokenKind.TokenKind.DOLLAR);
     return {
       kind: _kinds.Kind.VARIABLE,
@@ -262,10 +260,10 @@ var Parser = /*#__PURE__*/function () {
   /**
    * SelectionSet : { Selection+ }
    */
-  ;
 
-  _proto.parseSelectionSet = function parseSelectionSet() {
-    var start = this._lexer.token;
+
+  parseSelectionSet() {
+    const start = this._lexer.token;
     return {
       kind: _kinds.Kind.SELECTION_SET,
       selections: this.many(_tokenKind.TokenKind.BRACE_L, this.parseSelection, _tokenKind.TokenKind.BRACE_R),
@@ -278,9 +276,9 @@ var Parser = /*#__PURE__*/function () {
    *   - FragmentSpread
    *   - InlineFragment
    */
-  ;
 
-  _proto.parseSelection = function parseSelection() {
+
+  parseSelection() {
     return this.peek(_tokenKind.TokenKind.SPREAD) ? this.parseFragment() : this.parseField();
   }
   /**
@@ -288,13 +286,13 @@ var Parser = /*#__PURE__*/function () {
    *
    * Alias : Name :
    */
-  ;
 
-  _proto.parseField = function parseField() {
-    var start = this._lexer.token;
-    var nameOrAlias = this.parseName();
-    var alias;
-    var name;
+
+  parseField() {
+    const start = this._lexer.token;
+    const nameOrAlias = this.parseName();
+    let alias;
+    let name;
 
     if (this.expectOptionalToken(_tokenKind.TokenKind.COLON)) {
       alias = nameOrAlias;
@@ -305,8 +303,8 @@ var Parser = /*#__PURE__*/function () {
 
     return {
       kind: _kinds.Kind.FIELD,
-      alias: alias,
-      name: name,
+      alias,
+      name,
       arguments: this.parseArguments(false),
       directives: this.parseDirectives(false),
       selectionSet: this.peek(_tokenKind.TokenKind.BRACE_L) ? this.parseSelectionSet() : undefined,
@@ -316,31 +314,31 @@ var Parser = /*#__PURE__*/function () {
   /**
    * Arguments[Const] : ( Argument[?Const]+ )
    */
-  ;
 
-  _proto.parseArguments = function parseArguments(isConst) {
-    var item = isConst ? this.parseConstArgument : this.parseArgument;
+
+  parseArguments(isConst) {
+    const item = isConst ? this.parseConstArgument : this.parseArgument;
     return this.optionalMany(_tokenKind.TokenKind.PAREN_L, item, _tokenKind.TokenKind.PAREN_R);
   }
   /**
    * Argument[Const] : Name : Value[?Const]
    */
-  ;
 
-  _proto.parseArgument = function parseArgument() {
-    var start = this._lexer.token;
-    var name = this.parseName();
+
+  parseArgument() {
+    const start = this._lexer.token;
+    const name = this.parseName();
     this.expectToken(_tokenKind.TokenKind.COLON);
     return {
       kind: _kinds.Kind.ARGUMENT,
-      name: name,
+      name,
       value: this.parseValueLiteral(false),
       loc: this.loc(start)
     };
-  };
+  }
 
-  _proto.parseConstArgument = function parseConstArgument() {
-    var start = this._lexer.token;
+  parseConstArgument() {
+    const start = this._lexer.token;
     return {
       kind: _kinds.Kind.ARGUMENT,
       name: this.parseName(),
@@ -356,12 +354,12 @@ var Parser = /*#__PURE__*/function () {
    *
    * InlineFragment : ... TypeCondition? Directives? SelectionSet
    */
-  ;
 
-  _proto.parseFragment = function parseFragment() {
-    var start = this._lexer.token;
+
+  parseFragment() {
+    const start = this._lexer.token;
     this.expectToken(_tokenKind.TokenKind.SPREAD);
-    var hasTypeCondition = this.expectOptionalKeyword('on');
+    const hasTypeCondition = this.expectOptionalKeyword('on');
 
     if (!hasTypeCondition && this.peek(_tokenKind.TokenKind.NAME)) {
       return {
@@ -386,12 +384,12 @@ var Parser = /*#__PURE__*/function () {
    *
    * TypeCondition : NamedType
    */
-  ;
 
-  _proto.parseFragmentDefinition = function parseFragmentDefinition() {
+
+  parseFragmentDefinition() {
     var _this$_options;
 
-    var start = this._lexer.token;
+    const start = this._lexer.token;
     this.expectKeyword('fragment'); // Experimental support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
@@ -420,9 +418,9 @@ var Parser = /*#__PURE__*/function () {
   /**
    * FragmentName : Name but not `on`
    */
-  ;
 
-  _proto.parseFragmentName = function parseFragmentName() {
+
+  parseFragmentName() {
     if (this._lexer.token.value === 'on') {
       throw this.unexpected();
     }
@@ -448,10 +446,10 @@ var Parser = /*#__PURE__*/function () {
    *
    * EnumValue : Name but not `true`, `false` or `null`
    */
-  ;
 
-  _proto.parseValueLiteral = function parseValueLiteral(isConst) {
-    var token = this._lexer.token;
+
+  parseValueLiteral(isConst) {
+    const token = this._lexer.token;
 
     switch (token.kind) {
       case _tokenKind.TokenKind.BRACKET_L:
@@ -523,10 +521,10 @@ var Parser = /*#__PURE__*/function () {
     }
 
     throw this.unexpected();
-  };
+  }
 
-  _proto.parseStringLiteral = function parseStringLiteral() {
-    var token = this._lexer.token;
+  parseStringLiteral() {
+    const token = this._lexer.token;
 
     this._lexer.advance();
 
@@ -542,16 +540,12 @@ var Parser = /*#__PURE__*/function () {
    *   - [ ]
    *   - [ Value[?Const]+ ]
    */
-  ;
 
-  _proto.parseList = function parseList(isConst) {
-    var _this = this;
 
-    var start = this._lexer.token;
+  parseList(isConst) {
+    const start = this._lexer.token;
 
-    var item = function item() {
-      return _this.parseValueLiteral(isConst);
-    };
+    const item = () => this.parseValueLiteral(isConst);
 
     return {
       kind: _kinds.Kind.LIST,
@@ -564,16 +558,12 @@ var Parser = /*#__PURE__*/function () {
    *   - { }
    *   - { ObjectField[?Const]+ }
    */
-  ;
 
-  _proto.parseObject = function parseObject(isConst) {
-    var _this2 = this;
 
-    var start = this._lexer.token;
+  parseObject(isConst) {
+    const start = this._lexer.token;
 
-    var item = function item() {
-      return _this2.parseObjectField(isConst);
-    };
+    const item = () => this.parseObjectField(isConst);
 
     return {
       kind: _kinds.Kind.OBJECT,
@@ -584,15 +574,15 @@ var Parser = /*#__PURE__*/function () {
   /**
    * ObjectField[Const] : Name : Value[?Const]
    */
-  ;
 
-  _proto.parseObjectField = function parseObjectField(isConst) {
-    var start = this._lexer.token;
-    var name = this.parseName();
+
+  parseObjectField(isConst) {
+    const start = this._lexer.token;
+    const name = this.parseName();
     this.expectToken(_tokenKind.TokenKind.COLON);
     return {
       kind: _kinds.Kind.OBJECT_FIELD,
-      name: name,
+      name,
       value: this.parseValueLiteral(isConst),
       loc: this.loc(start)
     };
@@ -601,10 +591,10 @@ var Parser = /*#__PURE__*/function () {
   /**
    * Directives[Const] : Directive[?Const]+
    */
-  ;
 
-  _proto.parseDirectives = function parseDirectives(isConst) {
-    var directives = [];
+
+  parseDirectives(isConst) {
+    const directives = [];
 
     while (this.peek(_tokenKind.TokenKind.AT)) {
       directives.push(this.parseDirective(isConst));
@@ -615,10 +605,10 @@ var Parser = /*#__PURE__*/function () {
   /**
    * Directive[Const] : @ Name Arguments[?Const]?
    */
-  ;
 
-  _proto.parseDirective = function parseDirective(isConst) {
-    var start = this._lexer.token;
+
+  parseDirective(isConst) {
+    const start = this._lexer.token;
     this.expectToken(_tokenKind.TokenKind.AT);
     return {
       kind: _kinds.Kind.DIRECTIVE,
@@ -634,18 +624,18 @@ var Parser = /*#__PURE__*/function () {
    *   - ListType
    *   - NonNullType
    */
-  ;
 
-  _proto.parseTypeReference = function parseTypeReference() {
-    var start = this._lexer.token;
-    var type;
+
+  parseTypeReference() {
+    const start = this._lexer.token;
+    let type;
 
     if (this.expectOptionalToken(_tokenKind.TokenKind.BRACKET_L)) {
       type = this.parseTypeReference();
       this.expectToken(_tokenKind.TokenKind.BRACKET_R);
       type = {
         kind: _kinds.Kind.LIST_TYPE,
-        type: type,
+        type,
         loc: this.loc(start)
       };
     } else {
@@ -655,7 +645,7 @@ var Parser = /*#__PURE__*/function () {
     if (this.expectOptionalToken(_tokenKind.TokenKind.BANG)) {
       return {
         kind: _kinds.Kind.NON_NULL_TYPE,
-        type: type,
+        type,
         loc: this.loc(start)
       };
     }
@@ -665,10 +655,10 @@ var Parser = /*#__PURE__*/function () {
   /**
    * NamedType : Name
    */
-  ;
 
-  _proto.parseNamedType = function parseNamedType() {
-    var start = this._lexer.token;
+
+  parseNamedType() {
+    const start = this._lexer.token;
     return {
       kind: _kinds.Kind.NAMED_TYPE,
       name: this.parseName(),
@@ -690,11 +680,11 @@ var Parser = /*#__PURE__*/function () {
    *   - EnumTypeDefinition
    *   - InputObjectTypeDefinition
    */
-  ;
 
-  _proto.parseTypeSystemDefinition = function parseTypeSystemDefinition() {
+
+  parseTypeSystemDefinition() {
     // Many definitions begin with a description and require a lookahead.
-    var keywordToken = this.peekDescription() ? this._lexer.lookahead() : this._lexer.token;
+    const keywordToken = this.peekDescription() ? this._lexer.lookahead() : this._lexer.token;
 
     if (keywordToken.kind === _tokenKind.TokenKind.NAME) {
       switch (keywordToken.value) {
@@ -725,17 +715,17 @@ var Parser = /*#__PURE__*/function () {
     }
 
     throw this.unexpected(keywordToken);
-  };
+  }
 
-  _proto.peekDescription = function peekDescription() {
+  peekDescription() {
     return this.peek(_tokenKind.TokenKind.STRING) || this.peek(_tokenKind.TokenKind.BLOCK_STRING);
   }
   /**
    * Description : StringValue
    */
-  ;
 
-  _proto.parseDescription = function parseDescription() {
+
+  parseDescription() {
     if (this.peekDescription()) {
       return this.parseStringLiteral();
     }
@@ -743,55 +733,55 @@ var Parser = /*#__PURE__*/function () {
   /**
    * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
    */
-  ;
 
-  _proto.parseSchemaDefinition = function parseSchemaDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
+
+  parseSchemaDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('schema');
-    var directives = this.parseDirectives(true);
-    var operationTypes = this.many(_tokenKind.TokenKind.BRACE_L, this.parseOperationTypeDefinition, _tokenKind.TokenKind.BRACE_R);
+    const directives = this.parseDirectives(true);
+    const operationTypes = this.many(_tokenKind.TokenKind.BRACE_L, this.parseOperationTypeDefinition, _tokenKind.TokenKind.BRACE_R);
     return {
       kind: _kinds.Kind.SCHEMA_DEFINITION,
-      description: description,
-      directives: directives,
-      operationTypes: operationTypes,
+      description,
+      directives,
+      operationTypes,
       loc: this.loc(start)
     };
   }
   /**
    * OperationTypeDefinition : OperationType : NamedType
    */
-  ;
 
-  _proto.parseOperationTypeDefinition = function parseOperationTypeDefinition() {
-    var start = this._lexer.token;
-    var operation = this.parseOperationType();
+
+  parseOperationTypeDefinition() {
+    const start = this._lexer.token;
+    const operation = this.parseOperationType();
     this.expectToken(_tokenKind.TokenKind.COLON);
-    var type = this.parseNamedType();
+    const type = this.parseNamedType();
     return {
       kind: _kinds.Kind.OPERATION_TYPE_DEFINITION,
-      operation: operation,
-      type: type,
+      operation,
+      type,
       loc: this.loc(start)
     };
   }
   /**
    * ScalarTypeDefinition : Description? scalar Name Directives[Const]?
    */
-  ;
 
-  _proto.parseScalarTypeDefinition = function parseScalarTypeDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
+
+  parseScalarTypeDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('scalar');
-    var name = this.parseName();
-    var directives = this.parseDirectives(true);
+    const name = this.parseName();
+    const directives = this.parseDirectives(true);
     return {
       kind: _kinds.Kind.SCALAR_TYPE_DEFINITION,
-      description: description,
-      name: name,
-      directives: directives,
+      description,
+      name,
+      directives,
       loc: this.loc(start)
     };
   }
@@ -800,23 +790,23 @@ var Parser = /*#__PURE__*/function () {
    *   Description?
    *   type Name ImplementsInterfaces? Directives[Const]? FieldsDefinition?
    */
-  ;
 
-  _proto.parseObjectTypeDefinition = function parseObjectTypeDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
+
+  parseObjectTypeDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('type');
-    var name = this.parseName();
-    var interfaces = this.parseImplementsInterfaces();
-    var directives = this.parseDirectives(true);
-    var fields = this.parseFieldsDefinition();
+    const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
+    const directives = this.parseDirectives(true);
+    const fields = this.parseFieldsDefinition();
     return {
       kind: _kinds.Kind.OBJECT_TYPE_DEFINITION,
-      description: description,
-      name: name,
-      interfaces: interfaces,
-      directives: directives,
-      fields: fields,
+      description,
+      name,
+      interfaces,
+      directives,
+      fields,
       loc: this.loc(start)
     };
   }
@@ -825,77 +815,77 @@ var Parser = /*#__PURE__*/function () {
    *   - implements `&`? NamedType
    *   - ImplementsInterfaces & NamedType
    */
-  ;
 
-  _proto.parseImplementsInterfaces = function parseImplementsInterfaces() {
+
+  parseImplementsInterfaces() {
     return this.expectOptionalKeyword('implements') ? this.delimitedMany(_tokenKind.TokenKind.AMP, this.parseNamedType) : [];
   }
   /**
    * FieldsDefinition : { FieldDefinition+ }
    */
-  ;
 
-  _proto.parseFieldsDefinition = function parseFieldsDefinition() {
+
+  parseFieldsDefinition() {
     return this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseFieldDefinition, _tokenKind.TokenKind.BRACE_R);
   }
   /**
    * FieldDefinition :
    *   - Description? Name ArgumentsDefinition? : Type Directives[Const]?
    */
-  ;
 
-  _proto.parseFieldDefinition = function parseFieldDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
-    var name = this.parseName();
-    var args = this.parseArgumentDefs();
+
+  parseFieldDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
+    const name = this.parseName();
+    const args = this.parseArgumentDefs();
     this.expectToken(_tokenKind.TokenKind.COLON);
-    var type = this.parseTypeReference();
-    var directives = this.parseDirectives(true);
+    const type = this.parseTypeReference();
+    const directives = this.parseDirectives(true);
     return {
       kind: _kinds.Kind.FIELD_DEFINITION,
-      description: description,
-      name: name,
+      description,
+      name,
       arguments: args,
-      type: type,
-      directives: directives,
+      type,
+      directives,
       loc: this.loc(start)
     };
   }
   /**
    * ArgumentsDefinition : ( InputValueDefinition+ )
    */
-  ;
 
-  _proto.parseArgumentDefs = function parseArgumentDefs() {
+
+  parseArgumentDefs() {
     return this.optionalMany(_tokenKind.TokenKind.PAREN_L, this.parseInputValueDef, _tokenKind.TokenKind.PAREN_R);
   }
   /**
    * InputValueDefinition :
    *   - Description? Name : Type DefaultValue? Directives[Const]?
    */
-  ;
 
-  _proto.parseInputValueDef = function parseInputValueDef() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
-    var name = this.parseName();
+
+  parseInputValueDef() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
+    const name = this.parseName();
     this.expectToken(_tokenKind.TokenKind.COLON);
-    var type = this.parseTypeReference();
-    var defaultValue;
+    const type = this.parseTypeReference();
+    let defaultValue;
 
     if (this.expectOptionalToken(_tokenKind.TokenKind.EQUALS)) {
       defaultValue = this.parseValueLiteral(true);
     }
 
-    var directives = this.parseDirectives(true);
+    const directives = this.parseDirectives(true);
     return {
       kind: _kinds.Kind.INPUT_VALUE_DEFINITION,
-      description: description,
-      name: name,
-      type: type,
-      defaultValue: defaultValue,
-      directives: directives,
+      description,
+      name,
+      type,
+      defaultValue,
+      directives,
       loc: this.loc(start)
     };
   }
@@ -903,23 +893,23 @@ var Parser = /*#__PURE__*/function () {
    * InterfaceTypeDefinition :
    *   - Description? interface Name Directives[Const]? FieldsDefinition?
    */
-  ;
 
-  _proto.parseInterfaceTypeDefinition = function parseInterfaceTypeDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
+
+  parseInterfaceTypeDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('interface');
-    var name = this.parseName();
-    var interfaces = this.parseImplementsInterfaces();
-    var directives = this.parseDirectives(true);
-    var fields = this.parseFieldsDefinition();
+    const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
+    const directives = this.parseDirectives(true);
+    const fields = this.parseFieldsDefinition();
     return {
       kind: _kinds.Kind.INTERFACE_TYPE_DEFINITION,
-      description: description,
-      name: name,
-      interfaces: interfaces,
-      directives: directives,
-      fields: fields,
+      description,
+      name,
+      interfaces,
+      directives,
+      fields,
       loc: this.loc(start)
     };
   }
@@ -927,21 +917,21 @@ var Parser = /*#__PURE__*/function () {
    * UnionTypeDefinition :
    *   - Description? union Name Directives[Const]? UnionMemberTypes?
    */
-  ;
 
-  _proto.parseUnionTypeDefinition = function parseUnionTypeDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
+
+  parseUnionTypeDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('union');
-    var name = this.parseName();
-    var directives = this.parseDirectives(true);
-    var types = this.parseUnionMemberTypes();
+    const name = this.parseName();
+    const directives = this.parseDirectives(true);
+    const types = this.parseUnionMemberTypes();
     return {
       kind: _kinds.Kind.UNION_TYPE_DEFINITION,
-      description: description,
-      name: name,
-      directives: directives,
-      types: types,
+      description,
+      name,
+      directives,
+      types,
       loc: this.loc(start)
     };
   }
@@ -950,39 +940,39 @@ var Parser = /*#__PURE__*/function () {
    *   - = `|`? NamedType
    *   - UnionMemberTypes | NamedType
    */
-  ;
 
-  _proto.parseUnionMemberTypes = function parseUnionMemberTypes() {
+
+  parseUnionMemberTypes() {
     return this.expectOptionalToken(_tokenKind.TokenKind.EQUALS) ? this.delimitedMany(_tokenKind.TokenKind.PIPE, this.parseNamedType) : [];
   }
   /**
    * EnumTypeDefinition :
    *   - Description? enum Name Directives[Const]? EnumValuesDefinition?
    */
-  ;
 
-  _proto.parseEnumTypeDefinition = function parseEnumTypeDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
+
+  parseEnumTypeDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('enum');
-    var name = this.parseName();
-    var directives = this.parseDirectives(true);
-    var values = this.parseEnumValuesDefinition();
+    const name = this.parseName();
+    const directives = this.parseDirectives(true);
+    const values = this.parseEnumValuesDefinition();
     return {
       kind: _kinds.Kind.ENUM_TYPE_DEFINITION,
-      description: description,
-      name: name,
-      directives: directives,
-      values: values,
+      description,
+      name,
+      directives,
+      values,
       loc: this.loc(start)
     };
   }
   /**
    * EnumValuesDefinition : { EnumValueDefinition+ }
    */
-  ;
 
-  _proto.parseEnumValuesDefinition = function parseEnumValuesDefinition() {
+
+  parseEnumValuesDefinition() {
     return this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseEnumValueDefinition, _tokenKind.TokenKind.BRACE_R);
   }
   /**
@@ -990,18 +980,18 @@ var Parser = /*#__PURE__*/function () {
    *
    * EnumValue : Name
    */
-  ;
 
-  _proto.parseEnumValueDefinition = function parseEnumValueDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
-    var name = this.parseName();
-    var directives = this.parseDirectives(true);
+
+  parseEnumValueDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
+    const name = this.parseName();
+    const directives = this.parseDirectives(true);
     return {
       kind: _kinds.Kind.ENUM_VALUE_DEFINITION,
-      description: description,
-      name: name,
-      directives: directives,
+      description,
+      name,
+      directives,
       loc: this.loc(start)
     };
   }
@@ -1009,30 +999,30 @@ var Parser = /*#__PURE__*/function () {
    * InputObjectTypeDefinition :
    *   - Description? input Name Directives[Const]? InputFieldsDefinition?
    */
-  ;
 
-  _proto.parseInputObjectTypeDefinition = function parseInputObjectTypeDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
+
+  parseInputObjectTypeDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('input');
-    var name = this.parseName();
-    var directives = this.parseDirectives(true);
-    var fields = this.parseInputFieldsDefinition();
+    const name = this.parseName();
+    const directives = this.parseDirectives(true);
+    const fields = this.parseInputFieldsDefinition();
     return {
       kind: _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION,
-      description: description,
-      name: name,
-      directives: directives,
-      fields: fields,
+      description,
+      name,
+      directives,
+      fields,
       loc: this.loc(start)
     };
   }
   /**
    * InputFieldsDefinition : { InputValueDefinition+ }
    */
-  ;
 
-  _proto.parseInputFieldsDefinition = function parseInputFieldsDefinition() {
+
+  parseInputFieldsDefinition() {
     return this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseInputValueDef, _tokenKind.TokenKind.BRACE_R);
   }
   /**
@@ -1048,10 +1038,10 @@ var Parser = /*#__PURE__*/function () {
    *   - EnumTypeExtension
    *   - InputObjectTypeDefinition
    */
-  ;
 
-  _proto.parseTypeSystemExtension = function parseTypeSystemExtension() {
-    var keywordToken = this._lexer.lookahead();
+
+  parseTypeSystemExtension() {
+    const keywordToken = this._lexer.lookahead();
 
     if (keywordToken.kind === _tokenKind.TokenKind.NAME) {
       switch (keywordToken.value) {
@@ -1085,14 +1075,14 @@ var Parser = /*#__PURE__*/function () {
    *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
    *  - extend schema Directives[Const]
    */
-  ;
 
-  _proto.parseSchemaExtension = function parseSchemaExtension() {
-    var start = this._lexer.token;
+
+  parseSchemaExtension() {
+    const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('schema');
-    var directives = this.parseDirectives(true);
-    var operationTypes = this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseOperationTypeDefinition, _tokenKind.TokenKind.BRACE_R);
+    const directives = this.parseDirectives(true);
+    const operationTypes = this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseOperationTypeDefinition, _tokenKind.TokenKind.BRACE_R);
 
     if (directives.length === 0 && operationTypes.length === 0) {
       throw this.unexpected();
@@ -1100,8 +1090,8 @@ var Parser = /*#__PURE__*/function () {
 
     return {
       kind: _kinds.Kind.SCHEMA_EXTENSION,
-      directives: directives,
-      operationTypes: operationTypes,
+      directives,
+      operationTypes,
       loc: this.loc(start)
     };
   }
@@ -1109,14 +1099,14 @@ var Parser = /*#__PURE__*/function () {
    * ScalarTypeExtension :
    *   - extend scalar Name Directives[Const]
    */
-  ;
 
-  _proto.parseScalarTypeExtension = function parseScalarTypeExtension() {
-    var start = this._lexer.token;
+
+  parseScalarTypeExtension() {
+    const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('scalar');
-    var name = this.parseName();
-    var directives = this.parseDirectives(true);
+    const name = this.parseName();
+    const directives = this.parseDirectives(true);
 
     if (directives.length === 0) {
       throw this.unexpected();
@@ -1124,8 +1114,8 @@ var Parser = /*#__PURE__*/function () {
 
     return {
       kind: _kinds.Kind.SCALAR_TYPE_EXTENSION,
-      name: name,
-      directives: directives,
+      name,
+      directives,
       loc: this.loc(start)
     };
   }
@@ -1135,16 +1125,16 @@ var Parser = /*#__PURE__*/function () {
    *  - extend type Name ImplementsInterfaces? Directives[Const]
    *  - extend type Name ImplementsInterfaces
    */
-  ;
 
-  _proto.parseObjectTypeExtension = function parseObjectTypeExtension() {
-    var start = this._lexer.token;
+
+  parseObjectTypeExtension() {
+    const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('type');
-    var name = this.parseName();
-    var interfaces = this.parseImplementsInterfaces();
-    var directives = this.parseDirectives(true);
-    var fields = this.parseFieldsDefinition();
+    const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
+    const directives = this.parseDirectives(true);
+    const fields = this.parseFieldsDefinition();
 
     if (interfaces.length === 0 && directives.length === 0 && fields.length === 0) {
       throw this.unexpected();
@@ -1152,10 +1142,10 @@ var Parser = /*#__PURE__*/function () {
 
     return {
       kind: _kinds.Kind.OBJECT_TYPE_EXTENSION,
-      name: name,
-      interfaces: interfaces,
-      directives: directives,
-      fields: fields,
+      name,
+      interfaces,
+      directives,
+      fields,
       loc: this.loc(start)
     };
   }
@@ -1165,16 +1155,16 @@ var Parser = /*#__PURE__*/function () {
    *  - extend interface Name ImplementsInterfaces? Directives[Const]
    *  - extend interface Name ImplementsInterfaces
    */
-  ;
 
-  _proto.parseInterfaceTypeExtension = function parseInterfaceTypeExtension() {
-    var start = this._lexer.token;
+
+  parseInterfaceTypeExtension() {
+    const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('interface');
-    var name = this.parseName();
-    var interfaces = this.parseImplementsInterfaces();
-    var directives = this.parseDirectives(true);
-    var fields = this.parseFieldsDefinition();
+    const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
+    const directives = this.parseDirectives(true);
+    const fields = this.parseFieldsDefinition();
 
     if (interfaces.length === 0 && directives.length === 0 && fields.length === 0) {
       throw this.unexpected();
@@ -1182,10 +1172,10 @@ var Parser = /*#__PURE__*/function () {
 
     return {
       kind: _kinds.Kind.INTERFACE_TYPE_EXTENSION,
-      name: name,
-      interfaces: interfaces,
-      directives: directives,
-      fields: fields,
+      name,
+      interfaces,
+      directives,
+      fields,
       loc: this.loc(start)
     };
   }
@@ -1194,15 +1184,15 @@ var Parser = /*#__PURE__*/function () {
    *   - extend union Name Directives[Const]? UnionMemberTypes
    *   - extend union Name Directives[Const]
    */
-  ;
 
-  _proto.parseUnionTypeExtension = function parseUnionTypeExtension() {
-    var start = this._lexer.token;
+
+  parseUnionTypeExtension() {
+    const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('union');
-    var name = this.parseName();
-    var directives = this.parseDirectives(true);
-    var types = this.parseUnionMemberTypes();
+    const name = this.parseName();
+    const directives = this.parseDirectives(true);
+    const types = this.parseUnionMemberTypes();
 
     if (directives.length === 0 && types.length === 0) {
       throw this.unexpected();
@@ -1210,9 +1200,9 @@ var Parser = /*#__PURE__*/function () {
 
     return {
       kind: _kinds.Kind.UNION_TYPE_EXTENSION,
-      name: name,
-      directives: directives,
-      types: types,
+      name,
+      directives,
+      types,
       loc: this.loc(start)
     };
   }
@@ -1221,15 +1211,15 @@ var Parser = /*#__PURE__*/function () {
    *   - extend enum Name Directives[Const]? EnumValuesDefinition
    *   - extend enum Name Directives[Const]
    */
-  ;
 
-  _proto.parseEnumTypeExtension = function parseEnumTypeExtension() {
-    var start = this._lexer.token;
+
+  parseEnumTypeExtension() {
+    const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('enum');
-    var name = this.parseName();
-    var directives = this.parseDirectives(true);
-    var values = this.parseEnumValuesDefinition();
+    const name = this.parseName();
+    const directives = this.parseDirectives(true);
+    const values = this.parseEnumValuesDefinition();
 
     if (directives.length === 0 && values.length === 0) {
       throw this.unexpected();
@@ -1237,9 +1227,9 @@ var Parser = /*#__PURE__*/function () {
 
     return {
       kind: _kinds.Kind.ENUM_TYPE_EXTENSION,
-      name: name,
-      directives: directives,
-      values: values,
+      name,
+      directives,
+      values,
       loc: this.loc(start)
     };
   }
@@ -1248,15 +1238,15 @@ var Parser = /*#__PURE__*/function () {
    *   - extend input Name Directives[Const]? InputFieldsDefinition
    *   - extend input Name Directives[Const]
    */
-  ;
 
-  _proto.parseInputObjectTypeExtension = function parseInputObjectTypeExtension() {
-    var start = this._lexer.token;
+
+  parseInputObjectTypeExtension() {
+    const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('input');
-    var name = this.parseName();
-    var directives = this.parseDirectives(true);
-    var fields = this.parseInputFieldsDefinition();
+    const name = this.parseName();
+    const directives = this.parseDirectives(true);
+    const fields = this.parseInputFieldsDefinition();
 
     if (directives.length === 0 && fields.length === 0) {
       throw this.unexpected();
@@ -1264,9 +1254,9 @@ var Parser = /*#__PURE__*/function () {
 
     return {
       kind: _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION,
-      name: name,
-      directives: directives,
-      fields: fields,
+      name,
+      directives,
+      fields,
       loc: this.loc(start)
     };
   }
@@ -1274,25 +1264,25 @@ var Parser = /*#__PURE__*/function () {
    * DirectiveDefinition :
    *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
    */
-  ;
 
-  _proto.parseDirectiveDefinition = function parseDirectiveDefinition() {
-    var start = this._lexer.token;
-    var description = this.parseDescription();
+
+  parseDirectiveDefinition() {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('directive');
     this.expectToken(_tokenKind.TokenKind.AT);
-    var name = this.parseName();
-    var args = this.parseArgumentDefs();
-    var repeatable = this.expectOptionalKeyword('repeatable');
+    const name = this.parseName();
+    const args = this.parseArgumentDefs();
+    const repeatable = this.expectOptionalKeyword('repeatable');
     this.expectKeyword('on');
-    var locations = this.parseDirectiveLocations();
+    const locations = this.parseDirectiveLocations();
     return {
       kind: _kinds.Kind.DIRECTIVE_DEFINITION,
-      description: description,
-      name: name,
+      description,
+      name,
       arguments: args,
-      repeatable: repeatable,
-      locations: locations,
+      repeatable,
+      locations,
       loc: this.loc(start)
     };
   }
@@ -1301,9 +1291,9 @@ var Parser = /*#__PURE__*/function () {
    *   - `|`? DirectiveLocation
    *   - DirectiveLocations | DirectiveLocation
    */
-  ;
 
-  _proto.parseDirectiveLocations = function parseDirectiveLocations() {
+
+  parseDirectiveLocations() {
     return this.delimitedMany(_tokenKind.TokenKind.PIPE, this.parseDirectiveLocation);
   }
   /*
@@ -1333,11 +1323,11 @@ var Parser = /*#__PURE__*/function () {
    *   `INPUT_OBJECT`
    *   `INPUT_FIELD_DEFINITION`
    */
-  ;
 
-  _proto.parseDirectiveLocation = function parseDirectiveLocation() {
-    var start = this._lexer.token;
-    var name = this.parseName();
+
+  parseDirectiveLocation() {
+    const start = this._lexer.token;
+    const name = this.parseName();
 
     if (_directiveLocation.DirectiveLocation[name.value] !== undefined) {
       return name;
@@ -1349,9 +1339,9 @@ var Parser = /*#__PURE__*/function () {
   /**
    * Returns a location object, used to identify the place in the source that created a given parsed object.
    */
-  ;
 
-  _proto.loc = function loc(startToken) {
+
+  loc(startToken) {
     var _this$_options2;
 
     if (((_this$_options2 = this._options) === null || _this$_options2 === void 0 ? void 0 : _this$_options2.noLocation) !== true) {
@@ -1361,19 +1351,19 @@ var Parser = /*#__PURE__*/function () {
   /**
    * Determines if the next token is of a given kind
    */
-  ;
 
-  _proto.peek = function peek(kind) {
+
+  peek(kind) {
     return this._lexer.token.kind === kind;
   }
   /**
    * If the next token is of the given kind, return that token after advancing the lexer.
    * Otherwise, do not change the parser state and throw an error.
    */
-  ;
 
-  _proto.expectToken = function expectToken(kind) {
-    var token = this._lexer.token;
+
+  expectToken(kind) {
+    const token = this._lexer.token;
 
     if (token.kind === kind) {
       this._lexer.advance();
@@ -1381,16 +1371,16 @@ var Parser = /*#__PURE__*/function () {
       return token;
     }
 
-    throw (0, _syntaxError.syntaxError)(this._lexer.source, token.start, "Expected ".concat(getTokenKindDesc(kind), ", found ").concat(getTokenDesc(token), "."));
+    throw (0, _syntaxError.syntaxError)(this._lexer.source, token.start, `Expected ${getTokenKindDesc(kind)}, found ${getTokenDesc(token)}.`);
   }
   /**
    * If the next token is of the given kind, return that token after advancing the lexer.
    * Otherwise, do not change the parser state and return undefined.
    */
-  ;
 
-  _proto.expectOptionalToken = function expectOptionalToken(kind) {
-    var token = this._lexer.token;
+
+  expectOptionalToken(kind) {
+    const token = this._lexer.token;
 
     if (token.kind === kind) {
       this._lexer.advance();
@@ -1404,25 +1394,25 @@ var Parser = /*#__PURE__*/function () {
    * If the next token is a given keyword, advance the lexer.
    * Otherwise, do not change the parser state and throw an error.
    */
-  ;
 
-  _proto.expectKeyword = function expectKeyword(value) {
-    var token = this._lexer.token;
+
+  expectKeyword(value) {
+    const token = this._lexer.token;
 
     if (token.kind === _tokenKind.TokenKind.NAME && token.value === value) {
       this._lexer.advance();
     } else {
-      throw (0, _syntaxError.syntaxError)(this._lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(token), "."));
+      throw (0, _syntaxError.syntaxError)(this._lexer.source, token.start, `Expected "${value}", found ${getTokenDesc(token)}.`);
     }
   }
   /**
    * If the next token is a given keyword, return "true" after advancing the lexer.
    * Otherwise, do not change the parser state and return "false".
    */
-  ;
 
-  _proto.expectOptionalKeyword = function expectOptionalKeyword(value) {
-    var token = this._lexer.token;
+
+  expectOptionalKeyword(value) {
+    const token = this._lexer.token;
 
     if (token.kind === _tokenKind.TokenKind.NAME && token.value === value) {
       this._lexer.advance();
@@ -1435,22 +1425,22 @@ var Parser = /*#__PURE__*/function () {
   /**
    * Helper function for creating an error when an unexpected lexed token is encountered.
    */
-  ;
 
-  _proto.unexpected = function unexpected(atToken) {
-    var token = atToken !== null && atToken !== void 0 ? atToken : this._lexer.token;
-    return (0, _syntaxError.syntaxError)(this._lexer.source, token.start, "Unexpected ".concat(getTokenDesc(token), "."));
+
+  unexpected(atToken) {
+    const token = atToken !== null && atToken !== void 0 ? atToken : this._lexer.token;
+    return (0, _syntaxError.syntaxError)(this._lexer.source, token.start, `Unexpected ${getTokenDesc(token)}.`);
   }
   /**
    * Returns a possibly empty list of parse nodes, determined by the parseFn.
    * This list begins with a lex token of openKind and ends with a lex token of closeKind.
    * Advances the parser to the next lex token after the closing token.
    */
-  ;
 
-  _proto.any = function any(openKind, parseFn, closeKind) {
+
+  any(openKind, parseFn, closeKind) {
     this.expectToken(openKind);
-    var nodes = [];
+    const nodes = [];
 
     while (!this.expectOptionalToken(closeKind)) {
       nodes.push(parseFn.call(this));
@@ -1464,11 +1454,11 @@ var Parser = /*#__PURE__*/function () {
    * that begins with a lex token of openKind and ends with a lex token of closeKind.
    * Advances the parser to the next lex token after the closing token.
    */
-  ;
 
-  _proto.optionalMany = function optionalMany(openKind, parseFn, closeKind) {
+
+  optionalMany(openKind, parseFn, closeKind) {
     if (this.expectOptionalToken(openKind)) {
-      var nodes = [];
+      const nodes = [];
 
       do {
         nodes.push(parseFn.call(this));
@@ -1484,11 +1474,11 @@ var Parser = /*#__PURE__*/function () {
    * This list begins with a lex token of openKind and ends with a lex token of closeKind.
    * Advances the parser to the next lex token after the closing token.
    */
-  ;
 
-  _proto.many = function many(openKind, parseFn, closeKind) {
+
+  many(openKind, parseFn, closeKind) {
     this.expectToken(openKind);
-    var nodes = [];
+    const nodes = [];
 
     do {
       nodes.push(parseFn.call(this));
@@ -1501,21 +1491,20 @@ var Parser = /*#__PURE__*/function () {
    * This list may begin with a lex token of delimiterKind followed by items separated by lex tokens of tokenKind.
    * Advances the parser to the next lex token after last item in the list.
    */
-  ;
 
-  _proto.delimitedMany = function delimitedMany(delimiterKind, parseFn) {
+
+  delimitedMany(delimiterKind, parseFn) {
     this.expectOptionalToken(delimiterKind);
-    var nodes = [];
+    const nodes = [];
 
     do {
       nodes.push(parseFn.call(this));
     } while (this.expectOptionalToken(delimiterKind));
 
     return nodes;
-  };
+  }
 
-  return Parser;
-}();
+}
 /**
  * A helper function to describe a token as a string for debugging.
  */
@@ -1524,8 +1513,8 @@ var Parser = /*#__PURE__*/function () {
 exports.Parser = Parser;
 
 function getTokenDesc(token) {
-  var value = token.value;
-  return getTokenKindDesc(token.kind) + (value != null ? " \"".concat(value, "\"") : '');
+  const value = token.value;
+  return getTokenKindDesc(token.kind) + (value != null ? ` "${value}"` : '');
 }
 /**
  * A helper function to describe a token kind as a string for debugging.
@@ -1533,5 +1522,5 @@ function getTokenDesc(token) {
 
 
 function getTokenKindDesc(kind) {
-  return (0, _lexer.isPunctuatorTokenKind)(kind) ? "\"".concat(kind, "\"") : kind;
+  return (0, _lexer.isPunctuatorTokenKind)(kind) ? `"${kind}"` : kind;
 }

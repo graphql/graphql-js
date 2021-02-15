@@ -3,9 +3,9 @@
  */
 export function addPath(prev, key, typename) {
   return {
-    prev: prev,
-    key: key,
-    typename: typename
+    prev,
+    key,
+    typename
   };
 }
 /**
@@ -13,8 +13,8 @@ export function addPath(prev, key, typename) {
  */
 
 export function pathToArray(path) {
-  var flattened = [];
-  var curr = path;
+  const flattened = [];
+  let curr = path;
 
   while (curr) {
     flattened.push(curr.key);

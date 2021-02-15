@@ -13,15 +13,15 @@ exports.naturalCompare = naturalCompare;
  *
  */
 function naturalCompare(aStr, bStr) {
-  var aIdx = 0;
-  var bIdx = 0;
+  let aIdx = 0;
+  let bIdx = 0;
 
   while (aIdx < aStr.length && bIdx < bStr.length) {
-    var aChar = aStr.charCodeAt(aIdx);
-    var bChar = bStr.charCodeAt(bIdx);
+    let aChar = aStr.charCodeAt(aIdx);
+    let bChar = bStr.charCodeAt(bIdx);
 
     if (isDigit(aChar) && isDigit(bChar)) {
-      var aNum = 0;
+      let aNum = 0;
 
       do {
         ++aIdx;
@@ -29,7 +29,7 @@ function naturalCompare(aStr, bStr) {
         aChar = aStr.charCodeAt(aIdx);
       } while (isDigit(aChar) && aNum > 0);
 
-      var bNum = 0;
+      let bNum = 0;
 
       do {
         ++bIdx;
@@ -61,8 +61,8 @@ function naturalCompare(aStr, bStr) {
   return aStr.length - bStr.length;
 }
 
-var DIGIT_0 = 48;
-var DIGIT_9 = 57;
+const DIGIT_0 = 48;
+const DIGIT_9 = 57;
 
 function isDigit(code) {
   return !isNaN(code) && DIGIT_0 <= code && code <= DIGIT_9;

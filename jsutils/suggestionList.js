@@ -12,21 +12,20 @@ var _naturalCompare = require("./naturalCompare.js");
  * list of valid options sorted based on their similarity with the input.
  */
 function suggestionList(input, options) {
-  var optionsByDistance = Object.create(null);
-  var lexicalDistance = new LexicalDistance(input);
-  var threshold = Math.floor(input.length * 0.4) + 1;
+  const optionsByDistance = Object.create(null);
+  const lexicalDistance = new LexicalDistance(input);
+  const threshold = Math.floor(input.length * 0.4) + 1;
 
-  for (var _i2 = 0; _i2 < options.length; _i2++) {
-    var option = options[_i2];
-    var distance = lexicalDistance.measure(option, threshold);
+  for (const option of options) {
+    const distance = lexicalDistance.measure(option, threshold);
 
     if (distance !== undefined) {
       optionsByDistance[option] = distance;
     }
   }
 
-  return Object.keys(optionsByDistance).sort(function (a, b) {
-    var distanceDiff = optionsByDistance[a] - optionsByDistance[b];
+  return Object.keys(optionsByDistance).sort((a, b) => {
+    const distanceDiff = optionsByDistance[a] - optionsByDistance[b];
     return distanceDiff !== 0 ? distanceDiff : (0, _naturalCompare.naturalCompare)(a, b);
   });
 }
@@ -46,64 +45,62 @@ function suggestionList(input, options) {
  */
 
 
-var LexicalDistance = /*#__PURE__*/function () {
-  function LexicalDistance(input) {
+class LexicalDistance {
+  constructor(input) {
     this._input = input;
     this._inputLowerCase = input.toLowerCase();
     this._inputArray = stringToArray(this._inputLowerCase);
     this._rows = [new Array(input.length + 1).fill(0), new Array(input.length + 1).fill(0), new Array(input.length + 1).fill(0)];
   }
 
-  var _proto = LexicalDistance.prototype;
-
-  _proto.measure = function measure(option, threshold) {
+  measure(option, threshold) {
     if (this._input === option) {
       return 0;
     }
 
-    var optionLowerCase = option.toLowerCase(); // Any case change counts as a single edit
+    const optionLowerCase = option.toLowerCase(); // Any case change counts as a single edit
 
     if (this._inputLowerCase === optionLowerCase) {
       return 1;
     }
 
-    var a = stringToArray(optionLowerCase);
-    var b = this._inputArray;
+    let a = stringToArray(optionLowerCase);
+    let b = this._inputArray;
 
     if (a.length < b.length) {
-      var tmp = a;
+      const tmp = a;
       a = b;
       b = tmp;
     }
 
-    var aLength = a.length;
-    var bLength = b.length;
+    const aLength = a.length;
+    const bLength = b.length;
 
     if (aLength - bLength > threshold) {
       return undefined;
     }
 
-    var rows = this._rows;
+    const rows = this._rows;
 
-    for (var j = 0; j <= bLength; j++) {
+    for (let j = 0; j <= bLength; j++) {
       rows[0][j] = j;
     }
 
-    for (var i = 1; i <= aLength; i++) {
-      var upRow = rows[(i - 1) % 3];
-      var currentRow = rows[i % 3];
-      var smallestCell = currentRow[0] = i;
+    for (let i = 1; i <= aLength; i++) {
+      const upRow = rows[(i - 1) % 3];
+      const currentRow = rows[i % 3];
+      let smallestCell = currentRow[0] = i;
 
-      for (var _j = 1; _j <= bLength; _j++) {
-        var cost = a[i - 1] === b[_j - 1] ? 0 : 1;
-        var currentCell = Math.min(upRow[_j] + 1, // delete
-        currentRow[_j - 1] + 1, // insert
-        upRow[_j - 1] + cost // substitute
+      for (let j = 1; j <= bLength; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        let currentCell = Math.min(upRow[j] + 1, // delete
+        currentRow[j - 1] + 1, // insert
+        upRow[j - 1] + cost // substitute
         );
 
-        if (i > 1 && _j > 1 && a[i - 1] === b[_j - 2] && a[i - 2] === b[_j - 1]) {
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
           // transposition
-          var doubleDiagonalCell = rows[(i - 2) % 3][_j - 2];
+          const doubleDiagonalCell = rows[(i - 2) % 3][j - 2];
           currentCell = Math.min(currentCell, doubleDiagonalCell + 1);
         }
 
@@ -111,7 +108,7 @@ var LexicalDistance = /*#__PURE__*/function () {
           smallestCell = currentCell;
         }
 
-        currentRow[_j] = currentCell;
+        currentRow[j] = currentCell;
       } // Early exit, since distance can't go smaller than smallest element of the previous row.
 
 
@@ -120,18 +117,17 @@ var LexicalDistance = /*#__PURE__*/function () {
       }
     }
 
-    var distance = rows[aLength % 3][bLength];
+    const distance = rows[aLength % 3][bLength];
     return distance <= threshold ? distance : undefined;
-  };
+  }
 
-  return LexicalDistance;
-}();
+}
 
 function stringToArray(str) {
-  var strLength = str.length;
-  var array = new Array(strLength);
+  const strLength = str.length;
+  const array = new Array(strLength);
 
-  for (var i = 0; i < strLength; ++i) {
+  for (let i = 0; i < strLength; ++i) {
     array[i] = str.charCodeAt(i);
   }
 

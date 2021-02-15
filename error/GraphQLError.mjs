@@ -1,31 +1,3 @@
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
-
-function _construct(Parent, args, Class) { if (_isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
 // FIXME:
 // flowlint uninitialized-instance-property:off
 import { isObjectLike } from "../jsutils/isObjectLike.mjs";
@@ -38,11 +10,7 @@ import { printLocation, printSourceLocation } from "../language/printLocation.mj
  * GraphQL document and/or execution result that correspond to the Error.
  */
 
-export var GraphQLError = /*#__PURE__*/function (_Error) {
-  _inherits(GraphQLError, _Error);
-
-  var _super = _createSuper(GraphQLError);
-
+export class GraphQLError extends Error {
   /**
    * A message describing the Error for debugging purposes.
    *
@@ -92,19 +60,15 @@ export var GraphQLError = /*#__PURE__*/function (_Error) {
   /**
    * Extension fields to add to the formatted error.
    */
-  function GraphQLError(message, nodes, source, positions, path, originalError, extensions) {
+  constructor(message, nodes, source, positions, path, originalError, extensions) {
     var _locations2, _source2, _positions2, _extensions2;
 
-    var _this;
+    super(message); // Compute list of blame nodes.
 
-    _classCallCheck(this, GraphQLError);
-
-    _this = _super.call(this, message); // Compute list of blame nodes.
-
-    var _nodes = Array.isArray(nodes) ? nodes.length !== 0 ? nodes : undefined : nodes ? [nodes] : undefined; // Compute locations in the source for the given nodes/positions.
+    const _nodes = Array.isArray(nodes) ? nodes.length !== 0 ? nodes : undefined : nodes ? [nodes] : undefined; // Compute locations in the source for the given nodes/positions.
 
 
-    var _source = source;
+    let _source = source;
 
     if (!_source && _nodes) {
       var _nodes$0$loc;
@@ -112,10 +76,10 @@ export var GraphQLError = /*#__PURE__*/function (_Error) {
       _source = (_nodes$0$loc = _nodes[0].loc) === null || _nodes$0$loc === void 0 ? void 0 : _nodes$0$loc.source;
     }
 
-    var _positions = positions;
+    let _positions = positions;
 
     if (!_positions && _nodes) {
-      _positions = _nodes.reduce(function (list, node) {
+      _positions = _nodes.reduce((list, node) => {
         if (node.loc) {
           list.push(node.loc.start);
         }
@@ -128,14 +92,12 @@ export var GraphQLError = /*#__PURE__*/function (_Error) {
       _positions = undefined;
     }
 
-    var _locations;
+    let _locations;
 
     if (positions && source) {
-      _locations = positions.map(function (pos) {
-        return getLocation(source, pos);
-      });
+      _locations = positions.map(pos => getLocation(source, pos));
     } else if (_nodes) {
-      _locations = _nodes.reduce(function (list, node) {
+      _locations = _nodes.reduce((list, node) => {
         if (node.loc) {
           list.push(getLocation(node.loc.source, node.loc.start));
         }
@@ -144,17 +106,17 @@ export var GraphQLError = /*#__PURE__*/function (_Error) {
       }, []);
     }
 
-    var _extensions = extensions;
+    let _extensions = extensions;
 
     if (_extensions == null && originalError != null) {
-      var originalExtensions = originalError.extensions;
+      const originalExtensions = originalError.extensions;
 
       if (isObjectLike(originalExtensions)) {
         _extensions = originalExtensions;
       }
     }
 
-    Object.defineProperties(_assertThisInitialized(_this), {
+    Object.defineProperties(this, {
       name: {
         value: 'GraphQLError'
       },
@@ -208,63 +170,53 @@ export var GraphQLError = /*#__PURE__*/function (_Error) {
     }); // Include (non-enumerable) stack trace.
 
     if (originalError !== null && originalError !== void 0 && originalError.stack) {
-      Object.defineProperty(_assertThisInitialized(_this), 'stack', {
+      Object.defineProperty(this, 'stack', {
         value: originalError.stack,
         writable: true,
         configurable: true
       });
-      return _possibleConstructorReturn(_this);
+      return;
     } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
 
 
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(_assertThisInitialized(_this), GraphQLError);
+      Error.captureStackTrace(this, GraphQLError);
     } else {
-      Object.defineProperty(_assertThisInitialized(_this), 'stack', {
+      Object.defineProperty(this, 'stack', {
         value: Error().stack,
         writable: true,
         configurable: true
       });
     }
-
-    return _this;
   }
 
-  _createClass(GraphQLError, [{
-    key: "toString",
-    value: function toString() {
-      return printError(this);
-    } // FIXME: workaround to not break chai comparisons, should be remove in v16
-    // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  toString() {
+    return printError(this);
+  } // FIXME: workaround to not break chai comparisons, should be remove in v16
+  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
-  }, {
-    key: Symbol.toStringTag,
-    get: function get() {
-      return 'Object';
-    }
-  }]);
 
-  return GraphQLError;
-}( /*#__PURE__*/_wrapNativeSuper(Error));
+  get [Symbol.toStringTag]() {
+    return 'Object';
+  }
+
+}
 /**
  * Prints a GraphQLError to a string, representing useful location information
  * about the error's position in the source.
  */
 
 export function printError(error) {
-  var output = error.message;
+  let output = error.message;
 
   if (error.nodes) {
-    for (var _i2 = 0, _error$nodes2 = error.nodes; _i2 < _error$nodes2.length; _i2++) {
-      var node = _error$nodes2[_i2];
-
+    for (const node of error.nodes) {
       if (node.loc) {
         output += '\n\n' + printLocation(node.loc);
       }
     }
   } else if (error.source && error.locations) {
-    for (var _i4 = 0, _error$locations2 = error.locations; _i4 < _error$locations2.length; _i4++) {
-      var location = _error$locations2[_i4];
+    for (const location of error.locations) {
       output += '\n\n' + printSourceLocation(error.source, location);
     }
   }

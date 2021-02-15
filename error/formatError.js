@@ -15,19 +15,19 @@ function formatError(error) {
   var _error$message;
 
   error || (0, _devAssert.devAssert)(0, 'Received null or undefined error.');
-  var message = (_error$message = error.message) !== null && _error$message !== void 0 ? _error$message : 'An unknown error occurred.';
-  var locations = error.locations;
-  var path = error.path;
-  var extensions = error.extensions;
+  const message = (_error$message = error.message) !== null && _error$message !== void 0 ? _error$message : 'An unknown error occurred.';
+  const locations = error.locations;
+  const path = error.path;
+  const extensions = error.extensions;
   return extensions ? {
-    message: message,
-    locations: locations,
-    path: path,
-    extensions: extensions
+    message,
+    locations,
+    path,
+    extensions
   } : {
-    message: message,
-    locations: locations,
-    path: path
+    message,
+    locations,
+    path
   };
 }
 /**

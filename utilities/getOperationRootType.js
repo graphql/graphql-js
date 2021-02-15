@@ -12,7 +12,7 @@ var _GraphQLError = require("../error/GraphQLError.js");
  */
 function getOperationRootType(schema, operation) {
   if (operation.operation === 'query') {
-    var queryType = schema.getQueryType();
+    const queryType = schema.getQueryType();
 
     if (!queryType) {
       throw new _GraphQLError.GraphQLError('Schema does not define the required query root type.', operation);
@@ -22,7 +22,7 @@ function getOperationRootType(schema, operation) {
   }
 
   if (operation.operation === 'mutation') {
-    var mutationType = schema.getMutationType();
+    const mutationType = schema.getMutationType();
 
     if (!mutationType) {
       throw new _GraphQLError.GraphQLError('Schema is not configured for mutations.', operation);
@@ -32,7 +32,7 @@ function getOperationRootType(schema, operation) {
   }
 
   if (operation.operation === 'subscription') {
-    var subscriptionType = schema.getSubscriptionType();
+    const subscriptionType = schema.getSubscriptionType();
 
     if (!subscriptionType) {
       throw new _GraphQLError.GraphQLError('Schema is not configured for subscriptions.', operation);

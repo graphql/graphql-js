@@ -12,7 +12,7 @@ var _inspect = require("../jsutils/inspect.js");
 
 var _ast = require("./ast.js");
 
-var QueryDocumentKeys = {
+const QueryDocumentKeys = {
   Name: [],
   Document: ['definitions'],
   OperationDefinition: ['name', 'variableDefinitions', 'directives', 'selectionSet'],
@@ -60,7 +60,7 @@ var QueryDocumentKeys = {
   InputObjectTypeExtension: ['name', 'directives', 'fields']
 };
 exports.QueryDocumentKeys = QueryDocumentKeys;
-var BREAK = Object.freeze({});
+const BREAK = Object.freeze({});
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the
@@ -150,27 +150,25 @@ var BREAK = Object.freeze({});
 
 exports.BREAK = BREAK;
 
-function visit(root, visitor) {
-  var visitorKeys = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : QueryDocumentKeys;
-
+function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
   /* eslint-disable no-undef-init */
-  var stack = undefined;
-  var inArray = Array.isArray(root);
-  var keys = [root];
-  var index = -1;
-  var edits = [];
-  var node = undefined;
-  var key = undefined;
-  var parent = undefined;
-  var path = [];
-  var ancestors = [];
-  var newRoot = root;
+  let stack = undefined;
+  let inArray = Array.isArray(root);
+  let keys = [root];
+  let index = -1;
+  let edits = [];
+  let node = undefined;
+  let key = undefined;
+  let parent = undefined;
+  const path = [];
+  const ancestors = [];
+  let newRoot = root;
   /* eslint-enable no-undef-init */
 
   do {
     index++;
-    var isLeaving = index === keys.length;
-    var isEdited = isLeaving && edits.length !== 0;
+    const isLeaving = index === keys.length;
+    const isEdited = isLeaving && edits.length !== 0;
 
     if (isLeaving) {
       key = ancestors.length === 0 ? undefined : path[path.length - 1];
@@ -181,21 +179,20 @@ function visit(root, visitor) {
         if (inArray) {
           node = node.slice();
         } else {
-          var clone = {};
+          const clone = {};
 
-          for (var _i2 = 0, _Object$keys2 = Object.keys(node); _i2 < _Object$keys2.length; _i2++) {
-            var k = _Object$keys2[_i2];
+          for (const k of Object.keys(node)) {
             clone[k] = node[k];
           }
 
           node = clone;
         }
 
-        var editOffset = 0;
+        let editOffset = 0;
 
-        for (var ii = 0; ii < edits.length; ii++) {
-          var editKey = edits[ii][0];
-          var editValue = edits[ii][1];
+        for (let ii = 0; ii < edits.length; ii++) {
+          let editKey = edits[ii][0];
+          const editValue = edits[ii][1];
 
           if (inArray) {
             editKey -= editOffset;
@@ -228,14 +225,14 @@ function visit(root, visitor) {
       }
     }
 
-    var result = void 0;
+    let result;
 
     if (!Array.isArray(node)) {
       if (!(0, _ast.isNode)(node)) {
-        throw new Error("Invalid AST Node: ".concat((0, _inspect.inspect)(node), "."));
+        throw new Error(`Invalid AST Node: ${(0, _inspect.inspect)(node)}.`);
       }
 
-      var visitFn = getVisitFn(visitor, node.kind, isLeaving);
+      const visitFn = getVisitFn(visitor, node.kind, isLeaving);
 
       if (visitFn) {
         result = visitFn.call(visitor, node, key, parent, path, ancestors);
@@ -274,10 +271,10 @@ function visit(root, visitor) {
       var _visitorKeys$node$kin;
 
       stack = {
-        inArray: inArray,
-        index: index,
-        keys: keys,
-        edits: edits,
+        inArray,
+        index,
+        keys,
+        edits,
         prev: stack
       };
       inArray = Array.isArray(node);
@@ -308,17 +305,17 @@ function visit(root, visitor) {
 
 
 function visitInParallel(visitors) {
-  var skipping = new Array(visitors.length);
+  const skipping = new Array(visitors.length);
   return {
-    enter: function enter(node) {
-      for (var i = 0; i < visitors.length; i++) {
+    enter(node) {
+      for (let i = 0; i < visitors.length; i++) {
         if (skipping[i] == null) {
-          var fn = getVisitFn(visitors[i], node.kind,
+          const fn = getVisitFn(visitors[i], node.kind,
           /* isLeaving */
           false);
 
           if (fn) {
-            var result = fn.apply(visitors[i], arguments);
+            const result = fn.apply(visitors[i], arguments);
 
             if (result === false) {
               skipping[i] = node;
@@ -331,15 +328,16 @@ function visitInParallel(visitors) {
         }
       }
     },
-    leave: function leave(node) {
-      for (var i = 0; i < visitors.length; i++) {
+
+    leave(node) {
+      for (let i = 0; i < visitors.length; i++) {
         if (skipping[i] == null) {
-          var fn = getVisitFn(visitors[i], node.kind,
+          const fn = getVisitFn(visitors[i], node.kind,
           /* isLeaving */
           true);
 
           if (fn) {
-            var result = fn.apply(visitors[i], arguments);
+            const result = fn.apply(visitors[i], arguments);
 
             if (result === BREAK) {
               skipping[i] = BREAK;
@@ -352,6 +350,7 @@ function visitInParallel(visitors) {
         }
       }
     }
+
   };
 }
 /**
@@ -361,7 +360,7 @@ function visitInParallel(visitors) {
 
 
 function getVisitFn(visitor, kind, isLeaving) {
-  var kindVisitor = visitor[kind];
+  const kindVisitor = visitor[kind];
 
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {
@@ -369,14 +368,14 @@ function getVisitFn(visitor, kind, isLeaving) {
       return kindVisitor;
     }
 
-    var kindSpecificVisitor = isLeaving ? kindVisitor.leave : kindVisitor.enter;
+    const kindSpecificVisitor = isLeaving ? kindVisitor.leave : kindVisitor.enter;
 
     if (typeof kindSpecificVisitor === 'function') {
       // { Kind: { enter() {}, leave() {} } }
       return kindSpecificVisitor;
     }
   } else {
-    var specificVisitor = isLeaving ? visitor.leave : visitor.enter;
+    const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
 
     if (specificVisitor) {
       if (typeof specificVisitor === 'function') {
@@ -384,7 +383,7 @@ function getVisitFn(visitor, kind, isLeaving) {
         return specificVisitor;
       }
 
-      var specificKindVisitor = specificVisitor[kind];
+      const specificKindVisitor = specificVisitor[kind];
 
       if (typeof specificKindVisitor === 'function') {
         // { enter: { Kind() {} }, leave: { Kind() {} } }

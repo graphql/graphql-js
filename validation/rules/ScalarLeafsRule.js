@@ -19,25 +19,24 @@ var _definition = require("../../type/definition.js");
  */
 function ScalarLeafsRule(context) {
   return {
-    Field: function Field(node) {
-      var type = context.getType();
-      var selectionSet = node.selectionSet;
+    Field(node) {
+      const type = context.getType();
+      const selectionSet = node.selectionSet;
 
       if (type) {
         if ((0, _definition.isLeafType)((0, _definition.getNamedType)(type))) {
           if (selectionSet) {
-            var fieldName = node.name.value;
-            var typeStr = (0, _inspect.inspect)(type);
-            context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(fieldName, "\" must not have a selection since type \"").concat(typeStr, "\" has no subfields."), selectionSet));
+            const fieldName = node.name.value;
+            const typeStr = (0, _inspect.inspect)(type);
+            context.reportError(new _GraphQLError.GraphQLError(`Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`, selectionSet));
           }
         } else if (!selectionSet) {
-          var _fieldName = node.name.value;
-
-          var _typeStr = (0, _inspect.inspect)(type);
-
-          context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(_fieldName, "\" of type \"").concat(_typeStr, "\" must have a selection of subfields. Did you mean \"").concat(_fieldName, " { ... }\"?"), node));
+          const fieldName = node.name.value;
+          const typeStr = (0, _inspect.inspect)(type);
+          context.reportError(new _GraphQLError.GraphQLError(`Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`, node));
         }
       }
     }
+
   };
 }

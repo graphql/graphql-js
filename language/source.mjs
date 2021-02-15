@@ -1,7 +1,3 @@
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
 import { inspect } from "../jsutils/inspect.mjs";
 import { devAssert } from "../jsutils/devAssert.mjs";
 import instanceOf from "../jsutils/instanceOf.mjs";
@@ -13,14 +9,12 @@ import instanceOf from "../jsutils/instanceOf.mjs";
  * be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
-export var Source = /*#__PURE__*/function () {
-  function Source(body) {
-    var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'GraphQL request';
-    var locationOffset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {
-      line: 1,
-      column: 1
-    };
-    typeof body === 'string' || devAssert(0, "Body must be a string. Received: ".concat(inspect(body), "."));
+export class Source {
+  constructor(body, name = 'GraphQL request', locationOffset = {
+    line: 1,
+    column: 1
+  }) {
+    typeof body === 'string' || devAssert(0, `Body must be a string. Received: ${inspect(body)}.`);
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
@@ -29,15 +23,11 @@ export var Source = /*#__PURE__*/function () {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  _createClass(Source, [{
-    key: Symbol.toStringTag,
-    get: function get() {
-      return 'Source';
-    }
-  }]);
+  get [Symbol.toStringTag]() {
+    return 'Source';
+  }
 
-  return Source;
-}();
+}
 /**
  * Test if the given value is a Source object.
  *

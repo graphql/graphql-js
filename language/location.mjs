@@ -7,10 +7,10 @@
  * line and column as a SourceLocation.
  */
 export function getLocation(source, position) {
-  var lineRegexp = /\r\n|[\n\r]/g;
-  var line = 1;
-  var column = position + 1;
-  var match;
+  const lineRegexp = /\r\n|[\n\r]/g;
+  let line = 1;
+  let column = position + 1;
+  let match;
 
   while ((match = lineRegexp.exec(source.body)) && match.index < position) {
     line += 1;
@@ -18,7 +18,7 @@ export function getLocation(source, position) {
   }
 
   return {
-    line: line,
-    column: column
+    line,
+    column
   };
 }

@@ -10,7 +10,7 @@ exports.Token = exports.Location = void 0;
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
  */
-var Location = /*#__PURE__*/function () {
+class Location {
   /**
    * The character offset at which this Node begins.
    */
@@ -30,7 +30,7 @@ var Location = /*#__PURE__*/function () {
   /**
    * The Source document the AST represents.
    */
-  function Location(startToken, endToken, source) {
+  constructor(startToken, endToken, source) {
     this.start = startToken.start;
     this.end = endToken.end;
     this.startToken = startToken;
@@ -38,17 +38,14 @@ var Location = /*#__PURE__*/function () {
     this.source = source;
   }
 
-  var _proto = Location.prototype;
-
-  _proto.toJSON = function toJSON() {
+  toJSON() {
     return {
       start: this.start,
       end: this.end
     };
-  };
+  }
 
-  return Location;
-}();
+}
 /**
  * Represents a range of characters represented by a lexical token
  * within a Source.
@@ -57,7 +54,7 @@ var Location = /*#__PURE__*/function () {
 
 exports.Location = Location;
 
-var Token = /*#__PURE__*/function () {
+class Token {
   /**
    * The kind of Token.
    */
@@ -87,7 +84,7 @@ var Token = /*#__PURE__*/function () {
    * including ignored tokens. <SOF> is always the first node and <EOF>
    * the last.
    */
-  function Token(kind, start, end, line, column, prev, value) {
+  constructor(kind, start, end, line, column, prev, value) {
     this.kind = kind;
     this.start = start;
     this.end = end;
@@ -98,19 +95,16 @@ var Token = /*#__PURE__*/function () {
     this.next = null;
   }
 
-  var _proto2 = Token.prototype;
-
-  _proto2.toJSON = function toJSON() {
+  toJSON() {
     return {
       kind: this.kind,
       value: this.value,
       line: this.line,
       column: this.column
     };
-  };
+  }
 
-  return Token;
-}();
+}
 /**
  * @internal
  */

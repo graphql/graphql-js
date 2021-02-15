@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.grammar = void 0;
-var grammar = {
+const grammar = {
   Name: {
     token: 'Name'
   },

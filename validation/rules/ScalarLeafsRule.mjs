@@ -10,25 +10,24 @@ import { getNamedType, isLeafType } from "../../type/definition.mjs";
  */
 export function ScalarLeafsRule(context) {
   return {
-    Field: function Field(node) {
-      var type = context.getType();
-      var selectionSet = node.selectionSet;
+    Field(node) {
+      const type = context.getType();
+      const selectionSet = node.selectionSet;
 
       if (type) {
         if (isLeafType(getNamedType(type))) {
           if (selectionSet) {
-            var fieldName = node.name.value;
-            var typeStr = inspect(type);
-            context.reportError(new GraphQLError("Field \"".concat(fieldName, "\" must not have a selection since type \"").concat(typeStr, "\" has no subfields."), selectionSet));
+            const fieldName = node.name.value;
+            const typeStr = inspect(type);
+            context.reportError(new GraphQLError(`Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`, selectionSet));
           }
         } else if (!selectionSet) {
-          var _fieldName = node.name.value;
-
-          var _typeStr = inspect(type);
-
-          context.reportError(new GraphQLError("Field \"".concat(_fieldName, "\" of type \"").concat(_typeStr, "\" must have a selection of subfields. Did you mean \"").concat(_fieldName, " { ... }\"?"), node));
+          const fieldName = node.name.value;
+          const typeStr = inspect(type);
+          context.reportError(new GraphQLError(`Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`, node));
         }
       }
     }
+
   };
 }

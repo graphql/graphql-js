@@ -66,22 +66,22 @@ var _blockString = require("../language/blockString.js");
  * """Type description""" type Foo{"""Field description""" bar:String}
  */
 function stripIgnoredCharacters(source) {
-  var sourceObj = (0, _source.isSource)(source) ? source : new _source.Source(source);
-  var body = sourceObj.body;
-  var lexer = new _lexer.Lexer(sourceObj);
-  var strippedBody = '';
-  var wasLastAddedTokenNonPunctuator = false;
+  const sourceObj = (0, _source.isSource)(source) ? source : new _source.Source(source);
+  const body = sourceObj.body;
+  const lexer = new _lexer.Lexer(sourceObj);
+  let strippedBody = '';
+  let wasLastAddedTokenNonPunctuator = false;
 
   while (lexer.advance().kind !== _tokenKind.TokenKind.EOF) {
-    var currentToken = lexer.token;
-    var tokenKind = currentToken.kind;
+    const currentToken = lexer.token;
+    const tokenKind = currentToken.kind;
     /**
      * Every two non-punctuator tokens should have space between them.
      * Also prevent case of non-punctuator token following by spread resulting
      * in invalid token (e.g. `1...` is invalid Float token).
      */
 
-    var isNonPunctuator = !(0, _lexer.isPunctuatorTokenKind)(currentToken.kind);
+    const isNonPunctuator = !(0, _lexer.isPunctuatorTokenKind)(currentToken.kind);
 
     if (wasLastAddedTokenNonPunctuator) {
       if (isNonPunctuator || currentToken.kind === _tokenKind.TokenKind.SPREAD) {
@@ -89,7 +89,7 @@ function stripIgnoredCharacters(source) {
       }
     }
 
-    var tokenBody = body.slice(currentToken.start, currentToken.end);
+    const tokenBody = body.slice(currentToken.start, currentToken.end);
 
     if (tokenKind === _tokenKind.TokenKind.BLOCK_STRING) {
       strippedBody += dedentBlockString(tokenBody);
@@ -105,15 +105,15 @@ function stripIgnoredCharacters(source) {
 
 function dedentBlockString(blockStr) {
   // skip leading and trailing triple quotations
-  var rawStr = blockStr.slice(3, -3);
-  var body = (0, _blockString.dedentBlockStringValue)(rawStr);
+  const rawStr = blockStr.slice(3, -3);
+  let body = (0, _blockString.dedentBlockStringValue)(rawStr);
 
   if ((0, _blockString.getBlockStringIndentation)(body) > 0) {
     body = '\n' + body;
   }
 
-  var lastChar = body[body.length - 1];
-  var hasTrailingQuote = lastChar === '"' && body.slice(-4) !== '\\"""';
+  const lastChar = body[body.length - 1];
+  const hasTrailingQuote = lastChar === '"' && body.slice(-4) !== '\\"""';
 
   if (hasTrailingQuote || lastChar === '\\') {
     body += '\n';

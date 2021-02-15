@@ -23,55 +23,59 @@ var _definition = require("../../../type/definition.js");
  */
 function NoDeprecatedCustomRule(context) {
   return {
-    Field: function Field(node) {
-      var fieldDef = context.getFieldDef();
-      var deprecationReason = fieldDef === null || fieldDef === void 0 ? void 0 : fieldDef.deprecationReason;
+    Field(node) {
+      const fieldDef = context.getFieldDef();
+      const deprecationReason = fieldDef === null || fieldDef === void 0 ? void 0 : fieldDef.deprecationReason;
 
       if (fieldDef && deprecationReason != null) {
-        var parentType = context.getParentType();
+        const parentType = context.getParentType();
         parentType != null || (0, _invariant.invariant)(0);
-        context.reportError(new _GraphQLError.GraphQLError("The field ".concat(parentType.name, ".").concat(fieldDef.name, " is deprecated. ").concat(deprecationReason), node));
+        context.reportError(new _GraphQLError.GraphQLError(`The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`, node));
       }
     },
-    Argument: function Argument(node) {
-      var argDef = context.getArgument();
-      var deprecationReason = argDef === null || argDef === void 0 ? void 0 : argDef.deprecationReason;
+
+    Argument(node) {
+      const argDef = context.getArgument();
+      const deprecationReason = argDef === null || argDef === void 0 ? void 0 : argDef.deprecationReason;
 
       if (argDef && deprecationReason != null) {
-        var directiveDef = context.getDirective();
+        const directiveDef = context.getDirective();
 
         if (directiveDef != null) {
-          context.reportError(new _GraphQLError.GraphQLError("Directive \"@".concat(directiveDef.name, "\" argument \"").concat(argDef.name, "\" is deprecated. ").concat(deprecationReason), node));
+          context.reportError(new _GraphQLError.GraphQLError(`Directive "@${directiveDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`, node));
         } else {
-          var parentType = context.getParentType();
-          var fieldDef = context.getFieldDef();
+          const parentType = context.getParentType();
+          const fieldDef = context.getFieldDef();
           parentType != null && fieldDef != null || (0, _invariant.invariant)(0);
-          context.reportError(new _GraphQLError.GraphQLError("Field \"".concat(parentType.name, ".").concat(fieldDef.name, "\" argument \"").concat(argDef.name, "\" is deprecated. ").concat(deprecationReason), node));
+          context.reportError(new _GraphQLError.GraphQLError(`Field "${parentType.name}.${fieldDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`, node));
         }
       }
     },
-    ObjectField: function ObjectField(node) {
-      var inputObjectDef = (0, _definition.getNamedType)(context.getParentInputType());
+
+    ObjectField(node) {
+      const inputObjectDef = (0, _definition.getNamedType)(context.getParentInputType());
 
       if ((0, _definition.isInputObjectType)(inputObjectDef)) {
-        var inputFieldDef = inputObjectDef.getFields()[node.name.value]; // flowlint-next-line unnecessary-optional-chain:off
+        const inputFieldDef = inputObjectDef.getFields()[node.name.value]; // flowlint-next-line unnecessary-optional-chain:off
 
-        var deprecationReason = inputFieldDef === null || inputFieldDef === void 0 ? void 0 : inputFieldDef.deprecationReason;
+        const deprecationReason = inputFieldDef === null || inputFieldDef === void 0 ? void 0 : inputFieldDef.deprecationReason;
 
         if (deprecationReason != null) {
-          context.reportError(new _GraphQLError.GraphQLError("The input field ".concat(inputObjectDef.name, ".").concat(inputFieldDef.name, " is deprecated. ").concat(deprecationReason), node));
+          context.reportError(new _GraphQLError.GraphQLError(`The input field ${inputObjectDef.name}.${inputFieldDef.name} is deprecated. ${deprecationReason}`, node));
         }
       }
     },
-    EnumValue: function EnumValue(node) {
-      var enumValueDef = context.getEnumValue();
-      var deprecationReason = enumValueDef === null || enumValueDef === void 0 ? void 0 : enumValueDef.deprecationReason;
+
+    EnumValue(node) {
+      const enumValueDef = context.getEnumValue();
+      const deprecationReason = enumValueDef === null || enumValueDef === void 0 ? void 0 : enumValueDef.deprecationReason;
 
       if (enumValueDef && deprecationReason != null) {
-        var enumTypeDef = (0, _definition.getNamedType)(context.getInputType());
+        const enumTypeDef = (0, _definition.getNamedType)(context.getInputType());
         enumTypeDef != null || (0, _invariant.invariant)(0);
-        context.reportError(new _GraphQLError.GraphQLError("The enum value \"".concat(enumTypeDef.name, ".").concat(enumValueDef.name, "\" is deprecated. ").concat(deprecationReason), node));
+        context.reportError(new _GraphQLError.GraphQLError(`The enum value "${enumTypeDef.name}.${enumValueDef.name}" is deprecated. ${deprecationReason}`, node));
       }
     }
+
   };
 }

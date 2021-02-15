@@ -14,26 +14,30 @@ var _GraphQLError = require("../../error/GraphQLError.js");
  * uniquely named.
  */
 function UniqueInputFieldNamesRule(context) {
-  var knownNameStack = [];
-  var knownNames = Object.create(null);
+  const knownNameStack = [];
+  let knownNames = Object.create(null);
   return {
     ObjectValue: {
-      enter: function enter() {
+      enter() {
         knownNameStack.push(knownNames);
         knownNames = Object.create(null);
       },
-      leave: function leave() {
+
+      leave() {
         knownNames = knownNameStack.pop();
       }
+
     },
-    ObjectField: function ObjectField(node) {
-      var fieldName = node.name.value;
+
+    ObjectField(node) {
+      const fieldName = node.name.value;
 
       if (knownNames[fieldName]) {
-        context.reportError(new _GraphQLError.GraphQLError("There can be only one input field named \"".concat(fieldName, "\"."), [knownNames[fieldName], node.name]));
+        context.reportError(new _GraphQLError.GraphQLError(`There can be only one input field named "${fieldName}".`, [knownNames[fieldName], node.name]));
       } else {
         knownNames[fieldName] = node.name;
       }
     }
+
   };
 }

@@ -11,13 +11,7 @@ var _source = require("../source.js");
 
 var _grammar = require("./grammar.js");
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var TokenKind = {
+const TokenKind = {
   NAME: 'Name',
   INT: 'Int',
   FLOAT: 'Float',
@@ -29,7 +23,7 @@ var TokenKind = {
   INVALID: 'Invalid'
 };
 exports.TokenKind = TokenKind;
-var RuleKind = {
+const RuleKind = {
   TOKEN_CONSTRAINT: 'TokenConstraint',
   OF_TYPE_CONSTRAINT: 'OfTypeConstraint',
   LIST_OF_TYPE_CONSTRAINT: 'ListOfTypeConstraint',
@@ -41,8 +35,8 @@ var RuleKind = {
 };
 exports.RuleKind = RuleKind;
 
-var OnlineParser = /*#__PURE__*/function () {
-  function OnlineParser(source, state, config) {
+class OnlineParser {
+  constructor(source, state, config) {
     var _config$tabSize;
 
     this.state = state || OnlineParser.startState();
@@ -52,63 +46,67 @@ var OnlineParser = /*#__PURE__*/function () {
     this._lexer = new _lexer.Lexer(new _source.Source(source));
   }
 
-  OnlineParser.startState = function startState() {
+  static startState() {
     return {
       rules: [// $FlowFixMe[cannot-spread-interface]
-      _objectSpread(_objectSpread({
+      {
         name: 'Document',
         state: 'Document',
-        kind: 'ListOfTypeConstraint'
-      }, _grammar.grammar.Document), {}, {
+        kind: 'ListOfTypeConstraint',
+        ..._grammar.grammar.Document,
         expanded: false,
         depth: 1,
         step: 1
-      })],
+      }],
       name: null,
       type: null,
       levels: [],
       indentLevel: 0,
-      kind: function kind() {
+
+      kind() {
         var _this$rules;
 
         return ((_this$rules = this.rules[this.rules.length - 1]) === null || _this$rules === void 0 ? void 0 : _this$rules.state) || '';
       },
-      step: function step() {
+
+      step() {
         var _this$rules2;
 
         return ((_this$rules2 = this.rules[this.rules.length - 1]) === null || _this$rules2 === void 0 ? void 0 : _this$rules2.step) || 0;
       }
-    };
-  };
 
-  OnlineParser.copyState = function copyState(state) {
+    };
+  }
+
+  static copyState(state) {
     return {
       name: state.name,
       type: state.type,
       rules: JSON.parse(JSON.stringify(state.rules)),
-      levels: [].concat(state.levels),
+      levels: [...state.levels],
       indentLevel: state.indentLevel,
-      kind: function kind() {
+
+      kind() {
         var _this$rules3;
 
         return ((_this$rules3 = this.rules[this.rules.length - 1]) === null || _this$rules3 === void 0 ? void 0 : _this$rules3.state) || '';
       },
-      step: function step() {
+
+      step() {
         var _this$rules4;
 
         return ((_this$rules4 = this.rules[this.rules.length - 1]) === null || _this$rules4 === void 0 ? void 0 : _this$rules4.step) || 0;
       }
+
     };
-  };
+  }
 
-  var _proto = OnlineParser.prototype;
-
-  _proto.sol = function sol() {
+  sol() {
     return this._lexer.source.locationOffset.line === 1 && this._lexer.source.locationOffset.column === 1;
-  };
+  }
 
-  _proto.parseToken = function parseToken() {
-    var rule = this._getNextRule();
+  parseToken() {
+    const rule = this._getNextRule();
 
     if (this.sol()) {
       this.state.indentLevel = Math.floor(this.indentation() / this._config.tabSize);
@@ -121,7 +119,7 @@ var OnlineParser = /*#__PURE__*/function () {
       };
     }
 
-    var token;
+    let token;
 
     if (this._lookAhead().kind === '<EOF>') {
       return {
@@ -171,16 +169,16 @@ var OnlineParser = /*#__PURE__*/function () {
     }
 
     return token;
-  };
+  }
 
-  _proto.indentation = function indentation() {
-    var match = this._lexer.source.body.match(/\s*/);
+  indentation() {
+    const match = this._lexer.source.body.match(/\s*/);
 
-    var indent = 0;
+    let indent = 0;
 
     if (match && match.length === 0) {
-      var whiteSpaces = match[0];
-      var pos = 0;
+      const whiteSpaces = match[0];
+      let pos = 0;
 
       while (whiteSpaces.length > pos) {
         if (whiteSpaces.charCodeAt(pos) === 9) {
@@ -194,12 +192,12 @@ var OnlineParser = /*#__PURE__*/function () {
     }
 
     return indent;
-  };
+  }
 
-  _proto._parseTokenConstraint = function _parseTokenConstraint(rule) {
+  _parseTokenConstraint(rule) {
     rule.expanded = true;
 
-    var token = this._lookAhead();
+    const token = this._lookAhead();
 
     if (!this._matchToken(token, rule)) {
       return {
@@ -212,22 +210,22 @@ var OnlineParser = /*#__PURE__*/function () {
 
     this._advanceToken();
 
-    var parserToken = this._transformLexerToken(token, rule);
+    const parserToken = this._transformLexerToken(token, rule);
 
     this._popMatchedRule(parserToken);
 
     return parserToken;
-  };
+  }
 
-  _proto._parseListOfTypeConstraint = function _parseListOfTypeConstraint(rule) {
+  _parseListOfTypeConstraint(rule) {
     this._pushRule(_grammar.grammar[rule.listOfType], rule.depth + 1, rule.listOfType, 1, rule.state);
 
     rule.expanded = true;
-    var token = this.parseToken();
+    const token = this.parseToken();
     return token;
-  };
+  }
 
-  _proto._parseOfTypeConstraint = function _parseOfTypeConstraint(rule) {
+  _parseOfTypeConstraint(rule) {
     if (rule.expanded) {
       this._popMatchedRule();
 
@@ -237,11 +235,11 @@ var OnlineParser = /*#__PURE__*/function () {
     this._pushRule(rule.ofType, rule.depth + 1, rule.tokenName, 1, rule.state);
 
     rule.expanded = true;
-    var token = this.parseToken();
+    const token = this.parseToken();
     return token;
-  };
+  }
 
-  _proto._parsePeekConstraint = function _parsePeekConstraint(rule) {
+  _parsePeekConstraint(rule) {
     if (rule.expanded) {
       this._popMatchedRule();
 
@@ -250,14 +248,16 @@ var OnlineParser = /*#__PURE__*/function () {
 
     while (!rule.matched && rule.index < rule.peek.length - 1) {
       rule.index++;
-      var constraint = rule.peek[rule.index];
-      var ifCondition = constraint.ifCondition;
+      const constraint = rule.peek[rule.index];
+      let {
+        ifCondition
+      } = constraint;
 
       if (typeof ifCondition === 'string') {
         ifCondition = _grammar.grammar[ifCondition];
       }
 
-      var token = this._lookAhead();
+      let token = this._lookAhead();
 
       if (ifCondition && this._matchToken(token, ifCondition)) {
         rule.matched = true;
@@ -275,24 +275,24 @@ var OnlineParser = /*#__PURE__*/function () {
       value: '',
       ruleName: rule.name
     };
-  };
+  }
 
-  _proto._parseConstraintsSetRule = function _parseConstraintsSetRule(rule) {
+  _parseConstraintsSetRule(rule) {
     if (rule.expanded) {
       this._popMatchedRule();
 
       return this.parseToken();
     }
 
-    for (var index = rule.constraints.length - 1; index >= 0; index--) {
+    for (let index = rule.constraints.length - 1; index >= 0; index--) {
       this._pushRule(rule.constraints[index], rule.depth + 1, '', index, rule.state);
     }
 
     rule.expanded = true;
     return this.parseToken();
-  };
+  }
 
-  _proto._matchToken = function _matchToken(token, rule) {
+  _matchToken(token, rule) {
     if (typeof token.value === 'string') {
       if (typeof rule.ofValue === 'string' && token.value !== rule.ofValue || Array.isArray(rule.oneOf) && !rule.oneOf.includes(token.value) || typeof rule.ofValue !== 'string' && !Array.isArray(rule.oneOf) && token.kind !== rule.token) {
         return false;
@@ -306,16 +306,12 @@ var OnlineParser = /*#__PURE__*/function () {
     }
 
     return this._butNot(token, rule);
-  };
+  }
 
-  _proto._butNot = function _butNot(token, rule) {
-    var _this = this;
-
+  _butNot(token, rule) {
     if (rule.butNot) {
       if (Array.isArray(rule.butNot)) {
-        if (rule.butNot.reduce(function (matched, constraint) {
-          return matched || _this._matchToken(token, constraint);
-        }, false)) {
+        if (rule.butNot.reduce((matched, constraint) => matched || this._matchToken(token, constraint), false)) {
           return false;
         }
 
@@ -326,32 +322,32 @@ var OnlineParser = /*#__PURE__*/function () {
     }
 
     return true;
-  };
+  }
 
-  _proto._transformLexerToken = function _transformLexerToken(lexerToken, rule) {
-    var token;
-    var ruleName = rule.name || '';
-    var tokenName = rule.tokenName || '';
+  _transformLexerToken(lexerToken, rule) {
+    let token;
+    const ruleName = rule.name || '';
+    const tokenName = rule.tokenName || '';
 
     if (lexerToken.kind === '<EOF>' || lexerToken.value !== undefined) {
       token = {
         kind: lexerToken.kind,
         value: lexerToken.value || '',
-        tokenName: tokenName,
-        ruleName: ruleName
+        tokenName,
+        ruleName
       };
 
       if (token.kind === TokenKind.STRING) {
-        token.value = "\"".concat(token.value, "\"");
+        token.value = `"${token.value}"`;
       } else if (token.kind === TokenKind.BLOCK_STRING) {
-        token.value = "\"\"\"".concat(token.value, "\"\"\"");
+        token.value = `"""${token.value}"""`;
       }
     } else {
       token = {
         kind: TokenKind.PUNCTUATION,
         value: lexerToken.kind,
-        tokenName: tokenName,
-        ruleName: ruleName
+        tokenName,
+        ruleName
       };
 
       if (/^[{([]/.test(token.value)) {
@@ -364,21 +360,21 @@ var OnlineParser = /*#__PURE__*/function () {
     }
 
     return token;
-  };
+  }
 
-  _proto._getNextRule = function _getNextRule() {
+  _getNextRule() {
     return this.state.rules[this.state.rules.length - 1] || null;
-  };
+  }
 
-  _proto._popMatchedRule = function _popMatchedRule(token) {
-    var rule = this.state.rules.pop();
+  _popMatchedRule(token) {
+    const rule = this.state.rules.pop();
 
     if (!rule) {
       return;
     }
 
     if (token && rule.kind === RuleKind.TOKEN_CONSTRAINT) {
-      var constraint = rule;
+      const constraint = rule;
 
       if (typeof constraint.definitionName === 'string') {
         this.state.name = token.value || null;
@@ -387,7 +383,7 @@ var OnlineParser = /*#__PURE__*/function () {
       }
     }
 
-    var nextRule = this._getNextRule();
+    const nextRule = this._getNextRule();
 
     if (!nextRule) {
       return;
@@ -401,32 +397,30 @@ var OnlineParser = /*#__PURE__*/function () {
       nextRule.expanded = false;
       nextRule.optional = true;
     }
-  };
+  }
 
-  _proto._rollbackRule = function _rollbackRule() {
-    var _this2 = this;
-
+  _rollbackRule() {
     if (!this.state.rules.length) {
       return;
     }
 
-    var popRule = function popRule() {
-      var lastPoppedRule = _this2.state.rules.pop();
+    const popRule = () => {
+      const lastPoppedRule = this.state.rules.pop();
 
       if (lastPoppedRule.eatNextOnFail === true) {
-        _this2.state.rules.pop();
+        this.state.rules.pop();
       }
     };
 
-    var poppedRule = this.state.rules.pop();
+    const poppedRule = this.state.rules.pop();
 
     if (!poppedRule) {
       return;
     }
 
-    var popped = 0;
+    let popped = 0;
 
-    var nextRule = this._getNextRule();
+    let nextRule = this._getNextRule();
 
     while (nextRule && (poppedRule.kind !== RuleKind.LIST_OF_TYPE_CONSTRAINT || nextRule.expanded) && nextRule.depth > poppedRule.depth - 1) {
       this.state.rules.pop();
@@ -446,14 +440,14 @@ var OnlineParser = /*#__PURE__*/function () {
         this._rollbackRule();
       }
     }
-  };
+  }
 
-  _proto._pushRule = function _pushRule(baseRule, depth, name, step, state) {
+  _pushRule(baseRule, depth, name, step, state) {
     var _this$_getNextRule, _this$_getNextRule2, _this$_getNextRule3, _this$_getNextRule4, _this$_getNextRule5, _this$_getNextRule6, _this$_getNextRule7, _this$_getNextRule8, _this$_getNextRule9, _this$_getNextRule10;
 
     this.state.name = null;
     this.state.type = null;
-    var rule = baseRule;
+    let rule = baseRule;
 
     switch (this._getRuleKind(rule)) {
       case RuleKind.RULE_NAME:
@@ -467,7 +461,7 @@ var OnlineParser = /*#__PURE__*/function () {
         rule = rule;
         this.state.rules.push({
           name: name || '',
-          depth: depth,
+          depth,
           expanded: false,
           constraints: rule,
           constraintsSet: true,
@@ -485,7 +479,7 @@ var OnlineParser = /*#__PURE__*/function () {
           optional: Boolean(rule.optional),
           butNot: rule.butNot,
           eatNextOnFail: Boolean(rule.eatNextOnFail),
-          depth: depth,
+          depth,
           expanded: false,
           kind: RuleKind.OF_TYPE_CONSTRAINT,
           state: (typeof rule.tokenName === 'string' ? rule.tokenName : undefined) || (typeof name === 'string' ? name : undefined) || (typeof state === 'string' ? state : undefined) || ((_this$_getNextRule3 = this._getNextRule()) === null || _this$_getNextRule3 === void 0 ? void 0 : _this$_getNextRule3.state) || '',
@@ -501,7 +495,7 @@ var OnlineParser = /*#__PURE__*/function () {
           butNot: rule.butNot,
           eatNextOnFail: Boolean(rule.eatNextOnFail),
           name: name || '',
-          depth: depth,
+          depth,
           expanded: false,
           kind: RuleKind.LIST_OF_TYPE_CONSTRAINT,
           state: (typeof name === 'string' ? name : undefined) || (typeof state === 'string' ? state : undefined) || ((_this$_getNextRule5 = this._getNextRule()) === null || _this$_getNextRule5 === void 0 ? void 0 : _this$_getNextRule5.state) || '',
@@ -521,7 +515,7 @@ var OnlineParser = /*#__PURE__*/function () {
           butNot: rule.butNot,
           eatNextOnFail: Boolean(rule.eatNextOnFail),
           name: name || '',
-          depth: depth,
+          depth,
           expanded: false,
           kind: RuleKind.TOKEN_CONSTRAINT,
           state: (typeof rule.tokenName === 'string' ? rule.tokenName : undefined) || (typeof state === 'string' ? state : undefined) || ((_this$_getNextRule7 = this._getNextRule()) === null || _this$_getNextRule7 === void 0 ? void 0 : _this$_getNextRule7.state) || '',
@@ -537,7 +531,7 @@ var OnlineParser = /*#__PURE__*/function () {
           butNot: rule.butNot,
           eatNextOnFail: Boolean(rule.eatNextOnFail),
           name: name || '',
-          depth: depth,
+          depth,
           index: -1,
           matched: false,
           expanded: false,
@@ -547,9 +541,9 @@ var OnlineParser = /*#__PURE__*/function () {
         });
         break;
     }
-  };
+  }
 
-  _proto._getRuleKind = function _getRuleKind(rule) {
+  _getRuleKind(rule) {
     if (Array.isArray(rule)) {
       return RuleKind.CONSTRAINTS_SET;
     }
@@ -579,13 +573,13 @@ var OnlineParser = /*#__PURE__*/function () {
     }
 
     return RuleKind.INVALID;
-  };
+  }
 
-  _proto._advanceToken = function _advanceToken() {
+  _advanceToken() {
     return this._lexer.advance();
-  };
+  }
 
-  _proto._lookAhead = function _lookAhead() {
+  _lookAhead() {
     try {
       return this._lexer.lookahead();
     } catch (err) {
@@ -594,9 +588,8 @@ var OnlineParser = /*#__PURE__*/function () {
         value: ''
       };
     }
-  };
+  }
 
-  return OnlineParser;
-}();
+}
 
 exports.OnlineParser = OnlineParser;

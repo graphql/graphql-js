@@ -10,8 +10,8 @@ import { typeFromAST } from "./typeFromAST.mjs";
  * AST during a recursive descent by calling `enter(node)` and `leave(node)`.
  */
 
-export var TypeInfo = /*#__PURE__*/function () {
-  function TypeInfo(schema, // NOTE: this experimental optional second parameter is only needed in order
+export class TypeInfo {
+  constructor(schema, // NOTE: this experimental optional second parameter is only needed in order
   // to support non-spec-compliant code bases. You should never need to use it.
   // It may disappear in the future.
   getFieldDefFn, // Initial type may be provided in rare cases to facilitate traversals
@@ -43,58 +43,56 @@ export var TypeInfo = /*#__PURE__*/function () {
     }
   }
 
-  var _proto = TypeInfo.prototype;
-
-  _proto.getType = function getType() {
+  getType() {
     if (this._typeStack.length > 0) {
       return this._typeStack[this._typeStack.length - 1];
     }
-  };
+  }
 
-  _proto.getParentType = function getParentType() {
+  getParentType() {
     if (this._parentTypeStack.length > 0) {
       return this._parentTypeStack[this._parentTypeStack.length - 1];
     }
-  };
+  }
 
-  _proto.getInputType = function getInputType() {
+  getInputType() {
     if (this._inputTypeStack.length > 0) {
       return this._inputTypeStack[this._inputTypeStack.length - 1];
     }
-  };
+  }
 
-  _proto.getParentInputType = function getParentInputType() {
+  getParentInputType() {
     if (this._inputTypeStack.length > 1) {
       return this._inputTypeStack[this._inputTypeStack.length - 2];
     }
-  };
+  }
 
-  _proto.getFieldDef = function getFieldDef() {
+  getFieldDef() {
     if (this._fieldDefStack.length > 0) {
       return this._fieldDefStack[this._fieldDefStack.length - 1];
     }
-  };
+  }
 
-  _proto.getDefaultValue = function getDefaultValue() {
+  getDefaultValue() {
     if (this._defaultValueStack.length > 0) {
       return this._defaultValueStack[this._defaultValueStack.length - 1];
     }
-  };
+  }
 
-  _proto.getDirective = function getDirective() {
+  getDirective() {
     return this._directive;
-  };
+  }
 
-  _proto.getArgument = function getArgument() {
+  getArgument() {
     return this._argument;
-  };
+  }
 
-  _proto.getEnumValue = function getEnumValue() {
+  getEnumValue() {
     return this._enumValue;
-  };
+  }
 
-  _proto.enter = function enter(node) {
-    var schema = this._schema; // Note: many of the types below are explicitly typed as "mixed" to drop
+  enter(node) {
+    const schema = this._schema; // Note: many of the types below are explicitly typed as "mixed" to drop
     // any assumptions of a valid schema to ensure runtime types are properly
     // checked before continuing since TypeInfo is used as part of validation
     // which occurs before guarantees of schema and document validity.
@@ -102,7 +100,7 @@ export var TypeInfo = /*#__PURE__*/function () {
     switch (node.kind) {
       case Kind.SELECTION_SET:
         {
-          var namedType = getNamedType(this.getType());
+          const namedType = getNamedType(this.getType());
 
           this._parentTypeStack.push(isCompositeType(namedType) ? namedType : undefined);
 
@@ -111,9 +109,9 @@ export var TypeInfo = /*#__PURE__*/function () {
 
       case Kind.FIELD:
         {
-          var parentType = this.getParentType();
-          var fieldDef;
-          var fieldType;
+          const parentType = this.getParentType();
+          let fieldDef;
+          let fieldType;
 
           if (parentType) {
             fieldDef = this._getFieldDef(schema, parentType, node);
@@ -136,7 +134,7 @@ export var TypeInfo = /*#__PURE__*/function () {
 
       case Kind.OPERATION_DEFINITION:
         {
-          var type;
+          let type;
 
           switch (node.operation) {
             case 'query':
@@ -160,8 +158,8 @@ export var TypeInfo = /*#__PURE__*/function () {
       case Kind.INLINE_FRAGMENT:
       case Kind.FRAGMENT_DEFINITION:
         {
-          var typeConditionAST = node.typeCondition;
-          var outputType = typeConditionAST ? typeFromAST(schema, typeConditionAST) : getNamedType(this.getType());
+          const typeConditionAST = node.typeCondition;
+          const outputType = typeConditionAST ? typeFromAST(schema, typeConditionAST) : getNamedType(this.getType());
 
           this._typeStack.push(isOutputType(outputType) ? outputType : undefined);
 
@@ -170,7 +168,7 @@ export var TypeInfo = /*#__PURE__*/function () {
 
       case Kind.VARIABLE_DEFINITION:
         {
-          var inputType = typeFromAST(schema, node.type);
+          const inputType = typeFromAST(schema, node.type);
 
           this._inputTypeStack.push(isInputType(inputType) ? inputType : undefined);
 
@@ -181,14 +179,12 @@ export var TypeInfo = /*#__PURE__*/function () {
         {
           var _this$getDirective;
 
-          var argDef;
-          var argType;
-          var fieldOrDirective = (_this$getDirective = this.getDirective()) !== null && _this$getDirective !== void 0 ? _this$getDirective : this.getFieldDef();
+          let argDef;
+          let argType;
+          const fieldOrDirective = (_this$getDirective = this.getDirective()) !== null && _this$getDirective !== void 0 ? _this$getDirective : this.getFieldDef();
 
           if (fieldOrDirective) {
-            argDef = fieldOrDirective.args.find(function (arg) {
-              return arg.name === node.name.value;
-            });
+            argDef = fieldOrDirective.args.find(arg => arg.name === node.name.value);
 
             if (argDef) {
               argType = argDef.type;
@@ -206,8 +202,8 @@ export var TypeInfo = /*#__PURE__*/function () {
 
       case Kind.LIST:
         {
-          var listType = getNullableType(this.getInputType());
-          var itemType = isListType(listType) ? listType.ofType : listType; // List positions never have a default value.
+          const listType = getNullableType(this.getInputType());
+          const itemType = isListType(listType) ? listType.ofType : listType; // List positions never have a default value.
 
           this._defaultValueStack.push(undefined);
 
@@ -218,9 +214,9 @@ export var TypeInfo = /*#__PURE__*/function () {
 
       case Kind.OBJECT_FIELD:
         {
-          var objectType = getNamedType(this.getInputType());
-          var inputFieldType;
-          var inputField;
+          const objectType = getNamedType(this.getInputType());
+          let inputFieldType;
+          let inputField;
 
           if (isInputObjectType(objectType)) {
             inputField = objectType.getFields()[node.name.value];
@@ -239,8 +235,8 @@ export var TypeInfo = /*#__PURE__*/function () {
 
       case Kind.ENUM:
         {
-          var enumType = getNamedType(this.getInputType());
-          var enumValue;
+          const enumType = getNamedType(this.getInputType());
+          let enumValue;
 
           if (isEnumType(enumType)) {
             enumValue = enumType.getValue(node.value);
@@ -250,9 +246,9 @@ export var TypeInfo = /*#__PURE__*/function () {
           break;
         }
     }
-  };
+  }
 
-  _proto.leave = function leave(node) {
+  leave(node) {
     switch (node.kind) {
       case Kind.SELECTION_SET:
         this._parentTypeStack.pop();
@@ -303,10 +299,9 @@ export var TypeInfo = /*#__PURE__*/function () {
         this._enumValue = null;
         break;
     }
-  };
+  }
 
-  return TypeInfo;
-}();
+}
 /**
  * Not exactly the same as the executor's definition of getFieldDef, in this
  * statically evaluated environment we do not always have an Object type,
@@ -314,7 +309,7 @@ export var TypeInfo = /*#__PURE__*/function () {
  */
 
 function getFieldDef(schema, parentType, fieldNode) {
-  var name = fieldNode.name.value;
+  const name = fieldNode.name.value;
 
   if (name === SchemaMetaFieldDef.name && schema.getQueryType() === parentType) {
     return SchemaMetaFieldDef;
@@ -340,14 +335,14 @@ function getFieldDef(schema, parentType, fieldNode) {
 
 export function visitWithTypeInfo(typeInfo, visitor) {
   return {
-    enter: function enter(node) {
+    enter(node) {
       typeInfo.enter(node);
-      var fn = getVisitFn(visitor, node.kind,
+      const fn = getVisitFn(visitor, node.kind,
       /* isLeaving */
       false);
 
       if (fn) {
-        var result = fn.apply(visitor, arguments);
+        const result = fn.apply(visitor, arguments);
 
         if (result !== undefined) {
           typeInfo.leave(node);
@@ -360,11 +355,12 @@ export function visitWithTypeInfo(typeInfo, visitor) {
         return result;
       }
     },
-    leave: function leave(node) {
-      var fn = getVisitFn(visitor, node.kind,
+
+    leave(node) {
+      const fn = getVisitFn(visitor, node.kind,
       /* isLeaving */
       true);
-      var result;
+      let result;
 
       if (fn) {
         result = fn.apply(visitor, arguments);
@@ -373,5 +369,6 @@ export function visitWithTypeInfo(typeInfo, visitor) {
       typeInfo.leave(node);
       return result;
     }
+
   };
 }

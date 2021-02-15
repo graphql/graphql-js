@@ -8,9 +8,5 @@ import { isPromise } from "./isPromise.mjs";
  */
 
 export function promiseReduce(values, callback, initialValue) {
-  return values.reduce(function (previous, value) {
-    return isPromise(previous) ? previous.then(function (resolved) {
-      return callback(resolved, value);
-    }) : callback(previous, value);
-  }, initialValue);
+  return values.reduce((previous, value) => isPromise(previous) ? previous.then(resolved => callback(resolved, value)) : callback(previous, value), initialValue);
 }

@@ -5,13 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 Object.defineProperty(exports, "subscribe", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _subscribe.subscribe;
   }
 });
 Object.defineProperty(exports, "createSourceEventStream", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _subscribe.createSourceEventStream;
   }
 });

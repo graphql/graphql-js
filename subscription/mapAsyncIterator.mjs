@@ -1,23 +1,19 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
 export function mapAsyncIterator(iterable, callback, rejectCallback) {
   // $FlowFixMe[prop-missing]
-  var iteratorMethod = iterable[Symbol.asyncIterator];
-  var iterator = iteratorMethod.call(iterable);
-  var $return;
-  var abruptClose;
+  const iteratorMethod = iterable[Symbol.asyncIterator];
+  const iterator = iteratorMethod.call(iterable);
+  let $return;
+  let abruptClose;
 
   if (typeof iterator.return === 'function') {
     $return = iterator.return;
 
-    abruptClose = function abruptClose(error) {
-      var rethrow = function rethrow() {
-        return Promise.reject(error);
-      };
+    abruptClose = error => {
+      const rethrow = () => Promise.reject(error);
 
       return $return.call(iterator).then(rethrow, rethrow);
     };
@@ -27,51 +23,52 @@ export function mapAsyncIterator(iterable, callback, rejectCallback) {
     return result.done ? result : asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
   }
 
-  var mapReject;
+  let mapReject;
 
   if (rejectCallback) {
     // Capture rejectCallback to ensure it cannot be null.
-    var reject = rejectCallback;
+    const reject = rejectCallback;
 
-    mapReject = function mapReject(error) {
-      return asyncMapValue(error, reject).then(iteratorResult, abruptClose);
-    };
+    mapReject = error => asyncMapValue(error, reject).then(iteratorResult, abruptClose);
   }
   /* TODO: Flow doesn't support symbols as keys:
      https://github.com/facebook/flow/issues/3258 */
 
 
-  return _defineProperty({
-    next: function next() {
+  return {
+    next() {
       return iterator.next().then(mapResult, mapReject);
     },
-    return: function _return() {
+
+    return() {
       return $return ? $return.call(iterator).then(mapResult, mapReject) : Promise.resolve({
         value: undefined,
         done: true
       });
     },
-    throw: function _throw(error) {
+
+    throw(error) {
       if (typeof iterator.throw === 'function') {
         return iterator.throw(error).then(mapResult, mapReject);
       }
 
       return Promise.reject(error).catch(abruptClose);
+    },
+
+    [Symbol.asyncIterator]() {
+      return this;
     }
-  }, Symbol.asyncIterator, function () {
-    return this;
-  });
+
+  };
 }
 
 function asyncMapValue(value, callback) {
-  return new Promise(function (resolve) {
-    return resolve(callback(value));
-  });
+  return new Promise(resolve => resolve(callback(value)));
 }
 
 function iteratorResult(value) {
   return {
-    value: value,
+    value,
     done: false
   };
 }

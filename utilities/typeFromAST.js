@@ -15,7 +15,7 @@ var _definition = require("../type/definition.js");
 
 function typeFromAST(schema, typeNode) {
   /* eslint-enable no-redeclare */
-  var innerType;
+  let innerType;
 
   if (typeNode.kind === _kinds.Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);

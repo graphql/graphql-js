@@ -9,7 +9,7 @@ exports.TokenKind = void 0;
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-var TokenKind = Object.freeze({
+const TokenKind = Object.freeze({
   SOF: '<SOF>',
   EOF: '<EOF>',
   BANG: '!',

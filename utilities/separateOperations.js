@@ -16,12 +16,10 @@ var _visitor = require("../language/visitor.js");
  * refers to.
  */
 function separateOperations(documentAST) {
-  var operations = [];
-  var depGraph = Object.create(null); // Populate metadata and build a dependency graph.
+  const operations = [];
+  const depGraph = Object.create(null); // Populate metadata and build a dependency graph.
 
-  for (var _i2 = 0, _documentAST$definiti2 = documentAST.definitions; _i2 < _documentAST$definiti2.length; _i2++) {
-    var definitionNode = _documentAST$definiti2[_i2];
-
+  for (const definitionNode of documentAST.definitions) {
     switch (definitionNode.kind) {
       case _kinds.Kind.OPERATION_DEFINITION:
         operations.push(definitionNode);
@@ -35,31 +33,23 @@ function separateOperations(documentAST) {
   // is necessary for completing that operation.
 
 
-  var separatedDocumentASTs = Object.create(null);
+  const separatedDocumentASTs = Object.create(null);
 
-  var _loop = function _loop(_i4) {
-    var operation = operations[_i4];
-    var dependencies = new Set();
+  for (const operation of operations) {
+    const dependencies = new Set();
 
-    for (var _i6 = 0, _collectDependencies2 = collectDependencies(operation.selectionSet); _i6 < _collectDependencies2.length; _i6++) {
-      var fragmentName = _collectDependencies2[_i6];
+    for (const fragmentName of collectDependencies(operation.selectionSet)) {
       collectTransitiveDependencies(dependencies, depGraph, fragmentName);
     } // Provides the empty string for anonymous operations.
 
 
-    var operationName = operation.name ? operation.name.value : ''; // The list of definition nodes to be included for this operation, sorted
+    const operationName = operation.name ? operation.name.value : ''; // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
 
     separatedDocumentASTs[operationName] = {
       kind: _kinds.Kind.DOCUMENT,
-      definitions: documentAST.definitions.filter(function (node) {
-        return node === operation || node.kind === _kinds.Kind.FRAGMENT_DEFINITION && dependencies.has(node.name.value);
-      })
+      definitions: documentAST.definitions.filter(node => node === operation || node.kind === _kinds.Kind.FRAGMENT_DEFINITION && dependencies.has(node.name.value))
     };
-  };
-
-  for (var _i4 = 0; _i4 < operations.length; _i4++) {
-    _loop(_i4);
   }
 
   return separatedDocumentASTs;
@@ -70,11 +60,10 @@ function separateOperations(documentAST) {
 function collectTransitiveDependencies(collected, depGraph, fromName) {
   if (!collected.has(fromName)) {
     collected.add(fromName);
-    var immediateDeps = depGraph[fromName];
+    const immediateDeps = depGraph[fromName];
 
     if (immediateDeps !== undefined) {
-      for (var _i8 = 0; _i8 < immediateDeps.length; _i8++) {
-        var toName = immediateDeps[_i8];
+      for (const toName of immediateDeps) {
         collectTransitiveDependencies(collected, depGraph, toName);
       }
     }
@@ -82,11 +71,12 @@ function collectTransitiveDependencies(collected, depGraph, fromName) {
 }
 
 function collectDependencies(selectionSet) {
-  var dependencies = [];
+  const dependencies = [];
   (0, _visitor.visit)(selectionSet, {
-    FragmentSpread: function FragmentSpread(node) {
+    FragmentSpread(node) {
       dependencies.push(node.name.value);
     }
+
   });
   return dependencies;
 }

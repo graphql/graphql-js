@@ -5,5 +5,5 @@ import { GraphQLError } from "./GraphQLError.mjs";
  */
 
 export function syntaxError(source, position, description) {
-  return new GraphQLError("Syntax Error: ".concat(description), undefined, source, [position]);
+  return new GraphQLError(`Syntax Error: ${description}`, undefined, source, [position]);
 }

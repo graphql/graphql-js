@@ -21,22 +21,23 @@ var _typeComparators = require("../../utilities/typeComparators.js");
  * Variables passed to field arguments conform to type
  */
 function VariablesInAllowedPositionRule(context) {
-  var varDefMap = Object.create(null);
+  let varDefMap = Object.create(null);
   return {
     OperationDefinition: {
-      enter: function enter() {
+      enter() {
         varDefMap = Object.create(null);
       },
-      leave: function leave(operation) {
-        var usages = context.getRecursiveVariableUsages(operation);
 
-        for (var _i2 = 0; _i2 < usages.length; _i2++) {
-          var _ref2 = usages[_i2];
-          var node = _ref2.node;
-          var type = _ref2.type;
-          var defaultValue = _ref2.defaultValue;
-          var varName = node.name.value;
-          var varDef = varDefMap[varName];
+      leave(operation) {
+        const usages = context.getRecursiveVariableUsages(operation);
+
+        for (const {
+          node,
+          type,
+          defaultValue
+        } of usages) {
+          const varName = node.name.value;
+          const varDef = varDefMap[varName];
 
           if (varDef && type) {
             // A var type is allowed if it is the same or more strict (e.g. is
@@ -44,21 +45,24 @@ function VariablesInAllowedPositionRule(context) {
             // the variable type is non-null when the expected type is nullable.
             // If both are list types, the variable item type can be more strict
             // than the expected item type (contravariant).
-            var schema = context.getSchema();
-            var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
+            const schema = context.getSchema();
+            const varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
 
             if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
-              var varTypeStr = (0, _inspect.inspect)(varType);
-              var typeStr = (0, _inspect.inspect)(type);
-              context.reportError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of type \"").concat(varTypeStr, "\" used in position expecting type \"").concat(typeStr, "\"."), [varDef, node]));
+              const varTypeStr = (0, _inspect.inspect)(varType);
+              const typeStr = (0, _inspect.inspect)(type);
+              context.reportError(new _GraphQLError.GraphQLError(`Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`, [varDef, node]));
             }
           }
         }
       }
+
     },
-    VariableDefinition: function VariableDefinition(node) {
+
+    VariableDefinition(node) {
       varDefMap[node.variable.name.value] = node;
     }
+
   };
 }
 /**
@@ -70,14 +74,14 @@ function VariablesInAllowedPositionRule(context) {
 
 function allowedVariableUsage(schema, varType, varDefaultValue, locationType, locationDefaultValue) {
   if ((0, _definition.isNonNullType)(locationType) && !(0, _definition.isNonNullType)(varType)) {
-    var hasNonNullVariableDefaultValue = varDefaultValue != null && varDefaultValue.kind !== _kinds.Kind.NULL;
-    var hasLocationDefaultValue = locationDefaultValue !== undefined;
+    const hasNonNullVariableDefaultValue = varDefaultValue != null && varDefaultValue.kind !== _kinds.Kind.NULL;
+    const hasLocationDefaultValue = locationDefaultValue !== undefined;
 
     if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {
       return false;
     }
 
-    var nullableLocationType = locationType.ofType;
+    const nullableLocationType = locationType.ofType;
     return (0, _typeComparators.isTypeSubTypeOf)(schema, varType, nullableLocationType);
   }
 

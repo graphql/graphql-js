@@ -14,7 +14,7 @@ import { GraphQLList, GraphQLNonNull } from "../type/definition.mjs";
 
 export function typeFromAST(schema, typeNode) {
   /* eslint-enable no-redeclare */
-  var innerType;
+  let innerType;
 
   if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);

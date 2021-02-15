@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.valueFromAST = valueFromAST;
 
-var _objectValues3 = require("../polyfills/objectValues.js");
+var _objectValues = require("../polyfills/objectValues.js");
 
 var _keyMap = require("../jsutils/keyMap.js");
 
@@ -45,14 +45,14 @@ function valueFromAST(valueNode, type, variables) {
   }
 
   if (valueNode.kind === _kinds.Kind.VARIABLE) {
-    var variableName = valueNode.name.value;
+    const variableName = valueNode.name.value;
 
     if (variables == null || variables[variableName] === undefined) {
       // No valid return value.
       return;
     }
 
-    var variableValue = variables[variableName];
+    const variableValue = variables[variableName];
 
     if (variableValue === null && (0, _definition.isNonNullType)(type)) {
       return; // Invalid: intentionally return no value.
@@ -78,14 +78,12 @@ function valueFromAST(valueNode, type, variables) {
   }
 
   if ((0, _definition.isListType)(type)) {
-    var itemType = type.ofType;
+    const itemType = type.ofType;
 
     if (valueNode.kind === _kinds.Kind.LIST) {
-      var coercedValues = [];
+      const coercedValues = [];
 
-      for (var _i2 = 0, _valueNode$values2 = valueNode.values; _i2 < _valueNode$values2.length; _i2++) {
-        var itemNode = _valueNode$values2[_i2];
-
+      for (const itemNode of valueNode.values) {
         if (isMissingVariable(itemNode, variables)) {
           // If an array contains a missing variable, it is either coerced to
           // null or if the item type is non-null, it considered invalid.
@@ -95,7 +93,7 @@ function valueFromAST(valueNode, type, variables) {
 
           coercedValues.push(null);
         } else {
-          var itemValue = valueFromAST(itemNode, itemType, variables);
+          const itemValue = valueFromAST(itemNode, itemType, variables);
 
           if (itemValue === undefined) {
             return; // Invalid: intentionally return no value.
@@ -108,7 +106,7 @@ function valueFromAST(valueNode, type, variables) {
       return coercedValues;
     }
 
-    var coercedValue = valueFromAST(valueNode, itemType, variables);
+    const coercedValue = valueFromAST(valueNode, itemType, variables);
 
     if (coercedValue === undefined) {
       return; // Invalid: intentionally return no value.
@@ -122,14 +120,11 @@ function valueFromAST(valueNode, type, variables) {
       return; // Invalid: intentionally return no value.
     }
 
-    var coercedObj = Object.create(null);
-    var fieldNodes = (0, _keyMap.keyMap)(valueNode.fields, function (field) {
-      return field.name.value;
-    });
+    const coercedObj = Object.create(null);
+    const fieldNodes = (0, _keyMap.keyMap)(valueNode.fields, field => field.name.value);
 
-    for (var _i4 = 0, _objectValues2 = (0, _objectValues3.objectValues)(type.getFields()); _i4 < _objectValues2.length; _i4++) {
-      var field = _objectValues2[_i4];
-      var fieldNode = fieldNodes[field.name];
+    for (const field of (0, _objectValues.objectValues)(type.getFields())) {
+      const fieldNode = fieldNodes[field.name];
 
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
@@ -141,7 +136,7 @@ function valueFromAST(valueNode, type, variables) {
         continue;
       }
 
-      var fieldValue = valueFromAST(fieldNode.value, field.type, variables);
+      const fieldValue = valueFromAST(fieldNode.value, field.type, variables);
 
       if (fieldValue === undefined) {
         return; // Invalid: intentionally return no value.
@@ -158,7 +153,7 @@ function valueFromAST(valueNode, type, variables) {
     // Scalars and Enums fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
     // no value is returned.
-    var result;
+    let result;
 
     try {
       result = type.parseLiteral(valueNode, variables);

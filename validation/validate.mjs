@@ -22,18 +22,15 @@ import { SDLValidationContext, ValidationContext } from "./ValidationContext.mjs
  * will be created from the provided schema.
  */
 
-export function validate(schema, documentAST) {
-  var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedRules;
-  var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new TypeInfo(schema);
-  var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
-    maxErrors: undefined
-  };
+export function validate(schema, documentAST, rules = specifiedRules, typeInfo = new TypeInfo(schema), options = {
+  maxErrors: undefined
+}) {
   documentAST || devAssert(0, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
 
   assertValidSchema(schema);
-  var abortObj = Object.freeze({});
-  var errors = [];
-  var context = new ValidationContext(schema, documentAST, typeInfo, function (error) {
+  const abortObj = Object.freeze({});
+  const errors = [];
+  const context = new ValidationContext(schema, documentAST, typeInfo, error => {
     if (options.maxErrors != null && errors.length >= options.maxErrors) {
       errors.push(new GraphQLError('Too many validation errors, error limit reached. Validation aborted.'));
       throw abortObj;
@@ -43,9 +40,7 @@ export function validate(schema, documentAST) {
   }); // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
 
-  var visitor = visitInParallel(rules.map(function (rule) {
-    return rule(context);
-  })); // Visit the whole document with each instance of all provided rules.
+  const visitor = visitInParallel(rules.map(rule => rule(context))); // Visit the whole document with each instance of all provided rules.
 
   try {
     visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
@@ -61,15 +56,12 @@ export function validate(schema, documentAST) {
  * @internal
  */
 
-export function validateSDL(documentAST, schemaToExtend) {
-  var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedSDLRules;
-  var errors = [];
-  var context = new SDLValidationContext(documentAST, schemaToExtend, function (error) {
+export function validateSDL(documentAST, schemaToExtend, rules = specifiedSDLRules) {
+  const errors = [];
+  const context = new SDLValidationContext(documentAST, schemaToExtend, error => {
     errors.push(error);
   });
-  var visitors = rules.map(function (rule) {
-    return rule(context);
-  });
+  const visitors = rules.map(rule => rule(context));
   visit(documentAST, visitInParallel(visitors));
   return errors;
 }
@@ -81,12 +73,10 @@ export function validateSDL(documentAST, schemaToExtend) {
  */
 
 export function assertValidSDL(documentAST) {
-  var errors = validateSDL(documentAST);
+  const errors = validateSDL(documentAST);
 
   if (errors.length !== 0) {
-    throw new Error(errors.map(function (error) {
-      return error.message;
-    }).join('\n\n'));
+    throw new Error(errors.map(error => error.message).join('\n\n'));
   }
 }
 /**
@@ -97,11 +87,9 @@ export function assertValidSDL(documentAST) {
  */
 
 export function assertValidSDLExtension(documentAST, schema) {
-  var errors = validateSDL(documentAST, schema);
+  const errors = validateSDL(documentAST, schema);
 
   if (errors.length !== 0) {
-    throw new Error(errors.map(function (error) {
-      return error.message;
-    }).join('\n\n'));
+    throw new Error(errors.map(error => error.message).join('\n\n'));
   }
 }

@@ -14,10 +14,6 @@ var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
  * optional, but they are useful for clients who store GraphQL documents in source files.
@@ -25,14 +21,12 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  * be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
-var Source = /*#__PURE__*/function () {
-  function Source(body) {
-    var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'GraphQL request';
-    var locationOffset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {
-      line: 1,
-      column: 1
-    };
-    typeof body === 'string' || (0, _devAssert.devAssert)(0, "Body must be a string. Received: ".concat((0, _inspect.inspect)(body), "."));
+class Source {
+  constructor(body, name = 'GraphQL request', locationOffset = {
+    line: 1,
+    column: 1
+  }) {
+    typeof body === 'string' || (0, _devAssert.devAssert)(0, `Body must be a string. Received: ${(0, _inspect.inspect)(body)}.`);
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
@@ -41,15 +35,11 @@ var Source = /*#__PURE__*/function () {
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
 
-  _createClass(Source, [{
-    key: Symbol.toStringTag,
-    get: function get() {
-      return 'Source';
-    }
-  }]);
+  get [Symbol.toStringTag]() {
+    return 'Source';
+  }
 
-  return Source;
-}();
+}
 /**
  * Test if the given value is a Source object.
  *

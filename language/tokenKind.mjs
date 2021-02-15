@@ -2,7 +2,7 @@
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-export var TokenKind = Object.freeze({
+export const TokenKind = Object.freeze({
   SOF: '<SOF>',
   EOF: '<EOF>',
   BANG: '!',

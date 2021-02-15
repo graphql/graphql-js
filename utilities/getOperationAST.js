@@ -13,11 +13,9 @@ var _kinds = require("../language/kinds.js");
  * provided in the document.
  */
 function getOperationAST(documentAST, operationName) {
-  var operation = null;
+  let operation = null;
 
-  for (var _i2 = 0, _documentAST$definiti2 = documentAST.definitions; _i2 < _documentAST$definiti2.length; _i2++) {
-    var definition = _documentAST$definiti2[_i2];
-
+  for (const definition of documentAST.definitions) {
     if (definition.kind === _kinds.Kind.OPERATION_DEFINITION) {
       var _definition$name;
 

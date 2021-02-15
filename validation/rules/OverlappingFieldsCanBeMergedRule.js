@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 
-var _objectEntries3 = require("../../polyfills/objectEntries.js");
+var _objectEntries = require("../../polyfills/objectEntries.js");
 
 var _inspect = require("../../jsutils/inspect.js");
 
@@ -21,11 +21,7 @@ var _typeFromAST = require("../../utilities/typeFromAST.js");
 
 function reasonMessage(reason) {
   if (Array.isArray(reason)) {
-    return reason.map(function (_ref) {
-      var responseName = _ref[0],
-          subReason = _ref[1];
-      return "subfields \"".concat(responseName, "\" conflict because ") + reasonMessage(subReason);
-    }).join(' and ');
+    return reason.map(([responseName, subReason]) => `subfields "${responseName}" conflict because ` + reasonMessage(subReason)).join(' and ');
   }
 
   return reason;
@@ -43,26 +39,21 @@ function OverlappingFieldsCanBeMergedRule(context) {
   // A memoization for when two fragments are compared "between" each other for
   // conflicts. Two fragments may be compared many times, so memoizing this can
   // dramatically improve the performance of this validator.
-  var comparedFragmentPairs = new PairSet(); // A cache for the "field map" and list of fragment names found in any given
+  const comparedFragmentPairs = new PairSet(); // A cache for the "field map" and list of fragment names found in any given
   // selection set. Selection sets may be asked for this information multiple
   // times, so this improves the performance of this validator.
 
-  var cachedFieldsAndFragmentNames = new Map();
+  const cachedFieldsAndFragmentNames = new Map();
   return {
-    SelectionSet: function SelectionSet(selectionSet) {
-      var conflicts = findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, context.getParentType(), selectionSet);
+    SelectionSet(selectionSet) {
+      const conflicts = findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, context.getParentType(), selectionSet);
 
-      for (var _i2 = 0; _i2 < conflicts.length; _i2++) {
-        var _ref3 = conflicts[_i2];
-        var _ref2$ = _ref3[0];
-        var responseName = _ref2$[0];
-        var reason = _ref2$[1];
-        var fields1 = _ref3[1];
-        var fields2 = _ref3[2];
-        var reasonMsg = reasonMessage(reason);
-        context.reportError(new _GraphQLError.GraphQLError("Fields \"".concat(responseName, "\" conflict because ").concat(reasonMsg, ". Use different aliases on the fields to fetch both if this was intentional."), fields1.concat(fields2)));
+      for (const [[responseName, reason], fields1, fields2] of conflicts) {
+        const reasonMsg = reasonMessage(reason);
+        context.reportError(new _GraphQLError.GraphQLError(`Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`, fields1.concat(fields2)));
       }
     }
+
   };
 }
 
@@ -124,26 +115,22 @@ function OverlappingFieldsCanBeMergedRule(context) {
 // via spreading in fragments. Called when visiting each SelectionSet in the
 // GraphQL Document.
 function findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, parentType, selectionSet) {
-  var conflicts = [];
-
-  var _getFieldsAndFragment = getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, parentType, selectionSet),
-      fieldMap = _getFieldsAndFragment[0],
-      fragmentNames = _getFieldsAndFragment[1]; // (A) Find find all conflicts "within" the fields of this selection set.
+  const conflicts = [];
+  const [fieldMap, fragmentNames] = getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, parentType, selectionSet); // (A) Find find all conflicts "within" the fields of this selection set.
   // Note: this is the *only place* `collectConflictsWithin` is called.
-
 
   collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, fieldMap);
 
   if (fragmentNames.length !== 0) {
     // (B) Then collect conflicts between these fields and those represented by
     // each spread fragment name found.
-    for (var i = 0; i < fragmentNames.length; i++) {
+    for (let i = 0; i < fragmentNames.length; i++) {
       collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, fieldMap, fragmentNames[i]); // (C) Then compare this fragment with all other fragments found in this
       // selection set to collect conflicts between fragments spread together.
       // This compares each item in the list of fragment names to every other
       // item in that same list (except for itself).
 
-      for (var j = i + 1; j < fragmentNames.length; j++) {
+      for (let j = i + 1; j < fragmentNames.length; j++) {
         collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, fragmentNames[i], fragmentNames[j]);
       }
     }
@@ -155,16 +142,13 @@ function findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, 
 
 
 function collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap, fragmentName) {
-  var fragment = context.getFragment(fragmentName);
+  const fragment = context.getFragment(fragmentName);
 
   if (!fragment) {
     return;
   }
 
-  var _getReferencedFieldsA = getReferencedFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, fragment),
-      fieldMap2 = _getReferencedFieldsA[0],
-      fragmentNames2 = _getReferencedFieldsA[1]; // Do not compare a fragment's fieldMap to itself.
-
+  const [fieldMap2, fragmentNames2] = getReferencedFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, fragment); // Do not compare a fragment's fieldMap to itself.
 
   if (fieldMap === fieldMap2) {
     return;
@@ -175,7 +159,7 @@ function collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFiel
   collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap, fieldMap2); // (E) Then collect any conflicts between the provided collection of fields
   // and any fragment names found in the given fragment.
 
-  for (var i = 0; i < fragmentNames2.length; i++) {
+  for (let i = 0; i < fragmentNames2.length; i++) {
     collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap, fragmentNames2[i]);
   }
 } // Collect all conflicts found between two fragments, including via spreading in
@@ -194,33 +178,27 @@ function collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFra
   }
 
   comparedFragmentPairs.add(fragmentName1, fragmentName2, areMutuallyExclusive);
-  var fragment1 = context.getFragment(fragmentName1);
-  var fragment2 = context.getFragment(fragmentName2);
+  const fragment1 = context.getFragment(fragmentName1);
+  const fragment2 = context.getFragment(fragmentName2);
 
   if (!fragment1 || !fragment2) {
     return;
   }
 
-  var _getReferencedFieldsA2 = getReferencedFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, fragment1),
-      fieldMap1 = _getReferencedFieldsA2[0],
-      fragmentNames1 = _getReferencedFieldsA2[1];
-
-  var _getReferencedFieldsA3 = getReferencedFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, fragment2),
-      fieldMap2 = _getReferencedFieldsA3[0],
-      fragmentNames2 = _getReferencedFieldsA3[1]; // (F) First, collect all conflicts between these two collections of fields
+  const [fieldMap1, fragmentNames1] = getReferencedFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, fragment1);
+  const [fieldMap2, fragmentNames2] = getReferencedFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, fragment2); // (F) First, collect all conflicts between these two collections of fields
   // (not including any nested fragments).
-
 
   collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, fieldMap2); // (G) Then collect conflicts between the first fragment and any nested
   // fragments spread in the second fragment.
 
-  for (var j = 0; j < fragmentNames2.length; j++) {
+  for (let j = 0; j < fragmentNames2.length; j++) {
     collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentName1, fragmentNames2[j]);
   } // (G) Then collect conflicts between the second fragment and any nested
   // fragments spread in the first fragment.
 
 
-  for (var i = 0; i < fragmentNames1.length; i++) {
+  for (let i = 0; i < fragmentNames1.length; i++) {
     collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentNames1[i], fragmentName2);
   }
 } // Find all conflicts found between two selection sets, including those found
@@ -229,22 +207,15 @@ function collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFra
 
 
 function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, parentType1, selectionSet1, parentType2, selectionSet2) {
-  var conflicts = [];
-
-  var _getFieldsAndFragment2 = getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, parentType1, selectionSet1),
-      fieldMap1 = _getFieldsAndFragment2[0],
-      fragmentNames1 = _getFieldsAndFragment2[1];
-
-  var _getFieldsAndFragment3 = getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, parentType2, selectionSet2),
-      fieldMap2 = _getFieldsAndFragment3[0],
-      fragmentNames2 = _getFieldsAndFragment3[1]; // (H) First, collect all conflicts between these two collections of field.
-
+  const conflicts = [];
+  const [fieldMap1, fragmentNames1] = getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, parentType1, selectionSet1);
+  const [fieldMap2, fragmentNames2] = getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, parentType2, selectionSet2); // (H) First, collect all conflicts between these two collections of field.
 
   collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, fieldMap2); // (I) Then collect conflicts between the first collection of fields and
   // those referenced by each fragment name associated with the second.
 
   if (fragmentNames2.length !== 0) {
-    for (var j = 0; j < fragmentNames2.length; j++) {
+    for (let j = 0; j < fragmentNames2.length; j++) {
       collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, fragmentNames2[j]);
     }
   } // (I) Then collect conflicts between the second collection of fields and
@@ -252,7 +223,7 @@ function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNa
 
 
   if (fragmentNames1.length !== 0) {
-    for (var i = 0; i < fragmentNames1.length; i++) {
+    for (let i = 0; i < fragmentNames1.length; i++) {
       collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap2, fragmentNames1[i]);
     }
   } // (J) Also collect conflicts between any fragment names by the first and
@@ -260,9 +231,9 @@ function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNa
   // names to each item in the second set of names.
 
 
-  for (var _i3 = 0; _i3 < fragmentNames1.length; _i3++) {
-    for (var _j = 0; _j < fragmentNames2.length; _j++) {
-      collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentNames1[_i3], fragmentNames2[_j]);
+  for (let i = 0; i < fragmentNames1.length; i++) {
+    for (let j = 0; j < fragmentNames2.length; j++) {
+      collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentNames1[i], fragmentNames2[j]);
     }
   }
 
@@ -275,18 +246,14 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (var _i5 = 0, _objectEntries2 = (0, _objectEntries3.objectEntries)(fieldMap); _i5 < _objectEntries2.length; _i5++) {
-    var _ref5 = _objectEntries2[_i5];
-    var responseName = _ref5[0];
-    var fields = _ref5[1];
-
+  for (const [responseName, fields] of (0, _objectEntries.objectEntries)(fieldMap)) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.
     if (fields.length > 1) {
-      for (var i = 0; i < fields.length; i++) {
-        for (var j = i + 1; j < fields.length; j++) {
-          var conflict = findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, // within one collection is never mutually exclusive
+      for (let i = 0; i < fields.length; i++) {
+        for (let j = i + 1; j < fields.length; j++) {
+          const conflict = findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, // within one collection is never mutually exclusive
           responseName, fields[i], fields[j]);
 
           if (conflict) {
@@ -309,16 +276,15 @@ function collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentName
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (var _i7 = 0, _Object$keys2 = Object.keys(fieldMap1); _i7 < _Object$keys2.length; _i7++) {
-    var responseName = _Object$keys2[_i7];
-    var fields2 = fieldMap2[responseName];
+  for (const responseName of Object.keys(fieldMap1)) {
+    const fields2 = fieldMap2[responseName];
 
     if (fields2) {
-      var fields1 = fieldMap1[responseName];
+      const fields1 = fieldMap1[responseName];
 
-      for (var i = 0; i < fields1.length; i++) {
-        for (var j = 0; j < fields2.length; j++) {
-          var conflict = findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, parentFieldsAreMutuallyExclusive, responseName, fields1[i], fields2[j]);
+      for (let i = 0; i < fields1.length; i++) {
+        for (let j = 0; j < fields2.length; j++) {
+          const conflict = findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, parentFieldsAreMutuallyExclusive, responseName, fields1[i], fields2[j]);
 
           if (conflict) {
             conflicts.push(conflict);
@@ -332,12 +298,8 @@ function collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentName
 
 
 function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, parentFieldsAreMutuallyExclusive, responseName, field1, field2) {
-  var parentType1 = field1[0],
-      node1 = field1[1],
-      def1 = field1[2];
-  var parentType2 = field2[0],
-      node2 = field2[1],
-      def2 = field2[2]; // If it is known that two fields could not possibly apply at the same
+  const [parentType1, node1, def1] = field1;
+  const [parentType2, node2, def2] = field2; // If it is known that two fields could not possibly apply at the same
   // time, due to the parent types, then it is safe to permit them to diverge
   // in aliased field or arguments used as they will not present any ambiguity
   // by differing.
@@ -346,23 +308,23 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
   // in the current state of the schema, then perhaps in some future version,
   // thus may not safely diverge.
 
-  var areMutuallyExclusive = parentFieldsAreMutuallyExclusive || parentType1 !== parentType2 && (0, _definition.isObjectType)(parentType1) && (0, _definition.isObjectType)(parentType2);
+  const areMutuallyExclusive = parentFieldsAreMutuallyExclusive || parentType1 !== parentType2 && (0, _definition.isObjectType)(parentType1) && (0, _definition.isObjectType)(parentType2);
 
   if (!areMutuallyExclusive) {
     var _node1$arguments, _node2$arguments;
 
     // Two aliases must refer to the same field.
-    var name1 = node1.name.value;
-    var name2 = node2.name.value;
+    const name1 = node1.name.value;
+    const name2 = node2.name.value;
 
     if (name1 !== name2) {
-      return [[responseName, "\"".concat(name1, "\" and \"").concat(name2, "\" are different fields")], [node1], [node2]];
+      return [[responseName, `"${name1}" and "${name2}" are different fields`], [node1], [node2]];
     } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
 
 
-    var args1 = (_node1$arguments = node1.arguments) !== null && _node1$arguments !== void 0 ? _node1$arguments : []; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    const args1 = (_node1$arguments = node1.arguments) !== null && _node1$arguments !== void 0 ? _node1$arguments : []; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
 
-    var args2 = (_node2$arguments = node2.arguments) !== null && _node2$arguments !== void 0 ? _node2$arguments : []; // Two field calls must have the same arguments.
+    const args2 = (_node2$arguments = node2.arguments) !== null && _node2$arguments !== void 0 ? _node2$arguments : []; // Two field calls must have the same arguments.
 
     if (!sameArguments(args1, args2)) {
       return [[responseName, 'they have differing arguments'], [node1], [node2]];
@@ -370,21 +332,21 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
   } // The return type for each field.
 
 
-  var type1 = def1 === null || def1 === void 0 ? void 0 : def1.type;
-  var type2 = def2 === null || def2 === void 0 ? void 0 : def2.type;
+  const type1 = def1 === null || def1 === void 0 ? void 0 : def1.type;
+  const type2 = def2 === null || def2 === void 0 ? void 0 : def2.type;
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [[responseName, "they return conflicting types \"".concat((0, _inspect.inspect)(type1), "\" and \"").concat((0, _inspect.inspect)(type2), "\"")], [node1], [node2]];
+    return [[responseName, `they return conflicting types "${(0, _inspect.inspect)(type1)}" and "${(0, _inspect.inspect)(type2)}"`], [node1], [node2]];
   } // Collect and compare sub-fields. Use the same "visited fragment names" list
   // for both collections so fields in a fragment reference are never
   // compared to themselves.
 
 
-  var selectionSet1 = node1.selectionSet;
-  var selectionSet2 = node2.selectionSet;
+  const selectionSet1 = node1.selectionSet;
+  const selectionSet2 = node2.selectionSet;
 
   if (selectionSet1 && selectionSet2) {
-    var conflicts = findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, (0, _definition.getNamedType)(type1), selectionSet1, (0, _definition.getNamedType)(type2), selectionSet2);
+    const conflicts = findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, (0, _definition.getNamedType)(type1), selectionSet1, (0, _definition.getNamedType)(type2), selectionSet2);
     return subfieldConflicts(conflicts, responseName, node1, node2);
   }
 }
@@ -394,10 +356,8 @@ function sameArguments(arguments1, arguments2) {
     return false;
   }
 
-  return arguments1.every(function (argument1) {
-    var argument2 = arguments2.find(function (argument) {
-      return argument.name.value === argument1.name.value;
-    });
+  return arguments1.every(argument1 => {
+    const argument2 = arguments2.find(argument => argument.name.value === argument1.name.value);
 
     if (!argument2) {
       return false;
@@ -442,11 +402,11 @@ function doTypesConflict(type1, type2) {
 
 
 function getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, parentType, selectionSet) {
-  var cached = cachedFieldsAndFragmentNames.get(selectionSet);
+  let cached = cachedFieldsAndFragmentNames.get(selectionSet);
 
   if (!cached) {
-    var nodeAndDefs = Object.create(null);
-    var fragmentNames = Object.create(null);
+    const nodeAndDefs = Object.create(null);
+    const fragmentNames = Object.create(null);
 
     _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeAndDefs, fragmentNames);
 
@@ -461,31 +421,29 @@ function getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, parent
 
 function getReferencedFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, fragment) {
   // Short-circuit building a type from the node if possible.
-  var cached = cachedFieldsAndFragmentNames.get(fragment.selectionSet);
+  const cached = cachedFieldsAndFragmentNames.get(fragment.selectionSet);
 
   if (cached) {
     return cached;
   }
 
-  var fragmentType = (0, _typeFromAST.typeFromAST)(context.getSchema(), fragment.typeCondition);
+  const fragmentType = (0, _typeFromAST.typeFromAST)(context.getSchema(), fragment.typeCondition);
   return getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, fragmentType, fragment.selectionSet);
 }
 
 function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeAndDefs, fragmentNames) {
-  for (var _i9 = 0, _selectionSet$selecti2 = selectionSet.selections; _i9 < _selectionSet$selecti2.length; _i9++) {
-    var selection = _selectionSet$selecti2[_i9];
-
+  for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case _kinds.Kind.FIELD:
         {
-          var fieldName = selection.name.value;
-          var fieldDef = void 0;
+          const fieldName = selection.name.value;
+          let fieldDef;
 
           if ((0, _definition.isObjectType)(parentType) || (0, _definition.isInterfaceType)(parentType)) {
             fieldDef = parentType.getFields()[fieldName];
           }
 
-          var responseName = selection.alias ? selection.alias.value : fieldName;
+          const responseName = selection.alias ? selection.alias.value : fieldName;
 
           if (!nodeAndDefs[responseName]) {
             nodeAndDefs[responseName] = [];
@@ -501,8 +459,8 @@ function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeA
 
       case _kinds.Kind.INLINE_FRAGMENT:
         {
-          var typeCondition = selection.typeCondition;
-          var inlineFragmentType = typeCondition ? (0, _typeFromAST.typeFromAST)(context.getSchema(), typeCondition) : parentType;
+          const typeCondition = selection.typeCondition;
+          const inlineFragmentType = typeCondition ? (0, _typeFromAST.typeFromAST)(context.getSchema(), typeCondition) : parentType;
 
           _collectFieldsAndFragmentNames(context, inlineFragmentType, selection.selectionSet, nodeAndDefs, fragmentNames);
 
@@ -516,16 +474,7 @@ function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeA
 
 function subfieldConflicts(conflicts, responseName, node1, node2) {
   if (conflicts.length > 0) {
-    return [[responseName, conflicts.map(function (_ref6) {
-      var reason = _ref6[0];
-      return reason;
-    })], conflicts.reduce(function (allFields, _ref7) {
-      var fields1 = _ref7[1];
-      return allFields.concat(fields1);
-    }, [node1]), conflicts.reduce(function (allFields, _ref8) {
-      var fields2 = _ref8[2];
-      return allFields.concat(fields2);
-    }, [node2])];
+    return [[responseName, conflicts.map(([reason]) => reason)], conflicts.reduce((allFields, [, fields1]) => allFields.concat(fields1), [node1]), conflicts.reduce((allFields, [,, fields2]) => allFields.concat(fields2), [node2])];
   }
 }
 /**
@@ -534,16 +483,14 @@ function subfieldConflicts(conflicts, responseName, node1, node2) {
  */
 
 
-var PairSet = /*#__PURE__*/function () {
-  function PairSet() {
+class PairSet {
+  constructor() {
     this._data = Object.create(null);
   }
 
-  var _proto = PairSet.prototype;
-
-  _proto.has = function has(a, b, areMutuallyExclusive) {
-    var first = this._data[a];
-    var result = first && first[b];
+  has(a, b, areMutuallyExclusive) {
+    const first = this._data[a];
+    const result = first && first[b];
 
     if (result === undefined) {
       return false;
@@ -557,16 +504,16 @@ var PairSet = /*#__PURE__*/function () {
     }
 
     return true;
-  };
+  }
 
-  _proto.add = function add(a, b, areMutuallyExclusive) {
+  add(a, b, areMutuallyExclusive) {
     this._pairSetAdd(a, b, areMutuallyExclusive);
 
     this._pairSetAdd(b, a, areMutuallyExclusive);
-  };
+  }
 
-  _proto._pairSetAdd = function _pairSetAdd(a, b, areMutuallyExclusive) {
-    var map = this._data[a];
+  _pairSetAdd(a, b, areMutuallyExclusive) {
+    let map = this._data[a];
 
     if (!map) {
       map = Object.create(null);
@@ -574,7 +521,6 @@ var PairSet = /*#__PURE__*/function () {
     }
 
     map[b] = areMutuallyExclusive;
-  };
+  }
 
-  return PairSet;
-}();
+}

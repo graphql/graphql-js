@@ -30,7 +30,7 @@ import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } 
 
 export function astFromValue(value, type) {
   if (isNonNullType(type)) {
-    var astValue = astFromValue(value, type.ofType);
+    const astValue = astFromValue(value, type.ofType);
 
     if ((astValue === null || astValue === void 0 ? void 0 : astValue.kind) === Kind.NULL) {
       return null;
@@ -54,15 +54,14 @@ export function astFromValue(value, type) {
 
 
   if (isListType(type)) {
-    var itemType = type.ofType;
+    const itemType = type.ofType;
 
     if (isIteratableObject(value)) {
-      var valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
+      const valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
       // and it's required to first convert iteratable into array
 
-      for (var _i2 = 0, _Array$from2 = Array.from(value); _i2 < _Array$from2.length; _i2++) {
-        var item = _Array$from2[_i2];
-        var itemNode = astFromValue(item, itemType);
+      for (const item of Array.from(value)) {
+        const itemNode = astFromValue(item, itemType);
 
         if (itemNode != null) {
           valuesNodes.push(itemNode);
@@ -85,11 +84,10 @@ export function astFromValue(value, type) {
       return null;
     }
 
-    var fieldNodes = [];
+    const fieldNodes = [];
 
-    for (var _i4 = 0, _objectValues2 = objectValues(type.getFields()); _i4 < _objectValues2.length; _i4++) {
-      var field = _objectValues2[_i4];
-      var fieldValue = astFromValue(value[field.name], field.type);
+    for (const field of objectValues(type.getFields())) {
+      const fieldValue = astFromValue(value[field.name], field.type);
 
       if (fieldValue) {
         fieldNodes.push({
@@ -113,7 +111,7 @@ export function astFromValue(value, type) {
   if (isLeafType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
-    var serialized = type.serialize(value);
+    const serialized = type.serialize(value);
 
     if (serialized == null) {
       return null;
@@ -129,7 +127,7 @@ export function astFromValue(value, type) {
 
 
     if (typeof serialized === 'number' && Number.isFinite(serialized)) {
-      var stringNum = String(serialized);
+      const stringNum = String(serialized);
       return integerStringRegExp.test(stringNum) ? {
         kind: Kind.INT,
         value: stringNum
@@ -162,7 +160,7 @@ export function astFromValue(value, type) {
       };
     }
 
-    throw new TypeError("Cannot convert value to AST: ".concat(inspect(serialized), "."));
+    throw new TypeError(`Cannot convert value to AST: ${inspect(serialized)}.`);
   } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
 
@@ -174,4 +172,4 @@ export function astFromValue(value, type) {
  *   - NegativeSign? NonZeroDigit ( Digit+ )?
  */
 
-var integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;
+const integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;

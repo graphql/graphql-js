@@ -14,24 +14,27 @@ var _GraphQLError = require("../../error/GraphQLError.js");
  * uniquely named.
  */
 function UniqueArgumentNamesRule(context) {
-  var knownArgNames = Object.create(null);
+  let knownArgNames = Object.create(null);
   return {
-    Field: function Field() {
+    Field() {
       knownArgNames = Object.create(null);
     },
-    Directive: function Directive() {
+
+    Directive() {
       knownArgNames = Object.create(null);
     },
-    Argument: function Argument(node) {
-      var argName = node.name.value;
+
+    Argument(node) {
+      const argName = node.name.value;
 
       if (knownArgNames[argName]) {
-        context.reportError(new _GraphQLError.GraphQLError("There can be only one argument named \"".concat(argName, "\"."), [knownArgNames[argName], node.name]));
+        context.reportError(new _GraphQLError.GraphQLError(`There can be only one argument named "${argName}".`, [knownArgNames[argName], node.name]));
       } else {
         knownArgNames[argName] = node.name;
       }
 
       return false;
     }
+
   };
 }

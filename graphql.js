@@ -18,9 +18,7 @@ var _execute = require("./execution/execute.js");
 
 function graphql(args) {
   // Always return a Promise for a consistent API.
-  return new Promise(function (resolve) {
-    return resolve(graphqlImpl(args));
-  });
+  return new Promise(resolve => resolve(graphqlImpl(args)));
 }
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,
@@ -31,7 +29,7 @@ function graphql(args) {
 
 
 function graphqlSync(args) {
-  var result = graphqlImpl(args); // Assert that the execution was synchronous.
+  const result = graphqlImpl(args); // Assert that the execution was synchronous.
 
   if ((0, _isPromise.isPromise)(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
@@ -41,16 +39,18 @@ function graphqlSync(args) {
 }
 
 function graphqlImpl(args) {
-  var schema = args.schema,
-      source = args.source,
-      rootValue = args.rootValue,
-      contextValue = args.contextValue,
-      variableValues = args.variableValues,
-      operationName = args.operationName,
-      fieldResolver = args.fieldResolver,
-      typeResolver = args.typeResolver; // Validate Schema
+  const {
+    schema,
+    source,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+    typeResolver
+  } = args; // Validate Schema
 
-  var schemaValidationErrors = (0, _validate2.validateSchema)(schema);
+  const schemaValidationErrors = (0, _validate2.validateSchema)(schema);
 
   if (schemaValidationErrors.length > 0) {
     return {
@@ -59,7 +59,7 @@ function graphqlImpl(args) {
   } // Parse
 
 
-  var document;
+  let document;
 
   try {
     document = (0, _parser.parse)(source);
@@ -70,7 +70,7 @@ function graphqlImpl(args) {
   } // Validate
 
 
-  var validationErrors = (0, _validate.validate)(schema, document);
+  const validationErrors = (0, _validate.validate)(schema, document);
 
   if (validationErrors.length > 0) {
     return {
@@ -80,13 +80,13 @@ function graphqlImpl(args) {
 
 
   return (0, _execute.execute)({
-    schema: schema,
-    document: document,
-    rootValue: rootValue,
-    contextValue: contextValue,
-    variableValues: variableValues,
-    operationName: operationName,
-    fieldResolver: fieldResolver,
-    typeResolver: typeResolver
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+    typeResolver
   });
 }

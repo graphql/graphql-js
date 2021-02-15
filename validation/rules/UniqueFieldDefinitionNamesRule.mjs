@@ -7,9 +7,9 @@ import { isObjectType, isInterfaceType, isInputObjectType } from "../../type/def
  * A GraphQL complex type is only valid if all its fields are uniquely named.
  */
 export function UniqueFieldDefinitionNamesRule(context) {
-  var schema = context.getSchema();
-  var existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
-  var knownFieldNames = Object.create(null);
+  const schema = context.getSchema();
+  const existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
+  const knownFieldNames = Object.create(null);
   return {
     InputObjectTypeDefinition: checkFieldUniqueness,
     InputObjectTypeExtension: checkFieldUniqueness,
@@ -22,24 +22,23 @@ export function UniqueFieldDefinitionNamesRule(context) {
   function checkFieldUniqueness(node) {
     var _node$fields;
 
-    var typeName = node.name.value;
+    const typeName = node.name.value;
 
     if (!knownFieldNames[typeName]) {
       knownFieldNames[typeName] = Object.create(null);
     } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
 
 
-    var fieldNodes = (_node$fields = node.fields) !== null && _node$fields !== void 0 ? _node$fields : [];
-    var fieldNames = knownFieldNames[typeName];
+    const fieldNodes = (_node$fields = node.fields) !== null && _node$fields !== void 0 ? _node$fields : [];
+    const fieldNames = knownFieldNames[typeName];
 
-    for (var _i2 = 0; _i2 < fieldNodes.length; _i2++) {
-      var fieldDef = fieldNodes[_i2];
-      var fieldName = fieldDef.name.value;
+    for (const fieldDef of fieldNodes) {
+      const fieldName = fieldDef.name.value;
 
       if (hasField(existingTypeMap[typeName], fieldName)) {
-        context.reportError(new GraphQLError("Field \"".concat(typeName, ".").concat(fieldName, "\" already exists in the schema. It cannot also be defined in this type extension."), fieldDef.name));
+        context.reportError(new GraphQLError(`Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`, fieldDef.name));
       } else if (fieldNames[fieldName]) {
-        context.reportError(new GraphQLError("Field \"".concat(typeName, ".").concat(fieldName, "\" can only be defined once."), [fieldNames[fieldName], fieldDef.name]));
+        context.reportError(new GraphQLError(`Field "${typeName}.${fieldName}" can only be defined once.`, [fieldNames[fieldName], fieldDef.name]));
       } else {
         fieldNames[fieldName] = fieldDef.name;
       }

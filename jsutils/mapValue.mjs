@@ -5,13 +5,10 @@ import { objectEntries } from "../polyfills/objectEntries.mjs";
  * running each value of `map` thru `fn`.
  */
 export function mapValue(map, fn) {
-  var result = Object.create(null);
+  const result = Object.create(null);
 
-  for (var _i2 = 0, _objectEntries2 = objectEntries(map); _i2 < _objectEntries2.length; _i2++) {
-    var _ref2 = _objectEntries2[_i2];
-    var _key = _ref2[0];
-    var _value = _ref2[1];
-    result[_key] = fn(_value, _key);
+  for (const [key, value] of objectEntries(map)) {
+    result[key] = fn(value, key);
   }
 
   return result;

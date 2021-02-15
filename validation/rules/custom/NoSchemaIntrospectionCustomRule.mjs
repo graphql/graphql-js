@@ -14,12 +14,13 @@ import { isIntrospectionType } from "../../../type/introspection.mjs";
  */
 export function NoSchemaIntrospectionCustomRule(context) {
   return {
-    Field: function Field(node) {
-      var type = getNamedType(context.getType());
+    Field(node) {
+      const type = getNamedType(context.getType());
 
       if (type && isIntrospectionType(type)) {
-        context.reportError(new GraphQLError("GraphQL introspection has been disabled, but the requested query contained the field \"".concat(node.name.value, "\"."), node));
+        context.reportError(new GraphQLError(`GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`, node));
       }
     }
+
   };
 }

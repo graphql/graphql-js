@@ -12,28 +12,29 @@ import { isObjectType, isInterfaceType, isAbstractType } from "../../type/defini
  */
 export function FieldsOnCorrectTypeRule(context) {
   return {
-    Field: function Field(node) {
-      var type = context.getParentType();
+    Field(node) {
+      const type = context.getParentType();
 
       if (type) {
-        var fieldDef = context.getFieldDef();
+        const fieldDef = context.getFieldDef();
 
         if (!fieldDef) {
           // This field doesn't exist, lets look for suggestions.
-          var schema = context.getSchema();
-          var fieldName = node.name.value; // First determine if there are any suggested types to condition on.
+          const schema = context.getSchema();
+          const fieldName = node.name.value; // First determine if there are any suggested types to condition on.
 
-          var suggestion = didYouMean('to use an inline fragment on', getSuggestedTypeNames(schema, type, fieldName)); // If there are no suggested types, then perhaps this was a typo?
+          let suggestion = didYouMean('to use an inline fragment on', getSuggestedTypeNames(schema, type, fieldName)); // If there are no suggested types, then perhaps this was a typo?
 
           if (suggestion === '') {
             suggestion = didYouMean(getSuggestedFieldNames(type, fieldName));
           } // Report an error, including helpful suggestions.
 
 
-          context.reportError(new GraphQLError("Cannot query field \"".concat(fieldName, "\" on type \"").concat(type.name, "\".") + suggestion, node));
+          context.reportError(new GraphQLError(`Cannot query field "${fieldName}" on type "${type.name}".` + suggestion, node));
         }
       }
     }
+
   };
 }
 /**
@@ -48,12 +49,10 @@ function getSuggestedTypeNames(schema, type, fieldName) {
     return [];
   }
 
-  var suggestedTypes = new Set();
-  var usageCount = Object.create(null);
+  const suggestedTypes = new Set();
+  const usageCount = Object.create(null);
 
-  for (var _i2 = 0, _schema$getPossibleTy2 = schema.getPossibleTypes(type); _i2 < _schema$getPossibleTy2.length; _i2++) {
-    var possibleType = _schema$getPossibleTy2[_i2];
-
+  for (const possibleType of schema.getPossibleTypes(type)) {
     if (!possibleType.getFields()[fieldName]) {
       continue;
     } // This object type defines this field.
@@ -62,10 +61,8 @@ function getSuggestedTypeNames(schema, type, fieldName) {
     suggestedTypes.add(possibleType);
     usageCount[possibleType.name] = 1;
 
-    for (var _i4 = 0, _possibleType$getInte2 = possibleType.getInterfaces(); _i4 < _possibleType$getInte2.length; _i4++) {
+    for (const possibleInterface of possibleType.getInterfaces()) {
       var _usageCount$possibleI;
-
-      var possibleInterface = _possibleType$getInte2[_i4];
 
       if (!possibleInterface.getFields()[fieldName]) {
         continue;
@@ -77,9 +74,9 @@ function getSuggestedTypeNames(schema, type, fieldName) {
     }
   }
 
-  return Array.from(suggestedTypes).sort(function (typeA, typeB) {
+  return Array.from(suggestedTypes).sort((typeA, typeB) => {
     // Suggest both interface and object types based on how common they are.
-    var usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];
+    const usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];
 
     if (usageCountDiff !== 0) {
       return usageCountDiff;
@@ -95,9 +92,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
     }
 
     return naturalCompare(typeA.name, typeB.name);
-  }).map(function (x) {
-    return x.name;
-  });
+  }).map(x => x.name);
 }
 /**
  * For the field name provided, determine if there are any similar field names
@@ -107,7 +102,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
 
 function getSuggestedFieldNames(type, fieldName) {
   if (isObjectType(type) || isInterfaceType(type)) {
-    var possibleFieldNames = Object.keys(type.getFields());
+    const possibleFieldNames = Object.keys(type.getFields());
     return suggestionList(fieldName, possibleFieldNames);
   } // Otherwise, must be a Union type, which does not define fields.
 

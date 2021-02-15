@@ -29,7 +29,7 @@ exports.keyMap = keyMap;
  *
  */
 function keyMap(list, keyFn) {
-  return list.reduce(function (map, item) {
+  return list.reduce((map, item) => {
     map[keyFn(item)] = item;
     return map;
   }, Object.create(null));

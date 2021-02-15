@@ -21,14 +21,15 @@ var _typeFromAST = require("../../utilities/typeFromAST.js");
  */
 function VariablesAreInputTypesRule(context) {
   return {
-    VariableDefinition: function VariableDefinition(node) {
-      var type = (0, _typeFromAST.typeFromAST)(context.getSchema(), node.type);
+    VariableDefinition(node) {
+      const type = (0, _typeFromAST.typeFromAST)(context.getSchema(), node.type);
 
       if (type && !(0, _definition.isInputType)(type)) {
-        var variableName = node.variable.name.value;
-        var typeName = (0, _printer.print)(node.type);
-        context.reportError(new _GraphQLError.GraphQLError("Variable \"$".concat(variableName, "\" cannot be non-input type \"").concat(typeName, "\"."), node.type));
+        const variableName = node.variable.name.value;
+        const typeName = (0, _printer.print)(node.type);
+        context.reportError(new _GraphQLError.GraphQLError(`Variable "$${variableName}" cannot be non-input type "${typeName}".`, node.type));
       }
     }
+
   };
 }

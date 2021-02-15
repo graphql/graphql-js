@@ -10,7 +10,7 @@ export function locatedError(rawOriginalError, nodes, path) {
   var _nodes;
 
   // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
-  var originalError = rawOriginalError instanceof Error ? rawOriginalError : new Error('Unexpected error value: ' + inspect(rawOriginalError)); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
+  const originalError = rawOriginalError instanceof Error ? rawOriginalError : new Error('Unexpected error value: ' + inspect(rawOriginalError)); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
 
   if (Array.isArray(originalError.path)) {
     return originalError;

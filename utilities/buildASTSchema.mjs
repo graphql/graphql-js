@@ -23,7 +23,7 @@ export function buildASTSchema(documentAST, options) {
     assertValidSDL(documentAST);
   }
 
-  var emptySchemaConfig = {
+  const emptySchemaConfig = {
     description: undefined,
     types: [],
     directives: [],
@@ -31,12 +31,10 @@ export function buildASTSchema(documentAST, options) {
     extensionASTNodes: [],
     assumeValid: false
   };
-  var config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
+  const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
   if (config.astNode == null) {
-    for (var _i2 = 0, _config$types2 = config.types; _i2 < _config$types2.length; _i2++) {
-      var type = _config$types2[_i2];
-
+    for (const type of config.types) {
       switch (type.name) {
         // Note: While this could make early assertions to get the correctly
         // typed values below, that would throw immediately while type system
@@ -56,20 +54,14 @@ export function buildASTSchema(documentAST, options) {
     }
   }
 
-  var directives = config.directives; // If specified directives were not explicitly declared, add them.
+  const {
+    directives
+  } = config; // If specified directives were not explicitly declared, add them.
 
-  var _loop = function _loop(_i4) {
-    var stdDirective = specifiedDirectives[_i4];
-
-    if (directives.every(function (directive) {
-      return directive.name !== stdDirective.name;
-    })) {
+  for (const stdDirective of specifiedDirectives) {
+    if (directives.every(directive => directive.name !== stdDirective.name)) {
       directives.push(stdDirective);
     }
-  };
-
-  for (var _i4 = 0; _i4 < specifiedDirectives.length; _i4++) {
-    _loop(_i4);
   }
 
   return new GraphQLSchema(config);
@@ -80,7 +72,7 @@ export function buildASTSchema(documentAST, options) {
  */
 
 export function buildSchema(source, options) {
-  var document = parse(source, {
+  const document = parse(source, {
     noLocation: options === null || options === void 0 ? void 0 : options.noLocation,
     experimentalFragmentVariables: options === null || options === void 0 ? void 0 : options.experimentalFragmentVariables
   });

@@ -56,22 +56,22 @@ import { dedentBlockStringValue, getBlockStringIndentation } from "../language/b
  */
 
 export function stripIgnoredCharacters(source) {
-  var sourceObj = isSource(source) ? source : new Source(source);
-  var body = sourceObj.body;
-  var lexer = new Lexer(sourceObj);
-  var strippedBody = '';
-  var wasLastAddedTokenNonPunctuator = false;
+  const sourceObj = isSource(source) ? source : new Source(source);
+  const body = sourceObj.body;
+  const lexer = new Lexer(sourceObj);
+  let strippedBody = '';
+  let wasLastAddedTokenNonPunctuator = false;
 
   while (lexer.advance().kind !== TokenKind.EOF) {
-    var currentToken = lexer.token;
-    var tokenKind = currentToken.kind;
+    const currentToken = lexer.token;
+    const tokenKind = currentToken.kind;
     /**
      * Every two non-punctuator tokens should have space between them.
      * Also prevent case of non-punctuator token following by spread resulting
      * in invalid token (e.g. `1...` is invalid Float token).
      */
 
-    var isNonPunctuator = !isPunctuatorTokenKind(currentToken.kind);
+    const isNonPunctuator = !isPunctuatorTokenKind(currentToken.kind);
 
     if (wasLastAddedTokenNonPunctuator) {
       if (isNonPunctuator || currentToken.kind === TokenKind.SPREAD) {
@@ -79,7 +79,7 @@ export function stripIgnoredCharacters(source) {
       }
     }
 
-    var tokenBody = body.slice(currentToken.start, currentToken.end);
+    const tokenBody = body.slice(currentToken.start, currentToken.end);
 
     if (tokenKind === TokenKind.BLOCK_STRING) {
       strippedBody += dedentBlockString(tokenBody);
@@ -95,15 +95,15 @@ export function stripIgnoredCharacters(source) {
 
 function dedentBlockString(blockStr) {
   // skip leading and trailing triple quotations
-  var rawStr = blockStr.slice(3, -3);
-  var body = dedentBlockStringValue(rawStr);
+  const rawStr = blockStr.slice(3, -3);
+  let body = dedentBlockStringValue(rawStr);
 
   if (getBlockStringIndentation(body) > 0) {
     body = '\n' + body;
   }
 
-  var lastChar = body[body.length - 1];
-  var hasTrailingQuote = lastChar === '"' && body.slice(-4) !== '\\"""';
+  const lastChar = body[body.length - 1];
+  const hasTrailingQuote = lastChar === '"' && body.slice(-4) !== '\\"""';
 
   if (hasTrailingQuote || lastChar === '\\') {
     body += '\n';

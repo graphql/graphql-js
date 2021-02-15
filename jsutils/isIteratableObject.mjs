@@ -1,5 +1,3 @@
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 /**
  * Returns true if the provided object is an Object (i.e. not a string literal)
  * and implements the Iterator protocol.
@@ -18,5 +16,5 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
  */
 // eslint-disable-next-line no-redeclare
 export function isIteratableObject(maybeIteratable) {
-  return _typeof(maybeIteratable) === 'object' && typeof (maybeIteratable === null || maybeIteratable === void 0 ? void 0 : maybeIteratable[Symbol.iterator]) === 'function';
+  return typeof maybeIteratable === 'object' && typeof (maybeIteratable === null || maybeIteratable === void 0 ? void 0 : maybeIteratable[Symbol.iterator]) === 'function';
 }

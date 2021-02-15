@@ -1,7 +1,7 @@
 /**
  * The set of allowed kind values for AST nodes.
  */
-export var Kind = Object.freeze({
+export const Kind = Object.freeze({
   // Name
   NAME: 'Name',
   // Document

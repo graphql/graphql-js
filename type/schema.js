@@ -7,7 +7,7 @@ exports.isSchema = isSchema;
 exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
 
-var _objectValues5 = require("../polyfills/objectValues.js");
+var _objectValues = require("../polyfills/objectValues.js");
 
 var _inspect = require("../jsutils/inspect.js");
 
@@ -27,10 +27,6 @@ var _definition = require("./definition.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
 // eslint-disable-next-line no-redeclare
 function isSchema(schema) {
   return (0, _instanceOf.default)(schema, GraphQLSchema);
@@ -38,7 +34,7 @@ function isSchema(schema) {
 
 function assertSchema(schema) {
   if (!isSchema(schema)) {
-    throw new Error("Expected ".concat((0, _inspect.inspect)(schema), " to be a GraphQL schema."));
+    throw new Error(`Expected ${(0, _inspect.inspect)(schema)} to be a GraphQL schema.`);
   }
 
   return schema;
@@ -108,9 +104,9 @@ function assertSchema(schema) {
  */
 
 
-var GraphQLSchema = /*#__PURE__*/function () {
+class GraphQLSchema {
   // Used as a cache for validateSchema().
-  function GraphQLSchema(config) {
+  constructor(config) {
     var _config$directives;
 
     // If this schema was built from a source known to be valid, then it may be
@@ -118,8 +114,8 @@ var GraphQLSchema = /*#__PURE__*/function () {
     this.__validationErrors = config.assumeValid === true ? [] : undefined; // Check for common mistakes during construction to produce early errors.
 
     (0, _isObjectLike.isObjectLike)(config) || (0, _devAssert.devAssert)(0, 'Must provide configuration object.');
-    !config.types || Array.isArray(config.types) || (0, _devAssert.devAssert)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.inspect)(config.types), "."));
-    !config.directives || Array.isArray(config.directives) || (0, _devAssert.devAssert)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.inspect)(config.directives), "."));
+    !config.types || Array.isArray(config.types) || (0, _devAssert.devAssert)(0, `"types" must be Array if provided but got: ${(0, _inspect.inspect)(config.types)}.`);
+    !config.directives || Array.isArray(config.directives) || (0, _devAssert.devAssert)(0, '"directives" must be Array if provided but got: ' + `${(0, _inspect.inspect)(config.directives)}.`);
     this.description = config.description;
     this.extensions = config.extensions && (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
@@ -131,11 +127,10 @@ var GraphQLSchema = /*#__PURE__*/function () {
     this._directives = (_config$directives = config.directives) !== null && _config$directives !== void 0 ? _config$directives : _directives.specifiedDirectives; // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
 
-    var allReferencedTypes = new Set(config.types);
+    const allReferencedTypes = new Set(config.types);
 
     if (config.types != null) {
-      for (var _i2 = 0, _config$types2 = config.types; _i2 < _config$types2.length; _i2++) {
-        var type = _config$types2[_i2];
+      for (const type of config.types) {
         // When we ready to process this type, we remove it from "collected" types
         // and then add it together with all dependent types in the correct position.
         allReferencedTypes.delete(type);
@@ -155,13 +150,10 @@ var GraphQLSchema = /*#__PURE__*/function () {
       collectReferencedTypes(this._subscriptionType, allReferencedTypes);
     }
 
-    for (var _i4 = 0, _this$_directives2 = this._directives; _i4 < _this$_directives2.length; _i4++) {
-      var directive = _this$_directives2[_i4];
-
+    for (const directive of this._directives) {
       // Directives are not validated until validateSchema() is called.
       if ((0, _directives.isDirective)(directive)) {
-        for (var _i6 = 0, _directive$args2 = directive.args; _i6 < _directive$args2.length; _i6++) {
-          var arg = _directive$args2[_i6];
+        for (const arg of directive.args) {
           collectReferencedTypes(arg.type, allReferencedTypes);
         }
       }
@@ -174,29 +166,25 @@ var GraphQLSchema = /*#__PURE__*/function () {
 
     this._implementationsMap = Object.create(null);
 
-    for (var _i8 = 0, _Array$from2 = Array.from(allReferencedTypes); _i8 < _Array$from2.length; _i8++) {
-      var namedType = _Array$from2[_i8];
-
+    for (const namedType of Array.from(allReferencedTypes)) {
       if (namedType == null) {
         continue;
       }
 
-      var typeName = namedType.name;
+      const typeName = namedType.name;
       typeName || (0, _devAssert.devAssert)(0, 'One of the provided types for building the Schema is missing a name.');
 
       if (this._typeMap[typeName] !== undefined) {
-        throw new Error("Schema must contain uniquely named types but contains multiple types named \"".concat(typeName, "\"."));
+        throw new Error(`Schema must contain uniquely named types but contains multiple types named "${typeName}".`);
       }
 
       this._typeMap[typeName] = namedType;
 
       if ((0, _definition.isInterfaceType)(namedType)) {
         // Store implementations by interface.
-        for (var _i10 = 0, _namedType$getInterfa2 = namedType.getInterfaces(); _i10 < _namedType$getInterfa2.length; _i10++) {
-          var iface = _namedType$getInterfa2[_i10];
-
+        for (const iface of namedType.getInterfaces()) {
           if ((0, _definition.isInterfaceType)(iface)) {
-            var implementations = this._implementationsMap[iface.name];
+            let implementations = this._implementationsMap[iface.name];
 
             if (implementations === undefined) {
               implementations = this._implementationsMap[iface.name] = {
@@ -210,82 +198,75 @@ var GraphQLSchema = /*#__PURE__*/function () {
         }
       } else if ((0, _definition.isObjectType)(namedType)) {
         // Store implementations by objects.
-        for (var _i12 = 0, _namedType$getInterfa4 = namedType.getInterfaces(); _i12 < _namedType$getInterfa4.length; _i12++) {
-          var _iface = _namedType$getInterfa4[_i12];
+        for (const iface of namedType.getInterfaces()) {
+          if ((0, _definition.isInterfaceType)(iface)) {
+            let implementations = this._implementationsMap[iface.name];
 
-          if ((0, _definition.isInterfaceType)(_iface)) {
-            var _implementations = this._implementationsMap[_iface.name];
-
-            if (_implementations === undefined) {
-              _implementations = this._implementationsMap[_iface.name] = {
+            if (implementations === undefined) {
+              implementations = this._implementationsMap[iface.name] = {
                 objects: [],
                 interfaces: []
               };
             }
 
-            _implementations.objects.push(namedType);
+            implementations.objects.push(namedType);
           }
         }
       }
     }
   }
 
-  var _proto = GraphQLSchema.prototype;
-
-  _proto.getQueryType = function getQueryType() {
+  getQueryType() {
     return this._queryType;
-  };
+  }
 
-  _proto.getMutationType = function getMutationType() {
+  getMutationType() {
     return this._mutationType;
-  };
+  }
 
-  _proto.getSubscriptionType = function getSubscriptionType() {
+  getSubscriptionType() {
     return this._subscriptionType;
-  };
+  }
 
-  _proto.getTypeMap = function getTypeMap() {
+  getTypeMap() {
     return this._typeMap;
-  };
+  }
 
-  _proto.getType = function getType(name) {
+  getType(name) {
     return this.getTypeMap()[name];
-  };
+  }
 
-  _proto.getPossibleTypes = function getPossibleTypes(abstractType) {
+  getPossibleTypes(abstractType) {
     return (0, _definition.isUnionType)(abstractType) ? abstractType.getTypes() : this.getImplementations(abstractType).objects;
-  };
+  }
 
-  _proto.getImplementations = function getImplementations(interfaceType) {
-    var implementations = this._implementationsMap[interfaceType.name];
+  getImplementations(interfaceType) {
+    const implementations = this._implementationsMap[interfaceType.name];
     return implementations !== null && implementations !== void 0 ? implementations : {
       objects: [],
       interfaces: []
     };
-  };
+  }
 
-  _proto.isSubType = function isSubType(abstractType, maybeSubType) {
-    var map = this._subTypeMap[abstractType.name];
+  isSubType(abstractType, maybeSubType) {
+    let map = this._subTypeMap[abstractType.name];
 
     if (map === undefined) {
       map = Object.create(null);
 
       if ((0, _definition.isUnionType)(abstractType)) {
-        for (var _i14 = 0, _abstractType$getType2 = abstractType.getTypes(); _i14 < _abstractType$getType2.length; _i14++) {
-          var type = _abstractType$getType2[_i14];
+        for (const type of abstractType.getTypes()) {
           map[type.name] = true;
         }
       } else {
-        var implementations = this.getImplementations(abstractType);
+        const implementations = this.getImplementations(abstractType);
 
-        for (var _i16 = 0, _implementations$obje2 = implementations.objects; _i16 < _implementations$obje2.length; _i16++) {
-          var _type = _implementations$obje2[_i16];
-          map[_type.name] = true;
+        for (const type of implementations.objects) {
+          map[type.name] = true;
         }
 
-        for (var _i18 = 0, _implementations$inte2 = implementations.interfaces; _i18 < _implementations$inte2.length; _i18++) {
-          var _type2 = _implementations$inte2[_i18];
-          map[_type2.name] = true;
+        for (const type of implementations.interfaces) {
+          map[type.name] = true;
         }
       }
 
@@ -293,19 +274,17 @@ var GraphQLSchema = /*#__PURE__*/function () {
     }
 
     return map[maybeSubType.name] !== undefined;
-  };
+  }
 
-  _proto.getDirectives = function getDirectives() {
+  getDirectives() {
     return this._directives;
-  };
+  }
 
-  _proto.getDirective = function getDirective(name) {
-    return this.getDirectives().find(function (directive) {
-      return directive.name === name;
-    });
-  };
+  getDirective(name) {
+    return this.getDirectives().find(directive => directive.name === name);
+  }
 
-  _proto.toConfig = function toConfig() {
+  toConfig() {
     var _this$extensionASTNod;
 
     return {
@@ -313,7 +292,7 @@ var GraphQLSchema = /*#__PURE__*/function () {
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
-      types: (0, _objectValues5.objectValues)(this.getTypeMap()),
+      types: (0, _objectValues.objectValues)(this.getTypeMap()),
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
@@ -321,50 +300,41 @@ var GraphQLSchema = /*#__PURE__*/function () {
       assumeValid: this.__validationErrors !== undefined
     };
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-  ;
 
-  _createClass(GraphQLSchema, [{
-    key: Symbol.toStringTag,
-    get: function get() {
-      return 'GraphQLSchema';
-    }
-  }]);
 
-  return GraphQLSchema;
-}();
+  get [Symbol.toStringTag]() {
+    return 'GraphQLSchema';
+  }
+
+}
 
 exports.GraphQLSchema = GraphQLSchema;
 
 function collectReferencedTypes(type, typeSet) {
-  var namedType = (0, _definition.getNamedType)(type);
+  const namedType = (0, _definition.getNamedType)(type);
 
   if (!typeSet.has(namedType)) {
     typeSet.add(namedType);
 
     if ((0, _definition.isUnionType)(namedType)) {
-      for (var _i20 = 0, _namedType$getTypes2 = namedType.getTypes(); _i20 < _namedType$getTypes2.length; _i20++) {
-        var memberType = _namedType$getTypes2[_i20];
+      for (const memberType of namedType.getTypes()) {
         collectReferencedTypes(memberType, typeSet);
       }
     } else if ((0, _definition.isObjectType)(namedType) || (0, _definition.isInterfaceType)(namedType)) {
-      for (var _i22 = 0, _namedType$getInterfa6 = namedType.getInterfaces(); _i22 < _namedType$getInterfa6.length; _i22++) {
-        var interfaceType = _namedType$getInterfa6[_i22];
+      for (const interfaceType of namedType.getInterfaces()) {
         collectReferencedTypes(interfaceType, typeSet);
       }
 
-      for (var _i24 = 0, _objectValues2 = (0, _objectValues5.objectValues)(namedType.getFields()); _i24 < _objectValues2.length; _i24++) {
-        var field = _objectValues2[_i24];
+      for (const field of (0, _objectValues.objectValues)(namedType.getFields())) {
         collectReferencedTypes(field.type, typeSet);
 
-        for (var _i26 = 0, _field$args2 = field.args; _i26 < _field$args2.length; _i26++) {
-          var arg = _field$args2[_i26];
+        for (const arg of field.args) {
           collectReferencedTypes(arg.type, typeSet);
         }
       }
     } else if ((0, _definition.isInputObjectType)(namedType)) {
-      for (var _i28 = 0, _objectValues4 = (0, _objectValues5.objectValues)(namedType.getFields()); _i28 < _objectValues4.length; _i28++) {
-        var _field = _objectValues4[_i28];
-        collectReferencedTypes(_field.type, typeSet);
+      for (const field of (0, _objectValues.objectValues)(namedType.getFields())) {
+        collectReferencedTypes(field.type, typeSet);
       }
     }
   }

@@ -12,48 +12,44 @@ import { specifiedDirectives } from "../../type/directives.mjs";
  * schema and legally positioned.
  */
 export function KnownDirectivesRule(context) {
-  var locationsMap = Object.create(null);
-  var schema = context.getSchema();
-  var definedDirectives = schema ? schema.getDirectives() : specifiedDirectives;
+  const locationsMap = Object.create(null);
+  const schema = context.getSchema();
+  const definedDirectives = schema ? schema.getDirectives() : specifiedDirectives;
 
-  for (var _i2 = 0; _i2 < definedDirectives.length; _i2++) {
-    var directive = definedDirectives[_i2];
+  for (const directive of definedDirectives) {
     locationsMap[directive.name] = directive.locations;
   }
 
-  var astDefinitions = context.getDocument().definitions;
+  const astDefinitions = context.getDocument().definitions;
 
-  for (var _i4 = 0; _i4 < astDefinitions.length; _i4++) {
-    var def = astDefinitions[_i4];
-
+  for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      locationsMap[def.name.value] = def.locations.map(function (name) {
-        return name.value;
-      });
+      locationsMap[def.name.value] = def.locations.map(name => name.value);
     }
   }
 
   return {
-    Directive: function Directive(node, _key, _parent, _path, ancestors) {
-      var name = node.name.value;
-      var locations = locationsMap[name];
+    Directive(node, _key, _parent, _path, ancestors) {
+      const name = node.name.value;
+      const locations = locationsMap[name];
 
       if (!locations) {
-        context.reportError(new GraphQLError("Unknown directive \"@".concat(name, "\"."), node));
+        context.reportError(new GraphQLError(`Unknown directive "@${name}".`, node));
         return;
       }
 
-      var candidateLocation = getDirectiveLocationForASTPath(ancestors);
+      const candidateLocation = getDirectiveLocationForASTPath(ancestors);
 
       if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
-        context.reportError(new GraphQLError("Directive \"@".concat(name, "\" may not be used on ").concat(candidateLocation, "."), node));
+        context.reportError(new GraphQLError(`Directive "@${name}" may not be used on ${candidateLocation}.`, node));
       }
     }
+
   };
 }
 
 function getDirectiveLocationForASTPath(ancestors) {
-  var appliedTo = ancestors[ancestors.length - 1];
+  const appliedTo = ancestors[ancestors.length - 1];
   !Array.isArray(appliedTo) || invariant(0);
 
   switch (appliedTo.kind) {
@@ -111,7 +107,7 @@ function getDirectiveLocationForASTPath(ancestors) {
 
     case Kind.INPUT_VALUE_DEFINITION:
       {
-        var parentNode = ancestors[ancestors.length - 3];
+        const parentNode = ancestors[ancestors.length - 3];
         return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION ? DirectiveLocation.INPUT_FIELD_DEFINITION : DirectiveLocation.ARGUMENT_DEFINITION;
       }
   }

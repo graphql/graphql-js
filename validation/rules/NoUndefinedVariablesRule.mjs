@@ -7,28 +7,32 @@ import { GraphQLError } from "../../error/GraphQLError.mjs";
  * and via fragment spreads, are defined by that operation.
  */
 export function NoUndefinedVariablesRule(context) {
-  var variableNameDefined = Object.create(null);
+  let variableNameDefined = Object.create(null);
   return {
     OperationDefinition: {
-      enter: function enter() {
+      enter() {
         variableNameDefined = Object.create(null);
       },
-      leave: function leave(operation) {
-        var usages = context.getRecursiveVariableUsages(operation);
 
-        for (var _i2 = 0; _i2 < usages.length; _i2++) {
-          var _ref2 = usages[_i2];
-          var node = _ref2.node;
-          var varName = node.name.value;
+      leave(operation) {
+        const usages = context.getRecursiveVariableUsages(operation);
+
+        for (const {
+          node
+        } of usages) {
+          const varName = node.name.value;
 
           if (variableNameDefined[varName] !== true) {
-            context.reportError(new GraphQLError(operation.name ? "Variable \"$".concat(varName, "\" is not defined by operation \"").concat(operation.name.value, "\".") : "Variable \"$".concat(varName, "\" is not defined."), [node, operation]));
+            context.reportError(new GraphQLError(operation.name ? `Variable "$${varName}" is not defined by operation "${operation.name.value}".` : `Variable "$${varName}" is not defined.`, [node, operation]));
           }
         }
       }
+
     },
-    VariableDefinition: function VariableDefinition(node) {
+
+    VariableDefinition(node) {
       variableNameDefined[node.variable.name.value] = true;
     }
+
   };
 }
