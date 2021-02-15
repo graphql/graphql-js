@@ -24,13 +24,13 @@ var _isPromise = require("../jsutils/isPromise.js");
 
 var _isObjectLike = require("../jsutils/isObjectLike.js");
 
-var _isCollection = require("../jsutils/isCollection.js");
-
 var _promiseReduce = require("../jsutils/promiseReduce.js");
 
 var _promiseForObject = require("../jsutils/promiseForObject.js");
 
 var _Path = require("../jsutils/Path.js");
+
+var _isIteratableObject = require("../jsutils/isIteratableObject.js");
 
 var _GraphQLError = require("../error/GraphQLError.js");
 
@@ -593,7 +593,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
 
 function completeListValue(exeContext, returnType, fieldNodes, info, path, result) {
-  if (!(0, _isCollection.isCollection)(result)) {
+  if (!(0, _isIteratableObject.isIteratableObject)(result)) {
     throw new _GraphQLError.GraphQLError("Expected Iterable, but did not find one for field \"".concat(info.parentType.name, ".").concat(info.fieldName, "\"."));
   } // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.

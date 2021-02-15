@@ -15,13 +15,13 @@ var _didYouMean = require("../jsutils/didYouMean.js");
 
 var _isObjectLike = require("../jsutils/isObjectLike.js");
 
-var _isCollection = require("../jsutils/isCollection.js");
-
 var _suggestionList = require("../jsutils/suggestionList.js");
 
 var _printPathArray = require("../jsutils/printPathArray.js");
 
 var _Path = require("../jsutils/Path.js");
+
+var _isIteratableObject = require("../jsutils/isIteratableObject.js");
 
 var _GraphQLError = require("../error/GraphQLError.js");
 
@@ -64,7 +64,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
   if ((0, _definition.isListType)(type)) {
     var itemType = type.ofType;
 
-    if ((0, _isCollection.isCollection)(inputValue)) {
+    if ((0, _isIteratableObject.isIteratableObject)(inputValue)) {
       return Array.from(inputValue, function (itemValue, index) {
         var itemPath = (0, _Path.addPath)(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
