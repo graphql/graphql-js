@@ -2,7 +2,7 @@ import { objectValues } from "../polyfills/objectValues.js";
 import { inspect } from "../jsutils/inspect.js";
 import { invariant } from "../jsutils/invariant.js";
 import { isObjectLike } from "../jsutils/isObjectLike.js";
-import { isCollection } from "../jsutils/isCollection.js";
+import { isIteratableObject } from "../jsutils/isIteratableObject.js";
 import { Kind } from "../language/kinds.js";
 import { GraphQLID } from "../type/scalars.js";
 import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from "../type/definition.js";
@@ -56,7 +56,7 @@ export function astFromValue(value, type) {
   if (isListType(type)) {
     const itemType = type.ofType;
 
-    if (isCollection(value)) {
+    if (isIteratableObject(value)) {
       const valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
       // and it's required to first convert iteratable into array
 

@@ -4,10 +4,10 @@ import { invariant } from "../jsutils/invariant.js";
 import { devAssert } from "../jsutils/devAssert.js";
 import { isPromise } from "../jsutils/isPromise.js";
 import { isObjectLike } from "../jsutils/isObjectLike.js";
-import { isCollection } from "../jsutils/isCollection.js";
 import { promiseReduce } from "../jsutils/promiseReduce.js";
 import { promiseForObject } from "../jsutils/promiseForObject.js";
 import { addPath, pathToArray } from "../jsutils/Path.js";
+import { isIteratableObject } from "../jsutils/isIteratableObject.js";
 import { GraphQLError } from "../error/GraphQLError.js";
 import { locatedError } from "../error/locatedError.js";
 import { Kind } from "../language/kinds.js";
@@ -570,7 +570,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
 
 function completeListValue(exeContext, returnType, fieldNodes, info, path, result) {
-  if (!isCollection(result)) {
+  if (!isIteratableObject(result)) {
     throw new GraphQLError(`Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`);
   } // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
