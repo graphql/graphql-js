@@ -372,11 +372,11 @@ export class Parser {
 
   parseFragmentDefinition() {
     const start = this._lexer.token;
-    this.expectKeyword('fragment'); // Experimental support for defining variables within fragments changes
+    this.expectKeyword('fragment'); // Legacy support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
 
-    if (this._options?.experimentalFragmentVariables === true) {
+    if (this._options?.allowLegacyFragmentVariables === true) {
       return {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
