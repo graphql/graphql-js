@@ -38,9 +38,10 @@ var _ValidationContext = require("./ValidationContext.js");
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-function validate(schema, documentAST, rules = _specifiedRules.specifiedRules, typeInfo = new _TypeInfo.TypeInfo(schema), options = {
+function validate(schema, documentAST, rules = _specifiedRules.specifiedRules, options = {
   maxErrors: undefined
-}) {
+}, // @deprecate will be removed in 17.0.0
+typeInfo = new _TypeInfo.TypeInfo(schema)) {
   documentAST || (0, _devAssert.devAssert)(0, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);

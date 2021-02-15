@@ -22,9 +22,10 @@ import { SDLValidationContext, ValidationContext } from "./ValidationContext.mjs
  * will be created from the provided schema.
  */
 
-export function validate(schema, documentAST, rules = specifiedRules, typeInfo = new TypeInfo(schema), options = {
+export function validate(schema, documentAST, rules = specifiedRules, options = {
   maxErrors: undefined
-}) {
+}, // @deprecate will be removed in 17.0.0
+typeInfo = new TypeInfo(schema)) {
   documentAST || devAssert(0, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
 
   assertValidSchema(schema);
