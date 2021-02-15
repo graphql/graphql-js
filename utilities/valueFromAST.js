@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.js";
 import { keyMap } from "../jsutils/keyMap.js";
 import { inspect } from "../jsutils/inspect.js";
 import { invariant } from "../jsutils/invariant.js";
@@ -111,7 +110,7 @@ export function valueFromAST(valueNode, type, variables) {
     const coercedObj = Object.create(null);
     const fieldNodes = keyMap(valueNode.fields, field => field.name.value);
 
-    for (const field of objectValues(type.getFields())) {
+    for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes[field.name];
 
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {

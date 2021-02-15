@@ -1,4 +1,3 @@
-import { objectEntries } from "../../polyfills/objectEntries.js";
 import { inspect } from "../../jsutils/inspect.js";
 import { GraphQLError } from "../../error/GraphQLError.js";
 import { Kind } from "../../language/kinds.js";
@@ -233,7 +232,7 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const [responseName, fields] of objectEntries(fieldMap)) {
+  for (const [responseName, fields] of Object.entries(fieldMap)) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.

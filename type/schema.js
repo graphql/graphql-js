@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.js";
 import { inspect } from "../jsutils/inspect.js";
 import { toObjMap } from "../jsutils/toObjMap.js";
 import { devAssert } from "../jsutils/devAssert.js";
@@ -270,7 +269,7 @@ export class GraphQLSchema {
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
-      types: objectValues(this.getTypeMap()),
+      types: Object.values(this.getTypeMap()),
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
@@ -301,7 +300,7 @@ function collectReferencedTypes(type, typeSet) {
         collectReferencedTypes(interfaceType, typeSet);
       }
 
-      for (const field of objectValues(namedType.getFields())) {
+      for (const field of Object.values(namedType.getFields())) {
         collectReferencedTypes(field.type, typeSet);
 
         for (const arg of field.args) {
@@ -309,7 +308,7 @@ function collectReferencedTypes(type, typeSet) {
         }
       }
     } else if (isInputObjectType(namedType)) {
-      for (const field of objectValues(namedType.getFields())) {
+      for (const field of Object.values(namedType.getFields())) {
         collectReferencedTypes(field.type, typeSet);
       }
     }

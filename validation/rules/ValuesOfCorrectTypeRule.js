@@ -1,4 +1,3 @@
-import { objectValues } from "../../polyfills/objectValues.js";
 import { keyMap } from "../../jsutils/keyMap.js";
 import { inspect } from "../../jsutils/inspect.js";
 import { didYouMean } from "../../jsutils/didYouMean.js";
@@ -37,7 +36,7 @@ export function ValuesOfCorrectTypeRule(context) {
 
       const fieldNodeMap = keyMap(node.fields, field => field.name.value);
 
-      for (const fieldDef of objectValues(type.getFields())) {
+      for (const fieldDef of Object.values(type.getFields())) {
         const fieldNode = fieldNodeMap[fieldDef.name];
 
         if (!fieldNode && isRequiredInputField(fieldDef)) {

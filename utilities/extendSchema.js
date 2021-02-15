@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.js";
 import { keyMap } from "../jsutils/keyMap.js";
 import { inspect } from "../jsutils/inspect.js";
 import { mapValue } from "../jsutils/mapValue.js";
@@ -100,7 +99,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   return {
     description: schemaDef?.description?.value,
     ...operationTypes,
-    types: objectValues(typeMap),
+    types: Object.values(typeMap),
     directives: [...schemaConfig.directives.map(replaceDirective), ...directiveDefs.map(buildDirective)],
     extensions: undefined,
     astNode: schemaDef ?? schemaConfig.astNode,

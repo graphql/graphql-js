@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.js";
 import { inspect } from "../jsutils/inspect.js";
 import { invariant } from "../jsutils/invariant.js";
 import { keyValMap } from "../jsutils/keyValMap.js";
@@ -17,7 +16,7 @@ export function lexicographicSortSchema(schema) {
   const schemaConfig = schema.toConfig();
   const typeMap = keyValMap(sortByName(schemaConfig.types), type => type.name, sortNamedType);
   return new GraphQLSchema({ ...schemaConfig,
-    types: objectValues(typeMap),
+    types: Object.values(typeMap),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
     query: replaceMaybeType(schemaConfig.query),
     mutation: replaceMaybeType(schemaConfig.mutation),

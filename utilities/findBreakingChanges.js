@@ -1,4 +1,3 @@
-import { objectValues } from "../polyfills/objectValues.js";
 import { keyMap } from "../jsutils/keyMap.js";
 import { inspect } from "../jsutils/inspect.js";
 import { invariant } from "../jsutils/invariant.js";
@@ -109,7 +108,7 @@ function findDirectiveChanges(oldSchema, newSchema) {
 
 function findTypeChanges(oldSchema, newSchema) {
   const schemaChanges = [];
-  const typesDiff = diff(objectValues(oldSchema.getTypeMap()), objectValues(newSchema.getTypeMap()));
+  const typesDiff = diff(Object.values(oldSchema.getTypeMap()), Object.values(newSchema.getTypeMap()));
 
   for (const oldType of typesDiff.removed) {
     schemaChanges.push({
@@ -142,7 +141,7 @@ function findTypeChanges(oldSchema, newSchema) {
 
 function findInputObjectTypeChanges(oldType, newType) {
   const schemaChanges = [];
-  const fieldsDiff = diff(objectValues(oldType.getFields()), objectValues(newType.getFields()));
+  const fieldsDiff = diff(Object.values(oldType.getFields()), Object.values(newType.getFields()));
 
   for (const newField of fieldsDiff.added) {
     if (isRequiredInputField(newField)) {
@@ -244,7 +243,7 @@ function findImplementedInterfacesChanges(oldType, newType) {
 
 function findFieldChanges(oldType, newType) {
   const schemaChanges = [];
-  const fieldsDiff = diff(objectValues(oldType.getFields()), objectValues(newType.getFields()));
+  const fieldsDiff = diff(Object.values(oldType.getFields()), Object.values(newType.getFields()));
 
   for (const oldField of fieldsDiff.removed) {
     schemaChanges.push({
