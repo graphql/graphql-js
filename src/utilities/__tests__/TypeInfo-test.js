@@ -312,7 +312,7 @@ describe('visitWithTypeInfo', () => {
     const complexInputType = testSchema.getType('ComplexInput');
     invariant(complexInputType != null);
 
-    const typeInfo = new TypeInfo(testSchema, undefined, complexInputType);
+    const typeInfo = new TypeInfo(testSchema, complexInputType);
 
     const visited = [];
     visit(
@@ -357,7 +357,7 @@ describe('visitWithTypeInfo', () => {
     const humanType = testSchema.getType('Human');
     invariant(humanType != null);
 
-    const typeInfo = new TypeInfo(testSchema, undefined, humanType);
+    const typeInfo = new TypeInfo(testSchema, humanType);
 
     const ast = parse('{ name, pets { name } }');
     const operationNode = ast.definitions[0];
