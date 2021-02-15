@@ -1,5 +1,3 @@
-import { objectEntries } from '../polyfills/objectEntries';
-
 import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from '../jsutils/ObjMap';
 import { inspect } from '../jsutils/inspect';
 import { toObjMap } from '../jsutils/toObjMap';
@@ -71,7 +69,7 @@ export class GraphQLDirective {
       `@${config.name} args must be an object with argument names as keys.`,
     );
 
-    this.args = objectEntries(args).map(([argName, argConfig]) => ({
+    this.args = Object.entries(args).map(([argName, argConfig]) => ({
       name: argName,
       description: argConfig.description,
       type: argConfig.type,

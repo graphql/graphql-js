@@ -1,5 +1,3 @@
-import { objectValues } from '../polyfills/objectValues';
-
 import { inspect } from '../jsutils/inspect';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -214,7 +212,7 @@ function validateTypes(context: SchemaValidationContext): void {
     context,
   );
   const typeMap = context.schema.getTypeMap();
-  for (const type of objectValues(typeMap)) {
+  for (const type of Object.values(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.
     if (!isNamedType(type)) {
       context.reportError(
@@ -261,7 +259,7 @@ function validateFields(
   context: SchemaValidationContext,
   type: GraphQLObjectType | GraphQLInterfaceType,
 ): void {
-  const fields = objectValues(type.getFields());
+  const fields = Object.values(type.getFields());
 
   // Objects and Interfaces both must define one or more fields.
   if (fields.length === 0) {
@@ -360,7 +358,7 @@ function validateTypeImplementsInterface(
   const typeFieldMap = type.getFields();
 
   // Assert each interface field is implemented.
-  for (const ifaceField of objectValues(iface.getFields())) {
+  for (const ifaceField of Object.values(iface.getFields())) {
     const fieldName = ifaceField.name;
     const typeField = typeFieldMap[fieldName];
 
@@ -523,7 +521,7 @@ function validateInputFields(
   context: SchemaValidationContext,
   inputObj: GraphQLInputObjectType,
 ): void {
-  const fields = objectValues(inputObj.getFields());
+  const fields = Object.values(inputObj.getFields());
 
   if (fields.length === 0) {
     context.reportError(
@@ -586,7 +584,7 @@ function createInputObjectCircularRefsValidator(
     visitedTypes[inputObj.name] = true;
     fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
 
-    const fields = objectValues(inputObj.getFields());
+    const fields = Object.values(inputObj.getFields());
     for (const field of fields) {
       if (isNonNullType(field.type) && isInputObjectType(field.type.ofType)) {
         const fieldType = field.type.ofType;

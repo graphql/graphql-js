@@ -1,5 +1,3 @@
-import { objectValues } from '../polyfills/objectValues';
-
 import type {
   ObjMap,
   ReadOnlyObjMap,
@@ -335,7 +333,7 @@ export class GraphQLSchema {
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
-      types: objectValues(this.getTypeMap()),
+      types: Object.values(this.getTypeMap()),
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
@@ -406,14 +404,14 @@ function collectReferencedTypes(
         collectReferencedTypes(interfaceType, typeSet);
       }
 
-      for (const field of objectValues(namedType.getFields())) {
+      for (const field of Object.values(namedType.getFields())) {
         collectReferencedTypes(field.type, typeSet);
         for (const arg of field.args) {
           collectReferencedTypes(arg.type, typeSet);
         }
       }
     } else if (isInputObjectType(namedType)) {
-      for (const field of objectValues(namedType.getFields())) {
+      for (const field of Object.values(namedType.getFields())) {
         collectReferencedTypes(field.type, typeSet);
       }
     }

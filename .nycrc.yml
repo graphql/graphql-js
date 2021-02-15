@@ -2,7 +2,6 @@ all: true
 include:
   - 'src/'
 exclude:
-  - 'src/polyfills'
   - '**/*-fuzz.js'
   - '**/*.d.ts'
 clean: true
