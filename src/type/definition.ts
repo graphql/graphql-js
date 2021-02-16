@@ -503,22 +503,15 @@ export function assertNamedType(type: unknown): GraphQLNamedType {
   return type;
 }
 
-<<<<<<< HEAD
 export function getNamedType(type: undefined | null): void;
-=======
-export function getNamedType(type: undefined | null): undefined;
->>>>>>> TEMPORARY: Replace `void` with `undefined`
 export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
 export function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
 export function getNamedType(type: GraphQLType): GraphQLNamedType;
 export function getNamedType(
   type: Maybe<GraphQLType>,
-<<<<<<< HEAD
 ): GraphQLNamedType | undefined;
 export function getNamedType(
   type: Maybe<GraphQLType>,
-=======
->>>>>>> TEMPORARY: Replace `void` with `undefined`
 ): GraphQLNamedType | undefined {
   if (type) {
     let unwrappedType = type;
