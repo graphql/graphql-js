@@ -57,6 +57,7 @@ export function validate(
             'Too many validation errors, error limit reached. Validation aborted.',
           ),
         );
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw abortObj;
       }
       errors.push(error);
