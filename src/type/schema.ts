@@ -347,7 +347,7 @@ export class GraphQLSchema {
 
 type TypeMap = ObjMap<GraphQLNamedType>;
 
-export type GraphQLSchemaValidationOptions = {
+export interface GraphQLSchemaValidationOptions {
   /**
    * When building a schema from a GraphQL service's introspection result, it
    * might be safe to assume the schema is valid. Set to true to assume the
@@ -356,7 +356,7 @@ export type GraphQLSchemaValidationOptions = {
    * Default: false
    */
   assumeValid?: boolean;
-};
+}
 
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   description?: Maybe<string>;

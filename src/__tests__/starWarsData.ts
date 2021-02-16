@@ -2,30 +2,30 @@
  * These are types which correspond to the schema.
  * They represent the shape of the data visited during field resolution.
  */
-export type Character = {
+export interface Character {
   id: string;
   name: string;
   friends: Array<string>;
   appearsIn: Array<number>;
-};
+}
 
-export type Human = {
+export interface Human {
   type: 'Human';
   id: string;
   name: string;
   friends: Array<string>;
   appearsIn: Array<number>;
   homePlanet?: string;
-};
+}
 
-export type Droid = {
+export interface Droid {
   type: 'Droid';
   id: string;
   name: string;
   friends: Array<string>;
   appearsIn: Array<number>;
   primaryFunction: string;
-};
+}
 
 /**
  * This defines a basic set of data for our Star Wars Schema.

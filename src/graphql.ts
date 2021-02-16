@@ -56,7 +56,7 @@ import type { Maybe } from './jsutils/Maybe';
  *    If not provided, the default type resolver is used (which looks for a
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
-export type GraphQLArgs = {
+export interface GraphQLArgs {
   schema: GraphQLSchema;
   source: string | Source;
   rootValue?: unknown;
@@ -65,7 +65,7 @@ export type GraphQLArgs = {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
-};
+}
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
   // Always return a Promise for a consistent API.

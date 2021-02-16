@@ -93,7 +93,7 @@ import {
  * Namely, schema of the type system that is currently executing,
  * and the fragments defined in the query document
  */
-export type ExecutionContext = {
+export interface ExecutionContext {
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDefinitionNode>;
   rootValue: unknown;
@@ -103,7 +103,7 @@ export type ExecutionContext = {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   errors: Array<GraphQLError>;
-};
+}
 
 /**
  * The result of GraphQL execution.
@@ -112,19 +112,19 @@ export type ExecutionContext = {
  *   - `data` is the result of a successful execution of the query.
  *   - `extensions` is reserved for adding non-standard properties.
  */
-export type ExecutionResult = {
+export interface ExecutionResult {
   errors?: ReadonlyArray<GraphQLError>;
   data?: ObjMap<unknown> | null;
   extensions?: ObjMap<unknown>;
-};
+}
 
-export type FormattedExecutionResult = {
+export interface FormattedExecutionResult {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   data?: ObjMap<unknown> | null;
   extensions?: ObjMap<unknown>;
-};
+}
 
-export type ExecutionArgs = {
+export interface ExecutionArgs {
   schema: GraphQLSchema;
   document: DocumentNode;
   rootValue?: unknown;
@@ -133,7 +133,7 @@ export type ExecutionArgs = {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
-};
+}
 
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.

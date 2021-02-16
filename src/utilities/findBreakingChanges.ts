@@ -63,15 +63,15 @@ export const DangerousChangeType = Object.freeze({
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
 });
 
-export type BreakingChange = {
+export interface BreakingChange {
   type: keyof typeof BreakingChangeType;
   description: string;
-};
+}
 
-export type DangerousChange = {
+export interface DangerousChange {
   type: keyof typeof DangerousChangeType;
   description: string;
-};
+}
 
 /**
  * Given two schemas, returns an Array containing descriptions of all the types

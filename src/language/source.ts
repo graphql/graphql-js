@@ -2,10 +2,10 @@ import { inspect } from '../jsutils/inspect';
 import { devAssert } from '../jsutils/devAssert';
 import { instanceOf } from '../jsutils/instanceOf';
 
-type Location = {
+interface Location {
   line: number;
   column: number;
-};
+}
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are

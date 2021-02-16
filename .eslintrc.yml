@@ -460,7 +460,7 @@ overrides:
       '@typescript-eslint/class-literal-property-style': off # TODO enable after TS conversion
       '@typescript-eslint/consistent-indexed-object-style': off # TODO enable after TS conversion
       '@typescript-eslint/consistent-type-assertions': off # TODO temporarily disable
-      '@typescript-eslint/consistent-type-definitions': off # TODO consider
+      '@typescript-eslint/consistent-type-definitions': ['error', 'interface']
       '@typescript-eslint/consistent-type-imports': off # TODO enable after TS conversion
       '@typescript-eslint/explicit-function-return-type': off # TODO consider
       '@typescript-eslint/explicit-member-accessibility': off # TODO consider

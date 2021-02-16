@@ -16,10 +16,10 @@ type KindVisitor = {
     | EnterLeaveVisitor<ASTKindToNode[K]>;
 };
 
-type EnterLeaveVisitor<TVisitedNode extends ASTNode> = {
-  readonly enter?: ASTVisitFn<TVisitedNode>;
-  readonly leave?: ASTVisitFn<TVisitedNode>;
-};
+interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
+  readonly enter?: ASTVisitFn<TVisitedNode>,
+  readonly leave?: ASTVisitFn<TVisitedNode>,
+}
 
 /**
  * A visitor is comprised of visit functions, which are called on each node

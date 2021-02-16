@@ -102,7 +102,7 @@ export class GraphQLDirective {
   }
 }
 
-export type GraphQLDirectiveConfig = {
+export interface GraphQLDirectiveConfig {
   name: string;
   description?: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
@@ -110,7 +110,7 @@ export type GraphQLDirectiveConfig = {
   isRepeatable?: Maybe<boolean>;
   extensions?: Maybe<ReadOnlyObjMapLike<unknown>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
-};
+}
 
 interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
   args: GraphQLFieldConfigArgumentMap;
