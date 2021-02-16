@@ -5,7 +5,7 @@ import type { ObjMapLike } from '../ObjMap';
 import { toObjMap } from '../toObjMap';
 
 // Workaround to make ESLint happy
-const __proto__: string = '__proto__';
+const __proto__ = '__proto__';
 
 describe('toObjMap', () => {
   it('convert empty object to ObjMap', () => {

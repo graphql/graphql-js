@@ -480,7 +480,8 @@ overrides:
       '@typescript-eslint/no-for-in-array': error
       '@typescript-eslint/no-implicit-any-catch': off # TODO: Enable after TS convertion
       '@typescript-eslint/no-implied-eval': error
-      '@typescript-eslint/no-inferrable-types': off #TODO temporarily disabled
+      '@typescript-eslint/no-inferrable-types':
+        [error, { ignoreParameters: true, ignoreProperties: true }]
       '@typescript-eslint/no-misused-new': error
       '@typescript-eslint/no-misused-promises': error
       '@typescript-eslint/no-namespace': error
