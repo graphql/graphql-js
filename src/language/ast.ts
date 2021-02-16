@@ -77,7 +77,7 @@ export class Token {
   /**
    * For non-punctuation tokens, represents the interpreted value of the token.
    */
-  readonly value: string | void;
+  readonly value: string | undefined;
 
   /**
    * Tokens exist as nodes in a double-linked-list amongst all tokens
@@ -108,7 +108,7 @@ export class Token {
 
   toJSON(): {
     kind: TokenKindEnum;
-    value: string | void;
+    value: string | undefined;
     line: number;
     column: number;
   } {

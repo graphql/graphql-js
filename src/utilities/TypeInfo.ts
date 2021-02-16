@@ -227,8 +227,8 @@ export class TypeInfo {
       }
       case Kind.OBJECT_FIELD: {
         const objectType: unknown = getNamedType(this.getInputType());
-        let inputFieldType: GraphQLInputType | void;
-        let inputField: GraphQLInputField | void;
+        let inputFieldType: GraphQLInputType | undefined;
+        let inputField: GraphQLInputField | undefined;
         if (isInputObjectType(objectType)) {
           inputField = objectType.getFields()[node.name.value];
           if (inputField) {

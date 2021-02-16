@@ -1,18 +1,18 @@
 import type { Maybe } from './Maybe';
 
 export type Path = {
-  readonly prev: Path | void;
+  readonly prev: Path | undefined;
   readonly key: string | number;
-  readonly typename: string | void;
+  readonly typename: string | undefined;
 };
 
 /**
  * Given a Path and a key, return a new Path containing the new key.
  */
 export function addPath(
-  prev: Readonly<Path> | void,
+  prev: Readonly<Path> | undefined,
   key: string | number,
-  typename: string | void,
+  typename: string | undefined,
 ): Path {
   return { prev, key, typename };
 }

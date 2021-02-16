@@ -33,7 +33,7 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  readonly locations: ReadonlyArray<SourceLocation> | void;
+  readonly locations: ReadonlyArray<SourceLocation> | undefined;
 
   /**
    * An array describing the JSON-path into the execution response which
@@ -41,12 +41,12 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  readonly path: ReadonlyArray<string | number> | void;
+  readonly path: ReadonlyArray<string | number> | undefined;
 
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
-  readonly nodes: ReadonlyArray<ASTNode> | void;
+  readonly nodes: ReadonlyArray<ASTNode> | undefined;
 
   /**
    * The source GraphQL document for the first location of this error.
@@ -54,13 +54,13 @@ export class GraphQLError extends Error {
    * Note that if this Error represents more than one node, the source may not
    * represent nodes after the first node.
    */
-  readonly source: Source | void;
+  readonly source: Source | undefined;
 
   /**
    * An array of character offsets within the source GraphQL document
    * which correspond to this error.
    */
-  readonly positions: ReadonlyArray<number> | void;
+  readonly positions: ReadonlyArray<number> | undefined;
 
   /**
    * The original error thrown from a field resolver during execution.
@@ -70,11 +70,11 @@ export class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  readonly extensions: { [key: string]: unknown } | void;
+  readonly extensions: { [key: string]: unknown } | undefined;
 
   constructor(
     message: string,
-    nodes?: ReadonlyArray<ASTNode> | ASTNode | void | null,
+    nodes?: ReadonlyArray<ASTNode> | ASTNode | undefined | null,
     source?: Maybe<Source>,
     positions?: Maybe<ReadonlyArray<number>>,
     path?: Maybe<ReadonlyArray<string | number>>,

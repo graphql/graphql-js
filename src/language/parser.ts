@@ -751,7 +751,7 @@ export class Parser {
   /**
    * Description : StringValue
    */
-  parseDescription(): void | StringValueNode {
+  parseDescription(): undefined | StringValueNode {
     if (this.peekDescription()) {
       return this.parseStringLiteral();
     }
