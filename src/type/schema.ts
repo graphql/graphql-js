@@ -25,11 +25,8 @@ import type {
   GraphQLInterfaceType,
 } from './definition';
 import { __Schema } from './introspection';
-import {
-  GraphQLDirective,
-  isDirective,
-  specifiedDirectives,
-} from './directives';
+import type { GraphQLDirective } from './directives';
+import { isDirective, specifiedDirectives } from './directives';
 import {
   isObjectType,
   isInterfaceType,
