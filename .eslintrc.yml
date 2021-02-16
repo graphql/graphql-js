@@ -565,7 +565,16 @@ overrides:
       '@typescript-eslint/no-redeclare': error
       '@typescript-eslint/no-shadow': off #TODO temporarily disabled
       '@typescript-eslint/no-unused-expressions': error
-      '@typescript-eslint/no-unused-vars': off #TODO temporarily disabled
+      '@typescript-eslint/no-unused-vars':
+        [
+          error,
+          {
+            vars: all,
+            args: all,
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_T',
+          },
+        ]
       '@typescript-eslint/no-useless-constructor': error
       '@typescript-eslint/require-await': off #TODO temporarily disabled
       '@typescript-eslint/return-await': error
