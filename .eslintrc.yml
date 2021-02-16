@@ -457,22 +457,21 @@ overrides:
       '@typescript-eslint/await-thenable': error
       '@typescript-eslint/ban-ts-comment': [error, { 'ts-expect-error': false }]
       '@typescript-eslint/ban-tslint-comment': error
-      '@typescript-eslint/ban-types': error
+      '@typescript-eslint/ban-types': off # TODO temporarily disabled
       '@typescript-eslint/class-literal-property-style': off # TODO enable after TS conversion
       '@typescript-eslint/consistent-indexed-object-style': off # TODO enable after TS conversion
-      '@typescript-eslint/consistent-type-assertions':
-        [error, { assertionStyle: as, objectLiteralTypeAssertions: never }]
+      '@typescript-eslint/consistent-type-assertions': off # TODO temporarily disable
       '@typescript-eslint/consistent-type-definitions': off # TODO consider
-      '@typescript-eslint/consistent-type-imports': off # TODO enable after TS conversion
+      '@typescript-eslint/consistent-type-imports': error
       '@typescript-eslint/explicit-function-return-type': off # TODO consider
       '@typescript-eslint/explicit-member-accessibility': off # TODO consider
       '@typescript-eslint/explicit-module-boundary-types': off # TODO consider
-      '@typescript-eslint/member-ordering': off # TODO consider
+      '@typescript-eslint/member-ordering': error
       '@typescript-eslint/method-signature-style': error
       '@typescript-eslint/naming-convention': off # TODO consider
       '@typescript-eslint/no-base-to-string': error
       '@typescript-eslint/no-confusing-non-null-assertion': error
-      '@typescript-eslint/no-confusing-void-expression': error
+      '@typescript-eslint/no-confusing-void-expression': off # TODO enable with ignoreArrowShorthand
       '@typescript-eslint/no-dynamic-delete': off
       '@typescript-eslint/no-empty-interface': error
       '@typescript-eslint/no-explicit-any': off # TODO error
@@ -495,20 +494,20 @@ overrides:
       '@typescript-eslint/no-this-alias': error
       '@typescript-eslint/no-type-alias': off # TODO consider
       '@typescript-eslint/no-unnecessary-boolean-literal-compare': error
-      '@typescript-eslint/no-unnecessary-condition': error
+      '@typescript-eslint/no-unnecessary-condition': off # TODO temporary disable
       '@typescript-eslint/no-unnecessary-qualifier': error
       '@typescript-eslint/no-unnecessary-type-arguments': error
       '@typescript-eslint/no-unnecessary-type-assertion': error
-      '@typescript-eslint/no-unnecessary-type-constraint': off # TODO consider
+      '@typescript-eslint/no-unnecessary-type-constraint': error
       '@typescript-eslint/no-unsafe-argument': off # TODO consider
       '@typescript-eslint/no-unsafe-assignment': off # TODO consider
       '@typescript-eslint/no-unsafe-call': off # TODO consider
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
       '@typescript-eslint/no-unsafe-return': off # TODO consider
       '@typescript-eslint/no-var-requires': error
-      '@typescript-eslint/non-nullable-type-assertion-style': error
-      '@typescript-eslint/prefer-as-const': off # TODO consider
-      '@typescript-eslint/prefer-enum-initializers': off # TODO consider
+      '@typescript-eslint/non-nullable-type-assertion-style': off #TODO temporarily disabled
+      '@typescript-eslint/prefer-as-const': error
+      '@typescript-eslint/prefer-enum-initializers': error
       '@typescript-eslint/prefer-for-of': off # TODO switch to error after TS migration
       '@typescript-eslint/prefer-function-type': error
       '@typescript-eslint/prefer-includes': off # TODO switch to error after IE11 drop
@@ -524,12 +523,11 @@ overrides:
       '@typescript-eslint/prefer-string-starts-ends-with': off # TODO switch to error after IE11 drop
       '@typescript-eslint/promise-function-async': off
       '@typescript-eslint/require-array-sort-compare': error
-      '@typescript-eslint/restrict-plus-operands':
-        [error, { checkCompoundAssignments: true }]
-      '@typescript-eslint/restrict-template-expressions': error
+      '@typescript-eslint/restrict-plus-operands': off #TODO temporarily disabled
+      '@typescript-eslint/restrict-template-expressions': off #TODO temporarily disabled
       '@typescript-eslint/sort-type-union-intersection-members': off # TODO consider
       '@typescript-eslint/strict-boolean-expressions': off # TODO consider
-      '@typescript-eslint/switch-exhaustiveness-check': error
+      '@typescript-eslint/switch-exhaustiveness-check': off #TODO temporarily disabled
       '@typescript-eslint/triple-slash-reference': error
       '@typescript-eslint/typedef': off
       '@typescript-eslint/unbound-method': off # TODO consider

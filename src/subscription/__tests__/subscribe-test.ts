@@ -150,6 +150,7 @@ const DummyQueryType = new GraphQLObjectType({
   },
 });
 
+/* eslint-disable @typescript-eslint/require-await */
 // Check all error cases when initializing the subscription.
 describe('Subscription Initialization Phase', () => {
   it('accepts multiple subscription fields defined in schema', async () => {

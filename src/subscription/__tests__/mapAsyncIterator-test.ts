@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { mapAsyncIterator } from '../mapAsyncIterator';
 
+/* eslint-disable @typescript-eslint/require-await */
 describe('mapAsyncIterator', () => {
   it('maps over async generator', async () => {
     async function* source() {
