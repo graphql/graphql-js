@@ -12,7 +12,7 @@ import { GraphQLError } from './GraphQLError';
  */
 export function locatedError(
   rawOriginalError: unknown,
-  nodes: ASTNode | ReadonlyArray<ASTNode> | void | null,
+  nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
   path?: Maybe<ReadonlyArray<string | number>>,
 ): GraphQLError {
   // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.

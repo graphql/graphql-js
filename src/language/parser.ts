@@ -743,7 +743,7 @@ export class Parser {
   /**
    * Description : StringValue
    */
-  parseDescription(): void | StringValueNode {
+  parseDescription(): undefined | StringValueNode {
     if (this.peekDescription()) {
       return this.parseStringLiteral();
     }
@@ -1343,7 +1343,7 @@ export class Parser {
   /**
    * Returns a location object, used to identify the place in the source that created a given parsed object.
    */
-  loc(startToken: Token): Location | void {
+  loc(startToken: Token): Location | undefined {
     if (this._options?.noLocation !== true) {
       return new Location(
         startToken,

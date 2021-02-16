@@ -18,7 +18,7 @@ export function assertValidName(name: string): string {
 /**
  * Returns an Error if a name is invalid.
  */
-export function isValidNameError(name: string): GraphQLError | void {
+export function isValidNameError(name: string): GraphQLError | undefined {
   devAssert(typeof name === 'string', 'Expected name to be a string.');
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new GraphQLError(

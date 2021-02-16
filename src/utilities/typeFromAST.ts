@@ -23,15 +23,15 @@ import { GraphQLList, GraphQLNonNull } from '../type/definition';
 export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NamedTypeNode,
-): GraphQLNamedType | void;
+): GraphQLNamedType | undefined;
 export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: ListTypeNode,
-): GraphQLList<any> | void;
+): GraphQLList<any> | undefined;
 export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NonNullTypeNode,
-): GraphQLNonNull<any> | void;
+): GraphQLNonNull<any> | undefined;
 export function typeFromAST(schema, typeNode) {
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {

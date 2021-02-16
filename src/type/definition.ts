@@ -431,7 +431,7 @@ export function assertNullableType(type: unknown): GraphQLNullableType {
   return type;
 }
 
-export function getNullableType(type: void | null): void;
+export function getNullableType(type: undefined | null): void;
 export function getNullableType<T extends GraphQLNullableType>(type: T): T;
 export function getNullableType<T extends GraphQLNullableType>(
   // FIXME Disabled because of https://github.com/yaacovCR/graphql-tools-fork/issues/40#issuecomment-586671219
@@ -473,7 +473,7 @@ export function assertNamedType(type: unknown): GraphQLNamedType {
   return type;
 }
 
-export function getNamedType(type: void | null): void;
+export function getNamedType(type: undefined | null): void;
 export function getNamedType(type: GraphQLType): GraphQLNamedType;
 export function getNamedType(type) {
   if (type) {
@@ -875,7 +875,7 @@ export type GraphQLTypeResolver<TSource, TContext> = (
   context: TContext,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType,
-) => PromiseOrValue<string | void>;
+) => PromiseOrValue<string | undefined>;
 
 export type GraphQLIsTypeOfFn<TSource, TContext> = (
   source: TSource,

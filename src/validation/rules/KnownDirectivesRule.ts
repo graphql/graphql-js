@@ -69,7 +69,7 @@ export function KnownDirectivesRule(
 
 function getDirectiveLocationForASTPath(
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
-): DirectiveLocationEnum | void {
+): DirectiveLocationEnum | undefined {
   const appliedTo = ancestors[ancestors.length - 1];
   invariant(!Array.isArray(appliedTo));
 
