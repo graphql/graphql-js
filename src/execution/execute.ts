@@ -803,8 +803,7 @@ function completeValue(
   // istanbul ignore next (Not reachable. All possible output types have been considered)
   invariant(
     false,
-    'Cannot complete value of unexpected output type: ' +
-      inspect(returnType as never),
+    'Cannot complete value of unexpected output type: ' + inspect(returnType),
   );
 }
 
