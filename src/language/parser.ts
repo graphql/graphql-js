@@ -168,7 +168,7 @@ export class Parser {
     const token = this.expectToken(TokenKind.NAME);
     return {
       kind: Kind.NAME,
-      value: token.value as string,
+      value: token.value,
       loc: this.loc(token),
     };
   }
@@ -523,14 +523,14 @@ export class Parser {
         this._lexer.advance();
         return {
           kind: Kind.INT,
-          value: token.value as string,
+          value: token.value,
           loc: this.loc(token),
         };
       case TokenKind.FLOAT:
         this._lexer.advance();
         return {
           kind: Kind.FLOAT,
-          value: token.value as string,
+          value: token.value,
           loc: this.loc(token),
         };
       case TokenKind.STRING:
@@ -548,7 +548,7 @@ export class Parser {
           default:
             return {
               kind: Kind.ENUM,
-              value: token.value as string,
+              value: token.value,
               loc: this.loc(token),
             };
         }
@@ -566,7 +566,7 @@ export class Parser {
     this._lexer.advance();
     return {
       kind: Kind.STRING,
-      value: token.value as string,
+      value: token.value,
       block: token.kind === TokenKind.BLOCK_STRING,
       loc: this.loc(token),
     };

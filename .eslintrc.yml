@@ -505,7 +505,7 @@ overrides:
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
       '@typescript-eslint/no-unsafe-return': off # TODO consider
       '@typescript-eslint/no-var-requires': error
-      '@typescript-eslint/non-nullable-type-assertion-style': off #TODO temporarily disabled
+      '@typescript-eslint/non-nullable-type-assertion-style': error
       '@typescript-eslint/prefer-as-const': error
       '@typescript-eslint/prefer-enum-initializers': error
       '@typescript-eslint/prefer-for-of': off # TODO switch to error after TS migration

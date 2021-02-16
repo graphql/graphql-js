@@ -5,7 +5,6 @@ import { invariant } from '../jsutils/invariant';
 import { devAssert } from '../jsutils/devAssert';
 import type { Maybe } from '../jsutils/Maybe';
 
-import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import type {
   DocumentNode,
   TypeNode,
@@ -267,7 +266,7 @@ export function extendSchemaImpl(
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false, 'Unexpected type: ' + inspect(type as never));
+    invariant(false, 'Unexpected type: ' + inspect(type));
   }
 
   function extendInputObjectType(
@@ -432,9 +431,7 @@ export function extendSchemaImpl(
   }
 
   function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
-    const locations = node.locations.map(
-      ({ value }) => value as DirectiveLocationEnum,
-    );
+    const locations = node.locations.map(({ value }) => value);
 
     return new GraphQLDirective({
       name: node.name.value,
