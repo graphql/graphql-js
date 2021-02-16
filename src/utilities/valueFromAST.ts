@@ -147,7 +147,7 @@ export function valueFromAST(
   }
 
   // istanbul ignore next (Not reachable. All possible input types have been considered)
-  invariant(false, 'Unexpected input type: ' + inspect(type as never));
+  invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 
 // Returns true if the provided valueNode is a variable which is not defined

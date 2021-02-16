@@ -158,7 +158,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false, 'Unexpected type: ' + inspect(type as never));
+    invariant(false, 'Unexpected type: ' + inspect(type));
   }
 }
 

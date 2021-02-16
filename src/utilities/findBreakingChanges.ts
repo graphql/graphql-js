@@ -531,7 +531,7 @@ function typeKindName(type: GraphQLNamedType): string {
   }
 
   // istanbul ignore next (Not reachable. All possible named types have been considered)
-  invariant(false, 'Unexpected type: ' + inspect(type as never));
+  invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
 function stringifyValue(value: unknown, type: GraphQLInputType): string {
