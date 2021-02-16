@@ -13,17 +13,14 @@ const example: SomeExtension = {
   string: 'Meaning of life',
 };
 
-// FIXME: The following code block requires a version of TypeScript >= 3.2
-/*
-
 declare module 'graphql' {
-  interface GraphQLObjectTypeExtensions<TSource = any, TContext = any> {
+  interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
     someObjectExtension?: SomeExtension;
   }
   interface GraphQLFieldExtensions<
-    TSource,
-    TContext,
-    TArgs = { [argName: string]: any }
+    _TSource,
+    _TContext,
+    _TArgs = { [argName: string]: any }
   > {
     someFieldExtension?: SomeExtension;
   }
@@ -31,7 +28,6 @@ declare module 'graphql' {
     someArgumentExtension?: SomeExtension;
   }
 }
-*/
 
 const queryType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Query',
