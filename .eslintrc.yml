@@ -497,7 +497,7 @@ overrides:
       '@typescript-eslint/no-unnecessary-condition': off #TODO temporarily disabled
       '@typescript-eslint/no-unnecessary-qualifier': error
       '@typescript-eslint/no-unnecessary-type-arguments': error
-      '@typescript-eslint/no-unnecessary-type-assertion': off #TODO temporarily disabled
+      '@typescript-eslint/no-unnecessary-type-assertion': error
       '@typescript-eslint/no-unnecessary-type-constraint': error
       '@typescript-eslint/no-unsafe-argument': off # TODO consider
       '@typescript-eslint/no-unsafe-assignment': off # TODO consider

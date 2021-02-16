@@ -592,7 +592,7 @@ export function extendSchemaImpl(
 
     switch (astNode.kind) {
       case Kind.OBJECT_TYPE_DEFINITION: {
-        const extensionASTNodes = extensionNodes as any;
+        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLObjectType({
@@ -605,7 +605,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.INTERFACE_TYPE_DEFINITION: {
-        const extensionASTNodes = extensionNodes as any;
+        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLInterfaceType({
@@ -618,7 +618,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.ENUM_TYPE_DEFINITION: {
-        const extensionASTNodes = extensionNodes as any;
+        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLEnumType({
@@ -630,7 +630,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.UNION_TYPE_DEFINITION: {
-        const extensionASTNodes = extensionNodes as any;
+        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLUnionType({
@@ -642,7 +642,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.SCALAR_TYPE_DEFINITION: {
-        const extensionASTNodes = extensionNodes as any;
+        const extensionASTNodes = extensionNodes;
 
         return new GraphQLScalarType({
           name,
@@ -653,7 +653,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
-        const extensionASTNodes = extensionNodes as any;
+        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
 
         return new GraphQLInputObjectType({
