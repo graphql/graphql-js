@@ -44,6 +44,7 @@ export interface ExecutionContext {
  *
  *   - `errors` is included when any errors occurred as a non-empty array.
  *   - `data` is the result of a successful execution of the query.
+ *   - `hasNext` is true if a future payload is expected.
  *   - `extensions` is reserved for adding non-standard properties.
  */
 export interface ExecutionResult<
@@ -53,6 +54,7 @@ export interface ExecutionResult<
   errors?: ReadonlyArray<GraphQLError>;
   // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
   data?: TData | null;
+  hasNext?: boolean;
   extensions?: TExtensions;
 }
 
@@ -63,8 +65,45 @@ export interface FormattedExecutionResult<
   errors?: ReadonlyArray<GraphQLFormattedError>;
   // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
   data?: TData | null;
+  hasNext?: boolean;
   extensions?: TExtensions;
 }
+
+/**
+ * The result of an asynchronous GraphQL patch.
+ *
+ *   - `errors` is included when any errors occurred as a non-empty array.
+ *   - `data` is the result of the additional asynchronous data.
+ *   - `path` is the location of data.
+ *   - `hasNext` is true if a future payload is expected.
+ *   - `label` is the label provided to @defer or @stream.
+ *   - `extensions` is reserved for adding non-standard properties.
+ */
+export interface ExecutionPatchResult<
+  TData = { [key: string]: any },
+  TExtensions = { [key: string]: any }
+> {
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: TData | null;
+  path?: ReadonlyArray<string | number>;
+  label?: string;
+  hasNext: boolean;
+  extensions?: TExtensions;
+}
+
+export interface FormattedExecutionPatchResult<
+  TData = { [key: string]: any },
+  TExtensions = { [key: string]: any }
+> {
+  errors?: ReadonlyArray<GraphQLFormattedError>;
+  data?: TData | null;
+  path?: ReadonlyArray<string | number>;
+  label?: string;
+  hasNext: boolean;
+  extensions?: TExtensions;
+}
+
+export type AsyncExecutionResult = ExecutionResult | ExecutionPatchResult;
 
 export interface ExecutionArgs {
   schema: GraphQLSchema;
@@ -89,7 +128,11 @@ export interface ExecutionArgs {
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult>;
+export function execute(
+  args: ExecutionArgs,
+): PromiseOrValue<
+  ExecutionResult | AsyncIterableIterator<AsyncExecutionResult>
+>;
 export function execute(
   schema: GraphQLSchema,
   document: DocumentNode,
@@ -99,7 +142,9 @@ export function execute(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): PromiseOrValue<ExecutionResult>;
+): PromiseOrValue<
+  ExecutionResult | AsyncIterableIterator<AsyncExecutionResult>
+>;
 
 /**
  * Also implements the "Evaluating requests" section of the GraphQL specification.

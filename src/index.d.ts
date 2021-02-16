@@ -301,6 +301,9 @@ export {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  ExecutionPatchResult,
+  FormattedExecutionPatchResult,
+  AsyncExecutionResult,
 } from './execution/index';
 
 export {

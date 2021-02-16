@@ -1,5 +1,6 @@
 import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 import { isPromise } from './jsutils/isPromise';
+import { isAsyncIterable } from './jsutils/isAsyncIterable';
 
 import type { Source } from './language/source';
 import { parse } from './language/parser';
@@ -13,7 +14,10 @@ import type {
 import type { GraphQLSchema } from './type/schema';
 import { validateSchema } from './type/validate';
 
-import type { ExecutionResult } from './execution/execute';
+import type {
+  ExecutionResult,
+  AsyncExecutionResult,
+} from './execution/execute';
 import { execute } from './execution/execute';
 
 /**
@@ -66,7 +70,9 @@ export type GraphQLArgs = {|
   typeResolver?: ?GraphQLTypeResolver<any, any>,
 |};
 
-export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
+export function graphql(
+  args: GraphQLArgs,
+): Promise<ExecutionResult | AsyncIterable<AsyncExecutionResult>> {
   // Always return a Promise for a consistent API.
   return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
@@ -81,14 +87,17 @@ export function graphqlSync(args: GraphQLArgs): ExecutionResult {
   const result = graphqlImpl(args);
 
   // Assert that the execution was synchronous.
-  if (isPromise(result)) {
+  if (isPromise(result) || isAsyncIterable(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
-  return result;
+  // Note: Flow can't refine isAsyncIterable, so explicit casts are used.
+  return ((result: any): ExecutionResult);
 }
 
-function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
+function graphqlImpl(
+  args: GraphQLArgs,
+): PromiseOrValue<ExecutionResult | AsyncIterable<AsyncExecutionResult>> {
   const {
     schema,
     source,
