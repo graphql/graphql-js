@@ -12,6 +12,7 @@ function expectIntrospectionQuery(options?: IntrospectionOptions) {
       const pattern = toRegExp(name);
 
       expect(query).to.match(pattern);
+      // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
       expect(query.match(pattern)).to.have.lengthOf(times);
     },
     toNotMatch(name: string): void {
