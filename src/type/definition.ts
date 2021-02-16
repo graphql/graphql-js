@@ -433,14 +433,14 @@ export function assertNullableType(type: unknown): GraphQLNullableType {
   return type;
 }
 
-export function getNullableType(type: void | null): void;
+export function getNullableType(type: undefined | null): void;
 export function getNullableType<T extends GraphQLNullableType>(type: T): T;
 export function getNullableType<T extends GraphQLNullableType>(
   type: GraphQLNonNull<T>,
 ): T;
 export function getNullableType(
   type: Maybe<GraphQLType>,
-): GraphQLNullableType | void {
+): GraphQLNullableType | undefined {
   if (type) {
     return isNonNullType(type) ? type.ofType : type;
   }
@@ -481,13 +481,13 @@ export function assertNamedType(type: unknown): GraphQLNamedType {
   return type;
 }
 
-export function getNamedType(type: void | null): void;
+export function getNamedType(type: undefined | null): undefined;
 export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
 export function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
 export function getNamedType(type: GraphQLType): GraphQLNamedType;
 export function getNamedType(
   type: Maybe<GraphQLType>,
-): GraphQLNamedType | void {
+): GraphQLNamedType | undefined {
   if (type) {
     let unwrappedType = type;
     while (isWrappingType(unwrappedType)) {
@@ -893,7 +893,7 @@ export type GraphQLTypeResolver<TSource, TContext> = (
   context: TContext,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType,
-) => PromiseOrValue<string | void>;
+) => PromiseOrValue<string | undefined>;
 
 export type GraphQLIsTypeOfFn<TSource, TContext> = (
   source: TSource,

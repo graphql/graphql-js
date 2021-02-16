@@ -17,8 +17,8 @@ import { executeSync } from '../execute';
 class Dog {
   name: string;
   barks: boolean;
-  mother: Dog | void;
-  father: Dog | void;
+  mother: Dog | undefined;
+  father: Dog | undefined;
   progeny: Array<Dog>;
 
   constructor(name: string, barks: boolean) {
@@ -31,8 +31,8 @@ class Dog {
 class Cat {
   name: string;
   meows: boolean;
-  mother: Cat | void;
-  father: Cat | void;
+  mother: Cat | undefined;
+  father: Cat | undefined;
   progeny: Array<Cat>;
 
   constructor(name: string, meows: boolean) {
@@ -44,13 +44,13 @@ class Cat {
 
 class Person {
   name: string;
-  pets: Array<Dog | Cat> | void;
-  friends: Array<Dog | Cat | Person> | void;
+  pets: Array<Dog | Cat> | undefined;
+  friends: Array<Dog | Cat | Person> | undefined;
 
   constructor(
     name: string,
     pets?: Array<Dog | Cat>,
-    friends?: Array<Dog | Cat | Person> | void,
+    friends?: Array<Dog | Cat | Person> | undefined,
   ) {
     this.name = name;
     this.pets = pets;

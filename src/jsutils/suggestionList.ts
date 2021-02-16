@@ -57,7 +57,7 @@ class LexicalDistance {
     ];
   }
 
-  measure(option: string, threshold: number): number | void {
+  measure(option: string, threshold: number): number | undefined {
     if (this._input === option) {
       return 0;
     }
