@@ -436,6 +436,8 @@ export function assertNullableType(type: unknown): GraphQLNullableType {
 export function getNullableType(type: undefined | null): void;
 export function getNullableType<T extends GraphQLNullableType>(type: T): T;
 export function getNullableType<T extends GraphQLNullableType>(
+  // FIXME Disabled because of https://github.com/yaacovCR/graphql-tools-fork/issues/40#issuecomment-586671219
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   type: GraphQLNonNull<T>,
 ): T;
 export function getNullableType(
