@@ -57,6 +57,9 @@ export { ScalarLeafsRule } from './rules/ScalarLeafsRule';
 // Spec Section: "Subscriptions with Single Root Field"
 export { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule';
 
+// Spec Section: "Stream Directives Are Used On List Fields"
+export { StreamDirectiveOnListFieldRule } from './rules/StreamDirectiveOnListFieldRule';
+
 // Spec Section: "Argument Uniqueness"
 export { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule';
 
