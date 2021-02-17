@@ -121,6 +121,7 @@ export interface ExecutionResult<
   extensions?: TExtensions;
 }
 
+
 export interface FormattedExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
