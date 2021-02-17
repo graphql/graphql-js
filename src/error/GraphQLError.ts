@@ -7,6 +7,18 @@ import type { SourceLocation } from '../language/location';
 import { getLocation } from '../language/location';
 import { printLocation, printSourceLocation } from '../language/printLocation';
 
+function ensureArray<T>(
+  nodes: ReadonlyArray<T> | T | null | undefined,
+): ReadonlyArray<T> | undefined {
+  return Array.isArray(nodes)
+    ? nodes.length !== 0
+      ? nodes
+      : undefined
+    : nodes
+    ? ([nodes] as ReadonlyArray<T>)
+    : undefined;
+}
+
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
@@ -84,13 +96,7 @@ export class GraphQLError extends Error {
     super(message);
 
     // Compute list of blame nodes.
-    const _nodes = Array.isArray(nodes)
-      ? nodes.length !== 0
-        ? nodes
-        : undefined
-      : nodes
-      ? [nodes]
-      : undefined;
+    const _nodes = ensureArray(nodes);
 
     // Compute locations in the source for the given nodes/positions.
     let _source = source;
