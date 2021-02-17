@@ -234,17 +234,22 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       },
       name: {
         type: GraphQLString,
-        resolve: (type) => (type.name !== undefined ? type.name : undefined),
+        resolve: (type) =>
+          'name' in type && type.name ? type.name : undefined,
       },
       description: {
         type: GraphQLString,
         resolve: (type) =>
-          type.description !== undefined ? type.description : undefined,
+          'description' in type && type.description
+            ? type.description
+            : undefined,
       },
       specifiedByUrl: {
         type: GraphQLString,
         resolve: (obj) =>
-          obj.specifiedByUrl !== undefined ? obj.specifiedByUrl : undefined,
+          'specifiedByUrl' in obj && obj.specifiedByUrl
+            ? obj.specifiedByUrl
+            : undefined,
       },
       fields: {
         type: new GraphQLList(new GraphQLNonNull(__Field)),
@@ -309,8 +314,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       },
       ofType: {
         type: __Type,
-        resolve: (type) =>
-          type.ofType !== undefined ? type.ofType : undefined,
+        resolve: (type) => ('ofType' in type ? type.ofType : undefined),
       },
     } as GraphQLFieldConfigMap<GraphQLType, unknown>),
 });

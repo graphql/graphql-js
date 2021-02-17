@@ -312,7 +312,7 @@ export function buildExecutionContext(
     { maxErrors: 50 },
   );
 
-  if (coercedVariableValues.errors) {
+  if ('errors' in coercedVariableValues && coercedVariableValues.errors) {
     return coercedVariableValues.errors;
   }
 
