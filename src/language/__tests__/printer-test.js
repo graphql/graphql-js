@@ -150,7 +150,8 @@ describe('Printer: Query document', () => {
 
     expect(printed).to.equal(
       // $FlowFixMe[incompatible-call]
-      dedent(String.raw`
+      dedent([
+        String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         whoever123is: node(id: [123, 456]) {
           id
@@ -211,7 +212,8 @@ describe('Printer: Query document', () => {
       {
         __typename
       }
-    `),
+    `,
+      ]),
     );
   });
 });
