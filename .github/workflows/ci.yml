@@ -35,6 +35,9 @@ jobs:
       - name: Spellcheck
         run: npm run check:spelling
 
+      - name: Check Types
+        run: npm run check
+
   checkForCommonlyIgnoredFiles:
     name: Check for commonly ignored files
     runs-on: ubuntu-latest
