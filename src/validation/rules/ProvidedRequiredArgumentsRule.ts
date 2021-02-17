@@ -5,7 +5,7 @@ import type { ObjMap } from '../../jsutils/ObjMap';
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ASTVisitor } from '../../language/visitor';
-import type { InputValueDefinitionNode } from '../../language/ast';
+import type { FieldNode, InputValueDefinitionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 
@@ -32,7 +32,7 @@ export function ProvidedRequiredArgumentsRule(
     ...ProvidedRequiredArgumentsOnDirectivesRule(context),
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
-      leave(fieldNode) {
+      leave(fieldNode: FieldNode) {
         const fieldDef = context.getFieldDef();
         if (!fieldDef) {
           return false;

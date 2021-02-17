@@ -8,6 +8,10 @@ import { invariant } from '../../jsutils/invariant';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
+import type {
+  ObjectTypeDefinitionNode,
+  OperationDefinitionNode,
+} from '../../language/ast';
 
 import { GraphQLError, printError } from '../GraphQLError';
 
@@ -17,7 +21,7 @@ const source = new Source(dedent`
   }
 `);
 const ast = parse(source);
-const operationNode = ast.definitions[0];
+const operationNode = ast.definitions[0] as OperationDefinitionNode;
 invariant(operationNode.kind === Kind.OPERATION_DEFINITION);
 const fieldNode = operationNode.selectionSet.selections[0];
 invariant(fieldNode);
@@ -159,7 +163,7 @@ describe('printError', () => {
         'SourceA',
       ),
     );
-    const opA = docA.definitions[0];
+    const opA = docA.definitions[0] as ObjectTypeDefinitionNode;
     invariant(opA.kind === Kind.OBJECT_TYPE_DEFINITION && opA.fields);
     const fieldA = opA.fields[0];
 
@@ -173,7 +177,7 @@ describe('printError', () => {
         'SourceB',
       ),
     );
-    const opB = docB.definitions[0];
+    const opB = docB.definitions[0] as ObjectTypeDefinitionNode;
     invariant(opB.kind === Kind.OBJECT_TYPE_DEFINITION && opB.fields);
     const fieldB = opB.fields[0];
 

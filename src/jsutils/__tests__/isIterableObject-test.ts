@@ -60,7 +60,7 @@ describe('isIterableObject', () => {
     };
     expect(isIterableObject(invalidIterable)).to.equal(false);
 
-    const arrayLike = {};
+    const arrayLike: Record<string, any> = {};
     arrayLike[0] = 'Alpha';
     arrayLike[1] = 'Bravo';
     arrayLike[2] = 'Charlie';

@@ -124,7 +124,7 @@ describe('inspect', () => {
   });
 
   it('detect circular objects', () => {
-    const obj = {};
+    const obj: any = {};
     obj.self = obj;
     obj.deepSelf = { self: obj };
 

@@ -111,7 +111,7 @@ export class GraphQLError extends Error {
       _positions = undefined;
     }
 
-    let _locations;
+    let _locations: Array<SourceLocation>;
     if (positions && source) {
       _locations = positions.map((pos) => getLocation(source, pos));
     } else if (_nodes) {

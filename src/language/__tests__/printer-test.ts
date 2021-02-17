@@ -3,13 +3,17 @@ import { describe, it } from 'mocha';
 
 import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
+import type { FieldNode } from '../ast';
 
 import { parse } from '../parser';
 import { print } from '../printer';
 
 describe('Printer: Query document', () => {
   it('prints minimal ast', () => {
-    const ast = { kind: 'Field', name: { kind: 'Name', value: 'foo' } };
+    const ast: FieldNode = {
+      kind: 'Field',
+      name: { kind: 'Name', value: 'foo' },
+    };
     expect(print(ast)).to.equal('foo');
   });
 

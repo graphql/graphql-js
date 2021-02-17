@@ -63,7 +63,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
     }
-    return replaceNamedType(type);
+    return replaceNamedType(type as GraphQLNamedType) as T;
   }
 
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {

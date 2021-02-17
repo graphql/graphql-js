@@ -47,7 +47,9 @@ export function printSourceLocation(
       locationStr +
       printPrefixedLines([
         [`${lineNum} |`, subLines[0]],
-        ...subLines.slice(1, subLineIndex + 1).map((subLine) => ['|', subLine]),
+        ...subLines
+          .slice(1, subLineIndex + 1)
+          .map<[string, string]>((subLine) => ['|', subLine]),
         ['|', '^'.padStart(subLineColumnNum)],
         ['|', subLines[subLineIndex + 1]],
       ])

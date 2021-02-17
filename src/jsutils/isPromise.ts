@@ -3,5 +3,5 @@
  * otherwise returns false.
  */
 export function isPromise(value: unknown): value is Promise<unknown> {
-  return typeof value?.then === 'function';
+  return typeof (value as any)?.then === 'function';
 }

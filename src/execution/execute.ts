@@ -315,7 +315,6 @@ export function buildExecutionContext(
     return coercedVariableValues.errors;
   }
 
-  // @ts-expect-error
   return {
     schema,
     fragments,

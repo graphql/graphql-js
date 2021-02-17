@@ -517,7 +517,7 @@ describe('Visitor', () => {
     const argsStack = [];
 
     visit(ast, {
-      enter(node, key, parent) {
+      enter(node, key, parent: any) {
         visited.push([
           'enter',
           node.kind,
@@ -529,7 +529,7 @@ describe('Visitor', () => {
         argsStack.push([...arguments]);
       },
 
-      leave(node, key, parent) {
+      leave(node, key, parent: any) {
         visited.push([
           'leave',
           node.kind,
