@@ -78,7 +78,7 @@ const tarkin: Human = {
   appearsIn: [4],
 };
 
-const humanData: { [id: string]: Human } = {
+const humanData: Record<string, Human> = {
   [luke.id]: luke,
   [vader.id]: vader,
   [han.id]: han,
@@ -104,7 +104,7 @@ const artoo: Droid = {
   primaryFunction: 'Astromech',
 };
 
-const droidData: { [id: string]: Droid } = {
+const droidData: Record<string, Droid> = {
   [threepio.id]: threepio,
   [artoo.id]: artoo,
 };

@@ -70,7 +70,7 @@ export class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  readonly extensions: { [key: string]: unknown } | undefined;
+  readonly extensions: Record<string, unknown> | undefined;
 
   constructor(
     message: string,
@@ -79,7 +79,7 @@ export class GraphQLError extends Error {
     positions?: Maybe<ReadonlyArray<number>>,
     path?: Maybe<ReadonlyArray<string | number>>,
     originalError?: Maybe<Error & { readonly extensions?: unknown }>,
-    extensions?: Maybe<{ [key: string]: unknown }>,
+    extensions?: Maybe<Record<string, unknown>>,
   ) {
     super(message);
 
