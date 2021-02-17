@@ -23,9 +23,16 @@ import { valueFromAST } from '../utilities/valueFromAST';
 import { coerceInputValue } from '../utilities/coerceInputValue';
 import type { Maybe } from '../jsutils/Maybe';
 
+export interface CoercedVariableValuesErrors {
+  errors: ReadonlyArray<GraphQLError>;
+}
+export interface CoercedVariableValuesData {
+  coerced: Record<string, unknown>;
+}
+
 type CoercedVariableValues =
-  | { errors: ReadonlyArray<GraphQLError> }
-  | { coerced: { [variable: string]: unknown } };
+  | CoercedVariableValuesData
+  | CoercedVariableValuesErrors;
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
