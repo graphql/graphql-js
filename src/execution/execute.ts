@@ -239,7 +239,7 @@ export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
   rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
-): undefined {
+) {
   devAssert(document, 'Must provide document.');
 
   // If the schema used for execution is invalid, throw an error.
