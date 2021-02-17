@@ -6,6 +6,7 @@ import { invariant } from '../../jsutils/invariant';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
+import type { OperationDefinitionNode } from '../../language/ast';
 
 import type { GraphQLArgumentConfig } from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
@@ -1007,7 +1008,7 @@ describe('Execute: Handles inputs', () => {
       }
     `);
 
-    const operation = doc.definitions[0];
+    const operation = doc.definitions[0] as OperationDefinitionNode;
     invariant(operation.kind === Kind.OPERATION_DEFINITION);
     const { variableDefinitions } = operation;
     invariant(variableDefinitions != null);

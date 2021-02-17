@@ -6,6 +6,7 @@ import {
   isTypeDefinitionNode,
   isTypeExtensionNode,
 } from '../../language/predicates';
+import type { DirectiveNode } from '../../language/ast';
 
 import { specifiedDirectives } from '../../type/directives';
 
@@ -48,7 +49,7 @@ export function UniqueDirectivesPerLocationRule(
     // them all, just listen for entering any node, and check to see if it
     // defines any directives.
     enter(node) {
-      if (node.directives == null) {
+      if ((node as any).directives == null) {
         return;
       }
 
@@ -68,7 +69,11 @@ export function UniqueDirectivesPerLocationRule(
         seenDirectives = Object.create(null);
       }
 
-      for (const directive of node.directives) {
+      for (const directive of (
+        node as {
+          readonly directives?: ReadonlyArray<DirectiveNode>;
+        }
+      ).directives) {
         const directiveName = directive.name.value;
 
         if (uniqueDirectiveMap[directiveName]) {

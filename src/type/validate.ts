@@ -117,7 +117,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
       `Query root type must be Object type, it cannot be ${inspect(
         queryType,
       )}.`,
-      getOperationTypeNode(schema, 'query') ?? queryType.astNode,
+      getOperationTypeNode(schema, 'query') ?? (queryType as any).astNode,
     );
   }
 
@@ -126,7 +126,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     context.reportError(
       'Mutation root type must be Object type if provided, it cannot be ' +
         `${inspect(mutationType)}.`,
-      getOperationTypeNode(schema, 'mutation') ?? mutationType.astNode,
+      getOperationTypeNode(schema, 'mutation') ?? (mutationType as any).astNode,
     );
   }
 
@@ -135,7 +135,8 @@ function validateRootTypes(context: SchemaValidationContext): void {
     context.reportError(
       'Subscription root type must be Object type if provided, it cannot be ' +
         `${inspect(subscriptionType)}.`,
-      getOperationTypeNode(schema, 'subscription') ?? subscriptionType.astNode,
+      getOperationTypeNode(schema, 'subscription') ??
+        (subscriptionType as any).astNode,
     );
   }
 }
@@ -157,7 +158,7 @@ function validateDirectives(context: SchemaValidationContext): void {
     if (!isDirective(directive)) {
       context.reportError(
         `Expected directive but got: ${inspect(directive)}.`,
-        directive?.astNode,
+        (directive as any)?.astNode,
       );
       continue;
     }
@@ -211,7 +212,7 @@ function validateTypes(context: SchemaValidationContext): void {
     if (!isNamedType(type)) {
       context.reportError(
         `Expected GraphQL named type but got: ${inspect(type)}.`,
-        type.astNode,
+        (type as any).astNode,
       );
       continue;
     }
