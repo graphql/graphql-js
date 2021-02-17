@@ -6,6 +6,7 @@ import { invariant } from '../../jsutils/invariant';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
+import type { OperationDefinitionNode } from '../../language/ast';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLInt, GraphQLBoolean, GraphQLString } from '../../type/scalars';
@@ -262,7 +263,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'variableValues',
     );
 
-    const operation = document.definitions[0];
+    const operation = document.definitions[0] as OperationDefinitionNode;
     invariant(operation.kind === Kind.OPERATION_DEFINITION);
 
     expect(resolvedInfo).to.include({

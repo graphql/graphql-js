@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
+import type { FieldNode } from '../ast';
 
 import { parse } from '../parser';
 import { print } from '../printer';

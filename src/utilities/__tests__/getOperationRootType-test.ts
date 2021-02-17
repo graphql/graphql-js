@@ -75,7 +75,7 @@ describe('getOperationRootType', () => {
       }
     `);
 
-    const schemaNode = doc.definitions[0];
+    const schemaNode = doc.definitions[0] as SchemaDefinitionNode;
     invariant(schemaNode.kind === Kind.SCHEMA_DEFINITION);
     const [queryNode, mutationNode, subscriptionNode] =
       schemaNode.operationTypes;
