@@ -886,7 +886,7 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
 export type GraphQLFieldResolver<
   TSource,
   TContext,
-  TArgs = { [argument: string]: any }
+  TArgs = Record<string, any>
 > = (
   source: TSource,
   args: TArgs,
@@ -904,13 +904,13 @@ export interface GraphQLResolveInfo {
   readonly fragments: ObjMap<FragmentDefinitionNode>;
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
-  readonly variableValues: { [variable: string]: unknown };
+  readonly variableValues: Record<string, unknown>;
 }
 
 export interface GraphQLFieldConfig<
   TSource,
   TContext,
-  TArgs = { [argument: string]: any }
+  TArgs = Record<string, any>
 > {
   description?: Maybe<string>;
   type: GraphQLOutputType;
@@ -937,11 +937,7 @@ export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldConfig<TSource, TContext>
 >;
 
-export interface GraphQLField<
-  TSource,
-  TContext,
-  TArgs = { [argument: string]: any }
-> {
+export interface GraphQLField<TSource, TContext, TArgs = Record<string, any>> {
   name: string;
   description: Maybe<string>;
   type: GraphQLOutputType;
