@@ -6,6 +6,7 @@ import { invariant } from '../../jsutils/invariant';
 import { parse, parseValue } from '../../language/parser';
 import { print } from '../../language/printer';
 import { visit } from '../../language/visitor';
+import type { OperationDefinitionNode } from '../../language/ast';
 
 import { getNamedType, isCompositeType } from '../../type/definition';
 
@@ -360,7 +361,7 @@ describe('visitWithTypeInfo', () => {
     const typeInfo = new TypeInfo(testSchema, humanType);
 
     const ast = parse('{ name, pets { name } }');
-    const operationNode = ast.definitions[0];
+    const operationNode = ast.definitions[0] as OperationDefinitionNode;
     invariant(operationNode.kind === 'OperationDefinition');
 
     const visited = [];

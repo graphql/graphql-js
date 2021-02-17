@@ -22,7 +22,7 @@ export function locatedError(
       : new Error('Unexpected error value: ' + inspect(rawOriginalError));
 
   // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
-  if (Array.isArray(originalError.path)) {
+  if (Array.isArray((originalError as any).path)) {
     return originalError as any;
   }
 

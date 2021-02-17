@@ -3,7 +3,11 @@ import { describe, it } from 'mocha';
 
 import { invariant } from '../../jsutils/invariant';
 
-import type { DocumentNode } from '../../language/ast';
+import type {
+  DocumentNode,
+  OperationDefinitionNode,
+  SchemaDefinitionNode,
+} from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
@@ -35,7 +39,7 @@ const subscriptionType = new GraphQLObjectType({
 });
 
 function getOperationNode(doc: DocumentNode) {
-  const operationNode = doc.definitions[0];
+  const operationNode = doc.definitions[0] as OperationDefinitionNode;
   invariant(operationNode && operationNode.kind === Kind.OPERATION_DEFINITION);
   return operationNode;
 }
@@ -75,7 +79,7 @@ describe('getOperationRootType', () => {
       }
     `);
 
-    const schemaNode = doc.definitions[0];
+    const schemaNode = doc.definitions[0] as SchemaDefinitionNode;
     invariant(schemaNode && schemaNode.kind === Kind.SCHEMA_DEFINITION);
     const [
       queryNode,
@@ -149,9 +153,9 @@ describe('getOperationRootType', () => {
   it('Throws when operation not a valid operation kind', () => {
     const testSchema = new GraphQLSchema({});
     const doc = parse('{ field }');
-    const operationNode = {
+    const operationNode: OperationDefinitionNode = {
       ...getOperationNode(doc),
-      operation: 'non_existent_operation',
+      operation: 'non_existent_operation' as any,
     };
 
     expect(() => getOperationRootType(testSchema, operationNode)).to.throw(

@@ -57,11 +57,11 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
 
   function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
-      return new GraphQLList(replaceType(type.ofType));
+      return new GraphQLList(replaceType(type.ofType)) as T;
     } else if (isNonNullType(type)) {
-      return new GraphQLNonNull(replaceType(type.ofType));
+      return new GraphQLNonNull(replaceType(type.ofType)) as T;
     }
-    return replaceNamedType(type);
+    return replaceNamedType(type as GraphQLNamedType) as T;
   }
 
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {

@@ -61,6 +61,7 @@ import {
 import { typeFromAST } from '../utilities/typeFromAST';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
+import type { CoercedVariableValuesData } from './values';
 import {
   getVariableValues,
   getArgumentValues,
@@ -322,7 +323,8 @@ export function buildExecutionContext(
     rootValue,
     contextValue,
     operation,
-    variableValues: coercedVariableValues.coerced,
+    variableValues: (coercedVariableValues as CoercedVariableValuesData)
+      .coerced,
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     errors: [],

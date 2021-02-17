@@ -125,7 +125,7 @@ export class Token {
  * @internal
  */
 export function isNode(maybeNode: unknown): maybeNode is ASTNode {
-  return maybeNode != null && typeof maybeNode.kind === 'string';
+  return maybeNode != null && typeof (maybeNode as any).kind === 'string';
 }
 
 /**

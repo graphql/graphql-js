@@ -217,12 +217,12 @@ export function extendSchemaImpl(
 
   function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
-      return new GraphQLList(replaceType(type.ofType));
+      return new GraphQLList(replaceType(type.ofType)) as T;
     }
     if (isNonNullType(type)) {
-      return new GraphQLNonNull(replaceType(type.ofType));
+      return new GraphQLNonNull(replaceType(type.ofType)) as T;
     }
-    return replaceNamedType(type);
+    return replaceNamedType(type) as T;
   }
 
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
@@ -667,10 +667,7 @@ export function extendSchemaImpl(
     }
 
     // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
-    invariant(
-      false,
-      'Unexpected type definition node: ' + inspect(astNode as never),
-    );
+    invariant(false, 'Unexpected type definition node: ' + inspect(astNode));
   }
 }
 
