@@ -1148,6 +1148,7 @@ describe('extendSchema', () => {
       'Must provide valid Document AST',
     );
 
+    // @ts-expect-error
     expect(() => extendSchema(schema, {})).to.throw(
       'Must provide valid Document AST',
     );

@@ -305,6 +305,7 @@ describe('Subscription Initialization Phase', () => {
     );
 
     await expectPromiseToThrow(
+      // @ts-expect-error
       () => subscribe({ document }),
       'Expected undefined to be a GraphQL schema.',
     );
@@ -317,6 +318,7 @@ describe('Subscription Initialization Phase', () => {
     );
 
     await expectPromiseToThrow(
+      // @ts-expect-error
       () => subscribe({ schema: emailSchema }),
       'Must provide document.',
     );
@@ -345,6 +347,7 @@ describe('Subscription Initialization Phase', () => {
   it('should pass through unexpected errors thrown in subscribe', async () => {
     let expectedError;
     try {
+      // @ts-expect-error
       await subscribe({ schema: emailSchema, document: {} });
     } catch (error) {
       expectedError = error;

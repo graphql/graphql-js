@@ -629,6 +629,7 @@ describe('Type System: build schema from introspection', () => {
         'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: null.',
       );
 
+      // @ts-expect-error
       expect(() => buildClientSchema({})).to.throw(
         'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: {}.',
       );

@@ -328,8 +328,11 @@ describe('Type System: Schema', () => {
       });
 
       it('checks the configuration for mistakes', () => {
+        // @ts-expect-error
         expect(() => new GraphQLSchema(JSON.parse)).to.throw();
+        // @ts-expect-error
         expect(() => new GraphQLSchema({ types: {} })).to.throw();
+        // @ts-expect-error
         expect(() => new GraphQLSchema({ directives: {} })).to.throw();
       });
     });
@@ -358,6 +361,7 @@ describe('Type System: Schema', () => {
         });
         const types = [{}, query, {}];
 
+        // @ts-expect-error
         expect(() => new GraphQLSchema({ query, types })).to.throw(
           'One of the provided types for building the Schema is missing a name.',
         );

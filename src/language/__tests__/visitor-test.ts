@@ -263,6 +263,7 @@ describe('Visitor', () => {
         if (node.kind === 'Field' && node.name.value === 'a') {
           return {
             kind: 'Field',
+            // @ts-expect-error
             selectionSet: [addedField].concat(node.selectionSet),
           };
         }

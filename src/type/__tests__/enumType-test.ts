@@ -364,6 +364,7 @@ describe('Type System: Enum Values', () => {
     const oneValue = ComplexEnum.getValue('ONE');
     expect(oneValue).to.include({ name: 'ONE', value: Complex1 });
 
+    // @ts-expect-error
     const badUsage = ComplexEnum.getValue(Complex1);
     expect(badUsage).to.equal(undefined);
   });

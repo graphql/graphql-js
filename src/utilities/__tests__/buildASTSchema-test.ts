@@ -1100,6 +1100,7 @@ describe('Schema Builder', () => {
       'Must provide valid Document AST',
     );
 
+    // @ts-expect-error
     expect(() => buildASTSchema({})).to.throw(
       'Must provide valid Document AST',
     );

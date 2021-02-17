@@ -6,6 +6,7 @@ import { GraphQLError } from '../GraphQLError';
 
 describe('formatError: default error formatter', () => {
   it('uses default message', () => {
+    // @ts-expect-error
     const e = new GraphQLError();
 
     expect(formatError(e)).to.deep.equal({

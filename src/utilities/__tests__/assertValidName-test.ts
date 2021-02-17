@@ -15,6 +15,7 @@ describe('assertValidName()', () => {
   });
 
   it('throws for non-strings', () => {
+    // @ts-expect-error
     expect(() => assertValidName({})).to.throw('Expected name to be a string.');
   });
 

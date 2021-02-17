@@ -391,6 +391,7 @@ describe('Type System: A Schema must have Object root types', () => {
   it('rejects a Schema whose types are incorrectly typed', () => {
     const schema = new GraphQLSchema({
       query: SomeObjectType,
+      // @ts-expect-error
       types: [{ name: 'SomeType' }, SomeDirective],
     });
     expect(validateSchema(schema)).to.deep.equal([
@@ -407,6 +408,7 @@ describe('Type System: A Schema must have Object root types', () => {
   it('rejects a Schema whose directives are incorrectly typed', () => {
     const schema = new GraphQLSchema({
       query: SomeObjectType,
+      // @ts-expect-error
       directives: [null, 'SomeDirective', SomeScalarType],
     });
     expect(validateSchema(schema)).to.deep.equal([
@@ -686,6 +688,7 @@ describe('Type System: Union types must be valid', () => {
     for (const memberType of badUnionMemberTypes) {
       const badUnion = new GraphQLUnionType({
         name: 'BadUnion',
+        // @ts-expect-error
         types: [memberType],
       });
       const badSchema = schemaWithFieldType(badUnion);
@@ -1045,6 +1048,7 @@ describe('Type System: Object fields must have output types', () => {
   for (const type of notOutputTypes) {
     const typeStr = inspect(type);
     it(`rejects a non-output type as an Object field type: ${typeStr}`, () => {
+      // @ts-expect-error
       const schema = schemaWithObjectField({ type });
       expect(validateSchema(schema)).to.deep.equal([
         {
@@ -1055,6 +1059,7 @@ describe('Type System: Object fields must have output types', () => {
   }
 
   it('rejects a non-type value as an Object field type', () => {
+    // @ts-expect-error
     const schema = schemaWithObjectField({ type: Number });
     expect(validateSchema(schema)).to.deep.equal([
       {
@@ -1366,6 +1371,7 @@ describe('Type System: Interface fields must have output types', () => {
   for (const type of notOutputTypes) {
     const typeStr = inspect(type);
     it(`rejects a non-output type as an Interface field type: ${typeStr}`, () => {
+      // @ts-expect-error
       const schema = schemaWithInterfaceField({ type });
       expect(validateSchema(schema)).to.deep.equal([
         {
@@ -1379,6 +1385,7 @@ describe('Type System: Interface fields must have output types', () => {
   }
 
   it('rejects a non-type value as an Interface field type', () => {
+    // @ts-expect-error
     const schema = schemaWithInterfaceField({ type: Number });
     expect(validateSchema(schema)).to.deep.equal([
       {
@@ -1499,6 +1506,7 @@ describe('Type System: Arguments must have input types', () => {
   for (const type of notInputTypes) {
     const typeStr = inspect(type);
     it(`rejects a non-input type as a field arg type: ${typeStr}`, () => {
+      // @ts-expect-error
       const schema = schemaWithArg({ type });
       expect(validateSchema(schema)).to.deep.equal([
         {
@@ -1512,6 +1520,7 @@ describe('Type System: Arguments must have input types', () => {
   }
 
   it('rejects a non-type value as a field arg type', () => {
+    // @ts-expect-error
     const schema = schemaWithArg({ type: Number });
     expect(validateSchema(schema)).to.deep.equal([
       {
@@ -1630,6 +1639,7 @@ describe('Type System: Input Object fields must have input types', () => {
   for (const type of notInputTypes) {
     const typeStr = inspect(type);
     it(`rejects a non-input type as an input field type: ${typeStr}`, () => {
+      // @ts-expect-error
       const schema = schemaWithInputField({ type });
       expect(validateSchema(schema)).to.deep.equal([
         {
@@ -1640,6 +1650,7 @@ describe('Type System: Input Object fields must have input types', () => {
   }
 
   it('rejects a non-type value as an input field type', () => {
+    // @ts-expect-error
     const schema = schemaWithInputField({ type: Number });
     expect(validateSchema(schema)).to.deep.equal([
       {
