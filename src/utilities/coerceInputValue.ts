@@ -32,6 +32,7 @@ export function coerceInputValue(
   type: GraphQLInputType,
   onError: OnErrorCB = defaultOnError,
 ): unknown {
+  // @ts-expect-error: FIXME
   return coerceInputValueImpl(inputValue, type, onError);
 }
 
@@ -78,10 +79,12 @@ function coerceInputValueImpl(
     if (isIteratableObject(inputValue)) {
       return Array.from(inputValue, (itemValue, index) => {
         const itemPath = addPath(path, index, undefined);
+        // @ts-expect-error: FIXME
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
     }
     // Lists accept a non-list value as a list of one.
+    // @ts-expect-error: FIXME
     return [coerceInputValueImpl(inputValue, itemType, onError, path)];
   }
 

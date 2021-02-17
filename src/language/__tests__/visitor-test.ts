@@ -50,6 +50,7 @@ function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
 }
 
 function getValue(node: ASTNode) {
+  // @ts-expect-error: FIXME
   return node.value != null ? node.value : undefined;
 }
 

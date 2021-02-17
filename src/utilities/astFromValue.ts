@@ -69,6 +69,7 @@ export function astFromValue(
       // Since we transpile for-of in loose mode it doesn't support iterators
       // and it's required to first convert iteratable into array
       for (const item of Array.from(value)) {
+        // @ts-expect-error: FIXME
         const itemNode = astFromValue(item, itemType);
         if (itemNode != null) {
           valuesNodes.push(itemNode);
@@ -76,6 +77,7 @@ export function astFromValue(
       }
       return { kind: Kind.LIST, values: valuesNodes };
     }
+    // @ts-expect-error: FIXME
     return astFromValue(value, itemType);
   }
 

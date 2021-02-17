@@ -659,7 +659,8 @@ function doTypesConflict(
   }
   if (isNonNullType(type1)) {
     return isNonNullType(type2)
-      ? doTypesConflict(type1.ofType, type2.ofType)
+      ? // @ts-expect-error: FIXME
+        doTypesConflict(type1.ofType, type2.ofType)
       : true;
   }
   if (isNonNullType(type2)) {

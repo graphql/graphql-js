@@ -192,6 +192,7 @@ export class TypeInfo {
         break;
       }
       case Kind.VARIABLE_DEFINITION: {
+        // @ts-expect-error: FIXME
         const inputType: unknown = typeFromAST(schema, node.type);
         this._inputTypeStack.push(
           isInputType(inputType) ? inputType : undefined,

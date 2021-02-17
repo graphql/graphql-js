@@ -87,6 +87,7 @@ function coerceVariableValues(
   const coercedValues = {};
   for (const varDefNode of varDefNodes) {
     const varName = varDefNode.variable.name.value;
+    // @ts-expect-error: FIXME
     const varType = typeFromAST(schema, varDefNode.type);
     if (!isInputType(varType)) {
       // Must use input types for variables. This should be caught during

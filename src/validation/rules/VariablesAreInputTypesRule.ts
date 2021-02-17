@@ -21,6 +21,7 @@ export function VariablesAreInputTypesRule(
 ): ASTVisitor {
   return {
     VariableDefinition(node: VariableDefinitionNode) {
+      // @ts-expect-error: FIXME
       const type = typeFromAST(context.getSchema(), node.type);
 
       if (type && !isInputType(type)) {

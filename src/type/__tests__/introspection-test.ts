@@ -1578,6 +1578,7 @@ describe('Introspection', () => {
     const result = graphqlSync({
       schema,
       source,
+      // @ts-expect-error FIX ME
       fieldResolver,
       typeResolver,
     });

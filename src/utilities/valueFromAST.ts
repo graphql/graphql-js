@@ -87,6 +87,7 @@ export function valueFromAST(
           }
           coercedValues.push(null);
         } else {
+          // @ts-expect-error: FIXME
           const itemValue = valueFromAST(itemNode, itemType, variables);
           if (itemValue === undefined) {
             return; // Invalid: intentionally return no value.
@@ -96,6 +97,7 @@ export function valueFromAST(
       }
       return coercedValues;
     }
+    // @ts-expect-error: FIXME
     const coercedValue = valueFromAST(valueNode, itemType, variables);
     if (coercedValue === undefined) {
       return; // Invalid: intentionally return no value.

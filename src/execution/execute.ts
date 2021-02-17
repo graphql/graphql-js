@@ -773,6 +773,7 @@ function completeValue(
   if (isListType(returnType)) {
     return completeListValue(
       exeContext,
+      // @ts-expect-error: FIXME
       returnType,
       fieldNodes,
       info,

@@ -159,6 +159,7 @@ describe('Type System Printer', () => {
     });
 
     expectPrintedSchema(schema).to.equal(
+      // @ts-expect-error: FIXME
       dedent(String.raw`
         type Query {
           singleField(argOne: String = "tes\t de\fault"): String

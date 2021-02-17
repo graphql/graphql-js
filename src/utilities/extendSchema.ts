@@ -222,6 +222,7 @@ export function extendSchemaImpl(
     if (isNonNullType(type)) {
       return new GraphQLNonNull(replaceType(type.ofType)) as T;
     }
+    // @ts-expect-error: FIXME
     return replaceNamedType(type) as T;
   }
 
