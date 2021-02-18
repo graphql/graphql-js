@@ -8,7 +8,7 @@
       "presets": [
         [
           "@babel/preset-env",
-          { "modules": "commonjs", "targets": { "node": "10" } }
+          { "modules": "commonjs", "targets": { "node": "12" } }
         ]
       ],
       "plugins": [
@@ -17,7 +17,7 @@
     },
     "mjs": {
       "presets": [
-        ["@babel/preset-env", { "modules": false, "targets": { "node": "10" } }]
+        ["@babel/preset-env", { "modules": false, "targets": { "node": "12" } }]
       ],
       "plugins": [
         ["./resources/add-extension-to-import-paths", { "extension": "mjs" }]
