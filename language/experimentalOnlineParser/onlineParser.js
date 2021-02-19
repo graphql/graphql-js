@@ -149,8 +149,7 @@ export class OnlineParser {
   }
 
   indentation() {
-    const match = this._lexer.source.body.match(/\s*/);
-
+    const match = /\s*/.exec(this._lexer.source.body);
     let indent = 0;
 
     if (match && match.length === 0) {
