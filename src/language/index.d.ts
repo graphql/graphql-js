@@ -16,7 +16,6 @@ export {
   ASTVisitor,
   Visitor,
   VisitFn,
-  VisitorKeyMap,
 } from './visitor';
 
 export {

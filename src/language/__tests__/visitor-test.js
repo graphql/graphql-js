@@ -8,7 +8,7 @@ import { invariant } from '../../jsutils/invariant';
 import type { ASTNode } from '../ast';
 import { Kind } from '../kinds';
 import { parse } from '../parser';
-import { visit, visitInParallel, BREAK, QueryDocumentKeys } from '../visitor';
+import { visit, visitInParallel, BREAK } from '../visitor';
 
 function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
   const [node, key, parent, path, ancestors] = args;
@@ -907,45 +907,6 @@ describe('Visitor', () => {
         ['leave', 'Name', 'a'],
         ['leave', 'Field', undefined],
         ['enter', 'CustomField', undefined],
-        ['leave', 'CustomField', undefined],
-        ['leave', 'SelectionSet', undefined],
-        ['leave', 'OperationDefinition', undefined],
-        ['leave', 'Document', undefined],
-      ]);
-    });
-
-    it('does traverse unknown node kinds with visitor keys', () => {
-      const customQueryDocumentKeys = { ...QueryDocumentKeys };
-      (customQueryDocumentKeys: any).CustomField = ['name', 'selectionSet'];
-
-      const visited = [];
-      const visitor = {
-        enter(node) {
-          visited.push(['enter', node.kind, getValue(node)]);
-        },
-        leave(node) {
-          visited.push(['leave', node.kind, getValue(node)]);
-        },
-      };
-      visit(customAST, visitor, customQueryDocumentKeys);
-
-      expect(visited).to.deep.equal([
-        ['enter', 'Document', undefined],
-        ['enter', 'OperationDefinition', undefined],
-        ['enter', 'SelectionSet', undefined],
-        ['enter', 'Field', undefined],
-        ['enter', 'Name', 'a'],
-        ['leave', 'Name', 'a'],
-        ['leave', 'Field', undefined],
-        ['enter', 'CustomField', undefined],
-        ['enter', 'Name', 'b'],
-        ['leave', 'Name', 'b'],
-        ['enter', 'SelectionSet', undefined],
-        ['enter', 'CustomField', undefined],
-        ['enter', 'Name', 'c'],
-        ['leave', 'Name', 'c'],
-        ['leave', 'CustomField', undefined],
-        ['leave', 'SelectionSet', undefined],
         ['leave', 'CustomField', undefined],
         ['leave', 'SelectionSet', undefined],
         ['leave', 'OperationDefinition', undefined],

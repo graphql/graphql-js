@@ -39,15 +39,7 @@ export type VisitFn<TAnyNode, TVisitedNode: TAnyNode = TAnyNode> = (
   ancestors: $ReadOnlyArray<TAnyNode | $ReadOnlyArray<TAnyNode>>,
 ) => any;
 
-/**
- * A KeyMap describes each the traversable properties of each kind of node.
- */
-export type VisitorKeyMap<KindToNode> = $ObjMap<
-  KindToNode,
-  <T>(T) => $ReadOnlyArray<$Keys<T>>,
->;
-
-export const QueryDocumentKeys: VisitorKeyMap<ASTKindToNode> = {
+const QueryDocumentKeys = {
   Name: [],
 
   Document: ['definitions'],
@@ -221,11 +213,7 @@ export const BREAK: { ... } = Object.freeze({});
  *       }
  *     })
  */
-export function visit(
-  root: ASTNode,
-  visitor: Visitor<ASTKindToNode>,
-  visitorKeys: VisitorKeyMap<ASTKindToNode> = QueryDocumentKeys,
-): any {
+export function visit(root: ASTNode, visitor: Visitor<ASTKindToNode>): any {
   /* eslint-disable no-undef-init */
   let stack: any = undefined;
   let inArray = Array.isArray(root);
@@ -330,7 +318,7 @@ export function visit(
     } else {
       stack = { inArray, index, keys, edits, prev: stack };
       inArray = Array.isArray(node);
-      keys = inArray ? node : visitorKeys[node.kind] ?? [];
+      keys = inArray ? node : QueryDocumentKeys[node.kind] ?? [];
       index = -1;
       edits = [];
       if (parent) {
