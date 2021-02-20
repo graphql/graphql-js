@@ -214,8 +214,7 @@ export type {
   DirectiveLocationEnum,
   // Visitor utilities
   ASTVisitor,
-  Visitor,
-  VisitFn,
+  ASTVisitFn,
   // AST nodes
   ASTNode,
   ASTKindToNode,

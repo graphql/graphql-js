@@ -1,5 +1,5 @@
-import type { Visitor } from '../language/visitor';
-import type { ASTNode, ASTKindToNode, FieldNode } from '../language/ast';
+import type { ASTVisitor } from '../language/visitor';
+import type { ASTNode, FieldNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 import { isNode } from '../language/ast';
 import { getVisitFn } from '../language/visitor';
@@ -324,8 +324,8 @@ function getFieldDef(
  */
 export function visitWithTypeInfo(
   typeInfo: TypeInfo,
-  visitor: Visitor<ASTKindToNode>,
-): Visitor<ASTKindToNode> {
+  visitor: ASTVisitor,
+): ASTVisitor {
   return {
     enter(node) {
       typeInfo.enter(node);
