@@ -47,106 +47,6 @@ export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
   ancestors: ReadonlyArray<TAnyNode | ReadonlyArray<TAnyNode>>,
 ) => any;
 
-/**
- * A KeyMap describes each the traversable properties of each kind of node.
- */
-export type VisitorKeyMap<T> = { [P in keyof T]: ReadonlyArray<keyof T[P]> };
-
-// TODO: Should be `[]`, but that requires TypeScript@3
-type EmptyTuple = Array<never>;
-
-export const QueryDocumentKeys: {
-  Name: EmptyTuple;
-
-  Document: ['definitions'];
-  // Prettier forces trailing commas, but TS pre 3.2 doesn't allow them.
-  // prettier-ignore
-  OperationDefinition: [
-    'name',
-    'variableDefinitions',
-    'directives',
-    'selectionSet'
-  ];
-  VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'];
-  Variable: ['name'];
-  SelectionSet: ['selections'];
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'];
-  Argument: ['name', 'value'];
-
-  FragmentSpread: ['name', 'directives'];
-  InlineFragment: ['typeCondition', 'directives', 'selectionSet'];
-  // prettier-ignore
-  FragmentDefinition: [
-    'name',
-    // Note: fragment variable definitions are deprecated and will removed in v17.0.0
-    'variableDefinitions',
-    'typeCondition',
-    'directives',
-    'selectionSet'
-  ];
-
-  IntValue: EmptyTuple;
-  FloatValue: EmptyTuple;
-  StringValue: EmptyTuple;
-  BooleanValue: EmptyTuple;
-  NullValue: EmptyTuple;
-  EnumValue: EmptyTuple;
-  ListValue: ['values'];
-  ObjectValue: ['fields'];
-  ObjectField: ['name', 'value'];
-
-  Directive: ['name', 'arguments'];
-
-  NamedType: ['name'];
-  ListType: ['type'];
-  NonNullType: ['type'];
-
-  SchemaDefinition: ['description', 'directives', 'operationTypes'];
-  OperationTypeDefinition: ['type'];
-
-  ScalarTypeDefinition: ['description', 'name', 'directives'];
-  // prettier-ignore
-  ObjectTypeDefinition: [
-    'description',
-    'name',
-    'interfaces',
-    'directives',
-    'fields'
-  ];
-  FieldDefinition: ['description', 'name', 'arguments', 'type', 'directives'];
-  // prettier-ignore
-  InputValueDefinition: [
-    'description',
-    'name',
-    'type',
-    'defaultValue',
-    'directives'
-  ];
-  // prettier-ignore
-  InterfaceTypeDefinition: [
-    'description',
-    'name',
-    'interfaces',
-    'directives',
-    'fields'
-  ];
-  UnionTypeDefinition: ['description', 'name', 'directives', 'types'];
-  EnumTypeDefinition: ['description', 'name', 'directives', 'values'];
-  EnumValueDefinition: ['description', 'name', 'directives'];
-  InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'];
-
-  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'];
-
-  SchemaExtension: ['directives', 'operationTypes'];
-
-  ScalarTypeExtension: ['name', 'directives'];
-  ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'];
-  InterfaceTypeExtension: ['name', 'interfaces', 'directives', 'fields'];
-  UnionTypeExtension: ['name', 'directives', 'types'];
-  EnumTypeExtension: ['name', 'directives', 'values'];
-  InputObjectTypeExtension: ['name', 'directives', 'fields'];
-};
-
 export const BREAK: any;
 
 /**
@@ -235,11 +135,7 @@ export const BREAK: any;
  *       }
  *     })
  */
-export function visit(
-  root: ASTNode,
-  visitor: Visitor<ASTKindToNode>,
-  visitorKeys?: VisitorKeyMap<ASTKindToNode>, // default: QueryDocumentKeys
-): any;
+export function visit(root: ASTNode, visitor: Visitor<ASTKindToNode>): any;
 
 /**
  * Creates a new visitor instance which delegates to many visitors to run in

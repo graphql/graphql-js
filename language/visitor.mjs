@@ -5,7 +5,7 @@ import { isNode } from "./ast.mjs";
  * relevant functions to be called during the visitor's traversal.
  */
 
-export const QueryDocumentKeys = {
+const QueryDocumentKeys = {
   Name: [],
   Document: ['definitions'],
   OperationDefinition: ['name', 'variableDefinitions', 'directives', 'selectionSet'],
@@ -139,7 +139,7 @@ export const BREAK = Object.freeze({});
  *     })
  */
 
-export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
+export function visit(root, visitor) {
   /* eslint-disable no-undef-init */
   let stack = undefined;
   let inArray = Array.isArray(root);
@@ -257,7 +257,7 @@ export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
     if (isLeaving) {
       path.pop();
     } else {
-      var _visitorKeys$node$kin;
+      var _QueryDocumentKeys$no;
 
       stack = {
         inArray,
@@ -267,7 +267,7 @@ export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
         prev: stack
       };
       inArray = Array.isArray(node);
-      keys = inArray ? node : (_visitorKeys$node$kin = visitorKeys[node.kind]) !== null && _visitorKeys$node$kin !== void 0 ? _visitorKeys$node$kin : [];
+      keys = inArray ? node : (_QueryDocumentKeys$no = QueryDocumentKeys[node.kind]) !== null && _QueryDocumentKeys$no !== void 0 ? _QueryDocumentKeys$no : [];
       index = -1;
       edits = [];
 
