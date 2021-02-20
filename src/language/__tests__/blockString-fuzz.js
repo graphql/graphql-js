@@ -48,15 +48,13 @@ describe('printBlockString', () => {
       );
 
       const printedMultilineString = lexValue(
-        printBlockString(testValue, ' ', true),
+        printBlockString(testValue, true),
       );
 
       invariant(
         testValue === printedMultilineString,
         dedent`
-          Expected lexValue(printBlockString(${inspectStr(
-            testValue,
-          )}, ' ', true))
+          Expected lexValue(printBlockString(${inspectStr(testValue)}, true))
             to equal ${inspectStr(testValue)}
             but got  ${inspectStr(printedMultilineString)}
         `,
