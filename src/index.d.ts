@@ -229,7 +229,6 @@ export {
   ASTVisitor,
   Visitor,
   VisitFn,
-  VisitorKeyMap,
   // AST nodes
   ASTNode,
   ASTKindToNode,
