@@ -72,12 +72,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Build NPM package
-        run: npm run build:npm
-
-      - name: Build Deno package
-        run: npm run build:deno
-
       - name: Run Integration Tests
         run: npm run check:integrations
 
