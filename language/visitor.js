@@ -233,6 +233,7 @@ function visit(root, visitor) {
       const visitFn = getVisitFn(visitor, node.kind, isLeaving);
 
       if (visitFn) {
+        // $FlowFixMe[incompatible-call]
         result = visitFn.call(visitor, node, key, parent, path, ancestors);
 
         if (result === BREAK) {
@@ -373,6 +374,7 @@ function getVisitFn(visitor, kind, isLeaving) {
       return kindSpecificVisitor;
     }
   } else {
+    // $FlowFixMe[prop-missing]
     const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
 
     if (specificVisitor) {
