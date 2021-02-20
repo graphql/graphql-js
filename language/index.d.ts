@@ -14,8 +14,7 @@ export {
   getVisitFn,
   BREAK,
   ASTVisitor,
-  Visitor,
-  VisitFn,
+  ASTVisitFn,
 } from './visitor';
 
 export {

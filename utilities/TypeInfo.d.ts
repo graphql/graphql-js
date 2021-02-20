@@ -1,7 +1,7 @@
 import { Maybe } from '../jsutils/Maybe';
 
-import { Visitor } from '../language/visitor';
-import { ASTNode, ASTKindToNode, FieldNode } from '../language/ast';
+import { ASTVisitor } from '../language/visitor';
+import { ASTNode, FieldNode } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import {
@@ -55,5 +55,5 @@ type getFieldDef = (
  */
 export function visitWithTypeInfo(
   typeInfo: TypeInfo,
-  visitor: Visitor<ASTKindToNode>,
-): Visitor<ASTKindToNode>;
+  visitor: ASTVisitor,
+): ASTVisitor;

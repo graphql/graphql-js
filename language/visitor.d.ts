@@ -6,37 +6,35 @@ import { ASTNode, ASTKindToNode } from './ast';
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor = Visitor<ASTKindToNode>;
-export type Visitor<KindToNode, Nodes = KindToNode[keyof KindToNode]> =
-  | EnterLeaveVisitor<KindToNode, Nodes>
-  | ShapeMapVisitor<KindToNode, Nodes>;
+export type ASTVisitor = EnterLeaveVisitor | ShapeMapVisitor;
 
 interface EnterLeave<T> {
   readonly enter?: T;
   readonly leave?: T;
 }
 
-type EnterLeaveVisitor<KindToNode, Nodes> = EnterLeave<
-  VisitFn<Nodes> | { [K in keyof KindToNode]?: VisitFn<Nodes, KindToNode[K]> }
+type EnterLeaveVisitor = EnterLeave<
+  | ASTVisitFn<ASTNode>
+  | { [K in keyof ASTKindToNode]?: ASTVisitFn<ASTKindToNode[K]> }
 >;
 
-type ShapeMapVisitor<KindToNode, Nodes> = {
-  [K in keyof KindToNode]?:
-    | VisitFn<Nodes, KindToNode[K]>
-    | EnterLeave<VisitFn<Nodes, KindToNode[K]>>;
+type ShapeMapVisitor = {
+  [K in keyof ASTKindToNode]?:
+    | ASTVisitFn<ASTKindToNode[K]>
+    | EnterLeave<ASTVisitFn<ASTKindToNode[K]>>;
 };
 
 /**
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
  */
-export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
+export type ASTVisitFn<TVisitedNode extends ASTNode> = (
   /** The current node being visiting. */
   node: TVisitedNode,
   /** The index or key to this node from the parent node or Array. */
   key: string | number | undefined,
   /** The parent immediately above this node, which may be an Array. */
-  parent: TAnyNode | ReadonlyArray<TAnyNode> | undefined,
+  parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
   /** The key path to get to this node from the root node. */
   path: ReadonlyArray<string | number>,
   /**
@@ -44,7 +42,7 @@ export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
    * These correspond to array indices in `path`.
    * Note: ancestors includes arrays which contain the parent of visited node.
    */
-  ancestors: ReadonlyArray<TAnyNode | ReadonlyArray<TAnyNode>>,
+  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
 
 export const BREAK: any;
@@ -135,7 +133,7 @@ export const BREAK: any;
  *       }
  *     })
  */
-export function visit(root: ASTNode, visitor: Visitor<ASTKindToNode>): any;
+export function visit(root: ASTNode, visitor: ASTVisitor): any;
 
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
@@ -144,15 +142,15 @@ export function visit(root: ASTNode, visitor: Visitor<ASTKindToNode>): any;
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 export function visitInParallel(
-  visitors: ReadonlyArray<Visitor<ASTKindToNode>>,
-): Visitor<ASTKindToNode>;
+  visitors: ReadonlyArray<ASTVisitor>,
+): ASTVisitor;
 
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.
  */
 export function getVisitFn(
-  visitor: Visitor<any>,
+  visitor: ASTVisitor,
   kind: string,
   isLeaving: boolean,
-): Maybe<VisitFn<any>>;
+): Maybe<ASTVisitFn<ASTNode>>;
