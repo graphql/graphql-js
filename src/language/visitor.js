@@ -7,15 +7,14 @@ import { isNode } from './ast';
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor = Visitor<ASTKindToNode>;
-export type Visitor<KindToNode, Nodes = $Values<KindToNode>> =
+export type ASTVisitor =
   | EnterLeave<
-      | VisitFn<Nodes>
-      | ShapeMap<KindToNode, <Node>(Node) => VisitFn<Nodes, Node>>,
+      | ASTVisitFn<ASTNode>
+      | ShapeMap<ASTKindToNode, <Node>(Node) => ASTVisitFn<Node>>,
     >
   | ShapeMap<
-      KindToNode,
-      <Node>(Node) => VisitFn<Nodes, Node> | EnterLeave<VisitFn<Nodes, Node>>,
+      ASTKindToNode,
+      <Node>(Node) => ASTVisitFn<Node> | EnterLeave<ASTVisitFn<Node>>,
     >;
 type EnterLeave<T> = {| +enter?: T, +leave?: T |};
 type ShapeMap<O, F> = $Shape<$ObjMap<O, F>>;
@@ -24,19 +23,19 @@ type ShapeMap<O, F> = $Shape<$ObjMap<O, F>>;
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
  */
-export type VisitFn<TAnyNode, TVisitedNode: TAnyNode = TAnyNode> = (
+export type ASTVisitFn<TVisitedNode: ASTNode> = (
   // The current node being visiting.
   node: TVisitedNode,
   // The index or key to this node from the parent node or Array.
   key: string | number | void,
   // The parent immediately above this node, which may be an Array.
-  parent: TAnyNode | $ReadOnlyArray<TAnyNode> | void,
+  parent: ASTNode | $ReadOnlyArray<ASTNode> | void,
   // The key path to get to this node from the root node.
   path: $ReadOnlyArray<string | number>,
   // All nodes and Arrays visited before reaching parent of this node.
   // These correspond to array indices in `path`.
   // Note: ancestors includes arrays which contain the parent of visited node.
-  ancestors: $ReadOnlyArray<TAnyNode | $ReadOnlyArray<TAnyNode>>,
+  ancestors: $ReadOnlyArray<ASTNode | $ReadOnlyArray<ASTNode>>,
 ) => any;
 
 const QueryDocumentKeys = {
@@ -213,7 +212,7 @@ export const BREAK: { ... } = Object.freeze({});
  *       }
  *     })
  */
-export function visit(root: ASTNode, visitor: Visitor<ASTKindToNode>): any {
+export function visit(root: ASTNode, visitor: ASTVisitor): any {
   /* eslint-disable no-undef-init */
   let stack: any = undefined;
   let inArray = Array.isArray(root);
@@ -284,6 +283,7 @@ export function visit(root: ASTNode, visitor: Visitor<ASTKindToNode>): any {
       }
       const visitFn = getVisitFn(visitor, node.kind, isLeaving);
       if (visitFn) {
+        // $FlowFixMe[incompatible-call]
         result = visitFn.call(visitor, node, key, parent, path, ancestors);
 
         if (result === BREAK) {
@@ -342,8 +342,8 @@ export function visit(root: ASTNode, visitor: Visitor<ASTKindToNode>): any {
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 export function visitInParallel(
-  visitors: $ReadOnlyArray<Visitor<ASTKindToNode>>,
-): Visitor<ASTKindToNode> {
+  visitors: $ReadOnlyArray<ASTVisitor>,
+): ASTVisitor {
   const skipping = new Array(visitors.length);
 
   return {
@@ -389,10 +389,10 @@ export function visitInParallel(
  * the function the visitor runtime should call.
  */
 export function getVisitFn(
-  visitor: Visitor<any>,
+  visitor: ASTVisitor,
   kind: string,
   isLeaving: boolean,
-): ?VisitFn<any> {
+): ?ASTVisitFn<ASTNode> {
   const kindVisitor = visitor[kind];
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {
@@ -407,6 +407,7 @@ export function getVisitFn(
       return kindSpecificVisitor;
     }
   } else {
+    // $FlowFixMe[prop-missing]
     const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
     if (specificVisitor) {
       if (typeof specificVisitor === 'function') {
