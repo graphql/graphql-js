@@ -93,15 +93,8 @@ function validateRootTypes(context) {
 }
 
 function getOperationTypeNode(schema, operation) {
-  const operationNodes = getAllSubNodes(schema, node => node.operationTypes);
-
-  for (const node of operationNodes) {
-    if (node.operation === operation) {
-      return node.type;
-    }
-  }
-
-  return undefined;
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return getAllNodes(schema).flatMap(schemaNode => schemaNode.operationTypes ?? []).find(operationNode => operationNode.operation === operation)?.type;
 }
 
 function validateDirectives(context) {
@@ -419,23 +412,14 @@ function getAllNodes(object) {
   return astNode ? extensionASTNodes ? [astNode].concat(extensionASTNodes) : [astNode] : extensionASTNodes ?? [];
 }
 
-function getAllSubNodes(object, getter) {
-  let subNodes = [];
-
-  for (const node of getAllNodes(object)) {
-    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-    subNodes = subNodes.concat(getter(node) ?? []);
-  }
-
-  return subNodes;
-}
-
 function getAllImplementsInterfaceNodes(type, iface) {
-  return getAllSubNodes(type, typeNode => typeNode.interfaces).filter(ifaceNode => ifaceNode.name.value === iface.name);
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return getAllNodes(type).flatMap(typeNode => typeNode.interfaces ?? []).filter(ifaceNode => ifaceNode.name.value === iface.name);
 }
 
 function getUnionMemberTypeNodes(union, typeName) {
-  return getAllSubNodes(union, unionNode => unionNode.types).filter(typeNode => typeNode.name.value === typeName);
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return getAllNodes(union).flatMap(unionNode => unionNode.types ?? []).filter(typeNode => typeNode.name.value === typeName);
 }
 
 function getDeprecatedDirectiveNode(definitionNode) {
