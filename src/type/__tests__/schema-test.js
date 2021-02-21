@@ -140,19 +140,19 @@ describe('Type System: Schema', () => {
     it('defines a query root', () => {
       const schema = new GraphQLSchema({ query: testType });
       expect(schema.getQueryType()).to.equal(testType);
-      expect(schema.getTypeMap()).to.include.key('TestType');
+      expect(schema.getTypeMap()).to.include.keys('TestType');
     });
 
     it('defines a mutation root', () => {
       const schema = new GraphQLSchema({ mutation: testType });
       expect(schema.getMutationType()).to.equal(testType);
-      expect(schema.getTypeMap()).to.include.key('TestType');
+      expect(schema.getTypeMap()).to.include.keys('TestType');
     });
 
     it('defines a subscription root', () => {
       const schema = new GraphQLSchema({ subscription: testType });
       expect(schema.getSubscriptionType()).to.equal(testType);
-      expect(schema.getTypeMap()).to.include.key('TestType');
+      expect(schema.getTypeMap()).to.include.keys('TestType');
     });
   });
 
