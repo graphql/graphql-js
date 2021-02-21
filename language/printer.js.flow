@@ -85,10 +85,8 @@ const printDocASTReducer: any = {
 
   IntValue: ({ value }) => value,
   FloatValue: ({ value }) => value,
-  StringValue: ({ value, block: isBlockString }, key) =>
-    isBlockString
-      ? printBlockString(value, key === 'description' ? '' : '  ')
-      : JSON.stringify(value),
+  StringValue: ({ value, block: isBlockString }) =>
+    isBlockString ? printBlockString(value) : JSON.stringify(value),
   BooleanValue: ({ value }) => (value ? 'true' : 'false'),
   NullValue: () => 'null',
   EnumValue: ({ value }) => value,

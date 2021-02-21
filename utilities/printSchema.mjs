@@ -221,7 +221,7 @@ function printDescription(def, indentation = '', firstInBlock = true) {
   }
 
   const preferMultipleLines = description.length > 70;
-  const blockString = printBlockString(description, '', preferMultipleLines);
+  const blockString = printBlockString(description, preferMultipleLines);
   const prefix = indentation && !firstInBlock ? '\n' + indentation : indentation;
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
 }

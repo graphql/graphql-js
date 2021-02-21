@@ -110,7 +110,7 @@ function getBlockStringIndentation(value) {
  */
 
 
-function printBlockString(value, indentation = '', preferMultipleLines = false) {
+function printBlockString(value, preferMultipleLines = false) {
   const isSingleLine = value.indexOf('\n') === -1;
   const hasLeadingSpace = value[0] === ' ' || value[0] === '\t';
   const hasTrailingQuote = value[value.length - 1] === '"';
@@ -119,10 +119,10 @@ function printBlockString(value, indentation = '', preferMultipleLines = false) 
   let result = ''; // Format a multi-line block quote to account for leading space.
 
   if (printAsMultipleLines && !(isSingleLine && hasLeadingSpace)) {
-    result += '\n' + indentation;
+    result += '\n';
   }
 
-  result += indentation ? value.replace(/\n/g, '\n' + indentation) : value;
+  result += value;
 
   if (printAsMultipleLines) {
     result += '\n';
