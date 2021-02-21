@@ -168,7 +168,7 @@ const printDocASTReducer = {
     name,
     directives,
     types
-  }) => wrap('', description, '\n') + join(['union', name, join(directives, ' '), types && types.length !== 0 ? '= ' + join(types, ' | ') : ''], ' '),
+  }) => wrap('', description, '\n') + join(['union', name, join(directives, ' '), wrap('= ', join(types, ' | '))], ' '),
   EnumTypeDefinition: ({
     description,
     name,
@@ -217,7 +217,7 @@ const printDocASTReducer = {
     name,
     directives,
     types
-  }) => join(['extend union', name, join(directives, ' '), types && types.length !== 0 ? '= ' + join(types, ' | ') : ''], ' '),
+  }) => join(['extend union', name, join(directives, ' '), wrap('= ', join(types, ' | '))], ' '),
   EnumTypeExtension: ({
     name,
     directives,
