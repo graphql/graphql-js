@@ -198,7 +198,7 @@ describe('Printer: Query document', () => {
           size: $size
           bar: $b
           obj: {key: "value", block: """
-            block string uses \"""
+          block string uses \"""
           """}
         )
       }

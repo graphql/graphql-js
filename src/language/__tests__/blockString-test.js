@@ -134,13 +134,13 @@ describe('printBlockString', () => {
   it('by default print block strings as single line', () => {
     const str = 'one liner';
     expect(printBlockString(str)).to.equal('"""one liner"""');
-    expect(printBlockString(str, '', true)).to.equal('"""\none liner\n"""');
+    expect(printBlockString(str, true)).to.equal('"""\none liner\n"""');
   });
 
   it('correctly prints single-line with leading space', () => {
     const str = '    space-led string';
     expect(printBlockString(str)).to.equal('"""    space-led string"""');
-    expect(printBlockString(str, '', true)).to.equal(
+    expect(printBlockString(str, true)).to.equal(
       '"""    space-led string\n"""',
     );
   });
@@ -152,7 +152,7 @@ describe('printBlockString', () => {
       '"""    space-led value "quoted string"\n"""',
     );
 
-    expect(printBlockString(str, '', true)).to.equal(
+    expect(printBlockString(str, true)).to.equal(
       '"""    space-led value "quoted string"\n"""',
     );
   });
@@ -161,7 +161,7 @@ describe('printBlockString', () => {
     const str = 'backslash \\';
 
     expect(printBlockString(str)).to.equal('"""\nbackslash \\\n"""');
-    expect(printBlockString(str, '', true)).to.equal('"""\nbackslash \\\n"""');
+    expect(printBlockString(str, true)).to.equal('"""\nbackslash \\\n"""');
   });
 
   it('correctly prints string with a first line indentation', () => {
