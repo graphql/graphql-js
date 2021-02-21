@@ -20,7 +20,7 @@ export function VariablesAreInputTypesRule(
   context: ValidationContext,
 ): ASTVisitor {
   return {
-    VariableDefinition(node: VariableDefinitionNode): ?GraphQLError {
+    VariableDefinition(node: VariableDefinitionNode) {
       const type = typeFromAST(context.getSchema(), node.type);
 
       if (type && !isInputType(type)) {
