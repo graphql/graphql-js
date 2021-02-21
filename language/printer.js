@@ -130,67 +130,78 @@ const printDocASTReducer = {
     type
   }) => type + '!',
   // Type System Definitions
-  SchemaDefinition: addDescription(({
+  SchemaDefinition: ({
+    description,
     directives,
     operationTypes
-  }) => join(['schema', join(directives, ' '), block(operationTypes)], ' ')),
+  }) => wrap('', description, '\n') + join(['schema', join(directives, ' '), block(operationTypes)], ' '),
   OperationTypeDefinition: ({
     operation,
     type
   }) => operation + ': ' + type,
-  ScalarTypeDefinition: addDescription(({
+  ScalarTypeDefinition: ({
+    description,
     name,
     directives
-  }) => join(['scalar', name, join(directives, ' ')], ' ')),
-  ObjectTypeDefinition: addDescription(({
+  }) => wrap('', description, '\n') + join(['scalar', name, join(directives, ' ')], ' '),
+  ObjectTypeDefinition: ({
+    description,
     name,
     interfaces,
     directives,
     fields
-  }) => join(['type', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ')),
-  FieldDefinition: addDescription(({
+  }) => wrap('', description, '\n') + join(['type', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' '),
+  FieldDefinition: ({
+    description,
     name,
     arguments: args,
     type,
     directives
-  }) => name + (hasMultilineItems(args) ? wrap('(\n', indent(join(args, '\n')), '\n)') : wrap('(', join(args, ', '), ')')) + ': ' + type + wrap(' ', join(directives, ' '))),
-  InputValueDefinition: addDescription(({
+  }) => wrap('', description, '\n') + name + (hasMultilineItems(args) ? wrap('(\n', indent(join(args, '\n')), '\n)') : wrap('(', join(args, ', '), ')')) + ': ' + type + wrap(' ', join(directives, ' ')),
+  InputValueDefinition: ({
+    description,
     name,
     type,
     defaultValue,
     directives
-  }) => join([name + ': ' + type, wrap('= ', defaultValue), join(directives, ' ')], ' ')),
-  InterfaceTypeDefinition: addDescription(({
+  }) => wrap('', description, '\n') + join([name + ': ' + type, wrap('= ', defaultValue), join(directives, ' ')], ' '),
+  InterfaceTypeDefinition: ({
+    description,
     name,
     interfaces,
     directives,
     fields
-  }) => join(['interface', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ')),
-  UnionTypeDefinition: addDescription(({
+  }) => wrap('', description, '\n') + join(['interface', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' '),
+  UnionTypeDefinition: ({
+    description,
     name,
     directives,
     types
-  }) => join(['union', name, join(directives, ' '), types && types.length !== 0 ? '= ' + join(types, ' | ') : ''], ' ')),
-  EnumTypeDefinition: addDescription(({
+  }) => wrap('', description, '\n') + join(['union', name, join(directives, ' '), types && types.length !== 0 ? '= ' + join(types, ' | ') : ''], ' '),
+  EnumTypeDefinition: ({
+    description,
     name,
     directives,
     values
-  }) => join(['enum', name, join(directives, ' '), block(values)], ' ')),
-  EnumValueDefinition: addDescription(({
+  }) => wrap('', description, '\n') + join(['enum', name, join(directives, ' '), block(values)], ' '),
+  EnumValueDefinition: ({
+    description,
     name,
     directives
-  }) => join([name, join(directives, ' ')], ' ')),
-  InputObjectTypeDefinition: addDescription(({
+  }) => wrap('', description, '\n') + join([name, join(directives, ' ')], ' '),
+  InputObjectTypeDefinition: ({
+    description,
     name,
     directives,
     fields
-  }) => join(['input', name, join(directives, ' '), block(fields)], ' ')),
-  DirectiveDefinition: addDescription(({
+  }) => wrap('', description, '\n') + join(['input', name, join(directives, ' '), block(fields)], ' '),
+  DirectiveDefinition: ({
+    description,
     name,
     arguments: args,
     repeatable,
     locations
-  }) => 'directive @' + name + (hasMultilineItems(args) ? wrap('(\n', indent(join(args, '\n')), '\n)') : wrap('(', join(args, ', '), ')')) + (repeatable ? ' repeatable' : '') + ' on ' + join(locations, ' | ')),
+  }) => wrap('', description, '\n') + 'directive @' + name + (hasMultilineItems(args) ? wrap('(\n', indent(join(args, '\n')), '\n)') : wrap('(', join(args, ', '), ')')) + (repeatable ? ' repeatable' : '') + ' on ' + join(locations, ' | '),
   SchemaExtension: ({
     directives,
     operationTypes
@@ -227,15 +238,10 @@ const printDocASTReducer = {
     fields
   }) => join(['extend input', name, join(directives, ' '), block(fields)], ' ')
 };
-
-function addDescription(cb) {
-  return node => join([node.description, cb(node)], '\n');
-}
 /**
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print all items together separated by separator if provided
  */
-
 
 function join(maybeArray, separator = '') {
   var _maybeArray$filter$jo;
