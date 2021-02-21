@@ -143,13 +143,10 @@ function getOperationTypeNode(
   schema: GraphQLSchema,
   operation: OperationTypeNode,
 ): ?ASTNode {
-  const operationNodes = getAllSubNodes(schema, (node) => node.operationTypes);
-  for (const node of operationNodes) {
-    if (node.operation === operation) {
-      return node.type;
-    }
-  }
-  return undefined;
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return getAllNodes(schema)
+    .flatMap((schemaNode) => schemaNode.operationTypes ?? [])
+    .find((operationNode) => operationNode.operation === operation)?.type;
 }
 
 function validateDirectives(context: SchemaValidationContext): void {
@@ -626,34 +623,24 @@ function getAllNodes<T: ASTNode, K: ASTNode>(
     : extensionASTNodes ?? [];
 }
 
-function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
-  object: SDLDefinedObject<T, K>,
-  getter: (T | K) => ?(L | $ReadOnlyArray<L>),
-): $ReadOnlyArray<L> {
-  let subNodes = [];
-  for (const node of getAllNodes(object)) {
-    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-    subNodes = subNodes.concat(getter(node) ?? []);
-  }
-  return subNodes;
-}
-
 function getAllImplementsInterfaceNodes(
   type: GraphQLObjectType | GraphQLInterfaceType,
   iface: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
-  return getAllSubNodes(type, (typeNode) => typeNode.interfaces).filter(
-    (ifaceNode) => ifaceNode.name.value === iface.name,
-  );
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return getAllNodes(type)
+    .flatMap((typeNode) => typeNode.interfaces ?? [])
+    .filter((ifaceNode) => ifaceNode.name.value === iface.name);
 }
 
 function getUnionMemberTypeNodes(
   union: GraphQLUnionType,
   typeName: string,
 ): ?$ReadOnlyArray<NamedTypeNode> {
-  return getAllSubNodes(union, (unionNode) => unionNode.types).filter(
-    (typeNode) => typeNode.name.value === typeName,
-  );
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return getAllNodes(union)
+    .flatMap((unionNode) => unionNode.types ?? [])
+    .filter((typeNode) => typeNode.name.value === typeName);
 }
 
 function getDeprecatedDirectiveNode(
