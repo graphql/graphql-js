@@ -17,9 +17,6 @@ function formatValue(value: mixed, seenValues: Array<mixed>): string {
     case 'function':
       return value.name ? `[function ${value.name}]` : '[function]';
     case 'object':
-      if (value === null) {
-        return 'null';
-      }
       return formatObjectValue(value, seenValues);
     default:
       return String(value);
@@ -30,6 +27,10 @@ function formatObjectValue(
   value: Object,
   previouslySeenValues: Array<mixed>,
 ): string {
+  if (value === null) {
+    return 'null';
+  }
+
   if (previouslySeenValues.indexOf(value) !== -1) {
     return '[Circular]';
   }
@@ -37,7 +38,7 @@ function formatObjectValue(
   const seenValues = [...previouslySeenValues, value];
 
   if (typeof value.toJSON === 'function') {
-    const jsonValue = value.toJSON(value);
+    const jsonValue = (value.toJSON: () => mixed)();
 
     // check for infinite recursion
     if (jsonValue !== value) {
