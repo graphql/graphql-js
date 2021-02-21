@@ -180,12 +180,7 @@ const printDocASTReducer: any = {
   UnionTypeDefinition: ({ description, name, directives, types }) =>
     wrap('', description, '\n') +
     join(
-      [
-        'union',
-        name,
-        join(directives, ' '),
-        types && types.length !== 0 ? '= ' + join(types, ' | ') : '',
-      ],
+      ['union', name, join(directives, ' '), wrap('= ', join(types, ' | '))],
       ' ',
     ),
 
@@ -253,7 +248,7 @@ const printDocASTReducer: any = {
         'extend union',
         name,
         join(directives, ' '),
-        types && types.length !== 0 ? '= ' + join(types, ' | ') : '',
+        wrap('= ', join(types, ' | ')),
       ],
       ' ',
     ),
