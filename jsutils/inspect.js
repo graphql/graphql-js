@@ -25,10 +25,6 @@ function formatValue(value, seenValues) {
       return value.name ? `[function ${value.name}]` : '[function]';
 
     case 'object':
-      if (value === null) {
-        return 'null';
-      }
-
       return formatObjectValue(value, seenValues);
 
     default:
@@ -37,6 +33,10 @@ function formatValue(value, seenValues) {
 }
 
 function formatObjectValue(value, previouslySeenValues) {
+  if (value === null) {
+    return 'null';
+  }
+
   if (previouslySeenValues.indexOf(value) !== -1) {
     return '[Circular]';
   }
@@ -44,7 +44,7 @@ function formatObjectValue(value, previouslySeenValues) {
   const seenValues = [...previouslySeenValues, value];
 
   if (typeof value.toJSON === 'function') {
-    const jsonValue = value.toJSON(value); // check for infinite recursion
+    const jsonValue = value.toJSON(); // check for infinite recursion
 
     if (jsonValue !== value) {
       return typeof jsonValue === 'string' ? jsonValue : formatValue(jsonValue, seenValues);
