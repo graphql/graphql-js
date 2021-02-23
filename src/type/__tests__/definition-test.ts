@@ -335,7 +335,6 @@ describe('Type System: Objects', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {
-        // $FlowExpectedError[incompatible-call]
         f: undefined,
       },
     });
