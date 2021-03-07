@@ -3,7 +3,7 @@ title: graphql/utilities
 layout: ../_core/GraphQLJSLayout
 category: API Reference
 permalink: /graphql-js/utilities/
-sublinks: astFromValue,buildASTSchema,buildClientSchema,buildSchema,introspectionQuery,isValidJSValue,isValidLiteralValue,printIntrospectionSchema,printSchema,typeFromAST,TypeInfo
+sublinks: astFromValue,buildASTSchema,buildClientSchema,buildSchema,doTypesOverlap,findBreakingChanges,findDangerousChanges,introspectionFromSchema,introspectionQuery,isEqualType,isTypeSubTypeOf,isValidJSValue,isValidLiteralValue,lexicographicSortSchema,printIntrospectionSchema,printSchema,separateOperations,typeFromAST,TypeInfo
 next: /graphql-js/validation/
 ---
 
@@ -30,6 +30,12 @@ _Introspection_
     <a href="#buildclientschema">
       <pre>function buildClientSchema</pre>
       Produces a client schema given the result of querying a schema with `introspectionQuery`.
+    </a>
+  </li>
+  <li>
+    <a href="#introspectionfromschema">
+      <pre>function introspectionFromSchema</pre>
+      Produces an introspection query for a given schema. (Inverse of [`buildClientSchema`](#buildclientschema))
     </a>
   </li>
 </ul>
@@ -73,6 +79,35 @@ _Schema Language_
       Produces a GraphQL Input Value AST given a JavaScript value.
     </a>
   </li>
+  <li>
+    <a href="#lexicographicsortschema">
+      <pre>function lexicographicSortSchema</pre>
+      Creates a copy of a given schema where all types are sorted.
+    </a>
+  </li>
+  <li>
+    <a href="#separateoperations">
+      <pre>function separateOperations</pre>
+      Creates an object of Documents by operation name from a single AST document.
+    </a>
+  </li>
+</ul>
+
+_Schema Validation_
+
+<ul class="apiIndex">
+  <li>
+    <a href="#findbreakingchanges">
+      <pre>function findBreakingChanges</pre>
+      Given two schemas, returns an Array containing descriptions of all the types of breaking changes.
+    </a>
+  </li>
+  <li>
+    <a href="#finddangerouschanges">
+      <pre>function findDangerousChanges</pre>
+      Given two schemas, returns an Array containing descriptions of all the types of dangerous changes.
+    </a>
+  </li>
 </ul>
 
 _Visitors_
@@ -82,6 +117,29 @@ _Visitors_
     <a href="#typeinfo">
       <pre>class TypeInfo</pre>
       Tracks type and field definitions during a visitor AST traversal..
+    </a>
+  </li>
+</ul>
+
+_Type Validation_
+
+<ul class="apiIndex">
+  <li>
+    <a href="#isequaltype">
+      <pre>function isEqualType</pre>
+      Provided two types, return true if the types are equal (invariant)
+    </a>
+  </li>
+  <li>
+    <a href="#istypesubtypeof">
+      <pre>function isTypeSubTypeOf</pre>
+      Provided a type and a super type, return true if the first type is either equal or a subset of the second super type
+    </a>
+  </li>
+  <li>
+    <a href="#dotypesoverlap">
+      <pre>function doTypesOverlap</pre>
+      Provided two composite types, determine if they "overlap".
     </a>
   </li>
 </ul>
@@ -149,6 +207,21 @@ returns a GraphQLSchema instance which can be then used with all GraphQL.js
 tools, but cannot be used to execute a query, as introspection does not
 represent the "resolver", "parse" or "serialize" functions or any other
 server-internal mechanisms.
+
+### introspectionFromSchema
+
+```js
+introspectionFromSchema(
+  schema: GraphQLSchema,
+  options: ?IntrospectionOptions,
+): IntrospectionQuery
+```
+
+Given a schema and optionally further IntrospectionOptions, creates and returns an IntrospectionQuery that reproduces the type system of that schema.
+
+IntrospectionQuery is useful for utilities that care about type and field relationships, but do not need to traverse through those relationships.
+
+This is the inverse of [`buildClientSchema`](#buildclientschema). The primary use case is outside of the server context, for instance when doing schema comparisons.
 
 ## Schema Representation
 
@@ -218,6 +291,55 @@ Produces a GraphQL Input Value AST given a JavaScript value.
 Optionally, a GraphQL type may be provided, which will be used to
 disambiguate between value primitives.
 
+### lexicographicSortSchema
+
+```js
+function lexicographicSortSchema(
+  schema: GraphQLSchema,
+): GraphQLSchema
+```
+
+Creates a copy of the given schema where all types are lexicographical sorted.
+This function does not modify the original schema!
+
+### separateOperations
+
+```js
+function separateOperations(
+  documentAST: Document,
+): {[operationName: string]: Document}
+```
+
+Given an AST document with potentially many operations and fragments, it produces a collection of AST documents each of which contains a single operation as well the fragment definitions it refers to.
+
+## Schema Validation
+
+### findBreakingChanges
+
+```js
+function findBreakingChanges(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange>
+```
+
+Given two schemas, returns an Array containing descriptions of all the types of breaking changes.
+
+The different types of breaking changes are exported as `BreakingChangeType`.
+
+### findDangerousChanges
+
+```js
+function findDangerousChanges(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<DangerousChange>
+```
+
+Given two schemas, returns an Array containing descriptions of all the types of potentially dangerous changes covered by the other functions down below.
+
+The different types of dangerous changes are exported as `DangerousChangeType`.
+
 ## Visitors
 
 ### TypeInfo
@@ -237,6 +359,47 @@ class TypeInfo {
 TypeInfo is a utility class which, given a GraphQL schema, can keep track
 of the current field and type definitions at any point in a GraphQL document
 AST during a recursive descent by calling `enter(node)` and `leave(node)`.
+
+## Type Validation
+
+### isEqualType
+
+```js
+function isEqualType(
+  typeA: GraphQLType,
+  typeB: GraphQLType
+): boolean
+```
+
+Provided two types, return true if the types are equal (invariant).
+
+### isTypeSubTypeOf
+
+```js
+function isTypeSubTypeOf(
+  schema: GraphQLSchema,
+  maybeSubType: GraphQLType,
+  superType: GraphQLType,
+): boolean
+```
+
+Provided a type and a super type, return true if the first type is either equal or a subset of the second super type (covariant).
+
+### doTypesOverlap
+
+```js
+function doTypesOverlap(
+  schema: GraphQLSchema,
+  typeA: GraphQLCompositeType,
+  typeB: GraphQLCompositeType,
+): boolean
+```
+
+Provided two composite types, determine if they "overlap". Two composite types overlap when the Sets of possible concrete types for each intersect.
+
+This is often used to determine if a fragment of a given type could possibly be visited in a context of another type.
+
+This function is commutative.
 
 ## Value Validation
 
