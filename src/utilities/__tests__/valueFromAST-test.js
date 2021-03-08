@@ -29,7 +29,7 @@ describe('valueFromAST', () => {
   function expectValueFrom(
     valueText: string,
     type: GraphQLInputType,
-    variables: ?ObjMap<mixed>,
+    variables?: ObjMap<mixed>,
   ) {
     const ast = parseValue(valueText);
     const value = valueFromAST(ast, type, variables);
