@@ -433,7 +433,7 @@ export function argsToArgsConfig(
 export interface GraphQLObjectTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  interfaces?: Thunk<Maybe<Array<GraphQLInterfaceType>>>;
+  interfaces?: Thunk<Array<GraphQLInterfaceType>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
   extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
@@ -635,7 +635,7 @@ export class GraphQLInterfaceType {
 export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  interfaces?: Thunk<Maybe<Array<GraphQLInterfaceType>>>;
+  interfaces?: Thunk<Array<GraphQLInterfaceType>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
