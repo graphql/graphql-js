@@ -31,7 +31,7 @@ declare module 'graphql' {
 
 const queryType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Query',
-  fields: {
+  fields: () => ({
     sayHi: {
       type: GraphQLString,
       args: {
@@ -47,7 +47,7 @@ const queryType: GraphQLObjectType = new GraphQLObjectType({
         someFieldExtension: example,
       },
     },
-  },
+  }),
   extensions: {
     someObjectExtension: example,
   },
