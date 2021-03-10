@@ -516,7 +516,7 @@ export class GraphQLObjectType {
 }
 
 function defineInterfaces(config) {
-  const interfaces = resolveThunk(config.interfaces) ?? [];
+  const interfaces = resolveThunk(config.interfaces ?? []);
   Array.isArray(interfaces) || devAssert(0, `${config.name} interfaces must be an Array or a function which returns an Array.`);
   return interfaces;
 }
