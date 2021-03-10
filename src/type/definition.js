@@ -772,7 +772,7 @@ function defineInterfaces(
     | GraphQLInterfaceTypeConfig<mixed, mixed>,
   >,
 ): Array<GraphQLInterfaceType> {
-  const interfaces = resolveThunk(config.interfaces) ?? [];
+  const interfaces = resolveThunk(config.interfaces ?? []);
   devAssert(
     Array.isArray(interfaces),
     `${config.name} interfaces must be an Array or a function which returns an Array.`,
@@ -875,7 +875,7 @@ export function argsToArgsConfig(
 export type GraphQLObjectTypeConfig<TSource, TContext> = {|
   name: string,
   description?: ?string,
-  interfaces?: Thunk<?Array<GraphQLInterfaceType>>,
+  interfaces?: Thunk<Array<GraphQLInterfaceType>>,
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
   isTypeOf?: ?GraphQLIsTypeOfFn<TSource, TContext>,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
@@ -1086,7 +1086,7 @@ export class GraphQLInterfaceType {
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {|
   name: string,
   description?: ?string,
-  interfaces?: Thunk<?Array<GraphQLInterfaceType>>,
+  interfaces?: Thunk<Array<GraphQLInterfaceType>>,
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
