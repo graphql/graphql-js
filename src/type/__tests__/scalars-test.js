@@ -66,7 +66,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseLiteral', () => {
       function parseLiteral(str: string) {
-        return GraphQLInt.parseLiteral(parseValueToAST(str));
+        return GraphQLInt.parseLiteral(parseValueToAST(str), undefined);
       }
 
       expect(parseLiteral('1')).to.equal(1);
@@ -231,7 +231,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseLiteral', () => {
       function parseLiteral(str: string) {
-        return GraphQLFloat.parseLiteral(parseValueToAST(str));
+        return GraphQLFloat.parseLiteral(parseValueToAST(str), undefined);
       }
 
       expect(parseLiteral('1')).to.equal(1);
@@ -344,7 +344,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseLiteral', () => {
       function parseLiteral(str: string) {
-        return GraphQLString.parseLiteral(parseValueToAST(str));
+        return GraphQLString.parseLiteral(parseValueToAST(str), undefined);
       }
 
       expect(parseLiteral('"foo"')).to.equal('foo');
@@ -456,7 +456,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseLiteral', () => {
       function parseLiteral(str: string) {
-        return GraphQLBoolean.parseLiteral(parseValueToAST(str));
+        return GraphQLBoolean.parseLiteral(parseValueToAST(str), undefined);
       }
 
       expect(parseLiteral('true')).to.equal(true);
@@ -571,7 +571,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseLiteral', () => {
       function parseLiteral(str: string) {
-        return GraphQLID.parseLiteral(parseValueToAST(str));
+        return GraphQLID.parseLiteral(parseValueToAST(str), undefined);
       }
 
       expect(parseLiteral('""')).to.equal('');
