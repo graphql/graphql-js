@@ -2,8 +2,8 @@
   "exclude": ["integrationTests/ts/**/*"],
   "compilerOptions": {
     "module": "commonjs",
-    "lib": ["es2018"],
-    "target": "es2018",
+    "lib": ["es2019", "es2020.promise", "es2020.bigint", "es2020.string"],
+    "target": "es2019",
     "noImplicitAny": true,
     "noImplicitThis": true,
     "strictNullChecks": true,
