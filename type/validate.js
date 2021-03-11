@@ -116,14 +116,14 @@ function validateRootTypes(context) {
 }
 
 function getOperationTypeNode(schema, operation) {
-  var _getAllNodes$flatMap$;
+  var _concat$flatMap$find;
 
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return (_getAllNodes$flatMap$ = getAllNodes(schema).flatMap(schemaNode => {
+  return (_concat$flatMap$find = [schema.astNode].concat(schema.extensionASTNodes).flatMap(schemaNode => {
     var _schemaNode$operation;
 
-    return (_schemaNode$operation = schemaNode.operationTypes) !== null && _schemaNode$operation !== void 0 ? _schemaNode$operation : [];
-  }).find(operationNode => operationNode.operation === operation)) === null || _getAllNodes$flatMap$ === void 0 ? void 0 : _getAllNodes$flatMap$.type;
+    return (_schemaNode$operation = schemaNode === null || schemaNode === void 0 ? void 0 : schemaNode.operationTypes) !== null && _schemaNode$operation !== void 0 ? _schemaNode$operation : [];
+  }).find(operationNode => operationNode.operation === operation)) === null || _concat$flatMap$find === void 0 ? void 0 : _concat$flatMap$find.type;
 }
 
 function validateDirectives(context) {
@@ -210,7 +210,7 @@ function validateFields(context, type) {
   const fields = Object.values(type.getFields()); // Objects and Interfaces both must define one or more fields.
 
   if (fields.length === 0) {
-    context.reportError(`Type ${type.name} must define one or more fields.`, getAllNodes(type));
+    context.reportError(`Type ${type.name} must define one or more fields.`, [type.astNode].concat(type.extensionASTNodes));
   }
 
   for (const field of fields) {
@@ -278,7 +278,7 @@ function validateTypeImplementsInterface(context, type, iface) {
     const typeField = typeFieldMap[fieldName]; // Assert interface field exists on type.
 
     if (!typeField) {
-      context.reportError(`Interface field ${iface.name}.${fieldName} expected but ${type.name} does not provide it.`, [ifaceField.astNode, ...getAllNodes(type)]);
+      context.reportError(`Interface field ${iface.name}.${fieldName} expected but ${type.name} does not provide it.`, [ifaceField.astNode, type.astNode].concat(type.extensionASTNodes));
       continue;
     } // Assert interface field type is satisfied by type field type, by being
     // a valid subtype. (covariant)
@@ -341,7 +341,7 @@ function validateUnionMembers(context, union) {
   const memberTypes = union.getTypes();
 
   if (memberTypes.length === 0) {
-    context.reportError(`Union type ${union.name} must define one or more member types.`, getAllNodes(union));
+    context.reportError(`Union type ${union.name} must define one or more member types.`, [union.astNode].concat(union.extensionASTNodes));
   }
 
   const includedTypeNames = Object.create(null);
@@ -364,7 +364,7 @@ function validateEnumValues(context, enumType) {
   const enumValues = enumType.getValues();
 
   if (enumValues.length === 0) {
-    context.reportError(`Enum type ${enumType.name} must define one or more values.`, getAllNodes(enumType));
+    context.reportError(`Enum type ${enumType.name} must define one or more values.`, [enumType.astNode].concat(enumType.extensionASTNodes));
   }
 
   for (const enumValue of enumValues) {
@@ -382,7 +382,7 @@ function validateInputFields(context, inputObj) {
   const fields = Object.values(inputObj.getFields());
 
   if (fields.length === 0) {
-    context.reportError(`Input Object type ${inputObj.name} must define one or more fields.`, getAllNodes(inputObj));
+    context.reportError(`Input Object type ${inputObj.name} must define one or more fields.`, [inputObj.astNode].concat(inputObj.extensionASTNodes));
   } // Ensure the arguments are valid
 
 
@@ -449,29 +449,21 @@ function createInputObjectCircularRefsValidator(context) {
   }
 }
 
-function getAllNodes(object) {
-  const {
-    astNode,
-    extensionASTNodes
-  } = object;
-  return astNode ? extensionASTNodes ? [astNode].concat(extensionASTNodes) : [astNode] : extensionASTNodes !== null && extensionASTNodes !== void 0 ? extensionASTNodes : [];
-}
-
 function getAllImplementsInterfaceNodes(type, iface) {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return getAllNodes(type).flatMap(typeNode => {
+  return [type.astNode].concat(type.extensionASTNodes).flatMap(typeNode => {
     var _typeNode$interfaces;
 
-    return (_typeNode$interfaces = typeNode.interfaces) !== null && _typeNode$interfaces !== void 0 ? _typeNode$interfaces : [];
+    return (_typeNode$interfaces = typeNode === null || typeNode === void 0 ? void 0 : typeNode.interfaces) !== null && _typeNode$interfaces !== void 0 ? _typeNode$interfaces : [];
   }).filter(ifaceNode => ifaceNode.name.value === iface.name);
 }
 
 function getUnionMemberTypeNodes(union, typeName) {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return getAllNodes(union).flatMap(unionNode => {
+  return [union.astNode].concat(union.extensionASTNodes).flatMap(unionNode => {
     var _unionNode$types;
 
-    return (_unionNode$types = unionNode.types) !== null && _unionNode$types !== void 0 ? _unionNode$types : [];
+    return (_unionNode$types = unionNode === null || unionNode === void 0 ? void 0 : unionNode.types) !== null && _unionNode$types !== void 0 ? _unionNode$types : [];
   }).filter(typeNode => typeNode.name.value === typeName);
 }
 
