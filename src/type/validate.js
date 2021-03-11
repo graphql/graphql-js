@@ -144,8 +144,9 @@ function getOperationTypeNode(
   operation: OperationTypeNode,
 ): ?ASTNode {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return getAllNodes(schema)
-    .flatMap((schemaNode) => schemaNode.operationTypes ?? [])
+  return [schema.astNode]
+    .concat(schema.extensionASTNodes)
+    .flatMap((schemaNode) => schemaNode?.operationTypes ?? [])
     .find((operationNode) => operationNode.operation === operation)?.type;
 }
 
@@ -262,7 +263,7 @@ function validateFields(
   if (fields.length === 0) {
     context.reportError(
       `Type ${type.name} must define one or more fields.`,
-      getAllNodes(type),
+      [type.astNode].concat(type.extensionASTNodes),
     );
   }
 
@@ -363,7 +364,7 @@ function validateTypeImplementsInterface(
     if (!typeField) {
       context.reportError(
         `Interface field ${iface.name}.${fieldName} expected but ${type.name} does not provide it.`,
-        [ifaceField.astNode, ...getAllNodes(type)],
+        [ifaceField.astNode, type.astNode].concat(type.extensionASTNodes),
       );
       continue;
     }
@@ -463,7 +464,7 @@ function validateUnionMembers(
   if (memberTypes.length === 0) {
     context.reportError(
       `Union type ${union.name} must define one or more member types.`,
-      getAllNodes(union),
+      [union.astNode].concat(union.extensionASTNodes),
     );
   }
 
@@ -496,7 +497,7 @@ function validateEnumValues(
   if (enumValues.length === 0) {
     context.reportError(
       `Enum type ${enumType.name} must define one or more values.`,
-      getAllNodes(enumType),
+      [enumType.astNode].concat(enumType.extensionASTNodes),
     );
   }
 
@@ -523,7 +524,7 @@ function validateInputFields(
   if (fields.length === 0) {
     context.reportError(
       `Input Object type ${inputObj.name} must define one or more fields.`,
-      getAllNodes(inputObj),
+      [inputObj.astNode].concat(inputObj.extensionASTNodes),
     );
   }
 
@@ -606,30 +607,14 @@ function createInputObjectCircularRefsValidator(
   }
 }
 
-type SDLDefinedObject<T, K> = {
-  +astNode: ?T,
-  +extensionASTNodes?: ?$ReadOnlyArray<K>,
-  ...
-};
-
-function getAllNodes<T: ASTNode, K: ASTNode>(
-  object: SDLDefinedObject<T, K>,
-): $ReadOnlyArray<T | K> {
-  const { astNode, extensionASTNodes } = object;
-  return astNode
-    ? extensionASTNodes
-      ? [astNode].concat(extensionASTNodes)
-      : [astNode]
-    : extensionASTNodes ?? [];
-}
-
 function getAllImplementsInterfaceNodes(
   type: GraphQLObjectType | GraphQLInterfaceType,
   iface: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return getAllNodes(type)
-    .flatMap((typeNode) => typeNode.interfaces ?? [])
+  return [type.astNode]
+    .concat(type.extensionASTNodes)
+    .flatMap((typeNode) => typeNode?.interfaces ?? [])
     .filter((ifaceNode) => ifaceNode.name.value === iface.name);
 }
 
@@ -638,8 +623,9 @@ function getUnionMemberTypeNodes(
   typeName: string,
 ): ?$ReadOnlyArray<NamedTypeNode> {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return getAllNodes(union)
-    .flatMap((unionNode) => unionNode.types ?? [])
+  return [union.astNode]
+    .concat(union.extensionASTNodes)
+    .flatMap((unionNode) => unionNode?.types ?? [])
     .filter((typeNode) => typeNode.name.value === typeName);
 }
 
