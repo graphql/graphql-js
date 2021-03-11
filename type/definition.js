@@ -440,7 +440,6 @@ function getNamedType(type) {
 
 
 function resolveThunk(thunk) {
-  // $FlowFixMe[incompatible-use]
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 

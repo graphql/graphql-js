@@ -263,7 +263,9 @@ export function getNamedType(type: GraphQLType): GraphQLNamedType;
  * Used while defining GraphQL types to allow for circular references in
  * otherwise immutable type definitions.
  */
-export type Thunk<T> = (() => T) | T;
+export type Thunk<T extends { [key: string]: any } | Array<any>> =
+  | (() => T)
+  | T;
 
 /**
  * Custom extensions
