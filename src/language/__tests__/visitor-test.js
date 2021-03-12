@@ -56,6 +56,11 @@ function getValue(node: ASTNode) {
 }
 
 describe('Visitor', () => {
+  it('handles empty visitor', () => {
+    const ast = parse('{ a }', { noLocation: true });
+    expect(() => visit(ast, {})).to.not.throw();
+  });
+
   it('validates path argument', () => {
     const visited = [];
 
@@ -112,29 +117,6 @@ describe('Visitor', () => {
         visitedNodes.pop();
       },
     });
-  });
-
-  it('allows visiting only specified nodes', () => {
-    const ast = parse('{ a }', { noLocation: true });
-    const visited = [];
-
-    visit(ast, {
-      enter: {
-        Field(node) {
-          visited.push(['enter', node.kind]);
-        },
-      },
-      leave: {
-        Field(node) {
-          visited.push(['leave', node.kind]);
-        },
-      },
-    });
-
-    expect(visited).to.deep.equal([
-      ['enter', 'Field'],
-      ['leave', 'Field'],
-    ]);
   });
 
   it('allows editing a node both on enter and on leave', () => {
