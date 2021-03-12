@@ -592,7 +592,7 @@ describe('Type System: build schema from introspection', () => {
     expect(result.data).to.deep.equal({ foo: 'bar' });
   });
 
-  describe('can build invalid schema', () => {
+  it('can build invalid schema', () => {
     const schema = buildSchema('type Query', { assumeValid: true });
 
     const introspection = introspectionFromSchema(schema);
