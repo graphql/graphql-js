@@ -94,7 +94,7 @@ const BREAK = Object.freeze({});
  *
  * Alternatively to providing enter() and leave() functions, a visitor can
  * instead provide functions named the same as the kinds of AST nodes, or
- * enter/leave visitors at a named key, leading to four permutations of the
+ * enter/leave visitors at a named key, leading to three permutations of the
  * visitor API:
  *
  * 1) Named visitors triggered when entering a node of a specific kind.
@@ -127,21 +127,6 @@ const BREAK = Object.freeze({});
  *       },
  *       leave(node) {
  *         // leave any node
- *       }
- *     })
- *
- * 4) Parallel visitors for entering and leaving nodes of a specific kind.
- *
- *     visit(ast, {
- *       enter: {
- *         Kind(node) {
- *           // enter the "Kind" node
- *         }
- *       },
- *       leave: {
- *         Kind(node) {
- *           // leave the "Kind" node
- *         }
  *       }
  *     })
  */
@@ -378,17 +363,8 @@ function getVisitFn(visitor, kind, isLeaving) {
     const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
 
     if (specificVisitor) {
-      if (typeof specificVisitor === 'function') {
-        // { enter() {}, leave() {} }
-        return specificVisitor;
-      }
-
-      const specificKindVisitor = specificVisitor[kind];
-
-      if (typeof specificKindVisitor === 'function') {
-        // { enter: { Kind() {} }, leave: { Kind() {} } }
-        return specificKindVisitor;
-      }
+      // { enter() {}, leave() {} }
+      return specificVisitor;
     }
   }
 }

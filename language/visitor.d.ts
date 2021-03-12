@@ -6,17 +6,12 @@ import { ASTNode, ASTKindToNode } from './ast';
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor = EnterLeaveVisitor | ShapeMapVisitor;
+export type ASTVisitor = EnterLeave<ASTVisitFn<ASTNode>> | ShapeMapVisitor;
 
 interface EnterLeave<T> {
   readonly enter?: T;
   readonly leave?: T;
 }
-
-type EnterLeaveVisitor = EnterLeave<
-  | ASTVisitFn<ASTNode>
-  | { [K in keyof ASTKindToNode]?: ASTVisitFn<ASTKindToNode[K]> }
->;
 
 type ShapeMapVisitor = {
   [K in keyof ASTKindToNode]?:
@@ -82,7 +77,7 @@ export const BREAK: any;
  *
  * Alternatively to providing enter() and leave() functions, a visitor can
  * instead provide functions named the same as the kinds of AST nodes, or
- * enter/leave visitors at a named key, leading to four permutations of the
+ * enter/leave visitors at a named key, leading to three permutations of the
  * visitor API:
  *
  * 1) Named visitors triggered when entering a node of a specific kind.
@@ -115,21 +110,6 @@ export const BREAK: any;
  *       },
  *       leave(node) {
  *         // leave any node
- *       }
- *     })
- *
- * 4) Parallel visitors for entering and leaving nodes of a specific kind.
- *
- *     visit(ast, {
- *       enter: {
- *         Kind(node) {
- *           // enter the "Kind" node
- *         }
- *       },
- *       leave: {
- *         Kind(node) {
- *           // leave the "Kind" node
- *         }
  *       }
  *     })
  */
