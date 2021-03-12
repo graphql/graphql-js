@@ -1,23 +1,108 @@
 import { Maybe } from '../jsutils/Maybe';
 
-import { ASTNode, ASTKindToNode } from './ast';
+import {
+  ASTNode,
+  NameNode,
+  DocumentNode,
+  OperationDefinitionNode,
+  VariableDefinitionNode,
+  VariableNode,
+  SelectionSetNode,
+  FieldNode,
+  ArgumentNode,
+  FragmentSpreadNode,
+  InlineFragmentNode,
+  FragmentDefinitionNode,
+  IntValueNode,
+  FloatValueNode,
+  StringValueNode,
+  BooleanValueNode,
+  NullValueNode,
+  EnumValueNode,
+  ListValueNode,
+  ObjectValueNode,
+  ObjectFieldNode,
+  DirectiveNode,
+  NamedTypeNode,
+  ListTypeNode,
+  NonNullTypeNode,
+  SchemaDefinitionNode,
+  OperationTypeDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+  FieldDefinitionNode,
+  InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  UnionTypeDefinitionNode,
+  EnumTypeDefinitionNode,
+  EnumValueDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  DirectiveDefinitionNode,
+  SchemaExtensionNode,
+  ScalarTypeExtensionNode,
+  ObjectTypeExtensionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
+} from './ast';
 
 /**
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor = EnterLeave<ASTVisitFn<ASTNode>> | ShapeMapVisitor;
+export type ASTVisitor = Readonly<{
+  enter?: ASTVisitFn<ASTNode>;
+  leave?: ASTVisitFn<ASTNode>;
 
-interface EnterLeave<T> {
-  readonly enter?: T;
-  readonly leave?: T;
-}
+  Name?: KindVisitor<NameNode>;
+  Document?: KindVisitor<DocumentNode>;
+  OperationDefinition?: KindVisitor<OperationDefinitionNode>;
+  VariableDefinition?: KindVisitor<VariableDefinitionNode>;
+  Variable?: KindVisitor<VariableNode>;
+  SelectionSet?: KindVisitor<SelectionSetNode>;
+  Field?: KindVisitor<FieldNode>;
+  Argument?: KindVisitor<ArgumentNode>;
+  FragmentSpread?: KindVisitor<FragmentSpreadNode>;
+  InlineFragment?: KindVisitor<InlineFragmentNode>;
+  FragmentDefinition?: KindVisitor<FragmentDefinitionNode>;
+  IntValue?: KindVisitor<IntValueNode>;
+  FloatValue?: KindVisitor<FloatValueNode>;
+  StringValue?: KindVisitor<StringValueNode>;
+  BooleanValue?: KindVisitor<BooleanValueNode>;
+  NullValue?: KindVisitor<NullValueNode>;
+  EnumValue?: KindVisitor<EnumValueNode>;
+  ListValue?: KindVisitor<ListValueNode>;
+  ObjectValue?: KindVisitor<ObjectValueNode>;
+  ObjectField?: KindVisitor<ObjectFieldNode>;
+  Directive?: KindVisitor<DirectiveNode>;
+  NamedType?: KindVisitor<NamedTypeNode>;
+  ListType?: KindVisitor<ListTypeNode>;
+  NonNullType?: KindVisitor<NonNullTypeNode>;
+  SchemaDefinition?: KindVisitor<SchemaDefinitionNode>;
+  OperationTypeDefinition?: KindVisitor<OperationTypeDefinitionNode>;
+  ScalarTypeDefinition?: KindVisitor<ScalarTypeDefinitionNode>;
+  ObjectTypeDefinition?: KindVisitor<ObjectTypeDefinitionNode>;
+  FieldDefinition?: KindVisitor<FieldDefinitionNode>;
+  InputValueDefinition?: KindVisitor<InputValueDefinitionNode>;
+  InterfaceTypeDefinition?: KindVisitor<InterfaceTypeDefinitionNode>;
+  UnionTypeDefinition?: KindVisitor<UnionTypeDefinitionNode>;
+  EnumTypeDefinition?: KindVisitor<EnumTypeDefinitionNode>;
+  EnumValueDefinition?: KindVisitor<EnumValueDefinitionNode>;
+  InputObjectTypeDefinition?: KindVisitor<InputObjectTypeDefinitionNode>;
+  DirectiveDefinition?: KindVisitor<DirectiveDefinitionNode>;
+  SchemaExtension?: KindVisitor<SchemaExtensionNode>;
+  ScalarTypeExtension?: KindVisitor<ScalarTypeExtensionNode>;
+  ObjectTypeExtension?: KindVisitor<ObjectTypeExtensionNode>;
+  InterfaceTypeExtension?: KindVisitor<InterfaceTypeExtensionNode>;
+  UnionTypeExtension?: KindVisitor<UnionTypeExtensionNode>;
+  EnumTypeExtension?: KindVisitor<EnumTypeExtensionNode>;
+  InputObjectTypeExtension?: KindVisitor<InputObjectTypeExtensionNode>;
+}>;
 
-type ShapeMapVisitor = {
-  [K in keyof ASTKindToNode]?:
-    | ASTVisitFn<ASTKindToNode[K]>
-    | EnterLeave<ASTVisitFn<ASTKindToNode[K]>>;
-};
+type KindVisitor<T extends ASTNode> =
+  | ASTVisitFn<T>
+  | { readonly enter?: ASTVisitFn<T>; readonly leave?: ASTVisitFn<T> };
 
 /**
  * A visitor is comprised of visit functions, which are called on each node

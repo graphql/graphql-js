@@ -230,7 +230,6 @@ export {
   ASTVisitFn,
   // AST nodes
   ASTNode,
-  ASTKindToNode,
   // Each kind of AST node
   NameNode,
   DocumentNode,

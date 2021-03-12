@@ -24,7 +24,6 @@ export type { ASTVisitor, ASTVisitFn } from './visitor';
 export { Location, Token } from './ast';
 export type {
   ASTNode,
-  ASTKindToNode,
   // Each kind of AST node
   NameNode,
   DocumentNode,

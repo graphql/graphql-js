@@ -21,7 +21,6 @@ export {
   Location,
   Token,
   ASTNode,
-  ASTKindToNode,
   // Each kind of AST node
   NameNode,
   DocumentNode,
