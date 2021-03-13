@@ -7,14 +7,17 @@ import { isNode } from './ast';
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor =
-  | EnterLeave<ASTVisitFn<ASTNode>>
-  | ShapeMap<
-      ASTKindToNode,
-      <Node>(Node) => ASTVisitFn<Node> | EnterLeave<ASTVisitFn<Node>>,
-    >;
-type EnterLeave<T> = {| +enter?: T, +leave?: T |};
-type ShapeMap<O, F> = $Shape<$ObjMap<O, F>>;
+export type ASTVisitor = $Shape<EnterLeaveVisitor<ASTNode> & KindVisitor>;
+
+type KindVisitor = $ObjMap<
+  ASTKindToNode,
+  <Node>(Node) => ASTVisitFn<Node> | EnterLeaveVisitor<Node>,
+>;
+
+type EnterLeaveVisitor<TVisitedNode: ASTNode> = {|
+  +enter?: ASTVisitFn<TVisitedNode>,
+  +leave?: ASTVisitFn<TVisitedNode>,
+|};
 
 /**
  * A visitor is comprised of visit functions, which are called on each node
@@ -389,7 +392,6 @@ export function getVisitFn(
       return kindSpecificVisitor;
     }
   } else {
-    // $FlowFixMe[prop-missing]
     const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
     if (specificVisitor) {
       // { enter() {}, leave() {} }
