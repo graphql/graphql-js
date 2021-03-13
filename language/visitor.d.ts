@@ -6,17 +6,17 @@ import { ASTNode, ASTKindToNode } from './ast';
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor = EnterLeave<ASTVisitFn<ASTNode>> | ShapeMapVisitor;
+export type ASTVisitor = EnterLeaveVisitor<ASTNode> & KindVisitor;
 
-interface EnterLeave<T> {
-  readonly enter?: T;
-  readonly leave?: T;
-}
-
-type ShapeMapVisitor = {
-  [K in keyof ASTKindToNode]?:
+type KindVisitor = {
+  readonly [K in keyof ASTKindToNode]?:
     | ASTVisitFn<ASTKindToNode[K]>
-    | EnterLeave<ASTVisitFn<ASTKindToNode[K]>>;
+    | EnterLeaveVisitor<ASTKindToNode[K]>;
+};
+
+type EnterLeaveVisitor<TVisitedNode extends ASTNode> = {
+  readonly enter?: ASTVisitFn<TVisitedNode>;
+  readonly leave?: ASTVisitFn<TVisitedNode>;
 };
 
 /**
