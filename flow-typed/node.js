@@ -1,4 +1,4 @@
-declare class Process extends events$EventEmitter {
+declare class Process {
   env : { [key: string] : string | void, ... };
 }
 
