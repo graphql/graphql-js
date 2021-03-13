@@ -631,11 +631,11 @@ class Parser {
     let type;
 
     if (this.expectOptionalToken(_tokenKind.TokenKind.BRACKET_L)) {
-      type = this.parseTypeReference();
+      const innerType = this.parseTypeReference();
       this.expectToken(_tokenKind.TokenKind.BRACKET_R);
       type = {
         kind: _kinds.Kind.LIST_TYPE,
-        type,
+        type: innerType,
         loc: this.loc(start)
       };
     } else {
