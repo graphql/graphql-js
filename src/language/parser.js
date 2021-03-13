@@ -655,11 +655,11 @@ export class Parser {
     const start = this._lexer.token;
     let type;
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
-      type = this.parseTypeReference();
+      const innerType = this.parseTypeReference();
       this.expectToken(TokenKind.BRACKET_R);
       type = {
         kind: Kind.LIST_TYPE,
-        type,
+        type: innerType,
         loc: this.loc(start),
       };
     } else {
