@@ -439,7 +439,11 @@ function getNamedType(type) {
  */
 
 
-function resolveThunk(thunk) {
+function resolveArrayThunk(thunk) {
+  return typeof thunk === 'function' ? thunk() : thunk;
+}
+
+function resolveObjMapThunk(thunk) {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -628,13 +632,13 @@ exports.GraphQLObjectType = GraphQLObjectType;
 function defineInterfaces(config) {
   var _config$interfaces;
 
-  const interfaces = resolveThunk((_config$interfaces = config.interfaces) !== null && _config$interfaces !== void 0 ? _config$interfaces : []);
+  const interfaces = resolveArrayThunk((_config$interfaces = config.interfaces) !== null && _config$interfaces !== void 0 ? _config$interfaces : []);
   Array.isArray(interfaces) || (0, _devAssert.devAssert)(0, `${config.name} interfaces must be an Array or a function which returns an Array.`);
   return interfaces;
 }
 
 function defineFieldMap(config) {
-  const fieldMap = resolveThunk(config.fields);
+  const fieldMap = resolveObjMapThunk(config.fields);
   isPlainObj(fieldMap) || (0, _devAssert.devAssert)(0, `${config.name} fields must be an object with field names as keys or a function which returns such an object.`);
   return (0, _mapValue.mapValue)(fieldMap, (fieldConfig, fieldName) => {
     var _fieldConfig$args;
@@ -858,7 +862,7 @@ class GraphQLUnionType {
 exports.GraphQLUnionType = GraphQLUnionType;
 
 function defineTypes(config) {
-  const types = resolveThunk(config.types);
+  const types = resolveArrayThunk(config.types);
   Array.isArray(types) || (0, _devAssert.devAssert)(0, `Must provide Array of types or a function which returns such an array for Union ${config.name}.`);
   return types;
 }
@@ -1088,7 +1092,7 @@ class GraphQLInputObjectType {
 exports.GraphQLInputObjectType = GraphQLInputObjectType;
 
 function defineInputFieldMap(config) {
-  const fieldMap = resolveThunk(config.fields);
+  const fieldMap = resolveObjMapThunk(config.fields);
   isPlainObj(fieldMap) || (0, _devAssert.devAssert)(0, `${config.name} fields must be an object with field names as keys or a function which returns such an object.`);
   return (0, _mapValue.mapValue)(fieldMap, (fieldConfig, fieldName) => {
     !('resolve' in fieldConfig) || (0, _devAssert.devAssert)(0, `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`);

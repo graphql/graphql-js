@@ -512,9 +512,14 @@ export function getNamedType(type) {
  * Used while defining GraphQL types to allow for circular references in
  * otherwise immutable type definitions.
  */
-export type Thunk<+T: ObjMap<any> | Array<any>> = (() => T) | T;
+export type ThunkArray<T> = (() => Array<T>) | Array<T>;
+export type ThunkObjMap<T> = (() => ObjMap<T>) | ObjMap<T>;
 
-function resolveThunk<+T: ObjMap<any> | Array<any>>(thunk: Thunk<T>): T {
+function resolveArrayThunk<T>(thunk: ThunkArray<T>): Array<T> {
+  return typeof thunk === 'function' ? thunk() : thunk;
+}
+
+function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T> {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -704,8 +709,8 @@ export class GraphQLObjectType {
   astNode: ?ObjectTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
 
-  _fields: Thunk<GraphQLFieldMap<any, any>>;
-  _interfaces: Thunk<Array<GraphQLInterfaceType>>;
+  _fields: ThunkObjMap<GraphQLField<any, any>>;
+  _interfaces: ThunkArray<GraphQLInterfaceType>;
 
   constructor(config: $ReadOnly<GraphQLObjectTypeConfig<any, any>>) {
     this.name = config.name;
@@ -772,7 +777,7 @@ function defineInterfaces(
     | GraphQLInterfaceTypeConfig<mixed, mixed>,
   >,
 ): Array<GraphQLInterfaceType> {
-  const interfaces = resolveThunk(config.interfaces ?? []);
+  const interfaces = resolveArrayThunk(config.interfaces ?? []);
   devAssert(
     Array.isArray(interfaces),
     `${config.name} interfaces must be an Array or a function which returns an Array.`,
@@ -786,7 +791,7 @@ function defineFieldMap<TSource, TContext>(
     | GraphQLInterfaceTypeConfig<TSource, TContext>,
   >,
 ): GraphQLFieldMap<TSource, TContext> {
-  const fieldMap = resolveThunk(config.fields);
+  const fieldMap = resolveObjMapThunk(config.fields);
   devAssert(
     isPlainObj(fieldMap),
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
@@ -875,8 +880,8 @@ export function argsToArgsConfig(
 export type GraphQLObjectTypeConfig<TSource, TContext> = {|
   name: string,
   description?: ?string,
-  interfaces?: Thunk<Array<GraphQLInterfaceType>>,
-  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
+  interfaces?: ThunkArray<GraphQLInterfaceType>,
+  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>,
   isTypeOf?: ?GraphQLIsTypeOfFn<TSource, TContext>,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?ObjectTypeDefinitionNode,
@@ -1021,8 +1026,8 @@ export class GraphQLInterfaceType {
   astNode: ?InterfaceTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<InterfaceTypeExtensionNode>;
 
-  _fields: Thunk<GraphQLFieldMap<any, any>>;
-  _interfaces: Thunk<Array<GraphQLInterfaceType>>;
+  _fields: ThunkObjMap<GraphQLField<any, any>>;
+  _interfaces: ThunkArray<GraphQLInterfaceType>;
 
   constructor(config: $ReadOnly<GraphQLInterfaceTypeConfig<any, any>>) {
     this.name = config.name;
@@ -1086,8 +1091,8 @@ export class GraphQLInterfaceType {
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {|
   name: string,
   description?: ?string,
-  interfaces?: Thunk<Array<GraphQLInterfaceType>>,
-  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
+  interfaces?: ThunkArray<GraphQLInterfaceType>,
+  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -1138,7 +1143,7 @@ export class GraphQLUnionType {
   astNode: ?UnionTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<UnionTypeExtensionNode>;
 
-  _types: Thunk<Array<GraphQLObjectType>>;
+  _types: ThunkArray<GraphQLObjectType>;
 
   constructor(config: $ReadOnly<GraphQLUnionTypeConfig<any, any>>) {
     this.name = config.name;
@@ -1193,7 +1198,7 @@ export class GraphQLUnionType {
 function defineTypes(
   config: $ReadOnly<GraphQLUnionTypeConfig<mixed, mixed>>,
 ): Array<GraphQLObjectType> {
-  const types = resolveThunk(config.types);
+  const types = resolveArrayThunk(config.types);
   devAssert(
     Array.isArray(types),
     `Must provide Array of types or a function which returns such an array for Union ${config.name}.`,
@@ -1204,7 +1209,7 @@ function defineTypes(
 export type GraphQLUnionTypeConfig<TSource, TContext> = {|
   name: string,
   description?: ?string,
-  types: Thunk<Array<GraphQLObjectType>>,
+  types: ThunkArray<GraphQLObjectType>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -1464,7 +1469,7 @@ export class GraphQLInputObjectType {
   astNode: ?InputObjectTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<InputObjectTypeExtensionNode>;
 
-  _fields: Thunk<GraphQLInputFieldMap>;
+  _fields: ThunkObjMap<GraphQLInputField>;
 
   constructor(config: $ReadOnly<GraphQLInputObjectTypeConfig>) {
     this.name = config.name;
@@ -1520,7 +1525,7 @@ export class GraphQLInputObjectType {
 function defineInputFieldMap(
   config: $ReadOnly<GraphQLInputObjectTypeConfig>,
 ): GraphQLInputFieldMap {
-  const fieldMap = resolveThunk(config.fields);
+  const fieldMap = resolveObjMapThunk(config.fields);
   devAssert(
     isPlainObj(fieldMap),
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
@@ -1546,7 +1551,7 @@ function defineInputFieldMap(
 export type GraphQLInputObjectTypeConfig = {|
   name: string,
   description?: ?string,
-  fields: Thunk<GraphQLInputFieldConfigMap>,
+  fields: ThunkObjMap<GraphQLInputFieldConfig>,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?InputObjectTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<InputObjectTypeExtensionNode>,
