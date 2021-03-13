@@ -32,7 +32,7 @@ import {
   isAbstractType,
 } from './definition';
 
-export const __Schema = new GraphQLObjectType({
+export const __Schema: GraphQLObjectType = new GraphQLObjectType({
   name: '__Schema',
   description:
     'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.',
@@ -76,7 +76,7 @@ export const __Schema = new GraphQLObjectType({
     }: GraphQLFieldConfigMap<GraphQLSchema, mixed>),
 });
 
-export const __Directive = new GraphQLObjectType({
+export const __Directive: GraphQLObjectType = new GraphQLObjectType({
   name: '__Directive',
   description:
     "A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\nIn some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.",
@@ -109,7 +109,7 @@ export const __Directive = new GraphQLObjectType({
     }: GraphQLFieldConfigMap<GraphQLDirective, mixed>),
 });
 
-export const __DirectiveLocation = new GraphQLEnumType({
+export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
   name: '__DirectiveLocation',
   description:
     'A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.',
@@ -193,7 +193,7 @@ export const __DirectiveLocation = new GraphQLEnumType({
   },
 });
 
-export const __Type = new GraphQLObjectType({
+export const __Type: GraphQLObjectType = new GraphQLObjectType({
   name: '__Type',
   description:
     'The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByUrl`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.',
@@ -315,7 +315,7 @@ export const __Type = new GraphQLObjectType({
     }: GraphQLFieldConfigMap<GraphQLType, mixed>),
 });
 
-export const __Field = new GraphQLObjectType({
+export const __Field: GraphQLObjectType = new GraphQLObjectType({
   name: '__Field',
   description:
     'Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type.',
@@ -360,7 +360,7 @@ export const __Field = new GraphQLObjectType({
     }: GraphQLFieldConfigMap<GraphQLField<mixed, mixed>, mixed>),
 });
 
-export const __InputValue = new GraphQLObjectType({
+export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
   name: '__InputValue',
   description:
     'Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value.',
@@ -399,7 +399,7 @@ export const __InputValue = new GraphQLObjectType({
     }: GraphQLFieldConfigMap<GraphQLInputField, mixed>),
 });
 
-export const __EnumValue = new GraphQLObjectType({
+export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
   name: '__EnumValue',
   description:
     'One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.',
@@ -435,7 +435,7 @@ export const TypeKind = Object.freeze({
   NON_NULL: 'NON_NULL',
 });
 
-export const __TypeKind = new GraphQLEnumType({
+export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   name: '__TypeKind',
   description: 'An enum describing what kind of type a given `__Type` is.',
   values: {
@@ -528,17 +528,19 @@ export const TypeNameMetaFieldDef: GraphQLField<mixed, mixed> = {
   astNode: undefined,
 };
 
-export const introspectionTypes = Object.freeze([
-  __Schema,
-  __Directive,
-  __DirectiveLocation,
-  __Type,
-  __Field,
-  __InputValue,
-  __EnumValue,
-  __TypeKind,
-]);
+export const introspectionTypes: $ReadOnlyArray<GraphQLNamedType> = Object.freeze(
+  [
+    __Schema,
+    __Directive,
+    __DirectiveLocation,
+    __Type,
+    __Field,
+    __InputValue,
+    __EnumValue,
+    __TypeKind,
+  ],
+);
 
-export function isIntrospectionType(type: GraphQLNamedType): boolean %checks {
+export function isIntrospectionType(type: GraphQLNamedType): boolean {
   return introspectionTypes.some(({ name }) => type.name === name);
 }

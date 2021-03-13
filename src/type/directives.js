@@ -126,7 +126,7 @@ type GraphQLDirectiveNormalizedConfig = {|
 /**
  * Used to conditionally include fields or fragments.
  */
-export const GraphQLIncludeDirective = new GraphQLDirective({
+export const GraphQLIncludeDirective: GraphQLDirective = new GraphQLDirective({
   name: 'include',
   description:
     'Directs the executor to include this field or fragment only when the `if` argument is true.',
@@ -146,7 +146,7 @@ export const GraphQLIncludeDirective = new GraphQLDirective({
 /**
  * Used to conditionally skip (exclude) fields or fragments.
  */
-export const GraphQLSkipDirective = new GraphQLDirective({
+export const GraphQLSkipDirective: GraphQLDirective = new GraphQLDirective({
   name: 'skip',
   description:
     'Directs the executor to skip this field or fragment when the `if` argument is true.',
@@ -171,52 +171,56 @@ export const DEFAULT_DEPRECATION_REASON = 'No longer supported';
 /**
  * Used to declare element of a GraphQL schema as deprecated.
  */
-export const GraphQLDeprecatedDirective = new GraphQLDirective({
-  name: 'deprecated',
-  description: 'Marks an element of a GraphQL schema as no longer supported.',
-  locations: [
-    DirectiveLocation.FIELD_DEFINITION,
-    DirectiveLocation.ARGUMENT_DEFINITION,
-    DirectiveLocation.INPUT_FIELD_DEFINITION,
-    DirectiveLocation.ENUM_VALUE,
-  ],
-  args: {
-    reason: {
-      type: GraphQLString,
-      description:
-        'Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).',
-      defaultValue: DEFAULT_DEPRECATION_REASON,
+export const GraphQLDeprecatedDirective: GraphQLDirective = new GraphQLDirective(
+  {
+    name: 'deprecated',
+    description: 'Marks an element of a GraphQL schema as no longer supported.',
+    locations: [
+      DirectiveLocation.FIELD_DEFINITION,
+      DirectiveLocation.ARGUMENT_DEFINITION,
+      DirectiveLocation.INPUT_FIELD_DEFINITION,
+      DirectiveLocation.ENUM_VALUE,
+    ],
+    args: {
+      reason: {
+        type: GraphQLString,
+        description:
+          'Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).',
+        defaultValue: DEFAULT_DEPRECATION_REASON,
+      },
     },
   },
-});
+);
 
 /**
  * Used to provide a URL for specifying the behaviour of custom scalar definitions.
  */
-export const GraphQLSpecifiedByDirective = new GraphQLDirective({
-  name: 'specifiedBy',
-  description: 'Exposes a URL that specifies the behaviour of this scalar.',
-  locations: [DirectiveLocation.SCALAR],
-  args: {
-    url: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The URL that specifies the behaviour of this scalar.',
+export const GraphQLSpecifiedByDirective: GraphQLDirective = new GraphQLDirective(
+  {
+    name: 'specifiedBy',
+    description: 'Exposes a URL that specifies the behaviour of this scalar.',
+    locations: [DirectiveLocation.SCALAR],
+    args: {
+      url: {
+        type: new GraphQLNonNull(GraphQLString),
+        description: 'The URL that specifies the behaviour of this scalar.',
+      },
     },
   },
-});
+);
 
 /**
  * The full list of specified directives.
  */
-export const specifiedDirectives = Object.freeze([
-  GraphQLIncludeDirective,
-  GraphQLSkipDirective,
-  GraphQLDeprecatedDirective,
-  GraphQLSpecifiedByDirective,
-]);
+export const specifiedDirectives: $ReadOnlyArray<GraphQLDirective> = Object.freeze(
+  [
+    GraphQLIncludeDirective,
+    GraphQLSkipDirective,
+    GraphQLDeprecatedDirective,
+    GraphQLSpecifiedByDirective,
+  ],
+);
 
-export function isSpecifiedDirective(
-  directive: GraphQLDirective,
-): boolean %checks {
+export function isSpecifiedDirective(directive: GraphQLDirective): boolean {
   return specifiedDirectives.some(({ name }) => name === directive.name);
 }
