@@ -55,7 +55,10 @@ function babelBuild(srcPath, options) {
 }
 
 function buildPackageJSON() {
-  const packageJSON = require('../package.json');
+  const packageJSON = JSON.parse(
+    fs.readFileSync(require.resolve('../package.json'), 'utf-8'),
+  );
+
   delete packageJSON.private;
   delete packageJSON.scripts;
   delete packageJSON.devDependencies;
