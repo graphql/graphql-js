@@ -58,7 +58,7 @@ function coerceInt(inputValue: mixed): number {
   return inputValue;
 }
 
-export const GraphQLInt = new GraphQLScalarType({
+export const GraphQLInt: GraphQLScalarType = new GraphQLScalarType({
   name: 'Int',
   description:
     'The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.',
@@ -111,7 +111,7 @@ function coerceFloat(inputValue: mixed): number {
   return inputValue;
 }
 
-export const GraphQLFloat = new GraphQLScalarType({
+export const GraphQLFloat: GraphQLScalarType = new GraphQLScalarType({
   name: 'Float',
   description:
     'The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).',
@@ -175,7 +175,7 @@ function coerceString(inputValue: mixed): string {
   return inputValue;
 }
 
-export const GraphQLString = new GraphQLScalarType({
+export const GraphQLString: GraphQLScalarType = new GraphQLScalarType({
   name: 'String',
   description:
     'The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.',
@@ -215,7 +215,7 @@ function coerceBoolean(inputValue: mixed): boolean {
   return inputValue;
 }
 
-export const GraphQLBoolean = new GraphQLScalarType({
+export const GraphQLBoolean: GraphQLScalarType = new GraphQLScalarType({
   name: 'Boolean',
   description: 'The `Boolean` scalar type represents `true` or `false`.',
   serialize: serializeBoolean,
@@ -253,7 +253,7 @@ function coerceID(inputValue: mixed): string {
   throw new GraphQLError(`ID cannot represent value: ${inspect(inputValue)}`);
 }
 
-export const GraphQLID = new GraphQLScalarType({
+export const GraphQLID: GraphQLScalarType = new GraphQLScalarType({
   name: 'ID',
   description:
     'The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.',
@@ -271,14 +271,10 @@ export const GraphQLID = new GraphQLScalarType({
   },
 });
 
-export const specifiedScalarTypes = Object.freeze([
-  GraphQLString,
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLBoolean,
-  GraphQLID,
-]);
+export const specifiedScalarTypes: $ReadOnlyArray<GraphQLScalarType> = Object.freeze(
+  [GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID],
+);
 
-export function isSpecifiedScalarType(type: GraphQLNamedType): boolean %checks {
+export function isSpecifiedScalarType(type: GraphQLNamedType): boolean {
   return specifiedScalarTypes.some(({ name }) => type.name === name);
 }
