@@ -688,7 +688,6 @@ overrides:
     rules:
       node/no-unpublished-require: off
       node/no-sync: off
-      node/global-require: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
       import/no-commonjs: off
