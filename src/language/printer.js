@@ -26,16 +26,19 @@ const printDocASTReducer: any = {
 
   OperationDefinition: {
     leave(node) {
-      const op = node.operation;
-      const name = node.name;
       const varDefs = wrap('(', join(node.variableDefinitions, ', '), ')');
-      const directives = join(node.directives, ' ');
-      const selectionSet = node.selectionSet;
+      const prefix = join(
+        [
+          node.operation,
+          join([node.name, varDefs]),
+          join(node.directives, ' '),
+        ],
+        ' ',
+      );
+
       // Anonymous queries with no directives or variable definitions can use
       // the query short form.
-      return !name && !directives && !varDefs && op === 'query'
-        ? selectionSet
-        : join([op, join([name, varDefs]), directives, selectionSet], ' ');
+      return (prefix === 'query' ? '' : prefix + ' ') + node.selectionSet;
     },
   },
 
