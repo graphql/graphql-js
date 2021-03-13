@@ -10,10 +10,11 @@ import { Lexer } from '../lexer';
 import { Source } from '../source';
 import { printBlockString } from '../blockString';
 
-function lexValue(str: string) {
+function lexValue(str: string): string {
   const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 
+  invariant(typeof value === 'string');
   invariant(lexer.advance().kind === '<EOF>', 'Expected EOF');
   return value;
 }
