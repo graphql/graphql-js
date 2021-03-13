@@ -325,13 +325,7 @@ rules:
   no-nested-ternary: off
   no-new-object: error
   no-plusplus: off
-  no-restricted-syntax:
-    - error
-    - selector: 'FunctionDeclaration[async=true]'
-      message: >
-        async functions are not allowed inside package source code because
-        older versions of NodeJS do not support them without additional
-        runtime dependencies. Instead, use explicit Promises.
+  no-restricted-syntax: off
   no-tabs: error
   no-ternary: off
   no-underscore-dangle: off # TODO
@@ -670,7 +664,6 @@ overrides:
       node/no-unpublished-import: [error, { allowModules: ['chai', 'mocha'] }]
       import/no-restricted-paths: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
-      no-restricted-syntax: off
   - files: 'integrationTests/*'
     rules:
       node/no-unpublished-require: off
@@ -691,7 +684,6 @@ overrides:
       import/no-commonjs: off
       no-console: off
       no-await-in-loop: off
-      no-restricted-syntax: off
   - files: 'resources/**'
     rules:
       node/no-unpublished-import: off
@@ -704,5 +696,4 @@ overrides:
       import/no-nodejs-modules: off
       import/no-commonjs: off
       no-await-in-loop: off
-      no-restricted-syntax: off
       no-console: off
