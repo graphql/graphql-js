@@ -5,6 +5,7 @@ import { Maybe } from '../jsutils/Maybe';
 
 import { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { Path } from '../jsutils/Path';
+import { ObjMap } from '../jsutils/ObjMap';
 
 import {
   ScalarTypeDefinitionNode,
@@ -263,9 +264,8 @@ export function getNamedType(type: GraphQLType): GraphQLNamedType;
  * Used while defining GraphQL types to allow for circular references in
  * otherwise immutable type definitions.
  */
-export type Thunk<T extends { [key: string]: any } | Array<any>> =
-  | (() => T)
-  | T;
+export type ThunkArray<T> = Array<T> | (() => Array<T>);
+export type ThunkObjMap<T> = ObjMap<T> | (() => ObjMap<T>);
 
 /**
  * Custom extensions
@@ -435,8 +435,8 @@ export function argsToArgsConfig(
 export interface GraphQLObjectTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  interfaces?: Thunk<Array<GraphQLInterfaceType>>;
-  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
+  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
   extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
@@ -637,8 +637,8 @@ export class GraphQLInterfaceType {
 export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  interfaces?: Thunk<Array<GraphQLInterfaceType>>;
-  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
+  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -711,7 +711,7 @@ export class GraphQLUnionType {
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  types: Thunk<Array<GraphQLObjectType>>;
+  types: ThunkArray<GraphQLObjectType>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -884,7 +884,7 @@ export class GraphQLInputObjectType {
 export interface GraphQLInputObjectTypeConfig {
   name: string;
   description?: Maybe<string>;
-  fields: Thunk<GraphQLInputFieldConfigMap>;
+  fields: ThunkObjMap<GraphQLInputFieldConfig>;
   extensions?: Maybe<Readonly<GraphQLInputObjectTypeExtensions>>;
   astNode?: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;

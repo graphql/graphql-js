@@ -334,7 +334,11 @@ export function getNamedType(type) {
  * otherwise immutable type definitions.
  */
 
-function resolveThunk(thunk) {
+function resolveArrayThunk(thunk) {
+  return typeof thunk === 'function' ? thunk() : thunk;
+}
+
+function resolveObjMapThunk(thunk) {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -515,13 +519,13 @@ export class GraphQLObjectType {
 }
 
 function defineInterfaces(config) {
-  const interfaces = resolveThunk(config.interfaces ?? []);
+  const interfaces = resolveArrayThunk(config.interfaces ?? []);
   Array.isArray(interfaces) || devAssert(0, `${config.name} interfaces must be an Array or a function which returns an Array.`);
   return interfaces;
 }
 
 function defineFieldMap(config) {
-  const fieldMap = resolveThunk(config.fields);
+  const fieldMap = resolveObjMapThunk(config.fields);
   isPlainObj(fieldMap) || devAssert(0, `${config.name} fields must be an object with field names as keys or a function which returns such an object.`);
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     isPlainObj(fieldConfig) || devAssert(0, `${config.name}.${fieldName} field config must be an object.`);
@@ -734,7 +738,7 @@ export class GraphQLUnionType {
 }
 
 function defineTypes(config) {
-  const types = resolveThunk(config.types);
+  const types = resolveArrayThunk(config.types);
   Array.isArray(types) || devAssert(0, `Must provide Array of types or a function which returns such an array for Union ${config.name}.`);
   return types;
 }
@@ -956,7 +960,7 @@ export class GraphQLInputObjectType {
 }
 
 function defineInputFieldMap(config) {
-  const fieldMap = resolveThunk(config.fields);
+  const fieldMap = resolveObjMapThunk(config.fields);
   isPlainObj(fieldMap) || devAssert(0, `${config.name} fields must be an object with field names as keys or a function which returns such an object.`);
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     !('resolve' in fieldConfig) || devAssert(0, `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`);
