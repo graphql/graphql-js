@@ -348,7 +348,6 @@ export function getVisitFn(visitor, kind, isLeaving) {
       return kindSpecificVisitor;
     }
   } else {
-    // $FlowFixMe[prop-missing]
     const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
 
     if (specificVisitor) {
