@@ -666,14 +666,14 @@ overrides:
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
   - files: 'integrationTests/*'
     rules:
-      node/no-unpublished-require: off
       node/no-sync: off
+      node/no-unpublished-require: [error, { allowModules: ['mocha'] }]
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
   - files: 'integrationTests/*/**'
     rules:
       node/no-sync: off
-      node/no-missing-require: off
+      node/no-missing-require: [error, { allowModules: ['graphql'] }]
       import/no-nodejs-modules: off
       no-console: off
   - files: 'benchmark/**'
@@ -686,14 +686,10 @@ overrides:
       no-await-in-loop: off
   - files: 'resources/**'
     rules:
-      node/no-unpublished-import: off
       node/no-unpublished-require: off
-      node/no-missing-require: off
       node/no-sync: off
       node/global-require: off
-      import/no-dynamic-require: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
       import/no-commonjs: off
-      no-await-in-loop: off
       no-console: off
