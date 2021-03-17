@@ -17,8 +17,8 @@ type KindVisitor = {
 };
 
 interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
-  readonly enter?: ASTVisitFn<TVisitedNode>,
-  readonly leave?: ASTVisitFn<TVisitedNode>,
+  readonly enter?: ASTVisitFn<TVisitedNode>;
+  readonly leave?: ASTVisitFn<TVisitedNode>;
 }
 
 /**

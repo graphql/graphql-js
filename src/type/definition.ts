@@ -849,14 +849,14 @@ export function argsToArgsConfig(
 }
 
 export interface GraphQLObjectTypeConfig<TSource, TContext> {
-  name: string,
-  description?: Maybe<string>,
-  interfaces?: ThunkArray<GraphQLInterfaceType>,
-  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>,
-  isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>,
-  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>,
-  astNode?: Maybe<ObjectTypeDefinitionNode>,
-  extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>,
+  name: string;
+  description?: Maybe<string>;
+  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
+  isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
+  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>;
+  astNode?: Maybe<ObjectTypeDefinitionNode>;
+  extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 }
 
 interface GraphQLObjectTypeNormalizedConfig
@@ -1055,10 +1055,10 @@ export class GraphQLInterfaceType {
 }
 
 export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
-  name: string,
-  description?: Maybe<string>,
-  interfaces?: ThunkArray<GraphQLInterfaceType>,
-  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>,
+  name: string;
+  description?: Maybe<string>;
+  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -1172,9 +1172,9 @@ function defineTypes(
 }
 
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
-  name: string,
-  description?: Maybe<string>,
-  types: ThunkArray<GraphQLObjectType>,
+  name: string;
+  description?: Maybe<string>;
+  types: ThunkArray<GraphQLObjectType>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -1514,13 +1514,13 @@ function defineInputFieldMap(
 }
 
 export interface GraphQLInputObjectTypeConfig {
-  name: string,
-  description?: Maybe<string>,
-  fields: ThunkObjMap<GraphQLInputFieldConfig>,
-  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>,
-  astNode?: Maybe<InputObjectTypeDefinitionNode>,
-  extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>,
-};
+  name: string;
+  description?: Maybe<string>;
+  fields: ThunkObjMap<GraphQLInputFieldConfig>;
+  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>;
+  astNode?: Maybe<InputObjectTypeDefinitionNode>;
+  extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
+}
 
 interface GraphQLInputObjectTypeNormalizedConfig
   extends GraphQLInputObjectTypeConfig {
