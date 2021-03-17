@@ -14,6 +14,17 @@ const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 const minSamples = 5;
 
+// Get the revisions and make things happen!
+if (require.main === module) {
+  const { benchmarks, revisions } = getArguments(process.argv.slice(2));
+  const benchmarkProjects = prepareBenchmarkProjects(revisions);
+
+  runBenchmarks(benchmarks, benchmarkProjects).catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
+
 function localDir(...paths) {
   return path.join(__dirname, '..', ...paths);
 }
@@ -31,17 +42,16 @@ function exec(command, options = {}) {
 // and returns path to its 'dist' directory.
 function prepareBenchmarkProjects(revisionList) {
   const tmpDir = path.join(os.tmpdir(), 'graphql-js-benchmark');
-  fs.rmdirSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { recursive: true, force: true });
   fs.mkdirSync(tmpDir);
 
   const setupDir = path.join(tmpDir, 'setup');
-  fs.rmdirSync(setupDir, { recursive: true, force: true });
   fs.mkdirSync(setupDir);
 
   return revisionList.map((revision) => {
     console.log(`🍳  Preparing ${revision}...`);
     const projectPath = path.join(setupDir, revision);
-    fs.rmdirSync(projectPath, { recursive: true });
+    fs.rmSync(projectPath, { recursive: true, force: true });
     fs.mkdirSync(projectPath);
 
     fs.writeFileSync(
@@ -73,12 +83,12 @@ function prepareBenchmarkProjects(revisionList) {
     }
 
     const repoDir = path.join(tmpDir, hash);
-    fs.rmdirSync(repoDir, { recursive: true, force: true });
+    fs.rmSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
     exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
     exec('npm --quiet ci', { cwd: repoDir });
     fs.renameSync(buildNPMArchive(repoDir), archivePath);
-    fs.rmdirSync(repoDir, { recursive: true, force: true });
+    fs.rmSync(repoDir, { recursive: true });
     return archivePath;
   }
 
@@ -230,9 +240,7 @@ function maxBy(array, fn) {
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
-async function runBenchmarks(benchmarks, revisions) {
-  const benchmarkProjects = prepareBenchmarkProjects(revisions);
-
+async function runBenchmarks(benchmarks, benchmarkProjects) {
   for (const benchmark of benchmarks) {
     const results = [];
     for (let i = 0; i < benchmarkProjects.length; ++i) {
@@ -266,31 +274,36 @@ async function runBenchmarks(benchmarks, revisions) {
 
 function getArguments(argv) {
   const revsIdx = argv.indexOf('--revs');
-  const revsArgs = revsIdx === -1 ? [] : argv.slice(revsIdx + 1);
-  const specificBenchmarks = revsIdx === -1 ? argv : argv.slice(0, revsIdx);
-  let assumeArgs;
-  let revisions;
-  switch (revsArgs.length) {
+  const revisions = revsIdx === -1 ? [] : argv.slice(revsIdx + 1);
+  const benchmarks = revsIdx === -1 ? argv : argv.slice(0, revsIdx);
+
+  switch (revisions.length) {
     case 0:
-      assumeArgs = [...specificBenchmarks, '--revs', 'local', 'HEAD'];
-      revisions = [LOCAL, 'HEAD'];
+      revisions.unshift('HEAD');
+    // fall through
+    case 1: {
+      revisions.unshift('local');
+
+      const assumeArgv = ['benchmark', ...benchmarks, '--revs', ...revisions];
+      console.warn('Assuming you meant: ' + bold(assumeArgv.join(' ')));
       break;
-    case 1:
-      assumeArgs = [...specificBenchmarks, '--revs', 'local', revsArgs[0]];
-      revisions = [LOCAL, revsArgs[0]];
-      break;
-    default:
-      revisions = revsArgs;
-      break;
+    }
   }
 
-  if (assumeArgs) {
-    console.warn(
-      'Assuming you meant: ' + bold('benchmark ' + assumeArgs.join(' ')),
-    );
+  if (benchmarks.length === 0) {
+    benchmarks.push(...findAllBenchmarks());
   }
 
-  return { specificBenchmarks, revisions };
+  return { benchmarks, revisions };
+}
+
+function findAllBenchmarks() {
+  return fs
+    .readdirSync(localDir('benchmark'), { withFileTypes: true })
+    .filter((dirent) => dirent.isFile())
+    .map((dirent) => dirent.name)
+    .filter((name) => name.endsWith('-benchmark.js'))
+    .map((name) => path.join('benchmark', name));
 }
 
 function bold(str) {
@@ -315,26 +328,6 @@ function cyan(str) {
 
 function grey(str) {
   return '\u001b[90m' + str + '\u001b[0m';
-}
-
-function findAllBenchmarks() {
-  return fs
-    .readdirSync(localDir('benchmark'), { withFileTypes: true })
-    .filter((dirent) => dirent.isFile())
-    .map((dirent) => dirent.name)
-    .filter((name) => name.endsWith('-benchmark.js'))
-    .map((name) => path.join('benchmark', name));
-}
-
-// Get the revisions and make things happen!
-if (require.main === module) {
-  const { specificBenchmarks, revisions } = getArguments(process.argv.slice(2));
-  const benchmarks =
-    specificBenchmarks.length > 0 ? specificBenchmarks : findAllBenchmarks();
-  runBenchmarks(benchmarks, revisions).catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
 }
 
 function sampleModule(modulePath) {
