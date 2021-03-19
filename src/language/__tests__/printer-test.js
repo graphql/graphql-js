@@ -149,7 +149,6 @@ describe('Printer: Query document', () => {
     const printed = print(parse(kitchenSinkQuery));
 
     expect(printed).to.equal(
-      // $FlowFixMe[incompatible-call]
       dedent([
         String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
