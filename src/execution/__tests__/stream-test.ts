@@ -437,6 +437,72 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Can stream a field that returns an async iterable', async () => {
+    const document = parse(`
+      query { 
+        asyncIterableList @stream(initialCount: 2) {
+          name
+          id
+        }
+      }
+    `);
+    const schema = new GraphQLSchema({ query });
+
+    const result = await execute({ schema, document, rootValue: {} });
+
+    const results = [];
+    if (isAsyncIterable(result)) {
+      const asyncResults = await Promise.all([
+        result.next(),
+        result.next(),
+        result.next(),
+        result.next(),
+      ]);
+      results.push(...asyncResults);
+    }
+
+    expect(results).to.deep.equal([
+      {
+        done: false,
+        value: {
+          data: {
+            asyncIterableList: [
+              {
+                name: 'Luke',
+                id: '1',
+              },
+              {
+                name: 'Han',
+                id: '2',
+              },
+            ],
+          },
+          hasNext: true,
+        },
+      },
+      {
+        done: false,
+        value: {
+          data: {
+            name: 'Leia',
+            id: '3',
+          },
+          path: ['asyncIterableList', 2],
+          hasNext: true,
+        },
+      },
+      {
+        done: false,
+        value: {
+          hasNext: false,
+        },
+      },
+      {
+        done: true,
+        value: undefined,
+      },
+    ]);
+  });
   it('Handles error thrown in async iterable before initialCount is reached', async () => {
     const document = parse(`
       query { 
