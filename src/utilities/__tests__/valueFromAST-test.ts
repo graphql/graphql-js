@@ -67,7 +67,6 @@ describe('valueFromAST', () => {
       name: 'PassthroughScalar',
       parseLiteral(node) {
         invariant(node.kind === 'StringValue');
-        // @ts-expect-error: FIXME
         return node.value;
       },
       parseValue: identityFunc,

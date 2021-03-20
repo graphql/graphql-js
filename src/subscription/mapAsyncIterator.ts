@@ -29,7 +29,7 @@ export function mapAsyncIterator<T, U>(
       if (result.done) {
         return result;
       }
-
+      // @ts-expect-error FIXME
       return { value: await callback(result.value), done: false };
     } catch (callbackError) {
       return abruptClose(callbackError);
@@ -38,8 +38,10 @@ export function mapAsyncIterator<T, U>(
 
   return {
     next(): Promise<IteratorResult<U, void>> {
+      // @ts-expect-error FIXME
       return mapResult(iterator.next());
     },
+    // @ts-expect-error FIXME
     return() {
       return typeof iterator.return === 'function'
         ? mapResult(iterator.return())
@@ -47,8 +49,10 @@ export function mapAsyncIterator<T, U>(
     },
     throw(error?: unknown): Promise<IteratorResult<U, void>> {
       if (typeof iterator.throw === 'function') {
+        // @ts-expect-error FIXME
         return mapResult(iterator.throw(error));
       }
+      // @ts-expect-error FIXME
       return Promise.reject(error).catch(abruptClose);
     },
     [Symbol.asyncIterator]() {

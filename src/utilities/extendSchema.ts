@@ -673,6 +673,7 @@ export function extendSchemaImpl(
 }
 
 const stdTypeMap = keyMap(
+  // @ts-expect-error FIX ME
   specifiedScalarTypes.concat(introspectionTypes),
   (type) => type.name,
 );

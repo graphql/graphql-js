@@ -35,7 +35,9 @@ function formatObjectValue(
 
   const seenValues = [...previouslySeenValues, value];
 
+  // @ts-expect-error FIX ME
   if (typeof value.toJSON === 'function') {
+    // @ts-expect-error FIX ME
     const jsonValue = (value.toJSON as () => unknown)();
 
     // check for infinite recursion
