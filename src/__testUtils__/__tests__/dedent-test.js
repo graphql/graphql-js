@@ -106,13 +106,13 @@ describe('dedent', () => {
   });
 
   it('supports expression interpolation', () => {
-    const name = 'Luke Skywalker';
-    const age = 42;
+    const name = 'John';
+    const surname = 'Doe';
     const output = dedent`
       {
         "me": {
-          "name": "${name}"
-          "age": ${String(age)}
+          "name": "${name}",
+          "surname": "${surname}"
         }
       }
     `;
@@ -120,8 +120,8 @@ describe('dedent', () => {
       [
         '{',
         '  "me": {',
-        '    "name": "Luke Skywalker"',
-        '    "age": 42',
+        '    "name": "John",',
+        '    "surname": "Doe"',
         '  }',
         '}',
         '',
