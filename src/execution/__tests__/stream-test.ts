@@ -138,14 +138,13 @@ async function completeAsync(document, numCalls) {
 
   const result = await execute({ schema, document, rootValue: {} });
 
-  if (isAsyncIterable(result)) {
-    const promises = [];
-    for (let i = 0; i < numCalls; i++) {
-      promises.push(result.next());
-    }
-    return Promise.all(promises);
+  invariant(isAsyncIterable(result));
+
+  const promises = [];
+  for (let i = 0; i < numCalls; i++) {
+    promises.push(result.next());
   }
-  return result;
+  return Promise.all(promises);
 }
 
 describe('Execute: stream directive', () => {
