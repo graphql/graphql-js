@@ -133,6 +133,21 @@ async function complete(document: DocumentNode) {
   return result;
 }
 
+async function completeAsync(document, numCalls) {
+  const schema = new GraphQLSchema({ query });
+
+  const result = await execute({ schema, document, rootValue: {} });
+
+  if (isAsyncIterable(result)) {
+    const promises = [];
+    for (let i = 0; i < numCalls; i++) {
+      promises.push(result.next());
+    }
+    return Promise.all(promises);
+  }
+  return result;
+}
+
 describe('Execute: stream directive', () => {
   it('Can stream a list field', async () => {
     const document = parse('{ scalarList @stream(initialCount: 1) }');
@@ -446,22 +461,8 @@ describe('Execute: stream directive', () => {
         }
       }
     `);
-    const schema = new GraphQLSchema({ query });
-
-    const result = await execute({ schema, document, rootValue: {} });
-
-    const results = [];
-    if (isAsyncIterable(result)) {
-      const asyncResults = await Promise.all([
-        result.next(),
-        result.next(),
-        result.next(),
-        result.next(),
-      ]);
-      results.push(...asyncResults);
-    }
-
-    expect(results).to.deep.equal([
+    const result = await completeAsync(document, 4);
+    expect(result).to.deep.equal([
       {
         done: false,
         value: {
