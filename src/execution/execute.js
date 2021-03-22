@@ -1032,7 +1032,26 @@ function completeAsyncIteratorValue(
   let containsPromise = false;
   const stream = getStreamValues(exeContext, fieldNodes);
   return new Promise((resolve) => {
-    function next(index, completedResults) {
+    function advance(index, completedResults) {
+      if (
+        stream &&
+        typeof stream.initialCount === 'number' &&
+        index >= stream.initialCount
+      ) {
+        exeContext.dispatcher.addAsyncIteratorValue(
+          stream.label,
+          index,
+          path,
+          iterator,
+          exeContext,
+          fieldNodes,
+          info,
+          itemType,
+        );
+        resolve(completedResults);
+        return;
+      }
+
       const fieldPath = addPath(path, index, undefined);
       iterator.next().then(
         ({ value, done }) => {
@@ -1067,26 +1086,7 @@ function completeAsyncIteratorValue(
             return;
           }
 
-          const newIndex = index + 1;
-          if (
-            stream &&
-            typeof stream.initialCount === 'number' &&
-            newIndex >= stream.initialCount
-          ) {
-            exeContext.dispatcher.addAsyncIteratorValue(
-              stream.label,
-              newIndex,
-              path,
-              iterator,
-              exeContext,
-              fieldNodes,
-              info,
-              itemType,
-            );
-            resolve(completedResults);
-            return;
-          }
-          next(newIndex, completedResults);
+          advance(index + 1, completedResults);
         },
         (rawError) => {
           completedResults.push(null);
@@ -1100,7 +1100,8 @@ function completeAsyncIteratorValue(
         },
       );
     }
-    next(0, []);
+
+    advance(0, []);
   }).then((completedResults) =>
     containsPromise ? Promise.all(completedResults) : completedResults,
   );
