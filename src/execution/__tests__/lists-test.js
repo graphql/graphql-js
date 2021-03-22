@@ -139,6 +139,25 @@ describe('Execute: Accepts async iterables as list value', () => {
     });
   });
 
+  it('Handles an AsyncGenerator function where an intermediate value triggers an error', async () => {
+    async function* listField() {
+      yield await 'two';
+      yield await {};
+      yield await 4;
+    }
+
+    expect(await complete({ listField })).to.deep.equal({
+      data: { listField: ['two', null, '4'] },
+      errors: [
+        {
+          message: 'String cannot represent value: {}',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField', 1],
+        },
+      ],
+    });
+  });
+
   it('Handles errors from `completeValue` in AsyncIterables', async () => {
     async function* listField() {
       yield await 'two';

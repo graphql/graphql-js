@@ -901,8 +901,6 @@ function completeAsyncIteratorValue(
               pathToArray(fieldPath),
             );
             handleFieldError(error, itemType, exeContext);
-            resolve(completedResults);
-            return;
           }
 
           next(index + 1, completedResults);
