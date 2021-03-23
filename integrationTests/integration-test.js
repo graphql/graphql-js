@@ -8,11 +8,11 @@ const childProcess = require('child_process');
 const { describe, it } = require('mocha');
 
 function exec(command, options = {}) {
-  const result = childProcess.execSync(command, {
+  const output = childProcess.execSync(command, {
     encoding: 'utf-8',
     ...options,
   });
-  return result != null ? result.trimEnd() : result;
+  return output && output.trimEnd();
 }
 
 describe('Integration Tests', () => {

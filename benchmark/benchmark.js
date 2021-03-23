@@ -35,7 +35,7 @@ function exec(command, options = {}) {
     stdio: ['inherit', 'pipe', 'inherit'],
     ...options,
   });
-  return result && result.trimEnd();
+  return result?.trimEnd();
 }
 
 // Build a benchmark-friendly environment for the given revision
