@@ -364,7 +364,7 @@ function sampleModule(modulePath) {
     const child = cp.spawn(
       process.argv[0],
       [
-        '--noconcurrent_sweeping',
+        '--no-concurrent-sweeping',
         '--predictable',
         '--expose-gc',
         '--eval',
