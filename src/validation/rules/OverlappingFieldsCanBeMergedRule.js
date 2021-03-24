@@ -775,13 +775,8 @@ function subfieldConflicts(
   if (conflicts.length > 0) {
     return [
       [responseName, conflicts.map(([reason]) => reason)],
-      conflicts.reduce((allFields, [, fields1]) => allFields.concat(fields1), [
-        node1,
-      ]),
-      conflicts.reduce(
-        (allFields, [, , fields2]) => allFields.concat(fields2),
-        [node2],
-      ),
+      [node1, ...conflicts.map(([, fields1]) => fields1).flat()],
+      [node2, ...conflicts.map(([, , fields2]) => fields2).flat()],
     ];
   }
 }

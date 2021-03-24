@@ -10,12 +10,11 @@ import type { ObjMap } from './ObjMap';
 export function promiseForObject<T>(
   object: ObjMap<Promise<T>>,
 ): Promise<ObjMap<T>> {
-  const keys = Object.keys(object);
-  const valuesAndPromises = keys.map((name) => object[name]);
-  return Promise.all(valuesAndPromises).then((values) =>
-    values.reduce((resolvedObject, value, i) => {
-      resolvedObject[keys[i]] = value;
-      return resolvedObject;
-    }, Object.create(null)),
-  );
+  return Promise.all(Object.values(object)).then((resolvedValues) => {
+    const resolvedObject = Object.create(null);
+    for (const [i, key] of Object.keys(object).entries()) {
+      resolvedObject[key] = resolvedValues[i];
+    }
+    return resolvedObject;
+  });
 }
