@@ -5,7 +5,7 @@ import { PromiseOrValue } from '../jsutils/PromiseOrValue';
  * which produces values mapped via calling the callback function.
  */
 export function mapAsyncIterator<T, U>(
-  iterable: AsyncIterable<T>,
+  iterable: AsyncIterable<T> | AsyncGenerator<T, void, void>,
   callback: (arg: T) => PromiseOrValue<U>,
   rejectCallback?: (arg: any) => PromiseOrValue<U>,
-): any; // TS_SPECIFIC: AsyncGenerator requires typescript@3.6
+): AsyncGenerator<U, void, void>;
