@@ -2,6 +2,7 @@
 /* eslint-disable import/no-cycle */
 
 import { Maybe } from '../jsutils/Maybe';
+import { ObjMap } from '../jsutils/ObjMap';
 
 import { SchemaDefinitionNode, SchemaExtensionNode } from '../language/ast';
 
@@ -97,9 +98,7 @@ export class GraphQLSchema {
   get [Symbol.toStringTag](): string;
 }
 
-interface TypeMap {
-  [key: string]: GraphQLNamedType;
-}
+type TypeMap = ObjMap<GraphQLNamedType>;
 
 interface InterfaceImplementations {
   objects: ReadonlyArray<GraphQLObjectType>;

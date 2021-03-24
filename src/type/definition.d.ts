@@ -336,7 +336,7 @@ export type GraphQLScalarValueParser<TInternal> = (
 ) => Maybe<TInternal>;
 export type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
-  variables: Maybe<{ [key: string]: unknown }>,
+  variables: Maybe<ObjMap<unknown>>,
 ) => Maybe<TInternal>;
 
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
@@ -479,7 +479,7 @@ export interface GraphQLResolveInfo {
   readonly parentType: GraphQLObjectType;
   readonly path: Path;
   readonly schema: GraphQLSchema;
-  readonly fragments: { [key: string]: FragmentDefinitionNode };
+  readonly fragments: ObjMap<FragmentDefinitionNode>;
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
   readonly variableValues: { [variableName: string]: unknown };
@@ -522,9 +522,7 @@ export interface GraphQLFieldConfig<
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
-export interface GraphQLFieldConfigArgumentMap {
-  [key: string]: GraphQLArgumentConfig;
-}
+export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
 
 /**
  * Custom extensions
@@ -548,9 +546,9 @@ export interface GraphQLArgumentConfig {
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
-export interface GraphQLFieldConfigMap<TSource, TContext> {
-  [key: string]: GraphQLFieldConfig<TSource, TContext>;
-}
+export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
+  GraphQLFieldConfig<TSource, TContext>
+>;
 
 export interface GraphQLField<
   TSource,
@@ -580,9 +578,9 @@ export interface GraphQLArgument {
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean;
 
-export interface GraphQLFieldMap<TSource, TContext> {
-  [key: string]: GraphQLField<TSource, TContext>;
-}
+export type GraphQLFieldMap<TSource, TContext> = ObjMap<
+  GraphQLField<TSource, TContext>
+>;
 
 /**
  * Custom extensions
@@ -778,7 +776,7 @@ export class GraphQLEnumType {
   parseValue(value: unknown): Maybe<any>;
   parseLiteral(
     valueNode: ValueNode,
-    _variables: Maybe<{ [key: string]: unknown }>,
+    _variables: Maybe<ObjMap<unknown>>,
   ): Maybe<any>;
 
   toConfig(): GraphQLEnumTypeConfig & {
@@ -801,9 +799,7 @@ export interface GraphQLEnumTypeConfig {
   extensionASTNodes?: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 }
 
-export interface GraphQLEnumValueConfigMap {
-  [key: string]: GraphQLEnumValueConfig;
-}
+export type GraphQLEnumValueConfigMap = ObjMap<GraphQLEnumValueConfig>;
 
 /**
  * Custom extensions
@@ -921,9 +917,7 @@ export interface GraphQLInputFieldConfig {
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 
-export interface GraphQLInputFieldConfigMap {
-  [key: string]: GraphQLInputFieldConfig;
-}
+export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
 export interface GraphQLInputField {
   name: string;
@@ -937,6 +931,4 @@ export interface GraphQLInputField {
 
 export function isRequiredInputField(field: GraphQLInputField): boolean;
 
-export interface GraphQLInputFieldMap {
-  [key: string]: GraphQLInputField;
-}
+export type GraphQLInputFieldMap = ObjMap<GraphQLInputField>;
