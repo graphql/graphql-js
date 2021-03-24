@@ -23,6 +23,26 @@ import {
 } from '../type/definition';
 
 /**
+ * Terminology
+ *
+ * "Definitions" are the generic name for top-level statements in the document.
+ * Examples of this include:
+ * 1) Operations (such as a query)
+ * 2) Fragments
+ *
+ * "Operations" are a generic name for requests in the document.
+ * Examples of this include:
+ * 1) query,
+ * 2) mutation
+ *
+ * "Selections" are the definitions that can appear legally and at
+ * single level of the query. These include:
+ * 1) field references e.g "a"
+ * 2) fragment "spreads" e.g. "...c"
+ * 3) inline fragment "spreads" e.g. "...on Type { a }"
+ */
+
+/**
  * Data that must be available at all points during query execution.
  *
  * Namely, schema of the type system that is currently executing,
@@ -36,6 +56,7 @@ export interface ExecutionContext {
   operation: OperationDefinitionNode;
   variableValues: { [key: string]: any };
   fieldResolver: GraphQLFieldResolver<any, any>;
+  typeResolver: GraphQLTypeResolver<any, any>;
   errors: Array<GraphQLError>;
 }
 
@@ -86,20 +107,8 @@ export interface ExecutionArgs {
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
- *
- * Accepts either an object with named arguments, or individual arguments.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult>;
-export function execute(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: any,
-  contextValue?: any,
-  variableValues?: Maybe<{ [key: string]: any }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): PromiseOrValue<ExecutionResult>;
 
 /**
  * Also implements the "Evaluating requests" section of the GraphQL specification.
@@ -111,6 +120,8 @@ export function executeSync(args: ExecutionArgs): ExecutionResult;
 /**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
+ *
+ * @internal
  */
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
@@ -123,6 +134,8 @@ export function assertValidExecutionArguments(
  * execute, which we will pass throughout the other execution methods.
  *
  * Throws a GraphQLError if a valid execution context cannot be created.
+ *
+ * @internal
  */
 export function buildExecutionContext(
   schema: GraphQLSchema,
@@ -142,6 +155,8 @@ export function buildExecutionContext(
  * CollectFields requires the "runtime type" of an object. For a field which
  * returns an Interface or Union type, the "runtime type" will be the actual
  * Object type returned by that field.
+ *
+ * @internal
  */
 export function collectFields(
   exeContext: ExecutionContext,
@@ -151,6 +166,9 @@ export function collectFields(
   visitedFragmentNames: { [key: string]: boolean },
 ): { [key: string]: Array<FieldNode> };
 
+/**
+ * @internal
+ */
 export function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<any, any>,
@@ -175,18 +193,20 @@ export const defaultTypeResolver: GraphQLTypeResolver<any, any>;
  * If a resolve function is not given, then a default resolve behavior is used
  * which takes the property of the source object of the same name as the field
  * and returns it as the result, or if it's a function, returns the result
- * of calling that function while passing along args and context.
+ * of calling that function while passing along args and context value.
  */
 export const defaultFieldResolver: GraphQLFieldResolver<any, any>;
 
 /**
  * This method looks up the field on the given type definition.
- * It has special casing for the two introspection fields, __schema
- * and __typename. __typename is special because it can always be
- * queried as a field, even in situations where no other fields
- * are allowed, like on a Union. __schema could get automatically
- * added to the query type, but that would require mutating type
- * definitions, which would cause issues.
+ * It has special casing for the three introspection fields,
+ * __schema, __type and __typename. __typename is special because
+ * it can always be queried as a field, even in situations where no
+ * other fields are allowed, like on a Union. __schema and __type
+ * could get automatically added to the query type, but that would
+ * require mutating type definitions, which would cause issues.
+ *
+ * @internal
  */
 export function getFieldDef(
   schema: GraphQLSchema,
