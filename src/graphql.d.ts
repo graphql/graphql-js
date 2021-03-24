@@ -49,7 +49,7 @@ export interface GraphQLArgs {
   source: string | Source;
   rootValue?: unknown;
   contextValue?: unknown;
-  variableValues?: Maybe<{ [key: string]: unknown }>;
+  variableValues?: Maybe<Record<string, unknown>>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;

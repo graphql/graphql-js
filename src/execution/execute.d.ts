@@ -55,7 +55,7 @@ export interface ExecutionContext {
   contextValue: unknown;
   fragments: ObjMap<FragmentDefinitionNode>;
   operation: OperationDefinitionNode;
-  variableValues: { [key: string]: unknown };
+  variableValues: Record<string, unknown>;
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   errors: Array<GraphQLError>;
@@ -69,8 +69,8 @@ export interface ExecutionContext {
  *   - `extensions` is reserved for adding non-standard properties.
  */
 export interface ExecutionResult<
-  TData = { [key: string]: any },
-  TExtensions = { [key: string]: any }
+  TData = Record<string, any>,
+  TExtensions = Record<string, any>
 > {
   errors?: ReadonlyArray<GraphQLError>;
   // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
@@ -79,8 +79,8 @@ export interface ExecutionResult<
 }
 
 export interface FormattedExecutionResult<
-  TData = { [key: string]: any },
-  TExtensions = { [key: string]: any }
+  TData = Record<string, any>,
+  TExtensions = Record<string, any>
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
@@ -93,7 +93,7 @@ export interface ExecutionArgs {
   document: DocumentNode;
   rootValue?: unknown;
   contextValue?: unknown;
-  variableValues?: Maybe<{ [key: string]: unknown }>;
+  variableValues?: Maybe<Record<string, unknown>>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
@@ -127,7 +127,7 @@ export function executeSync(args: ExecutionArgs): ExecutionResult;
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: Maybe<{ [key: string]: unknown }>,
+  rawVariableValues: Maybe<Record<string, unknown>>,
 ): void;
 
 /**
@@ -143,7 +143,7 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: unknown,
   contextValue: unknown,
-  rawVariableValues: Maybe<{ [key: string]: unknown }>,
+  rawVariableValues: Maybe<Record<string, unknown>>,
   operationName: Maybe<string>,
   fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
   typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,

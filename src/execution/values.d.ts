@@ -14,7 +14,7 @@ import { GraphQLField } from '../type/definition';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
-  | { errors?: never; coerced: { [key: string]: unknown } };
+  | { errors?: never; coerced: Record<string, unknown> };
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -28,7 +28,7 @@ type CoercedVariableValues =
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
-  inputs: { [key: string]: unknown },
+  inputs: Record<string, unknown>,
   options?: { maxErrors?: number },
 ): CoercedVariableValues;
 
@@ -44,7 +44,7 @@ export function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
   variableValues?: Maybe<ObjMap<unknown>>,
-): { [key: string]: unknown };
+): Record<string, unknown>;
 
 /**
  * Prepares an object map of argument values given a directive definition
@@ -63,4 +63,4 @@ export function getDirectiveValues(
     readonly directives?: ReadonlyArray<DirectiveNode>;
   },
   variableValues?: Maybe<ObjMap<unknown>>,
-): undefined | { [key: string]: unknown };
+): undefined | Record<string, unknown>;

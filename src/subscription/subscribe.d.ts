@@ -74,7 +74,7 @@ export function createSourceEventStream(
   document: DocumentNode,
   rootValue?: unknown,
   contextValue?: unknown,
-  variableValues?: { [key: string]: unknown },
+  variableValues?: Record<string, unknown>,
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): Promise<AsyncIterable<unknown> | ExecutionResult>;
