@@ -353,6 +353,52 @@ describe('Execute: stream directive', () => {
   it('Can stream a field that returns an async iterable', async () => {
     const document = parse(`
       query { 
+        asyncIterableList @stream {
+          name
+          id
+        }
+      }
+    `);
+    const result = await complete(document);
+    expect(result).to.deep.equal([
+      {
+        data: {
+          asyncIterableList: [],
+        },
+        hasNext: true,
+      },
+      {
+        data: {
+          name: 'Luke',
+          id: '1',
+        },
+        path: ['asyncIterableList', 0],
+        hasNext: true,
+      },
+      {
+        data: {
+          name: 'Han',
+          id: '2',
+        },
+        path: ['asyncIterableList', 1],
+        hasNext: true,
+      },
+      {
+        data: {
+          name: 'Leia',
+          id: '3',
+        },
+        path: ['asyncIterableList', 2],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Can stream a field that returns an async iterable, using a non-zero initialCount', async () => {
+    const document = parse(`
+      query { 
         asyncIterableList @stream(initialCount: 2) {
           name
           id
