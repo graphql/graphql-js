@@ -100,7 +100,7 @@ export class Token {
 /**
  * @internal
  */
-export function isNode(maybeNode: any): maybeNode is ASTNode;
+export function isNode(maybeNode: unknown): maybeNode is ASTNode;
 
 /**
  * The list of all possible AST node types.

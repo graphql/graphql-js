@@ -3,7 +3,7 @@ import { GraphQLError } from '../error/GraphQLError';
 
 type OnErrorCB = (
   path: ReadonlyArray<string | number>,
-  invalidValue: any,
+  invalidValue: unknown,
   error: GraphQLError,
 ) => void;
 
@@ -11,7 +11,7 @@ type OnErrorCB = (
  * Coerces a JavaScript value given a GraphQL Input Type.
  */
 export function coerceInputValue(
-  inputValue: any,
+  inputValue: unknown,
   type: GraphQLInputType,
   onError?: OnErrorCB,
-): any;
+): unknown;

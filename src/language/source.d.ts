@@ -23,4 +23,4 @@ export class Source {
  *
  * @internal
  */
-export function isSource(source: any): source is Source;
+export function isSource(source: unknown): source is Source;

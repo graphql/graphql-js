@@ -11,8 +11,8 @@ import { GraphQLFieldConfigArgumentMap, GraphQLArgument } from './definition';
 /**
  * Test if the given value is a GraphQL directive.
  */
-export function isDirective(directive: any): directive is GraphQLDirective;
-export function assertDirective(directive: any): GraphQLDirective;
+export function isDirective(directive: unknown): directive is GraphQLDirective;
+export function assertDirective(directive: unknown): GraphQLDirective;
 
 /**
  * Custom extensions
