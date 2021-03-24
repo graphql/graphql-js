@@ -39,6 +39,10 @@ import { ExecutionResult } from './execution/execute';
  *    A resolver function to use when one is not provided by the schema.
  *    If not provided, the default field resolver is used (which looks for a
  *    value or method on the source value with the field's name).
+ * typeResolver:
+ *    A type resolver function to use when none is provided by the schema.
+ *    If not provided, the default type resolver is used (which looks for a
+ *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 export interface GraphQLArgs {
   schema: GraphQLSchema;
@@ -52,16 +56,6 @@ export interface GraphQLArgs {
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
-export function graphql(
-  schema: GraphQLSchema,
-  source: Source | string,
-  rootValue?: any,
-  contextValue?: any,
-  variableValues?: Maybe<{ [key: string]: any }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): Promise<ExecutionResult>;
 
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,
@@ -70,13 +64,3 @@ export function graphql(
  * that all field resolvers are also synchronous.
  */
 export function graphqlSync(args: GraphQLArgs): ExecutionResult;
-export function graphqlSync(
-  schema: GraphQLSchema,
-  source: Source | string,
-  rootValue?: any,
-  contextValue?: any,
-  variableValues?: Maybe<{ [key: string]: any }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): ExecutionResult;
