@@ -81,7 +81,7 @@ export class GraphQLSchema {
 
   isSubType(
     abstractType: GraphQLAbstractType,
-    maybeSubType: GraphQLNamedType,
+    maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
   ): boolean;
 
   getDirectives(): ReadonlyArray<GraphQLDirective>;
