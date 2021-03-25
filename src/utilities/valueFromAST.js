@@ -106,7 +106,7 @@ export function valueFromAST(
     if (valueNode.kind !== Kind.OBJECT) {
       return; // Invalid: intentionally return no value.
     }
-    const coercedObj = Object.create(null);
+    const coercedObj = {};
     const fieldNodes = keyMap(valueNode.fields, (field) => field.name.value);
     for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes[field.name];
