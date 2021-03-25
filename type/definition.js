@@ -4,7 +4,7 @@ import { mapValue } from "../jsutils/mapValue.js";
 import { toObjMap } from "../jsutils/toObjMap.js";
 import { devAssert } from "../jsutils/devAssert.js";
 import { keyValMap } from "../jsutils/keyValMap.js";
-import instanceOf from "../jsutils/instanceOf.js";
+import { instanceOf } from "../jsutils/instanceOf.js";
 import { didYouMean } from "../jsutils/didYouMean.js";
 import { isObjectLike } from "../jsutils/isObjectLike.js";
 import { identityFunc } from "../jsutils/identityFunc.js";
