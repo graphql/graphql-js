@@ -180,6 +180,7 @@ export class GraphQLList<T extends GraphQLType> {
   toString: () => string;
   toJSON: () => string;
   inspect: () => string;
+  get [Symbol.toStringTag](): string;
 }
 
 /**
@@ -210,6 +211,7 @@ export class GraphQLNonNull<T extends GraphQLNullableType> {
   toString: () => string;
   toJSON: () => string;
   inspect: () => string;
+  get [Symbol.toStringTag](): string;
 }
 
 export type GraphQLWrappingType = GraphQLList<any> | GraphQLNonNull<any>;
@@ -426,6 +428,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   toString(): string;
   toJSON(): string;
   inspect(): string;
+  get [Symbol.toStringTag](): string;
 }
 
 export function argsToArgsConfig(
@@ -632,6 +635,7 @@ export class GraphQLInterfaceType {
   toString(): string;
   toJSON(): string;
   inspect(): string;
+  get [Symbol.toStringTag](): string;
 }
 
 export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
@@ -706,6 +710,7 @@ export class GraphQLUnionType {
   toString(): string;
   toJSON(): string;
   inspect(): string;
+  get [Symbol.toStringTag](): string;
 }
 
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
@@ -782,6 +787,7 @@ export class GraphQLEnumType {
   toString(): string;
   toJSON(): string;
   inspect(): string;
+  get [Symbol.toStringTag](): string;
 }
 
 export interface GraphQLEnumTypeConfig {
@@ -879,6 +885,7 @@ export class GraphQLInputObjectType {
   toString(): string;
   toJSON(): string;
   inspect(): string;
+  get [Symbol.toStringTag](): string;
 }
 
 export interface GraphQLInputObjectTypeConfig {

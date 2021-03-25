@@ -94,6 +94,7 @@ export class GraphQLSchema {
     extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
     assumeValid: boolean;
   };
+  get [Symbol.toStringTag](): string;
 }
 
 interface TypeMap {
