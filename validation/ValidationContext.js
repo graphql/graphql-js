@@ -25,19 +25,17 @@ export class ASTValidationContext {
   }
 
   getFragment(name) {
-    let fragments = this._fragments;
+    if (!this._fragments) {
+      const fragments = this._fragments = Object.create(null);
 
-    if (!fragments) {
-      this._fragments = fragments = this.getDocument().definitions.reduce((frags, statement) => {
-        if (statement.kind === Kind.FRAGMENT_DEFINITION) {
-          frags[statement.name.value] = statement;
+      for (const defNode of this.getDocument().definitions) {
+        if (defNode.kind === Kind.FRAGMENT_DEFINITION) {
+          fragments[defNode.name.value] = defNode;
         }
-
-        return frags;
-      }, Object.create(null));
+      }
     }
 
-    return fragments[name];
+    return this._fragments[name];
   }
 
   getFragmentSpreads(node) {
