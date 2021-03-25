@@ -48,7 +48,7 @@ export function KnownTypeNamesRule(
       if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
         const definitionNode = ancestors[2] ?? parent;
         const isSDL = definitionNode != null && isSDLNode(definitionNode);
-        if (isSDL && isStandardTypeName(typeName)) {
+        if (isSDL && standardTypeNames.includes(typeName)) {
           return;
         }
 
@@ -70,10 +70,6 @@ export function KnownTypeNamesRule(
 const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(
   (type) => type.name,
 );
-
-function isStandardTypeName(typeName: string): boolean {
-  return standardTypeNames.indexOf(typeName) !== -1;
-}
 
 function isSDLNode(value: ASTNode | $ReadOnlyArray<ASTNode>): boolean {
   return (

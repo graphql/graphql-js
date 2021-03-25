@@ -55,7 +55,7 @@ export function KnownDirectivesRule(
       }
 
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
-      if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
+      if (candidateLocation && !locations.includes(candidateLocation)) {
         context.reportError(
           new GraphQLError(
             `Directive "@${name}" may not be used on ${candidateLocation}.`,

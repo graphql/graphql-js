@@ -370,7 +370,7 @@ describe('stripIgnoredCharacters', () => {
     expectStripped('""",|"""').toStayTheSame();
 
     const ignoredTokensWithoutFormatting = ignoredTokens.filter(
-      (token) => ['\n', '\r', '\r\n', '\t', ' '].indexOf(token) === -1,
+      (token) => !['\n', '\r', '\r\n', '\t', ' '].includes(token),
     );
     for (const ignored of ignoredTokensWithoutFormatting) {
       expectStripped('"""|' + ignored + '|"""').toStayTheSame();

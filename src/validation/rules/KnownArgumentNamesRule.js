@@ -78,7 +78,7 @@ export function KnownArgumentNamesOnDirectivesRule(
       if (directiveNode.arguments && knownArgs) {
         for (const argNode of directiveNode.arguments) {
           const argName = argNode.name.value;
-          if (knownArgs.indexOf(argName) === -1) {
+          if (!knownArgs.includes(argName)) {
             const suggestions = suggestionList(argName, knownArgs);
             context.reportError(
               new GraphQLError(
