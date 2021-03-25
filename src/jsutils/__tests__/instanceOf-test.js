@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { instanceOf } from '../instanceOf';
-import { SYMBOL_TO_STRING_TAG } from '../../polyfills/symbols';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -57,13 +56,13 @@ describe('instanceOf', () => {
     }
 
     function getTag(from: any): string {
-      return from[SYMBOL_TO_STRING_TAG];
+      return from[Symbol.toStringTag];
     }
 
     it('does not fail if dynamically-defined tags differ', () => {
       checkSameNameClasses((tag) => {
         class Foo {}
-        Object.defineProperty(Foo.prototype, SYMBOL_TO_STRING_TAG, {
+        Object.defineProperty(Foo.prototype, Symbol.toStringTag, {
           value: tag,
         });
         return Foo;
@@ -73,7 +72,7 @@ describe('instanceOf', () => {
     it('does not fail if dynamically-defined tag getters differ', () => {
       checkSameNameClasses((tag) => {
         class Foo {}
-        Object.defineProperty(Foo.prototype, SYMBOL_TO_STRING_TAG, {
+        Object.defineProperty(Foo.prototype, Symbol.toStringTag, {
           get() {
             return tag;
           },
@@ -85,7 +84,7 @@ describe('instanceOf', () => {
     it('does not fail for anonymous classes', () => {
       checkSameNameClasses((tag) => {
         const Foo = class {};
-        Object.defineProperty(Foo.prototype, SYMBOL_TO_STRING_TAG, {
+        Object.defineProperty(Foo.prototype, Symbol.toStringTag, {
           get() {
             return tag;
           },
@@ -97,7 +96,7 @@ describe('instanceOf', () => {
     it('does not fail if prototype property tags differ', () => {
       checkSameNameClasses((tag) => {
         class Foo {}
-        (Foo.prototype: any)[SYMBOL_TO_STRING_TAG] = tag;
+        (Foo.prototype: any)[Symbol.toStringTag] = tag;
         return Foo;
       });
     });
@@ -106,7 +105,7 @@ describe('instanceOf', () => {
       checkSameNameClasses((tag) => {
         class Foo {
           // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-          get [SYMBOL_TO_STRING_TAG]() {
+          get [Symbol.toStringTag]() {
             return tag;
           }
         }

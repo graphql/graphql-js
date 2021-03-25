@@ -1,5 +1,3 @@
-import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
-
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
@@ -18,7 +16,7 @@ export const instanceOf: (mixed, mixed) => boolean =
         }
         if (value) {
           const proto = constructor && constructor.prototype;
-          const classTag = proto && proto[SYMBOL_TO_STRING_TAG];
+          const classTag = proto && proto[Symbol.toStringTag];
           const className = classTag || constructor.name;
           // When the constructor class defines a Symbol.toStringTag
           // property, as most classes exported by graphql-js do, use it
@@ -32,8 +30,8 @@ export const instanceOf: (mixed, mixed) => boolean =
           // they could be minified to the same short string, even though
           // value is legitimately _not_ instanceof constructor.
           const valueName = classTag
-                ? value[SYMBOL_TO_STRING_TAG]
-                : value.constructor && value.constructor.name;
+            ? value[Symbol.toStringTag]
+            : value.constructor && value.constructor.name;
           if (typeof className === 'string' && valueName === className) {
             throw new Error(
               `Cannot use ${className} "${value}" from another module or realm.
