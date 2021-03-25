@@ -297,11 +297,7 @@ export class OnlineParser {
   _butNot(token, rule) {
     if (rule.butNot) {
       if (Array.isArray(rule.butNot)) {
-        if (rule.butNot.reduce((matched, constraint) => matched || this._matchToken(token, constraint), false)) {
-          return false;
-        }
-
-        return true;
+        return !rule.butNot.some(constraint => this._matchToken(token, constraint));
       }
 
       return !this._matchToken(token, rule.butNot);

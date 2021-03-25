@@ -23,8 +23,11 @@ exports.keyValMap = keyValMap;
  *
  */
 function keyValMap(list, keyFn, valFn) {
-  return list.reduce((map, item) => {
-    map[keyFn(item)] = valFn(item);
-    return map;
-  }, Object.create(null));
+  const result = Object.create(null);
+
+  for (const item of list) {
+    result[keyFn(item)] = valFn(item);
+  }
+
+  return result;
 }

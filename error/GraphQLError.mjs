@@ -79,13 +79,13 @@ export class GraphQLError extends Error {
     let _positions = positions;
 
     if (!_positions && _nodes) {
-      _positions = _nodes.reduce((list, node) => {
-        if (node.loc) {
-          list.push(node.loc.start);
-        }
+      _positions = [];
 
-        return list;
-      }, []);
+      for (const node of _nodes) {
+        if (node.loc) {
+          _positions.push(node.loc.start);
+        }
+      }
     }
 
     if (_positions && _positions.length === 0) {
@@ -97,13 +97,13 @@ export class GraphQLError extends Error {
     if (positions && source) {
       _locations = positions.map(pos => getLocation(source, pos));
     } else if (_nodes) {
-      _locations = _nodes.reduce((list, node) => {
-        if (node.loc) {
-          list.push(getLocation(node.loc.source, node.loc.start));
-        }
+      _locations = [];
 
-        return list;
-      }, []);
+      for (const node of _nodes) {
+        if (node.loc) {
+          _locations.push(getLocation(node.loc.source, node.loc.start));
+        }
+      }
     }
 
     let _extensions = extensions;
