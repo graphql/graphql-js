@@ -1,6 +1,6 @@
 import { inspect } from '../jsutils/inspect';
 import { devAssert } from '../jsutils/devAssert';
-import instanceOf from '../jsutils/instanceOf';
+import { instanceOf } from '../jsutils/instanceOf';
 
 type Location = {|
   line: number,
