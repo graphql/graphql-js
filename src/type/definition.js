@@ -11,7 +11,7 @@ import { mapValue } from '../jsutils/mapValue';
 import { toObjMap } from '../jsutils/toObjMap';
 import { devAssert } from '../jsutils/devAssert';
 import { keyValMap } from '../jsutils/keyValMap';
-import instanceOf from '../jsutils/instanceOf';
+import { instanceOf } from '../jsutils/instanceOf';
 import { didYouMean } from '../jsutils/didYouMean';
 import { isObjectLike } from '../jsutils/isObjectLike';
 import { identityFunc } from '../jsutils/identityFunc';

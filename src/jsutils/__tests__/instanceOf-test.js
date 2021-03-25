@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import instanceOf from '../instanceOf';
+import { instanceOf } from '../instanceOf';
 
 describe('instanceOf', () => {
   it('fails with descriptive error message', () => {
