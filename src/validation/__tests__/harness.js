@@ -9,7 +9,7 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import { validate, validateSDL } from '../validate';
 import type { ValidationRule, SDLValidationRule } from '../ValidationContext';
 
-export const testSchema = buildSchema(`
+export const testSchema: GraphQLSchema = buildSchema(`
   interface Being {
     name(surname: Boolean): String
   }
