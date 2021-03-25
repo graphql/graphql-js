@@ -31,6 +31,7 @@ export interface IntrospectionQuery {
 }
 
 export interface IntrospectionSchema {
+  readonly description?: Maybe<string>;
   readonly queryType: IntrospectionNamedTypeRef<IntrospectionObjectType>;
   readonly mutationType: Maybe<
     IntrospectionNamedTypeRef<IntrospectionObjectType>
@@ -165,14 +166,14 @@ export interface IntrospectionField {
   readonly args: ReadonlyArray<IntrospectionInputValue>;
   readonly type: IntrospectionOutputTypeRef;
   readonly isDeprecated: boolean;
-  readonly deprecationReason?: Maybe<string>;
+  readonly deprecationReason: Maybe<string>;
 }
 
 export interface IntrospectionInputValue {
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly type: IntrospectionInputTypeRef;
-  readonly defaultValue?: Maybe<string>;
+  readonly defaultValue: Maybe<string>;
   readonly isDeprecated?: boolean;
   readonly deprecationReason?: Maybe<string>;
 }
@@ -181,7 +182,7 @@ export interface IntrospectionEnumValue {
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly isDeprecated: boolean;
-  readonly deprecationReason?: Maybe<string>;
+  readonly deprecationReason: Maybe<string>;
 }
 
 export interface IntrospectionDirective {
