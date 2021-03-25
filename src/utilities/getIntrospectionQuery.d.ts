@@ -132,25 +132,25 @@ export interface IntrospectionNonNullTypeRef<
 
 export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef
-  | IntrospectionListTypeRef<any>
+  | IntrospectionListTypeRef
   | IntrospectionNonNullTypeRef<
-      IntrospectionNamedTypeRef | IntrospectionListTypeRef<any>
+      IntrospectionNamedTypeRef | IntrospectionListTypeRef
     >;
 
 export type IntrospectionOutputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionOutputType>
-  | IntrospectionListTypeRef<any>
+  | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
   | IntrospectionNonNullTypeRef<
       | IntrospectionNamedTypeRef<IntrospectionOutputType>
-      | IntrospectionListTypeRef<any>
+      | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
     >;
 
 export type IntrospectionInputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionInputType>
-  | IntrospectionListTypeRef<any>
+  | IntrospectionListTypeRef<IntrospectionInputTypeRef>
   | IntrospectionNonNullTypeRef<
       | IntrospectionNamedTypeRef<IntrospectionInputType>
-      | IntrospectionListTypeRef<any>
+      | IntrospectionListTypeRef<IntrospectionInputTypeRef>
     >;
 
 export interface IntrospectionNamedTypeRef<
