@@ -45,7 +45,7 @@ function KnownTypeNamesRule(context) {
         const definitionNode = (_ancestors$ = ancestors[2]) !== null && _ancestors$ !== void 0 ? _ancestors$ : parent;
         const isSDL = definitionNode != null && isSDLNode(definitionNode);
 
-        if (isSDL && isStandardTypeName(typeName)) {
+        if (isSDL && standardTypeNames.includes(typeName)) {
           return;
         }
 
@@ -58,10 +58,6 @@ function KnownTypeNamesRule(context) {
 }
 
 const standardTypeNames = [..._scalars.specifiedScalarTypes, ..._introspection.introspectionTypes].map(type => type.name);
-
-function isStandardTypeName(typeName) {
-  return standardTypeNames.indexOf(typeName) !== -1;
-}
 
 function isSDLNode(value) {
   return !Array.isArray(value) && ((0, _predicates.isTypeSystemDefinitionNode)(value) || (0, _predicates.isTypeSystemExtensionNode)(value));
