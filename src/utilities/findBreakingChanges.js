@@ -156,7 +156,7 @@ function findDirectiveChanges(
     }
 
     for (const location of oldDirective.locations) {
-      if (newDirective.locations.indexOf(location) === -1) {
+      if (!newDirective.locations.includes(location)) {
         schemaChanges.push({
           type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
           description: `${location} was removed from ${oldDirective.name}.`,

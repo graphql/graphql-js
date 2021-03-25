@@ -441,7 +441,7 @@ function validateTypeImplementsAncestors(
 ): void {
   const ifaceInterfaces = type.getInterfaces();
   for (const transitive of iface.getInterfaces()) {
-    if (ifaceInterfaces.indexOf(transitive) === -1) {
+    if (!ifaceInterfaces.includes(transitive)) {
       context.reportError(
         transitive === type
           ? `Type ${type.name} cannot implement ${iface.name} because it would create a circular reference.`
