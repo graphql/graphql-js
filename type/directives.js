@@ -14,7 +14,7 @@ var _toObjMap = require("../jsutils/toObjMap.js");
 
 var _devAssert = require("../jsutils/devAssert.js");
 
-var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
+var _instanceOf = require("../jsutils/instanceOf.js");
 
 var _isObjectLike = require("../jsutils/isObjectLike.js");
 
@@ -24,11 +24,9 @@ var _scalars = require("./scalars.js");
 
 var _definition = require("./definition.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 // eslint-disable-next-line no-redeclare
 function isDirective(directive) {
-  return (0, _instanceOf.default)(directive, GraphQLDirective);
+  return (0, _instanceOf.instanceOf)(directive, GraphQLDirective);
 }
 
 function assertDirective(directive) {

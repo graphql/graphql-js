@@ -10,9 +10,7 @@ var _inspect = require("../jsutils/inspect.js");
 
 var _devAssert = require("../jsutils/devAssert.js");
 
-var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _instanceOf = require("../jsutils/instanceOf.js");
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -51,5 +49,5 @@ exports.Source = Source;
 
 // eslint-disable-next-line no-redeclare
 function isSource(source) {
-  return (0, _instanceOf.default)(source, Source);
+  return (0, _instanceOf.instanceOf)(source, Source);
 }

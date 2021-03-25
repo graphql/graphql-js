@@ -1,7 +1,7 @@
 import { inspect } from "../jsutils/inspect.mjs";
 import { toObjMap } from "../jsutils/toObjMap.mjs";
 import { devAssert } from "../jsutils/devAssert.mjs";
-import instanceOf from "../jsutils/instanceOf.mjs";
+import { instanceOf } from "../jsutils/instanceOf.mjs";
 import { isObjectLike } from "../jsutils/isObjectLike.mjs";
 import { __Schema } from "./introspection.mjs";
 import { GraphQLDirective, isDirective, specifiedDirectives } from "./directives.mjs";

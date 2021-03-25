@@ -1,16 +1,13 @@
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
+ * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
+ * See: https://webpack.js.org/guides/production/
  */
-// See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
-// See: https://webpack.js.org/guides/production/
-// eslint-disable-next-line import/no-default-export
-export default process.env.NODE_ENV === 'production' ? // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
-// eslint-disable-next-line no-shadow
+export const instanceOf = process.env.NODE_ENV === 'production' ? // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
 function instanceOf(value, constructor) {
   return value instanceof constructor;
-} : // eslint-disable-next-line no-shadow
-function instanceOf(value, constructor) {
+} : function instanceOf(value, constructor) {
   if (value instanceof constructor) {
     return true;
   }

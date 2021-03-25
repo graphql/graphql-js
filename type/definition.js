@@ -56,7 +56,7 @@ var _devAssert = require("../jsutils/devAssert.js");
 
 var _keyValMap = require("../jsutils/keyValMap.js");
 
-var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf.js"));
+var _instanceOf = require("../jsutils/instanceOf.js");
 
 var _didYouMean = require("../jsutils/didYouMean.js");
 
@@ -73,8 +73,6 @@ var _kinds = require("../language/kinds.js");
 var _printer = require("../language/printer.js");
 
 var _valueFromASTUntyped = require("../utilities/valueFromASTUntyped.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function isType(type) {
   return isScalarType(type) || isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type) || isInputObjectType(type) || isListType(type) || isNonNullType(type);
@@ -94,7 +92,7 @@ function assertType(type) {
 
 // eslint-disable-next-line no-redeclare
 function isScalarType(type) {
-  return (0, _instanceOf.default)(type, GraphQLScalarType);
+  return (0, _instanceOf.instanceOf)(type, GraphQLScalarType);
 }
 
 function assertScalarType(type) {
@@ -107,7 +105,7 @@ function assertScalarType(type) {
 
 // eslint-disable-next-line no-redeclare
 function isObjectType(type) {
-  return (0, _instanceOf.default)(type, GraphQLObjectType);
+  return (0, _instanceOf.instanceOf)(type, GraphQLObjectType);
 }
 
 function assertObjectType(type) {
@@ -120,7 +118,7 @@ function assertObjectType(type) {
 
 // eslint-disable-next-line no-redeclare
 function isInterfaceType(type) {
-  return (0, _instanceOf.default)(type, GraphQLInterfaceType);
+  return (0, _instanceOf.instanceOf)(type, GraphQLInterfaceType);
 }
 
 function assertInterfaceType(type) {
@@ -133,7 +131,7 @@ function assertInterfaceType(type) {
 
 // eslint-disable-next-line no-redeclare
 function isUnionType(type) {
-  return (0, _instanceOf.default)(type, GraphQLUnionType);
+  return (0, _instanceOf.instanceOf)(type, GraphQLUnionType);
 }
 
 function assertUnionType(type) {
@@ -146,7 +144,7 @@ function assertUnionType(type) {
 
 // eslint-disable-next-line no-redeclare
 function isEnumType(type) {
-  return (0, _instanceOf.default)(type, GraphQLEnumType);
+  return (0, _instanceOf.instanceOf)(type, GraphQLEnumType);
 }
 
 function assertEnumType(type) {
@@ -159,7 +157,7 @@ function assertEnumType(type) {
 
 // eslint-disable-next-line no-redeclare
 function isInputObjectType(type) {
-  return (0, _instanceOf.default)(type, GraphQLInputObjectType);
+  return (0, _instanceOf.instanceOf)(type, GraphQLInputObjectType);
 }
 
 function assertInputObjectType(type) {
@@ -172,7 +170,7 @@ function assertInputObjectType(type) {
 
 // eslint-disable-next-line no-redeclare
 function isListType(type) {
-  return (0, _instanceOf.default)(type, GraphQLList);
+  return (0, _instanceOf.instanceOf)(type, GraphQLList);
 }
 
 function assertListType(type) {
@@ -185,7 +183,7 @@ function assertListType(type) {
 
 // eslint-disable-next-line no-redeclare
 function isNonNullType(type) {
-  return (0, _instanceOf.default)(type, GraphQLNonNull);
+  return (0, _instanceOf.instanceOf)(type, GraphQLNonNull);
 }
 
 function assertNonNullType(type) {

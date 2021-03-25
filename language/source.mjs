@@ -1,6 +1,6 @@
 import { inspect } from "../jsutils/inspect.mjs";
 import { devAssert } from "../jsutils/devAssert.mjs";
-import instanceOf from "../jsutils/instanceOf.mjs";
+import { instanceOf } from "../jsutils/instanceOf.mjs";
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
