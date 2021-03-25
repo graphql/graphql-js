@@ -30,7 +30,7 @@ function formatObjectValue(value, previouslySeenValues) {
     return 'null';
   }
 
-  if (previouslySeenValues.indexOf(value) !== -1) {
+  if (previouslySeenValues.includes(value)) {
     return '[Circular]';
   }
 

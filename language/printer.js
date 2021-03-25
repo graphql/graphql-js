@@ -340,10 +340,7 @@ function indent(str) {
   return wrap('  ', str.replace(/\n/g, '\n  '));
 }
 
-function isMultiline(str) {
-  return str.indexOf('\n') !== -1;
-}
-
 function hasMultilineItems(maybeArray) {
-  return maybeArray != null && maybeArray.some(isMultiline);
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return maybeArray?.some(str => str.includes('\n')) ?? false;
 }
