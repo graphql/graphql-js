@@ -1,3 +1,5 @@
+import type { ValidationRule, SDLValidationRule } from './ValidationContext';
+
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
 
@@ -97,7 +99,7 @@ import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
  * The order of the rules in this list has been adjusted to lead to the
  * most clear output when encountering multiple validation errors.
  */
-export const specifiedRules = Object.freeze([
+export const specifiedRules: $ReadOnlyArray<ValidationRule> = Object.freeze([
   ExecutableDefinitionsRule,
   UniqueOperationNamesRule,
   LoneAnonymousOperationRule,
@@ -129,19 +131,21 @@ export const specifiedRules = Object.freeze([
 /**
  * @internal
  */
-export const specifiedSDLRules = Object.freeze([
-  LoneSchemaDefinitionRule,
-  UniqueOperationTypesRule,
-  UniqueTypeNamesRule,
-  UniqueEnumValueNamesRule,
-  UniqueFieldDefinitionNamesRule,
-  UniqueDirectiveNamesRule,
-  KnownTypeNamesRule,
-  KnownDirectivesRule,
-  UniqueDirectivesPerLocationRule,
-  PossibleTypeExtensionsRule,
-  KnownArgumentNamesOnDirectivesRule,
-  UniqueArgumentNamesRule,
-  UniqueInputFieldNamesRule,
-  ProvidedRequiredArgumentsOnDirectivesRule,
-]);
+export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = Object.freeze(
+  [
+    LoneSchemaDefinitionRule,
+    UniqueOperationTypesRule,
+    UniqueTypeNamesRule,
+    UniqueEnumValueNamesRule,
+    UniqueFieldDefinitionNamesRule,
+    UniqueDirectiveNamesRule,
+    KnownTypeNamesRule,
+    KnownDirectivesRule,
+    UniqueDirectivesPerLocationRule,
+    PossibleTypeExtensionsRule,
+    KnownArgumentNamesOnDirectivesRule,
+    UniqueArgumentNamesRule,
+    UniqueInputFieldNamesRule,
+    ProvidedRequiredArgumentsOnDirectivesRule,
+  ],
+);
