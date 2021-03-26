@@ -38,6 +38,7 @@ import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
 
 function printExtensionNodes(obj: ?GraphQLNamedType | GraphQLSchema): string {
+  // istanbul ignore next (FIXME)
   invariant(obj?.extensionASTNodes != null);
   return print({
     kind: Kind.DOCUMENT,
@@ -60,6 +61,7 @@ function printSchemaChanges(
 }
 
 function printASTNode(obj: ?{ +astNode: ?ASTNode, ... }): string {
+  // istanbul ignore next (FIXME)
   invariant(obj?.astNode != null);
   return print(obj.astNode);
 }

@@ -52,6 +52,7 @@ function cycleSDL(sdl: string): string {
 }
 
 function printASTNode(obj: ?{ +astNode: ?ASTNode, ... }): string {
+  // istanbul ignore next (FIXME)
   invariant(obj?.astNode != null);
   return print(obj.astNode);
 }
