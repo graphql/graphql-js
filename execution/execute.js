@@ -197,7 +197,8 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
 
   if (coercedVariableValues.errors) {
     return coercedVariableValues.errors;
-  }
+  } // $FlowFixMe[incompatible-return]
+
 
   return {
     schema,
