@@ -306,6 +306,7 @@ export function buildExecutionContext(
     return coercedVariableValues.errors;
   }
 
+  // $FlowFixMe[incompatible-return]
   return {
     schema,
     fragments,

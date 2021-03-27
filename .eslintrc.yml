@@ -444,7 +444,7 @@ overrides:
 
     rules:
       ##############################################################################
-      # `eslint-plugin-flowtype` rule list based on `v5.3.x`
+      # `eslint-plugin-flowtype` rule list based on `v5.4.x`
       # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
       ##############################################################################
 
@@ -455,6 +455,7 @@ overrides:
       flowtype/no-dupe-keys: error
       flowtype/no-existential-type: off # checked by Flow
       flowtype/no-flow-fix-me-comments: off
+      flowtype/no-internal-flow-type: error
       flowtype/no-mixed: off
       flowtype/no-mutable-array: off
       flowtype/no-primitive-constructor-types: error
@@ -501,7 +502,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.17.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.19.x`
       ##########################################################################
 
       # Supported Rules
