@@ -1577,13 +1577,12 @@ describe('Introspection', () => {
       invariant(false, `Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
-    expect(() =>
-      graphqlSync({
-        schema,
-        source,
-        fieldResolver,
-        typeResolver,
-      }),
-    ).to.not.throw();
+    const result = graphqlSync({
+      schema,
+      source,
+      fieldResolver,
+      typeResolver,
+    });
+    expect(result).to.not.have.property('errors');
   });
 });
