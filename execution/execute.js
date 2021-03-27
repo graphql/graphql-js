@@ -185,7 +185,8 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
 
   if (coercedVariableValues.errors) {
     return coercedVariableValues.errors;
-  }
+  } // $FlowFixMe[incompatible-return]
+
 
   return {
     schema,
