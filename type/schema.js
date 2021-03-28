@@ -98,7 +98,7 @@ export class GraphQLSchema {
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = config.extensionASTNodes ?? [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
@@ -273,7 +273,7 @@ export class GraphQLSchema {
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes ?? [],
+      extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined
     };
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet

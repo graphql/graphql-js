@@ -179,7 +179,7 @@ function validateFields(context, type) {
   const fields = Object.values(type.getFields()); // Objects and Interfaces both must define one or more fields.
 
   if (fields.length === 0) {
-    context.reportError(`Type ${type.name} must define one or more fields.`, [type.astNode].concat(type.extensionASTNodes));
+    context.reportError(`Type ${type.name} must define one or more fields.`, [type.astNode, ...type.extensionASTNodes]);
   }
 
   for (const field of fields) {
@@ -241,7 +241,7 @@ function validateTypeImplementsInterface(context, type, iface) {
     const typeField = typeFieldMap[fieldName]; // Assert interface field exists on type.
 
     if (!typeField) {
-      context.reportError(`Interface field ${iface.name}.${fieldName} expected but ${type.name} does not provide it.`, [ifaceField.astNode, type.astNode].concat(type.extensionASTNodes));
+      context.reportError(`Interface field ${iface.name}.${fieldName} expected but ${type.name} does not provide it.`, [ifaceField.astNode, type.astNode, ...type.extensionASTNodes]);
       continue;
     } // Assert interface field type is satisfied by type field type, by being
     // a valid subtype. (covariant)
@@ -300,7 +300,7 @@ function validateUnionMembers(context, union) {
   const memberTypes = union.getTypes();
 
   if (memberTypes.length === 0) {
-    context.reportError(`Union type ${union.name} must define one or more member types.`, [union.astNode].concat(union.extensionASTNodes));
+    context.reportError(`Union type ${union.name} must define one or more member types.`, [union.astNode, ...union.extensionASTNodes]);
   }
 
   const includedTypeNames = Object.create(null);
@@ -323,7 +323,7 @@ function validateEnumValues(context, enumType) {
   const enumValues = enumType.getValues();
 
   if (enumValues.length === 0) {
-    context.reportError(`Enum type ${enumType.name} must define one or more values.`, [enumType.astNode].concat(enumType.extensionASTNodes));
+    context.reportError(`Enum type ${enumType.name} must define one or more values.`, [enumType.astNode, ...enumType.extensionASTNodes]);
   }
 
   for (const enumValue of enumValues) {
@@ -341,7 +341,7 @@ function validateInputFields(context, inputObj) {
   const fields = Object.values(inputObj.getFields());
 
   if (fields.length === 0) {
-    context.reportError(`Input Object type ${inputObj.name} must define one or more fields.`, [inputObj.astNode].concat(inputObj.extensionASTNodes));
+    context.reportError(`Input Object type ${inputObj.name} must define one or more fields.`, [inputObj.astNode, ...inputObj.extensionASTNodes]);
   } // Ensure the arguments are valid
 
 
@@ -405,13 +405,23 @@ function createInputObjectCircularRefsValidator(context) {
 }
 
 function getAllImplementsInterfaceNodes(type, iface) {
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return [type.astNode].concat(type.extensionASTNodes).flatMap(typeNode => typeNode?.interfaces ?? []).filter(ifaceNode => ifaceNode.name.value === iface.name);
+  const {
+    astNode,
+    extensionASTNodes
+  } = type;
+  const nodes = astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+
+  return nodes.flatMap(typeNode => typeNode.interfaces ?? []).filter(ifaceNode => ifaceNode.name.value === iface.name);
 }
 
 function getUnionMemberTypeNodes(union, typeName) {
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return [union.astNode].concat(union.extensionASTNodes).flatMap(unionNode => unionNode?.types ?? []).filter(typeNode => typeNode.name.value === typeName);
+  const {
+    astNode,
+    extensionASTNodes
+  } = union;
+  const nodes = astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+
+  return nodes.flatMap(unionNode => unionNode.types ?? []).filter(typeNode => typeNode.name.value === typeName);
 }
 
 function getDeprecatedDirectiveNode(definitionNode) {

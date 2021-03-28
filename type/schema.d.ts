@@ -62,7 +62,7 @@ export class GraphQLSchema {
   description: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode: Maybe<SchemaDefinitionNode>;
-  extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;
+  extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
 
   constructor(config: Readonly<GraphQLSchemaConfig>);
   getQueryType(): Maybe<GraphQLObjectType>;
@@ -136,6 +136,6 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   types: Array<GraphQLNamedType>;
   directives: Array<GraphQLDirective>;
   extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
-  extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;
+  extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
 }
