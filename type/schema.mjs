@@ -88,7 +88,7 @@ export function assertSchema(schema) {
 export class GraphQLSchema {
   // Used as a cache for validateSchema().
   constructor(config) {
-    var _config$directives;
+    var _config$extensionASTN, _config$directives;
 
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
@@ -100,7 +100,7 @@ export class GraphQLSchema {
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = (_config$extensionASTN = config.extensionASTNodes) !== null && _config$extensionASTN !== void 0 ? _config$extensionASTN : [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
@@ -266,8 +266,6 @@ export class GraphQLSchema {
   }
 
   toConfig() {
-    var _this$extensionASTNod;
-
     return {
       description: this.description,
       query: this.getQueryType(),
@@ -277,7 +275,7 @@ export class GraphQLSchema {
       directives: this.getDirectives().slice(),
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: (_this$extensionASTNod = this.extensionASTNodes) !== null && _this$extensionASTNod !== void 0 ? _this$extensionASTNod : [],
+      extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined
     };
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet

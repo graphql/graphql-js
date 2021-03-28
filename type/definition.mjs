@@ -341,10 +341,6 @@ function resolveArrayThunk(thunk) {
 function resolveObjMapThunk(thunk) {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
-
-function undefineIfEmpty(arr) {
-  return arr && arr.length > 0 ? arr : undefined;
-}
 /**
  * Scalar Type Definition
  *
@@ -373,7 +369,7 @@ function undefineIfEmpty(arr) {
 
 export class GraphQLScalarType {
   constructor(config) {
-    var _config$parseValue, _config$serialize, _config$parseLiteral;
+    var _config$parseValue, _config$serialize, _config$parseLiteral, _config$extensionASTN;
 
     const parseValue = (_config$parseValue = config.parseValue) !== null && _config$parseValue !== void 0 ? _config$parseValue : identityFunc;
     this.name = config.name;
@@ -384,7 +380,7 @@ export class GraphQLScalarType {
     this.parseLiteral = (_config$parseLiteral = config.parseLiteral) !== null && _config$parseLiteral !== void 0 ? _config$parseLiteral : (node, variables) => parseValue(valueFromASTUntyped(node, variables));
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = (_config$extensionASTN = config.extensionASTNodes) !== null && _config$extensionASTN !== void 0 ? _config$extensionASTN : [];
     typeof config.name === 'string' || devAssert(0, 'Must provide name.');
     config.specifiedByUrl == null || typeof config.specifiedByUrl === 'string' || devAssert(0, `${this.name} must provide "specifiedByUrl" as a string, ` + `but got: ${inspect(config.specifiedByUrl)}.`);
     config.serialize == null || typeof config.serialize === 'function' || devAssert(0, `${this.name} must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.`);
@@ -395,8 +391,6 @@ export class GraphQLScalarType {
   }
 
   toConfig() {
-    var _this$extensionASTNod;
-
     return {
       name: this.name,
       description: this.description,
@@ -406,7 +400,7 @@ export class GraphQLScalarType {
       parseLiteral: this.parseLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: (_this$extensionASTNod = this.extensionASTNodes) !== null && _this$extensionASTNod !== void 0 ? _this$extensionASTNod : []
+      extensionASTNodes: this.extensionASTNodes
     };
   }
 
@@ -464,12 +458,14 @@ export class GraphQLScalarType {
  */
 export class GraphQLObjectType {
   constructor(config) {
+    var _config$extensionASTN2;
+
     this.name = config.name;
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = (_config$extensionASTN2 = config.extensionASTNodes) !== null && _config$extensionASTN2 !== void 0 ? _config$extensionASTN2 : [];
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
     typeof config.name === 'string' || devAssert(0, 'Must provide name.');
@@ -501,7 +497,7 @@ export class GraphQLObjectType {
       isTypeOf: this.isTypeOf,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || []
+      extensionASTNodes: this.extensionASTNodes
     };
   }
 
@@ -616,12 +612,14 @@ export function isRequiredArgument(arg) {
  */
 export class GraphQLInterfaceType {
   constructor(config) {
+    var _config$extensionASTN3;
+
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = (_config$extensionASTN3 = config.extensionASTNodes) !== null && _config$extensionASTN3 !== void 0 ? _config$extensionASTN3 : [];
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
     typeof config.name === 'string' || devAssert(0, 'Must provide name.');
@@ -645,8 +643,6 @@ export class GraphQLInterfaceType {
   }
 
   toConfig() {
-    var _this$extensionASTNod2;
-
     return {
       name: this.name,
       description: this.description,
@@ -655,7 +651,7 @@ export class GraphQLInterfaceType {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: (_this$extensionASTNod2 = this.extensionASTNodes) !== null && _this$extensionASTNod2 !== void 0 ? _this$extensionASTNod2 : []
+      extensionASTNodes: this.extensionASTNodes
     };
   }
 
@@ -699,12 +695,14 @@ export class GraphQLInterfaceType {
  */
 export class GraphQLUnionType {
   constructor(config) {
+    var _config$extensionASTN4;
+
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = (_config$extensionASTN4 = config.extensionASTNodes) !== null && _config$extensionASTN4 !== void 0 ? _config$extensionASTN4 : [];
     this._types = defineTypes.bind(undefined, config);
     typeof config.name === 'string' || devAssert(0, 'Must provide name.');
     config.resolveType == null || typeof config.resolveType === 'function' || devAssert(0, `${this.name} must provide "resolveType" as a function, ` + `but got: ${inspect(config.resolveType)}.`);
@@ -719,8 +717,6 @@ export class GraphQLUnionType {
   }
 
   toConfig() {
-    var _this$extensionASTNod3;
-
     return {
       name: this.name,
       description: this.description,
@@ -728,7 +724,7 @@ export class GraphQLUnionType {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: (_this$extensionASTNod3 = this.extensionASTNodes) !== null && _this$extensionASTNod3 !== void 0 ? _this$extensionASTNod3 : []
+      extensionASTNodes: this.extensionASTNodes
     };
   }
 
@@ -778,11 +774,13 @@ export class GraphQLEnumType
 /* <T> */
 {
   constructor(config) {
+    var _config$extensionASTN5;
+
     this.name = config.name;
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = (_config$extensionASTN5 = config.extensionASTNodes) !== null && _config$extensionASTN5 !== void 0 ? _config$extensionASTN5 : [];
     this._values = defineEnumValues(this.name, config.values);
     this._valueLookup = new Map(this._values.map(enumValue => [enumValue.value, enumValue]));
     this._nameLookup = keyMap(this._values, value => value.name);
@@ -844,8 +842,6 @@ export class GraphQLEnumType
   }
 
   toConfig() {
-    var _this$extensionASTNod4;
-
     const values = keyValMap(this.getValues(), value => value.name, value => ({
       description: value.description,
       value: value.value,
@@ -859,7 +855,7 @@ export class GraphQLEnumType
       values,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: (_this$extensionASTNod4 = this.extensionASTNodes) !== null && _this$extensionASTNod4 !== void 0 ? _this$extensionASTNod4 : []
+      extensionASTNodes: this.extensionASTNodes
     };
   }
 
@@ -921,11 +917,13 @@ function defineEnumValues(typeName, valueMap) {
  */
 export class GraphQLInputObjectType {
   constructor(config) {
+    var _config$extensionASTN6;
+
     this.name = config.name;
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = (_config$extensionASTN6 = config.extensionASTNodes) !== null && _config$extensionASTN6 !== void 0 ? _config$extensionASTN6 : [];
     this._fields = defineInputFieldMap.bind(undefined, config);
     typeof config.name === 'string' || devAssert(0, 'Must provide name.');
   }
@@ -939,8 +937,6 @@ export class GraphQLInputObjectType {
   }
 
   toConfig() {
-    var _this$extensionASTNod5;
-
     const fields = mapValue(this.getFields(), field => ({
       description: field.description,
       type: field.type,
@@ -954,7 +950,7 @@ export class GraphQLInputObjectType {
       fields,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: (_this$extensionASTNod5 = this.extensionASTNodes) !== null && _this$extensionASTNod5 !== void 0 ? _this$extensionASTNod5 : []
+      extensionASTNodes: this.extensionASTNodes
     };
   }
 
