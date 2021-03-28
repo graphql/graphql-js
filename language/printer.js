@@ -19,7 +19,7 @@ const printDocASTReducer = {
   },
   // Document
   Document: {
-    leave: node => join(node.definitions, '\n\n') + '\n'
+    leave: node => join(node.definitions, '\n\n')
   },
   OperationDefinition: {
     leave(node) {
