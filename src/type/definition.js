@@ -522,10 +522,6 @@ function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T> {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
-function undefineIfEmpty<T>(arr: ?$ReadOnlyArray<T>): ?$ReadOnlyArray<T> {
-  return arr && arr.length > 0 ? arr : undefined;
-}
-
 /**
  * Scalar Type Definition
  *
@@ -559,7 +555,7 @@ export class GraphQLScalarType {
   parseLiteral: GraphQLScalarLiteralParser<mixed>;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?ScalarTypeDefinitionNode;
-  extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
+  extensionASTNodes: $ReadOnlyArray<ScalarTypeExtensionNode>;
 
   constructor(config: $ReadOnly<GraphQLScalarTypeConfig<mixed, mixed>>) {
     const parseValue = config.parseValue ?? identityFunc;
@@ -573,7 +569,7 @@ export class GraphQLScalarType {
       ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = config.extensionASTNodes ?? [];
 
     devAssert(typeof config.name === 'string', 'Must provide name.');
 
@@ -608,7 +604,7 @@ export class GraphQLScalarType {
       parseLiteral: this.parseLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes ?? [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -706,7 +702,7 @@ export class GraphQLObjectType {
   isTypeOf: ?GraphQLIsTypeOfFn<any, any>;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?ObjectTypeDefinitionNode;
-  extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
+  extensionASTNodes: $ReadOnlyArray<ObjectTypeExtensionNode>;
 
   _fields: ThunkObjMap<GraphQLField<any, any>>;
   _interfaces: ThunkArray<GraphQLInterfaceType>;
@@ -717,7 +713,7 @@ export class GraphQLObjectType {
     this.isTypeOf = config.isTypeOf;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = config.extensionASTNodes ?? [];
 
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
@@ -752,7 +748,7 @@ export class GraphQLObjectType {
       isTypeOf: this.isTypeOf,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes || [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -1023,7 +1019,7 @@ export class GraphQLInterfaceType {
   resolveType: ?GraphQLTypeResolver<any, any>;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?InterfaceTypeDefinitionNode;
-  extensionASTNodes: ?$ReadOnlyArray<InterfaceTypeExtensionNode>;
+  extensionASTNodes: $ReadOnlyArray<InterfaceTypeExtensionNode>;
 
   _fields: ThunkObjMap<GraphQLField<any, any>>;
   _interfaces: ThunkArray<GraphQLInterfaceType>;
@@ -1034,7 +1030,7 @@ export class GraphQLInterfaceType {
     this.resolveType = config.resolveType;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = config.extensionASTNodes ?? [];
 
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
@@ -1069,7 +1065,7 @@ export class GraphQLInterfaceType {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes ?? [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -1140,7 +1136,7 @@ export class GraphQLUnionType {
   resolveType: ?GraphQLTypeResolver<any, any>;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?UnionTypeDefinitionNode;
-  extensionASTNodes: ?$ReadOnlyArray<UnionTypeExtensionNode>;
+  extensionASTNodes: $ReadOnlyArray<UnionTypeExtensionNode>;
 
   _types: ThunkArray<GraphQLObjectType>;
 
@@ -1150,7 +1146,7 @@ export class GraphQLUnionType {
     this.resolveType = config.resolveType;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = config.extensionASTNodes ?? [];
 
     this._types = defineTypes.bind(undefined, config);
     devAssert(typeof config.name === 'string', 'Must provide name.');
@@ -1176,7 +1172,7 @@ export class GraphQLUnionType {
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes ?? [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -1253,7 +1249,7 @@ export class GraphQLEnumType /* <T> */ {
   description: ?string;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?EnumTypeDefinitionNode;
-  extensionASTNodes: ?$ReadOnlyArray<EnumTypeExtensionNode>;
+  extensionASTNodes: $ReadOnlyArray<EnumTypeExtensionNode>;
 
   _values: Array<GraphQLEnumValue /* <T> */>;
   _valueLookup: Map<any /* T */, GraphQLEnumValue>;
@@ -1264,7 +1260,7 @@ export class GraphQLEnumType /* <T> */ {
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = config.extensionASTNodes ?? [];
 
     this._values = defineEnumValues(this.name, config.values);
     this._valueLookup = new Map(
@@ -1354,7 +1350,7 @@ export class GraphQLEnumType /* <T> */ {
       values,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes ?? [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 
@@ -1466,7 +1462,7 @@ export class GraphQLInputObjectType {
   description: ?string;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?InputObjectTypeDefinitionNode;
-  extensionASTNodes: ?$ReadOnlyArray<InputObjectTypeExtensionNode>;
+  extensionASTNodes: $ReadOnlyArray<InputObjectTypeExtensionNode>;
 
   _fields: ThunkObjMap<GraphQLInputField>;
 
@@ -1475,7 +1471,7 @@ export class GraphQLInputObjectType {
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
+    this.extensionASTNodes = config.extensionASTNodes ?? [];
 
     this._fields = defineInputFieldMap.bind(undefined, config);
     devAssert(typeof config.name === 'string', 'Must provide name.');
@@ -1503,7 +1499,7 @@ export class GraphQLInputObjectType {
       fields,
       extensions: this.extensions,
       astNode: this.astNode,
-      extensionASTNodes: this.extensionASTNodes ?? [],
+      extensionASTNodes: this.extensionASTNodes,
     };
   }
 

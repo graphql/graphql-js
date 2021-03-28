@@ -58,7 +58,7 @@ function printASTNode(obj: ?{ +astNode: ?ASTNode, ... }): string {
 }
 
 function printAllASTNodes(obj: GraphQLNamedType): string {
-  invariant(obj.astNode != null && obj.extensionASTNodes != null);
+  invariant(obj.astNode != null);
   return print({
     kind: Kind.DOCUMENT,
     definitions: [obj.astNode, ...obj.extensionASTNodes],

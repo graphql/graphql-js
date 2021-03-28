@@ -38,8 +38,7 @@ import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
 
 function printExtensionNodes(obj: ?GraphQLNamedType | GraphQLSchema): string {
-  // istanbul ignore next (FIXME)
-  invariant(obj?.extensionASTNodes != null);
+  invariant(obj != null);
   return print({
     kind: Kind.DOCUMENT,
     definitions: obj.extensionASTNodes,
@@ -442,18 +441,11 @@ describe('extendSchema', () => {
       extendedTwiceSchema.getDirective('test'),
     );
 
-    expect(testType).to.include({ extensionASTNodes: undefined });
-    expect(testEnum).to.include({ extensionASTNodes: undefined });
-    expect(testUnion).to.include({ extensionASTNodes: undefined });
-    expect(testInput).to.include({ extensionASTNodes: undefined });
-    expect(testInterface).to.include({ extensionASTNodes: undefined });
-
-    invariant(query.extensionASTNodes);
-    invariant(someScalar.extensionASTNodes);
-    invariant(someEnum.extensionASTNodes);
-    invariant(someUnion.extensionASTNodes);
-    invariant(someInput.extensionASTNodes);
-    invariant(someInterface.extensionASTNodes);
+    expect(testType.extensionASTNodes).to.deep.equal([]);
+    expect(testEnum.extensionASTNodes).to.deep.equal([]);
+    expect(testUnion.extensionASTNodes).to.deep.equal([]);
+    expect(testInput.extensionASTNodes).to.deep.equal([]);
+    expect(testInterface.extensionASTNodes).to.deep.equal([]);
 
     expect([
       testInput.astNode,
