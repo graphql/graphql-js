@@ -1,6 +1,5 @@
 /**
- * An ES6 string tag that fixes indentation. Also removes leading newlines
- * and trailing spaces and tabs, but keeps trailing newlines.
+ * An ES6 string tag that fixes indentation and also trims string.
  *
  * Example usage:
  * const str = dedent`
@@ -8,7 +7,7 @@
  *     test
  *   }
  * `;
- * str === "{\n  test\n}\n";
+ * str === "{\n  test\n}";
  */
 export function dedent(
   strings: $ReadOnlyArray<string>,
@@ -28,7 +27,7 @@ export function dedent(
 
   const trimmedStr = str
     .replace(/^\n*/m, '') //  remove leading newline
-    .replace(/[ \t]*$/, ''); // remove trailing spaces and tabs
+    .replace(/[ \t\n]*$/, ''); // remove trailing spaces and tabs
 
   // fixes indentation by removing leading spaces and tabs from each line
   let indent = '';

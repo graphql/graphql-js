@@ -728,7 +728,7 @@ describe('Schema Builder', () => {
     `);
 
     const someScalar = assertScalarType(schema.getType('SomeScalar'));
-    expect(printType(someScalar) + '\n').to.equal(dedent`
+    expect(printType(someScalar)).to.equal(dedent`
       scalar SomeScalar
     `);
 
@@ -757,7 +757,7 @@ describe('Schema Builder', () => {
     `);
 
     const someObject = assertObjectType(schema.getType('SomeObject'));
-    expect(printType(someObject) + '\n').to.equal(dedent`
+    expect(printType(someObject)).to.equal(dedent`
       type SomeObject implements Foo & Bar & Baz {
         first: String
         second: Int
@@ -785,7 +785,7 @@ describe('Schema Builder', () => {
     const schema = buildSchema(interfaceSDL);
 
     const someInterface = assertInterfaceType(schema.getType('SomeInterface'));
-    expect(printType(someInterface) + '\n').to.equal(dedent`
+    expect(printType(someInterface)).to.equal(dedent`
       interface SomeInterface {
         first: String
         second: Int
@@ -812,7 +812,7 @@ describe('Schema Builder', () => {
     `);
 
     const someUnion = assertUnionType(schema.getType('SomeUnion'));
-    expect(printType(someUnion) + '\n').to.equal(dedent`
+    expect(printType(someUnion)).to.equal(dedent`
       union SomeUnion = FirstType | SecondType | ThirdType
     `);
 
@@ -836,7 +836,7 @@ describe('Schema Builder', () => {
     const schema = buildSchema(enumSDL);
 
     const someEnum = assertEnumType(schema.getType('SomeEnum'));
-    expect(printType(someEnum) + '\n').to.equal(dedent`
+    expect(printType(someEnum)).to.equal(dedent`
       enum SomeEnum {
         FIRST
         SECOND
@@ -864,7 +864,7 @@ describe('Schema Builder', () => {
     const schema = buildSchema(inputSDL);
 
     const someInput = assertInputObjectType(schema.getType('SomeInput'));
-    expect(printType(someInput) + '\n').to.equal(dedent`
+    expect(printType(someInput)).to.equal(dedent`
       input SomeInput {
         first: String
         second: Int

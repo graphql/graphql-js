@@ -826,10 +826,11 @@ describe('extendSchema', () => {
 
       interface AnotherNewInterface {
         anotherNewField: String
-      }`;
+      }
+    `;
     const schemaWithNewTypes = extendSchema(schema, parse(newTypesSDL));
     expect(printSchemaChanges(schema, schemaWithNewTypes)).to.equal(
-      newTypesSDL + '\n',
+      newTypesSDL,
     );
 
     const extendAST = parse(`
@@ -1219,7 +1220,7 @@ describe('extendSchema', () => {
 
       const queryType = extendedSchema.getQueryType();
       expect(queryType).to.include({ name: 'Foo' });
-      expect(printASTNode(extendedSchema) + '\n').to.equal(extensionSDL);
+      expect(printASTNode(extendedSchema)).to.equal(extensionSDL);
     });
 
     it('adds new root types via schema extension', () => {

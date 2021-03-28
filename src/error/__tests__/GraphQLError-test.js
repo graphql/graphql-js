@@ -182,7 +182,7 @@ describe('printError', () => {
       fieldB.type,
     ]);
 
-    expect(printError(error) + '\n').to.equal(dedent`
+    expect(printError(error)).to.equal(dedent`
       Example error with two nodes
 
       SourceA:2:10
