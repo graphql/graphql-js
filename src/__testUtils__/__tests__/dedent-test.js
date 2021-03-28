@@ -25,7 +25,6 @@ describe('dedent', () => {
         '  id: ID',
         '  name: String',
         '}',
-        '',
       ].join('\n'),
     );
   });
@@ -38,7 +37,7 @@ describe('dedent', () => {
                   fourth
     `;
     expect(output).to.equal(
-      ['first', '  second', '    third', '      fourth', ''].join('\n'),
+      ['first', '  second', '    third', '      fourth'].join('\n'),
     );
   });
 
@@ -53,7 +52,6 @@ describe('dedent', () => {
         'type Root {',
         '  field(arg: String = "wi\th de\fault"): String',
         '}',
-        '',
       ].join('\n'),
     );
   });
@@ -64,29 +62,20 @@ describe('dedent', () => {
         \t\t      me: User
         \t\t    }
     `;
-    expect(output).to.equal(['type Query {', '  me: User', '}', ''].join('\n'));
-  });
-
-  it('removes leading newlines', () => {
-    const output = dedent`
-
-
-      type Query {
-        me: User
-      }`;
     expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
   });
 
-  it('does not remove trailing newlines', () => {
+  it('removes leading and trailing newlines', () => {
     const output = dedent`
+
+
       type Query {
         me: User
       }
 
+
     `;
-    expect(output).to.equal(
-      ['type Query {', '  me: User', '}', '', ''].join('\n'),
-    );
+    expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
   });
 
   it('removes all trailing spaces and tabs', () => {
@@ -95,13 +84,14 @@ describe('dedent', () => {
         me: User
       }
           \t\t  \t `;
-    expect(output).to.equal(['type Query {', '  me: User', '}', ''].join('\n'));
+    expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
   });
 
   it('works on text without leading newline', () => {
     const output = dedent`      type Query {
         me: User
-      }`;
+      }
+    `;
     expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
   });
 
@@ -124,7 +114,6 @@ describe('dedent', () => {
         '    "surname": "Doe"',
         '  }',
         '}',
-        '',
       ].join('\n'),
     );
   });

@@ -98,7 +98,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 30 },
         },
       ],
-      loc: { start: 0, end: 31 },
+      loc: { start: 0, end: 30 },
     });
   });
 
@@ -194,7 +194,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 37 },
         },
       ],
-      loc: { start: 0, end: 38 },
+      loc: { start: 0, end: 37 },
     });
   });
 
@@ -465,7 +465,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 31 },
         },
       ],
-      loc: { start: 0, end: 32 },
+      loc: { start: 0, end: 31 },
     });
   });
 
@@ -703,7 +703,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 35 },
         },
       ],
-      loc: { start: 0, end: 36 },
+      loc: { start: 0, end: 35 },
     });
   });
 
@@ -741,7 +741,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 45 },
         },
       ],
-      loc: { start: 0, end: 46 },
+      loc: { start: 0, end: 45 },
     });
   });
 
@@ -783,7 +783,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 52 },
         },
       ],
-      loc: { start: 0, end: 53 },
+      loc: { start: 0, end: 52 },
     });
   });
 
@@ -825,7 +825,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 48 },
         },
       ],
-      loc: { start: 0, end: 49 },
+      loc: { start: 0, end: 48 },
     });
   });
 
@@ -869,7 +869,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 60 },
         },
       ],
-      loc: { start: 0, end: 61 },
+      loc: { start: 0, end: 60 },
     });
   });
 

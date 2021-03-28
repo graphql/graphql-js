@@ -147,7 +147,7 @@ describe('stripIgnoredCharacters', () => {
       caughtError = e;
     }
 
-    expect(String(caughtError) + '\n').to.equal(dedent`
+    expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Unterminated string.
 
       GraphQL request:1:13

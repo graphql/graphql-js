@@ -32,7 +32,7 @@ describe('Parser', () => {
       locations: [{ line: 1, column: 2 }],
     });
 
-    expect(String(caughtError) + '\n').to.equal(dedent`
+    expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Expected Name, found <EOF>.
 
       GraphQL request:1:2
@@ -76,7 +76,7 @@ describe('Parser', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError) + '\n').to.equal(dedent`
+    expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Expected "{", found <EOF>.
 
       MyQuery.graphql:1:6
@@ -217,7 +217,7 @@ describe('Parser', () => {
 
     expect(toJSONDeep(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 41 },
+      loc: { start: 0, end: 40 },
       definitions: [
         {
           kind: Kind.OPERATION_DEFINITION,
@@ -307,7 +307,7 @@ describe('Parser', () => {
 
     expect(toJSONDeep(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 30 },
+      loc: { start: 0, end: 29 },
       definitions: [
         {
           kind: Kind.OPERATION_DEFINITION,
