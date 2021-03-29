@@ -1,8 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { invariant } from '../../jsutils/invariant';
-
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -123,7 +121,7 @@ const PetType = new GraphQLUnionType({
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false);
+    expect.fail('Not reachable');
   },
 });
 

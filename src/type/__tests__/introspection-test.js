@@ -1,8 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { invariant } from '../../jsutils/invariant';
-
 import { buildSchema } from '../../utilities/buildASTSchema';
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 
@@ -1569,12 +1567,12 @@ describe('Introspection', () => {
 
     // istanbul ignore next (Called only to fail test)
     function fieldResolver(_1, _2, _3, info) {
-      invariant(false, `Called on ${info.parentType.name}::${info.fieldName}`);
+      expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
     // istanbul ignore next (Called only to fail test)
     function typeResolver(_1, _2, info) {
-      invariant(false, `Called on ${info.parentType.name}::${info.fieldName}`);
+      expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
     const result = graphqlSync({
