@@ -3,8 +3,6 @@ import { describe, it } from 'mocha';
 
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
-import { invariant } from '../../jsutils/invariant';
-
 import type { ASTNode } from '../ast';
 import { Kind } from '../kinds';
 import { parse } from '../parser';
@@ -1076,7 +1074,7 @@ describe('Visitor', () => {
             },
             // istanbul ignore next (Never called and used as a placeholder)
             leave() {
-              invariant(false);
+              expect.fail('Should not be called');
             },
           },
           {

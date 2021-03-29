@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { inspect } from '../inspect';
-import { invariant } from '../invariant';
 
 describe('inspect', () => {
   it('undefined', () => {
@@ -35,13 +34,13 @@ describe('inspect', () => {
   it('function', () => {
     const unnamedFuncStr = inspect(
       // istanbul ignore next (Never called and used as a placeholder)
-      () => invariant(false),
+      () => expect.fail('Should not be called'),
     );
     expect(unnamedFuncStr).to.equal('[function]');
 
     // istanbul ignore next (Never called and used as a placeholder)
     function namedFunc() {
-      invariant(false);
+      expect.fail('Should not be called');
     }
     expect(inspect(namedFunc)).to.equal('[function namedFunc]');
   });
