@@ -21,6 +21,6 @@ import { GraphQLInputType } from '../type/definition';
  *
  */
 export function astFromValue(
-  value: any,
+  value: unknown,
   type: GraphQLInputType,
 ): Maybe<ValueNode>;
