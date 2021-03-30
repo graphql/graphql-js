@@ -1,3 +1,4 @@
+import { ObjMap } from '../jsutils/ObjMap';
 import { DocumentNode } from '../language/ast';
 
 /**
@@ -8,4 +9,4 @@ import { DocumentNode } from '../language/ast';
  */
 export function separateOperations(
   documentAST: DocumentNode,
-): { [key: string]: DocumentNode };
+): ObjMap<DocumentNode>;

@@ -1,4 +1,5 @@
 import { Maybe } from '../jsutils/Maybe';
+import { ObjMap } from '../jsutils/ObjMap';
 
 import { GraphQLError } from '../error/GraphQLError';
 import {
@@ -42,7 +43,7 @@ export function getVariableValues(
 export function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
-  variableValues?: Maybe<{ [key: string]: unknown }>,
+  variableValues?: Maybe<ObjMap<unknown>>,
 ): { [key: string]: unknown };
 
 /**
@@ -61,5 +62,5 @@ export function getDirectiveValues(
   node: {
     readonly directives?: ReadonlyArray<DirectiveNode>;
   },
-  variableValues?: Maybe<{ [key: string]: unknown }>,
+  variableValues?: Maybe<ObjMap<unknown>>,
 ): undefined | { [key: string]: unknown };
