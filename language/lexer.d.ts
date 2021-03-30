@@ -50,9 +50,4 @@ export class Lexer {
 /**
  * @internal
  */
-export function isPunctuatorToken(token: Token): boolean;
-
-/**
- * @internal
- */
 export function isPunctuatorTokenKind(kind: TokenKindEnum): boolean;

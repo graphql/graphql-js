@@ -34,7 +34,7 @@ export class TypeInfo {
   getParentType(): Maybe<GraphQLCompositeType>;
   getInputType(): Maybe<GraphQLInputType>;
   getParentInputType(): Maybe<GraphQLInputType>;
-  getFieldDef(): GraphQLField<any, Maybe<any>>;
+  getFieldDef(): Maybe<GraphQLField<any, any>>;
   getDefaultValue(): Maybe<any>;
   getDirective(): Maybe<GraphQLDirective>;
   getArgument(): Maybe<GraphQLArgument>;

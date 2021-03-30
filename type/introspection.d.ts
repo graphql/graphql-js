@@ -13,7 +13,7 @@ export const __Field: GraphQLObjectType;
 export const __InputValue: GraphQLObjectType;
 export const __EnumValue: GraphQLObjectType;
 
-export const TypeKind: {
+export const TypeKind: Readonly<{
   SCALAR: 'SCALAR';
   OBJECT: 'OBJECT';
   INTERFACE: 'INTERFACE';
@@ -22,7 +22,7 @@ export const TypeKind: {
   INPUT_OBJECT: 'INPUT_OBJECT';
   LIST: 'LIST';
   NON_NULL: 'NON_NULL';
-};
+}>;
 
 export const __TypeKind: GraphQLEnumType;
 

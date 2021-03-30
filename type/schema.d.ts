@@ -81,7 +81,7 @@ export class GraphQLSchema {
 
   isSubType(
     abstractType: GraphQLAbstractType,
-    maybeSubType: GraphQLNamedType,
+    maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
   ): boolean;
 
   getDirectives(): ReadonlyArray<GraphQLDirective>;
@@ -94,6 +94,7 @@ export class GraphQLSchema {
     extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
     assumeValid: boolean;
   };
+  get [Symbol.toStringTag](): string;
 }
 
 interface TypeMap {
