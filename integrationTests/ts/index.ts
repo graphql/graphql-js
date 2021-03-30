@@ -17,6 +17,7 @@ declare module 'graphql' {
   interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
     someObjectExtension?: SomeExtension;
   }
+
   interface GraphQLFieldExtensions<
     _TSource,
     _TContext,
@@ -24,6 +25,7 @@ declare module 'graphql' {
   > {
     someFieldExtension?: SomeExtension;
   }
+
   interface GraphQLArgumentExtensions {
     someArgumentExtension?: SomeExtension;
   }
@@ -56,6 +58,15 @@ const queryType: GraphQLObjectType = new GraphQLObjectType({
 const schema: GraphQLSchema = new GraphQLSchema({
   query: queryType,
 });
+
+function checkExtensionTypes(_test: SomeExtension | null | undefined) {}
+
+checkExtensionTypes(queryType?.extensions?.someObjectExtension);
+
+const sayHiField = queryType?.getFields()?.sayHi;
+checkExtensionTypes(sayHiField?.extensions?.someFieldExtension);
+
+checkExtensionTypes(sayHiField?.args?.[0]?.extensions?.someArgumentExtension);
 
 const result: ExecutionResult = graphqlSync({
   schema,
