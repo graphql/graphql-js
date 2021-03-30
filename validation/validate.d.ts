@@ -43,7 +43,7 @@ export function validateSDL(
   documentAST: DocumentNode,
   schemaToExtend?: Maybe<GraphQLSchema>,
   rules?: ReadonlyArray<SDLValidationRule>,
-): Array<GraphQLError>;
+): Readonly<GraphQLError>;
 
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
