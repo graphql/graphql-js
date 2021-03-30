@@ -26,7 +26,7 @@ type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
-  readonly defaultValue: Maybe<any>;
+  readonly defaultValue: Maybe<unknown>;
 }
 
 /**
@@ -86,7 +86,7 @@ export class ValidationContext extends ASTValidationContext {
 
   getParentInputType(): Maybe<GraphQLInputType>;
 
-  getFieldDef(): Maybe<GraphQLField<any, any>>;
+  getFieldDef(): Maybe<GraphQLField<unknown, unknown>>;
 
   getDirective(): Maybe<GraphQLDirective>;
 

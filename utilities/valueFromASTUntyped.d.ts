@@ -20,5 +20,5 @@ import { ValueNode } from '../language/ast';
  */
 export function valueFromASTUntyped(
   valueNode: ValueNode,
-  variables?: Maybe<{ [key: string]: any }>,
-): any;
+  variables?: Maybe<{ [key: string]: unknown }>,
+): unknown;

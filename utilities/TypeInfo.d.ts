@@ -34,8 +34,8 @@ export class TypeInfo {
   getParentType(): Maybe<GraphQLCompositeType>;
   getInputType(): Maybe<GraphQLInputType>;
   getParentInputType(): Maybe<GraphQLInputType>;
-  getFieldDef(): Maybe<GraphQLField<any, any>>;
-  getDefaultValue(): Maybe<any>;
+  getFieldDef(): Maybe<GraphQLField<unknown, unknown>>;
+  getDefaultValue(): Maybe<unknown>;
   getDirective(): Maybe<GraphQLDirective>;
   getArgument(): Maybe<GraphQLArgument>;
   getEnumValue(): Maybe<GraphQLEnumValue>;
@@ -47,7 +47,7 @@ type getFieldDef = (
   schema: GraphQLSchema,
   parentType: GraphQLType,
   fieldNode: FieldNode,
-) => Maybe<GraphQLField<any, any>>;
+) => Maybe<GraphQLField<unknown, unknown>>;
 
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance

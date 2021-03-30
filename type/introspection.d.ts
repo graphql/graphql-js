@@ -31,9 +31,9 @@ export const __TypeKind: GraphQLEnumType;
  * so the format for args is different.
  */
 
-export const SchemaMetaFieldDef: GraphQLField<any, any>;
-export const TypeMetaFieldDef: GraphQLField<any, any>;
-export const TypeNameMetaFieldDef: GraphQLField<any, any>;
+export const SchemaMetaFieldDef: GraphQLField<unknown, unknown>;
+export const TypeMetaFieldDef: GraphQLField<unknown, unknown>;
+export const TypeNameMetaFieldDef: GraphQLField<unknown, unknown>;
 
 export const introspectionTypes: ReadonlyArray<GraphQLNamedType>;
 
