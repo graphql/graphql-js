@@ -12,7 +12,7 @@ export function formatError(error: GraphQLError): GraphQLFormattedError;
  * @see https://github.com/graphql/graphql-spec/blob/master/spec/Section%207%20--%20Response.md#errors
  */
 export interface GraphQLFormattedError<
-  TExtensions extends Record<string, any> = Record<string, any>
+  TExtensions extends Record<string, unknown> = Record<string, unknown>
 > {
   /**
    * A short, human-readable summary of the problem that **SHOULD NOT** change

@@ -16,8 +16,8 @@ import {
 /**
  * Test if the given value is a GraphQL schema.
  */
-export function isSchema(schema: any): schema is GraphQLSchema;
-export function assertSchema(schema: any): GraphQLSchema;
+export function isSchema(schema: unknown): schema is GraphQLSchema;
+export function assertSchema(schema: unknown): GraphQLSchema;
 
 /**
  * Custom extensions

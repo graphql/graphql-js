@@ -51,10 +51,10 @@ import {
 export interface ExecutionContext {
   schema: GraphQLSchema;
   fragments: { [key: string]: FragmentDefinitionNode };
-  rootValue: any;
-  contextValue: any;
+  rootValue: unknown;
+  contextValue: unknown;
   operation: OperationDefinitionNode;
-  variableValues: { [key: string]: any };
+  variableValues: { [key: string]: unknown };
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   errors: Array<GraphQLError>;
@@ -90,9 +90,9 @@ export interface FormattedExecutionResult<
 export interface ExecutionArgs {
   schema: GraphQLSchema;
   document: DocumentNode;
-  rootValue?: any;
-  contextValue?: any;
-  variableValues?: Maybe<{ [key: string]: any }>;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ [key: string]: unknown }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
@@ -126,7 +126,7 @@ export function executeSync(args: ExecutionArgs): ExecutionResult;
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: Maybe<{ [key: string]: any }>,
+  rawVariableValues: Maybe<{ [key: string]: unknown }>,
 ): void;
 
 /**
@@ -140,12 +140,12 @@ export function assertValidExecutionArguments(
 export function buildExecutionContext(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rootValue: any,
-  contextValue: any,
-  rawVariableValues: Maybe<{ [key: string]: any }>,
+  rootValue: unknown,
+  contextValue: unknown,
+  rawVariableValues: Maybe<{ [key: string]: unknown }>,
   operationName: Maybe<string>,
-  fieldResolver: Maybe<GraphQLFieldResolver<any, any>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
+  fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
+  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
 ): ReadonlyArray<GraphQLError> | ExecutionContext;
 
 /**
@@ -171,7 +171,7 @@ export function collectFields(
  */
 export function buildResolveInfo(
   exeContext: ExecutionContext,
-  fieldDef: GraphQLField<any, any>,
+  fieldDef: GraphQLField<unknown, unknown>,
   fieldNodes: ReadonlyArray<FieldNode>,
   parentType: GraphQLObjectType,
   path: Path,
@@ -187,7 +187,7 @@ export function buildResolveInfo(
  * Otherwise, test each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
-export const defaultTypeResolver: GraphQLTypeResolver<any, any>;
+export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown>;
 
 /**
  * If a resolve function is not given, then a default resolve behavior is used
@@ -195,7 +195,7 @@ export const defaultTypeResolver: GraphQLTypeResolver<any, any>;
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context value.
  */
-export const defaultFieldResolver: GraphQLFieldResolver<any, any>;
+export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown>;
 
 /**
  * This method looks up the field on the given type definition.
@@ -212,4 +212,4 @@ export function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
   fieldName: string,
-): Maybe<GraphQLField<any, any>>;
+): Maybe<GraphQLField<unknown, unknown>>;

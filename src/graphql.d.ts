@@ -47,9 +47,9 @@ import { ExecutionResult } from './execution/execute';
 export interface GraphQLArgs {
   schema: GraphQLSchema;
   source: string | Source;
-  rootValue?: any;
-  contextValue?: any;
-  variableValues?: Maybe<{ [key: string]: any }>;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ [key: string]: unknown }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;

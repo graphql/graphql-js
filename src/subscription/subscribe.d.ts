@@ -8,9 +8,9 @@ import { GraphQLFieldResolver } from '../type/definition';
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
   document: DocumentNode;
-  rootValue?: any;
-  contextValue?: any;
-  variableValues?: Maybe<Record<string, any>>;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<Record<string, unknown>>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
@@ -72,9 +72,9 @@ export function subscribe(
 export function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rootValue?: any,
-  contextValue?: any,
-  variableValues?: { [key: string]: any },
+  rootValue?: unknown,
+  contextValue?: unknown,
+  variableValues?: { [key: string]: unknown },
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): Promise<AsyncIterable<any> | ExecutionResult>;
+): Promise<AsyncIterable<unknown> | ExecutionResult>;
