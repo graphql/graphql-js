@@ -1,4 +1,5 @@
 import { Maybe } from '../jsutils/Maybe';
+import { ObjMap } from '../jsutils/ObjMap';
 
 import { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { Path } from '../jsutils/Path';
@@ -50,9 +51,9 @@ import {
  */
 export interface ExecutionContext {
   schema: GraphQLSchema;
-  fragments: { [key: string]: FragmentDefinitionNode };
   rootValue: unknown;
   contextValue: unknown;
+  fragments: ObjMap<FragmentDefinitionNode>;
   operation: OperationDefinitionNode;
   variableValues: { [key: string]: unknown };
   fieldResolver: GraphQLFieldResolver<any, any>;
@@ -162,9 +163,9 @@ export function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: { [key: string]: Array<FieldNode> },
-  visitedFragmentNames: { [key: string]: boolean },
-): { [key: string]: Array<FieldNode> };
+  fields: ObjMap<Array<FieldNode>>,
+  visitedFragmentNames: ObjMap<boolean>,
+): ObjMap<Array<FieldNode>>;
 
 /**
  * @internal
