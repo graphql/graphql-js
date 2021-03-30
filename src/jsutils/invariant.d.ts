@@ -1,1 +1,4 @@
-export function invariant(condition: unknown, message?: string): asserts condition;
+export function invariant(
+  condition: unknown,
+  message?: string,
+): asserts condition;
