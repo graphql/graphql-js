@@ -51,6 +51,7 @@ export class GraphQLDirective {
   toString(): string;
   toJSON(): string;
   inspect(): string;
+  get [Symbol.toStringTag](): string;
 }
 
 export interface GraphQLDirectiveConfig {

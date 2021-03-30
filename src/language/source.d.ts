@@ -15,6 +15,7 @@ export class Source {
   name: string;
   locationOffset: Location;
   constructor(body: string, name?: string, locationOffset?: Location);
+  get [Symbol.toStringTag](): string;
 }
 
 /**
