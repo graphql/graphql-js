@@ -281,7 +281,7 @@ export type ThunkObjMap<T> = ObjMap<T> | (() => ObjMap<T>);
  * an object which can contain all the values you need.
  */
 export interface GraphQLScalarTypeExtensions {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
 /**
@@ -367,7 +367,7 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
  * you may find them useful.
  */
 export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
 /**
@@ -502,7 +502,7 @@ export interface GraphQLFieldExtensions<
   _TContext,
   _TArgs = { [argName: string]: any }
 > {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
 export interface GraphQLFieldConfig<
@@ -534,7 +534,7 @@ export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
  * an object which can contain all the values you need.
  */
 export interface GraphQLArgumentExtensions {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
 export interface GraphQLArgumentConfig {
@@ -592,7 +592,7 @@ export type GraphQLFieldMap<TSource, TContext> = ObjMap<
  * an object which can contain all the values you need.
  */
 export interface GraphQLInterfaceTypeExtensions {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
 /**
@@ -664,7 +664,7 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
  * an object which can contain all the values you need.
  */
 export interface GraphQLUnionTypeExtensions {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
 /**
@@ -738,7 +738,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumTypeExtensions {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
 /**
@@ -811,7 +811,7 @@ export type GraphQLEnumValueConfigMap = ObjMap<GraphQLEnumValueConfig>;
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumValueExtensions {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
 export interface GraphQLEnumValueConfig {
@@ -841,7 +841,7 @@ export interface GraphQLEnumValue {
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputObjectTypeExtensions {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
 /**
