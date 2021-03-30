@@ -416,13 +416,32 @@ function executeFields(
   for (const responseName of Object.keys(fields)) {
     const fieldNodes = fields[responseName];
     const fieldPath = addPath(path, responseName, parentType.name);
-    const result = resolveField(
-      exeContext,
-      parentType,
-      sourceValue,
-      fieldNodes,
-      fieldPath,
-    );
+
+    let result;
+
+    // If a custom resolve field function is provided by the execution context, use it
+    // This allows for more application specific resolve logic such as caching by specific
+    // document types and execution context values
+    const contextValue = exeContext && (exeContext.contextValue: any);
+    if (typeof contextValue?.customResolveField === 'function') {
+      result = contextValue.customResolveField(
+        exeContext,
+        parentType,
+        sourceValue,
+        fieldNodes,
+        fieldPath,
+      );
+    }
+    // otherwise fall back on resolveField
+    else {
+      result = resolveField(
+        exeContext,
+        parentType,
+        sourceValue,
+        fieldNodes,
+        fieldPath,
+      );
+    }
 
     if (result !== undefined) {
       results[responseName] = result;
@@ -582,7 +601,7 @@ function getFieldEntryKey(node: FieldNode): string {
  * then calls completeValue to complete promises, serialize scalars, or execute
  * the sub-selection-set for objects.
  */
-function resolveField(
+export function resolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: mixed,
