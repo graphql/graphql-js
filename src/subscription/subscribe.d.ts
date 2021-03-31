@@ -39,7 +39,7 @@ export interface SubscriptionArgs {
  */
 export function subscribe(
   args: SubscriptionArgs,
-): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult>;
+): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
 
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
