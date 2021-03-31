@@ -897,12 +897,14 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should handle error during execution of source event', async () => {
+    async function* generateEmails() {
+      yield { email: { subject: 'Hello' } };
+      yield { email: { subject: 'Goodbye' } };
+      yield { email: { subject: 'Bonjour' } };
+    }
+
     const erroringEmailSchema = emailSchemaWithResolvers(
-      async function* () {
-        yield { email: { subject: 'Hello' } };
-        yield { email: { subject: 'Goodbye' } };
-        yield { email: { subject: 'Bonjour' } };
-      },
+      generateEmails,
       (event) => {
         if (event.email.subject === 'Goodbye') {
           throw new Error('Never leave.');
@@ -975,11 +977,13 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should pass through error thrown in source event stream', async () => {
+    async function* generateEmails() {
+      yield { email: { subject: 'Hello' } };
+      throw new Error('test error');
+    }
+
     const erroringEmailSchema = emailSchemaWithResolvers(
-      async function* () {
-        yield { email: { subject: 'Hello' } };
-        throw new Error('test error');
-      },
+      generateEmails,
       (email) => email,
     );
 
@@ -1029,11 +1033,13 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should resolve GraphQL error from source event stream', async () => {
+    async function* generateEmails() {
+      yield { email: { subject: 'Hello' } };
+      throw new GraphQLError('test error');
+    }
+
     const erroringEmailSchema = emailSchemaWithResolvers(
-      async function* () {
-        yield { email: { subject: 'Hello' } };
-        throw new GraphQLError('test error');
-      },
+      generateEmails,
       (email) => email,
     );
 

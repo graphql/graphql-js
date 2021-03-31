@@ -168,6 +168,7 @@ describe('inspect', () => {
     (Foo.prototype: any)[Symbol.toStringTag] = 'Bar';
     expect(inspect([[new Foo()]])).to.equal('[[[Bar]]]');
 
+    // eslint-disable-next-line func-names
     const objectWithoutClassName = new (function () {
       // eslint-disable-next-line no-invalid-this
       this.foo = 1;

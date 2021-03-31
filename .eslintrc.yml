@@ -298,7 +298,7 @@ rules:
   capitalized-comments: off # maybe
   consistent-this: off
   func-name-matching: off
-  func-names: off
+  func-names: [error, as-needed] # improve debug experience
   func-style: off
   id-denylist: off
   id-length: off

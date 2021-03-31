@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-module.exports = function (context) {
+module.exports = function noDirImportRule(context) {
   return {
     ImportDeclaration: checkImportPath,
     ExportNamedDeclaration: checkImportPath,
