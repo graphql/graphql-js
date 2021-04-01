@@ -14,14 +14,16 @@ export function mapAsyncIterator<T, U>(
   // $FlowFixMe[prop-missing]
   const iteratorMethod = iterable[Symbol.asyncIterator];
   const iterator: any = iteratorMethod.call(iterable);
-  let $return: any;
-  let abruptClose;
-  if (typeof iterator.return === 'function') {
-    $return = iterator.return;
-    abruptClose = (error: mixed) => {
-      const rethrow = () => Promise.reject(error);
-      return $return.call(iterator).then(rethrow, rethrow);
-    };
+
+  async function abruptClose(error: mixed) {
+    if (typeof iterator.return === 'function') {
+      try {
+        await iterator.return();
+      } catch (_e) {
+        /* ignore error */
+      }
+    }
+    throw error;
   }
 
   async function mapResult(result: IteratorResult<T, void>) {
@@ -51,8 +53,8 @@ export function mapAsyncIterator<T, U>(
       return iterator.next().then(mapResult, mapReject);
     },
     return() {
-      return $return
-        ? $return.call(iterator).then(mapResult, mapReject)
+      return typeof iterator.return === 'function'
+        ? iterator.return().then(mapResult, mapReject)
         : Promise.resolve({ value: undefined, done: true });
     },
     throw(error?: mixed): Promise<IteratorResult<U, void>> {
