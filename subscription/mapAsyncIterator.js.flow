@@ -8,7 +8,9 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 export function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T> | AsyncGenerator<T, void, void>,
   callback: (T) => PromiseOrValue<U>,
-  rejectCallback?: (any) => PromiseOrValue<U>,
+  rejectCallback: (any) => PromiseOrValue<U> = (error) => {
+    throw error;
+  },
 ): AsyncGenerator<U, void, void> {
   // $FlowFixMe[prop-missing]
   const iteratorMethod = iterable[Symbol.asyncIterator];
@@ -29,12 +31,11 @@ export function mapAsyncIterator<T, U>(
       : asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
   }
 
-  let mapReject;
-  if (rejectCallback) {
-    // Capture rejectCallback to ensure it cannot be null.
-    const reject = rejectCallback;
-    mapReject = (error: mixed) =>
-      asyncMapValue(error, reject).then(iteratorResult, abruptClose);
+  function mapReject(error: mixed) {
+    return asyncMapValue(error, rejectCallback).then(
+      iteratorResult,
+      abruptClose,
+    );
   }
 
   /* TODO: Flow doesn't support symbols as keys:
