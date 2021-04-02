@@ -25,10 +25,16 @@ export function mapAsyncIterator<T, U>(
     };
   }
 
-  function mapResult(result: IteratorResult<T, void>) {
-    return result.done
-      ? result
-      : asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
+  async function mapResult(result: IteratorResult<T, void>) {
+    if (result.done) {
+      return result;
+    }
+
+    try {
+      return { value: await callback(result.value), done: false };
+    } catch (callbackError) {
+      return abruptClose(callbackError);
+    }
   }
 
   function mapReject(error: mixed) {
@@ -60,15 +66,4 @@ export function mapAsyncIterator<T, U>(
       return this;
     },
   }: $FlowFixMe);
-}
-
-function asyncMapValue<T, U>(
-  value: T,
-  callback: (T) => PromiseOrValue<U>,
-): Promise<U> {
-  return new Promise((resolve) => resolve(callback(value)));
-}
-
-function iteratorResult<T>(value: T): IteratorResult<T, void> {
-  return { value, done: false };
 }
