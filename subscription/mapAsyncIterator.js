@@ -21,8 +21,19 @@ export function mapAsyncIterator(iterable, callback, rejectCallback = error => {
     };
   }
 
-  function mapResult(result) {
-    return result.done ? result : asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
+  async function mapResult(result) {
+    if (result.done) {
+      return result;
+    }
+
+    try {
+      return {
+        value: await callback(result.value),
+        done: false
+      };
+    } catch (callbackError) {
+      return abruptClose(callbackError);
+    }
   }
 
   function mapReject(error) {
@@ -63,16 +74,5 @@ export function mapAsyncIterator(iterable, callback, rejectCallback = error => {
       return this;
     }
 
-  };
-}
-
-function asyncMapValue(value, callback) {
-  return new Promise(resolve => resolve(callback(value)));
-}
-
-function iteratorResult(value) {
-  return {
-    value,
-    done: false
   };
 }
