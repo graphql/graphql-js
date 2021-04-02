@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../dedent';
+import { dedent, dedentString } from '../dedent';
 
-describe('dedent', () => {
+describe('dedentString', () => {
   it('removes indentation in typical usage', () => {
-    const output = dedent`
+    const output = dedentString(`
       type Query {
         me: User
       }
@@ -14,7 +14,7 @@ describe('dedent', () => {
         id: ID
         name: String
       }
-    `;
+    `);
     expect(output).to.equal(
       [
         'type Query {',
@@ -30,23 +30,23 @@ describe('dedent', () => {
   });
 
   it('removes only the first level of indentation', () => {
-    const output = dedent`
+    const output = dedentString(`
             first
               second
                 third
                   fourth
-    `;
+    `);
     expect(output).to.equal(
       ['first', '  second', '    third', '      fourth'].join('\n'),
     );
   });
 
   it('does not escape special characters', () => {
-    const output = dedent`
+    const output = dedentString(`
       type Root {
         field(arg: String = "wi\th de\fault"): String
       }
-    `;
+    `);
     expect(output).to.equal(
       [
         'type Root {',
@@ -57,16 +57,16 @@ describe('dedent', () => {
   });
 
   it('also removes indentation using tabs', () => {
-    const output = dedent`
+    const output = dedentString(`
         \t\t    type Query {
         \t\t      me: User
         \t\t    }
-    `;
+    `);
     expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
   });
 
   it('removes leading and trailing newlines', () => {
-    const output = dedent`
+    const output = dedentString(`
 
 
       type Query {
@@ -74,21 +74,32 @@ describe('dedent', () => {
       }
 
 
-    `;
+    `);
     expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
   });
 
   it('removes all trailing spaces and tabs', () => {
-    const output = dedent`
+    const output = dedentString(`
       type Query {
         me: User
       }
-          \t\t  \t `;
+          \t\t  \t `);
     expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
   });
 
   it('works on text without leading newline', () => {
-    const output = dedent`      type Query {
+    const output = dedentString(`      type Query {
+        me: User
+      }
+    `);
+    expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
+  });
+});
+
+describe('dedent', () => {
+  it('removes indentation in typical usage', () => {
+    const output = dedent`
+      type Query {
         me: User
       }
     `;
