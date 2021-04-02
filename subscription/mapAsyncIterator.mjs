@@ -8,17 +8,17 @@ export function mapAsyncIterator(iterable, callback, rejectCallback = error => {
   // $FlowFixMe[prop-missing]
   const iteratorMethod = iterable[Symbol.asyncIterator];
   const iterator = iteratorMethod.call(iterable);
-  let $return;
-  let abruptClose;
 
-  if (typeof iterator.return === 'function') {
-    $return = iterator.return;
+  async function abruptClose(error) {
+    if (typeof iterator.return === 'function') {
+      try {
+        await iterator.return();
+      } catch (_e) {
+        /* ignore error */
+      }
+    }
 
-    abruptClose = error => {
-      const rethrow = () => Promise.reject(error);
-
-      return $return.call(iterator).then(rethrow, rethrow);
-    };
+    throw error;
   }
 
   async function mapResult(result) {
@@ -56,7 +56,7 @@ export function mapAsyncIterator(iterable, callback, rejectCallback = error => {
     },
 
     return() {
-      return $return ? $return.call(iterator).then(mapResult, mapReject) : Promise.resolve({
+      return typeof iterator.return === 'function' ? iterator.return().then(mapResult, mapReject) : Promise.resolve({
         value: undefined,
         done: true
       });
