@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import { parse } from '../parser';
@@ -150,7 +150,7 @@ describe('Printer: Query document', () => {
 
     expect(printed).to.equal(
       // $FlowFixMe[incompatible-call]
-      dedent(String.raw`
+      dedentString(String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         whoever123is: node(id: [123, 456]) {
           id
