@@ -354,13 +354,19 @@ describe('mapAsyncIterator', () => {
     );
   });
 
-  async function testClosesSourceWithRejectMapper<T>(mapper: (Error) => T) {
+  it('closes source if mapper throws an error', async () => {
     async function* source() {
       yield 1;
       throw new Error(2);
     }
 
-    const throwOver1 = mapAsyncIterator(source(), (x) => x, mapper);
+    const throwOver1 = mapAsyncIterator(
+      source(),
+      (x) => x,
+      (error) => {
+        throw new Error('Cannot count to ' + error.message);
+      },
+    );
 
     expect(await throwOver1.next()).to.deep.equal({ value: 1, done: false });
 
@@ -379,17 +385,5 @@ describe('mapAsyncIterator', () => {
       value: undefined,
       done: true,
     });
-  }
-
-  it('closes source if mapper throws an error', async () => {
-    await testClosesSourceWithRejectMapper((error) => {
-      throw new Error('Cannot count to ' + error.message);
-    });
-  });
-
-  it('closes source if mapper rejects', async () => {
-    await testClosesSourceWithRejectMapper((error) =>
-      Promise.reject(new Error('Cannot count to ' + error.message)),
-    );
   });
 });
