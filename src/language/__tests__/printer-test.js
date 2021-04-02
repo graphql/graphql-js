@@ -8,13 +8,6 @@ import { parse } from '../parser';
 import { print } from '../printer';
 
 describe('Printer: Query document', () => {
-  it('does not alter ast', () => {
-    const ast = parse(kitchenSinkQuery);
-    const astBefore = JSON.stringify(ast);
-    print(ast);
-    expect(JSON.stringify(ast)).to.equal(astBefore);
-  });
-
   it('prints minimal ast', () => {
     const ast = { kind: 'Field', name: { kind: 'Name', value: 'foo' } };
     expect(print(ast)).to.equal('foo');
@@ -145,8 +138,15 @@ describe('Printer: Query document', () => {
     `);
   });
 
-  it('prints kitchen sink', () => {
-    const printed = print(parse(kitchenSinkQuery));
+  it('prints kitchen sink without altering ast', () => {
+    const ast = parse(kitchenSinkQuery, { noLocation: true });
+
+    const astBeforePrintCall = JSON.stringify(ast);
+    const printed = print(ast);
+    const printedAST = parse(printed, { noLocation: true });
+
+    expect(printedAST).to.deep.equal(ast);
+    expect(JSON.stringify(ast)).to.equal(astBeforePrintCall);
 
     expect(printed).to.equal(
       // $FlowFixMe[incompatible-call]
