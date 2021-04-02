@@ -33,7 +33,14 @@ function mapAsyncIterator(iterable, callback, rejectCallback = error => {
   }
 
   function mapReject(error) {
-    return asyncMapValue(error, rejectCallback).then(iteratorResult, abruptClose);
+    try {
+      return {
+        value: rejectCallback(error),
+        done: false
+      };
+    } catch (callbackError) {
+      return abruptClose(callbackError);
+    }
   }
   /* TODO: Flow doesn't support symbols as keys:
      https://github.com/facebook/flow/issues/3258 */
