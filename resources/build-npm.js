@@ -5,8 +5,13 @@ const path = require('path');
 const assert = require('assert');
 
 const babel = require('@babel/core');
+const prettier = require('prettier');
 
 const { readdirRecursive, showDirStats } = require('./utils');
+
+const prettierConfig = JSON.parse(
+  fs.readFileSync(require.resolve('../.prettierrc'), 'utf-8'),
+);
 
 if (require.main === module) {
   fs.rmSync('./npmDist', { recursive: true, force: true });
@@ -19,14 +24,15 @@ if (require.main === module) {
 
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
     if (filepath.endsWith('.js')) {
-      const flowBody = '// @flow strict\n' + fs.readFileSync(srcPath, 'utf-8');
+      const flowBody =
+        '// @flow strict\n\n' + fs.readFileSync(srcPath, 'utf-8');
       fs.writeFileSync(destPath + '.flow', flowBody);
 
       const cjs = babelBuild(srcPath, { envName: 'cjs' });
-      fs.writeFileSync(destPath, cjs);
+      writeGeneratedFile(destPath, cjs);
 
       const mjs = babelBuild(srcPath, { envName: 'mjs' });
-      fs.writeFileSync(destPath.replace(/\.js$/, '.mjs'), mjs);
+      writeGeneratedFile(destPath.replace(/\.js$/, '.mjs'), mjs);
     } else if (filepath.endsWith('.d.ts')) {
       fs.copyFileSync(srcPath, destPath);
     }
@@ -37,12 +43,14 @@ if (require.main === module) {
 
   // Should be done as the last step so only valid packages can be published
   const packageJSON = buildPackageJSON();
-  fs.writeFileSync(
-    './npmDist/package.json',
-    JSON.stringify(packageJSON, null, 2),
-  );
+  writeGeneratedFile('./npmDist/package.json', JSON.stringify(packageJSON));
 
   showDirStats('./npmDist');
+}
+
+function writeGeneratedFile(filepath, body) {
+  const formatted = prettier.format(body, { filepath, ...prettierConfig });
+  fs.writeFileSync(filepath, formatted);
 }
 
 function babelBuild(srcPath, options) {
