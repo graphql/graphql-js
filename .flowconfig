@@ -39,4 +39,4 @@ include_warnings=true
 no_flowlib=true
 
 [version]
-^0.147.0
+^0.148.0
