@@ -17,6 +17,7 @@
  */
 declare function isIteratableObject(
   value: mixed,
+  // $FlowFixMe[invalid-in-rhs]
 ): boolean %checks(value instanceof Iterable);
 
 // eslint-disable-next-line no-redeclare
