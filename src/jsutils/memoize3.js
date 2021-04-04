@@ -5,7 +5,7 @@ export function memoize3<
   A1: { ... } | $ReadOnlyArray<mixed>,
   A2: { ... } | $ReadOnlyArray<mixed>,
   A3: { ... } | $ReadOnlyArray<mixed>,
-  R: mixed,
+  R,
 >(fn: (A1, A2, A3) => R): (A1, A2, A3) => R {
   let cache0;
 
