@@ -1,4 +1,4 @@
-import { GraphQLError } from "../../error/GraphQLError.js";
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 /**
  * Unique operation names
@@ -13,7 +13,12 @@ export function UniqueOperationNamesRule(context) {
 
       if (operationName) {
         if (knownOperationNames[operationName.value]) {
-          context.reportError(new GraphQLError(`There can be only one operation named "${operationName.value}".`, [knownOperationNames[operationName.value], operationName]));
+          context.reportError(
+            new GraphQLError(
+              `There can be only one operation named "${operationName.value}".`,
+              [knownOperationNames[operationName.value], operationName],
+            ),
+          );
         } else {
           knownOperationNames[operationName.value] = operationName;
         }
@@ -22,6 +27,6 @@ export function UniqueOperationNamesRule(context) {
       return false;
     },
 
-    FragmentDefinition: () => false
+    FragmentDefinition: () => false,
   };
 }

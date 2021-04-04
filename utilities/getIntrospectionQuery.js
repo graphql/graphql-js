@@ -5,12 +5,18 @@ export function getIntrospectionQuery(options) {
     directiveIsRepeatable: false,
     schemaDescription: false,
     inputValueDeprecation: false,
-    ...options
+    ...options,
   };
   const descriptions = optionsWithDefault.descriptions ? 'description' : '';
-  const specifiedByUrl = optionsWithDefault.specifiedByUrl ? 'specifiedByUrl' : '';
-  const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable ? 'isRepeatable' : '';
-  const schemaDescription = optionsWithDefault.schemaDescription ? descriptions : '';
+  const specifiedByUrl = optionsWithDefault.specifiedByUrl
+    ? 'specifiedByUrl'
+    : '';
+  const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable
+    ? 'isRepeatable'
+    : '';
+  const schemaDescription = optionsWithDefault.schemaDescription
+    ? descriptions
+    : '';
 
   function inputDeprecation(str) {
     return optionsWithDefault.inputValueDeprecation ? str : '';

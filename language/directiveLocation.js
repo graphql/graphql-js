@@ -22,7 +22,7 @@ export const DirectiveLocation = Object.freeze({
   ENUM: 'ENUM',
   ENUM_VALUE: 'ENUM_VALUE',
   INPUT_OBJECT: 'INPUT_OBJECT',
-  INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION'
+  INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION',
 });
 /**
  * The enum type representing the directive location values.

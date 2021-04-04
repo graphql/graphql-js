@@ -1,7 +1,7 @@
-import { inspect } from "../jsutils/inspect.js";
-import { invariant } from "../jsutils/invariant.js";
-import { Kind } from "../language/kinds.js";
-import { GraphQLList, GraphQLNonNull } from "../type/definition.js";
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { Kind } from '../language/kinds.js';
+import { GraphQLList, GraphQLNonNull } from '../type/definition.js';
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType
  * definition which applies to that type. For example, if provided the parsed
@@ -26,11 +26,9 @@ export function typeFromAST(schema, typeNode) {
     return innerType && new GraphQLNonNull(innerType);
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-
   if (typeNode.kind === Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);
   } // istanbul ignore next (Not reachable. All possible type nodes have been considered)
-
 
   false || invariant(0, 'Unexpected type node: ' + inspect(typeNode));
 }

@@ -18,7 +18,6 @@ export function dedentBlockStringValue(rawString) {
     }
   } // Remove leading and trailing blank lines.
 
-
   let startLine = 0;
 
   while (startLine < lines.length && isBlank(lines[startLine])) {
@@ -30,7 +29,6 @@ export function dedentBlockStringValue(rawString) {
   while (endLine > startLine && isBlank(lines[endLine - 1])) {
     --endLine;
   } // Return a string of the lines joined with U+000A.
-
 
   return lines.slice(startLine, endLine).join('\n');
 }
@@ -47,7 +45,6 @@ function isBlank(str) {
 /**
  * @internal
  */
-
 
 export function getBlockStringIndentation(value) {
   let isFirstLine = true;
@@ -80,7 +77,11 @@ export function getBlockStringIndentation(value) {
         break;
 
       default:
-        if (isEmptyLine && !isFirstLine && (commonIndent === null || indent < commonIndent)) {
+        if (
+          isEmptyLine &&
+          !isFirstLine &&
+          (commonIndent === null || indent < commonIndent)
+        ) {
           commonIndent = indent;
         }
 
@@ -103,7 +104,11 @@ export function printBlockString(value, preferMultipleLines = false) {
   const hasLeadingSpace = value[0] === ' ' || value[0] === '\t';
   const hasTrailingQuote = value[value.length - 1] === '"';
   const hasTrailingSlash = value[value.length - 1] === '\\';
-  const printAsMultipleLines = !isSingleLine || hasTrailingQuote || hasTrailingSlash || preferMultipleLines;
+  const printAsMultipleLines =
+    !isSingleLine ||
+    hasTrailingQuote ||
+    hasTrailingSlash ||
+    preferMultipleLines;
   let result = ''; // Format a multi-line block quote to account for leading space.
 
   if (printAsMultipleLines && !(isSingleLine && hasLeadingSpace)) {

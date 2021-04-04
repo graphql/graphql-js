@@ -1,4 +1,4 @@
-import { GraphQLError } from "../error/GraphQLError.js";
+import { GraphQLError } from '../error/GraphQLError.js';
 
 /**
  * Extracts the root type of the operation from the schema.
@@ -8,7 +8,10 @@ export function getOperationRootType(schema, operation) {
     const queryType = schema.getQueryType();
 
     if (!queryType) {
-      throw new GraphQLError('Schema does not define the required query root type.', operation);
+      throw new GraphQLError(
+        'Schema does not define the required query root type.',
+        operation,
+      );
     }
 
     return queryType;
@@ -18,7 +21,10 @@ export function getOperationRootType(schema, operation) {
     const mutationType = schema.getMutationType();
 
     if (!mutationType) {
-      throw new GraphQLError('Schema is not configured for mutations.', operation);
+      throw new GraphQLError(
+        'Schema is not configured for mutations.',
+        operation,
+      );
     }
 
     return mutationType;
@@ -28,11 +34,17 @@ export function getOperationRootType(schema, operation) {
     const subscriptionType = schema.getSubscriptionType();
 
     if (!subscriptionType) {
-      throw new GraphQLError('Schema is not configured for subscriptions.', operation);
+      throw new GraphQLError(
+        'Schema is not configured for subscriptions.',
+        operation,
+      );
     }
 
     return subscriptionType;
   }
 
-  throw new GraphQLError('Can only have query, mutation and subscription operations.', operation);
+  throw new GraphQLError(
+    'Can only have query, mutation and subscription operations.',
+    operation,
+  );
 }

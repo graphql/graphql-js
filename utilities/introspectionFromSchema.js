@@ -1,7 +1,7 @@
-import { invariant } from "../jsutils/invariant.js";
-import { parse } from "../language/parser.js";
-import { executeSync } from "../execution/execute.js";
-import { getIntrospectionQuery } from "./getIntrospectionQuery.js";
+import { invariant } from '../jsutils/invariant.js';
+import { parse } from '../language/parser.js';
+import { executeSync } from '../execution/execute.js';
+import { getIntrospectionQuery } from './getIntrospectionQuery.js';
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
  *
@@ -18,13 +18,13 @@ export function introspectionFromSchema(schema, options) {
     directiveIsRepeatable: true,
     schemaDescription: true,
     inputValueDeprecation: true,
-    ...options
+    ...options,
   };
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
   const result = executeSync({
     schema,
-    document
+    document,
   });
-  !result.errors && result.data || invariant(0);
+  (!result.errors && result.data) || invariant(0);
   return result.data;
 }

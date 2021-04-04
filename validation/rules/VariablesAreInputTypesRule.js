@@ -1,7 +1,7 @@
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { print } from "../../language/printer.js";
-import { isInputType } from "../../type/definition.js";
-import { typeFromAST } from "../../utilities/typeFromAST.js";
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { print } from '../../language/printer.js';
+import { isInputType } from '../../type/definition.js';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
 
 /**
  * Variables are input types
@@ -17,9 +17,13 @@ export function VariablesAreInputTypesRule(context) {
       if (type && !isInputType(type)) {
         const variableName = node.variable.name.value;
         const typeName = print(node.type);
-        context.reportError(new GraphQLError(`Variable "$${variableName}" cannot be non-input type "${typeName}".`, node.type));
+        context.reportError(
+          new GraphQLError(
+            `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
+            node.type,
+          ),
+        );
       }
-    }
-
+    },
   };
 }

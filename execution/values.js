@@ -1,13 +1,13 @@
-import { keyMap } from "../jsutils/keyMap.js";
-import { inspect } from "../jsutils/inspect.js";
-import { printPathArray } from "../jsutils/printPathArray.js";
-import { GraphQLError } from "../error/GraphQLError.js";
-import { Kind } from "../language/kinds.js";
-import { print } from "../language/printer.js";
-import { isInputType, isNonNullType } from "../type/definition.js";
-import { typeFromAST } from "../utilities/typeFromAST.js";
-import { valueFromAST } from "../utilities/valueFromAST.js";
-import { coerceInputValue } from "../utilities/coerceInputValue.js";
+import { keyMap } from '../jsutils/keyMap.js';
+import { inspect } from '../jsutils/inspect.js';
+import { printPathArray } from '../jsutils/printPathArray.js';
+import { GraphQLError } from '../error/GraphQLError.js';
+import { Kind } from '../language/kinds.js';
+import { print } from '../language/printer.js';
+import { isInputType, isNonNullType } from '../type/definition.js';
+import { typeFromAST } from '../utilities/typeFromAST.js';
+import { valueFromAST } from '../utilities/valueFromAST.js';
+import { coerceInputValue } from '../utilities/coerceInputValue.js';
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -25,17 +25,24 @@ export function getVariableValues(schema, varDefNodes, inputs, options) {
   const maxErrors = options?.maxErrors;
 
   try {
-    const coerced = coerceVariableValues(schema, varDefNodes, inputs, error => {
-      if (maxErrors != null && errors.length >= maxErrors) {
-        throw new GraphQLError('Too many errors processing variables, error limit reached. Execution aborted.');
-      }
+    const coerced = coerceVariableValues(
+      schema,
+      varDefNodes,
+      inputs,
+      (error) => {
+        if (maxErrors != null && errors.length >= maxErrors) {
+          throw new GraphQLError(
+            'Too many errors processing variables, error limit reached. Execution aborted.',
+          );
+        }
 
-      errors.push(error);
-    });
+        errors.push(error);
+      },
+    );
 
     if (errors.length === 0) {
       return {
-        coerced
+        coerced,
       };
     }
   } catch (error) {
@@ -43,7 +50,7 @@ export function getVariableValues(schema, varDefNodes, inputs, options) {
   }
 
   return {
-    errors
+    errors,
   };
 }
 
@@ -58,7 +65,12 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
       // Must use input types for variables. This should be caught during
       // validation, however is checked again here for safety.
       const varTypeStr = print(varDefNode.type);
-      onError(new GraphQLError(`Variable "$${varName}" expected value of type "${varTypeStr}" which cannot be used as an input type.`, varDefNode.type));
+      onError(
+        new GraphQLError(
+          `Variable "$${varName}" expected value of type "${varTypeStr}" which cannot be used as an input type.`,
+          varDefNode.type,
+        ),
+      );
       continue;
     }
 
@@ -67,7 +79,12 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
         coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
       } else if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
-        onError(new GraphQLError(`Variable "$${varName}" of required type "${varTypeStr}" was not provided.`, varDefNode));
+        onError(
+          new GraphQLError(
+            `Variable "$${varName}" of required type "${varTypeStr}" was not provided.`,
+            varDefNode,
+          ),
+        );
       }
 
       continue;
@@ -77,19 +94,38 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
 
     if (value === null && isNonNullType(varType)) {
       const varTypeStr = inspect(varType);
-      onError(new GraphQLError(`Variable "$${varName}" of non-null type "${varTypeStr}" must not be null.`, varDefNode));
+      onError(
+        new GraphQLError(
+          `Variable "$${varName}" of non-null type "${varTypeStr}" must not be null.`,
+          varDefNode,
+        ),
+      );
       continue;
     }
 
-    coercedValues[varName] = coerceInputValue(value, varType, (path, invalidValue, error) => {
-      let prefix = `Variable "$${varName}" got invalid value ` + inspect(invalidValue);
+    coercedValues[varName] = coerceInputValue(
+      value,
+      varType,
+      (path, invalidValue, error) => {
+        let prefix =
+          `Variable "$${varName}" got invalid value ` + inspect(invalidValue);
 
-      if (path.length > 0) {
-        prefix += ` at "${varName}${printPathArray(path)}"`;
-      }
+        if (path.length > 0) {
+          prefix += ` at "${varName}${printPathArray(path)}"`;
+        }
 
-      onError(new GraphQLError(prefix + '; ' + error.message, varDefNode, undefined, undefined, undefined, error.originalError));
-    });
+        onError(
+          new GraphQLError(
+            prefix + '; ' + error.message,
+            varDefNode,
+            undefined,
+            undefined,
+            undefined,
+            error.originalError,
+          ),
+        );
+      },
+    );
   }
 
   return coercedValues;
@@ -105,12 +141,11 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
  * @internal
  */
 
-
 export function getArgumentValues(def, node, variableValues) {
   const coercedValues = {}; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
 
   const argumentNodes = node.arguments ?? [];
-  const argNodeMap = keyMap(argumentNodes, arg => arg.name.value);
+  const argNodeMap = keyMap(argumentNodes, (arg) => arg.name.value);
 
   for (const argDef of def.args) {
     const name = argDef.name;
@@ -121,7 +156,11 @@ export function getArgumentValues(def, node, variableValues) {
       if (argDef.defaultValue !== undefined) {
         coercedValues[name] = argDef.defaultValue;
       } else if (isNonNullType(argType)) {
-        throw new GraphQLError(`Argument "${name}" of required type "${inspect(argType)}" ` + 'was not provided.', node);
+        throw new GraphQLError(
+          `Argument "${name}" of required type "${inspect(argType)}" ` +
+            'was not provided.',
+          node,
+        );
       }
 
       continue;
@@ -133,11 +172,18 @@ export function getArgumentValues(def, node, variableValues) {
     if (valueNode.kind === Kind.VARIABLE) {
       const variableName = valueNode.name.value;
 
-      if (variableValues == null || !hasOwnProperty(variableValues, variableName)) {
+      if (
+        variableValues == null ||
+        !hasOwnProperty(variableValues, variableName)
+      ) {
         if (argDef.defaultValue !== undefined) {
           coercedValues[name] = argDef.defaultValue;
         } else if (isNonNullType(argType)) {
-          throw new GraphQLError(`Argument "${name}" of required type "${inspect(argType)}" ` + `was provided the variable "$${variableName}" which was not provided a runtime value.`, valueNode);
+          throw new GraphQLError(
+            `Argument "${name}" of required type "${inspect(argType)}" ` +
+              `was provided the variable "$${variableName}" which was not provided a runtime value.`,
+            valueNode,
+          );
         }
 
         continue;
@@ -147,7 +193,11 @@ export function getArgumentValues(def, node, variableValues) {
     }
 
     if (isNull && isNonNullType(argType)) {
-      throw new GraphQLError(`Argument "${name}" of non-null type "${inspect(argType)}" ` + 'must not be null.', valueNode);
+      throw new GraphQLError(
+        `Argument "${name}" of non-null type "${inspect(argType)}" ` +
+          'must not be null.',
+        valueNode,
+      );
     }
 
     const coercedValue = valueFromAST(valueNode, argType, variableValues);
@@ -156,7 +206,10 @@ export function getArgumentValues(def, node, variableValues) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
       // execution. This is a runtime check to ensure execution does not
       // continue with an invalid argument value.
-      throw new GraphQLError(`Argument "${name}" has invalid value ${print(valueNode)}.`, valueNode);
+      throw new GraphQLError(
+        `Argument "${name}" has invalid value ${print(valueNode)}.`,
+        valueNode,
+      );
     }
 
     coercedValues[name] = coercedValue;
@@ -178,7 +231,9 @@ export function getArgumentValues(def, node, variableValues) {
 
 export function getDirectiveValues(directiveDef, node, variableValues) {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  const directiveNode = node.directives?.find(directive => directive.name.value === directiveDef.name);
+  const directiveNode = node.directives?.find(
+    (directive) => directive.name.value === directiveDef.name,
+  );
 
   if (directiveNode) {
     return getArgumentValues(directiveDef, directiveNode, variableValues);

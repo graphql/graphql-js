@@ -1,5 +1,5 @@
-import { Kind } from "../language/kinds.js";
-import { visit } from "../language/visitor.js";
+import { Kind } from '../language/kinds.js';
+import { visit } from '../language/visitor.js';
 /**
  * separateOperations accepts a single AST document which may contain many
  * operations and fragments and returns a collection of AST documents each of
@@ -18,12 +18,13 @@ export function separateOperations(documentAST) {
         break;
 
       case Kind.FRAGMENT_DEFINITION:
-        depGraph[definitionNode.name.value] = collectDependencies(definitionNode.selectionSet);
+        depGraph[definitionNode.name.value] = collectDependencies(
+          definitionNode.selectionSet,
+        );
         break;
     }
   } // For each operation, produce a new synthesized AST which includes only what
   // is necessary for completing that operation.
-
 
   const separatedDocumentASTs = Object.create(null);
 
@@ -34,13 +35,17 @@ export function separateOperations(documentAST) {
       collectTransitiveDependencies(dependencies, depGraph, fragmentName);
     } // Provides the empty string for anonymous operations.
 
-
     const operationName = operation.name ? operation.name.value : ''; // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
 
     separatedDocumentASTs[operationName] = {
       kind: Kind.DOCUMENT,
-      definitions: documentAST.definitions.filter(node => node === operation || node.kind === Kind.FRAGMENT_DEFINITION && dependencies.has(node.name.value))
+      definitions: documentAST.definitions.filter(
+        (node) =>
+          node === operation ||
+          (node.kind === Kind.FRAGMENT_DEFINITION &&
+            dependencies.has(node.name.value)),
+      ),
     };
   }
 
@@ -67,8 +72,7 @@ function collectDependencies(selectionSet) {
   visit(selectionSet, {
     FragmentSpread(node) {
       dependencies.push(node.name.value);
-    }
-
+    },
   });
   return dependencies;
 }

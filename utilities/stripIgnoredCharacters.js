@@ -1,7 +1,10 @@
-import { Source, isSource } from "../language/source.js";
-import { TokenKind } from "../language/tokenKind.js";
-import { Lexer, isPunctuatorTokenKind } from "../language/lexer.js";
-import { dedentBlockStringValue, getBlockStringIndentation } from "../language/blockString.js";
+import { Source, isSource } from '../language/source.js';
+import { TokenKind } from '../language/tokenKind.js';
+import { Lexer, isPunctuatorTokenKind } from '../language/lexer.js';
+import {
+  dedentBlockStringValue,
+  getBlockStringIndentation,
+} from '../language/blockString.js';
 /**
  * Strips characters that are not significant to the validity or execution
  * of a GraphQL document:

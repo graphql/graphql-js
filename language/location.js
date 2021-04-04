@@ -19,6 +19,6 @@ export function getLocation(source, position) {
 
   return {
     line,
-    column
+    column,
   };
 }

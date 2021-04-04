@@ -1,8 +1,8 @@
-import { inspect } from "../../jsutils/inspect.js";
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { isCompositeType } from "../../type/definition.js";
-import { typeFromAST } from "../../utilities/typeFromAST.js";
-import { doTypesOverlap } from "../../utilities/typeComparators.js";
+import { inspect } from '../../jsutils/inspect.js';
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { isCompositeType } from '../../type/definition.js';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
+import { doTypesOverlap } from '../../utilities/typeComparators.js';
 
 /**
  * Possible fragment spread
@@ -17,10 +17,19 @@ export function PossibleFragmentSpreadsRule(context) {
       const fragType = context.getType();
       const parentType = context.getParentType();
 
-      if (isCompositeType(fragType) && isCompositeType(parentType) && !doTypesOverlap(context.getSchema(), fragType, parentType)) {
+      if (
+        isCompositeType(fragType) &&
+        isCompositeType(parentType) &&
+        !doTypesOverlap(context.getSchema(), fragType, parentType)
+      ) {
         const parentTypeStr = inspect(parentType);
         const fragTypeStr = inspect(fragType);
-        context.reportError(new GraphQLError(`Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`, node));
+        context.reportError(
+          new GraphQLError(
+            `Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
+            node,
+          ),
+        );
       }
     },
 
@@ -29,13 +38,21 @@ export function PossibleFragmentSpreadsRule(context) {
       const fragType = getFragmentType(context, fragName);
       const parentType = context.getParentType();
 
-      if (fragType && parentType && !doTypesOverlap(context.getSchema(), fragType, parentType)) {
+      if (
+        fragType &&
+        parentType &&
+        !doTypesOverlap(context.getSchema(), fragType, parentType)
+      ) {
         const parentTypeStr = inspect(parentType);
         const fragTypeStr = inspect(fragType);
-        context.reportError(new GraphQLError(`Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`, node));
+        context.reportError(
+          new GraphQLError(
+            `Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
+            node,
+          ),
+        );
       }
-    }
-
+    },
   };
 }
 

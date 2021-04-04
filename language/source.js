@@ -1,6 +1,6 @@
-import { inspect } from "../jsutils/inspect.js";
-import { devAssert } from "../jsutils/devAssert.js";
-import { instanceOf } from "../jsutils/instanceOf.js";
+import { inspect } from '../jsutils/inspect.js';
+import { devAssert } from '../jsutils/devAssert.js';
+import { instanceOf } from '../jsutils/instanceOf.js';
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -10,23 +10,31 @@ import { instanceOf } from "../jsutils/instanceOf.js";
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 export class Source {
-  constructor(body, name = 'GraphQL request', locationOffset = {
-    line: 1,
-    column: 1
-  }) {
-    typeof body === 'string' || devAssert(0, `Body must be a string. Received: ${inspect(body)}.`);
+  constructor(
+    body,
+    name = 'GraphQL request',
+    locationOffset = {
+      line: 1,
+      column: 1,
+    },
+  ) {
+    typeof body === 'string' ||
+      devAssert(0, `Body must be a string. Received: ${inspect(body)}.`);
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
-    this.locationOffset.line > 0 || devAssert(0, 'line in locationOffset is 1-indexed and must be positive.');
-    this.locationOffset.column > 0 || devAssert(0, 'column in locationOffset is 1-indexed and must be positive.');
+    this.locationOffset.line > 0 ||
+      devAssert(0, 'line in locationOffset is 1-indexed and must be positive.');
+    this.locationOffset.column > 0 ||
+      devAssert(
+        0,
+        'column in locationOffset is 1-indexed and must be positive.',
+      );
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-
 
   get [Symbol.toStringTag]() {
     return 'Source';
   }
-
 }
 /**
  * Test if the given value is a Source object.

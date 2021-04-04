@@ -1,4 +1,4 @@
-import { isPromise } from "./isPromise.js";
+import { isPromise } from './isPromise.js';
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
  * a Promise, in which case reduction will continue after each promise resolves.
@@ -8,5 +8,11 @@ import { isPromise } from "./isPromise.js";
  */
 
 export function promiseReduce(values, callback, initialValue) {
-  return values.reduce((previous, value) => isPromise(previous) ? previous.then(resolved => callback(resolved, value)) : callback(previous, value), initialValue);
+  return values.reduce(
+    (previous, value) =>
+      isPromise(previous)
+        ? previous.then((resolved) => callback(resolved, value))
+        : callback(previous, value),
+    initialValue,
+  );
 }

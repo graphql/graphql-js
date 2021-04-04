@@ -1,10 +1,10 @@
-import { devAssert } from "../jsutils/devAssert.js";
-import { Kind } from "../language/kinds.js";
-import { parse } from "../language/parser.js";
-import { assertValidSDL } from "../validation/validate.js";
-import { GraphQLSchema } from "../type/schema.js";
-import { specifiedDirectives } from "../type/directives.js";
-import { extendSchemaImpl } from "./extendSchema.js";
+import { devAssert } from '../jsutils/devAssert.js';
+import { Kind } from '../language/kinds.js';
+import { parse } from '../language/parser.js';
+import { assertValidSDL } from '../validation/validate.js';
+import { GraphQLSchema } from '../type/schema.js';
+import { specifiedDirectives } from '../type/directives.js';
+import { extendSchemaImpl } from './extendSchema.js';
 
 /**
  * This takes the ast of a schema document produced by the parse function in
@@ -17,7 +17,8 @@ import { extendSchemaImpl } from "./extendSchema.js";
  * has no resolve methods, so execution will use default resolvers.
  */
 export function buildASTSchema(documentAST, options) {
-  documentAST != null && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST.');
+  (documentAST != null && documentAST.kind === Kind.DOCUMENT) ||
+    devAssert(0, 'Must provide valid Document AST.');
 
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDL(documentAST);
@@ -29,7 +30,7 @@ export function buildASTSchema(documentAST, options) {
     directives: [],
     extensions: undefined,
     extensionASTNodes: [],
-    assumeValid: false
+    assumeValid: false,
   };
   const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
@@ -54,12 +55,10 @@ export function buildASTSchema(documentAST, options) {
     }
   }
 
-  const {
-    directives
-  } = config; // If specified directives were not explicitly declared, add them.
+  const { directives } = config; // If specified directives were not explicitly declared, add them.
 
   for (const stdDirective of specifiedDirectives) {
-    if (directives.every(directive => directive.name !== stdDirective.name)) {
+    if (directives.every((directive) => directive.name !== stdDirective.name)) {
       directives.push(stdDirective);
     }
   }
@@ -74,10 +73,10 @@ export function buildASTSchema(documentAST, options) {
 export function buildSchema(source, options) {
   const document = parse(source, {
     noLocation: options?.noLocation,
-    allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables
+    allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables,
   });
   return buildASTSchema(document, {
     assumeValidSDL: options?.assumeValidSDL,
-    assumeValid: options?.assumeValid
+    assumeValid: options?.assumeValid,
   });
 }

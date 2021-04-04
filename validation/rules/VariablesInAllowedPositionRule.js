@@ -1,9 +1,9 @@
-import { inspect } from "../../jsutils/inspect.js";
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { Kind } from "../../language/kinds.js";
-import { isNonNullType } from "../../type/definition.js";
-import { typeFromAST } from "../../utilities/typeFromAST.js";
-import { isTypeSubTypeOf } from "../../utilities/typeComparators.js";
+import { inspect } from '../../jsutils/inspect.js';
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { Kind } from '../../language/kinds.js';
+import { isNonNullType } from '../../type/definition.js';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
+import { isTypeSubTypeOf } from '../../utilities/typeComparators.js';
 
 /**
  * Variables passed to field arguments conform to type
@@ -19,11 +19,7 @@ export function VariablesInAllowedPositionRule(context) {
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        for (const {
-          node,
-          type,
-          defaultValue
-        } of usages) {
+        for (const { node, type, defaultValue } of usages) {
           const varName = node.name.value;
           const varDef = varDefMap[varName];
 
@@ -36,21 +32,33 @@ export function VariablesInAllowedPositionRule(context) {
             const schema = context.getSchema();
             const varType = typeFromAST(schema, varDef.type);
 
-            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
+            if (
+              varType &&
+              !allowedVariableUsage(
+                schema,
+                varType,
+                varDef.defaultValue,
+                type,
+                defaultValue,
+              )
+            ) {
               const varTypeStr = inspect(varType);
               const typeStr = inspect(type);
-              context.reportError(new GraphQLError(`Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`, [varDef, node]));
+              context.reportError(
+                new GraphQLError(
+                  `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
+                  [varDef, node],
+                ),
+              );
             }
           }
         }
-      }
-
+      },
     },
 
     VariableDefinition(node) {
       varDefMap[node.variable.name.value] = node;
-    }
-
+    },
   };
 }
 /**
@@ -59,9 +67,16 @@ export function VariablesInAllowedPositionRule(context) {
  * or the location at which it is located.
  */
 
-function allowedVariableUsage(schema, varType, varDefaultValue, locationType, locationDefaultValue) {
+function allowedVariableUsage(
+  schema,
+  varType,
+  varDefaultValue,
+  locationType,
+  locationDefaultValue,
+) {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
-    const hasNonNullVariableDefaultValue = varDefaultValue != null && varDefaultValue.kind !== Kind.NULL;
+    const hasNonNullVariableDefaultValue =
+      varDefaultValue != null && varDefaultValue.kind !== Kind.NULL;
     const hasLocationDefaultValue = locationDefaultValue !== undefined;
 
     if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {

@@ -1,6 +1,6 @@
-import { inspect } from "../../jsutils/inspect.js";
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { getNamedType, isLeafType } from "../../type/definition.js";
+import { inspect } from '../../jsutils/inspect.js';
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { getNamedType, isLeafType } from '../../type/definition.js';
 
 /**
  * Scalar leafs
@@ -19,15 +19,24 @@ export function ScalarLeafsRule(context) {
           if (selectionSet) {
             const fieldName = node.name.value;
             const typeStr = inspect(type);
-            context.reportError(new GraphQLError(`Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`, selectionSet));
+            context.reportError(
+              new GraphQLError(
+                `Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`,
+                selectionSet,
+              ),
+            );
           }
         } else if (!selectionSet) {
           const fieldName = node.name.value;
           const typeStr = inspect(type);
-          context.reportError(new GraphQLError(`Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`, node));
+          context.reportError(
+            new GraphQLError(
+              `Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`,
+              node,
+            ),
+          );
         }
       }
-    }
-
+    },
   };
 }

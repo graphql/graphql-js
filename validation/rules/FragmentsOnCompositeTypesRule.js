@@ -1,7 +1,7 @@
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { print } from "../../language/printer.js";
-import { isCompositeType } from "../../type/definition.js";
-import { typeFromAST } from "../../utilities/typeFromAST.js";
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { print } from '../../language/printer.js';
+import { isCompositeType } from '../../type/definition.js';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
 
 /**
  * Fragments on composite type
@@ -20,7 +20,12 @@ export function FragmentsOnCompositeTypesRule(context) {
 
         if (type && !isCompositeType(type)) {
           const typeStr = print(typeCondition);
-          context.reportError(new GraphQLError(`Fragment cannot condition on non composite type "${typeStr}".`, typeCondition));
+          context.reportError(
+            new GraphQLError(
+              `Fragment cannot condition on non composite type "${typeStr}".`,
+              typeCondition,
+            ),
+          );
         }
       }
     },
@@ -30,9 +35,13 @@ export function FragmentsOnCompositeTypesRule(context) {
 
       if (type && !isCompositeType(type)) {
         const typeStr = print(node.typeCondition);
-        context.reportError(new GraphQLError(`Fragment "${node.name.value}" cannot condition on non composite type "${typeStr}".`, node.typeCondition));
+        context.reportError(
+          new GraphQLError(
+            `Fragment "${node.name.value}" cannot condition on non composite type "${typeStr}".`,
+            node.typeCondition,
+          ),
+        );
       }
-    }
-
+    },
   };
 }

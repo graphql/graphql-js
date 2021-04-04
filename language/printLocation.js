@@ -1,10 +1,13 @@
-import { getLocation } from "./location.js";
+import { getLocation } from './location.js';
 /**
  * Render a helpful description of the location in the GraphQL Source document.
  */
 
 export function printLocation(location) {
-  return printSourceLocation(location.source, getLocation(location.source, location.start));
+  return printSourceLocation(
+    location.source,
+    getLocation(location.source, location.start),
+  );
 }
 /**
  * Render a helpful description of the location in the GraphQL Source document.
@@ -31,15 +34,33 @@ export function printSourceLocation(source, sourceLocation) {
       subLines.push(locationLine.slice(i, i + 80));
     }
 
-    return locationStr + printPrefixedLines([[`${lineNum} |`, subLines[0]], ...subLines.slice(1, subLineIndex + 1).map(subLine => ['|', subLine]), ['|', '^'.padStart(subLineColumnNum)], ['|', subLines[subLineIndex + 1]]]);
+    return (
+      locationStr +
+      printPrefixedLines([
+        [`${lineNum} |`, subLines[0]],
+        ...subLines.slice(1, subLineIndex + 1).map((subLine) => ['|', subLine]),
+        ['|', '^'.padStart(subLineColumnNum)],
+        ['|', subLines[subLineIndex + 1]],
+      ])
+    );
   }
 
-  return locationStr + printPrefixedLines([// Lines specified like this: ["prefix", "string"],
-  [`${lineNum - 1} |`, lines[lineIndex - 1]], [`${lineNum} |`, locationLine], ['|', '^'.padStart(columnNum)], [`${lineNum + 1} |`, lines[lineIndex + 1]]]);
+  return (
+    locationStr +
+    printPrefixedLines([
+      // Lines specified like this: ["prefix", "string"],
+      [`${lineNum - 1} |`, lines[lineIndex - 1]],
+      [`${lineNum} |`, locationLine],
+      ['|', '^'.padStart(columnNum)],
+      [`${lineNum + 1} |`, lines[lineIndex + 1]],
+    ])
+  );
 }
 
 function printPrefixedLines(lines) {
   const existingLines = lines.filter(([_, line]) => line !== undefined);
   const padLen = Math.max(...existingLines.map(([prefix]) => prefix.length));
-  return existingLines.map(([prefix, line]) => prefix.padStart(padLen) + (line ? ' ' + line : '')).join('\n');
+  return existingLines
+    .map(([prefix, line]) => prefix.padStart(padLen) + (line ? ' ' + line : ''))
+    .join('\n');
 }

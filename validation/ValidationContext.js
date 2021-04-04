@@ -1,6 +1,6 @@
-import { Kind } from "../language/kinds.js";
-import { visit } from "../language/visitor.js";
-import { TypeInfo, visitWithTypeInfo } from "../utilities/TypeInfo.js";
+import { Kind } from '../language/kinds.js';
+import { visit } from '../language/visitor.js';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -26,7 +26,7 @@ export class ASTValidationContext {
 
   getFragment(name) {
     if (!this._fragments) {
-      const fragments = this._fragments = Object.create(null);
+      const fragments = (this._fragments = Object.create(null));
 
       for (const defNode of this.getDocument().definitions) {
         if (defNode.kind === Kind.FRAGMENT_DEFINITION) {
@@ -94,7 +94,6 @@ export class ASTValidationContext {
 
     return fragments;
   }
-
 }
 export class SDLValidationContext extends ASTValidationContext {
   constructor(ast, schema, onError) {
@@ -105,7 +104,6 @@ export class SDLValidationContext extends ASTValidationContext {
   getSchema() {
     return this._schema;
   }
-
 }
 export class ValidationContext extends ASTValidationContext {
   constructor(schema, ast, typeInfo, onError) {
@@ -126,18 +124,20 @@ export class ValidationContext extends ASTValidationContext {
     if (!usages) {
       const newUsages = [];
       const typeInfo = new TypeInfo(this._schema);
-      visit(node, visitWithTypeInfo(typeInfo, {
-        VariableDefinition: () => false,
+      visit(
+        node,
+        visitWithTypeInfo(typeInfo, {
+          VariableDefinition: () => false,
 
-        Variable(variable) {
-          newUsages.push({
-            node: variable,
-            type: typeInfo.getInputType(),
-            defaultValue: typeInfo.getDefaultValue()
-          });
-        }
-
-      }));
+          Variable(variable) {
+            newUsages.push({
+              node: variable,
+              type: typeInfo.getInputType(),
+              defaultValue: typeInfo.getDefaultValue(),
+            });
+          },
+        }),
+      );
       usages = newUsages;
 
       this._variableUsages.set(node, usages);
@@ -193,5 +193,4 @@ export class ValidationContext extends ASTValidationContext {
   getEnumValue() {
     return this._typeInfo.getEnumValue();
   }
-
 }

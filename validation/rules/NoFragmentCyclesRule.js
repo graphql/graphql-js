@@ -1,4 +1,4 @@
-import { GraphQLError } from "../../error/GraphQLError.js";
+import { GraphQLError } from '../../error/GraphQLError.js';
 export function NoFragmentCyclesRule(context) {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
@@ -13,8 +13,7 @@ export function NoFragmentCyclesRule(context) {
     FragmentDefinition(node) {
       detectCycleRecursive(node);
       return false;
-    }
-
+    },
   }; // This does a straight-forward DFS to find cycles.
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
@@ -47,8 +46,17 @@ export function NoFragmentCyclesRule(context) {
         }
       } else {
         const cyclePath = spreadPath.slice(cycleIndex);
-        const viaPath = cyclePath.slice(0, -1).map(s => '"' + s.name.value + '"').join(', ');
-        context.reportError(new GraphQLError(`Cannot spread fragment "${spreadName}" within itself` + (viaPath !== '' ? ` via ${viaPath}.` : '.'), cyclePath));
+        const viaPath = cyclePath
+          .slice(0, -1)
+          .map((s) => '"' + s.name.value + '"')
+          .join(', ');
+        context.reportError(
+          new GraphQLError(
+            `Cannot spread fragment "${spreadName}" within itself` +
+              (viaPath !== '' ? ` via ${viaPath}.` : '.'),
+            cyclePath,
+          ),
+        );
       }
 
       spreadPath.pop();

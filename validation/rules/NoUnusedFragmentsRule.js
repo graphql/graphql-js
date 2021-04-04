@@ -1,4 +1,4 @@
-import { GraphQLError } from "../../error/GraphQLError.js";
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 /**
  * No unused fragments
@@ -25,7 +25,9 @@ export function NoUnusedFragmentsRule(context) {
         const fragmentNameUsed = Object.create(null);
 
         for (const operation of operationDefs) {
-          for (const fragment of context.getRecursivelyReferencedFragments(operation)) {
+          for (const fragment of context.getRecursivelyReferencedFragments(
+            operation,
+          )) {
             fragmentNameUsed[fragment.name.value] = true;
           }
         }
@@ -34,11 +36,15 @@ export function NoUnusedFragmentsRule(context) {
           const fragName = fragmentDef.name.value;
 
           if (fragmentNameUsed[fragName] !== true) {
-            context.reportError(new GraphQLError(`Fragment "${fragName}" is never used.`, fragmentDef));
+            context.reportError(
+              new GraphQLError(
+                `Fragment "${fragName}" is never used.`,
+                fragmentDef,
+              ),
+            );
           }
         }
-      }
-
-    }
+      },
+    },
   };
 }

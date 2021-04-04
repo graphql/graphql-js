@@ -1,5 +1,9 @@
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { isObjectType, isInterfaceType, isInputObjectType } from "../../type/definition.js";
+import { GraphQLError } from '../../error/GraphQLError.js';
+import {
+  isObjectType,
+  isInterfaceType,
+  isInputObjectType,
+} from '../../type/definition.js';
 
 /**
  * Unique field definition names
@@ -16,7 +20,7 @@ export function UniqueFieldDefinitionNamesRule(context) {
     InterfaceTypeDefinition: checkFieldUniqueness,
     InterfaceTypeExtension: checkFieldUniqueness,
     ObjectTypeDefinition: checkFieldUniqueness,
-    ObjectTypeExtension: checkFieldUniqueness
+    ObjectTypeExtension: checkFieldUniqueness,
   };
 
   function checkFieldUniqueness(node) {
@@ -26,7 +30,6 @@ export function UniqueFieldDefinitionNamesRule(context) {
       knownFieldNames[typeName] = Object.create(null);
     } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
 
-
     const fieldNodes = node.fields ?? [];
     const fieldNames = knownFieldNames[typeName];
 
@@ -34,9 +37,19 @@ export function UniqueFieldDefinitionNamesRule(context) {
       const fieldName = fieldDef.name.value;
 
       if (hasField(existingTypeMap[typeName], fieldName)) {
-        context.reportError(new GraphQLError(`Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`, fieldDef.name));
+        context.reportError(
+          new GraphQLError(
+            `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
+            fieldDef.name,
+          ),
+        );
       } else if (fieldNames[fieldName]) {
-        context.reportError(new GraphQLError(`Field "${typeName}.${fieldName}" can only be defined once.`, [fieldNames[fieldName], fieldDef.name]));
+        context.reportError(
+          new GraphQLError(
+            `Field "${typeName}.${fieldName}" can only be defined once.`,
+            [fieldNames[fieldName], fieldDef.name],
+          ),
+        );
       } else {
         fieldNames[fieldName] = fieldDef.name;
       }

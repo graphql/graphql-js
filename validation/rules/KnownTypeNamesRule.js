@@ -1,9 +1,13 @@
-import { didYouMean } from "../../jsutils/didYouMean.js";
-import { suggestionList } from "../../jsutils/suggestionList.js";
-import { GraphQLError } from "../../error/GraphQLError.js";
-import { isTypeDefinitionNode, isTypeSystemDefinitionNode, isTypeSystemExtensionNode } from "../../language/predicates.js";
-import { specifiedScalarTypes } from "../../type/scalars.js";
-import { introspectionTypes } from "../../type/introspection.js";
+import { didYouMean } from '../../jsutils/didYouMean.js';
+import { suggestionList } from '../../jsutils/suggestionList.js';
+import { GraphQLError } from '../../error/GraphQLError.js';
+import {
+  isTypeDefinitionNode,
+  isTypeSystemDefinitionNode,
+  isTypeSystemExtensionNode,
+} from '../../language/predicates.js';
+import { specifiedScalarTypes } from '../../type/scalars.js';
+import { introspectionTypes } from '../../type/introspection.js';
 
 /**
  * Known type names
@@ -22,7 +26,9 @@ export function KnownTypeNamesRule(context) {
     }
   }
 
-  const typeNames = Object.keys(existingTypesMap).concat(Object.keys(definedTypes));
+  const typeNames = Object.keys(existingTypesMap).concat(
+    Object.keys(definedTypes),
+  );
   return {
     NamedType(node, _1, parent, _2, ancestors) {
       const typeName = node.name.value;
@@ -35,15 +41,27 @@ export function KnownTypeNamesRule(context) {
           return;
         }
 
-        const suggestedTypes = suggestionList(typeName, isSDL ? standardTypeNames.concat(typeNames) : typeNames);
-        context.reportError(new GraphQLError(`Unknown type "${typeName}".` + didYouMean(suggestedTypes), node));
+        const suggestedTypes = suggestionList(
+          typeName,
+          isSDL ? standardTypeNames.concat(typeNames) : typeNames,
+        );
+        context.reportError(
+          new GraphQLError(
+            `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
+            node,
+          ),
+        );
       }
-    }
-
+    },
   };
 }
-const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(type => type.name);
+const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(
+  (type) => type.name,
+);
 
 function isSDLNode(value) {
-  return !Array.isArray(value) && (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value));
+  return (
+    !Array.isArray(value) &&
+    (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value))
+  );
 }
