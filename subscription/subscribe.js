@@ -197,11 +197,8 @@ async function executeSubscription(exeContext) {
     Object.create(null),
     Object.create(null),
   );
-  const responseNames = Object.keys(fields);
-  const responseName = responseNames[0];
-  const fieldNodes = fields[responseName];
-  const fieldNode = fieldNodes[0];
-  const fieldName = fieldNode.name.value;
+  const [responseName, fieldNodes] = Object.entries(fields)[0];
+  const fieldName = fieldNodes[0].name.value;
   const fieldDef = (0, _execute.getFieldDef)(schema, type, fieldName);
 
   if (!fieldDef) {
