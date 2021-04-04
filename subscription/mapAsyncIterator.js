@@ -19,12 +19,14 @@ export function mapAsyncIterator(iterable, callback) {
     throw error;
   }
 
-  async function mapResult(result) {
-    if (result.done) {
-      return result;
-    }
-
+  async function mapResult(resultPromise) {
     try {
+      const result = await resultPromise;
+
+      if (result.done) {
+        return result;
+      }
+
       return {
         value: await callback(result.value),
         done: false,
@@ -38,12 +40,12 @@ export function mapAsyncIterator(iterable, callback) {
 
   return {
     next() {
-      return iterator.next().then(mapResult, abruptClose);
+      return mapResult(iterator.next());
     },
 
     return() {
       return typeof iterator.return === 'function'
-        ? iterator.return().then(mapResult, abruptClose)
+        ? mapResult(iterator.return())
         : Promise.resolve({
             value: undefined,
             done: true,
@@ -52,7 +54,7 @@ export function mapAsyncIterator(iterable, callback) {
 
     throw(error) {
       if (typeof iterator.throw === 'function') {
-        return iterator.throw(error).then(mapResult, abruptClose);
+        return mapResult(iterator.throw(error));
       }
 
       return Promise.reject(error).catch(abruptClose);
