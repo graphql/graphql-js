@@ -52,7 +52,7 @@
     "@typescript-eslint/eslint-plugin": "4.20.0",
     "@typescript-eslint/parser": "4.20.0",
     "chai": "4.3.4",
-    "cspell": "5.3.10",
+    "cspell": "5.3.11",
     "eslint": "7.23.0",
     "eslint-plugin-flowtype": "5.4.0",
     "eslint-plugin-import": "2.22.1",
