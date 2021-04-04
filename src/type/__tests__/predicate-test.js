@@ -559,7 +559,7 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredArgument', () => {
-    function buildArg(config: $Shape<GraphQLArgument>) {
+    function buildArg(config: $Shape<GraphQLArgument>): GraphQLArgument {
       return {
         name: 'someArg',
         description: undefined,
@@ -604,7 +604,9 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredInputField', () => {
-    function buildInputField(config: $Shape<GraphQLInputField>) {
+    function buildInputField(
+      config: $Shape<GraphQLInputField>,
+    ): GraphQLInputField {
       return {
         name: 'someInputField',
         description: undefined,
