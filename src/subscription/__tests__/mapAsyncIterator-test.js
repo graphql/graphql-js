@@ -269,35 +269,6 @@ describe('mapAsyncIterator', () => {
       .with.property('message', 'Goodbye');
   });
 
-  it('maps over thrown errors if second callback provided', async () => {
-    async function* source() {
-      yield 'Hello';
-      throw new Error('Goodbye');
-    }
-
-    const doubles = mapAsyncIterator(
-      source(),
-      (x) => x + x,
-      (error) => error,
-    );
-
-    expect(await doubles.next()).to.deep.equal({
-      value: 'HelloHello',
-      done: false,
-    });
-
-    const result = await doubles.next();
-    expect(result.value)
-      .to.be.an.instanceOf(Error)
-      .with.property('message', 'Goodbye');
-    expect(result.done).to.equal(false);
-
-    expect(await doubles.next()).to.deep.equal({
-      value: undefined,
-      done: true,
-    });
-  });
-
   async function testClosesSourceWithMapper<T>(mapper: (number) => T) {
     let didVisitFinally = false;
 
@@ -352,38 +323,5 @@ describe('mapAsyncIterator', () => {
         ? Promise.reject(new Error('Cannot count to ' + x))
         : Promise.resolve(x),
     );
-  });
-
-  it('closes source if mapper throws an error', async () => {
-    async function* source() {
-      yield 1;
-      throw new Error(2);
-    }
-
-    const throwOver1 = mapAsyncIterator(
-      source(),
-      (x) => x,
-      (error) => {
-        throw new Error('Cannot count to ' + error.message);
-      },
-    );
-
-    expect(await throwOver1.next()).to.deep.equal({ value: 1, done: false });
-
-    let expectedError;
-    try {
-      await throwOver1.next();
-    } catch (error) {
-      expectedError = error;
-    }
-
-    expect(expectedError)
-      .to.be.an.instanceOf(Error)
-      .with.property('message', 'Cannot count to 2');
-
-    expect(await throwOver1.next()).to.deep.equal({
-      value: undefined,
-      done: true,
-    });
   });
 });

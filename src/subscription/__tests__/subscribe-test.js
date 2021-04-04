@@ -9,8 +9,6 @@ import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 import type { DocumentNode } from '../../language/ast';
 import { parse } from '../../language/parser';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
@@ -1027,64 +1025,6 @@ describe('Subscription Publish Phase', () => {
 
     const payload2 = await subscription.next();
     expect(payload2).to.deep.equal({
-      done: true,
-      value: undefined,
-    });
-  });
-
-  it('should resolve GraphQL error from source event stream', async () => {
-    async function* generateEmails() {
-      yield { email: { subject: 'Hello' } };
-      throw new GraphQLError('test error');
-    }
-
-    const erroringEmailSchema = emailSchemaWithResolvers(
-      generateEmails,
-      (email) => email,
-    );
-
-    const subscription = await subscribe({
-      schema: erroringEmailSchema,
-      document: parse(`
-        subscription {
-          importantEmail {
-            email {
-              subject
-            }
-          }
-        }
-      `),
-    });
-    invariant(isAsyncIterable(subscription));
-
-    const payload1 = await subscription.next();
-    expect(payload1).to.deep.equal({
-      done: false,
-      value: {
-        data: {
-          importantEmail: {
-            email: {
-              subject: 'Hello',
-            },
-          },
-        },
-      },
-    });
-
-    const payload2 = await subscription.next();
-    expect(payload2).to.deep.equal({
-      done: false,
-      value: {
-        errors: [
-          {
-            message: 'test error',
-          },
-        ],
-      },
-    });
-
-    const payload3 = await subscription.next();
-    expect(payload3).to.deep.equal({
       done: true,
       value: undefined,
     });
