@@ -505,10 +505,9 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (const responseName of Object.keys(fieldMap1)) {
+  for (const [responseName, fields1] of Object.entries(fieldMap1)) {
     const fields2 = fieldMap2[responseName];
     if (fields2) {
-      const fields1 = fieldMap1[responseName];
       for (let i = 0; i < fields1.length; i++) {
         for (let j = 0; j < fields2.length; j++) {
           const conflict = findConflict(

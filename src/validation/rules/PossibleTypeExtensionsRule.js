@@ -72,10 +72,10 @@ export function PossibleTypeExtensionsRule(
         );
       }
     } else {
-      let allTypeNames = Object.keys(definedTypes);
-      if (schema) {
-        allTypeNames = allTypeNames.concat(Object.keys(schema.getTypeMap()));
-      }
+      const allTypeNames = Object.keys({
+        ...definedTypes,
+        ...schema?.getTypeMap(),
+      });
 
       const suggestedTypes = suggestionList(typeName, allTypeNames);
       context.reportError(
