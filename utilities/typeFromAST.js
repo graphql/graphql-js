@@ -33,7 +33,7 @@ function typeFromAST(schema, typeNode) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected type node: ' + (0, _inspect.inspect)(typeNode),
     );
 }

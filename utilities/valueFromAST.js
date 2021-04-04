@@ -169,7 +169,7 @@ function valueFromAST(valueNode, type, variables) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected input type: ' + (0, _inspect.inspect)(type),
     );
 } // Returns true if the provided valueNode is a variable which is not defined

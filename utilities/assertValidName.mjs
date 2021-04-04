@@ -19,7 +19,7 @@ export function assertValidName(name) {
  */
 
 export function isValidNameError(name) {
-  typeof name === 'string' || devAssert(0, 'Expected name to be a string.');
+  typeof name === 'string' || devAssert(false, 'Expected name to be a string.');
 
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new GraphQLError(

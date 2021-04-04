@@ -127,7 +127,7 @@ function typeToExtKind(type) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected type: ' + (0, _inspect.inspect)(type),
     );
 }
@@ -155,7 +155,7 @@ function extensionKindToTypeName(kind) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected kind: ' + (0, _inspect.inspect)(kind),
     );
 }

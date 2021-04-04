@@ -176,7 +176,7 @@ function astFromValue(value, type) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected input type: ' + (0, _inspect.inspect)(type),
     );
 }

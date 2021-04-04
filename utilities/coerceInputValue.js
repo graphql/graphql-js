@@ -183,7 +183,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected input type: ' + (0, _inspect.inspect)(type),
     );
 }

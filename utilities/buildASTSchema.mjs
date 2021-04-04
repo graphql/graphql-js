@@ -18,7 +18,7 @@ import { extendSchemaImpl } from './extendSchema.mjs';
  */
 export function buildASTSchema(documentAST, options) {
   (documentAST != null && documentAST.kind === Kind.DOCUMENT) ||
-    devAssert(0, 'Must provide valid Document AST.');
+    devAssert(false, 'Must provide valid Document AST.');
 
   if (
     (options === null || options === void 0 ? void 0 : options.assumeValid) !==

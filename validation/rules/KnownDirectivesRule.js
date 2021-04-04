@@ -70,7 +70,7 @@ function KnownDirectivesRule(context) {
 
 function getDirectiveLocationForASTPath(ancestors) {
   const appliedTo = ancestors[ancestors.length - 1];
-  !Array.isArray(appliedTo) || (0, _invariant.invariant)(0);
+  !Array.isArray(appliedTo) || (0, _invariant.invariant)(false);
 
   switch (appliedTo.kind) {
     case _kinds.Kind.OPERATION_DEFINITION:
@@ -148,7 +148,7 @@ function getDirectiveLocationForOperation(operation) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected operation: ' + (0, _inspect.inspect)(operation),
     );
 }

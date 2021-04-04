@@ -37,6 +37,6 @@ function introspectionFromSchema(schema, options) {
     schema,
     document,
   });
-  (!result.errors && result.data) || (0, _invariant.invariant)(0);
+  (!result.errors && result.data) || (0, _invariant.invariant)(false);
   return result.data;
 }

@@ -14,7 +14,8 @@ var _devAssert = require('../jsutils/devAssert.js');
 function formatError(error) {
   var _error$message;
 
-  error || (0, _devAssert.devAssert)(0, 'Received null or undefined error.');
+  error ||
+    (0, _devAssert.devAssert)(false, 'Received null or undefined error.');
   const message =
     (_error$message = error.message) !== null && _error$message !== void 0
       ? _error$message

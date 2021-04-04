@@ -42,16 +42,16 @@ export class GraphQLDirective {
         : false;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    config.name || devAssert(0, 'Directive must be named.');
+    config.name || devAssert(false, 'Directive must be named.');
     Array.isArray(config.locations) ||
-      devAssert(0, `@${config.name} locations must be an Array.`);
+      devAssert(false, `@${config.name} locations must be an Array.`);
     const args =
       (_config$args = config.args) !== null && _config$args !== void 0
         ? _config$args
         : {};
     (isObjectLike(args) && !Array.isArray(args)) ||
       devAssert(
-        0,
+        false,
         `@${config.name} args must be an object with argument names as keys.`,
       );
     this.args = Object.entries(args).map(([argName, argConfig]) => ({

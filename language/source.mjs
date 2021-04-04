@@ -19,15 +19,18 @@ export class Source {
     },
   ) {
     typeof body === 'string' ||
-      devAssert(0, `Body must be a string. Received: ${inspect(body)}.`);
+      devAssert(false, `Body must be a string. Received: ${inspect(body)}.`);
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
     this.locationOffset.line > 0 ||
-      devAssert(0, 'line in locationOffset is 1-indexed and must be positive.');
+      devAssert(
+        false,
+        'line in locationOffset is 1-indexed and must be positive.',
+      );
     this.locationOffset.column > 0 ||
       devAssert(
-        0,
+        false,
         'column in locationOffset is 1-indexed and must be positive.',
       );
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet

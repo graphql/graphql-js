@@ -148,7 +148,7 @@ function printType(type) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected type: ' + (0, _inspect.inspect)(type),
     );
 }
@@ -306,7 +306,7 @@ function printSpecifiedByUrl(scalar) {
   const urlAST = (0, _astFromValue.astFromValue)(url, _scalars.GraphQLString);
   urlAST ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected null value returned from `astFromValue` for specifiedByUrl',
     );
   return ' @specifiedBy(url: ' + (0, _printer.print)(urlAST) + ')';

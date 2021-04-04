@@ -7,7 +7,7 @@ import { devAssert } from '../jsutils/devAssert.mjs';
 export function formatError(error) {
   var _error$message;
 
-  error || devAssert(0, 'Received null or undefined error.');
+  error || devAssert(false, 'Received null or undefined error.');
   const message =
     (_error$message = error.message) !== null && _error$message !== void 0
       ? _error$message

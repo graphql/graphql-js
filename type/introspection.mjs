@@ -217,7 +217,7 @@ export const __Type = new GraphQLObjectType({
           return TypeKind.NON_NULL;
         } // istanbul ignore next (Not reachable. All possible types have been considered)
 
-        false || invariant(0, `Unexpected type: "${inspect(type)}".`);
+        false || invariant(false, `Unexpected type: "${inspect(type)}".`);
       },
     },
     name: {

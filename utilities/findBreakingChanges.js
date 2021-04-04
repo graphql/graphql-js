@@ -488,14 +488,14 @@ function typeKindName(type) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected type: ' + (0, _inspect.inspect)(type),
     );
 }
 
 function stringifyValue(value, type) {
   const ast = (0, _astFromValue.astFromValue)(value, type);
-  ast != null || (0, _invariant.invariant)(0);
+  ast != null || (0, _invariant.invariant)(false);
   const sortedAST = (0, _visitor.visit)(ast, {
     ObjectValue(objectNode) {
       // Make a copy since sort mutates array

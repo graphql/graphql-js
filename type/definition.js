@@ -341,7 +341,7 @@ class GraphQLList {
   constructor(ofType) {
     isType(ofType) ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `Expected ${(0, _inspect.inspect)(ofType)} to be a GraphQL type.`,
       );
     this.ofType = ofType;
@@ -386,7 +386,7 @@ class GraphQLNonNull {
   constructor(ofType) {
     isNullableType(ofType) ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `Expected ${(0, _inspect.inspect)(
           ofType,
         )} to be a GraphQL nullable type.`,
@@ -563,18 +563,18 @@ class GraphQLScalarType {
         ? _config$extensionASTN
         : [];
     typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(0, 'Must provide name.');
+      (0, _devAssert.devAssert)(false, 'Must provide name.');
     config.specifiedByUrl == null ||
       typeof config.specifiedByUrl === 'string' ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${this.name} must provide "specifiedByUrl" as a string, ` +
           `but got: ${(0, _inspect.inspect)(config.specifiedByUrl)}.`,
       );
     config.serialize == null ||
       typeof config.serialize === 'function' ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${this.name} must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.`,
       );
 
@@ -582,7 +582,7 @@ class GraphQLScalarType {
       (typeof config.parseValue === 'function' &&
         typeof config.parseLiteral === 'function') ||
         (0, _devAssert.devAssert)(
-          0,
+          false,
           `${this.name} must provide both "parseValue" and "parseLiteral" functions.`,
         );
     }
@@ -672,11 +672,11 @@ class GraphQLObjectType {
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
     typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(0, 'Must provide name.');
+      (0, _devAssert.devAssert)(false, 'Must provide name.');
     config.isTypeOf == null ||
       typeof config.isTypeOf === 'function' ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${this.name} must provide "isTypeOf" as a function, ` +
           `but got: ${(0, _inspect.inspect)(config.isTypeOf)}.`,
       );
@@ -737,7 +737,7 @@ function defineInterfaces(config) {
   );
   Array.isArray(interfaces) ||
     (0, _devAssert.devAssert)(
-      0,
+      false,
       `${config.name} interfaces must be an Array or a function which returns an Array.`,
     );
   return interfaces;
@@ -747,7 +747,7 @@ function defineFieldMap(config) {
   const fieldMap = resolveObjMapThunk(config.fields);
   isPlainObj(fieldMap) ||
     (0, _devAssert.devAssert)(
-      0,
+      false,
       `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
     );
   return (0, _mapValue.mapValue)(fieldMap, (fieldConfig, fieldName) => {
@@ -755,13 +755,13 @@ function defineFieldMap(config) {
 
     isPlainObj(fieldConfig) ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${config.name}.${fieldName} field config must be an object.`,
       );
     fieldConfig.resolve == null ||
       typeof fieldConfig.resolve === 'function' ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${config.name}.${fieldName} field resolver must be a function if ` +
           `provided, but got: ${(0, _inspect.inspect)(fieldConfig.resolve)}.`,
       );
@@ -772,7 +772,7 @@ function defineFieldMap(config) {
         : {};
     isPlainObj(argsConfig) ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${config.name}.${fieldName} args must be an object with argument names as keys.`,
       );
     const args = Object.entries(argsConfig).map(([argName, argConfig]) => ({
@@ -876,11 +876,11 @@ class GraphQLInterfaceType {
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
     typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(0, 'Must provide name.');
+      (0, _devAssert.devAssert)(false, 'Must provide name.');
     config.resolveType == null ||
       typeof config.resolveType === 'function' ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${this.name} must provide "resolveType" as a function, ` +
           `but got: ${(0, _inspect.inspect)(config.resolveType)}.`,
       );
@@ -970,11 +970,11 @@ class GraphQLUnionType {
         : [];
     this._types = defineTypes.bind(undefined, config);
     typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(0, 'Must provide name.');
+      (0, _devAssert.devAssert)(false, 'Must provide name.');
     config.resolveType == null ||
       typeof config.resolveType === 'function' ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${this.name} must provide "resolveType" as a function, ` +
           `but got: ${(0, _inspect.inspect)(config.resolveType)}.`,
       );
@@ -1019,7 +1019,7 @@ function defineTypes(config) {
   const types = resolveArrayThunk(config.types);
   Array.isArray(types) ||
     (0, _devAssert.devAssert)(
-      0,
+      false,
       `Must provide Array of types or a function which returns such an array for Union ${config.name}.`,
     );
   return types;
@@ -1067,7 +1067,7 @@ class GraphQLEnumType {
     );
     this._nameLookup = (0, _keyMap.keyMap)(this._values, (value) => value.name);
     typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(0, 'Must provide name.');
+      (0, _devAssert.devAssert)(false, 'Must provide name.');
   }
 
   getValues() {
@@ -1189,13 +1189,13 @@ function didYouMeanEnumValue(enumType, unknownValueStr) {
 function defineEnumValues(typeName, valueMap) {
   isPlainObj(valueMap) ||
     (0, _devAssert.devAssert)(
-      0,
+      false,
       `${typeName} values must be an object with value names as keys.`,
     );
   return Object.entries(valueMap).map(([valueName, valueConfig]) => {
     isPlainObj(valueConfig) ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${typeName}.${valueName} must refer to an object with a "value" key ` +
           `representing an internal value but got: ${(0, _inspect.inspect)(
             valueConfig,
@@ -1250,7 +1250,7 @@ class GraphQLInputObjectType {
         : [];
     this._fields = defineInputFieldMap.bind(undefined, config);
     typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(0, 'Must provide name.');
+      (0, _devAssert.devAssert)(false, 'Must provide name.');
   }
 
   getFields() {
@@ -1298,13 +1298,13 @@ function defineInputFieldMap(config) {
   const fieldMap = resolveObjMapThunk(config.fields);
   isPlainObj(fieldMap) ||
     (0, _devAssert.devAssert)(
-      0,
+      false,
       `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
     );
   return (0, _mapValue.mapValue)(fieldMap, (fieldConfig, fieldName) => {
     !('resolve' in fieldConfig) ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
       );
     return {

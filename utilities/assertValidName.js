@@ -30,7 +30,7 @@ function assertValidName(name) {
 
 function isValidNameError(name) {
   typeof name === 'string' ||
-    (0, _devAssert.devAssert)(0, 'Expected name to be a string.');
+    (0, _devAssert.devAssert)(false, 'Expected name to be a string.');
 
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new _GraphQLError.GraphQLError(

@@ -130,7 +130,7 @@ export function printType(type) {
     return printInputObject(type);
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
-  false || invariant(0, 'Unexpected type: ' + inspect(type));
+  false || invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
 function printScalar(type) {
@@ -280,7 +280,7 @@ function printSpecifiedByUrl(scalar) {
   const urlAST = astFromValue(url, GraphQLString);
   urlAST ||
     invariant(
-      0,
+      false,
       'Unexpected null value returned from `astFromValue` for specifiedByUrl',
     );
   return ' @specifiedBy(url: ' + print(urlAST) + ')';

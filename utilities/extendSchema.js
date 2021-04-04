@@ -51,7 +51,7 @@ var _valueFromAST = require('./valueFromAST.js');
 function extendSchema(schema, documentAST, options) {
   (0, _schema.assertSchema)(schema);
   (documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT) ||
-    (0, _devAssert.devAssert)(0, 'Must provide valid Document AST.');
+    (0, _devAssert.devAssert)(false, 'Must provide valid Document AST.');
 
   if (
     (options === null || options === void 0 ? void 0 : options.assumeValid) !==
@@ -237,7 +237,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     false ||
       (0, _invariant.invariant)(
-        0,
+        false,
         'Unexpected type: ' + (0, _inspect.inspect)(type),
       );
   }
@@ -761,7 +761,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     false ||
       (0, _invariant.invariant)(
-        0,
+        false,
         'Unexpected type definition node: ' + (0, _inspect.inspect)(astNode),
       );
   }

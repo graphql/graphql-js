@@ -65,7 +65,7 @@ function valueFromASTUntyped(valueNode, variables) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Unexpected value node: ' + (0, _inspect.inspect)(valueNode),
     );
 }

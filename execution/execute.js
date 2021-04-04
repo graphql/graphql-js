@@ -145,14 +145,14 @@ function buildResponse(exeContext, data) {
  */
 
 function assertValidExecutionArguments(schema, document, rawVariableValues) {
-  document || (0, _devAssert.devAssert)(0, 'Must provide document.'); // If the schema used for execution is invalid, throw an error.
+  document || (0, _devAssert.devAssert)(false, 'Must provide document.'); // If the schema used for execution is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema); // Variables, if provided, must be an object.
 
   rawVariableValues == null ||
     (0, _isObjectLike.isObjectLike)(rawVariableValues) ||
     (0, _devAssert.devAssert)(
-      0,
+      false,
       'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
     );
 }
@@ -740,7 +740,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
   false ||
     (0, _invariant.invariant)(
-      0,
+      false,
       'Cannot complete value of unexpected output type: ' +
         (0, _inspect.inspect)(returnType),
     );

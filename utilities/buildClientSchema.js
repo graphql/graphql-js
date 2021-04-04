@@ -43,7 +43,7 @@ function buildClientSchema(introspection, options) {
   ((0, _isObjectLike.isObjectLike)(introspection) &&
     (0, _isObjectLike.isObjectLike)(introspection.__schema)) ||
     (0, _devAssert.devAssert)(
-      0,
+      false,
       `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${(0,
       _inspect.inspect)(introspection)}.`,
     ); // Get the schema from the introspection result.

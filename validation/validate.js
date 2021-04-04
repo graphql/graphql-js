@@ -47,7 +47,7 @@ function validate(
   }, // @deprecate will be removed in 17.0.0
   typeInfo = new _TypeInfo.TypeInfo(schema),
 ) {
-  documentAST || (0, _devAssert.devAssert)(0, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
+  documentAST || (0, _devAssert.devAssert)(false, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);
   const abortObj = Object.freeze({});

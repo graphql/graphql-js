@@ -159,14 +159,14 @@ export function assertValidExecutionArguments(
   document,
   rawVariableValues,
 ) {
-  document || devAssert(0, 'Must provide document.'); // If the schema used for execution is invalid, throw an error.
+  document || devAssert(false, 'Must provide document.'); // If the schema used for execution is invalid, throw an error.
 
   assertValidSchema(schema); // Variables, if provided, must be an object.
 
   rawVariableValues == null ||
     isObjectLike(rawVariableValues) ||
     devAssert(
-      0,
+      false,
       'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
     );
 }
@@ -742,7 +742,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
   false ||
     invariant(
-      0,
+      false,
       'Cannot complete value of unexpected output type: ' + inspect(returnType),
     );
 }

@@ -58,10 +58,10 @@ class GraphQLDirective {
     this.extensions =
       config.extensions && (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
-    config.name || (0, _devAssert.devAssert)(0, 'Directive must be named.');
+    config.name || (0, _devAssert.devAssert)(false, 'Directive must be named.');
     Array.isArray(config.locations) ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `@${config.name} locations must be an Array.`,
       );
     const args =
@@ -70,7 +70,7 @@ class GraphQLDirective {
         : {};
     ((0, _isObjectLike.isObjectLike)(args) && !Array.isArray(args)) ||
       (0, _devAssert.devAssert)(
-        0,
+        false,
         `@${config.name} args must be an object with argument names as keys.`,
       );
     this.args = Object.entries(args).map(([argName, argConfig]) => ({

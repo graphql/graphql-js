@@ -237,7 +237,7 @@ const __Type = new _definition.GraphQLObjectType({
 
         false ||
           (0, _invariant.invariant)(
-            0,
+            false,
             `Unexpected type: "${(0, _inspect.inspect)(type)}".`,
           );
       },

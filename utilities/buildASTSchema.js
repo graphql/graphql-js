@@ -32,7 +32,7 @@ var _extendSchema = require('./extendSchema.js');
  */
 function buildASTSchema(documentAST, options) {
   (documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT) ||
-    (0, _devAssert.devAssert)(0, 'Must provide valid Document AST.');
+    (0, _devAssert.devAssert)(false, 'Must provide valid Document AST.');
 
   if (
     (options === null || options === void 0 ? void 0 : options.assumeValid) !==

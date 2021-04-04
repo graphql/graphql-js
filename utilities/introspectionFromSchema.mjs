@@ -25,6 +25,6 @@ export function introspectionFromSchema(schema, options) {
     schema,
     document,
   });
-  (!result.errors && result.data) || invariant(0);
+  (!result.errors && result.data) || invariant(false);
   return result.data;
 }
