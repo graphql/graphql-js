@@ -128,7 +128,7 @@ declare class Object {
      * Returns an array of key/values of the enumerable properties of an object
      * @param object Object that contains the properties and methods. This can be an object that you created or an existing Document Object Model (DOM) object.
      */
-    static entries<T>(obj: { [key: string]: T, __proto__: null }): Array<[string, T]>; // graphql-js HACK
+    static entries<T>(obj: { +[key: string]: T, __proto__: null }): Array<[string, T]>; // graphql-js HACK
     static entries(object: $NotNullOrVoid): Array<[string, mixed]>;
     /**
      * Prevents the modification of existing property attributes and values, and prevents the addition of new properties.
@@ -220,7 +220,7 @@ declare class Object {
      * Returns an array of values of the enumerable properties of an object
      * @param object Object that contains the properties and methods. This can be an object that you created or an existing Document Object Model (DOM) object.
      */
-    static values<T>(obj: { [key: string]: T, __proto__: null }): Array<T>; // graphql-js HACK
+    static values<T>(obj: { +[key: string]: T, __proto__: null }): Array<T>; // graphql-js HACK
     static values(object: $NotNullOrVoid): Array<mixed>;
     /**
      * Determines whether an object has a property with the specified name.

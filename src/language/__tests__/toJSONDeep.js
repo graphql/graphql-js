@@ -1,3 +1,4 @@
+import { mapValue } from '../../jsutils/mapValue';
 import { isObjectLike } from '../../jsutils/isObjectLike';
 
 /**
@@ -18,9 +19,5 @@ export function toJSONDeep(value: mixed): mixed {
     return value.map(toJSONDeep);
   }
 
-  const result = Object.create(null);
-  for (const prop of Object.keys(value)) {
-    result[prop] = toJSONDeep(value[prop]);
-  }
-  return result;
+  return mapValue(value, toJSONDeep);
 }

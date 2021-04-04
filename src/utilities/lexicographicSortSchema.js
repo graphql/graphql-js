@@ -139,7 +139,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       const config = type.toConfig();
       return new GraphQLEnumType({
         ...config,
-        values: sortObjMap(config.values),
+        values: sortObjMap(config.values, (value) => value),
       });
     }
     // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
@@ -156,12 +156,11 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 }
 
-function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn?: (T) => R): ObjMap<R> {
+function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn: (T) => R): ObjMap<R> {
   const sortedMap = Object.create(null);
-  const sortedKeys = sortBy(Object.keys(map), (x) => x);
-  for (const key of sortedKeys) {
-    const value = map[key];
-    sortedMap[key] = sortValueFn ? sortValueFn(value) : value;
+  const sortedEntries = sortBy(Object.entries(map), ([key]) => key);
+  for (const [key, value] of sortedEntries) {
+    sortedMap[key] = sortValueFn(value);
   }
   return sortedMap;
 }
