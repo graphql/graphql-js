@@ -7,9 +7,6 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 export function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T> | AsyncGenerator<T, void, void>,
   callback: (T) => PromiseOrValue<U>,
-  rejectCallback: (any) => U = (error) => {
-    throw error;
-  },
 ): AsyncGenerator<U, void, void> {
   // $FlowFixMe[prop-missing]
   const iteratorMethod = iterable[Symbol.asyncIterator];
@@ -38,28 +35,20 @@ export function mapAsyncIterator<T, U>(
     }
   }
 
-  function mapReject(error: mixed) {
-    try {
-      return { value: rejectCallback(error), done: false };
-    } catch (callbackError) {
-      return abruptClose(callbackError);
-    }
-  }
-
   /* TODO: Flow doesn't support symbols as keys:
      https://github.com/facebook/flow/issues/3258 */
   return ({
     next(): Promise<IteratorResult<U, void>> {
-      return iterator.next().then(mapResult, mapReject);
+      return iterator.next().then(mapResult, abruptClose);
     },
     return() {
       return typeof iterator.return === 'function'
-        ? iterator.return().then(mapResult, mapReject)
+        ? iterator.return().then(mapResult, abruptClose)
         : Promise.resolve({ value: undefined, done: true });
     },
     throw(error?: mixed): Promise<IteratorResult<U, void>> {
       if (typeof iterator.throw === 'function') {
-        return iterator.throw(error).then(mapResult, mapReject);
+        return iterator.throw(error).then(mapResult, abruptClose);
       }
       return Promise.reject(error).catch(abruptClose);
     },

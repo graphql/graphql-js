@@ -104,12 +104,7 @@ export async function subscribe(
     });
 
   // Map every source value to a ExecutionResult value as described above.
-  return mapAsyncIterator(resultOrStream, mapSourceToResponse, (error) => {
-    if (error instanceof GraphQLError) {
-      return { errors: [error] };
-    }
-    throw error;
-  });
+  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
 }
 
 /**
