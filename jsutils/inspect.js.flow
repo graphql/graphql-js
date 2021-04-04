@@ -56,8 +56,8 @@ function formatObjectValue(
 }
 
 function formatObject(object: Object, seenValues: Array<mixed>): string {
-  const keys = Object.keys(object);
-  if (keys.length === 0) {
+  const entries = Object.entries(object);
+  if (entries.length === 0) {
     return '{}';
   }
 
@@ -65,11 +65,9 @@ function formatObject(object: Object, seenValues: Array<mixed>): string {
     return '[' + getObjectTag(object) + ']';
   }
 
-  const properties = keys.map((key) => {
-    const value = formatValue(object[key], seenValues);
-    return key + ': ' + value;
-  });
-
+  const properties = entries.map(
+    ([key, value]) => key + ': ' + formatValue(value, seenValues),
+  );
   return '{ ' + properties.join(', ') + ' }';
 }
 

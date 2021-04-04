@@ -69,12 +69,12 @@ function PossibleTypeExtensionsRule(context) {
         );
       }
     } else {
-      let allTypeNames = Object.keys(definedTypes);
-
-      if (schema) {
-        allTypeNames = allTypeNames.concat(Object.keys(schema.getTypeMap()));
-      }
-
+      const allTypeNames = Object.keys({
+        ...definedTypes,
+        ...(schema === null || schema === void 0
+          ? void 0
+          : schema.getTypeMap()),
+      });
       const suggestedTypes = (0, _suggestionList.suggestionList)(
         typeName,
         allTypeNames,

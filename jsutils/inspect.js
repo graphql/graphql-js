@@ -59,9 +59,9 @@ function formatObjectValue(value, previouslySeenValues) {
 }
 
 function formatObject(object, seenValues) {
-  const keys = Object.keys(object);
+  const entries = Object.entries(object);
 
-  if (keys.length === 0) {
+  if (entries.length === 0) {
     return '{}';
   }
 
@@ -69,10 +69,9 @@ function formatObject(object, seenValues) {
     return '[' + getObjectTag(object) + ']';
   }
 
-  const properties = keys.map((key) => {
-    const value = formatValue(object[key], seenValues);
-    return key + ': ' + value;
-  });
+  const properties = entries.map(
+    ([key, value]) => key + ': ' + formatValue(value, seenValues),
+  );
   return '{ ' + properties.join(', ') + ' }';
 }
 

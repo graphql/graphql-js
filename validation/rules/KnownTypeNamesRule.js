@@ -34,9 +34,10 @@ function KnownTypeNamesRule(context) {
     }
   }
 
-  const typeNames = Object.keys(existingTypesMap).concat(
-    Object.keys(definedTypes),
-  );
+  const typeNames = [
+    ...Object.keys(existingTypesMap),
+    ...Object.keys(definedTypes),
+  ];
   return {
     NamedType(node, _1, parent, _2, ancestors) {
       const typeName = node.name.value;

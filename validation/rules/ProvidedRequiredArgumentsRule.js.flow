@@ -38,12 +38,12 @@ export function ProvidedRequiredArgumentsRule(
           return false;
         }
 
-        // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-        const argNodes = fieldNode.arguments ?? [];
-        const argNodeMap = keyMap(argNodes, (arg) => arg.name.value);
+        const providedArgs = new Set(
+          // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+          fieldNode.arguments?.map((arg) => arg.name.value),
+        );
         for (const argDef of fieldDef.args) {
-          const argNode = argNodeMap[argDef.name];
-          if (!argNode && isRequiredArgument(argDef)) {
+          if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
             const argTypeStr = inspect(argDef.type);
             context.reportError(
               new GraphQLError(
@@ -67,9 +67,7 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
   const requiredArgsMap = Object.create(null);
 
   const schema = context.getSchema();
-  const definedDirectives = schema
-    ? schema.getDirectives()
-    : specifiedDirectives;
+  const definedDirectives = schema?.getDirectives() ?? specifiedDirectives;
   for (const directive of definedDirectives) {
     requiredArgsMap[directive.name] = keyMap(
       directive.args.filter(isRequiredArgument),
@@ -99,17 +97,15 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
         if (requiredArgs) {
           // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
           const argNodes = directiveNode.arguments ?? [];
-          const argNodeMap = keyMap(argNodes, (arg) => arg.name.value);
-          for (const argName of Object.keys(requiredArgs)) {
-            if (!argNodeMap[argName]) {
-              const argType = requiredArgs[argName].type;
-              const argTypeStr = isType(argType)
-                ? inspect(argType)
-                : print(argType);
-
+          const argNodeMap = new Set(argNodes.map((arg) => arg.name.value));
+          for (const [argName, argDef] of Object.entries(requiredArgs)) {
+            if (!argNodeMap.has(argName)) {
+              const argType = isType(argDef.type)
+                ? inspect(argDef.type)
+                : print(argDef.type);
               context.reportError(
                 new GraphQLError(
-                  `Directive "@${directiveName}" argument "${argName}" of type "${argTypeStr}" is required, but it was not provided.`,
+                  `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
                   directiveNode,
                 ),
               );
