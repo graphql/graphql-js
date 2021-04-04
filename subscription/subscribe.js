@@ -90,15 +90,6 @@ async function subscribe(args) {
   return (0, _mapAsyncIterator.mapAsyncIterator)(
     resultOrStream,
     mapSourceToResponse,
-    (error) => {
-      if (error instanceof _GraphQLError.GraphQLError) {
-        return {
-          errors: [error],
-        };
-      }
-
-      throw error;
-    },
   );
 }
 /**

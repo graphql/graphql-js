@@ -78,15 +78,7 @@ export async function subscribe(args) {
       fieldResolver,
     }); // Map every source value to a ExecutionResult value as described above.
 
-  return mapAsyncIterator(resultOrStream, mapSourceToResponse, (error) => {
-    if (error instanceof GraphQLError) {
-      return {
-        errors: [error],
-      };
-    }
-
-    throw error;
-  });
+  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
 }
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
