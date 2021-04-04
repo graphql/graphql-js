@@ -59,7 +59,7 @@ import { valueFromAST } from './valueFromAST.js';
 export function extendSchema(schema, documentAST, options) {
   assertSchema(schema);
   (documentAST != null && documentAST.kind === Kind.DOCUMENT) ||
-    devAssert(0, 'Must provide valid Document AST.');
+    devAssert(false, 'Must provide valid Document AST.');
 
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDLExtension(documentAST, schema);
@@ -211,7 +211,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       return extendInputObjectType(type);
     } // istanbul ignore next (Not reachable. All possible types have been considered)
 
-    false || invariant(0, 'Unexpected type: ' + inspect(type));
+    false || invariant(false, 'Unexpected type: ' + inspect(type));
   }
 
   function extendInputObjectType(type) {
@@ -577,7 +577,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     } // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
 
     false ||
-      invariant(0, 'Unexpected type definition node: ' + inspect(astNode));
+      invariant(false, 'Unexpected type definition node: ' + inspect(astNode));
   }
 }
 const stdTypeMap = keyMap(

@@ -102,17 +102,18 @@ export class GraphQLSchema {
     // marked with assumeValid to avoid an additional type system validation.
     this.__validationErrors = config.assumeValid === true ? [] : undefined; // Check for common mistakes during construction to produce early errors.
 
-    isObjectLike(config) || devAssert(0, 'Must provide configuration object.');
+    isObjectLike(config) ||
+      devAssert(false, 'Must provide configuration object.');
     !config.types ||
       Array.isArray(config.types) ||
       devAssert(
-        0,
+        false,
         `"types" must be Array if provided but got: ${inspect(config.types)}.`,
       );
     !config.directives ||
       Array.isArray(config.directives) ||
       devAssert(
-        0,
+        false,
         '"directives" must be Array if provided but got: ' +
           `${inspect(config.directives)}.`,
       );
@@ -174,7 +175,7 @@ export class GraphQLSchema {
       const typeName = namedType.name;
       typeName ||
         devAssert(
-          0,
+          false,
           'One of the provided types for building the Schema is missing a name.',
         );
 

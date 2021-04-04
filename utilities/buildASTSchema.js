@@ -18,7 +18,7 @@ import { extendSchemaImpl } from './extendSchema.js';
  */
 export function buildASTSchema(documentAST, options) {
   (documentAST != null && documentAST.kind === Kind.DOCUMENT) ||
-    devAssert(0, 'Must provide valid Document AST.');
+    devAssert(false, 'Must provide valid Document AST.');
 
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDL(documentAST);

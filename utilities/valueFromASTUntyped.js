@@ -51,5 +51,5 @@ export function valueFromASTUntyped(valueNode, variables) {
       return variables?.[valueNode.name.value];
   } // istanbul ignore next (Not reachable. All possible value nodes have been considered)
 
-  false || invariant(0, 'Unexpected value node: ' + inspect(valueNode));
+  false || invariant(false, 'Unexpected value node: ' + inspect(valueNode));
 }

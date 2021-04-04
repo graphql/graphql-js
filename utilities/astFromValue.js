@@ -162,7 +162,7 @@ export function astFromValue(value, type) {
     throw new TypeError(`Cannot convert value to AST: ${inspect(serialized)}.`);
   } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
-  false || invariant(0, 'Unexpected input type: ' + inspect(type));
+  false || invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 /**
  * IntValue:

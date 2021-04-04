@@ -39,7 +39,7 @@ import { valueFromAST } from './valueFromAST.js';
 export function buildClientSchema(introspection, options) {
   (isObjectLike(introspection) && isObjectLike(introspection.__schema)) ||
     devAssert(
-      0,
+      false,
       `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${inspect(
         introspection,
       )}.`,

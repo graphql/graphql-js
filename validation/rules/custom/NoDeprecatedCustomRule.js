@@ -20,7 +20,7 @@ export function NoDeprecatedCustomRule(context) {
 
       if (fieldDef && deprecationReason != null) {
         const parentType = context.getParentType();
-        parentType != null || invariant(0);
+        parentType != null || invariant(false);
         context.reportError(
           new GraphQLError(
             `The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`,
@@ -47,7 +47,7 @@ export function NoDeprecatedCustomRule(context) {
         } else {
           const parentType = context.getParentType();
           const fieldDef = context.getFieldDef();
-          (parentType != null && fieldDef != null) || invariant(0);
+          (parentType != null && fieldDef != null) || invariant(false);
           context.reportError(
             new GraphQLError(
               `Field "${parentType.name}.${fieldDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
@@ -83,7 +83,7 @@ export function NoDeprecatedCustomRule(context) {
 
       if (enumValueDef && deprecationReason != null) {
         const enumTypeDef = getNamedType(context.getInputType());
-        enumTypeDef != null || invariant(0);
+        enumTypeDef != null || invariant(false);
         context.reportError(
           new GraphQLError(
             `The enum value "${enumTypeDef.name}.${enumValueDef.name}" is deprecated. ${deprecationReason}`,

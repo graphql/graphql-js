@@ -463,12 +463,12 @@ function typeKindName(type) {
     return 'an Input type';
   } // istanbul ignore next (Not reachable. All possible named types have been considered)
 
-  false || invariant(0, 'Unexpected type: ' + inspect(type));
+  false || invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
 function stringifyValue(value, type) {
   const ast = astFromValue(value, type);
-  ast != null || invariant(0);
+  ast != null || invariant(false);
   const sortedAST = visit(ast, {
     ObjectValue(objectNode) {
       // Make a copy since sort mutates array

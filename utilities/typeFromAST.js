@@ -30,5 +30,5 @@ export function typeFromAST(schema, typeNode) {
     return schema.getType(typeNode.name.value);
   } // istanbul ignore next (Not reachable. All possible type nodes have been considered)
 
-  false || invariant(0, 'Unexpected type node: ' + inspect(typeNode));
+  false || invariant(false, 'Unexpected type node: ' + inspect(typeNode));
 }

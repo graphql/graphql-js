@@ -58,7 +58,7 @@ export function KnownDirectivesRule(context) {
 
 function getDirectiveLocationForASTPath(ancestors) {
   const appliedTo = ancestors[ancestors.length - 1];
-  !Array.isArray(appliedTo) || invariant(0);
+  !Array.isArray(appliedTo) || invariant(false);
 
   switch (appliedTo.kind) {
     case Kind.OPERATION_DEFINITION:
@@ -134,5 +134,5 @@ function getDirectiveLocationForOperation(operation) {
       return DirectiveLocation.SUBSCRIPTION;
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
-  false || invariant(0, 'Unexpected operation: ' + inspect(operation));
+  false || invariant(false, 'Unexpected operation: ' + inspect(operation));
 }
