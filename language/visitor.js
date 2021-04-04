@@ -1,21 +1,26 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.visit = visit;
 exports.visitInParallel = visitInParallel;
 exports.getVisitFn = getVisitFn;
 exports.BREAK = void 0;
 
-var _inspect = require("../jsutils/inspect.js");
+var _inspect = require('../jsutils/inspect.js');
 
-var _ast = require("./ast.js");
+var _ast = require('./ast.js');
 
 const QueryDocumentKeys = {
   Name: [],
   Document: ['definitions'],
-  OperationDefinition: ['name', 'variableDefinitions', 'directives', 'selectionSet'],
+  OperationDefinition: [
+    'name',
+    'variableDefinitions',
+    'directives',
+    'selectionSet',
+  ],
   VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],
@@ -23,8 +28,13 @@ const QueryDocumentKeys = {
   Argument: ['name', 'value'],
   FragmentSpread: ['name', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
-  FragmentDefinition: ['name', // Note: fragment variable definitions are deprecated and will removed in v17.0.0
-  'variableDefinitions', 'typeCondition', 'directives', 'selectionSet'],
+  FragmentDefinition: [
+    'name', // Note: fragment variable definitions are deprecated and will removed in v17.0.0
+    'variableDefinitions',
+    'typeCondition',
+    'directives',
+    'selectionSet',
+  ],
   IntValue: [],
   FloatValue: [],
   StringValue: [],
@@ -41,10 +51,28 @@ const QueryDocumentKeys = {
   SchemaDefinition: ['description', 'directives', 'operationTypes'],
   OperationTypeDefinition: ['type'],
   ScalarTypeDefinition: ['description', 'name', 'directives'],
-  ObjectTypeDefinition: ['description', 'name', 'interfaces', 'directives', 'fields'],
+  ObjectTypeDefinition: [
+    'description',
+    'name',
+    'interfaces',
+    'directives',
+    'fields',
+  ],
   FieldDefinition: ['description', 'name', 'arguments', 'type', 'directives'],
-  InputValueDefinition: ['description', 'name', 'type', 'defaultValue', 'directives'],
-  InterfaceTypeDefinition: ['description', 'name', 'interfaces', 'directives', 'fields'],
+  InputValueDefinition: [
+    'description',
+    'name',
+    'type',
+    'defaultValue',
+    'directives',
+  ],
+  InterfaceTypeDefinition: [
+    'description',
+    'name',
+    'interfaces',
+    'directives',
+    'fields',
+  ],
   UnionTypeDefinition: ['description', 'name', 'directives', 'types'],
   EnumTypeDefinition: ['description', 'name', 'directives', 'values'],
   EnumValueDefinition: ['description', 'name', 'directives'],
@@ -56,7 +84,7 @@ const QueryDocumentKeys = {
   InterfaceTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
   UnionTypeExtension: ['name', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
-  InputObjectTypeExtension: ['name', 'directives', 'fields']
+  InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
 const BREAK = Object.freeze({});
 /**
@@ -196,7 +224,7 @@ function visit(root, visitor) {
       inArray = stack.inArray;
       stack = stack.prev;
     } else {
-      key = parent ? inArray ? index : keys[index] : undefined;
+      key = parent ? (inArray ? index : keys[index]) : undefined;
       node = parent ? parent[key] : newRoot;
 
       if (node === null || node === undefined) {
@@ -259,10 +287,15 @@ function visit(root, visitor) {
         index,
         keys,
         edits,
-        prev: stack
+        prev: stack,
       };
       inArray = Array.isArray(node);
-      keys = inArray ? node : (_QueryDocumentKeys$no = QueryDocumentKeys[node.kind]) !== null && _QueryDocumentKeys$no !== void 0 ? _QueryDocumentKeys$no : [];
+      keys = inArray
+        ? node
+        : (_QueryDocumentKeys$no = QueryDocumentKeys[node.kind]) !== null &&
+          _QueryDocumentKeys$no !== void 0
+        ? _QueryDocumentKeys$no
+        : [];
       index = -1;
       edits = [];
 
@@ -287,16 +320,18 @@ function visit(root, visitor) {
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 
-
 function visitInParallel(visitors) {
   const skipping = new Array(visitors.length);
   return {
     enter(node) {
       for (let i = 0; i < visitors.length; i++) {
         if (skipping[i] == null) {
-          const fn = getVisitFn(visitors[i], node.kind,
-          /* isLeaving */
-          false);
+          const fn = getVisitFn(
+            visitors[i],
+            node.kind,
+            /* isLeaving */
+            false,
+          );
 
           if (fn) {
             const result = fn.apply(visitors[i], arguments);
@@ -316,9 +351,12 @@ function visitInParallel(visitors) {
     leave(node) {
       for (let i = 0; i < visitors.length; i++) {
         if (skipping[i] == null) {
-          const fn = getVisitFn(visitors[i], node.kind,
-          /* isLeaving */
-          true);
+          const fn = getVisitFn(
+            visitors[i],
+            node.kind,
+            /* isLeaving */
+            true,
+          );
 
           if (fn) {
             const result = fn.apply(visitors[i], arguments);
@@ -333,15 +371,13 @@ function visitInParallel(visitors) {
           skipping[i] = null;
         }
       }
-    }
-
+    },
   };
 }
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.
  */
-
 
 function getVisitFn(visitor, kind, isLeaving) {
   const kindVisitor = visitor[kind];
@@ -352,7 +388,9 @@ function getVisitFn(visitor, kind, isLeaving) {
       return kindVisitor;
     }
 
-    const kindSpecificVisitor = isLeaving ? kindVisitor.leave : kindVisitor.enter;
+    const kindSpecificVisitor = isLeaving
+      ? kindVisitor.leave
+      : kindVisitor.enter;
 
     if (typeof kindSpecificVisitor === 'function') {
       // { Kind: { enter() {}, leave() {} } }

@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.UniqueInputFieldNamesRule = UniqueInputFieldNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * Unique input field names
@@ -25,19 +25,22 @@ function UniqueInputFieldNamesRule(context) {
 
       leave() {
         knownNames = knownNameStack.pop();
-      }
-
+      },
     },
 
     ObjectField(node) {
       const fieldName = node.name.value;
 
       if (knownNames[fieldName]) {
-        context.reportError(new _GraphQLError.GraphQLError(`There can be only one input field named "${fieldName}".`, [knownNames[fieldName], node.name]));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `There can be only one input field named "${fieldName}".`,
+            [knownNames[fieldName], node.name],
+          ),
+        );
       } else {
         knownNames[fieldName] = node.name;
       }
-    }
-
+    },
   };
 }

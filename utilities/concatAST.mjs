@@ -12,6 +12,6 @@ export function concatAST(documents) {
 
   return {
     kind: 'Document',
-    definitions
+    definitions,
   };
 }

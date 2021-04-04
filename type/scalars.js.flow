@@ -1,4 +1,5 @@
 // @flow strict
+
 import { inspect } from '../jsutils/inspect';
 import { isObjectLike } from '../jsutils/isObjectLike';
 

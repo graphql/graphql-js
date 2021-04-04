@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.NoUndefinedVariablesRule = NoUndefinedVariablesRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * No undefined variables
@@ -24,22 +24,25 @@ function NoUndefinedVariablesRule(context) {
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        for (const {
-          node
-        } of usages) {
+        for (const { node } of usages) {
           const varName = node.name.value;
 
           if (variableNameDefined[varName] !== true) {
-            context.reportError(new _GraphQLError.GraphQLError(operation.name ? `Variable "$${varName}" is not defined by operation "${operation.name.value}".` : `Variable "$${varName}" is not defined.`, [node, operation]));
+            context.reportError(
+              new _GraphQLError.GraphQLError(
+                operation.name
+                  ? `Variable "$${varName}" is not defined by operation "${operation.name.value}".`
+                  : `Variable "$${varName}" is not defined.`,
+                [node, operation],
+              ),
+            );
           }
         }
-      }
-
+      },
     },
 
     VariableDefinition(node) {
       variableNameDefined[node.variable.name.value] = true;
-    }
-
+    },
   };
 }

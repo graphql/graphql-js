@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.UniqueVariableNamesRule = UniqueVariableNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * Unique variable names
@@ -23,11 +23,15 @@ function UniqueVariableNamesRule(context) {
       const variableName = node.variable.name.value;
 
       if (knownVariableNames[variableName]) {
-        context.reportError(new _GraphQLError.GraphQLError(`There can be only one variable named "$${variableName}".`, [knownVariableNames[variableName], node.variable.name]));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `There can be only one variable named "$${variableName}".`,
+            [knownVariableNames[variableName], node.variable.name],
+          ),
+        );
       } else {
         knownVariableNames[variableName] = node.variable.name;
       }
-    }
-
+    },
   };
 }

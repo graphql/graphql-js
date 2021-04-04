@@ -1,4 +1,4 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { GraphQLError } from '../../error/GraphQLError.mjs';
 
 /**
  * Known fragment names
@@ -13,9 +13,10 @@ export function KnownFragmentNamesRule(context) {
       const fragment = context.getFragment(fragmentName);
 
       if (!fragment) {
-        context.reportError(new GraphQLError(`Unknown fragment "${fragmentName}".`, node.name));
+        context.reportError(
+          new GraphQLError(`Unknown fragment "${fragmentName}".`, node.name),
+        );
       }
-    }
-
+    },
   };
 }

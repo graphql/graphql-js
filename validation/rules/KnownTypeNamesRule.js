@@ -1,21 +1,21 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.KnownTypeNamesRule = KnownTypeNamesRule;
 
-var _didYouMean = require("../../jsutils/didYouMean.js");
+var _didYouMean = require('../../jsutils/didYouMean.js');
 
-var _suggestionList = require("../../jsutils/suggestionList.js");
+var _suggestionList = require('../../jsutils/suggestionList.js');
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
-var _predicates = require("../../language/predicates.js");
+var _predicates = require('../../language/predicates.js');
 
-var _scalars = require("../../type/scalars.js");
+var _scalars = require('../../type/scalars.js');
 
-var _introspection = require("../../type/introspection.js");
+var _introspection = require('../../type/introspection.js');
 
 /**
  * Known type names
@@ -34,7 +34,9 @@ function KnownTypeNamesRule(context) {
     }
   }
 
-  const typeNames = Object.keys(existingTypesMap).concat(Object.keys(definedTypes));
+  const typeNames = Object.keys(existingTypesMap).concat(
+    Object.keys(definedTypes),
+  );
   return {
     NamedType(node, _1, parent, _2, ancestors) {
       const typeName = node.name.value;
@@ -42,23 +44,41 @@ function KnownTypeNamesRule(context) {
       if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
         var _ancestors$;
 
-        const definitionNode = (_ancestors$ = ancestors[2]) !== null && _ancestors$ !== void 0 ? _ancestors$ : parent;
+        const definitionNode =
+          (_ancestors$ = ancestors[2]) !== null && _ancestors$ !== void 0
+            ? _ancestors$
+            : parent;
         const isSDL = definitionNode != null && isSDLNode(definitionNode);
 
         if (isSDL && standardTypeNames.includes(typeName)) {
           return;
         }
 
-        const suggestedTypes = (0, _suggestionList.suggestionList)(typeName, isSDL ? standardTypeNames.concat(typeNames) : typeNames);
-        context.reportError(new _GraphQLError.GraphQLError(`Unknown type "${typeName}".` + (0, _didYouMean.didYouMean)(suggestedTypes), node));
+        const suggestedTypes = (0, _suggestionList.suggestionList)(
+          typeName,
+          isSDL ? standardTypeNames.concat(typeNames) : typeNames,
+        );
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `Unknown type "${typeName}".` +
+              (0, _didYouMean.didYouMean)(suggestedTypes),
+            node,
+          ),
+        );
       }
-    }
-
+    },
   };
 }
 
-const standardTypeNames = [..._scalars.specifiedScalarTypes, ..._introspection.introspectionTypes].map(type => type.name);
+const standardTypeNames = [
+  ..._scalars.specifiedScalarTypes,
+  ..._introspection.introspectionTypes,
+].map((type) => type.name);
 
 function isSDLNode(value) {
-  return !Array.isArray(value) && ((0, _predicates.isTypeSystemDefinitionNode)(value) || (0, _predicates.isTypeSystemExtensionNode)(value));
+  return (
+    !Array.isArray(value) &&
+    ((0, _predicates.isTypeSystemDefinitionNode)(value) ||
+      (0, _predicates.isTypeSystemExtensionNode)(value))
+  );
 }

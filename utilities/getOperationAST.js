@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.getOperationAST = getOperationAST;
 
-var _kinds = require("../language/kinds.js");
+var _kinds = require('../language/kinds.js');
 
 /**
  * Returns an operation AST given a document AST and optionally an operation
@@ -28,7 +28,12 @@ function getOperationAST(documentAST, operationName) {
         }
 
         operation = definition;
-      } else if (((_definition$name = definition.name) === null || _definition$name === void 0 ? void 0 : _definition$name.value) === operationName) {
+      } else if (
+        ((_definition$name = definition.name) === null ||
+        _definition$name === void 0
+          ? void 0
+          : _definition$name.value) === operationName
+      ) {
         return definition;
       }
     }

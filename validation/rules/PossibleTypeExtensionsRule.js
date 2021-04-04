@@ -1,25 +1,25 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.PossibleTypeExtensionsRule = PossibleTypeExtensionsRule;
 
-var _inspect = require("../../jsutils/inspect.js");
+var _inspect = require('../../jsutils/inspect.js');
 
-var _invariant = require("../../jsutils/invariant.js");
+var _invariant = require('../../jsutils/invariant.js');
 
-var _didYouMean = require("../../jsutils/didYouMean.js");
+var _didYouMean = require('../../jsutils/didYouMean.js');
 
-var _suggestionList = require("../../jsutils/suggestionList.js");
+var _suggestionList = require('../../jsutils/suggestionList.js');
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
-var _kinds = require("../../language/kinds.js");
+var _kinds = require('../../language/kinds.js');
 
-var _predicates = require("../../language/predicates.js");
+var _predicates = require('../../language/predicates.js');
 
-var _definition = require("../../type/definition.js");
+var _definition = require('../../type/definition.js');
 
 /**
  * Possible type extension
@@ -42,13 +42,14 @@ function PossibleTypeExtensionsRule(context) {
     InterfaceTypeExtension: checkExtension,
     UnionTypeExtension: checkExtension,
     EnumTypeExtension: checkExtension,
-    InputObjectTypeExtension: checkExtension
+    InputObjectTypeExtension: checkExtension,
   };
 
   function checkExtension(node) {
     const typeName = node.name.value;
     const defNode = definedTypes[typeName];
-    const existingType = schema === null || schema === void 0 ? void 0 : schema.getType(typeName);
+    const existingType =
+      schema === null || schema === void 0 ? void 0 : schema.getType(typeName);
     let expectedKind;
 
     if (defNode) {
@@ -60,7 +61,12 @@ function PossibleTypeExtensionsRule(context) {
     if (expectedKind) {
       if (expectedKind !== node.kind) {
         const kindStr = extensionKindToTypeName(node.kind);
-        context.reportError(new _GraphQLError.GraphQLError(`Cannot extend non-${kindStr} type "${typeName}".`, defNode ? [defNode, node] : node));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `Cannot extend non-${kindStr} type "${typeName}".`,
+            defNode ? [defNode, node] : node,
+          ),
+        );
       }
     } else {
       let allTypeNames = Object.keys(definedTypes);
@@ -69,8 +75,17 @@ function PossibleTypeExtensionsRule(context) {
         allTypeNames = allTypeNames.concat(Object.keys(schema.getTypeMap()));
       }
 
-      const suggestedTypes = (0, _suggestionList.suggestionList)(typeName, allTypeNames);
-      context.reportError(new _GraphQLError.GraphQLError(`Cannot extend type "${typeName}" because it is not defined.` + (0, _didYouMean.didYouMean)(suggestedTypes), node.name));
+      const suggestedTypes = (0, _suggestionList.suggestionList)(
+        typeName,
+        allTypeNames,
+      );
+      context.reportError(
+        new _GraphQLError.GraphQLError(
+          `Cannot extend type "${typeName}" because it is not defined.` +
+            (0, _didYouMean.didYouMean)(suggestedTypes),
+          node.name,
+        ),
+      );
     }
   }
 }
@@ -81,7 +96,8 @@ const defKindToExtKind = {
   [_kinds.Kind.INTERFACE_TYPE_DEFINITION]: _kinds.Kind.INTERFACE_TYPE_EXTENSION,
   [_kinds.Kind.UNION_TYPE_DEFINITION]: _kinds.Kind.UNION_TYPE_EXTENSION,
   [_kinds.Kind.ENUM_TYPE_DEFINITION]: _kinds.Kind.ENUM_TYPE_EXTENSION,
-  [_kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION]: _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION
+  [_kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION]:
+    _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION,
 };
 
 function typeToExtKind(type) {
@@ -105,13 +121,15 @@ function typeToExtKind(type) {
     return _kinds.Kind.ENUM_TYPE_EXTENSION;
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-
   if ((0, _definition.isInputObjectType)(type)) {
     return _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION;
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
-
-  false || (0, _invariant.invariant)(0, 'Unexpected type: ' + (0, _inspect.inspect)(type));
+  false ||
+    (0, _invariant.invariant)(
+      0,
+      'Unexpected type: ' + (0, _inspect.inspect)(type),
+    );
 }
 
 function extensionKindToTypeName(kind) {
@@ -135,6 +153,9 @@ function extensionKindToTypeName(kind) {
       return 'input object';
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
-
-  false || (0, _invariant.invariant)(0, 'Unexpected kind: ' + (0, _inspect.inspect)(kind));
+  false ||
+    (0, _invariant.invariant)(
+      0,
+      'Unexpected kind: ' + (0, _inspect.inspect)(kind),
+    );
 }

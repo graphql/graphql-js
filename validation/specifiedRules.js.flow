@@ -1,4 +1,5 @@
 // @flow strict
+
 import type { ValidationRule, SDLValidationRule } from './ValidationContext';
 
 // Spec Section: "Executable Definitions"

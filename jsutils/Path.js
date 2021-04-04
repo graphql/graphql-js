@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.addPath = addPath;
 exports.pathToArray = pathToArray;
@@ -13,13 +13,12 @@ function addPath(prev, key, typename) {
   return {
     prev,
     key,
-    typename
+    typename,
   };
 }
 /**
  * Given a Path, return an Array of the path keys.
  */
-
 
 function pathToArray(path) {
   const flattened = [];

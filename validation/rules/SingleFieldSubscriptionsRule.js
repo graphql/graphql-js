@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.SingleFieldSubscriptionsRule = SingleFieldSubscriptionsRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * Subscriptions must only include one field.
@@ -17,10 +17,16 @@ function SingleFieldSubscriptionsRule(context) {
     OperationDefinition(node) {
       if (node.operation === 'subscription') {
         if (node.selectionSet.selections.length !== 1) {
-          context.reportError(new _GraphQLError.GraphQLError(node.name ? `Subscription "${node.name.value}" must select only one top level field.` : 'Anonymous Subscription must select only one top level field.', node.selectionSet.selections.slice(1)));
+          context.reportError(
+            new _GraphQLError.GraphQLError(
+              node.name
+                ? `Subscription "${node.name.value}" must select only one top level field.`
+                : 'Anonymous Subscription must select only one top level field.',
+              node.selectionSet.selections.slice(1),
+            ),
+          );
         }
       }
-    }
-
+    },
   };
 }

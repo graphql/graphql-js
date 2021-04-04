@@ -1,4 +1,4 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { GraphQLError } from '../../error/GraphQLError.mjs';
 
 /**
  * Unique variable names
@@ -16,11 +16,15 @@ export function UniqueVariableNamesRule(context) {
       const variableName = node.variable.name.value;
 
       if (knownVariableNames[variableName]) {
-        context.reportError(new GraphQLError(`There can be only one variable named "$${variableName}".`, [knownVariableNames[variableName], node.variable.name]));
+        context.reportError(
+          new GraphQLError(
+            `There can be only one variable named "$${variableName}".`,
+            [knownVariableNames[variableName], node.variable.name],
+          ),
+        );
       } else {
         knownVariableNames[variableName] = node.variable.name;
       }
-    }
-
+    },
   };
 }

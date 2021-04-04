@@ -1,46 +1,63 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.printSchema = printSchema;
 exports.printIntrospectionSchema = printIntrospectionSchema;
 exports.printType = printType;
 
-var _inspect = require("../jsutils/inspect.js");
+var _inspect = require('../jsutils/inspect.js');
 
-var _invariant = require("../jsutils/invariant.js");
+var _invariant = require('../jsutils/invariant.js');
 
-var _printer = require("../language/printer.js");
+var _printer = require('../language/printer.js');
 
-var _blockString = require("../language/blockString.js");
+var _blockString = require('../language/blockString.js');
 
-var _introspection = require("../type/introspection.js");
+var _introspection = require('../type/introspection.js');
 
-var _scalars = require("../type/scalars.js");
+var _scalars = require('../type/scalars.js');
 
-var _directives = require("../type/directives.js");
+var _directives = require('../type/directives.js');
 
-var _definition = require("../type/definition.js");
+var _definition = require('../type/definition.js');
 
-var _astFromValue = require("./astFromValue.js");
+var _astFromValue = require('./astFromValue.js');
 
 function printSchema(schema) {
-  return printFilteredSchema(schema, n => !(0, _directives.isSpecifiedDirective)(n), isDefinedType);
+  return printFilteredSchema(
+    schema,
+    (n) => !(0, _directives.isSpecifiedDirective)(n),
+    isDefinedType,
+  );
 }
 
 function printIntrospectionSchema(schema) {
-  return printFilteredSchema(schema, _directives.isSpecifiedDirective, _introspection.isIntrospectionType);
+  return printFilteredSchema(
+    schema,
+    _directives.isSpecifiedDirective,
+    _introspection.isIntrospectionType,
+  );
 }
 
 function isDefinedType(type) {
-  return !(0, _scalars.isSpecifiedScalarType)(type) && !(0, _introspection.isIntrospectionType)(type);
+  return (
+    !(0, _scalars.isSpecifiedScalarType)(type) &&
+    !(0, _introspection.isIntrospectionType)(type)
+  );
 }
 
 function printFilteredSchema(schema, directiveFilter, typeFilter) {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
-  return [printSchemaDefinition(schema)].concat(directives.map(directive => printDirective(directive)), types.map(type => printType(type))).filter(Boolean).join('\n\n');
+  return [printSchemaDefinition(schema)]
+    .concat(
+      directives.map((directive) => printDirective(directive)),
+      types.map((type) => printType(type)),
+    )
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 function printSchemaDefinition(schema) {
@@ -81,7 +98,6 @@ function printSchemaDefinition(schema) {
  *
  * When using this naming convention, the schema description can be omitted.
  */
-
 
 function isSchemaOfCommonNames(schema) {
   const queryType = schema.getQueryType();
@@ -126,30 +142,46 @@ function printType(type) {
     return printEnum(type);
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-
   if ((0, _definition.isInputObjectType)(type)) {
     return printInputObject(type);
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
-
-  false || (0, _invariant.invariant)(0, 'Unexpected type: ' + (0, _inspect.inspect)(type));
+  false ||
+    (0, _invariant.invariant)(
+      0,
+      'Unexpected type: ' + (0, _inspect.inspect)(type),
+    );
 }
 
 function printScalar(type) {
-  return printDescription(type) + `scalar ${type.name}` + printSpecifiedByUrl(type);
+  return (
+    printDescription(type) + `scalar ${type.name}` + printSpecifiedByUrl(type)
+  );
 }
 
 function printImplementedInterfaces(type) {
   const interfaces = type.getInterfaces();
-  return interfaces.length ? ' implements ' + interfaces.map(i => i.name).join(' & ') : '';
+  return interfaces.length
+    ? ' implements ' + interfaces.map((i) => i.name).join(' & ')
+    : '';
 }
 
 function printObject(type) {
-  return printDescription(type) + `type ${type.name}` + printImplementedInterfaces(type) + printFields(type);
+  return (
+    printDescription(type) +
+    `type ${type.name}` +
+    printImplementedInterfaces(type) +
+    printFields(type)
+  );
 }
 
 function printInterface(type) {
-  return printDescription(type) + `interface ${type.name}` + printImplementedInterfaces(type) + printFields(type);
+  return (
+    printDescription(type) +
+    `interface ${type.name}` +
+    printImplementedInterfaces(type) +
+    printFields(type)
+  );
 }
 
 function printUnion(type) {
@@ -159,17 +191,36 @@ function printUnion(type) {
 }
 
 function printEnum(type) {
-  const values = type.getValues().map((value, i) => printDescription(value, '  ', !i) + '  ' + value.name + printDeprecated(value.deprecationReason));
+  const values = type
+    .getValues()
+    .map(
+      (value, i) =>
+        printDescription(value, '  ', !i) +
+        '  ' +
+        value.name +
+        printDeprecated(value.deprecationReason),
+    );
   return printDescription(type) + `enum ${type.name}` + printBlock(values);
 }
 
 function printInputObject(type) {
-  const fields = Object.values(type.getFields()).map((f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f));
+  const fields = Object.values(type.getFields()).map(
+    (f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f),
+  );
   return printDescription(type) + `input ${type.name}` + printBlock(fields);
 }
 
 function printFields(type) {
-  const fields = Object.values(type.getFields()).map((f, i) => printDescription(f, '  ', !i) + '  ' + f.name + printArgs(f.args, '  ') + ': ' + String(f.type) + printDeprecated(f.deprecationReason));
+  const fields = Object.values(type.getFields()).map(
+    (f, i) =>
+      printDescription(f, '  ', !i) +
+      '  ' +
+      f.name +
+      printArgs(f.args, '  ') +
+      ': ' +
+      String(f.type) +
+      printDeprecated(f.deprecationReason),
+  );
   return printBlock(fields);
 }
 
@@ -182,16 +233,32 @@ function printArgs(args, indentation = '') {
     return '';
   } // If every arg does not have a description, print them on one line.
 
-
-  if (args.every(arg => !arg.description)) {
+  if (args.every((arg) => !arg.description)) {
     return '(' + args.map(printInputValue).join(', ') + ')';
   }
 
-  return '(\n' + args.map((arg, i) => printDescription(arg, '  ' + indentation, !i) + '  ' + indentation + printInputValue(arg)).join('\n') + '\n' + indentation + ')';
+  return (
+    '(\n' +
+    args
+      .map(
+        (arg, i) =>
+          printDescription(arg, '  ' + indentation, !i) +
+          '  ' +
+          indentation +
+          printInputValue(arg),
+      )
+      .join('\n') +
+    '\n' +
+    indentation +
+    ')'
+  );
 }
 
 function printInputValue(arg) {
-  const defaultAST = (0, _astFromValue.astFromValue)(arg.defaultValue, arg.type);
+  const defaultAST = (0, _astFromValue.astFromValue)(
+    arg.defaultValue,
+    arg.type,
+  );
   let argDecl = arg.name + ': ' + String(arg.type);
 
   if (defaultAST) {
@@ -202,7 +269,15 @@ function printInputValue(arg) {
 }
 
 function printDirective(directive) {
-  return printDescription(directive) + 'directive @' + directive.name + printArgs(directive.args) + (directive.isRepeatable ? ' repeatable' : '') + ' on ' + directive.locations.join(' | ');
+  return (
+    printDescription(directive) +
+    'directive @' +
+    directive.name +
+    printArgs(directive.args) +
+    (directive.isRepeatable ? ' repeatable' : '') +
+    ' on ' +
+    directive.locations.join(' | ')
+  );
 }
 
 function printDeprecated(reason) {
@@ -210,7 +285,10 @@ function printDeprecated(reason) {
     return '';
   }
 
-  const reasonAST = (0, _astFromValue.astFromValue)(reason, _scalars.GraphQLString);
+  const reasonAST = (0, _astFromValue.astFromValue)(
+    reason,
+    _scalars.GraphQLString,
+  );
 
   if (reasonAST && reason !== _directives.DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated(reason: ' + (0, _printer.print)(reasonAST) + ')';
@@ -226,21 +304,27 @@ function printSpecifiedByUrl(scalar) {
 
   const url = scalar.specifiedByUrl;
   const urlAST = (0, _astFromValue.astFromValue)(url, _scalars.GraphQLString);
-  urlAST || (0, _invariant.invariant)(0, 'Unexpected null value returned from `astFromValue` for specifiedByUrl');
+  urlAST ||
+    (0, _invariant.invariant)(
+      0,
+      'Unexpected null value returned from `astFromValue` for specifiedByUrl',
+    );
   return ' @specifiedBy(url: ' + (0, _printer.print)(urlAST) + ')';
 }
 
 function printDescription(def, indentation = '', firstInBlock = true) {
-  const {
-    description
-  } = def;
+  const { description } = def;
 
   if (description == null) {
     return '';
   }
 
   const preferMultipleLines = description.length > 70;
-  const blockString = (0, _blockString.printBlockString)(description, preferMultipleLines);
-  const prefix = indentation && !firstInBlock ? '\n' + indentation : indentation;
+  const blockString = (0, _blockString.printBlockString)(
+    description,
+    preferMultipleLines,
+  );
+  const prefix =
+    indentation && !firstInBlock ? '\n' + indentation : indentation;
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
 }

@@ -1,9 +1,9 @@
-import { inspect } from "../../jsutils/inspect.mjs";
-import { invariant } from "../../jsutils/invariant.mjs";
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { Kind } from "../../language/kinds.mjs";
-import { DirectiveLocation } from "../../language/directiveLocation.mjs";
-import { specifiedDirectives } from "../../type/directives.mjs";
+import { inspect } from '../../jsutils/inspect.mjs';
+import { invariant } from '../../jsutils/invariant.mjs';
+import { GraphQLError } from '../../error/GraphQLError.mjs';
+import { Kind } from '../../language/kinds.mjs';
+import { DirectiveLocation } from '../../language/directiveLocation.mjs';
+import { specifiedDirectives } from '../../type/directives.mjs';
 
 /**
  * Known directives
@@ -14,7 +14,9 @@ import { specifiedDirectives } from "../../type/directives.mjs";
 export function KnownDirectivesRule(context) {
   const locationsMap = Object.create(null);
   const schema = context.getSchema();
-  const definedDirectives = schema ? schema.getDirectives() : specifiedDirectives;
+  const definedDirectives = schema
+    ? schema.getDirectives()
+    : specifiedDirectives;
 
   for (const directive of definedDirectives) {
     locationsMap[directive.name] = directive.locations;
@@ -24,7 +26,7 @@ export function KnownDirectivesRule(context) {
 
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      locationsMap[def.name.value] = def.locations.map(name => name.value);
+      locationsMap[def.name.value] = def.locations.map((name) => name.value);
     }
   }
 
@@ -34,17 +36,23 @@ export function KnownDirectivesRule(context) {
       const locations = locationsMap[name];
 
       if (!locations) {
-        context.reportError(new GraphQLError(`Unknown directive "@${name}".`, node));
+        context.reportError(
+          new GraphQLError(`Unknown directive "@${name}".`, node),
+        );
         return;
       }
 
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
 
       if (candidateLocation && !locations.includes(candidateLocation)) {
-        context.reportError(new GraphQLError(`Directive "@${name}" may not be used on ${candidateLocation}.`, node));
+        context.reportError(
+          new GraphQLError(
+            `Directive "@${name}" may not be used on ${candidateLocation}.`,
+            node,
+          ),
+        );
       }
-    }
-
+    },
   };
 }
 
@@ -105,11 +113,12 @@ function getDirectiveLocationForASTPath(ancestors) {
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return DirectiveLocation.INPUT_OBJECT;
 
-    case Kind.INPUT_VALUE_DEFINITION:
-      {
-        const parentNode = ancestors[ancestors.length - 3];
-        return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION ? DirectiveLocation.INPUT_FIELD_DEFINITION : DirectiveLocation.ARGUMENT_DEFINITION;
-      }
+    case Kind.INPUT_VALUE_DEFINITION: {
+      const parentNode = ancestors[ancestors.length - 3];
+      return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION
+        ? DirectiveLocation.INPUT_FIELD_DEFINITION
+        : DirectiveLocation.ARGUMENT_DEFINITION;
+    }
   }
 }
 
@@ -124,7 +133,6 @@ function getDirectiveLocationForOperation(operation) {
     case 'subscription':
       return DirectiveLocation.SUBSCRIPTION;
   } // istanbul ignore next (Not reachable. All possible types have been considered)
-
 
   false || invariant(0, 'Unexpected operation: ' + inspect(operation));
 }

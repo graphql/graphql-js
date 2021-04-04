@@ -1,23 +1,23 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.astFromValue = astFromValue;
 
-var _inspect = require("../jsutils/inspect.js");
+var _inspect = require('../jsutils/inspect.js');
 
-var _invariant = require("../jsutils/invariant.js");
+var _invariant = require('../jsutils/invariant.js');
 
-var _isObjectLike = require("../jsutils/isObjectLike.js");
+var _isObjectLike = require('../jsutils/isObjectLike.js');
 
-var _isIteratableObject = require("../jsutils/isIteratableObject.js");
+var _isIteratableObject = require('../jsutils/isIteratableObject.js');
 
-var _kinds = require("../language/kinds.js");
+var _kinds = require('../language/kinds.js');
 
-var _scalars = require("../type/scalars.js");
+var _scalars = require('../type/scalars.js');
 
-var _definition = require("../type/definition.js");
+var _definition = require('../type/definition.js');
 
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
@@ -44,26 +44,26 @@ function astFromValue(value, type) {
   if ((0, _definition.isNonNullType)(type)) {
     const astValue = astFromValue(value, type.ofType);
 
-    if ((astValue === null || astValue === void 0 ? void 0 : astValue.kind) === _kinds.Kind.NULL) {
+    if (
+      (astValue === null || astValue === void 0 ? void 0 : astValue.kind) ===
+      _kinds.Kind.NULL
+    ) {
       return null;
     }
 
     return astValue;
   } // only explicit null, not undefined, NaN
 
-
   if (value === null) {
     return {
-      kind: _kinds.Kind.NULL
+      kind: _kinds.Kind.NULL,
     };
   } // undefined
-
 
   if (value === undefined) {
     return null;
   } // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
   // the value is not an array, convert the value using the list's item type.
-
 
   if ((0, _definition.isListType)(type)) {
     const itemType = type.ofType;
@@ -82,14 +82,13 @@ function astFromValue(value, type) {
 
       return {
         kind: _kinds.Kind.LIST,
-        values: valuesNodes
+        values: valuesNodes,
       };
     }
 
     return astFromValue(value, itemType);
   } // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object according to the fields in the input type.
-
 
   if ((0, _definition.isInputObjectType)(type)) {
     if (!(0, _isObjectLike.isObjectLike)(value)) {
@@ -106,19 +105,18 @@ function astFromValue(value, type) {
           kind: _kinds.Kind.OBJECT_FIELD,
           name: {
             kind: _kinds.Kind.NAME,
-            value: field.name
+            value: field.name,
           },
-          value: fieldValue
+          value: fieldValue,
         });
       }
     }
 
     return {
       kind: _kinds.Kind.OBJECT,
-      fields: fieldNodes
+      fields: fieldNodes,
     };
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
-
 
   if ((0, _definition.isLeafType)(type)) {
     // Since value is an internally represented value, it must be serialized
@@ -129,24 +127,24 @@ function astFromValue(value, type) {
       return null;
     } // Others serialize based on their corresponding JavaScript scalar types.
 
-
     if (typeof serialized === 'boolean') {
       return {
         kind: _kinds.Kind.BOOLEAN,
-        value: serialized
+        value: serialized,
       };
     } // JavaScript numbers can be Int or Float values.
 
-
     if (typeof serialized === 'number' && Number.isFinite(serialized)) {
       const stringNum = String(serialized);
-      return integerStringRegExp.test(stringNum) ? {
-        kind: _kinds.Kind.INT,
-        value: stringNum
-      } : {
-        kind: _kinds.Kind.FLOAT,
-        value: stringNum
-      };
+      return integerStringRegExp.test(stringNum)
+        ? {
+            kind: _kinds.Kind.INT,
+            value: stringNum,
+          }
+        : {
+            kind: _kinds.Kind.FLOAT,
+            value: stringNum,
+          };
     }
 
     if (typeof serialized === 'string') {
@@ -154,35 +152,38 @@ function astFromValue(value, type) {
       if ((0, _definition.isEnumType)(type)) {
         return {
           kind: _kinds.Kind.ENUM,
-          value: serialized
+          value: serialized,
         };
       } // ID types can use Int literals.
-
 
       if (type === _scalars.GraphQLID && integerStringRegExp.test(serialized)) {
         return {
           kind: _kinds.Kind.INT,
-          value: serialized
+          value: serialized,
         };
       }
 
       return {
         kind: _kinds.Kind.STRING,
-        value: serialized
+        value: serialized,
       };
     }
 
-    throw new TypeError(`Cannot convert value to AST: ${(0, _inspect.inspect)(serialized)}.`);
+    throw new TypeError(
+      `Cannot convert value to AST: ${(0, _inspect.inspect)(serialized)}.`,
+    );
   } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
-
-  false || (0, _invariant.invariant)(0, 'Unexpected input type: ' + (0, _inspect.inspect)(type));
+  false ||
+    (0, _invariant.invariant)(
+      0,
+      'Unexpected input type: ' + (0, _inspect.inspect)(type),
+    );
 }
 /**
  * IntValue:
  *   - NegativeSign? 0
  *   - NegativeSign? NonZeroDigit ( Digit+ )?
  */
-
 
 const integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;

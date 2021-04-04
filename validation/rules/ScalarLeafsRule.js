@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.ScalarLeafsRule = ScalarLeafsRule;
 
-var _inspect = require("../../jsutils/inspect.js");
+var _inspect = require('../../jsutils/inspect.js');
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
-var _definition = require("../../type/definition.js");
+var _definition = require('../../type/definition.js');
 
 /**
  * Scalar leafs
@@ -28,15 +28,24 @@ function ScalarLeafsRule(context) {
           if (selectionSet) {
             const fieldName = node.name.value;
             const typeStr = (0, _inspect.inspect)(type);
-            context.reportError(new _GraphQLError.GraphQLError(`Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`, selectionSet));
+            context.reportError(
+              new _GraphQLError.GraphQLError(
+                `Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`,
+                selectionSet,
+              ),
+            );
           }
         } else if (!selectionSet) {
           const fieldName = node.name.value;
           const typeStr = (0, _inspect.inspect)(type);
-          context.reportError(new _GraphQLError.GraphQLError(`Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`, node));
+          context.reportError(
+            new _GraphQLError.GraphQLError(
+              `Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`,
+              node,
+            ),
+          );
         }
       }
-    }
-
+    },
   };
 }

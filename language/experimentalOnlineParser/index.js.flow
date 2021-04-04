@@ -1,4 +1,5 @@
 // @flow strict
+
 export {
   OnlineParser,
   RuleKind,

@@ -33,10 +33,9 @@ export class Location {
   toJSON() {
     return {
       start: this.start,
-      end: this.end
+      end: this.end,
     };
   }
-
 }
 /**
  * Represents a range of characters represented by a lexical token
@@ -89,10 +88,9 @@ export class Token {
       kind: this.kind,
       value: this.value,
       line: this.line,
-      column: this.column
+      column: this.column,
     };
   }
-
 }
 /**
  * @internal

@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.introspectionFromSchema = introspectionFromSchema;
 
-var _invariant = require("../jsutils/invariant.js");
+var _invariant = require('../jsutils/invariant.js');
 
-var _parser = require("../language/parser.js");
+var _parser = require('../language/parser.js');
 
-var _execute = require("../execution/execute.js");
+var _execute = require('../execution/execute.js');
 
-var _getIntrospectionQuery = require("./getIntrospectionQuery.js");
+var _getIntrospectionQuery = require('./getIntrospectionQuery.js');
 
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
@@ -28,13 +28,15 @@ function introspectionFromSchema(schema, options) {
     directiveIsRepeatable: true,
     schemaDescription: true,
     inputValueDeprecation: true,
-    ...options
+    ...options,
   };
-  const document = (0, _parser.parse)((0, _getIntrospectionQuery.getIntrospectionQuery)(optionsWithDefaults));
+  const document = (0, _parser.parse)(
+    (0, _getIntrospectionQuery.getIntrospectionQuery)(optionsWithDefaults),
+  );
   const result = (0, _execute.executeSync)({
     schema,
-    document
+    document,
   });
-  !result.errors && result.data || (0, _invariant.invariant)(0);
+  (!result.errors && result.data) || (0, _invariant.invariant)(0);
   return result.data;
 }

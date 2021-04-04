@@ -16,5 +16,10 @@
  */
 // eslint-disable-next-line no-redeclare
 export function isIteratableObject(maybeIteratable) {
-  return typeof maybeIteratable === 'object' && typeof (maybeIteratable === null || maybeIteratable === void 0 ? void 0 : maybeIteratable[Symbol.iterator]) === 'function';
+  return (
+    typeof maybeIteratable === 'object' &&
+    typeof (maybeIteratable === null || maybeIteratable === void 0
+      ? void 0
+      : maybeIteratable[Symbol.iterator]) === 'function'
+  );
 }

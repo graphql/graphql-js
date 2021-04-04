@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.TokenKind = void 0;
 
@@ -31,7 +31,7 @@ const TokenKind = Object.freeze({
   FLOAT: 'Float',
   STRING: 'String',
   BLOCK_STRING: 'BlockString',
-  COMMENT: 'Comment'
+  COMMENT: 'Comment',
 });
 /**
  * The enum type representing the token kinds values.

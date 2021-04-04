@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.UniqueFragmentNamesRule = UniqueFragmentNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * Unique fragment names
@@ -21,13 +21,17 @@ function UniqueFragmentNamesRule(context) {
       const fragmentName = node.name.value;
 
       if (knownFragmentNames[fragmentName]) {
-        context.reportError(new _GraphQLError.GraphQLError(`There can be only one fragment named "${fragmentName}".`, [knownFragmentNames[fragmentName], node.name]));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `There can be only one fragment named "${fragmentName}".`,
+            [knownFragmentNames[fragmentName], node.name],
+          ),
+        );
       } else {
         knownFragmentNames[fragmentName] = node.name;
       }
 
       return false;
-    }
-
+    },
   };
 }

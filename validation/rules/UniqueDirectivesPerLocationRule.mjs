@@ -1,7 +1,10 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { Kind } from "../../language/kinds.mjs";
-import { isTypeDefinitionNode, isTypeExtensionNode } from "../../language/predicates.mjs";
-import { specifiedDirectives } from "../../type/directives.mjs";
+import { GraphQLError } from '../../error/GraphQLError.mjs';
+import { Kind } from '../../language/kinds.mjs';
+import {
+  isTypeDefinitionNode,
+  isTypeExtensionNode,
+} from '../../language/predicates.mjs';
+import { specifiedDirectives } from '../../type/directives.mjs';
 
 /**
  * Unique directive names per location
@@ -12,7 +15,9 @@ import { specifiedDirectives } from "../../type/directives.mjs";
 export function UniqueDirectivesPerLocationRule(context) {
   const uniqueDirectiveMap = Object.create(null);
   const schema = context.getSchema();
-  const definedDirectives = schema ? schema.getDirectives() : specifiedDirectives;
+  const definedDirectives = schema
+    ? schema.getDirectives()
+    : specifiedDirectives;
 
   for (const directive of definedDirectives) {
     uniqueDirectiveMap[directive.name] = !directive.isRepeatable;
@@ -39,7 +44,10 @@ export function UniqueDirectivesPerLocationRule(context) {
 
       let seenDirectives;
 
-      if (node.kind === Kind.SCHEMA_DEFINITION || node.kind === Kind.SCHEMA_EXTENSION) {
+      if (
+        node.kind === Kind.SCHEMA_DEFINITION ||
+        node.kind === Kind.SCHEMA_EXTENSION
+      ) {
         seenDirectives = schemaDirectives;
       } else if (isTypeDefinitionNode(node) || isTypeExtensionNode(node)) {
         const typeName = node.name.value;
@@ -57,13 +65,17 @@ export function UniqueDirectivesPerLocationRule(context) {
 
         if (uniqueDirectiveMap[directiveName]) {
           if (seenDirectives[directiveName]) {
-            context.reportError(new GraphQLError(`The directive "@${directiveName}" can only be used once at this location.`, [seenDirectives[directiveName], directive]));
+            context.reportError(
+              new GraphQLError(
+                `The directive "@${directiveName}" can only be used once at this location.`,
+                [seenDirectives[directiveName], directive],
+              ),
+            );
           } else {
             seenDirectives[directiveName] = directive;
           }
         }
       }
-    }
-
+    },
   };
 }

@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.valueFromAST = valueFromAST;
 
-var _keyMap = require("../jsutils/keyMap.js");
+var _keyMap = require('../jsutils/keyMap.js');
 
-var _inspect = require("../jsutils/inspect.js");
+var _inspect = require('../jsutils/inspect.js');
 
-var _invariant = require("../jsutils/invariant.js");
+var _invariant = require('../jsutils/invariant.js');
 
-var _kinds = require("../language/kinds.js");
+var _kinds = require('../language/kinds.js');
 
-var _definition = require("../type/definition.js");
+var _definition = require('../type/definition.js');
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -57,7 +57,6 @@ function valueFromAST(valueNode, type, variables) {
     } // Note: This does no further checking that this variable is correct.
     // This assumes that this query has been validated and the variable
     // usage here is of the correct type.
-
 
     return variableValue;
   }
@@ -119,7 +118,10 @@ function valueFromAST(valueNode, type, variables) {
     }
 
     const coercedObj = Object.create(null);
-    const fieldNodes = (0, _keyMap.keyMap)(valueNode.fields, field => field.name.value);
+    const fieldNodes = (0, _keyMap.keyMap)(
+      valueNode.fields,
+      (field) => field.name.value,
+    );
 
     for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes[field.name];
@@ -146,7 +148,6 @@ function valueFromAST(valueNode, type, variables) {
     return coercedObj;
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-
   if ((0, _definition.isLeafType)(type)) {
     // Scalars and Enums fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
@@ -166,12 +167,17 @@ function valueFromAST(valueNode, type, variables) {
     return result;
   } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
-
-  false || (0, _invariant.invariant)(0, 'Unexpected input type: ' + (0, _inspect.inspect)(type));
+  false ||
+    (0, _invariant.invariant)(
+      0,
+      'Unexpected input type: ' + (0, _inspect.inspect)(type),
+    );
 } // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 
-
 function isMissingVariable(valueNode, variables) {
-  return valueNode.kind === _kinds.Kind.VARIABLE && (variables == null || variables[valueNode.name.value] === undefined);
+  return (
+    valueNode.kind === _kinds.Kind.VARIABLE &&
+    (variables == null || variables[valueNode.name.value] === undefined)
+  );
 }

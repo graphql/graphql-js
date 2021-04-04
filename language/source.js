@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.isSource = isSource;
 exports.Source = void 0;
 
-var _inspect = require("../jsutils/inspect.js");
+var _inspect = require('../jsutils/inspect.js');
 
-var _devAssert = require("../jsutils/devAssert.js");
+var _devAssert = require('../jsutils/devAssert.js');
 
-var _instanceOf = require("../jsutils/instanceOf.js");
+var _instanceOf = require('../jsutils/instanceOf.js');
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -20,30 +20,43 @@ var _instanceOf = require("../jsutils/instanceOf.js");
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 class Source {
-  constructor(body, name = 'GraphQL request', locationOffset = {
-    line: 1,
-    column: 1
-  }) {
-    typeof body === 'string' || (0, _devAssert.devAssert)(0, `Body must be a string. Received: ${(0, _inspect.inspect)(body)}.`);
+  constructor(
+    body,
+    name = 'GraphQL request',
+    locationOffset = {
+      line: 1,
+      column: 1,
+    },
+  ) {
+    typeof body === 'string' ||
+      (0, _devAssert.devAssert)(
+        0,
+        `Body must be a string. Received: ${(0, _inspect.inspect)(body)}.`,
+      );
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
-    this.locationOffset.line > 0 || (0, _devAssert.devAssert)(0, 'line in locationOffset is 1-indexed and must be positive.');
-    this.locationOffset.column > 0 || (0, _devAssert.devAssert)(0, 'column in locationOffset is 1-indexed and must be positive.');
+    this.locationOffset.line > 0 ||
+      (0, _devAssert.devAssert)(
+        0,
+        'line in locationOffset is 1-indexed and must be positive.',
+      );
+    this.locationOffset.column > 0 ||
+      (0, _devAssert.devAssert)(
+        0,
+        'column in locationOffset is 1-indexed and must be positive.',
+      );
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-
 
   get [Symbol.toStringTag]() {
     return 'Source';
   }
-
 }
 /**
  * Test if the given value is a Source object.
  *
  * @internal
  */
-
 
 exports.Source = Source;
 

@@ -1,11 +1,18 @@
-import { inspect } from "../../jsutils/inspect.mjs";
-import { invariant } from "../../jsutils/invariant.mjs";
-import { didYouMean } from "../../jsutils/didYouMean.mjs";
-import { suggestionList } from "../../jsutils/suggestionList.mjs";
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { Kind } from "../../language/kinds.mjs";
-import { isTypeDefinitionNode } from "../../language/predicates.mjs";
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from "../../type/definition.mjs";
+import { inspect } from '../../jsutils/inspect.mjs';
+import { invariant } from '../../jsutils/invariant.mjs';
+import { didYouMean } from '../../jsutils/didYouMean.mjs';
+import { suggestionList } from '../../jsutils/suggestionList.mjs';
+import { GraphQLError } from '../../error/GraphQLError.mjs';
+import { Kind } from '../../language/kinds.mjs';
+import { isTypeDefinitionNode } from '../../language/predicates.mjs';
+import {
+  isScalarType,
+  isObjectType,
+  isInterfaceType,
+  isUnionType,
+  isEnumType,
+  isInputObjectType,
+} from '../../type/definition.mjs';
 
 /**
  * Possible type extension
@@ -28,13 +35,14 @@ export function PossibleTypeExtensionsRule(context) {
     InterfaceTypeExtension: checkExtension,
     UnionTypeExtension: checkExtension,
     EnumTypeExtension: checkExtension,
-    InputObjectTypeExtension: checkExtension
+    InputObjectTypeExtension: checkExtension,
   };
 
   function checkExtension(node) {
     const typeName = node.name.value;
     const defNode = definedTypes[typeName];
-    const existingType = schema === null || schema === void 0 ? void 0 : schema.getType(typeName);
+    const existingType =
+      schema === null || schema === void 0 ? void 0 : schema.getType(typeName);
     let expectedKind;
 
     if (defNode) {
@@ -46,7 +54,12 @@ export function PossibleTypeExtensionsRule(context) {
     if (expectedKind) {
       if (expectedKind !== node.kind) {
         const kindStr = extensionKindToTypeName(node.kind);
-        context.reportError(new GraphQLError(`Cannot extend non-${kindStr} type "${typeName}".`, defNode ? [defNode, node] : node));
+        context.reportError(
+          new GraphQLError(
+            `Cannot extend non-${kindStr} type "${typeName}".`,
+            defNode ? [defNode, node] : node,
+          ),
+        );
       }
     } else {
       let allTypeNames = Object.keys(definedTypes);
@@ -56,7 +69,13 @@ export function PossibleTypeExtensionsRule(context) {
       }
 
       const suggestedTypes = suggestionList(typeName, allTypeNames);
-      context.reportError(new GraphQLError(`Cannot extend type "${typeName}" because it is not defined.` + didYouMean(suggestedTypes), node.name));
+      context.reportError(
+        new GraphQLError(
+          `Cannot extend type "${typeName}" because it is not defined.` +
+            didYouMean(suggestedTypes),
+          node.name,
+        ),
+      );
     }
   }
 }
@@ -66,7 +85,7 @@ const defKindToExtKind = {
   [Kind.INTERFACE_TYPE_DEFINITION]: Kind.INTERFACE_TYPE_EXTENSION,
   [Kind.UNION_TYPE_DEFINITION]: Kind.UNION_TYPE_EXTENSION,
   [Kind.ENUM_TYPE_DEFINITION]: Kind.ENUM_TYPE_EXTENSION,
-  [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION
+  [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION,
 };
 
 function typeToExtKind(type) {
@@ -90,11 +109,9 @@ function typeToExtKind(type) {
     return Kind.ENUM_TYPE_EXTENSION;
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-
   if (isInputObjectType(type)) {
     return Kind.INPUT_OBJECT_TYPE_EXTENSION;
   } // istanbul ignore next (Not reachable. All possible types have been considered)
-
 
   false || invariant(0, 'Unexpected type: ' + inspect(type));
 }
@@ -119,7 +136,6 @@ function extensionKindToTypeName(kind) {
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
   } // istanbul ignore next (Not reachable. All possible types have been considered)
-
 
   false || invariant(0, 'Unexpected kind: ' + inspect(kind));
 }

@@ -1,4 +1,5 @@
 // @flow strict
+
 import { Lexer } from '../lexer';
 import { Source } from '../source';
 

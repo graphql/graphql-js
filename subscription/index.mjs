@@ -1,1 +1,1 @@
-export { subscribe, createSourceEventStream } from "./subscribe.mjs";
+export { subscribe, createSourceEventStream } from './subscribe.mjs';

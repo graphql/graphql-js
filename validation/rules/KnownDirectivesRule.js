@@ -1,21 +1,21 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.KnownDirectivesRule = KnownDirectivesRule;
 
-var _inspect = require("../../jsutils/inspect.js");
+var _inspect = require('../../jsutils/inspect.js');
 
-var _invariant = require("../../jsutils/invariant.js");
+var _invariant = require('../../jsutils/invariant.js');
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
-var _kinds = require("../../language/kinds.js");
+var _kinds = require('../../language/kinds.js');
 
-var _directiveLocation = require("../../language/directiveLocation.js");
+var _directiveLocation = require('../../language/directiveLocation.js');
 
-var _directives = require("../../type/directives.js");
+var _directives = require('../../type/directives.js');
 
 /**
  * Known directives
@@ -26,7 +26,9 @@ var _directives = require("../../type/directives.js");
 function KnownDirectivesRule(context) {
   const locationsMap = Object.create(null);
   const schema = context.getSchema();
-  const definedDirectives = schema ? schema.getDirectives() : _directives.specifiedDirectives;
+  const definedDirectives = schema
+    ? schema.getDirectives()
+    : _directives.specifiedDirectives;
 
   for (const directive of definedDirectives) {
     locationsMap[directive.name] = directive.locations;
@@ -36,7 +38,7 @@ function KnownDirectivesRule(context) {
 
   for (const def of astDefinitions) {
     if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
-      locationsMap[def.name.value] = def.locations.map(name => name.value);
+      locationsMap[def.name.value] = def.locations.map((name) => name.value);
     }
   }
 
@@ -46,17 +48,23 @@ function KnownDirectivesRule(context) {
       const locations = locationsMap[name];
 
       if (!locations) {
-        context.reportError(new _GraphQLError.GraphQLError(`Unknown directive "@${name}".`, node));
+        context.reportError(
+          new _GraphQLError.GraphQLError(`Unknown directive "@${name}".`, node),
+        );
         return;
       }
 
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
 
       if (candidateLocation && !locations.includes(candidateLocation)) {
-        context.reportError(new _GraphQLError.GraphQLError(`Directive "@${name}" may not be used on ${candidateLocation}.`, node));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `Directive "@${name}" may not be used on ${candidateLocation}.`,
+            node,
+          ),
+        );
       }
-    }
-
+    },
   };
 }
 
@@ -117,11 +125,12 @@ function getDirectiveLocationForASTPath(ancestors) {
     case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return _directiveLocation.DirectiveLocation.INPUT_OBJECT;
 
-    case _kinds.Kind.INPUT_VALUE_DEFINITION:
-      {
-        const parentNode = ancestors[ancestors.length - 3];
-        return parentNode.kind === _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
-      }
+    case _kinds.Kind.INPUT_VALUE_DEFINITION: {
+      const parentNode = ancestors[ancestors.length - 3];
+      return parentNode.kind === _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION
+        ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION
+        : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
+    }
   }
 }
 
@@ -137,6 +146,9 @@ function getDirectiveLocationForOperation(operation) {
       return _directiveLocation.DirectiveLocation.SUBSCRIPTION;
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 
-
-  false || (0, _invariant.invariant)(0, 'Unexpected operation: ' + (0, _inspect.inspect)(operation));
+  false ||
+    (0, _invariant.invariant)(
+      0,
+      'Unexpected operation: ' + (0, _inspect.inspect)(operation),
+    );
 }

@@ -1,7 +1,7 @@
-import { invariant } from "../jsutils/invariant.mjs";
-import { parse } from "../language/parser.mjs";
-import { executeSync } from "../execution/execute.mjs";
-import { getIntrospectionQuery } from "./getIntrospectionQuery.mjs";
+import { invariant } from '../jsutils/invariant.mjs';
+import { parse } from '../language/parser.mjs';
+import { executeSync } from '../execution/execute.mjs';
+import { getIntrospectionQuery } from './getIntrospectionQuery.mjs';
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
  *
@@ -18,13 +18,13 @@ export function introspectionFromSchema(schema, options) {
     directiveIsRepeatable: true,
     schemaDescription: true,
     inputValueDeprecation: true,
-    ...options
+    ...options,
   };
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
   const result = executeSync({
     schema,
-    document
+    document,
   });
-  !result.errors && result.data || invariant(0);
+  (!result.errors && result.data) || invariant(0);
   return result.data;
 }

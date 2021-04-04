@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.NoSchemaIntrospectionCustomRule = NoSchemaIntrospectionCustomRule;
 
-var _GraphQLError = require("../../../error/GraphQLError.js");
+var _GraphQLError = require('../../../error/GraphQLError.js');
 
-var _definition = require("../../../type/definition.js");
+var _definition = require('../../../type/definition.js');
 
-var _introspection = require("../../../type/introspection.js");
+var _introspection = require('../../../type/introspection.js');
 
 /**
  * Prohibit introspection queries
@@ -27,9 +27,13 @@ function NoSchemaIntrospectionCustomRule(context) {
       const type = (0, _definition.getNamedType)(context.getType());
 
       if (type && (0, _introspection.isIntrospectionType)(type)) {
-        context.reportError(new _GraphQLError.GraphQLError(`GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`, node));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`,
+            node,
+          ),
+        );
       }
-    }
-
+    },
   };
 }

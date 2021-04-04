@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.Kind = void 0;
 
@@ -62,7 +62,7 @@ const Kind = Object.freeze({
   INTERFACE_TYPE_EXTENSION: 'InterfaceTypeExtension',
   UNION_TYPE_EXTENSION: 'UnionTypeExtension',
   ENUM_TYPE_EXTENSION: 'EnumTypeExtension',
-  INPUT_OBJECT_TYPE_EXTENSION: 'InputObjectTypeExtension'
+  INPUT_OBJECT_TYPE_EXTENSION: 'InputObjectTypeExtension',
 });
 /**
  * The enum type representing the possible kind values of AST nodes.

@@ -15,5 +15,5 @@ export const versionInfo = Object.freeze({
   major: 15,
   minor: 4,
   patch: 0,
-  preReleaseTag: null
+  preReleaseTag: null,
 });

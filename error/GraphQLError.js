@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.printError = printError;
 exports.GraphQLError = void 0;
 
-var _isObjectLike = require("../jsutils/isObjectLike.js");
+var _isObjectLike = require('../jsutils/isObjectLike.js');
 
-var _location = require("../language/location.js");
+var _location = require('../language/location.js');
 
-var _printLocation = require("../language/printLocation.js");
+var _printLocation = require('../language/printLocation.js');
 
 // FIXME:
 // flowlint uninitialized-instance-property:off
@@ -71,20 +71,36 @@ class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  constructor(message, nodes, source, positions, path, originalError, extensions) {
+  constructor(
+    message,
+    nodes,
+    source,
+    positions,
+    path,
+    originalError,
+    extensions,
+  ) {
     var _locations2, _source2, _positions2, _extensions2;
 
     super(message); // Compute list of blame nodes.
 
-    const _nodes = Array.isArray(nodes) ? nodes.length !== 0 ? nodes : undefined : nodes ? [nodes] : undefined; // Compute locations in the source for the given nodes/positions.
-
+    const _nodes = Array.isArray(nodes)
+      ? nodes.length !== 0
+        ? nodes
+        : undefined
+      : nodes
+      ? [nodes]
+      : undefined; // Compute locations in the source for the given nodes/positions.
 
     let _source = source;
 
     if (!_source && _nodes) {
       var _nodes$0$loc;
 
-      _source = (_nodes$0$loc = _nodes[0].loc) === null || _nodes$0$loc === void 0 ? void 0 : _nodes$0$loc.source;
+      _source =
+        (_nodes$0$loc = _nodes[0].loc) === null || _nodes$0$loc === void 0
+          ? void 0
+          : _nodes$0$loc.source;
     }
 
     let _positions = positions;
@@ -106,13 +122,17 @@ class GraphQLError extends Error {
     let _locations;
 
     if (positions && source) {
-      _locations = positions.map(pos => (0, _location.getLocation)(source, pos));
+      _locations = positions.map((pos) =>
+        (0, _location.getLocation)(source, pos),
+      );
     } else if (_nodes) {
       _locations = [];
 
       for (const node of _nodes) {
         if (node.loc) {
-          _locations.push((0, _location.getLocation)(node.loc.source, node.loc.start));
+          _locations.push(
+            (0, _location.getLocation)(node.loc.source, node.loc.start),
+          );
         }
       }
     }
@@ -129,7 +149,7 @@ class GraphQLError extends Error {
 
     Object.defineProperties(this, {
       name: {
-        value: 'GraphQLError'
+        value: 'GraphQLError',
       },
       message: {
         value: message,
@@ -137,16 +157,19 @@ class GraphQLError extends Error {
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.
         enumerable: true,
-        writable: true
+        writable: true,
       },
       locations: {
         // Coercing falsy values to undefined ensures they will not be included
         // in JSON.stringify() when not provided.
-        value: (_locations2 = _locations) !== null && _locations2 !== void 0 ? _locations2 : undefined,
+        value:
+          (_locations2 = _locations) !== null && _locations2 !== void 0
+            ? _locations2
+            : undefined,
         // By being enumerable, JSON.stringify will include `locations` in the
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.
-        enumerable: _locations != null
+        enumerable: _locations != null,
       },
       path: {
         // Coercing falsy values to undefined ensures they will not be included
@@ -155,40 +178,52 @@ class GraphQLError extends Error {
         // By being enumerable, JSON.stringify will include `path` in the
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.
-        enumerable: path != null
+        enumerable: path != null,
       },
       nodes: {
-        value: _nodes !== null && _nodes !== void 0 ? _nodes : undefined
+        value: _nodes !== null && _nodes !== void 0 ? _nodes : undefined,
       },
       source: {
-        value: (_source2 = _source) !== null && _source2 !== void 0 ? _source2 : undefined
+        value:
+          (_source2 = _source) !== null && _source2 !== void 0
+            ? _source2
+            : undefined,
       },
       positions: {
-        value: (_positions2 = _positions) !== null && _positions2 !== void 0 ? _positions2 : undefined
+        value:
+          (_positions2 = _positions) !== null && _positions2 !== void 0
+            ? _positions2
+            : undefined,
       },
       originalError: {
-        value: originalError
+        value: originalError,
       },
       extensions: {
         // Coercing falsy values to undefined ensures they will not be included
         // in JSON.stringify() when not provided.
-        value: (_extensions2 = _extensions) !== null && _extensions2 !== void 0 ? _extensions2 : undefined,
+        value:
+          (_extensions2 = _extensions) !== null && _extensions2 !== void 0
+            ? _extensions2
+            : undefined,
         // By being enumerable, JSON.stringify will include `path` in the
         // resulting output. This ensures that the simplest possible GraphQL
         // service adheres to the spec.
-        enumerable: _extensions != null
-      }
+        enumerable: _extensions != null,
+      },
     }); // Include (non-enumerable) stack trace.
 
-    if (originalError !== null && originalError !== void 0 && originalError.stack) {
+    if (
+      originalError !== null &&
+      originalError !== void 0 &&
+      originalError.stack
+    ) {
       Object.defineProperty(this, 'stack', {
         value: originalError.stack,
         writable: true,
-        configurable: true
+        configurable: true,
       });
       return;
     } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
-
 
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, GraphQLError);
@@ -196,7 +231,7 @@ class GraphQLError extends Error {
       Object.defineProperty(this, 'stack', {
         value: Error().stack,
         writable: true,
-        configurable: true
+        configurable: true,
       });
     }
   }
@@ -206,17 +241,14 @@ class GraphQLError extends Error {
   } // FIXME: workaround to not break chai comparisons, should be remove in v16
   // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
-
   get [Symbol.toStringTag]() {
     return 'Object';
   }
-
 }
 /**
  * Prints a GraphQLError to a string, representing useful location information
  * about the error's position in the source.
  */
-
 
 exports.GraphQLError = GraphQLError;
 
@@ -231,7 +263,9 @@ function printError(error) {
     }
   } else if (error.source && error.locations) {
     for (const location of error.locations) {
-      output += '\n\n' + (0, _printLocation.printSourceLocation)(error.source, location);
+      output +=
+        '\n\n' +
+        (0, _printLocation.printSourceLocation)(error.source, location);
     }
   }
 

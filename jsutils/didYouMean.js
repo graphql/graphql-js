@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.didYouMean = didYouMean;
 const MAX_SUGGESTIONS = 5;
@@ -11,14 +11,17 @@ const MAX_SUGGESTIONS = 5;
 
 // eslint-disable-next-line no-redeclare
 function didYouMean(firstArg, secondArg) {
-  const [subMessage, suggestionsArg] = typeof firstArg === 'string' ? [firstArg, secondArg] : [undefined, firstArg];
+  const [subMessage, suggestionsArg] =
+    typeof firstArg === 'string'
+      ? [firstArg, secondArg]
+      : [undefined, firstArg];
   let message = ' Did you mean ';
 
   if (subMessage) {
     message += subMessage + ' ';
   }
 
-  const suggestions = suggestionsArg.map(x => `"${x}"`);
+  const suggestions = suggestionsArg.map((x) => `"${x}"`);
 
   switch (suggestions.length) {
     case 0:

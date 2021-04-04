@@ -5,7 +5,7 @@ export function addPath(prev, key, typename) {
   return {
     prev,
     key,
-    typename
+    typename,
   };
 }
 /**

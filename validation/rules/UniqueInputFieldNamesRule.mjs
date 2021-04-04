@@ -1,4 +1,4 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { GraphQLError } from '../../error/GraphQLError.mjs';
 
 /**
  * Unique input field names
@@ -18,19 +18,22 @@ export function UniqueInputFieldNamesRule(context) {
 
       leave() {
         knownNames = knownNameStack.pop();
-      }
-
+      },
     },
 
     ObjectField(node) {
       const fieldName = node.name.value;
 
       if (knownNames[fieldName]) {
-        context.reportError(new GraphQLError(`There can be only one input field named "${fieldName}".`, [knownNames[fieldName], node.name]));
+        context.reportError(
+          new GraphQLError(
+            `There can be only one input field named "${fieldName}".`,
+            [knownNames[fieldName], node.name],
+          ),
+        );
       } else {
         knownNames[fieldName] = node.name;
       }
-    }
-
+    },
   };
 }

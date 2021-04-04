@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.promiseForObject = promiseForObject;
 
@@ -13,7 +13,7 @@ exports.promiseForObject = promiseForObject;
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
 function promiseForObject(object) {
-  return Promise.all(Object.values(object)).then(resolvedValues => {
+  return Promise.all(Object.values(object)).then((resolvedValues) => {
     const resolvedObject = Object.create(null);
 
     for (const [i, key] of Object.keys(object).entries()) {

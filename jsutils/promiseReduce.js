@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.promiseReduce = promiseReduce;
 
-var _isPromise = require("./isPromise.js");
+var _isPromise = require('./isPromise.js');
 
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
@@ -15,5 +15,11 @@ var _isPromise = require("./isPromise.js");
  * return a Promise.
  */
 function promiseReduce(values, callback, initialValue) {
-  return values.reduce((previous, value) => (0, _isPromise.isPromise)(previous) ? previous.then(resolved => callback(resolved, value)) : callback(previous, value), initialValue);
+  return values.reduce(
+    (previous, value) =>
+      (0, _isPromise.isPromise)(previous)
+        ? previous.then((resolved) => callback(resolved, value))
+        : callback(previous, value),
+    initialValue,
+  );
 }

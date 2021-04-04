@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.PossibleFragmentSpreadsRule = PossibleFragmentSpreadsRule;
 
-var _inspect = require("../../jsutils/inspect.js");
+var _inspect = require('../../jsutils/inspect.js');
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
-var _definition = require("../../type/definition.js");
+var _definition = require('../../type/definition.js');
 
-var _typeFromAST = require("../../utilities/typeFromAST.js");
+var _typeFromAST = require('../../utilities/typeFromAST.js');
 
-var _typeComparators = require("../../utilities/typeComparators.js");
+var _typeComparators = require('../../utilities/typeComparators.js');
 
 /**
  * Possible fragment spread
@@ -28,10 +28,23 @@ function PossibleFragmentSpreadsRule(context) {
       const fragType = context.getType();
       const parentType = context.getParentType();
 
-      if ((0, _definition.isCompositeType)(fragType) && (0, _definition.isCompositeType)(parentType) && !(0, _typeComparators.doTypesOverlap)(context.getSchema(), fragType, parentType)) {
+      if (
+        (0, _definition.isCompositeType)(fragType) &&
+        (0, _definition.isCompositeType)(parentType) &&
+        !(0, _typeComparators.doTypesOverlap)(
+          context.getSchema(),
+          fragType,
+          parentType,
+        )
+      ) {
         const parentTypeStr = (0, _inspect.inspect)(parentType);
         const fragTypeStr = (0, _inspect.inspect)(fragType);
-        context.reportError(new _GraphQLError.GraphQLError(`Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`, node));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
+            node,
+          ),
+        );
       }
     },
 
@@ -40,13 +53,25 @@ function PossibleFragmentSpreadsRule(context) {
       const fragType = getFragmentType(context, fragName);
       const parentType = context.getParentType();
 
-      if (fragType && parentType && !(0, _typeComparators.doTypesOverlap)(context.getSchema(), fragType, parentType)) {
+      if (
+        fragType &&
+        parentType &&
+        !(0, _typeComparators.doTypesOverlap)(
+          context.getSchema(),
+          fragType,
+          parentType,
+        )
+      ) {
         const parentTypeStr = (0, _inspect.inspect)(parentType);
         const fragTypeStr = (0, _inspect.inspect)(fragType);
-        context.reportError(new _GraphQLError.GraphQLError(`Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`, node));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
+            node,
+          ),
+        );
       }
-    }
-
+    },
   };
 }
 
@@ -54,7 +79,10 @@ function getFragmentType(context, name) {
   const frag = context.getFragment(name);
 
   if (frag) {
-    const type = (0, _typeFromAST.typeFromAST)(context.getSchema(), frag.typeCondition);
+    const type = (0, _typeFromAST.typeFromAST)(
+      context.getSchema(),
+      frag.typeCondition,
+    );
 
     if ((0, _definition.isCompositeType)(type)) {
       return type;

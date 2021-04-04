@@ -1,4 +1,4 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { GraphQLError } from '../../error/GraphQLError.mjs';
 
 /**
  * No unused variables
@@ -18,9 +18,7 @@ export function NoUnusedVariablesRule(context) {
         const variableNameUsed = Object.create(null);
         const usages = context.getRecursiveVariableUsages(operation);
 
-        for (const {
-          node
-        } of usages) {
+        for (const { node } of usages) {
           variableNameUsed[node.name.value] = true;
         }
 
@@ -28,16 +26,21 @@ export function NoUnusedVariablesRule(context) {
           const variableName = variableDef.variable.name.value;
 
           if (variableNameUsed[variableName] !== true) {
-            context.reportError(new GraphQLError(operation.name ? `Variable "$${variableName}" is never used in operation "${operation.name.value}".` : `Variable "$${variableName}" is never used.`, variableDef));
+            context.reportError(
+              new GraphQLError(
+                operation.name
+                  ? `Variable "$${variableName}" is never used in operation "${operation.name.value}".`
+                  : `Variable "$${variableName}" is never used.`,
+                variableDef,
+              ),
+            );
           }
         }
-      }
-
+      },
     },
 
     VariableDefinition(def) {
       variableDefs.push(def);
-    }
-
+    },
   };
 }

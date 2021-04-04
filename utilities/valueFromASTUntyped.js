@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.valueFromASTUntyped = valueFromASTUntyped;
 
-var _inspect = require("../jsutils/inspect.js");
+var _inspect = require('../jsutils/inspect.js');
 
-var _invariant = require("../jsutils/invariant.js");
+var _invariant = require('../jsutils/invariant.js');
 
-var _keyValMap = require("../jsutils/keyValMap.js");
+var _keyValMap = require('../jsutils/keyValMap.js');
 
-var _kinds = require("../language/kinds.js");
+var _kinds = require('../language/kinds.js');
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -46,15 +46,26 @@ function valueFromASTUntyped(valueNode, variables) {
       return valueNode.value;
 
     case _kinds.Kind.LIST:
-      return valueNode.values.map(node => valueFromASTUntyped(node, variables));
+      return valueNode.values.map((node) =>
+        valueFromASTUntyped(node, variables),
+      );
 
     case _kinds.Kind.OBJECT:
-      return (0, _keyValMap.keyValMap)(valueNode.fields, field => field.name.value, field => valueFromASTUntyped(field.value, variables));
+      return (0, _keyValMap.keyValMap)(
+        valueNode.fields,
+        (field) => field.name.value,
+        (field) => valueFromASTUntyped(field.value, variables),
+      );
 
     case _kinds.Kind.VARIABLE:
-      return variables === null || variables === void 0 ? void 0 : variables[valueNode.name.value];
+      return variables === null || variables === void 0
+        ? void 0
+        : variables[valueNode.name.value];
   } // istanbul ignore next (Not reachable. All possible value nodes have been considered)
 
-
-  false || (0, _invariant.invariant)(0, 'Unexpected value node: ' + (0, _inspect.inspect)(valueNode));
+  false ||
+    (0, _invariant.invariant)(
+      0,
+      'Unexpected value node: ' + (0, _inspect.inspect)(valueNode),
+    );
 }

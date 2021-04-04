@@ -1,4 +1,5 @@
 // @flow strict
+
 import type { DocumentNode } from '../language/ast';
 
 /**

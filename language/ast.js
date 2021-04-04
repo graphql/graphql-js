@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.isNode = isNode;
 exports.Token = exports.Location = void 0;
@@ -41,16 +41,14 @@ class Location {
   toJSON() {
     return {
       start: this.start,
-      end: this.end
+      end: this.end,
     };
   }
-
 }
 /**
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
-
 
 exports.Location = Location;
 
@@ -100,15 +98,13 @@ class Token {
       kind: this.kind,
       value: this.value,
       line: this.line,
-      column: this.column
+      column: this.column,
     };
   }
-
 }
 /**
  * @internal
  */
-
 
 exports.Token = Token;
 

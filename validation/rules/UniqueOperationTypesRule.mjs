@@ -1,4 +1,4 @@
-import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { GraphQLError } from '../../error/GraphQLError.mjs';
 
 /**
  * Unique operation types
@@ -8,30 +8,46 @@ import { GraphQLError } from "../../error/GraphQLError.mjs";
 export function UniqueOperationTypesRule(context) {
   const schema = context.getSchema();
   const definedOperationTypes = Object.create(null);
-  const existingOperationTypes = schema ? {
-    query: schema.getQueryType(),
-    mutation: schema.getMutationType(),
-    subscription: schema.getSubscriptionType()
-  } : {};
+  const existingOperationTypes = schema
+    ? {
+        query: schema.getQueryType(),
+        mutation: schema.getMutationType(),
+        subscription: schema.getSubscriptionType(),
+      }
+    : {};
   return {
     SchemaDefinition: checkOperationTypes,
-    SchemaExtension: checkOperationTypes
+    SchemaExtension: checkOperationTypes,
   };
 
   function checkOperationTypes(node) {
     var _node$operationTypes;
 
     // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-    const operationTypesNodes = (_node$operationTypes = node.operationTypes) !== null && _node$operationTypes !== void 0 ? _node$operationTypes : [];
+    const operationTypesNodes =
+      (_node$operationTypes = node.operationTypes) !== null &&
+      _node$operationTypes !== void 0
+        ? _node$operationTypes
+        : [];
 
     for (const operationType of operationTypesNodes) {
       const operation = operationType.operation;
       const alreadyDefinedOperationType = definedOperationTypes[operation];
 
       if (existingOperationTypes[operation]) {
-        context.reportError(new GraphQLError(`Type for ${operation} already defined in the schema. It cannot be redefined.`, operationType));
+        context.reportError(
+          new GraphQLError(
+            `Type for ${operation} already defined in the schema. It cannot be redefined.`,
+            operationType,
+          ),
+        );
       } else if (alreadyDefinedOperationType) {
-        context.reportError(new GraphQLError(`There can be only one ${operation} type in schema.`, [alreadyDefinedOperationType, operationType]));
+        context.reportError(
+          new GraphQLError(
+            `There can be only one ${operation} type in schema.`,
+            [alreadyDefinedOperationType, operationType],
+          ),
+        );
       } else {
         definedOperationTypes[operation] = operationType;
       }

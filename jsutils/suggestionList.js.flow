@@ -1,4 +1,5 @@
 // @flow strict
+
 import { naturalCompare } from './naturalCompare';
 
 /**

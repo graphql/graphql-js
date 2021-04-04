@@ -1,6 +1,6 @@
-import { Lexer } from "../lexer.mjs";
-import { Source } from "../source.mjs";
-import { grammar } from "./grammar.mjs";
+import { Lexer } from '../lexer.mjs';
+import { Source } from '../source.mjs';
+import { grammar } from './grammar.mjs';
 export const TokenKind = {
   NAME: 'Name',
   INT: 'Int',
@@ -10,7 +10,7 @@ export const TokenKind = {
   COMMENT: 'Comment',
   PUNCTUATION: 'Punctuation',
   EOF: '<EOF>',
-  INVALID: 'Invalid'
+  INVALID: 'Invalid',
 };
 export const RuleKind = {
   TOKEN_CONSTRAINT: 'TokenConstraint',
@@ -20,7 +20,7 @@ export const RuleKind = {
   CONSTRAINTS_SET: 'ConstraintsSet',
   CONSTRAINTS_SET_ROOT: 'ConstraintsSetRoot',
   RULE_NAME: 'RuleName',
-  INVALID: 'Invalid'
+  INVALID: 'Invalid',
 };
 export class OnlineParser {
   constructor(source, state, config) {
@@ -28,23 +28,30 @@ export class OnlineParser {
 
     this.state = state || OnlineParser.startState();
     this._config = {
-      tabSize: (_config$tabSize = config === null || config === void 0 ? void 0 : config.tabSize) !== null && _config$tabSize !== void 0 ? _config$tabSize : 2
+      tabSize:
+        (_config$tabSize =
+          config === null || config === void 0 ? void 0 : config.tabSize) !==
+          null && _config$tabSize !== void 0
+          ? _config$tabSize
+          : 2,
     };
     this._lexer = new Lexer(new Source(source));
   }
 
   static startState() {
     return {
-      rules: [// $FlowFixMe[cannot-spread-interface]
-      {
-        name: 'Document',
-        state: 'Document',
-        kind: 'ListOfTypeConstraint',
-        ...grammar.Document,
-        expanded: false,
-        depth: 1,
-        step: 1
-      }],
+      rules: [
+        // $FlowFixMe[cannot-spread-interface]
+        {
+          name: 'Document',
+          state: 'Document',
+          kind: 'ListOfTypeConstraint',
+          ...grammar.Document,
+          expanded: false,
+          depth: 1,
+          step: 1,
+        },
+      ],
       name: null,
       type: null,
       levels: [],
@@ -53,15 +60,24 @@ export class OnlineParser {
       kind() {
         var _this$rules;
 
-        return ((_this$rules = this.rules[this.rules.length - 1]) === null || _this$rules === void 0 ? void 0 : _this$rules.state) || '';
+        return (
+          ((_this$rules = this.rules[this.rules.length - 1]) === null ||
+          _this$rules === void 0
+            ? void 0
+            : _this$rules.state) || ''
+        );
       },
 
       step() {
         var _this$rules2;
 
-        return ((_this$rules2 = this.rules[this.rules.length - 1]) === null || _this$rules2 === void 0 ? void 0 : _this$rules2.step) || 0;
-      }
-
+        return (
+          ((_this$rules2 = this.rules[this.rules.length - 1]) === null ||
+          _this$rules2 === void 0
+            ? void 0
+            : _this$rules2.step) || 0
+        );
+      },
     };
   }
 
@@ -76,33 +92,47 @@ export class OnlineParser {
       kind() {
         var _this$rules3;
 
-        return ((_this$rules3 = this.rules[this.rules.length - 1]) === null || _this$rules3 === void 0 ? void 0 : _this$rules3.state) || '';
+        return (
+          ((_this$rules3 = this.rules[this.rules.length - 1]) === null ||
+          _this$rules3 === void 0
+            ? void 0
+            : _this$rules3.state) || ''
+        );
       },
 
       step() {
         var _this$rules4;
 
-        return ((_this$rules4 = this.rules[this.rules.length - 1]) === null || _this$rules4 === void 0 ? void 0 : _this$rules4.step) || 0;
-      }
-
+        return (
+          ((_this$rules4 = this.rules[this.rules.length - 1]) === null ||
+          _this$rules4 === void 0
+            ? void 0
+            : _this$rules4.step) || 0
+        );
+      },
     };
   }
 
   sol() {
-    return this._lexer.source.locationOffset.line === 1 && this._lexer.source.locationOffset.column === 1;
+    return (
+      this._lexer.source.locationOffset.line === 1 &&
+      this._lexer.source.locationOffset.column === 1
+    );
   }
 
   parseToken() {
     const rule = this._getNextRule();
 
     if (this.sol()) {
-      this.state.indentLevel = Math.floor(this.indentation() / this._config.tabSize);
+      this.state.indentLevel = Math.floor(
+        this.indentation() / this._config.tabSize,
+      );
     }
 
     if (!rule) {
       return {
         kind: TokenKind.INVALID,
-        value: ''
+        value: '',
       };
     }
 
@@ -112,7 +142,7 @@ export class OnlineParser {
       return {
         kind: TokenKind.EOF,
         value: '',
-        ruleName: rule.name
+        ruleName: rule.name,
       };
     }
 
@@ -141,7 +171,7 @@ export class OnlineParser {
         return {
           kind: TokenKind.INVALID,
           value: '',
-          ruleName: rule.name
+          ruleName: rule.name,
         };
     }
 
@@ -190,7 +220,7 @@ export class OnlineParser {
         kind: TokenKind.INVALID,
         value: '',
         tokenName: rule.tokenName,
-        ruleName: rule.name
+        ruleName: rule.name,
       };
     }
 
@@ -204,7 +234,13 @@ export class OnlineParser {
   }
 
   _parseListOfTypeConstraint(rule) {
-    this._pushRule(grammar[rule.listOfType], rule.depth + 1, rule.listOfType, 1, rule.state);
+    this._pushRule(
+      grammar[rule.listOfType],
+      rule.depth + 1,
+      rule.listOfType,
+      1,
+      rule.state,
+    );
 
     rule.expanded = true;
     const token = this.parseToken();
@@ -235,9 +271,7 @@ export class OnlineParser {
     while (!rule.matched && rule.index < rule.peek.length - 1) {
       rule.index++;
       const constraint = rule.peek[rule.index];
-      let {
-        ifCondition
-      } = constraint;
+      let { ifCondition } = constraint;
 
       if (typeof ifCondition === 'string') {
         ifCondition = grammar[ifCondition];
@@ -259,7 +293,7 @@ export class OnlineParser {
     return {
       kind: TokenKind.INVALID,
       value: '',
-      ruleName: rule.name
+      ruleName: rule.name,
     };
   }
 
@@ -271,7 +305,13 @@ export class OnlineParser {
     }
 
     for (let index = rule.constraints.length - 1; index >= 0; index--) {
-      this._pushRule(rule.constraints[index], rule.depth + 1, '', index, rule.state);
+      this._pushRule(
+        rule.constraints[index],
+        rule.depth + 1,
+        '',
+        index,
+        rule.state,
+      );
     }
 
     rule.expanded = true;
@@ -280,7 +320,13 @@ export class OnlineParser {
 
   _matchToken(token, rule) {
     if (typeof token.value === 'string') {
-      if (typeof rule.ofValue === 'string' && token.value !== rule.ofValue || Array.isArray(rule.oneOf) && !rule.oneOf.includes(token.value) || typeof rule.ofValue !== 'string' && !Array.isArray(rule.oneOf) && token.kind !== rule.token) {
+      if (
+        (typeof rule.ofValue === 'string' && token.value !== rule.ofValue) ||
+        (Array.isArray(rule.oneOf) && !rule.oneOf.includes(token.value)) ||
+        (typeof rule.ofValue !== 'string' &&
+          !Array.isArray(rule.oneOf) &&
+          token.kind !== rule.token)
+      ) {
         return false;
       }
 
@@ -297,7 +343,9 @@ export class OnlineParser {
   _butNot(token, rule) {
     if (rule.butNot) {
       if (Array.isArray(rule.butNot)) {
-        return !rule.butNot.some(constraint => this._matchToken(token, constraint));
+        return !rule.butNot.some((constraint) =>
+          this._matchToken(token, constraint),
+        );
       }
 
       return !this._matchToken(token, rule.butNot);
@@ -316,7 +364,7 @@ export class OnlineParser {
         kind: lexerToken.kind,
         value: lexerToken.value || '',
         tokenName,
-        ruleName
+        ruleName,
       };
 
       if (token.kind === TokenKind.STRING) {
@@ -329,12 +377,14 @@ export class OnlineParser {
         kind: TokenKind.PUNCTUATION,
         value: lexerToken.kind,
         tokenName,
-        ruleName
+        ruleName,
       };
 
       if (/^[{([]/.test(token.value)) {
         if (this.state.indentLevel !== undefined) {
-          this.state.levels = this.state.levels.concat(this.state.indentLevel + 1);
+          this.state.levels = this.state.levels.concat(
+            this.state.indentLevel + 1,
+          );
         }
       } else if (/^[})\]]/.test(token.value)) {
         this.state.levels.pop();
@@ -371,11 +421,19 @@ export class OnlineParser {
       return;
     }
 
-    if (nextRule.depth === rule.depth - 1 && nextRule.expanded && nextRule.kind === RuleKind.CONSTRAINTS_SET_ROOT) {
+    if (
+      nextRule.depth === rule.depth - 1 &&
+      nextRule.expanded &&
+      nextRule.kind === RuleKind.CONSTRAINTS_SET_ROOT
+    ) {
       this.state.rules.pop();
     }
 
-    if (nextRule.depth === rule.depth - 1 && nextRule.expanded && nextRule.kind === RuleKind.LIST_OF_TYPE_CONSTRAINT) {
+    if (
+      nextRule.depth === rule.depth - 1 &&
+      nextRule.expanded &&
+      nextRule.kind === RuleKind.LIST_OF_TYPE_CONSTRAINT
+    ) {
       nextRule.expanded = false;
       nextRule.optional = true;
     }
@@ -404,7 +462,12 @@ export class OnlineParser {
 
     let nextRule = this._getNextRule();
 
-    while (nextRule && (poppedRule.kind !== RuleKind.LIST_OF_TYPE_CONSTRAINT || nextRule.expanded) && nextRule.depth > poppedRule.depth - 1) {
+    while (
+      nextRule &&
+      (poppedRule.kind !== RuleKind.LIST_OF_TYPE_CONSTRAINT ||
+        nextRule.expanded) &&
+      nextRule.depth > poppedRule.depth - 1
+    ) {
       this.state.rules.pop();
       popped++;
       nextRule = this._getNextRule();
@@ -414,7 +477,10 @@ export class OnlineParser {
       if (nextRule.optional === true) {
         popRule();
       } else {
-        if (nextRule.kind === RuleKind.LIST_OF_TYPE_CONSTRAINT && popped === 1) {
+        if (
+          nextRule.kind === RuleKind.LIST_OF_TYPE_CONSTRAINT &&
+          popped === 1
+        ) {
           this.state.rules.pop();
           return;
         }
@@ -425,7 +491,16 @@ export class OnlineParser {
   }
 
   _pushRule(baseRule, depth, name, step, state) {
-    var _this$_getNextRule, _this$_getNextRule2, _this$_getNextRule3, _this$_getNextRule4, _this$_getNextRule5, _this$_getNextRule6, _this$_getNextRule7, _this$_getNextRule8, _this$_getNextRule9, _this$_getNextRule10;
+    var _this$_getNextRule,
+      _this$_getNextRule2,
+      _this$_getNextRule3,
+      _this$_getNextRule4,
+      _this$_getNextRule5,
+      _this$_getNextRule6,
+      _this$_getNextRule7,
+      _this$_getNextRule8,
+      _this$_getNextRule9,
+      _this$_getNextRule10;
 
     this.state.name = null;
     this.state.type = null;
@@ -435,7 +510,13 @@ export class OnlineParser {
       case RuleKind.RULE_NAME:
         rule = rule;
 
-        this._pushRule(grammar[rule], depth, (typeof name === 'string' ? name : undefined) || rule, step, state);
+        this._pushRule(
+          grammar[rule],
+          depth,
+          (typeof name === 'string' ? name : undefined) || rule,
+          step,
+          state,
+        );
 
         break;
 
@@ -448,8 +529,21 @@ export class OnlineParser {
           constraints: rule,
           constraintsSet: true,
           kind: RuleKind.CONSTRAINTS_SET_ROOT,
-          state: (typeof name === 'string' ? name : undefined) || (typeof state === 'string' ? state : undefined) || ((_this$_getNextRule = this._getNextRule()) === null || _this$_getNextRule === void 0 ? void 0 : _this$_getNextRule.state) || '',
-          step: typeof step === 'number' ? step : (((_this$_getNextRule2 = this._getNextRule()) === null || _this$_getNextRule2 === void 0 ? void 0 : _this$_getNextRule2.step) || 0) + 1
+          state:
+            (typeof name === 'string' ? name : undefined) ||
+            (typeof state === 'string' ? state : undefined) ||
+            ((_this$_getNextRule = this._getNextRule()) === null ||
+            _this$_getNextRule === void 0
+              ? void 0
+              : _this$_getNextRule.state) ||
+            '',
+          step:
+            typeof step === 'number'
+              ? step
+              : (((_this$_getNextRule2 = this._getNextRule()) === null ||
+                _this$_getNextRule2 === void 0
+                  ? void 0
+                  : _this$_getNextRule2.step) || 0) + 1,
         });
         break;
 
@@ -464,8 +558,22 @@ export class OnlineParser {
           depth,
           expanded: false,
           kind: RuleKind.OF_TYPE_CONSTRAINT,
-          state: (typeof rule.tokenName === 'string' ? rule.tokenName : undefined) || (typeof name === 'string' ? name : undefined) || (typeof state === 'string' ? state : undefined) || ((_this$_getNextRule3 = this._getNextRule()) === null || _this$_getNextRule3 === void 0 ? void 0 : _this$_getNextRule3.state) || '',
-          step: typeof step === 'number' ? step : (((_this$_getNextRule4 = this._getNextRule()) === null || _this$_getNextRule4 === void 0 ? void 0 : _this$_getNextRule4.step) || 0) + 1
+          state:
+            (typeof rule.tokenName === 'string' ? rule.tokenName : undefined) ||
+            (typeof name === 'string' ? name : undefined) ||
+            (typeof state === 'string' ? state : undefined) ||
+            ((_this$_getNextRule3 = this._getNextRule()) === null ||
+            _this$_getNextRule3 === void 0
+              ? void 0
+              : _this$_getNextRule3.state) ||
+            '',
+          step:
+            typeof step === 'number'
+              ? step
+              : (((_this$_getNextRule4 = this._getNextRule()) === null ||
+                _this$_getNextRule4 === void 0
+                  ? void 0
+                  : _this$_getNextRule4.step) || 0) + 1,
         });
         break;
 
@@ -480,8 +588,21 @@ export class OnlineParser {
           depth,
           expanded: false,
           kind: RuleKind.LIST_OF_TYPE_CONSTRAINT,
-          state: (typeof name === 'string' ? name : undefined) || (typeof state === 'string' ? state : undefined) || ((_this$_getNextRule5 = this._getNextRule()) === null || _this$_getNextRule5 === void 0 ? void 0 : _this$_getNextRule5.state) || '',
-          step: typeof step === 'number' ? step : (((_this$_getNextRule6 = this._getNextRule()) === null || _this$_getNextRule6 === void 0 ? void 0 : _this$_getNextRule6.step) || 0) + 1
+          state:
+            (typeof name === 'string' ? name : undefined) ||
+            (typeof state === 'string' ? state : undefined) ||
+            ((_this$_getNextRule5 = this._getNextRule()) === null ||
+            _this$_getNextRule5 === void 0
+              ? void 0
+              : _this$_getNextRule5.state) ||
+            '',
+          step:
+            typeof step === 'number'
+              ? step
+              : (((_this$_getNextRule6 = this._getNextRule()) === null ||
+                _this$_getNextRule6 === void 0
+                  ? void 0
+                  : _this$_getNextRule6.step) || 0) + 1,
         });
         break;
 
@@ -500,8 +621,21 @@ export class OnlineParser {
           depth,
           expanded: false,
           kind: RuleKind.TOKEN_CONSTRAINT,
-          state: (typeof rule.tokenName === 'string' ? rule.tokenName : undefined) || (typeof state === 'string' ? state : undefined) || ((_this$_getNextRule7 = this._getNextRule()) === null || _this$_getNextRule7 === void 0 ? void 0 : _this$_getNextRule7.state) || '',
-          step: typeof step === 'number' ? step : (((_this$_getNextRule8 = this._getNextRule()) === null || _this$_getNextRule8 === void 0 ? void 0 : _this$_getNextRule8.step) || 0) + 1
+          state:
+            (typeof rule.tokenName === 'string' ? rule.tokenName : undefined) ||
+            (typeof state === 'string' ? state : undefined) ||
+            ((_this$_getNextRule7 = this._getNextRule()) === null ||
+            _this$_getNextRule7 === void 0
+              ? void 0
+              : _this$_getNextRule7.state) ||
+            '',
+          step:
+            typeof step === 'number'
+              ? step
+              : (((_this$_getNextRule8 = this._getNextRule()) === null ||
+                _this$_getNextRule8 === void 0
+                  ? void 0
+                  : _this$_getNextRule8.step) || 0) + 1,
         });
         break;
 
@@ -518,8 +652,20 @@ export class OnlineParser {
           matched: false,
           expanded: false,
           kind: RuleKind.PEEK_CONSTRAINT,
-          state: (typeof state === 'string' ? state : undefined) || ((_this$_getNextRule9 = this._getNextRule()) === null || _this$_getNextRule9 === void 0 ? void 0 : _this$_getNextRule9.state) || '',
-          step: typeof step === 'number' ? step : (((_this$_getNextRule10 = this._getNextRule()) === null || _this$_getNextRule10 === void 0 ? void 0 : _this$_getNextRule10.step) || 0) + 1
+          state:
+            (typeof state === 'string' ? state : undefined) ||
+            ((_this$_getNextRule9 = this._getNextRule()) === null ||
+            _this$_getNextRule9 === void 0
+              ? void 0
+              : _this$_getNextRule9.state) ||
+            '',
+          step:
+            typeof step === 'number'
+              ? step
+              : (((_this$_getNextRule10 = this._getNextRule()) === null ||
+                _this$_getNextRule10 === void 0
+                  ? void 0
+                  : _this$_getNextRule10.step) || 0) + 1,
         });
         break;
     }
@@ -567,9 +713,8 @@ export class OnlineParser {
     } catch (err) {
       return {
         kind: TokenKind.INVALID,
-        value: ''
+        value: '',
       };
     }
   }
-
 }

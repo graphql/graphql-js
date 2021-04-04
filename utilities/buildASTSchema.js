@@ -1,24 +1,24 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.buildASTSchema = buildASTSchema;
 exports.buildSchema = buildSchema;
 
-var _devAssert = require("../jsutils/devAssert.js");
+var _devAssert = require('../jsutils/devAssert.js');
 
-var _kinds = require("../language/kinds.js");
+var _kinds = require('../language/kinds.js');
 
-var _parser = require("../language/parser.js");
+var _parser = require('../language/parser.js');
 
-var _validate = require("../validation/validate.js");
+var _validate = require('../validation/validate.js');
 
-var _schema = require("../type/schema.js");
+var _schema = require('../type/schema.js');
 
-var _directives = require("../type/directives.js");
+var _directives = require('../type/directives.js');
 
-var _extendSchema = require("./extendSchema.js");
+var _extendSchema = require('./extendSchema.js');
 
 /**
  * This takes the ast of a schema document produced by the parse function in
@@ -31,9 +31,16 @@ var _extendSchema = require("./extendSchema.js");
  * has no resolve methods, so execution will use default resolvers.
  */
 function buildASTSchema(documentAST, options) {
-  documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.devAssert)(0, 'Must provide valid Document AST.');
+  (documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT) ||
+    (0, _devAssert.devAssert)(0, 'Must provide valid Document AST.');
 
-  if ((options === null || options === void 0 ? void 0 : options.assumeValid) !== true && (options === null || options === void 0 ? void 0 : options.assumeValidSDL) !== true) {
+  if (
+    (options === null || options === void 0 ? void 0 : options.assumeValid) !==
+      true &&
+    (options === null || options === void 0
+      ? void 0
+      : options.assumeValidSDL) !== true
+  ) {
     (0, _validate.assertValidSDL)(documentAST);
   }
 
@@ -43,9 +50,13 @@ function buildASTSchema(documentAST, options) {
     directives: [],
     extensions: undefined,
     extensionASTNodes: [],
-    assumeValid: false
+    assumeValid: false,
   };
-  const config = (0, _extendSchema.extendSchemaImpl)(emptySchemaConfig, documentAST, options);
+  const config = (0, _extendSchema.extendSchemaImpl)(
+    emptySchemaConfig,
+    documentAST,
+    options,
+  );
 
   if (config.astNode == null) {
     for (const type of config.types) {
@@ -68,12 +79,10 @@ function buildASTSchema(documentAST, options) {
     }
   }
 
-  const {
-    directives
-  } = config; // If specified directives were not explicitly declared, add them.
+  const { directives } = config; // If specified directives were not explicitly declared, add them.
 
   for (const stdDirective of _directives.specifiedDirectives) {
-    if (directives.every(directive => directive.name !== stdDirective.name)) {
+    if (directives.every((directive) => directive.name !== stdDirective.name)) {
       directives.push(stdDirective);
     }
   }
@@ -85,14 +94,19 @@ function buildASTSchema(documentAST, options) {
  * document.
  */
 
-
 function buildSchema(source, options) {
   const document = (0, _parser.parse)(source, {
-    noLocation: options === null || options === void 0 ? void 0 : options.noLocation,
-    allowLegacyFragmentVariables: options === null || options === void 0 ? void 0 : options.allowLegacyFragmentVariables
+    noLocation:
+      options === null || options === void 0 ? void 0 : options.noLocation,
+    allowLegacyFragmentVariables:
+      options === null || options === void 0
+        ? void 0
+        : options.allowLegacyFragmentVariables,
   });
   return buildASTSchema(document, {
-    assumeValidSDL: options === null || options === void 0 ? void 0 : options.assumeValidSDL,
-    assumeValid: options === null || options === void 0 ? void 0 : options.assumeValid
+    assumeValidSDL:
+      options === null || options === void 0 ? void 0 : options.assumeValidSDL,
+    assumeValid:
+      options === null || options === void 0 ? void 0 : options.assumeValid,
   });
 }

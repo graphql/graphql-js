@@ -1,4 +1,5 @@
 // @flow strict
+
 /* eslint-disable flowtype/no-weak-types */
 
 const MAX_ARRAY_LENGTH = 10;

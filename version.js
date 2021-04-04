@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.versionInfo = exports.version = void 0;
 
@@ -23,6 +23,6 @@ const versionInfo = Object.freeze({
   major: 15,
   minor: 4,
   patch: 0,
-  preReleaseTag: null
+  preReleaseTag: null,
 });
 exports.versionInfo = versionInfo;

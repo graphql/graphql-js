@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.isIteratableObject = isIteratableObject;
 
@@ -23,5 +23,10 @@ exports.isIteratableObject = isIteratableObject;
  */
 // eslint-disable-next-line no-redeclare
 function isIteratableObject(maybeIteratable) {
-  return typeof maybeIteratable === 'object' && typeof (maybeIteratable === null || maybeIteratable === void 0 ? void 0 : maybeIteratable[Symbol.iterator]) === 'function';
+  return (
+    typeof maybeIteratable === 'object' &&
+    typeof (maybeIteratable === null || maybeIteratable === void 0
+      ? void 0
+      : maybeIteratable[Symbol.iterator]) === 'function'
+  );
 }

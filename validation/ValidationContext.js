@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.ValidationContext = exports.SDLValidationContext = exports.ASTValidationContext = void 0;
 
-var _kinds = require("../language/kinds.js");
+var _kinds = require('../language/kinds.js');
 
-var _visitor = require("../language/visitor.js");
+var _visitor = require('../language/visitor.js');
 
-var _TypeInfo = require("../utilities/TypeInfo.js");
+var _TypeInfo = require('../utilities/TypeInfo.js');
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -35,7 +35,7 @@ class ASTValidationContext {
 
   getFragment(name) {
     if (!this._fragments) {
-      const fragments = this._fragments = Object.create(null);
+      const fragments = (this._fragments = Object.create(null));
 
       for (const defNode of this.getDocument().definitions) {
         if (defNode.kind === _kinds.Kind.FRAGMENT_DEFINITION) {
@@ -103,7 +103,6 @@ class ASTValidationContext {
 
     return fragments;
   }
-
 }
 
 exports.ASTValidationContext = ASTValidationContext;
@@ -117,7 +116,6 @@ class SDLValidationContext extends ASTValidationContext {
   getSchema() {
     return this._schema;
   }
-
 }
 
 exports.SDLValidationContext = SDLValidationContext;
@@ -141,18 +139,20 @@ class ValidationContext extends ASTValidationContext {
     if (!usages) {
       const newUsages = [];
       const typeInfo = new _TypeInfo.TypeInfo(this._schema);
-      (0, _visitor.visit)(node, (0, _TypeInfo.visitWithTypeInfo)(typeInfo, {
-        VariableDefinition: () => false,
+      (0, _visitor.visit)(
+        node,
+        (0, _TypeInfo.visitWithTypeInfo)(typeInfo, {
+          VariableDefinition: () => false,
 
-        Variable(variable) {
-          newUsages.push({
-            node: variable,
-            type: typeInfo.getInputType(),
-            defaultValue: typeInfo.getDefaultValue()
-          });
-        }
-
-      }));
+          Variable(variable) {
+            newUsages.push({
+              node: variable,
+              type: typeInfo.getInputType(),
+              defaultValue: typeInfo.getDefaultValue(),
+            });
+          },
+        }),
+      );
       usages = newUsages;
 
       this._variableUsages.set(node, usages);
@@ -208,7 +208,6 @@ class ValidationContext extends ASTValidationContext {
   getEnumValue() {
     return this._typeInfo.getEnumValue();
   }
-
 }
 
 exports.ValidationContext = ValidationContext;

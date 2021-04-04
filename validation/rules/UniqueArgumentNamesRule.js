@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.UniqueArgumentNamesRule = UniqueArgumentNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * Unique argument names
@@ -28,13 +28,17 @@ function UniqueArgumentNamesRule(context) {
       const argName = node.name.value;
 
       if (knownArgNames[argName]) {
-        context.reportError(new _GraphQLError.GraphQLError(`There can be only one argument named "${argName}".`, [knownArgNames[argName], node.name]));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `There can be only one argument named "${argName}".`,
+            [knownArgNames[argName], node.name],
+          ),
+        );
       } else {
         knownArgNames[argName] = node.name;
       }
 
       return false;
-    }
-
+    },
   };
 }

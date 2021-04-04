@@ -1,4 +1,5 @@
 // @flow strict
+
 import type { Path } from '../jsutils/Path';
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';

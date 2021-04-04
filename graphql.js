@@ -1,24 +1,24 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.graphql = graphql;
 exports.graphqlSync = graphqlSync;
 
-var _isPromise = require("./jsutils/isPromise.js");
+var _isPromise = require('./jsutils/isPromise.js');
 
-var _parser = require("./language/parser.js");
+var _parser = require('./language/parser.js');
 
-var _validate = require("./validation/validate.js");
+var _validate = require('./validation/validate.js');
 
-var _validate2 = require("./type/validate.js");
+var _validate2 = require('./type/validate.js');
 
-var _execute = require("./execution/execute.js");
+var _execute = require('./execution/execute.js');
 
 function graphql(args) {
   // Always return a Promise for a consistent API.
-  return new Promise(resolve => resolve(graphqlImpl(args)));
+  return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,
@@ -26,7 +26,6 @@ function graphql(args) {
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
-
 
 function graphqlSync(args) {
   const result = graphqlImpl(args); // Assert that the execution was synchronous.
@@ -47,17 +46,16 @@ function graphqlImpl(args) {
     variableValues,
     operationName,
     fieldResolver,
-    typeResolver
+    typeResolver,
   } = args; // Validate Schema
 
   const schemaValidationErrors = (0, _validate2.validateSchema)(schema);
 
   if (schemaValidationErrors.length > 0) {
     return {
-      errors: schemaValidationErrors
+      errors: schemaValidationErrors,
     };
   } // Parse
-
 
   let document;
 
@@ -65,19 +63,17 @@ function graphqlImpl(args) {
     document = (0, _parser.parse)(source);
   } catch (syntaxError) {
     return {
-      errors: [syntaxError]
+      errors: [syntaxError],
     };
   } // Validate
-
 
   const validationErrors = (0, _validate.validate)(schema, document);
 
   if (validationErrors.length > 0) {
     return {
-      errors: validationErrors
+      errors: validationErrors,
     };
   } // Execute
-
 
   return (0, _execute.execute)({
     schema,
@@ -87,6 +83,6 @@ function graphqlImpl(args) {
     variableValues,
     operationName,
     fieldResolver,
-    typeResolver
+    typeResolver,
   });
 }

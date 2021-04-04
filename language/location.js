@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.getLocation = getLocation;
 
@@ -26,6 +26,6 @@ function getLocation(source, position) {
 
   return {
     line,
-    column
+    column,
   };
 }

@@ -1,4 +1,4 @@
-import { Kind } from "../language/kinds.mjs";
+import { Kind } from '../language/kinds.mjs';
 /**
  * Returns an operation AST given a document AST and optionally an operation
  * name. If a name is not provided, an operation is only returned if only one is
@@ -21,7 +21,12 @@ export function getOperationAST(documentAST, operationName) {
         }
 
         operation = definition;
-      } else if (((_definition$name = definition.name) === null || _definition$name === void 0 ? void 0 : _definition$name.value) === operationName) {
+      } else if (
+        ((_definition$name = definition.name) === null ||
+        _definition$name === void 0
+          ? void 0
+          : _definition$name.value) === operationName
+      ) {
         return definition;
       }
     }

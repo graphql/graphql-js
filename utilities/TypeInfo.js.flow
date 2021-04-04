@@ -1,4 +1,5 @@
 // @flow strict
+
 import type { ASTVisitor } from '../language/visitor';
 import type { ASTNode, FieldNode } from '../language/ast';
 import { Kind } from '../language/kinds';

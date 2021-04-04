@@ -1,191 +1,191 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
-Object.defineProperty(exports, "Source", {
+Object.defineProperty(exports, 'Source', {
   enumerable: true,
   get: function () {
     return _source.Source;
-  }
+  },
 });
-Object.defineProperty(exports, "getLocation", {
+Object.defineProperty(exports, 'getLocation', {
   enumerable: true,
   get: function () {
     return _location.getLocation;
-  }
+  },
 });
-Object.defineProperty(exports, "printLocation", {
+Object.defineProperty(exports, 'printLocation', {
   enumerable: true,
   get: function () {
     return _printLocation.printLocation;
-  }
+  },
 });
-Object.defineProperty(exports, "printSourceLocation", {
+Object.defineProperty(exports, 'printSourceLocation', {
   enumerable: true,
   get: function () {
     return _printLocation.printSourceLocation;
-  }
+  },
 });
-Object.defineProperty(exports, "Kind", {
+Object.defineProperty(exports, 'Kind', {
   enumerable: true,
   get: function () {
     return _kinds.Kind;
-  }
+  },
 });
-Object.defineProperty(exports, "TokenKind", {
+Object.defineProperty(exports, 'TokenKind', {
   enumerable: true,
   get: function () {
     return _tokenKind.TokenKind;
-  }
+  },
 });
-Object.defineProperty(exports, "Lexer", {
+Object.defineProperty(exports, 'Lexer', {
   enumerable: true,
   get: function () {
     return _lexer.Lexer;
-  }
+  },
 });
-Object.defineProperty(exports, "parse", {
+Object.defineProperty(exports, 'parse', {
   enumerable: true,
   get: function () {
     return _parser.parse;
-  }
+  },
 });
-Object.defineProperty(exports, "parseValue", {
+Object.defineProperty(exports, 'parseValue', {
   enumerable: true,
   get: function () {
     return _parser.parseValue;
-  }
+  },
 });
-Object.defineProperty(exports, "parseType", {
+Object.defineProperty(exports, 'parseType', {
   enumerable: true,
   get: function () {
     return _parser.parseType;
-  }
+  },
 });
-Object.defineProperty(exports, "print", {
+Object.defineProperty(exports, 'print', {
   enumerable: true,
   get: function () {
     return _printer.print;
-  }
+  },
 });
-Object.defineProperty(exports, "visit", {
+Object.defineProperty(exports, 'visit', {
   enumerable: true,
   get: function () {
     return _visitor.visit;
-  }
+  },
 });
-Object.defineProperty(exports, "visitInParallel", {
+Object.defineProperty(exports, 'visitInParallel', {
   enumerable: true,
   get: function () {
     return _visitor.visitInParallel;
-  }
+  },
 });
-Object.defineProperty(exports, "getVisitFn", {
+Object.defineProperty(exports, 'getVisitFn', {
   enumerable: true,
   get: function () {
     return _visitor.getVisitFn;
-  }
+  },
 });
-Object.defineProperty(exports, "BREAK", {
+Object.defineProperty(exports, 'BREAK', {
   enumerable: true,
   get: function () {
     return _visitor.BREAK;
-  }
+  },
 });
-Object.defineProperty(exports, "Location", {
+Object.defineProperty(exports, 'Location', {
   enumerable: true,
   get: function () {
     return _ast.Location;
-  }
+  },
 });
-Object.defineProperty(exports, "Token", {
+Object.defineProperty(exports, 'Token', {
   enumerable: true,
   get: function () {
     return _ast.Token;
-  }
+  },
 });
-Object.defineProperty(exports, "isDefinitionNode", {
+Object.defineProperty(exports, 'isDefinitionNode', {
   enumerable: true,
   get: function () {
     return _predicates.isDefinitionNode;
-  }
+  },
 });
-Object.defineProperty(exports, "isExecutableDefinitionNode", {
+Object.defineProperty(exports, 'isExecutableDefinitionNode', {
   enumerable: true,
   get: function () {
     return _predicates.isExecutableDefinitionNode;
-  }
+  },
 });
-Object.defineProperty(exports, "isSelectionNode", {
+Object.defineProperty(exports, 'isSelectionNode', {
   enumerable: true,
   get: function () {
     return _predicates.isSelectionNode;
-  }
+  },
 });
-Object.defineProperty(exports, "isValueNode", {
+Object.defineProperty(exports, 'isValueNode', {
   enumerable: true,
   get: function () {
     return _predicates.isValueNode;
-  }
+  },
 });
-Object.defineProperty(exports, "isTypeNode", {
+Object.defineProperty(exports, 'isTypeNode', {
   enumerable: true,
   get: function () {
     return _predicates.isTypeNode;
-  }
+  },
 });
-Object.defineProperty(exports, "isTypeSystemDefinitionNode", {
+Object.defineProperty(exports, 'isTypeSystemDefinitionNode', {
   enumerable: true,
   get: function () {
     return _predicates.isTypeSystemDefinitionNode;
-  }
+  },
 });
-Object.defineProperty(exports, "isTypeDefinitionNode", {
+Object.defineProperty(exports, 'isTypeDefinitionNode', {
   enumerable: true,
   get: function () {
     return _predicates.isTypeDefinitionNode;
-  }
+  },
 });
-Object.defineProperty(exports, "isTypeSystemExtensionNode", {
+Object.defineProperty(exports, 'isTypeSystemExtensionNode', {
   enumerable: true,
   get: function () {
     return _predicates.isTypeSystemExtensionNode;
-  }
+  },
 });
-Object.defineProperty(exports, "isTypeExtensionNode", {
+Object.defineProperty(exports, 'isTypeExtensionNode', {
   enumerable: true,
   get: function () {
     return _predicates.isTypeExtensionNode;
-  }
+  },
 });
-Object.defineProperty(exports, "DirectiveLocation", {
+Object.defineProperty(exports, 'DirectiveLocation', {
   enumerable: true,
   get: function () {
     return _directiveLocation.DirectiveLocation;
-  }
+  },
 });
 
-var _source = require("./source.js");
+var _source = require('./source.js');
 
-var _location = require("./location.js");
+var _location = require('./location.js');
 
-var _printLocation = require("./printLocation.js");
+var _printLocation = require('./printLocation.js');
 
-var _kinds = require("./kinds.js");
+var _kinds = require('./kinds.js');
 
-var _tokenKind = require("./tokenKind.js");
+var _tokenKind = require('./tokenKind.js');
 
-var _lexer = require("./lexer.js");
+var _lexer = require('./lexer.js');
 
-var _parser = require("./parser.js");
+var _parser = require('./parser.js');
 
-var _printer = require("./printer.js");
+var _printer = require('./printer.js');
 
-var _visitor = require("./visitor.js");
+var _visitor = require('./visitor.js');
 
-var _ast = require("./ast.js");
+var _ast = require('./ast.js');
 
-var _predicates = require("./predicates.js");
+var _predicates = require('./predicates.js');
 
-var _directiveLocation = require("./directiveLocation.js");
+var _directiveLocation = require('./directiveLocation.js');

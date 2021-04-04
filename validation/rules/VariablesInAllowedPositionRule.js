@@ -1,21 +1,21 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.VariablesInAllowedPositionRule = VariablesInAllowedPositionRule;
 
-var _inspect = require("../../jsutils/inspect.js");
+var _inspect = require('../../jsutils/inspect.js');
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
-var _kinds = require("../../language/kinds.js");
+var _kinds = require('../../language/kinds.js');
 
-var _definition = require("../../type/definition.js");
+var _definition = require('../../type/definition.js');
 
-var _typeFromAST = require("../../utilities/typeFromAST.js");
+var _typeFromAST = require('../../utilities/typeFromAST.js');
 
-var _typeComparators = require("../../utilities/typeComparators.js");
+var _typeComparators = require('../../utilities/typeComparators.js');
 
 /**
  * Variables passed to field arguments conform to type
@@ -31,11 +31,7 @@ function VariablesInAllowedPositionRule(context) {
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        for (const {
-          node,
-          type,
-          defaultValue
-        } of usages) {
+        for (const { node, type, defaultValue } of usages) {
           const varName = node.name.value;
           const varDef = varDefMap[varName];
 
@@ -48,21 +44,33 @@ function VariablesInAllowedPositionRule(context) {
             const schema = context.getSchema();
             const varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
 
-            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
+            if (
+              varType &&
+              !allowedVariableUsage(
+                schema,
+                varType,
+                varDef.defaultValue,
+                type,
+                defaultValue,
+              )
+            ) {
               const varTypeStr = (0, _inspect.inspect)(varType);
               const typeStr = (0, _inspect.inspect)(type);
-              context.reportError(new _GraphQLError.GraphQLError(`Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`, [varDef, node]));
+              context.reportError(
+                new _GraphQLError.GraphQLError(
+                  `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
+                  [varDef, node],
+                ),
+              );
             }
           }
         }
-      }
-
+      },
     },
 
     VariableDefinition(node) {
       varDefMap[node.variable.name.value] = node;
-    }
-
+    },
   };
 }
 /**
@@ -71,10 +79,19 @@ function VariablesInAllowedPositionRule(context) {
  * or the location at which it is located.
  */
 
-
-function allowedVariableUsage(schema, varType, varDefaultValue, locationType, locationDefaultValue) {
-  if ((0, _definition.isNonNullType)(locationType) && !(0, _definition.isNonNullType)(varType)) {
-    const hasNonNullVariableDefaultValue = varDefaultValue != null && varDefaultValue.kind !== _kinds.Kind.NULL;
+function allowedVariableUsage(
+  schema,
+  varType,
+  varDefaultValue,
+  locationType,
+  locationDefaultValue,
+) {
+  if (
+    (0, _definition.isNonNullType)(locationType) &&
+    !(0, _definition.isNonNullType)(varType)
+  ) {
+    const hasNonNullVariableDefaultValue =
+      varDefaultValue != null && varDefaultValue.kind !== _kinds.Kind.NULL;
     const hasLocationDefaultValue = locationDefaultValue !== undefined;
 
     if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {
@@ -82,7 +99,11 @@ function allowedVariableUsage(schema, varType, varDefaultValue, locationType, lo
     }
 
     const nullableLocationType = locationType.ofType;
-    return (0, _typeComparators.isTypeSubTypeOf)(schema, varType, nullableLocationType);
+    return (0, _typeComparators.isTypeSubTypeOf)(
+      schema,
+      varType,
+      nullableLocationType,
+    );
   }
 
   return (0, _typeComparators.isTypeSubTypeOf)(schema, varType, locationType);

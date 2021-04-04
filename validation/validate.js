@@ -1,26 +1,26 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.validate = validate;
 exports.validateSDL = validateSDL;
 exports.assertValidSDL = assertValidSDL;
 exports.assertValidSDLExtension = assertValidSDLExtension;
 
-var _devAssert = require("../jsutils/devAssert.js");
+var _devAssert = require('../jsutils/devAssert.js');
 
-var _GraphQLError = require("../error/GraphQLError.js");
+var _GraphQLError = require('../error/GraphQLError.js');
 
-var _visitor = require("../language/visitor.js");
+var _visitor = require('../language/visitor.js');
 
-var _validate = require("../type/validate.js");
+var _validate = require('../type/validate.js');
 
-var _TypeInfo = require("../utilities/TypeInfo.js");
+var _TypeInfo = require('../utilities/TypeInfo.js');
 
-var _specifiedRules = require("./specifiedRules.js");
+var _specifiedRules = require('./specifiedRules.js');
 
-var _ValidationContext = require("./ValidationContext.js");
+var _ValidationContext = require('./ValidationContext.js');
 
 /**
  * Implements the "Validation" section of the spec.
@@ -38,29 +38,48 @@ var _ValidationContext = require("./ValidationContext.js");
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-function validate(schema, documentAST, rules = _specifiedRules.specifiedRules, options = {
-  maxErrors: undefined
-}, // @deprecate will be removed in 17.0.0
-typeInfo = new _TypeInfo.TypeInfo(schema)) {
+function validate(
+  schema,
+  documentAST,
+  rules = _specifiedRules.specifiedRules,
+  options = {
+    maxErrors: undefined,
+  }, // @deprecate will be removed in 17.0.0
+  typeInfo = new _TypeInfo.TypeInfo(schema),
+) {
   documentAST || (0, _devAssert.devAssert)(0, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);
   const abortObj = Object.freeze({});
   const errors = [];
-  const context = new _ValidationContext.ValidationContext(schema, documentAST, typeInfo, error => {
-    if (options.maxErrors != null && errors.length >= options.maxErrors) {
-      errors.push(new _GraphQLError.GraphQLError('Too many validation errors, error limit reached. Validation aborted.'));
-      throw abortObj;
-    }
+  const context = new _ValidationContext.ValidationContext(
+    schema,
+    documentAST,
+    typeInfo,
+    (error) => {
+      if (options.maxErrors != null && errors.length >= options.maxErrors) {
+        errors.push(
+          new _GraphQLError.GraphQLError(
+            'Too many validation errors, error limit reached. Validation aborted.',
+          ),
+        );
+        throw abortObj;
+      }
 
-    errors.push(error);
-  }); // This uses a specialized visitor which runs multiple visitors in parallel,
+      errors.push(error);
+    },
+  ); // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
 
-  const visitor = (0, _visitor.visitInParallel)(rules.map(rule => rule(context))); // Visit the whole document with each instance of all provided rules.
+  const visitor = (0, _visitor.visitInParallel)(
+    rules.map((rule) => rule(context)),
+  ); // Visit the whole document with each instance of all provided rules.
 
   try {
-    (0, _visitor.visit)(documentAST, (0, _TypeInfo.visitWithTypeInfo)(typeInfo, visitor));
+    (0, _visitor.visit)(
+      documentAST,
+      (0, _TypeInfo.visitWithTypeInfo)(typeInfo, visitor),
+    );
   } catch (e) {
     if (e !== abortObj) {
       throw e;
@@ -73,13 +92,20 @@ typeInfo = new _TypeInfo.TypeInfo(schema)) {
  * @internal
  */
 
-
-function validateSDL(documentAST, schemaToExtend, rules = _specifiedRules.specifiedSDLRules) {
+function validateSDL(
+  documentAST,
+  schemaToExtend,
+  rules = _specifiedRules.specifiedSDLRules,
+) {
   const errors = [];
-  const context = new _ValidationContext.SDLValidationContext(documentAST, schemaToExtend, error => {
-    errors.push(error);
-  });
-  const visitors = rules.map(rule => rule(context));
+  const context = new _ValidationContext.SDLValidationContext(
+    documentAST,
+    schemaToExtend,
+    (error) => {
+      errors.push(error);
+    },
+  );
+  const visitors = rules.map((rule) => rule(context));
   (0, _visitor.visit)(documentAST, (0, _visitor.visitInParallel)(visitors));
   return errors;
 }
@@ -90,12 +116,11 @@ function validateSDL(documentAST, schemaToExtend, rules = _specifiedRules.specif
  * @internal
  */
 
-
 function assertValidSDL(documentAST) {
   const errors = validateSDL(documentAST);
 
   if (errors.length !== 0) {
-    throw new Error(errors.map(error => error.message).join('\n\n'));
+    throw new Error(errors.map((error) => error.message).join('\n\n'));
   }
 }
 /**
@@ -105,11 +130,10 @@ function assertValidSDL(documentAST) {
  * @internal
  */
 
-
 function assertValidSDLExtension(documentAST, schema) {
   const errors = validateSDL(documentAST, schema);
 
   if (errors.length !== 0) {
-    throw new Error(errors.map(error => error.message).join('\n\n'));
+    throw new Error(errors.map((error) => error.message).join('\n\n'));
   }
 }

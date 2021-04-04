@@ -1,9 +1,13 @@
-import { didYouMean } from "../../jsutils/didYouMean.mjs";
-import { suggestionList } from "../../jsutils/suggestionList.mjs";
-import { GraphQLError } from "../../error/GraphQLError.mjs";
-import { isTypeDefinitionNode, isTypeSystemDefinitionNode, isTypeSystemExtensionNode } from "../../language/predicates.mjs";
-import { specifiedScalarTypes } from "../../type/scalars.mjs";
-import { introspectionTypes } from "../../type/introspection.mjs";
+import { didYouMean } from '../../jsutils/didYouMean.mjs';
+import { suggestionList } from '../../jsutils/suggestionList.mjs';
+import { GraphQLError } from '../../error/GraphQLError.mjs';
+import {
+  isTypeDefinitionNode,
+  isTypeSystemDefinitionNode,
+  isTypeSystemExtensionNode,
+} from '../../language/predicates.mjs';
+import { specifiedScalarTypes } from '../../type/scalars.mjs';
+import { introspectionTypes } from '../../type/introspection.mjs';
 
 /**
  * Known type names
@@ -22,7 +26,9 @@ export function KnownTypeNamesRule(context) {
     }
   }
 
-  const typeNames = Object.keys(existingTypesMap).concat(Object.keys(definedTypes));
+  const typeNames = Object.keys(existingTypesMap).concat(
+    Object.keys(definedTypes),
+  );
   return {
     NamedType(node, _1, parent, _2, ancestors) {
       const typeName = node.name.value;
@@ -30,22 +36,37 @@ export function KnownTypeNamesRule(context) {
       if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
         var _ancestors$;
 
-        const definitionNode = (_ancestors$ = ancestors[2]) !== null && _ancestors$ !== void 0 ? _ancestors$ : parent;
+        const definitionNode =
+          (_ancestors$ = ancestors[2]) !== null && _ancestors$ !== void 0
+            ? _ancestors$
+            : parent;
         const isSDL = definitionNode != null && isSDLNode(definitionNode);
 
         if (isSDL && standardTypeNames.includes(typeName)) {
           return;
         }
 
-        const suggestedTypes = suggestionList(typeName, isSDL ? standardTypeNames.concat(typeNames) : typeNames);
-        context.reportError(new GraphQLError(`Unknown type "${typeName}".` + didYouMean(suggestedTypes), node));
+        const suggestedTypes = suggestionList(
+          typeName,
+          isSDL ? standardTypeNames.concat(typeNames) : typeNames,
+        );
+        context.reportError(
+          new GraphQLError(
+            `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
+            node,
+          ),
+        );
       }
-    }
-
+    },
   };
 }
-const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(type => type.name);
+const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(
+  (type) => type.name,
+);
 
 function isSDLNode(value) {
-  return !Array.isArray(value) && (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value));
+  return (
+    !Array.isArray(value) &&
+    (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value))
+  );
 }

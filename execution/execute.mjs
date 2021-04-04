@@ -1,23 +1,40 @@
-import { inspect } from "../jsutils/inspect.mjs";
-import { memoize3 } from "../jsutils/memoize3.mjs";
-import { invariant } from "../jsutils/invariant.mjs";
-import { devAssert } from "../jsutils/devAssert.mjs";
-import { isPromise } from "../jsutils/isPromise.mjs";
-import { isObjectLike } from "../jsutils/isObjectLike.mjs";
-import { promiseReduce } from "../jsutils/promiseReduce.mjs";
-import { promiseForObject } from "../jsutils/promiseForObject.mjs";
-import { addPath, pathToArray } from "../jsutils/Path.mjs";
-import { isIteratableObject } from "../jsutils/isIteratableObject.mjs";
-import { GraphQLError } from "../error/GraphQLError.mjs";
-import { locatedError } from "../error/locatedError.mjs";
-import { Kind } from "../language/kinds.mjs";
-import { assertValidSchema } from "../type/validate.mjs";
-import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from "../type/introspection.mjs";
-import { GraphQLIncludeDirective, GraphQLSkipDirective } from "../type/directives.mjs";
-import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from "../type/definition.mjs";
-import { typeFromAST } from "../utilities/typeFromAST.mjs";
-import { getOperationRootType } from "../utilities/getOperationRootType.mjs";
-import { getVariableValues, getArgumentValues, getDirectiveValues } from "./values.mjs";
+import { inspect } from '../jsutils/inspect.mjs';
+import { memoize3 } from '../jsutils/memoize3.mjs';
+import { invariant } from '../jsutils/invariant.mjs';
+import { devAssert } from '../jsutils/devAssert.mjs';
+import { isPromise } from '../jsutils/isPromise.mjs';
+import { isObjectLike } from '../jsutils/isObjectLike.mjs';
+import { promiseReduce } from '../jsutils/promiseReduce.mjs';
+import { promiseForObject } from '../jsutils/promiseForObject.mjs';
+import { addPath, pathToArray } from '../jsutils/Path.mjs';
+import { isIteratableObject } from '../jsutils/isIteratableObject.mjs';
+import { GraphQLError } from '../error/GraphQLError.mjs';
+import { locatedError } from '../error/locatedError.mjs';
+import { Kind } from '../language/kinds.mjs';
+import { assertValidSchema } from '../type/validate.mjs';
+import {
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+} from '../type/introspection.mjs';
+import {
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
+} from '../type/directives.mjs';
+import {
+  isObjectType,
+  isAbstractType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+} from '../type/definition.mjs';
+import { typeFromAST } from '../utilities/typeFromAST.mjs';
+import { getOperationRootType } from '../utilities/getOperationRootType.mjs';
+import {
+  getVariableValues,
+  getArgumentValues,
+  getDirectiveValues,
+} from './values.mjs';
 /**
  * Terminology
  *
@@ -64,17 +81,26 @@ export function execute(args) {
     variableValues,
     operationName,
     fieldResolver,
-    typeResolver
+    typeResolver,
   } = args; // If arguments are missing or incorrect, throw an error.
 
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
 
-  const exeContext = buildExecutionContext(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver); // Return early errors if execution context failed.
+  const exeContext = buildExecutionContext(
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+    typeResolver,
+  ); // Return early errors if execution context failed.
 
   if (Array.isArray(exeContext)) {
     return {
-      errors: exeContext
+      errors: exeContext,
     };
   } // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
@@ -83,7 +109,6 @@ export function execute(args) {
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-
 
   const data = executeOperation(exeContext, exeContext.operation, rootValue);
   return buildResponse(exeContext, data);
@@ -110,15 +135,17 @@ export function executeSync(args) {
 
 function buildResponse(exeContext, data) {
   if (isPromise(data)) {
-    return data.then(resolved => buildResponse(exeContext, resolved));
+    return data.then((resolved) => buildResponse(exeContext, resolved));
   }
 
-  return exeContext.errors.length === 0 ? {
-    data
-  } : {
-    errors: exeContext.errors,
-    data
-  };
+  return exeContext.errors.length === 0
+    ? {
+        data,
+      }
+    : {
+        errors: exeContext.errors,
+        data,
+      };
 }
 /**
  * Essential assertions before executing to provide developer feedback for
@@ -127,13 +154,21 @@ function buildResponse(exeContext, data) {
  * @internal
  */
 
-
-export function assertValidExecutionArguments(schema, document, rawVariableValues) {
+export function assertValidExecutionArguments(
+  schema,
+  document,
+  rawVariableValues,
+) {
   document || devAssert(0, 'Must provide document.'); // If the schema used for execution is invalid, throw an error.
 
   assertValidSchema(schema); // Variables, if provided, must be an object.
 
-  rawVariableValues == null || isObjectLike(rawVariableValues) || devAssert(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
+  rawVariableValues == null ||
+    isObjectLike(rawVariableValues) ||
+    devAssert(
+      0,
+      'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
+    );
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -144,7 +179,16 @@ export function assertValidExecutionArguments(schema, document, rawVariableValue
  * @internal
  */
 
-export function buildExecutionContext(schema, document, rootValue, contextValue, rawVariableValues, operationName, fieldResolver, typeResolver) {
+export function buildExecutionContext(
+  schema,
+  document,
+  rootValue,
+  contextValue,
+  rawVariableValues,
+  operationName,
+  fieldResolver,
+  typeResolver,
+) {
   var _definition$name, _operation$variableDe;
 
   let operation;
@@ -155,11 +199,20 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
       case Kind.OPERATION_DEFINITION:
         if (operationName == null) {
           if (operation !== undefined) {
-            return [new GraphQLError('Must provide operation name if query contains multiple operations.')];
+            return [
+              new GraphQLError(
+                'Must provide operation name if query contains multiple operations.',
+              ),
+            ];
           }
 
           operation = definition;
-        } else if (((_definition$name = definition.name) === null || _definition$name === void 0 ? void 0 : _definition$name.value) === operationName) {
+        } else if (
+          ((_definition$name = definition.name) === null ||
+          _definition$name === void 0
+            ? void 0
+            : _definition$name.value) === operationName
+        ) {
           operation = definition;
         }
 
@@ -179,16 +232,25 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
     return [new GraphQLError('Must provide an operation.')];
   } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
 
-
-  const variableDefinitions = (_operation$variableDe = operation.variableDefinitions) !== null && _operation$variableDe !== void 0 ? _operation$variableDe : [];
-  const coercedVariableValues = getVariableValues(schema, variableDefinitions, rawVariableValues !== null && rawVariableValues !== void 0 ? rawVariableValues : {}, {
-    maxErrors: 50
-  });
+  const variableDefinitions =
+    (_operation$variableDe = operation.variableDefinitions) !== null &&
+    _operation$variableDe !== void 0
+      ? _operation$variableDe
+      : [];
+  const coercedVariableValues = getVariableValues(
+    schema,
+    variableDefinitions,
+    rawVariableValues !== null && rawVariableValues !== void 0
+      ? rawVariableValues
+      : {},
+    {
+      maxErrors: 50,
+    },
+  );
 
   if (coercedVariableValues.errors) {
     return coercedVariableValues.errors;
   } // $FlowFixMe[incompatible-return]
-
 
   return {
     schema,
@@ -197,9 +259,15 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
     contextValue,
     operation,
     variableValues: coercedVariableValues.coerced,
-    fieldResolver: fieldResolver !== null && fieldResolver !== void 0 ? fieldResolver : defaultFieldResolver,
-    typeResolver: typeResolver !== null && typeResolver !== void 0 ? typeResolver : defaultTypeResolver,
-    errors: []
+    fieldResolver:
+      fieldResolver !== null && fieldResolver !== void 0
+        ? fieldResolver
+        : defaultFieldResolver,
+    typeResolver:
+      typeResolver !== null && typeResolver !== void 0
+        ? typeResolver
+        : defaultTypeResolver,
+    errors: [],
   };
 }
 /**
@@ -208,16 +276,25 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
 
 function executeOperation(exeContext, operation, rootValue) {
   const type = getOperationRootType(exeContext.schema, operation);
-  const fields = collectFields(exeContext, type, operation.selectionSet, Object.create(null), Object.create(null));
+  const fields = collectFields(
+    exeContext,
+    type,
+    operation.selectionSet,
+    Object.create(null),
+    Object.create(null),
+  );
   const path = undefined; // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
 
   try {
-    const result = operation.operation === 'mutation' ? executeFieldsSerially(exeContext, type, rootValue, path, fields) : executeFields(exeContext, type, rootValue, path, fields);
+    const result =
+      operation.operation === 'mutation'
+        ? executeFieldsSerially(exeContext, type, rootValue, path, fields)
+        : executeFields(exeContext, type, rootValue, path, fields);
 
     if (isPromise(result)) {
-      return result.then(undefined, error => {
+      return result.then(undefined, (error) => {
         exeContext.errors.push(error);
         return Promise.resolve(null);
       });
@@ -234,33 +311,47 @@ function executeOperation(exeContext, operation, rootValue) {
  * for "write" mode.
  */
 
+function executeFieldsSerially(
+  exeContext,
+  parentType,
+  sourceValue,
+  path,
+  fields,
+) {
+  return promiseReduce(
+    Object.keys(fields),
+    (results, responseName) => {
+      const fieldNodes = fields[responseName];
+      const fieldPath = addPath(path, responseName, parentType.name);
+      const result = resolveField(
+        exeContext,
+        parentType,
+        sourceValue,
+        fieldNodes,
+        fieldPath,
+      );
 
-function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields) {
-  return promiseReduce(Object.keys(fields), (results, responseName) => {
-    const fieldNodes = fields[responseName];
-    const fieldPath = addPath(path, responseName, parentType.name);
-    const result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
-
-    if (result === undefined) {
-      return results;
-    }
-
-    if (isPromise(result)) {
-      return result.then(resolvedResult => {
-        results[responseName] = resolvedResult;
+      if (result === undefined) {
         return results;
-      });
-    }
+      }
 
-    results[responseName] = result;
-    return results;
-  }, Object.create(null));
+      if (isPromise(result)) {
+        return result.then((resolvedResult) => {
+          results[responseName] = resolvedResult;
+          return results;
+        });
+      }
+
+      results[responseName] = result;
+      return results;
+    },
+    Object.create(null),
+  );
 }
 /**
  * Implements the "Evaluating selection sets" section of the spec
  * for "read" mode.
  */
-
 
 function executeFields(exeContext, parentType, sourceValue, path, fields) {
   const results = Object.create(null);
@@ -269,7 +360,13 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
   for (const responseName of Object.keys(fields)) {
     const fieldNodes = fields[responseName];
     const fieldPath = addPath(path, responseName, parentType.name);
-    const result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
+    const result = resolveField(
+      exeContext,
+      parentType,
+      sourceValue,
+      fieldNodes,
+      fieldPath,
+    );
 
     if (result !== undefined) {
       results[responseName] = result;
@@ -280,13 +377,11 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
     }
   } // If there are no promises, we can just return the object
 
-
   if (!containsPromise) {
     return results;
   } // Otherwise, results is a map from field name to the result of resolving that
   // field, which is possibly a promise. Return a promise that will return this
   // same map, but with any promises replaced with the values they resolved to.
-
 
   return promiseForObject(results);
 }
@@ -301,54 +396,77 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
  * @internal
  */
 
-
-export function collectFields(exeContext, runtimeType, selectionSet, fields, visitedFragmentNames) {
+export function collectFields(
+  exeContext,
+  runtimeType,
+  selectionSet,
+  fields,
+  visitedFragmentNames,
+) {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
-      case Kind.FIELD:
-        {
-          if (!shouldIncludeNode(exeContext, selection)) {
-            continue;
-          }
-
-          const name = getFieldEntryKey(selection);
-
-          if (!fields[name]) {
-            fields[name] = [];
-          }
-
-          fields[name].push(selection);
-          break;
+      case Kind.FIELD: {
+        if (!shouldIncludeNode(exeContext, selection)) {
+          continue;
         }
 
-      case Kind.INLINE_FRAGMENT:
-        {
-          if (!shouldIncludeNode(exeContext, selection) || !doesFragmentConditionMatch(exeContext, selection, runtimeType)) {
-            continue;
-          }
+        const name = getFieldEntryKey(selection);
 
-          collectFields(exeContext, runtimeType, selection.selectionSet, fields, visitedFragmentNames);
-          break;
+        if (!fields[name]) {
+          fields[name] = [];
         }
 
-      case Kind.FRAGMENT_SPREAD:
-        {
-          const fragName = selection.name.value;
+        fields[name].push(selection);
+        break;
+      }
 
-          if (visitedFragmentNames[fragName] || !shouldIncludeNode(exeContext, selection)) {
-            continue;
-          }
-
-          visitedFragmentNames[fragName] = true;
-          const fragment = exeContext.fragments[fragName];
-
-          if (!fragment || !doesFragmentConditionMatch(exeContext, fragment, runtimeType)) {
-            continue;
-          }
-
-          collectFields(exeContext, runtimeType, fragment.selectionSet, fields, visitedFragmentNames);
-          break;
+      case Kind.INLINE_FRAGMENT: {
+        if (
+          !shouldIncludeNode(exeContext, selection) ||
+          !doesFragmentConditionMatch(exeContext, selection, runtimeType)
+        ) {
+          continue;
         }
+
+        collectFields(
+          exeContext,
+          runtimeType,
+          selection.selectionSet,
+          fields,
+          visitedFragmentNames,
+        );
+        break;
+      }
+
+      case Kind.FRAGMENT_SPREAD: {
+        const fragName = selection.name.value;
+
+        if (
+          visitedFragmentNames[fragName] ||
+          !shouldIncludeNode(exeContext, selection)
+        ) {
+          continue;
+        }
+
+        visitedFragmentNames[fragName] = true;
+        const fragment = exeContext.fragments[fragName];
+
+        if (
+          !fragment ||
+          !doesFragmentConditionMatch(exeContext, fragment, runtimeType)
+        ) {
+          continue;
+        }
+
+        collectFields(
+          exeContext,
+          runtimeType,
+          fragment.selectionSet,
+          fields,
+          visitedFragmentNames,
+        );
+        break;
+      }
     }
   }
 
@@ -360,15 +478,25 @@ export function collectFields(exeContext, runtimeType, selectionSet, fields, vis
  */
 
 function shouldIncludeNode(exeContext, node) {
-  const skip = getDirectiveValues(GraphQLSkipDirective, node, exeContext.variableValues);
+  const skip = getDirectiveValues(
+    GraphQLSkipDirective,
+    node,
+    exeContext.variableValues,
+  );
 
   if ((skip === null || skip === void 0 ? void 0 : skip.if) === true) {
     return false;
   }
 
-  const include = getDirectiveValues(GraphQLIncludeDirective, node, exeContext.variableValues);
+  const include = getDirectiveValues(
+    GraphQLIncludeDirective,
+    node,
+    exeContext.variableValues,
+  );
 
-  if ((include === null || include === void 0 ? void 0 : include.if) === false) {
+  if (
+    (include === null || include === void 0 ? void 0 : include.if) === false
+  ) {
     return false;
   }
 
@@ -377,7 +505,6 @@ function shouldIncludeNode(exeContext, node) {
 /**
  * Determines if a fragment is applicable to the given type.
  */
-
 
 function doesFragmentConditionMatch(exeContext, fragment, type) {
   const typeConditionNode = fragment.typeCondition;
@@ -402,7 +529,6 @@ function doesFragmentConditionMatch(exeContext, fragment, type) {
  * Implements the logic to compute the key of a given field's entry
  */
 
-
 function getFieldEntryKey(node) {
   return node.alias ? node.alias.value : node.name.value;
 }
@@ -412,7 +538,6 @@ function getFieldEntryKey(node) {
  * then calls completeValue to complete promises, serialize scalars, or execute
  * the sub-selection-set for objects.
  */
-
 
 function resolveField(exeContext, parentType, source, fieldNodes, path) {
   var _fieldDef$resolve;
@@ -426,14 +551,28 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
   }
 
   const returnType = fieldDef.type;
-  const resolveFn = (_fieldDef$resolve = fieldDef.resolve) !== null && _fieldDef$resolve !== void 0 ? _fieldDef$resolve : exeContext.fieldResolver;
-  const info = buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path); // Get the resolve function, regardless of if its result is normal or abrupt (error).
+  const resolveFn =
+    (_fieldDef$resolve = fieldDef.resolve) !== null &&
+    _fieldDef$resolve !== void 0
+      ? _fieldDef$resolve
+      : exeContext.fieldResolver;
+  const info = buildResolveInfo(
+    exeContext,
+    fieldDef,
+    fieldNodes,
+    parentType,
+    path,
+  ); // Get the resolve function, regardless of if its result is normal or abrupt (error).
 
   try {
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
     // TODO: find a way to memoize, in case this field is within a List type.
-    const args = getArgumentValues(fieldDef, fieldNodes[0], exeContext.variableValues); // The resolve function's optional third argument is a context value that
+    const args = getArgumentValues(
+      fieldDef,
+      fieldNodes[0],
+      exeContext.variableValues,
+    ); // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
     // used to represent an authenticated user, or request-specific caches.
 
@@ -442,15 +581,24 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
     let completed;
 
     if (isPromise(result)) {
-      completed = result.then(resolved => completeValue(exeContext, returnType, fieldNodes, info, path, resolved));
+      completed = result.then((resolved) =>
+        completeValue(exeContext, returnType, fieldNodes, info, path, resolved),
+      );
     } else {
-      completed = completeValue(exeContext, returnType, fieldNodes, info, path, result);
+      completed = completeValue(
+        exeContext,
+        returnType,
+        fieldNodes,
+        info,
+        path,
+        result,
+      );
     }
 
     if (isPromise(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return completed.then(undefined, rawError => {
+      return completed.then(undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(path));
         return handleFieldError(error, returnType, exeContext);
       });
@@ -466,8 +614,13 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
  * @internal
  */
 
-
-export function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path) {
+export function buildResolveInfo(
+  exeContext,
+  fieldDef,
+  fieldNodes,
+  parentType,
+  path,
+) {
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
   return {
@@ -480,7 +633,7 @@ export function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, p
     fragments: exeContext.fragments,
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
-    variableValues: exeContext.variableValues
+    variableValues: exeContext.variableValues,
   };
 }
 
@@ -491,7 +644,6 @@ function handleFieldError(error, returnType, exeContext) {
     throw error;
   } // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
-
 
   exeContext.errors.push(error);
   return null;
@@ -518,7 +670,6 @@ function handleFieldError(error, returnType, exeContext) {
  * value by evaluating all sub-selections.
  */
 
-
 function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
@@ -526,60 +677,94 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
   } // If field type is NonNull, complete for inner type, and throw field error
   // if result is null.
 
-
   if (isNonNullType(returnType)) {
-    const completed = completeValue(exeContext, returnType.ofType, fieldNodes, info, path, result);
+    const completed = completeValue(
+      exeContext,
+      returnType.ofType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
 
     if (completed === null) {
-      throw new Error(`Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`);
+      throw new Error(
+        `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+      );
     }
 
     return completed;
   } // If result value is null or undefined then return null.
 
-
   if (result == null) {
     return null;
   } // If field type is List, complete each item in the list with the inner type
 
-
   if (isListType(returnType)) {
-    return completeListValue(exeContext, returnType, fieldNodes, info, path, result);
+    return completeListValue(
+      exeContext,
+      returnType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
   } // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
   // returning null if serialization is not possible.
-
 
   if (isLeafType(returnType)) {
     return completeLeafValue(returnType, result);
   } // If field type is an abstract type, Interface or Union, determine the
   // runtime Object type and complete for that type.
 
-
   if (isAbstractType(returnType)) {
-    return completeAbstractValue(exeContext, returnType, fieldNodes, info, path, result);
+    return completeAbstractValue(
+      exeContext,
+      returnType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
   } // If field type is Object, execute and complete all sub-selections.
   // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-
   if (isObjectType(returnType)) {
-    return completeObjectValue(exeContext, returnType, fieldNodes, info, path, result);
+    return completeObjectValue(
+      exeContext,
+      returnType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
   } // istanbul ignore next (Not reachable. All possible output types have been considered)
 
-
-  false || invariant(0, 'Cannot complete value of unexpected output type: ' + inspect(returnType));
+  false ||
+    invariant(
+      0,
+      'Cannot complete value of unexpected output type: ' + inspect(returnType),
+    );
 }
 /**
  * Complete a list value by completing each item in the list with the
  * inner type
  */
 
-
-function completeListValue(exeContext, returnType, fieldNodes, info, path, result) {
+function completeListValue(
+  exeContext,
+  returnType,
+  fieldNodes,
+  info,
+  path,
+  result,
+) {
   if (!isIteratableObject(result)) {
-    throw new GraphQLError(`Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`);
+    throw new GraphQLError(
+      `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
+    );
   } // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
-
 
   const itemType = returnType.ofType;
   let containsPromise = false;
@@ -592,17 +777,37 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
       let completedItem;
 
       if (isPromise(item)) {
-        completedItem = item.then(resolved => completeValue(exeContext, itemType, fieldNodes, info, itemPath, resolved));
+        completedItem = item.then((resolved) =>
+          completeValue(
+            exeContext,
+            itemType,
+            fieldNodes,
+            info,
+            itemPath,
+            resolved,
+          ),
+        );
       } else {
-        completedItem = completeValue(exeContext, itemType, fieldNodes, info, itemPath, item);
+        completedItem = completeValue(
+          exeContext,
+          itemType,
+          fieldNodes,
+          info,
+          itemPath,
+          item,
+        );
       }
 
       if (isPromise(completedItem)) {
         containsPromise = true; // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
 
-        return completedItem.then(undefined, rawError => {
-          const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+        return completedItem.then(undefined, (rawError) => {
+          const error = locatedError(
+            rawError,
+            fieldNodes,
+            pathToArray(itemPath),
+          );
           return handleFieldError(error, itemType, exeContext);
         });
       }
@@ -620,12 +825,14 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
  * null if serialization is not possible.
  */
 
-
 function completeLeafValue(returnType, result) {
   const serializedResult = returnType.serialize(result);
 
   if (serializedResult === undefined) {
-    throw new Error(`Expected a value of type "${inspect(returnType)}" but ` + `received: ${inspect(result)}`);
+    throw new Error(
+      `Expected a value of type "${inspect(returnType)}" but ` +
+        `received: ${inspect(result)}`,
+    );
   }
 
   return serializedResult;
@@ -635,48 +842,111 @@ function completeLeafValue(returnType, result) {
  * of that value, then complete the value for that type.
  */
 
-
-function completeAbstractValue(exeContext, returnType, fieldNodes, info, path, result) {
+function completeAbstractValue(
+  exeContext,
+  returnType,
+  fieldNodes,
+  info,
+  path,
+  result,
+) {
   var _returnType$resolveTy;
 
-  const resolveTypeFn = (_returnType$resolveTy = returnType.resolveType) !== null && _returnType$resolveTy !== void 0 ? _returnType$resolveTy : exeContext.typeResolver;
+  const resolveTypeFn =
+    (_returnType$resolveTy = returnType.resolveType) !== null &&
+    _returnType$resolveTy !== void 0
+      ? _returnType$resolveTy
+      : exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
   if (isPromise(runtimeType)) {
-    return runtimeType.then(resolvedRuntimeType => completeObjectValue(exeContext, ensureValidRuntimeType(resolvedRuntimeType, exeContext, returnType, fieldNodes, info, result), fieldNodes, info, path, result));
+    return runtimeType.then((resolvedRuntimeType) =>
+      completeObjectValue(
+        exeContext,
+        ensureValidRuntimeType(
+          resolvedRuntimeType,
+          exeContext,
+          returnType,
+          fieldNodes,
+          info,
+          result,
+        ),
+        fieldNodes,
+        info,
+        path,
+        result,
+      ),
+    );
   }
 
-  return completeObjectValue(exeContext, ensureValidRuntimeType(runtimeType, exeContext, returnType, fieldNodes, info, result), fieldNodes, info, path, result);
+  return completeObjectValue(
+    exeContext,
+    ensureValidRuntimeType(
+      runtimeType,
+      exeContext,
+      returnType,
+      fieldNodes,
+      info,
+      result,
+    ),
+    fieldNodes,
+    info,
+    path,
+    result,
+  );
 }
 
-function ensureValidRuntimeType(runtimeTypeName, exeContext, returnType, fieldNodes, info, result) {
+function ensureValidRuntimeType(
+  runtimeTypeName,
+  exeContext,
+  returnType,
+  fieldNodes,
+  info,
+  result,
+) {
   if (runtimeTypeName == null) {
-    throw new GraphQLError(`Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`, fieldNodes);
+    throw new GraphQLError(
+      `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
+      fieldNodes,
+    );
   } // releases before 16.0.0 supported returning `GraphQLObjectType` from `resolveType`
   // TODO: remove in 17.0.0 release
 
-
   if (isObjectType(runtimeTypeName)) {
-    throw new GraphQLError('Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.');
+    throw new GraphQLError(
+      'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
+    );
   }
 
   if (typeof runtimeTypeName !== 'string') {
-    throw new GraphQLError(`Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` + `value ${inspect(result)}, received "${inspect(runtimeTypeName)}".`);
+    throw new GraphQLError(
+      `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` +
+        `value ${inspect(result)}, received "${inspect(runtimeTypeName)}".`,
+    );
   }
 
   const runtimeType = exeContext.schema.getType(runtimeTypeName);
 
   if (runtimeType == null) {
-    throw new GraphQLError(`Abstract type "${returnType.name}" was resolve to a type "${runtimeTypeName}" that does not exist inside schema.`, fieldNodes);
+    throw new GraphQLError(
+      `Abstract type "${returnType.name}" was resolve to a type "${runtimeTypeName}" that does not exist inside schema.`,
+      fieldNodes,
+    );
   }
 
   if (!isObjectType(runtimeType)) {
-    throw new GraphQLError(`Abstract type "${returnType.name}" was resolve to a non-object type "${runtimeTypeName}".`, fieldNodes);
+    throw new GraphQLError(
+      `Abstract type "${returnType.name}" was resolve to a non-object type "${runtimeTypeName}".`,
+      fieldNodes,
+    );
   }
 
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
-    throw new GraphQLError(`Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`, fieldNodes);
+    throw new GraphQLError(
+      `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
+      fieldNodes,
+    );
   }
 
   return runtimeType;
@@ -685,8 +955,14 @@ function ensureValidRuntimeType(runtimeTypeName, exeContext, returnType, fieldNo
  * Complete an Object value by executing all sub-selections.
  */
 
-
-function completeObjectValue(exeContext, returnType, fieldNodes, info, path, result) {
+function completeObjectValue(
+  exeContext,
+  returnType,
+  fieldNodes,
+  info,
+  path,
+  result,
+) {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
@@ -694,12 +970,18 @@ function completeObjectValue(exeContext, returnType, fieldNodes, info, path, res
     const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
 
     if (isPromise(isTypeOf)) {
-      return isTypeOf.then(resolvedIsTypeOf => {
+      return isTypeOf.then((resolvedIsTypeOf) => {
         if (!resolvedIsTypeOf) {
           throw invalidReturnTypeError(returnType, result, fieldNodes);
         }
 
-        return collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, result);
+        return collectAndExecuteSubfields(
+          exeContext,
+          returnType,
+          fieldNodes,
+          path,
+          result,
+        );
       });
     }
 
@@ -708,14 +990,29 @@ function completeObjectValue(exeContext, returnType, fieldNodes, info, path, res
     }
   }
 
-  return collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, result);
+  return collectAndExecuteSubfields(
+    exeContext,
+    returnType,
+    fieldNodes,
+    path,
+    result,
+  );
 }
 
 function invalidReturnTypeError(returnType, result, fieldNodes) {
-  return new GraphQLError(`Expected value of type "${returnType.name}" but got: ${inspect(result)}.`, fieldNodes);
+  return new GraphQLError(
+    `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
+    fieldNodes,
+  );
 }
 
-function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, result) {
+function collectAndExecuteSubfields(
+  exeContext,
+  returnType,
+  fieldNodes,
+  path,
+  result,
+) {
   // Collect sub-fields to execute to complete this value.
   const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
   return executeFields(exeContext, returnType, result, path, subFieldNodes);
@@ -726,7 +1023,6 @@ function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, re
  * saves overhead when resolving lists of values.
  */
 
-
 const collectSubfields = memoize3(_collectSubfields);
 
 function _collectSubfields(exeContext, returnType, fieldNodes) {
@@ -735,7 +1031,13 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
 
   for (const node of fieldNodes) {
     if (node.selectionSet) {
-      subFieldNodes = collectFields(exeContext, returnType, node.selectionSet, subFieldNodes, visitedFragmentNames);
+      subFieldNodes = collectFields(
+        exeContext,
+        returnType,
+        node.selectionSet,
+        subFieldNodes,
+        visitedFragmentNames,
+      );
     }
   }
 
@@ -752,13 +1054,16 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
 
-
-export const defaultTypeResolver = function (value, contextValue, info, abstractType) {
+export const defaultTypeResolver = function (
+  value,
+  contextValue,
+  info,
+  abstractType,
+) {
   // First, look for `__typename`.
   if (isObjectLike(value) && typeof value.__typename === 'string') {
     return value.__typename;
   } // Otherwise, test each possible type.
-
 
   const possibleTypes = info.schema.getPossibleTypes(abstractType);
   const promisedIsTypeOfResults = [];
@@ -778,7 +1083,7 @@ export const defaultTypeResolver = function (value, contextValue, info, abstract
   }
 
   if (promisedIsTypeOfResults.length) {
-    return Promise.all(promisedIsTypeOfResults).then(isTypeOfResults => {
+    return Promise.all(promisedIsTypeOfResults).then((isTypeOfResults) => {
       for (let i = 0; i < isTypeOfResults.length; i++) {
         if (isTypeOfResults[i]) {
           return possibleTypes[i].name;
@@ -794,7 +1099,12 @@ export const defaultTypeResolver = function (value, contextValue, info, abstract
  * of calling that function while passing along args and context value.
  */
 
-export const defaultFieldResolver = function (source, args, contextValue, info) {
+export const defaultFieldResolver = function (
+  source,
+  args,
+  contextValue,
+  info,
+) {
   // ensure source is a value for which property access is acceptable.
   if (isObjectLike(source) || typeof source === 'function') {
     const property = source[info.fieldName];
@@ -819,9 +1129,15 @@ export const defaultFieldResolver = function (source, args, contextValue, info) 
  */
 
 export function getFieldDef(schema, parentType, fieldName) {
-  if (fieldName === SchemaMetaFieldDef.name && schema.getQueryType() === parentType) {
+  if (
+    fieldName === SchemaMetaFieldDef.name &&
+    schema.getQueryType() === parentType
+  ) {
     return SchemaMetaFieldDef;
-  } else if (fieldName === TypeMetaFieldDef.name && schema.getQueryType() === parentType) {
+  } else if (
+    fieldName === TypeMetaFieldDef.name &&
+    schema.getQueryType() === parentType
+  ) {
     return TypeMetaFieldDef;
   } else if (fieldName === TypeNameMetaFieldDef.name) {
     return TypeNameMetaFieldDef;

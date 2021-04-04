@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.UniqueOperationNamesRule = UniqueOperationNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * Unique operation names
@@ -20,7 +20,12 @@ function UniqueOperationNamesRule(context) {
 
       if (operationName) {
         if (knownOperationNames[operationName.value]) {
-          context.reportError(new _GraphQLError.GraphQLError(`There can be only one operation named "${operationName.value}".`, [knownOperationNames[operationName.value], operationName]));
+          context.reportError(
+            new _GraphQLError.GraphQLError(
+              `There can be only one operation named "${operationName.value}".`,
+              [knownOperationNames[operationName.value], operationName],
+            ),
+          );
         } else {
           knownOperationNames[operationName.value] = operationName;
         }
@@ -29,6 +34,6 @@ function UniqueOperationNamesRule(context) {
       return false;
     },
 
-    FragmentDefinition: () => false
+    FragmentDefinition: () => false,
   };
 }

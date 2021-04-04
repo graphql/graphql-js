@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.NoUnusedFragmentsRule = NoUnusedFragmentsRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * No unused fragments
@@ -32,7 +32,9 @@ function NoUnusedFragmentsRule(context) {
         const fragmentNameUsed = Object.create(null);
 
         for (const operation of operationDefs) {
-          for (const fragment of context.getRecursivelyReferencedFragments(operation)) {
+          for (const fragment of context.getRecursivelyReferencedFragments(
+            operation,
+          )) {
             fragmentNameUsed[fragment.name.value] = true;
           }
         }
@@ -41,11 +43,15 @@ function NoUnusedFragmentsRule(context) {
           const fragName = fragmentDef.name.value;
 
           if (fragmentNameUsed[fragName] !== true) {
-            context.reportError(new _GraphQLError.GraphQLError(`Fragment "${fragName}" is never used.`, fragmentDef));
+            context.reportError(
+              new _GraphQLError.GraphQLError(
+                `Fragment "${fragName}" is never used.`,
+                fragmentDef,
+              ),
+            );
           }
         }
-      }
-
-    }
+      },
+    },
   };
 }

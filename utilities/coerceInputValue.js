@@ -1,29 +1,29 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.coerceInputValue = coerceInputValue;
 
-var _inspect = require("../jsutils/inspect.js");
+var _inspect = require('../jsutils/inspect.js');
 
-var _invariant = require("../jsutils/invariant.js");
+var _invariant = require('../jsutils/invariant.js');
 
-var _didYouMean = require("../jsutils/didYouMean.js");
+var _didYouMean = require('../jsutils/didYouMean.js');
 
-var _isObjectLike = require("../jsutils/isObjectLike.js");
+var _isObjectLike = require('../jsutils/isObjectLike.js');
 
-var _suggestionList = require("../jsutils/suggestionList.js");
+var _suggestionList = require('../jsutils/suggestionList.js');
 
-var _printPathArray = require("../jsutils/printPathArray.js");
+var _printPathArray = require('../jsutils/printPathArray.js');
 
-var _Path = require("../jsutils/Path.js");
+var _Path = require('../jsutils/Path.js');
 
-var _isIteratableObject = require("../jsutils/isIteratableObject.js");
+var _isIteratableObject = require('../jsutils/isIteratableObject.js');
 
-var _GraphQLError = require("../error/GraphQLError.js");
+var _GraphQLError = require('../error/GraphQLError.js');
 
-var _definition = require("../type/definition.js");
+var _definition = require('../type/definition.js');
 
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
@@ -49,7 +49,15 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       return coerceInputValueImpl(inputValue, type.ofType, onError, path);
     }
 
-    onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Expected non-nullable type "${(0, _inspect.inspect)(type)}" not to be null.`));
+    onError(
+      (0, _Path.pathToArray)(path),
+      inputValue,
+      new _GraphQLError.GraphQLError(
+        `Expected non-nullable type "${(0, _inspect.inspect)(
+          type,
+        )}" not to be null.`,
+      ),
+    );
     return;
   }
 
@@ -68,13 +76,18 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       });
     } // Lists accept a non-list value as a list of one.
 
-
     return [coerceInputValueImpl(inputValue, itemType, onError, path)];
   }
 
   if ((0, _definition.isInputObjectType)(type)) {
     if (!(0, _isObjectLike.isObjectLike)(inputValue)) {
-      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Expected type "${type.name}" to be an object.`));
+      onError(
+        (0, _Path.pathToArray)(path),
+        inputValue,
+        new _GraphQLError.GraphQLError(
+          `Expected type "${type.name}" to be an object.`,
+        ),
+      );
       return;
     }
 
@@ -89,26 +102,45 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           coercedValue[field.name] = field.defaultValue;
         } else if ((0, _definition.isNonNullType)(field.type)) {
           const typeStr = (0, _inspect.inspect)(field.type);
-          onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Field "${field.name}" of required type "${typeStr}" was not provided.`));
+          onError(
+            (0, _Path.pathToArray)(path),
+            inputValue,
+            new _GraphQLError.GraphQLError(
+              `Field "${field.name}" of required type "${typeStr}" was not provided.`,
+            ),
+          );
         }
 
         continue;
       }
 
-      coercedValue[field.name] = coerceInputValueImpl(fieldValue, field.type, onError, (0, _Path.addPath)(path, field.name, type.name));
+      coercedValue[field.name] = coerceInputValueImpl(
+        fieldValue,
+        field.type,
+        onError,
+        (0, _Path.addPath)(path, field.name, type.name),
+      );
     } // Ensure every provided field is defined.
-
 
     for (const fieldName of Object.keys(inputValue)) {
       if (!fieldDefs[fieldName]) {
-        const suggestions = (0, _suggestionList.suggestionList)(fieldName, Object.keys(type.getFields()));
-        onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Field "${fieldName}" is not defined by type "${type.name}".` + (0, _didYouMean.didYouMean)(suggestions)));
+        const suggestions = (0, _suggestionList.suggestionList)(
+          fieldName,
+          Object.keys(type.getFields()),
+        );
+        onError(
+          (0, _Path.pathToArray)(path),
+          inputValue,
+          new _GraphQLError.GraphQLError(
+            `Field "${fieldName}" is not defined by type "${type.name}".` +
+              (0, _didYouMean.didYouMean)(suggestions),
+          ),
+        );
       }
     }
 
     return coercedValue;
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
-
 
   if ((0, _definition.isLeafType)(type)) {
     let parseResult; // Scalars and Enums determine if a input value is valid via parseValue(),
@@ -121,19 +153,37 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       if (error instanceof _GraphQLError.GraphQLError) {
         onError((0, _Path.pathToArray)(path), inputValue, error);
       } else {
-        onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Expected type "${type.name}". ` + error.message, undefined, undefined, undefined, undefined, error));
+        onError(
+          (0, _Path.pathToArray)(path),
+          inputValue,
+          new _GraphQLError.GraphQLError(
+            `Expected type "${type.name}". ` + error.message,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            error,
+          ),
+        );
       }
 
       return;
     }
 
     if (parseResult === undefined) {
-      onError((0, _Path.pathToArray)(path), inputValue, new _GraphQLError.GraphQLError(`Expected type "${type.name}".`));
+      onError(
+        (0, _Path.pathToArray)(path),
+        inputValue,
+        new _GraphQLError.GraphQLError(`Expected type "${type.name}".`),
+      );
     }
 
     return parseResult;
   } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
-
-  false || (0, _invariant.invariant)(0, 'Unexpected input type: ' + (0, _inspect.inspect)(type));
+  false ||
+    (0, _invariant.invariant)(
+      0,
+      'Unexpected input type: ' + (0, _inspect.inspect)(type),
+    );
 }

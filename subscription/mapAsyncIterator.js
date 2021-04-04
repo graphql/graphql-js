@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.mapAsyncIterator = mapAsyncIterator;
 
@@ -9,9 +9,13 @@ exports.mapAsyncIterator = mapAsyncIterator;
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
-function mapAsyncIterator(iterable, callback, rejectCallback = error => {
-  throw error;
-}) {
+function mapAsyncIterator(
+  iterable,
+  callback,
+  rejectCallback = (error) => {
+    throw error;
+  },
+) {
   // $FlowFixMe[prop-missing]
   const iteratorMethod = iterable[Symbol.asyncIterator];
   const iterator = iteratorMethod.call(iterable);
@@ -36,7 +40,7 @@ function mapAsyncIterator(iterable, callback, rejectCallback = error => {
     try {
       return {
         value: await callback(result.value),
-        done: false
+        done: false,
       };
     } catch (callbackError) {
       return abruptClose(callbackError);
@@ -47,7 +51,7 @@ function mapAsyncIterator(iterable, callback, rejectCallback = error => {
     try {
       return {
         value: rejectCallback(error),
-        done: false
+        done: false,
       };
     } catch (callbackError) {
       return abruptClose(callbackError);
@@ -56,17 +60,18 @@ function mapAsyncIterator(iterable, callback, rejectCallback = error => {
   /* TODO: Flow doesn't support symbols as keys:
      https://github.com/facebook/flow/issues/3258 */
 
-
   return {
     next() {
       return iterator.next().then(mapResult, mapReject);
     },
 
     return() {
-      return typeof iterator.return === 'function' ? iterator.return().then(mapResult, mapReject) : Promise.resolve({
-        value: undefined,
-        done: true
-      });
+      return typeof iterator.return === 'function'
+        ? iterator.return().then(mapResult, mapReject)
+        : Promise.resolve({
+            value: undefined,
+            done: true,
+          });
     },
 
     throw(error) {
@@ -79,7 +84,6 @@ function mapAsyncIterator(iterable, callback, rejectCallback = error => {
 
     [Symbol.asyncIterator]() {
       return this;
-    }
-
+    },
   };
 }

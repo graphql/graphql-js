@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.isAsyncIterable = isAsyncIterable;
 
@@ -11,5 +11,9 @@ exports.isAsyncIterable = isAsyncIterable;
  */
 // eslint-disable-next-line no-redeclare
 function isAsyncIterable(maybeAsyncIterable) {
-  return typeof (maybeAsyncIterable === null || maybeAsyncIterable === void 0 ? void 0 : maybeAsyncIterable[Symbol.asyncIterator]) === 'function';
+  return (
+    typeof (maybeAsyncIterable === null || maybeAsyncIterable === void 0
+      ? void 0
+      : maybeAsyncIterable[Symbol.asyncIterator]) === 'function'
+  );
 }

@@ -1,27 +1,27 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.isSchema = isSchema;
 exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
 
-var _inspect = require("../jsutils/inspect.js");
+var _inspect = require('../jsutils/inspect.js');
 
-var _toObjMap = require("../jsutils/toObjMap.js");
+var _toObjMap = require('../jsutils/toObjMap.js');
 
-var _devAssert = require("../jsutils/devAssert.js");
+var _devAssert = require('../jsutils/devAssert.js');
 
-var _instanceOf = require("../jsutils/instanceOf.js");
+var _instanceOf = require('../jsutils/instanceOf.js');
 
-var _isObjectLike = require("../jsutils/isObjectLike.js");
+var _isObjectLike = require('../jsutils/isObjectLike.js');
 
-var _introspection = require("./introspection.js");
+var _introspection = require('./introspection.js');
 
-var _directives = require("./directives.js");
+var _directives = require('./directives.js');
 
-var _definition = require("./definition.js");
+var _definition = require('./definition.js');
 
 // eslint-disable-next-line no-redeclare
 function isSchema(schema) {
@@ -30,7 +30,9 @@ function isSchema(schema) {
 
 function assertSchema(schema) {
   if (!isSchema(schema)) {
-    throw new Error(`Expected ${(0, _inspect.inspect)(schema)} to be a GraphQL schema.`);
+    throw new Error(
+      `Expected ${(0, _inspect.inspect)(schema)} to be a GraphQL schema.`,
+    );
   }
 
   return schema;
@@ -99,7 +101,6 @@ function assertSchema(schema) {
  *
  */
 
-
 class GraphQLSchema {
   // Used as a cache for validateSchema().
   constructor(config) {
@@ -109,18 +110,41 @@ class GraphQLSchema {
     // marked with assumeValid to avoid an additional type system validation.
     this.__validationErrors = config.assumeValid === true ? [] : undefined; // Check for common mistakes during construction to produce early errors.
 
-    (0, _isObjectLike.isObjectLike)(config) || (0, _devAssert.devAssert)(0, 'Must provide configuration object.');
-    !config.types || Array.isArray(config.types) || (0, _devAssert.devAssert)(0, `"types" must be Array if provided but got: ${(0, _inspect.inspect)(config.types)}.`);
-    !config.directives || Array.isArray(config.directives) || (0, _devAssert.devAssert)(0, '"directives" must be Array if provided but got: ' + `${(0, _inspect.inspect)(config.directives)}.`);
+    (0, _isObjectLike.isObjectLike)(config) ||
+      (0, _devAssert.devAssert)(0, 'Must provide configuration object.');
+    !config.types ||
+      Array.isArray(config.types) ||
+      (0, _devAssert.devAssert)(
+        0,
+        `"types" must be Array if provided but got: ${(0, _inspect.inspect)(
+          config.types,
+        )}.`,
+      );
+    !config.directives ||
+      Array.isArray(config.directives) ||
+      (0, _devAssert.devAssert)(
+        0,
+        '"directives" must be Array if provided but got: ' +
+          `${(0, _inspect.inspect)(config.directives)}.`,
+      );
     this.description = config.description;
-    this.extensions = config.extensions && (0, _toObjMap.toObjMap)(config.extensions);
+    this.extensions =
+      config.extensions && (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = (_config$extensionASTN = config.extensionASTNodes) !== null && _config$extensionASTN !== void 0 ? _config$extensionASTN : [];
+    this.extensionASTNodes =
+      (_config$extensionASTN = config.extensionASTNodes) !== null &&
+      _config$extensionASTN !== void 0
+        ? _config$extensionASTN
+        : [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
 
-    this._directives = (_config$directives = config.directives) !== null && _config$directives !== void 0 ? _config$directives : _directives.specifiedDirectives; // To preserve order of user-provided types, we add first to add them to
+    this._directives =
+      (_config$directives = config.directives) !== null &&
+      _config$directives !== void 0
+        ? _config$directives
+        : _directives.specifiedDirectives; // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
 
     const allReferencedTypes = new Set(config.types);
@@ -168,10 +192,16 @@ class GraphQLSchema {
       }
 
       const typeName = namedType.name;
-      typeName || (0, _devAssert.devAssert)(0, 'One of the provided types for building the Schema is missing a name.');
+      typeName ||
+        (0, _devAssert.devAssert)(
+          0,
+          'One of the provided types for building the Schema is missing a name.',
+        );
 
       if (this._typeMap[typeName] !== undefined) {
-        throw new Error(`Schema must contain uniquely named types but contains multiple types named "${typeName}".`);
+        throw new Error(
+          `Schema must contain uniquely named types but contains multiple types named "${typeName}".`,
+        );
       }
 
       this._typeMap[typeName] = namedType;
@@ -185,7 +215,7 @@ class GraphQLSchema {
             if (implementations === undefined) {
               implementations = this._implementationsMap[iface.name] = {
                 objects: [],
-                interfaces: []
+                interfaces: [],
               };
             }
 
@@ -201,7 +231,7 @@ class GraphQLSchema {
             if (implementations === undefined) {
               implementations = this._implementationsMap[iface.name] = {
                 objects: [],
-                interfaces: []
+                interfaces: [],
               };
             }
 
@@ -233,15 +263,19 @@ class GraphQLSchema {
   }
 
   getPossibleTypes(abstractType) {
-    return (0, _definition.isUnionType)(abstractType) ? abstractType.getTypes() : this.getImplementations(abstractType).objects;
+    return (0, _definition.isUnionType)(abstractType)
+      ? abstractType.getTypes()
+      : this.getImplementations(abstractType).objects;
   }
 
   getImplementations(interfaceType) {
     const implementations = this._implementationsMap[interfaceType.name];
-    return implementations !== null && implementations !== void 0 ? implementations : {
-      objects: [],
-      interfaces: []
-    };
+    return implementations !== null && implementations !== void 0
+      ? implementations
+      : {
+          objects: [],
+          interfaces: [],
+        };
   }
 
   isSubType(abstractType, maybeSubType) {
@@ -277,7 +311,7 @@ class GraphQLSchema {
   }
 
   getDirective(name) {
-    return this.getDirectives().find(directive => directive.name === name);
+    return this.getDirectives().find((directive) => directive.name === name);
   }
 
   toConfig() {
@@ -291,15 +325,13 @@ class GraphQLSchema {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
-      assumeValid: this.__validationErrors !== undefined
+      assumeValid: this.__validationErrors !== undefined,
     };
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-
 
   get [Symbol.toStringTag]() {
     return 'GraphQLSchema';
   }
-
 }
 
 exports.GraphQLSchema = GraphQLSchema;
@@ -314,7 +346,10 @@ function collectReferencedTypes(type, typeSet) {
       for (const memberType of namedType.getTypes()) {
         collectReferencedTypes(memberType, typeSet);
       }
-    } else if ((0, _definition.isObjectType)(namedType) || (0, _definition.isInterfaceType)(namedType)) {
+    } else if (
+      (0, _definition.isObjectType)(namedType) ||
+      (0, _definition.isInterfaceType)(namedType)
+    ) {
       for (const interfaceType of namedType.getInterfaces()) {
         collectReferencedTypes(interfaceType, typeSet);
       }

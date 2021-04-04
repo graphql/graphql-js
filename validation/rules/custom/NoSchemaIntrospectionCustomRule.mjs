@@ -1,6 +1,6 @@
-import { GraphQLError } from "../../../error/GraphQLError.mjs";
-import { getNamedType } from "../../../type/definition.mjs";
-import { isIntrospectionType } from "../../../type/introspection.mjs";
+import { GraphQLError } from '../../../error/GraphQLError.mjs';
+import { getNamedType } from '../../../type/definition.mjs';
+import { isIntrospectionType } from '../../../type/introspection.mjs';
 
 /**
  * Prohibit introspection queries
@@ -18,9 +18,13 @@ export function NoSchemaIntrospectionCustomRule(context) {
       const type = getNamedType(context.getType());
 
       if (type && isIntrospectionType(type)) {
-        context.reportError(new GraphQLError(`GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`, node));
+        context.reportError(
+          new GraphQLError(
+            `GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`,
+            node,
+          ),
+        );
       }
-    }
-
+    },
   };
 }

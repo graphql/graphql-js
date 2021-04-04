@@ -1,4 +1,5 @@
 // @flow strict
+
 import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from '../jsutils/ObjMap';
 import { inspect } from '../jsutils/inspect';
 import { toObjMap } from '../jsutils/toObjMap';

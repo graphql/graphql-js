@@ -1,8 +1,8 @@
-import { isPromise } from "./jsutils/isPromise.mjs";
-import { parse } from "./language/parser.mjs";
-import { validate } from "./validation/validate.mjs";
-import { validateSchema } from "./type/validate.mjs";
-import { execute } from "./execution/execute.mjs";
+import { isPromise } from './jsutils/isPromise.mjs';
+import { parse } from './language/parser.mjs';
+import { validate } from './validation/validate.mjs';
+import { validateSchema } from './type/validate.mjs';
+import { execute } from './execution/execute.mjs';
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
  * by parsing, validating, and executing a GraphQL document along side a
@@ -45,7 +45,7 @@ import { execute } from "./execution/execute.mjs";
 
 export function graphql(args) {
   // Always return a Promise for a consistent API.
-  return new Promise(resolve => resolve(graphqlImpl(args)));
+  return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,
@@ -73,17 +73,16 @@ function graphqlImpl(args) {
     variableValues,
     operationName,
     fieldResolver,
-    typeResolver
+    typeResolver,
   } = args; // Validate Schema
 
   const schemaValidationErrors = validateSchema(schema);
 
   if (schemaValidationErrors.length > 0) {
     return {
-      errors: schemaValidationErrors
+      errors: schemaValidationErrors,
     };
   } // Parse
-
 
   let document;
 
@@ -91,19 +90,17 @@ function graphqlImpl(args) {
     document = parse(source);
   } catch (syntaxError) {
     return {
-      errors: [syntaxError]
+      errors: [syntaxError],
     };
   } // Validate
-
 
   const validationErrors = validate(schema, document);
 
   if (validationErrors.length > 0) {
     return {
-      errors: validationErrors
+      errors: validationErrors,
     };
   } // Execute
-
 
   return execute({
     schema,
@@ -113,6 +110,6 @@ function graphqlImpl(args) {
     variableValues,
     operationName,
     fieldResolver,
-    typeResolver
+    typeResolver,
   });
 }

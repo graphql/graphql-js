@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.KnownFragmentNamesRule = KnownFragmentNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * Known fragment names
@@ -20,9 +20,13 @@ function KnownFragmentNamesRule(context) {
       const fragment = context.getFragment(fragmentName);
 
       if (!fragment) {
-        context.reportError(new _GraphQLError.GraphQLError(`Unknown fragment "${fragmentName}".`, node.name));
+        context.reportError(
+          new _GraphQLError.GraphQLError(
+            `Unknown fragment "${fragmentName}".`,
+            node.name,
+          ),
+        );
       }
-    }
-
+    },
   };
 }

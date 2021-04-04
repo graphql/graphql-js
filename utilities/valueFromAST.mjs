@@ -1,8 +1,13 @@
-import { keyMap } from "../jsutils/keyMap.mjs";
-import { inspect } from "../jsutils/inspect.mjs";
-import { invariant } from "../jsutils/invariant.mjs";
-import { Kind } from "../language/kinds.mjs";
-import { isLeafType, isInputObjectType, isListType, isNonNullType } from "../type/definition.mjs";
+import { keyMap } from '../jsutils/keyMap.mjs';
+import { inspect } from '../jsutils/inspect.mjs';
+import { invariant } from '../jsutils/invariant.mjs';
+import { Kind } from '../language/kinds.mjs';
+import {
+  isLeafType,
+  isInputObjectType,
+  isListType,
+  isNonNullType,
+} from '../type/definition.mjs';
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -46,7 +51,6 @@ export function valueFromAST(valueNode, type, variables) {
     } // Note: This does no further checking that this variable is correct.
     // This assumes that this query has been validated and the variable
     // usage here is of the correct type.
-
 
     return variableValue;
   }
@@ -108,7 +112,7 @@ export function valueFromAST(valueNode, type, variables) {
     }
 
     const coercedObj = Object.create(null);
-    const fieldNodes = keyMap(valueNode.fields, field => field.name.value);
+    const fieldNodes = keyMap(valueNode.fields, (field) => field.name.value);
 
     for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes[field.name];
@@ -135,7 +139,6 @@ export function valueFromAST(valueNode, type, variables) {
     return coercedObj;
   } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
 
-
   if (isLeafType(type)) {
     // Scalars and Enums fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
@@ -155,11 +158,13 @@ export function valueFromAST(valueNode, type, variables) {
     return result;
   } // istanbul ignore next (Not reachable. All possible input types have been considered)
 
-
   false || invariant(0, 'Unexpected input type: ' + inspect(type));
 } // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 
 function isMissingVariable(valueNode, variables) {
-  return valueNode.kind === Kind.VARIABLE && (variables == null || variables[valueNode.name.value] === undefined);
+  return (
+    valueNode.kind === Kind.VARIABLE &&
+    (variables == null || variables[valueNode.name.value] === undefined)
+  );
 }

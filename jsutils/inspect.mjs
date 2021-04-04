@@ -40,7 +40,9 @@ function formatObjectValue(value, previouslySeenValues) {
     const jsonValue = value.toJSON(); // check for infinite recursion
 
     if (jsonValue !== value) {
-      return typeof jsonValue === 'string' ? jsonValue : formatValue(jsonValue, seenValues);
+      return typeof jsonValue === 'string'
+        ? jsonValue
+        : formatValue(jsonValue, seenValues);
     }
   } else if (Array.isArray(value)) {
     return formatArray(value, seenValues);
@@ -60,7 +62,7 @@ function formatObject(object, seenValues) {
     return '[' + getObjectTag(object) + ']';
   }
 
-  const properties = keys.map(key => {
+  const properties = keys.map((key) => {
     const value = formatValue(object[key], seenValues);
     return key + ': ' + value;
   });
@@ -94,7 +96,10 @@ function formatArray(array, seenValues) {
 }
 
 function getObjectTag(object) {
-  const tag = Object.prototype.toString.call(object).replace(/^\[object /, '').replace(/]$/, '');
+  const tag = Object.prototype.toString
+    .call(object)
+    .replace(/^\[object /, '')
+    .replace(/]$/, '');
 
   if (tag === 'Object' && typeof object.constructor === 'function') {
     const name = object.constructor.name;

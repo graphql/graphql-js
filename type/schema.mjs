@@ -1,11 +1,21 @@
-import { inspect } from "../jsutils/inspect.mjs";
-import { toObjMap } from "../jsutils/toObjMap.mjs";
-import { devAssert } from "../jsutils/devAssert.mjs";
-import { instanceOf } from "../jsutils/instanceOf.mjs";
-import { isObjectLike } from "../jsutils/isObjectLike.mjs";
-import { __Schema } from "./introspection.mjs";
-import { GraphQLDirective, isDirective, specifiedDirectives } from "./directives.mjs";
-import { isObjectType, isInterfaceType, isUnionType, isInputObjectType, getNamedType } from "./definition.mjs";
+import { inspect } from '../jsutils/inspect.mjs';
+import { toObjMap } from '../jsutils/toObjMap.mjs';
+import { devAssert } from '../jsutils/devAssert.mjs';
+import { instanceOf } from '../jsutils/instanceOf.mjs';
+import { isObjectLike } from '../jsutils/isObjectLike.mjs';
+import { __Schema } from './introspection.mjs';
+import {
+  GraphQLDirective,
+  isDirective,
+  specifiedDirectives,
+} from './directives.mjs';
+import {
+  isObjectType,
+  isInterfaceType,
+  isUnionType,
+  isInputObjectType,
+  getNamedType,
+} from './definition.mjs';
 /**
  * Test if the given value is a GraphQL schema.
  */
@@ -95,17 +105,36 @@ export class GraphQLSchema {
     this.__validationErrors = config.assumeValid === true ? [] : undefined; // Check for common mistakes during construction to produce early errors.
 
     isObjectLike(config) || devAssert(0, 'Must provide configuration object.');
-    !config.types || Array.isArray(config.types) || devAssert(0, `"types" must be Array if provided but got: ${inspect(config.types)}.`);
-    !config.directives || Array.isArray(config.directives) || devAssert(0, '"directives" must be Array if provided but got: ' + `${inspect(config.directives)}.`);
+    !config.types ||
+      Array.isArray(config.types) ||
+      devAssert(
+        0,
+        `"types" must be Array if provided but got: ${inspect(config.types)}.`,
+      );
+    !config.directives ||
+      Array.isArray(config.directives) ||
+      devAssert(
+        0,
+        '"directives" must be Array if provided but got: ' +
+          `${inspect(config.directives)}.`,
+      );
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
-    this.extensionASTNodes = (_config$extensionASTN = config.extensionASTNodes) !== null && _config$extensionASTN !== void 0 ? _config$extensionASTN : [];
+    this.extensionASTNodes =
+      (_config$extensionASTN = config.extensionASTNodes) !== null &&
+      _config$extensionASTN !== void 0
+        ? _config$extensionASTN
+        : [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
 
-    this._directives = (_config$directives = config.directives) !== null && _config$directives !== void 0 ? _config$directives : specifiedDirectives; // To preserve order of user-provided types, we add first to add them to
+    this._directives =
+      (_config$directives = config.directives) !== null &&
+      _config$directives !== void 0
+        ? _config$directives
+        : specifiedDirectives; // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
 
     const allReferencedTypes = new Set(config.types);
@@ -153,10 +182,16 @@ export class GraphQLSchema {
       }
 
       const typeName = namedType.name;
-      typeName || devAssert(0, 'One of the provided types for building the Schema is missing a name.');
+      typeName ||
+        devAssert(
+          0,
+          'One of the provided types for building the Schema is missing a name.',
+        );
 
       if (this._typeMap[typeName] !== undefined) {
-        throw new Error(`Schema must contain uniquely named types but contains multiple types named "${typeName}".`);
+        throw new Error(
+          `Schema must contain uniquely named types but contains multiple types named "${typeName}".`,
+        );
       }
 
       this._typeMap[typeName] = namedType;
@@ -170,7 +205,7 @@ export class GraphQLSchema {
             if (implementations === undefined) {
               implementations = this._implementationsMap[iface.name] = {
                 objects: [],
-                interfaces: []
+                interfaces: [],
               };
             }
 
@@ -186,7 +221,7 @@ export class GraphQLSchema {
             if (implementations === undefined) {
               implementations = this._implementationsMap[iface.name] = {
                 objects: [],
-                interfaces: []
+                interfaces: [],
               };
             }
 
@@ -218,15 +253,19 @@ export class GraphQLSchema {
   }
 
   getPossibleTypes(abstractType) {
-    return isUnionType(abstractType) ? abstractType.getTypes() : this.getImplementations(abstractType).objects;
+    return isUnionType(abstractType)
+      ? abstractType.getTypes()
+      : this.getImplementations(abstractType).objects;
   }
 
   getImplementations(interfaceType) {
     const implementations = this._implementationsMap[interfaceType.name];
-    return implementations !== null && implementations !== void 0 ? implementations : {
-      objects: [],
-      interfaces: []
-    };
+    return implementations !== null && implementations !== void 0
+      ? implementations
+      : {
+          objects: [],
+          interfaces: [],
+        };
   }
 
   isSubType(abstractType, maybeSubType) {
@@ -262,7 +301,7 @@ export class GraphQLSchema {
   }
 
   getDirective(name) {
-    return this.getDirectives().find(directive => directive.name === name);
+    return this.getDirectives().find((directive) => directive.name === name);
   }
 
   toConfig() {
@@ -276,15 +315,13 @@ export class GraphQLSchema {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
-      assumeValid: this.__validationErrors !== undefined
+      assumeValid: this.__validationErrors !== undefined,
     };
   } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
-
 
   get [Symbol.toStringTag]() {
     return 'GraphQLSchema';
   }
-
 }
 
 function collectReferencedTypes(type, typeSet) {

@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+Object.defineProperty(exports, '__esModule', {
+  value: true,
 });
 exports.UniqueTypeNamesRule = UniqueTypeNamesRule;
 
-var _GraphQLError = require("../../error/GraphQLError.js");
+var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
  * Unique type names
@@ -21,19 +21,29 @@ function UniqueTypeNamesRule(context) {
     InterfaceTypeDefinition: checkTypeName,
     UnionTypeDefinition: checkTypeName,
     EnumTypeDefinition: checkTypeName,
-    InputObjectTypeDefinition: checkTypeName
+    InputObjectTypeDefinition: checkTypeName,
   };
 
   function checkTypeName(node) {
     const typeName = node.name.value;
 
     if (schema !== null && schema !== void 0 && schema.getType(typeName)) {
-      context.reportError(new _GraphQLError.GraphQLError(`Type "${typeName}" already exists in the schema. It cannot also be defined in this type definition.`, node.name));
+      context.reportError(
+        new _GraphQLError.GraphQLError(
+          `Type "${typeName}" already exists in the schema. It cannot also be defined in this type definition.`,
+          node.name,
+        ),
+      );
       return;
     }
 
     if (knownTypeNames[typeName]) {
-      context.reportError(new _GraphQLError.GraphQLError(`There can be only one type named "${typeName}".`, [knownTypeNames[typeName], node.name]));
+      context.reportError(
+        new _GraphQLError.GraphQLError(
+          `There can be only one type named "${typeName}".`,
+          [knownTypeNames[typeName], node.name],
+        ),
+      );
     } else {
       knownTypeNames[typeName] = node.name;
     }

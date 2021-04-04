@@ -1,4 +1,5 @@
 // @flow strict
+
 import type { Path } from '../jsutils/Path';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type {
