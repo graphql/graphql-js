@@ -12,7 +12,7 @@ export function mapAsyncIterator<T, U>(
   const iteratorMethod = iterable[Symbol.asyncIterator];
   const iterator: any = iteratorMethod.call(iterable);
 
-  async function abruptClose(error: mixed) {
+  async function abruptClose() {
     if (typeof iterator.return === 'function') {
       try {
         await iterator.return();
@@ -20,10 +20,11 @@ export function mapAsyncIterator<T, U>(
         /* ignore error */
       }
     }
-    throw error;
   }
 
-  async function mapResult(resultPromise: Promise<IteratorResult<T, void>>) {
+  async function mapResult(
+    resultPromise: Promise<IteratorResult<T, void>>,
+  ): Promise<IteratorResult<U, void>> {
     try {
       const result = await resultPromise;
 
@@ -33,26 +34,29 @@ export function mapAsyncIterator<T, U>(
 
       return { value: await callback(result.value), done: false };
     } catch (callbackError) {
-      return abruptClose(callbackError);
+      abruptClose();
+      throw callbackError;
     }
   }
 
   /* TODO: Flow doesn't support symbols as keys:
      https://github.com/facebook/flow/issues/3258 */
   return ({
-    next(): Promise<IteratorResult<U, void>> {
+    next() {
       return mapResult(iterator.next());
     },
-    return() {
+    async return() {
       return typeof iterator.return === 'function'
         ? mapResult(iterator.return())
-        : Promise.resolve({ value: undefined, done: true });
+        : { value: undefined, done: true };
     },
-    throw(error?: mixed): Promise<IteratorResult<U, void>> {
+    async throw(error?: mixed): Promise<IteratorResult<U, void>> {
       if (typeof iterator.throw === 'function') {
         return mapResult(iterator.throw(error));
       }
-      return Promise.reject(error).catch(abruptClose);
+
+      abruptClose();
+      throw error;
     },
     [Symbol.asyncIterator]() {
       return this;

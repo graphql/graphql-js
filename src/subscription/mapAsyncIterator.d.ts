@@ -7,5 +7,4 @@ import { PromiseOrValue } from '../jsutils/PromiseOrValue';
 export function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T> | AsyncGenerator<T, void, void>,
   callback: (arg: T) => PromiseOrValue<U>,
-  rejectCallback?: (arg: any) => PromiseOrValue<U>,
 ): AsyncGenerator<U, void, void>;
