@@ -9,14 +9,14 @@
  *
  * to:
  *
- *  !<cond> ? invariant(0, ...) : undefined;
+ *  (<cond>) || invariant(false ...)
  */
 module.exports = function inlineInvariant(context) {
   const invariantTemplate = context.template(`
-    (%%cond%%) || invariant(0, %%args%%)
+    (%%cond%%) || invariant(false, %%args%%)
   `);
   const assertTemplate = context.template(`
-    (%%cond%%) || devAssert(0, %%args%%)
+    (%%cond%%) || devAssert(false, %%args%%)
   `);
 
   return {
