@@ -225,9 +225,10 @@ export class Parser {
     if (this.peek(TokenKind.NAME)) {
       switch (this._lexer.token.value) {
         case 'query':
+          return this.parseOperationDefinition(true);
         case 'mutation':
         case 'subscription':
-          return this.parseOperationDefinition();
+          return this.parseOperationDefinition(false);
         case 'fragment':
           return this.parseFragmentDefinition();
         case 'schema':
@@ -243,7 +244,7 @@ export class Parser {
           return this.parseTypeSystemExtension();
       }
     } else if (this.peek(TokenKind.BRACE_L)) {
-      return this.parseOperationDefinition();
+      return this.parseOperationDefinition(true);
     } else if (this.peekDescription()) {
       return this.parseTypeSystemDefinition();
     }
@@ -258,7 +259,7 @@ export class Parser {
    *  - SelectionSet
    *  - OperationType Name? VariableDefinitions? Directives? SelectionSet
    */
-  parseOperationDefinition(): OperationDefinitionNode {
+  parseOperationDefinition(allowRequiredField: boolean): OperationDefinitionNode {
     const start = this._lexer.token;
     if (this.peek(TokenKind.BRACE_L)) {
       return {
@@ -267,7 +268,7 @@ export class Parser {
         name: undefined,
         variableDefinitions: [],
         directives: [],
-        selectionSet: this.parseSelectionSet(),
+        selectionSet: this.parseSelectionSet(allowRequiredField),
         loc: this.loc(start),
       };
     }
@@ -282,7 +283,7 @@ export class Parser {
       name,
       variableDefinitions: this.parseVariableDefinitions(),
       directives: this.parseDirectives(false),
-      selectionSet: this.parseSelectionSet(),
+      selectionSet: this.parseSelectionSet(allowRequiredField),
       loc: this.loc(start),
     };
   }
@@ -348,13 +349,18 @@ export class Parser {
   /**
    * SelectionSet : { Selection+ }
    */
-  parseSelectionSet(): SelectionSetNode {
+  parseSelectionSet(allowRequiredField: boolean = false): SelectionSetNode {
     const start = this._lexer.token;
+    const _allowRequiredField = allowRequiredField
+    let parseSelectionFn: () => SelectionNode = function (): SelectionNode {
+      return this.parseSelection(_allowRequiredField)
+    }
+
     return {
       kind: Kind.SELECTION_SET,
       selections: this.many(
         TokenKind.BRACE_L,
-        this.parseSelection,
+        parseSelectionFn,
         TokenKind.BRACE_R,
       ),
       loc: this.loc(start),
@@ -367,10 +373,10 @@ export class Parser {
    *   - FragmentSpread
    *   - InlineFragment
    */
-  parseSelection(): SelectionNode {
+  parseSelection(allowRequiredField: boolean): SelectionNode {
     return this.peek(TokenKind.SPREAD)
       ? this.parseFragment()
-      : this.parseField();
+      : this.parseField(allowRequiredField);
   }
 
   /**
@@ -378,12 +384,19 @@ export class Parser {
    *
    * Alias : Name :
    */
-  parseField(): FieldNode {
+  parseField(allowRequiredField: boolean): FieldNode {
     const start = this._lexer.token;
 
     const nameOrAlias = this.parseName();
     let alias;
     let name;
+    let required;
+    if (allowRequiredField && this.expectOptionalToken(TokenKind.BANG)) {
+      required = true
+    } else {
+      required = false
+    }
+
     if (this.expectOptionalToken(TokenKind.COLON)) {
       alias = nameOrAlias;
       name = this.parseName();
@@ -398,8 +411,9 @@ export class Parser {
       arguments: this.parseArguments(false),
       directives: this.parseDirectives(false),
       selectionSet: this.peek(TokenKind.BRACE_L)
-        ? this.parseSelectionSet()
+        ? this.parseSelectionSet(allowRequiredField)
         : undefined,
+      required: required,
       loc: this.loc(start),
     };
   }
@@ -464,7 +478,7 @@ export class Parser {
       kind: Kind.INLINE_FRAGMENT,
       typeCondition: hasTypeCondition ? this.parseNamedType() : undefined,
       directives: this.parseDirectives(false),
-      selectionSet: this.parseSelectionSet(),
+      selectionSet: this.parseSelectionSet(true),
       loc: this.loc(start),
     };
   }
@@ -488,7 +502,7 @@ export class Parser {
         variableDefinitions: this.parseVariableDefinitions(),
         typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
         directives: this.parseDirectives(false),
-        selectionSet: this.parseSelectionSet(),
+        selectionSet: this.parseSelectionSet(true),
         loc: this.loc(start),
       };
     }
@@ -497,7 +511,7 @@ export class Parser {
       name: this.parseFragmentName(),
       typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
       directives: this.parseDirectives(false),
-      selectionSet: this.parseSelectionSet(),
+      selectionSet: this.parseSelectionSet(true),
       loc: this.loc(start),
     };
   }
