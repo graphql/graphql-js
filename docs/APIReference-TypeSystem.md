@@ -206,7 +206,7 @@ class GraphQLScalarType<InternalType> {
 type GraphQLScalarTypeConfig<InternalType> = {
   name: string;
   description?: ?string;
-  specifiedByUrl?: string;
+  specifiedBy?: string;
   serialize: (value: mixed) => ?InternalType;
   parseValue?: (value: mixed) => ?InternalType;
   parseLiteral?: (valueAST: Value) => ?InternalType;
