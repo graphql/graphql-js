@@ -7,7 +7,7 @@ export interface IntrospectionOptions {
   // Default: true
   descriptions?: boolean;
 
-  // Whether to include `specifiedByUrl` in the introspection result.
+  // Whether to include `specifiedBy` in the introspection result.
   // Default: false
   specifiedByUrl?: boolean;
 
@@ -67,7 +67,7 @@ export interface IntrospectionScalarType {
   readonly kind: 'SCALAR';
   readonly name: string;
   readonly description?: Maybe<string>;
-  readonly specifiedByUrl?: Maybe<string>;
+  readonly specifiedBy?: Maybe<string>;
 }
 
 export interface IntrospectionObjectType {

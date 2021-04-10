@@ -33,9 +33,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   };
 
   const descriptions = optionsWithDefault.descriptions ? 'description' : '';
-  const specifiedByUrl = optionsWithDefault.specifiedByUrl
-    ? 'specifiedByUrl'
-    : '';
+  const specifiedByUrl = optionsWithDefault.specifiedByUrl ? 'specifiedBy' : '';
   const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable
     ? 'isRepeatable'
     : '';
@@ -184,7 +182,7 @@ export type IntrospectionScalarType = {|
   +kind: 'SCALAR',
   +name: string,
   +description?: ?string,
-  +specifiedByUrl?: ?string,
+  +specifiedBy?: ?string,
 |};
 
 export type IntrospectionObjectType = {|

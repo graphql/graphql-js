@@ -150,7 +150,7 @@ export function printType(type: GraphQLNamedType): string {
 
 function printScalar(type: GraphQLScalarType): string {
   return (
-    printDescription(type) + `scalar ${type.name}` + printSpecifiedByUrl(type)
+    printDescription(type) + `scalar ${type.name}` + printSpecifiedBy(type)
   );
 }
 
@@ -288,11 +288,11 @@ function printDeprecated(reason: ?string): string {
   return ' @deprecated';
 }
 
-function printSpecifiedByUrl(scalar: GraphQLScalarType): string {
-  if (scalar.specifiedByUrl == null) {
+function printSpecifiedBy(scalar: GraphQLScalarType): string {
+  if (scalar.specifiedBy == null) {
     return '';
   }
-  const url = scalar.specifiedByUrl;
+  const url = scalar.specifiedBy;
   const urlAST = astFromValue(url, GraphQLString);
   invariant(
     urlAST,

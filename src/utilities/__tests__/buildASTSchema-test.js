@@ -707,7 +707,7 @@ describe('Schema Builder', () => {
     const schema = buildSchema(sdl);
 
     expect(schema.getType('Foo')).to.include({
-      specifiedByUrl: 'https://example.com/foo_spec',
+      specifiedBy: 'https://example.com/foo_spec',
     });
   });
 
