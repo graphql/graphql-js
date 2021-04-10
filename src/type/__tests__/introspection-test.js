@@ -1560,7 +1560,7 @@ describe('Introspection', () => {
     `);
 
     const source = getIntrospectionQuery({
-      specifiedBy: true,
+      specifiedByUrl: true,
       directiveIsRepeatable: true,
       schemaDescription: true,
     });
