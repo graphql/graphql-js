@@ -418,6 +418,49 @@ describe('Visitor', () => {
     ]);
   });
 
+  it('visit nodes with unknown kinds but does not traverse deeper', () => {
+    const customAST = parse('{ a }');
+    // $FlowExpectedError[prop-missing]
+    customAST.definitions[0].selectionSet.selections.push({
+      kind: 'CustomField',
+      name: { kind: 'Name', value: 'NamedNodeToBeSkipped' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'CustomField',
+            name: { kind: 'Name', value: 'NamedNodeToBeSkipped' },
+          },
+        ],
+      },
+    });
+
+    const visited = [];
+    visit(customAST, {
+      enter(node) {
+        visited.push(['enter', node.kind, getValue(node)]);
+      },
+      leave(node) {
+        visited.push(['leave', node.kind, getValue(node)]);
+      },
+    });
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Document', undefined],
+      ['enter', 'OperationDefinition', undefined],
+      ['enter', 'SelectionSet', undefined],
+      ['enter', 'Field', undefined],
+      ['enter', 'Name', 'a'],
+      ['leave', 'Name', 'a'],
+      ['leave', 'Field', undefined],
+      ['enter', 'CustomField', undefined],
+      ['leave', 'CustomField', undefined],
+      ['leave', 'SelectionSet', undefined],
+      ['leave', 'OperationDefinition', undefined],
+      ['leave', 'Document', undefined],
+    ]);
+  });
+
   it('Legacy: visits variables defined in fragments', () => {
     const ast = parse('fragment a($v: Boolean = false) on t { f }', {
       noLocation: true,
@@ -843,56 +886,6 @@ describe('Visitor', () => {
       ['leave', 'OperationDefinition', 5, undefined],
       ['leave', 'Document', undefined, undefined],
     ]);
-  });
-
-  describe('Support for custom AST nodes', () => {
-    const customAST = parse('{ a }');
-    (customAST: any).definitions[0].selectionSet.selections.push({
-      kind: 'CustomField',
-      name: {
-        kind: 'Name',
-        value: 'b',
-      },
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'CustomField',
-            name: {
-              kind: 'Name',
-              value: 'c',
-            },
-          },
-        ],
-      },
-    });
-
-    it('does not traverse unknown node kinds', () => {
-      const visited = [];
-      visit(customAST, {
-        enter(node) {
-          visited.push(['enter', node.kind, getValue(node)]);
-        },
-        leave(node) {
-          visited.push(['leave', node.kind, getValue(node)]);
-        },
-      });
-
-      expect(visited).to.deep.equal([
-        ['enter', 'Document', undefined],
-        ['enter', 'OperationDefinition', undefined],
-        ['enter', 'SelectionSet', undefined],
-        ['enter', 'Field', undefined],
-        ['enter', 'Name', 'a'],
-        ['leave', 'Name', 'a'],
-        ['leave', 'Field', undefined],
-        ['enter', 'CustomField', undefined],
-        ['leave', 'CustomField', undefined],
-        ['leave', 'SelectionSet', undefined],
-        ['leave', 'OperationDefinition', undefined],
-        ['leave', 'Document', undefined],
-      ]);
-    });
   });
 
   describe('visitInParallel', () => {
