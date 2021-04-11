@@ -143,7 +143,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.23.x`
+  # ESLint builtin rules list based on `v7.24.x`
   ##############################################################################
 
   # Possible Errors
@@ -444,7 +444,7 @@ overrides:
 
     rules:
       ##############################################################################
-      # `eslint-plugin-flowtype` rule list based on `v5.4.x`
+      # `eslint-plugin-flowtype` rule list based on `v5.6.x`
       # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
       ##############################################################################
 
@@ -476,6 +476,7 @@ overrides:
       flowtype/spread-exact-type: off
       flowtype/type-id-match: [error, '^[A-Z]']
       flowtype/type-import-style: [error, declaration]
+      flowtype/use-read-only-spread: error
       flowtype/use-flow-type: error
 
       # Bellow rules are disabled because coflicts with Prettier, see:
@@ -502,7 +503,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.20.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.21.x`
       ##########################################################################
 
       # Supported Rules
@@ -556,6 +557,7 @@ overrides:
       '@typescript-eslint/no-unnecessary-type-arguments': error
       '@typescript-eslint/no-unnecessary-type-assertion': error
       '@typescript-eslint/no-unnecessary-type-constraint': off # TODO consider
+      '@typescript-eslint/no-unsafe-argument': off # TODO consider
       '@typescript-eslint/no-unsafe-assignment': off # TODO consider
       '@typescript-eslint/no-unsafe-call': off # TODO consider
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
