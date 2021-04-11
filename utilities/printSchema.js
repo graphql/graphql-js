@@ -51,11 +51,11 @@ function isDefinedType(type) {
 function printFilteredSchema(schema, directiveFilter, typeFilter) {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
-  return [printSchemaDefinition(schema)]
-    .concat(
-      directives.map((directive) => printDirective(directive)),
-      types.map((type) => printType(type)),
-    )
+  return [
+    printSchemaDefinition(schema),
+    ...directives.map((directive) => printDirective(directive)),
+    ...types.map((type) => printType(type)),
+  ]
     .filter(Boolean)
     .join('\n\n');
 }
@@ -94,6 +94,7 @@ function printSchemaDefinition(schema) {
  *   schema {
  *     query: Query
  *     mutation: Mutation
+ *     subscription: Subscription
  *   }
  *
  * When using this naming convention, the schema description can be omitted.
