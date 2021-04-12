@@ -1,5 +1,6 @@
 import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
+import type { Mutable } from '../jsutils/mutable';
 
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
