@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { invariant } from '../../jsutils/invariant';
 
 import { mapAsyncIterator } from '../mapAsyncIterator';
 
@@ -26,17 +25,14 @@ describe('mapAsyncIterator', () => {
   it('maps over async iterator', async () => {
     const items = [1, 2, 3];
 
-    const iterator = {
+    const iterator: $FlowFixMe = {
       [Symbol.asyncIterator]() {
         return this;
       },
 
-      next(): Promise<IteratorResult<number>> {
-        const value = items.shift()
-
-        if (items.length > 0){
-          invariant(value)
-          return Promise.resolve({ done: false, value });
+      next(): Promise<IteratorResult<number, void>> {
+        if (items.length > 0) {
+          return Promise.resolve({ done: false, value: items.shift() });
         }
 
         return Promise.resolve({ done: true, value: undefined });
