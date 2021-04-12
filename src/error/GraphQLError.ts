@@ -1,5 +1,6 @@
 import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
+import type { Mutable } from '../jsutils/mutable';
 
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
@@ -98,7 +99,7 @@ export class GraphQLError extends Error {
       _source = _nodes[0].loc?.source;
     }
 
-    let _positions = positions;
+    let _positions = positions as Mutable<typeof positions>;
     if (!_positions && _nodes) {
       _positions = [];
       for (const node of _nodes) {
