@@ -6,10 +6,10 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
  */
 export function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T> | AsyncGenerator<T, void, void>,
-  callback: (T) => PromiseOrValue<U>,
+  callback: (value: T) => PromiseOrValue<U>,
 ): AsyncGenerator<U, void, void> {
   const iteratorMethod = iterable[Symbol.asyncIterator];
-  const iterator: any = iteratorMethod.call(iterable);
+  const iterator = iteratorMethod.call(iterable);
 
   async function abruptClose(error: unknown) {
     if (typeof iterator.return === 'function') {
@@ -58,5 +58,5 @@ export function mapAsyncIterator<T, U>(
     [Symbol.asyncIterator]() {
       return this;
     },
-  } as any; // FIXME: removed $FlowFixMe in TS conversion
+  };
 }

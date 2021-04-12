@@ -25,12 +25,12 @@ describe('mapAsyncIterator', () => {
   it('maps over async iterator', async () => {
     const items = [1, 2, 3];
 
-    const iterator: $FlowFixMe = {
+    const iterator = {
       [Symbol.asyncIterator]() {
         return this;
       },
 
-      next(): Promise<IteratorResult<number, void>> {
+      next(): Promise<IteratorResult<number>> {
         if (items.length > 0) {
           return Promise.resolve({ done: false, value: items.shift() });
         }
@@ -75,7 +75,7 @@ describe('mapAsyncIterator', () => {
 
     const doubles: AsyncIterator<number> = mapAsyncIterator(
       source(),
-      async (x) => (await x) + x,
+      async (x) => x + x,
     );
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
@@ -121,7 +121,7 @@ describe('mapAsyncIterator', () => {
   it('allows returning early from mapped async iterator', async () => {
     const items = [1, 2, 3];
 
-    const iterator: any = {
+    const iterator = {
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -185,7 +185,7 @@ describe('mapAsyncIterator', () => {
   it('allows throwing errors through async iterators', async () => {
     const items = [1, 2, 3];
 
-    const iterator: any = {
+    const iterator = {
       [Symbol.asyncIterator]() {
         return this;
       },
