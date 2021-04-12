@@ -23,8 +23,6 @@ overrides:
 words:
   - graphiql
   - sublinks
-  - subcommand
-  - transpilation
   - instanceof
   - flowtype
 
@@ -51,7 +49,6 @@ words:
   - QLJS # GraphQLJS
   - iface
   - Reqs
-  - ORing
   - FXXX
   - XXXF
   - bfnrt
