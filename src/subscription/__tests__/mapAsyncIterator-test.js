@@ -25,15 +25,17 @@ describe('mapAsyncIterator', () => {
   it('maps over async iterator', async () => {
     const items = [1, 2, 3];
 
-    const iterator: any = {
+    const iterator: $FlowFixMe = {
       [Symbol.asyncIterator]() {
         return this;
       },
-      next() {
-        return Promise.resolve({
-          done: items.length === 0,
-          value: items.shift(),
-        });
+
+      next(): Promise<IteratorResult<number, void>> {
+        if (items.length > 0) {
+          return Promise.resolve({ done: false, value: items.shift() });
+        }
+
+        return Promise.resolve({ done: true, value: undefined });
       },
     };
 
