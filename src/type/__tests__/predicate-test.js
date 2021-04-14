@@ -1,7 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { GraphQLArgument, GraphQLInputField } from '../definition';
+import type {
+  GraphQLArgument,
+  GraphQLInputField,
+  GraphQLInputType,
+} from '../definition';
 import {
   GraphQLDirective,
   GraphQLSkipDirective,
@@ -503,7 +507,7 @@ describe('Type predicates', () => {
 
   describe('getNullableType', () => {
     it('returns undefined for no type', () => {
-      expect(getNullableType()).to.equal(undefined);
+      expect(getNullableType(undefined)).to.equal(undefined);
       expect(getNullableType(null)).to.equal(undefined);
     });
 
@@ -536,7 +540,7 @@ describe('Type predicates', () => {
 
   describe('getNamedType', () => {
     it('returns undefined for no type', () => {
-      expect(getNamedType()).to.equal(undefined);
+      expect(getNamedType(undefined)).to.equal(undefined);
       expect(getNamedType(null)).to.equal(undefined);
     });
 
@@ -559,15 +563,18 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredArgument', () => {
-    function buildArg(config: $Shape<GraphQLArgument>): GraphQLArgument {
+    function buildArg(config: {|
+      type: GraphQLInputType,
+      defaultValue?: mixed,
+    |}): GraphQLArgument {
       return {
         name: 'someArg',
+        type: config.type,
         description: undefined,
-        defaultValue: undefined,
+        defaultValue: config.defaultValue,
         deprecationReason: null,
         extensions: undefined,
         astNode: undefined,
-        ...config,
       };
     }
 
@@ -604,17 +611,18 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredInputField', () => {
-    function buildInputField(
-      config: $Shape<GraphQLInputField>,
-    ): GraphQLInputField {
+    function buildInputField(config: {|
+      type: GraphQLInputType,
+      defaultValue?: mixed,
+    |}): GraphQLInputField {
       return {
         name: 'someInputField',
+        type: config.type,
         description: undefined,
-        defaultValue: undefined,
+        defaultValue: config.defaultValue,
         deprecationReason: null,
         extensions: undefined,
         astNode: undefined,
-        ...config,
       };
     }
 
