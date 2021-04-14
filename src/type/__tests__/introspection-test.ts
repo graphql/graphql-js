@@ -1571,7 +1571,7 @@ describe('Introspection', () => {
     }
 
     // istanbul ignore next (Called only to fail test)
-    function typeResolver(_1, _2, info) {
+    function typeResolver(_1, _2, info): undefined {
       expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
