@@ -1,4 +1,7 @@
-export function invariant(condition: unknown, message?: string): void {
+export function invariant(
+  condition: unknown,
+  message?: string,
+): asserts condition {
   const booleanCondition = Boolean(condition);
   // istanbul ignore else (See transformation done in './resources/inlineInvariant.js')
   if (!booleanCondition) {
