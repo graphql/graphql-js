@@ -310,14 +310,14 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
 
-    let specifiedBy = config.specifiedBy;
+    let specifiedByURL = config.specifiedByURL;
     for (const extensionNode of extensions) {
-      specifiedBy = getSpecifiedBy(extensionNode) ?? specifiedBy;
+      specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
     }
 
     return new GraphQLScalarType({
       ...config,
-      specifiedBy,
+      specifiedByURL,
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
@@ -655,7 +655,7 @@ export function extendSchemaImpl(
         return new GraphQLScalarType({
           name,
           description: astNode.description?.value,
-          specifiedBy: getSpecifiedBy(astNode),
+          specifiedByURL: getSpecifiedByURL(astNode),
           astNode,
           extensionASTNodes,
         });
@@ -702,9 +702,9 @@ function getDeprecationReason(
 }
 
 /**
- * Given a scalar node, returns the string value for the specifiedBy.
+ * Given a scalar node, returns the string value for the specifiedByURL.
  */
-function getSpecifiedBy(
+function getSpecifiedByURL(
   node: ScalarTypeDefinitionNode | ScalarTypeExtensionNode,
 ): ?string {
   const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);

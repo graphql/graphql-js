@@ -304,7 +304,7 @@ export interface GraphQLScalarTypeExtensions {
 export class GraphQLScalarType {
   name: string;
   description: Maybe<string>;
-  specifiedBy: Maybe<string>;
+  specifiedByURL: Maybe<string>;
   serialize: GraphQLScalarSerializer<unknown>;
   parseValue: GraphQLScalarValueParser<unknown>;
   parseLiteral: GraphQLScalarLiteralParser<unknown>;
@@ -315,7 +315,7 @@ export class GraphQLScalarType {
   constructor(config: Readonly<GraphQLScalarTypeConfig<unknown, unknown>>);
 
   toConfig(): GraphQLScalarTypeConfig<unknown, unknown> & {
-    specifiedBy: Maybe<string>;
+    specifiedByURL: Maybe<string>;
     serialize: GraphQLScalarSerializer<unknown>;
     parseValue: GraphQLScalarValueParser<unknown>;
     parseLiteral: GraphQLScalarLiteralParser<unknown>;

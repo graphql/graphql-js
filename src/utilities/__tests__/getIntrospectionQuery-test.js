@@ -64,12 +64,14 @@ describe('getIntrospectionQuery', () => {
   });
 
   it('include "specifiedBy" field', () => {
-    expectIntrospectionQuery().toNotMatch('specifiedBy');
+    expectIntrospectionQuery().toNotMatch('specifiedByURL');
 
-    expectIntrospectionQuery({ specifiedByUrl: true }).toMatch('specifiedBy');
+    expectIntrospectionQuery({ specifiedByUrl: true }).toMatch(
+      'specifiedByURL',
+    );
 
     expectIntrospectionQuery({ specifiedByUrl: false }).toNotMatch(
-      'specifiedBy',
+      'specifiedByURL',
     );
   });
 
