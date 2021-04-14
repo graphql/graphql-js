@@ -37,6 +37,6 @@ spurious results.`,
         return false;
       };
 
-type Constructor = {
+interface Constructor extends Function {
   name: string;
-};
+}
