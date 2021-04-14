@@ -197,7 +197,7 @@ function validateDirectives(context: SchemaValidationContext): void {
 
 function validateName(
   context: SchemaValidationContext,
-  node: { readonly name: string; readonly astNode: Maybe<ASTNode>, ... },
+  node: { readonly name: string; readonly astNode: Maybe<ASTNode> },
 ): void {
   // Ensure names are valid, however introspection types opt out.
   const error = isValidNameError(node.name);
@@ -637,7 +637,7 @@ function getUnionMemberTypeNodes(
 }
 
 function getDeprecatedDirectiveNode(
-  definitionNode: Maybe<{ readonly directives?: ReadonlyArray<DirectiveNode>, ... }>,
+  definitionNode: Maybe<{ readonly directives?: ReadonlyArray<DirectiveNode> }>,
 ): Maybe<DirectiveNode> {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return definitionNode?.directives?.find(

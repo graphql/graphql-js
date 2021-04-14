@@ -166,7 +166,7 @@ function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn: (T) => R): ObjMap<R> {
   return sortedMap;
 }
 
-function sortByName<T: { readonly name: string, ... }>(
+function sortByName<T: { readonly name: string }>(
   array: ReadonlyArray<T>,
 ): Array<T> {
   return sortBy(array, (obj) => obj.name);

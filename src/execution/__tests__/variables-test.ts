@@ -119,7 +119,7 @@ const schema = new GraphQLSchema({ query: TestType });
 
 function executeQuery(
   query: string,
-  variableValues?: { [variable: string]: unknown, ... },
+  variableValues?: { [variable: string]: unknown },
 ) {
   const document = parse(query);
   return executeSync({ schema, document, variableValues });

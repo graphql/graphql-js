@@ -304,7 +304,7 @@ function printSpecifiedByUrl(scalar: GraphQLScalarType): string {
 }
 
 function printDescription(
-  def: { readonly description: Maybe<string>, ... },
+  def: { readonly description: Maybe<string> },
   indentation: string = '',
   firstInBlock: boolean = true,
 ): string {

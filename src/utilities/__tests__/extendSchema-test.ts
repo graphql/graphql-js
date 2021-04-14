@@ -38,12 +38,11 @@ import type { Maybe } from '../../jsutils/Maybe';
 
 function expectExtensionASTNodes(obj: {
   readonly extensionASTNodes: ReadonlyArray<ASTNode>,
-  ...
 }) {
   return expect(obj.extensionASTNodes.map(print).join('\n\n'));
 }
 
-function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode>, ... }>) {
+function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
   // istanbul ignore next (FIXME)
   invariant(obj?.astNode != null);
   return expect(print(obj.astNode));

@@ -99,7 +99,7 @@ export type ExecutionContext = {
   rootValue: unknown,
   contextValue: unknown,
   operation: OperationDefinitionNode,
-  variableValues: { [variable: string]: unknown, ... },
+  variableValues: { [variable: string]: unknown },
   fieldResolver: GraphQLFieldResolver<any, any>,
   typeResolver: GraphQLTypeResolver<any, any>,
   errors: Array<GraphQLError>,
@@ -129,7 +129,7 @@ export type ExecutionArgs = {
   document: DocumentNode,
   rootValue?: unknown,
   contextValue?: unknown,
-  variableValues?: Maybe<{ readonly [variable: string]: unknown, ... }>,
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
@@ -230,7 +230,7 @@ function buildResponse(
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: Maybe<{ readonly [variable: string]: unknown, ... }>,
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
 ): void {
   devAssert(document, 'Must provide document.');
 
@@ -257,7 +257,7 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: unknown,
   contextValue: unknown,
-  rawVariableValues: Maybe<{ readonly [variable: string]: unknown, ... }>,
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
   operationName: Maybe<string>,
   fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
   typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
