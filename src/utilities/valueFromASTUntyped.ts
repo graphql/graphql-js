@@ -5,6 +5,7 @@ import { keyValMap } from '../jsutils/keyValMap';
 
 import { Kind } from '../language/kinds';
 import type { ValueNode } from '../language/ast';
+import type { Maybe } from '../jsutils/Maybe';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -24,7 +25,7 @@ import type { ValueNode } from '../language/ast';
  */
 export function valueFromASTUntyped(
   valueNode: ValueNode,
-  variables?: ?ObjMap<unknown>,
+  variables?: Maybe<ObjMap<unknown>>,
 ): unknown {
   switch (valueNode.kind) {
     case Kind.NULL:

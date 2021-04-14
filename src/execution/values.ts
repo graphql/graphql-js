@@ -21,6 +21,7 @@ import { isInputType, isNonNullType } from '../type/definition';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
 import { coerceInputValue } from '../utilities/coerceInputValue';
+import type { Maybe } from '../jsutils/Maybe';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError> }
@@ -40,7 +41,7 @@ type CoercedVariableValues =
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
-  inputs: { readonly [variable: string]: unknown, ... },
+  inputs: { readonly [variable: string]: unknown },
   options?: { maxErrors?: number },
 ): CoercedVariableValues {
   const errors = [];
@@ -159,7 +160,7 @@ function coerceVariableValues(
 export function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
-  variableValues?: ?ObjMap<unknown>,
+  variableValues?: Maybe<ObjMap<unknown>>,
 ): { [argument: string]: unknown, ... } {
   const coercedValues = {};
 
@@ -244,8 +245,8 @@ export function getArgumentValues(
  */
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
-  node: { +directives?: ReadonlyArray<DirectiveNode>, ... },
-  variableValues?: ?ObjMap<unknown>,
+  node: { readonly directives?: ReadonlyArray<DirectiveNode>, ... },
+  variableValues?: Maybe<ObjMap<unknown>>,
 ): void | { [argument: string]: unknown, ... } {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   const directiveNode = node.directives?.find(

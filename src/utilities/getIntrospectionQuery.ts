@@ -1,3 +1,4 @@
+import type { Maybe } from '../jsutils/Maybe';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export type IntrospectionOptions = {
@@ -152,10 +153,10 @@ export type IntrospectionQuery = {
 };
 
 export type IntrospectionSchema = {
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly queryType: IntrospectionNamedTypeRef<IntrospectionObjectType>,
-  readonly mutationType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>,
-  readonly subscriptionType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>,
+  readonly mutationType: Maybe<IntrospectionNamedTypeRef<IntrospectionObjectType>>,
+  readonly subscriptionType: Maybe<IntrospectionNamedTypeRef<IntrospectionObjectType>>,
   readonly types: ReadonlyArray<IntrospectionType>,
   readonly directives: ReadonlyArray<IntrospectionDirective>,
 };
@@ -183,14 +184,14 @@ export type IntrospectionInputType =
 export type IntrospectionScalarType = {
   readonly kind: 'SCALAR',
   readonly name: string,
-  readonly description?: ?string,
-  readonly specifiedByUrl?: ?string,
+  readonly description?: Maybe<string>,
+  readonly specifiedByUrl?: Maybe<string>,
 };
 
 export type IntrospectionObjectType = {
   readonly kind: 'OBJECT',
   readonly name: string,
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly fields: ReadonlyArray<IntrospectionField>,
   readonly interfaces: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
@@ -200,7 +201,7 @@ export type IntrospectionObjectType = {
 export type IntrospectionInterfaceType = {
   readonly kind: 'INTERFACE',
   readonly name: string,
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly fields: ReadonlyArray<IntrospectionField>,
   readonly interfaces: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
@@ -213,7 +214,7 @@ export type IntrospectionInterfaceType = {
 export type IntrospectionUnionType = {
   readonly kind: 'UNION',
   readonly name: string,
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly possibleTypes: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>,
   >,
@@ -222,14 +223,14 @@ export type IntrospectionUnionType = {
 export type IntrospectionEnumType = {
   readonly kind: 'ENUM',
   readonly name: string,
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly enumValues: ReadonlyArray<IntrospectionEnumValue>,
 };
 
 export type IntrospectionInputObjectType = {
   readonly kind: 'INPUT_OBJECT',
   readonly name: string,
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly inputFields: ReadonlyArray<IntrospectionInputValue>,
 };
 
@@ -279,32 +280,32 @@ export type IntrospectionNamedTypeRef<
 
 export type IntrospectionField = {
   readonly name: string,
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly args: ReadonlyArray<IntrospectionInputValue>,
   readonly type: IntrospectionOutputTypeRef,
   readonly isDeprecated: boolean,
-  readonly deprecationReason: ?string,
+  readonly deprecationReason: Maybe<string>,
 };
 
 export type IntrospectionInputValue = {
   readonly name: string,
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly type: IntrospectionInputTypeRef,
-  readonly defaultValue: ?string,
+  readonly defaultValue: Maybe<string>,
   readonly isDeprecated?: boolean,
-  readonly deprecationReason?: ?string,
+  readonly deprecationReason?: Maybe<string>,
 };
 
 export type IntrospectionEnumValue = {
   readonly name: string,
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly isDeprecated: boolean,
-  readonly deprecationReason: ?string,
+  readonly deprecationReason: Maybe<string>,
 };
 
 export type IntrospectionDirective = {
   readonly name: string,
-  readonly description?: ?string,
+  readonly description?: Maybe<string>,
   readonly isRepeatable?: boolean,
   readonly locations: ReadonlyArray<DirectiveLocationEnum>,
   readonly args: ReadonlyArray<IntrospectionInputValue>,

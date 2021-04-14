@@ -11,6 +11,7 @@ import { promiseReduce } from '../jsutils/promiseReduce';
 import { promiseForObject } from '../jsutils/promiseForObject';
 import { addPath, pathToArray } from '../jsutils/Path';
 import { isIteratableObject } from '../jsutils/isIteratableObject';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { GraphQLFormattedError } from '../error/formatError';
 import { GraphQLError } from '../error/GraphQLError';
@@ -128,10 +129,10 @@ export type ExecutionArgs = {
   document: DocumentNode,
   rootValue?: unknown,
   contextValue?: unknown,
-  variableValues?: ?{ readonly [variable: string]: unknown, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  typeResolver?: ?GraphQLTypeResolver<any, any>,
+  variableValues?: Maybe<{ readonly [variable: string]: unknown, ... }>,
+  operationName?: Maybe<string>,
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
 };
 
 /**
@@ -229,7 +230,7 @@ function buildResponse(
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: ?{ readonly [variable: string]: unknown, ... },
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown, ... }>,
 ): void {
   devAssert(document, 'Must provide document.');
 
@@ -256,10 +257,10 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: unknown,
   contextValue: unknown,
-  rawVariableValues: ?{ readonly [variable: string]: unknown, ... },
-  operationName: ?string,
-  fieldResolver: ?GraphQLFieldResolver<unknown, unknown>,
-  typeResolver?: ?GraphQLTypeResolver<unknown, unknown>,
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown, ... }>,
+  operationName: Maybe<string>,
+  fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
+  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
   let operation: OperationDefinitionNode | void;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -1187,7 +1188,7 @@ export function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
   fieldName: string,
-): ?GraphQLField<unknown, unknown> {
+): Maybe<GraphQLField<unknown, unknown>> {
   if (
     fieldName === SchemaMetaFieldDef.name &&
     schema.getQueryType() === parentType

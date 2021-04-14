@@ -13,6 +13,7 @@ import {
   isListType,
   isNonNullType,
 } from '../type/definition';
+import type { Maybe } from '../jsutils/Maybe';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -35,9 +36,9 @@ import {
  *
  */
 export function valueFromAST(
-  valueNode: ?ValueNode,
+  valueNode: Maybe<ValueNode>,
   type: GraphQLInputType,
-  variables?: ?ObjMap<unknown>,
+  variables?: Maybe<ObjMap<unknown>>,
 ): unknown | void {
   if (!valueNode) {
     // When there is no node, then there is also no value.
@@ -152,7 +153,7 @@ export function valueFromAST(
 // in the set of variables.
 function isMissingVariable(
   valueNode: ValueNode,
-  variables: ?ObjMap<unknown>,
+  variables: Maybe<ObjMap<unknown>>,
 ): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&

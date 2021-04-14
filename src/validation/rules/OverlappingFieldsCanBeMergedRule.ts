@@ -32,6 +32,7 @@ import {
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 import type { ValidationContext } from '../ValidationContext';
+import type { Maybe } from '../../jsutils/Maybe';
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
@@ -97,7 +98,7 @@ type ConflictReasonMessage = string | Array<ConflictReason>;
 type NodeAndDef = [
   GraphQLCompositeType,
   FieldNode,
-  ?GraphQLField<unknown, unknown>,
+  Maybe<GraphQLField<unknown, unknown>>,
 ];
 // Map of array of those.
 type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
@@ -164,7 +165,7 @@ function findConflictsWithinSelectionSet(
   context: ValidationContext,
   cachedFieldsAndFragmentNames,
   comparedFragmentPairs: PairSet,
-  parentType: ?GraphQLNamedType,
+  parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
 ): Array<Conflict> {
   const conflicts = [];
@@ -367,9 +368,9 @@ function findConflictsBetweenSubSelectionSets(
   cachedFieldsAndFragmentNames,
   comparedFragmentPairs: PairSet,
   areMutuallyExclusive: boolean,
-  parentType1: ?GraphQLNamedType,
+  parentType1: Maybe<GraphQLNamedType>,
   selectionSet1: SelectionSetNode,
-  parentType2: ?GraphQLNamedType,
+  parentType2: Maybe<GraphQLNamedType>,
   selectionSet2: SelectionSetNode,
 ): Array<Conflict> {
   const conflicts = [];
@@ -538,7 +539,7 @@ function findConflict(
   responseName: string,
   field1: NodeAndDef,
   field2: NodeAndDef,
-): ?Conflict {
+): Maybe<Conflict> {
   const [parentType1, node1, def1] = field1;
   const [parentType2, node2, def2] = field2;
 
@@ -676,7 +677,7 @@ function doTypesConflict(
 function getFieldsAndFragmentNames(
   context: ValidationContext,
   cachedFieldsAndFragmentNames,
-  parentType: ?GraphQLNamedType,
+  parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
 ): [NodeAndDefCollection, Array<string>] {
   let cached = cachedFieldsAndFragmentNames.get(selectionSet);
@@ -720,7 +721,7 @@ function getReferencedFieldsAndFragmentNames(
 
 function _collectFieldsAndFragmentNames(
   context: ValidationContext,
-  parentType: ?GraphQLNamedType,
+  parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
   nodeAndDefs,
   fragmentNames,
@@ -770,7 +771,7 @@ function subfieldConflicts(
   responseName: string,
   node1: FieldNode,
   node2: FieldNode,
-): ?Conflict {
+): Maybe<Conflict> {
   if (conflicts.length > 0) {
     return [
       [responseName, conflicts.map(([reason]) => reason)],

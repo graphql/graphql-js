@@ -1,3 +1,5 @@
+import type { Maybe } from './Maybe';
+
 export type Path = {
   readonly prev: Path | void;
   readonly key: string | number;
@@ -18,7 +20,9 @@ export function addPath(
 /**
  * Given a Path, return an Array of the path keys.
  */
-export function pathToArray(path: ?Readonly<Path>): Array<string | number> {
+export function pathToArray(
+  path: Maybe<Readonly<Path>>,
+): Array<string | number> {
   const flattened = [];
   let curr = path;
   while (curr) {

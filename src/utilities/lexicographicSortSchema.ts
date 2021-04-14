@@ -31,6 +31,7 @@ import {
   isEnumType,
   isInputObjectType,
 } from '../type/definition';
+import type { Maybe } from '../jsutils/Maybe';
 
 /**
  * Sort GraphQLSchema.
@@ -69,7 +70,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return ((typeMap[type.name]: any): T);
   }
 
-  function replaceMaybeType<T: ?GraphQLNamedType>(maybeType: T): T {
+  function replaceMaybeType<T: Maybe<GraphQLNamedType>>(maybeType: T): T {
     return maybeType && replaceNamedType(maybeType);
   }
 

@@ -15,6 +15,7 @@ import { validateSchema } from './type/validate';
 
 import type { ExecutionResult } from './execution/execute';
 import { execute } from './execution/execute';
+import type { Maybe } from './jsutils/Maybe';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -60,10 +61,10 @@ export type GraphQLArgs = {
   source: string | Source,
   rootValue?: unknown,
   contextValue?: unknown,
-  variableValues?: ?{ readonly [variable: string]: unknown, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  typeResolver?: ?GraphQLTypeResolver<any, any>,
+  variableValues?: Maybe<{ readonly [variable: string]: unknown, ... }>,
+  operationName?: Maybe<string>,
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
 };
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {

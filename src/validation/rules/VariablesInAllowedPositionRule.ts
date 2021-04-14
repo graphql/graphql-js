@@ -14,6 +14,7 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 
 import type { ValidationContext } from '../ValidationContext';
+import type { Maybe } from '../../jsutils/Maybe';
 
 /**
  * Variables passed to field arguments conform to type
@@ -79,9 +80,9 @@ export function VariablesInAllowedPositionRule(
 function allowedVariableUsage(
   schema: GraphQLSchema,
   varType: GraphQLType,
-  varDefaultValue: ?ValueNode,
+  varDefaultValue: Maybe<ValueNode>,
   locationType: GraphQLType,
-  locationDefaultValue: ?unknown,
+  locationDefaultValue: Maybe<unknown>,
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =

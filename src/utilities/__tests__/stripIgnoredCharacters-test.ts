@@ -13,6 +13,7 @@ import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
+import type { Maybe } from '../../jsutils/Maybe';
 
 const ignoredTokens = [
   // UnicodeBOM ::
@@ -58,7 +59,7 @@ const nonPunctuatorTokens = [
   '"""block\nstring\nvalue"""', // StringValue(BlockString)
 ];
 
-function lexValue(str: string): ?string {
+function lexValue(str: string): Maybe<string> {
   const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 

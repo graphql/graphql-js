@@ -2,6 +2,7 @@
 // flowlint uninitialized-instance-property:off
 
 import { isObjectLike } from '../jsutils/isObjectLike';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
@@ -67,7 +68,7 @@ export class GraphQLError extends Error {
   /**
    * The original error thrown from a field resolver during execution.
    */
-  readonly originalError: ?Error;
+  readonly originalError: Maybe<Error>;
 
   /**
    * Extension fields to add to the formatted error.
@@ -77,11 +78,11 @@ export class GraphQLError extends Error {
   constructor(
     message: string,
     nodes?: ReadonlyArray<ASTNode> | ASTNode | void | null,
-    source?: ?Source,
-    positions?: ?ReadonlyArray<number>,
-    path?: ?ReadonlyArray<string | number>,
-    originalError?: ?(Error & { readonly extensions?: unknown, ... }),
-    extensions?: ?{ [key: string]: unknown, ... },
+    source?: Maybe<Source>,
+    positions?: Maybe<ReadonlyArray<number>>,
+    path?: Maybe<ReadonlyArray<string | number>>,
+    originalError?: Maybe<(Error & { readonly extensions?: unknown, ... })>,
+    extensions?: Maybe<{ [key: string]: unknown, ... }>,
   ) {
     super(message);
 

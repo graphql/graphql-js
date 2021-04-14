@@ -11,6 +11,7 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 import { doTypesOverlap } from '../../utilities/typeComparators';
 
 import type { ValidationContext } from '../ValidationContext';
+import type { Maybe } from '../../jsutils/Maybe';
 
 /**
  * Possible fragment spread
@@ -66,7 +67,7 @@ export function PossibleFragmentSpreadsRule(
 function getFragmentType(
   context: ValidationContext,
   name: string,
-): ?GraphQLCompositeType {
+): Maybe<GraphQLCompositeType> {
   const frag = context.getFragment(name);
   if (frag) {
     const type = typeFromAST(context.getSchema(), frag.typeCondition);
