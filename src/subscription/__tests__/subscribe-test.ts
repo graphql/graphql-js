@@ -283,12 +283,14 @@ describe('Subscription Initialization Phase', () => {
     });
     invariant(isAsyncIterable(subscription));
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     subscription.next(); // Ask for a result, but ignore it.
 
     expect(didResolveImportantEmail).to.equal(true);
     expect(didResolveNonImportantEmail).to.equal(false);
 
     // Close subscription
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     subscription.return();
   });
 
@@ -746,6 +748,7 @@ describe('Subscription Publish Phase', () => {
     });
 
     payload = subscription.next();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     subscription.return();
 
     // A new email arrives!
