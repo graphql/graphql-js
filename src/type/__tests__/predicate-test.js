@@ -563,7 +563,7 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredArgument', () => {
-    function buildArg(config: {
+    function buildArg(config: {|
       type: GraphQLInputType,
       defaultValue?: mixed,
     |}): GraphQLArgument {
