@@ -1,3 +1,4 @@
+import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
 
 import type { GraphQLError } from '../error/GraphQLError';
@@ -31,8 +32,8 @@ import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 type VariableUsage = {
   readonly node: VariableNode;
-  readonly type: ?GraphQLInputType;
-  readonly defaultValue: ?unknown;
+  readonly type: Maybe<GraphQLInputType>;
+  readonly defaultValue: Maybe<unknown>;
 };
 
 /**
@@ -43,7 +44,7 @@ type VariableUsage = {
 export class ASTValidationContext {
   _ast: DocumentNode;
   _onError: (error: GraphQLError) => void;
-  _fragments: ?ObjMap<FragmentDefinitionNode>;
+  _fragments: Maybe<ObjMap<FragmentDefinitionNode>>;
   _fragmentSpreads: Map<SelectionSetNode, ReadonlyArray<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
     OperationDefinitionNode,
@@ -66,7 +67,7 @@ export class ASTValidationContext {
     return this._ast;
   }
 
-  getFragment(name: string): ?FragmentDefinitionNode {
+  getFragment(name: string): Maybe<FragmentDefinitionNode> {
     if (!this._fragments) {
       const fragments = (this._fragments = Object.create(null));
       for (const defNode of this.getDocument().definitions) {
@@ -131,18 +132,18 @@ export class ASTValidationContext {
 export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
 
 export class SDLValidationContext extends ASTValidationContext {
-  _schema: ?GraphQLSchema;
+  _schema: Maybe<GraphQLSchema>;
 
   constructor(
     ast: DocumentNode,
-    schema: ?GraphQLSchema,
+    schema: Maybe<GraphQLSchema>,
     onError: (error: GraphQLError) => void,
   ) {
     super(ast, onError);
     this._schema = schema;
   }
 
-  getSchema(): ?GraphQLSchema {
+  getSchema(): Maybe<GraphQLSchema> {
     return this._schema;
   }
 }
@@ -213,35 +214,35 @@ export class ValidationContext extends ASTValidationContext {
     return usages;
   }
 
-  getType(): ?GraphQLOutputType {
+  getType(): Maybe<GraphQLOutputType> {
     return this._typeInfo.getType();
   }
 
-  getParentType(): ?GraphQLCompositeType {
+  getParentType(): Maybe<GraphQLCompositeType> {
     return this._typeInfo.getParentType();
   }
 
-  getInputType(): ?GraphQLInputType {
+  getInputType(): Maybe<GraphQLInputType> {
     return this._typeInfo.getInputType();
   }
 
-  getParentInputType(): ?GraphQLInputType {
+  getParentInputType(): Maybe<GraphQLInputType> {
     return this._typeInfo.getParentInputType();
   }
 
-  getFieldDef(): ?GraphQLField<unknown, unknown> {
+  getFieldDef(): Maybe<GraphQLField<unknown, unknown>> {
     return this._typeInfo.getFieldDef();
   }
 
-  getDirective(): ?GraphQLDirective {
+  getDirective(): Maybe<GraphQLDirective> {
     return this._typeInfo.getDirective();
   }
 
-  getArgument(): ?GraphQLArgument {
+  getArgument(): Maybe<GraphQLArgument> {
     return this._typeInfo.getArgument();
   }
 
-  getEnumValue(): ?GraphQLEnumValue {
+  getEnumValue(): Maybe<GraphQLEnumValue> {
     return this._typeInfo.getEnumValue();
   }
 }

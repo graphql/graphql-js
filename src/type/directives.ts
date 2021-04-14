@@ -4,6 +4,7 @@ import { toObjMap } from '../jsutils/toObjMap';
 import { devAssert } from '../jsutils/devAssert';
 import { instanceOf } from '../jsutils/instanceOf';
 import { isObjectLike } from '../jsutils/isObjectLike';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { DirectiveDefinitionNode } from '../language/ast';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
@@ -46,12 +47,12 @@ export function assertDirective(directive: unknown): GraphQLDirective {
  */
 export class GraphQLDirective {
   name: string;
-  description: ?string;
+  description: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
   args: ReadonlyArray<GraphQLArgument>;
   isRepeatable: boolean;
-  extensions: ?ReadOnlyObjMap<unknown>;
-  astNode: ?DirectiveDefinitionNode;
+  extensions: Maybe<ReadOnlyObjMap<unknown>>;
+  astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
     this.name = config.name;
@@ -104,19 +105,19 @@ export class GraphQLDirective {
 
 export type GraphQLDirectiveConfig = {
   name: string;
-  description?: ?string;
+  description?: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
-  args?: ?GraphQLFieldConfigArgumentMap;
-  isRepeatable?: ?boolean;
-  extensions?: ?ReadOnlyObjMapLike<unknown>;
-  astNode?: ?DirectiveDefinitionNode;
+  args?: Maybe<GraphQLFieldConfigArgumentMap>;
+  isRepeatable?: Maybe<boolean>;
+  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>;
+  astNode?: Maybe<DirectiveDefinitionNode>;
 };
 
 type GraphQLDirectiveNormalizedConfig = {
   ...GraphQLDirectiveConfig;
   args: GraphQLFieldConfigArgumentMap;
   isRepeatable: boolean;
-  extensions: ?ReadOnlyObjMap<unknown>;
+  extensions: Maybe<ReadOnlyObjMap<unknown>>;
 };
 
 /**

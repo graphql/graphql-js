@@ -1,3 +1,4 @@
+import type { Maybe } from '../jsutils/Maybe';
 import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 
@@ -8,8 +9,8 @@ import { Kind } from '../language/kinds';
  */
 export function getOperationAST(
   documentAST: DocumentNode,
-  operationName?: ?string,
-): ?OperationDefinitionNode {
+  operationName?: Maybe<string>,
+): Maybe<OperationDefinitionNode> {
   let operation = null;
   for (const definition of documentAST.definitions) {
     if (definition.kind === Kind.OPERATION_DEFINITION) {

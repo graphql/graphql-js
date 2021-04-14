@@ -3,6 +3,7 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { keyValMap } from '../jsutils/keyValMap';
 import { naturalCompare } from '../jsutils/naturalCompare';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type {
   GraphQLType,
@@ -70,7 +71,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return typeMap[type.name];
   }
 
-  function replaceMaybeType<T: ?GraphQLNamedType>(maybeType: T): T {
+  function replaceMaybeType<T: Maybe<GraphQLNamedType>>(maybeType: T): T {
     return maybeType && replaceNamedType(maybeType);
   }
 

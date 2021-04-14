@@ -1,6 +1,7 @@
 import type { Path } from '../jsutils/Path';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import type { Maybe } from '../jsutils/Maybe';
 import { inspect } from '../jsutils/inspect';
 import { memoize3 } from '../jsutils/memoize3';
 import { invariant } from '../jsutils/invariant';
@@ -128,10 +129,10 @@ export type ExecutionArgs = {
   document: DocumentNode;
   rootValue?: unknown;
   contextValue?: unknown;
-  variableValues?: ?{ readonly [variable: string]: unknown; ... };
-  operationName?: ?string;
-  fieldResolver?: ?GraphQLFieldResolver<any, any>;
-  typeResolver?: ?GraphQLTypeResolver<any, any>;
+  variableValues?: Maybe<{ readonly [variable: string]: unknown; ... }>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 };
 
 /**
@@ -229,7 +230,7 @@ function buildResponse(
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: ?{ readonly [variable: string]: unknown; ... },
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown; ... }>,
 ): void {
   devAssert(document, 'Must provide document.');
 
@@ -256,10 +257,10 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: unknown,
   contextValue: unknown,
-  rawVariableValues: ?{ readonly [variable: string]: unknown; ... },
-  operationName: ?string,
-  fieldResolver: ?GraphQLFieldResolver<unknown, unknown>,
-  typeResolver?: ?GraphQLTypeResolver<unknown, unknown>,
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown; ... }>,
+  operationName: Maybe<string>,
+  fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
+  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
   let operation: OperationDefinitionNode | void;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -1169,7 +1170,7 @@ export function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
   fieldNode: FieldNode,
-): ?GraphQLField<unknown, unknown> {
+): Maybe<GraphQLField<unknown, unknown>> {
   const fieldName = fieldNode.name.value;
 
   if (

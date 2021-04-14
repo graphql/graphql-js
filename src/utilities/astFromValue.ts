@@ -2,6 +2,7 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { isObjectLike } from '../jsutils/isObjectLike';
 import { isIterableObject } from '../jsutils/isIterableObject';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
@@ -37,7 +38,7 @@ import {
  * | null          | NullValue            |
  *
  */
-export function astFromValue(value: unknown, type: GraphQLInputType): ?ValueNode {
+export function astFromValue(value: unknown, type: GraphQLInputType): Maybe<ValueNode> {
   if (isNonNullType(type)) {
     const astValue = astFromValue(value, type.ofType);
     if (astValue?.kind === Kind.NULL) {

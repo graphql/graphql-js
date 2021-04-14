@@ -40,6 +40,7 @@ import { graphqlSync } from '../../graphql';
 
 import { printType, printSchema } from '../printSchema';
 import { buildASTSchema, buildSchema } from '../buildASTSchema';
+import type { Maybe } from '../../jsutils/Maybe';
 
 /**
  * This function does a full cycle of going from a string with the contents of
@@ -50,7 +51,7 @@ function cycleSDL(sdl: string): string {
   return printSchema(buildSchema(sdl));
 }
 
-function expectASTNode(obj: ?{ readonly astNode: ?ASTNode; ... }) {
+function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode>; ... }>) {
   invariant(obj?.astNode != null);
   return expect(print(obj.astNode));
 }

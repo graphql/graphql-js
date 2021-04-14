@@ -1,3 +1,5 @@
+import type { Maybe } from '../jsutils/Maybe';
+
 import type { ASTNode } from './ast';
 
 import { visit } from './visitor';
@@ -307,7 +309,7 @@ const printDocASTReducer: any = {
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print all items together separated by separator if provided
  */
-function join(maybeArray: ?Array<string>, separator = ''): string {
+function join(maybeArray: Maybe<Array<string>>, separator = ''): string {
   return maybeArray?.filter((x) => x).join(separator) ?? '';
 }
 
@@ -315,14 +317,18 @@ function join(maybeArray: ?Array<string>, separator = ''): string {
  * Given array, print each item on its own line, wrapped in an
  * indented "{ }" block.
  */
-function block(array: ?Array<string>): string {
+function block(array: Maybe<Array<string>>): string {
   return wrap('{\n', indent(join(array, '\n')), '\n}');
 }
 
 /**
  * If maybeString is not null or empty, then wrap with start and end, otherwise print an empty string.
  */
-function wrap(start: string, maybeString: ?string, end: string = ''): string {
+function wrap(
+  start: string,
+  maybeString: Maybe<string>,
+  end: string = '',
+): string {
   return maybeString != null && maybeString !== ''
     ? start + maybeString + end
     : '';
@@ -332,7 +338,7 @@ function indent(str: string): string {
   return wrap('  ', str.replace(/\n/g, '\n  '));
 }
 
-function hasMultilineItems(maybeArray: ?Array<string>): boolean {
+function hasMultilineItems(maybeArray: Maybe<Array<string>>): boolean {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return maybeArray?.some((str) => str.includes('\n')) ?? false;
 }

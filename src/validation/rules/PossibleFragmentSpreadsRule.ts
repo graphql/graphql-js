@@ -1,4 +1,5 @@
 import { inspect } from '../../jsutils/inspect';
+import type { Maybe } from '../../jsutils/Maybe';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
@@ -66,7 +67,7 @@ export function PossibleFragmentSpreadsRule(
 function getFragmentType(
   context: ValidationContext,
   name: string,
-): ?GraphQLCompositeType {
+): Maybe<GraphQLCompositeType> {
   const frag = context.getFragment(name);
   if (frag) {
     const type = typeFromAST(context.getSchema(), frag.typeCondition);

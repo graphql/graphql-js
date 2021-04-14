@@ -1,6 +1,7 @@
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { addPath, pathToArray } from '../jsutils/Path';
+import type { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
@@ -30,10 +31,10 @@ export type SubscriptionArgs = {
   document: DocumentNode;
   rootValue?: unknown;
   contextValue?: unknown;
-  variableValues?: ?{ readonly [variable: string]: unknown; ... };
-  operationName?: ?string;
-  fieldResolver?: ?GraphQLFieldResolver<any, any>;
-  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>;
+  variableValues?: Maybe<{ readonly [variable: string]: unknown; ... }>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 };
 
 /**
@@ -140,9 +141,9 @@ export async function createSourceEventStream(
   document: DocumentNode,
   rootValue?: unknown,
   contextValue?: unknown,
-  variableValues?: ?{ readonly [variable: string]: unknown; ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  variableValues?: Maybe<{ readonly [variable: string]: unknown; ... }>,
+  operationName?: Maybe<string>,
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): Promise<AsyncIterable<unknown> | ExecutionResult> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.

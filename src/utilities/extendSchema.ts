@@ -3,6 +3,7 @@ import { inspect } from '../jsutils/inspect';
 import { mapValue } from '../jsutils/mapValue';
 import { invariant } from '../jsutils/invariant';
 import { devAssert } from '../jsutils/devAssert';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type {
   DocumentNode,
@@ -143,7 +144,7 @@ export function extendSchemaImpl(
   // have the same name. For example, a type named "skip".
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
 
-  let schemaDef: ?SchemaDefinitionNode;
+  let schemaDef: Maybe<SchemaDefinitionNode>;
   // Schema extensions are collected which may add additional operation types.
   const schemaExtensions: Array<SchemaExtensionNode> = [];
 
@@ -394,9 +395,9 @@ export function extendSchemaImpl(
   function getOperationTypes(
     nodes: ReadonlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
   ): {
-    query: ?GraphQLObjectType;
-    mutation: ?GraphQLObjectType;
-    subscription: ?GraphQLObjectType;
+    query: Maybe<GraphQLObjectType>;
+    mutation: Maybe<GraphQLObjectType>;
+    subscription: Maybe<GraphQLObjectType>;
   } {
     const opTypes = {};
     for (const node of nodes) {
@@ -479,7 +480,7 @@ export function extendSchemaImpl(
   }
 
   function buildArgumentMap(
-    args: ?ReadonlyArray<InputValueDefinitionNode>,
+    args: Maybe<ReadonlyArray<InputValueDefinitionNode>>,
   ): GraphQLFieldConfigArgumentMap {
     // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const argsNodes = args ?? [];
@@ -675,7 +676,7 @@ function getDeprecationReason(
     | EnumValueDefinitionNode
     | FieldDefinitionNode
     | InputValueDefinitionNode,
-): ?string {
+): Maybe<string> {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
   return deprecated?.reason;
@@ -686,7 +687,7 @@ function getDeprecationReason(
  */
 function getSpecifiedByURL(
   node: ScalarTypeDefinitionNode | ScalarTypeExtensionNode,
-): ?string {
+): Maybe<string> {
   const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
   // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
   return specifiedBy?.url;
