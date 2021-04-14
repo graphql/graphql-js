@@ -39,5 +39,4 @@ spurious results.`,
 
 type Constructor = {
   name: string;
-  ...
 };

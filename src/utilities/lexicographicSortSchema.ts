@@ -170,7 +170,7 @@ function sortObjMap<T, R>(
   return sortedMap;
 }
 
-function sortByName<T: { readonly name: string; ... }>(
+function sortByName<T: { readonly name: string; }>(
   array: ReadonlyArray<T>,
 ): Array<T> {
   return sortBy(array, (obj) => obj.name);
