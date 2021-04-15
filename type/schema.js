@@ -167,7 +167,7 @@ export class GraphQLSchema {
 
     this._implementationsMap = Object.create(null);
 
-    for (const namedType of Array.from(allReferencedTypes)) {
+    for (const namedType of allReferencedTypes) {
       if (namedType == null) {
         continue;
       }
