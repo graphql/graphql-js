@@ -8,16 +8,16 @@
  *
  * @example
  *
- * isIteratableObject([ 1, 2, 3 ]) // true
- * isIteratableObject(new Map()) // true
- * isIteratableObject('ABC') // false
- * isIteratableObject({ key: 'value' }) // false
- * isIteratableObject({ length: 1, 0: 'Alpha' }) // false
+ * isIterableObject([ 1, 2, 3 ]) // true
+ * isIterableObject(new Map()) // true
+ * isIterableObject('ABC') // false
+ * isIterableObject({ key: 'value' }) // false
+ * isIterableObject({ length: 1, 0: 'Alpha' }) // false
  */
 // eslint-disable-next-line no-redeclare
-export function isIteratableObject(maybeIteratable) {
+export function isIterableObject(maybeIterable) {
   return (
-    typeof maybeIteratable === 'object' &&
-    typeof maybeIteratable?.[Symbol.iterator] === 'function'
+    typeof maybeIterable === 'object' &&
+    typeof maybeIterable?.[Symbol.iterator] === 'function'
   );
 }

@@ -1,7 +1,7 @@
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
-import { isIteratableObject } from '../jsutils/isIteratableObject.js';
+import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { Kind } from '../language/kinds.js';
 import { GraphQLID } from '../type/scalars.js';
 import {
@@ -58,9 +58,9 @@ export function astFromValue(value, type) {
   if (isListType(type)) {
     const itemType = type.ofType;
 
-    if (isIteratableObject(value)) {
+    if (isIterableObject(value)) {
       const valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
-      // and it's required to first convert iteratable into array
+      // and it's required to first convert iterable into array
 
       for (const item of Array.from(value)) {
         const itemNode = astFromValue(item, itemType);

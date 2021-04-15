@@ -5,7 +5,7 @@ import { isObjectLike } from '../jsutils/isObjectLike.js';
 import { suggestionList } from '../jsutils/suggestionList.js';
 import { printPathArray } from '../jsutils/printPathArray.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
-import { isIteratableObject } from '../jsutils/isIteratableObject.js';
+import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import {
   isLeafType,
@@ -56,7 +56,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
   if (isListType(type)) {
     const itemType = type.ofType;
 
-    if (isIteratableObject(inputValue)) {
+    if (isIterableObject(inputValue)) {
       return Array.from(inputValue, (itemValue, index) => {
         const itemPath = addPath(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
