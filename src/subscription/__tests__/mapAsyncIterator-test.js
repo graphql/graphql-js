@@ -22,10 +22,10 @@ describe('mapAsyncIterator', () => {
     });
   });
 
-  it('maps over async iterator', async () => {
+  it('maps over async iterable', async () => {
     const items = [1, 2, 3];
 
-    const iterator: $FlowFixMe = {
+    const iterable: $FlowFixMe = {
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -39,7 +39,7 @@ describe('mapAsyncIterator', () => {
       },
     };
 
-    const doubles = mapAsyncIterator(iterator, (x) => x + x);
+    const doubles = mapAsyncIterator(iterable, (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -119,10 +119,10 @@ describe('mapAsyncIterator', () => {
     });
   });
 
-  it('allows returning early from mapped async iterator', async () => {
+  it('allows returning early from mapped async iterable', async () => {
     const items = [1, 2, 3];
 
-    const iterator: any = {
+    const iterable: any = {
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -134,7 +134,7 @@ describe('mapAsyncIterator', () => {
       },
     };
 
-    const doubles = mapAsyncIterator(iterator, (x) => x + x);
+    const doubles = mapAsyncIterator(iterable, (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -182,10 +182,10 @@ describe('mapAsyncIterator', () => {
     });
   });
 
-  it('allows throwing errors through async iterators', async () => {
+  it('allows throwing errors through async iterable', async () => {
     const items = [1, 2, 3];
 
-    const iterator: any = {
+    const iterable: any = {
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -197,7 +197,7 @@ describe('mapAsyncIterator', () => {
       },
     };
 
-    const doubles = mapAsyncIterator(iterator, (x) => x + x);
+    const doubles = mapAsyncIterator(iterable, (x) => x + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
