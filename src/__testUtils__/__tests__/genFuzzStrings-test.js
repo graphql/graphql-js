@@ -7,7 +7,7 @@ function expectFuzzStrings(options: {|
   allowedChars: Array<string>,
   maxLength: number,
 |}) {
-  return expect(Array.from(genFuzzStrings(options)));
+  return expect([...genFuzzStrings(options)]);
 }
 
 describe('genFuzzStrings', () => {
