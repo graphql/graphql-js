@@ -16,8 +16,8 @@ export class SimplePubSub<T> {
     return this._subscribers.size > 0;
   }
 
-  getSubscriber<R>(transform?: (T) => R): AsyncGenerator<R, void, void> {
-    const pullQueue = [];
+  getSubscriber<R>(transform: (T) => R): AsyncGenerator<R, void, void> {
+    const pullQueue: Array<(result: IteratorResult<R, void>) => void> = [];
     const pushQueue = [];
     let listening = true;
     this._subscribers.add(pushValue);
@@ -32,9 +32,7 @@ export class SimplePubSub<T> {
       pushQueue.length = 0;
     };
 
-    /* TODO: Flow doesn't support symbols as keys:
-       https://github.com/facebook/flow/issues/3258 */
-    return ({
+    return {
       next() {
         if (!listening) {
           return Promise.resolve({ value: undefined, done: true });
@@ -45,7 +43,7 @@ export class SimplePubSub<T> {
         }
         return new Promise((resolve) => pullQueue.push(resolve));
       },
-      return() {
+      return(): Promise<IteratorResult<R, void>> {
         emptyQueue();
         return Promise.resolve({ value: undefined, done: true });
       },
@@ -56,10 +54,10 @@ export class SimplePubSub<T> {
       [Symbol.asyncIterator]() {
         return this;
       },
-    }: any);
+    };
 
     function pushValue(event: T): void {
-      const value = transform != null ? transform(event) : event;
+      const value: R = transform(event);
       if (pullQueue.length > 0) {
         pullQueue.shift()({ value, done: false });
       } else {

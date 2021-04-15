@@ -260,7 +260,7 @@ declare opaque type $SymbolToStringTag: symbol;
 declare opaque type $SymbolUnscopables: symbol;
 
 declare class Symbol {
-  static asyncIterator: string; // graphql-js HACK
+  static asyncIterator: '@@asyncIterator'; // graphql-js HACK
 
   /**
    * Returns a new unique Symbol value.
@@ -287,7 +287,7 @@ declare class Symbol {
    * by Array.prototype.concat.
    */
   static isConcatSpreadable: $SymboIsConcatSpreadable;
-  static iterator: string; // polyfill '@@iterator'
+  static iterator: '@@iterator';
   /**
    * Returns a key from the global symbol registry matching the given Symbol if found.
    * Otherwise, returns a undefined.

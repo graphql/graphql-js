@@ -8,9 +8,8 @@ export function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T> | AsyncGenerator<T, void, void>,
   callback: (T) => PromiseOrValue<U>,
 ): AsyncGenerator<U, void, void> {
-  // $FlowFixMe[prop-missing]
-  const iteratorMethod = iterable[Symbol.asyncIterator];
-  const iterator: any = iteratorMethod.call(iterable);
+  // $FlowIssue[incompatible-use]
+  const iterator = iterable[Symbol.asyncIterator]();
 
   async function abruptClose(error: mixed) {
     if (typeof iterator.return === 'function') {
@@ -37,13 +36,11 @@ export function mapAsyncIterator<T, U>(
     }
   }
 
-  /* TODO: Flow doesn't support symbols as keys:
-     https://github.com/facebook/flow/issues/3258 */
-  return ({
+  return {
     next(): Promise<IteratorResult<U, void>> {
       return mapResult(iterator.next());
     },
-    return() {
+    return(): Promise<IteratorResult<U, void>> {
       return typeof iterator.return === 'function'
         ? mapResult(iterator.return())
         : Promise.resolve({ value: undefined, done: true });
@@ -57,5 +54,5 @@ export function mapAsyncIterator<T, U>(
     [Symbol.asyncIterator]() {
       return this;
     },
-  }: $FlowFixMe);
+  };
 }
