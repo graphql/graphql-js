@@ -1,7 +1,7 @@
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { isObjectLike } from '../jsutils/isObjectLike';
-import { isIteratableObject } from '../jsutils/isIteratableObject';
+import { isIterableObject } from '../jsutils/isIterableObject';
 
 import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
@@ -60,10 +60,10 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   // the value is not an array, convert the value using the list's item type.
   if (isListType(type)) {
     const itemType = type.ofType;
-    if (isIteratableObject(value)) {
+    if (isIterableObject(value)) {
       const valuesNodes = [];
       // Since we transpile for-of in loose mode it doesn't support iterators
-      // and it's required to first convert iteratable into array
+      // and it's required to first convert iterable into array
       for (const item of Array.from(value)) {
         const itemNode = astFromValue(item, itemType);
         if (itemNode != null) {

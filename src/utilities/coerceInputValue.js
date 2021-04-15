@@ -6,7 +6,7 @@ import { isObjectLike } from '../jsutils/isObjectLike';
 import { suggestionList } from '../jsutils/suggestionList';
 import { printPathArray } from '../jsutils/printPathArray';
 import { addPath, pathToArray } from '../jsutils/Path';
-import { isIteratableObject } from '../jsutils/isIteratableObject';
+import { isIterableObject } from '../jsutils/isIterableObject';
 
 import { GraphQLError } from '../error/GraphQLError';
 
@@ -75,7 +75,7 @@ function coerceInputValueImpl(
 
   if (isListType(type)) {
     const itemType = type.ofType;
-    if (isIteratableObject(inputValue)) {
+    if (isIterableObject(inputValue)) {
       return Array.from(inputValue, (itemValue, index) => {
         const itemPath = addPath(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);

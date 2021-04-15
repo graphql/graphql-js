@@ -6,8 +6,8 @@ import { isAsyncIterable } from '../isAsyncIterable';
 
 describe('isAsyncIterable', () => {
   it('should return `true` for AsyncIterable', () => {
-    const asyncIteratable = { [Symbol.asyncIterator]: identityFunc };
-    expect(isAsyncIterable(asyncIteratable)).to.equal(true);
+    const asyncIterable = { [Symbol.asyncIterator]: identityFunc };
+    expect(isAsyncIterable(asyncIterable)).to.equal(true);
 
     // istanbul ignore next (Never called and use just as a placeholder)
     async function* asyncGeneratorFunc() {
@@ -16,7 +16,7 @@ describe('isAsyncIterable', () => {
 
     expect(isAsyncIterable(asyncGeneratorFunc())).to.equal(true);
 
-    // But async generator function itself is not iteratable
+    // But async generator function itself is not iterable
     expect(isAsyncIterable(asyncGeneratorFunc)).to.equal(false);
   });
 
@@ -34,8 +34,11 @@ describe('isAsyncIterable', () => {
     expect(isAsyncIterable({})).to.equal(false);
     expect(isAsyncIterable({ iterable: true })).to.equal(false);
 
-    const iterator = { [Symbol.iterator]: identityFunc };
-    expect(isAsyncIterable(iterator)).to.equal(false);
+    const asyncIteratorWithoutSymbol = { next: identityFunc };
+    expect(isAsyncIterable(asyncIteratorWithoutSymbol)).to.equal(false);
+
+    const nonAsyncIterable = { [Symbol.iterator]: identityFunc };
+    expect(isAsyncIterable(nonAsyncIterable)).to.equal(false);
 
     // istanbul ignore next (Never called and use just as a placeholder)
     function* generatorFunc() {
@@ -43,9 +46,9 @@ describe('isAsyncIterable', () => {
     }
     expect(isAsyncIterable(generatorFunc())).to.equal(false);
 
-    const invalidAsyncIteratable = {
+    const invalidAsyncIterable = {
       [Symbol.asyncIterator]: { next: identityFunc },
     };
-    expect(isAsyncIterable(invalidAsyncIteratable)).to.equal(false);
+    expect(isAsyncIterable(invalidAsyncIterable)).to.equal(false);
   });
 });
