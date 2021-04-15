@@ -11,7 +11,7 @@ var _invariant = require('../jsutils/invariant.js');
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
 
-var _isIteratableObject = require('../jsutils/isIteratableObject.js');
+var _isIterableObject = require('../jsutils/isIterableObject.js');
 
 var _kinds = require('../language/kinds.js');
 
@@ -68,9 +68,9 @@ function astFromValue(value, type) {
   if ((0, _definition.isListType)(type)) {
     const itemType = type.ofType;
 
-    if ((0, _isIteratableObject.isIteratableObject)(value)) {
+    if ((0, _isIterableObject.isIterableObject)(value)) {
       const valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
-      // and it's required to first convert iteratable into array
+      // and it's required to first convert iterable into array
 
       for (const item of Array.from(value)) {
         const itemNode = astFromValue(item, itemType);

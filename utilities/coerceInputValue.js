@@ -19,7 +19,7 @@ var _printPathArray = require('../jsutils/printPathArray.js');
 
 var _Path = require('../jsutils/Path.js');
 
-var _isIteratableObject = require('../jsutils/isIteratableObject.js');
+var _isIterableObject = require('../jsutils/isIterableObject.js');
 
 var _GraphQLError = require('../error/GraphQLError.js');
 
@@ -69,7 +69,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
   if ((0, _definition.isListType)(type)) {
     const itemType = type.ofType;
 
-    if ((0, _isIteratableObject.isIteratableObject)(inputValue)) {
+    if ((0, _isIterableObject.isIterableObject)(inputValue)) {
       return Array.from(inputValue, (itemValue, index) => {
         const itemPath = (0, _Path.addPath)(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);

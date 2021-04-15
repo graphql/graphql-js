@@ -12,7 +12,7 @@ import { isObjectLike } from '../jsutils/isObjectLike';
 import { promiseReduce } from '../jsutils/promiseReduce';
 import { promiseForObject } from '../jsutils/promiseForObject';
 import { addPath, pathToArray } from '../jsutils/Path';
-import { isIteratableObject } from '../jsutils/isIteratableObject';
+import { isIterableObject } from '../jsutils/isIterableObject';
 
 import type { GraphQLFormattedError } from '../error/formatError';
 import { GraphQLError } from '../error/GraphQLError';
@@ -824,7 +824,7 @@ function completeListValue(
   path: Path,
   result: mixed,
 ): PromiseOrValue<$ReadOnlyArray<mixed>> {
-  if (!isIteratableObject(result)) {
+  if (!isIterableObject(result)) {
     throw new GraphQLError(
       `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
     );

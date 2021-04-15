@@ -30,7 +30,7 @@ var _promiseForObject = require('../jsutils/promiseForObject.js');
 
 var _Path = require('../jsutils/Path.js');
 
-var _isIteratableObject = require('../jsutils/isIteratableObject.js');
+var _isIterableObject = require('../jsutils/isIterableObject.js');
 
 var _GraphQLError = require('../error/GraphQLError.js');
 
@@ -758,7 +758,7 @@ function completeListValue(
   path,
   result,
 ) {
-  if (!(0, _isIteratableObject.isIteratableObject)(result)) {
+  if (!(0, _isIterableObject.isIterableObject)(result)) {
     throw new _GraphQLError.GraphQLError(
       `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
     );

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.isIteratableObject = isIteratableObject;
+exports.isIterableObject = isIterableObject;
 
 /**
  * Returns true if the provided object is an Object (i.e. not a string literal)
@@ -15,18 +15,18 @@ exports.isIteratableObject = isIteratableObject;
  *
  * @example
  *
- * isIteratableObject([ 1, 2, 3 ]) // true
- * isIteratableObject(new Map()) // true
- * isIteratableObject('ABC') // false
- * isIteratableObject({ key: 'value' }) // false
- * isIteratableObject({ length: 1, 0: 'Alpha' }) // false
+ * isIterableObject([ 1, 2, 3 ]) // true
+ * isIterableObject(new Map()) // true
+ * isIterableObject('ABC') // false
+ * isIterableObject({ key: 'value' }) // false
+ * isIterableObject({ length: 1, 0: 'Alpha' }) // false
  */
 // eslint-disable-next-line no-redeclare
-function isIteratableObject(maybeIteratable) {
+function isIterableObject(maybeIterable) {
   return (
-    typeof maybeIteratable === 'object' &&
-    typeof (maybeIteratable === null || maybeIteratable === void 0
+    typeof maybeIterable === 'object' &&
+    typeof (maybeIterable === null || maybeIterable === void 0
       ? void 0
-      : maybeIteratable[Symbol.iterator]) === 'function'
+      : maybeIterable[Symbol.iterator]) === 'function'
   );
 }

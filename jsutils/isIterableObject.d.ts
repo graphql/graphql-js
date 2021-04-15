@@ -8,12 +8,12 @@
  *
  * @example
  *
- * isIteratableObject([ 1, 2, 3 ]) // true
- * isIteratableObject(new Map()) // true
- * isIteratableObject('ABC') // false
- * isIteratableObject({ key: 'value' }) // false
- * isIteratableObject({ length: 1, 0: 'Alpha' }) // false
+ * isIterableObject([ 1, 2, 3 ]) // true
+ * isIterableObject(new Map()) // true
+ * isIterableObject('ABC') // false
+ * isIterableObject({ key: 'value' }) // false
+ * isIterableObject({ length: 1, 0: 'Alpha' }) // false
  */
-export function isIteratableObject(
-  maybeIteratable: unknown,
-): maybeIteratable is Iterable<unknown>;
+export function isIterableObject(
+  maybeIterable: unknown,
+): maybeIterable is Iterable<unknown>;
