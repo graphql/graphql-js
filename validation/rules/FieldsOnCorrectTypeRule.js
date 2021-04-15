@@ -96,7 +96,7 @@ function getSuggestedTypeNames(schema, type, fieldName) {
     }
   }
 
-  return Array.from(suggestedTypes)
+  return [...suggestedTypes]
     .sort((typeA, typeB) => {
       // Suggest both interface and object types based on how common they are.
       const usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];

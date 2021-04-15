@@ -69,10 +69,9 @@ function astFromValue(value, type) {
     const itemType = type.ofType;
 
     if ((0, _isIterableObject.isIterableObject)(value)) {
-      const valuesNodes = []; // Since we transpile for-of in loose mode it doesn't support iterators
-      // and it's required to first convert iterable into array
+      const valuesNodes = [];
 
-      for (const item of Array.from(value)) {
+      for (const item of value) {
         const itemNode = astFromValue(item, itemType);
 
         if (itemNode != null) {
