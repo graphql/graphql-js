@@ -10,6 +10,7 @@ export const TokenKind = Object.freeze({
   AMP: '&',
   PAREN_L: '(',
   PAREN_R: ')',
+  DOT: '.',
   SPREAD: '...',
   COLON: ':',
   EQUALS: '=',
