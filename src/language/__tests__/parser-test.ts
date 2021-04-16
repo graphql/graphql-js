@@ -11,7 +11,13 @@ import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { Kind } from '../kinds.js';
-import { parse, parseConstValue, parseType, parseValue } from '../parser.js';
+import {
+  parse,
+  parseConstValue,
+  parseSchemaCoordinate,
+  parseType,
+  parseValue,
+} from '../parser.js';
 import { Source } from '../source.js';
 import { TokenKind } from '../tokenKind.js';
 
@@ -676,6 +682,131 @@ describe('Parser', () => {
             },
           },
         },
+      });
+    });
+  });
+
+  describe('parseSchemaCoordinate', () => {
+    it('parses Name', () => {
+      const result = parseSchemaCoordinate('MyType');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.SCHEMA_COORDINATE,
+        loc: { start: 0, end: 6 },
+        ofDirective: false,
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+        memberName: undefined,
+        argumentName: undefined,
+      });
+    });
+
+    it('parses Name . Name', () => {
+      const result = parseSchemaCoordinate('MyType.field');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.SCHEMA_COORDINATE,
+        loc: { start: 0, end: 12 },
+        ofDirective: false,
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+        memberName: {
+          kind: Kind.NAME,
+          loc: { start: 7, end: 12 },
+          value: 'field',
+        },
+        argumentName: undefined,
+      });
+    });
+
+    it('rejects Name . Name . Name', () => {
+      expectToThrowJSON(() =>
+        parseSchemaCoordinate('MyType.field.deep'),
+      ).to.deep.equal({
+        message: 'Syntax Error: Expected <EOF>, found ".".',
+        locations: [{ line: 1, column: 13 }],
+      });
+    });
+
+    it('parses Name . Name ( Name : )', () => {
+      const result = parseSchemaCoordinate('MyType.field(arg:)');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.SCHEMA_COORDINATE,
+        loc: { start: 0, end: 18 },
+        ofDirective: false,
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+        memberName: {
+          kind: Kind.NAME,
+          loc: { start: 7, end: 12 },
+          value: 'field',
+        },
+        argumentName: {
+          kind: Kind.NAME,
+          loc: { start: 13, end: 16 },
+          value: 'arg',
+        },
+      });
+    });
+
+    it('rejects Name . Name ( Name : Name )', () => {
+      expectToThrowJSON(() =>
+        parseSchemaCoordinate('MyType.field(arg: value)'),
+      ).to.deep.equal({
+        message: 'Syntax Error: Expected ")", found Name "value".',
+        locations: [{ line: 1, column: 19 }],
+      });
+    });
+
+    it('parses @ Name', () => {
+      const result = parseSchemaCoordinate('@myDirective');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.SCHEMA_COORDINATE,
+        loc: { start: 0, end: 12 },
+        ofDirective: true,
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 1, end: 12 },
+          value: 'myDirective',
+        },
+        memberName: undefined,
+        argumentName: undefined,
+      });
+    });
+
+    it('parses @ Name ( Name : )', () => {
+      const result = parseSchemaCoordinate('@myDirective(arg:)');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.SCHEMA_COORDINATE,
+        loc: { start: 0, end: 18 },
+        ofDirective: true,
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 1, end: 12 },
+          value: 'myDirective',
+        },
+        memberName: undefined,
+        argumentName: {
+          kind: Kind.NAME,
+          loc: { start: 13, end: 16 },
+          value: 'arg',
+        },
+      });
+    });
+
+    it('rejects @ Name . Name', () => {
+      expectToThrowJSON(() =>
+        parseSchemaCoordinate('@myDirective.field'),
+      ).to.deep.equal({
+        message: 'Syntax Error: Expected <EOF>, found ".".',
+        locations: [{ line: 1, column: 13 }],
       });
     });
   });
