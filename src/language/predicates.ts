@@ -10,6 +10,7 @@ import type {
   TypeDefinitionNode,
   TypeSystemExtensionNode,
   TypeExtensionNode,
+  SchemaCoordinateNode,
 } from './ast';
 import { Kind } from './kinds';
 
@@ -109,4 +110,10 @@ export function isTypeExtensionNode(node: ASTNode): node is TypeExtensionNode {
     node.kind === Kind.ENUM_TYPE_EXTENSION ||
     node.kind === Kind.INPUT_OBJECT_TYPE_EXTENSION
   );
+}
+
+export function isSchemaCoordinateNode(
+  node: ASTNode,
+): node is SchemaCoordinateNode {
+  return node.kind === Kind.SCHEMA_COORDINATE;
 }
