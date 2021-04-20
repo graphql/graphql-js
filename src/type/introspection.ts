@@ -3,7 +3,8 @@ import { invariant } from '../jsutils/invariant';
 
 import { print } from '../language/printer';
 import { DirectiveLocation } from '../language/directiveLocation';
-import { astFromValue } from '../utilities/astFromValue';
+
+import { valueToLiteral } from '../utilities/valueToLiteral';
 
 import type { GraphQLSchema } from './schema';
 import type { GraphQLDirective } from './directives';
@@ -388,7 +389,7 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
             return null;
           }
           const literal =
-            defaultValue.literal ?? astFromValue(defaultValue.value, type);
+            defaultValue.literal ?? valueToLiteral(defaultValue.value, type);
           invariant(literal, 'Invalid default value');
           return print(literal);
         },

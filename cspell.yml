@@ -24,6 +24,8 @@ words:
   - graphiql
   - sublinks
   - instanceof
+  - uncoerce
+  - uncoerced
 
   # Different names used inside tests
   - Skywalker

@@ -34,7 +34,7 @@ import {
   isRequiredInputField,
 } from '../type/definition';
 
-import { astFromValue } from './astFromValue';
+import { valueToLiteral } from './valueToLiteral';
 
 export const BreakingChangeType = Object.freeze({
   TYPE_REMOVED: 'TYPE_REMOVED',
@@ -532,7 +532,7 @@ function stringifyValue(
   defaultValue: GraphQLDefaultValueUsage,
   type: GraphQLInputType,
 ): string {
-  const ast = defaultValue.literal ?? astFromValue(defaultValue.value, type);
+  const ast = defaultValue.literal ?? valueToLiteral(defaultValue.value, type);
   invariant(ast);
   const sortedAST = visit(ast, {
     ObjectValue(objectNode) {
