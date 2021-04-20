@@ -34,7 +34,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
 
   const descriptions = optionsWithDefault.descriptions ? 'description' : '';
   const specifiedByUrl = optionsWithDefault.specifiedByUrl
-    ? 'specifiedByUrl'
+    ? 'specifiedByURL'
     : '';
   const directiveIsRepeatable = optionsWithDefault.directiveIsRepeatable
     ? 'isRepeatable'
@@ -184,7 +184,7 @@ export type IntrospectionScalarType = {|
   +kind: 'SCALAR',
   +name: string,
   +description?: ?string,
-  +specifiedByUrl?: ?string,
+  +specifiedByURL?: ?string,
 |};
 
 export type IntrospectionObjectType = {|

@@ -549,7 +549,7 @@ function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T> {
 export class GraphQLScalarType {
   name: string;
   description: ?string;
-  specifiedByUrl: ?string;
+  specifiedByURL: ?string;
   serialize: GraphQLScalarSerializer<mixed>;
   parseValue: GraphQLScalarValueParser<mixed>;
   parseLiteral: GraphQLScalarLiteralParser<mixed>;
@@ -561,7 +561,7 @@ export class GraphQLScalarType {
     const parseValue = config.parseValue ?? identityFunc;
     this.name = config.name;
     this.description = config.description;
-    this.specifiedByUrl = config.specifiedByUrl;
+    this.specifiedByURL = config.specifiedByURL;
     this.serialize = config.serialize ?? identityFunc;
     this.parseValue = parseValue;
     this.parseLiteral =
@@ -574,10 +574,10 @@ export class GraphQLScalarType {
     devAssert(typeof config.name === 'string', 'Must provide name.');
 
     devAssert(
-      config.specifiedByUrl == null ||
-        typeof config.specifiedByUrl === 'string',
-      `${this.name} must provide "specifiedByUrl" as a string, ` +
-        `but got: ${inspect(config.specifiedByUrl)}.`,
+      config.specifiedByURL == null ||
+        typeof config.specifiedByURL === 'string',
+      `${this.name} must provide "specifiedByURL" as a string, ` +
+        `but got: ${inspect(config.specifiedByURL)}.`,
     );
 
     devAssert(
@@ -598,7 +598,7 @@ export class GraphQLScalarType {
     return {
       name: this.name,
       description: this.description,
-      specifiedByUrl: this.specifiedByUrl,
+      specifiedByURL: this.specifiedByURL,
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
@@ -638,7 +638,7 @@ export type GraphQLScalarLiteralParser<TInternal> = (
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   name: string,
   description?: ?string,
-  specifiedByUrl?: ?string,
+  specifiedByURL?: ?string,
   // Serializes an internal value to include in a response.
   serialize?: GraphQLScalarSerializer<TExternal>,
   // Parses an externally provided value to use as an input.

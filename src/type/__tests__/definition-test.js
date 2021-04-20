@@ -46,12 +46,12 @@ describe('Type System: Scalars', () => {
     expect(() => new GraphQLScalarType({ name: 'SomeScalar' })).to.not.throw();
   });
 
-  it('accepts a Scalar type defining specifiedByUrl', () => {
+  it('accepts a Scalar type defining specifiedByURL', () => {
     expect(
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
-          specifiedByUrl: 'https://example.com/foo_spec',
+          specifiedByURL: 'https://example.com/foo_spec',
         }),
     ).not.to.throw();
   });
@@ -139,16 +139,16 @@ describe('Type System: Scalars', () => {
     );
   });
 
-  it('rejects a Scalar type defining specifiedByUrl with an incorrect type', () => {
+  it('rejects a Scalar type defining specifiedByURL with an incorrect type', () => {
     expect(
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
           // $FlowExpectedError[incompatible-call]
-          specifiedByUrl: {},
+          specifiedByURL: {},
         }),
     ).to.throw(
-      'SomeScalar must provide "specifiedByUrl" as a string, but got: {}.',
+      'SomeScalar must provide "specifiedByURL" as a string, but got: {}.',
     );
   });
 });

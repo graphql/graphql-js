@@ -495,10 +495,10 @@ describe('Type System Printer', () => {
     `);
   });
 
-  it('Custom Scalar with specifiedByUrl', () => {
+  it('Custom Scalar with specifiedByURL', () => {
     const FooType = new GraphQLScalarType({
       name: 'Foo',
-      specifiedByUrl: 'https://example.com/foo_spec',
+      specifiedByURL: 'https://example.com/foo_spec',
     });
 
     const schema = new GraphQLSchema({ types: [FooType] });
@@ -670,13 +670,13 @@ describe('Type System Printer', () => {
       """
       The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the \`__TypeKind\` enum.
 
-      Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional \`specifiedByUrl\`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
+      Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional \`specifiedByURL\`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
       """
       type __Type {
         kind: __TypeKind!
         name: String
         description: String
-        specifiedByUrl: String
+        specifiedByURL: String
         fields(includeDeprecated: Boolean = false): [__Field!]
         interfaces: [__Type!]
         possibleTypes: [__Type!]

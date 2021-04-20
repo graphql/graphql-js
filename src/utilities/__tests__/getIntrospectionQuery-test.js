@@ -63,15 +63,15 @@ describe('getIntrospectionQuery', () => {
     }).toNotMatch('description');
   });
 
-  it('include "specifiedByUrl" field', () => {
-    expectIntrospectionQuery().toNotMatch('specifiedByUrl');
+  it('include "specifiedBy" field', () => {
+    expectIntrospectionQuery().toNotMatch('specifiedByURL');
 
     expectIntrospectionQuery({ specifiedByUrl: true }).toMatch(
-      'specifiedByUrl',
+      'specifiedByURL',
     );
 
     expectIntrospectionQuery({ specifiedByUrl: false }).toNotMatch(
-      'specifiedByUrl',
+      'specifiedByURL',
     );
   });
 
