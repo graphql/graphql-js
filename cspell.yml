@@ -34,6 +34,8 @@ ignoreRegExpList:
 
 words:
   - graphiql
+  - uncoerce
+  - uncoerced
 
   # Different names used inside tests
   - Skywalker
