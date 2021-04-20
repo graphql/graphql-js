@@ -4,7 +4,7 @@ import { invariant } from '../jsutils/invariant.js';
 import { DirectiveLocation } from '../language/directiveLocation.js';
 import { print } from '../language/printer.js';
 
-import { astFromValue } from '../utilities/astFromValue.js';
+import { valueToLiteral } from '../utilities/valueToLiteral.js';
 
 import type {
   GraphQLEnumValue,
@@ -411,7 +411,7 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
             return null;
           }
           const literal =
-            defaultValue.literal ?? astFromValue(defaultValue.value, type);
+            defaultValue.literal ?? valueToLiteral(defaultValue.value, type);
           invariant(literal != null, 'Invalid default value');
           return print(literal);
         },
