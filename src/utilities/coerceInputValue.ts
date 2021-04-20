@@ -254,7 +254,7 @@ export function coerceDefaultValue(
   if (coercedValue === undefined) {
     coercedValue = defaultValue.literal
       ? coerceInputLiteral(defaultValue.literal, type)
-      : defaultValue.value;
+      : coerceInputValue(defaultValue.value, type);
     invariant(coercedValue !== undefined);
     (defaultValue as any)._memoizedCoercedValue = coercedValue;
   }

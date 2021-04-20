@@ -63,9 +63,7 @@ const QueryType = new GraphQLObjectType({
       args: {
         fromEnum: {
           type: ComplexEnum,
-          // Note: defaultValue is provided an *internal* representation for
-          // Enums, rather than the string name.
-          defaultValue: Complex1,
+          defaultValue: 'ONE',
         },
         provideGoodValue: { type: GraphQLBoolean },
         provideBadValue: { type: GraphQLBoolean },
