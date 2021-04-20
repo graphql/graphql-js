@@ -289,21 +289,21 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
       _typeExtensionsMap$co2 !== void 0
         ? _typeExtensionsMap$co2
         : [];
-    let specifiedByUrl = config.specifiedByUrl;
+    let specifiedByURL = config.specifiedByURL;
 
     for (const extensionNode of extensions) {
-      var _getSpecifiedByUrl;
+      var _getSpecifiedByURL;
 
-      specifiedByUrl =
-        (_getSpecifiedByUrl = getSpecifiedByUrl(extensionNode)) !== null &&
-        _getSpecifiedByUrl !== void 0
-          ? _getSpecifiedByUrl
-          : specifiedByUrl;
+      specifiedByURL =
+        (_getSpecifiedByURL = getSpecifiedByURL(extensionNode)) !== null &&
+        _getSpecifiedByURL !== void 0
+          ? _getSpecifiedByURL
+          : specifiedByURL;
     }
 
     return new _definition.GraphQLScalarType({
       ...config,
-      specifiedByUrl,
+      specifiedByURL,
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
@@ -734,7 +734,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
             _astNode$description5 === void 0
               ? void 0
               : _astNode$description5.value,
-          specifiedByUrl: getSpecifiedByUrl(astNode),
+          specifiedByURL: getSpecifiedByURL(astNode),
           astNode,
           extensionASTNodes,
         });
@@ -786,10 +786,10 @@ function getDeprecationReason(node) {
     : deprecated.reason;
 }
 /**
- * Given a scalar node, returns the string value for the specifiedByUrl.
+ * Given a scalar node, returns the string value for the specifiedByURL.
  */
 
-function getSpecifiedByUrl(node) {
+function getSpecifiedByURL(node) {
   const specifiedBy = (0, _values.getDirectiveValues)(
     _directives.GraphQLSpecifiedByDirective,
     node,
