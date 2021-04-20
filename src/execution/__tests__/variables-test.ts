@@ -150,7 +150,6 @@ const TestType = new GraphQLObjectType({
     }),
     fieldWithNestedInputObject: fieldWithInputArg({
       type: TestNestedInputObject,
-      defaultValue: 'Hello World',
     }),
     list: fieldWithInputArg({ type: new GraphQLList(GraphQLString) }),
     nested: {
