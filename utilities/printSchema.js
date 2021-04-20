@@ -136,7 +136,7 @@ export function printType(type) {
 
 function printScalar(type) {
   return (
-    printDescription(type) + `scalar ${type.name}` + printSpecifiedByUrl(type)
+    printDescription(type) + `scalar ${type.name}` + printSpecifiedByURL(type)
   );
 }
 
@@ -272,17 +272,17 @@ function printDeprecated(reason) {
   return ' @deprecated';
 }
 
-function printSpecifiedByUrl(scalar) {
-  if (scalar.specifiedByUrl == null) {
+function printSpecifiedByURL(scalar) {
+  if (scalar.specifiedByURL == null) {
     return '';
   }
 
-  const url = scalar.specifiedByUrl;
+  const url = scalar.specifiedByURL;
   const urlAST = astFromValue(url, GraphQLString);
   urlAST ||
     invariant(
       false,
-      'Unexpected null value returned from `astFromValue` for specifiedByUrl',
+      'Unexpected null value returned from `astFromValue` for specifiedByURL',
     );
   return ' @specifiedBy(url: ' + print(urlAST) + ')';
 }

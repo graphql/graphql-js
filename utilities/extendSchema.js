@@ -243,15 +243,15 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   function extendScalarType(type) {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
-    let specifiedByUrl = config.specifiedByUrl;
+    let specifiedByURL = config.specifiedByURL;
 
     for (const extensionNode of extensions) {
-      specifiedByUrl = getSpecifiedByUrl(extensionNode) ?? specifiedByUrl;
+      specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
     }
 
     return new GraphQLScalarType({
       ...config,
-      specifiedByUrl,
+      specifiedByURL,
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
@@ -557,7 +557,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
         return new GraphQLScalarType({
           name,
           description: astNode.description?.value,
-          specifiedByUrl: getSpecifiedByUrl(astNode),
+          specifiedByURL: getSpecifiedByURL(astNode),
           astNode,
           extensionASTNodes,
         });
@@ -594,10 +594,10 @@ function getDeprecationReason(node) {
   return deprecated?.reason;
 }
 /**
- * Given a scalar node, returns the string value for the specifiedByUrl.
+ * Given a scalar node, returns the string value for the specifiedByURL.
  */
 
-function getSpecifiedByUrl(node) {
+function getSpecifiedByURL(node) {
   const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
   return specifiedBy?.url;
 }

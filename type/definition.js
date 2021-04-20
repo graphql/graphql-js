@@ -406,7 +406,7 @@ export class GraphQLScalarType {
     const parseValue = config.parseValue ?? identityFunc;
     this.name = config.name;
     this.description = config.description;
-    this.specifiedByUrl = config.specifiedByUrl;
+    this.specifiedByURL = config.specifiedByURL;
     this.serialize = config.serialize ?? identityFunc;
     this.parseValue = parseValue;
 
@@ -418,12 +418,12 @@ export class GraphQLScalarType {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     typeof config.name === 'string' || devAssert(false, 'Must provide name.');
-    config.specifiedByUrl == null ||
-      typeof config.specifiedByUrl === 'string' ||
+    config.specifiedByURL == null ||
+      typeof config.specifiedByURL === 'string' ||
       devAssert(
         false,
-        `${this.name} must provide "specifiedByUrl" as a string, ` +
-          `but got: ${inspect(config.specifiedByUrl)}.`,
+        `${this.name} must provide "specifiedByURL" as a string, ` +
+          `but got: ${inspect(config.specifiedByURL)}.`,
       );
     config.serialize == null ||
       typeof config.serialize === 'function' ||
@@ -446,7 +446,7 @@ export class GraphQLScalarType {
     return {
       name: this.name,
       description: this.description,
-      specifiedByUrl: this.specifiedByUrl,
+      specifiedByURL: this.specifiedByURL,
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,

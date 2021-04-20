@@ -179,7 +179,7 @@ export const __DirectiveLocation = new GraphQLEnumType({
 export const __Type = new GraphQLObjectType({
   name: '__Type',
   description:
-    'The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByUrl`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.',
+    'The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.',
   fields: () => ({
     kind: {
       type: new GraphQLNonNull(__TypeKind),
@@ -229,10 +229,10 @@ export const __Type = new GraphQLObjectType({
       resolve: (type) =>
         type.description !== undefined ? type.description : undefined,
     },
-    specifiedByUrl: {
+    specifiedByURL: {
       type: GraphQLString,
       resolve: (obj) =>
-        obj.specifiedByUrl !== undefined ? obj.specifiedByUrl : undefined,
+        obj.specifiedByURL !== undefined ? obj.specifiedByURL : undefined,
     },
     fields: {
       type: new GraphQLList(new GraphQLNonNull(__Field)),
