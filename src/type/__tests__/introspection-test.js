@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import invariant from '../../jsutils/invariant';
@@ -1586,4 +1586,25 @@ describe('Introspection', () => {
       }),
     ).to.not.throw();
   });
+
+  it('can include deprecated input fields', () => {
+    const schema = buildSchema(`
+    type Query {
+      oldField(input: Boolean @deprecated(reason: "got over it")): String
+    }
+    `);
+
+    const source = getIntrospectionQuery({
+      inputValueDeprecation: true,
+    });
+
+    const { data, errors } = graphqlSync({
+      schema,
+      source,
+    });
+
+    assert.isUndefined(errors, `Introspection query was not successful ${JSON.stringify(errors)}`);
+    assert.isOk(data);
+  });
+
 });
