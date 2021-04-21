@@ -8,6 +8,7 @@ import {
 export const __Schema: GraphQLObjectType;
 export const __Directive: GraphQLObjectType;
 export const __DirectiveLocation: GraphQLEnumType;
+export const __AppliedDirective: GraphQLObjectType;
 export const __Type: GraphQLObjectType;
 export const __Field: GraphQLObjectType;
 export const __InputValue: GraphQLObjectType;

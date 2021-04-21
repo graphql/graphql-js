@@ -127,6 +127,7 @@ export class GraphQLSchema {
   _mutationType: ?GraphQLObjectType;
   _subscriptionType: ?GraphQLObjectType;
   _directives: $ReadOnlyArray<GraphQLDirective>;
+  _appliedDirectives: $ReadOnlyArray<GraphQLDirective>;
   _typeMap: TypeMap;
   _subTypeMap: ObjMap<ObjMap<boolean>>;
   _implementationsMap: ObjMap<{|
@@ -164,6 +165,8 @@ export class GraphQLSchema {
     this._subscriptionType = config.subscription;
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives ?? specifiedDirectives;
+
+    this._appliedDirectives = config.appliedDirectives || [];
 
     // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
@@ -323,6 +326,10 @@ export class GraphQLSchema {
     return this._directives;
   }
 
+  getAppliedDirectives(): $ReadOnlyArray<GraphQLDirective> {
+    return this._appliedDirectives;
+  }
+
   getDirective(name: string): ?GraphQLDirective {
     return this.getDirectives().find((directive) => directive.name === name);
   }
@@ -368,6 +375,7 @@ export type GraphQLSchemaConfig = {|
   subscription?: ?GraphQLObjectType,
   types?: ?Array<GraphQLNamedType>,
   directives?: ?Array<GraphQLDirective>,
+  appliedDirectives?: ?Array<GraphQLDirective>,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?SchemaDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,

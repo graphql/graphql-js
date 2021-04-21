@@ -663,8 +663,11 @@ describe('Type System Printer', () => {
         """
         subscriptionType: __Type
 
-        """A list of all directives supported by this server."""
+        """A list of all built in directives supported by this server."""
         directives: [__Directive!]!
+
+        """A list of all custom directives supported by this server."""
+        appliedDirectives: [__AppliedDirective!]!
       }
 
       """
@@ -829,6 +832,12 @@ describe('Type System Printer', () => {
 
         """Location adjacent to an input object field definition."""
         INPUT_FIELD_DEFINITION
+      }
+
+      """An AppliedDirective is a custom directive.  TODO flesh out description"""
+      type __AppliedDirective {
+        name: String!
+        args: [__InputValue!]!
       }
     `);
   });
