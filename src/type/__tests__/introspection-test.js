@@ -1603,8 +1603,10 @@ describe('Introspection', () => {
       source,
     });
 
-    assert.isUndefined(errors, `Introspection query was not successful ${JSON.stringify(errors)}`);
+    assert.isUndefined(
+      errors,
+      `Introspection query was not successful ${JSON.stringify(errors) || ''}`,
+    );
     assert.isOk(data);
   });
-
 });
