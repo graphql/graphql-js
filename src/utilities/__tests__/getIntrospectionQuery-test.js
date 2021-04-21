@@ -108,7 +108,7 @@ describe('getIntrospectionQuery', () => {
 
     expectIntrospectionQuery({ inputValueDeprecation: true }).toMatch(
       'includeDeprecated: true',
-      5,
+      4,
     );
 
     expectIntrospectionQuery({ inputValueDeprecation: false }).toMatch(

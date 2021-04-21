@@ -62,7 +62,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
           ${descriptions}
           ${directiveIsRepeatable}
           locations
-          args${inputDeprecation('(includeDeprecated: true)')} {
+          args {
             ...InputValue
           }
         }
