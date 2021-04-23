@@ -263,6 +263,31 @@ describe('Lexer', () => {
       value: 'unicode \u1234\u5678\u90AB\uCDEF',
     });
 
+    expect(lexOne('"unicode \\u{1234}\\u{5678}\\u{90AB}\\u{CDEF}"')).to.contain(
+      {
+        kind: TokenKind.STRING,
+        start: 0,
+        end: 42,
+        value: 'unicode \u1234\u5678\u90AB\uCDEF',
+      },
+    );
+
+    expect(
+      lexOne('"string with unicode escape outside BMP \\u{1F600}"'),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 50,
+      value: 'string with unicode escape outside BMP 😀',
+    });
+
+    expect(lexOne('"unicode \\u{10FFFF}"')).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 20,
+      value: 'unicode \u{10FFFF}',
+    });
+
     expect(
       lexOne('"string with unicode code point outside BMP 😀"'),
     ).to.contain({
@@ -378,55 +403,135 @@ describe('Lexer', () => {
     });
 
     expectSyntaxError('"bad \\z esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\z.',
+      message: 'Syntax Error: Invalid character escape sequence: "\\z".',
       locations: [{ line: 1, column: 7 }],
     });
 
     expectSyntaxError('"bad \\x esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\x.',
+      message: 'Syntax Error: Invalid character escape sequence: "\\x".',
       locations: [{ line: 1, column: 7 }],
     });
 
     expectSyntaxError('"bad \\u1 esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\u1 es.',
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u1 es".',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\u1"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u1".',
       locations: [{ line: 1, column: 7 }],
     });
 
     expectSyntaxError('"bad \\u0XX1 esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\u0XX1.',
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u0XX1".',
       locations: [{ line: 1, column: 7 }],
     });
 
     expectSyntaxError('"bad \\uXXXX esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\uXXXX.',
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uXXXX".',
       locations: [{ line: 1, column: 7 }],
     });
 
     expectSyntaxError('"bad \\uFXXX esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\uFXXX.',
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uFXXX".',
       locations: [{ line: 1, column: 7 }],
     });
 
     expectSyntaxError('"bad \\uXXXF esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\uXXXF.',
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uXXXF".',
       locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\u{} esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{}".',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\u{XXXF} esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{XXXF}".',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\u{XXXF esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{XXXF es".',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\u{X"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{X".',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\u{XXXF e}scape"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{XXXF e}".',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \\u{110000} esc"').to.deep.equal({
+      message: 'Syntax Error: Undefined Unicode code-point: "\\u{110000}".',
+      locations: [{ line: 1, column: 7 }],
+    });
+
+    expectSyntaxError('"bad \uDEAD esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid low surrogate within String: "\\uDEAD".',
+      locations: [{ line: 1, column: 6 }],
     });
 
     expectSyntaxError('"bad \\uDEAD esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid surrogate pair escape sequence: \\uDEAD.',
-      locations: [{ line: 1, column: 7 }],
+      message: 'Syntax Error: Invalid low surrogate within String: "\\uDEAD".',
+      locations: [{ line: 1, column: 6 }],
     });
 
-    expectSyntaxError('"bad \\uD83D\\noEscape"').to.deep.equal({
+    expectSyntaxError('"bad \\u{DEAD} esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid low surrogate within String: "\\uDEAD".',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \uD83D esc"').to.deep.equal({
       message:
-        'Syntax Error: Invalid surrogate pair escape sequence: \\uD83D\\n.',
-      locations: [{ line: 1, column: 7 }],
+        'Syntax Error: Invalid high surrogate "\\uD83D" followed by a non-low surrogate " " in String.',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \\uD83D esc"').to.deep.equal({
+      message:
+        'Syntax Error: Invalid high surrogate "\\uD83D" followed by a non-low surrogate " " in String.',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \\u{D83D} esc"').to.deep.equal({
+      message:
+        'Syntax Error: Invalid high surrogate "\\uD83D" followed by a non-low surrogate " " in String.',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \uD83D\uDBFF esc"').to.deep.equal({
+      message:
+        'Syntax Error: Invalid high surrogate "\\uD83D" followed by a non-low surrogate "\\uDBFF" in String.',
+      locations: [{ line: 1, column: 6 }],
     });
 
     expectSyntaxError('"bad \\uD83D\\uDBFF esc"').to.deep.equal({
       message:
-        'Syntax Error: Invalid surrogate pair escape sequence: \\uD83D\\uDBFF.',
-      locations: [{ line: 1, column: 7 }],
+        'Syntax Error: Invalid high surrogate "\\uD83D" followed by a non-low surrogate "\\uDBFF" in String.',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \uD83D\\uDBFF esc"').to.deep.equal({
+      message:
+        'Syntax Error: Invalid high surrogate "\\uD83D" followed by a non-low surrogate "\\uDBFF" in String.',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \\uD83D\uDBFF esc"').to.deep.equal({
+      message:
+        'Syntax Error: Invalid high surrogate "\\uD83D" followed by a non-low surrogate "\\uDBFF" in String.',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \\uD83D\\escape"').to.deep.equal({
+      message: 'Syntax Error: Invalid character escape sequence: "\\e".',
+      locations: [{ line: 1, column: 13 }],
     });
   });
 

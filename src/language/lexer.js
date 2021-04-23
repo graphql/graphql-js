@@ -425,7 +425,7 @@ function readDigits(source: Source, start: number, firstCode: number): number {
 /**
  * Reads a string token from the source file.
  *
- * "([^"\\\u000A\u000D]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
+ * "([^"\\\u000A\u000D]|(\\(u([0-9a-fA-F]{4}|\{[0-9a-fA-F]{1,6}\})|["\\/bfnrt])))*"
  */
 function readString(
   source: Source,
@@ -439,6 +439,7 @@ function readString(
   let chunkStart = position;
   let code = 0;
   let value = '';
+  let isSurrogatePair = false;
 
   while (
     position < body.length &&
@@ -470,129 +471,173 @@ function readString(
       );
     }
 
-    ++position;
+    let codeSize;
+    // Escape Sequence (\)
     if (code === 92) {
-      // \
-      value += body.slice(chunkStart, position - 1);
-      code = body.charCodeAt(position);
-      switch (code) {
-        case 34:
-          value += '"';
-          break;
-        case 47:
-          value += '/';
-          break;
-        case 92:
-          value += '\\';
-          break;
-        case 98:
-          value += '\b';
-          break;
-        case 102:
-          value += '\f';
-          break;
-        case 110:
-          value += '\n';
-          break;
-        case 114:
-          value += '\r';
-          break;
-        case 116:
-          value += '\t';
-          break;
-        case 117: {
-          // uXXXX
-          const convertedEscape = convertUnicodeEscape(source, body, position);
-          value += convertedEscape.value;
-          position += convertedEscape.positionIncrease;
-          break;
-        }
-        default:
-          throw syntaxError(
-            source,
-            position,
-            `Invalid character escape sequence: \\${String.fromCharCode(
-              code,
-            )}.`,
-          );
-      }
-      ++position;
-      chunkStart = position;
+      value += body.slice(chunkStart, position);
+      const escape = readEscapeSequence(source, position);
+      code = escape.code;
+      codeSize = escape.size;
+      value += escape.value;
+      chunkStart = position + codeSize;
+    } else {
+      codeSize = 1;
     }
+
+    // Surrogate Pairs
+    // The specification semantics call for replacing surrogate pairs with valid
+    // non-BMP Unicode code points. However since JS strings encode non-BMP code
+    // points as surrogate pairs anyhow, this simply validates those pairs.
+    if (code >= 0xd800 && code <= 0xdbff) {
+      let nextCode = body.charCodeAt(position + codeSize);
+      if (nextCode === 92) {
+        nextCode = readEscapeSequence(source, position + codeSize).code;
+      }
+      // A High Surrogate must be followed by a Low Surrogate.
+      if (nextCode < 0xdc00 || nextCode > 0xdfff) {
+        throw syntaxError(
+          source,
+          position,
+          `Invalid high surrogate ${printCharCode(
+            code,
+          )} followed by a non-low surrogate ${printCharCode(
+            nextCode,
+          )} in String.`,
+        );
+      }
+      isSurrogatePair = true;
+    } else if (code >= 0xdc00 && code <= 0xdfff) {
+      // A Low Surrogate must follow a High Surrogate.
+      if (!isSurrogatePair) {
+        throw syntaxError(
+          source,
+          position,
+          `Invalid low surrogate within String: ${printCharCode(code)}.`,
+        );
+      }
+      isSurrogatePair = false;
+    }
+
+    position += codeSize;
   }
 
   throw syntaxError(source, position, 'Unterminated string.');
 }
 
-function convertUnicodeEscape(source, body, position) {
-  const charCode = uniCharCode(
-    body.charCodeAt(position + 1),
-    body.charCodeAt(position + 2),
-    body.charCodeAt(position + 3),
-    body.charCodeAt(position + 4),
+// The code-point, lexed size, and string value of an escape sequence.
+type EscapeSequence = {| code: number, size: number, value: string |};
+
+/**
+ * | Escaped Character | Code Point | Character Name               |
+ * | ----------------- | ---------- | ---------------------------- |
+ * | {`"`}             | U+0022     | double quote                 |
+ * | {`\`}             | U+005C     | reverse solidus (back slash) |
+ * | {`/`}             | U+002F     | solidus (forward slash)      |
+ * | {`b`}             | U+0008     | backspace                    |
+ * | {`f`}             | U+000C     | form feed                    |
+ * | {`n`}             | U+000A     | line feed (new line)         |
+ * | {`r`}             | U+000D     | carriage return              |
+ * | {`t`}             | U+0009     | horizontal tab               |
+ */
+function readEscapeSequence(source: Source, pos: number): EscapeSequence {
+  const escapedCode = source.body.charCodeAt(pos + 1);
+  switch (escapedCode) {
+    case 34: // \"
+      return { code: 0x0022, size: 2, value: '"' };
+    case 47: // \/
+      return { code: 0x005c, size: 2, value: '/' };
+    case 92: // \\
+      return { code: 0x002f, size: 2, value: '\\' };
+    case 98: // \b
+      return { code: 0x0008, size: 2, value: '\b' };
+    case 102: // \f
+      return { code: 0x000c, size: 2, value: '\f' };
+    case 110: // \n
+      return { code: 0x000a, size: 2, value: '\n' };
+    case 114: // \r
+      return { code: 0x000d, size: 2, value: '\r' };
+    case 116: // \t
+      return { code: 0x0009, size: 2, value: '\t' };
+    case 117: // \u
+      return readEscapedUnicode(source, pos);
+  }
+  throw syntaxError(
+    source,
+    pos + 1,
+    `Invalid character escape sequence: "${source.body.slice(pos, pos + 2)}".`,
   );
-  if (charCode < 0) {
-    const invalidSequence = body.slice(position + 1, position + 5);
-    throw syntaxError(
-      source,
-      position,
-      `Invalid character escape sequence: \\u${invalidSequence}.`,
-    );
-  }
+}
 
-  let value;
-  let positionIncrease;
-  // String.fromCharCode doesn't fail for invalid surrogate pairs, therefore
-  // it is manually verified here
-  if (isTrailingSurrogate(charCode)) {
-    const invalidSequence = body.slice(position + 1, position + 5);
-    throw syntaxError(
-      source,
-      position,
-      `Invalid surrogate pair escape sequence: \\u${invalidSequence}.`,
-    );
-  }
-  if (isLeadingSurrogate(charCode)) {
-    if (
-      body.charCodeAt(position + 5) !== 92 ||
-      body.charCodeAt(position + 6) !== 117
-    ) {
-      const invalidSequence = body.slice(position + 1, position + 7);
+function readEscapedUnicode(source: Source, pos: number): EscapeSequence {
+  const body = source.body;
+  let code = 0;
+  let size = 2;
+  // A braced unicode escape "{"
+  if (body.charCodeAt(pos + 2) === 123) {
+    size++;
+    // A braced unicode escape cannot be larger than 10 chars.
+    while (size < 10) {
+      const charCode = body.charCodeAt(pos + size++);
+      // If an end quote, break with an invalid code.
+      if (charCode === 34) {
+        size--;
+        code = -1;
+        break;
+      }
+      // End brace "}" to complete the code.
+      if (charCode === 125) {
+        // If the size is only 4, the escape found no hex digits.
+        if (size === 4) {
+          code = -1;
+        }
+        break;
+      } else if (size === 10) {
+        // If this is the 10th char which is not a brace, it's an invalid code.
+        code = -1;
+      } else {
+        // Append this hex digit to the code point.
+        code = (code << 4) | char2hex(charCode);
+      }
+    }
+    // Unicode code points must be <= U+10FFFF
+    if (code > 0x10ffff) {
       throw syntaxError(
         source,
-        position,
-        `Invalid surrogate pair escape sequence: \\u${invalidSequence}.`,
+        pos + 1,
+        `Undefined Unicode code-point: "${body.slice(pos, pos + size)}".`,
       );
     }
-    const trailingSurrogate = uniCharCode(
-      body.charCodeAt(position + 7),
-      body.charCodeAt(position + 8),
-      body.charCodeAt(position + 9),
-      body.charCodeAt(position + 10),
-    );
-    if (!isTrailingSurrogate(trailingSurrogate)) {
-      const invalidSequence = body.slice(position + 1, position + 11);
-      throw syntaxError(
-        source,
-        position,
-        `Invalid surrogate pair escape sequence: \\u${invalidSequence}.`,
-      );
-    }
-    value = String.fromCharCode(charCode, trailingSurrogate);
-    positionIncrease = 10;
   } else {
-    value = String.fromCharCode(charCode);
-    positionIncrease = 4;
+    // A simple unicode escape is 6 chars.
+    while (size < 6) {
+      const charCode = body.charCodeAt(pos + size++);
+      // If an end quote, break with an invalid code.
+      if (charCode === 34) {
+        size--;
+        code = -1;
+        break;
+      }
+      // Append this hex digit to the code point.
+      code = (code << 4) | char2hex(charCode);
+    }
   }
-  return { value, positionIncrease };
-}
-
-function isLeadingSurrogate(charCode) {
-  return charCode >= 0xd800 && charCode <= 0xdbff;
-}
-
-function isTrailingSurrogate(charCode) {
-  return charCode >= 0xdc00 && charCode <= 0xdfff;
+  // A negative code point occurs if char2hex ever encountered a non-hex digit.
+  if (code < 0) {
+    throw syntaxError(
+      source,
+      pos + 1,
+      `Invalid Unicode escape sequence: "${body.slice(pos, pos + size)}".`,
+    );
+  }
+  // JS strings encode astral code points as surrogate pairs.
+  const value =
+    code <= 0xffff
+      ? String.fromCharCode(code)
+      : String.fromCharCode(
+          0xd800 | ((code - 0x10000) >> 10), // High Surrogate
+          0xdc00 | ((code - 0x10000) & 0x3ff), // Low Surrogate
+        );
+  return { code, size, value };
 }
 
 /**
@@ -677,22 +722,6 @@ function readBlockString(
   }
 
   throw syntaxError(source, position, 'Unterminated string.');
-}
-
-/**
- * Converts four hexadecimal chars to the integer that the
- * string represents. For example, uniCharCode('0','0','0','f')
- * will return 15, and uniCharCode('0','0','f','f') returns 255.
- *
- * Returns a negative number on error, if a char was invalid.
- *
- * This is implemented by noting that char2hex() returns -1 on error,
- * which means the result of ORing the char2hex() will also be negative.
- */
-function uniCharCode(a: number, b: number, c: number, d: number): number {
-  return (
-    (char2hex(a) << 12) | (char2hex(b) << 8) | (char2hex(c) << 4) | char2hex(d)
-  );
 }
 
 /**
