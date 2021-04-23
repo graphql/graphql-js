@@ -1,5 +1,3 @@
-// @noflow
-
 'use strict';
 
 const util = require('util');
@@ -37,7 +35,7 @@ const labelsConfig = {
     fold: true,
   },
 };
-const GH_TOKEN = process.env['GH_TOKEN'];
+const { GH_TOKEN } = process.env;
 
 if (!GH_TOKEN) {
   console.error('Must provide GH_TOKEN as environment variable!');
@@ -49,18 +47,21 @@ if (!packageJSON.repository || typeof packageJSON.repository.url !== 'string') {
   process.exit(1);
 }
 
-const repoURLMatch = /https:\/\/github.com\/([^/]+)\/([^/]+).git/.exec(
+const repoURLMatch = /https:\/\/github.com\/(?<githubOrg>[^/]+)\/(?<githubRepo>[^/]+).git/.exec(
   packageJSON.repository.url,
 );
 if (repoURLMatch == null) {
   console.error('Cannot extract organization and repo name from repo URL!');
   process.exit(1);
 }
-const [, githubOrg, githubRepo] = repoURLMatch;
+const { githubOrg, githubRepo } = repoURLMatch.groups;
 
 getChangeLog()
-  .then(changelog => process.stdout.write(changelog))
-  .catch(error => console.error(error));
+  .then((changelog) => process.stdout.write(changelog))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 
 function getChangeLog() {
   const { version } = packageJSON;
@@ -76,8 +77,8 @@ function getChangeLog() {
 
   const date = exec('git log -1 --format=%cd --date=short');
   return getCommitsInfo(commitsList.split('\n'))
-    .then(commitsInfo => getPRsInfo(commitsInfoToPRs(commitsInfo)))
-    .then(prsInfo => genChangeLog(tag, date, prsInfo));
+    .then((commitsInfo) => getPRsInfo(commitsInfoToPRs(commitsInfo)))
+    .then((prsInfo) => genChangeLog(tag, date, prsInfo));
 }
 
 function genChangeLog(tag, date, allPRs) {
@@ -86,8 +87,8 @@ function genChangeLog(tag, date, allPRs) {
 
   for (const pr of allPRs) {
     const labels = pr.labels.nodes
-      .map(label => label.name)
-      .filter(label => label.startsWith('PR: '));
+      .map((label) => label.name)
+      .filter((label) => label.startsWith('PR: '));
 
     if (labels.length === 0) {
       throw new Error(`PR is missing label. See ${pr.url}`);
@@ -153,12 +154,12 @@ function graphqlRequestImpl(query, variables, cb) {
     },
   });
 
-  req.on('response', res => {
+  req.on('response', (res) => {
     let responseBody = '';
 
     res.setEncoding('utf8');
-    res.on('data', d => (responseBody += d));
-    res.on('error', error => resultCB(error));
+    res.on('data', (d) => (responseBody += d));
+    res.on('error', (error) => resultCB(error));
 
     res.on('end', () => {
       if (res.statusCode !== 200) {
@@ -187,7 +188,7 @@ function graphqlRequestImpl(query, variables, cb) {
     });
   });
 
-  req.on('error', error => resultCB(error));
+  req.on('error', (error) => resultCB(error));
   req.write(JSON.stringify({ query, variables }));
   req.end();
 }
@@ -271,12 +272,12 @@ function commitsInfoToPRs(commits) {
   const prs = {};
   for (const commit of commits) {
     const associatedPRs = commit.associatedPullRequests.nodes.filter(
-      pr => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
+      (pr) => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
     );
     if (associatedPRs.length === 0) {
-      const match = / \(#([0-9]+)\)$/m.exec(commit.message);
+      const match = / \(#(?<prNumber>[0-9]+)\)$/m.exec(commit.message);
       if (match) {
-        prs[parseInt(match[1], 10)] = true;
+        prs[parseInt(match.groups.prNumber, 10)] = true;
         continue;
       }
       throw new Error(

@@ -1,4 +1,4 @@
-// @flow strict
+import type { ValidationRule, SDLValidationRule } from './ValidationContext';
 
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
@@ -60,7 +60,7 @@ import { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLoca
 // Spec Section: "Argument Names"
 import {
   KnownArgumentNamesRule,
-  KnownArgumentNamesOnDirectives,
+  KnownArgumentNamesOnDirectivesRule,
 } from './rules/KnownArgumentNamesRule';
 
 // Spec Section: "Argument Uniqueness"
@@ -72,7 +72,7 @@ import { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule';
 // Spec Section: "Argument Optionality"
 import {
   ProvidedRequiredArgumentsRule,
-  ProvidedRequiredArgumentsOnDirectives,
+  ProvidedRequiredArgumentsOnDirectivesRule,
 } from './rules/ProvidedRequiredArgumentsRule';
 
 // Spec Section: "All Variable Usages Are Allowed"
@@ -99,7 +99,7 @@ import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
  * The order of the rules in this list has been adjusted to lead to the
  * most clear output when encountering multiple validation errors.
  */
-export const specifiedRules = Object.freeze([
+export const specifiedRules: $ReadOnlyArray<ValidationRule> = Object.freeze([
   ExecutableDefinitionsRule,
   UniqueOperationNamesRule,
   LoneAnonymousOperationRule,
@@ -131,19 +131,21 @@ export const specifiedRules = Object.freeze([
 /**
  * @internal
  */
-export const specifiedSDLRules = Object.freeze([
-  LoneSchemaDefinitionRule,
-  UniqueOperationTypesRule,
-  UniqueTypeNamesRule,
-  UniqueEnumValueNamesRule,
-  UniqueFieldDefinitionNamesRule,
-  UniqueDirectiveNamesRule,
-  KnownTypeNamesRule,
-  KnownDirectivesRule,
-  UniqueDirectivesPerLocationRule,
-  PossibleTypeExtensionsRule,
-  KnownArgumentNamesOnDirectives,
-  UniqueArgumentNamesRule,
-  UniqueInputFieldNamesRule,
-  ProvidedRequiredArgumentsOnDirectives,
-]);
+export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = Object.freeze(
+  [
+    LoneSchemaDefinitionRule,
+    UniqueOperationTypesRule,
+    UniqueTypeNamesRule,
+    UniqueEnumValueNamesRule,
+    UniqueFieldDefinitionNamesRule,
+    UniqueDirectiveNamesRule,
+    KnownTypeNamesRule,
+    KnownDirectivesRule,
+    UniqueDirectivesPerLocationRule,
+    PossibleTypeExtensionsRule,
+    KnownArgumentNamesOnDirectivesRule,
+    UniqueArgumentNamesRule,
+    UniqueInputFieldNamesRule,
+    ProvidedRequiredArgumentsOnDirectivesRule,
+  ],
+);

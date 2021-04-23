@@ -1,9 +1,5 @@
-// @flow strict
-
-import defineToJSON from '../jsutils/defineToJSON';
-
-import { type Source } from './source';
-import { type TokenKindEnum } from './tokenKind';
+import type { Source } from './source';
+import type { TokenKindEnum } from './tokenKind';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
@@ -42,12 +38,11 @@ export class Location {
     this.endToken = endToken;
     this.source = source;
   }
-}
 
-// Print a simplified form when appearing in JSON/util.inspect.
-defineToJSON(Location, function() {
-  return { start: this.start, end: this.end };
-});
+  toJSON(): {| start: number, end: number |} {
+    return { start: this.start, end: this.end };
+  }
+}
 
 /**
  * Represents a range of characters represented by a lexical token
@@ -110,17 +105,21 @@ export class Token {
     this.prev = prev;
     this.next = null;
   }
-}
 
-// Print a simplified form when appearing in JSON/util.inspect.
-defineToJSON(Token, function() {
-  return {
-    kind: this.kind,
-    value: this.value,
-    line: this.line,
-    column: this.column,
-  };
-});
+  toJSON(): {|
+    kind: TokenKindEnum,
+    value: string | void,
+    line: number,
+    column: number,
+  |} {
+    return {
+      kind: this.kind,
+      value: this.value,
+      line: this.line,
+      column: this.column,
+    };
+  }
+}
 
 /**
  * @internal
@@ -324,8 +323,7 @@ export type FragmentDefinitionNode = {|
   +kind: 'FragmentDefinition',
   +loc?: Location,
   +name: NameNode,
-  // Note: fragment variable definitions are experimental and may be changed
-  // or removed in the future.
+  // Note: fragment variable definitions are deprecated and will removed in v17.0.0
   +variableDefinitions?: $ReadOnlyArray<VariableDefinitionNode>,
   +typeCondition: NamedTypeNode,
   +directives?: $ReadOnlyArray<DirectiveNode>,

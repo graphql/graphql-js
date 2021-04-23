@@ -1,67 +1,89 @@
-parser: babel-eslint
 parserOptions:
-  sourceType: module
+  sourceType: script
+  ecmaVersion: 2020
 env:
   es6: true
   node: true
 reportUnusedDisableDirectives: true
 plugins:
-  - flowtype
+  - internal-rules
+  - node
+  - istanbul
   - import
+settings:
+  node:
+    tryExtensions: ['.js', '.json', '.node', '.ts', '.d.ts']
 
 rules:
-  no-dir-import: error
-
   ##############################################################################
-  # `eslint-plugin-flowtype` rule list based on `v4.6.x`
-  # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
+  # Internal rules located in 'resources/eslint-internal-rules'.
+  # See './resources/eslint-internal-rules/README.md'
   ##############################################################################
 
-  flowtype/array-style-complex-type: error
-  flowtype/array-style-simple-type: error
-  flowtype/define-flow-type: error
-  flowtype/newline-after-flow-annotation: error
-  flowtype/no-dupe-keys: error
-  flowtype/no-existential-type: off # checked by Flow
-  flowtype/no-flow-fix-me-comments: off
-  flowtype/no-mixed: off
-  flowtype/no-mutable-array: off
-  flowtype/no-primitive-constructor-types: error
-  flowtype/no-types-missing-file-annotation: error
-  flowtype/no-unused-expressions: off
-  flowtype/no-weak-types: [error, { any: false }]
-  flowtype/require-compound-type-alias: off
-  flowtype/require-exact-type: off
-  flowtype/require-indexer-name: error
-  flowtype/require-inexact-type: off # checked by Flow
-  flowtype/require-parameter-type: off
-  flowtype/require-readonly-react-props: off
-  flowtype/require-return-type: off
-  flowtype/require-types-at-top: off
-  flowtype/require-valid-file-annotation:
-    [error, always, { annotationStyle: line, strict: true }]
-  flowtype/require-variable-type: off
-  flowtype/sort-keys: off
-  flowtype/spread-exact-type: off
-  flowtype/type-id-match: [error, '^[A-Z]']
-  flowtype/type-import-style: [error, identifier, { ignoreTypeDefault: true }]
-  flowtype/use-flow-type: error
-
-  # Bellow rules are disabled because coflicts with Prettier, see:
-  # https://github.com/prettier/eslint-config-prettier/blob/master/flowtype.js
-  flowtype/arrow-parens: off
-  flowtype/boolean-style: off
-  flowtype/delimiter-dangle: off
-  flowtype/generic-spacing: off
-  flowtype/object-type-delimiter: off
-  flowtype/semi: off
-  flowtype/space-after-type-colon: off
-  flowtype/space-before-generic-bracket: off
-  flowtype/space-before-type-colon: off
-  flowtype/union-intersection-spacing: off
+  internal-rules/no-dir-import: error
 
   ##############################################################################
-  # `eslint-plugin-import` rule list based on `v2.20.x`
+  # `eslint-plugin-istanbul` rule list based on `v0.1.2`
+  # https://github.com/istanbuljs/eslint-plugin-istanbul#rules
+  ##############################################################################
+
+  istanbul/no-ignore-file: error
+  istanbul/prefer-ignore-reason: error
+
+  ##############################################################################
+  # `eslint-plugin-node` rule list based on `v11.1.x`
+  ##############################################################################
+
+  # Possible Errors
+  # https://github.com/mysticatea/eslint-plugin-node#possible-errors
+
+  node/handle-callback-err: [error, error]
+  node/no-callback-literal: error
+  node/no-exports-assign: error
+  node/no-extraneous-import: error
+  node/no-extraneous-require: error
+  node/no-missing-import: error
+  node/no-missing-require: error
+  node/no-new-require: error
+  node/no-path-concat: error
+  node/no-process-exit: off
+  node/no-unpublished-bin: error
+  node/no-unpublished-import: error
+  node/no-unpublished-require: error
+  node/no-unsupported-features/es-builtins: error
+  node/no-unsupported-features/es-syntax: [error, { ignores: [modules] }]
+  node/no-unsupported-features/node-builtins: error
+  node/process-exit-as-throw: error
+  node/shebang: error
+
+  # Best Practices
+  # https://github.com/mysticatea/eslint-plugin-node#best-practices
+  node/no-deprecated-api: error
+
+  # Stylistic Issues
+  # https://github.com/mysticatea/eslint-plugin-node#stylistic-issues
+
+  node/callback-return: error
+  node/exports-style: off # TODO consider
+  node/file-extension-in-import: off # TODO consider
+  node/global-require: error
+  node/no-mixed-requires: error
+  node/no-process-env: off
+  node/no-restricted-import: off
+  node/no-restricted-require: off
+  node/no-sync: error
+  node/prefer-global/buffer: error
+  node/prefer-global/console: error
+  node/prefer-global/process: error
+  node/prefer-global/text-decoder: error
+  node/prefer-global/text-encoder: error
+  node/prefer-global/url-search-params: error
+  node/prefer-global/url: error
+  node/prefer-promises/dns: off
+  node/prefer-promises/fs: off
+
+  ##############################################################################
+  # `eslint-plugin-import` rule list based on `v2.22.x`
   ##############################################################################
 
   # Static analysis
@@ -70,7 +92,11 @@ rules:
   import/named: error
   import/default: error
   import/namespace: error
-  import/no-restricted-paths: off
+  import/no-restricted-paths:
+    - error
+    - basePath: './'
+      zones:
+        - { target: './src', from: 'src/__testUtils__' }
   import/no-absolute-path: error
   import/no-dynamic-require: error
   import/no-internal-modules: off
@@ -110,14 +136,14 @@ rules:
   import/max-dependencies: off
   import/no-unassigned-import: error
   import/no-named-default: error
-  import/no-default-export: off
+  import/no-default-export: error
   import/no-named-export: off
   import/no-anonymous-default-export: error
   import/group-exports: off
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v6.8.x`
+  # ESLint builtin rules list based on `v7.24.x`
   ##############################################################################
 
   # Possible Errors
@@ -146,16 +172,21 @@ rules:
   no-inner-declarations: [error, both]
   no-invalid-regexp: error
   no-irregular-whitespace: error
+  no-loss-of-precision: error
   no-misleading-character-class: error
   no-obj-calls: error
+  no-promise-executor-return: off # TODO
   no-prototype-builtins: error
   no-regex-spaces: error
   no-setter-return: error
   no-sparse-arrays: error
   no-template-curly-in-string: error
   no-unreachable: error
+  no-unreachable-loop: error
   no-unsafe-finally: error
   no-unsafe-negation: error
+  no-unsafe-optional-chaining: [error, { disallowArithmeticOperators: true }]
+  no-useless-backreference: error
   require-atomic-updates: error
   use-isnan: error
   valid-typeof: error
@@ -171,8 +202,9 @@ rules:
   consistent-return: off
   curly: error
   default-case: off
+  default-case-last: error
   default-param-last: error
-  dot-notation: off
+  dot-notation: error
   eqeqeq: [error, smart]
   grouped-accessor-pairs: error
   guard-for-in: error
@@ -195,7 +227,7 @@ rules:
   no-implicit-coercion: error
   no-implicit-globals: off
   no-implied-eval: error
-  no-invalid-this: off
+  no-invalid-this: error
   no-iterator: error
   no-labels: error
   no-lone-blocks: error
@@ -205,6 +237,7 @@ rules:
   no-new: error
   no-new-func: error
   no-new-wrappers: error
+  no-nonoctal-decimal-escape: error
   no-octal: error
   no-octal-escape: error
   no-param-reassign: error
@@ -258,21 +291,6 @@ rules:
   no-unused-vars: [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
   no-use-before-define: off
 
-  # Node.js and CommonJS
-  # https://eslint.org/docs/rules/#nodejs-and-commonjs
-
-  callback-return: error
-  global-require: error
-  handle-callback-err: [error, error]
-  no-buffer-constructor: error
-  no-mixed-requires: error
-  no-new-require: error
-  no-path-concat: error
-  no-process-env: off
-  no-process-exit: off
-  no-restricted-modules: off
-  no-sync: error
-
   # Stylistic Issues
   # https://eslint.org/docs/rules/#stylistic-issues
 
@@ -280,9 +298,9 @@ rules:
   capitalized-comments: off # maybe
   consistent-this: off
   func-name-matching: off
-  func-names: off
+  func-names: [error, as-needed] # improve debug experience
   func-style: off
-  id-blacklist: off
+  id-denylist: off
   id-length: off
   id-match: [error, '^(?:_?[a-zA-Z0-9]*)|[_A-Z0-9]+$']
   line-comment-position: off
@@ -296,7 +314,7 @@ rules:
   max-statements: off
   max-statements-per-line: off
   multiline-comment-style: off
-  new-cap: off # TODO
+  new-cap: error
   no-array-constructor: error
   no-bitwise: off
   no-continue: off
@@ -307,16 +325,10 @@ rules:
   no-nested-ternary: off
   no-new-object: error
   no-plusplus: off
-  no-restricted-syntax:
-    - error
-    - selector: 'FunctionDeclaration[async=true]'
-      message: >
-        async functions are not allowed inside package source code because
-        older versions of NodeJS do not support them without additional
-        runtime dependencies. Instead, use explicit Promises.
+  no-restricted-syntax: off
   no-tabs: error
   no-ternary: off
-  no-underscore-dangle: off
+  no-underscore-dangle: off # TODO
   no-unneeded-ternary: error
   one-var: [error, never]
   operator-assignment: error
@@ -336,8 +348,9 @@ rules:
   no-class-assign: error
   no-const-assign: error
   no-dupe-class-members: error
-  no-duplicate-imports: error
+  no-duplicate-imports: off # Superseded by `import/no-duplicates`
   no-new-symbol: error
+  no-restricted-exports: off
   no-restricted-imports: off
   no-this-before-super: error
   no-useless-computed-key: error
@@ -422,27 +435,75 @@ rules:
   yield-star-spacing: off
 
 overrides:
+  - files: 'src/**/*.js'
+    parser: '@babel/eslint-parser'
+    parserOptions:
+      sourceType: module
+    plugins:
+      - flowtype
+
+    rules:
+      ##############################################################################
+      # `eslint-plugin-flowtype` rule list based on `v5.6.x`
+      # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
+      ##############################################################################
+
+      flowtype/array-style-complex-type: error
+      flowtype/array-style-simple-type: error
+      flowtype/define-flow-type: error
+      flowtype/newline-after-flow-annotation: error
+      flowtype/no-dupe-keys: error
+      flowtype/no-existential-type: off # checked by Flow
+      flowtype/no-flow-fix-me-comments: off
+      flowtype/no-internal-flow-type: error
+      flowtype/no-mixed: off
+      flowtype/no-mutable-array: off
+      flowtype/no-primitive-constructor-types: error
+      flowtype/no-types-missing-file-annotation: off
+      flowtype/no-unused-expressions: off
+      flowtype/no-weak-types: [error, { any: false }]
+      flowtype/require-compound-type-alias: off
+      flowtype/require-exact-type: off
+      flowtype/require-indexer-name: error
+      flowtype/require-inexact-type: off # checked by Flow
+      flowtype/require-parameter-type: off
+      flowtype/require-readonly-react-props: off
+      flowtype/require-return-type: off
+      flowtype/require-types-at-top: off
+      flowtype/require-valid-file-annotation: off
+      flowtype/require-variable-type: off
+      flowtype/sort-keys: off
+      flowtype/spread-exact-type: off
+      flowtype/type-id-match: [error, '^[A-Z]']
+      flowtype/type-import-style: [error, declaration]
+      flowtype/use-read-only-spread: error
+      flowtype/use-flow-type: error
+
+      # Bellow rules are disabled because coflicts with Prettier, see:
+      # https://github.com/prettier/eslint-config-prettier/blob/master/flowtype.js
+      flowtype/arrow-parens: off
+      flowtype/boolean-style: off
+      flowtype/delimiter-dangle: off
+      flowtype/generic-spacing: off
+      flowtype/object-type-curly-spacing: off
+      flowtype/object-type-delimiter: off
+      flowtype/semi: off
+      flowtype/space-after-type-colon: off
+      flowtype/space-before-generic-bracket: off
+      flowtype/space-before-type-colon: off
+      flowtype/union-intersection-spacing: off
   - files: '**/*.ts'
     parser: '@typescript-eslint/parser'
     parserOptions:
-      tsconfigRootDir: './src/'
+      sourceType: module
       project: ['tsconfig.json']
     plugins:
       - '@typescript-eslint'
+    extends:
+      - plugin:import/typescript
     rules:
-      flowtype/require-valid-file-annotation: off
-      import/named: off
-      import/namespace: off
-      import/default: off
-      import/no-named-as-default-member: off
-      import/no-named-as-default: off
-      import/no-cycle: off
-      import/no-unused-modules: off
-      import/no-deprecated: off
-      import/no-unresolved: off
-
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v2.17.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.21.x`
       ##########################################################################
 
       # Supported Rules
@@ -450,16 +511,24 @@ overrides:
       '@typescript-eslint/adjacent-overload-signatures': error
       '@typescript-eslint/array-type': [error, { default: generic }]
       '@typescript-eslint/await-thenable': error
-      '@typescript-eslint/ban-ts-comment': error
+      '@typescript-eslint/ban-ts-comment': [error, { 'ts-expect-error': false }]
+      '@typescript-eslint/ban-tslint-comment': error
       '@typescript-eslint/ban-types': error
+      '@typescript-eslint/class-literal-property-style': off # TODO enable after TS conversion
+      '@typescript-eslint/consistent-indexed-object-style': off # TODO enable after TS conversion
       '@typescript-eslint/consistent-type-assertions':
         [error, { assertionStyle: as, objectLiteralTypeAssertions: never }]
       '@typescript-eslint/consistent-type-definitions': off # TODO consider
+      '@typescript-eslint/consistent-type-imports': off # TODO enable after TS conversion
       '@typescript-eslint/explicit-function-return-type': off # TODO consider
       '@typescript-eslint/explicit-member-accessibility': off # TODO consider
       '@typescript-eslint/explicit-module-boundary-types': off # TODO consider
       '@typescript-eslint/member-ordering': off # TODO consider
+      '@typescript-eslint/method-signature-style': error
       '@typescript-eslint/naming-convention': off # TODO consider
+      '@typescript-eslint/no-base-to-string': error
+      '@typescript-eslint/no-confusing-non-null-assertion': error
+      '@typescript-eslint/no-confusing-void-expression': error
       '@typescript-eslint/no-dynamic-delete': off
       '@typescript-eslint/no-empty-interface': error
       '@typescript-eslint/no-explicit-any': off # TODO error
@@ -467,6 +536,7 @@ overrides:
       '@typescript-eslint/no-extraneous-class': off # TODO consider
       '@typescript-eslint/no-floating-promises': error
       '@typescript-eslint/no-for-in-array': error
+      '@typescript-eslint/no-implicit-any-catch': off # TODO: Enable after TS convertion
       '@typescript-eslint/no-implied-eval': error
       '@typescript-eslint/no-inferrable-types':
         [error, { ignoreParameters: true, ignoreProperties: true }]
@@ -476,6 +546,7 @@ overrides:
       '@typescript-eslint/no-non-null-asserted-optional-chain': error
       '@typescript-eslint/no-non-null-assertion': error
       '@typescript-eslint/no-parameter-properties': error
+      '@typescript-eslint/no-invalid-void-type': error
       '@typescript-eslint/no-require-imports': error
       '@typescript-eslint/no-this-alias': error
       '@typescript-eslint/no-throw-literal': error
@@ -485,23 +556,35 @@ overrides:
       '@typescript-eslint/no-unnecessary-qualifier': error
       '@typescript-eslint/no-unnecessary-type-arguments': error
       '@typescript-eslint/no-unnecessary-type-assertion': error
-      '@typescript-eslint/no-unused-vars-experimental': off
+      '@typescript-eslint/no-unnecessary-type-constraint': off # TODO consider
+      '@typescript-eslint/no-unsafe-argument': off # TODO consider
+      '@typescript-eslint/no-unsafe-assignment': off # TODO consider
+      '@typescript-eslint/no-unsafe-call': off # TODO consider
+      '@typescript-eslint/no-unsafe-member-access': off # TODO consider
+      '@typescript-eslint/no-unsafe-return': off # TODO consider
       '@typescript-eslint/no-var-requires': error
+      '@typescript-eslint/non-nullable-type-assertion-style': error
       '@typescript-eslint/prefer-as-const': off # TODO consider
+      '@typescript-eslint/prefer-enum-initializers': off # TODO consider
       '@typescript-eslint/prefer-for-of': off # TODO switch to error after TS migration
       '@typescript-eslint/prefer-function-type': error
       '@typescript-eslint/prefer-includes': off # TODO switch to error after IE11 drop
+      '@typescript-eslint/prefer-literal-enum-member': error
       '@typescript-eslint/prefer-namespace-keyword': error
       '@typescript-eslint/prefer-nullish-coalescing': error
       '@typescript-eslint/prefer-optional-chain': error
       '@typescript-eslint/prefer-readonly': error
+      '@typescript-eslint/prefer-readonly-parameter-types': off # TODO consider
+      '@typescript-eslint/prefer-reduce-type-parameter': error
       '@typescript-eslint/prefer-regexp-exec': error
+      '@typescript-eslint/prefer-ts-expect-error': error
       '@typescript-eslint/prefer-string-starts-ends-with': off # TODO switch to error after IE11 drop
       '@typescript-eslint/promise-function-async': off
       '@typescript-eslint/require-array-sort-compare': error
       '@typescript-eslint/restrict-plus-operands':
         [error, { checkCompoundAssignments: true }]
       '@typescript-eslint/restrict-template-expressions': error
+      '@typescript-eslint/sort-type-union-intersection-members': off # TODO consider
       '@typescript-eslint/strict-boolean-expressions': off # TODO consider
       '@typescript-eslint/switch-exhaustiveness-check': error
       '@typescript-eslint/triple-slash-reference': error
@@ -514,57 +597,101 @@ overrides:
 
       # Disable conflicting ESLint rules and enable TS-compatible ones
       default-param-last: off
+      dot-notation: off
+      lines-between-class-members: off
       no-array-constructor: off
       no-dupe-class-members: off
       no-empty-function: off
+      no-invalid-this: off
+      no-loop-func: off
+      no-loss-of-precision: off
+      no-redeclare: off
+      no-shadow: off
       no-unused-expressions: off
       no-unused-vars: off
       no-useless-constructor: off
       require-await: off
       no-return-await: off
       '@typescript-eslint/default-param-last': error
-      '@typescript-eslint/no-dupe-class-members': error
+      '@typescript-eslint/dot-notation': error
+      '@typescript-eslint/lines-between-class-members':
+        [error, always, { exceptAfterSingleLine: true }]
       '@typescript-eslint/no-array-constructor': error
+      '@typescript-eslint/no-dupe-class-members': error
       '@typescript-eslint/no-empty-function': error
+      '@typescript-eslint/no-invalid-this': error
+      '@typescript-eslint/no-loop-func': error
+      '@typescript-eslint/no-loss-of-precision': error
+      '@typescript-eslint/no-redeclare': error
+      '@typescript-eslint/no-shadow': error
       '@typescript-eslint/no-unused-expressions': error
       '@typescript-eslint/no-unused-vars':
-        [error, { vars: all, args: all, argsIgnorePattern: '^_' }]
+        [
+          error,
+          {
+            vars: all,
+            args: all,
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_T',
+          },
+        ]
       '@typescript-eslint/no-useless-constructor': error
       '@typescript-eslint/require-await': error
       '@typescript-eslint/return-await': error
 
       # Disable for JS, Flow and TS
+      '@typescript-eslint/init-declarations': off
       '@typescript-eslint/no-magic-numbers': off
       '@typescript-eslint/no-use-before-define': off
+      '@typescript-eslint/no-duplicate-imports': off # Superseded by `import/no-duplicates`
 
       # Bellow rules are disabled because coflicts with Prettier, see:
       # https://github.com/prettier/eslint-config-prettier/blob/master/%40typescript-eslint.js
+      '@typescript-eslint/object-curly-spacing': off
       '@typescript-eslint/quotes': off
       '@typescript-eslint/brace-style': off
+      '@typescript-eslint/comma-dangle': off
       '@typescript-eslint/comma-spacing': off
       '@typescript-eslint/func-call-spacing': off
       '@typescript-eslint/indent': off
+      '@typescript-eslint/keyword-spacing': off
       '@typescript-eslint/member-delimiter-style': off
       '@typescript-eslint/no-extra-parens': off
       '@typescript-eslint/no-extra-semi': off
       '@typescript-eslint/semi': off
       '@typescript-eslint/space-before-function-paren': off
+      '@typescript-eslint/space-infix-ops': off
       '@typescript-eslint/type-annotation-spacing': off
-  - files: '**/__*__/**'
+  - files: 'src/**/__*__/**'
     rules:
-      import/no-extraneous-dependencies: off
+      node/no-unpublished-import: [error, { allowModules: ['chai', 'mocha'] }]
+      import/no-restricted-paths: off
+      import/no-extraneous-dependencies: [error, { devDependencies: true }]
+  - files: 'integrationTests/*'
+    rules:
+      node/no-sync: off
+      node/no-unpublished-require: [error, { allowModules: ['mocha'] }]
+      import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
-      no-restricted-syntax: off
-  - files: 'resources/**'
-    parserOptions:
-      sourceType: script
+  - files: 'integrationTests/*/**'
     rules:
-      import/no-dynamic-require: off
-      import/no-extraneous-dependencies: off
+      node/no-sync: off
+      node/no-missing-require: [error, { allowModules: ['graphql'] }]
+      import/no-nodejs-modules: off
+      no-console: off
+  - files: 'benchmark/**'
+    rules:
+      node/no-sync: off
+      node/no-missing-require: off
       import/no-nodejs-modules: off
       import/no-commonjs: off
-      no-await-in-loop: off
-      no-restricted-syntax: off
       no-console: off
-      no-sync: off
-      global-require: off
+      no-await-in-loop: off
+  - files: 'resources/**'
+    rules:
+      node/no-unpublished-require: off
+      node/no-sync: off
+      import/no-extraneous-dependencies: [error, { devDependencies: true }]
+      import/no-nodejs-modules: off
+      import/no-commonjs: off
+      no-console: off

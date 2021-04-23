@@ -1,9 +1,7 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import { dedent } from '../../__testUtils__/dedent';
 
 import { printSchema } from '../../utilities/printSchema';
 
@@ -61,7 +59,7 @@ describe('Type System: Schema', () => {
           type: BlogArticle,
         },
         feed: {
-          type: GraphQLList(BlogArticle),
+          type: new GraphQLList(BlogArticle),
         },
       },
     });
@@ -142,19 +140,19 @@ describe('Type System: Schema', () => {
     it('defines a query root', () => {
       const schema = new GraphQLSchema({ query: testType });
       expect(schema.getQueryType()).to.equal(testType);
-      expect(schema.getTypeMap()).to.include.key('TestType');
+      expect(schema.getTypeMap()).to.include.keys('TestType');
     });
 
     it('defines a mutation root', () => {
       const schema = new GraphQLSchema({ mutation: testType });
       expect(schema.getMutationType()).to.equal(testType);
-      expect(schema.getTypeMap()).to.include.key('TestType');
+      expect(schema.getTypeMap()).to.include.keys('TestType');
     });
 
     it('defines a subscription root', () => {
       const schema = new GraphQLSchema({ subscription: testType });
       expect(schema.getSubscriptionType()).to.equal(testType);
-      expect(schema.getTypeMap()).to.include.key('TestType');
+      expect(schema.getTypeMap()).to.include.keys('TestType');
     });
   });
 
@@ -185,7 +183,6 @@ describe('Type System: Schema', () => {
       expect(schema.getType('SomeSubtype')).to.equal(SomeSubtype);
 
       expect(schema.isSubType(SomeInterface, SomeSubtype)).to.equal(true);
-      expect(schema.isPossibleType(SomeInterface, SomeSubtype)).to.equal(true);
     });
 
     it("includes interface's thunk subtypes in the type map", () => {
@@ -261,7 +258,7 @@ describe('Type System: Schema', () => {
     });
   });
 
-  it('preserve order of use provided types', () => {
+  it('preserves the order of user provided types', () => {
     const aType = new GraphQLObjectType({
       name: 'A',
       fields: {
@@ -331,11 +328,11 @@ describe('Type System: Schema', () => {
       });
 
       it('checks the configuration for mistakes', () => {
-        // $DisableFlowOnNegativeTest
+        // $FlowExpectedError[incompatible-exact]
         expect(() => new GraphQLSchema(JSON.parse)).to.throw();
-        // $DisableFlowOnNegativeTest
+        // $FlowExpectedError[incompatible-call]
         expect(() => new GraphQLSchema({ types: {} })).to.throw();
-        // $DisableFlowOnNegativeTest
+        // $FlowExpectedError[incompatible-call]
         expect(() => new GraphQLSchema({ directives: {} })).to.throw();
       });
     });
@@ -354,6 +351,19 @@ describe('Type System: Schema', () => {
 
         expect(() => new GraphQLSchema({ query: QueryType })).to.throw(
           'Schema must contain uniquely named types but contains multiple types named "String".',
+        );
+      });
+
+      it('rejects a Schema when a provided type has no name', () => {
+        const query = new GraphQLObjectType({
+          name: 'Query',
+          fields: { foo: { type: GraphQLString } },
+        });
+        const types = [{}, query, {}];
+
+        // $FlowExpectedError[incompatible-call]
+        expect(() => new GraphQLSchema({ query, types })).to.throw(
+          'One of the provided types for building the Schema is missing a name.',
         );
       });
 

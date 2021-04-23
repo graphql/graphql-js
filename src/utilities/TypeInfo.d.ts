@@ -1,6 +1,7 @@
-import Maybe from '../tsutils/Maybe';
-import { Visitor } from '../language/visitor';
-import { ASTNode, ASTKindToNode, FieldNode } from '../language/ast';
+import { Maybe } from '../jsutils/Maybe';
+
+import { ASTVisitor } from '../language/visitor';
+import { ASTNode, FieldNode } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import {
@@ -21,21 +22,20 @@ import {
 export class TypeInfo {
   constructor(
     schema: GraphQLSchema,
-    // NOTE: this experimental optional second parameter is only needed in order
-    // to support non-spec-compliant code bases. You should never need to use it.
-    // It may disappear in the future.
-    getFieldDefFn?: getFieldDef,
     // Initial type may be provided in rare cases to facilitate traversals
     // beginning somewhere other than documents.
     initialType?: GraphQLType,
+
+    // @deprecated will be removed in 17.0.0
+    getFieldDefFn?: getFieldDef,
   );
 
   getType(): Maybe<GraphQLOutputType>;
   getParentType(): Maybe<GraphQLCompositeType>;
   getInputType(): Maybe<GraphQLInputType>;
   getParentInputType(): Maybe<GraphQLInputType>;
-  getFieldDef(): GraphQLField<any, Maybe<any>>;
-  getDefaultValue(): Maybe<any>;
+  getFieldDef(): Maybe<GraphQLField<unknown, unknown>>;
+  getDefaultValue(): Maybe<unknown>;
   getDirective(): Maybe<GraphQLDirective>;
   getArgument(): Maybe<GraphQLArgument>;
   getEnumValue(): Maybe<GraphQLEnumValue>;
@@ -47,7 +47,7 @@ type getFieldDef = (
   schema: GraphQLSchema,
   parentType: GraphQLType,
   fieldNode: FieldNode,
-) => Maybe<GraphQLField<any, any>>;
+) => Maybe<GraphQLField<unknown, unknown>>;
 
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance
@@ -55,5 +55,5 @@ type getFieldDef = (
  */
 export function visitWithTypeInfo(
   typeInfo: TypeInfo,
-  visitor: Visitor<ASTKindToNode>,
-): Visitor<ASTKindToNode>;
+  visitor: ASTVisitor,
+): ASTVisitor;

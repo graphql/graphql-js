@@ -1,21 +1,20 @@
-// @flow strict
+import type { PromiseOrValue } from './jsutils/PromiseOrValue';
+import { isPromise } from './jsutils/isPromise';
 
-import isPromise from './jsutils/isPromise';
-import { type PromiseOrValue } from './jsutils/PromiseOrValue';
-
+import type { Source } from './language/source';
 import { parse } from './language/parser';
-import { type Source } from './language/source';
 
 import { validate } from './validation/validate';
 
-import { validateSchema } from './type/validate';
-import { type GraphQLSchema } from './type/schema';
-import {
-  type GraphQLFieldResolver,
-  type GraphQLTypeResolver,
+import type {
+  GraphQLFieldResolver,
+  GraphQLTypeResolver,
 } from './type/definition';
+import type { GraphQLSchema } from './type/schema';
+import { validateSchema } from './type/validate';
 
-import { type ExecutionResult, execute } from './execution/execute';
+import type { ExecutionResult } from './execution/execute';
+import { execute } from './execution/execute';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -66,47 +65,10 @@ export type GraphQLArgs = {|
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
 |};
-declare function graphql(GraphQLArgs, ..._: []): Promise<ExecutionResult>;
-/* eslint-disable no-redeclare */
-declare function graphql(
-  schema: GraphQLSchema,
-  source: Source | string,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  typeResolver?: ?GraphQLTypeResolver<any, any>,
-): Promise<ExecutionResult>;
-export function graphql(
-  argsOrSchema,
-  source,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver,
-  typeResolver,
-) {
-  /* eslint-enable no-redeclare */
+
+export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
   // Always return a Promise for a consistent API.
-  return new Promise(resolve =>
-    resolve(
-      // Extract arguments from object args if provided.
-      arguments.length === 1
-        ? graphqlImpl(argsOrSchema)
-        : graphqlImpl({
-            schema: argsOrSchema,
-            source,
-            rootValue,
-            contextValue,
-            variableValues,
-            operationName,
-            fieldResolver,
-            typeResolver,
-          }),
-    ),
-  );
+  return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
 
 /**
@@ -115,43 +77,8 @@ export function graphql(
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
-declare function graphqlSync(GraphQLArgs, ..._: []): ExecutionResult;
-/* eslint-disable no-redeclare */
-declare function graphqlSync(
-  schema: GraphQLSchema,
-  source: Source | string,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  typeResolver?: ?GraphQLTypeResolver<any, any>,
-): ExecutionResult;
-export function graphqlSync(
-  argsOrSchema,
-  source,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver,
-  typeResolver,
-) {
-  /* eslint-enable no-redeclare */
-  // Extract arguments from object args if provided.
-  const result =
-    arguments.length === 1
-      ? graphqlImpl(argsOrSchema)
-      : graphqlImpl({
-          schema: argsOrSchema,
-          source,
-          rootValue,
-          contextValue,
-          variableValues,
-          operationName,
-          fieldResolver,
-          typeResolver,
-        });
+export function graphqlSync(args: GraphQLArgs): ExecutionResult {
+  const result = graphqlImpl(args);
 
   // Assert that the execution was synchronous.
   if (isPromise(result)) {

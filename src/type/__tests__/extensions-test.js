@@ -1,9 +1,7 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import invariant from '../../jsutils/invariant';
+import { invariant } from '../../jsutils/invariant';
 
 import { GraphQLSchema } from '../schema';
 import { GraphQLDirective } from '../directives';
@@ -18,7 +16,7 @@ import {
 
 const dummyType = new GraphQLScalarType({ name: 'DummyScalar' });
 
-function expectObjMap(value) {
+function expectObjMap(value: mixed) {
   invariant(value != null && typeof value === 'object');
   expect(Object.getPrototypeOf(value)).to.equal(null);
   return expect(value);

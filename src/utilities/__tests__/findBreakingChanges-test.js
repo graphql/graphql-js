@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -7,6 +5,7 @@ import { GraphQLSchema } from '../../type/schema';
 import {
   GraphQLSkipDirective,
   GraphQLIncludeDirective,
+  GraphQLSpecifiedByDirective,
   GraphQLDeprecatedDirective,
 } from '../../type/directives';
 
@@ -799,7 +798,11 @@ describe('findBreakingChanges', () => {
     const oldSchema = new GraphQLSchema({});
 
     const newSchema = new GraphQLSchema({
-      directives: [GraphQLSkipDirective, GraphQLIncludeDirective],
+      directives: [
+        GraphQLSkipDirective,
+        GraphQLIncludeDirective,
+        GraphQLSpecifiedByDirective,
+      ],
     });
 
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([

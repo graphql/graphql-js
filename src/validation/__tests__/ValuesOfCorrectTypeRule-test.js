@@ -1,6 +1,6 @@
-// @flow strict
-
 import { describe, it } from 'mocha';
+
+import { inspect } from '../../jsutils/inspect';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
@@ -13,11 +13,11 @@ import {
   expectValidationErrorsWithSchema,
 } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(ValuesOfCorrectTypeRule, queryStr);
 }
 
-function expectErrorsWithSchema(schema, queryStr) {
+function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
   return expectValidationErrorsWithSchema(
     schema,
     ValuesOfCorrectTypeRule,
@@ -25,8 +25,12 @@ function expectErrorsWithSchema(schema, queryStr) {
   );
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
+}
+
+function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
+  expectErrorsWithSchema(schema, queryStr).to.deep.equal([]);
 }
 
 describe('Validate: Values of correct type', () => {
@@ -923,31 +927,51 @@ describe('Validate: Values of correct type', () => {
           complicatedArgs {
             complexArgField(complexArg: {
               requiredField: true,
-              unknownField: "value"
+              invalidField: "value"
             })
           }
         }
       `).to.deep.equal([
         {
           message:
-            'Field "unknownField" is not defined by type "ComplexInput". Did you mean "booleanField", "intField", or "nonNullField"?',
+            'Field "invalidField" is not defined by type "ComplexInput". Did you mean "intField"?',
           locations: [{ line: 6, column: 15 }],
         },
       ]);
     });
 
     it('reports original error for custom scalar which throws', () => {
-      const expectedErrors = expectErrors(`
-        {
-          invalidArg(arg: 123)
-        }
-      `);
+      const customScalar = new GraphQLScalarType({
+        name: 'Invalid',
+        parseValue(value) {
+          throw new Error(
+            `Invalid scalar is always invalid: ${inspect(value)}`,
+          );
+        },
+      });
+
+      const schema = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'Query',
+          fields: {
+            invalidArg: {
+              type: GraphQLString,
+              args: { arg: { type: customScalar } },
+            },
+          },
+        }),
+      });
+
+      const expectedErrors = expectErrorsWithSchema(
+        schema,
+        '{ invalidArg(arg: 123) }',
+      );
 
       expectedErrors.to.deep.equal([
         {
           message:
             'Expected value of type "Invalid", found 123; Invalid scalar is always invalid: 123',
-          locations: [{ line: 3, column: 27 }],
+          locations: [{ line: 1, column: 19 }],
         },
       ]);
 
@@ -971,40 +995,45 @@ describe('Validate: Values of correct type', () => {
           fields: {
             invalidArg: {
               type: GraphQLString,
-              args: {
-                arg: { type: customScalar },
-              },
+              args: { arg: { type: customScalar } },
             },
           },
         }),
       });
 
-      const expectedErrors = expectErrorsWithSchema(
-        schema,
-        `
-        {
-          invalidArg(arg: 123)
-        }
-      `,
-      );
-
-      expectedErrors.to.deep.equal([
+      expectErrorsWithSchema(schema, '{ invalidArg(arg: 123) }').to.deep.equal([
         {
           message: 'Expected value of type "CustomScalar", found 123.',
-          locations: [{ line: 3, column: 27 }],
+          locations: [{ line: 1, column: 19 }],
         },
       ]);
     });
 
     it('allows custom scalar to accept complex literals', () => {
-      expectValid(`
-        {
-          test1: anyArg(arg: 123)
-          test2: anyArg(arg: "abc")
-          test3: anyArg(arg: [123, "abc"])
-          test4: anyArg(arg: {deep: [123, "abc"]})
-        }
-      `);
+      const customScalar = new GraphQLScalarType({ name: 'Any' });
+      const schema = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'Query',
+          fields: {
+            anyArg: {
+              type: GraphQLString,
+              args: { arg: { type: customScalar } },
+            },
+          },
+        }),
+      });
+
+      expectValidWithSchema(
+        schema,
+        `
+          {
+            test1: anyArg(arg: 123)
+            test2: anyArg(arg: "abc")
+            test3: anyArg(arg: [123, "abc"])
+            test4: anyArg(arg: {deep: [123, "abc"]})
+          }
+        `,
+      );
     });
   });
 

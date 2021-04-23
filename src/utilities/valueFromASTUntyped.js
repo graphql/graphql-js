@@ -1,12 +1,10 @@
-// @flow strict
-
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import keyValMap from '../jsutils/keyValMap';
-import { type ObjMap } from '../jsutils/ObjMap';
+import type { ObjMap } from '../jsutils/ObjMap';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { keyValMap } from '../jsutils/keyValMap';
 
 import { Kind } from '../language/kinds';
-import { type ValueNode } from '../language/ast';
+import type { ValueNode } from '../language/ast';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -40,17 +38,19 @@ export function valueFromASTUntyped(
     case Kind.BOOLEAN:
       return valueNode.value;
     case Kind.LIST:
-      return valueNode.values.map(node => valueFromASTUntyped(node, variables));
+      return valueNode.values.map((node) =>
+        valueFromASTUntyped(node, variables),
+      );
     case Kind.OBJECT:
       return keyValMap(
         valueNode.fields,
-        field => field.name.value,
-        field => valueFromASTUntyped(field.value, variables),
+        (field) => field.name.value,
+        (field) => valueFromASTUntyped(field.value, variables),
       );
     case Kind.VARIABLE:
       return variables?.[valueNode.name.value];
   }
 
-  // Not reachable. All possible value nodes have been considered.
+  // istanbul ignore next (Not reachable. All possible value nodes have been considered)
   invariant(false, 'Unexpected value node: ' + inspect((valueNode: empty)));
 }

@@ -1,11 +1,9 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
 
-import { type ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 
 /**
  * Lone anonymous operation
@@ -20,7 +18,7 @@ export function LoneAnonymousOperationRule(
   return {
     Document(node) {
       operationCount = node.definitions.filter(
-        definition => definition.kind === Kind.OPERATION_DEFINITION,
+        (definition) => definition.kind === Kind.OPERATION_DEFINITION,
       ).length;
     },
     OperationDefinition(node) {

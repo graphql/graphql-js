@@ -1,4 +1,5 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
+
 import { GraphQLError } from '../error/GraphQLError';
 import { ASTVisitor } from '../language/visitor';
 import {
@@ -17,15 +18,16 @@ import {
   GraphQLCompositeType,
   GraphQLField,
   GraphQLArgument,
+  GraphQLEnumValue,
 } from '../type/definition';
 import { TypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
-type VariableUsage = {
+interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
-  readonly defaultValue: Maybe<any>;
-};
+  readonly defaultValue: Maybe<unknown>;
+}
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -84,11 +86,13 @@ export class ValidationContext extends ASTValidationContext {
 
   getParentInputType(): Maybe<GraphQLInputType>;
 
-  getFieldDef(): Maybe<GraphQLField<any, any>>;
+  getFieldDef(): Maybe<GraphQLField<unknown, unknown>>;
 
   getDirective(): Maybe<GraphQLDirective>;
 
   getArgument(): Maybe<GraphQLArgument>;
+
+  getEnumValue(): Maybe<GraphQLEnumValue>;
 }
 
 export type ValidationRule = (context: ValidationContext) => ASTVisitor;

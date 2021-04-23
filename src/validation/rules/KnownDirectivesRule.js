@@ -1,23 +1,19 @@
-// @flow strict
-
-import inspect from '../../jsutils/inspect';
-import invariant from '../../jsutils/invariant';
+import { inspect } from '../../jsutils/inspect';
+import { invariant } from '../../jsutils/invariant';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
+import type { ASTNode, OperationTypeNode } from '../../language/ast';
+import type { DirectiveLocationEnum } from '../../language/directiveLocation';
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
-import { type OperationTypeNode } from '../../language/ast';
-import {
-  type DirectiveLocationEnum,
-  DirectiveLocation,
-} from '../../language/directiveLocation';
+import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { specifiedDirectives } from '../../type/directives';
 
-import {
-  type ValidationContext,
-  type SDLValidationContext,
+import type {
+  ValidationContext,
+  SDLValidationContext,
 } from '../ValidationContext';
 
 /**
@@ -42,7 +38,7 @@ export function KnownDirectivesRule(
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      locationsMap[def.name.value] = def.locations.map(name => name.value);
+      locationsMap[def.name.value] = def.locations.map((name) => name.value);
     }
   }
 
@@ -59,7 +55,7 @@ export function KnownDirectivesRule(
       }
 
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
-      if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
+      if (candidateLocation && !locations.includes(candidateLocation)) {
         context.reportError(
           new GraphQLError(
             `Directive "@${name}" may not be used on ${candidateLocation}.`,
@@ -71,7 +67,9 @@ export function KnownDirectivesRule(
   };
 }
 
-function getDirectiveLocationForASTPath(ancestors) {
+function getDirectiveLocationForASTPath(
+  ancestors: $ReadOnlyArray<ASTNode | $ReadOnlyArray<ASTNode>>,
+): DirectiveLocationEnum | void {
   const appliedTo = ancestors[ancestors.length - 1];
   invariant(!Array.isArray(appliedTo));
 
@@ -134,6 +132,6 @@ function getDirectiveLocationForOperation(
       return DirectiveLocation.SUBSCRIPTION;
   }
 
-  // Not reachable. All possible types have been considered.
+  // istanbul ignore next (Not reachable. All possible types have been considered)
   invariant(false, 'Unexpected operation: ' + inspect((operation: empty)));
 }

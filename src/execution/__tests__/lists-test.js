@@ -1,539 +1,223 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString, GraphQLInt } from '../../type/scalars';
-import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-} from '../../type/definition';
+import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { execute } from '../execute';
-
-// resolved() is shorthand for Promise.resolve()
-const resolved = Promise.resolve.bind(Promise);
-
-// rejected() is shorthand for Promise.reject()
-const rejected = Promise.reject.bind(Promise);
-
-/**
- * This function creates a test case passed to "it", there's a time delay
- * between when the test is created and when the test is run, so if testData
- * contains a rejection, testData should be a function that returns that
- * rejection so as not to trigger the "unhandled rejection" error watcher.
- */
-function check(testType, testData, expected) {
-  return async () => {
-    const data = { test: testData };
-
-    const dataType = new GraphQLObjectType({
-      name: 'DataType',
-      fields: () => ({
-        test: { type: testType },
-        nest: { type: dataType, resolve: () => data },
-      }),
-    });
-
-    const response = await execute({
-      schema: new GraphQLSchema({ query: dataType }),
-      document: parse('{ nest { test } }'),
-      contextValue: { test: testData },
-    });
-    expect(response).to.deep.equal(expected);
-  };
-}
+import { execute, executeSync } from '../execute';
 
 describe('Execute: Accepts any iterable as list value', () => {
-  it(
-    'Accepts a Set as a List value',
-    check(
-      GraphQLList(GraphQLString),
-      new Set(['apple', 'banana', 'apple', 'coconut']),
-      { data: { nest: { test: ['apple', 'banana', 'coconut'] } } },
-    ),
-  );
-
-  function* yieldItems() {
-    yield 'one';
-    yield 2;
-    yield true;
+  function complete(rootValue: mixed) {
+    return executeSync({
+      schema: buildSchema('type Query { listField: [String] }'),
+      document: parse('{ listField }'),
+      rootValue,
+    });
   }
 
-  it(
-    'Accepts an Generator function as a List value',
-    check(GraphQLList(GraphQLString), yieldItems(), {
-      data: { nest: { test: ['one', '2', 'true'] } },
-    }),
-  );
+  it('Accepts a Set as a List value', () => {
+    const listField = new Set(['apple', 'banana', 'apple', 'coconut']);
 
-  function getArgs(...args) {
-    return args;
-  }
+    expect(complete({ listField })).to.deep.equal({
+      data: { listField: ['apple', 'banana', 'coconut'] },
+    });
+  });
 
-  it(
-    'Accepts function arguments as a List value',
-    check(GraphQLList(GraphQLString), getArgs('one', 'two'), {
-      data: { nest: { test: ['one', 'two'] } },
-    }),
-  );
+  it('Accepts an Generator function as a List value', () => {
+    function* listField() {
+      yield 'one';
+      yield 2;
+      yield true;
+    }
 
-  it(
-    'Does not accept (Iterable) String-literal as a List value',
-    check(GraphQLList(GraphQLString), 'Singular', {
-      data: { nest: { test: null } },
+    expect(complete({ listField })).to.deep.equal({
+      data: { listField: ['one', '2', 'true'] },
+    });
+  });
+
+  it('Accepts function arguments as a List value', () => {
+    function getArgs(..._args: Array<string>) {
+      return arguments;
+    }
+    const listField = getArgs('one', 'two');
+
+    expect(complete({ listField })).to.deep.equal({
+      data: { listField: ['one', 'two'] },
+    });
+  });
+
+  it('Does not accept (Iterable) String-literal as a List value', () => {
+    const listField = 'Singular';
+
+    expect(complete({ listField })).to.deep.equal({
+      data: { listField: null },
       errors: [
         {
           message:
-            'Expected Iterable, but did not find one for field "DataType.test".',
-          locations: [{ line: 1, column: 10 }],
-          path: ['nest', 'test'],
+            'Expected Iterable, but did not find one for field "Query.listField".',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField'],
         },
       ],
-    }),
-  );
+    });
+  });
 });
 
 describe('Execute: Handles list nullability', () => {
-  describe('[T]', () => {
-    const type = GraphQLList(GraphQLInt);
+  async function complete(args: {| listField: mixed, as: string |}) {
+    const { listField, as } = args;
+    const schema = buildSchema(`type Query { listField: ${as} }`);
+    const document = parse('{ listField }');
 
-    describe('Array<T>', () => {
-      it(
-        'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
+    const result = await executeQuery(listField);
+    // Promise<Array<T>> === Array<T>
+    expect(await executeQuery(promisify(listField))).to.deep.equal(result);
+    if (Array.isArray(listField)) {
+      const listOfPromises = listField.map(promisify);
+
+      // Array<Promise<T>> === Array<T>
+      expect(await executeQuery(listOfPromises)).to.deep.equal(result);
+      // Promise<Array<Promise<T>>> === Array<T>
+      expect(await executeQuery(promisify(listOfPromises))).to.deep.equal(
+        result,
       );
+    }
+    return result;
 
-      it(
-        'Contains null',
-        check(type, [1, null, 2], { data: { nest: { test: [1, null, 2] } } }),
-      );
+    function executeQuery(listValue: mixed) {
+      return execute({ schema, document, rootValue: { listField: listValue } });
+    }
 
-      it('Returns null', check(type, null, { data: { nest: { test: null } } }));
+    function promisify(value: mixed): Promise<mixed> {
+      return value instanceof Error
+        ? Promise.reject(value)
+        : Promise.resolve(value);
+    }
+  }
+
+  it('Contains values', async () => {
+    const listField = [1, 2];
+
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: [1, 2] },
     });
-
-    describe('Promise<Array<T>>', () => {
-      it(
-        'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, resolved([1, null, 2]), {
-          data: { nest: { test: [1, null, 2] } },
-        }),
-      );
-
-      it(
-        'Returns null',
-        check(type, resolved(null), { data: { nest: { test: null } } }),
-      );
-
-      it(
-        'Rejected',
-        check(type, () => rejected(new Error('bad')), {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: { listField: [1, 2] },
     });
-
-    describe('Array<Promise<T>>', () => {
-      it(
-        'Contains values',
-        check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
-        }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: { test: [1, null, 2] } },
-        }),
-      );
-
-      it(
-        'Contains reject',
-        check(
-          type,
-          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
-          {
-            data: { nest: { test: [1, null, 2] } },
-            errors: [
-              {
-                message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
-              },
-            ],
-          },
-        ),
-      );
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: [1, 2] },
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: { listField: [1, 2] },
     });
   });
 
-  describe('[T]!', () => {
-    const type = GraphQLNonNull(GraphQLList(GraphQLInt));
+  it('Contains null', async () => {
+    const listField = [1, null, 2];
+    const errors = [
+      {
+        message: 'Cannot return null for non-nullable field Query.listField.',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField', 1],
+      },
+    ];
 
-    describe('Array<T>', () => {
-      it(
-        'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [1, null, 2], { data: { nest: { test: [1, null, 2] } } }),
-      );
-
-      it(
-        'Returns null',
-        check(type, null, {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: [1, null, 2] },
     });
-
-    describe('Promise<Array<T>>', () => {
-      it(
-        'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, resolved([1, null, 2]), {
-          data: { nest: { test: [1, null, 2] } },
-        }),
-      );
-
-      it(
-        'Returns null',
-        check(type, resolved(null), {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Rejected',
-        check(type, () => rejected(new Error('bad')), {
-          data: { nest: null },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: { listField: [1, null, 2] },
     });
-
-    describe('Array<Promise<T>>', () => {
-      it(
-        'Contains values',
-        check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
-        }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: { test: [1, null, 2] } },
-        }),
-      );
-
-      it(
-        'Contains reject',
-        check(
-          type,
-          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
-          {
-            data: { nest: { test: [1, null, 2] } },
-            errors: [
-              {
-                message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
-              },
-            ],
-          },
-        ),
-      );
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: null },
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: null,
+      errors,
     });
   });
 
-  describe('[T!]', () => {
-    const type = GraphQLList(GraphQLNonNull(GraphQLInt));
+  it('Returns null', async () => {
+    const listField = null;
+    const errors = [
+      {
+        message: 'Cannot return null for non-nullable field Query.listField.',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField'],
+      },
+    ];
 
-    describe('Array<T>', () => {
-      it(
-        'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [1, null, 2], {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it('Returns null', check(type, null, { data: { nest: { test: null } } }));
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: null },
     });
-
-    describe('Promise<Array<T>>', () => {
-      it(
-        'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, resolved([1, null, 2]), {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Returns null',
-        check(type, resolved(null), { data: { nest: { test: null } } }),
-      );
-
-      it(
-        'Rejected',
-        check(type, () => rejected(new Error('bad')), {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: null,
+      errors,
     });
-
-    describe('Array<Promise<T>>', () => {
-      it(
-        'Contains values',
-        check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
-        }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Contains reject',
-        check(
-          type,
-          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
-          {
-            data: { nest: { test: null } },
-            errors: [
-              {
-                message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
-              },
-            ],
-          },
-        ),
-      );
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: null },
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: null,
+      errors,
     });
   });
 
-  describe('[T!]!', () => {
-    const type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt)));
+  it('Contains error', async () => {
+    const listField = [1, new Error('bad'), 2];
+    const errors = [
+      {
+        message: 'bad',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField', 1],
+      },
+    ];
 
-    describe('Array<T>', () => {
-      it(
-        'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [1, null, 2], {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Returns null',
-        check(type, null, {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: [1, null, 2] },
+      errors,
     });
-
-    describe('Promise<Array<T>>', () => {
-      it(
-        'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, resolved([1, null, 2]), {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Returns null',
-        check(type, resolved(null), {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Rejected',
-        check(type, () => rejected(new Error('bad')), {
-          data: { nest: null },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: { listField: [1, null, 2] },
+      errors,
     });
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: null },
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: null,
+      errors,
+    });
+  });
 
-    describe('Array<Promise<T>>', () => {
-      it(
-        'Contains values',
-        check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
-        }),
-      );
+  it('Results in error', async () => {
+    const listField = new Error('bad');
+    const errors = [
+      {
+        message: 'bad',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField'],
+      },
+    ];
 
-      it(
-        'Contains null',
-        check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Contains reject',
-        check(
-          type,
-          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
-          {
-            data: { nest: null },
-            errors: [
-              {
-                message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
-              },
-            ],
-          },
-        ),
-      );
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: null },
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: null,
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+      data: { listField: null },
+      errors,
+    });
+    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+      data: null,
+      errors,
     });
   });
 });

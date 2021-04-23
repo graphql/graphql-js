@@ -1,4 +1,4 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
 
@@ -30,8 +30,10 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules?: ReadonlyArray<ValidationRule>,
-  typeInfo?: TypeInfo,
   options?: { maxErrors?: number },
+
+  // @deprecate will be removed in 17.0.0
+  typeInfo?: TypeInfo,
 ): ReadonlyArray<GraphQLError>;
 
 /**
@@ -41,7 +43,7 @@ export function validateSDL(
   documentAST: DocumentNode,
   schemaToExtend?: Maybe<GraphQLSchema>,
   rules?: ReadonlyArray<SDLValidationRule>,
-): Array<GraphQLError>;
+): Readonly<GraphQLError>;
 
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
@@ -49,7 +51,7 @@ export function validateSDL(
  *
  * @internal
  */
-export function assertValidSDL(documentAST: DocumentNode): undefined;
+export function assertValidSDL(documentAST: DocumentNode): void;
 
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
@@ -60,4 +62,4 @@ export function assertValidSDL(documentAST: DocumentNode): undefined;
 export function assertValidSDLExtension(
   documentAST: DocumentNode,
   schema: GraphQLSchema,
-): undefined;
+): void;

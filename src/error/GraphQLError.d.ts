@@ -1,4 +1,4 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
 
 import { ASTNode } from '../language/ast';
 import { Source } from '../language/source';
@@ -13,12 +13,12 @@ import { SourceLocation } from '../language/location';
 export class GraphQLError extends Error {
   constructor(
     message: string,
-    nodes?: ReadonlyArray<ASTNode> | ASTNode | undefined,
+    nodes?: Maybe<ReadonlyArray<ASTNode> | ASTNode>,
     source?: Maybe<Source>,
     positions?: Maybe<ReadonlyArray<number>>,
     path?: Maybe<ReadonlyArray<string | number>>,
     originalError?: Maybe<Error>,
-    extensions?: Maybe<{ [key: string]: any }>,
+    extensions?: Maybe<{ [key: string]: unknown }>,
   );
 
   /**
@@ -77,7 +77,7 @@ export class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  readonly extensions: { [key: string]: any } | undefined;
+  readonly extensions: { [key: string]: unknown } | undefined;
 }
 
 /**

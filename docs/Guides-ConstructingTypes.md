@@ -14,7 +14,7 @@ For example, let's say we are building a simple API that lets you fetch user dat
 
 ```js
 var express = require('express');
-var graphqlHTTP = require('express-graphql');
+var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 
 var schema = buildSchema(`
@@ -41,7 +41,7 @@ var fakeDatabase = {
 };
 
 var root = {
-  user: function({ id }) {
+  user: function ({ id }) {
     return fakeDatabase[id];
   },
 };
@@ -64,7 +64,7 @@ We can implement this same API without using GraphQL schema language:
 
 ```js
 var express = require('express');
-var graphqlHTTP = require('express-graphql');
+var { graphqlHTTP } = require('express-graphql');
 var graphql = require('graphql');
 
 // Maps id to User object
@@ -98,7 +98,7 @@ var queryType = new graphql.GraphQLObjectType({
       args: {
         id: { type: graphql.GraphQLString },
       },
-      resolve: function(_, { id }) {
+      resolve: function (_, { id }) {
         return fakeDatabase[id];
       },
     },

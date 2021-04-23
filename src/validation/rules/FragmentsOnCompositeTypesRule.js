@@ -1,15 +1,13 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
 import { print } from '../../language/printer';
-import { type ASTVisitor } from '../../language/visitor';
 
 import { isCompositeType } from '../../type/definition';
 
 import { typeFromAST } from '../../utilities/typeFromAST';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * Fragments on composite type

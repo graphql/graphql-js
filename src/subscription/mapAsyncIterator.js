@@ -1,77 +1,61 @@
-// @flow strict
-
-import { SYMBOL_ASYNC_ITERATOR } from '../polyfills/symbols';
-
-import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
-export default function mapAsyncIterator<T, U>(
-  iterable: AsyncIterable<T>,
-  callback: T => PromiseOrValue<U>,
-  rejectCallback?: any => PromiseOrValue<U>,
+export function mapAsyncIterator<T, U>(
+  iterable: AsyncIterable<T> | AsyncGenerator<T, void, void>,
+  callback: (T) => PromiseOrValue<U>,
 ): AsyncGenerator<U, void, void> {
-  // $FlowFixMe
-  const iteratorMethod = iterable[SYMBOL_ASYNC_ITERATOR];
-  const iterator: AsyncIterator<T> = iteratorMethod.call(iterable);
-  let $return;
-  let abruptClose;
-  // $FlowFixMe(>=0.68.0)
-  if (typeof iterator.return === 'function') {
-    $return = iterator.return;
-    abruptClose = error => {
-      const rethrow = () => Promise.reject(error);
-      return $return.call(iterator).then(rethrow, rethrow);
-    };
+  // $FlowFixMe[prop-missing]
+  const iteratorMethod = iterable[Symbol.asyncIterator];
+  const iterator: any = iteratorMethod.call(iterable);
+
+  async function abruptClose(error: mixed) {
+    if (typeof iterator.return === 'function') {
+      try {
+        await iterator.return();
+      } catch (_e) {
+        /* ignore error */
+      }
+    }
+    throw error;
   }
 
-  function mapResult(result) {
-    return result.done
-      ? result
-      : asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
-  }
+  async function mapResult(resultPromise: Promise<IteratorResult<T, void>>) {
+    try {
+      const result = await resultPromise;
 
-  let mapReject;
-  if (rejectCallback) {
-    // Capture rejectCallback to ensure it cannot be null.
-    const reject = rejectCallback;
-    mapReject = error =>
-      asyncMapValue(error, reject).then(iteratorResult, abruptClose);
+      if (result.done) {
+        return result;
+      }
+
+      return { value: await callback(result.value), done: false };
+    } catch (callbackError) {
+      return abruptClose(callbackError);
+    }
   }
 
   /* TODO: Flow doesn't support symbols as keys:
      https://github.com/facebook/flow/issues/3258 */
   return ({
-    next() {
-      return iterator.next().then(mapResult, mapReject);
+    next(): Promise<IteratorResult<U, void>> {
+      return mapResult(iterator.next());
     },
     return() {
-      return $return
-        ? $return.call(iterator).then(mapResult, mapReject)
+      return typeof iterator.return === 'function'
+        ? mapResult(iterator.return())
         : Promise.resolve({ value: undefined, done: true });
     },
-    throw(error) {
-      // $FlowFixMe(>=0.68.0)
+    throw(error?: mixed): Promise<IteratorResult<U, void>> {
       if (typeof iterator.throw === 'function') {
-        return iterator.throw(error).then(mapResult, mapReject);
+        return mapResult(iterator.throw(error));
       }
       return Promise.reject(error).catch(abruptClose);
     },
-    [SYMBOL_ASYNC_ITERATOR]() {
+    [Symbol.asyncIterator]() {
       return this;
     },
-  }: any);
-}
-
-function asyncMapValue<T, U>(
-  value: T,
-  callback: T => PromiseOrValue<U>,
-): Promise<U> {
-  return new Promise(resolve => resolve(callback(value)));
-}
-
-function iteratorResult<T>(value: T): IteratorResult<T, void> {
-  return { value, done: false };
+  }: $FlowFixMe);
 }

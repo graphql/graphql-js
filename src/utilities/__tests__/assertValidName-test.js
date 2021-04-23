@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -17,7 +15,7 @@ describe('assertValidName()', () => {
   });
 
   it('throws for non-strings', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError[incompatible-call]
     expect(() => assertValidName({})).to.throw('Expected name to be a string.');
   });
 

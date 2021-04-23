@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -9,7 +7,7 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
 
-import { execute } from '../execute';
+import { executeSync } from '../execute';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -30,9 +28,9 @@ const rootValue = {
   },
 };
 
-function executeTestQuery(query) {
+function executeTestQuery(query: string) {
   const document = parse(query);
-  return execute({ schema, document, rootValue });
+  return executeSync({ schema, document, rootValue });
 }
 
 describe('Execute: handles directives', () => {

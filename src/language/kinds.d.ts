@@ -1,12 +1,7 @@
 /**
  * The set of allowed kind values for AST nodes.
  */
-export const Kind: _Kind;
-
-/**
- * @internal
- */
-type _Kind = {
+export const Kind: Readonly<{
   // Name
   NAME: 'Name';
 
@@ -71,9 +66,9 @@ type _Kind = {
   UNION_TYPE_EXTENSION: 'UnionTypeExtension';
   ENUM_TYPE_EXTENSION: 'EnumTypeExtension';
   INPUT_OBJECT_TYPE_EXTENSION: 'InputObjectTypeExtension';
-};
+}>;
 
 /**
  * The enum type representing the possible kind values of AST nodes.
  */
-export type KindEnum = _Kind[keyof _Kind];
+export type KindEnum = typeof Kind[keyof typeof Kind];

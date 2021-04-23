@@ -1,26 +1,25 @@
-// @flow strict
-
-import arrayFrom from '../../polyfills/arrayFrom';
-
-import didYouMean from '../../jsutils/didYouMean';
-import suggestionList from '../../jsutils/suggestionList';
+import { didYouMean } from '../../jsutils/didYouMean';
+import { suggestionList } from '../../jsutils/suggestionList';
+import { naturalCompare } from '../../jsutils/naturalCompare';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import { type FieldNode } from '../../language/ast';
-import { type ASTVisitor } from '../../language/visitor';
+import type { FieldNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
-import { type GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema';
+import type {
+  GraphQLOutputType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+} from '../../type/definition';
 import {
-  type GraphQLOutputType,
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
   isObjectType,
   isInterfaceType,
   isAbstractType,
 } from '../../type/definition';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * Fields on correct type
@@ -106,7 +105,7 @@ function getSuggestedTypeNames(
     }
   }
 
-  return arrayFrom(suggestedTypes)
+  return [...suggestedTypes]
     .sort((typeA, typeB) => {
       // Suggest both interface and object types based on how common they are.
       const usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];
@@ -122,9 +121,9 @@ function getSuggestedTypeNames(
         return 1;
       }
 
-      return typeA.name.localeCompare(typeB.name);
+      return naturalCompare(typeA.name, typeB.name);
     })
-    .map(x => x.name);
+    .map((x) => x.name);
 }
 
 /**

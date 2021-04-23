@@ -1,17 +1,13 @@
-// @flow strict
+import type { ObjMap } from '../jsutils/ObjMap';
+import { keyMap } from '../jsutils/keyMap';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
 
-import objectValues from '../polyfills/objectValues';
-
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import { type ObjMap } from '../jsutils/ObjMap';
-
+import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { type ValueNode } from '../language/ast';
 
+import type { GraphQLInputType } from '../type/definition';
 import {
-  type GraphQLInputType,
   isLeafType,
   isInputObjectType,
   isListType,
@@ -111,8 +107,8 @@ export function valueFromAST(
       return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
-    const fieldNodes = keyMap(valueNode.fields, field => field.name.value);
-    for (const field of objectValues(type.getFields())) {
+    const fieldNodes = keyMap(valueNode.fields, (field) => field.name.value);
+    for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
@@ -131,8 +127,9 @@ export function valueFromAST(
     return coercedObj;
   }
 
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isLeafType(type)) {
-    // Scalars fulfill parsing a literal value via parseLiteral().
+    // Scalars and Enums fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
     // no value is returned.
     let result;
@@ -147,13 +144,16 @@ export function valueFromAST(
     return result;
   }
 
-  // Not reachable. All possible input types have been considered.
+  // istanbul ignore next (Not reachable. All possible input types have been considered)
   invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
 }
 
 // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
-function isMissingVariable(valueNode, variables) {
+function isMissingVariable(
+  valueNode: ValueNode,
+  variables: ?ObjMap<mixed>,
+): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&
     (variables == null || variables[valueNode.name.value] === undefined)

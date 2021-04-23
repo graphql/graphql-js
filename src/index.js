@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * GraphQL.js provides a reference implementation for the GraphQL specification
  * but is also a useful utility for operating on GraphQL files and building
@@ -56,6 +54,7 @@ export {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
+  GraphQLSpecifiedByDirective,
   // "Enum" of Type Kinds
   TypeKind,
   // Constant Deprecation Reason
@@ -137,7 +136,8 @@ export type {
   GraphQLWrappingType,
   GraphQLNullableType,
   GraphQLNamedType,
-  Thunk,
+  ThunkArray,
+  ThunkObjMap,
   GraphQLSchemaConfig,
   GraphQLDirectiveConfig,
   GraphQLArgument,
@@ -172,7 +172,9 @@ export type {
 
 // Parse and operate on GraphQL language source files.
 export {
+  Token,
   Source,
+  Location,
   getLocation,
   // Print source location
   printLocation,
@@ -208,16 +210,12 @@ export {
 export type {
   ParseOptions,
   SourceLocation,
-  Location,
-  Token,
   TokenKindEnum,
   KindEnum,
   DirectiveLocationEnum,
   // Visitor utilities
   ASTVisitor,
-  Visitor,
-  VisitFn,
-  VisitorKeyMap,
+  ASTVisitFn,
   // AST nodes
   ASTNode,
   ASTKindToNode,
@@ -280,13 +278,18 @@ export type {
 // Execute GraphQL queries.
 export {
   execute,
+  executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,
   getDirectiveValues,
 } from './execution/index';
 
-export type { ExecutionArgs, ExecutionResult } from './execution/index';
+export type {
+  ExecutionArgs,
+  ExecutionResult,
+  FormattedExecutionResult,
+} from './execution/index';
 
 export { subscribe, createSourceEventStream } from './subscription/index';
 export type { SubscriptionArgs } from './subscription/index';
@@ -332,6 +335,9 @@ export {
   UniqueFieldDefinitionNamesRule,
   UniqueDirectiveNamesRule,
   PossibleTypeExtensionsRule,
+  // Custom validation rules
+  NoDeprecatedCustomRule,
+  NoSchemaIntrospectionCustomRule,
 } from './validation/index';
 
 export type { ValidationRule } from './validation/index';
@@ -364,9 +370,6 @@ export {
   buildASTSchema,
   // Build a GraphQLSchema from a GraphQL schema language document.
   buildSchema,
-  // @deprecated: Get the description from a schema AST node and supports legacy
-  // syntax for specifying descriptions - will be removed in v16.
-  getDescription,
   // Extends an existing GraphQLSchema from a parsed GraphQL Schema
   // language AST.
   extendSchema,
@@ -413,8 +416,6 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-  // Report all deprecated usage within a GraphQL document.
-  findDeprecatedUsages,
 } from './utilities/index';
 
 export type {

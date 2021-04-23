@@ -1,10 +1,14 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
-import { type ASTVisitor } from '../../language/visitor';
+
+import type { ASTVisitor } from '../../language/visitor';
+import type {
+  EnumTypeDefinitionNode,
+  EnumTypeExtensionNode,
+} from '../../language/ast';
+
 import { isEnumType } from '../../type/definition';
 
-import { type SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext';
 
 /**
  * Unique enum value names
@@ -23,14 +27,16 @@ export function UniqueEnumValueNamesRule(
     EnumTypeExtension: checkValueUniqueness,
   };
 
-  function checkValueUniqueness(node) {
+  function checkValueUniqueness(
+    node: EnumTypeDefinitionNode | EnumTypeExtensionNode,
+  ) {
     const typeName = node.name.value;
 
     if (!knownValueNames[typeName]) {
       knownValueNames[typeName] = Object.create(null);
     }
 
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const valueNodes = node.values ?? [];
     const valueNames = knownValueNames[typeName];
 

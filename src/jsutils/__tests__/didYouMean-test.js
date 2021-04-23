@@ -1,9 +1,7 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import didYouMean from '../didYouMean';
+import { didYouMean } from '../didYouMean';
 
 describe('didYouMean', () => {
   it('Does accept an empty list', () => {

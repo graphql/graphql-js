@@ -1,15 +1,17 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
 
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from '../../language/visitor';
+import {
+  isTypeDefinitionNode,
+  isTypeExtensionNode,
+} from '../../language/predicates';
 
 import { specifiedDirectives } from '../../type/directives';
 
-import {
-  type SDLValidationContext,
-  type ValidationContext,
+import type {
+  SDLValidationContext,
+  ValidationContext,
 } from '../ValidationContext';
 
 /**
@@ -38,27 +40,47 @@ export function UniqueDirectivesPerLocationRule(
     }
   }
 
+  const schemaDirectives = Object.create(null);
+  const typeDirectivesMap = Object.create(null);
+
   return {
     // Many different AST nodes may contain directives. Rather than listing
     // them all, just listen for entering any node, and check to see if it
     // defines any directives.
     enter(node) {
-      if (node.directives != null) {
-        const knownDirectives = Object.create(null);
-        for (const directive of node.directives) {
-          const directiveName = directive.name.value;
+      if (node.directives == null) {
+        return;
+      }
 
-          if (uniqueDirectiveMap[directiveName]) {
-            if (knownDirectives[directiveName]) {
-              context.reportError(
-                new GraphQLError(
-                  `The directive "@${directiveName}" can only be used once at this location.`,
-                  [knownDirectives[directiveName], directive],
-                ),
-              );
-            } else {
-              knownDirectives[directiveName] = directive;
-            }
+      let seenDirectives;
+      if (
+        node.kind === Kind.SCHEMA_DEFINITION ||
+        node.kind === Kind.SCHEMA_EXTENSION
+      ) {
+        seenDirectives = schemaDirectives;
+      } else if (isTypeDefinitionNode(node) || isTypeExtensionNode(node)) {
+        const typeName = node.name.value;
+        seenDirectives = typeDirectivesMap[typeName];
+        if (seenDirectives === undefined) {
+          typeDirectivesMap[typeName] = seenDirectives = Object.create(null);
+        }
+      } else {
+        seenDirectives = Object.create(null);
+      }
+
+      for (const directive of node.directives) {
+        const directiveName = directive.name.value;
+
+        if (uniqueDirectiveMap[directiveName]) {
+          if (seenDirectives[directiveName]) {
+            context.reportError(
+              new GraphQLError(
+                `The directive "@${directiveName}" can only be used once at this location.`,
+                [seenDirectives[directiveName], directive],
+              ),
+            );
+          } else {
+            seenDirectives[directiveName] = directive;
           }
         }
       }

@@ -1,4 +1,5 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
+
 import { ValueNode } from '../language/ast';
 import { GraphQLInputType } from '../type/definition';
 
@@ -20,6 +21,6 @@ import { GraphQLInputType } from '../type/definition';
  *
  */
 export function astFromValue(
-  value: any,
+  value: unknown,
   type: GraphQLInputType,
 ): Maybe<ValueNode>;

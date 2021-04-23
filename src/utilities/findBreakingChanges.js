@@ -1,26 +1,25 @@
-// @flow strict
-
-import objectValues from '../polyfills/objectValues';
-
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import { keyMap } from '../jsutils/keyMap';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { naturalCompare } from '../jsutils/naturalCompare';
 
 import { print } from '../language/printer';
 import { visit } from '../language/visitor';
 
-import { type GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
+import type {
+  GraphQLField,
+  GraphQLType,
+  GraphQLInputType,
+  GraphQLNamedType,
+  GraphQLEnumType,
+  GraphQLUnionType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLInputObjectType,
+} from '../type/definition';
 import { isSpecifiedScalarType } from '../type/scalars';
 import {
-  type GraphQLField,
-  type GraphQLType,
-  type GraphQLInputType,
-  type GraphQLNamedType,
-  type GraphQLEnumType,
-  type GraphQLUnionType,
-  type GraphQLObjectType,
-  type GraphQLInterfaceType,
-  type GraphQLInputObjectType,
   isScalarType,
   isObjectType,
   isInterfaceType,
@@ -83,7 +82,7 @@ export function findBreakingChanges(
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const breakingChanges = findSchemaChanges(oldSchema, newSchema).filter(
-    change => change.type in BreakingChangeType,
+    (change) => change.type in BreakingChangeType,
   );
   return ((breakingChanges: any): Array<BreakingChange>);
 }
@@ -97,7 +96,7 @@ export function findDangerousChanges(
   newSchema: GraphQLSchema,
 ): Array<DangerousChange> {
   const dangerousChanges = findSchemaChanges(oldSchema, newSchema).filter(
-    change => change.type in DangerousChangeType,
+    (change) => change.type in DangerousChangeType,
   );
   return ((dangerousChanges: any): Array<DangerousChange>);
 }
@@ -157,7 +156,7 @@ function findDirectiveChanges(
     }
 
     for (const location of oldDirective.locations) {
-      if (newDirective.locations.indexOf(location) === -1) {
+      if (!newDirective.locations.includes(location)) {
         schemaChanges.push({
           type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
           description: `${location} was removed from ${oldDirective.name}.`,
@@ -176,8 +175,8 @@ function findTypeChanges(
   const schemaChanges = [];
 
   const typesDiff = diff(
-    objectValues(oldSchema.getTypeMap()),
-    objectValues(newSchema.getTypeMap()),
+    Object.values(oldSchema.getTypeMap()),
+    Object.values(newSchema.getTypeMap()),
   );
 
   for (const oldType of typesDiff.removed) {
@@ -225,8 +224,8 @@ function findInputObjectTypeChanges(
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const fieldsDiff = diff(
-    objectValues(oldType.getFields()),
-    objectValues(newType.getFields()),
+    Object.values(oldType.getFields()),
+    Object.values(newType.getFields()),
   );
 
   for (const newField of fieldsDiff.added) {
@@ -346,8 +345,8 @@ function findFieldChanges(
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const fieldsDiff = diff(
-    objectValues(oldType.getFields()),
-    objectValues(newType.getFields()),
+    Object.values(oldType.getFields()),
+    Object.values(newType.getFields()),
   );
 
   for (const oldField of fieldsDiff.removed) {
@@ -526,11 +525,12 @@ function typeKindName(type: GraphQLNamedType): string {
   if (isEnumType(type)) {
     return 'an Enum type';
   }
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isInputObjectType(type)) {
     return 'an Input type';
   }
 
-  // Not reachable. All possible named types have been considered.
+  // istanbul ignore next (Not reachable. All possible named types have been considered)
   invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 
@@ -540,8 +540,11 @@ function stringifyValue(value: mixed, type: GraphQLInputType): string {
 
   const sortedAST = visit(ast, {
     ObjectValue(objectNode) {
-      const fields = [...objectNode.fields].sort((fieldA, fieldB) =>
-        fieldA.name.value.localeCompare(fieldB.name.value),
+      // Make a copy since sort mutates array
+      const fields = [...objectNode.fields];
+
+      fields.sort((fieldA, fieldB) =>
+        naturalCompare(fieldA.name.value, fieldB.name.value),
       );
       return { ...objectNode, fields };
     },

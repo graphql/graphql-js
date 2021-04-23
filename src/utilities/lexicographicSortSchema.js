@@ -1,24 +1,27 @@
-// @flow strict
+import type { ObjMap } from '../jsutils/ObjMap';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { keyValMap } from '../jsutils/keyValMap';
+import { naturalCompare } from '../jsutils/naturalCompare';
 
-import objectValues from '../polyfills/objectValues';
-
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import keyValMap from '../jsutils/keyValMap';
-import { type ObjMap } from '../jsutils/ObjMap';
-
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLFieldConfigMap,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLInputFieldConfigMap,
+} from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import { isIntrospectionType } from '../type/introspection';
 import {
-  type GraphQLNamedType,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
   isListType,
   isNonNullType,
   isScalarType,
@@ -38,23 +41,25 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   const schemaConfig = schema.toConfig();
   const typeMap = keyValMap(
     sortByName(schemaConfig.types),
-    type => type.name,
+    (type) => type.name,
     sortNamedType,
   );
 
   return new GraphQLSchema({
     ...schemaConfig,
-    types: objectValues(typeMap),
+    types: Object.values(typeMap),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
     query: replaceMaybeType(schemaConfig.query),
     mutation: replaceMaybeType(schemaConfig.mutation),
     subscription: replaceMaybeType(schemaConfig.subscription),
   });
 
-  function replaceType(type) {
+  function replaceType<T: GraphQLType>(type: T): T {
     if (isListType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
     } else if (isNonNullType(type)) {
+      // $FlowFixMe[incompatible-return]
       return new GraphQLNonNull(replaceType(type.ofType));
     }
     return replaceNamedType(type);
@@ -64,36 +69,36 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return ((typeMap[type.name]: any): T);
   }
 
-  function replaceMaybeType(maybeType) {
+  function replaceMaybeType<T: ?GraphQLNamedType>(maybeType: T): T {
     return maybeType && replaceNamedType(maybeType);
   }
 
-  function sortDirective(directive) {
+  function sortDirective(directive: GraphQLDirective) {
     const config = directive.toConfig();
     return new GraphQLDirective({
       ...config,
-      locations: sortBy(config.locations, x => x),
+      locations: sortBy(config.locations, (x) => x),
       args: sortArgs(config.args),
     });
   }
 
-  function sortArgs(args) {
-    return sortObjMap(args, arg => ({
+  function sortArgs(args: GraphQLFieldConfigArgumentMap) {
+    return sortObjMap(args, (arg) => ({
       ...arg,
       type: replaceType(arg.type),
     }));
   }
 
-  function sortFields(fieldsMap) {
-    return sortObjMap(fieldsMap, field => ({
+  function sortFields(fieldsMap: GraphQLFieldConfigMap<mixed, mixed>) {
+    return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
       args: sortArgs(field.args),
     }));
   }
 
-  function sortInputFields(fieldsMap) {
-    return sortObjMap(fieldsMap, field => ({
+  function sortInputFields(fieldsMap: GraphQLInputFieldConfigMap) {
+    return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
     }));
@@ -103,7 +108,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return sortByName(arr).map(replaceNamedType);
   }
 
-  function sortNamedType(type) {
+  function sortNamedType(type: GraphQLNamedType): GraphQLNamedType {
     if (isScalarType(type) || isIntrospectionType(type)) {
       return type;
     }
@@ -134,9 +139,10 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       const config = type.toConfig();
       return new GraphQLEnumType({
         ...config,
-        values: sortObjMap(config.values),
+        values: sortObjMap(config.values, (value) => value),
       });
     }
+    // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
     if (isInputObjectType(type)) {
       const config = type.toConfig();
       return new GraphQLInputObjectType({
@@ -145,17 +151,16 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       });
     }
 
-    // Not reachable. All possible types have been considered.
+    // istanbul ignore next (Not reachable. All possible types have been considered)
     invariant(false, 'Unexpected type: ' + inspect((type: empty)));
   }
 }
 
-function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn?: T => R): ObjMap<R> {
+function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn: (T) => R): ObjMap<R> {
   const sortedMap = Object.create(null);
-  const sortedKeys = sortBy(Object.keys(map), x => x);
-  for (const key of sortedKeys) {
-    const value = map[key];
-    sortedMap[key] = sortValueFn ? sortValueFn(value) : value;
+  const sortedEntries = sortBy(Object.entries(map), ([key]) => key);
+  for (const [key, value] of sortedEntries) {
+    sortedMap[key] = sortValueFn(value);
   }
   return sortedMap;
 }
@@ -163,13 +168,16 @@ function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn?: T => R): ObjMap<R> {
 function sortByName<T: { +name: string, ... }>(
   array: $ReadOnlyArray<T>,
 ): Array<T> {
-  return sortBy(array, obj => obj.name);
+  return sortBy(array, (obj) => obj.name);
 }
 
-function sortBy<T>(array: $ReadOnlyArray<T>, mapToKey: T => string): Array<T> {
+function sortBy<T>(
+  array: $ReadOnlyArray<T>,
+  mapToKey: (T) => string,
+): Array<T> {
   return array.slice().sort((obj1, obj2) => {
     const key1 = mapToKey(obj1);
     const key2 = mapToKey(obj2);
-    return key1.localeCompare(key2);
+    return naturalCompare(key1, key2);
   });
 }

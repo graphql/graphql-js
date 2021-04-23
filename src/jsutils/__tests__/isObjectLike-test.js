@@ -1,10 +1,8 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import identityFunc from '../identityFunc';
-import isObjectLike from '../isObjectLike';
+import { identityFunc } from '../identityFunc';
+import { isObjectLike } from '../isObjectLike';
 
 describe('isObjectLike', () => {
   it('should return `true` for objects', () => {

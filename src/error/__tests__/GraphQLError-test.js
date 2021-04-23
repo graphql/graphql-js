@@ -1,10 +1,9 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
-import invariant from '../../jsutils/invariant';
+import { dedent } from '../../__testUtils__/dedent';
+
+import { invariant } from '../../jsutils/invariant';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
@@ -183,7 +182,7 @@ describe('printError', () => {
       fieldB.type,
     ]);
 
-    expect(printError(error) + '\n').to.equal(dedent`
+    expect(printError(error)).to.equal(dedent`
       Example error with two nodes
 
       SourceA:2:10

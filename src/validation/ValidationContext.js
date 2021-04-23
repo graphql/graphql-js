@@ -1,28 +1,29 @@
-// @flow strict
+import type { ObjMap } from '../jsutils/ObjMap';
 
-import { type ObjMap } from '../jsutils/ObjMap';
+import type { GraphQLError } from '../error/GraphQLError';
 
-import { type GraphQLError } from '../error/GraphQLError';
-
-import { Kind } from '../language/kinds';
-import { type ASTVisitor, visit } from '../language/visitor';
-import {
-  type DocumentNode,
-  type OperationDefinitionNode,
-  type VariableNode,
-  type SelectionSetNode,
-  type FragmentSpreadNode,
-  type FragmentDefinitionNode,
+import type { ASTVisitor } from '../language/visitor';
+import type {
+  DocumentNode,
+  OperationDefinitionNode,
+  VariableNode,
+  SelectionSetNode,
+  FragmentSpreadNode,
+  FragmentDefinitionNode,
 } from '../language/ast';
 
-import { type GraphQLSchema } from '../type/schema';
-import { type GraphQLDirective } from '../type/directives';
-import {
-  type GraphQLInputType,
-  type GraphQLOutputType,
-  type GraphQLCompositeType,
-  type GraphQLField,
-  type GraphQLArgument,
+import { Kind } from '../language/kinds';
+import { visit } from '../language/visitor';
+
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type {
+  GraphQLInputType,
+  GraphQLOutputType,
+  GraphQLCompositeType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
 } from '../type/definition';
 
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
@@ -49,7 +50,7 @@ export class ASTValidationContext {
     $ReadOnlyArray<FragmentDefinitionNode>,
   >;
 
-  constructor(ast: DocumentNode, onError: (err: GraphQLError) => void): void {
+  constructor(ast: DocumentNode, onError: (err: GraphQLError) => void) {
     this._ast = ast;
     this._fragments = undefined;
     this._fragmentSpreads = new Map();
@@ -66,19 +67,15 @@ export class ASTValidationContext {
   }
 
   getFragment(name: string): ?FragmentDefinitionNode {
-    let fragments = this._fragments;
-    if (!fragments) {
-      this._fragments = fragments = this.getDocument().definitions.reduce(
-        (frags, statement) => {
-          if (statement.kind === Kind.FRAGMENT_DEFINITION) {
-            frags[statement.name.value] = statement;
-          }
-          return frags;
-        },
-        Object.create(null),
-      );
+    if (!this._fragments) {
+      const fragments = (this._fragments = Object.create(null));
+      for (const defNode of this.getDocument().definitions) {
+        if (defNode.kind === Kind.FRAGMENT_DEFINITION) {
+          fragments[defNode.name.value] = defNode;
+        }
+      }
     }
-    return fragments[name];
+    return this._fragments[name];
   }
 
   getFragmentSpreads(
@@ -131,7 +128,7 @@ export class ASTValidationContext {
   }
 }
 
-export type ASTValidationRule = ASTValidationContext => ASTVisitor;
+export type ASTValidationRule = (ASTValidationContext) => ASTVisitor;
 
 export class SDLValidationContext extends ASTValidationContext {
   _schema: ?GraphQLSchema;
@@ -140,7 +137,7 @@ export class SDLValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     schema: ?GraphQLSchema,
     onError: (err: GraphQLError) => void,
-  ): void {
+  ) {
     super(ast, onError);
     this._schema = schema;
   }
@@ -150,7 +147,7 @@ export class SDLValidationContext extends ASTValidationContext {
   }
 }
 
-export type SDLValidationRule = SDLValidationContext => ASTVisitor;
+export type SDLValidationRule = (SDLValidationContext) => ASTVisitor;
 
 export class ValidationContext extends ASTValidationContext {
   _schema: GraphQLSchema;
@@ -166,7 +163,7 @@ export class ValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (err: GraphQLError) => void,
-  ): void {
+  ) {
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
@@ -243,6 +240,10 @@ export class ValidationContext extends ASTValidationContext {
   getArgument(): ?GraphQLArgument {
     return this._typeInfo.getArgument();
   }
+
+  getEnumValue(): ?GraphQLEnumValue {
+    return this._typeInfo.getEnumValue();
+  }
 }
 
-export type ValidationRule = ValidationContext => ASTVisitor;
+export type ValidationRule = (ValidationContext) => ASTVisitor;

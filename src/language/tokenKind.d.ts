@@ -2,9 +2,7 @@
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-export const TokenKind: _TokenKind;
-
-type _TokenKind = {
+export const TokenKind: Readonly<{
   SOF: '<SOF>';
   EOF: '<EOF>';
   BANG: '!';
@@ -27,9 +25,9 @@ type _TokenKind = {
   STRING: 'String';
   BLOCK_STRING: 'BlockString';
   COMMENT: 'Comment';
-};
+}>;
 
 /**
  * The enum type representing the token kinds values.
  */
-export type TokenKindEnum = _TokenKind[keyof _TokenKind];
+export type TokenKindEnum = typeof TokenKind[keyof typeof TokenKind];

@@ -1,5 +1,3 @@
-// @noflow
-
 'use strict';
 
 /**
@@ -16,7 +14,7 @@
  *  export { foo } from './bar.mjs';
  *
  */
-module.exports = function addExtensionToImportPaths(context) {
+module.exports = function addExtensionToImportPaths(context, { extension }) {
   const { types } = context;
 
   return {
@@ -34,10 +32,8 @@ module.exports = function addExtensionToImportPaths(context) {
 
     const source = path.node.source.value;
     if (source.startsWith('./') || source.startsWith('../')) {
-      if (!source.endsWith('.mjs')) {
-        const newSourceNode = types.stringLiteral(source + '.mjs');
-        path.get('source').replaceWith(newSourceNode);
-      }
+      const newSourceNode = types.stringLiteral(source + '.' + extension);
+      path.get('source').replaceWith(newSourceNode);
     }
   }
 };

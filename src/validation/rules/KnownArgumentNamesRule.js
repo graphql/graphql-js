@@ -1,18 +1,16 @@
-// @flow strict
-
-import didYouMean from '../../jsutils/didYouMean';
-import suggestionList from '../../jsutils/suggestionList';
+import { didYouMean } from '../../jsutils/didYouMean';
+import { suggestionList } from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
 
 import { specifiedDirectives } from '../../type/directives';
 
-import {
-  type ValidationContext,
-  type SDLValidationContext,
+import type {
+  ValidationContext,
+  SDLValidationContext,
 } from '../ValidationContext';
 
 /**
@@ -23,7 +21,8 @@ import {
  */
 export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
   return {
-    ...KnownArgumentNamesOnDirectives(context),
+    // eslint-disable-next-line new-cap
+    ...KnownArgumentNamesOnDirectivesRule(context),
     Argument(argNode) {
       const argDef = context.getArgument();
       const fieldDef = context.getFieldDef();
@@ -31,7 +30,7 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
-        const knownArgsNames = fieldDef.args.map(arg => arg.name);
+        const knownArgsNames = fieldDef.args.map((arg) => arg.name);
         const suggestions = suggestionList(argName, knownArgsNames);
         context.reportError(
           new GraphQLError(
@@ -48,7 +47,7 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 /**
  * @internal
  */
-export function KnownArgumentNamesOnDirectives(
+export function KnownArgumentNamesOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
   const directiveArgs = Object.create(null);
@@ -58,16 +57,16 @@ export function KnownArgumentNamesOnDirectives(
     ? schema.getDirectives()
     : specifiedDirectives;
   for (const directive of definedDirectives) {
-    directiveArgs[directive.name] = directive.args.map(arg => arg.name);
+    directiveArgs[directive.name] = directive.args.map((arg) => arg.name);
   }
 
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       const argsNodes = def.arguments ?? [];
 
-      directiveArgs[def.name.value] = argsNodes.map(arg => arg.name.value);
+      directiveArgs[def.name.value] = argsNodes.map((arg) => arg.name.value);
     }
   }
 
@@ -79,7 +78,7 @@ export function KnownArgumentNamesOnDirectives(
       if (directiveNode.arguments && knownArgs) {
         for (const argNode of directiveNode.arguments) {
           const argName = argNode.name.value;
-          if (knownArgs.indexOf(argName) === -1) {
+          if (!knownArgs.includes(argName)) {
             const suggestions = suggestionList(argName, knownArgs);
             context.reportError(
               new GraphQLError(

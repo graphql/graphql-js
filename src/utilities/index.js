@@ -1,5 +1,3 @@
-// @flow strict
-
 // Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.
 export { getIntrospectionQuery } from './getIntrospectionQuery';
@@ -46,12 +44,7 @@ export { buildASTSchema, buildSchema } from './buildASTSchema';
 export type { BuildSchemaOptions } from './buildASTSchema';
 
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
-export {
-  extendSchema,
-  // @deprecated: Get the description from a schema AST node and supports legacy
-  // syntax for specifying descriptions - will be removed in v16.
-  getDescription,
-} from './extendSchema';
+export { extendSchema } from './extendSchema';
 
 // Sort a GraphQLSchema.
 export { lexicographicSortSchema } from './lexicographicSortSchema';
@@ -110,6 +103,3 @@ export {
   findDangerousChanges,
 } from './findBreakingChanges';
 export type { BreakingChange, DangerousChange } from './findBreakingChanges';
-
-// Report all deprecated usage within a GraphQL document.
-export { findDeprecatedUsages } from './findDeprecatedUsages';

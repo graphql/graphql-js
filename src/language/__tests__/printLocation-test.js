@@ -1,9 +1,7 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import { dedent } from '../../__testUtils__/dedent';
 
 import { Source } from '../source';
 import { printSourceLocation } from '../printLocation';
@@ -18,7 +16,7 @@ describe('printSourceLocation', () => {
       line: 1,
       column: minifiedSource.body.indexOf('FIRST_ERROR_HERE') + 1,
     });
-    expect(firstLocation + '\n').to.equal(dedent`
+    expect(firstLocation).to.equal(dedent`
       GraphQL request:1:53
       1 | query SomeMinifiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String)
         |                                                     ^
@@ -29,7 +27,7 @@ describe('printSourceLocation', () => {
       line: 1,
       column: minifiedSource.body.indexOf('SECOND_ERROR_HERE') + 1,
     });
-    expect(secondLocation + '\n').to.equal(dedent`
+    expect(secondLocation).to.equal(dedent`
       GraphQL request:1:114
       1 | query SomeMinifiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String)
         | {someField(foo:$foo bar:$bar baz:SECOND_ERROR_HERE){fieldA fieldB{fieldC fieldD.
@@ -41,7 +39,7 @@ describe('printSourceLocation', () => {
       line: 1,
       column: minifiedSource.body.indexOf('THIRD_ERROR_HERE') + 1,
     });
-    expect(thirdLocation + '\n').to.equal(dedent`
+    expect(thirdLocation).to.equal(dedent`
       GraphQL request:1:166
       1 | query SomeMinifiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String)
         | {someField(foo:$foo bar:$bar baz:SECOND_ERROR_HERE){fieldA fieldB{fieldC fieldD.
@@ -56,7 +54,7 @@ describe('printSourceLocation', () => {
       { line: 1, column: 1 },
     );
 
-    expect(result + '\n').to.equal(dedent`
+    expect(result).to.equal(dedent`
       Test:9:1
       9 | *
         | ^
@@ -69,7 +67,7 @@ describe('printSourceLocation', () => {
       { line: 1, column: 1 },
     );
 
-    expect(result + '\n').to.equal(dedent`
+    expect(result).to.equal(dedent`
       Test:9:1
        9 | *
          | ^

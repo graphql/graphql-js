@@ -1,5 +1,3 @@
-// @flow strict
-
 const MAX_SUGGESTIONS = 5;
 
 /**
@@ -13,7 +11,7 @@ declare function didYouMean(
 ): string;
 
 // eslint-disable-next-line no-redeclare
-export default function didYouMean(firstArg, secondArg) {
+export function didYouMean(firstArg, secondArg) {
   const [subMessage, suggestionsArg] =
     typeof firstArg === 'string'
       ? [firstArg, secondArg]
@@ -24,7 +22,7 @@ export default function didYouMean(firstArg, secondArg) {
     message += subMessage + ' ';
   }
 
-  const suggestions = suggestionsArg.map(x => `"${x}"`);
+  const suggestions = suggestionsArg.map((x) => `"${x}"`);
   switch (suggestions.length) {
     case 0:
       return '';

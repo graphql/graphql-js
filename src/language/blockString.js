@@ -1,5 +1,3 @@
-// @flow strict
-
 /**
  * Produces the value of a block string from its parsed raw value, similar to
  * CoffeeScript's block string, Python's docstring trim or Ruby's strip_heredoc.
@@ -13,7 +11,7 @@ export function dedentBlockStringValue(rawString: string): string {
   const lines = rawString.split(/\r\n|[\n\r]/g);
 
   // Remove common indentation from all lines but first.
-  const commonIndent = getBlockStringIndentation(lines);
+  const commonIndent = getBlockStringIndentation(rawString);
 
   if (commonIndent !== 0) {
     for (let i = 1; i < lines.length; i++) {
@@ -22,52 +20,68 @@ export function dedentBlockStringValue(rawString: string): string {
   }
 
   // Remove leading and trailing blank lines.
-  while (lines.length > 0 && isBlank(lines[0])) {
-    lines.shift();
+  let startLine = 0;
+  while (startLine < lines.length && isBlank(lines[startLine])) {
+    ++startLine;
   }
-  while (lines.length > 0 && isBlank(lines[lines.length - 1])) {
-    lines.pop();
+
+  let endLine = lines.length;
+  while (endLine > startLine && isBlank(lines[endLine - 1])) {
+    --endLine;
   }
 
   // Return a string of the lines joined with U+000A.
-  return lines.join('\n');
+  return lines.slice(startLine, endLine).join('\n');
 }
+
+function isBlank(str: string): boolean {
+  for (let i = 0; i < str.length; ++i) {
+    if (str[i] !== ' ' && str[i] !== '\t') {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /**
  * @internal
  */
-export function getBlockStringIndentation(
-  lines: $ReadOnlyArray<string>,
-): number {
+export function getBlockStringIndentation(value: string): number {
+  let isFirstLine = true;
+  let isEmptyLine = true;
+  let indent = 0;
   let commonIndent = null;
 
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    const indent = leadingWhitespace(line);
-    if (indent === line.length) {
-      continue; // skip empty lines
-    }
-
-    if (commonIndent === null || indent < commonIndent) {
-      commonIndent = indent;
-      if (commonIndent === 0) {
+  for (let i = 0; i < value.length; ++i) {
+    switch (value.charCodeAt(i)) {
+      case 13: //  \r
+        if (value.charCodeAt(i + 1) === 10) {
+          ++i; // skip \r\n as one symbol
+        }
+      // falls through
+      case 10: //  \n
+        isFirstLine = false;
+        isEmptyLine = true;
+        indent = 0;
         break;
-      }
+      case 9: //   \t
+      case 32: //  <space>
+        ++indent;
+        break;
+      default:
+        if (
+          isEmptyLine &&
+          !isFirstLine &&
+          (commonIndent === null || indent < commonIndent)
+        ) {
+          commonIndent = indent;
+        }
+        isEmptyLine = false;
     }
   }
 
-  return commonIndent === null ? 0 : commonIndent;
-}
-
-function leadingWhitespace(str) {
-  let i = 0;
-  while (i < str.length && (str[i] === ' ' || str[i] === '\t')) {
-    i++;
-  }
-  return i;
-}
-
-function isBlank(str) {
-  return leadingWhitespace(str) === str.length;
+  return commonIndent ?? 0;
 }
 
 /**
@@ -79,21 +93,24 @@ function isBlank(str) {
  */
 export function printBlockString(
   value: string,
-  indentation?: string = '',
-  preferMultipleLines?: boolean = false,
+  preferMultipleLines: boolean = false,
 ): string {
-  const isSingleLine = value.indexOf('\n') === -1;
+  const isSingleLine = !value.includes('\n');
   const hasLeadingSpace = value[0] === ' ' || value[0] === '\t';
   const hasTrailingQuote = value[value.length - 1] === '"';
+  const hasTrailingSlash = value[value.length - 1] === '\\';
   const printAsMultipleLines =
-    !isSingleLine || hasTrailingQuote || preferMultipleLines;
+    !isSingleLine ||
+    hasTrailingQuote ||
+    hasTrailingSlash ||
+    preferMultipleLines;
 
   let result = '';
   // Format a multi-line block quote to account for leading space.
   if (printAsMultipleLines && !(isSingleLine && hasLeadingSpace)) {
-    result += '\n' + indentation;
+    result += '\n';
   }
-  result += indentation ? value.replace(/\n/g, '\n' + indentation) : value;
+  result += value;
   if (printAsMultipleLines) {
     result += '\n';
   }

@@ -1,20 +1,17 @@
-// @flow strict
-
-import arrayFrom from '../polyfills/arrayFrom';
-import objectValues from '../polyfills/objectValues';
-
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import didYouMean from '../jsutils/didYouMean';
-import isObjectLike from '../jsutils/isObjectLike';
-import isCollection from '../jsutils/isCollection';
-import suggestionList from '../jsutils/suggestionList';
-import printPathArray from '../jsutils/printPathArray';
-import { type Path, addPath, pathToArray } from '../jsutils/Path';
+import type { Path } from '../jsutils/Path';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { didYouMean } from '../jsutils/didYouMean';
+import { isObjectLike } from '../jsutils/isObjectLike';
+import { suggestionList } from '../jsutils/suggestionList';
+import { printPathArray } from '../jsutils/printPathArray';
+import { addPath, pathToArray } from '../jsutils/Path';
+import { isIterableObject } from '../jsutils/isIterableObject';
 
 import { GraphQLError } from '../error/GraphQLError';
+
+import type { GraphQLInputType } from '../type/definition';
 import {
-  type GraphQLInputType,
   isLeafType,
   isInputObjectType,
   isListType,
@@ -33,7 +30,7 @@ type OnErrorCB = (
 export function coerceInputValue(
   inputValue: mixed,
   type: GraphQLInputType,
-  onError?: OnErrorCB = defaultOnError,
+  onError: OnErrorCB = defaultOnError,
 ): mixed {
   return coerceInputValueImpl(inputValue, type, onError);
 }
@@ -42,7 +39,7 @@ function defaultOnError(
   path: $ReadOnlyArray<string | number>,
   invalidValue: mixed,
   error: GraphQLError,
-) {
+): void {
   let errorPrefix = 'Invalid value ' + inspect(invalidValue);
   if (path.length > 0) {
     errorPrefix += ` at "value${printPathArray(path)}"`;
@@ -78,9 +75,9 @@ function coerceInputValueImpl(
 
   if (isListType(type)) {
     const itemType = type.ofType;
-    if (isCollection(inputValue)) {
-      return arrayFrom(inputValue, (itemValue, index) => {
-        const itemPath = addPath(path, index);
+    if (isIterableObject(inputValue)) {
+      return Array.from(inputValue, (itemValue, index) => {
+        const itemPath = addPath(path, index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
     }
@@ -101,7 +98,7 @@ function coerceInputValueImpl(
     const coercedValue = {};
     const fieldDefs = type.getFields();
 
-    for (const field of objectValues(fieldDefs)) {
+    for (const field of Object.values(fieldDefs)) {
       const fieldValue = inputValue[field.name];
 
       if (fieldValue === undefined) {
@@ -124,7 +121,7 @@ function coerceInputValueImpl(
         fieldValue,
         field.type,
         onError,
-        addPath(path, field.name),
+        addPath(path, field.name, type.name),
       );
     }
 
@@ -148,12 +145,13 @@ function coerceInputValueImpl(
     return coercedValue;
   }
 
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isLeafType(type)) {
     let parseResult;
 
-    // Scalars determine if a input value is valid via parseValue(), which can
-    // throw to indicate failure. If it throws, maintain a reference to
-    // the original error.
+    // Scalars and Enums determine if a input value is valid via parseValue(),
+    // which can throw to indicate failure. If it throws, maintain a reference
+    // to the original error.
     try {
       parseResult = type.parseValue(inputValue);
     } catch (error) {
@@ -185,6 +183,6 @@ function coerceInputValueImpl(
     return parseResult;
   }
 
-  // Not reachable. All possible input types have been considered.
+  // istanbul ignore next (Not reachable. All possible input types have been considered)
   invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
 }

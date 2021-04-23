@@ -36,8 +36,8 @@ fetch('/graphql', {
   },
   body: JSON.stringify({ query: '{ hello }' }),
 })
-  .then(r => r.json())
-  .then(data => console.log('data returned:', data));
+  .then((r) => r.json())
+  .then((data) => console.log('data returned:', data));
 ```
 
 You should see the data returned, logged in the console:
@@ -76,8 +76,8 @@ fetch('/graphql', {
     variables: { dice, sides },
   }),
 })
-  .then(r => r.json())
-  .then(data => console.log('data returned:', data));
+  .then((r) => r.json())
+  .then((data) => console.log('data returned:', data));
 ```
 
 Using this syntax for variables is a good idea because it automatically prevents bugs due to escaping, and it makes it easier to monitor your server.

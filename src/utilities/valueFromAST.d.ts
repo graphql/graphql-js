@@ -1,4 +1,6 @@
-import Maybe from '../tsutils/Maybe';
+import { Maybe } from '../jsutils/Maybe';
+import { ObjMap } from '../jsutils/ObjMap';
+
 import { ValueNode } from '../language/ast';
 import { GraphQLInputType } from '../type/definition';
 
@@ -25,5 +27,5 @@ import { GraphQLInputType } from '../type/definition';
 export function valueFromAST(
   valueNode: Maybe<ValueNode>,
   type: GraphQLInputType,
-  variables?: Maybe<{ [key: string]: any }>,
-): any;
+  variables?: Maybe<ObjMap<unknown>>,
+): unknown;

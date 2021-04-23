@@ -1,8 +1,7 @@
-// @flow strict
-
 export type Path = {|
   +prev: Path | void,
   +key: string | number,
+  +typename: string | void,
 |};
 
 /**
@@ -11,8 +10,9 @@ export type Path = {|
 export function addPath(
   prev: $ReadOnly<Path> | void,
   key: string | number,
+  typename: string | void,
 ): Path {
-  return { prev, key };
+  return { prev, key, typename };
 }
 
 /**

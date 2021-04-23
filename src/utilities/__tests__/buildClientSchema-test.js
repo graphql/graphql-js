@@ -1,9 +1,7 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import { dedent } from '../../__testUtils__/dedent';
 
 import { graphqlSync } from '../../graphql';
 
@@ -33,12 +31,10 @@ import { introspectionFromSchema } from '../introspectionFromSchema';
  * returns that schema printed as SDL.
  */
 function cycleIntrospection(sdlString: string): string {
-  const options = { directiveIsRepeatable: true };
-
   const serverSchema = buildSchema(sdlString);
-  const initialIntrospection = introspectionFromSchema(serverSchema, options);
+  const initialIntrospection = introspectionFromSchema(serverSchema);
   const clientSchema = buildClientSchema(initialIntrospection);
-  const secondIntrospection = introspectionFromSchema(clientSchema, options);
+  const secondIntrospection = introspectionFromSchema(clientSchema);
 
   /**
    * If the client then runs the introspection query against the client-side
@@ -76,8 +72,7 @@ describe('Type System: build schema from introspection', () => {
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
 
-    // $DisableFlowOnNegativeTest
-    delete introspection.__schema.queryType;
+    delete (introspection: any).__schema.queryType;
 
     const clientSchema = buildClientSchema(introspection);
     expect(clientSchema.getQueryType()).to.equal(null);
@@ -386,7 +381,6 @@ describe('Type System: build schema from introspection', () => {
         name: 'VEGETABLES',
         description: 'Foods that are vegetables.',
         value: 'VEGETABLES',
-        isDeprecated: false,
         deprecationReason: null,
         extensions: undefined,
         astNode: undefined,
@@ -395,7 +389,6 @@ describe('Type System: build schema from introspection', () => {
         name: 'FRUITS',
         description: null,
         value: 'FRUITS',
-        isDeprecated: false,
         deprecationReason: null,
         extensions: undefined,
         astNode: undefined,
@@ -404,7 +397,6 @@ describe('Type System: build schema from introspection', () => {
         name: 'OILS',
         description: null,
         value: 'OILS',
-        isDeprecated: true,
         deprecationReason: 'Too fatty',
         extensions: undefined,
         astNode: undefined,
@@ -480,8 +472,7 @@ describe('Type System: build schema from introspection', () => {
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
 
-    // $DisableFlowOnNegativeTest
-    delete introspection.__schema.directives;
+    delete (introspection: any).__schema.directives;
 
     const clientSchema = buildClientSchema(introspection);
 
@@ -492,6 +483,14 @@ describe('Type System: build schema from introspection', () => {
 
   it('builds a schema aware of deprecation', () => {
     const sdl = dedent`
+      directive @someDirective(
+        """This is a shiny new argument"""
+        shinyArg: SomeInputObject
+
+        """This was our design mistake :("""
+        oldArg: String @deprecated(reason: "Use shinyArg")
+      ) on QUERY
+
       enum Color {
         """So rosy"""
         RED
@@ -506,13 +505,32 @@ describe('Type System: build schema from introspection', () => {
         MAUVE @deprecated(reason: "No longer in fashion")
       }
 
+      input SomeInputObject {
+        """Nothing special about it, just deprecated for some unknown reason"""
+        oldField: String @deprecated(reason: "Don't use it, use newField instead!")
+
+        """Same field but with a new name"""
+        newField: String
+      }
+
       type Query {
         """This is a shiny string field"""
         shinyString: String
 
         """This is a deprecated string field"""
         deprecatedString: String @deprecated(reason: "Use shinyString")
+
+        """Color of a week"""
         color: Color
+
+        """Some random field"""
+        someField(
+          """This is a shiny new argument"""
+          shinyArg: SomeInputObject
+
+          """This was our design mistake :("""
+          oldArg: String @deprecated(reason: "Use shinyArg")
+        ): String
       }
     `;
 
@@ -521,12 +539,30 @@ describe('Type System: build schema from introspection', () => {
 
   it('builds a schema with empty deprecation reasons', () => {
     const sdl = dedent`
+      directive @someDirective(someArg: SomeInputObject @deprecated(reason: "")) on QUERY
+
       type Query {
-        someField: String @deprecated(reason: "")
+        someField(someArg: SomeInputObject @deprecated(reason: "")): SomeEnum @deprecated(reason: "")
+      }
+
+      input SomeInputObject {
+        someInputField: String @deprecated(reason: "")
       }
 
       enum SomeEnum {
         SOME_VALUE @deprecated(reason: "")
+      }
+    `;
+
+    expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
+  it('builds a schema with specifiedBy url', () => {
+    const sdl = dedent`
+      scalar Foo @specifiedBy(url: "https://example.com/foo_spec")
+
+      type Query {
+        foo: Foo
       }
     `;
 
@@ -556,7 +592,7 @@ describe('Type System: build schema from introspection', () => {
     expect(result.data).to.deep.equal({ foo: 'bar' });
   });
 
-  describe('can build invalid schema', () => {
+  it('can build invalid schema', () => {
     const schema = buildSchema('type Query', { assumeValid: true });
 
     const introspection = introspectionFromSchema(schema);
@@ -589,12 +625,12 @@ describe('Type System: build schema from introspection', () => {
     `);
 
     it('throws when introspection is missing __schema property', () => {
-      // $DisableFlowOnNegativeTest
+      // $FlowExpectedError[incompatible-call]
       expect(() => buildClientSchema(null)).to.throw(
         'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: null.',
       );
 
-      // $DisableFlowOnNegativeTest
+      // $FlowExpectedError[prop-missing]
       expect(() => buildClientSchema({})).to.throw(
         'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: {}.',
       );
@@ -603,8 +639,7 @@ describe('Type System: build schema from introspection', () => {
     it('throws when referenced unknown type', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
-      // $DisableFlowOnNegativeTest
-      introspection.__schema.types = introspection.__schema.types.filter(
+      (introspection: any).__schema.types = introspection.__schema.types.filter(
         ({ name }) => name !== 'Query',
       );
 
@@ -621,8 +656,7 @@ describe('Type System: build schema from introspection', () => {
       `);
       const introspection = introspectionFromSchema(schema);
 
-      // $DisableFlowOnNegativeTest
-      introspection.__schema.types = introspection.__schema.types.filter(
+      (introspection: any).__schema.types = introspection.__schema.types.filter(
         ({ name }) => name !== 'Float',
       );
 
@@ -636,8 +670,7 @@ describe('Type System: build schema from introspection', () => {
 
       expect(introspection).to.have.nested.property('__schema.queryType.name');
 
-      // $DisableFlowOnNegativeTest
-      delete introspection.__schema.queryType.name;
+      delete (introspection: any).__schema.queryType.name;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Unknown type reference: {}.',
@@ -652,8 +685,7 @@ describe('Type System: build schema from introspection', () => {
 
       expect(queryTypeIntrospection).to.have.property('kind');
 
-      // $DisableFlowOnNegativeTest
-      delete queryTypeIntrospection.kind;
+      delete (queryTypeIntrospection: any).kind;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: { name: "Query", .* }\./,
@@ -668,8 +700,7 @@ describe('Type System: build schema from introspection', () => {
 
       expect(queryTypeIntrospection).to.have.property('interfaces');
 
-      // $DisableFlowOnNegativeTest
-      delete queryTypeIntrospection.interfaces;
+      delete (queryTypeIntrospection: any).interfaces;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing interfaces: { kind: "OBJECT", name: "Query", .* }\./,
@@ -683,8 +714,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someInterfaceIntrospection).to.have.property('interfaces');
-      // $DisableFlowOnNegativeTest
-      someInterfaceIntrospection.interfaces = null;
+      (someInterfaceIntrospection: any).interfaces = null;
 
       const clientSchema = buildClientSchema(introspection);
       expect(printSchema(clientSchema)).to.equal(printSchema(dummySchema));
@@ -697,9 +727,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(queryTypeIntrospection).to.have.property('fields');
-
-      // $DisableFlowOnNegativeTest
-      delete queryTypeIntrospection.fields;
+      delete (queryTypeIntrospection: any).fields;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing fields: { kind: "OBJECT", name: "Query", .* }\./,
@@ -713,9 +741,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(queryTypeIntrospection).to.have.nested.property('fields[0].args');
-
-      // $DisableFlowOnNegativeTest
-      delete queryTypeIntrospection.fields[0].args;
+      delete (queryTypeIntrospection: any).fields[0].args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing field args: { name: "foo", .* }\./,
@@ -732,8 +758,7 @@ describe('Type System: build schema from introspection', () => {
         'fields[0].args[0].type.name',
         'String',
       );
-      // $DisableFlowOnNegativeTest
-      queryTypeIntrospection.fields[0].args[0].type.name = 'SomeUnion';
+      (queryTypeIntrospection: any).fields[0].args[0].type.name = 'SomeUnion';
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Introspection must provide input type for arguments, but received: SomeUnion.',
@@ -750,8 +775,7 @@ describe('Type System: build schema from introspection', () => {
         'fields[0].type.name',
         'String',
       );
-      // $DisableFlowOnNegativeTest
-      queryTypeIntrospection.fields[0].type.name = 'SomeInputObject';
+      (queryTypeIntrospection: any).fields[0].type.name = 'SomeInputObject';
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Introspection must provide output type for fields, but received: SomeInputObject.',
@@ -765,9 +789,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someUnionIntrospection).to.have.property('possibleTypes');
-
-      // $DisableFlowOnNegativeTest
-      delete someUnionIntrospection.possibleTypes;
+      delete (someUnionIntrospection: any).possibleTypes;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing possibleTypes: { kind: "UNION", name: "SomeUnion",.* }\./,
@@ -781,9 +803,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someEnumIntrospection).to.have.property('enumValues');
-
-      // $DisableFlowOnNegativeTest
-      delete someEnumIntrospection.enumValues;
+      delete (someEnumIntrospection: any).enumValues;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing enumValues: { kind: "ENUM", name: "SomeEnum", .* }\./,
@@ -797,9 +817,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(someInputObjectIntrospection).to.have.property('inputFields');
-
-      // $DisableFlowOnNegativeTest
-      delete someInputObjectIntrospection.inputFields;
+      delete (someInputObjectIntrospection: any).inputFields;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing inputFields: { kind: "INPUT_OBJECT", name: "SomeInputObject", .* }\./,
@@ -814,9 +832,7 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         locations: ['QUERY'],
       });
-
-      // $DisableFlowOnNegativeTest
-      delete someDirectiveIntrospection.locations;
+      delete (someDirectiveIntrospection: any).locations;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing directive locations: { name: "SomeDirective", .* }\./,
@@ -831,9 +847,7 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         args: [],
       });
-
-      // $DisableFlowOnNegativeTest
-      delete someDirectiveIntrospection.args;
+      delete (someDirectiveIntrospection: any).args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing directive args: { name: "SomeDirective", .* }\./,
@@ -895,7 +909,7 @@ describe('Type System: build schema from introspection', () => {
       const introspection = introspectionFromSchema(schema);
 
       const fooIntrospection = introspection.__schema.types.find(
-        type => type.name === 'Foo',
+        (type) => type.name === 'Foo',
       );
       expect(fooIntrospection).to.deep.include({
         name: 'Foo',
@@ -919,7 +933,7 @@ describe('Type System: build schema from introspection', () => {
       const introspection = introspectionFromSchema(schema);
 
       const fooIntrospection = introspection.__schema.types.find(
-        type => type.name === 'Foo',
+        (type) => type.name === 'Foo',
       );
       expect(fooIntrospection).to.deep.include({
         name: 'Foo',

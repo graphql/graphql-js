@@ -1,9 +1,9 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
+
+import type { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
@@ -12,11 +12,11 @@ import { FieldsOnCorrectTypeRule } from '../rules/FieldsOnCorrectTypeRule';
 
 import { expectValidationErrors } from './harness';
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrors(FieldsOnCorrectTypeRule, queryStr);
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 
@@ -257,7 +257,7 @@ describe('Validate: Fields on correct type', () => {
   });
 
   describe('Fields on correct type error message', () => {
-    function expectErrorMessage(schema, queryStr) {
+    function expectErrorMessage(schema: GraphQLSchema, queryStr: string) {
       const errors = validate(schema, parse(queryStr), [
         FieldsOnCorrectTypeRule,
       ]);
@@ -328,6 +328,32 @@ describe('Validate: Fields on correct type', () => {
 
       expectErrorMessage(schema, '{ t { f } }').to.equal(
         'Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?',
+      );
+    });
+
+    it('Sort type suggestions based on inheritance order', () => {
+      const schema = buildSchema(`
+        interface T { bar: String }
+        type Query { t: T }
+
+        interface Z implements T {
+          foo: String
+          bar: String
+        }
+
+        interface Y implements Z & T {
+          foo: String
+          bar: String
+        }
+
+        type X implements Y & Z & T {
+          foo: String
+          bar: String
+        }
+      `);
+
+      expectErrorMessage(schema, '{ t { foo } }').to.equal(
+        'Cannot query field "foo" on type "T". Did you mean to use an inline fragment on "Z", "Y", or "X"?',
       );
     });
 

@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -13,7 +11,7 @@ import { GraphQLObjectType } from '../../type/definition';
 
 import { graphqlSync } from '../../graphql';
 
-import { execute } from '../execute';
+import { execute, executeSync } from '../execute';
 
 describe('Execute: synchronously when possible', () => {
   const schema = new GraphQLSchema({
@@ -92,7 +90,41 @@ describe('Execute: synchronously when possible', () => {
     });
   });
 
+  describe('executeSync', () => {
+    it('does not return a Promise for sync execution', () => {
+      const doc = 'query Example { syncField }';
+      const result = executeSync({
+        schema,
+        document: parse(doc),
+        rootValue: 'rootValue',
+      });
+      expect(result).to.deep.equal({ data: { syncField: 'rootValue' } });
+    });
+
+    it('throws if encountering async execution', () => {
+      const doc = 'query Example { syncField, asyncField }';
+      expect(() => {
+        executeSync({
+          schema,
+          document: parse(doc),
+          rootValue: 'rootValue',
+        });
+      }).to.throw('GraphQL execution failed to complete synchronously.');
+    });
+  });
+
   describe('graphqlSync', () => {
+    it('report errors raised during schema validation', () => {
+      const badSchema = new GraphQLSchema({});
+      const result = graphqlSync({
+        schema: badSchema,
+        source: '{ __typename }',
+      });
+      expect(result).to.deep.equal({
+        errors: [{ message: 'Query root type must be provided.' }],
+      });
+    });
+
     it('does not return a Promise for syntax errors', () => {
       const doc = 'fragment Example on Query { { { syncField }';
       const result = graphqlSync({

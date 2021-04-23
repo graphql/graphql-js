@@ -18,7 +18,7 @@ Each of these types maps straightforwardly to JavaScript, so you can just return
 
 ```js
 var express = require('express');
-var graphqlHTTP = require('express-graphql');
+var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
@@ -39,7 +39,7 @@ var root = {
     return Math.random();
   },
   rollThreeDice: () => {
-    return [1, 2, 3].map(_ => 1 + Math.floor(Math.random() * 6));
+    return [1, 2, 3].map((_) => 1 + Math.floor(Math.random() * 6));
   },
 };
 

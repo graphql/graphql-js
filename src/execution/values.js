@@ -1,29 +1,22 @@
-// @flow strict
-
-import find from '../polyfills/find';
-
-import keyMap from '../jsutils/keyMap';
-import inspect from '../jsutils/inspect';
-import { type ObjMap } from '../jsutils/ObjMap';
-import printPathArray from '../jsutils/printPathArray';
+import type { ObjMap } from '../jsutils/ObjMap';
+import { keyMap } from '../jsutils/keyMap';
+import { inspect } from '../jsutils/inspect';
+import { printPathArray } from '../jsutils/printPathArray';
 
 import { GraphQLError } from '../error/GraphQLError';
 
+import type {
+  FieldNode,
+  DirectiveNode,
+  VariableDefinitionNode,
+} from '../language/ast';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
-import {
-  type FieldNode,
-  type DirectiveNode,
-  type VariableDefinitionNode,
-} from '../language/ast';
 
-import { type GraphQLSchema } from '../type/schema';
-import { type GraphQLDirective } from '../type/directives';
-import {
-  type GraphQLField,
-  isInputType,
-  isNonNullType,
-} from '../type/definition';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLField } from '../type/definition';
+import type { GraphQLDirective } from '../type/directives';
+import { isInputType, isNonNullType } from '../type/definition';
 
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
@@ -53,14 +46,19 @@ export function getVariableValues(
   const errors = [];
   const maxErrors = options?.maxErrors;
   try {
-    const coerced = coerceVariableValues(schema, varDefNodes, inputs, error => {
-      if (maxErrors != null && errors.length >= maxErrors) {
-        throw new GraphQLError(
-          'Too many errors processing variables, error limit reached. Execution aborted.',
-        );
-      }
-      errors.push(error);
-    });
+    const coerced = coerceVariableValues(
+      schema,
+      varDefNodes,
+      inputs,
+      (error) => {
+        if (maxErrors != null && errors.length >= maxErrors) {
+          throw new GraphQLError(
+            'Too many errors processing variables, error limit reached. Execution aborted.',
+          );
+        }
+        errors.push(error);
+      },
+    );
 
     if (errors.length === 0) {
       return { coerced };
@@ -76,7 +74,7 @@ function coerceVariableValues(
   schema: GraphQLSchema,
   varDefNodes: $ReadOnlyArray<VariableDefinitionNode>,
   inputs: { +[variable: string]: mixed, ... },
-  onError: GraphQLError => void,
+  onError: (GraphQLError) => void,
 ): { [variable: string]: mixed, ... } {
   const coercedValues = {};
   for (const varDefNode of varDefNodes) {
@@ -165,9 +163,9 @@ export function getArgumentValues(
 ): { [argument: string]: mixed, ... } {
   const coercedValues = {};
 
-  /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   const argumentNodes = node.arguments ?? [];
-  const argNodeMap = keyMap(argumentNodes, arg => arg.name.value);
+  const argNodeMap = keyMap(argumentNodes, (arg) => arg.name.value);
 
   for (const argDef of def.args) {
     const name = argDef.name;
@@ -249,12 +247,10 @@ export function getDirectiveValues(
   node: { +directives?: $ReadOnlyArray<DirectiveNode>, ... },
   variableValues?: ?ObjMap<mixed>,
 ): void | { [argument: string]: mixed, ... } {
-  const directiveNode =
-    node.directives &&
-    find(
-      node.directives,
-      directive => directive.name.value === directiveDef.name,
-    );
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  const directiveNode = node.directives?.find(
+    (directive) => directive.name.value === directiveDef.name,
+  );
 
   if (directiveNode) {
     return getArgumentValues(directiveDef, directiveNode, variableValues);

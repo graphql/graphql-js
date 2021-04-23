@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -114,7 +112,10 @@ const schema = new GraphQLSchema({
   subscription: SubscriptionType,
 });
 
-function executeQuery(source, variableValues) {
+function executeQuery(
+  source: string,
+  variableValues?: { +[variable: string]: mixed, ... },
+) {
   return graphqlSync({ schema, source, variableValues });
 }
 
@@ -178,7 +179,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Value "green" does not exist in "Color" enum. Did you mean the enum value "GREEN"?',
+            'Value "green" does not exist in "Color" enum. Did you mean the enum value "GREEN" or "RED"?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -344,7 +345,6 @@ describe('Type System: Enum Values', () => {
         name: 'ONE',
         description: undefined,
         value: Complex1,
-        isDeprecated: false,
         deprecationReason: undefined,
         extensions: undefined,
         astNode: undefined,
@@ -353,7 +353,6 @@ describe('Type System: Enum Values', () => {
         name: 'TWO',
         description: undefined,
         value: Complex2,
-        isDeprecated: false,
         deprecationReason: undefined,
         extensions: undefined,
         astNode: undefined,
@@ -365,7 +364,7 @@ describe('Type System: Enum Values', () => {
     const oneValue = ComplexEnum.getValue('ONE');
     expect(oneValue).to.include({ name: 'ONE', value: Complex1 });
 
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError[incompatible-call]
     const badUsage = ComplexEnum.getValue(Complex1);
     expect(badUsage).to.equal(undefined);
   });

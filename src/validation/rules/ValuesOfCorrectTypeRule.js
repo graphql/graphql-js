@@ -1,17 +1,13 @@
-// @flow strict
-
-import objectValues from '../../polyfills/objectValues';
-
-import keyMap from '../../jsutils/keyMap';
-import inspect from '../../jsutils/inspect';
-import didYouMean from '../../jsutils/didYouMean';
-import suggestionList from '../../jsutils/suggestionList';
+import { keyMap } from '../../jsutils/keyMap';
+import { inspect } from '../../jsutils/inspect';
+import { didYouMean } from '../../jsutils/didYouMean';
+import { suggestionList } from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ValueNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 import { print } from '../../language/printer';
-import { type ValueNode } from '../../language/ast';
-import { type ASTVisitor } from '../../language/visitor';
 
 import {
   isLeafType,
@@ -23,7 +19,7 @@ import {
   getNamedType,
 } from '../../type/definition';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * Value literals of correct type
@@ -51,8 +47,8 @@ export function ValuesOfCorrectTypeRule(
         return false; // Don't traverse further.
       }
       // Ensure every required field exists.
-      const fieldNodeMap = keyMap(node.fields, field => field.name.value);
-      for (const fieldDef of objectValues(type.getFields())) {
+      const fieldNodeMap = keyMap(node.fields, (field) => field.name.value);
+      for (const fieldDef of Object.values(type.getFields())) {
         const fieldNode = fieldNodeMap[fieldDef.name];
         if (!fieldNode && isRequiredInputField(fieldDef)) {
           const typeStr = inspect(fieldDef.type);
@@ -93,11 +89,11 @@ export function ValuesOfCorrectTypeRule(
         );
       }
     },
-    EnumValue: node => isValidValueNode(context, node),
-    IntValue: node => isValidValueNode(context, node),
-    FloatValue: node => isValidValueNode(context, node),
-    StringValue: node => isValidValueNode(context, node),
-    BooleanValue: node => isValidValueNode(context, node),
+    EnumValue: (node) => isValidValueNode(context, node),
+    IntValue: (node) => isValidValueNode(context, node),
+    FloatValue: (node) => isValidValueNode(context, node),
+    StringValue: (node) => isValidValueNode(context, node),
+    BooleanValue: (node) => isValidValueNode(context, node),
   };
 }
 
@@ -125,8 +121,8 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     return;
   }
 
-  // Scalars determine if a literal value is valid via parseLiteral() which
-  // may throw or return an invalid value to indicate failure.
+  // Scalars and Enums determine if a literal value is valid via parseLiteral(),
+  // which may throw or return an invalid value to indicate failure.
   try {
     const parseResult = type.parseLiteral(node, undefined /* variables */);
     if (parseResult === undefined) {

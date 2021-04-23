@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -18,7 +16,7 @@ import {
   GraphQLBoolean,
 } from '../../type/scalars';
 
-import { execute } from '../execute';
+import { executeSync } from '../execute';
 
 describe('Execute: Handles execution with a complex schema', () => {
   it('executes using a schema', () => {
@@ -48,12 +46,12 @@ describe('Execute: Handles execution with a complex schema', () => {
     const BlogArticle = new GraphQLObjectType({
       name: 'Article',
       fields: {
-        id: { type: GraphQLNonNull(GraphQLString) },
+        id: { type: new GraphQLNonNull(GraphQLString) },
         isPublished: { type: GraphQLBoolean },
         author: { type: BlogAuthor },
         title: { type: GraphQLString },
         body: { type: GraphQLString },
-        keywords: { type: GraphQLList(GraphQLString) },
+        keywords: { type: new GraphQLList(GraphQLString) },
       },
     });
 
@@ -66,7 +64,7 @@ describe('Execute: Handles execution with a complex schema', () => {
           resolve: (_, { id }) => article(id),
         },
         feed: {
-          type: GraphQLList(BlogArticle),
+          type: new GraphQLList(BlogArticle),
           resolve: () => [
             article(1),
             article(2),
@@ -87,14 +85,14 @@ describe('Execute: Handles execution with a complex schema', () => {
       query: BlogQuery,
     });
 
-    function article(id) {
+    function article(id: number) {
       return {
         id,
         isPublished: true,
         author: {
           id: 123,
           name: 'John Smith',
-          pic: (width, height) => getPic(123, width, height),
+          pic: (width: number, height: number) => getPic(123, width, height),
           recentArticle: () => article(1),
         },
         title: 'My Article ' + id,
@@ -104,7 +102,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       };
     }
 
-    function getPic(uid, width, height) {
+    function getPic(uid: number, width: number, height: number) {
       return {
         url: `cdn://${uid}`,
         width: `${width}`,
@@ -148,7 +146,7 @@ describe('Execute: Handles execution with a complex schema', () => {
 
     // Note: this is intentionally not validating to ensure appropriate
     // behavior occurs when executing an invalid query.
-    expect(execute({ schema: BlogSchema, document })).to.deep.equal({
+    expect(executeSync({ schema: BlogSchema, document })).to.deep.equal({
       data: {
         feed: [
           { id: '1', title: 'My Article 1' },

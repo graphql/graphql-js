@@ -1,23 +1,13 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import { dedent, dedentString } from '../../__testUtils__/dedent';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import { parse } from '../parser';
 import { print } from '../printer';
 
-import { kitchenSinkQuery } from '../../__fixtures__/index';
-
 describe('Printer: Query document', () => {
-  it('does not alter ast', () => {
-    const ast = parse(kitchenSinkQuery);
-    const astBefore = JSON.stringify(ast);
-    print(ast);
-    expect(JSON.stringify(ast)).to.equal(astBefore);
-  });
-
   it('prints minimal ast', () => {
     const ast = { kind: 'Field', name: { kind: 'Name', value: 'foo' } };
     expect(print(ast)).to.equal('foo');
@@ -25,7 +15,8 @@ describe('Printer: Query document', () => {
 
   it('produces helpful error messages', () => {
     const badAST = { random: 'Data' };
-    // $DisableFlowOnNegativeTest
+
+    // $FlowExpectedError[incompatible-call]
     expect(() => print(badAST)).to.throw(
       'Invalid AST Node: { random: "Data" }.',
     );
@@ -80,12 +71,49 @@ describe('Printer: Query document', () => {
     `);
   });
 
-  it('Experimental: prints fragment with variable directives', () => {
+  it('keeps arguments on one line if line is short (<= 80 chars)', () => {
+    const printed = print(
+      parse('{trip(wheelchair:false arriveBy:false){dateTime}}'),
+    );
+
+    expect(printed).to.equal(
+      dedent`
+      {
+        trip(wheelchair: false, arriveBy: false) {
+          dateTime
+        }
+      }
+    `,
+    );
+  });
+
+  it('puts arguments on multiple lines if line is long (> 80 chars)', () => {
+    const printed = print(
+      parse(
+        '{trip(wheelchair:false arriveBy:false includePlannedCancellations:true transitDistanceReluctance:2000){dateTime}}',
+      ),
+    );
+
+    expect(printed).to.equal(
+      dedent`
+      {
+        trip(
+          wheelchair: false
+          arriveBy: false
+          includePlannedCancellations: true
+          transitDistanceReluctance: 2000
+        ) {
+          dateTime
+        }
+      }
+    `,
+    );
+  });
+
+  it('Legacy: prints fragment with variable directives', () => {
     const queryASTWithVariableDirective = parse(
       'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
-      {
-        experimentalFragmentVariables: true,
-      },
+      { allowLegacyFragmentVariables: true },
     );
     expect(print(queryASTWithVariableDirective)).to.equal(dedent`
       fragment Foo($foo: TestType @test) on TestType @testDirective {
@@ -94,14 +122,14 @@ describe('Printer: Query document', () => {
     `);
   });
 
-  it('Experimental: correctly prints fragment defined variables', () => {
+  it('Legacy: correctly prints fragment defined variables', () => {
     const fragmentWithVariable = parse(
       `
         fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
           id
         }
       `,
-      { experimentalFragmentVariables: true },
+      { allowLegacyFragmentVariables: true },
     );
     expect(print(fragmentWithVariable)).to.equal(dedent`
       fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
@@ -110,12 +138,19 @@ describe('Printer: Query document', () => {
     `);
   });
 
-  it('prints kitchen sink', () => {
-    const printed = print(parse(kitchenSinkQuery));
+  it('prints kitchen sink without altering ast', () => {
+    const ast = parse(kitchenSinkQuery, { noLocation: true });
+
+    const astBeforePrintCall = JSON.stringify(ast);
+    const printed = print(ast);
+    const printedAST = parse(printed, { noLocation: true });
+
+    expect(printedAST).to.deep.equal(ast);
+    expect(JSON.stringify(ast)).to.equal(astBeforePrintCall);
 
     expect(printed).to.equal(
-      // $FlowFixMe
-      dedent(String.raw`
+      // $FlowFixMe[incompatible-call]
+      dedentString(String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         whoever123is: node(id: [123, 456]) {
           id
@@ -159,9 +194,13 @@ describe('Printer: Query document', () => {
       }
 
       fragment frag on Friend @onFragmentDefinition {
-        foo(size: $size, bar: $b, obj: {key: "value", block: """
+        foo(
+          size: $size
+          bar: $b
+          obj: {key: "value", block: """
           block string uses \"""
-        """})
+          """}
+        )
       }
 
       {

@@ -1,12 +1,10 @@
-// @flow strict
-
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
 import { Kind } from '../../language/kinds';
-import { type ASTVisitor } from '../../language/visitor';
 import { isExecutableDefinitionNode } from '../../language/predicates';
 
-import { type ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 
 /**
  * Executable definitions

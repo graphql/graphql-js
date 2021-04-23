@@ -14,9 +14,7 @@ export {
   getVisitFn,
   BREAK,
   ASTVisitor,
-  Visitor,
-  VisitFn,
-  VisitorKeyMap,
+  ASTVisitFn,
 } from './visitor';
 
 export {

@@ -32,6 +32,8 @@ export class Location {
   readonly source: Source;
 
   constructor(startToken: Token, endToken: Token, source: Source);
+
+  toJSON(): { start: number; end: number };
 }
 
 /**
@@ -86,12 +88,19 @@ export class Token {
     prev: Token | null,
     value?: string,
   );
+
+  toJSON(): {
+    kind: TokenKindEnum;
+    value: string | undefined;
+    line: number;
+    column: number;
+  };
 }
 
 /**
  * @internal
  */
-export function isNode(maybeNode: any): maybeNode is ASTNode;
+export function isNode(maybeNode: unknown): maybeNode is ASTNode;
 
 /**
  * The list of all possible AST node types.
@@ -288,8 +297,7 @@ export interface FragmentDefinitionNode {
   readonly kind: 'FragmentDefinition';
   readonly loc?: Location;
   readonly name: NameNode;
-  // Note: fragment variable definitions are experimental and may be changed
-  // or removed in the future.
+  // Note: fragment variable definitions are deprecated and will removed in v17.0.0
   readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
   readonly typeCondition: NamedTypeNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
@@ -526,12 +534,12 @@ export interface DirectiveDefinitionNode {
 
 export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 
-export type SchemaExtensionNode = {
+export interface SchemaExtensionNode {
   readonly kind: 'SchemaExtension';
   readonly loc?: Location;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly operationTypes?: ReadonlyArray<OperationTypeDefinitionNode>;
-};
+}
 
 // Type Extensions
 

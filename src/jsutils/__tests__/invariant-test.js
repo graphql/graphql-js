@@ -1,9 +1,7 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import invariant from '../invariant';
+import { invariant } from '../invariant';
 
 describe('invariant', () => {
   it('throws on false conditions', () => {

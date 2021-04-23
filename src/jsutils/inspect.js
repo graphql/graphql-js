@@ -1,6 +1,4 @@
-// @flow strict
-
-import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
+/* eslint-disable flowtype/no-weak-types */
 
 const MAX_ARRAY_LENGTH = 10;
 const MAX_RECURSIVE_DEPTH = 2;
@@ -8,43 +6,45 @@ const MAX_RECURSIVE_DEPTH = 2;
 /**
  * Used to print values in error messages.
  */
-export default function inspect(value: mixed): string {
+export function inspect(value: mixed): string {
   return formatValue(value, []);
 }
 
-function formatValue(value, seenValues) {
+function formatValue(value: mixed, seenValues: Array<mixed>): string {
   switch (typeof value) {
     case 'string':
       return JSON.stringify(value);
     case 'function':
       return value.name ? `[function ${value.name}]` : '[function]';
     case 'object':
-      if (value === null) {
-        return 'null';
-      }
       return formatObjectValue(value, seenValues);
     default:
       return String(value);
   }
 }
 
-function formatObjectValue(value, previouslySeenValues) {
-  if (previouslySeenValues.indexOf(value) !== -1) {
+function formatObjectValue(
+  value: Object,
+  previouslySeenValues: Array<mixed>,
+): string {
+  if (value === null) {
+    return 'null';
+  }
+
+  if (previouslySeenValues.includes(value)) {
     return '[Circular]';
   }
 
   const seenValues = [...previouslySeenValues, value];
-  const customInspectFn = getCustomFn(value);
 
-  if (customInspectFn !== undefined) {
-    // $FlowFixMe(>=0.90.0)
-    const customValue = customInspectFn.call(value);
+  if (typeof value.toJSON === 'function') {
+    const jsonValue = (value.toJSON: () => mixed)();
 
     // check for infinite recursion
-    if (customValue !== value) {
-      return typeof customValue === 'string'
-        ? customValue
-        : formatValue(customValue, seenValues);
+    if (jsonValue !== value) {
+      return typeof jsonValue === 'string'
+        ? jsonValue
+        : formatValue(jsonValue, seenValues);
     }
   } else if (Array.isArray(value)) {
     return formatArray(value, seenValues);
@@ -53,9 +53,9 @@ function formatObjectValue(value, previouslySeenValues) {
   return formatObject(value, seenValues);
 }
 
-function formatObject(object, seenValues) {
-  const keys = Object.keys(object);
-  if (keys.length === 0) {
+function formatObject(object: Object, seenValues: Array<mixed>): string {
+  const entries = Object.entries(object);
+  if (entries.length === 0) {
     return '{}';
   }
 
@@ -63,15 +63,13 @@ function formatObject(object, seenValues) {
     return '[' + getObjectTag(object) + ']';
   }
 
-  const properties = keys.map(key => {
-    const value = formatValue(object[key], seenValues);
-    return key + ': ' + value;
-  });
-
+  const properties = entries.map(
+    ([key, value]) => key + ': ' + formatValue(value, seenValues),
+  );
   return '{ ' + properties.join(', ') + ' }';
 }
 
-function formatArray(array, seenValues) {
+function formatArray(array: Array<mixed>, seenValues: Array<mixed>): string {
   if (array.length === 0) {
     return '[]';
   }
@@ -97,19 +95,7 @@ function formatArray(array, seenValues) {
   return '[' + items.join(', ') + ']';
 }
 
-function getCustomFn(object) {
-  const customInspectFn = object[String(nodejsCustomInspectSymbol)];
-
-  if (typeof customInspectFn === 'function') {
-    return customInspectFn;
-  }
-
-  if (typeof object.inspect === 'function') {
-    return object.inspect;
-  }
-}
-
-function getObjectTag(object) {
+function getObjectTag(object: Object): string {
   const tag = Object.prototype.toString
     .call(object)
     .replace(/^\[object /, '')

@@ -1,20 +1,14 @@
-// @flow strict
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { isObjectLike } from '../jsutils/isObjectLike';
+import { isIterableObject } from '../jsutils/isIterableObject';
 
-import isFinite from '../polyfills/isFinite';
-import arrayFrom from '../polyfills/arrayFrom';
-import objectValues from '../polyfills/objectValues';
-
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import isObjectLike from '../jsutils/isObjectLike';
-import isCollection from '../jsutils/isCollection';
-
+import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { type ValueNode } from '../language/ast';
 
+import type { GraphQLInputType } from '../type/definition';
 import { GraphQLID } from '../type/scalars';
 import {
-  type GraphQLInputType,
   isLeafType,
   isEnumType,
   isInputObjectType,
@@ -66,11 +60,9 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   // the value is not an array, convert the value using the list's item type.
   if (isListType(type)) {
     const itemType = type.ofType;
-    if (isCollection(value)) {
+    if (isIterableObject(value)) {
       const valuesNodes = [];
-      // Since we transpile for-of in loose mode it doesn't support iterators
-      // and it's required to first convert iteratable into array
-      for (const item of arrayFrom(value)) {
+      for (const item of value) {
         const itemNode = astFromValue(item, itemType);
         if (itemNode != null) {
           valuesNodes.push(itemNode);
@@ -88,7 +80,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
       return null;
     }
     const fieldNodes = [];
-    for (const field of objectValues(type.getFields())) {
+    for (const field of Object.values(type.getFields())) {
       const fieldValue = astFromValue(value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({
@@ -101,6 +93,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     return { kind: Kind.OBJECT, fields: fieldNodes };
   }
 
+  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isLeafType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
@@ -115,7 +108,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     }
 
     // JavaScript numbers can be Int or Float values.
-    if (typeof serialized === 'number' && isFinite(serialized)) {
+    if (typeof serialized === 'number' && Number.isFinite(serialized)) {
       const stringNum = String(serialized);
       return integerStringRegExp.test(stringNum)
         ? { kind: Kind.INT, value: stringNum }
@@ -142,7 +135,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     throw new TypeError(`Cannot convert value to AST: ${inspect(serialized)}.`);
   }
 
-  // Not reachable. All possible input types have been considered.
+  // istanbul ignore next (Not reachable. All possible input types have been considered)
   invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
 }
 

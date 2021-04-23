@@ -1,54 +1,44 @@
-// @flow strict
+import { inspect } from '../jsutils/inspect';
 
-import inspect from '../jsutils/inspect';
-
-import { type ASTNode, type ASTKindToNode, isNode } from './ast';
+import type { ASTNode, ASTKindToNode } from './ast';
+import { isNode } from './ast';
 
 /**
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor = Visitor<ASTKindToNode>;
-export type Visitor<KindToNode, Nodes = $Values<KindToNode>> =
-  | EnterLeave<
-      | VisitFn<Nodes>
-      | ShapeMap<KindToNode, <Node>(Node) => VisitFn<Nodes, Node>>,
-    >
-  | ShapeMap<
-      KindToNode,
-      <Node>(Node) => VisitFn<Nodes, Node> | EnterLeave<VisitFn<Nodes, Node>>,
-    >;
-type EnterLeave<T> = {| +enter?: T, +leave?: T |};
-type ShapeMap<O, F> = $Shape<$ObjMap<O, F>>;
+export type ASTVisitor = $Shape<EnterLeaveVisitor<ASTNode> & KindVisitor>;
+
+type KindVisitor = $ObjMap<
+  ASTKindToNode,
+  <Node>(Node) => ASTVisitFn<Node> | EnterLeaveVisitor<Node>,
+>;
+
+type EnterLeaveVisitor<TVisitedNode: ASTNode> = {|
+  +enter?: ASTVisitFn<TVisitedNode>,
+  +leave?: ASTVisitFn<TVisitedNode>,
+|};
 
 /**
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
  */
-export type VisitFn<TAnyNode, TVisitedNode: TAnyNode = TAnyNode> = (
+export type ASTVisitFn<TVisitedNode: ASTNode> = (
   // The current node being visiting.
   node: TVisitedNode,
   // The index or key to this node from the parent node or Array.
   key: string | number | void,
   // The parent immediately above this node, which may be an Array.
-  parent: TAnyNode | $ReadOnlyArray<TAnyNode> | void,
+  parent: ASTNode | $ReadOnlyArray<ASTNode> | void,
   // The key path to get to this node from the root node.
   path: $ReadOnlyArray<string | number>,
   // All nodes and Arrays visited before reaching parent of this node.
   // These correspond to array indices in `path`.
   // Note: ancestors includes arrays which contain the parent of visited node.
-  ancestors: $ReadOnlyArray<TAnyNode | $ReadOnlyArray<TAnyNode>>,
+  ancestors: $ReadOnlyArray<ASTNode | $ReadOnlyArray<ASTNode>>,
 ) => any;
 
-/**
- * A KeyMap describes each the traversable properties of each kind of node.
- */
-export type VisitorKeyMap<KindToNode> = $ObjMap<
-  KindToNode,
-  <T>(T) => $ReadOnlyArray<$Keys<T>>,
->;
-
-export const QueryDocumentKeys: VisitorKeyMap<ASTKindToNode> = {
+const QueryDocumentKeys = {
   Name: [],
 
   Document: ['definitions'],
@@ -68,8 +58,7 @@ export const QueryDocumentKeys: VisitorKeyMap<ASTKindToNode> = {
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [
     'name',
-    // Note: fragment variable definitions are experimental and may be changed
-    // or removed in the future.
+    // Note: fragment variable definitions are deprecated and will removed in v17.0.0
     'variableDefinitions',
     'typeCondition',
     'directives',
@@ -138,7 +127,7 @@ export const QueryDocumentKeys: VisitorKeyMap<ASTKindToNode> = {
 export const BREAK: { ... } = Object.freeze({});
 
 /**
- * visit() will walk through an AST using a depth first traversal, calling
+ * visit() will walk through an AST using a depth-first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the
  * leave function after visiting that node and all of its child nodes.
  *
@@ -172,10 +161,10 @@ export const BREAK: { ... } = Object.freeze({});
  *
  * Alternatively to providing enter() and leave() functions, a visitor can
  * instead provide functions named the same as the kinds of AST nodes, or
- * enter/leave visitors at a named key, leading to four permutations of
+ * enter/leave visitors at a named key, leading to three permutations of the
  * visitor API:
  *
- * 1) Named visitors triggered when entering a node a specific kind.
+ * 1) Named visitors triggered when entering a node of a specific kind.
  *
  *     visit(ast, {
  *       Kind(node) {
@@ -207,27 +196,8 @@ export const BREAK: { ... } = Object.freeze({});
  *         // leave any node
  *       }
  *     })
- *
- * 4) Parallel visitors for entering and leaving nodes of a specific kind.
- *
- *     visit(ast, {
- *       enter: {
- *         Kind(node) {
- *           // enter the "Kind" node
- *         }
- *       },
- *       leave: {
- *         Kind(node) {
- *           // leave the "Kind" node
- *         }
- *       }
- *     })
  */
-export function visit(
-  root: ASTNode,
-  visitor: Visitor<ASTKindToNode>,
-  visitorKeys: VisitorKeyMap<ASTKindToNode> = QueryDocumentKeys,
-): any {
+export function visit(root: ASTNode, visitor: ASTVisitor): any {
   /* eslint-disable no-undef-init */
   let stack: any = undefined;
   let inArray = Array.isArray(root);
@@ -298,6 +268,7 @@ export function visit(
       }
       const visitFn = getVisitFn(visitor, node.kind, isLeaving);
       if (visitFn) {
+        // $FlowFixMe[incompatible-call]
         result = visitFn.call(visitor, node, key, parent, path, ancestors);
 
         if (result === BREAK) {
@@ -332,7 +303,7 @@ export function visit(
     } else {
       stack = { inArray, index, keys, edits, prev: stack };
       inArray = Array.isArray(node);
-      keys = inArray ? node : visitorKeys[node.kind] ?? [];
+      keys = inArray ? node : QueryDocumentKeys[node.kind] ?? [];
       index = -1;
       edits = [];
       if (parent) {
@@ -356,8 +327,8 @@ export function visit(
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 export function visitInParallel(
-  visitors: $ReadOnlyArray<Visitor<ASTKindToNode>>,
-): Visitor<ASTKindToNode> {
+  visitors: $ReadOnlyArray<ASTVisitor>,
+): ASTVisitor {
   const skipping = new Array(visitors.length);
 
   return {
@@ -403,10 +374,10 @@ export function visitInParallel(
  * the function the visitor runtime should call.
  */
 export function getVisitFn(
-  visitor: Visitor<any>,
+  visitor: ASTVisitor,
   kind: string,
   isLeaving: boolean,
-): ?VisitFn<any> {
+): ?ASTVisitFn<ASTNode> {
   const kindVisitor = visitor[kind];
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {
@@ -423,15 +394,8 @@ export function getVisitFn(
   } else {
     const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
     if (specificVisitor) {
-      if (typeof specificVisitor === 'function') {
-        // { enter() {}, leave() {} }
-        return specificVisitor;
-      }
-      const specificKindVisitor = specificVisitor[kind];
-      if (typeof specificKindVisitor === 'function') {
-        // { enter: { Kind() {} }, leave: { Kind() {} } }
-        return specificKindVisitor;
-      }
+      // { enter() {}, leave() {} }
+      return specificVisitor;
     }
   }
 }

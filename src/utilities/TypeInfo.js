@@ -1,27 +1,22 @@
-// @flow strict
-
-import find from '../polyfills/find';
-
+import type { ASTVisitor } from '../language/visitor';
+import type { ASTNode, FieldNode } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { type Visitor, getVisitFn } from '../language/visitor';
-import {
-  type ASTNode,
-  type ASTKindToNode,
-  type FieldNode,
-  isNode,
-} from '../language/ast';
+import { isNode } from '../language/ast';
+import { getVisitFn } from '../language/visitor';
 
-import { type GraphQLSchema } from '../type/schema';
-import { type GraphQLDirective } from '../type/directives';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type {
+  GraphQLType,
+  GraphQLInputType,
+  GraphQLOutputType,
+  GraphQLCompositeType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLInputField,
+  GraphQLEnumValue,
+} from '../type/definition';
 import {
-  type GraphQLType,
-  type GraphQLInputType,
-  type GraphQLOutputType,
-  type GraphQLCompositeType,
-  type GraphQLField,
-  type GraphQLArgument,
-  type GraphQLInputField,
-  type GraphQLEnumValue,
   isObjectType,
   isInterfaceType,
   isEnumType,
@@ -60,14 +55,13 @@ export class TypeInfo {
 
   constructor(
     schema: GraphQLSchema,
-    // NOTE: this experimental optional second parameter is only needed in order
-    // to support non-spec-compliant code bases. You should never need to use it.
-    // It may disappear in the future.
-    getFieldDefFn?: typeof getFieldDef,
     // Initial type may be provided in rare cases to facilitate traversals
     // beginning somewhere other than documents.
-    initialType?: GraphQLType,
-  ): void {
+    initialType?: ?GraphQLType,
+
+    // @deprecated will be removed in 17.0.0
+    getFieldDefFn?: typeof getFieldDef,
+  ) {
     this._schema = schema;
     this._typeStack = [];
     this._parentTypeStack = [];
@@ -207,9 +201,8 @@ export class TypeInfo {
         let argType: mixed;
         const fieldOrDirective = this.getDirective() ?? this.getFieldDef();
         if (fieldOrDirective) {
-          argDef = find(
-            fieldOrDirective.args,
-            arg => arg.name === node.name.value,
+          argDef = fieldOrDirective.args.find(
+            (arg) => arg.name === node.name.value,
           );
           if (argDef) {
             argType = argDef.type;
@@ -331,8 +324,8 @@ function getFieldDef(
  */
 export function visitWithTypeInfo(
   typeInfo: TypeInfo,
-  visitor: Visitor<ASTKindToNode>,
-): Visitor<ASTKindToNode> {
+  visitor: ASTVisitor,
+): ASTVisitor {
   return {
     enter(node) {
       typeInfo.enter(node);

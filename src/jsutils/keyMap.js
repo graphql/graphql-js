@@ -1,6 +1,4 @@
-// @flow strict
-
-import { type ObjMap } from './ObjMap';
+import type { ObjMap } from './ObjMap';
 
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
@@ -25,12 +23,13 @@ import { type ObjMap } from './ObjMap';
  *     const jennyEntry = entriesByName['Jenny']
  *
  */
-export default function keyMap<T>(
+export function keyMap<T>(
   list: $ReadOnlyArray<T>,
   keyFn: (item: T) => string,
 ): ObjMap<T> {
-  return list.reduce((map, item) => {
-    map[keyFn(item)] = item;
-    return map;
-  }, Object.create(null));
+  const result = Object.create(null);
+  for (const item of list) {
+    result[keyFn(item)] = item;
+  }
+  return result;
 }

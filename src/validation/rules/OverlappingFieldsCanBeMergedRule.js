@@ -1,28 +1,26 @@
-// @flow strict
-
-import find from '../../polyfills/find';
-import objectEntries from '../../polyfills/objectEntries';
-
-import inspect from '../../jsutils/inspect';
-import { type ObjMap } from '../../jsutils/ObjMap';
+import type { ObjMap } from '../../jsutils/ObjMap';
+import { inspect } from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { ASTVisitor } from '../../language/visitor';
+import type {
+  SelectionSetNode,
+  ValueNode,
+  FieldNode,
+  ArgumentNode,
+  FragmentDefinitionNode,
+} from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
-import { type ASTVisitor } from '../../language/visitor';
-import {
-  type SelectionSetNode,
-  type FieldNode,
-  type ArgumentNode,
-  type FragmentDefinitionNode,
-} from '../../language/ast';
 
+import type {
+  GraphQLNamedType,
+  GraphQLOutputType,
+  GraphQLCompositeType,
+  GraphQLField,
+} from '../../type/definition';
 import {
-  type GraphQLNamedType,
-  type GraphQLOutputType,
-  type GraphQLCompositeType,
-  type GraphQLField,
   getNamedType,
   isNonNullType,
   isLeafType,
@@ -33,7 +31,7 @@ import {
 
 import { typeFromAST } from '../../utilities/typeFromAST';
 
-import { type ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
@@ -463,7 +461,7 @@ function collectConflictsWithin(
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const [responseName, fields] of objectEntries(fieldMap)) {
+  for (const [responseName, fields] of Object.entries(fieldMap)) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.
@@ -507,10 +505,9 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (const responseName of Object.keys(fieldMap1)) {
+  for (const [responseName, fields1] of Object.entries(fieldMap1)) {
     const fields2 = fieldMap2[responseName];
     if (fields2) {
-      const fields1 = fieldMap1[responseName];
       for (let i = 0; i < fields1.length; i++) {
         for (let j = 0; j < fields2.length; j++) {
           const conflict = findConflict(
@@ -571,9 +568,9 @@ function findConflict(
       ];
     }
 
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const args1 = node1.arguments ?? [];
-    /* istanbul ignore next (See https://github.com/graphql/graphql-js/issues/2203) */
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const args2 = node2.arguments ?? [];
     // Two field calls must have the same arguments.
     if (!sameArguments(args1, args2)) {
@@ -629,10 +626,9 @@ function sameArguments(
   if (arguments1.length !== arguments2.length) {
     return false;
   }
-  return arguments1.every(argument1 => {
-    const argument2 = find(
-      arguments2,
-      argument => argument.name.value === argument1.name.value,
+  return arguments1.every((argument1) => {
+    const argument2 = arguments2.find(
+      (argument) => argument.name.value === argument1.name.value,
     );
     if (!argument2) {
       return false;
@@ -641,7 +637,7 @@ function sameArguments(
   });
 }
 
-function sameValue(value1, value2) {
+function sameValue(value1: ValueNode, value2: ValueNode): boolean {
   return print(value1) === print(value2);
 }
 
@@ -778,13 +774,8 @@ function subfieldConflicts(
   if (conflicts.length > 0) {
     return [
       [responseName, conflicts.map(([reason]) => reason)],
-      conflicts.reduce((allFields, [, fields1]) => allFields.concat(fields1), [
-        node1,
-      ]),
-      conflicts.reduce(
-        (allFields, [, , fields2]) => allFields.concat(fields2),
-        [node2],
-      ),
+      [node1, ...conflicts.map(([, fields1]) => fields1).flat()],
+      [node2, ...conflicts.map(([, , fields2]) => fields2).flat()],
     ];
   }
 }
@@ -796,11 +787,11 @@ function subfieldConflicts(
 class PairSet {
   _data: ObjMap<ObjMap<boolean>>;
 
-  constructor(): void {
+  constructor() {
     this._data = Object.create(null);
   }
 
-  has(a: string, b: string, areMutuallyExclusive: boolean) {
+  has(a: string, b: string, areMutuallyExclusive: boolean): boolean {
     const first = this._data[a];
     const result = first && first[b];
     if (result === undefined) {
@@ -815,17 +806,17 @@ class PairSet {
     return true;
   }
 
-  add(a: string, b: string, areMutuallyExclusive: boolean) {
-    _pairSetAdd(this._data, a, b, areMutuallyExclusive);
-    _pairSetAdd(this._data, b, a, areMutuallyExclusive);
+  add(a: string, b: string, areMutuallyExclusive: boolean): void {
+    this._pairSetAdd(a, b, areMutuallyExclusive);
+    this._pairSetAdd(b, a, areMutuallyExclusive);
   }
-}
 
-function _pairSetAdd(data, a, b, areMutuallyExclusive) {
-  let map = data[a];
-  if (!map) {
-    map = Object.create(null);
-    data[a] = map;
+  _pairSetAdd(a: string, b: string, areMutuallyExclusive: boolean): void {
+    let map = this._data[a];
+    if (!map) {
+      map = Object.create(null);
+      this._data[a] = map;
+    }
+    map[b] = areMutuallyExclusive;
   }
-  map[b] = areMutuallyExclusive;
 }

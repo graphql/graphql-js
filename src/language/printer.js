@@ -1,7 +1,6 @@
-// @flow strict
+import type { ASTNode } from './ast';
 
 import { visit } from './visitor';
-import { type ASTNode } from './ast';
 import { printBlockString } from './blockString';
 
 /**
@@ -9,115 +8,149 @@ import { printBlockString } from './blockString';
  * formatting rules.
  */
 export function print(ast: ASTNode): string {
-  return visit(ast, { leave: printDocASTReducer });
+  return visit(ast, printDocASTReducer);
 }
+
+const MAX_LINE_LENGTH = 80;
 
 // TODO: provide better type coverage in future
 const printDocASTReducer: any = {
-  Name: node => node.value,
-  Variable: node => '$' + node.name,
+  Name: { leave: (node) => node.value },
+  Variable: { leave: (node) => '$' + node.name },
 
   // Document
 
-  Document: node => join(node.definitions, '\n\n') + '\n',
-
-  OperationDefinition(node) {
-    const op = node.operation;
-    const name = node.name;
-    const varDefs = wrap('(', join(node.variableDefinitions, ', '), ')');
-    const directives = join(node.directives, ' ');
-    const selectionSet = node.selectionSet;
-    // Anonymous queries with no directives or variable definitions can use
-    // the query short form.
-    return !name && !directives && !varDefs && op === 'query'
-      ? selectionSet
-      : join([op, join([name, varDefs]), directives, selectionSet], ' ');
+  Document: {
+    leave: (node) => join(node.definitions, '\n\n'),
   },
 
-  VariableDefinition: ({ variable, type, defaultValue, directives }) =>
-    variable +
-    ': ' +
-    type +
-    wrap(' = ', defaultValue) +
-    wrap(' ', join(directives, ' ')),
-  SelectionSet: ({ selections }) => block(selections),
+  OperationDefinition: {
+    leave(node) {
+      const varDefs = wrap('(', join(node.variableDefinitions, ', '), ')');
+      const prefix = join(
+        [
+          node.operation,
+          join([node.name, varDefs]),
+          join(node.directives, ' '),
+        ],
+        ' ',
+      );
 
-  Field: ({ alias, name, arguments: args, directives, selectionSet }) =>
-    join(
-      [
-        wrap('', alias, ': ') + name + wrap('(', join(args, ', '), ')'),
-        join(directives, ' '),
-        selectionSet,
-      ],
-      ' ',
-    ),
+      // Anonymous queries with no directives or variable definitions can use
+      // the query short form.
+      return (prefix === 'query' ? '' : prefix + ' ') + node.selectionSet;
+    },
+  },
 
-  Argument: ({ name, value }) => name + ': ' + value,
+  VariableDefinition: {
+    leave: ({ variable, type, defaultValue, directives }) =>
+      variable +
+      ': ' +
+      type +
+      wrap(' = ', defaultValue) +
+      wrap(' ', join(directives, ' ')),
+  },
+  SelectionSet: { leave: ({ selections }) => block(selections) },
+
+  Field: {
+    leave({ alias, name, arguments: args, directives, selectionSet }) {
+      const prefix = wrap('', alias, ': ') + name;
+      let argsLine = prefix + wrap('(', join(args, ', '), ')');
+
+      if (argsLine.length > MAX_LINE_LENGTH) {
+        argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+      }
+
+      return join([argsLine, join(directives, ' '), selectionSet], ' ');
+    },
+  },
+
+  Argument: { leave: ({ name, value }) => name + ': ' + value },
 
   // Fragments
 
-  FragmentSpread: ({ name, directives }) =>
-    '...' + name + wrap(' ', join(directives, ' ')),
+  FragmentSpread: {
+    leave: ({ name, directives }) =>
+      '...' + name + wrap(' ', join(directives, ' ')),
+  },
 
-  InlineFragment: ({ typeCondition, directives, selectionSet }) =>
-    join(
-      ['...', wrap('on ', typeCondition), join(directives, ' '), selectionSet],
-      ' ',
-    ),
+  InlineFragment: {
+    leave: ({ typeCondition, directives, selectionSet }) =>
+      join(
+        [
+          '...',
+          wrap('on ', typeCondition),
+          join(directives, ' '),
+          selectionSet,
+        ],
+        ' ',
+      ),
+  },
 
-  FragmentDefinition: ({
-    name,
-    typeCondition,
-    variableDefinitions,
-    directives,
-    selectionSet,
-  }) =>
-    // Note: fragment variable definitions are experimental and may be changed
-    // or removed in the future.
-    `fragment ${name}${wrap('(', join(variableDefinitions, ', '), ')')} ` +
-    `on ${typeCondition} ${wrap('', join(directives, ' '), ' ')}` +
-    selectionSet,
+  FragmentDefinition: {
+    leave: ({
+      name,
+      typeCondition,
+      variableDefinitions,
+      directives,
+      selectionSet,
+    }) =>
+      // Note: fragment variable definitions are experimental and may be changed
+      // or removed in the future.
+      `fragment ${name}${wrap('(', join(variableDefinitions, ', '), ')')} ` +
+      `on ${typeCondition} ${wrap('', join(directives, ' '), ' ')}` +
+      selectionSet,
+  },
 
   // Value
 
-  IntValue: ({ value }) => value,
-  FloatValue: ({ value }) => value,
-  StringValue: ({ value, block: isBlockString }, key) =>
-    isBlockString
-      ? printBlockString(value, key === 'description' ? '' : '  ')
-      : JSON.stringify(value),
-  BooleanValue: ({ value }) => (value ? 'true' : 'false'),
-  NullValue: () => 'null',
-  EnumValue: ({ value }) => value,
-  ListValue: ({ values }) => '[' + join(values, ', ') + ']',
-  ObjectValue: ({ fields }) => '{' + join(fields, ', ') + '}',
-  ObjectField: ({ name, value }) => name + ': ' + value,
+  IntValue: { leave: ({ value }) => value },
+  FloatValue: { leave: ({ value }) => value },
+  StringValue: {
+    leave: ({ value, block: isBlockString }) =>
+      isBlockString ? printBlockString(value) : JSON.stringify(value),
+  },
+  BooleanValue: { leave: ({ value }) => (value ? 'true' : 'false') },
+  NullValue: { leave: () => 'null' },
+  EnumValue: { leave: ({ value }) => value },
+  ListValue: { leave: ({ values }) => '[' + join(values, ', ') + ']' },
+  ObjectValue: { leave: ({ fields }) => '{' + join(fields, ', ') + '}' },
+  ObjectField: { leave: ({ name, value }) => name + ': ' + value },
 
   // Directive
 
-  Directive: ({ name, arguments: args }) =>
-    '@' + name + wrap('(', join(args, ', '), ')'),
+  Directive: {
+    leave: ({ name, arguments: args }) =>
+      '@' + name + wrap('(', join(args, ', '), ')'),
+  },
 
   // Type
 
-  NamedType: ({ name }) => name,
-  ListType: ({ type }) => '[' + type + ']',
-  NonNullType: ({ type }) => type + '!',
+  NamedType: { leave: ({ name }) => name },
+  ListType: { leave: ({ type }) => '[' + type + ']' },
+  NonNullType: { leave: ({ type }) => type + '!' },
 
   // Type System Definitions
 
-  SchemaDefinition: addDescription(({ directives, operationTypes }) =>
-    join(['schema', join(directives, ' '), block(operationTypes)], ' '),
-  ),
+  SchemaDefinition: {
+    leave: ({ description, directives, operationTypes }) =>
+      wrap('', description, '\n') +
+      join(['schema', join(directives, ' '), block(operationTypes)], ' '),
+  },
 
-  OperationTypeDefinition: ({ operation, type }) => operation + ': ' + type,
+  OperationTypeDefinition: {
+    leave: ({ operation, type }) => operation + ': ' + type,
+  },
 
-  ScalarTypeDefinition: addDescription(({ name, directives }) =>
-    join(['scalar', name, join(directives, ' ')], ' '),
-  ),
+  ScalarTypeDefinition: {
+    leave: ({ description, name, directives }) =>
+      wrap('', description, '\n') +
+      join(['scalar', name, join(directives, ' ')], ' '),
+  },
 
-  ObjectTypeDefinition: addDescription(
-    ({ name, interfaces, directives, fields }) =>
+  ObjectTypeDefinition: {
+    leave: ({ description, name, interfaces, directives, fields }) =>
+      wrap('', description, '\n') +
       join(
         [
           'type',
@@ -128,10 +161,11 @@ const printDocASTReducer: any = {
         ],
         ' ',
       ),
-  ),
+  },
 
-  FieldDefinition: addDescription(
-    ({ name, arguments: args, type, directives }) =>
+  FieldDefinition: {
+    leave: ({ description, name, arguments: args, type, directives }) =>
+      wrap('', description, '\n') +
       name +
       (hasMultilineItems(args)
         ? wrap('(\n', indent(join(args, '\n')), '\n)')
@@ -139,18 +173,20 @@ const printDocASTReducer: any = {
       ': ' +
       type +
       wrap(' ', join(directives, ' ')),
-  ),
+  },
 
-  InputValueDefinition: addDescription(
-    ({ name, type, defaultValue, directives }) =>
+  InputValueDefinition: {
+    leave: ({ description, name, type, defaultValue, directives }) =>
+      wrap('', description, '\n') +
       join(
         [name + ': ' + type, wrap('= ', defaultValue), join(directives, ' ')],
         ' ',
       ),
-  ),
+  },
 
-  InterfaceTypeDefinition: addDescription(
-    ({ name, interfaces, directives, fields }) =>
+  InterfaceTypeDefinition: {
+    leave: ({ description, name, interfaces, directives, fields }) =>
+      wrap('', description, '\n') +
       join(
         [
           'interface',
@@ -161,34 +197,37 @@ const printDocASTReducer: any = {
         ],
         ' ',
       ),
-  ),
+  },
 
-  UnionTypeDefinition: addDescription(({ name, directives, types }) =>
-    join(
-      [
-        'union',
-        name,
-        join(directives, ' '),
-        types && types.length !== 0 ? '= ' + join(types, ' | ') : '',
-      ],
-      ' ',
-    ),
-  ),
+  UnionTypeDefinition: {
+    leave: ({ description, name, directives, types }) =>
+      wrap('', description, '\n') +
+      join(
+        ['union', name, join(directives, ' '), wrap('= ', join(types, ' | '))],
+        ' ',
+      ),
+  },
 
-  EnumTypeDefinition: addDescription(({ name, directives, values }) =>
-    join(['enum', name, join(directives, ' '), block(values)], ' '),
-  ),
+  EnumTypeDefinition: {
+    leave: ({ description, name, directives, values }) =>
+      wrap('', description, '\n') +
+      join(['enum', name, join(directives, ' '), block(values)], ' '),
+  },
 
-  EnumValueDefinition: addDescription(({ name, directives }) =>
-    join([name, join(directives, ' ')], ' '),
-  ),
+  EnumValueDefinition: {
+    leave: ({ description, name, directives }) =>
+      wrap('', description, '\n') + join([name, join(directives, ' ')], ' '),
+  },
 
-  InputObjectTypeDefinition: addDescription(({ name, directives, fields }) =>
-    join(['input', name, join(directives, ' '), block(fields)], ' '),
-  ),
+  InputObjectTypeDefinition: {
+    leave: ({ description, name, directives, fields }) =>
+      wrap('', description, '\n') +
+      join(['input', name, join(directives, ' '), block(fields)], ' '),
+  },
 
-  DirectiveDefinition: addDescription(
-    ({ name, arguments: args, repeatable, locations }) =>
+  DirectiveDefinition: {
+    leave: ({ description, name, arguments: args, repeatable, locations }) =>
+      wrap('', description, '\n') +
       'directive @' +
       name +
       (hasMultilineItems(args)
@@ -197,94 +236,103 @@ const printDocASTReducer: any = {
       (repeatable ? ' repeatable' : '') +
       ' on ' +
       join(locations, ' | '),
-  ),
+  },
 
-  SchemaExtension: ({ directives, operationTypes }) =>
-    join(['extend schema', join(directives, ' '), block(operationTypes)], ' '),
+  SchemaExtension: {
+    leave: ({ directives, operationTypes }) =>
+      join(
+        ['extend schema', join(directives, ' '), block(operationTypes)],
+        ' ',
+      ),
+  },
 
-  ScalarTypeExtension: ({ name, directives }) =>
-    join(['extend scalar', name, join(directives, ' ')], ' '),
+  ScalarTypeExtension: {
+    leave: ({ name, directives }) =>
+      join(['extend scalar', name, join(directives, ' ')], ' '),
+  },
 
-  ObjectTypeExtension: ({ name, interfaces, directives, fields }) =>
-    join(
-      [
-        'extend type',
-        name,
-        wrap('implements ', join(interfaces, ' & ')),
-        join(directives, ' '),
-        block(fields),
-      ],
-      ' ',
-    ),
+  ObjectTypeExtension: {
+    leave: ({ name, interfaces, directives, fields }) =>
+      join(
+        [
+          'extend type',
+          name,
+          wrap('implements ', join(interfaces, ' & ')),
+          join(directives, ' '),
+          block(fields),
+        ],
+        ' ',
+      ),
+  },
 
-  InterfaceTypeExtension: ({ name, interfaces, directives, fields }) =>
-    join(
-      [
-        'extend interface',
-        name,
-        wrap('implements ', join(interfaces, ' & ')),
-        join(directives, ' '),
-        block(fields),
-      ],
-      ' ',
-    ),
+  InterfaceTypeExtension: {
+    leave: ({ name, interfaces, directives, fields }) =>
+      join(
+        [
+          'extend interface',
+          name,
+          wrap('implements ', join(interfaces, ' & ')),
+          join(directives, ' '),
+          block(fields),
+        ],
+        ' ',
+      ),
+  },
 
-  UnionTypeExtension: ({ name, directives, types }) =>
-    join(
-      [
-        'extend union',
-        name,
-        join(directives, ' '),
-        types && types.length !== 0 ? '= ' + join(types, ' | ') : '',
-      ],
-      ' ',
-    ),
+  UnionTypeExtension: {
+    leave: ({ name, directives, types }) =>
+      join(
+        [
+          'extend union',
+          name,
+          join(directives, ' '),
+          wrap('= ', join(types, ' | ')),
+        ],
+        ' ',
+      ),
+  },
 
-  EnumTypeExtension: ({ name, directives, values }) =>
-    join(['extend enum', name, join(directives, ' '), block(values)], ' '),
+  EnumTypeExtension: {
+    leave: ({ name, directives, values }) =>
+      join(['extend enum', name, join(directives, ' '), block(values)], ' '),
+  },
 
-  InputObjectTypeExtension: ({ name, directives, fields }) =>
-    join(['extend input', name, join(directives, ' '), block(fields)], ' '),
+  InputObjectTypeExtension: {
+    leave: ({ name, directives, fields }) =>
+      join(['extend input', name, join(directives, ' '), block(fields)], ' '),
+  },
 };
-
-function addDescription(cb) {
-  return node => join([node.description, cb(node)], '\n');
-}
 
 /**
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print all items together separated by separator if provided
  */
-function join(maybeArray: ?Array<string>, separator = '') {
-  return maybeArray?.filter(x => x).join(separator) ?? '';
+function join(maybeArray: ?Array<string>, separator = ''): string {
+  return maybeArray?.filter((x) => x).join(separator) ?? '';
 }
 
 /**
  * Given array, print each item on its own line, wrapped in an
  * indented "{ }" block.
  */
-function block(array) {
-  return array && array.length !== 0
-    ? '{\n' + indent(join(array, '\n')) + '\n}'
-    : '';
+function block(array: ?Array<string>): string {
+  return wrap('{\n', indent(join(array, '\n')), '\n}');
 }
 
 /**
- * If maybeString is not null or empty, then wrap with start and end, otherwise
- * print an empty string.
+ * If maybeString is not null or empty, then wrap with start and end, otherwise print an empty string.
  */
-function wrap(start, maybeString, end = '') {
-  return maybeString ? start + maybeString + end : '';
+function wrap(start: string, maybeString: ?string, end: string = ''): string {
+  return maybeString != null && maybeString !== ''
+    ? start + maybeString + end
+    : '';
 }
 
-function indent(maybeString) {
-  return maybeString && '  ' + maybeString.replace(/\n/g, '\n  ');
+function indent(str: string): string {
+  return wrap('  ', str.replace(/\n/g, '\n  '));
 }
 
-function isMultiline(string) {
-  return string.indexOf('\n') !== -1;
-}
-
-function hasMultilineItems(maybeArray) {
-  return maybeArray && maybeArray.some(isMultiline);
+function hasMultilineItems(maybeArray: ?Array<string>): boolean {
+  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  return maybeArray?.some((str) => str.includes('\n')) ?? false;
 }

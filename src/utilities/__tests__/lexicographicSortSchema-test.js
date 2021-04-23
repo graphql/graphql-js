@@ -1,15 +1,13 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
+import { dedent } from '../../__testUtils__/dedent';
 
 import { printSchema } from '../printSchema';
 import { buildSchema } from '../buildASTSchema';
 import { lexicographicSortSchema } from '../lexicographicSortSchema';
 
-function sortSDL(sdl) {
+function sortSDL(sdl: string): string {
   const schema = buildSchema(sdl);
   return printSchema(lexicographicSortSchema(schema));
 }

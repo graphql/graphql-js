@@ -1,9 +1,7 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import identityFunc from '../identityFunc';
+import { identityFunc } from '../identityFunc';
 
 describe('identityFunc', () => {
   it('returns the first argument it receives', () => {

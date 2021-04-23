@@ -1,0 +1,55 @@
+language: en
+ignorePaths:
+  # Copied from '.gitignore', please keep it in sync.
+  - .eslintcache
+  - node_modules
+  - coverage
+  - npmDist
+  - denoDist
+  - npm
+  - deno
+
+  # Excluded from spelling check
+  - cspell.yml
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - benchmark/github-schema.graphql
+  - benchmark/github-schema.json
+overrides:
+  - filename: '**/docs/APIReference-*.md'
+    ignoreRegExpList: ['/href="[^"]*"/']
+
+words:
+  - graphiql
+  - sublinks
+  - instanceof
+  - flowtype
+
+  # Different names used inside tests
+  - Skywalker
+  - Leia
+  - Wilhuff
+  - Tarkin
+  - Artoo
+  - Threepio
+  - Odie
+  - Odie's
+  - Damerau
+  - Alderaan
+  - Tatooine
+  - astromech
+
+  # TODO: contribute upstream
+  - deno
+  - codecov
+
+  # TODO: remove bellow words
+  - QLID # GraphQLID
+  - QLJS # GraphQLJS
+  - iface
+  - Reqs
+  - FXXX
+  - XXXF
+  - bfnrt
+  - wrds

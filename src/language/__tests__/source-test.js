@@ -1,11 +1,23 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { Source } from '../source';
 
 describe('Source', () => {
+  it('asserts that a body was provided', () => {
+    // $FlowExpectedError[incompatible-call]
+    expect(() => new Source()).to.throw(
+      'Body must be a string. Received: undefined.',
+    );
+  });
+
+  it('asserts that a valid body was provided', () => {
+    // $FlowExpectedError[incompatible-call]
+    expect(() => new Source({})).to.throw(
+      'Body must be a string. Received: {}.',
+    );
+  });
+
   it('can be Object.toStringified', () => {
     const source = new Source('');
 
@@ -13,7 +25,7 @@ describe('Source', () => {
   });
 
   it('rejects invalid locationOffset', () => {
-    function createSource(locationOffset) {
+    function createSource(locationOffset: {| line: number, column: number |}) {
       return new Source('', '', locationOffset);
     }
 

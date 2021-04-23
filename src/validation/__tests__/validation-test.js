@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -10,13 +8,14 @@ import { parse } from '../../language/parser';
 import { TypeInfo } from '../../utilities/TypeInfo';
 import { buildSchema } from '../../utilities/buildASTSchema';
 
+import type { ValidationContext } from '../ValidationContext';
 import { validate } from '../validate';
 
 import { testSchema } from './harness';
 
 describe('Validate: Supports full validation', () => {
   it('rejects invalid documents', () => {
-    // $DisableFlowOnNegativeTest
+    // $FlowExpectedError[incompatible-call]
     expect(() => validate(testSchema, null)).to.throw('Must provide document.');
   });
 
@@ -38,27 +37,25 @@ describe('Validate: Supports full validation', () => {
     expect(errors).to.deep.equal([]);
   });
 
-  it('detects bad scalar parse', () => {
+  it('detects unknown fields', () => {
     const doc = parse(`
-      query {
-        invalidArg(arg: "bad value")
+      {
+        unknown
       }
     `);
 
     const errors = validate(testSchema, doc);
     expect(errors).to.deep.equal([
       {
-        locations: [{ line: 3, column: 25 }],
-        message:
-          'Expected value of type "Invalid", found "bad value"; Invalid scalar is always invalid: "bad value"',
+        locations: [{ line: 3, column: 9 }],
+        message: 'Cannot query field "unknown" on type "QueryRoot".',
       },
     ]);
   });
 
-  // NOTE: experimental
-  it('validates using a custom TypeInfo', () => {
+  it('Deprecated: validates using a custom TypeInfo', () => {
     // This TypeInfo will never return a valid field.
-    const typeInfo = new TypeInfo(testSchema, () => null);
+    const typeInfo = new TypeInfo(testSchema, null, () => null);
 
     const doc = parse(`
       query {
@@ -73,8 +70,8 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    const errors = validate(testSchema, doc, undefined, typeInfo);
-    const errorMessages = errors.map(err => err.message);
+    const errors = validate(testSchema, doc, undefined, undefined, typeInfo);
+    const errorMessages = errors.map((err) => err.message);
 
     expect(errorMessages).to.deep.equal([
       'Cannot query field "catOrDog" on type "QueryRoot". Did you mean "catOrDog"?',
@@ -98,7 +95,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    function customRule(context) {
+    function customRule(context: ValidationContext) {
       return {
         Directive(node) {
           const directiveDef = context.getDirective();
@@ -131,11 +128,11 @@ describe('Validate: Limit maximum number of validation errors', () => {
   `;
   const doc = parse(query, { noLocation: true });
 
-  function validateDocument(options) {
-    return validate(testSchema, doc, undefined, undefined, options);
+  function validateDocument(options: {| maxErrors?: number |}) {
+    return validate(testSchema, doc, undefined, options);
   }
 
-  function invalidFieldError(fieldName) {
+  function invalidFieldError(fieldName: string) {
     return {
       message: `Cannot query field "${fieldName}" on type "QueryRoot".`,
       locations: [],
@@ -172,7 +169,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
       };
     }
     expect(() =>
-      validate(testSchema, doc, [customRule], undefined, { maxErrors: 1 }),
+      validate(testSchema, doc, [customRule], { maxErrors: 1 }),
     ).to.throw(/^Error from custom rule!$/);
   });
 });

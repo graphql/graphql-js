@@ -1,11 +1,9 @@
-import Maybe from './tsutils/Maybe';
+import { Maybe } from './jsutils/Maybe';
+
 import { Source } from './language/source';
 import { GraphQLSchema } from './type/schema';
 import { GraphQLFieldResolver, GraphQLTypeResolver } from './type/definition';
-import {
-  ExecutionResult,
-  ExecutionResultDataDefault,
-} from './execution/execute';
+import { ExecutionResult } from './execution/execute';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -41,31 +39,23 @@ import {
  *    A resolver function to use when one is not provided by the schema.
  *    If not provided, the default field resolver is used (which looks for a
  *    value or method on the source value with the field's name).
+ * typeResolver:
+ *    A type resolver function to use when none is provided by the schema.
+ *    If not provided, the default type resolver is used (which looks for a
+ *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 export interface GraphQLArgs {
   schema: GraphQLSchema;
   source: string | Source;
-  rootValue?: any;
-  contextValue?: any;
-  variableValues?: Maybe<{ [key: string]: any }>;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ [key: string]: unknown }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 
-export function graphql<TData = ExecutionResultDataDefault>(
-  args: GraphQLArgs,
-): Promise<ExecutionResult<TData>>;
-export function graphql<TData = ExecutionResultDataDefault>(
-  schema: GraphQLSchema,
-  source: Source | string,
-  rootValue?: any,
-  contextValue?: any,
-  variableValues?: Maybe<{ [key: string]: any }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): Promise<ExecutionResult<TData>>;
+export function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
 
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,
@@ -73,16 +63,4 @@ export function graphql<TData = ExecutionResultDataDefault>(
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
-export function graphqlSync<TData = ExecutionResultDataDefault>(
-  args: GraphQLArgs,
-): ExecutionResult<TData>;
-export function graphqlSync<TData = ExecutionResultDataDefault>(
-  schema: GraphQLSchema,
-  source: Source | string,
-  rootValue?: any,
-  contextValue?: any,
-  variableValues?: Maybe<{ [key: string]: any }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
-): ExecutionResult<TData>;
+export function graphqlSync(args: GraphQLArgs): ExecutionResult;

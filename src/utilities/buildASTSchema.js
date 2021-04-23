@@ -1,38 +1,21 @@
-// @flow strict
+import { devAssert } from '../jsutils/devAssert';
 
-import devAssert from '../jsutils/devAssert';
-
+import type { Source } from '../language/source';
+import type { DocumentNode } from '../language/ast';
+import type { ParseOptions } from '../language/parser';
 import { Kind } from '../language/kinds';
-import { type Source } from '../language/source';
-import { type DocumentNode } from '../language/ast';
-import { type ParseOptions, parse } from '../language/parser';
+import { parse } from '../language/parser';
 
 import { assertValidSDL } from '../validation/validate';
 
-import {
-  type GraphQLSchemaValidationOptions,
-  GraphQLSchema,
-} from '../type/schema';
-import {
-  GraphQLSkipDirective,
-  GraphQLIncludeDirective,
-  GraphQLDeprecatedDirective,
-} from '../type/directives';
+import type { GraphQLSchemaValidationOptions } from '../type/schema';
+import { GraphQLSchema } from '../type/schema';
+import { specifiedDirectives } from '../type/directives';
 
 import { extendSchemaImpl } from './extendSchema';
 
 export type BuildSchemaOptions = {|
   ...GraphQLSchemaValidationOptions,
-
-  /**
-   * Descriptions are defined as preceding string literals, however an older
-   * experimental version of the SDL supported preceding comments as
-   * descriptions. Set to true to enable this deprecated behavior.
-   * This option is provided to ease adoption and will be removed in v16.
-   *
-   * Default: false
-   */
-  commentDescriptions?: boolean,
 
   /**
    * Set to true to assume the SDL is valid.
@@ -51,12 +34,6 @@ export type BuildSchemaOptions = {|
  *
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
- *
- * Accepts options as a second argument:
- *
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *
  */
 export function buildASTSchema(
   documentAST: DocumentNode,
@@ -71,6 +48,14 @@ export function buildASTSchema(
     assertValidSDL(documentAST);
   }
 
+  const emptySchemaConfig = {
+    description: undefined,
+    types: [],
+    directives: [],
+    extensions: undefined,
+    extensionASTNodes: [],
+    assumeValid: false,
+  };
   const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
   if (config.astNode == null) {
@@ -94,22 +79,14 @@ export function buildASTSchema(
 
   const { directives } = config;
   // If specified directives were not explicitly declared, add them.
-  if (!directives.some(directive => directive.name === 'skip')) {
-    directives.push(GraphQLSkipDirective);
-  }
-
-  if (!directives.some(directive => directive.name === 'include')) {
-    directives.push(GraphQLIncludeDirective);
-  }
-
-  if (!directives.some(directive => directive.name === 'deprecated')) {
-    directives.push(GraphQLDeprecatedDirective);
+  for (const stdDirective of specifiedDirectives) {
+    if (directives.every((directive) => directive.name !== stdDirective.name)) {
+      directives.push(stdDirective);
+    }
   }
 
   return new GraphQLSchema(config);
 }
-
-const emptySchemaConfig = new GraphQLSchema({ directives: [] }).toConfig();
 
 /**
  * A helper function to build a GraphQLSchema directly from a source
@@ -121,14 +98,10 @@ export function buildSchema(
 ): GraphQLSchema {
   const document = parse(source, {
     noLocation: options?.noLocation,
-    allowLegacySDLEmptyFields: options?.allowLegacySDLEmptyFields,
-    allowLegacySDLImplementsInterfaces:
-      options?.allowLegacySDLImplementsInterfaces,
-    experimentalFragmentVariables: options?.experimentalFragmentVariables,
+    allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables,
   });
 
   return buildASTSchema(document, {
-    commentDescriptions: options?.commentDescriptions,
     assumeValidSDL: options?.assumeValidSDL,
     assumeValid: options?.assumeValid,
   });

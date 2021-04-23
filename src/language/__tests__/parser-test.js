@@ -1,37 +1,23 @@
-// @flow strict
-
-import { inspect as nodeInspect } from 'util';
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
-import inspect from '../../jsutils/inspect';
+import { dedent } from '../../__testUtils__/dedent';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
+
+import { inspect } from '../../jsutils/inspect';
 
 import { Kind } from '../kinds';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseType } from '../parser';
 
-import { kitchenSinkQuery } from '../../__fixtures__/index';
+import { toJSONDeep } from './toJSONDeep';
 
-import toJSONDeep from './toJSONDeep';
-
-function expectSyntaxError(text) {
+function expectSyntaxError(text: string) {
   return expect(() => parse(text)).to.throw();
 }
 
 describe('Parser', () => {
-  it('asserts that a source to parse was provided', () => {
-    // $DisableFlowOnNegativeTest
-    expect(() => parse()).to.throw('Must provide Source. Received: undefined.');
-  });
-
-  it('asserts that an invalid source to parse was provided', () => {
-    // $DisableFlowOnNegativeTest
-    expect(() => parse({})).to.throw('Must provide Source. Received: {}.');
-  });
-
   it('parse provides useful errors', () => {
     let caughtError;
     try {
@@ -46,7 +32,7 @@ describe('Parser', () => {
       locations: [{ line: 1, column: 2 }],
     });
 
-    expect(String(caughtError) + '\n').to.equal(dedent`
+    expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Expected Name, found <EOF>.
 
       GraphQL request:1:2
@@ -90,7 +76,7 @@ describe('Parser', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError) + '\n').to.equal(dedent`
+    expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Expected "{", found <EOF>.
 
       MyQuery.graphql:1:6
@@ -231,7 +217,7 @@ describe('Parser', () => {
 
     expect(toJSONDeep(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 41 },
+      loc: { start: 0, end: 40 },
       definitions: [
         {
           kind: Kind.OPERATION_DEFINITION,
@@ -321,7 +307,7 @@ describe('Parser', () => {
 
     expect(toJSONDeep(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 30 },
+      loc: { start: 0, end: 29 },
       definitions: [
         {
           kind: Kind.OPERATION_DEFINITION,
@@ -377,11 +363,11 @@ describe('Parser', () => {
     expect(result.loc).to.equal(undefined);
   });
 
-  it('Experimental: allows parsing fragment defined variables', () => {
+  it('Legacy: allows parsing fragment defined variables', () => {
     const document = 'fragment a($v: Boolean = false) on t { f(v: $v) }';
 
     expect(() =>
-      parse(document, { experimentalFragmentVariables: true }),
+      parse(document, { allowLegacyFragmentVariables: true }),
     ).to.not.throw();
     expect(() => parse(document)).to.throw('Syntax Error');
   });
@@ -390,7 +376,6 @@ describe('Parser', () => {
     const result = parse('{ id }');
 
     expect(JSON.stringify(result.loc)).to.equal('{"start":0,"end":6}');
-    expect(nodeInspect(result.loc)).to.equal('{ start: 0, end: 6 }');
     expect(inspect(result.loc)).to.equal('{ start: 0, end: 6 }');
   });
 

@@ -1,12 +1,9 @@
-// @flow strict
-
-import { inspect as nodeInspect } from 'util';
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
-import inspect from '../../jsutils/inspect';
+import { dedent } from '../../__testUtils__/dedent';
+
+import { inspect } from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
@@ -14,18 +11,18 @@ import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { Lexer, isPunctuatorTokenKind } from '../lexer';
 
-function lexOne(str) {
+function lexOne(str: string) {
   const lexer = new Lexer(new Source(str));
   return lexer.advance();
 }
 
-function lexSecond(str) {
+function lexSecond(str: string) {
   const lexer = new Lexer(new Source(str));
   lexer.advance();
   return lexer.advance();
 }
 
-function expectSyntaxError(text) {
+function expectSyntaxError(text: string) {
   return expect(() => lexSecond(text)).to.throw();
 }
 
@@ -121,9 +118,6 @@ describe('Lexer', () => {
     expect(JSON.stringify(token)).to.equal(
       '{"kind":"Name","value":"foo","line":1,"column":1}',
     );
-    expect(nodeInspect(token)).to.equal(
-      "{ kind: 'Name', value: 'foo', line: 1, column: 1 }",
-    );
     expect(inspect(token)).to.equal(
       '{ kind: "Name", value: "foo", line: 1, column: 1 }',
     );
@@ -171,7 +165,7 @@ describe('Lexer', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError) + '\n').to.equal(dedent`
+    expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Cannot parse the unexpected character "?".
 
       GraphQL request:3:5
@@ -191,7 +185,7 @@ describe('Lexer', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError) + '\n').to.equal(dedent`
+    expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Cannot parse the unexpected character "?".
 
       foo.js:13:6
@@ -210,7 +204,7 @@ describe('Lexer', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError) + '\n').to.equal(dedent`
+    expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Cannot parse the unexpected character "?".
 
       foo.js:1:5
@@ -982,7 +976,7 @@ describe('Lexer', () => {
       tokens.push(tok);
     }
 
-    expect(tokens.map(tok => tok.kind)).to.deep.equal([
+    expect(tokens.map((tok) => tok.kind)).to.deep.equal([
       TokenKind.SOF,
       TokenKind.BRACE_L,
       TokenKind.COMMENT,
@@ -994,7 +988,7 @@ describe('Lexer', () => {
 });
 
 describe('isPunctuatorTokenKind', () => {
-  function isPunctuatorToken(text) {
+  function isPunctuatorToken(text: string) {
     return isPunctuatorTokenKind(lexOne(text).kind);
   }
 

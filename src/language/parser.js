@@ -1,63 +1,59 @@
-// @flow strict
-
-import inspect from '../jsutils/inspect';
-import devAssert from '../jsutils/devAssert';
-
+import type { GraphQLError } from '../error/GraphQLError';
 import { syntaxError } from '../error/syntaxError';
-import { type GraphQLError } from '../error/GraphQLError';
 
-import { Kind } from './kinds';
-import { Source } from './source';
-import { DirectiveLocation } from './directiveLocation';
-import { type TokenKindEnum, TokenKind } from './tokenKind';
-import { Lexer, isPunctuatorTokenKind } from './lexer';
-import {
-  Location,
-  type Token,
-  type NameNode,
-  type VariableNode,
-  type DocumentNode,
-  type DefinitionNode,
-  type OperationDefinitionNode,
-  type OperationTypeNode,
-  type VariableDefinitionNode,
-  type SelectionSetNode,
-  type SelectionNode,
-  type FieldNode,
-  type ArgumentNode,
-  type FragmentSpreadNode,
-  type InlineFragmentNode,
-  type FragmentDefinitionNode,
-  type ValueNode,
-  type StringValueNode,
-  type ListValueNode,
-  type ObjectValueNode,
-  type ObjectFieldNode,
-  type DirectiveNode,
-  type TypeNode,
-  type NamedTypeNode,
-  type TypeSystemDefinitionNode,
-  type SchemaDefinitionNode,
-  type OperationTypeDefinitionNode,
-  type ScalarTypeDefinitionNode,
-  type ObjectTypeDefinitionNode,
-  type FieldDefinitionNode,
-  type InputValueDefinitionNode,
-  type InterfaceTypeDefinitionNode,
-  type UnionTypeDefinitionNode,
-  type EnumTypeDefinitionNode,
-  type EnumValueDefinitionNode,
-  type InputObjectTypeDefinitionNode,
-  type DirectiveDefinitionNode,
-  type TypeSystemExtensionNode,
-  type SchemaExtensionNode,
-  type ScalarTypeExtensionNode,
-  type ObjectTypeExtensionNode,
-  type InterfaceTypeExtensionNode,
-  type UnionTypeExtensionNode,
-  type EnumTypeExtensionNode,
-  type InputObjectTypeExtensionNode,
+import type { TokenKindEnum } from './tokenKind';
+import type {
+  Token,
+  NameNode,
+  VariableNode,
+  DocumentNode,
+  DefinitionNode,
+  OperationDefinitionNode,
+  OperationTypeNode,
+  VariableDefinitionNode,
+  SelectionSetNode,
+  SelectionNode,
+  FieldNode,
+  ArgumentNode,
+  FragmentSpreadNode,
+  InlineFragmentNode,
+  FragmentDefinitionNode,
+  ValueNode,
+  StringValueNode,
+  ListValueNode,
+  ObjectValueNode,
+  ObjectFieldNode,
+  DirectiveNode,
+  TypeNode,
+  NamedTypeNode,
+  TypeSystemDefinitionNode,
+  SchemaDefinitionNode,
+  OperationTypeDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+  FieldDefinitionNode,
+  InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  UnionTypeDefinitionNode,
+  EnumTypeDefinitionNode,
+  EnumValueDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  DirectiveDefinitionNode,
+  TypeSystemExtensionNode,
+  SchemaExtensionNode,
+  ScalarTypeExtensionNode,
+  ObjectTypeExtensionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
 } from './ast';
+import { Kind } from './kinds';
+import { Location } from './ast';
+import { TokenKind } from './tokenKind';
+import { Source, isSource } from './source';
+import { DirectiveLocation } from './directiveLocation';
+import { Lexer, isPunctuatorTokenKind } from './lexer';
 
 /**
  * Configuration options to control parser behavior
@@ -71,27 +67,7 @@ export type ParseOptions = {|
   noLocation?: boolean,
 
   /**
-   * If enabled, the parser will parse empty fields sets in the Schema
-   * Definition Language. Otherwise, the parser will follow the current
-   * specification.
-   *
-   * This option is provided to ease adoption of the final SDL specification
-   * and will be removed in v16.
-   */
-  allowLegacySDLEmptyFields?: boolean,
-
-  /**
-   * If enabled, the parser will parse implemented interfaces with no `&`
-   * character between each interface. Otherwise, the parser will follow the
-   * current specification.
-   *
-   * This option is provided to ease adoption of the final SDL specification
-   * and will be removed in v16.
-   */
-  allowLegacySDLImplementsInterfaces?: boolean,
-
-  /**
-   * EXPERIMENTAL:
+   * @deprecated will be removed in the v17.0.0
    *
    * If enabled, the parser will understand and parse variable definitions
    * contained in a fragment definition. They'll be represented in the
@@ -103,10 +79,8 @@ export type ParseOptions = {|
    *     ...
    *   }
    *
-   * Note: this feature is experimental and may change or be removed in the
-   * future.
    */
-  experimentalFragmentVariables?: boolean,
+  allowLegacyFragmentVariables?: boolean,
 |};
 
 /**
@@ -163,16 +137,23 @@ export function parseType(
   return type;
 }
 
-class Parser {
+/**
+ * This class is exported only to assist people in implementing their own parsers
+ * without duplicating too much code and should be used only as last resort for cases
+ * such as experimental syntax or if certain features could not be contributed upstream.
+ *
+ * It is still part of the internal API and is versioned, so any changes to it are never
+ * considered breaking changes. If you still need to support multiple versions of the
+ * library, please use the `versionInfo` variable for version detection.
+ *
+ * @internal
+ */
+export class Parser {
   _options: ?ParseOptions;
   _lexer: Lexer;
 
   constructor(source: string | Source, options?: ParseOptions) {
-    const sourceObj = typeof source === 'string' ? new Source(source) : source;
-    devAssert(
-      sourceObj instanceof Source,
-      `Must provide Source. Received: ${inspect(sourceObj)}.`,
-    );
+    const sourceObj = isSource(source) ? source : new Source(source);
 
     this._lexer = new Lexer(sourceObj);
     this._options = options;
@@ -475,10 +456,10 @@ class Parser {
   parseFragmentDefinition(): FragmentDefinitionNode {
     const start = this._lexer.token;
     this.expectKeyword('fragment');
-    // Experimental support for defining variables within fragments changes
+    // Legacy support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options?.experimentalFragmentVariables === true) {
+    if (this._options?.allowLegacyFragmentVariables === true) {
       return {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
@@ -674,11 +655,11 @@ class Parser {
     const start = this._lexer.token;
     let type;
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
-      type = this.parseTypeReference();
+      const innerType = this.parseTypeReference();
       this.expectToken(TokenKind.BRACKET_R);
       type = {
         kind: Kind.LIST_TYPE,
-        type,
+        type: innerType,
         loc: this.loc(start),
       };
     } else {
@@ -852,36 +833,15 @@ class Parser {
    *   - ImplementsInterfaces & NamedType
    */
   parseImplementsInterfaces(): Array<NamedTypeNode> {
-    const types = [];
-    if (this.expectOptionalKeyword('implements')) {
-      // Optional leading ampersand
-      this.expectOptionalToken(TokenKind.AMP);
-      do {
-        types.push(this.parseNamedType());
-      } while (
-        this.expectOptionalToken(TokenKind.AMP) ||
-        // Legacy support for the SDL?
-        (this._options?.allowLegacySDLImplementsInterfaces === true &&
-          this.peek(TokenKind.NAME))
-      );
-    }
-    return types;
+    return this.expectOptionalKeyword('implements')
+      ? this.delimitedMany(TokenKind.AMP, this.parseNamedType)
+      : [];
   }
 
   /**
    * FieldsDefinition : { FieldDefinition+ }
    */
   parseFieldsDefinition(): Array<FieldDefinitionNode> {
-    // Legacy support for the SDL?
-    if (
-      this._options?.allowLegacySDLEmptyFields === true &&
-      this.peek(TokenKind.BRACE_L) &&
-      this._lexer.lookahead().kind === TokenKind.BRACE_R
-    ) {
-      this._lexer.advance();
-      this._lexer.advance();
-      return [];
-    }
     return this.optionalMany(
       TokenKind.BRACE_L,
       this.parseFieldDefinition,
@@ -999,15 +959,9 @@ class Parser {
    *   - UnionMemberTypes | NamedType
    */
   parseUnionMemberTypes(): Array<NamedTypeNode> {
-    const types = [];
-    if (this.expectOptionalToken(TokenKind.EQUALS)) {
-      // Optional leading pipe
-      this.expectOptionalToken(TokenKind.PIPE);
-      do {
-        types.push(this.parseNamedType());
-      } while (this.expectOptionalToken(TokenKind.PIPE));
-    }
-    return types;
+    return this.expectOptionalToken(TokenKind.EQUALS)
+      ? this.delimitedMany(TokenKind.PIPE, this.parseNamedType)
+      : [];
   }
 
   /**
@@ -1343,13 +1297,7 @@ class Parser {
    *   - DirectiveLocations | DirectiveLocation
    */
   parseDirectiveLocations(): Array<NameNode> {
-    // Optional leading pipe
-    this.expectOptionalToken(TokenKind.PIPE);
-    const locations = [];
-    do {
-      locations.push(this.parseDirectiveLocation());
-    } while (this.expectOptionalToken(TokenKind.PIPE));
-    return locations;
+    return this.delimitedMany(TokenKind.PIPE, this.parseDirectiveLocation);
   }
 
   /*
@@ -1391,8 +1339,7 @@ class Parser {
   // Core parsing utility functions
 
   /**
-   * Returns a location object, used to identify the place in
-   * the source that created a given parsed object.
+   * Returns a location object, used to identify the place in the source that created a given parsed object.
    */
   loc(startToken: Token): Location | void {
     if (this._options?.noLocation !== true) {
@@ -1412,8 +1359,8 @@ class Parser {
   }
 
   /**
-   * If the next token is of the given kind, return that token after advancing
-   * the lexer. Otherwise, do not change the parser state and throw an error.
+   * If the next token is of the given kind, return that token after advancing the lexer.
+   * Otherwise, do not change the parser state and throw an error.
    */
   expectToken(kind: TokenKindEnum): Token {
     const token = this._lexer.token;
@@ -1430,8 +1377,8 @@ class Parser {
   }
 
   /**
-   * If the next token is of the given kind, return that token after advancing
-   * the lexer. Otherwise, do not change the parser state and return undefined.
+   * If the next token is of the given kind, return that token after advancing the lexer.
+   * Otherwise, do not change the parser state and return undefined.
    */
   expectOptionalToken(kind: TokenKindEnum): ?Token {
     const token = this._lexer.token;
@@ -1460,8 +1407,8 @@ class Parser {
   }
 
   /**
-   * If the next token is a given keyword, return "true" after advancing
-   * the lexer. Otherwise, do not change the parser state and return "false".
+   * If the next token is a given keyword, return "true" after advancing the lexer.
+   * Otherwise, do not change the parser state and return "false".
    */
   expectOptionalKeyword(value: string): boolean {
     const token = this._lexer.token;
@@ -1473,8 +1420,7 @@ class Parser {
   }
 
   /**
-   * Helper function for creating an error when an unexpected lexed token
-   * is encountered.
+   * Helper function for creating an error when an unexpected lexed token is encountered.
    */
   unexpected(atToken?: ?Token): GraphQLError {
     const token = atToken ?? this._lexer.token;
@@ -1486,10 +1432,9 @@ class Parser {
   }
 
   /**
-   * Returns a possibly empty list of parse nodes, determined by
-   * the parseFn. This list begins with a lex token of openKind
-   * and ends with a lex token of closeKind. Advances the parser
-   * to the next lex token after the closing token.
+   * Returns a possibly empty list of parse nodes, determined by the parseFn.
+   * This list begins with a lex token of openKind and ends with a lex token of closeKind.
+   * Advances the parser to the next lex token after the closing token.
    */
   any<T>(
     openKind: TokenKindEnum,
@@ -1506,10 +1451,9 @@ class Parser {
 
   /**
    * Returns a list of parse nodes, determined by the parseFn.
-   * It can be empty only if open token is missing otherwise it will always
-   * return non-empty list that begins with a lex token of openKind and ends
-   * with a lex token of closeKind. Advances the parser to the next lex token
-   * after the closing token.
+   * It can be empty only if open token is missing otherwise it will always return non-empty list
+   * that begins with a lex token of openKind and ends with a lex token of closeKind.
+   * Advances the parser to the next lex token after the closing token.
    */
   optionalMany<T>(
     openKind: TokenKindEnum,
@@ -1527,10 +1471,9 @@ class Parser {
   }
 
   /**
-   * Returns a non-empty list of parse nodes, determined by
-   * the parseFn. This list begins with a lex token of openKind
-   * and ends with a lex token of closeKind. Advances the parser
-   * to the next lex token after the closing token.
+   * Returns a non-empty list of parse nodes, determined by the parseFn.
+   * This list begins with a lex token of openKind and ends with a lex token of closeKind.
+   * Advances the parser to the next lex token after the closing token.
    */
   many<T>(
     openKind: TokenKindEnum,
@@ -1544,10 +1487,25 @@ class Parser {
     } while (!this.expectOptionalToken(closeKind));
     return nodes;
   }
+
+  /**
+   * Returns a non-empty list of parse nodes, determined by the parseFn.
+   * This list may begin with a lex token of delimiterKind followed by items separated by lex tokens of tokenKind.
+   * Advances the parser to the next lex token after last item in the list.
+   */
+  delimitedMany<T>(delimiterKind: TokenKindEnum, parseFn: () => T): Array<T> {
+    this.expectOptionalToken(delimiterKind);
+
+    const nodes = [];
+    do {
+      nodes.push(parseFn.call(this));
+    } while (this.expectOptionalToken(delimiterKind));
+    return nodes;
+  }
 }
 
 /**
- * A helper function to describe a token as a string for debugging
+ * A helper function to describe a token as a string for debugging.
  */
 function getTokenDesc(token: Token): string {
   const value = token.value;
@@ -1555,7 +1513,7 @@ function getTokenDesc(token: Token): string {
 }
 
 /**
- * A helper function to describe a token kind as a string for debugging
+ * A helper function to describe a token kind as a string for debugging.
  */
 function getTokenKindDesc(kind: TokenKindEnum): string {
   return isPunctuatorTokenKind(kind) ? `"${kind}"` : kind;

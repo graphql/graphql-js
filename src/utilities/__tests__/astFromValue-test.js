@@ -1,5 +1,3 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -48,7 +46,7 @@ describe('astFromValue', () => {
       value: true,
     });
 
-    const NonNullBoolean = GraphQLNonNull(GraphQLBoolean);
+    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
     expect(astFromValue(0, NonNullBoolean)).to.deep.equal({
       kind: 'BooleanValue',
       value: false,
@@ -238,7 +236,7 @@ describe('astFromValue', () => {
   });
 
   it('does not converts NonNull values to NullValue', () => {
-    const NonNullBoolean = GraphQLNonNull(GraphQLBoolean);
+    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
     expect(astFromValue(null, NonNullBoolean)).to.deep.equal(null);
   });
 
@@ -277,7 +275,7 @@ describe('astFromValue', () => {
 
   it('converts array values to List ASTs', () => {
     expect(
-      astFromValue(['FOO', 'BAR'], GraphQLList(GraphQLString)),
+      astFromValue(['FOO', 'BAR'], new GraphQLList(GraphQLString)),
     ).to.deep.equal({
       kind: 'ListValue',
       values: [
@@ -287,7 +285,7 @@ describe('astFromValue', () => {
     });
 
     expect(
-      astFromValue(['HELLO', 'GOODBYE'], GraphQLList(myEnum)),
+      astFromValue(['HELLO', 'GOODBYE'], new GraphQLList(myEnum)),
     ).to.deep.equal({
       kind: 'ListValue',
       values: [
@@ -295,10 +293,27 @@ describe('astFromValue', () => {
         { kind: 'EnumValue', value: 'GOODBYE' },
       ],
     });
+
+    function* listGenerator() {
+      yield 1;
+      yield 2;
+      yield 3;
+    }
+
+    expect(
+      astFromValue(listGenerator(), new GraphQLList(GraphQLInt)),
+    ).to.deep.equal({
+      kind: 'ListValue',
+      values: [
+        { kind: 'IntValue', value: '1' },
+        { kind: 'IntValue', value: '2' },
+        { kind: 'IntValue', value: '3' },
+      ],
+    });
   });
 
   it('converts list singletons', () => {
-    expect(astFromValue('FOO', GraphQLList(GraphQLString))).to.deep.equal({
+    expect(astFromValue('FOO', new GraphQLList(GraphQLString))).to.deep.equal({
       kind: 'StringValue',
       value: 'FOO',
     });
@@ -307,7 +322,7 @@ describe('astFromValue', () => {
   it('skip invalid list items', () => {
     const ast = astFromValue(
       ['FOO', null, 'BAR'],
-      GraphQLList(GraphQLNonNull(GraphQLString)),
+      new GraphQLList(new GraphQLNonNull(GraphQLString)),
     );
 
     expect(ast).to.deep.equal({

@@ -1,21 +1,18 @@
-// @flow strict
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import dedent from '../../jsutils/dedent';
-
-import { kitchenSinkSDL } from '../../__fixtures__/index';
+import { dedent } from '../../__testUtils__/dedent';
+import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
 
 import { parse } from '../parser';
 
-import toJSONDeep from './toJSONDeep';
+import { toJSONDeep } from './toJSONDeep';
 
-function expectSyntaxError(text) {
+function expectSyntaxError(text: string) {
   return expect(() => parse(text)).to.throw();
 }
 
-function typeNode(name, loc) {
+function typeNode(name: mixed, loc: mixed) {
   return {
     kind: 'NamedType',
     name: nameNode(name, loc),
@@ -23,7 +20,7 @@ function typeNode(name, loc) {
   };
 }
 
-function nameNode(name, loc) {
+function nameNode(name: mixed, loc: mixed) {
   return {
     kind: 'Name',
     value: name,
@@ -31,11 +28,11 @@ function nameNode(name, loc) {
   };
 }
 
-function fieldNode(name, type, loc) {
+function fieldNode(name: mixed, type: mixed, loc: mixed) {
   return fieldNodeWithArgs(name, type, [], loc);
 }
 
-function fieldNodeWithArgs(name, type, args, loc) {
+function fieldNodeWithArgs(name: mixed, type: mixed, args: mixed, loc: mixed) {
   return {
     kind: 'FieldDefinition',
     description: undefined,
@@ -47,7 +44,7 @@ function fieldNodeWithArgs(name, type, args, loc) {
   };
 }
 
-function enumValueNode(name, loc) {
+function enumValueNode(name: mixed, loc: mixed) {
   return {
     kind: 'EnumValueDefinition',
     name: nameNode(name, loc),
@@ -57,7 +54,12 @@ function enumValueNode(name, loc) {
   };
 }
 
-function inputValueNode(name, type, defaultValue, loc) {
+function inputValueNode(
+  name: mixed,
+  type: mixed,
+  defaultValue: mixed,
+  loc: mixed,
+) {
   return {
     kind: 'InputValueDefinition',
     name,
@@ -96,7 +98,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 30 },
         },
       ],
-      loc: { start: 0, end: 31 },
+      loc: { start: 0, end: 30 },
     });
   });
 
@@ -108,7 +110,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expect(toJSONDeep(doc)).to.nested.deep.property(
+    expect(toJSONDeep(doc)).to.deep.nested.property(
       'definitions[0].description',
       {
         kind: 'StringValue',
@@ -130,7 +132,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expect(toJSONDeep(doc)).to.nested.deep.property(
+    expect(toJSONDeep(doc)).to.deep.nested.property(
       'definitions[0].description',
       {
         kind: 'StringValue',
@@ -149,7 +151,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expect(toJSONDeep(doc)).to.nested.deep.property(
+    expect(toJSONDeep(doc)).to.deep.nested.property(
       'definitions[0].description',
       {
         kind: 'StringValue',
@@ -192,7 +194,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 37 },
         },
       ],
-      loc: { start: 0, end: 38 },
+      loc: { start: 0, end: 37 },
     });
   });
 
@@ -463,7 +465,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 31 },
         },
       ],
-      loc: { start: 0, end: 32 },
+      loc: { start: 0, end: 31 },
     });
   });
 
@@ -701,7 +703,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 35 },
         },
       ],
-      loc: { start: 0, end: 36 },
+      loc: { start: 0, end: 35 },
     });
   });
 
@@ -739,7 +741,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 45 },
         },
       ],
-      loc: { start: 0, end: 46 },
+      loc: { start: 0, end: 45 },
     });
   });
 
@@ -781,7 +783,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 52 },
         },
       ],
-      loc: { start: 0, end: 53 },
+      loc: { start: 0, end: 52 },
     });
   });
 
@@ -823,7 +825,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 48 },
         },
       ],
-      loc: { start: 0, end: 49 },
+      loc: { start: 0, end: 48 },
     });
   });
 
@@ -867,7 +869,7 @@ describe('Schema Parser', () => {
           loc: { start: 0, end: 60 },
         },
       ],
-      loc: { start: 0, end: 61 },
+      loc: { start: 0, end: 60 },
     });
   });
 
@@ -1103,30 +1105,5 @@ input Hello {
 
   it('parses kitchen sink schema', () => {
     expect(() => parse(kitchenSinkSDL)).to.not.throw();
-  });
-
-  it('Option: allowLegacySDLEmptyFields supports type with empty fields', () => {
-    const body = 'type Hello { }';
-    expectSyntaxError(body).to.include({
-      message: 'Syntax Error: Expected Name, found "}".',
-    });
-
-    const doc = parse(body, { allowLegacySDLEmptyFields: true });
-    expect(doc).to.have.deep.nested.property('definitions[0].fields', []);
-  });
-
-  it('Option: allowLegacySDLImplementsInterfaces', () => {
-    const body = 'type Hello implements Wo rld { field: String }';
-    expectSyntaxError(body).to.include({
-      message: 'Syntax Error: Unexpected Name "rld".',
-    });
-
-    const doc = parse(body, { allowLegacySDLImplementsInterfaces: true });
-    expect(
-      toJSONDeep(doc),
-    ).to.have.deep.nested.property('definitions[0].interfaces', [
-      typeNode('Wo', { start: 22, end: 24 }),
-      typeNode('rld', { start: 25, end: 28 }),
-    ]);
   });
 });

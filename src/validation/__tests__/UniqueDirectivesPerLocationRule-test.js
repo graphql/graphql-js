@@ -1,8 +1,9 @@
-// @flow strict
-
 import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
+
+import type { GraphQLSchema } from '../../type/schema';
+
 import { extendSchema } from '../../utilities/extendSchema';
 
 import { UniqueDirectivesPerLocationRule } from '../rules/UniqueDirectivesPerLocationRule';
@@ -21,7 +22,7 @@ const extensionSDL = `
 `;
 const schemaWithDirectives = extendSchema(testSchema, parse(extensionSDL));
 
-function expectErrors(queryStr) {
+function expectErrors(queryStr: string) {
   return expectValidationErrorsWithSchema(
     schemaWithDirectives,
     UniqueDirectivesPerLocationRule,
@@ -29,11 +30,11 @@ function expectErrors(queryStr) {
   );
 }
 
-function expectValid(queryStr) {
+function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
 
-function expectSDLErrors(sdlStr, schema) {
+function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(
     schema,
     UniqueDirectivesPerLocationRule,
@@ -201,22 +202,12 @@ describe('Validate: Directives Are Unique Per Location', () => {
         SCHEMA | SCALAR | OBJECT | INTERFACE | UNION | INPUT_OBJECT
 
       schema @nonRepeatable @nonRepeatable { query: Dummy }
-      extend schema @nonRepeatable @nonRepeatable
 
       scalar TestScalar @nonRepeatable @nonRepeatable
-      extend scalar TestScalar @nonRepeatable @nonRepeatable
-
       type TestObject @nonRepeatable @nonRepeatable
-      extend type TestObject @nonRepeatable @nonRepeatable
-
       interface TestInterface @nonRepeatable @nonRepeatable
-      extend interface TestInterface @nonRepeatable @nonRepeatable
-
       union TestUnion @nonRepeatable @nonRepeatable
-      extend union TestUnion @nonRepeatable @nonRepeatable
-
       input TestInput @nonRepeatable @nonRepeatable
-      extend input TestInput @nonRepeatable @nonRepeatable
     `).to.deep.equal([
       {
         message:
@@ -230,24 +221,32 @@ describe('Validate: Directives Are Unique Per Location', () => {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 6, column: 21 },
-          { line: 6, column: 36 },
+          { line: 7, column: 25 },
+          { line: 7, column: 40 },
         ],
       },
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 8, column: 25 },
-          { line: 8, column: 40 },
+          { line: 8, column: 23 },
+          { line: 8, column: 38 },
         ],
       },
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 9, column: 32 },
-          { line: 9, column: 47 },
+          { line: 9, column: 31 },
+          { line: 9, column: 46 },
+        ],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [
+          { line: 10, column: 23 },
+          { line: 10, column: 38 },
         ],
       },
       {
@@ -258,60 +257,136 @@ describe('Validate: Directives Are Unique Per Location', () => {
           { line: 11, column: 38 },
         ],
       },
+    ]);
+  });
+
+  it('duplicate directives on SDL extensions', () => {
+    expectSDLErrors(`
+      directive @nonRepeatable on
+        SCHEMA | SCALAR | OBJECT | INTERFACE | UNION | INPUT_OBJECT
+
+      extend schema @nonRepeatable @nonRepeatable
+
+      extend scalar TestScalar @nonRepeatable @nonRepeatable
+      extend type TestObject @nonRepeatable @nonRepeatable
+      extend interface TestInterface @nonRepeatable @nonRepeatable
+      extend union TestUnion @nonRepeatable @nonRepeatable
+      extend input TestInput @nonRepeatable @nonRepeatable
+    `).to.deep.equal([
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 12, column: 30 },
-          { line: 12, column: 45 },
+          { line: 5, column: 21 },
+          { line: 5, column: 36 },
         ],
       },
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 14, column: 31 },
-          { line: 14, column: 46 },
+          { line: 7, column: 32 },
+          { line: 7, column: 47 },
         ],
       },
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 15, column: 38 },
-          { line: 15, column: 53 },
+          { line: 8, column: 30 },
+          { line: 8, column: 45 },
         ],
       },
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 17, column: 23 },
-          { line: 17, column: 38 },
+          { line: 9, column: 38 },
+          { line: 9, column: 53 },
         ],
       },
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 18, column: 30 },
-          { line: 18, column: 45 },
+          { line: 10, column: 30 },
+          { line: 10, column: 45 },
         ],
       },
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 20, column: 23 },
-          { line: 20, column: 38 },
+          { line: 11, column: 30 },
+          { line: 11, column: 45 },
+        ],
+      },
+    ]);
+  });
+
+  it('duplicate directives between SDL definitions and extensions', () => {
+    expectSDLErrors(`
+      directive @nonRepeatable on SCHEMA
+
+      schema @nonRepeatable { query: Dummy }
+      extend schema @nonRepeatable
+    `).to.deep.equal([
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [
+          { line: 4, column: 14 },
+          { line: 5, column: 21 },
+        ],
+      },
+    ]);
+
+    expectSDLErrors(`
+      directive @nonRepeatable on SCALAR
+
+      scalar TestScalar @nonRepeatable
+      extend scalar TestScalar @nonRepeatable
+      scalar TestScalar @nonRepeatable
+    `).to.deep.equal([
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [
+          { line: 4, column: 25 },
+          { line: 5, column: 32 },
         ],
       },
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
         locations: [
-          { line: 21, column: 30 },
-          { line: 21, column: 45 },
+          { line: 4, column: 25 },
+          { line: 6, column: 25 },
+        ],
+      },
+    ]);
+
+    expectSDLErrors(`
+      directive @nonRepeatable on OBJECT
+
+      extend type TestObject @nonRepeatable
+      type TestObject @nonRepeatable
+      extend type TestObject @nonRepeatable
+    `).to.deep.equal([
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [
+          { line: 4, column: 30 },
+          { line: 5, column: 23 },
+        ],
+      },
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [
+          { line: 4, column: 30 },
+          { line: 6, column: 30 },
         ],
       },
     ]);

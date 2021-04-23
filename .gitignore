@@ -5,11 +5,10 @@
 # https://help.github.com/articles/ignoring-files/#create-a-global-gitignore
 # https://www.gitignore.io/
 
-package-lock.json
-.nyc_output
-.eslintcache
-node_modules
-coverage
-dist
-benchmarkDist
-npm
+/.eslintcache
+/node_modules
+/coverage
+/npmDist
+/denoDist
+/npm
+/deno
