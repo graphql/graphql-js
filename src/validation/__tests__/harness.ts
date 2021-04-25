@@ -130,8 +130,23 @@ export const testSchema: GraphQLSchema = buildSchema(`
     complicatedArgs: ComplicatedArgs
   }
 
+  type Message {
+    body: String
+    sender: String
+  }
+
+  type SubscriptionRoot {
+    importantEmails: [String]
+    notImportantEmails: [String]
+    moreImportantEmails: [String]
+    spamEmails: [String]
+    deletedEmails: [String]
+    newMessage: Message
+  }
+
   schema {
     query: QueryRoot
+    subscription: SubscriptionRoot
   }
 
   directive @onQuery on QUERY

@@ -28,7 +28,7 @@ describe('Validate: Subscriptions with single field', () => {
         ...newMessageFields
       }
 
-      fragment newMessageFields on Subscription {
+      fragment newMessageFields on SubscriptionRoot {
         newMessage {
           body
           sender
@@ -47,7 +47,7 @@ describe('Validate: Subscriptions with single field', () => {
         ...newMessageFields
       }
 
-      fragment newMessageFields on Subscription {
+      fragment newMessageFields on SubscriptionRoot {
         newMessage {
           body
           sender
@@ -80,6 +80,11 @@ describe('Validate: Subscriptions with single field', () => {
     `).to.deep.equal([
       {
         message:
+          'Subscription "ImportantEmails" must select only one top level field.',
+        locations: [{ line: 4, column: 9 }],
+      },
+      {
+        message:
           'Subscription "ImportantEmails" must not select an introspection top level field.',
         locations: [{ line: 4, column: 9 }],
       },
@@ -92,10 +97,15 @@ describe('Validate: Subscriptions with single field', () => {
         importantEmails
         ...Introspection
       }
-      fragment Introspection on Subscription {
+      fragment Introspection on SubscriptionRoot {
         typename: __typename
       }
     `).to.deep.equal([
+      {
+        message:
+          'Subscription "ImportantEmails" must select only one top level field.',
+        locations: [{ line: 7, column: 9 }],
+      },
       {
         message:
           'Subscription "ImportantEmails" must not select an introspection top level field.',
@@ -132,12 +142,12 @@ describe('Validate: Subscriptions with single field', () => {
         }
         ...NotImportantEmails
       }
-      fragment NotImportantEmails on Subscription {
+      fragment NotImportantEmails on SubscriptionRoot {
         notImportantEmails
         deleted: deletedEmails
         ...SpamEmails
       }
-      fragment SpamEmails on Subscription {
+      fragment SpamEmails on SubscriptionRoot {
         spamEmails
       }
     `).to.deep.equal([
@@ -159,7 +169,7 @@ describe('Validate: Subscriptions with single field', () => {
       subscription NoInfiniteLoop {
         ...A
       }
-      fragment A on Subscription {
+      fragment A on SubscriptionRoot {
         ...A
       }
     `).to.deep.equal([]);
@@ -175,7 +185,7 @@ describe('Validate: Subscriptions with single field', () => {
         }
         ...NotImportantEmails
       }
-      fragment NotImportantEmails on Subscription {
+      fragment NotImportantEmails on SubscriptionRoot {
         notImportantEmails
         deleted: deletedEmails
         ... {
@@ -185,7 +195,7 @@ describe('Validate: Subscriptions with single field', () => {
         }
         ...SpamEmails
       }
-      fragment SpamEmails on Subscription {
+      fragment SpamEmails on SubscriptionRoot {
         spamEmails
         ...NonExistentFragment
       }

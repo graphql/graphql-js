@@ -1,78 +1,19 @@
+import type { ObjMap } from '../../jsutils/ObjMap';
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ASTVisitor } from '../../language/visitor';
 import type {
   OperationDefinitionNode,
-  SelectionSetNode,
+  FragmentDefinitionNode,
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
+import type { ExecutionContext } from '../../execution/execute';
+import { collectFields } from '../../execution/execute';
 
-/**
- * Walks the selection set and returns a list of selections where extra fields
- * were selected, and selections where introspection fields were selected.
- */
-function walkSubscriptionSelectionSet(
-  context: ASTValidationContext,
-  selectionSet: SelectionSetNode,
-  responseKeys,
-  fieldNames = new Set(),
-  visitedFragmentNames = new Set(),
-  extraFieldSelections = [],
-  introspectionFieldSelections = [],
-) {
-  for (const selection of selectionSet.selections) {
-    switch (selection.kind) {
-      case Kind.FIELD: {
-        const fieldName = selection.name.value;
-        fieldNames.add(fieldName);
-        const responseName = selection.alias
-          ? selection.alias.value
-          : fieldName;
-        responseKeys.add(responseName);
-        if (fieldName[0] === '_' && fieldName[1] === '_') {
-          // fieldName represents an introspection field if it starts with `__`
-          introspectionFieldSelections.push(selection);
-        } else if (fieldNames.size > 1 || responseKeys.size > 1) {
-          extraFieldSelections.push(selection);
-        }
-        break;
-      }
-      case Kind.FRAGMENT_SPREAD: {
-        const fragmentName = selection.name.value;
-        if (!visitedFragmentNames.has(fragmentName)) {
-          visitedFragmentNames.add(fragmentName);
-          const fragment = context.getFragment(fragmentName);
-          if (fragment) {
-            walkSubscriptionSelectionSet(
-              context,
-              fragment.selectionSet,
-              responseKeys,
-              fieldNames,
-              visitedFragmentNames,
-              extraFieldSelections,
-              introspectionFieldSelections,
-            );
-          }
-        }
-        break;
-      }
-      case Kind.INLINE_FRAGMENT: {
-        walkSubscriptionSelectionSet(
-          context,
-          selection.selectionSet,
-          responseKeys,
-          fieldNames,
-          visitedFragmentNames,
-          extraFieldSelections,
-          introspectionFieldSelections,
-        );
-        break;
-      }
-    }
-  }
-  return [extraFieldSelections, introspectionFieldSelections];
+function fakeResolver() {
+  /* noop */
 }
 
 /**
@@ -82,40 +23,75 @@ function walkSubscriptionSelectionSet(
  * that root field is not an introspection field.
  */
 export function SingleFieldSubscriptionsRule(
-  context: ASTValidationContext,
+  context: ValidationContext,
 ): ASTVisitor {
   return {
     OperationDefinition(node: OperationDefinitionNode) {
       if (node.operation === 'subscription') {
-        const responseKeys = new Set();
-        const operationName = node.name ? node.name.value : null;
-        const [
-          extraFieldSelections,
-          introspectionFieldSelections,
-        ] = walkSubscriptionSelectionSet(
-          context,
-          node.selectionSet,
-          responseKeys,
-        );
-        if (extraFieldSelections.length > 0) {
-          context.reportError(
-            new GraphQLError(
-              operationName != null
-                ? `Subscription "${operationName}" must select only one top level field.`
-                : 'Anonymous Subscription must select only one top level field.',
-              extraFieldSelections,
-            ),
+        const schema = context.getSchema();
+        const subscriptionType = schema.getSubscriptionType();
+        if (subscriptionType) {
+          const operationName = node.name ? node.name.value : null;
+          const variableValues: {
+            [variable: string]: mixed,
+            ...
+          } = {};
+          const document = context.getDocument();
+          const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
+          for (const definition of document.definitions) {
+            if (definition.kind === Kind.FRAGMENT_DEFINITION) {
+              fragments[definition.name.value] = definition;
+            }
+          }
+          const fakeExecutionContext: ExecutionContext = {
+            schema,
+            fragments,
+            rootValue: undefined,
+            contextValue: undefined,
+            operation: node,
+            variableValues,
+            fieldResolver: fakeResolver,
+            typeResolver: fakeResolver,
+            errors: [],
+          };
+          const fields = collectFields(
+            fakeExecutionContext,
+            subscriptionType,
+            node.selectionSet,
+            {},
+            {},
           );
-        }
-        if (introspectionFieldSelections.length > 0) {
-          context.reportError(
-            new GraphQLError(
-              operationName != null
-                ? `Subscription "${operationName}" must not select an introspection top level field.`
-                : 'Anonymous Subscription must not select an introspection top level field.',
-              introspectionFieldSelections,
-            ),
-          );
+          const responseKeys = Object.keys(fields);
+          if (responseKeys.length > 1) {
+            const extraResponseKeys = responseKeys.slice(1);
+            const extraFieldSelections = extraResponseKeys.flatMap(
+              (key) => fields[key],
+            );
+            context.reportError(
+              new GraphQLError(
+                operationName != null
+                  ? `Subscription "${operationName}" must select only one top level field.`
+                  : 'Anonymous Subscription must select only one top level field.',
+                extraFieldSelections,
+              ),
+            );
+          }
+          for (const responseKey of Object.keys(fields)) {
+            const field = fields[responseKey][0];
+            if (field) {
+              const fieldName = field.name.value;
+              if (fieldName[0] === '_' && fieldName[1] === '_') {
+                context.reportError(
+                  new GraphQLError(
+                    operationName != null
+                      ? `Subscription "${operationName}" must not select an introspection top level field.`
+                      : 'Anonymous Subscription must not select an introspection top level field.',
+                    fields[responseKey],
+                  ),
+                );
+              }
+            }
+          }
         }
       }
     },
