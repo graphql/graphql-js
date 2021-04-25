@@ -2,7 +2,11 @@ import { describe, it } from 'mocha';
 
 import { SingleFieldSubscriptionsRule } from '../rules/SingleFieldSubscriptionsRule';
 
-import { expectValidationErrors } from './harness';
+import {
+  expectValidationErrors,
+  expectValidationErrorsWithSchema,
+  emptySchema,
+} from './harness';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(SingleFieldSubscriptionsRule, queryStr);
@@ -253,5 +257,17 @@ describe('Validate: Subscriptions with single field', () => {
         locations: [{ line: 3, column: 9 }],
       },
     ]);
+  });
+
+  it('skips if not subscription type', () => {
+    expectValidationErrorsWithSchema(
+      emptySchema,
+      SingleFieldSubscriptionsRule,
+      `
+        subscription {
+          __typename
+        }
+      `,
+    ).to.deep.equal([]);
   });
 });

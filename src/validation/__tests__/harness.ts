@@ -159,6 +159,16 @@ export const testSchema: GraphQLSchema = buildSchema(`
   directive @onVariableDefinition on VARIABLE_DEFINITION
 `);
 
+export const emptySchema: GraphQLSchema = buildSchema(`
+  type QueryRoot {
+    empty: Boolean
+  }
+
+  schema {
+    query: QueryRoot
+  }
+`);
+
 export function expectValidationErrorsWithSchema(
   schema: GraphQLSchema,
   rule: ValidationRule,

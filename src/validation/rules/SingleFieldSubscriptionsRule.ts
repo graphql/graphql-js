@@ -10,11 +10,11 @@ import { Kind } from '../../language/kinds';
 
 import type { ValidationContext } from '../ValidationContext';
 import type { ExecutionContext } from '../../execution/execute';
-import { collectFields } from '../../execution/execute';
-
-function fakeResolver() {
-  /* noop */
-}
+import {
+  collectFields,
+  defaultFieldResolver,
+  defaultTypeResolver,
+} from '../../execution/execute';
 
 /**
  * Subscriptions must only include a non-introspection field.
@@ -50,8 +50,8 @@ export function SingleFieldSubscriptionsRule(
             contextValue: undefined,
             operation: node,
             variableValues,
-            fieldResolver: fakeResolver,
-            typeResolver: fakeResolver,
+            fieldResolver: defaultFieldResolver,
+            typeResolver: defaultTypeResolver,
             errors: [],
           };
           const fields = collectFields(
@@ -78,18 +78,16 @@ export function SingleFieldSubscriptionsRule(
           }
           for (const responseKey of Object.keys(fields)) {
             const field = fields[responseKey][0];
-            if (field) {
-              const fieldName = field.name.value;
-              if (fieldName[0] === '_' && fieldName[1] === '_') {
-                context.reportError(
-                  new GraphQLError(
-                    operationName != null
-                      ? `Subscription "${operationName}" must not select an introspection top level field.`
-                      : 'Anonymous Subscription must not select an introspection top level field.',
-                    fields[responseKey],
-                  ),
-                );
-              }
+            const fieldName = field.name.value;
+            if (fieldName[0] === '_' && fieldName[1] === '_') {
+              context.reportError(
+                new GraphQLError(
+                  operationName != null
+                    ? `Subscription "${operationName}" must not select an introspection top level field.`
+                    : 'Anonymous Subscription must not select an introspection top level field.',
+                  fields[responseKey],
+                ),
+              );
             }
           }
         }
