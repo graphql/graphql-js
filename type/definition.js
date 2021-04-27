@@ -604,20 +604,11 @@ function defineFieldMap(config) {
         false,
         `${config.name}.${fieldName} args must be an object with argument names as keys.`,
       );
-    const args = Object.entries(argsConfig).map(([argName, argConfig]) => ({
-      name: argName,
-      description: argConfig.description,
-      type: argConfig.type,
-      defaultValue: argConfig.defaultValue,
-      deprecationReason: argConfig.deprecationReason,
-      extensions: argConfig.extensions && toObjMap(argConfig.extensions),
-      astNode: argConfig.astNode,
-    }));
     return {
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
-      args,
+      args: defineArguments(argsConfig),
       resolve: fieldConfig.resolve,
       subscribe: fieldConfig.subscribe,
       deprecationReason: fieldConfig.deprecationReason,
@@ -625,6 +616,18 @@ function defineFieldMap(config) {
       astNode: fieldConfig.astNode,
     };
   });
+}
+
+export function defineArguments(config) {
+  return Object.entries(config).map(([argName, argConfig]) => ({
+    name: argName,
+    description: argConfig.description,
+    type: argConfig.type,
+    defaultValue: argConfig.defaultValue,
+    deprecationReason: argConfig.deprecationReason,
+    extensions: argConfig.extensions && toObjMap(argConfig.extensions),
+    astNode: argConfig.astNode,
+  }));
 }
 
 function isPlainObj(obj) {
