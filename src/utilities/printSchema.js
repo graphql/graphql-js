@@ -228,7 +228,7 @@ function printBlock(items: $ReadOnlyArray<string>): string {
 }
 
 function printArgs(
-  args: Array<GraphQLArgument>,
+  args: $ReadOnlyArray<GraphQLArgument>,
   indentation: string = '',
 ): string {
   if (args.length === 0) {
