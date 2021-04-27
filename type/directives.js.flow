@@ -16,7 +16,11 @@ import type {
   GraphQLFieldConfigArgumentMap,
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
-import { argsToArgsConfig, GraphQLNonNull } from './definition';
+import {
+  defineArguments,
+  argsToArgsConfig,
+  GraphQLNonNull,
+} from './definition';
 
 /**
  * Test if the given value is a GraphQL directive.
@@ -46,7 +50,7 @@ export class GraphQLDirective {
   name: string;
   description: ?string;
   locations: Array<DirectiveLocationEnum>;
-  args: Array<GraphQLArgument>;
+  args: $ReadOnlyArray<GraphQLArgument>;
   isRepeatable: boolean;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?DirectiveDefinitionNode;
@@ -71,15 +75,7 @@ export class GraphQLDirective {
       `@${config.name} args must be an object with argument names as keys.`,
     );
 
-    this.args = Object.entries(args).map(([argName, argConfig]) => ({
-      name: argName,
-      description: argConfig.description,
-      type: argConfig.type,
-      defaultValue: argConfig.defaultValue,
-      deprecationReason: argConfig.deprecationReason,
-      extensions: argConfig.extensions && toObjMap(argConfig.extensions),
-      astNode: argConfig.astNode,
-    }));
+    this.args = defineArguments(args);
   }
 
   toConfig(): GraphQLDirectiveNormalizedConfig {

@@ -73,16 +73,7 @@ class GraphQLDirective {
         false,
         `@${config.name} args must be an object with argument names as keys.`,
       );
-    this.args = Object.entries(args).map(([argName, argConfig]) => ({
-      name: argName,
-      description: argConfig.description,
-      type: argConfig.type,
-      defaultValue: argConfig.defaultValue,
-      deprecationReason: argConfig.deprecationReason,
-      extensions:
-        argConfig.extensions && (0, _toObjMap.toObjMap)(argConfig.extensions),
-      astNode: argConfig.astNode,
-    }));
+    this.args = (0, _definition.defineArguments)(args);
   }
 
   toConfig() {

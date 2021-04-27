@@ -39,6 +39,7 @@ exports.getNullableType = getNullableType;
 exports.isNamedType = isNamedType;
 exports.assertNamedType = assertNamedType;
 exports.getNamedType = getNamedType;
+exports.defineArguments = defineArguments;
 exports.argsToArgsConfig = argsToArgsConfig;
 exports.isRequiredArgument = isRequiredArgument;
 exports.isRequiredInputField = isRequiredInputField;
@@ -775,21 +776,11 @@ function defineFieldMap(config) {
         false,
         `${config.name}.${fieldName} args must be an object with argument names as keys.`,
       );
-    const args = Object.entries(argsConfig).map(([argName, argConfig]) => ({
-      name: argName,
-      description: argConfig.description,
-      type: argConfig.type,
-      defaultValue: argConfig.defaultValue,
-      deprecationReason: argConfig.deprecationReason,
-      extensions:
-        argConfig.extensions && (0, _toObjMap.toObjMap)(argConfig.extensions),
-      astNode: argConfig.astNode,
-    }));
     return {
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
-      args,
+      args: defineArguments(argsConfig),
       resolve: fieldConfig.resolve,
       subscribe: fieldConfig.subscribe,
       deprecationReason: fieldConfig.deprecationReason,
@@ -799,6 +790,19 @@ function defineFieldMap(config) {
       astNode: fieldConfig.astNode,
     };
   });
+}
+
+function defineArguments(config) {
+  return Object.entries(config).map(([argName, argConfig]) => ({
+    name: argName,
+    description: argConfig.description,
+    type: argConfig.type,
+    defaultValue: argConfig.defaultValue,
+    deprecationReason: argConfig.deprecationReason,
+    extensions:
+      argConfig.extensions && (0, _toObjMap.toObjMap)(argConfig.extensions),
+    astNode: argConfig.astNode,
+  }));
 }
 
 function isPlainObj(obj) {

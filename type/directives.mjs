@@ -5,7 +5,11 @@ import { instanceOf } from '../jsutils/instanceOf.mjs';
 import { isObjectLike } from '../jsutils/isObjectLike.mjs';
 import { DirectiveLocation } from '../language/directiveLocation.mjs';
 import { GraphQLString, GraphQLBoolean } from './scalars.mjs';
-import { argsToArgsConfig, GraphQLNonNull } from './definition.mjs';
+import {
+  defineArguments,
+  argsToArgsConfig,
+  GraphQLNonNull,
+} from './definition.mjs';
 /**
  * Test if the given value is a GraphQL directive.
  */
@@ -54,15 +58,7 @@ export class GraphQLDirective {
         false,
         `@${config.name} args must be an object with argument names as keys.`,
       );
-    this.args = Object.entries(args).map(([argName, argConfig]) => ({
-      name: argName,
-      description: argConfig.description,
-      type: argConfig.type,
-      defaultValue: argConfig.defaultValue,
-      deprecationReason: argConfig.deprecationReason,
-      extensions: argConfig.extensions && toObjMap(argConfig.extensions),
-      astNode: argConfig.astNode,
-    }));
+    this.args = defineArguments(args);
   }
 
   toConfig() {
