@@ -8,6 +8,18 @@ import { graphqlSync } from '../../graphql';
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {
+    // TODO Include custom directives in the introspection schema
+    // const schema = buildSchema(`
+    //   directive @foo(bar: Int) on FIELD_DEFINITION
+
+    //   type SomeObject {
+    //     someField: String @foo(bar: "some value")
+    //   }
+
+    //   schema {
+    //     query: SomeObject
+    //   }
+    // `);
     const schema = buildSchema(`
       type SomeObject {
         someField: String
@@ -165,6 +177,30 @@ describe('Introspection', () => {
                         ofType: {
                           kind: 'OBJECT',
                           name: '__Directive',
+                          ofType: null,
+                        },
+                      },
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+
+                {
+                  name: 'appliedDirectives',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'LIST',
+                      name: null,
+                      ofType: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'OBJECT',
+                          name: '__AppliedDirective',
                           ofType: null,
                         },
                       },
@@ -890,6 +926,55 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
               ],
+              possibleTypes: null,
+            },
+            {
+              kind: 'OBJECT',
+              name: '__AppliedDirective',
+              specifiedByUrl: null,
+              fields: [
+                {
+                  name: 'name',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'String',
+                      ofType: null,
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'args',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'LIST',
+                      name: null,
+                      ofType: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'OBJECT',
+                          name: '__InputValue',
+                          ofType: null,
+                        },
+                      },
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+              ],
+              inputFields: null,
+              interfaces: [],
+              enumValues: null,
               possibleTypes: null,
             },
           ],

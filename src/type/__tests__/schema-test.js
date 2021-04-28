@@ -302,6 +302,7 @@ describe('Type System: Schema', () => {
       '__EnumValue',
       '__Directive',
       '__DirectiveLocation',
+      '__AppliedDirective',
     ]);
 
     // Also check that this order is stable

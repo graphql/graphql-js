@@ -105,6 +105,7 @@ export {
   __Schema,
   __Directive,
   __DirectiveLocation,
+  __AppliedDirective,
   __Type,
   __Field,
   __InputValue,

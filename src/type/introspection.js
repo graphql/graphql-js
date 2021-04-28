@@ -67,11 +67,20 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
         resolve: (schema) => schema.getSubscriptionType(),
       },
       directives: {
-        description: 'A list of all directives supported by this server.',
+        description:
+          'A list of all built in directives supported by this server.',
         type: new GraphQLNonNull(
           new GraphQLList(new GraphQLNonNull(__Directive)),
         ),
         resolve: (schema) => schema.getDirectives(),
+      },
+      appliedDirectives: {
+        description:
+          'A list of all custom directives supported by this server.',
+        type: new GraphQLNonNull(
+          new GraphQLList(new GraphQLNonNull(__AppliedDirective)),
+        ),
+        resolve: (schema) => schema.getAppliedDirectives(),
       },
     }: GraphQLFieldConfigMap<GraphQLSchema, mixed>),
 });
@@ -191,6 +200,25 @@ export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
       description: 'Location adjacent to an input object field definition.',
     },
   },
+});
+
+export const __AppliedDirective: GraphQLObjectType = new GraphQLObjectType({
+  name: '__AppliedDirective',
+  description:
+    'An AppliedDirective is a custom directive.  TODO flesh out description',
+  fields: () =>
+    ({
+      name: {
+        type: new GraphQLNonNull(GraphQLString),
+        resolve: (appliedDirective) => appliedDirective.name,
+      },
+      args: {
+        type: new GraphQLNonNull(
+          new GraphQLList(new GraphQLNonNull(__InputValue)),
+        ),
+        resolve: (appliedDirective) => appliedDirective.args,
+      },
+    }: GraphQLFieldConfigMap<GraphQLDirective, mixed>),
 });
 
 export const __Type: GraphQLObjectType = new GraphQLObjectType({
@@ -533,6 +561,8 @@ export const introspectionTypes: $ReadOnlyArray<GraphQLNamedType> = Object.freez
     __Schema,
     __Directive,
     __DirectiveLocation,
+    __AppliedDirective,
+    // __DirectiveArgument,
     __Type,
     __Field,
     __InputValue,
