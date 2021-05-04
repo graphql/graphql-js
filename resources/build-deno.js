@@ -13,7 +13,7 @@ const prettierConfig = JSON.parse(
 );
 
 if (require.main === module) {
-  fs.rmdirSync('./denoDist', { recursive: true, force: true });
+  fs.rmSync('./denoDist', { recursive: true, force: true });
   fs.mkdirSync('./denoDist');
 
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
