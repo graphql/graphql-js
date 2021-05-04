@@ -249,7 +249,7 @@ async function runBenchmarks(benchmarks, benchmarkProjects) {
 
       if (i === 0) {
         const { name } = await sampleModule(modulePath);
-        console.log('⏱️   ' + name);
+        console.log('⏱   ' + name);
       }
 
       try {

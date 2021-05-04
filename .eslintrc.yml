@@ -20,6 +20,7 @@ rules:
   # See './resources/eslint-internal-rules/README.md'
   ##############################################################################
 
+  internal-rules/only-ascii: error
   internal-rules/no-dir-import: error
 
   ##############################################################################
@@ -681,6 +682,7 @@ overrides:
       no-console: off
   - files: 'benchmark/**'
     rules:
+      internal-rules/only-ascii: [error, { allowEmoji: true }]
       node/no-sync: off
       node/no-missing-require: off
       import/no-nodejs-modules: off
@@ -689,6 +691,7 @@ overrides:
       no-await-in-loop: off
   - files: 'resources/**'
     rules:
+      internal-rules/only-ascii: [error, { allowEmoji: true }]
       node/no-unpublished-require: off
       node/no-sync: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]

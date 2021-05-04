@@ -706,7 +706,7 @@ describe('Lexer', () => {
       message: 'Syntax Error: Invalid number, expected digit but got: "_".',
       locations: [{ line: 1, column: 2 }],
     });
-    expectSyntaxError('1ß').to.deep.equal({
+    expectSyntaxError('1\u00DF').to.deep.equal({
       message: 'Syntax Error: Cannot parse the unexpected character "\\u00DF".',
       locations: [{ line: 1, column: 2 }],
     });
@@ -717,10 +717,6 @@ describe('Lexer', () => {
     expectSyntaxError('1.234_5').to.deep.equal({
       message: 'Syntax Error: Invalid number, expected digit but got: "_".',
       locations: [{ line: 1, column: 6 }],
-    });
-    expectSyntaxError('1ß').to.deep.equal({
-      message: 'Syntax Error: Cannot parse the unexpected character "\\u00DF".',
-      locations: [{ line: 1, column: 2 }],
     });
   });
 
