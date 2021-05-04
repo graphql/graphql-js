@@ -25,7 +25,7 @@ describe('mapAsyncIterator', () => {
   it('maps over async iterable', async () => {
     const items = [1, 2, 3];
 
-    const iterable: $FlowFixMe = {
+    const iterable = {
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -122,7 +122,7 @@ describe('mapAsyncIterator', () => {
   it('allows returning early from mapped async iterable', async () => {
     const items = [1, 2, 3];
 
-    const iterable: any = {
+    const iterable = {
       [Symbol.asyncIterator]() {
         return this;
       },
@@ -185,7 +185,7 @@ describe('mapAsyncIterator', () => {
   it('allows throwing errors through async iterable', async () => {
     const items = [1, 2, 3];
 
-    const iterable: any = {
+    const iterable = {
       [Symbol.asyncIterator]() {
         return this;
       },

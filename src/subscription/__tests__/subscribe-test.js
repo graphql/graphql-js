@@ -187,7 +187,7 @@ describe('Subscription Initialization Phase', () => {
         fields: {
           importantEmail: {
             type: GraphQLString,
-            subscribe: () => pubsub.getSubscriber(),
+            subscribe: () => pubsub.getSubscriber((x) => x),
           },
         },
       }),
@@ -219,7 +219,7 @@ describe('Subscription Initialization Phase', () => {
             type: GraphQLString,
             subscribe: async () => {
               await resolveOnNextTick();
-              return pubsub.getSubscriber();
+              return pubsub.getSubscriber((x) => x);
             },
           },
         },
@@ -253,7 +253,8 @@ describe('Subscription Initialization Phase', () => {
           type: EmailEventType,
           subscribe() {
             didResolveImportantEmail = true;
-            return new SimplePubSub().getSubscriber();
+            // istanbul ignore next (FIXME)
+            return new SimplePubSub().getSubscriber((x) => x);
           },
         },
         nonImportantEmail: {
@@ -261,7 +262,7 @@ describe('Subscription Initialization Phase', () => {
           // istanbul ignore next (Shouldn't be called)
           subscribe() {
             didResolveNonImportantEmail = true;
-            return new SimplePubSub().getSubscriber();
+            return new SimplePubSub().getSubscriber((x) => x);
           },
         },
       },

@@ -6,7 +6,7 @@ import { SimplePubSub } from './simplePubSub';
 describe('SimplePubSub', () => {
   it('subscribe async-iterator mock', async () => {
     const pubsub = new SimplePubSub();
-    const iterator = pubsub.getSubscriber();
+    const iterator = pubsub.getSubscriber((x) => x);
 
     // Queue up publishes
     expect(pubsub.emit('Apple')).to.equal(true);
