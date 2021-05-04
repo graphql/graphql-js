@@ -10,9 +10,8 @@ exports.mapAsyncIterator = mapAsyncIterator;
  * which produces values mapped via calling the callback function.
  */
 function mapAsyncIterator(iterable, callback) {
-  // $FlowFixMe[prop-missing]
-  const iteratorMethod = iterable[Symbol.asyncIterator];
-  const iterator = iteratorMethod.call(iterable);
+  // $FlowIssue[incompatible-use]
+  const iterator = iterable[Symbol.asyncIterator]();
 
   async function abruptClose(error) {
     if (typeof iterator.return === 'function') {
@@ -42,8 +41,6 @@ function mapAsyncIterator(iterable, callback) {
       return abruptClose(callbackError);
     }
   }
-  /* TODO: Flow doesn't support symbols as keys:
-     https://github.com/facebook/flow/issues/3258 */
 
   return {
     next() {
