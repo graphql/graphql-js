@@ -144,7 +144,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.24.x`
+  # ESLint builtin rules list based on `v7.25.x`
   ##############################################################################
 
   # Possible Errors
@@ -445,7 +445,7 @@ overrides:
 
     rules:
       ##############################################################################
-      # `eslint-plugin-flowtype` rule list based on `v5.6.x`
+      # `eslint-plugin-flowtype` rule list based on `v5.7.x`
       # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
       ##############################################################################
 
@@ -488,6 +488,7 @@ overrides:
       flowtype/generic-spacing: off
       flowtype/object-type-curly-spacing: off
       flowtype/object-type-delimiter: off
+      flowtype/quotes: off
       flowtype/semi: off
       flowtype/space-after-type-colon: off
       flowtype/space-before-generic-bracket: off
@@ -504,7 +505,7 @@ overrides:
       - plugin:import/typescript
     rules:
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.21.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.22.x`
       ##########################################################################
 
       # Supported Rules
