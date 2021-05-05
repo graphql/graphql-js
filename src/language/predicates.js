@@ -38,6 +38,17 @@ export function isValueNode(node: ASTNode): boolean %checks {
   );
 }
 
+export function isConstValueNode(node: ASTNode): boolean %checks {
+  return (
+    isValueNode(node) &&
+    (node.kind === Kind.LIST
+      ? node.values.some(isConstValueNode)
+      : node.kind === Kind.OBJECT
+      ? node.fields.some((field) => isConstValueNode(field.value))
+      : node.kind !== Kind.VARIABLE)
+  );
+}
+
 export function isTypeNode(node: ASTNode): boolean %checks {
   return (
     node.kind === Kind.NAMED_TYPE ||

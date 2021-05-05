@@ -13,7 +13,7 @@ export type { TokenKindEnum } from './tokenKind';
 
 export { Lexer } from './lexer';
 
-export { parse, parseValue, parseType } from './parser';
+export { parse, parseValue, parseConstValue, parseType } from './parser';
 export type { ParseOptions } from './parser';
 
 export { print } from './printer';
@@ -38,10 +38,12 @@ export type {
   SelectionNode,
   FieldNode,
   ArgumentNode,
+  ConstArgumentNode,
   FragmentSpreadNode,
   InlineFragmentNode,
   FragmentDefinitionNode,
   ValueNode,
+  ConstValueNode,
   IntValueNode,
   FloatValueNode,
   StringValueNode,
@@ -49,9 +51,13 @@ export type {
   NullValueNode,
   EnumValueNode,
   ListValueNode,
+  ConstListValueNode,
   ObjectValueNode,
+  ConstObjectValueNode,
   ObjectFieldNode,
+  ConstObjectFieldNode,
   DirectiveNode,
+  ConstDirectiveNode,
   TypeNode,
   NamedTypeNode,
   ListTypeNode,
@@ -86,6 +92,7 @@ export {
   isExecutableDefinitionNode,
   isSelectionNode,
   isValueNode,
+  isConstValueNode,
   isTypeNode,
   isTypeSystemDefinitionNode,
   isTypeDefinitionNode,

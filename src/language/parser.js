@@ -15,15 +15,18 @@ import type {
   SelectionNode,
   FieldNode,
   ArgumentNode,
+  ConstArgumentNode,
   FragmentSpreadNode,
   InlineFragmentNode,
   FragmentDefinitionNode,
   ValueNode,
+  ConstValueNode,
   StringValueNode,
   ListValueNode,
   ObjectValueNode,
   ObjectFieldNode,
   DirectiveNode,
+  ConstDirectiveNode,
   TypeNode,
   NamedTypeNode,
   TypeSystemDefinitionNode,
@@ -112,6 +115,21 @@ export function parseValue(
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
   const value = parser.parseValueLiteral(false);
+  parser.expectToken(TokenKind.EOF);
+  return value;
+}
+
+/**
+ * Similar to parseValue(), but raises a parse error if it encounters a
+ * variable. The return type will be a constant value.
+ */
+export function parseConstValue(
+  source: string | Source,
+  options?: ParseOptions,
+): ConstValueNode {
+  const parser = new Parser(source, options);
+  parser.expectToken(TokenKind.SOF);
+  const value = parser.parseConstValueLiteral();
   parser.expectToken(TokenKind.EOF);
   return value;
 }
@@ -297,9 +315,9 @@ export class Parser {
       variable: this.parseVariable(),
       type: (this.expectToken(TokenKind.COLON), this.parseTypeReference()),
       defaultValue: this.expectOptionalToken(TokenKind.EQUALS)
-        ? this.parseValueLiteral(true)
+        ? this.parseConstValueLiteral()
         : undefined,
-      directives: this.parseDirectives(true),
+      directives: this.parseConstDirectives(),
     });
   }
 
@@ -382,7 +400,7 @@ export class Parser {
   /**
    * Argument[Const] : Name : Value[?Const]
    */
-  parseArgument(): ArgumentNode {
+  parseArgument(isConst: boolean = false): ArgumentNode {
     const start = this._lexer.token;
     const name = this.parseName();
 
@@ -390,16 +408,12 @@ export class Parser {
     return this.node(start, {
       kind: Kind.ARGUMENT,
       name,
-      value: this.parseValueLiteral(false),
+      value: this.parseValueLiteral(isConst),
     });
   }
 
-  parseConstArgument(): ArgumentNode {
-    return this.node(this._lexer.token, {
-      kind: Kind.ARGUMENT,
-      name: this.parseName(),
-      value: (this.expectToken(TokenKind.COLON), this.parseValueLiteral(true)),
-    });
+  parseConstArgument(): ConstArgumentNode {
+    return (this.parseArgument(true): any);
   }
 
   // Implements the parsing rules in the Fragments section.
@@ -530,12 +544,26 @@ export class Parser {
             });
         }
       case TokenKind.DOLLAR:
-        if (!isConst) {
-          return this.parseVariable();
+        if (isConst) {
+          this.expectToken(TokenKind.DOLLAR);
+          const varName = this.expectOptionalToken(TokenKind.NAME)?.value;
+          if (varName != null) {
+            throw syntaxError(
+              this._lexer.source,
+              token.start,
+              `Unexpected variable "$${varName}" in constant value.`,
+            );
+          } else {
+            throw this.unexpected(token);
+          }
         }
-        break;
+        return this.parseVariable();
     }
     throw this.unexpected();
+  }
+
+  parseConstValueLiteral(): ConstValueNode {
+    return (this.parseValueLiteral(true): any);
   }
 
   parseStringLiteral(): StringValueNode {
@@ -600,6 +628,10 @@ export class Parser {
       directives.push(this.parseDirective(isConst));
     }
     return directives;
+  }
+
+  parseConstDirectives(): Array<ConstDirectiveNode> {
+    return (this.parseDirectives(true): any);
   }
 
   /**
@@ -722,7 +754,7 @@ export class Parser {
     const start = this._lexer.token;
     const description = this.parseDescription();
     this.expectKeyword('schema');
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const operationTypes = this.many(
       TokenKind.BRACE_L,
       this.parseOperationTypeDefinition,
@@ -759,7 +791,7 @@ export class Parser {
     const description = this.parseDescription();
     this.expectKeyword('scalar');
     const name = this.parseName();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     return this.node(start, {
       kind: Kind.SCALAR_TYPE_DEFINITION,
       description,
@@ -779,7 +811,7 @@ export class Parser {
     this.expectKeyword('type');
     const name = this.parseName();
     const interfaces = this.parseImplementsInterfaces();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const fields = this.parseFieldsDefinition();
     return this.node(start, {
       kind: Kind.OBJECT_TYPE_DEFINITION,
@@ -824,7 +856,7 @@ export class Parser {
     const args = this.parseArgumentDefs();
     this.expectToken(TokenKind.COLON);
     const type = this.parseTypeReference();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     return this.node(start, {
       kind: Kind.FIELD_DEFINITION,
       description,
@@ -858,9 +890,9 @@ export class Parser {
     const type = this.parseTypeReference();
     let defaultValue;
     if (this.expectOptionalToken(TokenKind.EQUALS)) {
-      defaultValue = this.parseValueLiteral(true);
+      defaultValue = this.parseConstValueLiteral();
     }
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     return this.node(start, {
       kind: Kind.INPUT_VALUE_DEFINITION,
       description,
@@ -881,7 +913,7 @@ export class Parser {
     this.expectKeyword('interface');
     const name = this.parseName();
     const interfaces = this.parseImplementsInterfaces();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const fields = this.parseFieldsDefinition();
     return this.node(start, {
       kind: Kind.INTERFACE_TYPE_DEFINITION,
@@ -902,7 +934,7 @@ export class Parser {
     const description = this.parseDescription();
     this.expectKeyword('union');
     const name = this.parseName();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const types = this.parseUnionMemberTypes();
     return this.node(start, {
       kind: Kind.UNION_TYPE_DEFINITION,
@@ -933,7 +965,7 @@ export class Parser {
     const description = this.parseDescription();
     this.expectKeyword('enum');
     const name = this.parseName();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const values = this.parseEnumValuesDefinition();
     return this.node(start, {
       kind: Kind.ENUM_TYPE_DEFINITION,
@@ -964,7 +996,7 @@ export class Parser {
     const start = this._lexer.token;
     const description = this.parseDescription();
     const name = this.parseName();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     return this.node(start, {
       kind: Kind.ENUM_VALUE_DEFINITION,
       description,
@@ -982,7 +1014,7 @@ export class Parser {
     const description = this.parseDescription();
     this.expectKeyword('input');
     const name = this.parseName();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const fields = this.parseInputFieldsDefinition();
     return this.node(start, {
       kind: Kind.INPUT_OBJECT_TYPE_DEFINITION,
@@ -1051,7 +1083,7 @@ export class Parser {
     const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('schema');
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const operationTypes = this.optionalMany(
       TokenKind.BRACE_L,
       this.parseOperationTypeDefinition,
@@ -1076,7 +1108,7 @@ export class Parser {
     this.expectKeyword('extend');
     this.expectKeyword('scalar');
     const name = this.parseName();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     if (directives.length === 0) {
       throw this.unexpected();
     }
@@ -1099,7 +1131,7 @@ export class Parser {
     this.expectKeyword('type');
     const name = this.parseName();
     const interfaces = this.parseImplementsInterfaces();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const fields = this.parseFieldsDefinition();
     if (
       interfaces.length === 0 &&
@@ -1129,7 +1161,7 @@ export class Parser {
     this.expectKeyword('interface');
     const name = this.parseName();
     const interfaces = this.parseImplementsInterfaces();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const fields = this.parseFieldsDefinition();
     if (
       interfaces.length === 0 &&
@@ -1157,7 +1189,7 @@ export class Parser {
     this.expectKeyword('extend');
     this.expectKeyword('union');
     const name = this.parseName();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const types = this.parseUnionMemberTypes();
     if (directives.length === 0 && types.length === 0) {
       throw this.unexpected();
@@ -1180,7 +1212,7 @@ export class Parser {
     this.expectKeyword('extend');
     this.expectKeyword('enum');
     const name = this.parseName();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const values = this.parseEnumValuesDefinition();
     if (directives.length === 0 && values.length === 0) {
       throw this.unexpected();
@@ -1203,7 +1235,7 @@ export class Parser {
     this.expectKeyword('extend');
     this.expectKeyword('input');
     const name = this.parseName();
-    const directives = this.parseDirectives(true);
+    const directives = this.parseConstDirectives();
     const fields = this.parseInputFieldsDefinition();
     if (directives.length === 0 && fields.length === 0) {
       throw this.unexpected();

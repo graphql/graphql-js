@@ -3,11 +3,13 @@ import { describe, it } from 'mocha';
 
 import type { ASTNode } from '../ast';
 import { Kind } from '../kinds';
+import { parseValue } from '../parser';
 import {
   isDefinitionNode,
   isExecutableDefinitionNode,
   isSelectionNode,
   isValueNode,
+  isConstValueNode,
   isTypeNode,
   isTypeSystemDefinitionNode,
   isTypeDefinitionNode,
@@ -73,6 +75,17 @@ describe('AST node predicates', () => {
       'ListValue',
       'ObjectValue',
     ]);
+  });
+
+  it('isConstValueNode', () => {
+    expect(isConstValueNode(parseValue('"value"'))).to.equal(true);
+    expect(isConstValueNode(parseValue('$var'))).to.equal(false);
+
+    expect(isConstValueNode(parseValue('{ field: "value" }'))).to.equal(true);
+    expect(isConstValueNode(parseValue('{ field: $var }'))).to.equal(false);
+
+    expect(isConstValueNode(parseValue('[ "value" ]'))).to.equal(true);
+    expect(isConstValueNode(parseValue('[ $var ]'))).to.equal(false);
   });
 
   it('isTypeNode', () => {
