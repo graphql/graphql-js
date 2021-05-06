@@ -178,18 +178,9 @@ export function visit(root, visitor) {
       parent = ancestors.pop();
 
       if (isEdited) {
-        if (inArray) {
-          node = node.slice();
-        } else {
-          const clone = {};
-
-          for (const k of Object.keys(node)) {
-            clone[k] = node[k];
-          }
-
-          node = clone;
-        }
-
+        node = inArray
+          ? node.slice()
+          : Object.defineProperties({}, Object.getOwnPropertyDescriptors(node));
         let editOffset = 0;
 
         for (let ii = 0; ii < edits.length; ii++) {
@@ -237,7 +228,6 @@ export function visit(root, visitor) {
       const visitFn = getVisitFn(visitor, node.kind, isLeaving);
 
       if (visitFn) {
-        // $FlowFixMe[incompatible-call]
         result = visitFn.call(visitor, node, key, parent, path, ancestors);
 
         if (result === BREAK) {

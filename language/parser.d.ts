@@ -3,7 +3,6 @@ import { GraphQLError } from '../error/GraphQLError';
 
 import {
   Token,
-  Location,
   NameNode,
   VariableNode,
   DocumentNode,
@@ -501,9 +500,11 @@ export declare class Parser {
   parseDirectiveLocation(): NameNode;
 
   /**
-   * Returns a location object, used to identify the place in the source that created a given parsed object.
+   * Returns a node that, if configured to do so, sets a "loc" field as a
+   * location object, used to identify the place in the source that created a
+   * given parsed object.
    */
-  loc(startToken: Token): Location | undefined;
+  node<T>(startToken: Token, node: T): T;
 
   /**
    * Determines if the next token is of a given kind
