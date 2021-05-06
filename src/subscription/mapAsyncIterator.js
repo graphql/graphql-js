@@ -37,7 +37,7 @@ export function mapAsyncIterator<T, U>(
     async next() {
       return mapResult(await iterator.next());
     },
-    async return(): Promise<IteratorResult<U, void>>  {
+    async return(): Promise<IteratorResult<U, void>> {
       return typeof iterator.return === 'function'
         ? mapResult(await iterator.return())
         : { value: undefined, done: true };
