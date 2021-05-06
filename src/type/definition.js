@@ -467,13 +467,19 @@ export function getNullableType(type) {
 /**
  * These named types do not include modifiers like List or NonNull.
  */
-export type GraphQLNamedType =
+export type GraphQLNamedType = GraphQLNamedInputType | GraphQLNamedOutputType;
+
+export type GraphQLNamedInputType =
+  | GraphQLScalarType
+  | GraphQLEnumType
+  | GraphQLInputObjectType;
+
+export type GraphQLNamedOutputType =
   | GraphQLScalarType
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
-  | GraphQLEnumType
-  | GraphQLInputObjectType;
+  | GraphQLEnumType;
 
 export function isNamedType(type: mixed): boolean %checks {
   return (
@@ -495,6 +501,8 @@ export function assertNamedType(type: mixed): GraphQLNamedType {
 
 /* eslint-disable no-redeclare */
 declare function getNamedType(type: void | null): void;
+declare function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
+declare function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
 declare function getNamedType(type: GraphQLType): GraphQLNamedType;
 export function getNamedType(type) {
   /* eslint-enable no-redeclare */

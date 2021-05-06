@@ -73,6 +73,8 @@ export {
   GraphQLWrappingType,
   GraphQLNullableType,
   GraphQLNamedType,
+  GraphQLNamedInputType,
+  GraphQLNamedOutputType,
   ThunkArray,
   ThunkObjMap,
   GraphQLArgument,

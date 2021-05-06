@@ -136,6 +136,8 @@ export type {
   GraphQLWrappingType,
   GraphQLNullableType,
   GraphQLNamedType,
+  GraphQLNamedInputType,
+  GraphQLNamedOutputType,
   ThunkArray,
   ThunkObjMap,
   GraphQLSchemaConfig,
