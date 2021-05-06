@@ -31,6 +31,8 @@ import { Kind } from '../language/kinds';
 
 import type { VariableValues } from '../execution/values';
 
+import { replaceVariables } from './replaceVariables';
+
 type OnErrorCB = (
   path: ReadonlyArray<string | number>,
   invalidValue: unknown,
@@ -312,9 +314,10 @@ export function coerceInputLiteral(
   }
 
   const leafType = assertLeafType(type);
+  const constValueNode = replaceVariables(valueNode, variableValues);
 
   try {
-    return leafType.parseLiteral(valueNode, variableValues?.coerced);
+    return leafType.parseLiteral(constValueNode);
   } catch (_error) {
     // Invalid: ignore error and intentionally return no value.
   }

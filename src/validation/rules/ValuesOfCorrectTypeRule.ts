@@ -19,6 +19,7 @@ import {
 } from '../../type/definition';
 
 import type { ValidationContext } from '../ValidationContext';
+import { replaceVariables } from '../../utilities/replaceVariables';
 
 /**
  * Value literals of correct type
@@ -118,10 +119,12 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     return;
   }
 
+  const constValueNode = replaceVariables(node);
+
   // Scalars and Enums determine if a literal value is valid via parseLiteral(),
-  // which may throw or return an invalid value to indicate failure.
+  // which may throw or return undefined to indicate an invalid value.
   try {
-    const parseResult = type.parseLiteral(node, undefined /* variables */);
+    const parseResult = type.parseLiteral(constValueNode);
     if (parseResult === undefined) {
       context.reportError(
         new GraphQLError(

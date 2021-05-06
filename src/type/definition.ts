@@ -20,7 +20,6 @@ import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 import type {
   FieldNode,
-  ValueNode,
   ConstValueNode,
   OperationDefinitionNode,
   FragmentDefinitionNode,
@@ -590,8 +589,38 @@ export interface GraphQLScalarTypeExtensions {
  *         if (value % 2 === 1) {
  *           return value;
  *         }
+ *       },
+ *       parseValue(value) {
+ *         if (value % 2 === 1) {
+ *           return value;
+ *         }
+ *       }
+ *       valueToLiteral(value) {
+ *         if (value % 2 === 1) {
+ *           return parse(`${value}`);
+ *         }
  *       }
  *     });
+ *
+ * Custom scalars behavior is defined via the following functions:
+ *
+ *  - serialize(value): Implements "Result Coercion". Given an internal value,
+ *    produces an external value valid for this type. Returns undefined or
+ *    throws an error to indicate invalid values.
+ *
+ *  - parseValue(value): Implements "Input Coercion" for values. Given an
+ *    external value (for example, variable values), produces an internal value
+ *    valid for this type. Returns undefined or throws an error to indicate
+ *    invalid values.
+ *
+ *  - parseLiteral(ast): Implements "Input Coercion" for literals. Given an
+ *    GraphQL literal (AST) (for example, an argument value), produces an
+ *    internal value valid for this type. Returns undefined or throws an error
+ *    to indicate invalid values.
+ *
+ *  - valueToLiteral(value): Converts an external value to a GraphQL
+ *    literal (AST). Returns undefined or throws an error to indicate
+ *    invalid values.
  *
  */
 export class GraphQLScalarType extends GraphQLSchemaElement {
@@ -601,6 +630,7 @@ export class GraphQLScalarType extends GraphQLSchemaElement {
   serialize: GraphQLScalarSerializer<unknown>;
   parseValue: GraphQLScalarValueParser<unknown>;
   parseLiteral: GraphQLScalarLiteralParser<unknown>;
+  valueToLiteral: Maybe<GraphQLScalarValueToLiteral>;
   extensions: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
@@ -614,8 +644,8 @@ export class GraphQLScalarType extends GraphQLSchemaElement {
     this.serialize = config.serialize ?? identityFunc;
     this.parseValue = parseValue;
     this.parseLiteral =
-      config.parseLiteral ??
-      ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
+      config.parseLiteral ?? ((node) => parseValue(valueFromASTUntyped(node)));
+    this.valueToLiteral = config.valueToLiteral;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
@@ -641,6 +671,13 @@ export class GraphQLScalarType extends GraphQLSchemaElement {
         `${this.name} must provide both "parseValue" and "parseLiteral" functions.`,
       );
     }
+
+    if (config.valueToLiteral) {
+      devAssert(
+        typeof config.valueToLiteral === 'function',
+        `${this.name} must provide "valueToLiteral" as a function.`,
+      );
+    }
   }
 
   toConfig(): GraphQLScalarTypeNormalizedConfig {
@@ -651,6 +688,7 @@ export class GraphQLScalarType extends GraphQLSchemaElement {
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
+      valueToLiteral: this.valueToLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
@@ -671,9 +709,12 @@ export type GraphQLScalarValueParser<TInternal> = (
 ) => Maybe<TInternal>;
 
 export type GraphQLScalarLiteralParser<TInternal> = (
-  valueNode: ValueNode,
-  variables?: Maybe<ObjMap<unknown>>,
+  valueNode: ConstValueNode,
 ) => Maybe<TInternal>;
+
+export type GraphQLScalarValueToLiteral = (
+  inputValue: unknown,
+) => ConstValueNode | undefined;
 
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   name: string;
@@ -685,6 +726,8 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   parseValue?: GraphQLScalarValueParser<TInternal>;
   /** Parses an externally provided literal value to use as an input. */
   parseLiteral?: GraphQLScalarLiteralParser<TInternal>;
+  /** Translates an externally provided value to a literal (AST). */
+  valueToLiteral?: Maybe<GraphQLScalarValueToLiteral>;
   extensions?: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
   astNode?: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
@@ -1457,10 +1500,7 @@ export class GraphQLEnumType /* <T> */ extends GraphQLSchemaElement {
     return enumValue.value;
   }
 
-  parseLiteral(
-    valueNode: ValueNode,
-    _variables: Maybe<ObjMap<unknown>>,
-  ): Maybe<any> /* T */ {
+  parseLiteral(valueNode: ConstValueNode): Maybe<any> /* T */ {
     // Note: variables will be resolved to a value before calling this function.
     if (valueNode.kind !== Kind.ENUM) {
       const valueStr = print(valueNode);
@@ -1481,6 +1521,12 @@ export class GraphQLEnumType /* <T> */ extends GraphQLSchemaElement {
       );
     }
     return enumValue.value;
+  }
+
+  valueToLiteral(value: unknown): ConstValueNode | undefined {
+    if (typeof value === 'string' && this.getValue(value)) {
+      return { kind: Kind.ENUM, value };
+    }
   }
 
   toConfig(): GraphQLEnumTypeNormalizedConfig {
