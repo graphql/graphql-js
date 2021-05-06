@@ -77,11 +77,10 @@ export class Parser {
 
   parseName() {
     const token = this.expectToken(TokenKind.NAME);
-    return {
+    return this.node(token, {
       kind: Kind.NAME,
       value: token.value,
-      loc: this.loc(token),
-    };
+    });
   } // Implements the parsing rules in the Document section.
 
   /**
@@ -89,16 +88,14 @@ export class Parser {
    */
 
   parseDocument() {
-    const start = this._lexer.token;
-    return {
+    return this.node(this._lexer.token, {
       kind: Kind.DOCUMENT,
       definitions: this.many(
         TokenKind.SOF,
         this.parseDefinition,
         TokenKind.EOF,
       ),
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * Definition :
@@ -154,15 +151,14 @@ export class Parser {
     const start = this._lexer.token;
 
     if (this.peek(TokenKind.BRACE_L)) {
-      return {
+      return this.node(start, {
         kind: Kind.OPERATION_DEFINITION,
         operation: 'query',
         name: undefined,
         variableDefinitions: [],
         directives: [],
         selectionSet: this.parseSelectionSet(),
-        loc: this.loc(start),
-      };
+      });
     }
 
     const operation = this.parseOperationType();
@@ -172,15 +168,14 @@ export class Parser {
       name = this.parseName();
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.OPERATION_DEFINITION,
       operation,
       name,
       variableDefinitions: this.parseVariableDefinitions(),
       directives: this.parseDirectives(false),
       selectionSet: this.parseSelectionSet(),
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * OperationType : one of query mutation subscription
@@ -218,8 +213,7 @@ export class Parser {
    */
 
   parseVariableDefinition() {
-    const start = this._lexer.token;
-    return {
+    return this.node(this._lexer.token, {
       kind: Kind.VARIABLE_DEFINITION,
       variable: this.parseVariable(),
       type: (this.expectToken(TokenKind.COLON), this.parseTypeReference()),
@@ -227,8 +221,7 @@ export class Parser {
         ? this.parseValueLiteral(true)
         : undefined,
       directives: this.parseDirectives(true),
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * Variable : $ Name
@@ -237,27 +230,24 @@ export class Parser {
   parseVariable() {
     const start = this._lexer.token;
     this.expectToken(TokenKind.DOLLAR);
-    return {
+    return this.node(start, {
       kind: Kind.VARIABLE,
       name: this.parseName(),
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * SelectionSet : { Selection+ }
    */
 
   parseSelectionSet() {
-    const start = this._lexer.token;
-    return {
+    return this.node(this._lexer.token, {
       kind: Kind.SELECTION_SET,
       selections: this.many(
         TokenKind.BRACE_L,
         this.parseSelection,
         TokenKind.BRACE_R,
       ),
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * Selection :
@@ -290,7 +280,7 @@ export class Parser {
       name = nameOrAlias;
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.FIELD,
       alias,
       name,
@@ -299,8 +289,7 @@ export class Parser {
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
         : undefined,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * Arguments[Const] : ( Argument[?Const]+ )
@@ -318,22 +307,19 @@ export class Parser {
     const start = this._lexer.token;
     const name = this.parseName();
     this.expectToken(TokenKind.COLON);
-    return {
+    return this.node(start, {
       kind: Kind.ARGUMENT,
       name,
       value: this.parseValueLiteral(false),
-      loc: this.loc(start),
-    };
+    });
   }
 
   parseConstArgument() {
-    const start = this._lexer.token;
-    return {
+    return this.node(this._lexer.token, {
       kind: Kind.ARGUMENT,
       name: this.parseName(),
       value: (this.expectToken(TokenKind.COLON), this.parseValueLiteral(true)),
-      loc: this.loc(start),
-    };
+    });
   } // Implements the parsing rules in the Fragments section.
 
   /**
@@ -350,21 +336,19 @@ export class Parser {
     const hasTypeCondition = this.expectOptionalKeyword('on');
 
     if (!hasTypeCondition && this.peek(TokenKind.NAME)) {
-      return {
+      return this.node(start, {
         kind: Kind.FRAGMENT_SPREAD,
         name: this.parseFragmentName(),
         directives: this.parseDirectives(false),
-        loc: this.loc(start),
-      };
+      });
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.INLINE_FRAGMENT,
       typeCondition: hasTypeCondition ? this.parseNamedType() : undefined,
       directives: this.parseDirectives(false),
       selectionSet: this.parseSelectionSet(),
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * FragmentDefinition :
@@ -386,25 +370,23 @@ export class Parser {
         ? void 0
         : _this$_options.allowLegacyFragmentVariables) === true
     ) {
-      return {
+      return this.node(start, {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
         variableDefinitions: this.parseVariableDefinitions(),
         typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
         directives: this.parseDirectives(false),
         selectionSet: this.parseSelectionSet(),
-        loc: this.loc(start),
-      };
+      });
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.FRAGMENT_DEFINITION,
       name: this.parseFragmentName(),
       typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
       directives: this.parseDirectives(false),
       selectionSet: this.parseSelectionSet(),
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * FragmentName : Name but not `on`
@@ -450,20 +432,18 @@ export class Parser {
       case TokenKind.INT:
         this._lexer.advance();
 
-        return {
+        return this.node(token, {
           kind: Kind.INT,
           value: token.value,
-          loc: this.loc(token),
-        };
+        });
 
       case TokenKind.FLOAT:
         this._lexer.advance();
 
-        return {
+        return this.node(token, {
           kind: Kind.FLOAT,
           value: token.value,
-          loc: this.loc(token),
-        };
+        });
 
       case TokenKind.STRING:
       case TokenKind.BLOCK_STRING:
@@ -474,31 +454,27 @@ export class Parser {
 
         switch (token.value) {
           case 'true':
-            return {
+            return this.node(token, {
               kind: Kind.BOOLEAN,
               value: true,
-              loc: this.loc(token),
-            };
+            });
 
           case 'false':
-            return {
+            return this.node(token, {
               kind: Kind.BOOLEAN,
               value: false,
-              loc: this.loc(token),
-            };
+            });
 
           case 'null':
-            return {
+            return this.node(token, {
               kind: Kind.NULL,
-              loc: this.loc(token),
-            };
+            });
 
           default:
-            return {
+            return this.node(token, {
               kind: Kind.ENUM,
               value: token.value,
-              loc: this.loc(token),
-            };
+            });
         }
 
       case TokenKind.DOLLAR:
@@ -517,12 +493,11 @@ export class Parser {
 
     this._lexer.advance();
 
-    return {
+    return this.node(token, {
       kind: Kind.STRING,
       value: token.value,
       block: token.kind === TokenKind.BLOCK_STRING,
-      loc: this.loc(token),
-    };
+    });
   }
   /**
    * ListValue[Const] :
@@ -531,15 +506,12 @@ export class Parser {
    */
 
   parseList(isConst) {
-    const start = this._lexer.token;
-
     const item = () => this.parseValueLiteral(isConst);
 
-    return {
+    return this.node(this._lexer.token, {
       kind: Kind.LIST,
       values: this.any(TokenKind.BRACKET_L, item, TokenKind.BRACKET_R),
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * ObjectValue[Const] :
@@ -548,15 +520,12 @@ export class Parser {
    */
 
   parseObject(isConst) {
-    const start = this._lexer.token;
-
     const item = () => this.parseObjectField(isConst);
 
-    return {
+    return this.node(this._lexer.token, {
       kind: Kind.OBJECT,
       fields: this.any(TokenKind.BRACE_L, item, TokenKind.BRACE_R),
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * ObjectField[Const] : Name : Value[?Const]
@@ -566,12 +535,11 @@ export class Parser {
     const start = this._lexer.token;
     const name = this.parseName();
     this.expectToken(TokenKind.COLON);
-    return {
+    return this.node(start, {
       kind: Kind.OBJECT_FIELD,
       name,
       value: this.parseValueLiteral(isConst),
-      loc: this.loc(start),
-    };
+    });
   } // Implements the parsing rules in the Directives section.
 
   /**
@@ -594,12 +562,11 @@ export class Parser {
   parseDirective(isConst) {
     const start = this._lexer.token;
     this.expectToken(TokenKind.AT);
-    return {
+    return this.node(start, {
       kind: Kind.DIRECTIVE,
       name: this.parseName(),
       arguments: this.parseArguments(isConst),
-      loc: this.loc(start),
-    };
+    });
   } // Implements the parsing rules in the Types section.
 
   /**
@@ -616,21 +583,19 @@ export class Parser {
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
       const innerType = this.parseTypeReference();
       this.expectToken(TokenKind.BRACKET_R);
-      type = {
+      type = this.node(start, {
         kind: Kind.LIST_TYPE,
         type: innerType,
-        loc: this.loc(start),
-      };
+      });
     } else {
       type = this.parseNamedType();
     }
 
     if (this.expectOptionalToken(TokenKind.BANG)) {
-      return {
+      return this.node(start, {
         kind: Kind.NON_NULL_TYPE,
         type,
-        loc: this.loc(start),
-      };
+      });
     }
 
     return type;
@@ -640,12 +605,10 @@ export class Parser {
    */
 
   parseNamedType() {
-    const start = this._lexer.token;
-    return {
+    return this.node(this._lexer.token, {
       kind: Kind.NAMED_TYPE,
       name: this.parseName(),
-      loc: this.loc(start),
-    };
+    });
   } // Implements the parsing rules in the Type Definition section.
 
   /**
@@ -726,13 +689,12 @@ export class Parser {
       this.parseOperationTypeDefinition,
       TokenKind.BRACE_R,
     );
-    return {
+    return this.node(start, {
       kind: Kind.SCHEMA_DEFINITION,
       description,
       directives,
       operationTypes,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * OperationTypeDefinition : OperationType : NamedType
@@ -743,12 +705,11 @@ export class Parser {
     const operation = this.parseOperationType();
     this.expectToken(TokenKind.COLON);
     const type = this.parseNamedType();
-    return {
+    return this.node(start, {
       kind: Kind.OPERATION_TYPE_DEFINITION,
       operation,
       type,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * ScalarTypeDefinition : Description? scalar Name Directives[Const]?
@@ -760,13 +721,12 @@ export class Parser {
     this.expectKeyword('scalar');
     const name = this.parseName();
     const directives = this.parseDirectives(true);
-    return {
+    return this.node(start, {
       kind: Kind.SCALAR_TYPE_DEFINITION,
       description,
       name,
       directives,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * ObjectTypeDefinition :
@@ -782,15 +742,14 @@ export class Parser {
     const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseDirectives(true);
     const fields = this.parseFieldsDefinition();
-    return {
+    return this.node(start, {
       kind: Kind.OBJECT_TYPE_DEFINITION,
       description,
       name,
       interfaces,
       directives,
       fields,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * ImplementsInterfaces :
@@ -827,15 +786,14 @@ export class Parser {
     this.expectToken(TokenKind.COLON);
     const type = this.parseTypeReference();
     const directives = this.parseDirectives(true);
-    return {
+    return this.node(start, {
       kind: Kind.FIELD_DEFINITION,
       description,
       name,
       arguments: args,
       type,
       directives,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * ArgumentsDefinition : ( InputValueDefinition+ )
@@ -866,15 +824,14 @@ export class Parser {
     }
 
     const directives = this.parseDirectives(true);
-    return {
+    return this.node(start, {
       kind: Kind.INPUT_VALUE_DEFINITION,
       description,
       name,
       type,
       defaultValue,
       directives,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * InterfaceTypeDefinition :
@@ -889,15 +846,14 @@ export class Parser {
     const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseDirectives(true);
     const fields = this.parseFieldsDefinition();
-    return {
+    return this.node(start, {
       kind: Kind.INTERFACE_TYPE_DEFINITION,
       description,
       name,
       interfaces,
       directives,
       fields,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * UnionTypeDefinition :
@@ -911,14 +867,13 @@ export class Parser {
     const name = this.parseName();
     const directives = this.parseDirectives(true);
     const types = this.parseUnionMemberTypes();
-    return {
+    return this.node(start, {
       kind: Kind.UNION_TYPE_DEFINITION,
       description,
       name,
       directives,
       types,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * UnionMemberTypes :
@@ -943,14 +898,13 @@ export class Parser {
     const name = this.parseName();
     const directives = this.parseDirectives(true);
     const values = this.parseEnumValuesDefinition();
-    return {
+    return this.node(start, {
       kind: Kind.ENUM_TYPE_DEFINITION,
       description,
       name,
       directives,
       values,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * EnumValuesDefinition : { EnumValueDefinition+ }
@@ -974,13 +928,12 @@ export class Parser {
     const description = this.parseDescription();
     const name = this.parseName();
     const directives = this.parseDirectives(true);
-    return {
+    return this.node(start, {
       kind: Kind.ENUM_VALUE_DEFINITION,
       description,
       name,
       directives,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * InputObjectTypeDefinition :
@@ -994,14 +947,13 @@ export class Parser {
     const name = this.parseName();
     const directives = this.parseDirectives(true);
     const fields = this.parseInputFieldsDefinition();
-    return {
+    return this.node(start, {
       kind: Kind.INPUT_OBJECT_TYPE_DEFINITION,
       description,
       name,
       directives,
       fields,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * InputFieldsDefinition : { InputValueDefinition+ }
@@ -1079,12 +1031,11 @@ export class Parser {
       throw this.unexpected();
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.SCHEMA_EXTENSION,
       directives,
       operationTypes,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * ScalarTypeExtension :
@@ -1102,12 +1053,11 @@ export class Parser {
       throw this.unexpected();
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.SCALAR_TYPE_EXTENSION,
       name,
       directives,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * ObjectTypeExtension :
@@ -1133,14 +1083,13 @@ export class Parser {
       throw this.unexpected();
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.OBJECT_TYPE_EXTENSION,
       name,
       interfaces,
       directives,
       fields,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * InterfaceTypeExtension :
@@ -1166,14 +1115,13 @@ export class Parser {
       throw this.unexpected();
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.INTERFACE_TYPE_EXTENSION,
       name,
       interfaces,
       directives,
       fields,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * UnionTypeExtension :
@@ -1193,13 +1141,12 @@ export class Parser {
       throw this.unexpected();
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.UNION_TYPE_EXTENSION,
       name,
       directives,
       types,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * EnumTypeExtension :
@@ -1219,13 +1166,12 @@ export class Parser {
       throw this.unexpected();
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.ENUM_TYPE_EXTENSION,
       name,
       directives,
       values,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * InputObjectTypeExtension :
@@ -1245,13 +1191,12 @@ export class Parser {
       throw this.unexpected();
     }
 
-    return {
+    return this.node(start, {
       kind: Kind.INPUT_OBJECT_TYPE_EXTENSION,
       name,
       directives,
       fields,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * DirectiveDefinition :
@@ -1268,15 +1213,14 @@ export class Parser {
     const repeatable = this.expectOptionalKeyword('repeatable');
     this.expectKeyword('on');
     const locations = this.parseDirectiveLocations();
-    return {
+    return this.node(start, {
       kind: Kind.DIRECTIVE_DEFINITION,
       description,
       name,
       arguments: args,
       repeatable,
       locations,
-      loc: this.loc(start),
-    };
+    });
   }
   /**
    * DirectiveLocations :
@@ -1327,10 +1271,12 @@ export class Parser {
   } // Core parsing utility functions
 
   /**
-   * Returns a location object, used to identify the place in the source that created a given parsed object.
+   * Returns a node that, if configured to do so, sets a "loc" field as a
+   * location object, used to identify the place in the source that created a
+   * given parsed object.
    */
 
-  loc(startToken) {
+  node(startToken, node) {
     var _this$_options2;
 
     if (
@@ -1338,12 +1284,14 @@ export class Parser {
         ? void 0
         : _this$_options2.noLocation) !== true
     ) {
-      return new Location(
+      node.loc = new Location(
         startToken,
         this._lexer.lastToken,
         this._lexer.source,
       );
     }
+
+    return node;
   }
   /**
    * Determines if the next token is of a given kind
