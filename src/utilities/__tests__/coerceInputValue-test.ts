@@ -630,6 +630,13 @@ describe('coerceInputLiteral', () => {
     });
 
     test('"value"', printScalar, '~~~"value"~~~');
+    testWithVariables(
+      '($var: String)',
+      { var: 'value' },
+      '{ field: $var }',
+      printScalar,
+      '~~~{ field: "value" }~~~',
+    );
 
     const throwScalar = new GraphQLScalarType({
       name: 'ThrowScalar',

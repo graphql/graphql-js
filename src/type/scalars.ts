@@ -6,6 +6,8 @@ import { GraphQLError } from '../error/GraphQLError.js';
 import { Kind } from '../language/kinds.js';
 import { print } from '../language/printer.js';
 
+import { defaultScalarValueToLiteral } from '../utilities/valueToLiteral.js';
+
 import type { GraphQLNamedType } from './definition.js';
 import { GraphQLScalarType } from './definition.js';
 
@@ -82,6 +84,16 @@ export const GraphQLInt = new GraphQLScalarType<number>({
     }
     return num;
   },
+  valueToLiteral(value) {
+    if (
+      typeof value === 'number' &&
+      Number.isInteger(value) &&
+      value <= GRAPHQL_MAX_INT &&
+      value >= GRAPHQL_MIN_INT
+    ) {
+      return { kind: Kind.INT, value: String(value) };
+    }
+  },
 });
 
 export const GraphQLFloat = new GraphQLScalarType<number>({
@@ -127,6 +139,12 @@ export const GraphQLFloat = new GraphQLScalarType<number>({
     }
     return parseFloat(valueNode.value);
   },
+  valueToLiteral(value) {
+    const literal = defaultScalarValueToLiteral(value);
+    if (literal.kind === Kind.FLOAT || literal.kind === Kind.INT) {
+      return literal;
+    }
+  },
 });
 
 export const GraphQLString = new GraphQLScalarType<string>({
@@ -171,6 +189,12 @@ export const GraphQLString = new GraphQLScalarType<string>({
     }
     return valueNode.value;
   },
+  valueToLiteral(value) {
+    const literal = defaultScalarValueToLiteral(value);
+    if (literal.kind === Kind.STRING) {
+      return literal;
+    }
+  },
 });
 
 export const GraphQLBoolean = new GraphQLScalarType<boolean>({
@@ -208,6 +232,12 @@ export const GraphQLBoolean = new GraphQLScalarType<boolean>({
       );
     }
     return valueNode.value;
+  },
+  valueToLiteral(value) {
+    const literal = defaultScalarValueToLiteral(value);
+    if (literal.kind === Kind.BOOLEAN) {
+      return literal;
+    }
   },
 });
 
@@ -249,6 +279,16 @@ export const GraphQLID = new GraphQLScalarType<string>({
       );
     }
     return valueNode.value;
+  },
+  valueToLiteral(value) {
+    // ID types can use number values and Int literals.
+    const stringValue = Number.isInteger(value) ? String(value) : value;
+    if (typeof stringValue === 'string') {
+      // Will parse as an IntValue.
+      return /^-?(?:0|[1-9][0-9]*)$/.test(stringValue)
+        ? { kind: Kind.INT, value: stringValue }
+        : { kind: Kind.STRING, value: stringValue, block: false };
+    }
   },
 });
 

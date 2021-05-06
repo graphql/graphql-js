@@ -35,7 +35,6 @@ import type {
   ScalarTypeExtensionNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
-  ValueNode,
 } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
 import { print } from '../language/printer.js';
@@ -551,22 +550,52 @@ export interface GraphQLScalarTypeExtensions {
  * Example:
  *
  * ```ts
+ * function ensureOdd(value) {
+ *   if (!Number.isFinite(value)) {
+ *     throw new Error(
+ *       `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *     );
+ *   }
+ *
+ *   if (value % 2 === 0) {
+ *     throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
+ *   }
+ * }
+ *
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
  *   serialize(value) {
- *     if (!Number.isFinite(value)) {
- *       throw new Error(
- *         `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
- *       );
- *     }
- *
- *     if (value % 2 === 0) {
- *       throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
- *     }
- *     return value;
+ *     return ensureOdd(value);
+ *   },
+ *   parseValue(value) {
+ *     return ensureOdd(value);
+ *   }
+ *   valueToLiteral(value) {
+ *    return parse(`${ensureOdd(value)`);
  *   }
  * });
  * ```
+ *
+ * Custom scalars behavior is defined via the following functions:
+ *
+ *  - serialize(value): Implements "Result Coercion". Given an internal value,
+ *    produces an external value valid for this type. Returns undefined or
+ *    throws an error to indicate invalid values.
+ *
+ *  - parseValue(value): Implements "Input Coercion" for values. Given an
+ *    external value (for example, variable values), produces an internal value
+ *    valid for this type. Returns undefined or throws an error to indicate
+ *    invalid values.
+ *
+ *  - parseLiteral(ast): Implements "Input Coercion" for literals. Given an
+ *    GraphQL literal (AST) (for example, an argument value), produces an
+ *    internal value valid for this type. Returns undefined or throws an error
+ *    to indicate invalid values.
+ *
+ *  - valueToLiteral(value): Converts an external value to a GraphQL
+ *    literal (AST). Returns undefined or throws an error to indicate
+ *    invalid values.
+ *
  */
 export class GraphQLScalarType<
   TInternal = unknown,
@@ -578,6 +607,7 @@ export class GraphQLScalarType<
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
+  valueToLiteral: GraphQLScalarValueToLiteral | undefined;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
@@ -595,8 +625,8 @@ export class GraphQLScalarType<
       config.serialize ?? (identityFunc as GraphQLScalarSerializer<TExternal>);
     this.parseValue = parseValue;
     this.parseLiteral =
-      config.parseLiteral ??
-      ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
+      config.parseLiteral ?? ((node) => parseValue(valueFromASTUntyped(node)));
+    this.valueToLiteral = config.valueToLiteral;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
@@ -622,6 +652,7 @@ export class GraphQLScalarType<
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
+      valueToLiteral: this.valueToLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
@@ -638,9 +669,12 @@ export type GraphQLScalarValueParser<TInternal> = (
 ) => TInternal;
 
 export type GraphQLScalarLiteralParser<TInternal> = (
-  valueNode: ValueNode,
-  variables?: Maybe<ObjMap<unknown>>,
-) => TInternal;
+  valueNode: ConstValueNode,
+) => Maybe<TInternal>;
+
+export type GraphQLScalarValueToLiteral = (
+  inputValue: unknown,
+) => ConstValueNode | undefined;
 
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   name: string;
@@ -652,6 +686,8 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   parseValue?: GraphQLScalarValueParser<TInternal> | undefined;
   /** Parses an externally provided literal value to use as an input. */
   parseLiteral?: GraphQLScalarLiteralParser<TInternal> | undefined;
+  /** Translates an externally provided value to a literal (AST). */
+  valueToLiteral?: GraphQLScalarValueToLiteral | undefined;
   extensions?: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
   astNode?: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
@@ -1384,10 +1420,7 @@ export class GraphQLEnumType /* <T> */ extends GraphQLSchemaElement {
     return enumValue.value;
   }
 
-  parseLiteral(
-    valueNode: ValueNode,
-    _variables: Maybe<ObjMap<unknown>>,
-  ): Maybe<any> /* T */ {
+  parseLiteral(valueNode: ConstValueNode): Maybe<any> /* T */ {
     // Note: variables will be resolved to a value before calling this function.
     if (valueNode.kind !== Kind.ENUM) {
       const valueStr = print(valueNode);
@@ -1408,6 +1441,12 @@ export class GraphQLEnumType /* <T> */ extends GraphQLSchemaElement {
       );
     }
     return enumValue.value;
+  }
+
+  valueToLiteral(value: unknown): ConstValueNode | undefined {
+    if (typeof value === 'string' && this.getValue(value)) {
+      return { kind: Kind.ENUM, value };
+    }
   }
 
   toConfig(): GraphQLEnumTypeNormalizedConfig {
