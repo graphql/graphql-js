@@ -25,6 +25,8 @@ import {
   isRequiredInputField,
 } from '../../type/definition.js';
 
+import { replaceVariables } from '../../utilities/replaceVariables.js';
+
 import type { ValidationContext } from '../ValidationContext.js';
 
 /**
@@ -151,10 +153,12 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     return;
   }
 
-  // Scalars and Enums determine if a literal value is valid via parseLiteral(),
-  // which may throw or return an invalid value to indicate failure.
+  const constValueNode = replaceVariables(node);
+
+  // Scalars and Enums determine if a literal value is valid via parseConstLiteral(),
+  // which may throw or return undefined to indicate an invalid value.
   try {
-    const parseResult = type.parseLiteral(node, undefined /* variables */);
+    const parseResult = type.parseConstLiteral(constValueNode);
     if (parseResult === undefined) {
       const typeStr = inspect(locationType);
       context.reportError(

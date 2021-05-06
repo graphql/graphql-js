@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parseValue as parseValueToAST } from '../../language/parser.js';
+import { parseConstValue } from '../../language/parser.js';
 
 import {
   GraphQLBoolean,
@@ -64,48 +64,45 @@ describe('Type System: Specified scalar types', () => {
       );
     });
 
-    it('parseLiteral', () => {
-      function parseLiteral(str: string) {
-        return GraphQLInt.parseLiteral(parseValueToAST(str), undefined);
+    it('parseConstLiteral', () => {
+      function parseConstLiteral(str: string) {
+        return GraphQLInt.parseConstLiteral(parseConstValue(str));
       }
 
-      expect(parseLiteral('1')).to.equal(1);
-      expect(parseLiteral('0')).to.equal(0);
-      expect(parseLiteral('-1')).to.equal(-1);
+      expect(parseConstLiteral('1')).to.equal(1);
+      expect(parseConstLiteral('0')).to.equal(0);
+      expect(parseConstLiteral('-1')).to.equal(-1);
 
-      expect(() => parseLiteral('9876504321')).to.throw(
+      expect(() => parseConstLiteral('9876504321')).to.throw(
         'Int cannot represent non 32-bit signed integer value: 9876504321',
       );
-      expect(() => parseLiteral('-9876504321')).to.throw(
+      expect(() => parseConstLiteral('-9876504321')).to.throw(
         'Int cannot represent non 32-bit signed integer value: -9876504321',
       );
 
-      expect(() => parseLiteral('1.0')).to.throw(
+      expect(() => parseConstLiteral('1.0')).to.throw(
         'Int cannot represent non-integer value: 1.0',
       );
-      expect(() => parseLiteral('null')).to.throw(
+      expect(() => parseConstLiteral('null')).to.throw(
         'Int cannot represent non-integer value: null',
       );
-      expect(() => parseLiteral('""')).to.throw(
+      expect(() => parseConstLiteral('""')).to.throw(
         'Int cannot represent non-integer value: ""',
       );
-      expect(() => parseLiteral('"123"')).to.throw(
+      expect(() => parseConstLiteral('"123"')).to.throw(
         'Int cannot represent non-integer value: "123"',
       );
-      expect(() => parseLiteral('false')).to.throw(
+      expect(() => parseConstLiteral('false')).to.throw(
         'Int cannot represent non-integer value: false',
       );
-      expect(() => parseLiteral('[1]')).to.throw(
+      expect(() => parseConstLiteral('[1]')).to.throw(
         'Int cannot represent non-integer value: [1]',
       );
-      expect(() => parseLiteral('{ value: 1 }')).to.throw(
+      expect(() => parseConstLiteral('{ value: 1 }')).to.throw(
         'Int cannot represent non-integer value: { value: 1 }',
       );
-      expect(() => parseLiteral('ENUM_VALUE')).to.throw(
+      expect(() => parseConstLiteral('ENUM_VALUE')).to.throw(
         'Int cannot represent non-integer value: ENUM_VALUE',
-      );
-      expect(() => parseLiteral('$var')).to.throw(
-        'Int cannot represent non-integer value: $var',
       );
     });
 
@@ -229,43 +226,40 @@ describe('Type System: Specified scalar types', () => {
       );
     });
 
-    it('parseLiteral', () => {
-      function parseLiteral(str: string) {
-        return GraphQLFloat.parseLiteral(parseValueToAST(str), undefined);
+    it('parseConstLiteral', () => {
+      function parseConstLiteral(str: string) {
+        return GraphQLFloat.parseConstLiteral(parseConstValue(str));
       }
 
-      expect(parseLiteral('1')).to.equal(1);
-      expect(parseLiteral('0')).to.equal(0);
-      expect(parseLiteral('-1')).to.equal(-1);
-      expect(parseLiteral('0.1')).to.equal(0.1);
-      expect(parseLiteral(Math.PI.toString())).to.equal(Math.PI);
+      expect(parseConstLiteral('1')).to.equal(1);
+      expect(parseConstLiteral('0')).to.equal(0);
+      expect(parseConstLiteral('-1')).to.equal(-1);
+      expect(parseConstLiteral('0.1')).to.equal(0.1);
+      expect(parseConstLiteral(Math.PI.toString())).to.equal(Math.PI);
 
-      expect(() => parseLiteral('null')).to.throw(
+      expect(() => parseConstLiteral('null')).to.throw(
         'Float cannot represent non numeric value: null',
       );
-      expect(() => parseLiteral('""')).to.throw(
+      expect(() => parseConstLiteral('""')).to.throw(
         'Float cannot represent non numeric value: ""',
       );
-      expect(() => parseLiteral('"123"')).to.throw(
+      expect(() => parseConstLiteral('"123"')).to.throw(
         'Float cannot represent non numeric value: "123"',
       );
-      expect(() => parseLiteral('"123.5"')).to.throw(
+      expect(() => parseConstLiteral('"123.5"')).to.throw(
         'Float cannot represent non numeric value: "123.5"',
       );
-      expect(() => parseLiteral('false')).to.throw(
+      expect(() => parseConstLiteral('false')).to.throw(
         'Float cannot represent non numeric value: false',
       );
-      expect(() => parseLiteral('[0.1]')).to.throw(
+      expect(() => parseConstLiteral('[0.1]')).to.throw(
         'Float cannot represent non numeric value: [0.1]',
       );
-      expect(() => parseLiteral('{ value: 0.1 }')).to.throw(
+      expect(() => parseConstLiteral('{ value: 0.1 }')).to.throw(
         'Float cannot represent non numeric value: { value: 0.1 }',
       );
-      expect(() => parseLiteral('ENUM_VALUE')).to.throw(
+      expect(() => parseConstLiteral('ENUM_VALUE')).to.throw(
         'Float cannot represent non numeric value: ENUM_VALUE',
-      );
-      expect(() => parseLiteral('$var')).to.throw(
-        'Float cannot represent non numeric value: $var',
       );
     });
 
@@ -342,37 +336,34 @@ describe('Type System: Specified scalar types', () => {
       );
     });
 
-    it('parseLiteral', () => {
-      function parseLiteral(str: string) {
-        return GraphQLString.parseLiteral(parseValueToAST(str), undefined);
+    it('parseConstLiteral', () => {
+      function parseConstLiteral(str: string) {
+        return GraphQLString.parseConstLiteral(parseConstValue(str));
       }
 
-      expect(parseLiteral('"foo"')).to.equal('foo');
-      expect(parseLiteral('"""bar"""')).to.equal('bar');
+      expect(parseConstLiteral('"foo"')).to.equal('foo');
+      expect(parseConstLiteral('"""bar"""')).to.equal('bar');
 
-      expect(() => parseLiteral('null')).to.throw(
+      expect(() => parseConstLiteral('null')).to.throw(
         'String cannot represent a non string value: null',
       );
-      expect(() => parseLiteral('1')).to.throw(
+      expect(() => parseConstLiteral('1')).to.throw(
         'String cannot represent a non string value: 1',
       );
-      expect(() => parseLiteral('0.1')).to.throw(
+      expect(() => parseConstLiteral('0.1')).to.throw(
         'String cannot represent a non string value: 0.1',
       );
-      expect(() => parseLiteral('false')).to.throw(
+      expect(() => parseConstLiteral('false')).to.throw(
         'String cannot represent a non string value: false',
       );
-      expect(() => parseLiteral('["foo"]')).to.throw(
+      expect(() => parseConstLiteral('["foo"]')).to.throw(
         'String cannot represent a non string value: ["foo"]',
       );
-      expect(() => parseLiteral('{ value: "foo" }')).to.throw(
+      expect(() => parseConstLiteral('{ value: "foo" }')).to.throw(
         'String cannot represent a non string value: { value: "foo" }',
       );
-      expect(() => parseLiteral('ENUM_VALUE')).to.throw(
+      expect(() => parseConstLiteral('ENUM_VALUE')).to.throw(
         'String cannot represent a non string value: ENUM_VALUE',
-      );
-      expect(() => parseLiteral('$var')).to.throw(
-        'String cannot represent a non string value: $var',
       );
     });
 
@@ -454,43 +445,40 @@ describe('Type System: Specified scalar types', () => {
       );
     });
 
-    it('parseLiteral', () => {
-      function parseLiteral(str: string) {
-        return GraphQLBoolean.parseLiteral(parseValueToAST(str), undefined);
+    it('parseConstLiteral', () => {
+      function parseConstLiteral(str: string) {
+        return GraphQLBoolean.parseConstLiteral(parseConstValue(str));
       }
 
-      expect(parseLiteral('true')).to.equal(true);
-      expect(parseLiteral('false')).to.equal(false);
+      expect(parseConstLiteral('true')).to.equal(true);
+      expect(parseConstLiteral('false')).to.equal(false);
 
-      expect(() => parseLiteral('null')).to.throw(
+      expect(() => parseConstLiteral('null')).to.throw(
         'Boolean cannot represent a non boolean value: null',
       );
-      expect(() => parseLiteral('0')).to.throw(
+      expect(() => parseConstLiteral('0')).to.throw(
         'Boolean cannot represent a non boolean value: 0',
       );
-      expect(() => parseLiteral('1')).to.throw(
+      expect(() => parseConstLiteral('1')).to.throw(
         'Boolean cannot represent a non boolean value: 1',
       );
-      expect(() => parseLiteral('0.1')).to.throw(
+      expect(() => parseConstLiteral('0.1')).to.throw(
         'Boolean cannot represent a non boolean value: 0.1',
       );
-      expect(() => parseLiteral('""')).to.throw(
+      expect(() => parseConstLiteral('""')).to.throw(
         'Boolean cannot represent a non boolean value: ""',
       );
-      expect(() => parseLiteral('"false"')).to.throw(
+      expect(() => parseConstLiteral('"false"')).to.throw(
         'Boolean cannot represent a non boolean value: "false"',
       );
-      expect(() => parseLiteral('[false]')).to.throw(
+      expect(() => parseConstLiteral('[false]')).to.throw(
         'Boolean cannot represent a non boolean value: [false]',
       );
-      expect(() => parseLiteral('{ value: false }')).to.throw(
+      expect(() => parseConstLiteral('{ value: false }')).to.throw(
         'Boolean cannot represent a non boolean value: { value: false }',
       );
-      expect(() => parseLiteral('ENUM_VALUE')).to.throw(
+      expect(() => parseConstLiteral('ENUM_VALUE')).to.throw(
         'Boolean cannot represent a non boolean value: ENUM_VALUE',
-      );
-      expect(() => parseLiteral('$var')).to.throw(
-        'Boolean cannot represent a non boolean value: $var',
       );
     });
 
@@ -569,43 +557,44 @@ describe('Type System: Specified scalar types', () => {
       );
     });
 
-    it('parseLiteral', () => {
-      function parseLiteral(str: string) {
-        return GraphQLID.parseLiteral(parseValueToAST(str), undefined);
+    it('parseConstLiteral', () => {
+      function parseConstLiteral(str: string) {
+        return GraphQLID.parseConstLiteral(parseConstValue(str));
       }
 
-      expect(parseLiteral('""')).to.equal('');
-      expect(parseLiteral('"1"')).to.equal('1');
-      expect(parseLiteral('"foo"')).to.equal('foo');
-      expect(parseLiteral('"""foo"""')).to.equal('foo');
-      expect(parseLiteral('1')).to.equal('1');
-      expect(parseLiteral('0')).to.equal('0');
-      expect(parseLiteral('-1')).to.equal('-1');
+      expect(parseConstLiteral('""')).to.equal('');
+      expect(parseConstLiteral('"1"')).to.equal('1');
+      expect(parseConstLiteral('"foo"')).to.equal('foo');
+      expect(parseConstLiteral('"""foo"""')).to.equal('foo');
+      expect(parseConstLiteral('1')).to.equal('1');
+      expect(parseConstLiteral('0')).to.equal('0');
+      expect(parseConstLiteral('-1')).to.equal('-1');
 
       // Support arbitrary long numbers even if they can't be represented in JS
-      expect(parseLiteral('90071992547409910')).to.equal('90071992547409910');
-      expect(parseLiteral('-90071992547409910')).to.equal('-90071992547409910');
+      expect(parseConstLiteral('90071992547409910')).to.equal(
+        '90071992547409910',
+      );
+      expect(parseConstLiteral('-90071992547409910')).to.equal(
+        '-90071992547409910',
+      );
 
-      expect(() => parseLiteral('null')).to.throw(
+      expect(() => parseConstLiteral('null')).to.throw(
         'ID cannot represent a non-string and non-integer value: null',
       );
-      expect(() => parseLiteral('0.1')).to.throw(
+      expect(() => parseConstLiteral('0.1')).to.throw(
         'ID cannot represent a non-string and non-integer value: 0.1',
       );
-      expect(() => parseLiteral('false')).to.throw(
+      expect(() => parseConstLiteral('false')).to.throw(
         'ID cannot represent a non-string and non-integer value: false',
       );
-      expect(() => parseLiteral('["1"]')).to.throw(
+      expect(() => parseConstLiteral('["1"]')).to.throw(
         'ID cannot represent a non-string and non-integer value: ["1"]',
       );
-      expect(() => parseLiteral('{ value: "1" }')).to.throw(
+      expect(() => parseConstLiteral('{ value: "1" }')).to.throw(
         'ID cannot represent a non-string and non-integer value: { value: "1" }',
       );
-      expect(() => parseLiteral('ENUM_VALUE')).to.throw(
+      expect(() => parseConstLiteral('ENUM_VALUE')).to.throw(
         'ID cannot represent a non-string and non-integer value: ENUM_VALUE',
-      );
-      expect(() => parseLiteral('$var')).to.throw(
-        'ID cannot represent a non-string and non-integer value: $var',
       );
     });
 

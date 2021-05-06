@@ -47,7 +47,7 @@ const TestFaultyScalar = new GraphQLScalarType({
   parseValue() {
     throw TestFaultyScalarGraphQLError;
   },
-  parseLiteral() {
+  parseConstLiteral() {
     throw TestFaultyScalarGraphQLError;
   },
 });
@@ -58,7 +58,7 @@ const TestComplexScalar = new GraphQLScalarType({
     expect(value).to.equal('SerializedValue');
     return 'DeserializedValue';
   },
-  parseLiteral(ast) {
+  parseConstLiteral(ast) {
     expect(ast).to.include({ kind: 'StringValue', value: 'SerializedValue' });
     return 'DeserializedValue';
   },
@@ -281,7 +281,7 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
-      it('properly runs parseLiteral on complex scalar types', () => {
+      it('properly runs parseConstLiteral on complex scalar types', () => {
         const result = executeQuery(`
           {
             fieldWithObjectInput(input: {c: "foo", d: "SerializedValue"})
