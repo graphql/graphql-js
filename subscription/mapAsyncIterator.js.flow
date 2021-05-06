@@ -13,45 +13,41 @@ export function mapAsyncIterator<T, U>(
   // $FlowIssue[incompatible-use]
   const iterator = iterable[Symbol.asyncIterator]();
 
-  async function abruptClose(error: mixed) {
-    if (typeof iterator.return === 'function') {
-      try {
-        await iterator.return();
-      } catch (_e) {
-        /* ignore error */
-      }
+  async function mapResult(
+    result: IteratorResult<T, void>,
+  ): Promise<IteratorResult<U, void>> {
+    if (result.done) {
+      return result;
     }
-    throw error;
-  }
 
-  async function mapResult(resultPromise: Promise<IteratorResult<T, void>>) {
     try {
-      const result = await resultPromise;
-
-      if (result.done) {
-        return result;
-      }
-
       return { value: await callback(result.value), done: false };
-    } catch (callbackError) {
-      return abruptClose(callbackError);
+    } catch (error) {
+      // istanbul ignore else (FIXME: add test case)
+      if (typeof iterator.return === 'function') {
+        try {
+          await iterator.return();
+        } catch (_e) {
+          /* ignore error */
+        }
+      }
+      throw error;
     }
   }
 
   return {
-    next(): Promise<IteratorResult<U, void>> {
-      return mapResult(iterator.next());
+    async next() {
+      return mapResult(await iterator.next());
     },
-    return(): Promise<IteratorResult<U, void>> {
+    async return(): Promise<IteratorResult<U, void>> {
       return typeof iterator.return === 'function'
-        ? mapResult(iterator.return())
-        : Promise.resolve({ value: undefined, done: true });
+        ? mapResult(await iterator.return())
+        : { value: undefined, done: true };
     },
-    throw(error?: mixed): Promise<IteratorResult<U, void>> {
-      if (typeof iterator.throw === 'function') {
-        return mapResult(iterator.throw(error));
-      }
-      return Promise.reject(error).catch(abruptClose);
+    async throw(error?: mixed) {
+      return typeof iterator.throw === 'function'
+        ? mapResult(await iterator.throw(error))
+        : Promise.reject(error);
     },
     [Symbol.asyncIterator]() {
       return this;

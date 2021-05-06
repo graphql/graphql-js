@@ -13,55 +13,48 @@ function mapAsyncIterator(iterable, callback) {
   // $FlowIssue[incompatible-use]
   const iterator = iterable[Symbol.asyncIterator]();
 
-  async function abruptClose(error) {
-    if (typeof iterator.return === 'function') {
-      try {
-        await iterator.return();
-      } catch (_e) {
-        /* ignore error */
-      }
+  async function mapResult(result) {
+    if (result.done) {
+      return result;
     }
 
-    throw error;
-  }
-
-  async function mapResult(resultPromise) {
     try {
-      const result = await resultPromise;
-
-      if (result.done) {
-        return result;
-      }
-
       return {
         value: await callback(result.value),
         done: false,
       };
-    } catch (callbackError) {
-      return abruptClose(callbackError);
+    } catch (error) {
+      // istanbul ignore else (FIXME: add test case)
+      if (typeof iterator.return === 'function') {
+        try {
+          await iterator.return();
+        } catch (_e) {
+          /* ignore error */
+        }
+      }
+
+      throw error;
     }
   }
 
   return {
-    next() {
-      return mapResult(iterator.next());
+    async next() {
+      return mapResult(await iterator.next());
     },
 
-    return() {
+    async return() {
       return typeof iterator.return === 'function'
-        ? mapResult(iterator.return())
-        : Promise.resolve({
+        ? mapResult(await iterator.return())
+        : {
             value: undefined,
             done: true,
-          });
+          };
     },
 
-    throw(error) {
-      if (typeof iterator.throw === 'function') {
-        return mapResult(iterator.throw(error));
-      }
-
-      return Promise.reject(error).catch(abruptClose);
+    async throw(error) {
+      return typeof iterator.throw === 'function'
+        ? mapResult(await iterator.throw(error))
+        : Promise.reject(error);
     },
 
     [Symbol.asyncIterator]() {
