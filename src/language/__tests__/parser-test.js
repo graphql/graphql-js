@@ -360,7 +360,7 @@ describe('Parser', () => {
 
   it('allows parsing without source location information', () => {
     const result = parse('{ id }', { noLocation: true });
-    expect(result.loc).to.equal(undefined);
+    expect(result).to.not.haveOwnProperty('loc');
   });
 
   it('Legacy: allows parsing fragment defined variables', () => {
