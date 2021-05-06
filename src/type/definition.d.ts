@@ -254,19 +254,27 @@ export function getNullableType<T extends GraphQLNullableType>(
 /**
  * These named types do not include modifiers like List or NonNull.
  */
-export type GraphQLNamedType =
+export type GraphQLNamedType = GraphQLNamedInputType | GraphQLNamedOutputType;
+
+export type GraphQLNamedInputType =
+  | GraphQLScalarType
+  | GraphQLEnumType
+  | GraphQLInputObjectType;
+
+export type GraphQLNamedOutputType =
   | GraphQLScalarType
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
-  | GraphQLEnumType
-  | GraphQLInputObjectType;
+  | GraphQLEnumType;
 
 export function isNamedType(type: any): type is GraphQLNamedType;
 
 export function assertNamedType(type: any): GraphQLNamedType;
 
 export function getNamedType(type: undefined): undefined;
+export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
+export function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
 export function getNamedType(type: GraphQLType): GraphQLNamedType;
 
 /**
