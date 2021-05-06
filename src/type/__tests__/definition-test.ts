@@ -5,7 +5,7 @@ import { identityFunc } from '../../jsutils/identityFunc.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { Kind } from '../../language/kinds.js';
-import { parseValue } from '../../language/parser.js';
+import { parseConstValue } from '../../language/parser.js';
 
 import type { GraphQLNullableType, GraphQLType } from '../definition.js';
 import {
@@ -82,15 +82,12 @@ describe('Type System: Scalars', () => {
       },
     });
 
-    expect(scalar.parseLiteral(parseValue('null'))).to.equal(
+    expect(scalar.parseLiteral(parseConstValue('null'))).to.equal(
       'parseValue: null',
     );
-    expect(scalar.parseLiteral(parseValue('{ foo: "bar" }'))).to.equal(
+    expect(scalar.parseLiteral(parseConstValue('{ foo: "bar" }'))).to.equal(
       'parseValue: { foo: "bar" }',
     );
-    expect(
-      scalar.parseLiteral(parseValue('{ foo: { bar: $var } }'), { var: 'baz' }),
-    ).to.equal('parseValue: { foo: { bar: "baz" } }');
   });
 
   it('rejects a Scalar type defining parseLiteral but not parseValue', () => {
