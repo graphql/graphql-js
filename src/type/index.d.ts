@@ -80,6 +80,8 @@ export {
   GraphQLArgument,
   GraphQLArgumentConfig,
   GraphQLArgumentExtensions,
+  GraphQLInputValue,
+  GraphQLInputValueConfig,
   GraphQLEnumTypeConfig,
   GraphQLEnumTypeExtensions,
   GraphQLEnumValue,
@@ -123,6 +125,7 @@ export {
   assertDirective,
   // Directives Definition
   GraphQLDirective,
+  GraphQLDirectiveArgument,
   // Built-in Directives defined by the Spec
   isSpecifiedDirective,
   specifiedDirectives,
@@ -134,6 +137,7 @@ export {
   DEFAULT_DEPRECATION_REASON,
   // type
   GraphQLDirectiveConfig,
+  GraphQLDirectiveArgumentConfig,
   GraphQLDirectiveExtensions,
 } from './directives';
 
