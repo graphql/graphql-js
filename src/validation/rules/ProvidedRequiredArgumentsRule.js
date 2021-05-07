@@ -9,7 +9,7 @@ import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 
 import { specifiedDirectives } from '../../type/directives';
-import { isType, isRequiredArgument } from '../../type/definition';
+import { isType, isRequiredInput } from '../../type/definition';
 
 import type {
   ValidationContext,
@@ -41,7 +41,7 @@ export function ProvidedRequiredArgumentsRule(
           fieldNode.arguments?.map((arg) => arg.name.value),
         );
         for (const argDef of fieldDef.args) {
-          if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
+          if (!providedArgs.has(argDef.name) && isRequiredInput(argDef)) {
             const argTypeStr = inspect(argDef.type);
             context.reportError(
               new GraphQLError(
@@ -68,7 +68,7 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
   const definedDirectives = schema?.getDirectives() ?? specifiedDirectives;
   for (const directive of definedDirectives) {
     requiredArgsMap[directive.name] = keyMap(
-      directive.args.filter(isRequiredArgument),
+      directive.args.filter(isRequiredInput),
       (arg) => arg.name,
     );
   }
@@ -80,7 +80,7 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
       const argNodes = def.arguments ?? [];
 
       requiredArgsMap[def.name.value] = keyMap(
-        argNodes.filter(isRequiredArgumentNode),
+        argNodes.filter(isRequiredInputNode),
         (arg) => arg.name.value,
       );
     }
@@ -115,6 +115,6 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
   };
 }
 
-function isRequiredArgumentNode(arg: InputValueDefinitionNode): boolean {
+function isRequiredInputNode(arg: InputValueDefinitionNode): boolean {
   return arg.type.kind === Kind.NON_NULL_TYPE && arg.defaultValue == null;
 }

@@ -952,13 +952,15 @@ export type GraphQLField<
 
 export type GraphQLArgument = GraphQLInputValue;
 
-export function isRequiredArgument(arg: GraphQLArgument): boolean %checks {
-  return isNonNullType(arg.type) && arg.defaultValue === undefined;
-}
+export const isRequiredArgument = isRequiredInput;
 
 export type GraphQLFieldMap<TSource, TContext> = ObjMap<
   GraphQLField<TSource, TContext>,
 >;
+
+export function isRequiredInput(input: GraphQLInputValue): boolean %checks {
+  return isNonNullType(input.type) && input.defaultValue === undefined;
+}
 
 /**
  * @internal
@@ -1570,10 +1572,6 @@ export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
 export type GraphQLInputField = GraphQLInputValue;
 
-export function isRequiredInputField(
-  field: GraphQLInputField,
-): boolean %checks {
-  return isNonNullType(field.type) && field.defaultValue === undefined;
-}
+export const isRequiredInputField = isRequiredInput;
 
 export type GraphQLInputFieldMap = ObjMap<GraphQLInputField>;

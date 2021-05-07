@@ -29,6 +29,7 @@ export {
   isWrappingType,
   isNullableType,
   isNamedType,
+  isRequiredInput,
   isRequiredArgument,
   isRequiredInputField,
   // Assertions

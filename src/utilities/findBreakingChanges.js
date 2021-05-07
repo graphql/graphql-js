@@ -29,8 +29,7 @@ import {
   isNonNullType,
   isListType,
   isNamedType,
-  isRequiredArgument,
-  isRequiredInputField,
+  isRequiredInput,
 } from '../type/definition';
 
 import { astFromValue } from './astFromValue';
@@ -133,7 +132,7 @@ function findDirectiveChanges(
     const argsDiff = diff(oldDirective.args, newDirective.args);
 
     for (const newArg of argsDiff.added) {
-      if (isRequiredArgument(newArg)) {
+      if (isRequiredInput(newArg)) {
         schemaChanges.push({
           type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
           description: `A required arg ${newArg.name} on directive ${oldDirective.name} was added.`,
@@ -229,7 +228,7 @@ function findInputObjectTypeChanges(
   );
 
   for (const newField of fieldsDiff.added) {
-    if (isRequiredInputField(newField)) {
+    if (isRequiredInput(newField)) {
       schemaChanges.push({
         type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
         description: `A required field ${newField.name} on input type ${oldType.name} was added.`,
@@ -427,7 +426,7 @@ function findArgChanges(
   }
 
   for (const newArg of argsDiff.added) {
-    if (isRequiredArgument(newArg)) {
+    if (isRequiredInput(newArg)) {
       schemaChanges.push({
         type: BreakingChangeType.REQUIRED_ARG_ADDED,
         description: `A required arg ${newArg.name} on ${oldType.name}.${oldField.name} was added.`,

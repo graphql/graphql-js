@@ -571,6 +571,8 @@ export type GraphQLFieldMap<TSource, TContext> = ObjMap<
   GraphQLField<TSource, TContext>
 >;
 
+export function isRequiredInput(input: GraphQLInputValue<any>): boolean;
+
 export interface GraphQLInputValue<Extensions> {
   name: string;
   description: Maybe<string>;

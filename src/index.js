@@ -93,6 +93,7 @@ export {
   isWrappingType,
   isNullableType,
   isNamedType,
+  isRequiredInput,
   isRequiredArgument,
   isRequiredInputField,
   isSpecifiedScalarType,

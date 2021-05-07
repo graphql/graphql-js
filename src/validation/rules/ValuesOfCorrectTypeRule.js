@@ -14,7 +14,7 @@ import {
   isInputObjectType,
   isListType,
   isNonNullType,
-  isRequiredInputField,
+  isRequiredInput,
   getNullableType,
   getNamedType,
 } from '../../type/definition';
@@ -50,7 +50,7 @@ export function ValuesOfCorrectTypeRule(
       const fieldNodeMap = keyMap(node.fields, (field) => field.name.value);
       for (const fieldDef of Object.values(type.getFields())) {
         const fieldNode = fieldNodeMap[fieldDef.name];
-        if (!fieldNode && isRequiredInputField(fieldDef)) {
+        if (!fieldNode && isRequiredInput(fieldDef)) {
           const typeStr = inspect(fieldDef.type);
           context.reportError(
             new GraphQLError(
