@@ -32,6 +32,16 @@ export function isValueNode(node) {
     node.kind === Kind.OBJECT
   );
 }
+export function isConstValueNode(node) {
+  return (
+    isValueNode(node) &&
+    (node.kind === Kind.LIST
+      ? node.values.some(isConstValueNode)
+      : node.kind === Kind.OBJECT
+      ? node.fields.some((field) => isConstValueNode(field.value))
+      : node.kind !== Kind.VARIABLE)
+  );
+}
 export function isTypeNode(node) {
   return (
     node.kind === Kind.NAMED_TYPE ||

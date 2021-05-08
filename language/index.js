@@ -4,7 +4,7 @@ export { printLocation, printSourceLocation } from './printLocation.js';
 export { Kind } from './kinds.js';
 export { TokenKind } from './tokenKind.js';
 export { Lexer } from './lexer.js';
-export { parse, parseValue, parseType } from './parser.js';
+export { parse, parseValue, parseConstValue, parseType } from './parser.js';
 export { print } from './printer.js';
 export { visit, visitInParallel, getVisitFn, BREAK } from './visitor.js';
 export { Location, Token } from './ast.js';
@@ -13,6 +13,7 @@ export {
   isExecutableDefinitionNode,
   isSelectionNode,
   isValueNode,
+  isConstValueNode,
   isTypeNode,
   isTypeSystemDefinitionNode,
   isTypeDefinitionNode,

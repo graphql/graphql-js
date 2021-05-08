@@ -4,6 +4,7 @@ import {
   ExecutableDefinitionNode,
   SelectionNode,
   ValueNode,
+  ConstValueNode,
   TypeNode,
   TypeSystemDefinitionNode,
   TypeDefinitionNode,
@@ -20,6 +21,8 @@ export function isExecutableDefinitionNode(
 export function isSelectionNode(node: ASTNode): node is SelectionNode;
 
 export function isValueNode(node: ASTNode): node is ValueNode;
+
+export function isConstValueNode(node: ASTNode): node is ConstValueNode;
 
 export function isTypeNode(node: ASTNode): node is TypeNode;
 
