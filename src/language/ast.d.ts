@@ -241,8 +241,8 @@ export interface VariableDefinitionNode {
   readonly loc?: Location;
   readonly variable: VariableNode;
   readonly type: TypeNode;
-  readonly defaultValue?: ValueNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly defaultValue?: ConstValueNode;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
 }
 
 export interface VariableNode {
@@ -274,6 +274,13 @@ export interface ArgumentNode {
   readonly loc?: Location;
   readonly name: NameNode;
   readonly value: ValueNode;
+}
+
+export interface ConstArgumentNode {
+  readonly kind: 'Argument';
+  readonly loc?: Location;
+  readonly name: NameNode;
+  readonly value: ConstValueNode;
 }
 
 // Fragments
@@ -317,6 +324,16 @@ export type ValueNode =
   | ListValueNode
   | ObjectValueNode;
 
+export type ConstValueNode =
+  | IntValueNode
+  | FloatValueNode
+  | StringValueNode
+  | BooleanValueNode
+  | NullValueNode
+  | EnumValueNode
+  | ConstListValueNode
+  | ConstObjectValueNode;
+
 export interface IntValueNode {
   readonly kind: 'IntValue';
   readonly loc?: Location;
@@ -359,10 +376,22 @@ export interface ListValueNode {
   readonly values: ReadonlyArray<ValueNode>;
 }
 
+export interface ConstListValueNode {
+  readonly kind: 'ListValue';
+  readonly loc?: Location;
+  readonly values: ReadonlyArray<ConstValueNode>;
+}
+
 export interface ObjectValueNode {
   readonly kind: 'ObjectValue';
   readonly loc?: Location;
   readonly fields: ReadonlyArray<ObjectFieldNode>;
+}
+
+export interface ConstObjectValueNode {
+  readonly kind: 'ObjectValue';
+  readonly loc?: Location;
+  readonly fields: ReadonlyArray<ConstObjectFieldNode>;
 }
 
 export interface ObjectFieldNode {
@@ -372,6 +401,13 @@ export interface ObjectFieldNode {
   readonly value: ValueNode;
 }
 
+export interface ConstObjectFieldNode {
+  readonly kind: 'ObjectField';
+  readonly loc?: Location;
+  readonly name: NameNode;
+  readonly value: ConstValueNode;
+}
+
 // Directives
 
 export interface DirectiveNode {
@@ -379,6 +415,13 @@ export interface DirectiveNode {
   readonly loc?: Location;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<ArgumentNode>;
+}
+
+export interface ConstDirectiveNode {
+  readonly kind: 'Directive';
+  readonly loc?: Location;
+  readonly name: NameNode;
+  readonly arguments?: ReadonlyArray<ConstArgumentNode>;
 }
 
 // Type Reference
@@ -414,7 +457,7 @@ export interface SchemaDefinitionNode {
   readonly kind: 'SchemaDefinition';
   readonly loc?: Location;
   readonly description?: StringValueNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly operationTypes: ReadonlyArray<OperationTypeDefinitionNode>;
 }
 
@@ -440,7 +483,7 @@ export interface ScalarTypeDefinitionNode {
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly name: NameNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
 }
 
 export interface ObjectTypeDefinitionNode {
@@ -449,7 +492,7 @@ export interface ObjectTypeDefinitionNode {
   readonly description?: StringValueNode;
   readonly name: NameNode;
   readonly interfaces?: ReadonlyArray<NamedTypeNode>;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly fields?: ReadonlyArray<FieldDefinitionNode>;
 }
 
@@ -460,7 +503,7 @@ export interface FieldDefinitionNode {
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<InputValueDefinitionNode>;
   readonly type: TypeNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
 }
 
 export interface InputValueDefinitionNode {
@@ -469,8 +512,8 @@ export interface InputValueDefinitionNode {
   readonly description?: StringValueNode;
   readonly name: NameNode;
   readonly type: TypeNode;
-  readonly defaultValue?: ValueNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly defaultValue?: ConstValueNode;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
 }
 
 export interface InterfaceTypeDefinitionNode {
@@ -479,7 +522,7 @@ export interface InterfaceTypeDefinitionNode {
   readonly description?: StringValueNode;
   readonly name: NameNode;
   readonly interfaces?: ReadonlyArray<NamedTypeNode>;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly fields?: ReadonlyArray<FieldDefinitionNode>;
 }
 
@@ -488,7 +531,7 @@ export interface UnionTypeDefinitionNode {
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly name: NameNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly types?: ReadonlyArray<NamedTypeNode>;
 }
 
@@ -497,7 +540,7 @@ export interface EnumTypeDefinitionNode {
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly name: NameNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly values?: ReadonlyArray<EnumValueDefinitionNode>;
 }
 
@@ -506,7 +549,7 @@ export interface EnumValueDefinitionNode {
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly name: NameNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
 }
 
 export interface InputObjectTypeDefinitionNode {
@@ -514,7 +557,7 @@ export interface InputObjectTypeDefinitionNode {
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly name: NameNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly fields?: ReadonlyArray<InputValueDefinitionNode>;
 }
 
@@ -537,7 +580,7 @@ export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 export interface SchemaExtensionNode {
   readonly kind: 'SchemaExtension';
   readonly loc?: Location;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly operationTypes?: ReadonlyArray<OperationTypeDefinitionNode>;
 }
 
@@ -555,7 +598,7 @@ export interface ScalarTypeExtensionNode {
   readonly kind: 'ScalarTypeExtension';
   readonly loc?: Location;
   readonly name: NameNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
 }
 
 export interface ObjectTypeExtensionNode {
@@ -563,7 +606,7 @@ export interface ObjectTypeExtensionNode {
   readonly loc?: Location;
   readonly name: NameNode;
   readonly interfaces?: ReadonlyArray<NamedTypeNode>;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly fields?: ReadonlyArray<FieldDefinitionNode>;
 }
 
@@ -572,7 +615,7 @@ export interface InterfaceTypeExtensionNode {
   readonly loc?: Location;
   readonly name: NameNode;
   readonly interfaces?: ReadonlyArray<NamedTypeNode>;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly fields?: ReadonlyArray<FieldDefinitionNode>;
 }
 
@@ -580,7 +623,7 @@ export interface UnionTypeExtensionNode {
   readonly kind: 'UnionTypeExtension';
   readonly loc?: Location;
   readonly name: NameNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly types?: ReadonlyArray<NamedTypeNode>;
 }
 
@@ -588,7 +631,7 @@ export interface EnumTypeExtensionNode {
   readonly kind: 'EnumTypeExtension';
   readonly loc?: Location;
   readonly name: NameNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly values?: ReadonlyArray<EnumValueDefinitionNode>;
 }
 
@@ -596,6 +639,6 @@ export interface InputObjectTypeExtensionNode {
   readonly kind: 'InputObjectTypeExtension';
   readonly loc?: Location;
   readonly name: NameNode;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly fields?: ReadonlyArray<InputValueDefinitionNode>;
 }

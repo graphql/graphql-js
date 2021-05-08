@@ -9,7 +9,7 @@ import { inspect } from '../../jsutils/inspect';
 import { Kind } from '../kinds';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
-import { parse, parseValue, parseType } from '../parser';
+import { parse, parseValue, parseConstValue, parseType } from '../parser';
 
 import { toJSONDeep } from './toJSONDeep';
 
@@ -95,7 +95,7 @@ describe('Parser', () => {
     expectSyntaxError(
       'query Foo($x: Complex = { a: { b: [ $var ] } }) { field }',
     ).to.deep.equal({
-      message: 'Syntax Error: Unexpected "$".',
+      message: 'Syntax Error: Unexpected variable "$var" in constant value.',
       locations: [{ line: 1, column: 37 }],
     });
   });
@@ -446,6 +446,94 @@ describe('Parser', () => {
           },
         ],
       });
+    });
+
+    it('allows variables', () => {
+      const result = parseValue('{ field: $var }');
+      expect(toJSONDeep(result)).to.deep.equal({
+        kind: Kind.OBJECT,
+        loc: { start: 0, end: 15 },
+        fields: [
+          {
+            kind: Kind.OBJECT_FIELD,
+            loc: { start: 2, end: 13 },
+            name: {
+              kind: Kind.NAME,
+              loc: { start: 2, end: 7 },
+              value: 'field',
+            },
+            value: {
+              kind: Kind.VARIABLE,
+              loc: { start: 9, end: 13 },
+              name: {
+                kind: Kind.NAME,
+                loc: { start: 10, end: 13 },
+                value: 'var',
+              },
+            },
+          },
+        ],
+      });
+    });
+
+    it('correct message for incomplete variable', () => {
+      expect(() => parseValue('$'))
+        .to.throw()
+        .to.deep.include({
+          message: 'Syntax Error: Expected Name, found <EOF>.',
+          locations: [{ line: 1, column: 2 }],
+        });
+    });
+
+    it('correct message for unexpected token', () => {
+      expect(() => parseValue(':'))
+        .to.throw()
+        .to.deep.include({
+          message: 'Syntax Error: Unexpected ":".',
+          locations: [{ line: 1, column: 1 }],
+        });
+    });
+  });
+
+  describe('parseConstValue', () => {
+    it('parses values', () => {
+      const result = parseConstValue('[123 "abc"]');
+      expect(toJSONDeep(result)).to.deep.equal({
+        kind: Kind.LIST,
+        loc: { start: 0, end: 11 },
+        values: [
+          {
+            kind: Kind.INT,
+            loc: { start: 1, end: 4 },
+            value: '123',
+          },
+          {
+            kind: Kind.STRING,
+            loc: { start: 5, end: 10 },
+            value: 'abc',
+            block: false,
+          },
+        ],
+      });
+    });
+
+    it('does not allow variables', () => {
+      expect(() => parseConstValue('{ field: $var }'))
+        .to.throw()
+        .to.deep.include({
+          message:
+            'Syntax Error: Unexpected variable "$var" in constant value.',
+          locations: [{ line: 1, column: 10 }],
+        });
+    });
+
+    it('correct message for unexpected token', () => {
+      expect(() => parseConstValue('$'))
+        .to.throw()
+        .to.deep.include({
+          message: 'Syntax Error: Unexpected "$".',
+          locations: [{ line: 1, column: 1 }],
+        });
     });
   });
 
