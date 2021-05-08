@@ -57,6 +57,12 @@ Object.defineProperty(exports, 'parseValue', {
     return _parser.parseValue;
   },
 });
+Object.defineProperty(exports, 'parseConstValue', {
+  enumerable: true,
+  get: function () {
+    return _parser.parseConstValue;
+  },
+});
 Object.defineProperty(exports, 'parseType', {
   enumerable: true,
   get: function () {
@@ -127,6 +133,12 @@ Object.defineProperty(exports, 'isValueNode', {
   enumerable: true,
   get: function () {
     return _predicates.isValueNode;
+  },
+});
+Object.defineProperty(exports, 'isConstValueNode', {
+  enumerable: true,
+  get: function () {
+    return _predicates.isConstValueNode;
   },
 });
 Object.defineProperty(exports, 'isTypeNode', {

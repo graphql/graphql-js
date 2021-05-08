@@ -7,6 +7,7 @@ exports.isDefinitionNode = isDefinitionNode;
 exports.isExecutableDefinitionNode = isExecutableDefinitionNode;
 exports.isSelectionNode = isSelectionNode;
 exports.isValueNode = isValueNode;
+exports.isConstValueNode = isConstValueNode;
 exports.isTypeNode = isTypeNode;
 exports.isTypeSystemDefinitionNode = isTypeSystemDefinitionNode;
 exports.isTypeDefinitionNode = isTypeDefinitionNode;
@@ -49,6 +50,17 @@ function isValueNode(node) {
     node.kind === _kinds.Kind.ENUM ||
     node.kind === _kinds.Kind.LIST ||
     node.kind === _kinds.Kind.OBJECT
+  );
+}
+
+function isConstValueNode(node) {
+  return (
+    isValueNode(node) &&
+    (node.kind === _kinds.Kind.LIST
+      ? node.values.some(isConstValueNode)
+      : node.kind === _kinds.Kind.OBJECT
+      ? node.fields.some((field) => isConstValueNode(field.value))
+      : node.kind !== _kinds.Kind.VARIABLE)
   );
 }
 

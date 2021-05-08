@@ -6,7 +6,13 @@ export { printLocation, printSourceLocation } from './printLocation';
 export { Kind, KindEnum } from './kinds';
 export { TokenKind, TokenKindEnum } from './tokenKind';
 export { Lexer } from './lexer';
-export { parse, parseValue, parseType, ParseOptions } from './parser';
+export {
+  parse,
+  parseValue,
+  parseConstValue,
+  parseType,
+  ParseOptions,
+} from './parser';
 export { print } from './printer';
 export {
   visit,
@@ -35,10 +41,12 @@ export {
   SelectionNode,
   FieldNode,
   ArgumentNode,
+  ConstArgumentNode,
   FragmentSpreadNode,
   InlineFragmentNode,
   FragmentDefinitionNode,
   ValueNode,
+  ConstValueNode,
   IntValueNode,
   FloatValueNode,
   StringValueNode,
@@ -46,9 +54,13 @@ export {
   NullValueNode,
   EnumValueNode,
   ListValueNode,
+  ConstListValueNode,
   ObjectValueNode,
+  ConstObjectValueNode,
   ObjectFieldNode,
+  ConstObjectFieldNode,
   DirectiveNode,
+  ConstDirectiveNode,
   TypeNode,
   NamedTypeNode,
   ListTypeNode,
@@ -83,6 +95,7 @@ export {
   isExecutableDefinitionNode,
   isSelectionNode,
   isValueNode,
+  isConstValueNode,
   isTypeNode,
   isTypeSystemDefinitionNode,
   isTypeDefinitionNode,

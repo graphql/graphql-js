@@ -123,6 +123,7 @@ export {
   TokenKind, // Parse
   parse,
   parseValue,
+  parseConstValue,
   parseType, // Print
   print, // Visit
   visit,
@@ -135,6 +136,7 @@ export {
   isExecutableDefinitionNode,
   isSelectionNode,
   isValueNode,
+  isConstValueNode,
   isTypeNode,
   isTypeSystemDefinitionNode,
   isTypeDefinitionNode,
