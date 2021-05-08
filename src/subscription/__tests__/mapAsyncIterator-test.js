@@ -90,11 +90,16 @@ describe('mapAsyncIterator', () => {
 
   it('allows returning early from mapped async generator', async () => {
     async function* source() {
-      yield 1;
-      yield 2;
+      try {
+        yield 1;
+        yield 2;
 
-      // istanbul ignore next (Shouldn't be reached)
-      yield 3;
+        // istanbul ignore next (Shouldn't be reached)
+        yield 3;
+      } finally {
+        // eslint-disable-next-line no-unsafe-finally
+        return 'The End';
+      }
     }
 
     const doubles = mapAsyncIterator(source(), (x) => x + x);
@@ -104,7 +109,7 @@ describe('mapAsyncIterator', () => {
 
     // Early return
     expect(await doubles.return()).to.deep.equal({
-      value: undefined,
+      value: 'The End',
       done: true,
     });
 

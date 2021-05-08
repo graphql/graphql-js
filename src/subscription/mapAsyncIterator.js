@@ -4,16 +4,16 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
-export function mapAsyncIterator<T, U>(
-  iterable: AsyncIterable<T> | AsyncGenerator<T, void, void>,
+export function mapAsyncIterator<T, U, R = void>(
+  iterable: AsyncGenerator<T, R, void> | AsyncIterable<T>,
   callback: (T) => PromiseOrValue<U>,
-): AsyncGenerator<U, void, void> {
+): AsyncGenerator<U, R, void> {
   // $FlowIssue[incompatible-use]
   const iterator = iterable[Symbol.asyncIterator]();
 
   async function mapResult(
-    result: IteratorResult<T, void>,
-  ): Promise<IteratorResult<U, void>> {
+    result: IteratorResult<T, R>,
+  ): Promise<IteratorResult<U, R>> {
     if (result.done) {
       return result;
     }
@@ -37,7 +37,7 @@ export function mapAsyncIterator<T, U>(
     async next() {
       return mapResult(await iterator.next());
     },
-    async return(): Promise<IteratorResult<U, void>> {
+    async return(): Promise<IteratorResult<U, R>> {
       return typeof iterator.return === 'function'
         ? mapResult(await iterator.return())
         : { value: undefined, done: true };
