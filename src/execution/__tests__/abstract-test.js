@@ -557,11 +557,11 @@ describe('Execute: Handles execution of abstract types', () => {
     );
 
     expectError({ forTypeName: 'Human' }).toEqual(
-      'Abstract type "Pet" was resolve to a type "Human" that does not exist inside schema.',
+      'Abstract type "Pet" was resolved to a type "Human" that does not exist inside the schema.',
     );
 
     expectError({ forTypeName: 'String' }).toEqual(
-      'Abstract type "Pet" was resolve to a non-object type "String".',
+      'Abstract type "Pet" was resolved to a non-object type "String".',
     );
 
     expectError({ forTypeName: '__Schema' }).toEqual(
