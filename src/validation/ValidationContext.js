@@ -42,7 +42,7 @@ type VariableUsage = {|
  */
 export class ASTValidationContext {
   _ast: DocumentNode;
-  _onError: (err: GraphQLError) => void;
+  _onError: (error: GraphQLError) => void;
   _fragments: ?ObjMap<FragmentDefinitionNode>;
   _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
@@ -50,7 +50,7 @@ export class ASTValidationContext {
     $ReadOnlyArray<FragmentDefinitionNode>,
   >;
 
-  constructor(ast: DocumentNode, onError: (err: GraphQLError) => void) {
+  constructor(ast: DocumentNode, onError: (error: GraphQLError) => void) {
     this._ast = ast;
     this._fragments = undefined;
     this._fragmentSpreads = new Map();
@@ -136,7 +136,7 @@ export class SDLValidationContext extends ASTValidationContext {
   constructor(
     ast: DocumentNode,
     schema: ?GraphQLSchema,
-    onError: (err: GraphQLError) => void,
+    onError: (error: GraphQLError) => void,
   ) {
     super(ast, onError);
     this._schema = schema;
@@ -162,7 +162,7 @@ export class ValidationContext extends ASTValidationContext {
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
-    onError: (err: GraphQLError) => void,
+    onError: (error: GraphQLError) => void,
   ) {
     super(ast, onError);
     this._schema = schema;

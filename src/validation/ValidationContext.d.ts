@@ -35,7 +35,7 @@ interface VariableUsage {
  * validation rule.
  */
 export class ASTValidationContext {
-  constructor(ast: DocumentNode, onError: (err: GraphQLError) => void);
+  constructor(ast: DocumentNode, onError: (error: GraphQLError) => void);
 
   reportError(error: GraphQLError): undefined;
 
@@ -54,7 +54,7 @@ export class SDLValidationContext extends ASTValidationContext {
   constructor(
     ast: DocumentNode,
     schema: Maybe<GraphQLSchema>,
-    onError: (err: GraphQLError) => void,
+    onError: (error: GraphQLError) => void,
   );
 
   getSchema(): Maybe<GraphQLSchema>;
@@ -67,7 +67,7 @@ export class ValidationContext extends ASTValidationContext {
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
-    onError: (err: GraphQLError) => void,
+    onError: (error: GraphQLError) => void,
   );
 
   getSchema(): GraphQLSchema;
