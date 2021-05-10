@@ -574,7 +574,10 @@ describe('Type predicates', () => {
         name: 'someArg',
         type: config.type,
         description: undefined,
-        defaultValue: config.defaultValue,
+        defaultValue:
+          config.defaultValue !== undefined
+            ? { value: config.defaultValue }
+            : undefined,
         deprecationReason: null,
         extensions: Object.create(null),
         astNode: undefined,
@@ -622,7 +625,10 @@ describe('Type predicates', () => {
         name: 'someInputField',
         type: config.type,
         description: undefined,
-        defaultValue: config.defaultValue,
+        defaultValue:
+          config.defaultValue !== undefined
+            ? { value: config.defaultValue }
+            : undefined,
         deprecationReason: null,
         extensions: Object.create(null),
         astNode: undefined,

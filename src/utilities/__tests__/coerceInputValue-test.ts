@@ -5,6 +5,7 @@ import { identityFunc } from '../../jsutils/identityFunc.js';
 import { invariant } from '../../jsutils/invariant.js';
 import type { ObjMap } from '../../jsutils/ObjMap.js';
 
+import { Kind } from '../../language/kinds.js';
 import { parseValue } from '../../language/parser.js';
 import { print } from '../../language/printer.js';
 
@@ -24,7 +25,11 @@ import {
   GraphQLString,
 } from '../../type/scalars.js';
 
-import { coerceInputLiteral, coerceInputValue } from '../coerceInputValue.js';
+import {
+  coerceDefaultValue,
+  coerceInputLiteral,
+  coerceInputValue,
+} from '../coerceInputValue.js';
 
 interface CoerceResult {
   value: unknown;
@@ -716,10 +721,14 @@ describe('coerceInputLiteral', () => {
       name: 'TestInput',
       fields: {
         int: { type: GraphQLInt, defaultValue: 42 },
+        float: {
+          type: GraphQLFloat,
+          defaultValueLiteral: { kind: Kind.FLOAT, value: '3.14' },
+        },
       },
     });
 
-    test('{}', type, { int: 42 });
+    test('{}', type, { int: 42, float: 3.14 });
   });
 
   const testInputObj = new GraphQLInputObjectType({
@@ -805,5 +814,28 @@ describe('coerceInputLiteral', () => {
       int: 42,
       requiredBool: true,
     });
+  });
+});
+
+describe('coerceDefaultValue', () => {
+  it('memoizes coercion', () => {
+    const parseValueCalls: any = [];
+
+    const spyScalar = new GraphQLScalarType({
+      name: 'SpyScalar',
+      parseValue(value) {
+        parseValueCalls.push(value);
+        return value;
+      },
+    });
+
+    const defaultValueUsage = {
+      literal: { kind: Kind.STRING, value: 'hello' },
+    } as const;
+    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+
+    // Call a second time
+    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+    expect(parseValueCalls).to.deep.equal(['hello']);
   });
 });

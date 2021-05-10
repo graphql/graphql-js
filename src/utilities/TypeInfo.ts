@@ -14,6 +14,7 @@ import { getEnterLeaveForKind } from '../language/visitor.js';
 import type {
   GraphQLArgument,
   GraphQLCompositeType,
+  GraphQLDefaultValueUsage,
   GraphQLEnumValue,
   GraphQLField,
   GraphQLInputField,
@@ -53,7 +54,7 @@ export class TypeInfo {
   private _parentTypeStack: Array<Maybe<GraphQLCompositeType>>;
   private _inputTypeStack: Array<Maybe<GraphQLInputType>>;
   private _fieldDefStack: Array<Maybe<GraphQLField<unknown, unknown>>>;
-  private _defaultValueStack: Array<Maybe<unknown>>;
+  private _defaultValueStack: Array<GraphQLDefaultValueUsage | undefined>;
   private _directive: Maybe<GraphQLDirective>;
   private _argument: Maybe<GraphQLArgument>;
   private _enumValue: Maybe<GraphQLEnumValue>;
@@ -124,7 +125,7 @@ export class TypeInfo {
     return this._fieldDefStack.at(-1);
   }
 
-  getDefaultValue(): Maybe<unknown> {
+  getDefaultValue(): GraphQLDefaultValueUsage | undefined {
     return this._defaultValueStack.at(-1);
   }
 

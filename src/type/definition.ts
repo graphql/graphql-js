@@ -16,6 +16,7 @@ import { toObjMap } from '../jsutils/toObjMap.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
+  ConstValueNode,
   EnumTypeDefinitionNode,
   EnumTypeExtensionNode,
   EnumValueDefinitionNode,
@@ -799,7 +800,7 @@ export function defineArguments(
     name: assertName(argName),
     description: argConfig.description,
     type: argConfig.type,
-    defaultValue: argConfig.defaultValue,
+    defaultValue: defineDefaultValue(argName, argConfig),
     deprecationReason: argConfig.deprecationReason,
     extensions: toObjMap(argConfig.extensions),
     astNode: argConfig.astNode,
@@ -833,7 +834,8 @@ export function argsToArgsConfig(
     (arg) => ({
       description: arg.description,
       type: arg.type,
-      defaultValue: arg.defaultValue,
+      defaultValue: arg.defaultValue?.value,
+      defaultValueLiteral: arg.defaultValue?.literal,
       deprecationReason: arg.deprecationReason,
       extensions: arg.extensions,
       astNode: arg.astNode,
@@ -946,6 +948,7 @@ export interface GraphQLArgumentConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: unknown;
+  defaultValueLiteral?: ConstValueNode | undefined;
   deprecationReason?: Maybe<string>;
   extensions?: Maybe<Readonly<GraphQLArgumentExtensions>>;
   astNode?: Maybe<InputValueDefinitionNode>;
@@ -971,7 +974,7 @@ export interface GraphQLArgument {
   name: string;
   description: Maybe<string>;
   type: GraphQLInputType;
-  defaultValue: unknown;
+  defaultValue: GraphQLDefaultValueUsage | undefined;
   deprecationReason: Maybe<string>;
   extensions: Readonly<GraphQLArgumentExtensions>;
   astNode: Maybe<InputValueDefinitionNode>;
@@ -984,6 +987,26 @@ export function isRequiredArgument(arg: GraphQLArgument): boolean {
 export type GraphQLFieldMap<TSource, TContext> = ObjMap<
   GraphQLField<TSource, TContext>
 >;
+
+export type GraphQLDefaultValueUsage =
+  | { value: unknown; literal?: never }
+  | { literal: ConstValueNode; value?: never };
+
+export function defineDefaultValue(
+  argName: string,
+  config: GraphQLArgumentConfig | GraphQLInputFieldConfig,
+): GraphQLDefaultValueUsage | undefined {
+  if (config.defaultValue === undefined && !config.defaultValueLiteral) {
+    return;
+  }
+  devAssert(
+    !(config.defaultValue !== undefined && config.defaultValueLiteral),
+    `Argument "${argName}" has both a defaultValue and a defaultValueLiteral property, but only one must be provided.`,
+  );
+  return config.defaultValueLiteral
+    ? { literal: config.defaultValueLiteral }
+    : { value: config.defaultValue };
+}
 
 /**
  * Custom extensions
@@ -1538,7 +1561,8 @@ export class GraphQLInputObjectType {
     const fields = mapValue(this.getFields(), (field) => ({
       description: field.description,
       type: field.type,
-      defaultValue: field.defaultValue,
+      defaultValue: field.defaultValue?.value,
+      defaultValueLiteral: field.defaultValue?.literal,
       deprecationReason: field.deprecationReason,
       extensions: field.extensions,
       astNode: field.astNode,
@@ -1572,7 +1596,7 @@ function defineInputFieldMap(
     name: assertName(fieldName),
     description: fieldConfig.description,
     type: fieldConfig.type,
-    defaultValue: fieldConfig.defaultValue,
+    defaultValue: defineDefaultValue(fieldName, fieldConfig),
     deprecationReason: fieldConfig.deprecationReason,
     extensions: toObjMap(fieldConfig.extensions),
     astNode: fieldConfig.astNode,
@@ -1613,6 +1637,7 @@ export interface GraphQLInputFieldConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: unknown;
+  defaultValueLiteral?: ConstValueNode | undefined;
   deprecationReason?: Maybe<string>;
   extensions?: Maybe<Readonly<GraphQLInputFieldExtensions>>;
   astNode?: Maybe<InputValueDefinitionNode>;
@@ -1624,7 +1649,7 @@ export interface GraphQLInputField {
   name: string;
   description: Maybe<string>;
   type: GraphQLInputType;
-  defaultValue: unknown;
+  defaultValue: GraphQLDefaultValueUsage | undefined;
   deprecationReason: Maybe<string>;
   extensions: Readonly<GraphQLInputFieldExtensions>;
   astNode: Maybe<InputValueDefinitionNode>;

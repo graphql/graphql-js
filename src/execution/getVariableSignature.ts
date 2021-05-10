@@ -4,9 +4,12 @@ import type { VariableDefinitionNode } from '../language/ast.js';
 import { print } from '../language/printer.js';
 
 import { isInputType } from '../type/definition.js';
-import type { GraphQLInputType, GraphQLSchema } from '../type/index.js';
+import type {
+  GraphQLDefaultValueUsage,
+  GraphQLInputType,
+  GraphQLSchema,
+} from '../type/index.js';
 
-import { coerceInputLiteral } from '../utilities/coerceInputValue.js';
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
 /**
@@ -18,7 +21,7 @@ import { typeFromAST } from '../utilities/typeFromAST.js';
 export interface GraphQLVariableSignature {
   name: string;
   type: GraphQLInputType;
-  defaultValue: unknown;
+  defaultValue: GraphQLDefaultValueUsage | undefined;
 }
 
 export function getVariableSignature(
@@ -43,8 +46,6 @@ export function getVariableSignature(
   return {
     name: varName,
     type: varType,
-    defaultValue: defaultValue
-      ? coerceInputLiteral(varDefNode.defaultValue, varType)
-      : undefined,
+    defaultValue: defaultValue ? { literal: defaultValue } : undefined,
   };
 }
