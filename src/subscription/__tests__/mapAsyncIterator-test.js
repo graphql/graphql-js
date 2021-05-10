@@ -276,7 +276,7 @@ describe('mapAsyncIterator', () => {
       .with.property('message', 'Goodbye');
   });
 
-  async function testClosesSourceWithMapper<T>(mapper: (number) => T) {
+  async function testClosesSourceWithMapper<T>(mapper: (value: number) => T) {
     let didVisitFinally = false;
 
     async function* source() {

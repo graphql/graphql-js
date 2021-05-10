@@ -11,7 +11,7 @@ export type ASTVisitor = $Shape<EnterLeaveVisitor<ASTNode> & KindVisitor>;
 
 type KindVisitor = $ObjMap<
   ASTKindToNode,
-  <Node>(Node) => ASTVisitFn<Node> | EnterLeaveVisitor<Node>,
+  <Node>(node: Node) => ASTVisitFn<Node> | EnterLeaveVisitor<Node>,
 >;
 
 type EnterLeaveVisitor<TVisitedNode: ASTNode> = {|
