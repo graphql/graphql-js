@@ -120,6 +120,7 @@ export type {
   GraphQLScalarSerializer,
   GraphQLScalarValueParser,
   GraphQLScalarLiteralParser,
+  GraphQLDefaultValueUsage,
 } from './definition.js';
 
 export {

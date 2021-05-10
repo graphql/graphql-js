@@ -19,6 +19,7 @@ import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
 import {
+  coerceDefaultValue,
   coerceInputLiteral,
   coerceInputValue,
 } from '../utilities/coerceInputValue.js';
@@ -169,8 +170,11 @@ export function getArgumentValues(
     const argumentNode = argNodeMap.get(name);
 
     if (argumentNode == null) {
-      if (argDef.defaultValue !== undefined) {
-        coercedValues[name] = argDef.defaultValue;
+      if (argDef.defaultValue) {
+        coercedValues[name] = coerceDefaultValue(
+          argDef.defaultValue,
+          argDef.type,
+        );
       } else if (isNonNullType(argType)) {
         throw new GraphQLError(
           `Argument ${argDef} of required type ${argType} was not provided.`,
@@ -189,8 +193,11 @@ export function getArgumentValues(
         variableValues == null ||
         !Object.hasOwn(variableValues, variableName)
       ) {
-        if (argDef.defaultValue !== undefined) {
-          coercedValues[name] = argDef.defaultValue;
+        if (argDef.defaultValue) {
+          coercedValues[name] = coerceDefaultValue(
+            argDef.defaultValue,
+            argDef.type,
+          );
         } else if (isNonNullType(argType)) {
           throw new GraphQLError(
             `Argument ${argDef} of required type ${argType} ` +

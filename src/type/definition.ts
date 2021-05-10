@@ -16,6 +16,7 @@ import { toObjMap } from '../jsutils/toObjMap.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
+  ConstValueNode,
   EnumTypeDefinitionNode,
   EnumTypeExtensionNode,
   EnumValueDefinitionNode,
@@ -906,6 +907,7 @@ export interface GraphQLArgumentConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: unknown;
+  defaultValueLiteral?: ConstValueNode | undefined;
   deprecationReason?: Maybe<string>;
   extensions?: Maybe<Readonly<GraphQLArgumentExtensions>>;
   astNode?: Maybe<InputValueDefinitionNode>;
@@ -982,7 +984,7 @@ export class GraphQLArgument extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   type: GraphQLInputType;
-  defaultValue: unknown;
+  defaultValue: GraphQLDefaultValueUsage | undefined;
   deprecationReason: Maybe<string>;
   extensions: Readonly<GraphQLArgumentExtensions>;
   astNode: Maybe<InputValueDefinitionNode>;
@@ -997,7 +999,7 @@ export class GraphQLArgument extends GraphQLSchemaElement {
     this.name = assertName(name);
     this.description = config.description;
     this.type = config.type;
-    this.defaultValue = config.defaultValue;
+    this.defaultValue = defineDefaultValue(coordinate, config);
     this.deprecationReason = config.deprecationReason;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
@@ -1011,7 +1013,8 @@ export class GraphQLArgument extends GraphQLSchemaElement {
     return {
       description: this.description,
       type: this.type,
-      defaultValue: this.defaultValue,
+      defaultValue: this.defaultValue?.value,
+      defaultValueLiteral: this.defaultValue?.literal,
       deprecationReason: this.deprecationReason,
       extensions: this.extensions,
       astNode: this.astNode,
@@ -1026,6 +1029,26 @@ export function isRequiredArgument(arg: GraphQLArgument): boolean {
 export type GraphQLFieldMap<TSource, TContext> = ObjMap<
   GraphQLField<TSource, TContext>
 >;
+
+export type GraphQLDefaultValueUsage =
+  | { value: unknown; literal?: never }
+  | { literal: ConstValueNode; value?: never };
+
+function defineDefaultValue(
+  coordinate: string,
+  config: GraphQLArgumentConfig | GraphQLInputFieldConfig,
+): GraphQLDefaultValueUsage | undefined {
+  if (config.defaultValue === undefined && !config.defaultValueLiteral) {
+    return;
+  }
+  devAssert(
+    !(config.defaultValue !== undefined && config.defaultValueLiteral),
+    `${coordinate} has both a defaultValue and a defaultValueLiteral property, but only one must be provided.`,
+  );
+  return config.defaultValueLiteral
+    ? { literal: config.defaultValueLiteral }
+    : { value: config.defaultValue };
+}
 
 /**
  * Custom extensions
@@ -1620,6 +1643,7 @@ export interface GraphQLInputFieldConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
   defaultValue?: unknown;
+  defaultValueLiteral?: ConstValueNode | undefined;
   deprecationReason?: Maybe<string>;
   extensions?: Maybe<Readonly<GraphQLInputFieldExtensions>>;
   astNode?: Maybe<InputValueDefinitionNode>;
@@ -1631,7 +1655,7 @@ export class GraphQLInputField extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   type: GraphQLInputType;
-  defaultValue: unknown;
+  defaultValue: GraphQLDefaultValueUsage | undefined;
   deprecationReason: Maybe<string>;
   extensions: Readonly<GraphQLInputFieldExtensions>;
   astNode: Maybe<InputValueDefinitionNode>;
@@ -1652,7 +1676,7 @@ export class GraphQLInputField extends GraphQLSchemaElement {
     this.name = assertName(name);
     this.description = config.description;
     this.type = config.type;
-    this.defaultValue = config.defaultValue;
+    this.defaultValue = defineDefaultValue(coordinate, config);
     this.deprecationReason = config.deprecationReason;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
@@ -1666,7 +1690,8 @@ export class GraphQLInputField extends GraphQLSchemaElement {
     return {
       description: this.description,
       type: this.type,
-      defaultValue: this.defaultValue,
+      defaultValue: this.defaultValue?.value,
+      defaultValueLiteral: this.defaultValue?.literal,
       deprecationReason: this.deprecationReason,
       extensions: this.extensions,
       astNode: this.astNode,
