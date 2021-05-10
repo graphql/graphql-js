@@ -516,7 +516,7 @@ export interface GraphQLFieldConfig<
 > {
   description?: Maybe<string>;
   type: GraphQLOutputType;
-  args?: GraphQLFieldConfigArgumentMap;
+  args?: ObjMap<GraphQLArgumentConfig>;
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   deprecationReason?: Maybe<string>;
@@ -525,8 +525,6 @@ export interface GraphQLFieldConfig<
   >;
   astNode?: Maybe<FieldDefinitionNode>;
 }
-
-export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
 
 /**
  * Custom extensions
@@ -885,7 +883,7 @@ export class GraphQLInputObjectType {
   getFields(): GraphQLInputFieldMap;
 
   toConfig(): GraphQLInputObjectTypeConfig & {
-    fields: GraphQLInputFieldConfigMap;
+    fields: ObjMap<GraphQLInputFieldConfig>;
     extensions: Maybe<Readonly<GraphQLInputObjectTypeExtensions>>;
     extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
   };
@@ -919,8 +917,6 @@ export interface GraphQLInputFieldExtensions {
 }
 
 export type GraphQLInputFieldConfig = GraphQLInputValueConfig<GraphQLInputFieldExtensions>;
-
-export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
 export type GraphQLInputField = GraphQLInputValue<GraphQLInputFieldExtensions>;
 

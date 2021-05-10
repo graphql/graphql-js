@@ -918,15 +918,13 @@ export type GraphQLFieldConfig<
 > = {|
   description?: ?string,
   type: GraphQLOutputType,
-  args?: GraphQLFieldConfigArgumentMap,
+  args?: ObjMap<GraphQLArgumentConfig>,
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   deprecationReason?: ?string,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?FieldDefinitionNode,
 |};
-
-export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
 
 export type GraphQLArgumentConfig = GraphQLInputValueConfig;
 
@@ -1561,14 +1559,12 @@ export type GraphQLInputObjectTypeConfig = {|
 
 type GraphQLInputObjectTypeNormalizedConfig = {|
   ...GraphQLInputObjectTypeConfig,
-  fields: GraphQLInputFieldConfigMap,
+  fields: ObjMap<GraphQLInputFieldConfig>,
   extensions: ?ReadOnlyObjMap<mixed>,
   extensionASTNodes: $ReadOnlyArray<InputObjectTypeExtensionNode>,
 |};
 
 export type GraphQLInputFieldConfig = GraphQLInputValueConfig;
-
-export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
 export type GraphQLInputField = GraphQLInputValue;
 
