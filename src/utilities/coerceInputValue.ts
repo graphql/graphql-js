@@ -14,7 +14,10 @@ import { isIterableObject } from '../jsutils/isIterableObject';
 
 import { GraphQLError } from '../error/GraphQLError';
 
-import type { GraphQLInputType } from '../type/definition';
+import type {
+  GraphQLInputType,
+  GraphQLDefaultValueUsage,
+} from '../type/definition';
 import {
   isLeafType,
   assertLeafType,
@@ -111,8 +114,11 @@ function coerceInputValueImpl(
       const fieldValue = inputValue[field.name];
 
       if (fieldValue === undefined) {
-        if (field.defaultValue !== undefined) {
-          coercedValue[field.name] = field.defaultValue;
+        if (field.defaultValue) {
+          coercedValue[field.name] = coerceDefaultValue(
+            field.defaultValue,
+            field.type,
+          );
         } else if (isNonNullType(field.type)) {
           const typeStr = inspect(field.type);
           onError(
@@ -279,8 +285,11 @@ export function coerceInputLiteral(
         if (isRequiredInputField(field)) {
           return; // Invalid: intentionally return no value.
         }
-        if (field.defaultValue !== undefined) {
-          coercedValue[field.name] = field.defaultValue;
+        if (field.defaultValue) {
+          coercedValue[field.name] = coerceDefaultValue(
+            field.defaultValue,
+            field.type,
+          );
         }
       } else {
         const fieldValue = coerceInputLiteral(
@@ -316,4 +325,24 @@ function isMissingVariable(
     valueNode.kind === Kind.VARIABLE &&
     (variables == null || variables[valueNode.name.value] === undefined)
   );
+}
+
+/**
+ * @internal
+ */
+export function coerceDefaultValue(
+  defaultValue: GraphQLDefaultValueUsage,
+  type: GraphQLInputType,
+): unknown {
+  // Memoize the result of coercing the default value in a hidden field.
+  let coercedValue = (defaultValue as any)._memoizedCoercedValue;
+  // istanbul ignore else (memoized case)
+  if (coercedValue === undefined) {
+    coercedValue = defaultValue.literal
+      ? coerceInputLiteral(defaultValue.literal, type)
+      : defaultValue.value;
+    invariant(coercedValue !== undefined);
+    (defaultValue as any)._memoizedCoercedValue = coercedValue;
+  }
+  return coercedValue;
 }

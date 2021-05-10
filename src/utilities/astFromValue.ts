@@ -4,7 +4,7 @@ import { isObjectLike } from '../jsutils/isObjectLike';
 import { isIterableObject } from '../jsutils/isIterableObject';
 import type { Maybe } from '../jsutils/Maybe';
 
-import type { ValueNode } from '../language/ast';
+import type { ConstValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 
 import type { GraphQLInputType } from '../type/definition';
@@ -41,7 +41,7 @@ import {
 export function astFromValue(
   value: unknown,
   type: GraphQLInputType,
-): Maybe<ValueNode> {
+): Maybe<ConstValueNode> {
   if (isNonNullType(type)) {
     const astValue = astFromValue(value, type.ofType);
     if (astValue?.kind === Kind.NULL) {

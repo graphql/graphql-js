@@ -7,7 +7,10 @@ import type { ValueNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { GraphQLSchema } from '../../type/schema';
-import type { GraphQLType } from '../../type/definition';
+import type {
+  GraphQLType,
+  GraphQLDefaultValueUsage,
+} from '../../type/definition';
 import { isNonNullType } from '../../type/definition';
 
 import { typeFromAST } from '../../utilities/typeFromAST';
@@ -79,7 +82,7 @@ function allowedVariableUsage(
   varType: GraphQLType,
   varDefaultValue: Maybe<ValueNode>,
   locationType: GraphQLType,
-  locationDefaultValue: Maybe<unknown>,
+  locationDefaultValue: GraphQLDefaultValueUsage | undefined,
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =

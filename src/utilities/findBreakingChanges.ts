@@ -17,6 +17,7 @@ import type {
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLInputObjectType,
+  GraphQLDefaultValueUsage,
 } from '../type/definition';
 import { isSpecifiedScalarType } from '../type/scalars';
 import {
@@ -527,10 +528,12 @@ function typeKindName(type: GraphQLNamedType): string {
   invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
-function stringifyValue(value: unknown, type: GraphQLInputType): string {
-  const ast = astFromValue(value, type);
-  invariant(ast != null);
-
+function stringifyValue(
+  defaultValue: GraphQLDefaultValueUsage,
+  type: GraphQLInputType,
+): string {
+  const ast = defaultValue.literal ?? astFromValue(defaultValue.value, type);
+  invariant(ast);
   const sortedAST = visit(ast, {
     ObjectValue(objectNode) {
       // Make a copy since sort mutates array

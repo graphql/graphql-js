@@ -826,6 +826,69 @@ describe('Type System: Input Objects', () => {
       );
     });
   });
+
+  describe('Input Object fields may have default values', () => {
+    it('accepts an Input Object type with a default value', () => {
+      const inputObjType = new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: { type: ScalarType, defaultValue: 3 },
+        },
+      });
+      expect(inputObjType.getFields()).to.deep.equal({
+        f: {
+          coordinate: 'SomeInputObject.f',
+          name: 'f',
+          description: undefined,
+          type: ScalarType,
+          defaultValue: { value: 3 },
+          deprecationReason: undefined,
+          extensions: undefined,
+          astNode: undefined,
+        },
+      });
+    });
+
+    it('accepts an Input Object type with a default value literal', () => {
+      const inputObjType = new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: {
+            type: ScalarType,
+            defaultValueLiteral: { kind: 'IntValue', value: '3' },
+          },
+        },
+      });
+      expect(inputObjType.getFields()).to.deep.equal({
+        f: {
+          coordinate: 'SomeInputObject.f',
+          name: 'f',
+          description: undefined,
+          type: ScalarType,
+          defaultValue: { literal: { kind: 'IntValue', value: '3' } },
+          deprecationReason: undefined,
+          extensions: undefined,
+          astNode: undefined,
+        },
+      });
+    });
+
+    it('rejects an Input Object type with potentially conflicting default values', () => {
+      const inputObjType = new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: {
+            type: ScalarType,
+            defaultValue: 3,
+            defaultValueLiteral: { kind: 'IntValue', value: '3' },
+          },
+        },
+      });
+      expect(() => inputObjType.getFields()).to.throw(
+        'f has both a defaultValue and a defaultValueLiteral property, but only one must be provided.',
+      );
+    });
+  });
 });
 
 describe('Type System: List', () => {
