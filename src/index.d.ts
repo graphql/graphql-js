@@ -146,8 +146,6 @@ export {
   GraphQLSchemaExtensions,
   GraphQLDirectiveConfig,
   GraphQLDirectiveExtensions,
-  GraphQLDirectiveArgument,
-  GraphQLDirectiveArgumentConfig,
   GraphQLArgument,
   GraphQLArgumentConfig,
   GraphQLArgumentExtensions,

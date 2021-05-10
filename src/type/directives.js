@@ -14,7 +14,7 @@ import type { DirectiveDefinitionNode } from '../language/ast';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import { DirectiveLocation } from '../language/directiveLocation';
 
-import type { GraphQLInputValue, GraphQLInputValueConfig } from './definition';
+import type { GraphQLArgument, GraphQLArgumentConfig } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import {
   defineInputValue,
@@ -50,7 +50,7 @@ export class GraphQLDirective {
   name: string;
   description: ?string;
   locations: Array<DirectiveLocationEnum>;
-  args: $ReadOnlyArray<GraphQLDirectiveArgument>;
+  args: $ReadOnlyArray<GraphQLArgument>;
   isRepeatable: boolean;
   extensions: ?ReadOnlyObjMap<mixed>;
   astNode: ?DirectiveDefinitionNode;
@@ -106,13 +106,11 @@ export class GraphQLDirective {
   }
 }
 
-export type GraphQLDirectiveArgument = GraphQLInputValue;
-
 export type GraphQLDirectiveConfig = {|
   name: string,
   description?: ?string,
   locations: Array<DirectiveLocationEnum>,
-  args?: ?GraphQLDirectiveConfigArgumentMap,
+  args?: ?ObjMap<GraphQLArgumentConfig>,
   isRepeatable?: ?boolean,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?DirectiveDefinitionNode,
@@ -120,14 +118,10 @@ export type GraphQLDirectiveConfig = {|
 
 type GraphQLDirectiveNormalizedConfig = {|
   ...GraphQLDirectiveConfig,
-  args: GraphQLDirectiveConfigArgumentMap,
+  args: ObjMap<GraphQLArgumentConfig>,
   isRepeatable: boolean,
   extensions: ?ReadOnlyObjMap<mixed>,
 |};
-
-type GraphQLDirectiveConfigArgumentMap = ObjMap<GraphQLDirectiveArgumentConfig>;
-
-export type GraphQLDirectiveArgumentConfig = GraphQLInputValueConfig;
 
 /**
  * Used to conditionally include fields or fragments.

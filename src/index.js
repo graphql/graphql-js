@@ -145,8 +145,6 @@ export type {
   GraphQLDirectiveConfig,
   GraphQLArgument,
   GraphQLArgumentConfig,
-  GraphQLDirectiveArgument,
-  GraphQLDirectiveArgumentConfig,
   GraphQLInputValue,
   GraphQLInputValueConfig,
   GraphQLEnumTypeConfig,

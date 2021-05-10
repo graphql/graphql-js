@@ -7,7 +7,7 @@ import { ObjMap } from '../jsutils/ObjMap';
 import { DirectiveDefinitionNode } from '../language/ast';
 import { DirectiveLocationEnum } from '../language/directiveLocation';
 
-import { GraphQLInputValue, GraphQLInputValueConfig } from './definition';
+import { GraphQLArgument, GraphQLArgumentConfig } from './definition';
 
 /**
  * Test if the given value is a GraphQL directive.
@@ -37,14 +37,14 @@ export class GraphQLDirective {
   description: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
   isRepeatable: boolean;
-  args: Array<GraphQLDirectiveArgument>;
+  args: Array<GraphQLArgument>;
   extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>);
 
   toConfig(): GraphQLDirectiveConfig & {
-    args: ObjMap<GraphQLDirectiveArgumentConfig>;
+    args: ObjMap<GraphQLArgumentConfig>;
     isRepeatable: boolean;
     extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   };
@@ -59,28 +59,11 @@ export interface GraphQLDirectiveConfig {
   name: string;
   description?: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
-  args?: Maybe<ObjMap<GraphQLDirectiveArgumentConfig>>;
+  args?: Maybe<ObjMap<GraphQLArgumentConfig>>;
   isRepeatable?: Maybe<boolean>;
   extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
-
-/**
- * Custom extensions
- *
- * @remarks
- * Use a unique identifier name for your extension, for example the name of
- * your library or project. Do not use a shortened identifier as this increases
- * the risk of conflicts. We recommend you add at most one extension field,
- * an object which can contain all the values you need.
- */
-export interface GraphQLDirectiveArgumentExtensions {
-  [attributeName: string]: unknown;
-}
-
-export type GraphQLDirectiveArgument = GraphQLInputValue<GraphQLDirectiveArgumentExtensions>;
-
-export type GraphQLDirectiveArgumentConfig = GraphQLInputValueConfig<GraphQLDirectiveArgumentExtensions>;
 
 /**
  * Used to conditionally include fields or fragments.
