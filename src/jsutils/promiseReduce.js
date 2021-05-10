@@ -11,7 +11,7 @@ import { isPromise } from './isPromise';
  */
 export function promiseReduce<T, U>(
   values: $ReadOnlyArray<T>,
-  callback: (U, T) => PromiseOrValue<U>,
+  callback: (accumulator: U, currentValue: T) => PromiseOrValue<U>,
   initialValue: PromiseOrValue<U>,
 ): PromiseOrValue<U> {
   return values.reduce(

@@ -128,7 +128,7 @@ export class ASTValidationContext {
   }
 }
 
-export type ASTValidationRule = (ASTValidationContext) => ASTVisitor;
+export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
 
 export class SDLValidationContext extends ASTValidationContext {
   _schema: ?GraphQLSchema;
@@ -147,7 +147,7 @@ export class SDLValidationContext extends ASTValidationContext {
   }
 }
 
-export type SDLValidationRule = (SDLValidationContext) => ASTVisitor;
+export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 
 export class ValidationContext extends ASTValidationContext {
   _schema: GraphQLSchema;
@@ -246,4 +246,4 @@ export class ValidationContext extends ASTValidationContext {
   }
 }
 
-export type ValidationRule = (ValidationContext) => ASTVisitor;
+export type ValidationRule = (context: ValidationContext) => ASTVisitor;

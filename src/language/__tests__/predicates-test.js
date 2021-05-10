@@ -21,7 +21,7 @@ const allASTNodes: Array<ASTNode> = Object.values(Kind).map(
   (kind) => ({ kind }: any),
 );
 
-function filterNodes(predicate: (ASTNode) => boolean): Array<string> {
+function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
   return allASTNodes.filter(predicate).map(({ kind }) => kind);
 }
 

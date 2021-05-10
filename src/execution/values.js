@@ -74,7 +74,7 @@ function coerceVariableValues(
   schema: GraphQLSchema,
   varDefNodes: $ReadOnlyArray<VariableDefinitionNode>,
   inputs: { +[variable: string]: mixed, ... },
-  onError: (GraphQLError) => void,
+  onError: (error: GraphQLError) => void,
 ): { [variable: string]: mixed, ... } {
   const coercedValues = {};
   for (const varDefNode of varDefNodes) {

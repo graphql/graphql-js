@@ -6,7 +6,7 @@ export function memoize3<
   A2: { ... } | $ReadOnlyArray<mixed>,
   A3: { ... } | $ReadOnlyArray<mixed>,
   R,
->(fn: (A1, A2, A3) => R): (A1, A2, A3) => R {
+>(fn: (a1: A1, a2: A2, a3: A3) => R): (a1: A1, a2: A2, a3: A3) => R {
   let cache0;
 
   return function memoized(a1, a2, a3) {

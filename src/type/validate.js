@@ -557,7 +557,7 @@ function validateInputFields(
 
 function createInputObjectCircularRefsValidator(
   context: SchemaValidationContext,
-): (GraphQLInputObjectType) => void {
+): (inputObj: GraphQLInputObjectType) => void {
   // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
   // Tracks already visited types to maintain O(N) and to ensure that cycles
   // are not redundantly reported.

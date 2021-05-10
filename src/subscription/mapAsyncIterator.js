@@ -6,7 +6,7 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
  */
 export function mapAsyncIterator<T, U, R = void>(
   iterable: AsyncGenerator<T, R, void> | AsyncIterable<T>,
-  callback: (T) => PromiseOrValue<U>,
+  callback: (value: T) => PromiseOrValue<U>,
 ): AsyncGenerator<U, R, void> {
   // $FlowIssue[incompatible-use]
   const iterator = iterable[Symbol.asyncIterator]();

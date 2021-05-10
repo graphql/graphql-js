@@ -156,7 +156,10 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 }
 
-function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn: (T) => R): ObjMap<R> {
+function sortObjMap<T, R>(
+  map: ObjMap<T>,
+  sortValueFn: (value: T) => R,
+): ObjMap<R> {
   const sortedMap = Object.create(null);
   const sortedEntries = sortBy(Object.entries(map), ([key]) => key);
   for (const [key, value] of sortedEntries) {
@@ -173,7 +176,7 @@ function sortByName<T: { +name: string, ... }>(
 
 function sortBy<T>(
   array: $ReadOnlyArray<T>,
-  mapToKey: (T) => string,
+  mapToKey: (item: T) => string,
 ): Array<T> {
   return array.slice().sort((obj1, obj2) => {
     const key1 = mapToKey(obj1);

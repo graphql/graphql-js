@@ -3,7 +3,7 @@
  * PubSub system for tests.
  */
 export class SimplePubSub<T> {
-  _subscribers: Set<(T) => void>;
+  _subscribers: Set<(value: T) => void>;
 
   constructor() {
     this._subscribers = new Set();
@@ -16,7 +16,7 @@ export class SimplePubSub<T> {
     return this._subscribers.size > 0;
   }
 
-  getSubscriber<R>(transform: (T) => R): AsyncGenerator<R, void, void> {
+  getSubscriber<R>(transform: (value: T) => R): AsyncGenerator<R, void, void> {
     const pullQueue: Array<(result: IteratorResult<R, void>) => void> = [];
     const pushQueue = [];
     let listening = true;
