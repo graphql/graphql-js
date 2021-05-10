@@ -3,7 +3,7 @@ import { invariant } from '../jsutils/invariant.mjs';
 import { print } from '../language/printer.mjs';
 import { printBlockString } from '../language/blockString.mjs';
 import { isIntrospectionType } from '../type/introspection.mjs';
-import { GraphQLString, isSpecifiedScalarType } from '../type/scalars.mjs';
+import { isSpecifiedScalarType } from '../type/scalars.mjs';
 import {
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
@@ -263,10 +263,12 @@ function printDeprecated(reason) {
     return '';
   }
 
-  const reasonAST = astFromValue(reason, GraphQLString);
-
-  if (reasonAST && reason !== DEFAULT_DEPRECATION_REASON) {
-    return ' @deprecated(reason: ' + print(reasonAST) + ')';
+  if (reason !== DEFAULT_DEPRECATION_REASON) {
+    const astValue = print({
+      kind: 'StringValue',
+      value: reason,
+    });
+    return ` @deprecated(reason: ${astValue})`;
   }
 
   return ' @deprecated';
@@ -277,14 +279,11 @@ function printSpecifiedByURL(scalar) {
     return '';
   }
 
-  const url = scalar.specifiedByURL;
-  const urlAST = astFromValue(url, GraphQLString);
-  urlAST ||
-    invariant(
-      false,
-      'Unexpected null value returned from `astFromValue` for specifiedByURL',
-    );
-  return ' @specifiedBy(url: ' + print(urlAST) + ')';
+  const astValue = print({
+    kind: 'StringValue',
+    value: scalar.specifiedByURL,
+  });
+  return ` @specifiedBy(url: ${astValue})`;
 }
 
 function printDescription(def, indentation = '', firstInBlock = true) {

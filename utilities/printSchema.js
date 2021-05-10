@@ -286,13 +286,12 @@ function printDeprecated(reason) {
     return '';
   }
 
-  const reasonAST = (0, _astFromValue.astFromValue)(
-    reason,
-    _scalars.GraphQLString,
-  );
-
-  if (reasonAST && reason !== _directives.DEFAULT_DEPRECATION_REASON) {
-    return ' @deprecated(reason: ' + (0, _printer.print)(reasonAST) + ')';
+  if (reason !== _directives.DEFAULT_DEPRECATION_REASON) {
+    const astValue = (0, _printer.print)({
+      kind: 'StringValue',
+      value: reason,
+    });
+    return ` @deprecated(reason: ${astValue})`;
   }
 
   return ' @deprecated';
@@ -303,14 +302,11 @@ function printSpecifiedByURL(scalar) {
     return '';
   }
 
-  const url = scalar.specifiedByURL;
-  const urlAST = (0, _astFromValue.astFromValue)(url, _scalars.GraphQLString);
-  urlAST ||
-    (0, _invariant.invariant)(
-      false,
-      'Unexpected null value returned from `astFromValue` for specifiedByURL',
-    );
-  return ' @specifiedBy(url: ' + (0, _printer.print)(urlAST) + ')';
+  const astValue = (0, _printer.print)({
+    kind: 'StringValue',
+    value: scalar.specifiedByURL,
+  });
+  return ` @specifiedBy(url: ${astValue})`;
 }
 
 function printDescription(def, indentation = '', firstInBlock = true) {
