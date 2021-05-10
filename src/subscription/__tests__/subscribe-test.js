@@ -164,14 +164,14 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    async function* fooGen() {
+    async function* fooGenerator() {
       yield { foo: 'FooValue' };
     }
 
     const subscription = await subscribe({
       schema,
       document: parse('subscription { foo }'),
-      rootValue: { foo: fooGen },
+      rootValue: { foo: fooGenerator },
     });
     invariant(isAsyncIterable(subscription));
 
