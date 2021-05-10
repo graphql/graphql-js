@@ -934,14 +934,14 @@ function ensureValidRuntimeType(
 
   if (runtimeType == null) {
     throw new _GraphQLError.GraphQLError(
-      `Abstract type "${returnType.name}" was resolve to a type "${runtimeTypeName}" that does not exist inside schema.`,
+      `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
       fieldNodes,
     );
   }
 
   if (!(0, _definition.isObjectType)(runtimeType)) {
     throw new _GraphQLError.GraphQLError(
-      `Abstract type "${returnType.name}" was resolve to a non-object type "${runtimeTypeName}".`,
+      `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
       fieldNodes,
     );
   }
