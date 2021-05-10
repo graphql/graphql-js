@@ -90,8 +90,8 @@ function lexicographicSortSchema(schema) {
     }));
   }
 
-  function sortTypes(arr) {
-    return sortByName(arr).map(replaceNamedType);
+  function sortTypes(array) {
+    return sortByName(array).map(replaceNamedType);
   }
 
   function sortNamedType(type) {
