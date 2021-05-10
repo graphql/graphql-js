@@ -71,7 +71,7 @@ describe('Validate: Supports full validation', () => {
     `);
 
     const errors = validate(testSchema, doc, undefined, undefined, typeInfo);
-    const errorMessages = errors.map((err) => err.message);
+    const errorMessages = errors.map((error) => error.message);
 
     expect(errorMessages).to.deep.equal([
       'Cannot query field "catOrDog" on type "QueryRoot". Did you mean "catOrDog"?',
