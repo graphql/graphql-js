@@ -3,6 +3,8 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
+import { invariant } from '../../jsutils/invariant';
+
 import { graphqlSync } from '../../graphql';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -72,7 +74,8 @@ describe('Type System: build schema from introspection', () => {
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
 
-    delete (introspection: any).__schema.queryType;
+    // $FlowExpectedError[cannot-write]
+    delete introspection.__schema.queryType;
 
     const clientSchema = buildClientSchema(introspection);
     expect(clientSchema.getQueryType()).to.equal(null);
@@ -472,7 +475,8 @@ describe('Type System: build schema from introspection', () => {
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
 
-    delete (introspection: any).__schema.directives;
+    // $FlowExpectedError[cannot-write]
+    delete introspection.__schema.directives;
 
     const clientSchema = buildClientSchema(introspection);
 
@@ -639,7 +643,8 @@ describe('Type System: build schema from introspection', () => {
     it('throws when referenced unknown type', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
-      (introspection: any).__schema.types = introspection.__schema.types.filter(
+      // $FlowExpectedError[cannot-write]
+      introspection.__schema.types = introspection.__schema.types.filter(
         ({ name }) => name !== 'Query',
       );
 
@@ -656,7 +661,8 @@ describe('Type System: build schema from introspection', () => {
       `);
       const introspection = introspectionFromSchema(schema);
 
-      (introspection: any).__schema.types = introspection.__schema.types.filter(
+      // $FlowExpectedError[cannot-write]
+      introspection.__schema.types = introspection.__schema.types.filter(
         ({ name }) => name !== 'Float',
       );
 
@@ -670,7 +676,8 @@ describe('Type System: build schema from introspection', () => {
 
       expect(introspection).to.have.nested.property('__schema.queryType.name');
 
-      delete (introspection: any).__schema.queryType.name;
+      // $FlowExpectedError[cannot-write]
+      delete introspection.__schema.queryType.name;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Unknown type reference: {}.',
@@ -683,9 +690,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      expect(queryTypeIntrospection).to.have.property('kind');
-
-      delete (queryTypeIntrospection: any).kind;
+      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      // $FlowExpectedError[cannot-write]
+      delete queryTypeIntrospection.kind;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: { name: "Query", .* }\./,
@@ -700,7 +707,9 @@ describe('Type System: build schema from introspection', () => {
 
       expect(queryTypeIntrospection).to.have.property('interfaces');
 
-      delete (queryTypeIntrospection: any).interfaces;
+      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      // $FlowExpectedError[cannot-write]
+      delete queryTypeIntrospection.interfaces;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing interfaces: { kind: "OBJECT", name: "Query", .* }\./,
@@ -713,8 +722,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeInterface',
       );
 
-      expect(someInterfaceIntrospection).to.have.property('interfaces');
-      (someInterfaceIntrospection: any).interfaces = null;
+      invariant(someInterfaceIntrospection?.kind === 'INTERFACE');
+      // $FlowExpectedError[cannot-write]
+      someInterfaceIntrospection.interfaces = null;
 
       const clientSchema = buildClientSchema(introspection);
       expect(printSchema(clientSchema)).to.equal(printSchema(dummySchema));
@@ -726,8 +736,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      expect(queryTypeIntrospection).to.have.property('fields');
-      delete (queryTypeIntrospection: any).fields;
+      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      // $FlowExpectedError[cannot-write]
+      delete queryTypeIntrospection.fields;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing fields: { kind: "OBJECT", name: "Query", .* }\./,
@@ -740,8 +751,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      expect(queryTypeIntrospection).to.have.nested.property('fields[0].args');
-      delete (queryTypeIntrospection: any).fields[0].args;
+      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      // $FlowExpectedError[cannot-write]
+      delete queryTypeIntrospection.fields[0].args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing field args: { name: "foo", .* }\./,
@@ -754,11 +766,13 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      expect(queryTypeIntrospection).to.have.nested.property(
-        'fields[0].args[0].type.name',
-        'String',
-      );
-      (queryTypeIntrospection: any).fields[0].args[0].type.name = 'SomeUnion';
+      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      const argType = queryTypeIntrospection.fields[0].args[0].type;
+      invariant(argType.kind === 'SCALAR');
+
+      expect(argType).to.have.property('name', 'String');
+      // $FlowExpectedError[cannot-write]
+      argType.name = 'SomeUnion';
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Introspection must provide input type for arguments, but received: SomeUnion.',
@@ -771,11 +785,13 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      expect(queryTypeIntrospection).to.have.nested.property(
-        'fields[0].type.name',
-        'String',
-      );
-      (queryTypeIntrospection: any).fields[0].type.name = 'SomeInputObject';
+      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      const fieldType = queryTypeIntrospection.fields[0].type;
+      invariant(fieldType.kind === 'SCALAR');
+
+      expect(fieldType).to.have.property('name', 'String');
+      // $FlowExpectedError[cannot-write]
+      fieldType.name = 'SomeInputObject';
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Introspection must provide output type for fields, but received: SomeInputObject.',
@@ -788,8 +804,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeUnion',
       );
 
-      expect(someUnionIntrospection).to.have.property('possibleTypes');
-      delete (someUnionIntrospection: any).possibleTypes;
+      invariant(someUnionIntrospection?.kind === 'UNION');
+      // $FlowExpectedError[cannot-write]
+      delete someUnionIntrospection.possibleTypes;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing possibleTypes: { kind: "UNION", name: "SomeUnion",.* }\./,
@@ -802,8 +819,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeEnum',
       );
 
-      expect(someEnumIntrospection).to.have.property('enumValues');
-      delete (someEnumIntrospection: any).enumValues;
+      invariant(someEnumIntrospection?.kind === 'ENUM');
+      // $FlowExpectedError[cannot-write]
+      delete someEnumIntrospection.enumValues;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing enumValues: { kind: "ENUM", name: "SomeEnum", .* }\./,
@@ -816,8 +834,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeInputObject',
       );
 
-      expect(someInputObjectIntrospection).to.have.property('inputFields');
-      delete (someInputObjectIntrospection: any).inputFields;
+      invariant(someInputObjectIntrospection?.kind === 'INPUT_OBJECT');
+      // $FlowExpectedError[cannot-write]
+      delete someInputObjectIntrospection.inputFields;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing inputFields: { kind: "INPUT_OBJECT", name: "SomeInputObject", .* }\./,
@@ -832,7 +851,9 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         locations: ['QUERY'],
       });
-      delete (someDirectiveIntrospection: any).locations;
+
+      // $FlowExpectedError[cannot-write]
+      delete someDirectiveIntrospection.locations;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing directive locations: { name: "SomeDirective", .* }\./,
@@ -847,7 +868,9 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         args: [],
       });
-      delete (someDirectiveIntrospection: any).args;
+
+      // $FlowExpectedError[cannot-write]
+      delete someDirectiveIntrospection.args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         /Introspection result missing directive args: { name: "SomeDirective", .* }\./,

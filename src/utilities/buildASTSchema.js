@@ -65,13 +65,16 @@ export function buildASTSchema(
         // typed values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
         case 'Query':
-          config.query = (type: any);
+          // $FlowExpectedError[incompatible-type] validated in `validateSchema`
+          config.query = type;
           break;
         case 'Mutation':
-          config.mutation = (type: any);
+          // $FlowExpectedError[incompatible-type] validated in `validateSchema`
+          config.mutation = type;
           break;
         case 'Subscription':
-          config.subscription = (type: any);
+          // $FlowExpectedError[incompatible-type] validated in `validateSchema`
+          config.subscription = type;
           break;
       }
     }
