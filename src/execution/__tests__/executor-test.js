@@ -489,7 +489,8 @@ describe('Execute: Handles basic execution tasks', () => {
       },
       asyncReturnErrorWithExtensions() {
         const error = new Error('Error getting asyncReturnErrorWithExtensions');
-        (error: any).extensions = { foo: 'bar' };
+        // $FlowExpectedError[prop-missing]
+        error.extensions = { foo: 'bar' };
 
         return Promise.resolve(error);
       },

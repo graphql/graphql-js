@@ -81,10 +81,10 @@ export function findBreakingChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
-  const breakingChanges = findSchemaChanges(oldSchema, newSchema).filter(
+  // $FlowFixMe[prop-missing]
+  return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in BreakingChangeType,
   );
-  return ((breakingChanges: any): Array<BreakingChange>);
 }
 
 /**
@@ -95,10 +95,10 @@ export function findDangerousChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<DangerousChange> {
-  const dangerousChanges = findSchemaChanges(oldSchema, newSchema).filter(
+  // $FlowFixMe[prop-missing]
+  return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in DangerousChangeType,
   );
-  return ((dangerousChanges: any): Array<DangerousChange>);
 }
 
 function findSchemaChanges(

@@ -17,20 +17,26 @@ describe('locatedError', () => {
   });
 
   it('passes GraphQLError-ish through', () => {
-    const e = new Error('I have a different prototype chain');
-    (e: any).locations = [];
-    (e: any).path = [];
-    (e: any).nodes = [];
-    (e: any).source = null;
-    (e: any).positions = [];
-    (e: any).name = 'GraphQLError';
+    const e = new Error();
+    // $FlowExpectedError[prop-missing]
+    e.locations = [];
+    // $FlowExpectedError[prop-missing]
+    e.path = [];
+    // $FlowExpectedError[prop-missing]
+    e.nodes = [];
+    // $FlowExpectedError[prop-missing]
+    e.source = null;
+    // $FlowExpectedError[prop-missing]
+    e.positions = [];
+    e.name = 'GraphQLError';
 
     expect(locatedError(e, [], [])).to.deep.equal(e);
   });
 
   it('does not pass through elasticsearch-like errors', () => {
     const e = new Error('I am from elasticsearch');
-    (e: any).path = '/something/feed/_search';
+    // $FlowExpectedError[prop-missing]
+    e.path = '/something/feed/_search';
 
     expect(locatedError(e, [], [])).to.not.deep.equal(e);
   });
