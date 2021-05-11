@@ -1,4 +1,4 @@
-import type { ObjMap } from '../jsutils/ObjMap';
+import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap';
 import type { Maybe } from '../jsutils/Maybe';
 import { keyMap } from '../jsutils/keyMap';
 import { inspect } from '../jsutils/inspect';
@@ -15,7 +15,7 @@ import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 
 import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLField } from '../type/definition';
+import type { GraphQLInputType, GraphQLField } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import { isInputType, isNonNullType } from '../type/definition';
 
@@ -26,9 +26,20 @@ import {
   coerceDefaultValue,
 } from '../utilities/coerceInputValue';
 
-type CoercedVariableValues =
-  | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
-  | { coerced: { [variable: string]: unknown }; errors?: never };
+export interface VariableValues {
+  readonly sources: ReadOnlyObjMap<VariableValueSource>;
+  readonly coerced: ReadOnlyObjMap<unknown>;
+}
+
+interface VariableValueSource {
+  readonly variable: VariableDefinitionNode;
+  readonly type: GraphQLInputType;
+  readonly value: unknown;
+}
+
+type VariableValuesOrErrors =
+  | { variableValues: VariableValues; errors?: never }
+  | { errors: ReadonlyArray<GraphQLError>; variableValues?: never };
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -46,11 +57,11 @@ export function getVariableValues(
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { readonly [variable: string]: unknown },
   options?: { maxErrors?: number },
-): CoercedVariableValues {
-  const errors = [];
+): VariableValuesOrErrors {
+  const errors: Array<GraphQLError> = [];
   const maxErrors = options?.maxErrors;
   try {
-    const coerced = coerceVariableValues(
+    const variableValues = coerceVariableValues(
       schema,
       varDefNodes,
       inputs,
@@ -65,7 +76,7 @@ export function getVariableValues(
     );
 
     if (errors.length === 0) {
-      return { coerced };
+      return { variableValues };
     }
   } catch (error) {
     errors.push(error);
@@ -79,8 +90,9 @@ function coerceVariableValues(
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { readonly [variable: string]: unknown },
   onError: (error: GraphQLError) => void,
-): { [variable: string]: unknown } {
-  const coercedValues: { [variable: string]: unknown } = {};
+): VariableValues {
+  const sources: ObjMap<VariableValueSource> = Object.create(null);
+  const coerced: ObjMap<unknown> = Object.create(null);
   for (const varDefNode of varDefNodes) {
     const varName = varDefNode.variable.name.value;
     const varType = typeFromAST(schema, varDefNode.type);
@@ -98,11 +110,14 @@ function coerceVariableValues(
     }
 
     if (!hasOwnProperty(inputs, varName)) {
-      if (varDefNode.defaultValue) {
-        coercedValues[varName] = coerceInputLiteral(
-          varDefNode.defaultValue,
-          varType,
-        );
+      const defaultValue = varDefNode.defaultValue;
+      if (defaultValue) {
+        sources[varName] = {
+          variable: varDefNode,
+          type: varType,
+          value: undefined,
+        };
+        coerced[varName] = coerceInputLiteral(defaultValue, varType);
       } else if (isNonNullType(varType)) {
         onError(
           new GraphQLError(
@@ -125,7 +140,8 @@ function coerceVariableValues(
       continue;
     }
 
-    coercedValues[varName] = coerceInputValue(
+    sources[varName] = { variable: varDefNode, type: varType, value };
+    coerced[varName] = coerceInputValue(
       value,
       varType,
       (path, invalidValue, error) => {
@@ -148,7 +164,7 @@ function coerceVariableValues(
     );
   }
 
-  return coercedValues;
+  return { sources, coerced };
 }
 
 /**
@@ -164,7 +180,7 @@ function coerceVariableValues(
 export function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
-  variableValues?: Maybe<ObjMap<unknown>>,
+  variableValues?: Maybe<VariableValues>,
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
 
@@ -199,7 +215,7 @@ export function getArgumentValues(
       const variableName = valueNode.name.value;
       if (
         variableValues == null ||
-        !hasOwnProperty(variableValues, variableName)
+        variableValues.coerced[variableName] === undefined
       ) {
         if (argDef.defaultValue) {
           coercedValues[name] = coerceDefaultValue(
@@ -215,7 +231,7 @@ export function getArgumentValues(
         }
         continue;
       }
-      isNull = variableValues[variableName] == null;
+      isNull = variableValues.coerced[variableName] == null;
     }
 
     if (isNull && isNonNullType(argType)) {
@@ -256,7 +272,7 @@ export function getArgumentValues(
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: { readonly directives?: ReadonlyArray<DirectiveNode> },
-  variableValues?: Maybe<ObjMap<unknown>>,
+  variableValues?: Maybe<VariableValues>,
 ): undefined | { [argument: string]: unknown } {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   const directiveNode = node.directives?.find(

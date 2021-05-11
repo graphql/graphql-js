@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { ObjMap } from '../../jsutils/ObjMap';
+import type { ReadOnlyObjMap } from '../../jsutils/ObjMap';
 import { invariant } from '../../jsutils/invariant';
 import { identityFunc } from '../../jsutils/identityFunc';
 
 import { print } from '../../language/printer';
-import { parseValue } from '../../language/parser';
+import { parseValue, Parser } from '../../language/parser';
 
 import type { GraphQLInputType } from '../../type/definition';
 import {
@@ -23,6 +23,10 @@ import {
   GraphQLScalarType,
   GraphQLInputObjectType,
 } from '../../type/definition';
+import { GraphQLSchema } from '../../type/schema';
+
+import type { VariableValues } from '../../execution/values';
+import { getVariableValues } from '../../execution/values';
 
 import {
   coerceInputValue,
@@ -450,20 +454,29 @@ describe('coerceInputLiteral', () => {
     valueText: string,
     type: GraphQLInputType,
     expected: unknown,
-    variables?: ObjMap<unknown>,
+    variableValues?: VariableValues,
   ) {
     const ast = parseValue(valueText);
-    const value = coerceInputLiteral(ast, type, variables);
+    const value = coerceInputLiteral(ast, type, variableValues);
     expect(value).to.deep.equal(expected);
   }
 
   function testWithVariables(
-    variables: ObjMap<unknown>,
+    variableDefs: string,
+    inputs: ReadOnlyObjMap<unknown>,
     valueText: string,
     type: GraphQLInputType,
     expected: unknown,
   ) {
-    test(valueText, type, expected, variables);
+    const parser = new Parser(variableDefs);
+    parser.expectToken('<SOF>');
+    const variableValuesOrErrors = getVariableValues(
+      new GraphQLSchema({}),
+      parser.parseVariableDefinitions(),
+      inputs,
+    );
+    invariant(variableValuesOrErrors.variableValues);
+    test(valueText, type, expected, variableValuesOrErrors.variableValues);
   }
 
   it('converts according to input coercion rules', () => {
@@ -662,19 +675,55 @@ describe('coerceInputLiteral', () => {
 
   it('accepts variable values assuming already coerced', () => {
     test('$var', GraphQLBoolean, undefined);
-    testWithVariables({ var: true }, '$var', GraphQLBoolean, true);
-    testWithVariables({ var: null }, '$var', GraphQLBoolean, null);
-    testWithVariables({ var: null }, '$var', nonNullBool, undefined);
+    testWithVariables(
+      '($var: Boolean)',
+      { var: true },
+      '$var',
+      GraphQLBoolean,
+      true,
+    );
+    testWithVariables(
+      '($var: Boolean)',
+      { var: null },
+      '$var',
+      GraphQLBoolean,
+      null,
+    );
+    testWithVariables(
+      '($var: Boolean)',
+      { var: null },
+      '$var',
+      nonNullBool,
+      undefined,
+    );
   });
 
   it('asserts variables are provided as items in lists', () => {
     test('[ $foo ]', listOfBool, [null]);
     test('[ $foo ]', listOfNonNullBool, undefined);
-    testWithVariables({ foo: true }, '[ $foo ]', listOfNonNullBool, [true]);
+    testWithVariables(
+      '($foo: Boolean)',
+      { foo: true },
+      '[ $foo ]',
+      listOfNonNullBool,
+      [true],
+    );
     // Note: variables are expected to have already been coerced, so we
     // do not expect the singleton wrapping behavior for variables.
-    testWithVariables({ foo: true }, '$foo', listOfNonNullBool, true);
-    testWithVariables({ foo: [true] }, '$foo', listOfNonNullBool, [true]);
+    testWithVariables(
+      '($foo: Boolean)',
+      { foo: true },
+      '$foo',
+      listOfNonNullBool,
+      true,
+    );
+    testWithVariables(
+      '($foo: [Boolean])',
+      { foo: [true] },
+      '$foo',
+      listOfNonNullBool,
+      [true],
+    );
   });
 
   it('omits input object fields for unprovided variables', () => {
@@ -683,10 +732,13 @@ describe('coerceInputLiteral', () => {
       requiredBool: true,
     });
     test('{ requiredBool: $foo }', testInputObj, undefined);
-    testWithVariables({ foo: true }, '{ requiredBool: $foo }', testInputObj, {
-      int: 42,
-      requiredBool: true,
-    });
+    testWithVariables(
+      '($foo: Boolean)',
+      { foo: true },
+      '{ requiredBool: $foo }',
+      testInputObj,
+      { int: 42, requiredBool: true },
+    );
   });
 });
 
