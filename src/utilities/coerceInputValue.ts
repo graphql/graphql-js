@@ -4,7 +4,6 @@ import { invariant } from '../jsutils/invariant.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
 import { printPathArray } from '../jsutils/printPathArray.js';
@@ -27,6 +26,8 @@ import {
   isNonNullType,
   isRequiredInputField,
 } from '../type/definition.js';
+
+import type { VariableValues } from '../execution/values.js';
 
 type OnErrorCB = (
   path: ReadonlyArray<string | number>,
@@ -227,26 +228,26 @@ function coerceInputValueImpl(
 export function coerceInputLiteral(
   valueNode: ValueNode,
   type: GraphQLInputType,
-  variables?: Maybe<ObjMap<unknown>>,
+  variableValues?: Maybe<VariableValues>,
 ): unknown {
   if (valueNode.kind === Kind.VARIABLE) {
-    if (!variables || isMissingVariable(valueNode, variables)) {
+    if (!variableValues || isMissingVariable(valueNode, variableValues)) {
       return; // Invalid: intentionally return no value.
     }
-    const variableValue = variables[valueNode.name.value];
-    if (variableValue === null && isNonNullType(type)) {
+    const coercedVariableValue = variableValues.coerced[valueNode.name.value];
+    if (coercedVariableValue === null && isNonNullType(type)) {
       return; // Invalid: intentionally return no value.
     }
     // Note: This does no further checking that this variable is correct.
     // This assumes validated has checked this variable is of the correct type.
-    return variableValue;
+    return coercedVariableValue;
   }
 
   if (isNonNullType(type)) {
     if (valueNode.kind === Kind.NULL) {
       return; // Invalid: intentionally return no value.
     }
-    return coerceInputLiteral(valueNode, type.ofType, variables);
+    return coerceInputLiteral(valueNode, type.ofType, variableValues);
   }
 
   if (valueNode.kind === Kind.NULL) {
@@ -256,7 +257,11 @@ export function coerceInputLiteral(
   if (isListType(type)) {
     if (valueNode.kind !== Kind.LIST) {
       // Lists accept a non-list value as a list of one.
-      const itemValue = coerceInputLiteral(valueNode, type.ofType, variables);
+      const itemValue = coerceInputLiteral(
+        valueNode,
+        type.ofType,
+        variableValues,
+      );
       if (itemValue === undefined) {
         return; // Invalid: intentionally return no value.
       }
@@ -264,10 +269,10 @@ export function coerceInputLiteral(
     }
     const coercedValue: Array<unknown> = [];
     for (const itemNode of valueNode.values) {
-      let itemValue = coerceInputLiteral(itemNode, type.ofType, variables);
+      let itemValue = coerceInputLiteral(itemNode, type.ofType, variableValues);
       if (itemValue === undefined) {
         if (
-          isMissingVariable(itemNode, variables) &&
+          isMissingVariable(itemNode, variableValues) &&
           !isNonNullType(type.ofType)
         ) {
           // A missing variable within a list is coerced to null.
@@ -299,7 +304,7 @@ export function coerceInputLiteral(
     );
     for (const field of Object.values(fieldDefs)) {
       const fieldNode = fieldNodes.get(field.name);
-      if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
+      if (!fieldNode || isMissingVariable(fieldNode.value, variableValues)) {
         if (isRequiredInputField(field)) {
           return; // Invalid: intentionally return no value.
         }
@@ -313,7 +318,7 @@ export function coerceInputLiteral(
         const fieldValue = coerceInputLiteral(
           fieldNode.value,
           field.type,
-          variables,
+          variableValues,
         );
         if (fieldValue === undefined) {
           return; // Invalid: intentionally return no value.
@@ -339,7 +344,7 @@ export function coerceInputLiteral(
   const leafType = assertLeafType(type);
 
   try {
-    return leafType.parseLiteral(valueNode, variables);
+    return leafType.parseLiteral(valueNode, variableValues?.coerced);
   } catch (_error) {
     // Invalid: ignore error and intentionally return no value.
   }
@@ -349,11 +354,12 @@ export function coerceInputLiteral(
 // in the set of variables.
 function isMissingVariable(
   valueNode: ValueNode,
-  variables: Maybe<ObjMap<unknown>>,
+  variables: Maybe<VariableValues>,
 ): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&
-    (variables == null || !Object.hasOwn(variables, valueNode.name.value))
+    (variables == null ||
+      !Object.hasOwn(variables.coerced, valueNode.name.value))
   );
 }
 

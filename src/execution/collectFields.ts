@@ -24,6 +24,7 @@ import type { GraphQLSchema } from '../type/schema.js';
 
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
+import type { VariableValues } from './values.js';
 import { getDirectiveValues } from './values.js';
 
 export interface DeferUsage {
@@ -39,7 +40,7 @@ export interface FieldDetails {
 interface CollectFieldsContext {
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDefinitionNode>;
-  variableValues: { [variable: string]: unknown };
+  variableValues: VariableValues;
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
@@ -57,7 +58,7 @@ interface CollectFieldsContext {
 export function collectFields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
-  variableValues: { [variable: string]: unknown },
+  variableValues: VariableValues,
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
 ): Map<string, ReadonlyArray<FieldDetails>> {
@@ -89,7 +90,7 @@ export function collectFields(
 export function collectSubfields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
-  variableValues: { [variable: string]: unknown },
+  variableValues: VariableValues,
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldDetails: ReadonlyArray<FieldDetails>,
@@ -221,7 +222,7 @@ function collectFieldsImpl(
  */
 function getDeferUsage(
   operation: OperationDefinitionNode,
-  variableValues: { [variable: string]: unknown },
+  variableValues: VariableValues,
   node: FragmentSpreadNode | InlineFragmentNode,
   parentDeferUsage: DeferUsage | undefined,
 ): DeferUsage | undefined {
@@ -251,7 +252,7 @@ function getDeferUsage(
  * directives, where `@skip` has higher precedence than `@include`.
  */
 function shouldIncludeNode(
-  variableValues: { [variable: string]: unknown },
+  variableValues: VariableValues,
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
 ): boolean {
   const skip = getDirectiveValues(GraphQLSkipDirective, node, variableValues);
