@@ -152,10 +152,7 @@ function validateDirectives(context) {
       if (isRequiredArgument(arg) && arg.deprecationReason != null) {
         context.reportError(
           `Required argument @${directive.name}(${arg.name}:) cannot be deprecated.`,
-          [
-            getDeprecatedDirectiveNode(arg.astNode), // istanbul ignore next (TODO need to write coverage tests)
-            arg.astNode?.type,
-          ],
+          [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type],
         );
       }
     }
@@ -254,10 +251,7 @@ function validateFields(context, type) {
       if (isRequiredArgument(arg) && arg.deprecationReason != null) {
         context.reportError(
           `Required argument ${type.name}.${field.name}(${argName}:) cannot be deprecated.`,
-          [
-            getDeprecatedDirectiveNode(arg.astNode), // istanbul ignore next (TODO need to write coverage tests)
-            arg.astNode?.type,
-          ],
+          [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type],
         );
       }
     }
@@ -320,11 +314,7 @@ function validateTypeImplementsInterface(context, type, iface) {
         `Interface field ${iface.name}.${fieldName} expects type ` +
           `${inspect(ifaceField.type)} but ${type.name}.${fieldName} ` +
           `is type ${inspect(typeField.type)}.`,
-        [
-          // istanbul ignore next (TODO need to write coverage tests)
-          ifaceField.astNode?.type, // istanbul ignore next (TODO need to write coverage tests)
-          typeField.astNode?.type,
-        ],
+        [ifaceField.astNode?.type, typeField.astNode?.type],
       );
     } // Assert each interface field arg is implemented.
 
