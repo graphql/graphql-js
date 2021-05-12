@@ -186,7 +186,8 @@ export class Parser {
     const token = this.expectToken(TokenKind.NAME);
     return this.node(token, {
       kind: Kind.NAME,
-      value: ((token.value: any): string),
+      // $FlowFixMe[incompatible-return] FIXME
+      value: token.value,
     });
   }
 
@@ -415,7 +416,8 @@ export class Parser {
   }
 
   parseConstArgument(): ConstArgumentNode {
-    return (this.parseArgument(true): any);
+    // $FlowFixMe[incompatible-return] FIXME during TS conversion
+    return this.parseArgument(true);
   }
 
   // Implements the parsing rules in the Fragments section.
@@ -519,13 +521,15 @@ export class Parser {
         this._lexer.advance();
         return this.node(token, {
           kind: Kind.INT,
-          value: ((token.value: any): string),
+          // $FlowFixMe[incompatible-return] FIXME
+          value: token.value,
         });
       case TokenKind.FLOAT:
         this._lexer.advance();
         return this.node(token, {
           kind: Kind.FLOAT,
-          value: ((token.value: any): string),
+          // $FlowFixMe[incompatible-return] FIXME
+          value: token.value,
         });
       case TokenKind.STRING:
       case TokenKind.BLOCK_STRING:
@@ -542,7 +546,8 @@ export class Parser {
           default:
             return this.node(token, {
               kind: Kind.ENUM,
-              value: ((token.value: any): string),
+              // $FlowFixMe[incompatible-return] FIXME
+              value: token.value,
             });
         }
       case TokenKind.DOLLAR:
@@ -565,7 +570,8 @@ export class Parser {
   }
 
   parseConstValueLiteral(): ConstValueNode {
-    return (this.parseValueLiteral(true): any);
+    // $FlowFixMe[incompatible-return] FIXME during TS conversion
+    return this.parseValueLiteral(true);
   }
 
   parseStringLiteral(): StringValueNode {
@@ -573,7 +579,8 @@ export class Parser {
     this._lexer.advance();
     return this.node(token, {
       kind: Kind.STRING,
-      value: ((token.value: any): string),
+      // $FlowFixMe[incompatible-return] FIXME
+      value: token.value,
       block: token.kind === TokenKind.BLOCK_STRING,
     });
   }
@@ -633,7 +640,8 @@ export class Parser {
   }
 
   parseConstDirectives(): Array<ConstDirectiveNode> {
-    return (this.parseDirectives(true): any);
+    // $FlowFixMe[incompatible-return] FIXME during TS conversion
+    return this.parseDirectives(true);
   }
 
   /**

@@ -59,10 +59,10 @@ exports.DangerousChangeType = DangerousChangeType;
  * of breaking changes covered by the other functions down below.
  */
 function findBreakingChanges(oldSchema, newSchema) {
-  const breakingChanges = findSchemaChanges(oldSchema, newSchema).filter(
+  // $FlowFixMe[prop-missing]
+  return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in BreakingChangeType,
   );
-  return breakingChanges;
 }
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
@@ -70,10 +70,10 @@ function findBreakingChanges(oldSchema, newSchema) {
  */
 
 function findDangerousChanges(oldSchema, newSchema) {
-  const dangerousChanges = findSchemaChanges(oldSchema, newSchema).filter(
+  // $FlowFixMe[prop-missing]
+  return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in DangerousChangeType,
   );
-  return dangerousChanges;
 }
 
 function findSchemaChanges(oldSchema, newSchema) {

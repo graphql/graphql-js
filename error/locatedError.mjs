@@ -7,7 +7,7 @@ import { GraphQLError } from './GraphQLError.mjs';
  */
 
 export function locatedError(rawOriginalError, nodes, path) {
-  var _nodes;
+  var _originalError$nodes;
 
   // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
   const originalError =
@@ -16,15 +16,17 @@ export function locatedError(rawOriginalError, nodes, path) {
       : new Error('Unexpected error value: ' + inspect(rawOriginalError)); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
 
   if (Array.isArray(originalError.path)) {
+    // $FlowExpectedError[incompatible-return]
     return originalError;
   }
 
   return new GraphQLError(
-    originalError.message,
-    (_nodes = originalError.nodes) !== null && _nodes !== void 0
-      ? _nodes
-      : nodes,
-    originalError.source,
+    originalError.message, // $FlowFixMe[prop-missing] FIXME
+    (_originalError$nodes = originalError.nodes) !== null &&
+    _originalError$nodes !== void 0
+      ? _originalError$nodes
+      : nodes, // $FlowFixMe[prop-missing] FIXME
+    originalError.source, // $FlowFixMe[prop-missing] FIXME
     originalError.positions,
     path,
     originalError,

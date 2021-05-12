@@ -25,6 +25,8 @@ export function introspectionFromSchema(schema, options) {
     schema,
     document,
   });
-  (!result.errors && result.data) || invariant(false);
+  (!result.errors && result.data) || invariant(false); // $FlowIgnore[incompatible-indexer]
+  // $FlowIgnore[incompatible-return]
+
   return result.data;
 }

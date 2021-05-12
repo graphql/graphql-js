@@ -55,6 +55,7 @@ function lexicographicSortSchema(schema) {
   }
 
   function replaceNamedType(type) {
+    // $FlowFixMe[incompatible-return]
     return typeMap[type.name];
   }
 

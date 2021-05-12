@@ -406,6 +406,8 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     } // Note: While this could make early assertions to get the correctly
     // typed values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
+    // $FlowFixMe[incompatible-return]
+    // $FlowFixMe[incompatible-exact]
 
     return opTypes;
   }
@@ -443,7 +445,6 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   function buildDirective(node) {
     var _node$description;
 
-    const locations = node.locations.map(({ value }) => value);
     return new GraphQLDirective({
       name: node.name.value,
       description:
@@ -451,7 +452,8 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
         _node$description === void 0
           ? void 0
           : _node$description.value,
-      locations,
+      // $FlowFixMe[incompatible-call]
+      locations: node.locations.map(({ value }) => value),
       isRepeatable: node.repeatable,
       args: buildArgumentMap(node.arguments),
       astNode: node,
@@ -588,59 +590,53 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 
   function buildInterfaces(nodes) {
-    const interfaces = [];
-
-    for (const node of nodes) {
-      var _node$interfaces;
-
+    // Note: While this could make assertions to get the correctly typed
+    // values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+    // $FlowFixMe[incompatible-return]
+    return nodes.flatMap(
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      const interfacesNodes =
-        (_node$interfaces = node.interfaces) !== null &&
-        _node$interfaces !== void 0
-          ? _node$interfaces
+      (node) => {
+        var _node$interfaces$map, _node$interfaces;
+
+        return (_node$interfaces$map =
+          (_node$interfaces = node.interfaces) === null ||
+          _node$interfaces === void 0
+            ? void 0
+            : _node$interfaces.map(getNamedType)) !== null &&
+          _node$interfaces$map !== void 0
+          ? _node$interfaces$map
           : [];
-
-      for (const type of interfacesNodes) {
-        // Note: While this could make assertions to get the correctly typed
-        // values below, that would throw immediately while type system
-        // validation with validateSchema() will produce more actionable
-        // results.
-        interfaces.push(getNamedType(type));
-      }
-    }
-
-    return interfaces;
+      },
+    );
   }
 
   function buildUnionTypes(nodes) {
-    const types = [];
-
-    for (const node of nodes) {
-      var _node$types;
-
+    // Note: While this could make assertions to get the correctly typed
+    // values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+    // $FlowFixMe[incompatible-return]
+    return nodes.flatMap(
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      const typeNodes =
-        (_node$types = node.types) !== null && _node$types !== void 0
-          ? _node$types
+      (node) => {
+        var _node$types$map, _node$types;
+
+        return (_node$types$map =
+          (_node$types = node.types) === null || _node$types === void 0
+            ? void 0
+            : _node$types.map(getNamedType)) !== null &&
+          _node$types$map !== void 0
+          ? _node$types$map
           : [];
-
-      for (const type of typeNodes) {
-        // Note: While this could make assertions to get the correctly typed
-        // values below, that would throw immediately while type system
-        // validation with validateSchema() will produce more actionable
-        // results.
-        types.push(getNamedType(type));
-      }
-    }
-
-    return types;
+      },
+    );
   }
 
   function buildType(astNode) {
     var _typeExtensionsMap$na;
 
     const name = astNode.name.value;
-    const extensionNodes =
+    const extensionASTNodes =
       (_typeExtensionsMap$na = typeExtensionsMap[name]) !== null &&
       _typeExtensionsMap$na !== void 0
         ? _typeExtensionsMap$na
@@ -650,7 +646,6 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       case Kind.OBJECT_TYPE_DEFINITION: {
         var _astNode$description;
 
-        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
         return new GraphQLObjectType({
           name,
@@ -669,7 +664,6 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       case Kind.INTERFACE_TYPE_DEFINITION: {
         var _astNode$description2;
 
-        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
         return new GraphQLInterfaceType({
           name,
@@ -688,7 +682,6 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       case Kind.ENUM_TYPE_DEFINITION: {
         var _astNode$description3;
 
-        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
         return new GraphQLEnumType({
           name,
@@ -706,7 +699,6 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       case Kind.UNION_TYPE_DEFINITION: {
         var _astNode$description4;
 
-        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
         return new GraphQLUnionType({
           name,
@@ -724,7 +716,6 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       case Kind.SCALAR_TYPE_DEFINITION: {
         var _astNode$description5;
 
-        const extensionASTNodes = extensionNodes;
         return new GraphQLScalarType({
           name,
           description:
@@ -741,7 +732,6 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
         var _astNode$description6;
 
-        const extensionASTNodes = extensionNodes;
         const allNodes = [astNode, ...extensionASTNodes];
         return new GraphQLInputObjectType({
           name,
@@ -771,7 +761,8 @@ const stdTypeMap = keyMap(
  */
 
 function getDeprecationReason(node) {
-  const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
+  const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node); // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
+
   return deprecated === null || deprecated === void 0
     ? void 0
     : deprecated.reason;
@@ -781,7 +772,8 @@ function getDeprecationReason(node) {
  */
 
 function getSpecifiedByURL(node) {
-  const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
+  const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node); // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
+
   return specifiedBy === null || specifiedBy === void 0
     ? void 0
     : specifiedBy.url;

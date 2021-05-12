@@ -37,6 +37,8 @@ function introspectionFromSchema(schema, options) {
     schema,
     document,
   });
-  (!result.errors && result.data) || (0, _invariant.invariant)(false);
+  (!result.errors && result.data) || (0, _invariant.invariant)(false); // $FlowIgnore[incompatible-indexer]
+  // $FlowIgnore[incompatible-return]
+
   return result.data;
 }
