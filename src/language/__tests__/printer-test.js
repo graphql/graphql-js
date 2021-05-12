@@ -149,7 +149,6 @@ describe('Printer: Query document', () => {
     expect(JSON.stringify(ast)).to.equal(astBeforePrintCall);
 
     expect(printed).to.equal(
-      // $FlowFixMe[incompatible-call]
       dedentString(String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         whoever123is: node(id: [123, 456]) {

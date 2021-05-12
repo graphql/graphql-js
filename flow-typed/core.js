@@ -1277,7 +1277,7 @@ declare class String {
      * @param callSite A well-formed template string call site representation.
      * @param substitutions A set of substitution values.
      */
-    static raw(callSite: $Shape<{ raw: string, ... }>, ...substitutions: any[]): string;
+    static raw(callSite: string[], ...substitutions: any[]): string; // graphql-js HACK
 }
 
 declare class RegExp {
