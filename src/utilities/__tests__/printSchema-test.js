@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent, dedentString } from '../../__testUtils__/dedent';
 
 import { DirectiveLocation } from '../../language/directiveLocation';
 
@@ -158,7 +158,7 @@ describe('Type System Printer', () => {
 
     expectPrintedSchema(schema).to.equal(
       // $FlowFixMe[incompatible-call]
-      dedent(String.raw`
+      dedentString(String.raw`
         type Query {
           singleField(argOne: String = "tes\t de\fault"): String
         }
