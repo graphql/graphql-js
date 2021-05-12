@@ -193,7 +193,7 @@ function validateDirectives(context) {
         context.reportError(
           `Required argument @${directive.name}(${arg.name}:) cannot be deprecated.`,
           [
-            getDeprecatedDirectiveNode(arg.astNode), // istanbul ignore next (TODO need to write coverage tests)
+            getDeprecatedDirectiveNode(arg.astNode),
             (_arg$astNode = arg.astNode) === null || _arg$astNode === void 0
               ? void 0
               : _arg$astNode.type,
@@ -310,7 +310,7 @@ function validateFields(context, type) {
         context.reportError(
           `Required argument ${type.name}.${field.name}(${argName}:) cannot be deprecated.`,
           [
-            getDeprecatedDirectiveNode(arg.astNode), // istanbul ignore next (TODO need to write coverage tests)
+            getDeprecatedDirectiveNode(arg.astNode),
             (_arg$astNode3 = arg.astNode) === null || _arg$astNode3 === void 0
               ? void 0
               : _arg$astNode3.type,
@@ -390,11 +390,10 @@ function validateTypeImplementsInterface(context, type, iface) {
           }.${fieldName} ` +
           `is type ${(0, _inspect.inspect)(typeField.type)}.`,
         [
-          // istanbul ignore next (TODO need to write coverage tests)
           (_ifaceField$astNode = ifaceField.astNode) === null ||
           _ifaceField$astNode === void 0
             ? void 0
-            : _ifaceField$astNode.type, // istanbul ignore next (TODO need to write coverage tests)
+            : _ifaceField$astNode.type,
           (_typeField$astNode = typeField.astNode) === null ||
           _typeField$astNode === void 0
             ? void 0
