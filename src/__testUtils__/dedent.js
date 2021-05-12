@@ -30,17 +30,10 @@ export function dedent(
   strings: $ReadOnlyArray<string>,
   ...values: $ReadOnlyArray<string>
 ): string {
-  let str = '';
+  let str = strings[0];
 
-  for (let i = 0; i < strings.length; ++i) {
-    str += strings[i];
-    if (i < values.length) {
-      // istanbul ignore next (Ignore else inside Babel generated code)
-      const value = values[i];
-
-      str += value; // interpolation
-    }
+  for (let i = 1; i < strings.length; ++i) {
+    str += values[i - 1] + strings[i]; // interpolation
   }
-
   return dedentString(str);
 }
