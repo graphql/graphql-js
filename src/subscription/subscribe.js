@@ -195,10 +195,10 @@ async function executeSubscription(
     exeContext,
     type,
     operation.selectionSet,
-    Object.create(null),
-    Object.create(null),
+    new Map(),
+    new Set(),
   );
-  const [responseName, fieldNodes] = Object.entries(fields)[0];
+  const [responseName, fieldNodes] = [...fields.entries()][0];
   const fieldName = fieldNodes[0].name.value;
   const fieldDef = getFieldDef(schema, type, fieldName);
 
