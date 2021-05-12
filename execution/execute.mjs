@@ -280,8 +280,8 @@ function executeOperation(exeContext, operation, rootValue) {
     exeContext,
     type,
     operation.selectionSet,
-    Object.create(null),
-    Object.create(null),
+    new Map(),
+    new Set(),
   );
   const path = undefined; // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
@@ -319,9 +319,8 @@ function executeFieldsSerially(
   fields,
 ) {
   return promiseReduce(
-    Object.keys(fields),
-    (results, responseName) => {
-      const fieldNodes = fields[responseName];
+    fields.entries(),
+    (results, [responseName, fieldNodes]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = resolveField(
         exeContext,
@@ -357,8 +356,7 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
   const results = Object.create(null);
   let containsPromise = false;
 
-  for (const responseName of Object.keys(fields)) {
-    const fieldNodes = fields[responseName];
+  for (const [responseName, fieldNodes] of fields.entries()) {
     const fieldPath = addPath(path, responseName, parentType.name);
     const result = resolveField(
       exeContext,
@@ -411,12 +409,14 @@ export function collectFields(
         }
 
         const name = getFieldEntryKey(selection);
+        const fieldList = fields.get(name);
 
-        if (!fields[name]) {
-          fields[name] = [];
+        if (fieldList !== undefined) {
+          fieldList.push(selection);
+        } else {
+          fields.set(name, [selection]);
         }
 
-        fields[name].push(selection);
         break;
       }
 
@@ -442,13 +442,13 @@ export function collectFields(
         const fragName = selection.name.value;
 
         if (
-          visitedFragmentNames[fragName] ||
+          visitedFragmentNames.has(fragName) ||
           !shouldIncludeNode(exeContext, selection)
         ) {
           continue;
         }
 
-        visitedFragmentNames[fragName] = true;
+        visitedFragmentNames.add(fragName);
         const fragment = exeContext.fragments[fragName];
 
         if (
@@ -1026,8 +1026,8 @@ function collectAndExecuteSubfields(
 const collectSubfields = memoize3(_collectSubfields);
 
 function _collectSubfields(exeContext, returnType, fieldNodes) {
-  let subFieldNodes = Object.create(null);
-  const visitedFragmentNames = Object.create(null);
+  let subFieldNodes = new Map();
+  const visitedFragmentNames = new Set();
 
   for (const node of fieldNodes) {
     if (node.selectionSet) {

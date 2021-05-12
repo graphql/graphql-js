@@ -335,8 +335,8 @@ function executeOperation(
     exeContext,
     type,
     operation.selectionSet,
-    Object.create(null),
-    Object.create(null),
+    new Map(),
+    new Set(),
   );
 
   const path = undefined;
@@ -371,12 +371,11 @@ function executeFieldsSerially(
   parentType: GraphQLObjectType,
   sourceValue: mixed,
   path: Path | void,
-  fields: ObjMap<Array<FieldNode>>,
+  fields: Map<string, Array<FieldNode>>,
 ): PromiseOrValue<ObjMap<mixed>> {
   return promiseReduce(
-    Object.keys(fields),
-    (results, responseName) => {
-      const fieldNodes = fields[responseName];
+    fields.entries(),
+    (results, [responseName, fieldNodes]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = resolveField(
         exeContext,
@@ -410,13 +409,12 @@ function executeFields(
   parentType: GraphQLObjectType,
   sourceValue: mixed,
   path: Path | void,
-  fields: ObjMap<Array<FieldNode>>,
+  fields: Map<string, Array<FieldNode>>,
 ): PromiseOrValue<ObjMap<mixed>> {
   const results = Object.create(null);
   let containsPromise = false;
 
-  for (const responseName of Object.keys(fields)) {
-    const fieldNodes = fields[responseName];
+  for (const [responseName, fieldNodes] of fields.entries()) {
     const fieldPath = addPath(path, responseName, parentType.name);
     const result = resolveField(
       exeContext,
@@ -459,9 +457,9 @@ export function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: ObjMap<Array<FieldNode>>,
-  visitedFragmentNames: ObjMap<boolean>,
-): ObjMap<Array<FieldNode>> {
+  fields: Map<string, Array<FieldNode>>,
+  visitedFragmentNames: Set<string>,
+): Map<string, Array<FieldNode>> {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
@@ -469,10 +467,12 @@ export function collectFields(
           continue;
         }
         const name = getFieldEntryKey(selection);
-        if (!fields[name]) {
-          fields[name] = [];
+        const fieldList = fields.get(name);
+        if (fieldList !== undefined) {
+          fieldList.push(selection);
+        } else {
+          fields.set(name, [selection]);
         }
-        fields[name].push(selection);
         break;
       }
       case Kind.INLINE_FRAGMENT: {
@@ -494,12 +494,12 @@ export function collectFields(
       case Kind.FRAGMENT_SPREAD: {
         const fragName = selection.name.value;
         if (
-          visitedFragmentNames[fragName] ||
+          visitedFragmentNames.has(fragName) ||
           !shouldIncludeNode(exeContext, selection)
         ) {
           continue;
         }
-        visitedFragmentNames[fragName] = true;
+        visitedFragmentNames.add(fragName);
         const fragment = exeContext.fragments[fragName];
         if (
           !fragment ||
@@ -1087,9 +1087,9 @@ function _collectSubfields(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
-): ObjMap<Array<FieldNode>> {
-  let subFieldNodes = Object.create(null);
-  const visitedFragmentNames = Object.create(null);
+): Map<string, Array<FieldNode>> {
+  let subFieldNodes = new Map();
+  const visitedFragmentNames = new Set();
   for (const node of fieldNodes) {
     if (node.selectionSet) {
       subFieldNodes = collectFields(

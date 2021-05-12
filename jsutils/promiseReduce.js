@@ -14,12 +14,14 @@ var _isPromise = require('./isPromise.js');
  * If the callback does not return a Promise, then this function will also not
  * return a Promise.
  */
-function promiseReduce(values, callback, initialValue) {
-  return values.reduce(
-    (previous, value) =>
-      (0, _isPromise.isPromise)(previous)
-        ? previous.then((resolved) => callback(resolved, value))
-        : callback(previous, value),
-    initialValue,
-  );
+function promiseReduce(values, callbackFn, initialValue) {
+  let accumulator = initialValue;
+
+  for (const value of values) {
+    accumulator = (0, _isPromise.isPromise)(accumulator)
+      ? accumulator.then((resolved) => callbackFn(resolved, value))
+      : callbackFn(accumulator, value);
+  }
+
+  return accumulator;
 }

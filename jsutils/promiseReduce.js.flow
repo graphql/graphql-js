@@ -12,15 +12,15 @@ import { isPromise } from './isPromise';
  * return a Promise.
  */
 export function promiseReduce<T, U>(
-  values: $ReadOnlyArray<T>,
-  callback: (accumulator: U, currentValue: T) => PromiseOrValue<U>,
+  values: Iterable<T>,
+  callbackFn: (accumulator: U, currentValue: T) => PromiseOrValue<U>,
   initialValue: PromiseOrValue<U>,
 ): PromiseOrValue<U> {
-  return values.reduce(
-    (previous, value) =>
-      isPromise(previous)
-        ? previous.then((resolved) => callback(resolved, value))
-        : callback(previous, value),
-    initialValue,
-  );
+  let accumulator = initialValue;
+  for (const value of values) {
+    accumulator = isPromise(accumulator)
+      ? accumulator.then((resolved) => callbackFn(resolved, value))
+      : callbackFn(accumulator, value);
+  }
+  return accumulator;
 }
