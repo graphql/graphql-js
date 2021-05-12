@@ -133,7 +133,8 @@ export class GraphQLError extends Error {
       }
     }
 
-    Object.defineProperties((this: any), {
+    // $FlowFixMe[cannot-write] FIXME
+    Object.defineProperties(this, {
       name: { value: 'GraphQLError' },
       message: {
         value: message,

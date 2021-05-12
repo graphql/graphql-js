@@ -66,7 +66,8 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 
   function replaceNamedType<T: GraphQLNamedType>(type: T): T {
-    return ((typeMap[type.name]: any): T);
+    // $FlowFixMe[incompatible-return]
+    return typeMap[type.name];
   }
 
   function replaceMaybeType<T: ?GraphQLNamedType>(maybeType: T): T {

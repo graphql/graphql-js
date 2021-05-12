@@ -6,6 +6,7 @@ import { parse } from '../../language/parser';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
+  assertInterfaceType,
   GraphQLList,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -569,13 +570,16 @@ describe('Execute: Handles execution of abstract types', () => {
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    (schema.getType('Pet'): any).resolveType = () => [];
+    // $FlowExpectedError[incompatible-type]
+    assertInterfaceType(schema.getType('Pet')).resolveType = () => [];
     expectError({ forTypeName: undefined }).toEqual(
       'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet" with value { __typename: undefined }, received "[]".',
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    (schema.getType('Pet'): any).resolveType = () => schema.getType('Cat');
+    assertInterfaceType(schema.getType('Pet')).resolveType =
+      // $FlowExpectedError[incompatible-type]
+      () => schema.getType('Cat');
     expectError({ forTypeName: undefined }).toEqual(
       'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
     );

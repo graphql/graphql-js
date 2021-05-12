@@ -17,12 +17,11 @@ import {
   isTypeExtensionNode,
 } from '../predicates';
 
-const allASTNodes: Array<ASTNode> = Object.values(Kind).map(
-  (kind) => ({ kind }: any),
-);
-
-function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
-  return allASTNodes.filter(predicate).map(({ kind }) => kind);
+function filterNodes(predicate: (ASTNode) => boolean): Array<string> {
+  return Object.values(Kind).filter(
+    // $FlowExpectedError[speculation-ambiguous] create node only with kind
+    (kind) => predicate({ kind }),
+  );
 }
 
 describe('AST node predicates', () => {

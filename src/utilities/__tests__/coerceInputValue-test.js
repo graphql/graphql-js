@@ -15,29 +15,38 @@ import {
 
 import { coerceInputValue } from '../coerceInputValue';
 
-function expectValue(result: any) {
+type CoerceResult = {|
+  value: mixed,
+  errors: $ReadOnlyArray<{|
+    path: $ReadOnlyArray<string | number>,
+    value: mixed,
+    error: string,
+  |}>,
+|};
+
+function coerceValue(inputValue: mixed, type: GraphQLInputType): CoerceResult {
+  const errors = [];
+  const value = coerceInputValue(
+    inputValue,
+    type,
+    (path, invalidValue, error) => {
+      errors.push({ path, value: invalidValue, error: error.message });
+    },
+  );
+
+  return { errors, value };
+}
+
+function expectValue(result: CoerceResult) {
   expect(result.errors).to.deep.equal([]);
   return expect(result.value);
 }
 
-function expectErrors(result: any) {
+function expectErrors(result: CoerceResult) {
   return expect(result.errors);
 }
 
 describe('coerceInputValue', () => {
-  function coerceValue(inputValue: mixed, type: GraphQLInputType) {
-    const errors = [];
-    const value = coerceInputValue(
-      inputValue,
-      type,
-      (path, invalidValue, error) => {
-        errors.push({ path, value: invalidValue, error: error.message });
-      },
-    );
-
-    return { errors, value };
-  }
-
   describe('for GraphQLNonNull', () => {
     const TestNonNull = new GraphQLNonNull(GraphQLInt);
 
