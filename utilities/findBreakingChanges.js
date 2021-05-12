@@ -51,10 +51,10 @@ export const DangerousChangeType = Object.freeze({
  * of breaking changes covered by the other functions down below.
  */
 export function findBreakingChanges(oldSchema, newSchema) {
-  const breakingChanges = findSchemaChanges(oldSchema, newSchema).filter(
+  // $FlowFixMe[prop-missing]
+  return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in BreakingChangeType,
   );
-  return breakingChanges;
 }
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
@@ -62,10 +62,10 @@ export function findBreakingChanges(oldSchema, newSchema) {
  */
 
 export function findDangerousChanges(oldSchema, newSchema) {
-  const dangerousChanges = findSchemaChanges(oldSchema, newSchema).filter(
+  // $FlowFixMe[prop-missing]
+  return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in DangerousChangeType,
   );
-  return dangerousChanges;
 }
 
 function findSchemaChanges(oldSchema, newSchema) {

@@ -126,7 +126,7 @@ export class GraphQLError extends Error {
       if (isObjectLike(originalExtensions)) {
         _extensions = originalExtensions;
       }
-    }
+    } // $FlowFixMe[cannot-write] FIXME
 
     Object.defineProperties(this, {
       name: {

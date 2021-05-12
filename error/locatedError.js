@@ -14,13 +14,14 @@ export function locatedError(rawOriginalError, nodes, path) {
       : new Error('Unexpected error value: ' + inspect(rawOriginalError)); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
 
   if (Array.isArray(originalError.path)) {
+    // $FlowExpectedError[incompatible-return]
     return originalError;
   }
 
   return new GraphQLError(
-    originalError.message,
-    originalError.nodes ?? nodes,
-    originalError.source,
+    originalError.message, // $FlowFixMe[prop-missing] FIXME
+    originalError.nodes ?? nodes, // $FlowFixMe[prop-missing] FIXME
+    originalError.source, // $FlowFixMe[prop-missing] FIXME
     originalError.positions,
     path,
     originalError,

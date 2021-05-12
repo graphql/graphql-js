@@ -41,14 +41,17 @@ export function buildASTSchema(documentAST, options) {
         // typed values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
         case 'Query':
+          // $FlowExpectedError[incompatible-type] validated in `validateSchema`
           config.query = type;
           break;
 
         case 'Mutation':
+          // $FlowExpectedError[incompatible-type] validated in `validateSchema`
           config.mutation = type;
           break;
 
         case 'Subscription':
+          // $FlowExpectedError[incompatible-type] validated in `validateSchema`
           config.subscription = type;
           break;
       }
