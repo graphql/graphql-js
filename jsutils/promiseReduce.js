@@ -7,12 +7,14 @@ import { isPromise } from './isPromise.js';
  * return a Promise.
  */
 
-export function promiseReduce(values, callback, initialValue) {
-  return values.reduce(
-    (previous, value) =>
-      isPromise(previous)
-        ? previous.then((resolved) => callback(resolved, value))
-        : callback(previous, value),
-    initialValue,
-  );
+export function promiseReduce(values, callbackFn, initialValue) {
+  let accumulator = initialValue;
+
+  for (const value of values) {
+    accumulator = isPromise(accumulator)
+      ? accumulator.then((resolved) => callbackFn(resolved, value))
+      : callbackFn(accumulator, value);
+  }
+
+  return accumulator;
 }
