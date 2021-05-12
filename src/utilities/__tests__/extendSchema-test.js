@@ -43,7 +43,6 @@ function expectExtensionASTNodes(obj: {
 }
 
 function expectASTNode(obj: ?{ +astNode: ?ASTNode, ... }) {
-  // istanbul ignore next (FIXME)
   invariant(obj?.astNode != null);
   return expect(print(obj.astNode));
 }
