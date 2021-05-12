@@ -36,7 +36,7 @@ const subscriptionType = new GraphQLObjectType({
 
 function getOperationNode(doc: DocumentNode) {
   const operationNode = doc.definitions[0];
-  invariant(operationNode && operationNode.kind === Kind.OPERATION_DEFINITION);
+  invariant(operationNode.kind === Kind.OPERATION_DEFINITION);
   return operationNode;
 }
 
@@ -76,7 +76,7 @@ describe('getOperationRootType', () => {
     `);
 
     const schemaNode = doc.definitions[0];
-    invariant(schemaNode && schemaNode.kind === Kind.SCHEMA_DEFINITION);
+    invariant(schemaNode.kind === Kind.SCHEMA_DEFINITION);
     const [
       queryNode,
       mutationNode,
