@@ -591,10 +591,7 @@ function resolveField(
   fieldNodes: $ReadOnlyArray<FieldNode>,
   path: Path,
 ): PromiseOrValue<mixed> {
-  const fieldNode = fieldNodes[0];
-  const fieldName = fieldNode.name.value;
-
-  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldName);
+  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
   if (!fieldDef) {
     return;
   }
@@ -1173,8 +1170,10 @@ export const defaultFieldResolver: GraphQLFieldResolver<
 export function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
-  fieldName: string,
+  fieldNode: FieldNode,
 ): ?GraphQLField<mixed, mixed> {
+  const fieldName = fieldNode.name.value;
+
   if (
     fieldName === SchemaMetaFieldDef.name &&
     schema.getQueryType() === parentType
