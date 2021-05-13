@@ -963,9 +963,11 @@ function completeObjectValue(
   path,
   result,
 ) {
-  // If there is an isTypeOf predicate function, call it with the
+  // Collect sub-fields to execute to complete this value.
+  const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes); // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
+
   if (returnType.isTypeOf) {
     const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
 
@@ -975,12 +977,12 @@ function completeObjectValue(
           throw invalidReturnTypeError(returnType, result, fieldNodes);
         }
 
-        return collectAndExecuteSubfields(
+        return executeFields(
           exeContext,
           returnType,
-          fieldNodes,
-          path,
           result,
+          path,
+          subFieldNodes,
         );
       });
     }
@@ -990,13 +992,7 @@ function completeObjectValue(
     }
   }
 
-  return collectAndExecuteSubfields(
-    exeContext,
-    returnType,
-    fieldNodes,
-    path,
-    result,
-  );
+  return executeFields(exeContext, returnType, result, path, subFieldNodes);
 }
 
 function invalidReturnTypeError(returnType, result, fieldNodes) {
@@ -1004,18 +1000,6 @@ function invalidReturnTypeError(returnType, result, fieldNodes) {
     `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
     fieldNodes,
   );
-}
-
-function collectAndExecuteSubfields(
-  exeContext,
-  returnType,
-  fieldNodes,
-  path,
-  result,
-) {
-  // Collect sub-fields to execute to complete this value.
-  const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
-  return executeFields(exeContext, returnType, result, path, subFieldNodes);
 }
 /**
  * A memoized collection of relevant subfields with regard to the return
