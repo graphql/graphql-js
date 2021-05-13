@@ -65,15 +65,15 @@ export const DangerousChangeType = Object.freeze({
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
 });
 
-export type BreakingChange = {|
+export type BreakingChange = {
   type: $Keys<typeof BreakingChangeType>,
   description: string,
-|};
+};
 
-export type DangerousChange = {|
+export type DangerousChange = {
   type: $Keys<typeof DangerousChangeType>,
   description: string,
-|};
+};
 
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
@@ -558,11 +558,11 @@ function stringifyValue(value: mixed, type: GraphQLInputType): string {
 function diff<T: { name: string, ... }>(
   oldArray: $ReadOnlyArray<T>,
   newArray: $ReadOnlyArray<T>,
-): {|
+): {
   added: Array<T>,
   removed: Array<T>,
   persisted: Array<[T, T]>,
-|} {
+} {
   const added = [];
   const removed = [];
   const persisted = [];
