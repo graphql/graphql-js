@@ -199,10 +199,10 @@ async function executeSubscription(
     new Set(),
   );
   const [responseName, fieldNodes] = [...fields.entries()][0];
-  const fieldName = fieldNodes[0].name.value;
-  const fieldDef = getFieldDef(schema, type, fieldName);
+  const fieldDef = getFieldDef(schema, type, fieldNodes[0]);
 
   if (!fieldDef) {
+    const fieldName = fieldNodes[0].name.value;
     throw new GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
       fieldNodes,
