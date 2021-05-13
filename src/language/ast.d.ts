@@ -33,7 +33,7 @@ export class Location {
 
   constructor(startToken: Token, endToken: Token, source: Source);
 
-  toJSON(): { start: number; end: number };
+  toJSON(): { start: number; end: number; source: Source };
 }
 
 /**

@@ -46,6 +46,13 @@ export class Source {
   get [Symbol.toStringTag]() {
     return 'Source';
   }
+
+  toJSON(): {| body: string, name: string |} {
+    return {
+      body: this.body,
+      name: this.name,
+    };
+  }
 }
 
 /**
