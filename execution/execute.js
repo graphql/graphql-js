@@ -519,9 +519,7 @@ function getFieldEntryKey(node) {
  */
 
 function resolveField(exeContext, parentType, source, fieldNodes, path) {
-  const fieldNode = fieldNodes[0];
-  const fieldName = fieldNode.name.value;
-  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldName);
+  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
 
   if (!fieldDef) {
     return;
@@ -1079,7 +1077,9 @@ export const defaultFieldResolver = function (
  * @internal
  */
 
-export function getFieldDef(schema, parentType, fieldName) {
+export function getFieldDef(schema, parentType, fieldNode) {
+  const fieldName = fieldNode.name.value;
+
   if (
     fieldName === SchemaMetaFieldDef.name &&
     schema.getQueryType() === parentType
