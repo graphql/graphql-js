@@ -14,7 +14,7 @@ import {
   buildExecutionContext,
   buildResolveInfo,
   collectFields,
-  execute,
+  execute as defaultExecute,
   getFieldDef,
 } from '../execution/execute';
 
@@ -34,6 +34,7 @@ export type SubscriptionArgs = {|
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
+  execute?: ?typeof execute
 |};
 
 /**
@@ -69,6 +70,7 @@ export async function subscribe(
     operationName,
     fieldResolver,
     subscribeFieldResolver,
+    execute = defaultExecute
   } = args;
 
   // $FlowFixMe[incompatible-call]

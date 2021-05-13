@@ -1,7 +1,7 @@
 import { Maybe } from '../jsutils/Maybe';
 
 import { DocumentNode } from '../language/ast';
-import { ExecutionResult } from '../execution/execute';
+import { execute, ExecutionResult } from '../execution/execute';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLFieldResolver } from '../type/definition';
 
@@ -14,6 +14,7 @@ export interface SubscriptionArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  execute?: Maybe<typeof execute>
 }
 
 /**
