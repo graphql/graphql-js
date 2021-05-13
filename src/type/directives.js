@@ -1,5 +1,10 @@
-import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from '../jsutils/ObjMap';
+import type {
+  ObjMap,
+  ReadOnlyObjMap,
+  ReadOnlyObjMapLike,
+} from '../jsutils/ObjMap';
 import { inspect } from '../jsutils/inspect';
+import { keyValMap } from '../jsutils/keyValMap';
 import { toObjMap } from '../jsutils/toObjMap';
 import { devAssert } from '../jsutils/devAssert';
 import { instanceOf } from '../jsutils/instanceOf';
@@ -9,14 +14,11 @@ import type { DirectiveDefinitionNode } from '../language/ast';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import { DirectiveLocation } from '../language/directiveLocation';
 
-import type {
-  GraphQLArgument,
-  GraphQLFieldConfigArgumentMap,
-} from './definition';
+import type { GraphQLArgument, GraphQLArgumentConfig } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import {
-  defineArguments,
-  argsToArgsConfig,
+  defineInputValue,
+  inputValueToConfig,
   GraphQLNonNull,
 } from './definition';
 
@@ -73,7 +75,9 @@ export class GraphQLDirective {
       `@${config.name} args must be an object with argument names as keys.`,
     );
 
-    this.args = defineArguments(args);
+    this.args = Object.entries(args).map(([argName, argConfig]) =>
+      defineInputValue(argConfig, argName),
+    );
   }
 
   toConfig(): GraphQLDirectiveNormalizedConfig {
@@ -81,7 +85,7 @@ export class GraphQLDirective {
       name: this.name,
       description: this.description,
       locations: this.locations,
-      args: argsToArgsConfig(this.args),
+      args: keyValMap(this.args, (arg) => arg.name, inputValueToConfig),
       isRepeatable: this.isRepeatable,
       extensions: this.extensions,
       astNode: this.astNode,
@@ -106,7 +110,7 @@ export type GraphQLDirectiveConfig = {|
   name: string,
   description?: ?string,
   locations: Array<DirectiveLocationEnum>,
-  args?: ?GraphQLFieldConfigArgumentMap,
+  args?: ?ObjMap<GraphQLArgumentConfig>,
   isRepeatable?: ?boolean,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?DirectiveDefinitionNode,
@@ -114,7 +118,7 @@ export type GraphQLDirectiveConfig = {|
 
 type GraphQLDirectiveNormalizedConfig = {|
   ...GraphQLDirectiveConfig,
-  args: GraphQLFieldConfigArgumentMap,
+  args: ObjMap<GraphQLArgumentConfig>,
   isRepeatable: boolean,
   extensions: ?ReadOnlyObjMap<mixed>,
 |};

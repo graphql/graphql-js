@@ -1,3 +1,4 @@
+import type { ObjMap } from '../jsutils/ObjMap';
 import { keyMap } from '../jsutils/keyMap';
 import { inspect } from '../jsutils/inspect';
 import { mapValue } from '../jsutils/mapValue';
@@ -47,10 +48,9 @@ import type {
   GraphQLNamedType,
   GraphQLFieldConfig,
   GraphQLFieldConfigMap,
+  GraphQLInputValueConfig,
   GraphQLArgumentConfig,
-  GraphQLFieldConfigArgumentMap,
   GraphQLEnumValueConfigMap,
-  GraphQLInputFieldConfigMap,
 } from '../type/definition';
 import { assertSchema, GraphQLSchema } from '../type/schema';
 import { specifiedScalarTypes, isSpecifiedScalarType } from '../type/scalars';
@@ -444,7 +444,7 @@ export function extendSchemaImpl(
       // $FlowFixMe[incompatible-call]
       locations: node.locations.map(({ value }) => value),
       isRepeatable: node.repeatable,
-      args: buildArgumentMap(node.arguments),
+      args: buildInputValueMap(node.arguments),
       astNode: node,
     });
   }
@@ -469,7 +469,7 @@ export function extendSchemaImpl(
           // with validateSchema() will produce more actionable results.
           type: getWrappedType(field.type),
           description: field.description?.value,
-          args: buildArgumentMap(field.arguments),
+          args: buildInputValueMap(field.arguments),
           deprecationReason: getDeprecationReason(field),
           astNode: field,
         };
@@ -478,54 +478,38 @@ export function extendSchemaImpl(
     return fieldConfigMap;
   }
 
-  function buildArgumentMap(
-    args: ?$ReadOnlyArray<InputValueDefinitionNode>,
-  ): GraphQLFieldConfigArgumentMap {
+  function buildInputValueMap(
+    nodes: ?$ReadOnlyArray<InputValueDefinitionNode>,
+    configMap: ObjMap<GraphQLInputValueConfig> = Object.create(null),
+  ): ObjMap<GraphQLInputValueConfig> {
     // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-    const argsNodes = args ?? [];
+    const inputNodes = nodes ?? [];
 
-    const argConfigMap = Object.create(null);
-    for (const arg of argsNodes) {
+    for (const node of inputNodes) {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
       // with validateSchema() will produce more actionable results.
-      const type: any = getWrappedType(arg.type);
+      const type: any = getWrappedType(node.type);
 
-      argConfigMap[arg.name.value] = {
+      configMap[node.name.value] = {
         type,
-        description: arg.description?.value,
-        defaultValue: valueFromAST(arg.defaultValue, type),
-        deprecationReason: getDeprecationReason(arg),
-        astNode: arg,
+        description: node.description?.value,
+        defaultValue: valueFromAST(node.defaultValue, type),
+        deprecationReason: getDeprecationReason(node),
+        astNode: node,
       };
     }
-    return argConfigMap;
+    return configMap;
   }
 
   function buildInputFieldMap(
     nodes: $ReadOnlyArray<
       InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode,
     >,
-  ): GraphQLInputFieldConfigMap {
-    const inputFieldMap = Object.create(null);
+  ): ObjMap<GraphQLInputValueConfig> {
+    let inputFieldMap = Object.create(null);
     for (const node of nodes) {
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      const fieldsNodes = node.fields ?? [];
-
-      for (const field of fieldsNodes) {
-        // Note: While this could make assertions to get the correctly typed
-        // value, that would throw immediately while type system validation
-        // with validateSchema() will produce more actionable results.
-        const type: any = getWrappedType(field.type);
-
-        inputFieldMap[field.name.value] = {
-          type,
-          description: field.description?.value,
-          defaultValue: valueFromAST(field.defaultValue, type),
-          deprecationReason: getDeprecationReason(field),
-          astNode: field,
-        };
-      }
+      inputFieldMap = buildInputValueMap(node.fields, inputFieldMap);
     }
     return inputFieldMap;
   }

@@ -821,7 +821,9 @@ function defineFieldMap<TSource, TContext>(
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
-      args: defineArguments(argsConfig),
+      args: Object.entries(argsConfig).map(([argName, argConfig]) =>
+        defineInputValue(argConfig, argName),
+      ),
       resolve: fieldConfig.resolve,
       subscribe: fieldConfig.subscribe,
       deprecationReason: fieldConfig.deprecationReason,
@@ -829,20 +831,6 @@ function defineFieldMap<TSource, TContext>(
       astNode: fieldConfig.astNode,
     };
   });
-}
-
-export function defineArguments(
-  config: GraphQLFieldConfigArgumentMap,
-): $ReadOnlyArray<GraphQLArgument> {
-  return Object.entries(config).map(([argName, argConfig]) => ({
-    name: argName,
-    description: argConfig.description,
-    type: argConfig.type,
-    defaultValue: argConfig.defaultValue,
-    deprecationReason: argConfig.deprecationReason,
-    extensions: argConfig.extensions && toObjMap(argConfig.extensions),
-    astNode: argConfig.astNode,
-  }));
 }
 
 function isPlainObj(obj: mixed): boolean {
@@ -855,33 +843,13 @@ function fieldsToFieldsConfig(
   return mapValue(fields, (field) => ({
     description: field.description,
     type: field.type,
-    args: argsToArgsConfig(field.args),
+    args: keyValMap(field.args, (arg) => arg.name, inputValueToConfig),
     resolve: field.resolve,
     subscribe: field.subscribe,
     deprecationReason: field.deprecationReason,
     extensions: field.extensions,
     astNode: field.astNode,
   }));
-}
-
-/**
- * @internal
- */
-export function argsToArgsConfig(
-  args: $ReadOnlyArray<GraphQLArgument>,
-): GraphQLFieldConfigArgumentMap {
-  return keyValMap(
-    args,
-    (arg) => arg.name,
-    (arg) => ({
-      description: arg.description,
-      type: arg.type,
-      defaultValue: arg.defaultValue,
-      deprecationReason: arg.deprecationReason,
-      extensions: arg.extensions,
-      astNode: arg.astNode,
-    }),
-  );
 }
 
 export type GraphQLObjectTypeConfig<TSource, TContext> = {|
@@ -950,7 +918,7 @@ export type GraphQLFieldConfig<
 > = {|
   description?: ?string,
   type: GraphQLOutputType,
-  args?: GraphQLFieldConfigArgumentMap,
+  args?: ObjMap<GraphQLArgumentConfig>,
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   deprecationReason?: ?string,
@@ -958,16 +926,7 @@ export type GraphQLFieldConfig<
   astNode?: ?FieldDefinitionNode,
 |};
 
-export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
-
-export type GraphQLArgumentConfig = {|
-  description?: ?string,
-  type: GraphQLInputType,
-  defaultValue?: mixed,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  deprecationReason?: ?string,
-  astNode?: ?InputValueDefinitionNode,
-|};
+export type GraphQLArgumentConfig = GraphQLInputValueConfig;
 
 export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldConfig<TSource, TContext>,
@@ -989,7 +948,57 @@ export type GraphQLField<
   astNode: ?FieldDefinitionNode,
 |};
 
-export type GraphQLArgument = {|
+export type GraphQLArgument = GraphQLInputValue;
+
+export const isRequiredArgument = isRequiredInput;
+
+export type GraphQLFieldMap<TSource, TContext> = ObjMap<
+  GraphQLField<TSource, TContext>,
+>;
+
+export function isRequiredInput(input: GraphQLInputValue): boolean %checks {
+  return isNonNullType(input.type) && input.defaultValue === undefined;
+}
+
+/**
+ * @internal
+ */
+export function defineInputValue(
+  config: GraphQLInputValueConfig,
+  name: string,
+): GraphQLInputValue {
+  devAssert(
+    !('resolve' in config),
+    `${name} has a resolve property, but inputs cannot define resolvers.`,
+  );
+  return {
+    name,
+    description: config.description,
+    type: config.type,
+    defaultValue: config.defaultValue,
+    deprecationReason: config.deprecationReason,
+    extensions: config.extensions && toObjMap(config.extensions),
+    astNode: config.astNode,
+  };
+}
+
+/**
+ * @internal
+ */
+export function inputValueToConfig(
+  inputValue: GraphQLInputValue,
+): GraphQLInputValueConfig {
+  return {
+    description: inputValue.description,
+    type: inputValue.type,
+    defaultValue: inputValue.defaultValue,
+    deprecationReason: inputValue.deprecationReason,
+    extensions: inputValue.extensions,
+    astNode: inputValue.astNode,
+  };
+}
+
+export type GraphQLInputValue = {|
   name: string,
   description: ?string,
   type: GraphQLInputType,
@@ -999,13 +1008,14 @@ export type GraphQLArgument = {|
   astNode: ?InputValueDefinitionNode,
 |};
 
-export function isRequiredArgument(arg: GraphQLArgument): boolean %checks {
-  return isNonNullType(arg.type) && arg.defaultValue === undefined;
-}
-
-export type GraphQLFieldMap<TSource, TContext> = ObjMap<
-  GraphQLField<TSource, TContext>,
->;
+export type GraphQLInputValueConfig = {|
+  description?: ?string,
+  type: GraphQLInputType,
+  defaultValue?: mixed,
+  deprecationReason?: ?string,
+  extensions?: ?ReadOnlyObjMapLike<mixed>,
+  astNode?: ?InputValueDefinitionNode,
+|};
 
 /**
  * Interface Type Definition
@@ -1497,18 +1507,10 @@ export class GraphQLInputObjectType {
   }
 
   toConfig(): GraphQLInputObjectTypeNormalizedConfig {
-    const fields = mapValue(this.getFields(), (field) => ({
-      description: field.description,
-      type: field.type,
-      defaultValue: field.defaultValue,
-      extensions: field.extensions,
-      astNode: field.astNode,
-    }));
-
     return {
       name: this.name,
       description: this.description,
-      fields,
+      fields: mapValue(this.getFields(), inputValueToConfig),
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
@@ -1542,16 +1544,7 @@ function defineInputFieldMap(
       !('resolve' in fieldConfig),
       `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
     );
-
-    return {
-      name: fieldName,
-      description: fieldConfig.description,
-      type: fieldConfig.type,
-      defaultValue: fieldConfig.defaultValue,
-      deprecationReason: fieldConfig.deprecationReason,
-      extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
-      astNode: fieldConfig.astNode,
-    };
+    return defineInputValue(fieldConfig, fieldName);
   });
 }
 
@@ -1566,36 +1559,15 @@ export type GraphQLInputObjectTypeConfig = {|
 
 type GraphQLInputObjectTypeNormalizedConfig = {|
   ...GraphQLInputObjectTypeConfig,
-  fields: GraphQLInputFieldConfigMap,
+  fields: ObjMap<GraphQLInputFieldConfig>,
   extensions: ?ReadOnlyObjMap<mixed>,
   extensionASTNodes: $ReadOnlyArray<InputObjectTypeExtensionNode>,
 |};
 
-export type GraphQLInputFieldConfig = {|
-  description?: ?string,
-  type: GraphQLInputType,
-  defaultValue?: mixed,
-  deprecationReason?: ?string,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?InputValueDefinitionNode,
-|};
+export type GraphQLInputFieldConfig = GraphQLInputValueConfig;
 
-export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
+export type GraphQLInputField = GraphQLInputValue;
 
-export type GraphQLInputField = {|
-  name: string,
-  description: ?string,
-  type: GraphQLInputType,
-  defaultValue: mixed,
-  deprecationReason: ?string,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  astNode: ?InputValueDefinitionNode,
-|};
-
-export function isRequiredInputField(
-  field: GraphQLInputField,
-): boolean %checks {
-  return isNonNullType(field.type) && field.defaultValue === undefined;
-}
+export const isRequiredInputField = isRequiredInput;
 
 export type GraphQLInputFieldMap = ObjMap<GraphQLInputField>;

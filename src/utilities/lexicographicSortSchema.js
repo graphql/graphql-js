@@ -8,8 +8,7 @@ import type {
   GraphQLType,
   GraphQLNamedType,
   GraphQLFieldConfigMap,
-  GraphQLFieldConfigArgumentMap,
-  GraphQLInputFieldConfigMap,
+  GraphQLInputValueConfig,
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
@@ -79,14 +78,14 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return new GraphQLDirective({
       ...config,
       locations: sortBy(config.locations, (x) => x),
-      args: sortArgs(config.args),
+      args: sortInputs(config.args),
     });
   }
 
-  function sortArgs(args: GraphQLFieldConfigArgumentMap) {
-    return sortObjMap(args, (arg) => ({
-      ...arg,
-      type: replaceType(arg.type),
+  function sortInputs(inputs: ObjMap<GraphQLInputValueConfig>) {
+    return sortObjMap(inputs, (input) => ({
+      ...input,
+      type: replaceType(input.type),
     }));
   }
 
@@ -94,14 +93,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
-      args: sortArgs(field.args),
-    }));
-  }
-
-  function sortInputFields(fieldsMap: GraphQLInputFieldConfigMap) {
-    return sortObjMap(fieldsMap, (field) => ({
-      ...field,
-      type: replaceType(field.type),
+      args: sortInputs(field.args),
     }));
   }
 
@@ -148,7 +140,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       const config = type.toConfig();
       return new GraphQLInputObjectType({
         ...config,
-        fields: () => sortInputFields(config.fields),
+        fields: () => sortInputs(config.fields),
       });
     }
 

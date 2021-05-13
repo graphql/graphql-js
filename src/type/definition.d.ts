@@ -441,10 +441,6 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   get [Symbol.toStringTag](): string;
 }
 
-export function argsToArgsConfig(
-  args: ReadonlyArray<GraphQLArgument>,
-): GraphQLFieldConfigArgumentMap;
-
 export interface GraphQLObjectTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
@@ -520,7 +516,7 @@ export interface GraphQLFieldConfig<
 > {
   description?: Maybe<string>;
   type: GraphQLOutputType;
-  args?: GraphQLFieldConfigArgumentMap;
+  args?: ObjMap<GraphQLArgumentConfig>;
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   deprecationReason?: Maybe<string>;
@@ -529,8 +525,6 @@ export interface GraphQLFieldConfig<
   >;
   astNode?: Maybe<FieldDefinitionNode>;
 }
-
-export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
 
 /**
  * Custom extensions
@@ -545,14 +539,7 @@ export interface GraphQLArgumentExtensions {
   [attributeName: string]: unknown;
 }
 
-export interface GraphQLArgumentConfig {
-  description?: Maybe<string>;
-  type: GraphQLInputType;
-  defaultValue?: unknown;
-  deprecationReason?: Maybe<string>;
-  extensions?: Maybe<Readonly<GraphQLArgumentExtensions>>;
-  astNode?: Maybe<InputValueDefinitionNode>;
-}
+export type GraphQLArgumentConfig = GraphQLInputValueConfig<GraphQLArgumentExtensions>;
 
 export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldConfig<TSource, TContext>
@@ -574,21 +561,34 @@ export interface GraphQLField<
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
-export interface GraphQLArgument {
-  name: string;
-  description: Maybe<string>;
-  type: GraphQLInputType;
-  defaultValue: unknown;
-  deprecationReason: Maybe<string>;
-  extensions: Maybe<Readonly<GraphQLArgumentExtensions>>;
-  astNode: Maybe<InputValueDefinitionNode>;
-}
+export type GraphQLArgument = GraphQLInputValue<GraphQLArgumentExtensions>;
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean;
 
 export type GraphQLFieldMap<TSource, TContext> = ObjMap<
   GraphQLField<TSource, TContext>
 >;
+
+export function isRequiredInput(input: GraphQLInputValue<any>): boolean;
+
+export interface GraphQLInputValue<Extensions> {
+  name: string;
+  description: Maybe<string>;
+  type: GraphQLInputType;
+  defaultValue: unknown;
+  deprecationReason: Maybe<string>;
+  extensions: Maybe<Readonly<Extensions>>;
+  astNode: Maybe<InputValueDefinitionNode>;
+}
+
+export interface GraphQLInputValueConfig<Extensions> {
+  description?: Maybe<string>;
+  type: GraphQLInputType;
+  defaultValue?: unknown;
+  deprecationReason?: Maybe<string>;
+  extensions?: Maybe<Readonly<Extensions>>;
+  astNode?: Maybe<InputValueDefinitionNode>;
+}
 
 /**
  * Custom extensions
@@ -883,7 +883,7 @@ export class GraphQLInputObjectType {
   getFields(): GraphQLInputFieldMap;
 
   toConfig(): GraphQLInputObjectTypeConfig & {
-    fields: GraphQLInputFieldConfigMap;
+    fields: ObjMap<GraphQLInputFieldConfig>;
     extensions: Maybe<Readonly<GraphQLInputObjectTypeExtensions>>;
     extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
   };
@@ -913,29 +913,12 @@ export interface GraphQLInputObjectTypeConfig {
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputFieldExtensions {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 
-export interface GraphQLInputFieldConfig {
-  description?: Maybe<string>;
-  type: GraphQLInputType;
-  defaultValue?: unknown;
-  deprecationReason?: Maybe<string>;
-  extensions?: Maybe<Readonly<GraphQLInputFieldExtensions>>;
-  astNode?: Maybe<InputValueDefinitionNode>;
-}
+export type GraphQLInputFieldConfig = GraphQLInputValueConfig<GraphQLInputFieldExtensions>;
 
-export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
-
-export interface GraphQLInputField {
-  name: string;
-  description?: Maybe<string>;
-  type: GraphQLInputType;
-  defaultValue?: unknown;
-  deprecationReason: Maybe<string>;
-  extensions: Maybe<Readonly<GraphQLInputFieldExtensions>>;
-  astNode?: Maybe<InputValueDefinitionNode>;
-}
+export type GraphQLInputField = GraphQLInputValue<GraphQLInputFieldExtensions>;
 
 export function isRequiredInputField(field: GraphQLInputField): boolean;
 

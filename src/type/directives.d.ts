@@ -2,11 +2,12 @@
 /* eslint-disable import/no-cycle */
 
 import { Maybe } from '../jsutils/Maybe';
+import { ObjMap } from '../jsutils/ObjMap';
 
 import { DirectiveDefinitionNode } from '../language/ast';
 import { DirectiveLocationEnum } from '../language/directiveLocation';
 
-import { GraphQLFieldConfigArgumentMap, GraphQLArgument } from './definition';
+import { GraphQLArgument, GraphQLArgumentConfig } from './definition';
 
 /**
  * Test if the given value is a GraphQL directive.
@@ -43,7 +44,7 @@ export class GraphQLDirective {
   constructor(config: Readonly<GraphQLDirectiveConfig>);
 
   toConfig(): GraphQLDirectiveConfig & {
-    args: GraphQLFieldConfigArgumentMap;
+    args: ObjMap<GraphQLArgumentConfig>;
     isRepeatable: boolean;
     extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   };
@@ -58,7 +59,7 @@ export interface GraphQLDirectiveConfig {
   name: string;
   description?: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
-  args?: Maybe<GraphQLFieldConfigArgumentMap>;
+  args?: Maybe<ObjMap<GraphQLArgumentConfig>>;
   isRepeatable?: Maybe<boolean>;
   extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode?: Maybe<DirectiveDefinitionNode>;

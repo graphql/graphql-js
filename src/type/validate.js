@@ -34,8 +34,7 @@ import {
   isNonNullType,
   isInputType,
   isOutputType,
-  isRequiredArgument,
-  isRequiredInputField,
+  isRequiredInput,
 } from './definition';
 
 /**
@@ -180,7 +179,7 @@ function validateDirectives(context: SchemaValidationContext): void {
         );
       }
 
-      if (isRequiredArgument(arg) && arg.deprecationReason != null) {
+      if (isRequiredInput(arg) && arg.deprecationReason != null) {
         context.reportError(
           `Required argument @${directive.name}(${arg.name}:) cannot be deprecated.`,
           [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type],
@@ -292,7 +291,7 @@ function validateFields(
         );
       }
 
-      if (isRequiredArgument(arg) && arg.deprecationReason != null) {
+      if (isRequiredInput(arg) && arg.deprecationReason != null) {
         context.reportError(
           `Required argument ${type.name}.${field.name}(${argName}:) cannot be deprecated.`,
           [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type],
@@ -411,7 +410,7 @@ function validateTypeImplementsInterface(
     for (const typeArg of typeField.args) {
       const argName = typeArg.name;
       const ifaceArg = ifaceField.args.find((arg) => arg.name === argName);
-      if (!ifaceArg && isRequiredArgument(typeArg)) {
+      if (!ifaceArg && isRequiredInput(typeArg)) {
         context.reportError(
           `Object field ${type.name}.${fieldName} includes required argument ${argName} that is missing from the Interface field ${iface.name}.${fieldName}.`,
           [typeArg.astNode, ifaceField.astNode],
@@ -529,7 +528,7 @@ function validateInputFields(
       );
     }
 
-    if (isRequiredInputField(field) && field.deprecationReason != null) {
+    if (isRequiredInput(field) && field.deprecationReason != null) {
       context.reportError(
         `Required input field ${inputObj.name}.${field.name} cannot be deprecated.`,
         [
