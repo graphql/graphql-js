@@ -563,10 +563,10 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredArgument', () => {
-    function buildArg(config: {|
+    function buildArg(config: {
       type: GraphQLInputType,
       defaultValue?: mixed,
-    |}): GraphQLArgument {
+    }): GraphQLArgument {
       return {
         name: 'someArg',
         type: config.type,
@@ -611,10 +611,10 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredInputField', () => {
-    function buildInputField(config: {|
+    function buildInputField(config: {
       type: GraphQLInputType,
       defaultValue?: mixed,
-    |}): GraphQLInputField {
+    }): GraphQLInputField {
       return {
         name: 'someInputField',
         type: config.type,

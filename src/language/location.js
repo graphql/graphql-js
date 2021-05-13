@@ -3,10 +3,10 @@ import type { Source } from './source';
 /**
  * Represents a location in a Source.
  */
-export type SourceLocation = {|
+export type SourceLocation = {
   +line: number,
   +column: number,
-|};
+};
 
 /**
  * Takes a Source and a UTF-8 character offset, and returns the corresponding
