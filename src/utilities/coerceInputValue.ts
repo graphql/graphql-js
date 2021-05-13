@@ -1,15 +1,6 @@
-import { didYouMean } from '../jsutils/didYouMean.js';
-import { inspect } from '../jsutils/inspect.js';
-import { invariant } from '../jsutils/invariant.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 import type { Maybe } from '../jsutils/Maybe.js';
-import type { Path } from '../jsutils/Path.js';
-import { addPath, pathToArray } from '../jsutils/Path.js';
-import { printPathArray } from '../jsutils/printPathArray.js';
-import { suggestionList } from '../jsutils/suggestionList.js';
-
-import { GraphQLError } from '../error/GraphQLError.js';
 
 import type { ValueNode, VariableNode } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
@@ -21,7 +12,6 @@ import type {
 import {
   assertLeafType,
   isInputObjectType,
-  isLeafType,
   isListType,
   isNonNullType,
   isRequiredInputField,
@@ -31,194 +21,104 @@ import type { VariableValues } from '../execution/values.js';
 
 import { replaceVariables } from './replaceVariables.js';
 
-type OnErrorCB = (
-  path: ReadonlyArray<string | number>,
-  invalidValue: unknown,
-  error: GraphQLError,
-) => void;
-
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
+ *
+ * Returns `undefined` when the value could not be validly coerced according to
+ * the provided type.
  */
 export function coerceInputValue(
   inputValue: unknown,
   type: GraphQLInputType,
-  onError: OnErrorCB = defaultOnError,
-): unknown {
-  return coerceInputValueImpl(inputValue, type, onError, undefined);
-}
-
-function defaultOnError(
-  path: ReadonlyArray<string | number>,
-  invalidValue: unknown,
-  error: GraphQLError,
-): void {
-  let errorPrefix = 'Invalid value ' + inspect(invalidValue);
-  if (path.length > 0) {
-    errorPrefix += ` at "value${printPathArray(path)}"`;
-  }
-  error.message = errorPrefix + ': ' + error.message;
-  throw error;
-}
-
-function coerceInputValueImpl(
-  inputValue: unknown,
-  type: GraphQLInputType,
-  onError: OnErrorCB,
-  path: Path | undefined,
 ): unknown {
   if (isNonNullType(type)) {
-    if (inputValue != null) {
-      return coerceInputValueImpl(inputValue, type.ofType, onError, path);
+    if (inputValue == null) {
+      return; // Invalid: intentionally return no value.
     }
-    onError(
-      pathToArray(path),
-      inputValue,
-      new GraphQLError(
-        `Expected non-nullable type "${inspect(type)}" not to be null.`,
-      ),
-    );
-    return;
+    return coerceInputValue(inputValue, type.ofType);
   }
 
   if (inputValue == null) {
-    // Explicitly return the value null.
-    return null;
+    return null; // Explicitly return the value null.
   }
 
   if (isListType(type)) {
-    const itemType = type.ofType;
-    if (isIterableObject(inputValue)) {
-      return Array.from(inputValue, (itemValue, index) => {
-        const itemPath = addPath(path, index, undefined);
-        return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
-      });
+    if (!isIterableObject(inputValue)) {
+      // Lists accept a non-list value as a list of one.
+      const coercedItem = coerceInputValue(inputValue, type.ofType);
+      if (coercedItem === undefined) {
+        return; // Invalid: intentionally return no value.
+      }
+      return [coercedItem];
     }
-    // Lists accept a non-list value as a list of one.
-    return [coerceInputValueImpl(inputValue, itemType, onError, path)];
+    const coercedValue = [];
+    for (const itemValue of inputValue) {
+      const coercedItem = coerceInputValue(itemValue, type.ofType);
+      if (coercedItem === undefined) {
+        return; // Invalid: intentionally return no value.
+      }
+      coercedValue.push(coercedItem);
+    }
+    return coercedValue;
   }
 
   if (isInputObjectType(type)) {
     if (!isObjectLike(inputValue)) {
-      onError(
-        pathToArray(path),
-        inputValue,
-        new GraphQLError(`Expected type "${type}" to be an object.`),
-      );
-      return;
+      return; // Invalid: intentionally return no value.
     }
 
     const coercedValue: any = {};
     const fieldDefs = type.getFields();
-
+    const hasUndefinedField = Object.keys(inputValue).some(
+      (name) => !Object.hasOwn(fieldDefs, name),
+    );
+    if (hasUndefinedField) {
+      return; // Invalid: intentionally return no value.
+    }
     for (const field of Object.values(fieldDefs)) {
       const fieldValue = inputValue[field.name];
-
       if (fieldValue === undefined) {
+        if (isRequiredInputField(field)) {
+          return; // Invalid: intentionally return no value.
+        }
         if (field.defaultValue) {
           coercedValue[field.name] = coerceDefaultValue(
             field.defaultValue,
             field.type,
           );
-        } else if (isNonNullType(field.type)) {
-          const typeStr = inspect(field.type);
-          onError(
-            pathToArray(path),
-            inputValue,
-            new GraphQLError(
-              `Field "${type}.${field.name}" of required type "${typeStr}" was not provided.`,
-            ),
-          );
         }
-        continue;
-      }
-
-      coercedValue[field.name] = coerceInputValueImpl(
-        fieldValue,
-        field.type,
-        onError,
-        addPath(path, field.name, type.name),
-      );
-    }
-
-    // Ensure every provided field is defined.
-    for (const fieldName of Object.keys(inputValue)) {
-      if (fieldDefs[fieldName] == null) {
-        const suggestions = suggestionList(
-          fieldName,
-          Object.keys(type.getFields()),
-        );
-        onError(
-          pathToArray(path),
-          inputValue,
-          new GraphQLError(
-            `Field "${fieldName}" is not defined by type "${type}".` +
-              didYouMean(suggestions),
-          ),
-        );
+      } else {
+        const coercedField = coerceInputValue(fieldValue, field.type);
+        if (coercedField === undefined) {
+          return; // Invalid: intentionally return no value.
+        }
+        coercedValue[field.name] = coercedField;
       }
     }
 
     if (type.isOneOf) {
       const keys = Object.keys(coercedValue);
       if (keys.length !== 1) {
-        onError(
-          pathToArray(path),
-          inputValue,
-          new GraphQLError(
-            `Exactly one key must be specified for OneOf type "${type}".`,
-          ),
-        );
+        return; // Invalid: intentionally return no value.
       }
 
       const key = keys[0];
       const value = coercedValue[key];
       if (value === null) {
-        onError(
-          pathToArray(path).concat(key),
-          value,
-          new GraphQLError(`Field "${key}" must be non-null.`),
-        );
+        return; // Invalid: intentionally return no value.
       }
     }
 
     return coercedValue;
   }
 
-  if (isLeafType(type)) {
-    let parseResult;
+  const leafType = assertLeafType(type);
 
-    // Scalars and Enums determine if an input value is valid via parseValue(),
-    // which can throw to indicate failure. If it throws, maintain a reference
-    // to the original error.
-    try {
-      parseResult = type.parseValue(inputValue);
-    } catch (error) {
-      if (error instanceof GraphQLError) {
-        onError(pathToArray(path), inputValue, error);
-      } else {
-        onError(
-          pathToArray(path),
-          inputValue,
-          new GraphQLError(`Expected type "${type}". ` + error.message, {
-            originalError: error,
-          }),
-        );
-      }
-      return;
-    }
-    if (parseResult === undefined) {
-      onError(
-        pathToArray(path),
-        inputValue,
-        new GraphQLError(`Expected type "${type}".`),
-      );
-    }
-    return parseResult;
+  try {
+    return leafType.parseValue(inputValue);
+  } catch (_error) {
+    // Invalid: ignore error and intentionally return no value.
   }
-  /* c8 ignore next 3 */
-  // Not reachable, all possible types have been considered.
-  invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 
 /**
