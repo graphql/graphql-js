@@ -1,7 +1,5 @@
 import { describe, it } from 'mocha';
 
-import { inspect } from '../../jsutils/inspect';
-
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLScalarType, GraphQLObjectType } from '../../type/definition';
@@ -787,7 +785,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected value of type "Int!", found null.',
+          message: 'Expected value of non-null type Int! not to be null.',
           locations: [{ line: 4, column: 32 }],
         },
       ]);
@@ -879,7 +877,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Field "ComplexInput.requiredField" of required type "Boolean!" was not provided.',
+            'Expected value of type ComplexInput to include required field "requiredField", found: {intField: 4}.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -915,7 +913,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected value of type "Boolean!", found null.',
+          message: 'Expected value of non-null type Boolean! not to be null.',
           locations: [{ line: 6, column: 29 }],
         },
       ]);
@@ -934,7 +932,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Field "invalidField" is not defined by type "ComplexInput". Did you mean "intField"?',
+            'Expected value of type ComplexInput not to include unknown field "invalidField". Did you mean "intField"? Found: {requiredField: true, invalidField: "value"}.',
           locations: [{ line: 6, column: 15 }],
         },
       ]);
@@ -943,10 +941,8 @@ describe('Validate: Values of correct type', () => {
     it('reports original error for custom scalar which throws', () => {
       const customScalar = new GraphQLScalarType({
         name: 'Invalid',
-        parseValue(value) {
-          throw new Error(
-            `Invalid scalar is always invalid: ${inspect(value)}`,
-          );
+        parseValue() {
+          throw new Error('Invalid scalar is always invalid.');
         },
       });
 
@@ -970,14 +966,14 @@ describe('Validate: Values of correct type', () => {
       expectedErrors.to.deep.equal([
         {
           message:
-            'Expected value of type "Invalid", found 123; Invalid scalar is always invalid: 123',
+            'Expected value of type Invalid; Invalid scalar is always invalid. Found: 123.',
           locations: [{ line: 1, column: 19 }],
         },
       ]);
 
       expectedErrors.to.have.nested.property(
         '[0].originalError.message',
-        'Invalid scalar is always invalid: 123',
+        'Invalid scalar is always invalid.',
       );
     });
 
@@ -1003,7 +999,7 @@ describe('Validate: Values of correct type', () => {
 
       expectErrorsWithSchema(schema, '{ invalidArg(arg: 123) }').to.deep.equal([
         {
-          message: 'Expected value of type "CustomScalar", found 123.',
+          message: 'Expected value of type CustomScalar, found: 123.',
           locations: [{ line: 1, column: 19 }],
         },
       ]);
@@ -1108,15 +1104,15 @@ describe('Validate: Values of correct type', () => {
         }
       `).to.deep.equal([
         {
-          message: 'Expected value of type "Int!", found null.',
+          message: 'Expected value of non-null type Int! not to be null.',
           locations: [{ line: 3, column: 22 }],
         },
         {
-          message: 'Expected value of type "String!", found null.',
+          message: 'Expected value of non-null type String! not to be null.',
           locations: [{ line: 4, column: 25 }],
         },
         {
-          message: 'Expected value of type "Boolean!", found null.',
+          message: 'Expected value of non-null type Boolean! not to be null.',
           locations: [{ line: 5, column: 47 }],
         },
       ]);
@@ -1142,7 +1138,7 @@ describe('Validate: Values of correct type', () => {
         },
         {
           message:
-            'Expected value of type "ComplexInput", found "NotVeryComplex".',
+            'Expected value of type ComplexInput to be an object, found: "NotVeryComplex".',
           locations: [{ line: 5, column: 30 }],
         },
       ]);
@@ -1175,7 +1171,7 @@ describe('Validate: Values of correct type', () => {
       `).to.deep.equal([
         {
           message:
-            'Field "ComplexInput.requiredField" of required type "Boolean!" was not provided.',
+            'Expected value of type ComplexInput to include required field "requiredField", found: {intField: 3}.',
           locations: [{ line: 2, column: 55 }],
         },
       ]);
