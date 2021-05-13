@@ -55,7 +55,7 @@ import { execute } from './execution/execute';
  *    If not provided, the default type resolver is used (which looks for a
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
-export type GraphQLArgs = {|
+export type GraphQLArgs = {
   schema: GraphQLSchema,
   source: string | Source,
   rootValue?: mixed,
@@ -64,7 +64,7 @@ export type GraphQLArgs = {|
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
-|};
+};
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
   // Always return a Promise for a consistent API.

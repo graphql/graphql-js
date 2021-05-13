@@ -81,7 +81,7 @@ import {
 
 import { valueFromAST } from './valueFromAST';
 
-type Options = {|
+type Options = {
   ...GraphQLSchemaValidationOptions,
 
   /**
@@ -90,7 +90,7 @@ type Options = {|
    * Default: false
    */
   assumeValidSDL?: boolean,
-|};
+};
 
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -393,11 +393,11 @@ export function extendSchemaImpl(
 
   function getOperationTypes(
     nodes: $ReadOnlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
-  ): {|
+  ): {
     query: ?GraphQLObjectType,
     mutation: ?GraphQLObjectType,
     subscription: ?GraphQLObjectType,
-  |} {
+  } {
     const opTypes = {};
     for (const node of nodes) {
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')

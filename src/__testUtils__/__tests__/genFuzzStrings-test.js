@@ -3,10 +3,10 @@ import { describe, it } from 'mocha';
 
 import { genFuzzStrings } from '../genFuzzStrings';
 
-function expectFuzzStrings(options: {|
+function expectFuzzStrings(options: {
   allowedChars: Array<string>,
   maxLength: number,
-|}) {
+}) {
   return expect([...genFuzzStrings(options)]);
 }
 

@@ -14,7 +14,7 @@ import { specifiedDirectives } from '../type/directives';
 
 import { extendSchemaImpl } from './extendSchema';
 
-export type BuildSchemaOptions = {|
+export type BuildSchemaOptions = {
   ...GraphQLSchemaValidationOptions,
 
   /**
@@ -23,7 +23,7 @@ export type BuildSchemaOptions = {|
    * Default: false
    */
   assumeValidSDL?: boolean,
-|};
+};
 
 /**
  * This takes the ast of a schema document produced by the parse function in
@@ -97,7 +97,7 @@ export function buildASTSchema(
  */
 export function buildSchema(
   source: string | Source,
-  options?: {| ...BuildSchemaOptions, ...ParseOptions |},
+  options?: { ...BuildSchemaOptions, ...ParseOptions },
 ): GraphQLSchema {
   const document = parse(source, {
     noLocation: options?.noLocation,

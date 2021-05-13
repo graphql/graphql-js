@@ -129,10 +129,10 @@ export class GraphQLSchema {
   _directives: $ReadOnlyArray<GraphQLDirective>;
   _typeMap: TypeMap;
   _subTypeMap: ObjMap<ObjMap<boolean>>;
-  _implementationsMap: ObjMap<{|
+  _implementationsMap: ObjMap<{
     objects: Array<GraphQLObjectType>,
     interfaces: Array<GraphQLInterfaceType>,
-  |}>;
+  }>;
 
   // Used as a cache for validateSchema().
   __validationErrors: ?$ReadOnlyArray<GraphQLError>;
@@ -284,10 +284,10 @@ export class GraphQLSchema {
 
   getImplementations(
     interfaceType: GraphQLInterfaceType,
-  ): {|
+  ): {
     objects: /* $ReadOnly */ Array<GraphQLObjectType>,
     interfaces: /* $ReadOnly */ Array<GraphQLInterfaceType>,
-  |} {
+  } {
     const implementations = this._implementationsMap[interfaceType.name];
     return implementations ?? { objects: [], interfaces: [] };
   }
@@ -350,7 +350,7 @@ export class GraphQLSchema {
 
 type TypeMap = ObjMap<GraphQLNamedType>;
 
-export type GraphQLSchemaValidationOptions = {|
+export type GraphQLSchemaValidationOptions = {
   /**
    * When building a schema from a GraphQL service's introspection result, it
    * might be safe to assume the schema is valid. Set to true to assume the
@@ -359,9 +359,9 @@ export type GraphQLSchemaValidationOptions = {|
    * Default: false
    */
   assumeValid?: boolean,
-|};
+};
 
-export type GraphQLSchemaConfig = {|
+export type GraphQLSchemaConfig = {
   description?: ?string,
   query?: ?GraphQLObjectType,
   mutation?: ?GraphQLObjectType,
@@ -372,12 +372,12 @@ export type GraphQLSchemaConfig = {|
   astNode?: ?SchemaDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
   ...GraphQLSchemaValidationOptions,
-|};
+};
 
 /**
  * @internal
  */
-export type GraphQLSchemaNormalizedConfig = {|
+export type GraphQLSchemaNormalizedConfig = {
   ...GraphQLSchemaConfig,
   description: ?string,
   types: Array<GraphQLNamedType>,
@@ -385,7 +385,7 @@ export type GraphQLSchemaNormalizedConfig = {|
   extensions: ?ReadOnlyObjMap<mixed>,
   extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>,
   assumeValid: boolean,
-|};
+};
 
 function collectReferencedTypes(
   type: GraphQLType,

@@ -39,7 +39,7 @@ export class Location {
     this.source = source;
   }
 
-  toJSON(): {| start: number, end: number |} {
+  toJSON(): { start: number, end: number } {
     return { start: this.start, end: this.end };
   }
 }
@@ -106,12 +106,12 @@ export class Token {
     this.next = null;
   }
 
-  toJSON(): {|
+  toJSON(): {
     kind: TokenKindEnum,
     value: string | void,
     line: number,
     column: number,
-  |} {
+  } {
     return {
       kind: this.kind,
       value: this.value,
@@ -179,7 +179,7 @@ export type ASTNode =
 /**
  * Utility type listing all nodes indexed by their kind.
  */
-export type ASTKindToNode = {|
+export type ASTKindToNode = {
   Name: NameNode,
   Document: DocumentNode,
   OperationDefinition: OperationDefinitionNode,
@@ -223,23 +223,23 @@ export type ASTKindToNode = {|
   UnionTypeExtension: UnionTypeExtensionNode,
   EnumTypeExtension: EnumTypeExtensionNode,
   InputObjectTypeExtension: InputObjectTypeExtensionNode,
-|};
+};
 
 // Name
 
-export type NameNode = {|
+export type NameNode = {
   +kind: 'Name',
   +loc?: Location,
   +value: string,
-|};
+};
 
 // Document
 
-export type DocumentNode = {|
+export type DocumentNode = {
   +kind: 'Document',
   +loc?: Location,
   +definitions: $ReadOnlyArray<DefinitionNode>,
-|};
+};
 
 export type DefinitionNode =
   | ExecutableDefinitionNode
@@ -250,7 +250,7 @@ export type ExecutableDefinitionNode =
   | OperationDefinitionNode
   | FragmentDefinitionNode;
 
-export type OperationDefinitionNode = {|
+export type OperationDefinitionNode = {
   +kind: 'OperationDefinition',
   +loc?: Location,
   +operation: OperationTypeNode,
@@ -258,34 +258,34 @@ export type OperationDefinitionNode = {|
   +variableDefinitions?: $ReadOnlyArray<VariableDefinitionNode>,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet: SelectionSetNode,
-|};
+};
 
 export type OperationTypeNode = 'query' | 'mutation' | 'subscription';
 
-export type VariableDefinitionNode = {|
+export type VariableDefinitionNode = {
   +kind: 'VariableDefinition',
   +loc?: Location,
   +variable: VariableNode,
   +type: TypeNode,
   +defaultValue?: ConstValueNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
-|};
+};
 
-export type VariableNode = {|
+export type VariableNode = {
   +kind: 'Variable',
   +loc?: Location,
   +name: NameNode,
-|};
+};
 
-export type SelectionSetNode = {|
+export type SelectionSetNode = {
   kind: 'SelectionSet',
   loc?: Location,
   selections: $ReadOnlyArray<SelectionNode>,
-|};
+};
 
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
-export type FieldNode = {|
+export type FieldNode = {
   +kind: 'Field',
   +loc?: Location,
   +alias?: NameNode,
@@ -293,40 +293,40 @@ export type FieldNode = {|
   +arguments?: $ReadOnlyArray<ArgumentNode>,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet?: SelectionSetNode,
-|};
+};
 
-export type ArgumentNode = {|
+export type ArgumentNode = {
   +kind: 'Argument',
   +loc?: Location,
   +name: NameNode,
   +value: ValueNode,
-|};
+};
 
-export type ConstArgumentNode = {|
+export type ConstArgumentNode = {
   +kind: 'Argument',
   +loc?: Location,
   +name: NameNode,
   +value: ConstValueNode,
-|};
+};
 
 // Fragments
 
-export type FragmentSpreadNode = {|
+export type FragmentSpreadNode = {
   +kind: 'FragmentSpread',
   +loc?: Location,
   +name: NameNode,
   +directives?: $ReadOnlyArray<DirectiveNode>,
-|};
+};
 
-export type InlineFragmentNode = {|
+export type InlineFragmentNode = {
   +kind: 'InlineFragment',
   +loc?: Location,
   +typeCondition?: NamedTypeNode,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet: SelectionSetNode,
-|};
+};
 
-export type FragmentDefinitionNode = {|
+export type FragmentDefinitionNode = {
   +kind: 'FragmentDefinition',
   +loc?: Location,
   +name: NameNode,
@@ -335,7 +335,7 @@ export type FragmentDefinitionNode = {|
   +typeCondition: NamedTypeNode,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet: SelectionSetNode,
-|};
+};
 
 // Values
 
@@ -360,117 +360,117 @@ export type ConstValueNode =
   | ConstListValueNode
   | ConstObjectValueNode;
 
-export type IntValueNode = {|
+export type IntValueNode = {
   +kind: 'IntValue',
   +loc?: Location,
   +value: string,
-|};
+};
 
-export type FloatValueNode = {|
+export type FloatValueNode = {
   +kind: 'FloatValue',
   +loc?: Location,
   +value: string,
-|};
+};
 
-export type StringValueNode = {|
+export type StringValueNode = {
   +kind: 'StringValue',
   +loc?: Location,
   +value: string,
   +block?: boolean,
-|};
+};
 
-export type BooleanValueNode = {|
+export type BooleanValueNode = {
   +kind: 'BooleanValue',
   +loc?: Location,
   +value: boolean,
-|};
+};
 
-export type NullValueNode = {|
+export type NullValueNode = {
   +kind: 'NullValue',
   +loc?: Location,
-|};
+};
 
-export type EnumValueNode = {|
+export type EnumValueNode = {
   +kind: 'EnumValue',
   +loc?: Location,
   +value: string,
-|};
+};
 
-export type ListValueNode = {|
+export type ListValueNode = {
   +kind: 'ListValue',
   +loc?: Location,
   +values: $ReadOnlyArray<ValueNode>,
-|};
+};
 
-export type ConstListValueNode = {|
+export type ConstListValueNode = {
   +kind: 'ListValue',
   +loc?: Location,
   +values: $ReadOnlyArray<ConstValueNode>,
-|};
+};
 
-export type ObjectValueNode = {|
+export type ObjectValueNode = {
   +kind: 'ObjectValue',
   +loc?: Location,
   +fields: $ReadOnlyArray<ObjectFieldNode>,
-|};
+};
 
-export type ConstObjectValueNode = {|
+export type ConstObjectValueNode = {
   +kind: 'ObjectValue',
   +loc?: Location,
   +fields: $ReadOnlyArray<ConstObjectFieldNode>,
-|};
+};
 
-export type ObjectFieldNode = {|
+export type ObjectFieldNode = {
   +kind: 'ObjectField',
   +loc?: Location,
   +name: NameNode,
   +value: ValueNode,
-|};
+};
 
-export type ConstObjectFieldNode = {|
+export type ConstObjectFieldNode = {
   +kind: 'ObjectField',
   +loc?: Location,
   +name: NameNode,
   +value: ConstValueNode,
-|};
+};
 
 // Directives
 
-export type DirectiveNode = {|
+export type DirectiveNode = {
   +kind: 'Directive',
   +loc?: Location,
   +name: NameNode,
   +arguments?: $ReadOnlyArray<ArgumentNode>,
-|};
+};
 
-export type ConstDirectiveNode = {|
+export type ConstDirectiveNode = {
   +kind: 'Directive',
   +loc?: Location,
   +name: NameNode,
   +arguments?: $ReadOnlyArray<ConstArgumentNode>,
-|};
+};
 
 // Type Reference
 
 export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
 
-export type NamedTypeNode = {|
+export type NamedTypeNode = {
   +kind: 'NamedType',
   +loc?: Location,
   +name: NameNode,
-|};
+};
 
-export type ListTypeNode = {|
+export type ListTypeNode = {
   +kind: 'ListType',
   +loc?: Location,
   +type: TypeNode,
-|};
+};
 
-export type NonNullTypeNode = {|
+export type NonNullTypeNode = {
   +kind: 'NonNullType',
   +loc?: Location,
   +type: NamedTypeNode | ListTypeNode,
-|};
+};
 
 // Type System Definition
 
@@ -479,20 +479,20 @@ export type TypeSystemDefinitionNode =
   | TypeDefinitionNode
   | DirectiveDefinitionNode;
 
-export type SchemaDefinitionNode = {|
+export type SchemaDefinitionNode = {
   +kind: 'SchemaDefinition',
   +loc?: Location,
   +description?: StringValueNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +operationTypes: $ReadOnlyArray<OperationTypeDefinitionNode>,
-|};
+};
 
-export type OperationTypeDefinitionNode = {|
+export type OperationTypeDefinitionNode = {
   +kind: 'OperationTypeDefinition',
   +loc?: Location,
   +operation: OperationTypeNode,
   +type: NamedTypeNode,
-|};
+};
 
 // Type Definition
 
@@ -504,15 +504,15 @@ export type TypeDefinitionNode =
   | EnumTypeDefinitionNode
   | InputObjectTypeDefinitionNode;
 
-export type ScalarTypeDefinitionNode = {|
+export type ScalarTypeDefinitionNode = {
   +kind: 'ScalarTypeDefinition',
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
-|};
+};
 
-export type ObjectTypeDefinitionNode = {|
+export type ObjectTypeDefinitionNode = {
   +kind: 'ObjectTypeDefinition',
   +loc?: Location,
   +description?: StringValueNode,
@@ -520,9 +520,9 @@ export type ObjectTypeDefinitionNode = {|
   +interfaces?: $ReadOnlyArray<NamedTypeNode>,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +fields?: $ReadOnlyArray<FieldDefinitionNode>,
-|};
+};
 
-export type FieldDefinitionNode = {|
+export type FieldDefinitionNode = {
   +kind: 'FieldDefinition',
   +loc?: Location,
   +description?: StringValueNode,
@@ -530,9 +530,9 @@ export type FieldDefinitionNode = {|
   +arguments?: $ReadOnlyArray<InputValueDefinitionNode>,
   +type: TypeNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
-|};
+};
 
-export type InputValueDefinitionNode = {|
+export type InputValueDefinitionNode = {
   +kind: 'InputValueDefinition',
   +loc?: Location,
   +description?: StringValueNode,
@@ -540,9 +540,9 @@ export type InputValueDefinitionNode = {|
   +type: TypeNode,
   +defaultValue?: ConstValueNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
-|};
+};
 
-export type InterfaceTypeDefinitionNode = {|
+export type InterfaceTypeDefinitionNode = {
   +kind: 'InterfaceTypeDefinition',
   +loc?: Location,
   +description?: StringValueNode,
@@ -550,46 +550,46 @@ export type InterfaceTypeDefinitionNode = {|
   +interfaces?: $ReadOnlyArray<NamedTypeNode>,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +fields?: $ReadOnlyArray<FieldDefinitionNode>,
-|};
+};
 
-export type UnionTypeDefinitionNode = {|
+export type UnionTypeDefinitionNode = {
   +kind: 'UnionTypeDefinition',
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +types?: $ReadOnlyArray<NamedTypeNode>,
-|};
+};
 
-export type EnumTypeDefinitionNode = {|
+export type EnumTypeDefinitionNode = {
   +kind: 'EnumTypeDefinition',
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +values?: $ReadOnlyArray<EnumValueDefinitionNode>,
-|};
+};
 
-export type EnumValueDefinitionNode = {|
+export type EnumValueDefinitionNode = {
   +kind: 'EnumValueDefinition',
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
-|};
+};
 
-export type InputObjectTypeDefinitionNode = {|
+export type InputObjectTypeDefinitionNode = {
   +kind: 'InputObjectTypeDefinition',
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +fields?: $ReadOnlyArray<InputValueDefinitionNode>,
-|};
+};
 
 // Directive Definitions
 
-export type DirectiveDefinitionNode = {|
+export type DirectiveDefinitionNode = {
   +kind: 'DirectiveDefinition',
   +loc?: Location,
   +description?: StringValueNode,
@@ -597,18 +597,18 @@ export type DirectiveDefinitionNode = {|
   +arguments?: $ReadOnlyArray<InputValueDefinitionNode>,
   +repeatable: boolean,
   +locations: $ReadOnlyArray<NameNode>,
-|};
+};
 
 // Type System Extensions
 
 export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 
-export type SchemaExtensionNode = {|
+export type SchemaExtensionNode = {
   +kind: 'SchemaExtension',
   +loc?: Location,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +operationTypes?: $ReadOnlyArray<OperationTypeDefinitionNode>,
-|};
+};
 
 // Type Extensions
 
@@ -620,51 +620,51 @@ export type TypeExtensionNode =
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode;
 
-export type ScalarTypeExtensionNode = {|
+export type ScalarTypeExtensionNode = {
   +kind: 'ScalarTypeExtension',
   +loc?: Location,
   +name: NameNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
-|};
+};
 
-export type ObjectTypeExtensionNode = {|
+export type ObjectTypeExtensionNode = {
   +kind: 'ObjectTypeExtension',
   +loc?: Location,
   +name: NameNode,
   +interfaces?: $ReadOnlyArray<NamedTypeNode>,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +fields?: $ReadOnlyArray<FieldDefinitionNode>,
-|};
+};
 
-export type InterfaceTypeExtensionNode = {|
+export type InterfaceTypeExtensionNode = {
   +kind: 'InterfaceTypeExtension',
   +loc?: Location,
   +name: NameNode,
   +interfaces?: $ReadOnlyArray<NamedTypeNode>,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +fields?: $ReadOnlyArray<FieldDefinitionNode>,
-|};
+};
 
-export type UnionTypeExtensionNode = {|
+export type UnionTypeExtensionNode = {
   +kind: 'UnionTypeExtension',
   +loc?: Location,
   +name: NameNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +types?: $ReadOnlyArray<NamedTypeNode>,
-|};
+};
 
-export type EnumTypeExtensionNode = {|
+export type EnumTypeExtensionNode = {
   +kind: 'EnumTypeExtension',
   +loc?: Location,
   +name: NameNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +values?: $ReadOnlyArray<EnumValueDefinitionNode>,
-|};
+};
 
-export type InputObjectTypeExtensionNode = {|
+export type InputObjectTypeExtensionNode = {
   +kind: 'InputObjectTypeExtension',
   +loc?: Location,
   +name: NameNode,
   +directives?: $ReadOnlyArray<ConstDirectiveNode>,
   +fields?: $ReadOnlyArray<InputValueDefinitionNode>,
-|};
+};
