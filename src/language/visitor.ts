@@ -126,7 +126,7 @@ const QueryDocumentKeys = {
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
 
-export const BREAK: { ... } = Object.freeze({});
+export const BREAK = Object.freeze({});
 
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
