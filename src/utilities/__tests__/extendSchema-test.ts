@@ -42,7 +42,7 @@ function expectExtensionASTNodes(obj: {
   return expect(obj.extensionASTNodes.map(print).join('\n\n'));
 }
 
-function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode>; }>) {
+function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
   invariant(obj?.astNode != null);
   return expect(print(obj.astNode));
 }

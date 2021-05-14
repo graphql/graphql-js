@@ -360,27 +360,27 @@ export type GraphQLSchemaValidationOptions = {
 };
 
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
-  description?: Maybe<string>,
-  query?: Maybe<GraphQLObjectType>,
-  mutation?: Maybe<GraphQLObjectType>,
-  subscription?: Maybe<GraphQLObjectType>,
-  types?: Maybe<Array<GraphQLNamedType>>,
-  directives?: Maybe<Array<GraphQLDirective>>,
-  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>,
-  astNode?: Maybe<SchemaDefinitionNode>,
-  extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>,
+  description?: Maybe<string>;
+  query?: Maybe<GraphQLObjectType>;
+  mutation?: Maybe<GraphQLObjectType>;
+  subscription?: Maybe<GraphQLObjectType>;
+  types?: Maybe<Array<GraphQLNamedType>>;
+  directives?: Maybe<Array<GraphQLDirective>>;
+  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>;
+  astNode?: Maybe<SchemaDefinitionNode>;
+  extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 }
 
 /**
  * @internal
  */
 export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
-  description: Maybe<string>,
-  types: Array<GraphQLNamedType>,
-  directives: Array<GraphQLDirective>,
-  extensions: Maybe<ReadOnlyObjMap<unknown>>,
-  extensionASTNodes: ReadonlyArray<SchemaExtensionNode>,
-  assumeValid: boolean,
+  description: Maybe<string>;
+  types: Array<GraphQLNamedType>;
+  directives: Array<GraphQLDirective>;
+  extensions: Maybe<ReadOnlyObjMap<unknown>>;
+  extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
+  assumeValid: boolean;
 }
 
 function collectReferencedTypes(

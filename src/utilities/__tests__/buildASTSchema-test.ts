@@ -51,7 +51,7 @@ function cycleSDL(sdl: string): string {
   return printSchema(buildSchema(sdl));
 }
 
-function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode>; }>) {
+function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
   invariant(obj?.astNode != null);
   return expect(print(obj.astNode));
 }

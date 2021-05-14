@@ -24,7 +24,10 @@ type CoerceResult = {
   }>;
 };
 
-function coerceValue(inputValue: unknown, type: GraphQLInputType): CoerceResult {
+function coerceValue(
+  inputValue: unknown,
+  type: GraphQLInputType,
+): CoerceResult {
   const errors = [];
   const value = coerceInputValue(
     inputValue,

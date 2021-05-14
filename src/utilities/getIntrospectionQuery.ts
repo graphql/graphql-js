@@ -155,8 +155,12 @@ export type IntrospectionQuery = {
 export type IntrospectionSchema = {
   readonly description?: Maybe<string>;
   readonly queryType: IntrospectionNamedTypeRef<IntrospectionObjectType>;
-  readonly mutationType: Maybe<IntrospectionNamedTypeRef<IntrospectionObjectType>>;
-  readonly subscriptionType: Maybe<IntrospectionNamedTypeRef<IntrospectionObjectType>>;
+  readonly mutationType: Maybe<
+    IntrospectionNamedTypeRef<IntrospectionObjectType>
+  >;
+  readonly subscriptionType: Maybe<
+    IntrospectionNamedTypeRef<IntrospectionObjectType>
+  >;
   readonly types: ReadonlyArray<IntrospectionType>;
   readonly directives: ReadonlyArray<IntrospectionDirective>;
 };
@@ -194,7 +198,7 @@ export type IntrospectionObjectType = {
   readonly description?: Maybe<string>;
   readonly fields: ReadonlyArray<IntrospectionField>;
   readonly interfaces: ReadonlyArray<
-    IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
+    IntrospectionNamedTypeRef<IntrospectionInterfaceType>
   >;
 };
 
@@ -204,10 +208,10 @@ export type IntrospectionInterfaceType = {
   readonly description?: Maybe<string>;
   readonly fields: ReadonlyArray<IntrospectionField>;
   readonly interfaces: ReadonlyArray<
-    IntrospectionNamedTypeRef<IntrospectionInterfaceType>,
+    IntrospectionNamedTypeRef<IntrospectionInterfaceType>
   >;
   readonly possibleTypes: ReadonlyArray<
-    IntrospectionNamedTypeRef<IntrospectionObjectType>,
+    IntrospectionNamedTypeRef<IntrospectionObjectType>
   >;
 };
 
@@ -216,7 +220,7 @@ export type IntrospectionUnionType = {
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly possibleTypes: ReadonlyArray<
-    IntrospectionNamedTypeRef<IntrospectionObjectType>,
+    IntrospectionNamedTypeRef<IntrospectionObjectType>
   >;
 };
 
@@ -268,7 +272,7 @@ export type IntrospectionInputTypeRef =
   | IntrospectionListTypeRef<IntrospectionInputTypeRef>
   | IntrospectionNonNullTypeRef<
       | IntrospectionNamedTypeRef<IntrospectionInputType>
-      | IntrospectionListTypeRef<IntrospectionInputTypeRef>,
+      | IntrospectionListTypeRef<IntrospectionInputTypeRef>
     >;
 
 export type IntrospectionNamedTypeRef<

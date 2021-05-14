@@ -29,7 +29,7 @@ export type GraphQLFormattedError = {
    * from occurrence to occurrence of the problem, except for purposes of
    * localization.
    */
-   readonly message: string;
+  readonly message: string;
   /**
    * If an error can be associated to a particular point in the requested
    * GraphQL document, it should contain a list of locations.
@@ -46,5 +46,5 @@ export type GraphQLFormattedError = {
    * Reserved for implementors to extend the protocol however they see fit,
    * and hence there are no additional restrictions on its contents.
    */
-  readonly extensions?: { [key: string]: unknown; };
+  readonly extensions?: { [key: string]: unknown };
 };
