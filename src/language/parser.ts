@@ -1334,7 +1334,7 @@ export class Parser {
    * location object, used to identify the place in the source that created a
    * given parsed object.
    */
-  node<T: { loc?: Location; ... }>(startToken: Token, node: T): T {
+  node<T extends { loc?: Location }>(startToken: Token, node: T): T {
     if (this._options?.noLocation !== true) {
       node.loc = new Location(
         startToken,
