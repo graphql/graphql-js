@@ -372,7 +372,7 @@ export function getVisitFn(
   visitor: ASTVisitor,
   kind: string,
   isLeaving: boolean,
-  ): Maybe<ASTVisitFn<ASTNode>> {
+): Maybe<ASTVisitFn<ASTNode>> {
   const kindVisitor = visitor[kind];
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {
