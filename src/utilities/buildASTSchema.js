@@ -15,14 +15,14 @@ import { specifiedDirectives } from '../type/directives';
 import { extendSchemaImpl } from './extendSchema';
 
 export type BuildSchemaOptions = {
-  ...GraphQLSchemaValidationOptions,
+  ...GraphQLSchemaValidationOptions;
 
   /**
    * Set to true to assume the SDL is valid.
    *
    * Default: false
    */
-  assumeValidSDL?: boolean,
+  assumeValidSDL?: boolean;
 };
 
 /**
@@ -97,7 +97,7 @@ export function buildASTSchema(
  */
 export function buildSchema(
   source: string | Source,
-  options?: { ...BuildSchemaOptions, ...ParseOptions },
+  options?: { ...BuildSchemaOptions; ...ParseOptions },
 ): GraphQLSchema {
   const document = parse(source, {
     noLocation: options?.noLocation,

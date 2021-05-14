@@ -103,20 +103,20 @@ export class GraphQLDirective {
 }
 
 export type GraphQLDirectiveConfig = {
-  name: string,
-  description?: ?string,
-  locations: Array<DirectiveLocationEnum>,
-  args?: ?GraphQLFieldConfigArgumentMap,
-  isRepeatable?: ?boolean,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?DirectiveDefinitionNode,
+  name: string;
+  description?: ?string;
+  locations: Array<DirectiveLocationEnum>;
+  args?: ?GraphQLFieldConfigArgumentMap;
+  isRepeatable?: ?boolean;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?DirectiveDefinitionNode;
 };
 
 type GraphQLDirectiveNormalizedConfig = {
-  ...GraphQLDirectiveConfig,
-  args: GraphQLFieldConfigArgumentMap,
-  isRepeatable: boolean,
-  extensions: ?ReadOnlyObjMap<mixed>,
+  ...GraphQLDirectiveConfig;
+  args: GraphQLFieldConfigArgumentMap;
+  isRepeatable: boolean;
+  extensions: ?ReadOnlyObjMap<mixed>;
 };
 
 /**

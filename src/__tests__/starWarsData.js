@@ -3,29 +3,29 @@
  * They represent the shape of the data visited during field resolution.
  */
 export type Character = {
-  id: string,
-  name: string,
-  friends: Array<string>,
-  appearsIn: Array<number>,
+  id: string;
+  name: string;
+  friends: Array<string>;
+  appearsIn: Array<number>;
   ...
 };
 
 export type Human = {
-  type: 'Human',
-  id: string,
-  name: string,
-  friends: Array<string>,
-  appearsIn: Array<number>,
-  homePlanet?: string,
+  type: 'Human';
+  id: string;
+  name: string;
+  friends: Array<string>;
+  appearsIn: Array<number>;
+  homePlanet?: string;
 };
 
 export type Droid = {
-  type: 'Droid',
-  id: string,
-  name: string,
-  friends: Array<string>,
-  appearsIn: Array<number>,
-  primaryFunction: string,
+  type: 'Droid';
+  id: string;
+  name: string;
+  friends: Array<string>;
+  appearsIn: Array<number>;
+  primaryFunction: string;
 };
 
 /**

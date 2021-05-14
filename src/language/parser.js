@@ -67,7 +67,7 @@ export type ParseOptions = {
    * in the source that they correspond to. This configuration flag
    * disables that behavior for performance or testing.
    */
-  noLocation?: boolean,
+  noLocation?: boolean;
 
   /**
    * @deprecated will be removed in the v17.0.0
@@ -83,7 +83,7 @@ export type ParseOptions = {
    *   }
    *
    */
-  allowLegacyFragmentVariables?: boolean,
+  allowLegacyFragmentVariables?: boolean;
 };
 
 /**
@@ -1332,7 +1332,7 @@ export class Parser {
    * location object, used to identify the place in the source that created a
    * given parsed object.
    */
-  node<T: { loc?: Location, ... }>(startToken: Token, node: T): T {
+  node<T: { loc?: Location; ... }>(startToken: Token, node: T): T {
     if (this._options?.noLocation !== true) {
       node.loc = new Location(
         startToken,

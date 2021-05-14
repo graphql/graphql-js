@@ -30,9 +30,9 @@ import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 type VariableUsage = {
-  +node: VariableNode,
-  +type: ?GraphQLInputType,
-  +defaultValue: ?mixed,
+  +node: VariableNode;
+  +type: ?GraphQLInputType;
+  +defaultValue: ?mixed;
 };
 
 /**

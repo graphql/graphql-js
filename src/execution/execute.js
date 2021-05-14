@@ -93,15 +93,15 @@ import {
  * and the fragments defined in the query document
  */
 export type ExecutionContext = {
-  schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
-  rootValue: mixed,
-  contextValue: mixed,
-  operation: OperationDefinitionNode,
-  variableValues: { [variable: string]: mixed, ... },
-  fieldResolver: GraphQLFieldResolver<any, any>,
-  typeResolver: GraphQLTypeResolver<any, any>,
-  errors: Array<GraphQLError>,
+  schema: GraphQLSchema;
+  fragments: ObjMap<FragmentDefinitionNode>;
+  rootValue: mixed;
+  contextValue: mixed;
+  operation: OperationDefinitionNode;
+  variableValues: { [variable: string]: mixed; ... };
+  fieldResolver: GraphQLFieldResolver<any, any>;
+  typeResolver: GraphQLTypeResolver<any, any>;
+  errors: Array<GraphQLError>;
 };
 
 /**
@@ -112,26 +112,26 @@ export type ExecutionContext = {
  *   - `extensions` is reserved for adding non-standard properties.
  */
 export type ExecutionResult = {
-  errors?: $ReadOnlyArray<GraphQLError>,
-  data?: ObjMap<mixed> | null,
-  extensions?: ObjMap<mixed>,
+  errors?: $ReadOnlyArray<GraphQLError>;
+  data?: ObjMap<mixed> | null;
+  extensions?: ObjMap<mixed>;
 };
 
 export type FormattedExecutionResult = {
-  errors?: $ReadOnlyArray<GraphQLFormattedError>,
-  data?: ObjMap<mixed> | null,
-  extensions?: ObjMap<mixed>,
+  errors?: $ReadOnlyArray<GraphQLFormattedError>;
+  data?: ObjMap<mixed> | null;
+  extensions?: ObjMap<mixed>;
 };
 
 export type ExecutionArgs = {
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  typeResolver?: ?GraphQLTypeResolver<any, any>,
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  rootValue?: mixed;
+  contextValue?: mixed;
+  variableValues?: ?{ +[variable: string]: mixed; ... };
+  operationName?: ?string;
+  fieldResolver?: ?GraphQLFieldResolver<any, any>;
+  typeResolver?: ?GraphQLTypeResolver<any, any>;
 };
 
 /**
@@ -229,7 +229,7 @@ function buildResponse(
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: ?{ +[variable: string]: mixed, ... },
+  rawVariableValues: ?{ +[variable: string]: mixed; ... },
 ): void {
   devAssert(document, 'Must provide document.');
 
@@ -256,7 +256,7 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: mixed,
   contextValue: mixed,
-  rawVariableValues: ?{ +[variable: string]: mixed, ... },
+  rawVariableValues: ?{ +[variable: string]: mixed; ... },
   operationName: ?string,
   fieldResolver: ?GraphQLFieldResolver<mixed, mixed>,
   typeResolver?: ?GraphQLTypeResolver<mixed, mixed>,

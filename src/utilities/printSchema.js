@@ -298,7 +298,7 @@ function printSpecifiedByURL(scalar: GraphQLScalarType): string {
 }
 
 function printDescription(
-  def: { +description: ?string, ... },
+  def: { +description: ?string; ... },
   indentation: string = '',
   firstInBlock: boolean = true,
 ): string {
