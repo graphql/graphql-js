@@ -1,8 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { invariant } from '../../jsutils/invariant';
-
 import type { GraphQLInputType } from '../../type/definition';
 import { GraphQLInt } from '../../type/scalars';
 import {
@@ -15,16 +13,19 @@ import {
 
 import { coerceInputValue } from '../coerceInputValue';
 
-type CoerceResult = {
-  value: mixed,
-  errors: $ReadOnlyArray<{
-    path: $ReadOnlyArray<string | number>,
-    value: mixed,
-    error: string,
-  }>,
-};
+interface CoerceResult {
+  value: unknown;
+  errors: ReadonlyArray<{
+    path: ReadonlyArray<string | number>;
+    value: unknown;
+    error: string;
+  }>;
+}
 
-function coerceValue(inputValue: mixed, type: GraphQLInputType): CoerceResult {
+function coerceValue(
+  inputValue: unknown,
+  type: GraphQLInputType,
+): CoerceResult {
   const errors = [];
   const value = coerceInputValue(
     inputValue,
@@ -81,8 +82,7 @@ describe('coerceInputValue', () => {
   describe('for GraphQLScalar', () => {
     const TestScalar = new GraphQLScalarType({
       name: 'TestScalar',
-      parseValue(input) {
-        invariant(typeof input === 'object' && input !== null);
+      parseValue(input: { error?: string; value?: unknown }) {
         if (input.error != null) {
           throw new Error(input.error);
         }

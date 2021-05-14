@@ -53,7 +53,7 @@ describe('typeComparators', () => {
   });
 
   describe('isTypeSubTypeOf', () => {
-    function testSchema(fields: GraphQLFieldConfigMap<mixed, mixed>) {
+    function testSchema(fields: GraphQLFieldConfigMap<unknown, unknown>) {
       return new GraphQLSchema({
         query: new GraphQLObjectType({
           name: 'Query',

@@ -72,7 +72,7 @@ const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(
   (type) => type.name,
 );
 
-function isSDLNode(value: ASTNode | $ReadOnlyArray<ASTNode>): boolean {
+function isSDLNode(value: ASTNode | ReadonlyArray<ASTNode>): boolean {
   return (
     !Array.isArray(value) &&
     (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value))

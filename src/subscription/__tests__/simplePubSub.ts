@@ -3,7 +3,7 @@
  * PubSub system for tests.
  */
 export class SimplePubSub<T> {
-  _subscribers: Set<(value: T) => void>;
+  private _subscribers: Set<(value: T) => void>;
 
   constructor() {
     this._subscribers = new Set();
@@ -47,7 +47,7 @@ export class SimplePubSub<T> {
         emptyQueue();
         return Promise.resolve({ value: undefined, done: true });
       },
-      throw(error: mixed) {
+      throw(error: unknown) {
         emptyQueue();
         return Promise.reject(error);
       },

@@ -6,7 +6,7 @@ import { naturalCompare } from './naturalCompare';
  */
 export function suggestionList(
   input: string,
-  options: $ReadOnlyArray<string>,
+  options: ReadonlyArray<string>,
 ): Array<string> {
   const optionsByDistance = Object.create(null);
   const lexicalDistance = new LexicalDistance(input);
@@ -57,7 +57,7 @@ class LexicalDistance {
     ];
   }
 
-  measure(option: string, threshold: number): number | void {
+  measure(option: string, threshold: number): number | undefined {
     if (this._input === option) {
       return 0;
     }

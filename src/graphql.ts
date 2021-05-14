@@ -1,5 +1,6 @@
 import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 import { isPromise } from './jsutils/isPromise';
+import type { Maybe } from './jsutils/Maybe';
 
 import type { Source } from './language/source';
 import { parse } from './language/parser';
@@ -55,16 +56,16 @@ import { execute } from './execution/execute';
  *    If not provided, the default type resolver is used (which looks for a
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
-export type GraphQLArgs = {
-  schema: GraphQLSchema,
-  source: string | Source,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  typeResolver?: ?GraphQLTypeResolver<any, any>,
-};
+export interface GraphQLArgs {
+  schema: GraphQLSchema;
+  source: string | Source;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+}
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
   // Always return a Promise for a consistent API.

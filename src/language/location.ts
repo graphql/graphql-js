@@ -5,10 +5,10 @@ const LineRegExp = /\r\n|[\n\r]/g;
 /**
  * Represents a location in a Source.
  */
-export type SourceLocation = {
-  +line: number,
-  +column: number,
-};
+export interface SourceLocation {
+  readonly line: number;
+  readonly column: number;
+}
 
 /**
  * Takes a Source and a UTF-8 character offset, and returns the corresponding

@@ -1,6 +1,7 @@
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { addPath, pathToArray } from '../jsutils/Path';
+import type { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
@@ -25,16 +26,16 @@ import { getOperationRootType } from '../utilities/getOperationRootType';
 
 import { mapAsyncIterator } from './mapAsyncIterator';
 
-export type SubscriptionArgs = {
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
-};
+export interface SubscriptionArgs {
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+}
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -71,7 +72,6 @@ export async function subscribe(
     subscribeFieldResolver,
   } = args;
 
-  // $FlowFixMe[incompatible-call]
   const resultOrStream = await createSourceEventStream(
     schema,
     document,
@@ -138,12 +138,12 @@ export async function subscribe(
 export async function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-): Promise<AsyncIterable<mixed> | ExecutionResult> {
+  rootValue?: unknown,
+  contextValue?: unknown,
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
+  operationName?: Maybe<string>,
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+): Promise<AsyncIterable<unknown> | ExecutionResult> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);
@@ -188,7 +188,7 @@ export async function createSourceEventStream(
 
 async function executeSubscription(
   exeContext: ExecutionContext,
-): Promise<mixed> {
+): Promise<unknown> {
   const { schema, operation, variableValues, rootValue } = exeContext;
   const type = getOperationRootType(schema, operation);
   const fields = collectFields(

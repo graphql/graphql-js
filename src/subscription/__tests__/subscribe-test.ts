@@ -16,12 +16,12 @@ import { createSourceEventStream, subscribe } from '../subscribe';
 
 import { SimplePubSub } from './simplePubSub';
 
-type Email = {
-  from: string,
-  subject: string,
-  message: string,
-  unread: boolean,
-};
+interface Email {
+  from: string;
+  subject: string;
+  message: string;
+  unread: boolean;
+}
 
 const EmailType = new GraphQLObjectType({
   name: 'Email',
@@ -121,7 +121,7 @@ function createSubscription(pubsub: SimplePubSub<Email>) {
   return subscribe({ schema: emailSchema, document, rootValue: data });
 }
 
-async function expectPromise(promise: Promise<mixed>) {
+async function expectPromise(promise: Promise<unknown>) {
   let caughtError;
 
   try {
@@ -150,6 +150,7 @@ const DummyQueryType = new GraphQLObjectType({
   },
 });
 
+/* eslint-disable @typescript-eslint/require-await */
 // Check all error cases when initializing the subscription.
 describe('Subscription Initialization Phase', () => {
   it('accepts multiple subscription fields defined in schema', async () => {
@@ -311,22 +312,20 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    // $FlowExpectedError[incompatible-call]
     (await expectPromise(subscribe({ schema: null, document }))).toRejectWith(
       'Expected null to be a GraphQL schema.',
     );
 
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     (await expectPromise(subscribe({ document }))).toRejectWith(
       'Expected undefined to be a GraphQL schema.',
     );
 
-    // $FlowExpectedError[incompatible-call]
     (await expectPromise(subscribe({ schema, document: null }))).toRejectWith(
       'Must provide document.',
     );
 
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     (await expectPromise(subscribe({ schema }))).toRejectWith(
       'Must provide document.',
     );
@@ -366,7 +365,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     (await expectPromise(subscribe({ schema, document: {} }))).toReject();
   });
 
@@ -392,7 +391,7 @@ describe('Subscription Initialization Phase', () => {
   });
 
   it('resolves to an error for subscription resolver errors', async () => {
-    async function subscribeWithFn(subscribeFn: () => mixed) {
+    async function subscribeWithFn(subscribeFn: () => unknown) {
       const schema = new GraphQLSchema({
         query: DummyQueryType,
         subscription: new GraphQLObjectType({
@@ -483,7 +482,7 @@ describe('Subscription Initialization Phase', () => {
 // Once a subscription returns a valid AsyncIterator, it can still yield errors.
 describe('Subscription Publish Phase', () => {
   it('produces a payload for multiple subscribe in same subscription', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
 
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
@@ -526,7 +525,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('produces a payload per subscription event', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
@@ -615,7 +614,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('produces a payload when there are multiple events', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
@@ -681,7 +680,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should not trigger when subscription is already done', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
@@ -735,7 +734,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should not trigger when subscription is thrown', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
@@ -787,7 +786,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('event order is correct for multiple publishes', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 

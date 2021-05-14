@@ -18,9 +18,9 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import { executeSync, execute } from '../execute';
 
 async function executeQuery(args: {
-  schema: GraphQLSchema,
-  query: string,
-  rootValue?: mixed,
+  schema: GraphQLSchema;
+  query: string;
+  rootValue?: unknown;
 }) {
   const { schema, query, rootValue } = args;
   const document = parse(query);
@@ -534,7 +534,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `);
 
-    function expectError({ forTypeName }: { forTypeName: mixed }) {
+    function expectError({ forTypeName }: { forTypeName: unknown }) {
       const rootValue = { pet: { __typename: forTypeName } };
       const result = executeSync({ schema, document, rootValue });
       return {
@@ -570,7 +570,7 @@ describe('Execute: Handles execution of abstract types', () => {
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    // $FlowExpectedError[incompatible-type]
+    // @ts-expect-error
     assertInterfaceType(schema.getType('Pet')).resolveType = () => [];
     expectError({ forTypeName: undefined }).toEqual(
       'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet" with value { __typename: undefined }, received "[]".',
@@ -578,7 +578,7 @@ describe('Execute: Handles execution of abstract types', () => {
 
     // FIXME: workaround since we can't inject resolveType into SDL
     assertInterfaceType(schema.getType('Pet')).resolveType =
-      // $FlowExpectedError[incompatible-type]
+      // @ts-expect-error
       () => schema.getType('Cat');
     expectError({ forTypeName: undefined }).toEqual(
       'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',

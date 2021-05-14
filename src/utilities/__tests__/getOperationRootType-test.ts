@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import { invariant } from '../../jsutils/invariant';
 
-import type { DocumentNode } from '../../language/ast';
+import type { DocumentNode, OperationDefinitionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
@@ -34,7 +34,7 @@ const subscriptionType = new GraphQLObjectType({
   }),
 });
 
-function getOperationNode(doc: DocumentNode) {
+function getOperationNode(doc: DocumentNode): OperationDefinitionNode {
   const operationNode = doc.definitions[0];
   invariant(operationNode.kind === Kind.OPERATION_DEFINITION);
   return operationNode;
@@ -146,12 +146,12 @@ describe('getOperationRootType', () => {
   it('Throws when operation not a valid operation kind', () => {
     const testSchema = new GraphQLSchema({});
     const doc = parse('{ field }');
-    const operationNode = {
+    const operationNode: OperationDefinitionNode = {
       ...getOperationNode(doc),
+      // @ts-expect-error
       operation: 'non_existent_operation',
     };
 
-    // $FlowExpectedError[incompatible-call]
     expect(() => getOperationRootType(testSchema, operationNode)).to.throw(
       'Can only have query, mutation and subscription operations.',
     );

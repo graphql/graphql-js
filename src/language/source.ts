@@ -2,10 +2,10 @@ import { inspect } from '../jsutils/inspect';
 import { devAssert } from '../jsutils/devAssert';
 import { instanceOf } from '../jsutils/instanceOf';
 
-type Location = {
-  line: number,
-  column: number,
-};
+interface Location {
+  line: number;
+  column: number;
+}
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -42,7 +42,6 @@ export class Source {
     );
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'Source';
   }
@@ -53,9 +52,6 @@ export class Source {
  *
  * @internal
  */
-declare function isSource(source: mixed): boolean %checks(source instanceof
-  Source);
-// eslint-disable-next-line no-redeclare
-export function isSource(source) {
+export function isSource(source: unknown): source is Source {
   return instanceOf(source, Source);
 }

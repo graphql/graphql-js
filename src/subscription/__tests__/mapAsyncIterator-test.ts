@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { mapAsyncIterator } from '../mapAsyncIterator';
 
+/* eslint-disable @typescript-eslint/require-await */
 describe('mapAsyncIterator', () => {
   it('maps over async generator', async () => {
     async function* source() {
@@ -150,11 +151,11 @@ describe('mapAsyncIterator', () => {
   it('passes through early return from async values', async () => {
     async function* source() {
       try {
-        yield 1;
-        yield 2;
+        yield 'a';
+        yield 'b';
 
         // istanbul ignore next (Shouldn't be reached)
-        yield 3;
+        yield 'c';
       } finally {
         yield 'Done';
         yield 'Last';
@@ -163,8 +164,8 @@ describe('mapAsyncIterator', () => {
 
     const doubles = mapAsyncIterator(source(), (x) => x + x);
 
-    expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
-    expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
+    expect(await doubles.next()).to.deep.equal({ value: 'aa', done: false });
+    expect(await doubles.next()).to.deep.equal({ value: 'bb', done: false });
 
     // Early return
     expect(await doubles.return()).to.deep.equal({

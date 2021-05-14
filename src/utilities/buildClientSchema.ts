@@ -140,9 +140,7 @@ export function buildClientSchema(
     return getNamedType(typeRef);
   }
 
-  function getNamedType(
-    typeRef: IntrospectionNamedTypeRef<>,
-  ): GraphQLNamedType {
+  function getNamedType(typeRef: IntrospectionNamedTypeRef): GraphQLNamedType {
     const typeName = typeRef.name;
     if (!typeName) {
       throw new Error(`Unknown type reference: ${inspect(typeRef)}.`);
@@ -173,6 +171,7 @@ export function buildClientSchema(
   // Given a type's introspection result, construct the correct
   // GraphQLType instance.
   function buildType(type: IntrospectionType): GraphQLNamedType {
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     if (type != null && type.name != null && type.kind != null) {
       switch (type.kind) {
         case TypeKind.SCALAR:
@@ -308,7 +307,7 @@ export function buildClientSchema(
 
   function buildFieldDefMap(
     typeIntrospection: IntrospectionObjectType | IntrospectionInterfaceType,
-  ): GraphQLFieldConfigMap<mixed, mixed> {
+  ): GraphQLFieldConfigMap<unknown, unknown> {
     if (!typeIntrospection.fields) {
       throw new Error(
         `Introspection result missing fields: ${inspect(typeIntrospection)}.`,
@@ -324,7 +323,7 @@ export function buildClientSchema(
 
   function buildField(
     fieldIntrospection: IntrospectionField,
-  ): GraphQLFieldConfig<mixed, mixed> {
+  ): GraphQLFieldConfig<unknown, unknown> {
     const type = getType(fieldIntrospection.type);
     if (!isOutputType(type)) {
       const typeStr = inspect(type);
@@ -349,7 +348,7 @@ export function buildClientSchema(
   }
 
   function buildInputValueDefMap(
-    inputValueIntrospections: $ReadOnlyArray<IntrospectionInputValue>,
+    inputValueIntrospections: ReadonlyArray<IntrospectionInputValue>,
   ) {
     return keyValMap(
       inputValueIntrospections,

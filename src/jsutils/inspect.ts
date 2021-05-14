@@ -6,11 +6,11 @@ const MAX_RECURSIVE_DEPTH = 2;
 /**
  * Used to print values in error messages.
  */
-export function inspect(value: mixed): string {
+export function inspect(value: unknown): string {
   return formatValue(value, []);
 }
 
-function formatValue(value: mixed, seenValues: Array<mixed>): string {
+function formatValue(value: unknown, seenValues: Array<unknown>): string {
   switch (typeof value) {
     case 'string':
       return JSON.stringify(value);
@@ -25,7 +25,7 @@ function formatValue(value: mixed, seenValues: Array<mixed>): string {
 
 function formatObjectValue(
   value: Object,
-  previouslySeenValues: Array<mixed>,
+  previouslySeenValues: Array<unknown>,
 ): string {
   if (value === null) {
     return 'null';
@@ -38,7 +38,7 @@ function formatObjectValue(
   const seenValues = [...previouslySeenValues, value];
 
   if (typeof value.toJSON === 'function') {
-    const jsonValue = (value.toJSON: () => mixed)();
+    const jsonValue = (value.toJSON as () => unknown)();
 
     // check for infinite recursion
     if (jsonValue !== value) {
@@ -53,7 +53,7 @@ function formatObjectValue(
   return formatObject(value, seenValues);
 }
 
-function formatObject(object: Object, seenValues: Array<mixed>): string {
+function formatObject(object: Object, seenValues: Array<unknown>): string {
   const entries = Object.entries(object);
   if (entries.length === 0) {
     return '{}';
@@ -69,7 +69,10 @@ function formatObject(object: Object, seenValues: Array<mixed>): string {
   return '{ ' + properties.join(', ') + ' }';
 }
 
-function formatArray(array: Array<mixed>, seenValues: Array<mixed>): string {
+function formatArray(
+  array: Array<unknown>,
+  seenValues: Array<unknown>,
+): string {
   if (array.length === 0) {
     return '[]';
   }

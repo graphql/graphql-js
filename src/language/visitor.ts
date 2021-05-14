@@ -1,4 +1,5 @@
 import { inspect } from '../jsutils/inspect';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode, ASTKindToNode } from './ast';
 import { isNode } from './ast';
@@ -7,37 +8,38 @@ import { isNode } from './ast';
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor = $Shape<EnterLeaveVisitor<ASTNode> & KindVisitor>;
+export type ASTVisitor = EnterLeaveVisitor<ASTNode> & KindVisitor;
 
-type KindVisitor = $ObjMap<
-  ASTKindToNode,
-  <Node>(node: Node) => ASTVisitFn<Node> | EnterLeaveVisitor<Node>,
->;
-
-type EnterLeaveVisitor<TVisitedNode: ASTNode> = {
-  +enter?: ASTVisitFn<TVisitedNode>,
-  +leave?: ASTVisitFn<TVisitedNode>,
+type KindVisitor = {
+  readonly [K in keyof ASTKindToNode]?:
+    | ASTVisitFn<ASTKindToNode[K]>
+    | EnterLeaveVisitor<ASTKindToNode[K]>;
 };
+
+interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
+  readonly enter?: ASTVisitFn<TVisitedNode>;
+  readonly leave?: ASTVisitFn<TVisitedNode>;
+}
 
 /**
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
  */
-export type ASTVisitFn<TVisitedNode: ASTNode> = (
+export type ASTVisitFn<TVisitedNode extends ASTNode> = (
   /** The current node being visiting. */
   node: TVisitedNode,
   /** The index or key to this node from the parent node or Array. */
-  key: string | number | void,
+  key: string | number | undefined,
   /** The parent immediately above this node, which may be an Array. */
-  parent: ASTNode | $ReadOnlyArray<ASTNode> | void,
+  parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
   /** The key path to get to this node from the root node. */
-  path: $ReadOnlyArray<string | number>,
+  path: ReadonlyArray<string | number>,
   /**
    * All nodes and Arrays visited before reaching parent of this node.
    * These correspond to array indices in `path`.
    * Note: ancestors includes arrays which contain the parent of visited node.
    */
-  ancestors: $ReadOnlyArray<ASTNode | $ReadOnlyArray<ASTNode>>,
+  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
 
 const QueryDocumentKeys = {
@@ -126,7 +128,7 @@ const QueryDocumentKeys = {
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
 
-export const BREAK: { ... } = Object.freeze({});
+export const BREAK: unknown = Object.freeze({});
 
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
@@ -322,7 +324,7 @@ export function visit(root: ASTNode, visitor: ASTVisitor): any {
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 export function visitInParallel(
-  visitors: $ReadOnlyArray<ASTVisitor>,
+  visitors: ReadonlyArray<ASTVisitor>,
 ): ASTVisitor {
   const skipping = new Array(visitors.length);
 
@@ -372,7 +374,7 @@ export function getVisitFn(
   visitor: ASTVisitor,
   kind: string,
   isLeaving: boolean,
-): ?ASTVisitFn<ASTNode> {
+): Maybe<ASTVisitFn<ASTNode>> {
   const kindVisitor = visitor[kind];
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {

@@ -99,7 +99,7 @@ import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
  * The order of the rules in this list has been adjusted to lead to the
  * most clear output when encountering multiple validation errors.
  */
-export const specifiedRules: $ReadOnlyArray<ValidationRule> = Object.freeze([
+export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   ExecutableDefinitionsRule,
   UniqueOperationNamesRule,
   LoneAnonymousOperationRule,
@@ -131,7 +131,7 @@ export const specifiedRules: $ReadOnlyArray<ValidationRule> = Object.freeze([
 /**
  * @internal
  */
-export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> =
+export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
   Object.freeze([
     LoneSchemaDefinitionRule,
     UniqueOperationTypesRule,

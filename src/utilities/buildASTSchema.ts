@@ -14,16 +14,14 @@ import { specifiedDirectives } from '../type/directives';
 
 import { extendSchemaImpl } from './extendSchema';
 
-export type BuildSchemaOptions = {
-  ...GraphQLSchemaValidationOptions,
-
+export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**
    * Set to true to assume the SDL is valid.
    *
    * Default: false
    */
-  assumeValidSDL?: boolean,
-};
+  assumeValidSDL?: boolean;
+}
 
 /**
  * This takes the ast of a schema document produced by the parse function in
@@ -65,15 +63,15 @@ export function buildASTSchema(
         // typed values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
         case 'Query':
-          // $FlowExpectedError[incompatible-type] validated in `validateSchema`
+          // @ts-expect-error validated in `validateSchema`
           config.query = type;
           break;
         case 'Mutation':
-          // $FlowExpectedError[incompatible-type] validated in `validateSchema`
+          // @ts-expect-error validated in `validateSchema`
           config.mutation = type;
           break;
         case 'Subscription':
-          // $FlowExpectedError[incompatible-type] validated in `validateSchema`
+          // @ts-expect-error validated in `validateSchema`
           config.subscription = type;
           break;
       }
@@ -97,7 +95,7 @@ export function buildASTSchema(
  */
 export function buildSchema(
   source: string | Source,
-  options?: { ...BuildSchemaOptions, ...ParseOptions },
+  options?: BuildSchemaOptions & ParseOptions,
 ): GraphQLSchema {
   const document = parse(source, {
     noLocation: options?.noLocation,

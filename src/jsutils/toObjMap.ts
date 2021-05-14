@@ -5,12 +5,9 @@ import type {
   ReadOnlyObjMapLike,
 } from './ObjMap';
 
-/* eslint-disable no-redeclare */
-declare function toObjMap<T>(obj: ObjMapLike<T>): ObjMap<T>;
-declare function toObjMap<T>(obj: ReadOnlyObjMapLike<T>): ReadOnlyObjMap<T>;
-
-export function toObjMap(obj) {
-  /* eslint-enable no-redeclare */
+export function toObjMap<T>(obj: ObjMapLike<T>): ObjMap<T>;
+export function toObjMap<T>(obj: ReadOnlyObjMapLike<T>): ReadOnlyObjMap<T>;
+export function toObjMap<T>(obj: ObjMapLike<T> | ReadOnlyObjMapLike<T>) {
   if (Object.getPrototypeOf(obj) === null) {
     return obj;
   }

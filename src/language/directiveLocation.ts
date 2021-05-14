@@ -23,9 +23,10 @@ export const DirectiveLocation = Object.freeze({
   ENUM_VALUE: 'ENUM_VALUE',
   INPUT_OBJECT: 'INPUT_OBJECT',
   INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION',
-});
+} as const);
 
 /**
  * The enum type representing the directive location values.
  */
-export type DirectiveLocationEnum = $Values<typeof DirectiveLocation>;
+export type DirectiveLocationEnum =
+  typeof DirectiveLocation[keyof typeof DirectiveLocation];
