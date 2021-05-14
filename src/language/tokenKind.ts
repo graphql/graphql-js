@@ -25,9 +25,9 @@ export const TokenKind = Object.freeze({
   STRING: 'String',
   BLOCK_STRING: 'BlockString',
   COMMENT: 'Comment',
-});
+} as const);
 
 /**
  * The enum type representing the token kinds values.
  */
-export type TokenKindEnum = $Values<typeof TokenKind>;
+export type TokenKindEnum = typeof TokenKind[keyof typeof TokenKind];

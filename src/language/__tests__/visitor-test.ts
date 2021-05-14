@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import type { ASTNode } from '../ast';
+import { isNode } from '../ast';
 import { Kind } from '../kinds';
 import { parse } from '../parser';
 import { visit, visitInParallel, BREAK } from '../visitor';
@@ -420,7 +421,7 @@ describe('Visitor', () => {
 
   it('visit nodes with unknown kinds but does not traverse deeper', () => {
     const customAST = parse('{ a }');
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     customAST.definitions[0].selectionSet.selections.push({
       kind: 'CustomField',
       name: { kind: 'Name', value: 'NamedNodeToBeSkipped' },
@@ -522,7 +523,7 @@ describe('Visitor', () => {
           'enter',
           node.kind,
           key,
-          parent?.kind != null ? parent.kind : undefined,
+          isNode(parent) ? parent.kind : undefined,
         ]);
 
         checkVisitorFnArgs(ast, arguments);
@@ -534,7 +535,7 @@ describe('Visitor', () => {
           'leave',
           node.kind,
           key,
-          parent?.kind != null ? parent.kind : undefined,
+          isNode(parent) ? parent.kind : undefined,
         ]);
 
         expect(argsStack.pop()).to.deep.equal([...arguments]);

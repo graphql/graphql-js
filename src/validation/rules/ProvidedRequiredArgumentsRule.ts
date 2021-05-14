@@ -1,5 +1,6 @@
 import { inspect } from '../../jsutils/inspect';
 import { keyMap } from '../../jsutils/keyMap';
+import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
@@ -10,6 +11,7 @@ import { print } from '../../language/printer';
 
 import { specifiedDirectives } from '../../type/directives';
 import { isType, isRequiredArgument } from '../../type/definition';
+import type { GraphQLArgument } from '../../type/definition';
 
 import type {
   ValidationContext,
@@ -62,7 +64,9 @@ export function ProvidedRequiredArgumentsRule(
 export function ProvidedRequiredArgumentsOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
-  const requiredArgsMap = Object.create(null);
+  const requiredArgsMap: ObjMap<
+    ObjMap<GraphQLArgument | InputValueDefinitionNode>
+  > = Object.create(null);
 
   const schema = context.getSchema();
   const definedDirectives = schema?.getDirectives() ?? specifiedDirectives;

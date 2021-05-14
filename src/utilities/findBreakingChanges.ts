@@ -52,7 +52,7 @@ export const BreakingChangeType = Object.freeze({
   REQUIRED_DIRECTIVE_ARG_ADDED: 'REQUIRED_DIRECTIVE_ARG_ADDED',
   DIRECTIVE_REPEATABLE_REMOVED: 'DIRECTIVE_REPEATABLE_REMOVED',
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED',
-});
+} as const);
 
 export const DangerousChangeType = Object.freeze({
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
@@ -61,17 +61,17 @@ export const DangerousChangeType = Object.freeze({
   OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED',
   IMPLEMENTED_INTERFACE_ADDED: 'IMPLEMENTED_INTERFACE_ADDED',
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
-});
+} as const);
 
-export type BreakingChange = {
-  type: $Keys<typeof BreakingChangeType>,
-  description: string,
-};
+export interface BreakingChange {
+  type: keyof typeof BreakingChangeType;
+  description: string;
+}
 
-export type DangerousChange = {
-  type: $Keys<typeof DangerousChangeType>,
-  description: string,
-};
+export interface DangerousChange {
+  type: keyof typeof DangerousChangeType;
+  description: string;
+}
 
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
@@ -81,7 +81,7 @@ export function findBreakingChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
-  // $FlowFixMe[prop-missing]
+  // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in BreakingChangeType,
   );
@@ -95,7 +95,7 @@ export function findDangerousChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<DangerousChange> {
-  // $FlowFixMe[prop-missing]
+  // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in DangerousChangeType,
   );
@@ -378,8 +378,8 @@ function findFieldChanges(
 
 function findArgChanges(
   oldType: GraphQLObjectType | GraphQLInterfaceType,
-  oldField: GraphQLField<mixed, mixed>,
-  newField: GraphQLField<mixed, mixed>,
+  oldField: GraphQLField<unknown, unknown>,
+  newField: GraphQLField<unknown, unknown>,
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const argsDiff = diff(oldField.args, newField.args);
@@ -531,10 +531,10 @@ function typeKindName(type: GraphQLNamedType): string {
   }
 
   // istanbul ignore next (Not reachable. All possible named types have been considered)
-  invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+  invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
-function stringifyValue(value: mixed, type: GraphQLInputType): string {
+function stringifyValue(value: unknown, type: GraphQLInputType): string {
   const ast = astFromValue(value, type);
   invariant(ast != null);
 
@@ -553,13 +553,13 @@ function stringifyValue(value: mixed, type: GraphQLInputType): string {
   return print(sortedAST);
 }
 
-function diff<T: { name: string, ... }>(
-  oldArray: $ReadOnlyArray<T>,
-  newArray: $ReadOnlyArray<T>,
+function diff<T extends { name: string }>(
+  oldArray: ReadonlyArray<T>,
+  newArray: ReadonlyArray<T>,
 ): {
-  added: Array<T>,
-  removed: Array<T>,
-  persisted: Array<[T, T]>,
+  added: Array<T>;
+  removed: Array<T>;
+  persisted: Array<[T, T]>;
 } {
   const added = [];
   const removed = [];

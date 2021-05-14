@@ -1,4 +1,5 @@
 import { inspect } from '../jsutils/inspect';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode } from '../language/ast';
 
@@ -10,9 +11,9 @@ import { GraphQLError } from './GraphQLError';
  * document responsible for the original Error.
  */
 export function locatedError(
-  rawOriginalError: mixed,
-  nodes: ASTNode | $ReadOnlyArray<ASTNode> | void | null,
-  path?: ?$ReadOnlyArray<string | number>,
+  rawOriginalError: unknown,
+  nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
+  path?: Maybe<ReadonlyArray<string | number>>,
 ): GraphQLError {
   // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
   const originalError: Error | GraphQLError =
@@ -22,17 +23,17 @@ export function locatedError(
 
   // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
   if (Array.isArray(originalError.path)) {
-    // $FlowExpectedError[incompatible-return]
+    // @ts-expect-error
     return originalError;
   }
 
   return new GraphQLError(
     originalError.message,
-    // $FlowFixMe[prop-missing] FIXME
+    // @ts-expect-error FIXME
     originalError.nodes ?? nodes,
-    // $FlowFixMe[prop-missing] FIXME
+    // @ts-expect-error FIXME
     originalError.source,
-    // $FlowFixMe[prop-missing] FIXME
+    // @ts-expect-error FIXME
     originalError.positions,
     path,
     originalError,

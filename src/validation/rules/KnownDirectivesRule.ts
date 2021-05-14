@@ -68,8 +68,8 @@ export function KnownDirectivesRule(
 }
 
 function getDirectiveLocationForASTPath(
-  ancestors: $ReadOnlyArray<ASTNode | $ReadOnlyArray<ASTNode>>,
-): DirectiveLocationEnum | void {
+  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+): DirectiveLocationEnum | undefined {
   const appliedTo = ancestors[ancestors.length - 1];
   invariant(!Array.isArray(appliedTo));
 
@@ -133,5 +133,5 @@ function getDirectiveLocationForOperation(
   }
 
   // istanbul ignore next (Not reachable. All possible types have been considered)
-  invariant(false, 'Unexpected operation: ' + inspect((operation: empty)));
+  invariant(false, 'Unexpected operation: ' + inspect(operation));
 }

@@ -2,6 +2,7 @@
 // flowlint uninitialized-instance-property:off
 
 import { isObjectLike } from '../jsutils/isObjectLike';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
@@ -35,7 +36,7 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  +locations: $ReadOnlyArray<SourceLocation> | void;
+  readonly locations?: ReadonlyArray<SourceLocation>;
 
   /**
    * An array describing the JSON-path into the execution response which
@@ -43,12 +44,12 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  +path: $ReadOnlyArray<string | number> | void;
+  readonly path?: ReadonlyArray<string | number>;
 
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
-  +nodes: $ReadOnlyArray<ASTNode> | void;
+  readonly nodes?: ReadonlyArray<ASTNode>;
 
   /**
    * The source GraphQL document for the first location of this error.
@@ -56,32 +57,32 @@ export class GraphQLError extends Error {
    * Note that if this Error represents more than one node, the source may not
    * represent nodes after the first node.
    */
-  +source: Source | void;
+  readonly source?: Source;
 
   /**
    * An array of character offsets within the source GraphQL document
    * which correspond to this error.
    */
-  +positions: $ReadOnlyArray<number> | void;
+  readonly positions?: ReadonlyArray<number>;
 
   /**
    * The original error thrown from a field resolver during execution.
    */
-  +originalError: ?Error;
+  readonly originalError: Maybe<Error>;
 
   /**
    * Extension fields to add to the formatted error.
    */
-  +extensions: { [key: string]: mixed, ... } | void;
+  readonly extensions?: { [key: string]: unknown };
 
   constructor(
     message: string,
-    nodes?: $ReadOnlyArray<ASTNode> | ASTNode | void | null,
-    source?: ?Source,
-    positions?: ?$ReadOnlyArray<number>,
-    path?: ?$ReadOnlyArray<string | number>,
-    originalError?: ?(Error & { +extensions?: mixed, ... }),
-    extensions?: ?{ [key: string]: mixed, ... },
+    nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
+    source?: Maybe<Source>,
+    positions?: Maybe<ReadonlyArray<number>>,
+    path?: Maybe<ReadonlyArray<string | number>>,
+    originalError?: Maybe<Error & { readonly extensions?: unknown }>,
+    extensions?: Maybe<{ [key: string]: unknown }>,
   ) {
     super(message);
 
@@ -100,8 +101,10 @@ export class GraphQLError extends Error {
       _source = _nodes[0].loc?.source;
     }
 
-    let _positions = positions;
-    if (!_positions && _nodes) {
+    let _positions;
+    if (positions) {
+      _positions = positions;
+    } else if (_nodes) {
       _positions = [];
       for (const node of _nodes) {
         if (node.loc) {
@@ -133,7 +136,6 @@ export class GraphQLError extends Error {
       }
     }
 
-    // $FlowFixMe[cannot-write] FIXME
     Object.defineProperties(this, {
       name: { value: 'GraphQLError' },
       message: {
@@ -212,7 +214,6 @@ export class GraphQLError extends Error {
   }
 
   // FIXME: workaround to not break chai comparisons, should be remove in v16
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
   get [Symbol.toStringTag](): string {
     return 'Object';
   }

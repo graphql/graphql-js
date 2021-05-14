@@ -7,6 +7,7 @@ import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import { invariant } from '../../jsutils/invariant';
+import type { Maybe } from '../../jsutils/Maybe';
 
 import { Lexer } from '../../language/lexer';
 import { parse } from '../../language/parser';
@@ -58,7 +59,7 @@ const nonPunctuatorTokens = [
   '"""block\nstring\nvalue"""', // StringValue(BlockString)
 ];
 
-function lexValue(str: string): ?string {
+function lexValue(str: string): Maybe<string> {
   const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 

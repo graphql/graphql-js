@@ -3,15 +3,15 @@ const MAX_SUGGESTIONS = 5;
 /**
  * Given [ A, B, C ] return ' Did you mean A, B, or C?'.
  */
-declare function didYouMean(suggestions: $ReadOnlyArray<string>): string;
-// eslint-disable-next-line no-redeclare
-declare function didYouMean(
+export function didYouMean(suggestions: ReadonlyArray<string>): string;
+export function didYouMean(
   subMessage: string,
-  suggestions: $ReadOnlyArray<string>,
+  suggestions: ReadonlyArray<string>,
 ): string;
-
-// eslint-disable-next-line no-redeclare
-export function didYouMean(firstArg, secondArg) {
+export function didYouMean(
+  firstArg: string | ReadonlyArray<string>,
+  secondArg?: ReadonlyArray<string>,
+) {
   const [subMessage, suggestionsArg] =
     typeof firstArg === 'string'
       ? [firstArg, secondArg]

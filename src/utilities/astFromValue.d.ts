@@ -18,7 +18,7 @@ import type { GraphQLInputType } from '../type/definition';
  * | Boolean       | Boolean              |
  * | String        | String / Enum Value  |
  * | Number        | Int / Float          |
- * | Mixed         | Enum Value           |
+ * | Unknown       | Enum Value           |
  * | null          | NullValue            |
  *
  */

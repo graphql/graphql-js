@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type { Maybe } from '../../jsutils/Maybe';
 import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { parseValue } from '../../language/parser';
@@ -8,7 +9,10 @@ import { parseValue } from '../../language/parser';
 import { valueFromASTUntyped } from '../valueFromASTUntyped';
 
 describe('valueFromASTUntyped', () => {
-  function expectValueFrom(valueText: string, variables?: ?ObjMap<mixed>) {
+  function expectValueFrom(
+    valueText: string,
+    variables?: Maybe<ObjMap<unknown>>,
+  ) {
     const ast = parseValue(valueText);
     const value = valueFromASTUntyped(ast, variables);
     return expect(value);

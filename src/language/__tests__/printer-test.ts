@@ -9,14 +9,17 @@ import { print } from '../printer';
 
 describe('Printer: Query document', () => {
   it('prints minimal ast', () => {
-    const ast = { kind: 'Field', name: { kind: 'Name', value: 'foo' } };
+    const ast = {
+      kind: 'Field',
+      name: { kind: 'Name', value: 'foo' },
+    } as const;
     expect(print(ast)).to.equal('foo');
   });
 
   it('produces helpful error messages', () => {
     const badAST = { random: 'Data' };
 
-    // $FlowExpectedError[incompatible-call]
+    // @ts-expect-error
     expect(() => print(badAST)).to.throw(
       'Invalid AST Node: { random: "Data" }.',
     );

@@ -38,7 +38,7 @@ export function separateOperations(
   // is necessary for completing that operation.
   const separatedDocumentASTs = Object.create(null);
   for (const operation of operations) {
-    const dependencies = new Set();
+    const dependencies = new Set<string>();
 
     for (const fragmentName of collectDependencies(operation.selectionSet)) {
       collectTransitiveDependencies(dependencies, depGraph, fragmentName);

@@ -1,3 +1,5 @@
+import type { Maybe } from '../jsutils/Maybe';
+
 import type { GraphQLError } from '../error/GraphQLError';
 import { syntaxError } from '../error/syntaxError';
 
@@ -23,8 +25,11 @@ import type {
   ConstValueNode,
   StringValueNode,
   ListValueNode,
+  ConstListValueNode,
   ObjectValueNode,
+  ConstObjectValueNode,
   ObjectFieldNode,
+  ConstObjectFieldNode,
   DirectiveNode,
   ConstDirectiveNode,
   TypeNode,
@@ -61,13 +66,13 @@ import { Lexer, isPunctuatorTokenKind } from './lexer';
 /**
  * Configuration options to control parser behavior
  */
-export type ParseOptions = {
+export interface ParseOptions {
   /**
    * By default, the parser creates AST nodes that know the location
    * in the source that they correspond to. This configuration flag
    * disables that behavior for performance or testing.
    */
-  noLocation?: boolean,
+  noLocation?: boolean;
 
   /**
    * @deprecated will be removed in the v17.0.0
@@ -83,8 +88,8 @@ export type ParseOptions = {
    *   }
    *
    */
-  allowLegacyFragmentVariables?: boolean,
-};
+  allowLegacyFragmentVariables?: boolean;
+}
 
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -167,8 +172,8 @@ export function parseType(
  * @internal
  */
 export class Parser {
-  _options: ?ParseOptions;
-  _lexer: Lexer;
+  private _options: Maybe<ParseOptions>;
+  private _lexer: Lexer;
 
   constructor(source: string | Source, options?: ParseOptions) {
     const sourceObj = isSource(source) ? source : new Source(source);
@@ -184,7 +189,7 @@ export class Parser {
     const token = this.expectToken(TokenKind.NAME);
     return this.node(token, {
       kind: Kind.NAME,
-      // $FlowFixMe[incompatible-return] FIXME
+      // @ts-expect-error FIXME
       value: token.value,
     });
   }
@@ -393,6 +398,8 @@ export class Parser {
   /**
    * Arguments[Const] : ( Argument[?Const]+ )
    */
+  parseArguments(isConst: true): Array<ConstArgumentNode>;
+  parseArguments(isConst: boolean): Array<ArgumentNode>;
   parseArguments(isConst: boolean): Array<ArgumentNode> {
     const item = isConst ? this.parseConstArgument : this.parseArgument;
     return this.optionalMany(TokenKind.PAREN_L, item, TokenKind.PAREN_R);
@@ -401,6 +408,8 @@ export class Parser {
   /**
    * Argument[Const] : Name : Value[?Const]
    */
+  parseArgument(isConst: true): ConstArgumentNode;
+  parseArgument(isConst?: boolean): ArgumentNode;
   parseArgument(isConst: boolean = false): ArgumentNode {
     const start = this._lexer.token;
     const name = this.parseName();
@@ -414,7 +423,6 @@ export class Parser {
   }
 
   parseConstArgument(): ConstArgumentNode {
-    // $FlowFixMe[incompatible-return] FIXME during TS conversion
     return this.parseArgument(true);
   }
 
@@ -508,6 +516,8 @@ export class Parser {
    *
    * EnumValue : Name but not `true`, `false` or `null`
    */
+  parseValueLiteral(isConst: true): ConstValueNode;
+  parseValueLiteral(isConst: boolean): ValueNode;
   parseValueLiteral(isConst: boolean): ValueNode {
     const token = this._lexer.token;
     switch (token.kind) {
@@ -519,14 +529,14 @@ export class Parser {
         this._lexer.advance();
         return this.node(token, {
           kind: Kind.INT,
-          // $FlowFixMe[incompatible-return] FIXME
+          // @ts-expect-error FIXME
           value: token.value,
         });
       case TokenKind.FLOAT:
         this._lexer.advance();
         return this.node(token, {
           kind: Kind.FLOAT,
-          // $FlowFixMe[incompatible-return] FIXME
+          // @ts-expect-error FIXME
           value: token.value,
         });
       case TokenKind.STRING:
@@ -544,7 +554,7 @@ export class Parser {
           default:
             return this.node(token, {
               kind: Kind.ENUM,
-              // $FlowFixMe[incompatible-return] FIXME
+              // @ts-expect-error FIXME
               value: token.value,
             });
         }
@@ -568,7 +578,7 @@ export class Parser {
   }
 
   parseConstValueLiteral(): ConstValueNode {
-    // $FlowFixMe[incompatible-return] FIXME during TS conversion
+    // @ts-expect-error FIXME during TS conversion
     return this.parseValueLiteral(true);
   }
 
@@ -577,7 +587,7 @@ export class Parser {
     this._lexer.advance();
     return this.node(token, {
       kind: Kind.STRING,
-      // $FlowFixMe[incompatible-return] FIXME
+      // @ts-expect-error FIXME
       value: token.value,
       block: token.kind === TokenKind.BLOCK_STRING,
     });
@@ -588,6 +598,8 @@ export class Parser {
    *   - [ ]
    *   - [ Value[?Const]+ ]
    */
+  parseList(isConst: true): ConstListValueNode;
+  parseList(isConst: boolean): ListValueNode;
   parseList(isConst: boolean): ListValueNode {
     const item = () => this.parseValueLiteral(isConst);
     return this.node(this._lexer.token, {
@@ -601,6 +613,8 @@ export class Parser {
    *   - { }
    *   - { ObjectField[?Const]+ }
    */
+  parseObject(isConst: true): ConstObjectValueNode;
+  parseObject(isConst: boolean): ObjectValueNode;
   parseObject(isConst: boolean): ObjectValueNode {
     const item = () => this.parseObjectField(isConst);
     return this.node(this._lexer.token, {
@@ -612,6 +626,8 @@ export class Parser {
   /**
    * ObjectField[Const] : Name : Value[?Const]
    */
+  parseObjectField(isConst: true): ConstObjectFieldNode;
+  parseObjectField(isConst: boolean): ObjectFieldNode;
   parseObjectField(isConst: boolean): ObjectFieldNode {
     const start = this._lexer.token;
     const name = this.parseName();
@@ -629,6 +645,8 @@ export class Parser {
   /**
    * Directives[Const] : Directive[?Const]+
    */
+  parseDirectives(isConst: true): Array<ConstDirectiveNode>;
+  parseDirectives(isConst: boolean): Array<DirectiveNode>;
   parseDirectives(isConst: boolean): Array<DirectiveNode> {
     const directives = [];
     while (this.peek(TokenKind.AT)) {
@@ -638,13 +656,14 @@ export class Parser {
   }
 
   parseConstDirectives(): Array<ConstDirectiveNode> {
-    // $FlowFixMe[incompatible-return] FIXME during TS conversion
     return this.parseDirectives(true);
   }
 
   /**
    * Directive[Const] : @ Name Arguments[?Const]?
    */
+  parseDirective(isConst: true): ConstDirectiveNode;
+  parseDirective(isConst: boolean): DirectiveNode;
   parseDirective(isConst: boolean): DirectiveNode {
     const start = this._lexer.token;
     this.expectToken(TokenKind.AT);
@@ -749,7 +768,7 @@ export class Parser {
   /**
    * Description : StringValue
    */
-  parseDescription(): void | StringValueNode {
+  parseDescription(): undefined | StringValueNode {
     if (this.peekDescription()) {
       return this.parseStringLiteral();
     }
@@ -1332,7 +1351,7 @@ export class Parser {
    * location object, used to identify the place in the source that created a
    * given parsed object.
    */
-  node<T: { loc?: Location, ... }>(startToken: Token, node: T): T {
+  node<T extends { loc?: Location }>(startToken: Token, node: T): T {
     if (this._options?.noLocation !== true) {
       node.loc = new Location(
         startToken,
@@ -1372,7 +1391,7 @@ export class Parser {
    * If the next token is of the given kind, return that token after advancing the lexer.
    * Otherwise, do not change the parser state and return undefined.
    */
-  expectOptionalToken(kind: TokenKindEnum): ?Token {
+  expectOptionalToken(kind: TokenKindEnum): Maybe<Token> {
     const token = this._lexer.token;
     if (token.kind === kind) {
       this._lexer.advance();
@@ -1414,7 +1433,7 @@ export class Parser {
   /**
    * Helper function for creating an error when an unexpected lexed token is encountered.
    */
-  unexpected(atToken?: ?Token): GraphQLError {
+  unexpected(atToken?: Maybe<Token>): GraphQLError {
     const token = atToken ?? this._lexer.token;
     return syntaxError(
       this._lexer.source,

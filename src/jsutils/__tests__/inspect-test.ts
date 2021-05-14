@@ -124,7 +124,7 @@ describe('inspect', () => {
   });
 
   it('detect circular objects', () => {
-    const obj = {};
+    const obj: { [name: string]: unknown } = {};
     obj.self = obj;
     obj.deepSelf = { self: obj };
 
@@ -165,13 +165,12 @@ describe('inspect', () => {
 
     expect(inspect([[new Foo()]])).to.equal('[[[Foo]]]');
 
-    // $FlowExpectedError[prop-missing]
     Foo.prototype[Symbol.toStringTag] = 'Bar';
     expect(inspect([[new Foo()]])).to.equal('[[[Bar]]]');
 
     // eslint-disable-next-line func-names
     const objectWithoutClassName = new (function () {
-      // eslint-disable-next-line no-invalid-this
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
       this.foo = 1;
     })();
     expect(inspect([[objectWithoutClassName]])).to.equal('[[[Object]]]');

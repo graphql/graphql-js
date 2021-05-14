@@ -16,7 +16,7 @@ import {
 
 const dummyType = new GraphQLScalarType({ name: 'DummyScalar' });
 
-function expectObjMap(value: mixed) {
+function expectObjMap(value: unknown) {
   invariant(value != null && typeof value === 'object');
   expect(Object.getPrototypeOf(value)).to.equal(null);
   return expect(value);

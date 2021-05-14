@@ -1,4 +1,5 @@
 import { inspect } from '../../jsutils/inspect';
+import type { Maybe } from '../../jsutils/Maybe';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
@@ -79,9 +80,9 @@ export function VariablesInAllowedPositionRule(
 function allowedVariableUsage(
   schema: GraphQLSchema,
   varType: GraphQLType,
-  varDefaultValue: ?ValueNode,
+  varDefaultValue: Maybe<ValueNode>,
   locationType: GraphQLType,
-  locationDefaultValue: ?mixed,
+  locationDefaultValue: Maybe<unknown>,
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =
