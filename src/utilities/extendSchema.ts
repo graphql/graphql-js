@@ -89,7 +89,7 @@ interface Options extends GraphQLSchemaValidationOptions {
    * Default: false
    */
   assumeValidSDL?: boolean;
-};
+}
 
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -268,7 +268,7 @@ export function extendSchemaImpl(
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+    invariant(false, 'Unexpected type: ' + inspect(type as never));
   }
 
   function extendInputObjectType(
@@ -453,7 +453,7 @@ export function extendSchemaImpl(
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
       | ObjectTypeDefinitionNode
-      | ObjectTypeExtensionNode,
+      | ObjectTypeExtensionNode
     >,
   ): GraphQLFieldConfigMap<unknown, unknown> {
     const fieldConfigMap = Object.create(null);
@@ -503,7 +503,7 @@ export function extendSchemaImpl(
 
   function buildInputFieldMap(
     nodes: ReadonlyArray<
-      InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode,
+      InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode
     >,
   ): GraphQLInputFieldConfigMap {
     const inputFieldMap = Object.create(null);
@@ -553,7 +553,7 @@ export function extendSchemaImpl(
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
       | ObjectTypeDefinitionNode
-      | ObjectTypeExtensionNode,
+      | ObjectTypeExtensionNode
     >,
   ): Array<GraphQLInterfaceType> {
     // Note: While this could make assertions to get the correctly typed
@@ -655,7 +655,7 @@ export function extendSchemaImpl(
     // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
     invariant(
       false,
-      'Unexpected type definition node: ' + inspect((astNode: empty)),
+      'Unexpected type definition node: ' + inspect(astNode as never),
     );
   }
 }

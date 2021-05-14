@@ -804,7 +804,7 @@ function completeValue(
   invariant(
     false,
     'Cannot complete value of unexpected output type: ' +
-      inspect((returnType: empty)),
+      inspect(returnType as never),
   );
 }
 
@@ -885,7 +885,10 @@ function completeListValue(
  * Complete a Scalar or Enum by serializing to a valid value, returning
  * null if serialization is not possible.
  */
-function completeLeafValue(returnType: GraphQLLeafType, result: unknown): unknown {
+function completeLeafValue(
+  returnType: GraphQLLeafType,
+  result: unknown,
+): unknown {
   const serializedResult = returnType.serialize(result);
   if (serializedResult === undefined) {
     throw new Error(
@@ -1095,12 +1098,10 @@ function _collectSubfields(
  * Otherwise, test each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
-export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> = function (
-  value,
-  contextValue,
-  info,
-  abstractType,
-) {
+export const defaultTypeResolver: GraphQLTypeResolver<
+  unknown,
+  unknown
+> = function (value, contextValue, info, abstractType) {
   // First, look for `__typename`.
   if (isObjectLike(value) && typeof value.__typename === 'string') {
     return value.__typename;
@@ -1143,7 +1144,7 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> = functi
  */
 export const defaultFieldResolver: GraphQLFieldResolver<
   unknown,
-  unknown,
+  unknown
 > = function (source: any, args, contextValue, info) {
   // ensure source is a value for which property access is acceptable.
   if (isObjectLike(source) || typeof source === 'function') {

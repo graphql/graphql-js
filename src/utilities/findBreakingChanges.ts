@@ -531,7 +531,7 @@ function typeKindName(type: GraphQLNamedType): string {
   }
 
   // istanbul ignore next (Not reachable. All possible named types have been considered)
-  invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+  invariant(false, 'Unexpected type: ' + inspect(type as never));
 }
 
 function stringifyValue(value: unknown, type: GraphQLInputType): string {
@@ -553,7 +553,7 @@ function stringifyValue(value: unknown, type: GraphQLInputType): string {
   return print(sortedAST);
 }
 
-function diff<T extends { name: string; }>(
+function diff<T extends { name: string }>(
   oldArray: ReadonlyArray<T>,
   newArray: ReadonlyArray<T>,
 ): {

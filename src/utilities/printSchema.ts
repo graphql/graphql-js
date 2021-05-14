@@ -147,7 +147,7 @@ export function printType(type: GraphQLNamedType): string {
   }
 
   // istanbul ignore next (Not reachable. All possible types have been considered)
-  invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+  invariant(false, 'Unexpected type: ' + inspect(type as never));
 }
 
 function printScalar(type: GraphQLScalarType): string {
@@ -299,7 +299,7 @@ function printSpecifiedByURL(scalar: GraphQLScalarType): string {
 }
 
 function printDescription(
-  def: { readonly description: Maybe<string>; },
+  def: { readonly description: Maybe<string> },
   indentation: string = '',
   firstInBlock: boolean = true,
 ): string {

@@ -71,7 +71,9 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return typeMap[type.name];
   }
 
-  function replaceMaybeType<T extends Maybe<GraphQLNamedType>>(maybeType: T): T {
+  function replaceMaybeType<T extends Maybe<GraphQLNamedType>>(
+    maybeType: T,
+  ): T {
     return maybeType && replaceNamedType(maybeType);
   }
 
@@ -106,7 +108,9 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }));
   }
 
-  function sortTypes<T extends GraphQLNamedType>(array: ReadonlyArray<T>): Array<T> {
+  function sortTypes<T extends GraphQLNamedType>(
+    array: ReadonlyArray<T>,
+  ): Array<T> {
     return sortByName(array).map(replaceNamedType);
   }
 
@@ -154,7 +158,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+    invariant(false, 'Unexpected type: ' + inspect(type as never));
   }
 }
 
@@ -170,7 +174,7 @@ function sortObjMap<T, R>(
   return sortedMap;
 }
 
-function sortByName<T extends { readonly name: string; }>(
+function sortByName<T extends { readonly name: string }>(
   array: ReadonlyArray<T>,
 ): Array<T> {
   return sortBy(array, (obj) => obj.name);
