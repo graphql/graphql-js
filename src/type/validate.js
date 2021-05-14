@@ -192,7 +192,7 @@ function validateDirectives(context: SchemaValidationContext): void {
 
 function validateName(
   context: SchemaValidationContext,
-  node: { +name: string, +astNode: ?ASTNode, ... },
+  node: { +name: string; +astNode: ?ASTNode; ... },
 ): void {
   // Ensure names are valid, however introspection types opt out.
   const error = isValidNameError(node.name);
@@ -622,7 +622,7 @@ function getUnionMemberTypeNodes(
 }
 
 function getDeprecatedDirectiveNode(
-  definitionNode: ?{ +directives?: $ReadOnlyArray<DirectiveNode>, ... },
+  definitionNode: ?{ +directives?: $ReadOnlyArray<DirectiveNode>; ... },
 ): ?DirectiveNode {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return definitionNode?.directives?.find(

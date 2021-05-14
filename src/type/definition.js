@@ -644,27 +644,27 @@ export type GraphQLScalarLiteralParser<TInternal> = (
 ) => ?TInternal;
 
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
-  name: string,
-  description?: ?string,
-  specifiedByURL?: ?string,
+  name: string;
+  description?: ?string;
+  specifiedByURL?: ?string;
   // Serializes an internal value to include in a response.
-  serialize?: GraphQLScalarSerializer<TExternal>,
+  serialize?: GraphQLScalarSerializer<TExternal>;
   // Parses an externally provided value to use as an input.
-  parseValue?: GraphQLScalarValueParser<TInternal>,
+  parseValue?: GraphQLScalarValueParser<TInternal>;
   // Parses an externally provided literal value to use as an input.
-  parseLiteral?: GraphQLScalarLiteralParser<TInternal>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?ScalarTypeDefinitionNode,
-  extensionASTNodes?: ?$ReadOnlyArray<ScalarTypeExtensionNode>,
+  parseLiteral?: GraphQLScalarLiteralParser<TInternal>;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?ScalarTypeDefinitionNode;
+  extensionASTNodes?: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 };
 
 type GraphQLScalarTypeNormalizedConfig = {
-  ...GraphQLScalarTypeConfig<mixed, mixed>,
-  serialize: GraphQLScalarSerializer<mixed>,
-  parseValue: GraphQLScalarValueParser<mixed>,
-  parseLiteral: GraphQLScalarLiteralParser<mixed>,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  extensionASTNodes: $ReadOnlyArray<ScalarTypeExtensionNode>,
+  ...GraphQLScalarTypeConfig<mixed, mixed>;
+  serialize: GraphQLScalarSerializer<mixed>;
+  parseValue: GraphQLScalarValueParser<mixed>;
+  parseLiteral: GraphQLScalarLiteralParser<mixed>;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  extensionASTNodes: $ReadOnlyArray<ScalarTypeExtensionNode>;
 };
 
 /**
@@ -885,22 +885,22 @@ export function argsToArgsConfig(
 }
 
 export type GraphQLObjectTypeConfig<TSource, TContext> = {
-  name: string,
-  description?: ?string,
-  interfaces?: ThunkArray<GraphQLInterfaceType>,
-  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>,
-  isTypeOf?: ?GraphQLIsTypeOfFn<TSource, TContext>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?ObjectTypeDefinitionNode,
-  extensionASTNodes?: ?$ReadOnlyArray<ObjectTypeExtensionNode>,
+  name: string;
+  description?: ?string;
+  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
+  isTypeOf?: ?GraphQLIsTypeOfFn<TSource, TContext>;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?ObjectTypeDefinitionNode;
+  extensionASTNodes?: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
 };
 
 type GraphQLObjectTypeNormalizedConfig = {
-  ...GraphQLObjectTypeConfig<any, any>,
-  interfaces: Array<GraphQLInterfaceType>,
-  fields: GraphQLFieldConfigMap<any, any>,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  extensionASTNodes: $ReadOnlyArray<ObjectTypeExtensionNode>,
+  ...GraphQLObjectTypeConfig<any, any>;
+  interfaces: Array<GraphQLInterfaceType>;
+  fields: GraphQLFieldConfigMap<any, any>;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  extensionASTNodes: $ReadOnlyArray<ObjectTypeExtensionNode>;
 };
 
 /**
@@ -922,7 +922,7 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
 export type GraphQLFieldResolver<
   TSource,
   TContext,
-  TArgs = { [argument: string]: any, ... },
+  TArgs = { [argument: string]: any; ... },
 > = (
   source: TSource,
   args: TArgs,
@@ -931,42 +931,42 @@ export type GraphQLFieldResolver<
 ) => mixed;
 
 export type GraphQLResolveInfo = {
-  +fieldName: string,
-  +fieldNodes: $ReadOnlyArray<FieldNode>,
-  +returnType: GraphQLOutputType,
-  +parentType: GraphQLObjectType,
-  +path: Path,
-  +schema: GraphQLSchema,
-  +fragments: ObjMap<FragmentDefinitionNode>,
-  +rootValue: mixed,
-  +operation: OperationDefinitionNode,
-  +variableValues: { [variable: string]: mixed, ... },
+  +fieldName: string;
+  +fieldNodes: $ReadOnlyArray<FieldNode>;
+  +returnType: GraphQLOutputType;
+  +parentType: GraphQLObjectType;
+  +path: Path;
+  +schema: GraphQLSchema;
+  +fragments: ObjMap<FragmentDefinitionNode>;
+  +rootValue: mixed;
+  +operation: OperationDefinitionNode;
+  +variableValues: { [variable: string]: mixed; ... };
 };
 
 export type GraphQLFieldConfig<
   TSource,
   TContext,
-  TArgs = { [argument: string]: any, ... },
+  TArgs = { [argument: string]: any; ... },
 > = {
-  description?: ?string,
-  type: GraphQLOutputType,
-  args?: GraphQLFieldConfigArgumentMap,
-  resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
-  subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
-  deprecationReason?: ?string,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?FieldDefinitionNode,
+  description?: ?string;
+  type: GraphQLOutputType;
+  args?: GraphQLFieldConfigArgumentMap;
+  resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
+  subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
+  deprecationReason?: ?string;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?FieldDefinitionNode;
 };
 
 export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
 
 export type GraphQLArgumentConfig = {
-  description?: ?string,
-  type: GraphQLInputType,
-  defaultValue?: mixed,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  deprecationReason?: ?string,
-  astNode?: ?InputValueDefinitionNode,
+  description?: ?string;
+  type: GraphQLInputType;
+  defaultValue?: mixed;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  deprecationReason?: ?string;
+  astNode?: ?InputValueDefinitionNode;
 };
 
 export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
@@ -976,27 +976,27 @@ export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
 export type GraphQLField<
   TSource,
   TContext,
-  TArgs = { [argument: string]: any, ... },
+  TArgs = { [argument: string]: any; ... },
 > = {
-  name: string,
-  description: ?string,
-  type: GraphQLOutputType,
-  args: Array<GraphQLArgument>,
-  resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
-  subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
-  deprecationReason: ?string,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  astNode: ?FieldDefinitionNode,
+  name: string;
+  description: ?string;
+  type: GraphQLOutputType;
+  args: Array<GraphQLArgument>;
+  resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
+  subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
+  deprecationReason: ?string;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  astNode: ?FieldDefinitionNode;
 };
 
 export type GraphQLArgument = {
-  name: string,
-  description: ?string,
-  type: GraphQLInputType,
-  defaultValue: mixed,
-  deprecationReason: ?string,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  astNode: ?InputValueDefinitionNode,
+  name: string;
+  description: ?string;
+  type: GraphQLInputType;
+  defaultValue: mixed;
+  deprecationReason: ?string;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  astNode: ?InputValueDefinitionNode;
 };
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean {
@@ -1096,27 +1096,27 @@ export class GraphQLInterfaceType {
 }
 
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
-  name: string,
-  description?: ?string,
-  interfaces?: ThunkArray<GraphQLInterfaceType>,
-  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>,
+  name: string;
+  description?: ?string;
+  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: ?GraphQLTypeResolver<TSource, TContext>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?InterfaceTypeDefinitionNode,
-  extensionASTNodes?: ?$ReadOnlyArray<InterfaceTypeExtensionNode>,
+  resolveType?: ?GraphQLTypeResolver<TSource, TContext>;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?InterfaceTypeDefinitionNode;
+  extensionASTNodes?: ?$ReadOnlyArray<InterfaceTypeExtensionNode>;
 };
 
 export type GraphQLInterfaceTypeNormalizedConfig = {
-  ...GraphQLInterfaceTypeConfig<any, any>,
-  interfaces: Array<GraphQLInterfaceType>,
-  fields: GraphQLFieldConfigMap<any, any>,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  extensionASTNodes: $ReadOnlyArray<InterfaceTypeExtensionNode>,
+  ...GraphQLInterfaceTypeConfig<any, any>;
+  interfaces: Array<GraphQLInterfaceType>;
+  fields: GraphQLFieldConfigMap<any, any>;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  extensionASTNodes: $ReadOnlyArray<InterfaceTypeExtensionNode>;
 };
 
 /**
@@ -1214,25 +1214,25 @@ function defineTypes(
 }
 
 export type GraphQLUnionTypeConfig<TSource, TContext> = {
-  name: string,
-  description?: ?string,
-  types: ThunkArray<GraphQLObjectType>,
+  name: string;
+  description?: ?string;
+  types: ThunkArray<GraphQLObjectType>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: ?GraphQLTypeResolver<TSource, TContext>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?UnionTypeDefinitionNode,
-  extensionASTNodes?: ?$ReadOnlyArray<UnionTypeExtensionNode>,
+  resolveType?: ?GraphQLTypeResolver<TSource, TContext>;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?UnionTypeDefinitionNode;
+  extensionASTNodes?: ?$ReadOnlyArray<UnionTypeExtensionNode>;
 };
 
 type GraphQLUnionTypeNormalizedConfig = {
-  ...GraphQLUnionTypeConfig<any, any>,
-  types: Array<GraphQLObjectType>,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  extensionASTNodes: $ReadOnlyArray<UnionTypeExtensionNode>,
+  ...GraphQLUnionTypeConfig<any, any>;
+  types: Array<GraphQLObjectType>;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  extensionASTNodes: $ReadOnlyArray<UnionTypeExtensionNode>;
 };
 
 /**
@@ -1416,38 +1416,38 @@ function defineEnumValues(
 }
 
 export type GraphQLEnumTypeConfig /* <T> */ = {
-  name: string,
-  description?: ?string,
-  values: GraphQLEnumValueConfigMap /* <T> */,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?EnumTypeDefinitionNode,
-  extensionASTNodes?: ?$ReadOnlyArray<EnumTypeExtensionNode>,
+  name: string;
+  description?: ?string;
+  values: GraphQLEnumValueConfigMap /* <T> */;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?EnumTypeDefinitionNode;
+  extensionASTNodes?: ?$ReadOnlyArray<EnumTypeExtensionNode>;
 };
 
 type GraphQLEnumTypeNormalizedConfig = {
-  ...GraphQLEnumTypeConfig,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  extensionASTNodes: $ReadOnlyArray<EnumTypeExtensionNode>,
+  ...GraphQLEnumTypeConfig;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  extensionASTNodes: $ReadOnlyArray<EnumTypeExtensionNode>;
 };
 
 export type GraphQLEnumValueConfigMap /* <T> */ =
   ObjMap<GraphQLEnumValueConfig /* <T> */>;
 
 export type GraphQLEnumValueConfig /* <T> */ = {
-  description?: ?string,
-  value?: any /* T */,
-  deprecationReason?: ?string,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?EnumValueDefinitionNode,
+  description?: ?string;
+  value?: any /* T */;
+  deprecationReason?: ?string;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?EnumValueDefinitionNode;
 };
 
 export type GraphQLEnumValue /* <T> */ = {
-  name: string,
-  description: ?string,
-  value: any /* T */,
-  deprecationReason: ?string,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  astNode: ?EnumValueDefinitionNode,
+  name: string;
+  description: ?string;
+  value: any /* T */;
+  deprecationReason: ?string;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  astNode: ?EnumValueDefinitionNode;
 };
 
 /**
@@ -1557,40 +1557,40 @@ function defineInputFieldMap(
 }
 
 export type GraphQLInputObjectTypeConfig = {
-  name: string,
-  description?: ?string,
-  fields: ThunkObjMap<GraphQLInputFieldConfig>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?InputObjectTypeDefinitionNode,
-  extensionASTNodes?: ?$ReadOnlyArray<InputObjectTypeExtensionNode>,
+  name: string;
+  description?: ?string;
+  fields: ThunkObjMap<GraphQLInputFieldConfig>;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?InputObjectTypeDefinitionNode;
+  extensionASTNodes?: ?$ReadOnlyArray<InputObjectTypeExtensionNode>;
 };
 
 type GraphQLInputObjectTypeNormalizedConfig = {
-  ...GraphQLInputObjectTypeConfig,
-  fields: GraphQLInputFieldConfigMap,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  extensionASTNodes: $ReadOnlyArray<InputObjectTypeExtensionNode>,
+  ...GraphQLInputObjectTypeConfig;
+  fields: GraphQLInputFieldConfigMap;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  extensionASTNodes: $ReadOnlyArray<InputObjectTypeExtensionNode>;
 };
 
 export type GraphQLInputFieldConfig = {
-  description?: ?string,
-  type: GraphQLInputType,
-  defaultValue?: mixed,
-  deprecationReason?: ?string,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?InputValueDefinitionNode,
+  description?: ?string;
+  type: GraphQLInputType;
+  defaultValue?: mixed;
+  deprecationReason?: ?string;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?InputValueDefinitionNode;
 };
 
 export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
 export type GraphQLInputField = {
-  name: string,
-  description: ?string,
-  type: GraphQLInputType,
-  defaultValue: mixed,
-  deprecationReason: ?string,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  astNode: ?InputValueDefinitionNode,
+  name: string;
+  description: ?string;
+  type: GraphQLInputType;
+  defaultValue: mixed;
+  deprecationReason: ?string;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  astNode: ?InputValueDefinitionNode;
 };
 
 export function isRequiredInputField(field: GraphQLInputField): boolean {

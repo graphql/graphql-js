@@ -64,13 +64,13 @@ export const DangerousChangeType = Object.freeze({
 });
 
 export type BreakingChange = {
-  type: $Keys<typeof BreakingChangeType>,
-  description: string,
+  type: $Keys<typeof BreakingChangeType>;
+  description: string;
 };
 
 export type DangerousChange = {
-  type: $Keys<typeof DangerousChangeType>,
-  description: string,
+  type: $Keys<typeof DangerousChangeType>;
+  description: string;
 };
 
 /**
@@ -553,13 +553,13 @@ function stringifyValue(value: mixed, type: GraphQLInputType): string {
   return print(sortedAST);
 }
 
-function diff<T: { name: string, ... }>(
+function diff<T: { name: string; ... }>(
   oldArray: $ReadOnlyArray<T>,
   newArray: $ReadOnlyArray<T>,
 ): {
-  added: Array<T>,
-  removed: Array<T>,
-  persisted: Array<[T, T]>,
+  added: Array<T>;
+  removed: Array<T>;
+  persisted: Array<[T, T]>;
 } {
   const added = [];
   const removed = [];

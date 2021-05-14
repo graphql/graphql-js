@@ -169,7 +169,7 @@ function sortObjMap<T, R>(
   return sortedMap;
 }
 
-function sortByName<T: { +name: string, ... }>(
+function sortByName<T: { +name: string; ... }>(
   array: $ReadOnlyArray<T>,
 ): Array<T> {
   return sortBy(array, (obj) => obj.name);

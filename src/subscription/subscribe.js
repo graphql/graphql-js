@@ -26,14 +26,14 @@ import { getOperationRootType } from '../utilities/getOperationRootType';
 import { mapAsyncIterator } from './mapAsyncIterator';
 
 export type SubscriptionArgs = {
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  rootValue?: mixed;
+  contextValue?: mixed;
+  variableValues?: ?{ +[variable: string]: mixed; ... };
+  operationName?: ?string;
+  fieldResolver?: ?GraphQLFieldResolver<any, any>;
+  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>;
 };
 
 /**
@@ -140,7 +140,7 @@ export async function createSourceEventStream(
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
+  variableValues?: ?{ +[variable: string]: mixed; ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
 ): Promise<AsyncIterable<mixed> | ExecutionResult> {

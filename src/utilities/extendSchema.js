@@ -82,14 +82,14 @@ import {
 import { valueFromAST } from './valueFromAST';
 
 type Options = {
-  ...GraphQLSchemaValidationOptions,
+  ...GraphQLSchemaValidationOptions;
 
   /**
    * Set to true to assume the SDL is valid.
    *
    * Default: false
    */
-  assumeValidSDL?: boolean,
+  assumeValidSDL?: boolean;
 };
 
 /**
@@ -394,9 +394,9 @@ export function extendSchemaImpl(
   function getOperationTypes(
     nodes: $ReadOnlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
   ): {
-    query: ?GraphQLObjectType,
-    mutation: ?GraphQLObjectType,
-    subscription: ?GraphQLObjectType,
+    query: ?GraphQLObjectType;
+    mutation: ?GraphQLObjectType;
+    subscription: ?GraphQLObjectType;
   } {
     const opTypes = {};
     for (const node of nodes) {

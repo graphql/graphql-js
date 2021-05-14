@@ -6,8 +6,8 @@ const LineRegExp = /\r\n|[\n\r]/g;
  * Represents a location in a Source.
  */
 export type SourceLocation = {
-  +line: number,
-  +column: number,
+  +line: number;
+  +column: number;
 };
 
 /**
