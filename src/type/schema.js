@@ -130,8 +130,8 @@ export class GraphQLSchema {
   _typeMap: TypeMap;
   _subTypeMap: ObjMap<ObjMap<boolean>>;
   _implementationsMap: ObjMap<{
-    objects: Array<GraphQLObjectType>,
-    interfaces: Array<GraphQLInterfaceType>,
+    objects: Array<GraphQLObjectType>;
+    interfaces: Array<GraphQLInterfaceType>;
   }>;
 
   // Used as a cache for validateSchema().
@@ -285,8 +285,8 @@ export class GraphQLSchema {
   getImplementations(
     interfaceType: GraphQLInterfaceType,
   ): {
-    objects: /* $ReadOnly */ Array<GraphQLObjectType>,
-    interfaces: /* $ReadOnly */ Array<GraphQLInterfaceType>,
+    objects: /* $ReadOnly */ Array<GraphQLObjectType>;
+    interfaces: /* $ReadOnly */ Array<GraphQLInterfaceType>;
   } {
     const implementations = this._implementationsMap[interfaceType.name];
     return implementations ?? { objects: [], interfaces: [] };
@@ -358,33 +358,33 @@ export type GraphQLSchemaValidationOptions = {
    *
    * Default: false
    */
-  assumeValid?: boolean,
+  assumeValid?: boolean;
 };
 
 export type GraphQLSchemaConfig = {
-  description?: ?string,
-  query?: ?GraphQLObjectType,
-  mutation?: ?GraphQLObjectType,
-  subscription?: ?GraphQLObjectType,
-  types?: ?Array<GraphQLNamedType>,
-  directives?: ?Array<GraphQLDirective>,
-  extensions?: ?ReadOnlyObjMapLike<mixed>,
-  astNode?: ?SchemaDefinitionNode,
-  extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
-  ...GraphQLSchemaValidationOptions,
+  description?: ?string;
+  query?: ?GraphQLObjectType;
+  mutation?: ?GraphQLObjectType;
+  subscription?: ?GraphQLObjectType;
+  types?: ?Array<GraphQLNamedType>;
+  directives?: ?Array<GraphQLDirective>;
+  extensions?: ?ReadOnlyObjMapLike<mixed>;
+  astNode?: ?SchemaDefinitionNode;
+  extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>;
+  ...GraphQLSchemaValidationOptions;
 };
 
 /**
  * @internal
  */
 export type GraphQLSchemaNormalizedConfig = {
-  ...GraphQLSchemaConfig,
-  description: ?string,
-  types: Array<GraphQLNamedType>,
-  directives: Array<GraphQLDirective>,
-  extensions: ?ReadOnlyObjMap<mixed>,
-  extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>,
-  assumeValid: boolean,
+  ...GraphQLSchemaConfig;
+  description: ?string;
+  types: Array<GraphQLNamedType>;
+  directives: Array<GraphQLDirective>;
+  extensions: ?ReadOnlyObjMap<mixed>;
+  extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>;
+  assumeValid: boolean;
 };
 
 function collectReferencedTypes(

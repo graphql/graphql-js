@@ -15,8 +15,8 @@ type KindVisitor = $ObjMap<
 >;
 
 type EnterLeaveVisitor<TVisitedNode: ASTNode> = {
-  +enter?: ASTVisitFn<TVisitedNode>,
-  +leave?: ASTVisitFn<TVisitedNode>,
+  +enter?: ASTVisitFn<TVisitedNode>;
+  +leave?: ASTVisitFn<TVisitedNode>;
 };
 
 /**

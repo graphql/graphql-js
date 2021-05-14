@@ -18,9 +18,9 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import { executeSync, execute } from '../execute';
 
 async function executeQuery(args: {
-  schema: GraphQLSchema,
-  query: string,
-  rootValue?: mixed,
+  schema: GraphQLSchema;
+  query: string;
+  rootValue?: mixed;
 }) {
   const { schema, query, rootValue } = args;
   const document = parse(query);

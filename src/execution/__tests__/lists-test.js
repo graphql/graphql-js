@@ -65,7 +65,7 @@ describe('Execute: Accepts any iterable as list value', () => {
 });
 
 describe('Execute: Handles list nullability', () => {
-  async function complete(args: { listField: mixed, as: string }) {
+  async function complete(args: { listField: mixed; as: string }) {
     const { listField, as } = args;
     const schema = buildSchema(`type Query { listField: ${as} }`);
     const document = parse('{ listField }');

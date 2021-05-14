@@ -1,7 +1,7 @@
 export type Path = {
-  +prev: Path | void,
-  +key: string | number,
-  +typename: string | void,
+  +prev: Path | void;
+  +key: string | number;
+  +typename: string | void;
 };
 
 /**

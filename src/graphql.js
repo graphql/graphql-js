@@ -56,14 +56,14 @@ import { execute } from './execution/execute';
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 export type GraphQLArgs = {
-  schema: GraphQLSchema,
-  source: string | Source,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{ +[variable: string]: mixed, ... },
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  typeResolver?: ?GraphQLTypeResolver<any, any>,
+  schema: GraphQLSchema;
+  source: string | Source;
+  rootValue?: mixed;
+  contextValue?: mixed;
+  variableValues?: ?{ +[variable: string]: mixed; ... };
+  operationName?: ?string;
+  fieldResolver?: ?GraphQLFieldResolver<any, any>;
+  typeResolver?: ?GraphQLTypeResolver<any, any>;
 };
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {

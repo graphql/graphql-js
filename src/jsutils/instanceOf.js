@@ -38,6 +38,6 @@ spurious results.`,
       };
 
 type Constructor = {
-  name: string,
+  name: string;
   ...
 };
