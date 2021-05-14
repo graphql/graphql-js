@@ -73,7 +73,7 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
         ),
         resolve: (schema) => schema.getDirectives(),
       },
-    }: GraphQLFieldConfigMap<GraphQLSchema, unknown>),
+    } as GraphQLFieldConfigMap<GraphQLSchema, unknown>),
 });
 
 export const __Directive: GraphQLObjectType = new GraphQLObjectType({
@@ -106,7 +106,7 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
         ),
         resolve: (directive) => directive.args,
       },
-    }: GraphQLFieldConfigMap<GraphQLDirective, unknown>),
+    } as GraphQLFieldConfigMap<GraphQLDirective, unknown>),
 });
 
 export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
@@ -229,7 +229,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           }
 
           // istanbul ignore next (Not reachable. All possible types have been considered)
-          invariant(false, `Unexpected type: "${inspect((type as never))}".`);
+          invariant(false, `Unexpected type: "${inspect(type as never)}".`);
         },
       },
       name: {
@@ -312,7 +312,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         resolve: (type) =>
           type.ofType !== undefined ? type.ofType : undefined,
       },
-    }: GraphQLFieldConfigMap<GraphQLType, unknown>),
+    } as GraphQLFieldConfigMap<GraphQLType, unknown>),
 });
 
 export const __Field: GraphQLObjectType = new GraphQLObjectType({
@@ -357,7 +357,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (field) => field.deprecationReason,
       },
-    }: GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>),
+    } as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>),
 });
 
 export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
@@ -396,7 +396,7 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (obj) => obj.deprecationReason,
       },
-    }: GraphQLFieldConfigMap<GraphQLInputField, unknown>),
+    } as GraphQLFieldConfigMap<GraphQLInputField, unknown>),
 });
 
 export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
@@ -421,7 +421,7 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (enumValue) => enumValue.deprecationReason,
       },
-    }: GraphQLFieldConfigMap<GraphQLEnumValue, unknown>),
+    } as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>),
 });
 
 export const TypeKind = Object.freeze({
