@@ -14,13 +14,9 @@
  * isIterableObject({ key: 'value' }) // false
  * isIterableObject({ length: 1, 0: 'Alpha' }) // false
  */
-declare function isIterableObject(
-  value: unknown,
-  // $FlowFixMe[invalid-in-rhs]
-): value is Iterable<unknown>;
-
-// eslint-disable-next-line no-redeclare
-export function isIterableObject(maybeIterable: unknown): boolean {
+export function isIterableObject(
+  maybeIterable: unknown,
+): maybeIteratable is Iterable<unknown> {
   return (
     typeof maybeIterable === 'object' &&
     typeof maybeIterable?.[Symbol.iterator] === 'function'
