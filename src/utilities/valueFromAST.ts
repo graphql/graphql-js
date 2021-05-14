@@ -32,7 +32,7 @@ import type { Maybe } from '../jsutils/Maybe';
  * | Boolean              | Boolean       |
  * | String               | String        |
  * | Int / Float          | Number        |
- * | Enum Value           | unknown         |
+ * | Enum Value           | Unknown       |
  * | NullValue            | null          |
  *
  */
