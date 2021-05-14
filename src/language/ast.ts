@@ -455,9 +455,9 @@ export type ConstDirectiveNode = {
 export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
 
 export type NamedTypeNode = {
-   kind: 'NamedType';
-   loc?: Location;
-   name: NameNode;
+  readonly kind: 'NamedType';
+  readonly loc?: Location;
+  readonly name: NameNode;
 };
 
 export type ListTypeNode = {
@@ -658,7 +658,8 @@ export type EnumTypeExtensionNode = {
   readonly loc?: Location;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
-  readonly values?: ReadonlyArray<EnumValueDefinitionNode>;readonly };
+  readonly values?: ReadonlyArray<EnumValueDefinitionNode>;
+};
 
 export type InputObjectTypeExtensionNode = {
   readonly kind: 'InputObjectTypeExtension';
