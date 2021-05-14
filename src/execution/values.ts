@@ -41,10 +41,7 @@ type CoercedVariableValues =
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
-  inputs: { readonly [variable: string]: unknown; ... },
-=======
   inputs: { readonly [variable: string]: unknown },
->>>>>>> 78c2be0a (convert `?` (flow) to `Maybe` (TS))
   options?: { maxErrors?: number },
 ): CoercedVariableValues {
   const errors = [];
