@@ -2,6 +2,7 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 
 import type {
+  TypeNode,
   NamedTypeNode,
   ListTypeNode,
   NonNullTypeNode,
@@ -34,7 +35,7 @@ export function typeFromAST(
 ): GraphQLNonNull<any> | undefined;
 export function typeFromAST(
   schema: GraphQLSchema,
-  typeNode: NamedTypeNode | ListTypeNode | NonNullTypeNode,
+  typeNode: TypeNode,
 ): GraphQLType | undefined {
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {
