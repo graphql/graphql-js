@@ -20,8 +20,10 @@ import type { GraphQLDirective } from '../type/directives';
 import { isInputType, isNonNullType } from '../type/definition';
 
 import { typeFromAST } from '../utilities/typeFromAST';
-import { valueFromAST } from '../utilities/valueFromAST';
-import { coerceInputValue } from '../utilities/coerceInputValue';
+import {
+  coerceInputValue,
+  coerceInputLiteral,
+} from '../utilities/coerceInputValue';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
@@ -96,7 +98,10 @@ function coerceVariableValues(
 
     if (!hasOwnProperty(inputs, varName)) {
       if (varDefNode.defaultValue) {
-        coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
+        coercedValues[varName] = coerceInputLiteral(
+          varDefNode.defaultValue,
+          varType,
+        );
       } else if (isNonNullType(varType)) {
         onError(
           new GraphQLError(
@@ -213,7 +218,7 @@ export function getArgumentValues(
       );
     }
 
-    const coercedValue = valueFromAST(valueNode, argType, variableValues);
+    const coercedValue = coerceInputLiteral(valueNode, argType, variableValues);
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
       // execution. This is a runtime check to ensure execution does not
