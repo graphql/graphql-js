@@ -14,7 +14,7 @@ import {
 describe('Type System: Specified scalar types', () => {
   describe('GraphQLInt', () => {
     it('parseValue', () => {
-      function parseValue(value: mixed) {
+      function parseValue(value: unknown) {
         return GraphQLInt.parseValue(value);
       }
 
@@ -110,7 +110,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value: mixed) {
+      function serialize(value: unknown) {
         return GraphQLInt.serialize(value);
       }
 
@@ -183,7 +183,7 @@ describe('Type System: Specified scalar types', () => {
 
   describe('GraphQLFloat', () => {
     it('parseValue', () => {
-      function parseValue(value: mixed) {
+      function parseValue(value: unknown) {
         return GraphQLFloat.parseValue(value);
       }
 
@@ -270,7 +270,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value: mixed) {
+      function serialize(value: unknown) {
         return GraphQLFloat.serialize(value);
       }
 
@@ -313,7 +313,7 @@ describe('Type System: Specified scalar types', () => {
 
   describe('GraphQLString', () => {
     it('parseValue', () => {
-      function parseValue(value: mixed) {
+      function parseValue(value: unknown) {
         return GraphQLString.parseValue(value);
       }
 
@@ -377,7 +377,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value: mixed) {
+      function serialize(value: unknown) {
         return GraphQLString.serialize(value);
       }
 
@@ -418,7 +418,7 @@ describe('Type System: Specified scalar types', () => {
 
   describe('GraphQLBoolean', () => {
     it('parseValue', () => {
-      function parseValue(value: mixed) {
+      function parseValue(value: unknown) {
         return GraphQLBoolean.parseValue(value);
       }
 
@@ -495,7 +495,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value: mixed) {
+      function serialize(value: unknown) {
         return GraphQLBoolean.serialize(value);
       }
 
@@ -532,7 +532,7 @@ describe('Type System: Specified scalar types', () => {
 
   describe('GraphQLID', () => {
     it('parseValue', () => {
-      function parseValue(value: mixed) {
+      function parseValue(value: unknown) {
         return GraphQLID.parseValue(value);
       }
 
@@ -610,7 +610,7 @@ describe('Type System: Specified scalar types', () => {
     });
 
     it('serialize', () => {
-      function serialize(value: mixed) {
+      function serialize(value: unknown) {
         return GraphQLID.serialize(value);
       }
 

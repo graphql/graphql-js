@@ -14,6 +14,8 @@ import {
   isNonNullType,
 } from '../type/definition';
 
+import type { Maybe } from '../jsutils/Maybe';
+
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -30,15 +32,15 @@ import {
  * | Boolean              | Boolean       |
  * | String               | String        |
  * | Int / Float          | Number        |
- * | Enum Value           | Mixed         |
+ * | Enum Value           | Unknown       |
  * | NullValue            | null          |
  *
  */
 export function valueFromAST(
-  valueNode: ?ValueNode,
+  valueNode: Maybe<ValueNode>,
   type: GraphQLInputType,
-  variables?: ?ObjMap<mixed>,
-): mixed | void {
+  variables?: Maybe<ObjMap<unknown>>,
+): unknown | void {
   if (!valueNode) {
     // When there is no node, then there is also no value.
     // Importantly, this is different from returning the value null.
@@ -145,14 +147,14 @@ export function valueFromAST(
   }
 
   // istanbul ignore next (Not reachable. All possible input types have been considered)
-  invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
+  invariant(false, 'Unexpected input type: ' + inspect(type as never));
 }
 
 // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 function isMissingVariable(
   valueNode: ValueNode,
-  variables: ?ObjMap<mixed>,
+  variables: Maybe<ObjMap<unknown>>,
 ): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&

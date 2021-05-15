@@ -42,7 +42,7 @@ export function mapAsyncIterator<T, U, R = void>(
         ? mapResult(await iterator.return())
         : { value: undefined, done: true };
     },
-    async throw(error?: mixed) {
+    async throw(error?: unknown) {
       return typeof iterator.throw === 'function'
         ? mapResult(await iterator.throw(error))
         : Promise.reject(error);

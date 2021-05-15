@@ -1,5 +1,6 @@
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
+import type { Maybe } from '../jsutils/Maybe';
 
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
@@ -67,7 +68,7 @@ function printFilteredSchema(
     .join('\n\n');
 }
 
-function printSchemaDefinition(schema: GraphQLSchema): ?string {
+function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
   if (schema.description == null && isSchemaOfCommonNames(schema)) {
     return;
   }
@@ -146,7 +147,7 @@ export function printType(type: GraphQLNamedType): string {
   }
 
   // istanbul ignore next (Not reachable. All possible types have been considered)
-  invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+  invariant(false, 'Unexpected type: ' + inspect(type as never));
 }
 
 function printScalar(type: GraphQLScalarType): string {
@@ -223,12 +224,12 @@ function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
   return printBlock(fields);
 }
 
-function printBlock(items: $ReadOnlyArray<string>): string {
+function printBlock(items: ReadonlyArray<string>): string {
   return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
 }
 
 function printArgs(
-  args: $ReadOnlyArray<GraphQLArgument>,
+  args: ReadonlyArray<GraphQLArgument>,
   indentation: string = '',
 ): string {
   if (args.length === 0) {
@@ -278,7 +279,7 @@ function printDirective(directive: GraphQLDirective): string {
   );
 }
 
-function printDeprecated(reason: ?string): string {
+function printDeprecated(reason: Maybe<string>): string {
   if (reason == null) {
     return '';
   }
@@ -298,7 +299,7 @@ function printSpecifiedByURL(scalar: GraphQLScalarType): string {
 }
 
 function printDescription(
-  def: { +description: ?string; ... },
+  def: { readonly description: Maybe<string> },
   indentation: string = '',
   firstInBlock: boolean = true,
 ): string {

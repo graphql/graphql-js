@@ -30,4 +30,4 @@ export const TokenKind = Object.freeze({
 /**
  * The enum type representing the token kinds values.
  */
-export type TokenKindEnum = $Values<typeof TokenKind>;
+export type TokenKindEnum = typeof TokenKind[keyof typeof TokenKind];

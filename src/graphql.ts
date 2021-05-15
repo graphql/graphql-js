@@ -1,5 +1,6 @@
 import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 import { isPromise } from './jsutils/isPromise';
+import type { Maybe } from './jsutils/Maybe';
 
 import type { Source } from './language/source';
 import { parse } from './language/parser';
@@ -58,12 +59,12 @@ import { execute } from './execution/execute';
 export type GraphQLArgs = {
   schema: GraphQLSchema;
   source: string | Source;
-  rootValue?: mixed;
-  contextValue?: mixed;
-  variableValues?: ?{ +[variable: string]: mixed; ... };
-  operationName?: ?string;
-  fieldResolver?: ?GraphQLFieldResolver<any, any>;
-  typeResolver?: ?GraphQLTypeResolver<any, any>;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 };
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {

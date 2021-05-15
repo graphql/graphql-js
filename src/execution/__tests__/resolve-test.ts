@@ -95,7 +95,7 @@ describe('Execute: resolve function', () => {
       resolve: (source, args) => JSON.stringify([source, args]),
     });
 
-    function executeQuery(query: string, rootValue?: mixed) {
+    function executeQuery(query: string, rootValue?: unknown) {
       const document = parse(query);
       return executeSync({ schema, document, rootValue });
     }

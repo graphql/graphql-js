@@ -2,6 +2,7 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { isObjectLike } from '../jsutils/isObjectLike';
 import { isIterableObject } from '../jsutils/isIterableObject';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
@@ -33,11 +34,14 @@ import {
  * | Boolean       | Boolean              |
  * | String        | String / Enum Value  |
  * | Number        | Int / Float          |
- * | Mixed         | Enum Value           |
+ * | Unknown       | Enum Value           |
  * | null          | NullValue            |
  *
  */
-export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
+export function astFromValue(
+  value: unknown,
+  type: GraphQLInputType,
+): Maybe<ValueNode> {
   if (isNonNullType(type)) {
     const astValue = astFromValue(value, type.ofType);
     if (astValue?.kind === Kind.NULL) {
@@ -136,7 +140,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   }
 
   // istanbul ignore next (Not reachable. All possible input types have been considered)
-  invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
+  invariant(false, 'Unexpected input type: ' + inspect(type as never));
 }
 
 /**
