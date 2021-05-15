@@ -70,7 +70,7 @@ export interface ExecutionContext {
  */
 export interface ExecutionResult<
   TData = { [key: string]: any },
-  TExtensions = { [key: string]: any }
+  TExtensions = { [key: string]: any },
 > {
   errors?: ReadonlyArray<GraphQLError>;
   // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
@@ -80,7 +80,7 @@ export interface ExecutionResult<
 
 export interface FormattedExecutionResult<
   TData = { [key: string]: any },
-  TExtensions = { [key: string]: any }
+  TExtensions = { [key: string]: any },
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229

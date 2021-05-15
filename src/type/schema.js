@@ -282,9 +282,7 @@ export class GraphQLSchema {
       : this.getImplementations(abstractType).objects;
   }
 
-  getImplementations(
-    interfaceType: GraphQLInterfaceType,
-  ): {
+  getImplementations(interfaceType: GraphQLInterfaceType): {
     objects: /* $ReadOnly */ Array<GraphQLObjectType>,
     interfaces: /* $ReadOnly */ Array<GraphQLInterfaceType>,
   } {

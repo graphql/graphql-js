@@ -1140,19 +1140,17 @@ export const defaultTypeResolver: GraphQLTypeResolver<mixed, mixed> = function (
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context value.
  */
-export const defaultFieldResolver: GraphQLFieldResolver<
-  mixed,
-  mixed,
-> = function (source: any, args, contextValue, info) {
-  // ensure source is a value for which property access is acceptable.
-  if (isObjectLike(source) || typeof source === 'function') {
-    const property = source[info.fieldName];
-    if (typeof property === 'function') {
-      return source[info.fieldName](args, contextValue, info);
+export const defaultFieldResolver: GraphQLFieldResolver<mixed, mixed> =
+  function (source: any, args, contextValue, info) {
+    // ensure source is a value for which property access is acceptable.
+    if (isObjectLike(source) || typeof source === 'function') {
+      const property = source[info.fieldName];
+      if (typeof property === 'function') {
+        return source[info.fieldName](args, contextValue, info);
+      }
+      return property;
     }
-    return property;
-  }
-};
+  };
 
 /**
  * This method looks up the field on the given type definition.

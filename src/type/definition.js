@@ -1430,7 +1430,8 @@ type GraphQLEnumTypeNormalizedConfig = {
   extensionASTNodes: $ReadOnlyArray<EnumTypeExtensionNode>,
 };
 
-export type GraphQLEnumValueConfigMap /* <T> */ = ObjMap<GraphQLEnumValueConfig /* <T> */>;
+export type GraphQLEnumValueConfigMap /* <T> */ =
+  ObjMap<GraphQLEnumValueConfig /* <T> */>;
 
 export type GraphQLEnumValueConfig /* <T> */ = {
   description?: ?string,

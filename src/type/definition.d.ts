@@ -472,7 +472,7 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
 export type GraphQLFieldResolver<
   TSource,
   TContext,
-  TArgs = { [argName: string]: any }
+  TArgs = { [argName: string]: any },
 > = (
   source: TSource,
   args: TArgs,
@@ -508,7 +508,7 @@ export interface GraphQLResolveInfo {
 export interface GraphQLFieldExtensions<
   _TSource,
   _TContext,
-  _TArgs = { [argName: string]: any }
+  _TArgs = { [argName: string]: any },
 > {
   [attributeName: string]: unknown;
 }
@@ -516,7 +516,7 @@ export interface GraphQLFieldExtensions<
 export interface GraphQLFieldConfig<
   TSource,
   TContext,
-  TArgs = { [argName: string]: any }
+  TArgs = { [argName: string]: any },
 > {
   description?: Maybe<string>;
   type: GraphQLOutputType;
@@ -561,7 +561,7 @@ export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
 export interface GraphQLField<
   TSource,
   TContext,
-  TArgs = { [key: string]: any }
+  TArgs = { [key: string]: any },
 > {
   name: string;
   description: Maybe<string>;
