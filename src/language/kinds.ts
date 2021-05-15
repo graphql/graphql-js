@@ -71,4 +71,4 @@ export const Kind = Object.freeze({
 /**
  * The enum type representing the possible kind values of AST nodes.
  */
-export type KindEnum = $Values<typeof Kind>;
+export type KindEnum = typeof Kind[keyof typeof Kind];

@@ -7,7 +7,6 @@ export type Character = {
   name: string;
   friends: Array<string>;
   appearsIn: Array<number>;
-  ...
 };
 
 export type Human = {

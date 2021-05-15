@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { dedent } from '../../__testUtils__/dedent';
 
 import { invariant } from '../../jsutils/invariant';
+import type { Maybe } from '../../jsutils/Maybe';
 
 import type { ASTNode } from '../../language/ast';
 import { parse } from '../../language/parser';
@@ -36,13 +37,12 @@ import { extendSchema } from '../extendSchema';
 import { buildSchema } from '../buildASTSchema';
 
 function expectExtensionASTNodes(obj: {
-  +extensionASTNodes: $ReadOnlyArray<ASTNode>;
-  ...
+  readonly extensionASTNodes: ReadonlyArray<ASTNode>;
 }) {
   return expect(obj.extensionASTNodes.map(print).join('\n\n'));
 }
 
-function expectASTNode(obj: ?{ +astNode: ?ASTNode; ... }) {
+function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
   invariant(obj?.astNode != null);
   return expect(print(obj.astNode));
 }

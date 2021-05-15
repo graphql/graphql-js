@@ -64,12 +64,12 @@ export const DangerousChangeType = Object.freeze({
 });
 
 export type BreakingChange = {
-  type: $Keys<typeof BreakingChangeType>;
+  type: keyof typeof BreakingChangeType;
   description: string;
 };
 
 export type DangerousChange = {
-  type: $Keys<typeof DangerousChangeType>;
+  type: keyof typeof DangerousChangeType;
   description: string;
 };
 
@@ -378,8 +378,8 @@ function findFieldChanges(
 
 function findArgChanges(
   oldType: GraphQLObjectType | GraphQLInterfaceType,
-  oldField: GraphQLField<mixed, mixed>,
-  newField: GraphQLField<mixed, mixed>,
+  oldField: GraphQLField<unknown, unknown>,
+  newField: GraphQLField<unknown, unknown>,
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const argsDiff = diff(oldField.args, newField.args);
@@ -531,10 +531,10 @@ function typeKindName(type: GraphQLNamedType): string {
   }
 
   // istanbul ignore next (Not reachable. All possible named types have been considered)
-  invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+  invariant(false, 'Unexpected type: ' + inspect(type as never));
 }
 
-function stringifyValue(value: mixed, type: GraphQLInputType): string {
+function stringifyValue(value: unknown, type: GraphQLInputType): string {
   const ast = astFromValue(value, type);
   invariant(ast != null);
 
@@ -553,9 +553,9 @@ function stringifyValue(value: mixed, type: GraphQLInputType): string {
   return print(sortedAST);
 }
 
-function diff<T: { name: string; ... }>(
-  oldArray: $ReadOnlyArray<T>,
-  newArray: $ReadOnlyArray<T>,
+function diff<T extends { name: string }>(
+  oldArray: ReadonlyArray<T>,
+  newArray: ReadonlyArray<T>,
 ): {
   added: Array<T>;
   removed: Array<T>;

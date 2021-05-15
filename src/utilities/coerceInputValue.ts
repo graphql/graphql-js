@@ -19,8 +19,8 @@ import {
 } from '../type/definition';
 
 type OnErrorCB = (
-  path: $ReadOnlyArray<string | number>,
-  invalidValue: mixed,
+  path: ReadonlyArray<string | number>,
+  invalidValue: unknown,
   error: GraphQLError,
 ) => void;
 
@@ -28,16 +28,16 @@ type OnErrorCB = (
  * Coerces a JavaScript value given a GraphQL Input Type.
  */
 export function coerceInputValue(
-  inputValue: mixed,
+  inputValue: unknown,
   type: GraphQLInputType,
   onError: OnErrorCB = defaultOnError,
-): mixed {
+): unknown {
   return coerceInputValueImpl(inputValue, type, onError);
 }
 
 function defaultOnError(
-  path: $ReadOnlyArray<string | number>,
-  invalidValue: mixed,
+  path: ReadonlyArray<string | number>,
+  invalidValue: unknown,
   error: GraphQLError,
 ): void {
   let errorPrefix = 'Invalid value ' + inspect(invalidValue);
@@ -49,11 +49,11 @@ function defaultOnError(
 }
 
 function coerceInputValueImpl(
-  inputValue: mixed,
+  inputValue: unknown,
   type: GraphQLInputType,
   onError: OnErrorCB,
   path: Path | void,
-): mixed {
+): unknown {
   if (isNonNullType(type)) {
     if (inputValue != null) {
       return coerceInputValueImpl(inputValue, type.ofType, onError, path);
@@ -184,5 +184,5 @@ function coerceInputValueImpl(
   }
 
   // istanbul ignore next (Not reachable. All possible input types have been considered)
-  invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
+  invariant(false, 'Unexpected input type: ' + inspect(type as never));
 }

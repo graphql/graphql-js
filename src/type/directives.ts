@@ -4,6 +4,7 @@ import { toObjMap } from '../jsutils/toObjMap';
 import { devAssert } from '../jsutils/devAssert';
 import { instanceOf } from '../jsutils/instanceOf';
 import { isObjectLike } from '../jsutils/isObjectLike';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { DirectiveDefinitionNode } from '../language/ast';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
@@ -23,15 +24,11 @@ import {
 /**
  * Test if the given value is a GraphQL directive.
  */
-declare function isDirective(
-  directive: mixed,
-): boolean %checks(directive instanceof GraphQLDirective);
-// eslint-disable-next-line no-redeclare
-export function isDirective(directive) {
+export function isDirective(directive: unknown): directive is GraphQLDirective {
   return instanceOf(directive, GraphQLDirective);
 }
 
-export function assertDirective(directive: mixed): GraphQLDirective {
+export function assertDirective(directive: unknown): GraphQLDirective {
   if (!isDirective(directive)) {
     throw new Error(
       `Expected ${inspect(directive)} to be a GraphQL directive.`,
@@ -46,14 +43,14 @@ export function assertDirective(directive: mixed): GraphQLDirective {
  */
 export class GraphQLDirective {
   name: string;
-  description: ?string;
+  description: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
-  args: $ReadOnlyArray<GraphQLArgument>;
+  args: ReadonlyArray<GraphQLArgument>;
   isRepeatable: boolean;
-  extensions: ?ReadOnlyObjMap<mixed>;
-  astNode: ?DirectiveDefinitionNode;
+  extensions: Maybe<ReadOnlyObjMap<unknown>>;
+  astNode: Maybe<DirectiveDefinitionNode>;
 
-  constructor(config: $ReadOnly<GraphQLDirectiveConfig>) {
+  constructor(config: Readonly<GraphQLDirectiveConfig>) {
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
@@ -104,20 +101,19 @@ export class GraphQLDirective {
 
 export type GraphQLDirectiveConfig = {
   name: string;
-  description?: ?string;
+  description?: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
-  args?: ?GraphQLFieldConfigArgumentMap;
-  isRepeatable?: ?boolean;
-  extensions?: ?ReadOnlyObjMapLike<mixed>;
-  astNode?: ?DirectiveDefinitionNode;
+  args?: Maybe<GraphQLFieldConfigArgumentMap>;
+  isRepeatable?: Maybe<boolean>;
+  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>;
+  astNode?: Maybe<DirectiveDefinitionNode>;
 };
 
-type GraphQLDirectiveNormalizedConfig = {
-  ...GraphQLDirectiveConfig;
+interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
   args: GraphQLFieldConfigArgumentMap;
   isRepeatable: boolean;
-  extensions: ?ReadOnlyObjMap<mixed>;
-};
+  extensions: Maybe<ReadOnlyObjMap<unknown>>;
+}
 
 /**
  * Used to conditionally include fields or fragments.
@@ -206,7 +202,7 @@ export const GraphQLSpecifiedByDirective: GraphQLDirective =
 /**
  * The full list of specified directives.
  */
-export const specifiedDirectives: $ReadOnlyArray<GraphQLDirective> =
+export const specifiedDirectives: ReadonlyArray<GraphQLDirective> =
   Object.freeze([
     GraphQLIncludeDirective,
     GraphQLSkipDirective,

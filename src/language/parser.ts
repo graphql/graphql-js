@@ -1,3 +1,5 @@
+import type { Maybe } from '../jsutils/Maybe';
+
 import type { GraphQLError } from '../error/GraphQLError';
 import { syntaxError } from '../error/syntaxError';
 
@@ -167,7 +169,7 @@ export function parseType(
  * @internal
  */
 export class Parser {
-  _options: ?ParseOptions;
+  _options: Maybe<ParseOptions>;
   _lexer: Lexer;
 
   constructor(source: string | Source, options?: ParseOptions) {
@@ -1332,7 +1334,7 @@ export class Parser {
    * location object, used to identify the place in the source that created a
    * given parsed object.
    */
-  node<T: { loc?: Location; ... }>(startToken: Token, node: T): T {
+  node<T extends { loc?: Location }>(startToken: Token, node: T): T {
     if (this._options?.noLocation !== true) {
       node.loc = new Location(
         startToken,
@@ -1372,7 +1374,7 @@ export class Parser {
    * If the next token is of the given kind, return that token after advancing the lexer.
    * Otherwise, do not change the parser state and return undefined.
    */
-  expectOptionalToken(kind: TokenKindEnum): ?Token {
+  expectOptionalToken(kind: TokenKindEnum): Maybe<Token> {
     const token = this._lexer.token;
     if (token.kind === kind) {
       this._lexer.advance();
@@ -1414,7 +1416,7 @@ export class Parser {
   /**
    * Helper function for creating an error when an unexpected lexed token is encountered.
    */
-  unexpected(atToken?: ?Token): GraphQLError {
+  unexpected(atToken?: Maybe<Token>): GraphQLError {
     const token = atToken ?? this._lexer.token;
     return syntaxError(
       this._lexer.source,

@@ -3,6 +3,7 @@ import { inspect } from '../jsutils/inspect';
 import { mapValue } from '../jsutils/mapValue';
 import { invariant } from '../jsutils/invariant';
 import { devAssert } from '../jsutils/devAssert';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type {
   DocumentNode,
@@ -81,16 +82,14 @@ import {
 
 import { valueFromAST } from './valueFromAST';
 
-type Options = {
-  ...GraphQLSchemaValidationOptions;
-
+interface Options extends GraphQLSchemaValidationOptions {
   /**
    * Set to true to assume the SDL is valid.
    *
    * Default: false
    */
   assumeValidSDL?: boolean;
-};
+}
 
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -143,7 +142,7 @@ export function extendSchemaImpl(
   // have the same name. For example, a type named "skip".
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
 
-  let schemaDef: ?SchemaDefinitionNode;
+  let schemaDef: Maybe<SchemaDefinitionNode>;
   // Schema extensions are collected which may add additional operation types.
   const schemaExtensions: Array<SchemaExtensionNode> = [];
 
@@ -216,7 +215,7 @@ export function extendSchemaImpl(
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
-  function replaceType<T: GraphQLType>(type: T): T {
+  function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
       // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
@@ -228,7 +227,7 @@ export function extendSchemaImpl(
     return replaceNamedType(type);
   }
 
-  function replaceNamedType<T: GraphQLNamedType>(type: T): T {
+  function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
     // Note: While this could make early assertions to get the correctly
     // typed values, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
@@ -269,7 +268,7 @@ export function extendSchemaImpl(
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+    invariant(false, 'Unexpected type: ' + inspect(type as never));
   }
 
   function extendInputObjectType(
@@ -374,8 +373,8 @@ export function extendSchemaImpl(
   }
 
   function extendField(
-    field: GraphQLFieldConfig<mixed, mixed>,
-  ): GraphQLFieldConfig<mixed, mixed> {
+    field: GraphQLFieldConfig<unknown, unknown>,
+  ): GraphQLFieldConfig<unknown, unknown> {
     return {
       ...field,
       type: replaceType(field.type),
@@ -392,11 +391,11 @@ export function extendSchemaImpl(
   }
 
   function getOperationTypes(
-    nodes: $ReadOnlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
+    nodes: ReadonlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
   ): {
-    query: ?GraphQLObjectType;
-    mutation: ?GraphQLObjectType;
-    subscription: ?GraphQLObjectType;
+    query: Maybe<GraphQLObjectType>;
+    mutation: Maybe<GraphQLObjectType>;
+    subscription: Maybe<GraphQLObjectType>;
   } {
     const opTypes = {};
     for (const node of nodes) {
@@ -450,13 +449,13 @@ export function extendSchemaImpl(
   }
 
   function buildFieldMap(
-    nodes: $ReadOnlyArray<
+    nodes: ReadonlyArray<
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
       | ObjectTypeDefinitionNode
-      | ObjectTypeExtensionNode,
+      | ObjectTypeExtensionNode
     >,
-  ): GraphQLFieldConfigMap<mixed, mixed> {
+  ): GraphQLFieldConfigMap<unknown, unknown> {
     const fieldConfigMap = Object.create(null);
     for (const node of nodes) {
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
@@ -479,7 +478,7 @@ export function extendSchemaImpl(
   }
 
   function buildArgumentMap(
-    args: ?$ReadOnlyArray<InputValueDefinitionNode>,
+    args: Maybe<ReadonlyArray<InputValueDefinitionNode>>,
   ): GraphQLFieldConfigArgumentMap {
     // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const argsNodes = args ?? [];
@@ -503,8 +502,8 @@ export function extendSchemaImpl(
   }
 
   function buildInputFieldMap(
-    nodes: $ReadOnlyArray<
-      InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode,
+    nodes: ReadonlyArray<
+      InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode
     >,
   ): GraphQLInputFieldConfigMap {
     const inputFieldMap = Object.create(null);
@@ -531,7 +530,7 @@ export function extendSchemaImpl(
   }
 
   function buildEnumValueMap(
-    nodes: $ReadOnlyArray<EnumTypeDefinitionNode | EnumTypeExtensionNode>,
+    nodes: ReadonlyArray<EnumTypeDefinitionNode | EnumTypeExtensionNode>,
   ): GraphQLEnumValueConfigMap {
     const enumValueMap = Object.create(null);
     for (const node of nodes) {
@@ -550,11 +549,11 @@ export function extendSchemaImpl(
   }
 
   function buildInterfaces(
-    nodes: $ReadOnlyArray<
+    nodes: ReadonlyArray<
       | InterfaceTypeDefinitionNode
       | InterfaceTypeExtensionNode
       | ObjectTypeDefinitionNode
-      | ObjectTypeExtensionNode,
+      | ObjectTypeExtensionNode
     >,
   ): Array<GraphQLInterfaceType> {
     // Note: While this could make assertions to get the correctly typed
@@ -568,7 +567,7 @@ export function extendSchemaImpl(
   }
 
   function buildUnionTypes(
-    nodes: $ReadOnlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode>,
+    nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode>,
   ): Array<GraphQLObjectType> {
     // Note: While this could make assertions to get the correctly typed
     // values below, that would throw immediately while type system
@@ -656,7 +655,7 @@ export function extendSchemaImpl(
     // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
     invariant(
       false,
-      'Unexpected type definition node: ' + inspect((astNode: empty)),
+      'Unexpected type definition node: ' + inspect(astNode as never),
     );
   }
 }
@@ -675,7 +674,7 @@ function getDeprecationReason(
     | EnumValueDefinitionNode
     | FieldDefinitionNode
     | InputValueDefinitionNode,
-): ?string {
+): Maybe<string> {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
   return deprecated?.reason;
@@ -686,7 +685,7 @@ function getDeprecationReason(
  */
 function getSpecifiedByURL(
   node: ScalarTypeDefinitionNode | ScalarTypeExtensionNode,
-): ?string {
+): Maybe<string> {
   const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
   // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
   return specifiedBy?.url;

@@ -17,7 +17,7 @@ import { GraphQLScalarType } from './definition';
 const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
 
-function serializeInt(outputValue: mixed): number {
+function serializeInt(outputValue: unknown): number {
   const coercedValue = serializeObject(outputValue);
 
   if (typeof coercedValue === 'boolean') {
@@ -43,7 +43,7 @@ function serializeInt(outputValue: mixed): number {
   return num;
 }
 
-function coerceInt(inputValue: mixed): number {
+function coerceInt(inputValue: unknown): number {
   if (typeof inputValue !== 'number' || !Number.isInteger(inputValue)) {
     throw new GraphQLError(
       `Int cannot represent non-integer value: ${inspect(inputValue)}`,
@@ -81,7 +81,7 @@ export const GraphQLInt: GraphQLScalarType = new GraphQLScalarType({
   },
 });
 
-function serializeFloat(outputValue: mixed): number {
+function serializeFloat(outputValue: unknown): number {
   const coercedValue = serializeObject(outputValue);
 
   if (typeof coercedValue === 'boolean') {
@@ -101,7 +101,7 @@ function serializeFloat(outputValue: mixed): number {
   return num;
 }
 
-function coerceFloat(inputValue: mixed): number {
+function coerceFloat(inputValue: unknown): number {
   if (typeof inputValue !== 'number' || !Number.isFinite(inputValue)) {
     throw new GraphQLError(
       `Float cannot represent non numeric value: ${inspect(inputValue)}`,
@@ -130,7 +130,7 @@ export const GraphQLFloat: GraphQLScalarType = new GraphQLScalarType({
 // Support serializing objects with custom valueOf() or toJSON() functions -
 // a common way to represent a complex value which can be represented as
 // a string (ex: MongoDB id objects).
-function serializeObject(outputValue: mixed): mixed {
+function serializeObject(outputValue: unknown): unknown {
   if (isObjectLike(outputValue)) {
     if (typeof outputValue.valueOf === 'function') {
       const valueOfResult = outputValue.valueOf();
@@ -146,7 +146,7 @@ function serializeObject(outputValue: mixed): mixed {
   return outputValue;
 }
 
-function serializeString(outputValue: mixed): string {
+function serializeString(outputValue: unknown): string {
   const coercedValue = serializeObject(outputValue);
 
   // Serialize string, boolean and number values to a string, but do not
@@ -165,7 +165,7 @@ function serializeString(outputValue: mixed): string {
   );
 }
 
-function coerceString(inputValue: mixed): string {
+function coerceString(inputValue: unknown): string {
   if (typeof inputValue !== 'string') {
     throw new GraphQLError(
       `String cannot represent a non string value: ${inspect(inputValue)}`,
@@ -191,7 +191,7 @@ export const GraphQLString: GraphQLScalarType = new GraphQLScalarType({
   },
 });
 
-function serializeBoolean(outputValue: mixed): boolean {
+function serializeBoolean(outputValue: unknown): boolean {
   const coercedValue = serializeObject(outputValue);
 
   if (typeof coercedValue === 'boolean') {
@@ -205,7 +205,7 @@ function serializeBoolean(outputValue: mixed): boolean {
   );
 }
 
-function coerceBoolean(inputValue: mixed): boolean {
+function coerceBoolean(inputValue: unknown): boolean {
   if (typeof inputValue !== 'boolean') {
     throw new GraphQLError(
       `Boolean cannot represent a non boolean value: ${inspect(inputValue)}`,
@@ -230,7 +230,7 @@ export const GraphQLBoolean: GraphQLScalarType = new GraphQLScalarType({
   },
 });
 
-function serializeID(outputValue: mixed): string {
+function serializeID(outputValue: unknown): string {
   const coercedValue = serializeObject(outputValue);
 
   if (typeof coercedValue === 'string') {
@@ -242,7 +242,7 @@ function serializeID(outputValue: mixed): string {
   throw new GraphQLError(`ID cannot represent value: ${inspect(outputValue)}`);
 }
 
-function coerceID(inputValue: mixed): string {
+function coerceID(inputValue: unknown): string {
   if (typeof inputValue === 'string') {
     return inputValue;
   }
@@ -270,7 +270,7 @@ export const GraphQLID: GraphQLScalarType = new GraphQLScalarType({
   },
 });
 
-export const specifiedScalarTypes: $ReadOnlyArray<GraphQLScalarType> =
+export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType> =
   Object.freeze([
     GraphQLString,
     GraphQLInt,

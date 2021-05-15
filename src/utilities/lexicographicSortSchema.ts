@@ -3,6 +3,7 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { keyValMap } from '../jsutils/keyValMap';
 import { naturalCompare } from '../jsutils/naturalCompare';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type {
   GraphQLType,
@@ -54,7 +55,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     subscription: replaceMaybeType(schemaConfig.subscription),
   });
 
-  function replaceType<T: GraphQLType>(type: T): T {
+  function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
       // $FlowFixMe[incompatible-return]
       return new GraphQLList(replaceType(type.ofType));
@@ -65,12 +66,14 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return replaceNamedType(type);
   }
 
-  function replaceNamedType<T: GraphQLNamedType>(type: T): T {
+  function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
     // $FlowFixMe[incompatible-return]
     return typeMap[type.name];
   }
 
-  function replaceMaybeType<T: ?GraphQLNamedType>(maybeType: T): T {
+  function replaceMaybeType<T extends Maybe<GraphQLNamedType>>(
+    maybeType: T,
+  ): T {
     return maybeType && replaceNamedType(maybeType);
   }
 
@@ -90,7 +93,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }));
   }
 
-  function sortFields(fieldsMap: GraphQLFieldConfigMap<mixed, mixed>) {
+  function sortFields(fieldsMap: GraphQLFieldConfigMap<unknown, unknown>) {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
@@ -105,7 +108,9 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }));
   }
 
-  function sortTypes<T: GraphQLNamedType>(array: $ReadOnlyArray<T>): Array<T> {
+  function sortTypes<T extends GraphQLNamedType>(
+    array: ReadonlyArray<T>,
+  ): Array<T> {
     return sortByName(array).map(replaceNamedType);
   }
 
@@ -153,7 +158,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }
 
     // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false, 'Unexpected type: ' + inspect((type: empty)));
+    invariant(false, 'Unexpected type: ' + inspect(type as never));
   }
 }
 
@@ -169,14 +174,14 @@ function sortObjMap<T, R>(
   return sortedMap;
 }
 
-function sortByName<T: { +name: string; ... }>(
-  array: $ReadOnlyArray<T>,
+function sortByName<T extends { readonly name: string }>(
+  array: ReadonlyArray<T>,
 ): Array<T> {
   return sortBy(array, (obj) => obj.name);
 }
 
 function sortBy<T>(
-  array: $ReadOnlyArray<T>,
+  array: ReadonlyArray<T>,
   mapToKey: (item: T) => string,
 ): Array<T> {
   return array.slice().sort((obj1, obj2) => {

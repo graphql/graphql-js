@@ -2,6 +2,7 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 
 import type {
+  TypeNode,
   NamedTypeNode,
   ListTypeNode,
   NonNullTypeNode,
@@ -10,7 +11,7 @@ import type {
 import { Kind } from '../language/kinds';
 
 import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLNamedType } from '../type/definition';
+import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 import { GraphQLList, GraphQLNonNull } from '../type/definition';
 
 /**
@@ -20,21 +21,22 @@ import { GraphQLList, GraphQLNonNull } from '../type/definition';
  * the type called "User" found in the schema. If a type called "User" is not
  * found in the schema, then undefined will be returned.
  */
-/* eslint-disable no-redeclare */
-declare function typeFromAST(
+export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NamedTypeNode,
-): GraphQLNamedType | void;
-declare function typeFromAST(
+): GraphQLNamedType | undefined;
+export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: ListTypeNode,
-): GraphQLList<any> | void;
-declare function typeFromAST(
+): GraphQLList<any> | undefined;
+export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NonNullTypeNode,
-): GraphQLNonNull<any> | void;
-export function typeFromAST(schema, typeNode) {
-  /* eslint-enable no-redeclare */
+): GraphQLNonNull<any> | undefined;
+export function typeFromAST(
+  schema: GraphQLSchema,
+  typeNode: TypeNode,
+): GraphQLType | undefined {
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
@@ -50,5 +52,5 @@ export function typeFromAST(schema, typeNode) {
   }
 
   // istanbul ignore next (Not reachable. All possible type nodes have been considered)
-  invariant(false, 'Unexpected type node: ' + inspect((typeNode: empty)));
+  invariant(false, 'Unexpected type node: ' + inspect(typeNode as never));
 }

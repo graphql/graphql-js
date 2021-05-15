@@ -121,7 +121,7 @@ function createSubscription(pubsub: SimplePubSub<Email>) {
   return subscribe({ schema: emailSchema, document, rootValue: data });
 }
 
-async function expectPromise(promise: Promise<mixed>) {
+async function expectPromise(promise: Promise<unknown>) {
   let caughtError;
 
   try {
@@ -392,7 +392,7 @@ describe('Subscription Initialization Phase', () => {
   });
 
   it('resolves to an error for subscription resolver errors', async () => {
-    async function subscribeWithFn(subscribeFn: () => mixed) {
+    async function subscribeWithFn(subscribeFn: () => unknown) {
       const schema = new GraphQLSchema({
         query: DummyQueryType,
         subscription: new GraphQLObjectType({
