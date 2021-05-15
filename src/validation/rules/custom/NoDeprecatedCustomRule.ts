@@ -63,7 +63,6 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
       const inputObjectDef = getNamedType(context.getParentInputType());
       if (isInputObjectType(inputObjectDef)) {
         const inputFieldDef = inputObjectDef.getFields()[node.name.value];
-        // flowlint-next-line unnecessary-optional-chain:off
         const deprecationReason = inputFieldDef?.deprecationReason;
         if (deprecationReason != null) {
           context.reportError(

@@ -22,12 +22,10 @@ if (require.main === module) {
     const destPath = path.join('./denoDist', filepath);
 
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
-    if (filepath.endsWith('.js')) {
+    if (filepath.endsWith('.ts')) {
       const options = { babelrc: false, configFile: './.babelrc-deno.json' };
       const output = babel.transformFileSync(srcPath, options).code + '\n';
       writeGeneratedFile(destPath, output);
-    } else if (filepath.endsWith('.d.ts')) {
-      fs.copyFileSync(srcPath, destPath);
     }
   }
 

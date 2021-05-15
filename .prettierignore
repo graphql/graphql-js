@@ -1,5 +1,3 @@
-/flow-typed
-
 # Copied from '.gitignore', please keep it in sync.
 /.eslintcache
 /node_modules
