@@ -73,7 +73,7 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 - 80 character line length strongly preferred.
 - Prefer `'` over `"`
 - ES6 syntax when possible. However do not rely on ES6-specific functions to be available.
-- Use [Flow types](https://flowtype.org/).
+- Use [TypeScript](https://www.typescriptlang.org).
 - Use semicolons;
 - Trailing commas,
 - Avd abbr wrds.

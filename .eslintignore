@@ -7,7 +7,5 @@
 /npm
 /deno
 
-# Ignore Flow typings for 3rd-party libraries
-/flow-typed
 # Ignore TS files inside integration test
 /integrationTests/ts/*.ts
