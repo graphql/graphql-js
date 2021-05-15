@@ -1,4 +1,5 @@
 import { inspect } from '../jsutils/inspect';
+import type { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
@@ -47,7 +48,7 @@ import {
  */
 export function validateSchema(
   schema: GraphQLSchema,
-): $ReadOnlyArray<GraphQLError> {
+): ReadonlyArray<GraphQLError> {
   // First check to ensure the provided value is in fact a GraphQLSchema.
   assertSchema(schema);
 
@@ -81,8 +82,8 @@ export function assertValidSchema(schema: GraphQLSchema): void {
 }
 
 class SchemaValidationContext {
-  +_errors: Array<GraphQLError>;
-  +schema: GraphQLSchema;
+  readonly _errors: Array<GraphQLError>;
+  readonly schema: GraphQLSchema;
 
   constructor(schema) {
     this._errors = [];
@@ -91,7 +92,7 @@ class SchemaValidationContext {
 
   reportError(
     message: string,
-    nodes?: $ReadOnlyArray<?ASTNode> | ?ASTNode,
+    nodes?: ReadonlyArray<Maybe<ASTNode>> | Maybe<ASTNode>,
   ): void {
     const _nodes = Array.isArray(nodes) ? nodes.filter(Boolean) : nodes;
     this.addError(new GraphQLError(message, _nodes));
@@ -101,7 +102,7 @@ class SchemaValidationContext {
     this._errors.push(error);
   }
 
-  getErrors(): $ReadOnlyArray<GraphQLError> {
+  getErrors(): ReadonlyArray<GraphQLError> {
     return this._errors;
   }
 }
@@ -142,7 +143,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
 function getOperationTypeNode(
   schema: GraphQLSchema,
   operation: OperationTypeNode,
-): ?ASTNode {
+): Maybe<ASTNode> {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return [schema.astNode]
     .concat(schema.extensionASTNodes)
@@ -192,7 +193,7 @@ function validateDirectives(context: SchemaValidationContext): void {
 
 function validateName(
   context: SchemaValidationContext,
-  node: { +name: string; +astNode: ?ASTNode; ... },
+  node: { readonly name: string; readonly astNode: Maybe<ASTNode> },
 ): void {
   // Ensure names are valid, however introspection types opt out.
   const error = isValidNameError(node.name);
@@ -596,7 +597,7 @@ function createInputObjectCircularRefsValidator(
 function getAllImplementsInterfaceNodes(
   type: GraphQLObjectType | GraphQLInterfaceType,
   iface: GraphQLInterfaceType,
-): $ReadOnlyArray<NamedTypeNode> {
+): ReadonlyArray<NamedTypeNode> {
   const { astNode, extensionASTNodes } = type;
   const nodes =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
@@ -610,7 +611,7 @@ function getAllImplementsInterfaceNodes(
 function getUnionMemberTypeNodes(
   union: GraphQLUnionType,
   typeName: string,
-): ?$ReadOnlyArray<NamedTypeNode> {
+): Maybe<ReadonlyArray<NamedTypeNode>> {
   const { astNode, extensionASTNodes } = union;
   const nodes =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
@@ -622,8 +623,8 @@ function getUnionMemberTypeNodes(
 }
 
 function getDeprecatedDirectiveNode(
-  definitionNode: ?{ +directives?: $ReadOnlyArray<DirectiveNode>; ... },
-): ?DirectiveNode {
+  definitionNode: Maybe<{ readonly directives?: ReadonlyArray<DirectiveNode> }>,
+): Maybe<DirectiveNode> {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return definitionNode?.directives?.find(
     (node) => node.name.value === GraphQLDeprecatedDirective.name,

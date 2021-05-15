@@ -114,7 +114,7 @@ const schema = new GraphQLSchema({
 
 function executeQuery(
   source: string,
-  variableValues?: { +[variable: string]: mixed; ... },
+  variableValues?: { readonly [variable: string]: unknown },
 ) {
   return graphqlSync({ schema, source, variableValues });
 }

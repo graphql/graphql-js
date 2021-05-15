@@ -2,6 +2,7 @@ import type { ObjMap } from '../jsutils/ObjMap';
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { keyValMap } from '../jsutils/keyValMap';
+import type { Maybe } from '../jsutils/Maybe';
 
 import { Kind } from '../language/kinds';
 import type { ValueNode } from '../language/ast';
@@ -24,8 +25,8 @@ import type { ValueNode } from '../language/ast';
  */
 export function valueFromASTUntyped(
   valueNode: ValueNode,
-  variables?: ?ObjMap<mixed>,
-): mixed {
+  variables?: Maybe<ObjMap<unknown>>,
+): unknown {
   switch (valueNode.kind) {
     case Kind.NULL:
       return null;
@@ -52,5 +53,5 @@ export function valueFromASTUntyped(
   }
 
   // istanbul ignore next (Not reachable. All possible value nodes have been considered)
-  invariant(false, 'Unexpected value node: ' + inspect((valueNode: empty)));
+  invariant(false, 'Unexpected value node: ' + inspect(valueNode as never));
 }

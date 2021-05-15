@@ -68,7 +68,7 @@ const SomeInputObjectType = assertInputObjectType(
 
 const SomeDirective = assertDirective(SomeSchema.getDirective('SomeDirective'));
 
-function withModifiers<T: GraphQLNamedType>(
+function withModifiers<T extends GraphQLNamedType>(
   type: T,
 ): Array<T | GraphQLList<T> | GraphQLNonNull<T | GraphQLList<T>>> {
   return [
@@ -1007,7 +1007,7 @@ describe('Type System: Enum types must be well defined', () => {
 
 describe('Type System: Object fields must have output types', () => {
   function schemaWithObjectField(
-    fieldConfig: GraphQLFieldConfig<mixed, mixed>,
+    fieldConfig: GraphQLFieldConfig<unknown, unknown>,
   ): GraphQLSchema {
     const BadObjectType = new GraphQLObjectType({
       name: 'BadObject',
@@ -1322,7 +1322,7 @@ describe('Type System: Interface extensions should be valid', () => {
 
 describe('Type System: Interface fields must have output types', () => {
   function schemaWithInterfaceField(
-    fieldConfig: GraphQLFieldConfig<mixed, mixed>,
+    fieldConfig: GraphQLFieldConfig<unknown, unknown>,
   ): GraphQLSchema {
     const fields = { badField: fieldConfig };
 

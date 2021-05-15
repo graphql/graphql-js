@@ -4,10 +4,10 @@
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
  */
-export const instanceOf: (value: mixed, constructor: Constructor) => boolean =
+export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
   process.env.NODE_ENV === 'production'
     ? // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
-      function instanceOf(value: mixed, constructor: Constructor): boolean {
+      function instanceOf(value: unknown, constructor: Constructor): boolean {
         return value instanceof constructor;
       }
     : function instanceOf(value: any, constructor: Constructor): boolean {
@@ -39,5 +39,4 @@ spurious results.`,
 
 type Constructor = {
   name: string;
-  ...
 };

@@ -1,4 +1,5 @@
 import { inspect } from '../jsutils/inspect';
+import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode } from '../language/ast';
 
@@ -10,9 +11,9 @@ import { GraphQLError } from './GraphQLError';
  * document responsible for the original Error.
  */
 export function locatedError(
-  rawOriginalError: mixed,
-  nodes: ASTNode | $ReadOnlyArray<ASTNode> | void | null,
-  path?: ?$ReadOnlyArray<string | number>,
+  rawOriginalError: unknown,
+  nodes: ASTNode | ReadonlyArray<ASTNode> | void | null,
+  path?: Maybe<ReadonlyArray<string | number>>,
 ): GraphQLError {
   // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
   const originalError: Error | GraphQLError =

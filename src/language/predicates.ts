@@ -1,7 +1,19 @@
-import type { ASTNode } from './ast';
+import type {
+  ASTNode,
+  DefinitionNode,
+  ExecutableDefinitionNode,
+  SelectionNode,
+  ValueNode,
+  TypeNode,
+  TypeSystemDefinitionNode,
+  TypeDefinitionNode,
+  TypeSystemExtensionNode,
+  TypeExtensionNode,
+  ConstValueNode,
+} from './ast';
 import { Kind } from './kinds';
 
-export function isDefinitionNode(node: ASTNode): boolean %checks {
+export function isDefinitionNode(node: ASTNode): node is DefinitionNode {
   return (
     isExecutableDefinitionNode(node) ||
     isTypeSystemDefinitionNode(node) ||
@@ -9,14 +21,16 @@ export function isDefinitionNode(node: ASTNode): boolean %checks {
   );
 }
 
-export function isExecutableDefinitionNode(node: ASTNode): boolean %checks {
+export function isExecutableDefinitionNode(
+  node: ASTNode,
+): node is ExecutableDefinitionNode {
   return (
     node.kind === Kind.OPERATION_DEFINITION ||
     node.kind === Kind.FRAGMENT_DEFINITION
   );
 }
 
-export function isSelectionNode(node: ASTNode): boolean %checks {
+export function isSelectionNode(node: ASTNode): node is SelectionNode {
   return (
     node.kind === Kind.FIELD ||
     node.kind === Kind.FRAGMENT_SPREAD ||
@@ -24,7 +38,7 @@ export function isSelectionNode(node: ASTNode): boolean %checks {
   );
 }
 
-export function isValueNode(node: ASTNode): boolean %checks {
+export function isValueNode(node: ASTNode): node is ValueNode {
   return (
     node.kind === Kind.VARIABLE ||
     node.kind === Kind.INT ||
@@ -38,7 +52,7 @@ export function isValueNode(node: ASTNode): boolean %checks {
   );
 }
 
-export function isConstValueNode(node: ASTNode): boolean %checks {
+export function isConstValueNode(node: ASTNode): node is ConstValueNode {
   return (
     isValueNode(node) &&
     (node.kind === Kind.LIST
@@ -49,7 +63,7 @@ export function isConstValueNode(node: ASTNode): boolean %checks {
   );
 }
 
-export function isTypeNode(node: ASTNode): boolean %checks {
+export function isTypeNode(node: ASTNode): node is TypeNode {
   return (
     node.kind === Kind.NAMED_TYPE ||
     node.kind === Kind.LIST_TYPE ||
@@ -57,7 +71,9 @@ export function isTypeNode(node: ASTNode): boolean %checks {
   );
 }
 
-export function isTypeSystemDefinitionNode(node: ASTNode): boolean %checks {
+export function isTypeSystemDefinitionNode(
+  node: ASTNode,
+): node is TypeSystemDefinitionNode {
   return (
     node.kind === Kind.SCHEMA_DEFINITION ||
     isTypeDefinitionNode(node) ||
@@ -65,7 +81,9 @@ export function isTypeSystemDefinitionNode(node: ASTNode): boolean %checks {
   );
 }
 
-export function isTypeDefinitionNode(node: ASTNode): boolean %checks {
+export function isTypeDefinitionNode(
+  node: ASTNode,
+): node is TypeDefinitionNode {
   return (
     node.kind === Kind.SCALAR_TYPE_DEFINITION ||
     node.kind === Kind.OBJECT_TYPE_DEFINITION ||
@@ -76,11 +94,13 @@ export function isTypeDefinitionNode(node: ASTNode): boolean %checks {
   );
 }
 
-export function isTypeSystemExtensionNode(node: ASTNode): boolean %checks {
+export function isTypeSystemExtensionNode(
+  node: ASTNode,
+): node is TypeSystemExtensionNode {
   return node.kind === Kind.SCHEMA_EXTENSION || isTypeExtensionNode(node);
 }
 
-export function isTypeExtensionNode(node: ASTNode): boolean %checks {
+export function isTypeExtensionNode(node: ASTNode): node is TypeExtensionNode {
   return (
     node.kind === Kind.SCALAR_TYPE_EXTENSION ||
     node.kind === Kind.OBJECT_TYPE_EXTENSION ||

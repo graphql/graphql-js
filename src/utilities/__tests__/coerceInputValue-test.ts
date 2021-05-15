@@ -16,15 +16,18 @@ import {
 import { coerceInputValue } from '../coerceInputValue';
 
 type CoerceResult = {
-  value: mixed;
-  errors: $ReadOnlyArray<{
-    path: $ReadOnlyArray<string | number>;
-    value: mixed;
+  value: unknown;
+  errors: ReadonlyArray<{
+    path: ReadonlyArray<string | number>;
+    value: unknown;
     error: string;
   }>;
 };
 
-function coerceValue(inputValue: mixed, type: GraphQLInputType): CoerceResult {
+function coerceValue(
+  inputValue: unknown,
+  type: GraphQLInputType,
+): CoerceResult {
   const errors = [];
   const value = coerceInputValue(
     inputValue,

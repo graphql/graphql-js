@@ -12,7 +12,7 @@ function expectSyntaxError(text: string) {
   return expect(() => parse(text)).to.throw();
 }
 
-function typeNode(name: mixed, loc: mixed) {
+function typeNode(name: unknown, loc: unknown) {
   return {
     kind: 'NamedType',
     name: nameNode(name, loc),
@@ -20,7 +20,7 @@ function typeNode(name: mixed, loc: mixed) {
   };
 }
 
-function nameNode(name: mixed, loc: mixed) {
+function nameNode(name: unknown, loc: unknown) {
   return {
     kind: 'Name',
     value: name,
@@ -28,11 +28,16 @@ function nameNode(name: mixed, loc: mixed) {
   };
 }
 
-function fieldNode(name: mixed, type: mixed, loc: mixed) {
+function fieldNode(name: unknown, type: unknown, loc: unknown) {
   return fieldNodeWithArgs(name, type, [], loc);
 }
 
-function fieldNodeWithArgs(name: mixed, type: mixed, args: mixed, loc: mixed) {
+function fieldNodeWithArgs(
+  name: unknown,
+  type: unknown,
+  args: unknown,
+  loc: unknown,
+) {
   return {
     kind: 'FieldDefinition',
     description: undefined,
@@ -44,7 +49,7 @@ function fieldNodeWithArgs(name: mixed, type: mixed, args: mixed, loc: mixed) {
   };
 }
 
-function enumValueNode(name: mixed, loc: mixed) {
+function enumValueNode(name: unknown, loc: unknown) {
   return {
     kind: 'EnumValueDefinition',
     name: nameNode(name, loc),
@@ -55,10 +60,10 @@ function enumValueNode(name: mixed, loc: mixed) {
 }
 
 function inputValueNode(
-  name: mixed,
-  type: mixed,
-  defaultValue: mixed,
-  loc: mixed,
+  name: unknown,
+  type: unknown,
+  defaultValue: unknown,
+  loc: unknown,
 ) {
   return {
     kind: 'InputValueDefinition',
