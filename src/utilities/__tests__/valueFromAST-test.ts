@@ -24,6 +24,7 @@ import {
 
 import { valueFromAST } from '../valueFromAST.js';
 
+/** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
 describe('valueFromAST', () => {
   function expectValueFrom(
     valueText: string,
