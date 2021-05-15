@@ -24,7 +24,6 @@ words:
   - graphiql
   - sublinks
   - instanceof
-  - flowtype
 
   # Different names used inside tests
   - Skywalker

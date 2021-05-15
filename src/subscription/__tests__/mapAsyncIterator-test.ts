@@ -73,11 +73,7 @@ describe('mapAsyncIterator', () => {
       yield 3;
     }
 
-    // Flow test: this is *not* AsyncIterator<Promise<number>>
-    const doubles: AsyncIterator<number> = mapAsyncIterator(
-      source(),
-      async (x) => (await x) + x,
-    );
+    const doubles = mapAsyncIterator(source(), async (x) => (await x) + x);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
