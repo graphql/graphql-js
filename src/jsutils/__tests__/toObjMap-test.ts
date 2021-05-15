@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 import type { ObjMapLike } from '../ObjMap';
 import { toObjMap } from '../toObjMap';
 
-// Workaround to make both ESLint and Flow happy
+// Workaround to make both ESLint happy
 const __proto__: string = '__proto__';
 
 describe('toObjMap', () => {
