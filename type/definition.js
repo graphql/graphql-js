@@ -43,7 +43,15 @@ exports.defineArguments = defineArguments;
 exports.argsToArgsConfig = argsToArgsConfig;
 exports.isRequiredArgument = isRequiredArgument;
 exports.isRequiredInputField = isRequiredInputField;
-exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.GraphQLObjectType = exports.GraphQLScalarType = exports.GraphQLNonNull = exports.GraphQLList = void 0;
+exports.GraphQLInputObjectType =
+  exports.GraphQLEnumType =
+  exports.GraphQLUnionType =
+  exports.GraphQLInterfaceType =
+  exports.GraphQLObjectType =
+  exports.GraphQLScalarType =
+  exports.GraphQLNonNull =
+  exports.GraphQLList =
+    void 0;
 
 var _inspect = require('../jsutils/inspect.js');
 

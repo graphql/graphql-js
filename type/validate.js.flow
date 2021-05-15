@@ -204,9 +204,8 @@ function validateName(
 }
 
 function validateTypes(context: SchemaValidationContext): void {
-  const validateInputObjectCircularRefs = createInputObjectCircularRefsValidator(
-    context,
-  );
+  const validateInputObjectCircularRefs =
+    createInputObjectCircularRefsValidator(context);
   const typeMap = context.schema.getTypeMap();
   for (const type of Object.values(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.

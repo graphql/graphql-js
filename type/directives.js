@@ -6,7 +6,14 @@ Object.defineProperty(exports, '__esModule', {
 exports.isDirective = isDirective;
 exports.assertDirective = assertDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
-exports.specifiedDirectives = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
+exports.specifiedDirectives =
+  exports.GraphQLSpecifiedByDirective =
+  exports.GraphQLDeprecatedDirective =
+  exports.DEFAULT_DEPRECATION_REASON =
+  exports.GraphQLSkipDirective =
+  exports.GraphQLIncludeDirective =
+  exports.GraphQLDirective =
+    void 0;
 
 var _inspect = require('../jsutils/inspect.js');
 

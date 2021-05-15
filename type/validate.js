@@ -214,9 +214,8 @@ function validateName(context, node) {
 }
 
 function validateTypes(context) {
-  const validateInputObjectCircularRefs = createInputObjectCircularRefsValidator(
-    context,
-  );
+  const validateInputObjectCircularRefs =
+    createInputObjectCircularRefsValidator(context);
   const typeMap = context.schema.getTypeMap();
 
   for (const type of Object.values(typeMap)) {

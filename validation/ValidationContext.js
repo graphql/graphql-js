@@ -3,7 +3,10 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.ValidationContext = exports.SDLValidationContext = exports.ASTValidationContext = void 0;
+exports.ValidationContext =
+  exports.SDLValidationContext =
+  exports.ASTValidationContext =
+    void 0;
 
 var _kinds = require('../language/kinds.js');
 
