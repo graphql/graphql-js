@@ -10,7 +10,7 @@ import type {
 import { Kind } from '../language/kinds';
 
 import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLNamedType } from '../type/definition';
+import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 import { GraphQLList, GraphQLNonNull } from '../type/definition';
 
 /**
@@ -32,7 +32,10 @@ export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NonNullTypeNode,
 ): GraphQLNonNull<any> | undefined;
-export function typeFromAST(schema, typeNode) {
+export function typeFromAST(
+  schema: GraphQLSchema,
+  typeNode: NamedTypeNode | ListTypeNode | NonNullTypeNode,
+): GraphQLType | undefined {
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);

@@ -438,7 +438,9 @@ export function getNullableType<T extends GraphQLNullableType>(type: T): T;
 export function getNullableType<T extends GraphQLNullableType>(
   type: GraphQLNonNull<T>,
 ): T;
-export function getNullableType(type) {
+export function getNullableType(
+  type: Maybe<GraphQLType>,
+): GraphQLNullableType | void {
   if (type) {
     return isNonNullType(type) ? type.ofType : type;
   }
@@ -483,7 +485,9 @@ export function getNamedType(type: void | null): void;
 export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
 export function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
 export function getNamedType(type: GraphQLType): GraphQLNamedType;
-export function getNamedType(type) {
+export function getNamedType(
+  type: Maybe<GraphQLType>,
+): GraphQLNamedType | void {
   if (type) {
     let unwrappedType = type;
     while (isWrappingType(unwrappedType)) {
