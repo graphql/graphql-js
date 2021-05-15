@@ -21,7 +21,7 @@ declare module 'graphql' {
   interface GraphQLFieldExtensions<
     _TSource,
     _TContext,
-    _TArgs = { [argName: string]: any }
+    _TArgs = { [argName: string]: any },
   > {
     someFieldExtension?: SomeExtension;
   }

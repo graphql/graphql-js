@@ -117,14 +117,14 @@ export interface IntrospectionInputObjectType {
 }
 
 export interface IntrospectionListTypeRef<
-  T extends IntrospectionTypeRef = IntrospectionTypeRef
+  T extends IntrospectionTypeRef = IntrospectionTypeRef,
 > {
   readonly kind: 'LIST';
   readonly ofType: T;
 }
 
 export interface IntrospectionNonNullTypeRef<
-  T extends IntrospectionTypeRef = IntrospectionTypeRef
+  T extends IntrospectionTypeRef = IntrospectionTypeRef,
 > {
   readonly kind: 'NON_NULL';
   readonly ofType: T;
@@ -154,7 +154,7 @@ export type IntrospectionInputTypeRef =
     >;
 
 export interface IntrospectionNamedTypeRef<
-  T extends IntrospectionType = IntrospectionType
+  T extends IntrospectionType = IntrospectionType,
 > {
   readonly kind: T['kind'];
   readonly name: string;

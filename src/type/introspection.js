@@ -528,8 +528,8 @@ export const TypeNameMetaFieldDef: GraphQLField<mixed, mixed> = {
   astNode: undefined,
 };
 
-export const introspectionTypes: $ReadOnlyArray<GraphQLNamedType> = Object.freeze(
-  [
+export const introspectionTypes: $ReadOnlyArray<GraphQLNamedType> =
+  Object.freeze([
     __Schema,
     __Directive,
     __DirectiveLocation,
@@ -538,8 +538,7 @@ export const introspectionTypes: $ReadOnlyArray<GraphQLNamedType> = Object.freez
     __InputValue,
     __EnumValue,
     __TypeKind,
-  ],
-);
+  ]);
 
 export function isIntrospectionType(type: GraphQLNamedType): boolean {
   return introspectionTypes.some(({ name }) => type.name === name);

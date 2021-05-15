@@ -131,8 +131,8 @@ export const specifiedRules: $ReadOnlyArray<ValidationRule> = Object.freeze([
 /**
  * @internal
  */
-export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = Object.freeze(
-  [
+export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> =
+  Object.freeze([
     LoneSchemaDefinitionRule,
     UniqueOperationTypesRule,
     UniqueTypeNamesRule,
@@ -147,5 +147,4 @@ export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = Object.freez
     UniqueArgumentNamesRule,
     UniqueInputFieldNamesRule,
     ProvidedRequiredArgumentsOnDirectivesRule,
-  ],
-);
+  ]);

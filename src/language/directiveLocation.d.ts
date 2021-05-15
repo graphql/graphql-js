@@ -29,4 +29,5 @@ export const DirectiveLocation: Readonly<{
 /**
  * The enum type representing the directive location values.
  */
-export type DirectiveLocationEnum = typeof DirectiveLocation[keyof typeof DirectiveLocation];
+export type DirectiveLocationEnum =
+  typeof DirectiveLocation[keyof typeof DirectiveLocation];
