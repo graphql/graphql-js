@@ -83,7 +83,7 @@ import { assertValidSDLExtension } from '../validation/validate.js';
 
 import { getDirectiveValues } from '../execution/values.js';
 
-import { valueFromAST } from './valueFromAST.js';
+import { coerceInputLiteral } from './coerceInputValue.js';
 
 interface Options extends GraphQLSchemaValidationOptions {
   /**
@@ -536,7 +536,9 @@ export function extendSchemaImpl(
       argConfigMap[arg.name.value] = {
         type,
         description: arg.description?.value,
-        defaultValue: valueFromAST(arg.defaultValue, type),
+        defaultValue: arg.defaultValue
+          ? coerceInputLiteral(arg.defaultValue, type)
+          : undefined,
         deprecationReason: getDeprecationReason(arg),
         astNode: arg,
       };
@@ -563,7 +565,9 @@ export function extendSchemaImpl(
         inputFieldMap[field.name.value] = {
           type,
           description: field.description?.value,
-          defaultValue: valueFromAST(field.defaultValue, type),
+          defaultValue: field.defaultValue
+            ? coerceInputLiteral(field.defaultValue, type)
+            : undefined,
           deprecationReason: getDeprecationReason(field),
           astNode: field,
         };
