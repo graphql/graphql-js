@@ -32,5 +32,5 @@ export const versionInfo = Object.freeze({
 `;
 
 if (require.main === module) {
-  fs.writeFileSync('./src/version.js', body.trim() + '\n');
+  fs.writeFileSync('./src/version.ts', body.trim() + '\n');
 }

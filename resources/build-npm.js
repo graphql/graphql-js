@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 
+const ts = require('typescript');
 const babel = require('@babel/core');
 const prettier = require('prettier');
 
@@ -23,20 +24,29 @@ if (require.main === module) {
     const destPath = path.join('./npmDist', filepath);
 
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
-    if (filepath.endsWith('.js')) {
-      const flowBody =
-        '// @flow strict\n\n' + fs.readFileSync(srcPath, 'utf-8');
-      fs.writeFileSync(destPath + '.flow', flowBody);
-
+    if (filepath.endsWith('.ts')) {
       const cjs = babelBuild(srcPath, { envName: 'cjs' });
-      writeGeneratedFile(destPath, cjs);
+      writeGeneratedFile(destPath.replace(/\.ts$/, '.js'), cjs);
 
       const mjs = babelBuild(srcPath, { envName: 'mjs' });
-      writeGeneratedFile(destPath.replace(/\.js$/, '.mjs'), mjs);
-    } else if (filepath.endsWith('.d.ts')) {
-      fs.copyFileSync(srcPath, destPath);
+      writeGeneratedFile(destPath.replace(/\.ts$/, '.mjs'), mjs);
     }
   }
+
+  const tsProgram = ts.createProgram(['src/index.ts'], {
+    ...ts.getDefaultCompilerOptions(),
+    declaration: true,
+    declarationDir: './npmDist',
+    emitDeclarationOnly: true,
+  });
+
+  const tsResult = tsProgram.emit(undefined, (filepath, body) => {
+    writeGeneratedFile(filepath, body);
+  });
+  assert(
+    !tsResult.emitSkipped,
+    'Fail to generate `*.d.ts` files, please run `npm run check`',
+  );
 
   fs.copyFileSync('./LICENSE', './npmDist/LICENSE');
   fs.copyFileSync('./README.md', './npmDist/README.md');

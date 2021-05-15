@@ -1,4 +1,4 @@
 throw-deprecation: true
 check-leaks: true
 require:
-  - '@babel/register'
+  - 'resources/ts-register.js'

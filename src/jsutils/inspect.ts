@@ -1,5 +1,3 @@
-/* eslint-disable flowtype/no-weak-types */
-
 const MAX_ARRAY_LENGTH = 10;
 const MAX_RECURSIVE_DEPTH = 2;
 

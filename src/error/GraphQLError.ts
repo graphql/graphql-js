@@ -1,6 +1,3 @@
-// FIXME:
-// flowlint uninitialized-instance-property:off
-
 import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
 

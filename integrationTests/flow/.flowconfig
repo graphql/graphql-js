@@ -1,8 +1,0 @@
-[include]
-./index.mjs
-
-[declarations]
-.*/node_modules/.*
-
-[options]
-include_warnings=true
