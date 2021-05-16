@@ -833,6 +833,7 @@ function defineFieldMap<TSource, TContext>(
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
   );
 
+  // @ts-expect-error FIXME: TS Conversion
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     devAssert(
       isPlainObj(fieldConfig),
