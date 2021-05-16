@@ -420,7 +420,7 @@ describe('Visitor', () => {
 
   it('visit nodes with unknown kinds but does not traverse deeper', () => {
     const customAST = parse('{ a }');
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     customAST.definitions[0].selectionSet.selections.push({
       kind: 'CustomField',
       name: { kind: 'Name', value: 'NamedNodeToBeSkipped' },

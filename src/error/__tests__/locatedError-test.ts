@@ -18,15 +18,15 @@ describe('locatedError', () => {
 
   it('passes GraphQLError-ish through', () => {
     const e = new Error();
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     e.locations = [];
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     e.path = [];
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     e.nodes = [];
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     e.source = null;
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     e.positions = [];
     e.name = 'GraphQLError';
 
@@ -35,7 +35,7 @@ describe('locatedError', () => {
 
   it('does not pass through elasticsearch-like errors', () => {
     const e = new Error('I am from elasticsearch');
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     e.path = '/something/feed/_search';
 
     expect(locatedError(e, [], [])).to.not.deep.equal(e);

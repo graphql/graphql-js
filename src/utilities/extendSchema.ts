@@ -676,7 +676,7 @@ function getDeprecationReason(
     | InputValueDefinitionNode,
 ): Maybe<string> {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
-  // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
+  // @ts-expect-error validated by `getDirectiveValues`
   return deprecated?.reason;
 }
 
@@ -687,6 +687,6 @@ function getSpecifiedByURL(
   node: ScalarTypeDefinitionNode | ScalarTypeExtensionNode,
 ): Maybe<string> {
   const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
-  // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
+  // @ts-expect-error validated by `getDirectiveValues`
   return specifiedBy?.url;
 }

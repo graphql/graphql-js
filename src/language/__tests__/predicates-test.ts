@@ -19,7 +19,7 @@ import {
 
 function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
   return Object.values(Kind).filter(
-    // $FlowExpectedError[speculation-ambiguous] create node only with kind
+    // @ts-expect-error create node only with kind
     (kind) => predicate({ kind }),
   );
 }

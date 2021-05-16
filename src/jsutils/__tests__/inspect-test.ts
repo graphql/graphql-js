@@ -165,7 +165,7 @@ describe('inspect', () => {
 
     expect(inspect([[new Foo()]])).to.equal('[[[Foo]]]');
 
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     Foo.prototype[Symbol.toStringTag] = 'Bar';
     expect(inspect([[new Foo()]])).to.equal('[[[Bar]]]');
 

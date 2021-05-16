@@ -20,7 +20,7 @@ describe('Printer: SDL document', () => {
   it('produces helpful error messages', () => {
     const badAST = { random: 'Data' };
 
-    // $FlowExpectedError[incompatible-call]
+    // @ts-expect-error
     expect(() => print(badAST)).to.throw(
       'Invalid AST Node: { random: "Data" }.',
     );
