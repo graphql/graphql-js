@@ -999,7 +999,7 @@ export type GraphQLArgument = {
   astNode: ?InputValueDefinitionNode,
 };
 
-export function isRequiredArgument(arg: GraphQLArgument): boolean %checks {
+export function isRequiredArgument(arg: GraphQLArgument): boolean {
   return isNonNullType(arg.type) && arg.defaultValue === undefined;
 }
 
@@ -1593,9 +1593,7 @@ export type GraphQLInputField = {
   astNode: ?InputValueDefinitionNode,
 };
 
-export function isRequiredInputField(
-  field: GraphQLInputField,
-): boolean %checks {
+export function isRequiredInputField(field: GraphQLInputField): boolean {
   return isNonNullType(field.type) && field.defaultValue === undefined;
 }
 
