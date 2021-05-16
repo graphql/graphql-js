@@ -551,7 +551,6 @@ overrides:
       '@typescript-eslint/no-invalid-void-type': error
       '@typescript-eslint/no-require-imports': error
       '@typescript-eslint/no-this-alias': error
-      '@typescript-eslint/no-throw-literal': error
       '@typescript-eslint/no-type-alias': off # TODO consider
       '@typescript-eslint/no-unnecessary-boolean-literal-compare': error
       '@typescript-eslint/no-unnecessary-condition': error
@@ -608,6 +607,7 @@ overrides:
       no-loop-func: off
       no-loss-of-precision: off
       no-redeclare: off
+      no-throw-literal: off
       no-shadow: off
       no-unused-expressions: off
       no-unused-vars: off
@@ -625,6 +625,7 @@ overrides:
       '@typescript-eslint/no-loop-func': error
       '@typescript-eslint/no-loss-of-precision': error
       '@typescript-eslint/no-redeclare': error
+      '@typescript-eslint/no-throw-literal': error
       '@typescript-eslint/no-shadow': error
       '@typescript-eslint/no-unused-expressions': error
       '@typescript-eslint/no-unused-vars':
