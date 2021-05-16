@@ -1,4 +1,4 @@
-export const kitchenSinkSDL: string = `
+export const kitchenSinkSDL = `
 """This is a description of the schema as a whole."""
 schema {
   query: QueryType
