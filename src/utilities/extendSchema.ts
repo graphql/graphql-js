@@ -217,11 +217,11 @@ export function extendSchemaImpl(
 
   function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new GraphQLList(replaceType(type.ofType));
     }
     if (isNonNullType(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
     }
     return replaceNamedType(type);
@@ -378,7 +378,7 @@ export function extendSchemaImpl(
     return {
       ...field,
       type: replaceType(field.type),
-      // $FlowFixMe[incompatible-call]
+      // @ts-expect-error
       args: mapValue(field.args, extendArg),
     };
   }
@@ -410,8 +410,8 @@ export function extendSchemaImpl(
     // Note: While this could make early assertions to get the correctly
     // typed values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    // $FlowFixMe[incompatible-return]
-    // $FlowFixMe[incompatible-exact]
+    // @ts-expect-error
+    // @ts-expect-error
     return opTypes;
   }
 
@@ -430,7 +430,7 @@ export function extendSchemaImpl(
       return new GraphQLList(getWrappedType(node.type));
     }
     if (node.kind === Kind.NON_NULL_TYPE) {
-      // $FlowFixMe[incompatible-call]
+      // @ts-expect-error
       return new GraphQLNonNull(getWrappedType(node.type));
     }
     return getNamedType(node);
@@ -440,7 +440,7 @@ export function extendSchemaImpl(
     return new GraphQLDirective({
       name: node.name.value,
       description: node.description?.value,
-      // $FlowFixMe[incompatible-call]
+      // @ts-expect-error
       locations: node.locations.map(({ value }) => value),
       isRepeatable: node.repeatable,
       args: buildArgumentMap(node.arguments),
@@ -559,7 +559,7 @@ export function extendSchemaImpl(
     // Note: While this could make assertions to get the correctly typed
     // values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    // $FlowFixMe[incompatible-return]
+    // @ts-expect-error
     return nodes.flatMap(
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       (node) => node.interfaces?.map(getNamedType) ?? [],
@@ -572,7 +572,7 @@ export function extendSchemaImpl(
     // Note: While this could make assertions to get the correctly typed
     // values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    // $FlowFixMe[incompatible-return]
+    // @ts-expect-error
     return nodes.flatMap(
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       (node) => node.types?.map(getNamedType) ?? [],

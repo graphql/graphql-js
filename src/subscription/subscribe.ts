@@ -72,7 +72,7 @@ export async function subscribe(
     subscribeFieldResolver,
   } = args;
 
-  // $FlowFixMe[incompatible-call]
+  // @ts-expect-error
   const resultOrStream = await createSourceEventStream(
     schema,
     document,

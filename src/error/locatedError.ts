@@ -29,11 +29,11 @@ export function locatedError(
 
   return new GraphQLError(
     originalError.message,
-    // $FlowFixMe[prop-missing] FIXME
+    // @ts-expect-error FIXME
     originalError.nodes ?? nodes,
-    // $FlowFixMe[prop-missing] FIXME
+    // @ts-expect-error FIXME
     originalError.source,
-    // $FlowFixMe[prop-missing] FIXME
+    // @ts-expect-error FIXME
     originalError.positions,
     path,
     originalError,

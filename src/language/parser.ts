@@ -186,7 +186,7 @@ export class Parser {
     const token = this.expectToken(TokenKind.NAME);
     return this.node(token, {
       kind: Kind.NAME,
-      // $FlowFixMe[incompatible-return] FIXME
+      // @ts-expect-error FIXME
       value: token.value,
     });
   }
@@ -416,7 +416,7 @@ export class Parser {
   }
 
   parseConstArgument(): ConstArgumentNode {
-    // $FlowFixMe[incompatible-return] FIXME during TS conversion
+    // @ts-expect-error FIXME during TS conversion
     return this.parseArgument(true);
   }
 
@@ -521,14 +521,14 @@ export class Parser {
         this._lexer.advance();
         return this.node(token, {
           kind: Kind.INT,
-          // $FlowFixMe[incompatible-return] FIXME
+          // @ts-expect-error FIXME
           value: token.value,
         });
       case TokenKind.FLOAT:
         this._lexer.advance();
         return this.node(token, {
           kind: Kind.FLOAT,
-          // $FlowFixMe[incompatible-return] FIXME
+          // @ts-expect-error FIXME
           value: token.value,
         });
       case TokenKind.STRING:
@@ -546,7 +546,7 @@ export class Parser {
           default:
             return this.node(token, {
               kind: Kind.ENUM,
-              // $FlowFixMe[incompatible-return] FIXME
+              // @ts-expect-error FIXME
               value: token.value,
             });
         }
@@ -570,7 +570,7 @@ export class Parser {
   }
 
   parseConstValueLiteral(): ConstValueNode {
-    // $FlowFixMe[incompatible-return] FIXME during TS conversion
+    // @ts-expect-error FIXME during TS conversion
     return this.parseValueLiteral(true);
   }
 
@@ -579,7 +579,7 @@ export class Parser {
     this._lexer.advance();
     return this.node(token, {
       kind: Kind.STRING,
-      // $FlowFixMe[incompatible-return] FIXME
+      // @ts-expect-error FIXME
       value: token.value,
       block: token.kind === TokenKind.BLOCK_STRING,
     });
@@ -640,7 +640,7 @@ export class Parser {
   }
 
   parseConstDirectives(): Array<ConstDirectiveNode> {
-    // $FlowFixMe[incompatible-return] FIXME during TS conversion
+    // @ts-expect-error FIXME during TS conversion
     return this.parseDirectives(true);
   }
 

@@ -81,7 +81,7 @@ export function findBreakingChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
-  // $FlowFixMe[prop-missing]
+  // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in BreakingChangeType,
   );
@@ -95,7 +95,7 @@ export function findDangerousChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<DangerousChange> {
-  // $FlowFixMe[prop-missing]
+  // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in DangerousChangeType,
   );

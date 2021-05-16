@@ -315,7 +315,7 @@ export function buildExecutionContext(
     return coercedVariableValues.errors;
   }
 
-  // $FlowFixMe[incompatible-return]
+  // @ts-expect-error
   return {
     schema,
     fragments,
