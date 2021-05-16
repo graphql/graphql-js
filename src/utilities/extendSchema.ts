@@ -438,7 +438,6 @@ export function extendSchemaImpl(
     return new GraphQLDirective({
       name: node.name.value,
       description: node.description?.value,
-      // @ts-expect-error
       locations: node.locations.map(({ value }) => value),
       isRepeatable: node.repeatable,
       args: buildArgumentMap(node.arguments),
