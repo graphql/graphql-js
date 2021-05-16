@@ -4,11 +4,7 @@ import { devAssert } from '../jsutils/devAssert.mjs';
 import { instanceOf } from '../jsutils/instanceOf.mjs';
 import { isObjectLike } from '../jsutils/isObjectLike.mjs';
 import { __Schema } from './introspection.mjs';
-import {
-  GraphQLDirective,
-  isDirective,
-  specifiedDirectives,
-} from './directives.mjs';
+import { isDirective, specifiedDirectives } from './directives.mjs';
 import {
   isObjectType,
   isInterfaceType,
