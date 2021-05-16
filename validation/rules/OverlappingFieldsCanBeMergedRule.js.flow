@@ -787,15 +787,16 @@ function subfieldConflicts(
  * not matter. We do this by maintaining a sort of double adjacency sets.
  */
 class PairSet {
-  _data: ObjMap<ObjMap<boolean>>;
+  _data: Map<string, Map<string, boolean>>;
 
   constructor() {
-    this._data = Object.create(null);
+    this._data = new Map();
   }
 
   has(a: string, b: string, areMutuallyExclusive: boolean): boolean {
-    const first = this._data[a];
-    const result = first && first[b];
+    const [key1, key2] = a < b ? [a, b] : [b, a];
+
+    const result = this._data.get(key1)?.get(key2);
     if (result === undefined) {
       return false;
     }
@@ -809,16 +810,13 @@ class PairSet {
   }
 
   add(a: string, b: string, areMutuallyExclusive: boolean): void {
-    this._pairSetAdd(a, b, areMutuallyExclusive);
-    this._pairSetAdd(b, a, areMutuallyExclusive);
-  }
+    const [key1, key2] = a < b ? [a, b] : [b, a];
 
-  _pairSetAdd(a: string, b: string, areMutuallyExclusive: boolean): void {
-    let map = this._data[a];
-    if (!map) {
-      map = Object.create(null);
-      this._data[a] = map;
+    const map = this._data.get(key1);
+    if (map === undefined) {
+      this._data.set(key1, new Map([[key2, areMutuallyExclusive]]));
+    } else {
+      map.set(key2, areMutuallyExclusive);
     }
-    map[b] = areMutuallyExclusive;
   }
 }
