@@ -739,12 +739,12 @@ function subfieldConflicts(conflicts, responseName, node1, node2) {
 
 class PairSet {
   constructor() {
-    this._data = Object.create(null);
+    this._data = new Map();
   }
 
   has(a, b, areMutuallyExclusive) {
-    const first = this._data[a];
-    const result = first && first[b];
+    const [key1, key2] = a < b ? [a, b] : [b, a];
+    const result = this._data.get(key1)?.get(key2);
 
     if (result === undefined) {
       return false;
@@ -760,19 +760,14 @@ class PairSet {
   }
 
   add(a, b, areMutuallyExclusive) {
-    this._pairSetAdd(a, b, areMutuallyExclusive);
+    const [key1, key2] = a < b ? [a, b] : [b, a];
 
-    this._pairSetAdd(b, a, areMutuallyExclusive);
-  }
+    const map = this._data.get(key1);
 
-  _pairSetAdd(a, b, areMutuallyExclusive) {
-    let map = this._data[a];
-
-    if (!map) {
-      map = Object.create(null);
-      this._data[a] = map;
+    if (map === undefined) {
+      this._data.set(key1, new Map([[key2, areMutuallyExclusive]]));
+    } else {
+      map.set(key2, areMutuallyExclusive);
     }
-
-    map[b] = areMutuallyExclusive;
   }
 }
