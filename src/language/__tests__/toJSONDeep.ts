@@ -11,7 +11,7 @@ export function toJSONDeep(value: unknown): unknown {
   }
 
   if (typeof value.toJSON === 'function') {
-    // $FlowFixMe[incompatible-use]
+    // @ts-expect-error
     return value.toJSON();
   }
 

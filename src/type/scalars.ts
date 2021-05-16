@@ -139,7 +139,7 @@ function serializeObject(outputValue: unknown): unknown {
       }
     }
     if (typeof outputValue.toJSON === 'function') {
-      // $FlowFixMe[incompatible-use]
+      // @ts-expect-error
       return outputValue.toJSON();
     }
   }

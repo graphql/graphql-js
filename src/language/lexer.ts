@@ -64,7 +64,7 @@ export class Lexer {
     let token = this.token;
     if (token.kind !== TokenKind.EOF) {
       do {
-        // $FlowFixMe[cannot-write] next is only mutable during parsing, so we cast to allow this.
+        // @ts-expect-error next is only mutable during parsing, so we cast to allow this.
         token = token.next ?? (token.next = readToken(this, token));
       } while (token.kind === TokenKind.COMMENT);
     }

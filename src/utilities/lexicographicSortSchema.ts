@@ -57,17 +57,17 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
 
   function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new GraphQLList(replaceType(type.ofType));
     } else if (isNonNullType(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
     }
     return replaceNamedType(type);
   }
 
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
-    // $FlowFixMe[incompatible-return]
+    // @ts-expect-error
     return typeMap[type.name];
   }
 

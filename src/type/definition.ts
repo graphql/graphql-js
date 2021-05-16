@@ -341,7 +341,7 @@ export class GraphQLList<T extends GraphQLType> {
     return this.toString();
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  // @ts-expect-error Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'GraphQLList';
   }
@@ -387,7 +387,7 @@ export class GraphQLNonNull<T extends GraphQLNullableType> {
     return this.toString();
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  // @ts-expect-error Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'GraphQLNonNull';
   }
@@ -608,7 +608,7 @@ export class GraphQLScalarType {
     return this.toString();
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  // @ts-expect-error Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'GraphQLScalarType';
   }
@@ -752,7 +752,7 @@ export class GraphQLObjectType {
     return this.toString();
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  // @ts-expect-error Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'GraphQLObjectType';
   }
@@ -1073,7 +1073,7 @@ export class GraphQLInterfaceType {
     return this.toString();
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  // @ts-expect-error Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'GraphQLInterfaceType';
   }
@@ -1180,7 +1180,7 @@ export class GraphQLUnionType {
     return this.toString();
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  // @ts-expect-error Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'GraphQLUnionType';
   }
@@ -1361,7 +1361,7 @@ export class GraphQLEnumType /* <T> */ {
     return this.toString();
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  // @ts-expect-error Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'GraphQLEnumType';
   }
@@ -1510,7 +1510,7 @@ export class GraphQLInputObjectType {
     return this.toString();
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  // @ts-expect-error Flow doesn't support computed properties yet
   get [Symbol.toStringTag]() {
     return 'GraphQLInputObjectType';
   }
