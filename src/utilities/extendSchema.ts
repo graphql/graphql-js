@@ -224,6 +224,7 @@ export function extendSchemaImpl(
       // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
     }
+    // @ts-expect-error FIXME
     return replaceNamedType(type);
   }
 
@@ -657,6 +658,7 @@ export function extendSchemaImpl(
 }
 
 const stdTypeMap = keyMap(
+  // @ts-expect-error FIXME
   specifiedScalarTypes.concat(introspectionTypes),
   (type) => type.name,
 );

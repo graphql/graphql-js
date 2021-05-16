@@ -123,6 +123,7 @@ export function buildClientSchema(
   // preferring cached instances before building new instances.
   function getType(typeRef: IntrospectionTypeRef): GraphQLType {
     if (typeRef.kind === TypeKind.LIST) {
+      // @ts-expect-error FIXME
       const itemRef = typeRef.ofType;
       if (!itemRef) {
         throw new Error('Decorated type deeper than introspection query.');
@@ -130,6 +131,7 @@ export function buildClientSchema(
       return new GraphQLList(getType(itemRef));
     }
     if (typeRef.kind === TypeKind.NON_NULL) {
+      // @ts-expect-error FIXME
       const nullableRef = typeRef.ofType;
       if (!nullableRef) {
         throw new Error('Decorated type deeper than introspection query.');
@@ -137,6 +139,7 @@ export function buildClientSchema(
       const nullableType = getType(nullableRef);
       return new GraphQLNonNull(assertNullableType(nullableType));
     }
+    // @ts-expect-error FIXME
     return getNamedType(typeRef);
   }
 
@@ -175,16 +178,22 @@ export function buildClientSchema(
     if (type != null && type.name != null && type.kind != null) {
       switch (type.kind) {
         case TypeKind.SCALAR:
+          // @ts-expect-error FIXME
           return buildScalarDef(type);
         case TypeKind.OBJECT:
+          // @ts-expect-error FIXME
           return buildObjectDef(type);
         case TypeKind.INTERFACE:
+          // @ts-expect-error FIXME
           return buildInterfaceDef(type);
         case TypeKind.UNION:
+          // @ts-expect-error FIXME
           return buildUnionDef(type);
         case TypeKind.ENUM:
+          // @ts-expect-error FIXME
           return buildEnumDef(type);
         case TypeKind.INPUT_OBJECT:
+          // @ts-expect-error FIXME
           return buildInputObjectDef(type);
       }
     }

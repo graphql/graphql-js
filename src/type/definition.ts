@@ -158,6 +158,13 @@ export function assertInputObjectType(type: unknown): GraphQLInputObjectType {
   return type;
 }
 
+export function isListType(
+  type: GraphQLInputType,
+): type is GraphQLList<GraphQLInputType>;
+export function isListType(
+  type: GraphQLOutputType,
+): type is GraphQLList<GraphQLOutputType>;
+export function isListType(type: unknown): type is GraphQLList<GraphQLType>;
 export function isListType(type: unknown): type is GraphQLList<GraphQLType> {
   return instanceOf(type, GraphQLList);
 }
@@ -169,6 +176,15 @@ export function assertListType(type: unknown): GraphQLList<GraphQLType> {
   return type;
 }
 
+export function isNonNullType(
+  type: GraphQLInputType,
+): type is GraphQLNonNull<GraphQLInputType>;
+export function isNonNullType(
+  type: GraphQLOutputType,
+): type is GraphQLNonNull<GraphQLOutputType>;
+export function isNonNullType(
+  type: unknown,
+): type is GraphQLNonNull<GraphQLType>;
 export function isNonNullType(
   type: unknown,
 ): type is GraphQLNonNull<GraphQLType> {
@@ -780,6 +796,7 @@ function defineFieldMap<TSource, TContext>(
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
   );
 
+  // @ts-expect-error FIXME: TS Conversion
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     devAssert(
       isPlainObj(fieldConfig),

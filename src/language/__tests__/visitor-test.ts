@@ -50,6 +50,7 @@ function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
 }
 
 function getValue(node: ASTNode) {
+  // @ts-expect-error FIXME
   return node.value != null ? node.value : undefined;
 }
 
@@ -263,6 +264,7 @@ describe('Visitor', () => {
         if (node.kind === 'Field' && node.name.value === 'a') {
           return {
             kind: 'Field',
+            // @ts-expect-error FIXME
             selectionSet: [addedField].concat(node.selectionSet),
           };
         }

@@ -1566,12 +1566,12 @@ describe('Introspection', () => {
     });
 
     // istanbul ignore next (Called only to fail test)
-    function fieldResolver(_1, _2, _3, info) {
+    function fieldResolver(_1, _2, _3, info): never {
       expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
     // istanbul ignore next (Called only to fail test)
-    function typeResolver(_1, _2, info) {
+    function typeResolver(_1, _2, info): never {
       expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
