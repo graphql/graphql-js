@@ -4,7 +4,7 @@ Object.defineProperty(exports, '__esModule', {
   value: true,
 });
 exports.getLocation = getLocation;
-
+const LineRegExp = /\r\n|[\n\r]/g;
 /**
  * Represents a location in a Source.
  */
@@ -14,18 +14,20 @@ exports.getLocation = getLocation;
  * line and column as a SourceLocation.
  */
 function getLocation(source, position) {
-  const lineRegexp = /\r\n|[\n\r]/g;
+  let lastLineStart = 0;
   let line = 1;
-  let column = position + 1;
-  let match;
 
-  while ((match = lineRegexp.exec(source.body)) && match.index < position) {
+  for (const match of source.body.matchAll(LineRegExp)) {
+    if (match.index >= position) {
+      break;
+    }
+
+    lastLineStart = match.index + match[0].length;
     line += 1;
-    column = position + 1 - (match.index + match[0].length);
   }
 
   return {
     line,
-    column,
+    column: position + 1 - lastLineStart,
   };
 }
