@@ -577,7 +577,7 @@ overrides:
       '@typescript-eslint/prefer-readonly': error
       '@typescript-eslint/prefer-readonly-parameter-types': off # TODO consider
       '@typescript-eslint/prefer-reduce-type-parameter': error
-      '@typescript-eslint/prefer-regexp-exec': error
+      '@typescript-eslint/prefer-regexp-exec': off
       '@typescript-eslint/prefer-ts-expect-error': error
       '@typescript-eslint/prefer-string-starts-ends-with': off # TODO switch to error after IE11 drop
       '@typescript-eslint/promise-function-async': off

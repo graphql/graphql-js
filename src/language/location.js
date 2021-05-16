@@ -1,5 +1,7 @@
 import type { Source } from './source';
 
+const LineRegExp = /\r\n|[\n\r]/g;
+
 /**
  * Represents a location in a Source.
  */
@@ -13,13 +15,16 @@ export type SourceLocation = {
  * line and column as a SourceLocation.
  */
 export function getLocation(source: Source, position: number): SourceLocation {
-  const lineRegexp = /\r\n|[\n\r]/g;
+  let lastLineStart = 0;
   let line = 1;
-  let column = position + 1;
-  let match;
-  while ((match = lineRegexp.exec(source.body)) && match.index < position) {
+
+  for (const match of source.body.matchAll(LineRegExp)) {
+    if (match.index >= position) {
+      break;
+    }
+    lastLineStart = match.index + match[0].length;
     line += 1;
-    column = position + 1 - (match.index + match[0].length);
   }
-  return { line, column };
+
+  return { line, column: position + 1 - lastLineStart };
 }
