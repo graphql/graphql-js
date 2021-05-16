@@ -165,6 +165,7 @@ export async function createSourceEventStream(
       return { errors: exeContext };
     }
 
+    // @ts-expect-error FIXME
     const eventStream = await executeSubscription(exeContext);
 
     // Assert field returned an event stream, otherwise yield an error.

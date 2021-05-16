@@ -83,9 +83,11 @@ describe('Type System: Scalars', () => {
       },
     });
 
+    // @ts-expect-error
     expect(scalar.parseLiteral(parseValue('null'))).to.equal(
       'parseValue: null',
     );
+    // @ts-expect-error
     expect(scalar.parseLiteral(parseValue('{ foo: "bar" }'))).to.equal(
       'parseValue: { foo: "bar" }',
     );
