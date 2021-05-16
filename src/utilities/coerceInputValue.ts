@@ -32,7 +32,7 @@ export function coerceInputValue(
   type: GraphQLInputType,
   onError: OnErrorCB = defaultOnError,
 ): unknown {
-  return coerceInputValueImpl(inputValue, type, onError);
+  return coerceInputValueImpl(inputValue, type, onError, undefined);
 }
 
 function defaultOnError(
