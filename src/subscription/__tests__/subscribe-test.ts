@@ -312,22 +312,22 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    // $FlowExpectedError[incompatible-call]
+    // @ts-expect-error
     (await expectPromise(subscribe({ schema: null, document }))).toRejectWith(
       'Expected null to be a GraphQL schema.',
     );
 
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     (await expectPromise(subscribe({ document }))).toRejectWith(
       'Expected undefined to be a GraphQL schema.',
     );
 
-    // $FlowExpectedError[incompatible-call]
+    // @ts-expect-error
     (await expectPromise(subscribe({ schema, document: null }))).toRejectWith(
       'Must provide document.',
     );
 
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     (await expectPromise(subscribe({ schema }))).toRejectWith(
       'Must provide document.',
     );
@@ -367,7 +367,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     (await expectPromise(subscribe({ schema, document: {} }))).toReject();
   });
 

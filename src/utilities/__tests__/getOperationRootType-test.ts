@@ -155,7 +155,7 @@ describe('getOperationRootType', () => {
       operation: 'non_existent_operation' as any,
     };
 
-    // $FlowExpectedError[incompatible-call]
+    // @ts-expect-error
     expect(() => getOperationRootType(testSchema, operationNode)).to.throw(
       'Can only have query, mutation and subscription operations.',
     );

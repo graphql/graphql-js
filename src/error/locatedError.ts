@@ -23,7 +23,7 @@ export function locatedError(
 
   // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
   if (Array.isArray(originalError.path)) {
-    // $FlowExpectedError[incompatible-return]
+    // @ts-expect-error
     return originalError;
   }
 

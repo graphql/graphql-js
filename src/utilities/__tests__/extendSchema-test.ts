@@ -1143,12 +1143,12 @@ describe('extendSchema', () => {
   it('Rejects invalid AST', () => {
     const schema = new GraphQLSchema({});
 
-    // $FlowExpectedError[incompatible-call]
+    // @ts-expect-error
     expect(() => extendSchema(schema, null)).to.throw(
       'Must provide valid Document AST',
     );
 
-    // $FlowExpectedError[prop-missing]
+    // @ts-expect-error
     expect(() => extendSchema(schema, {})).to.throw(
       'Must provide valid Document AST',
     );

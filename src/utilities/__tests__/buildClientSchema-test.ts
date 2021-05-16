@@ -74,7 +74,7 @@ describe('Type System: build schema from introspection', () => {
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
 
-    // $FlowExpectedError[cannot-write]
+    // @ts-expect-error
     delete introspection.__schema.queryType;
 
     const clientSchema = buildClientSchema(introspection);
@@ -475,7 +475,7 @@ describe('Type System: build schema from introspection', () => {
     const schema = buildSchema(sdl);
     const introspection = introspectionFromSchema(schema);
 
-    // $FlowExpectedError[cannot-write]
+    // @ts-expect-error
     delete introspection.__schema.directives;
 
     const clientSchema = buildClientSchema(introspection);
@@ -629,12 +629,12 @@ describe('Type System: build schema from introspection', () => {
     `);
 
     it('throws when introspection is missing __schema property', () => {
-      // $FlowExpectedError[incompatible-call]
+      // @ts-expect-error
       expect(() => buildClientSchema(null)).to.throw(
         'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: null.',
       );
 
-      // $FlowExpectedError[prop-missing]
+      // @ts-expect-error
       expect(() => buildClientSchema({})).to.throw(
         'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: {}.',
       );
@@ -643,7 +643,7 @@ describe('Type System: build schema from introspection', () => {
     it('throws when referenced unknown type', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       introspection.__schema.types = introspection.__schema.types.filter(
         ({ name }) => name !== 'Query',
       );
@@ -661,7 +661,7 @@ describe('Type System: build schema from introspection', () => {
       `);
       const introspection = introspectionFromSchema(schema);
 
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       introspection.__schema.types = introspection.__schema.types.filter(
         ({ name }) => name !== 'Float',
       );
@@ -676,7 +676,7 @@ describe('Type System: build schema from introspection', () => {
 
       expect(introspection).to.have.nested.property('__schema.queryType.name');
 
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete introspection.__schema.queryType.name;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -691,7 +691,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       invariant(queryTypeIntrospection?.kind === 'OBJECT');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete queryTypeIntrospection.kind;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -708,7 +708,7 @@ describe('Type System: build schema from introspection', () => {
       expect(queryTypeIntrospection).to.have.property('interfaces');
 
       invariant(queryTypeIntrospection?.kind === 'OBJECT');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete queryTypeIntrospection.interfaces;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -723,7 +723,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       invariant(someInterfaceIntrospection?.kind === 'INTERFACE');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       someInterfaceIntrospection.interfaces = null;
 
       const clientSchema = buildClientSchema(introspection);
@@ -737,7 +737,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       invariant(queryTypeIntrospection?.kind === 'OBJECT');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete queryTypeIntrospection.fields;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -752,7 +752,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       invariant(queryTypeIntrospection?.kind === 'OBJECT');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete queryTypeIntrospection.fields[0].args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -771,7 +771,7 @@ describe('Type System: build schema from introspection', () => {
       invariant(argType.kind === 'SCALAR');
 
       expect(argType).to.have.property('name', 'String');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       argType.name = 'SomeUnion';
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -790,7 +790,7 @@ describe('Type System: build schema from introspection', () => {
       invariant(fieldType.kind === 'SCALAR');
 
       expect(fieldType).to.have.property('name', 'String');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       fieldType.name = 'SomeInputObject';
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -805,7 +805,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       invariant(someUnionIntrospection?.kind === 'UNION');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete someUnionIntrospection.possibleTypes;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -820,7 +820,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       invariant(someEnumIntrospection?.kind === 'ENUM');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete someEnumIntrospection.enumValues;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -835,7 +835,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       invariant(someInputObjectIntrospection?.kind === 'INPUT_OBJECT');
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete someInputObjectIntrospection.inputFields;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -852,7 +852,7 @@ describe('Type System: build schema from introspection', () => {
         locations: ['QUERY'],
       });
 
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete someDirectiveIntrospection.locations;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -869,7 +869,7 @@ describe('Type System: build schema from introspection', () => {
         args: [],
       });
 
-      // $FlowExpectedError[cannot-write]
+      // @ts-expect-error
       delete someDirectiveIntrospection.args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
