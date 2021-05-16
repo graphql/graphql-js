@@ -238,19 +238,19 @@ export type IntrospectionInputObjectType = {
   readonly inputFields: ReadonlyArray<IntrospectionInputValue>;
 };
 
-export type IntrospectionListTypeRef<
+export interface IntrospectionListTypeRef<
   T extends IntrospectionTypeRef = IntrospectionTypeRef,
-> = {
+> {
   readonly kind: 'LIST';
   readonly ofType: T;
-};
+}
 
-export type IntrospectionNonNullTypeRef<
+export interface IntrospectionNonNullTypeRef<
   T extends IntrospectionTypeRef = IntrospectionTypeRef,
-> = {
+> {
   readonly kind: 'NON_NULL';
   readonly ofType: T;
-};
+}
 
 export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef
