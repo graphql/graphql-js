@@ -482,7 +482,7 @@ describe('Subscription Initialization Phase', () => {
 // Once a subscription returns a valid AsyncIterator, it can still yield errors.
 describe('Subscription Publish Phase', () => {
   it('produces a payload for multiple subscribe in same subscription', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
 
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
@@ -525,7 +525,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('produces a payload per subscription event', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
@@ -614,7 +614,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('produces a payload when there are multiple events', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
@@ -680,7 +680,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should not trigger when subscription is already done', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
@@ -734,7 +734,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should not trigger when subscription is thrown', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
@@ -786,7 +786,7 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('event order is correct for multiple publishes', async () => {
-    const pubsub = new SimplePubSub();
+    const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
     invariant(isAsyncIterable(subscription));
 
