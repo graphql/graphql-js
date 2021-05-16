@@ -538,7 +538,7 @@ overrides:
       '@typescript-eslint/no-extraneous-class': off # TODO consider
       '@typescript-eslint/no-floating-promises': error
       '@typescript-eslint/no-for-in-array': error
-      '@typescript-eslint/no-implicit-any-catch': off # TODO: Enable after TS convertion
+      '@typescript-eslint/no-implicit-any-catch': off # TODO: Enable after TS conversion
       '@typescript-eslint/no-implied-eval': error
       '@typescript-eslint/no-inferrable-types':
         [error, { ignoreParameters: true, ignoreProperties: true }]
