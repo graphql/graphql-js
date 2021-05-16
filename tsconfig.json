@@ -7,7 +7,7 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": false,
-    "strictFunctionTypes": false,
+    "strictFunctionTypes": true,
     "noEmit": true,
     "forceConsistentCasingInFileNames": true
   }
