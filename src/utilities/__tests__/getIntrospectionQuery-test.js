@@ -12,7 +12,7 @@ function expectIntrospectionQuery(options?: IntrospectionOptions) {
       const pattern = toRegExp(name);
 
       expect(query).to.match(pattern);
-      expect(query.match(pattern)).to.have.lengthOf(times);
+      expect(pattern.exec(query)).to.have.lengthOf(times);
     },
     toNotMatch(name: string): void {
       expect(query).to.not.match(toRegExp(name));
