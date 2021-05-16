@@ -184,9 +184,10 @@ export class Parser {
    */
   parseName(): NameNode {
     const token = this.expectToken(TokenKind.NAME);
+    // @ts-expect-error FIXME
     return this.node(token, {
-      kind: Kind.NAME,
       // @ts-expect-error FIXME
+      kind: Kind.NAME,
       value: token.value,
     });
   }
@@ -197,7 +198,9 @@ export class Parser {
    * Document : Definition+
    */
   parseDocument(): DocumentNode {
+    // @ts-expect-error FIXME
     return this.node(this._lexer.token, {
+      // @ts-expect-error FIXME
       kind: Kind.DOCUMENT,
       definitions: this.many(
         TokenKind.SOF,
@@ -257,7 +260,9 @@ export class Parser {
   parseOperationDefinition(): OperationDefinitionNode {
     const start = this._lexer.token;
     if (this.peek(TokenKind.BRACE_L)) {
+      // @ts-expect-error FIXME
       return this.node(start, {
+        // @ts-expect-error FIXME
         kind: Kind.OPERATION_DEFINITION,
         operation: 'query',
         name: undefined,
@@ -271,7 +276,9 @@ export class Parser {
     if (this.peek(TokenKind.NAME)) {
       name = this.parseName();
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.OPERATION_DEFINITION,
       operation,
       name,
@@ -313,7 +320,9 @@ export class Parser {
    * VariableDefinition : Variable : Type DefaultValue? Directives[Const]?
    */
   parseVariableDefinition(): VariableDefinitionNode {
+    // @ts-expect-error FIXME
     return this.node(this._lexer.token, {
+      // @ts-expect-error FIXME
       kind: Kind.VARIABLE_DEFINITION,
       variable: this.parseVariable(),
       type: (this.expectToken(TokenKind.COLON), this.parseTypeReference()),
@@ -330,7 +339,9 @@ export class Parser {
   parseVariable(): VariableNode {
     const start = this._lexer.token;
     this.expectToken(TokenKind.DOLLAR);
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.VARIABLE,
       name: this.parseName(),
     });
@@ -340,7 +351,9 @@ export class Parser {
    * SelectionSet : { Selection+ }
    */
   parseSelectionSet(): SelectionSetNode {
+    // @ts-expect-error FIXME
     return this.node(this._lexer.token, {
+      // @ts-expect-error FIXME
       kind: Kind.SELECTION_SET,
       selections: this.many(
         TokenKind.BRACE_L,
@@ -380,7 +393,9 @@ export class Parser {
       name = nameOrAlias;
     }
 
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.FIELD,
       alias,
       name,
@@ -408,7 +423,9 @@ export class Parser {
     const name = this.parseName();
 
     this.expectToken(TokenKind.COLON);
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.ARGUMENT,
       name,
       value: this.parseValueLiteral(isConst),
@@ -435,13 +452,17 @@ export class Parser {
 
     const hasTypeCondition = this.expectOptionalKeyword('on');
     if (!hasTypeCondition && this.peek(TokenKind.NAME)) {
+      // @ts-expect-error FIXME
       return this.node(start, {
+        // @ts-expect-error FIXME
         kind: Kind.FRAGMENT_SPREAD,
         name: this.parseFragmentName(),
         directives: this.parseDirectives(false),
       });
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.INLINE_FRAGMENT,
       typeCondition: hasTypeCondition ? this.parseNamedType() : undefined,
       directives: this.parseDirectives(false),
@@ -462,7 +483,9 @@ export class Parser {
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
     if (this._options?.allowLegacyFragmentVariables === true) {
+      // @ts-expect-error FIXME
       return this.node(start, {
+        // @ts-expect-error FIXME
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
         variableDefinitions: this.parseVariableDefinitions(),
@@ -471,7 +494,9 @@ export class Parser {
         selectionSet: this.parseSelectionSet(),
       });
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.FRAGMENT_DEFINITION,
       name: this.parseFragmentName(),
       typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
@@ -519,16 +544,18 @@ export class Parser {
         return this.parseObject(isConst);
       case TokenKind.INT:
         this._lexer.advance();
+        // @ts-expect-error FIXME
         return this.node(token, {
-          kind: Kind.INT,
           // @ts-expect-error FIXME
+          kind: Kind.INT,
           value: token.value,
         });
       case TokenKind.FLOAT:
         this._lexer.advance();
+        // @ts-expect-error FIXME
         return this.node(token, {
-          kind: Kind.FLOAT,
           // @ts-expect-error FIXME
+          kind: Kind.FLOAT,
           value: token.value,
         });
       case TokenKind.STRING:
@@ -538,15 +565,19 @@ export class Parser {
         this._lexer.advance();
         switch (token.value) {
           case 'true':
+            // @ts-expect-error FIXME
             return this.node(token, { kind: Kind.BOOLEAN, value: true });
           case 'false':
+            // @ts-expect-error FIXME
             return this.node(token, { kind: Kind.BOOLEAN, value: false });
           case 'null':
+            // @ts-expect-error FIXME
             return this.node(token, { kind: Kind.NULL });
           default:
+            // @ts-expect-error FIXME
             return this.node(token, {
-              kind: Kind.ENUM,
               // @ts-expect-error FIXME
+              kind: Kind.ENUM,
               value: token.value,
             });
         }
@@ -577,9 +608,10 @@ export class Parser {
   parseStringLiteral(): StringValueNode {
     const token = this._lexer.token;
     this._lexer.advance();
+    // @ts-expect-error FIXME
     return this.node(token, {
-      kind: Kind.STRING,
       // @ts-expect-error FIXME
+      kind: Kind.STRING,
       value: token.value,
       block: token.kind === TokenKind.BLOCK_STRING,
     });
@@ -592,7 +624,9 @@ export class Parser {
    */
   parseList(isConst: boolean): ListValueNode {
     const item = () => this.parseValueLiteral(isConst);
+    // @ts-expect-error FIXME
     return this.node(this._lexer.token, {
+      // @ts-expect-error FIXME
       kind: Kind.LIST,
       values: this.any(TokenKind.BRACKET_L, item, TokenKind.BRACKET_R),
     });
@@ -605,7 +639,9 @@ export class Parser {
    */
   parseObject(isConst: boolean): ObjectValueNode {
     const item = () => this.parseObjectField(isConst);
+    // @ts-expect-error FIXME
     return this.node(this._lexer.token, {
+      // @ts-expect-error FIXME
       kind: Kind.OBJECT,
       fields: this.any(TokenKind.BRACE_L, item, TokenKind.BRACE_R),
     });
@@ -619,7 +655,9 @@ export class Parser {
     const name = this.parseName();
     this.expectToken(TokenKind.COLON);
 
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.OBJECT_FIELD,
       name,
       value: this.parseValueLiteral(isConst),
@@ -650,7 +688,9 @@ export class Parser {
   parseDirective(isConst: boolean): DirectiveNode {
     const start = this._lexer.token;
     this.expectToken(TokenKind.AT);
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.DIRECTIVE,
       name: this.parseName(),
       arguments: this.parseArguments(isConst),
@@ -672,6 +712,7 @@ export class Parser {
       const innerType = this.parseTypeReference();
       this.expectToken(TokenKind.BRACKET_R);
       type = this.node(start, {
+        // @ts-expect-error FIXME
         kind: Kind.LIST_TYPE,
         type: innerType,
       });
@@ -680,7 +721,9 @@ export class Parser {
     }
 
     if (this.expectOptionalToken(TokenKind.BANG)) {
+      // @ts-expect-error FIXME
       return this.node(start, {
+        // @ts-expect-error FIXME
         kind: Kind.NON_NULL_TYPE,
         type,
       });
@@ -692,7 +735,9 @@ export class Parser {
    * NamedType : Name
    */
   parseNamedType(): NamedTypeNode {
+    // @ts-expect-error FIXME
     return this.node(this._lexer.token, {
+      // @ts-expect-error FIXME
       kind: Kind.NAMED_TYPE,
       name: this.parseName(),
     });
@@ -770,7 +815,9 @@ export class Parser {
       this.parseOperationTypeDefinition,
       TokenKind.BRACE_R,
     );
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.SCHEMA_DEFINITION,
       description,
       directives,
@@ -786,7 +833,9 @@ export class Parser {
     const operation = this.parseOperationType();
     this.expectToken(TokenKind.COLON);
     const type = this.parseNamedType();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.OPERATION_TYPE_DEFINITION,
       operation,
       type,
@@ -802,7 +851,9 @@ export class Parser {
     this.expectKeyword('scalar');
     const name = this.parseName();
     const directives = this.parseConstDirectives();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.SCALAR_TYPE_DEFINITION,
       description,
       name,
@@ -823,7 +874,9 @@ export class Parser {
     const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseConstDirectives();
     const fields = this.parseFieldsDefinition();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.OBJECT_TYPE_DEFINITION,
       description,
       name,
@@ -867,7 +920,9 @@ export class Parser {
     this.expectToken(TokenKind.COLON);
     const type = this.parseTypeReference();
     const directives = this.parseConstDirectives();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.FIELD_DEFINITION,
       description,
       name,
@@ -903,7 +958,9 @@ export class Parser {
       defaultValue = this.parseConstValueLiteral();
     }
     const directives = this.parseConstDirectives();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.INPUT_VALUE_DEFINITION,
       description,
       name,
@@ -925,7 +982,9 @@ export class Parser {
     const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseConstDirectives();
     const fields = this.parseFieldsDefinition();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.INTERFACE_TYPE_DEFINITION,
       description,
       name,
@@ -946,7 +1005,9 @@ export class Parser {
     const name = this.parseName();
     const directives = this.parseConstDirectives();
     const types = this.parseUnionMemberTypes();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.UNION_TYPE_DEFINITION,
       description,
       name,
@@ -977,7 +1038,9 @@ export class Parser {
     const name = this.parseName();
     const directives = this.parseConstDirectives();
     const values = this.parseEnumValuesDefinition();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.ENUM_TYPE_DEFINITION,
       description,
       name,
@@ -1007,7 +1070,9 @@ export class Parser {
     const description = this.parseDescription();
     const name = this.parseName();
     const directives = this.parseConstDirectives();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.ENUM_VALUE_DEFINITION,
       description,
       name,
@@ -1026,7 +1091,9 @@ export class Parser {
     const name = this.parseName();
     const directives = this.parseConstDirectives();
     const fields = this.parseInputFieldsDefinition();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.INPUT_OBJECT_TYPE_DEFINITION,
       description,
       name,
@@ -1102,7 +1169,9 @@ export class Parser {
     if (directives.length === 0 && operationTypes.length === 0) {
       throw this.unexpected();
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.SCHEMA_EXTENSION,
       directives,
       operationTypes,
@@ -1122,7 +1191,9 @@ export class Parser {
     if (directives.length === 0) {
       throw this.unexpected();
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.SCALAR_TYPE_EXTENSION,
       name,
       directives,
@@ -1150,7 +1221,9 @@ export class Parser {
     ) {
       throw this.unexpected();
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.OBJECT_TYPE_EXTENSION,
       name,
       interfaces,
@@ -1180,7 +1253,9 @@ export class Parser {
     ) {
       throw this.unexpected();
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.INTERFACE_TYPE_EXTENSION,
       name,
       interfaces,
@@ -1204,7 +1279,9 @@ export class Parser {
     if (directives.length === 0 && types.length === 0) {
       throw this.unexpected();
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.UNION_TYPE_EXTENSION,
       name,
       directives,
@@ -1227,7 +1304,9 @@ export class Parser {
     if (directives.length === 0 && values.length === 0) {
       throw this.unexpected();
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.ENUM_TYPE_EXTENSION,
       name,
       directives,
@@ -1250,7 +1329,9 @@ export class Parser {
     if (directives.length === 0 && fields.length === 0) {
       throw this.unexpected();
     }
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.INPUT_OBJECT_TYPE_EXTENSION,
       name,
       directives,
@@ -1272,7 +1353,9 @@ export class Parser {
     const repeatable = this.expectOptionalKeyword('repeatable');
     this.expectKeyword('on');
     const locations = this.parseDirectiveLocations();
+    // @ts-expect-error FIXME
     return this.node(start, {
+      // @ts-expect-error FIXME
       kind: Kind.DIRECTIVE_DEFINITION,
       description,
       name,

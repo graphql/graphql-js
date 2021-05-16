@@ -19,6 +19,7 @@ export function mapAsyncIterator<T, U, R = undefined>(
     }
 
     try {
+      // @ts-expect-error FIXME
       return { value: await callback(result.value), done: false };
     } catch (error) {
       // istanbul ignore else (FIXME: add test case)
