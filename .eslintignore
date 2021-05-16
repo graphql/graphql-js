@@ -9,3 +9,5 @@
 
 # Ignore TS files inside integration test
 /integrationTests/ts/*.ts
+
+src/**/*.d.ts
