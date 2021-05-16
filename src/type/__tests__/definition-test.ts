@@ -83,9 +83,11 @@ describe('Type System: Scalars', () => {
       },
     });
 
+    // @ts-expect-error
     expect(scalar.parseLiteral(parseValue('null'))).to.equal(
       'parseValue: null',
     );
+    // @ts-expect-error
     expect(scalar.parseLiteral(parseValue('{ foo: "bar" }'))).to.equal(
       'parseValue: { foo: "bar" }',
     );
@@ -355,8 +357,8 @@ describe('Type System: Objects', () => {
   it('rejects an Object type with a field function that returns incorrect type', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
+      // @ts-expect-error
       fields() {
-        // @ts-expect-error
         return [{ field: ScalarType }];
       },
     });
@@ -395,8 +397,8 @@ describe('Type System: Objects', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {},
+      // @ts-expect-error
       interfaces() {
-        // @ts-expect-error
         return {};
       },
     });
@@ -408,8 +410,8 @@ describe('Type System: Objects', () => {
   it('rejects an empty Object field resolver', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
-      // @ts-expect-error
       fields: {
+        // @ts-expect-error
         field: { type: ScalarType, resolve: {} },
       },
     });
@@ -422,8 +424,8 @@ describe('Type System: Objects', () => {
   it('rejects a constant scalar value resolver', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
-      // @ts-expect-error
       fields: {
+        // @ts-expect-error
         field: { type: ScalarType, resolve: 0 },
       },
     });
@@ -498,8 +500,8 @@ describe('Type System: Interfaces', () => {
     const objType = new GraphQLInterfaceType({
       name: 'AnotherInterface',
       fields: {},
+      // @ts-expect-error
       interfaces() {
-        // @ts-expect-error
         return {};
       },
     });
@@ -793,8 +795,8 @@ describe('Type System: Input Objects', () => {
     it('rejects an Input Object type with resolvers', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
-        // @ts-expect-error
         fields: {
+          // @ts-expect-error
           f: { type: ScalarType, resolve: dummyFunc },
         },
       });
@@ -806,8 +808,8 @@ describe('Type System: Input Objects', () => {
     it('rejects an Input Object type with resolver constant', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
-        // @ts-expect-error
         fields: {
+          // @ts-expect-error
           f: { type: ScalarType, resolve: {} },
         },
       });
