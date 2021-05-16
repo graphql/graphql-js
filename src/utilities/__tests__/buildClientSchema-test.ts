@@ -629,7 +629,6 @@ describe('Type System: build schema from introspection', () => {
     `);
 
     it('throws when introspection is missing __schema property', () => {
-      // @ts-expect-error
       expect(() => buildClientSchema(null)).to.throw(
         'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: null.',
       );
@@ -771,7 +770,6 @@ describe('Type System: build schema from introspection', () => {
       invariant(argType.kind === 'SCALAR');
 
       expect(argType).to.have.property('name', 'String');
-      // @ts-expect-error
       argType.name = 'SomeUnion';
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -790,7 +788,6 @@ describe('Type System: build schema from introspection', () => {
       invariant(fieldType.kind === 'SCALAR');
 
       expect(fieldType).to.have.property('name', 'String');
-      // @ts-expect-error
       fieldType.name = 'SomeInputObject';
 
       expect(() => buildClientSchema(introspection)).to.throw(

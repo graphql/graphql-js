@@ -155,7 +155,6 @@ describe('getOperationRootType', () => {
       operation: 'non_existent_operation' as any,
     };
 
-    // @ts-expect-error
     expect(() => getOperationRootType(testSchema, operationNode)).to.throw(
       'Can only have query, mutation and subscription operations.',
     );

@@ -72,7 +72,6 @@ export async function subscribe(
     subscribeFieldResolver,
   } = args;
 
-  // @ts-expect-error
   const resultOrStream = await createSourceEventStream(
     schema,
     document,

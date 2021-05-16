@@ -333,7 +333,6 @@ describe('Type System: Objects', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {
-        // @ts-expect-error
         f: undefined,
       },
     });
@@ -697,7 +696,6 @@ describe('Type System: Enums', () => {
       () =>
         new GraphQLEnumType({
           name: 'SomeEnum',
-          // @ts-expect-error
           values: { FOO: null },
         }),
     ).to.throw(
@@ -843,9 +841,7 @@ describe('Type System: List', () => {
     expectList(String).to.throw(
       'Expected [function String] to be a GraphQL type.',
     );
-    // @ts-expect-error
     expectList(null).to.throw('Expected null to be a GraphQL type.');
-    // @ts-expect-error
     expectList(undefined).to.throw('Expected undefined to be a GraphQL type.');
   });
 });
@@ -867,7 +863,6 @@ describe('Type System: Non-Null', () => {
   });
 
   it('rejects a non-type as nullable type of non-null', () => {
-    // @ts-expect-error
     expectNonNull(NonNullScalarType).to.throw(
       'Expected Scalar! to be a GraphQL nullable type.',
     );
@@ -877,11 +872,9 @@ describe('Type System: Non-Null', () => {
     expectNonNull(String).to.throw(
       'Expected [function String] to be a GraphQL nullable type.',
     );
-    // @ts-expect-error
     expectNonNull(null).to.throw(
       'Expected null to be a GraphQL nullable type.',
     );
-    // @ts-expect-error
     expectNonNull(undefined).to.throw(
       'Expected undefined to be a GraphQL nullable type.',
     );

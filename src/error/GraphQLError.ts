@@ -131,7 +131,6 @@ export class GraphQLError extends Error {
       }
     }
 
-    // @ts-expect-error FIXME
     Object.defineProperties(this, {
       name: { value: 'GraphQLError' },
       message: {
@@ -210,7 +209,6 @@ export class GraphQLError extends Error {
   }
 
   // FIXME: workaround to not break chai comparisons, should be remove in v16
-  // @ts-expect-error Flow doesn't support computed properties yet
   get [Symbol.toStringTag](): string {
     return 'Object';
   }
