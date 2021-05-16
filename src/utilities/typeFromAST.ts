@@ -36,6 +36,10 @@ export function typeFromAST(
 export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: TypeNode,
+): GraphQLType | undefined;
+export function typeFromAST(
+  schema: GraphQLSchema,
+  typeNode: TypeNode,
 ): GraphQLType | undefined {
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {

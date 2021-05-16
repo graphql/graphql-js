@@ -146,10 +146,13 @@ function getOperationTypeNode(
   operation: OperationTypeNode,
 ): Maybe<ASTNode> {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return [schema.astNode]
-    .concat(schema.extensionASTNodes)
-    .flatMap((schemaNode) => schemaNode?.operationTypes ?? [])
-    .find((operationNode) => operationNode.operation === operation)?.type;
+  return (
+    [schema.astNode]
+      // @ts-expect-error FIXME: TS Conversion
+      .concat(schema.extensionASTNodes)
+      .flatMap((schemaNode) => schemaNode?.operationTypes ?? [])
+      .find((operationNode) => operationNode.operation === operation)?.type
+  );
 }
 
 function validateDirectives(context: SchemaValidationContext): void {

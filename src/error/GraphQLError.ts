@@ -128,6 +128,7 @@ export class GraphQLError extends Error {
     if (_extensions == null && originalError != null) {
       const originalExtensions = originalError.extensions;
       if (isObjectLike(originalExtensions)) {
+        // @ts-expect-error FIXME: TS Conversion
         _extensions = originalExtensions;
       }
     }

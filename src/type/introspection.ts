@@ -234,16 +234,19 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       },
       name: {
         type: GraphQLString,
+        // @ts-expect-error FIXME: TS Conversion
         resolve: (type) => (type.name !== undefined ? type.name : undefined),
       },
       description: {
         type: GraphQLString,
         resolve: (type) =>
+          // @ts-expect-error FIXME: TS Conversion
           type.description !== undefined ? type.description : undefined,
       },
       specifiedByURL: {
         type: GraphQLString,
         resolve: (obj) =>
+          // @ts-expect-error FIXME: TS Conversion
           obj.specifiedByURL !== undefined ? obj.specifiedByURL : undefined,
       },
       fields: {
@@ -310,6 +313,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       ofType: {
         type: __Type,
         resolve: (type) =>
+          // @ts-expect-error FIXME: TS Conversion
           type.ofType !== undefined ? type.ofType : undefined,
       },
     } as GraphQLFieldConfigMap<GraphQLType, unknown>),

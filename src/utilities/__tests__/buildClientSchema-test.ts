@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { dedent } from '../../__testUtils__/dedent';
 
 import { invariant } from '../../jsutils/invariant';
+import type { Mutable } from '../../jsutils/mutable';
 
 import { graphqlSync } from '../../graphql';
 
@@ -25,6 +26,10 @@ import { printSchema } from '../printSchema';
 import { buildSchema } from '../buildASTSchema';
 import { buildClientSchema } from '../buildClientSchema';
 import { introspectionFromSchema } from '../introspectionFromSchema';
+import type {
+  IntrospectionInputTypeRef,
+  IntrospectionOutputTypeRef,
+} from '../getIntrospectionQuery';
 
 /**
  * This function does a full cycle of going from a string with the contents of
@@ -766,7 +771,8 @@ describe('Type System: build schema from introspection', () => {
       );
 
       invariant(queryTypeIntrospection?.kind === 'OBJECT');
-      const argType = queryTypeIntrospection.fields[0].args[0].type;
+      const argType = queryTypeIntrospection.fields[0].args[0]
+        .type as Mutable<IntrospectionInputTypeRef>;
       invariant(argType.kind === 'SCALAR');
 
       expect(argType).to.have.property('name', 'String');
@@ -784,7 +790,8 @@ describe('Type System: build schema from introspection', () => {
       );
 
       invariant(queryTypeIntrospection?.kind === 'OBJECT');
-      const fieldType = queryTypeIntrospection.fields[0].type;
+      const fieldType = queryTypeIntrospection.fields[0]
+        .type as Mutable<IntrospectionOutputTypeRef>;
       invariant(fieldType.kind === 'SCALAR');
 
       expect(fieldType).to.have.property('name', 'String');
