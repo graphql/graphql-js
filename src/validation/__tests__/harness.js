@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
