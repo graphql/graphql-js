@@ -312,7 +312,6 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    // @ts-expect-error
     (await expectPromise(subscribe({ schema: null, document }))).toRejectWith(
       'Expected null to be a GraphQL schema.',
     );
@@ -322,7 +321,6 @@ describe('Subscription Initialization Phase', () => {
       'Expected undefined to be a GraphQL schema.',
     );
 
-    // @ts-expect-error
     (await expectPromise(subscribe({ schema, document: null }))).toRejectWith(
       'Must provide document.',
     );
