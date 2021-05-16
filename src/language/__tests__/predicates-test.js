@@ -17,7 +17,7 @@ import {
   isTypeExtensionNode,
 } from '../predicates';
 
-function filterNodes(predicate: (ASTNode) => boolean): Array<string> {
+function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
   return Object.values(Kind).filter(
     // $FlowExpectedError[speculation-ambiguous] create node only with kind
     (kind) => predicate({ kind }),
