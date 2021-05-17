@@ -30,12 +30,12 @@ function expectSyntaxError(text: string) {
 describe('Lexer', () => {
   it('disallows uncommon control characters', () => {
     expectSyntaxError('\u0007').to.deep.equal({
-      message: 'Syntax Error: Cannot contain the invalid character "\\u0007".',
+      message: 'Syntax Error: Invalid character: U+0007.',
       locations: [{ line: 1, column: 1 }],
     });
   });
 
-  it('accepts BOM header', () => {
+  it('ignores BOM header', () => {
     expect(lexOne('\uFEFF foo')).to.contain({
       kind: TokenKind.NAME,
       start: 2,
@@ -139,6 +139,13 @@ describe('Lexer', () => {
       value: 'foo',
     });
 
+    expect(lexOne('\t\tfoo\t\t')).to.contain({
+      kind: TokenKind.NAME,
+      start: 2,
+      end: 5,
+      value: 'foo',
+    });
+
     expect(
       lexOne(`
     #comment
@@ -167,7 +174,7 @@ describe('Lexer', () => {
       caughtError = error;
     }
     expect(String(caughtError)).to.equal(dedent`
-      Syntax Error: Cannot parse the unexpected character "?".
+      Syntax Error: Unexpected character: "?".
 
       GraphQL request:3:5
       2 |
@@ -187,7 +194,7 @@ describe('Lexer', () => {
       caughtError = error;
     }
     expect(String(caughtError)).to.equal(dedent`
-      Syntax Error: Cannot parse the unexpected character "?".
+      Syntax Error: Unexpected character: "?".
 
       foo.js:13:6
       12 |
@@ -206,7 +213,7 @@ describe('Lexer', () => {
       caughtError = error;
     }
     expect(String(caughtError)).to.equal(dedent`
-      Syntax Error: Cannot parse the unexpected character "?".
+      Syntax Error: Unexpected character: "?".
 
       foo.js:1:5
       1 |     ?
@@ -294,13 +301,13 @@ describe('Lexer', () => {
 
     expectSyntaxError('"contains unescaped \u0007 control char"').to.deep.equal(
       {
-        message: 'Syntax Error: Invalid character within String: "\\u0007".',
+        message: 'Syntax Error: Invalid character within String: U+0007.',
         locations: [{ line: 1, column: 21 }],
       },
     );
 
     expectSyntaxError('"null-byte is not \u0000 end of file"').to.deep.equal({
-      message: 'Syntax Error: Invalid character within String: "\\u0000".',
+      message: 'Syntax Error: Invalid character within String: U+0000.',
       locations: [{ line: 1, column: 19 }],
     });
 
@@ -315,38 +322,38 @@ describe('Lexer', () => {
     });
 
     expectSyntaxError('"bad \\z esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\z.',
-      locations: [{ line: 1, column: 7 }],
+      message: 'Syntax Error: Invalid character escape sequence: "\\z".',
+      locations: [{ line: 1, column: 6 }],
     });
 
     expectSyntaxError('"bad \\x esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\x.',
-      locations: [{ line: 1, column: 7 }],
+      message: 'Syntax Error: Invalid character escape sequence: "\\x".',
+      locations: [{ line: 1, column: 6 }],
     });
 
     expectSyntaxError('"bad \\u1 esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\u1 es.',
-      locations: [{ line: 1, column: 7 }],
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u1 es".',
+      locations: [{ line: 1, column: 6 }],
     });
 
     expectSyntaxError('"bad \\u0XX1 esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\u0XX1.',
-      locations: [{ line: 1, column: 7 }],
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u0XX1".',
+      locations: [{ line: 1, column: 6 }],
     });
 
     expectSyntaxError('"bad \\uXXXX esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\uXXXX.',
-      locations: [{ line: 1, column: 7 }],
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uXXXX".',
+      locations: [{ line: 1, column: 6 }],
     });
 
     expectSyntaxError('"bad \\uFXXX esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\uFXXX.',
-      locations: [{ line: 1, column: 7 }],
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uFXXX".',
+      locations: [{ line: 1, column: 6 }],
     });
 
     expectSyntaxError('"bad \\uXXXF esc"').to.deep.equal({
-      message: 'Syntax Error: Invalid character escape sequence: \\uXXXF.',
-      locations: [{ line: 1, column: 7 }],
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uXXXF".',
+      locations: [{ line: 1, column: 6 }],
     });
   });
 
@@ -482,14 +489,14 @@ describe('Lexer', () => {
     expectSyntaxError(
       '"""contains unescaped \u0007 control char"""',
     ).to.deep.equal({
-      message: 'Syntax Error: Invalid character within String: "\\u0007".',
+      message: 'Syntax Error: Invalid character within String: U+0007.',
       locations: [{ line: 1, column: 23 }],
     });
 
     expectSyntaxError(
       '"""null-byte is not \u0000 end of file"""',
     ).to.deep.equal({
-      message: 'Syntax Error: Invalid character within String: "\\u0000".',
+      message: 'Syntax Error: Invalid character within String: U+0000.',
       locations: [{ line: 1, column: 21 }],
     });
   });
@@ -625,7 +632,7 @@ describe('Lexer', () => {
     });
 
     expectSyntaxError('+1').to.deep.equal({
-      message: 'Syntax Error: Cannot parse the unexpected character "+".',
+      message: 'Syntax Error: Unexpected character: "+".',
       locations: [{ line: 1, column: 1 }],
     });
 
@@ -650,7 +657,7 @@ describe('Lexer', () => {
     });
 
     expectSyntaxError('.123').to.deep.equal({
-      message: 'Syntax Error: Cannot parse the unexpected character ".".',
+      message: 'Syntax Error: Unexpected character: ".".',
       locations: [{ line: 1, column: 1 }],
     });
 
@@ -671,6 +678,11 @@ describe('Lexer', () => {
 
     expectSyntaxError('1.0eA').to.deep.equal({
       message: 'Syntax Error: Invalid number, expected digit but got: "A".',
+      locations: [{ line: 1, column: 5 }],
+    });
+
+    expectSyntaxError('1.0e"').to.deep.equal({
+      message: "Syntax Error: Invalid number, expected digit but got: '\"'.",
       locations: [{ line: 1, column: 5 }],
     });
 
@@ -708,7 +720,7 @@ describe('Lexer', () => {
       locations: [{ line: 1, column: 2 }],
     });
     expectSyntaxError('1\u00DF').to.deep.equal({
-      message: 'Syntax Error: Cannot parse the unexpected character "\\u00DF".',
+      message: 'Syntax Error: Unexpected character: U+00DF.',
       locations: [{ line: 1, column: 2 }],
     });
     expectSyntaxError('1.23f').to.deep.equal({
@@ -816,22 +828,27 @@ describe('Lexer', () => {
 
   it('lex reports useful unknown character error', () => {
     expectSyntaxError('..').to.deep.equal({
-      message: 'Syntax Error: Cannot parse the unexpected character ".".',
+      message: 'Syntax Error: Unexpected character: ".".',
       locations: [{ line: 1, column: 1 }],
     });
 
     expectSyntaxError('?').to.deep.equal({
-      message: 'Syntax Error: Cannot parse the unexpected character "?".',
+      message: 'Syntax Error: Unexpected character: "?".',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\u00AA').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+00AA.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\u0AAA').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+0AAA.',
       locations: [{ line: 1, column: 1 }],
     });
 
     expectSyntaxError('\u203B').to.deep.equal({
-      message: 'Syntax Error: Cannot parse the unexpected character "\\u203B".',
-      locations: [{ line: 1, column: 1 }],
-    });
-
-    expectSyntaxError('\u200b').to.deep.equal({
-      message: 'Syntax Error: Cannot parse the unexpected character "\\u200B".',
+      message: 'Syntax Error: Unexpected character: U+203B.',
       locations: [{ line: 1, column: 1 }],
     });
   });
@@ -893,6 +910,31 @@ describe('Lexer', () => {
       TokenKind.BRACE_R,
       TokenKind.EOF,
     ]);
+  });
+
+  it('lexes comments', () => {
+    expect(lexOne('# Comment').prev).to.contain({
+      kind: TokenKind.COMMENT,
+      start: 0,
+      end: 9,
+      value: ' Comment',
+    });
+    expect(lexOne('# Comment\nAnother line').prev).to.contain({
+      kind: TokenKind.COMMENT,
+      start: 0,
+      end: 9,
+      value: ' Comment',
+    });
+    expect(lexOne('# Comment\r\nAnother line').prev).to.contain({
+      kind: TokenKind.COMMENT,
+      start: 0,
+      end: 9,
+      value: ' Comment',
+    });
+    expectSyntaxError('# \u0007').to.deep.equal({
+      message: 'Syntax Error: Invalid character: U+0007.',
+      locations: [{ line: 1, column: 3 }],
+    });
   });
 });
 
