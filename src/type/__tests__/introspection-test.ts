@@ -1070,6 +1070,52 @@ describe('Introspection', () => {
     });
   });
 
+  it('introspects any default value', () => {
+    const schema = buildSchema(`
+      input InputObjectWithDefaultValues {
+        a: String = "Emoji: \\u{1F600}"
+        b: Complex = {x: ["abc"], y: 123}
+      }
+
+      input Complex {
+        x: [String]
+        y: Int
+      }
+
+      type Query {
+        someField(someArg: InputObjectWithDefaultValues): String
+      }
+    `);
+
+    const source = `
+      {
+        __type(name: "InputObjectWithDefaultValues") {
+          inputFields {
+            name
+            defaultValue
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __type: {
+          inputFields: [
+            {
+              name: 'a',
+              defaultValue: '"Emoji: \u{1F600}"',
+            },
+            {
+              name: 'b',
+              defaultValue: '{x: ["abc"], y: 123}',
+            },
+          ],
+        },
+      },
+    });
+  });
+
   it('supports the __type root field', () => {
     const schema = buildSchema(`
       type Query {

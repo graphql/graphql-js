@@ -108,18 +108,51 @@ export function isPunctuatorTokenKind(kind: TokenKindEnum): boolean {
 }
 
 /**
- * ```
+ * A Unicode scalar value is any Unicode code point except surrogate code
+ * points. In other words, the inclusive ranges of values 0x0000 to 0xD7FF and
+ * 0xE000 to 0x10FFFF.
+ *
  * SourceCharacter ::
- *   - U+0009 (Horizontal Tab)
- *   - U+000A (New Line)
- *   - U+000D (Carriage Return)
- *   - U+0020-U+FFFF
- * ```
+ *   - "Any Unicode scalar value"
  */
-function isSourceCharacter(code: number): boolean {
+function isUnicodeScalarValue(code: number): boolean {
   return (
-    code >= 0x0020 || code === 0x0009 || code === 0x000a || code === 0x000d
+    (code >= 0x0000 && code <= 0xd7ff) || (code >= 0xe000 && code <= 0x10ffff)
   );
+}
+
+/**
+ * The GraphQL specification defines source text as a sequence of unicode scalar
+ * values (which Unicode defines to exclude surrogate code points). However
+ * JavaScript defines strings as a sequence of UTF-16 code units which may
+ * include surrogates. A surrogate pair is a valid source character as it
+ * encodes a supplementary code point (above U+FFFF), but unpaired surrogate
+ * code points are not valid source characters.
+ */
+function isSupplementaryCodePoint(body: string, location: number): boolean {
+  return (
+    isLeadingSurrogate(body.charCodeAt(location)) &&
+    isTrailingSurrogate(body.charCodeAt(location + 1))
+  );
+}
+
+function isLeadingSurrogate(code: number): boolean {
+  return code >= 0xd800 && code <= 0xdbff;
+}
+
+function isTrailingSurrogate(code: number): boolean {
+  return code >= 0xdc00 && code <= 0xdfff;
+}
+
+function encodeSurrogatePair(point: number): string {
+  return String.fromCharCode(
+    0xd800 | ((point - 0x10000) >> 10), // Leading Surrogate
+    0xdc00 | ((point - 0x10000) & 0x3ff), // Trailing Surrogate
+  );
+}
+
+function decodeSurrogatePair(leading: number, trailing: number): number {
+  return 0x10000 | ((leading & 0x03ff) << 10) | (trailing & 0x03ff);
 }
 
 /**
@@ -140,9 +173,12 @@ function printCodePointAt(lexer: Lexer, location: number): string {
     return code === 0x0022 ? "'\"'" : `"${body[location]}"`;
   }
   // Unicode code point
+  const point = isSupplementaryCodePoint(body, location)
+    ? decodeSurrogatePair(code, body.charCodeAt(location + 1))
+    : code;
   const zeroPad =
-    code > 0xfff ? '' : code > 0xff ? '0' : code > 0xf ? '00' : '000';
-  return `U+${zeroPad}${code.toString(16).toUpperCase()}`;
+    point > 0xfff ? '' : point > 0xff ? '0' : point > 0xf ? '00' : '000';
+  return `U+${zeroPad}${point.toString(16).toUpperCase()}`;
 }
 
 /**
@@ -286,7 +322,7 @@ function readNextToken(lexer: Lexer, start: number): Token {
       position,
       code === 0x0027
         ? 'Unexpected single quote character (\'), did you mean to use a double quote (")?'
-        : isSourceCharacter(code)
+        : isUnicodeScalarValue(code) || isSupplementaryCodePoint(body, position)
         ? `Unexpected character: ${printCodePointAt(lexer, position)}.`
         : `Invalid character: ${printCodePointAt(lexer, position)}.`,
     );
@@ -318,8 +354,10 @@ function readComment(lexer: Lexer, start: number): Token {
     }
 
     // SourceCharacter
-    if (isSourceCharacter(code)) {
+    if (isUnicodeScalarValue(code)) {
       ++position;
+    } else if (isSupplementaryCodePoint(body, position)) {
+      position += 2;
     } else {
       break;
     }
@@ -474,7 +512,9 @@ function readDigits(lexer: Lexer, start: number, firstCode: number): number {
  *   - `\u` EscapedUnicode
  *   - `\` EscapedCharacter
  *
- * EscapedUnicode :: /[0-9A-Fa-f]{4}/
+ * EscapedUnicode ::
+ *   - `{` HexDigit+ `}`
+ *   - HexDigit HexDigit HexDigit HexDigit
  *
  * EscapedCharacter :: one of `"` `\` `/` `b` `f` `n` `r` `t`
  * ```
@@ -500,7 +540,9 @@ function readString(lexer: Lexer, start: number): Token {
       value += body.slice(chunkStart, position);
       const escape =
         body.charCodeAt(position + 1) === 0x0075 // u
-          ? readEscapedUnicode(lexer, position)
+          ? body.charCodeAt(position + 2) === 0x007b // {
+            ? readEscapedUnicodeVariableWidth(lexer, position)
+            : readEscapedUnicodeFixedWidth(lexer, position)
           : readEscapedCharacter(lexer, position);
       value += escape.value;
       position += escape.size;
@@ -514,8 +556,10 @@ function readString(lexer: Lexer, start: number): Token {
     }
 
     // SourceCharacter
-    if (isSourceCharacter(code)) {
+    if (isUnicodeScalarValue(code)) {
       ++position;
+    } else if (isSupplementaryCodePoint(body, position)) {
+      position += 2;
     } else {
       throw syntaxError(
         lexer.source,
@@ -537,12 +581,79 @@ interface EscapeSequence {
   size: number;
 }
 
-function readEscapedUnicode(lexer: Lexer, position: number): EscapeSequence {
+function readEscapedUnicodeVariableWidth(
+  lexer: Lexer,
+  position: number,
+): EscapeSequence {
+  const body = lexer.source.body;
+  let point = 0;
+  let size = 3;
+  // Cannot be larger than 12 chars (\u{00000000}).
+  while (size < 12) {
+    const code = body.charCodeAt(position + size++);
+    // Closing Brace (})
+    if (code === 0x007d) {
+      // Must be at least 5 chars (\u{0}) and encode a Unicode scalar value.
+      if (size < 5 || !isUnicodeScalarValue(point)) {
+        break;
+      }
+      // JavaScript defines strings as a sequence of UTF-16 code units and
+      // encodes Unicode code points above U+FFFF using a surrogate pair.
+      return {
+        value:
+          point <= 0xffff
+            ? String.fromCharCode(point)
+            : encodeSurrogatePair(point),
+        size,
+      };
+    }
+    // Append this hex digit to the code point.
+    point = (point << 4) | readHexDigit(code);
+    if (point < 0) {
+      break;
+    }
+  }
+
+  throw syntaxError(
+    lexer.source,
+    position,
+    `Invalid Unicode escape sequence: "${body.slice(
+      position,
+      position + size,
+    )}".`,
+  );
+}
+
+function readEscapedUnicodeFixedWidth(
+  lexer: Lexer,
+  position: number,
+): EscapeSequence {
   const body = lexer.source.body;
   const code = read16BitHexCode(body, position + 2);
 
-  if (code >= 0) {
+  if (isUnicodeScalarValue(code)) {
     return { value: String.fromCharCode(code), size: 6 };
+  }
+
+  // GraphQL allows JSON-style surrogate pair escape sequences, but only when
+  // a valid pair is formed.
+  if (isLeadingSurrogate(code)) {
+    // \u
+    if (
+      body.charCodeAt(position + 6) === 0x005c &&
+      body.charCodeAt(position + 7) === 0x0075
+    ) {
+      const trailingCode = read16BitHexCode(body, position + 8);
+      if (isTrailingSurrogate(trailingCode)) {
+        // JavaScript defines strings as a sequence of UTF-16 code units and
+        // encodes Unicode code points above U+FFFF using a surrogate pair of
+        // code units. Since this is a surrogate pair escape sequence, just
+        // include both codes into the JavaScript string value. Had JavaScript
+        // not been internally based on UTF-16, then this surrogate pair would
+        // be decoded to retrieve the supplementary code point.
+        return { value: String.fromCharCode(code, trailingCode), size: 12 };
+      }
+    }
   }
 
   throw syntaxError(
@@ -578,6 +689,11 @@ function read16BitHexCode(body: string, position: number): number {
  * 'a' becomes 10, 'f' becomes 15
  *
  * Returns -1 if the provided character code was not a valid hexadecimal digit.
+ *
+ * HexDigit :: one of
+ *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
+ *   - `A` `B` `C` `D` `E` `F`
+ *   - `a` `b` `c` `d` `e` `f`
  */
 function readHexDigit(code: number): number {
   return code >= 0x0030 && code <= 0x0039 // 0-9
@@ -696,8 +812,10 @@ function readBlockString(lexer: Lexer, start: number): Token {
     }
 
     // SourceCharacter
-    if (isSourceCharacter(code)) {
+    if (isUnicodeScalarValue(code)) {
       ++position;
+    } else if (isSupplementaryCodePoint(body, position)) {
+      position += 2;
     } else {
       throw syntaxError(
         lexer.source,
