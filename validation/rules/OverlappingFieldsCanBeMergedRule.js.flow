@@ -783,8 +783,7 @@ function subfieldConflicts(
 }
 
 /**
- * A way to keep track of pairs of things when the ordering of the pair does
- * not matter. We do this by maintaining a sort of double adjacency sets.
+ * A way to keep track of pairs of things when the ordering of the pair does not matter.
  */
 class PairSet {
   _data: Map<string, Map<string, boolean>>;
@@ -800,13 +799,11 @@ class PairSet {
     if (result === undefined) {
       return false;
     }
-    // areMutuallyExclusive being false is a superset of being true,
-    // hence if we want to know if this PairSet "has" these two with no
-    // exclusivity, we have to ensure it was added as such.
-    if (areMutuallyExclusive === false) {
-      return result === false;
-    }
-    return true;
+
+    // areMutuallyExclusive being false is a superset of being true, hence if
+    // we want to know if this PairSet "has" these two with no exclusivity,
+    // we have to ensure it was added as such.
+    return areMutuallyExclusive ? true : areMutuallyExclusive === result;
   }
 
   add(a: string, b: string, areMutuallyExclusive: boolean): void {
