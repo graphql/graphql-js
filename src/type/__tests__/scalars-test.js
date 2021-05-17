@@ -620,6 +620,8 @@ describe('Type System: Specified scalar types', () => {
       expect(serialize(123)).to.equal('123');
       expect(serialize(0)).to.equal('0');
       expect(serialize(-1)).to.equal('-1');
+      // $FlowFixMe[bigint-unsupported];
+      expect(serialize(1n)).to.equal('1');
 
       const valueOf = () => 'valueOf ID';
       const toJSON = () => 'toJSON ID';

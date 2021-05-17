@@ -143,6 +143,12 @@ function serializeObject(outputValue: mixed): mixed {
       return outputValue.toJSON();
     }
   }
+  // $FlowFixMe[illegal-typeof]
+  if (typeof outputValue === 'bigint') {
+    // $FlowFixMe[incompatible-use]
+    return outputValue.toString();
+  }
+
   return outputValue;
 }
 
