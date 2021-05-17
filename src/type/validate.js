@@ -156,7 +156,7 @@ function validateDirectives(context: SchemaValidationContext): void {
     if (!isDirective(directive)) {
       context.reportError(
         `Expected directive but got: ${inspect(directive)}.`,
-        directive?.astNode,
+        directive.astNode,
       );
       continue;
     }
