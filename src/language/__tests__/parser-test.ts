@@ -620,3 +620,26 @@ describe('Parser', () => {
     });
   });
 });
+
+// Valid
+// query {
+//   foo: dsf! {
+//     baz
+//   }
+// }
+// query {
+//   foo: bar!
+// }
+// query {
+//   foo!
+// }
+
+// Invalid
+// query {
+//   foo!: dsf {
+//     baz
+//   }
+// }
+// query {
+//   foo!: bar
+// }
