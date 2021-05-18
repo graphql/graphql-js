@@ -261,7 +261,6 @@ export interface OperationDefinitionNode {
   readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
-  readonly required?: Boolean;
 }
 
 export type OperationTypeNode = 'query' | 'mutation' | 'subscription';
@@ -297,6 +296,7 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
+  readonly required?: Boolean;
 }
 
 export interface ArgumentNode {

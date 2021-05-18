@@ -643,3 +643,7 @@ describe('Parser', () => {
 // query {
 //   foo!: bar
 // }
+//
+// query {
+//   foo!: bar!
+// }

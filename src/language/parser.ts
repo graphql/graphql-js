@@ -398,6 +398,13 @@ export class Parser {
     if (this.expectOptionalToken(TokenKind.COLON)) {
       alias = nameOrAlias;
       name = this.parseName();
+      if (allowRequiredField && this.expectOptionalToken(TokenKind.BANG)) {
+        // TODO(areilly): throw error if required is already true because that means
+        // we have something like foo!: bar! which should be illegal
+        required = true
+      } else {
+        required = false
+      }
     } else {
       name = nameOrAlias;
     }
