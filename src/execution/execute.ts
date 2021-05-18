@@ -51,6 +51,7 @@ import {
   GraphQLSkipDirective,
 } from '../type/directives';
 import {
+  GraphQLNonNull,
   isObjectType,
   isAbstractType,
   isLeafType,
@@ -607,7 +608,9 @@ function resolveField(
     return;
   }
 
-  const returnType = fieldDef.type;
+  const returnType = fieldNodes[0].required // TODO: Need to update FieldNode
+    ? new GraphQLNonNull(fieldDef.type)
+    : fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(
