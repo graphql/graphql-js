@@ -583,13 +583,26 @@ function findConflict(
         [node2],
       ];
     }
+
+    // For now, fail the validation if the nullability status is different
+    if (
+      (node1.required || isNonNullType(def1.type)) !==
+      (node2.required || isNonNullType(def2.type))
+    ) {
+      console.log(isNonNullType(def1.type), isNonNullType(def2.type));
+      return [
+        [responseName, 'they have differing nullability status'],
+        [node1],
+        [node2],
+      ];
+    }
   }
 
   // The return type for each field.
   const type1 = def1?.type;
   const type2 = def2?.type;
 
-  if (type1 && type2 && doTypesConflict(type1, type2)) {
+  if (type1 && type2 && doDefsConflict(def1, def2)) {
     return [
       [
         responseName,
@@ -644,31 +657,35 @@ function sameValue(value1: ValueNode, value2: ValueNode): boolean {
   return print(value1) === print(value2);
 }
 
+function isNonNullDef(def: GraphQLField<unknown, unknown>): boolean {
+  return isNonNullType(def.type) || def.astNode?.required;
+}
+
 // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.
-function doTypesConflict(
-  type1: GraphQLOutputType,
-  type2: GraphQLOutputType,
+function doDefsConflict(
+  def1: GraphQLField<unknown, unknown>,
+  def2: GraphQLField<unknown, unknown>,
 ): boolean {
-  if (isListType(type1)) {
-    return isListType(type2)
-      ? doTypesConflict(type1.ofType, type2.ofType)
+  if (isListType(def1.type)) {
+    return isListType(def2.type)
+      ? doDefsConflict(def1.type.ofType, def2.type.ofType)
       : true;
   }
-  if (isListType(type2)) {
+  if (isListType(def2.type)) {
     return true;
   }
-  if (isNonNullType(type1)) {
-    return isNonNullType(type2)
-      ? doTypesConflict(type1.ofType, type2.ofType)
+  if (isNonNullDef(def1)) {
+    return isNonNullDef(def2)
+      ? doDefsConflict(def1.type.ofType, def2.type.ofType)
       : true;
   }
-  if (isNonNullType(type2)) {
+  if (isNonNullDef(def2)) {
     return true;
   }
-  if (isLeafType(type1) || isLeafType(type2)) {
-    return type1 !== type2;
+  if (isLeafType(def1.type) || isLeafType(def2.type)) {
+    return def1.type !== def2.type;
   }
   return false;
 }

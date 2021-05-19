@@ -167,6 +167,24 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
+  it('different nullability, second adds an argument', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        doesKnowCommand
+        doesKnowCommand!
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Fields "doesKnowCommand" conflict because they have differing nullability status. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
   it('different args, second missing an argument', () => {
     expectErrors(`
       fragment conflictingArgs on Dog {
@@ -236,6 +254,21 @@ describe('Validate: Overlapping fields can be merged', () => {
     `);
   });
 
+  it('allows different nullability status where no conflict is possible', () => {
+    // This is valid since no object can be both a "Dog" and a "Cat", thus
+    // these fields can never overlap.
+    expectValid(`
+      fragment conflictingArgs on Pet {
+        ... on Dog {
+          name!
+        }
+        ... on Cat {
+          name
+        }
+      }
+    `);
+  });
+
   it('encounters conflict in fragments', () => {
     expectErrors(`
       {
@@ -252,6 +285,30 @@ describe('Validate: Overlapping fields can be merged', () => {
       {
         message:
           'Fields "x" conflict because "a" and "b" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 7, column: 9 },
+          { line: 10, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('encounters nullability status conflict in fragments', () => {
+    expectErrors(`
+      {
+        ...A
+        ...B
+      }
+      fragment A on Type {
+        a
+      }
+      fragment B on Type {
+        a!
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Fields "a" conflict because they have differing nullability status. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 7, column: 9 },
           { line: 10, column: 9 },
@@ -613,6 +670,37 @@ describe('Validate: Overlapping fields can be merged', () => {
       ]);
     });
 
+    it('conflicting nullability status which potentially overlap', () => {
+      // This is invalid since an object could potentially be both the Object
+      // type IntBox and the interface type NonNullStringBox1. While that
+      // condition does not exist in the current schema, the schema could
+      // expand in the future to allow this. Thus it is invalid.
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            someBox {
+              ...on SomeBox {
+                unrelatedField
+              }
+              ...on IntBox {
+                unrelatedField!
+              }
+            }
+          }
+        `,
+      ).to.deep.equal([
+        {
+          message:
+            'Fields "unrelatedField" conflict because they have differing nullability status. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
+        },
+      ]);
+    });
+
     it('compatible return shapes on different return types', () => {
       // In this case `deepBox` returns `SomeBox` in the first usage, and
       // `StringBox` in the second usage. These return types are not the same!
@@ -636,6 +724,43 @@ describe('Validate: Overlapping fields can be merged', () => {
           }
         `,
       );
+    });
+
+    it('nested conflicting nullability status which potentially overlap', () => {
+      // This is invalid since an object could potentially be both the Object
+      // type IntBox and the interface type NonNullStringBox1. While that
+      // condition does not exist in the current schema, the schema could
+      // expand in the future to allow this. Thus it is invalid.
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            someBox {
+              ... on SomeBox {
+                deepBox {
+                  unrelatedField
+                }
+              }
+              ... on StringBox {
+                deepBox {
+                  unrelatedField!
+                }
+              }
+            }
+          }
+        `,
+      ).to.deep.equal([
+        {
+          message:
+            'Fields "deepBox" conflict because subfields "unrelatedField" conflict because they have differing nullability status. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 6, column: 19 },
+            { line: 10, column: 17 },
+            { line: 11, column: 19 },
+          ],
+        },
+      ]);
     });
 
     it('disallows differing return types despite no overlap', () => {
@@ -751,6 +876,24 @@ describe('Validate: Overlapping fields can be merged', () => {
           ],
         },
       ]);
+    });
+
+    it.only('allows the nullability status based on ! operator', () => {
+      expectValidWithSchema(
+        schema,
+        `
+          {
+            someBox {
+              ... on NonNullStringBox1 {
+                scalar
+              }
+              ... on StringBox {
+                scalar!
+              }
+            }
+          }
+        `,
+      );
     });
 
     it('disallows differing return type list despite no overlap', () => {
