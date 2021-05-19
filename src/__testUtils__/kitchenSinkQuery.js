@@ -11,6 +11,8 @@ query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
           ...frag @onFragmentSpread
         }
       }
+      field3!
+      requiredField4: field4!
     }
     ... @skip(unless: $foo) {
       id

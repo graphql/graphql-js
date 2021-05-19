@@ -208,6 +208,46 @@ describe('Parser', () => {
     ).to.not.throw();
   });
 
+  it('parses required field', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField!
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('parses required with alias', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField: field!
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('does not parse aliased field with bang on left of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField!: field
+      }
+    `),
+    ).to.throw();
+  });
+
+  it('does not parse aliased field with bang on left and right of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField!: field!
+      }
+    `),
+    ).to.throw();
+  });
+
   it('creates ast', () => {
     const result = parse(dedent`
       {
@@ -259,6 +299,7 @@ describe('Parser', () => {
                   },
                 ],
                 directives: [],
+                required: false,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 16, end: 38 },
@@ -274,6 +315,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
+                      required: false,
                       selectionSet: undefined,
                     },
                     {
@@ -287,6 +329,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
+                      required: false,
                       selectionSet: undefined,
                     },
                   ],
@@ -334,6 +377,7 @@ describe('Parser', () => {
                 },
                 arguments: [],
                 directives: [],
+                required: false,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 15, end: 27 },
@@ -349,6 +393,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
+                      required: false,
                       selectionSet: undefined,
                     },
                   ],
@@ -536,3 +581,45 @@ describe('Parser', () => {
     });
   });
 });
+
+// Valid
+// query {
+//   foo: dsf! {
+//     baz
+//   }
+// }
+// query {
+//   foo: bar!
+// }
+// query {
+//   foo!
+// }
+
+// With schema
+//
+
+// non-null on a non-null field 
+//
+// Person {
+//   name: String!
+// }
+// query {
+//   name! 
+// }
+//
+// We decided this should be valid: https://github.com/graphql/graphql-spec/issues/867#issuecomment-840807186
+
+
+// Invalid
+// query {
+//   foo!: dsf {
+//     baz
+//   }
+// }
+// query {
+//   foo!: bar
+// }
+//
+// query {
+//   foo!: bar!
+// }

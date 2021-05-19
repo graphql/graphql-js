@@ -384,11 +384,15 @@ export class Parser {
     const nameOrAlias = this.parseName();
     let alias;
     let name;
+    let required;
+
     if (this.expectOptionalToken(TokenKind.COLON)) {
       alias = nameOrAlias;
       name = this.parseName();
+      required = !!this.expectOptionalToken(TokenKind.BANG);
     } else {
       name = nameOrAlias;
+      required = !!this.expectOptionalToken(TokenKind.BANG)
     }
 
     return {
@@ -401,6 +405,7 @@ export class Parser {
         ? this.parseSelectionSet()
         : undefined,
       loc: this.loc(start),
+      required: required,
     };
   }
 
