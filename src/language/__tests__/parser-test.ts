@@ -219,17 +219,27 @@ describe('Parser', () => {
     expect(() =>
       parse(`
       query {
-        requiredField: sdfds!
+        requiredField: field!
       }
     `),
     ).to.not.throw();
   });
 
-  it('does not parse field with alias with bang on left', () => {
+  it('does not parse aliased field with bang on left of colon', () => {
     expect(() =>
       parse(`
       query {
-        requiredField!: sdfds
+        requiredField!: field
+      }
+    `),
+    ).to.throw();
+  });
+
+  it('does not parse aliased field with bang on left and right of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField!: field!
       }
     `),
     ).to.throw();
