@@ -1,6 +1,10 @@
-import { NamedTypeNode, ListTypeNode, NonNullTypeNode } from '../language/ast';
-import { GraphQLSchema } from '../type/schema';
-import {
+import type {
+  NamedTypeNode,
+  ListTypeNode,
+  NonNullTypeNode,
+} from '../language/ast';
+import type { GraphQLSchema } from '../type/schema';
+import type {
   GraphQLNamedType,
   GraphQLList,
   GraphQLNonNull,

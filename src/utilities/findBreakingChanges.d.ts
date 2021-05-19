@@ -1,4 +1,4 @@
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 
 export const BreakingChangeType: {
   TYPE_REMOVED: 'TYPE_REMOVED';

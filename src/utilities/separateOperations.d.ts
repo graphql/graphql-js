@@ -1,5 +1,5 @@
-import { ObjMap } from '../jsutils/ObjMap';
-import { DocumentNode } from '../language/ast';
+import type { ObjMap } from '../jsutils/ObjMap';
+import type { DocumentNode } from '../language/ast';
 
 /**
  * separateOperations accepts a single AST document which may contain many

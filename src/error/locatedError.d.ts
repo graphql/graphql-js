@@ -1,8 +1,8 @@
-import { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe';
 
-import { ASTNode } from '../language/ast';
+import type { ASTNode } from '../language/ast';
 
-import { GraphQLError } from './GraphQLError';
+import type { GraphQLError } from './GraphQLError';
 
 /**
  * Given an arbitrary value, presumably thrown while attempting to execute a

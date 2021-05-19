@@ -1,14 +1,14 @@
-import { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe';
 
-import { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLError } from '../error/GraphQLError';
 
-import { DocumentNode } from '../language/ast';
+import type { DocumentNode } from '../language/ast';
 
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 
-import { TypeInfo } from '../utilities/TypeInfo';
+import type { TypeInfo } from '../utilities/TypeInfo';
 
-import { ValidationRule, SDLValidationRule } from './ValidationContext';
+import type { ValidationRule, SDLValidationRule } from './ValidationContext';
 
 /**
  * Implements the "Validation" section of the spec.

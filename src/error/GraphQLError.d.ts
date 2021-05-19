@@ -1,8 +1,8 @@
-import { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe';
 
-import { ASTNode } from '../language/ast';
-import { Source } from '../language/source';
-import { SourceLocation } from '../language/location';
+import type { ASTNode } from '../language/ast';
+import type { Source } from '../language/source';
+import type { SourceLocation } from '../language/location';
 
 /**
  * A GraphQLError describes an Error found during the parse, validate, or

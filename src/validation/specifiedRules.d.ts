@@ -1,4 +1,4 @@
-import { ValidationRule, SDLValidationRule } from './ValidationContext';
+import type { ValidationRule, SDLValidationRule } from './ValidationContext';
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.
