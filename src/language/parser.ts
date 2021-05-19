@@ -248,7 +248,7 @@ export class Parser {
           return this.parseTypeSystemExtension();
       }
     } else if (this.peek(TokenKind.BRACE_L)) {
-      return this.parseOperationDefinition(false); // TODO(areilly): Should this be false?
+      return this.parseOperationDefinition();
     } else if (this.peekDescription()) {
       return this.parseTypeSystemDefinition();
     }
@@ -263,7 +263,7 @@ export class Parser {
    *  - SelectionSet
    *  - OperationType Name? VariableDefinitions? Directives? SelectionSet
    */
-  parseOperationDefinition(allowRequiredField: boolean): OperationDefinitionNode {
+  parseOperationDefinition(): OperationDefinitionNode {
     const start = this._lexer.token;
     if (this.peek(TokenKind.BRACE_L)) {
       return this.node<OperationDefinitionNode>(start, {
@@ -272,7 +272,7 @@ export class Parser {
         name: undefined,
         variableDefinitions: [],
         directives: [],
-        selectionSet: this.parseSelectionSet(allowRequiredField),
+        selectionSet: this.parseSelectionSet(),
       });
     }
     const operation = this.parseOperationType();
@@ -286,7 +286,7 @@ export class Parser {
       name,
       variableDefinitions: this.parseVariableDefinitions(),
       directives: this.parseDirectives(false),
-      selectionSet: this.parseSelectionSet(allowRequiredField),
+      selectionSet: this.parseSelectionSet(),
     });
   }
 
@@ -348,12 +348,10 @@ export class Parser {
   /**
    * SelectionSet : { Selection+ }
    */
-
-  parseSelectionSet(allowRequiredField: boolean = false): SelectionSetNode {
-    const _allowRequiredField = allowRequiredField
+  parseSelectionSet(): SelectionSetNode {
     let parseSelectionFn: () => SelectionNode = function (): SelectionNode {
-      return this.parseSelection(_allowRequiredField)
-    }
+      return this.parseSelection();
+    };
     
     return this.node<SelectionSetNode>(this._lexer.token, {
       kind: Kind.SELECTION_SET,
@@ -371,10 +369,10 @@ export class Parser {
    *   - FragmentSpread
    *   - InlineFragment
    */
-  parseSelection(allowRequiredField: boolean): SelectionNode {
+  parseSelection(): SelectionNode {
     return this.peek(TokenKind.SPREAD)
       ? this.parseFragment()
-      : this.parseField(allowRequiredField);
+      : this.parseField();
   }
 
   /**
@@ -382,31 +380,21 @@ export class Parser {
    *
    * Alias : Name :
    */
-  parseField(allowRequiredField: boolean): FieldNode {
+  parseField(): FieldNode {
     const start = this._lexer.token;
 
     const nameOrAlias = this.parseName();
     let alias;
     let name;
     let required;
-    if (allowRequiredField && this.expectOptionalToken(TokenKind.BANG)) {
-      required = true
-    } else {
-      required = false
-    }
 
     if (this.expectOptionalToken(TokenKind.COLON)) {
       alias = nameOrAlias;
       name = this.parseName();
-      if (allowRequiredField && this.expectOptionalToken(TokenKind.BANG)) {
-        // TODO(areilly): throw error if required is already true because that means
-        // we have something like foo!: bar! which should be illegal
-        required = true
-      } else {
-        required = false
-      }
+      required = !!this.expectOptionalToken(TokenKind.BANG);
     } else {
       name = nameOrAlias;
+      required = !!this.expectOptionalToken(TokenKind.BANG)
     }
 
     return this.node<FieldNode>(start, {
@@ -416,7 +404,7 @@ export class Parser {
       arguments: this.parseArguments(false),
       directives: this.parseDirectives(false),
       selectionSet: this.peek(TokenKind.BRACE_L)
-        ? this.parseSelectionSet(allowRequiredField)
+        ? this.parseSelectionSet()
         : undefined,
       required: required,
     });
