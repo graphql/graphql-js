@@ -1,5 +1,5 @@
-import { GraphQLSchema } from '../type/schema';
-import { GraphQLNamedType } from '../type/definition';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLNamedType } from '../type/definition';
 
 export function printSchema(schema: GraphQLSchema): string;
 

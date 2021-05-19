@@ -1,10 +1,10 @@
-import { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe';
 
-import { ASTVisitor } from '../language/visitor';
-import { ASTNode, FieldNode } from '../language/ast';
-import { GraphQLSchema } from '../type/schema';
-import { GraphQLDirective } from '../type/directives';
-import {
+import type { ASTVisitor } from '../language/visitor';
+import type { ASTNode, FieldNode } from '../language/ast';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type {
   GraphQLType,
   GraphQLInputType,
   GraphQLOutputType,

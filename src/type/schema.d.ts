@@ -1,13 +1,13 @@
-// FIXME
-/* eslint-disable import/no-cycle */
+import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
 
-import { Maybe } from '../jsutils/Maybe';
-import { ObjMap } from '../jsutils/ObjMap';
+import type {
+  SchemaDefinitionNode,
+  SchemaExtensionNode,
+} from '../language/ast';
 
-import { SchemaDefinitionNode, SchemaExtensionNode } from '../language/ast';
-
-import { GraphQLDirective } from './directives';
-import {
+import type { GraphQLDirective } from './directives';
+import type {
   GraphQLNamedType,
   GraphQLAbstractType,
   GraphQLObjectType,

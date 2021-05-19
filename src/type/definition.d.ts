@@ -1,13 +1,10 @@
-// FIXME
-/* eslint-disable import/no-cycle */
+import type { Maybe } from '../jsutils/Maybe';
 
-import { Maybe } from '../jsutils/Maybe';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import type { Path } from '../jsutils/Path';
+import type { ObjMap } from '../jsutils/ObjMap';
 
-import { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import { Path } from '../jsutils/Path';
-import { ObjMap } from '../jsutils/ObjMap';
-
-import {
+import type {
   ScalarTypeDefinitionNode,
   ObjectTypeDefinitionNode,
   FieldDefinitionNode,
@@ -29,7 +26,7 @@ import {
   InputObjectTypeExtensionNode,
 } from '../language/ast';
 
-import { GraphQLSchema } from './schema';
+import type { GraphQLSchema } from './schema';
 
 /**
  * These are all of the possible kinds of types.
