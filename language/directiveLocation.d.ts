@@ -11,7 +11,6 @@ export const DirectiveLocation: Readonly<{
   FRAGMENT_SPREAD: 'FRAGMENT_SPREAD';
   INLINE_FRAGMENT: 'INLINE_FRAGMENT';
   VARIABLE_DEFINITION: 'VARIABLE_DEFINITION';
-
   // Type System Definitions
   SCHEMA: 'SCHEMA';
   SCALAR: 'SCALAR';
@@ -25,7 +24,6 @@ export const DirectiveLocation: Readonly<{
   INPUT_OBJECT: 'INPUT_OBJECT';
   INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION';
 }>;
-
 /**
  * The enum type representing the directive location values.
  */

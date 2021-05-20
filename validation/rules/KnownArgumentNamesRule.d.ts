@@ -3,7 +3,6 @@ import type {
   SDLValidationContext,
 } from '../ValidationContext';
 import type { ASTVisitor } from '../../language/visitor';
-
 /**
  * Known argument names
  *
@@ -11,7 +10,6 @@ import type { ASTVisitor } from '../../language/visitor';
  * that field.
  */
 export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor;
-
 /**
  * @internal
  */

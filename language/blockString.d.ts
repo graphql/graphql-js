@@ -7,12 +7,10 @@
  * @internal
  */
 export function dedentBlockStringValue(rawString: string): string;
-
 /**
  * @internal
  */
 export function getBlockStringIndentation(body: string): number;
-
 /**
  * Print a block string in the indented block form by adding a leading and
  * trailing blank line. However, if a block string starts with whitespace and is

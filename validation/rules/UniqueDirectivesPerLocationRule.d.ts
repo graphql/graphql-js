@@ -1,6 +1,5 @@
 import type { ASTVisitor } from '../../language/visitor';
 import type { ASTValidationContext } from '../ValidationContext';
-
 /**
  * Unique directive names per location
  *

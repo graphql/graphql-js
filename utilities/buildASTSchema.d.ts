@@ -5,7 +5,6 @@ import type {
   GraphQLSchemaValidationOptions,
 } from '../type/schema';
 import type { ParseOptions } from '../language/parser';
-
 export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**
    * Set to true to assume the SDL is valid.
@@ -14,7 +13,6 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
    */
   assumeValidSDL?: boolean;
 }
-
 /**
  * This takes the ast of a schema document produced by the parse function in
  * src/language/parser.js.
@@ -29,7 +27,6 @@ export function buildASTSchema(
   documentAST: DocumentNode,
   options?: BuildSchemaOptions,
 ): GraphQLSchema;
-
 /**
  * A helper function to build a GraphQLSchema directly from a source
  * document.

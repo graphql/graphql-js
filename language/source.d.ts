@@ -2,7 +2,6 @@ interface Location {
   line: number;
   column: number;
 }
-
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
  * optional, but they are useful for clients who store GraphQL documents in source files.
@@ -17,7 +16,6 @@ export class Source {
   constructor(body: string, name?: string, locationOffset?: Location);
   get [Symbol.toStringTag](): string;
 }
-
 /**
  * Test if the given value is a Source object.
  *

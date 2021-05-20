@@ -1,9 +1,7 @@
 import type { Maybe } from '../jsutils/Maybe';
-
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
 import type { SourceLocation } from '../language/location';
-
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
@@ -20,7 +18,6 @@ export class GraphQLError extends Error {
     originalError?: Maybe<Error>,
     extensions?: Maybe<{ [key: string]: unknown }>,
   );
-
   /**
    * A message describing the Error for debugging purposes.
    *
@@ -29,7 +26,6 @@ export class GraphQLError extends Error {
    * Note: should be treated as readonly, despite invariant usage.
    */
   message: string;
-
   /**
    * An array of { line, column } locations within the source GraphQL document
    * which correspond to this error.
@@ -41,7 +37,6 @@ export class GraphQLError extends Error {
    * Enumerable, and appears in the result of JSON.stringify().
    */
   readonly locations: ReadonlyArray<SourceLocation> | undefined;
-
   /**
    * An array describing the JSON-path into the execution response which
    * corresponds to this error. Only included for errors during execution.
@@ -49,12 +44,10 @@ export class GraphQLError extends Error {
    * Enumerable, and appears in the result of JSON.stringify().
    */
   readonly path: ReadonlyArray<string | number> | undefined;
-
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
   readonly nodes: ReadonlyArray<ASTNode> | undefined;
-
   /**
    * The source GraphQL document corresponding to this error.
    *
@@ -62,24 +55,20 @@ export class GraphQLError extends Error {
    * represent nodes after the first node.
    */
   readonly source: Source | undefined;
-
   /**
    * An array of character offsets within the source GraphQL document
    * which correspond to this error.
    */
   readonly positions: ReadonlyArray<number> | undefined;
-
   /**
    * The original error thrown from a field resolver during execution.
    */
   readonly originalError: Maybe<Error>;
-
   /**
    * Extension fields to add to the formatted error.
    */
   readonly extensions: { [key: string]: unknown } | undefined;
 }
-
 /**
  * Prints a GraphQLError to a string, representing useful location information
  * about the error's position in the source.

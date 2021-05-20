@@ -1,13 +1,10 @@
 import type { SourceLocation } from '../language/location';
-
 import type { GraphQLError } from './GraphQLError';
-
 /**
  * Given a GraphQLError, format it according to the rules described by the
  * Response Format, Errors section of the GraphQL Specification.
  */
 export function formatError(error: GraphQLError): GraphQLFormattedError;
-
 /**
  * @see https://github.com/graphql/graphql-spec/blob/master/spec/Section%207%20--%20Response.md#errors
  */

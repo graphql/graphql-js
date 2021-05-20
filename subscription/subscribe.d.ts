@@ -1,10 +1,8 @@
 import type { Maybe } from '../jsutils/Maybe';
-
 import type { DocumentNode } from '../language/ast';
 import type { ExecutionResult } from '../execution/execute';
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
-
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
   document: DocumentNode;
@@ -15,7 +13,6 @@ export interface SubscriptionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
-
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
@@ -40,7 +37,6 @@ export interface SubscriptionArgs {
 export function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
-
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.

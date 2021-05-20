@@ -1,5 +1,4 @@
 import type { Maybe } from '../jsutils/Maybe';
-
 import type { ASTVisitor } from '../language/visitor';
 import type { ASTNode, FieldNode } from '../language/ast';
 import type { GraphQLSchema } from '../type/schema';
@@ -13,7 +12,6 @@ import type {
   GraphQLArgument,
   GraphQLEnumValue,
 } from '../type/definition';
-
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
  * of the current field and type definitions at any point in a GraphQL document
@@ -25,11 +23,9 @@ export class TypeInfo {
     // Initial type may be provided in rare cases to facilitate traversals
     // beginning somewhere other than documents.
     initialType?: GraphQLType,
-
     // @deprecated will be removed in 17.0.0
     getFieldDefFn?: getFieldDef,
   );
-
   getType(): Maybe<GraphQLOutputType>;
   getParentType(): Maybe<GraphQLCompositeType>;
   getInputType(): Maybe<GraphQLInputType>;
@@ -42,13 +38,11 @@ export class TypeInfo {
   enter(node: ASTNode): any;
   leave(node: ASTNode): any;
 }
-
 type getFieldDef = (
   schema: GraphQLSchema,
   parentType: GraphQLType,
   fieldNode: FieldNode,
 ) => Maybe<GraphQLField<unknown, unknown>>;
-
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance
  * along with visiting visitor.

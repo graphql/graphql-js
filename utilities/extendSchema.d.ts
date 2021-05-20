@@ -4,7 +4,6 @@ import type {
   GraphQLSchema,
   GraphQLSchemaNormalizedConfig,
 } from '../type/schema';
-
 interface Options extends GraphQLSchemaValidationOptions {
   /**
    * Set to true to assume the SDL is valid.
@@ -13,7 +12,6 @@ interface Options extends GraphQLSchemaValidationOptions {
    */
   assumeValidSDL?: boolean;
 }
-
 /**
  * Produces a new schema given an existing schema and a document which may
  * contain GraphQL type extensions and definitions. The original schema will
@@ -31,7 +29,6 @@ export function extendSchema(
   documentAST: DocumentNode,
   options?: Options,
 ): GraphQLSchema;
-
 /**
  * @internal
  */

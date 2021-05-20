@@ -26,7 +26,6 @@ export const TokenKind: Readonly<{
   BLOCK_STRING: 'BlockString';
   COMMENT: 'Comment';
 }>;
-
 /**
  * The enum type representing the token kinds values.
  */

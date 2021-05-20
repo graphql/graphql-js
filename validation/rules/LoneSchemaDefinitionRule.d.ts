@@ -1,6 +1,5 @@
 import type { ASTVisitor } from '../../language/visitor';
 import type { SDLValidationContext } from '../ValidationContext';
-
 /**
  * Lone Schema definition
  *

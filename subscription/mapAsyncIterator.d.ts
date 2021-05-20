@@ -1,5 +1,4 @@
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
-
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
