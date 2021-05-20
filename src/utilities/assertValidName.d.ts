@@ -1,4 +1,4 @@
-import { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLError } from '../error/GraphQLError';
 
 /**
  * Upholds the spec rules about naming.

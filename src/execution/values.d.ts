@@ -1,16 +1,16 @@
-import { Maybe } from '../jsutils/Maybe';
-import { ObjMap } from '../jsutils/ObjMap';
+import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
 
-import { GraphQLError } from '../error/GraphQLError';
-import {
+import type { GraphQLError } from '../error/GraphQLError';
+import type {
   FieldNode,
   DirectiveNode,
   VariableDefinitionNode,
 } from '../language/ast';
 
-import { GraphQLDirective } from '../type/directives';
-import { GraphQLSchema } from '../type/schema';
-import { GraphQLField } from '../type/definition';
+import type { GraphQLDirective } from '../type/directives';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLField } from '../type/definition';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }

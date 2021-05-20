@@ -1,4 +1,4 @@
-import { Source } from '../language/source';
+import type { Source } from '../language/source';
 
 /**
  * Strips characters that are not significant to the validity or execution

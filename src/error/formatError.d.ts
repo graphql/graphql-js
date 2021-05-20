@@ -1,6 +1,6 @@
-import { SourceLocation } from '../language/location';
+import type { SourceLocation } from '../language/location';
 
-import { GraphQLError } from './GraphQLError';
+import type { GraphQLError } from './GraphQLError';
 
 /**
  * Given a GraphQLError, format it according to the rules described by the

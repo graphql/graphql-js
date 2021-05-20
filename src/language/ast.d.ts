@@ -1,5 +1,5 @@
-import { Source } from './source';
-import { TokenKindEnum } from './tokenKind';
+import type { Source } from './source';
+import type { TokenKindEnum } from './tokenKind';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that

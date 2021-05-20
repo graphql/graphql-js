@@ -1,6 +1,6 @@
-import { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe';
 
-import { ASTNode, ASTKindToNode } from './ast';
+import type { ASTNode, ASTKindToNode } from './ast';
 
 /**
  * A visitor is provided to visit, it contains the collection of

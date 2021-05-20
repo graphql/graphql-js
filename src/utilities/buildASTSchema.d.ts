@@ -1,7 +1,10 @@
-import { DocumentNode } from '../language/ast';
-import { Source } from '../language/source';
-import { GraphQLSchema, GraphQLSchemaValidationOptions } from '../type/schema';
-import { ParseOptions } from '../language/parser';
+import type { DocumentNode } from '../language/ast';
+import type { Source } from '../language/source';
+import type {
+  GraphQLSchema,
+  GraphQLSchemaValidationOptions,
+} from '../type/schema';
+import type { ParseOptions } from '../language/parser';
 
 export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**

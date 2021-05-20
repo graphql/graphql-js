@@ -1,5 +1,8 @@
-import { ValidationContext, SDLValidationContext } from '../ValidationContext';
-import { ASTVisitor } from '../../language/visitor';
+import type {
+  ValidationContext,
+  SDLValidationContext,
+} from '../ValidationContext';
+import type { ASTVisitor } from '../../language/visitor';
 
 /**
  * Known argument names

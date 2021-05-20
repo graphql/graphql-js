@@ -1,6 +1,6 @@
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 
-import {
+import type {
   IntrospectionQuery,
   IntrospectionOptions,
 } from './getIntrospectionQuery';

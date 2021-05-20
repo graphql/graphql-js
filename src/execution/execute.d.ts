@@ -1,21 +1,21 @@
-import { Maybe } from '../jsutils/Maybe';
-import { ObjMap } from '../jsutils/ObjMap';
+import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
 
-import { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import { Path } from '../jsutils/Path';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import type { Path } from '../jsutils/Path';
 
-import { GraphQLError } from '../error/GraphQLError';
-import { GraphQLFormattedError } from '../error/formatError';
+import type { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLFormattedError } from '../error/formatError';
 
-import {
+import type {
   DocumentNode,
   OperationDefinitionNode,
   SelectionSetNode,
   FieldNode,
   FragmentDefinitionNode,
 } from '../language/ast';
-import { GraphQLSchema } from '../type/schema';
-import {
+import type { GraphQLSchema } from '../type/schema';
+import type {
   GraphQLField,
   GraphQLFieldResolver,
   GraphQLResolveInfo,

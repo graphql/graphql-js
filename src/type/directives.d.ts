@@ -1,12 +1,12 @@
-// FIXME
-/* eslint-disable import/no-cycle */
+import type { Maybe } from '../jsutils/Maybe';
 
-import { Maybe } from '../jsutils/Maybe';
+import type { DirectiveDefinitionNode } from '../language/ast';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
-import { DirectiveDefinitionNode } from '../language/ast';
-import { DirectiveLocationEnum } from '../language/directiveLocation';
-
-import { GraphQLFieldConfigArgumentMap, GraphQLArgument } from './definition';
+import type {
+  GraphQLFieldConfigArgumentMap,
+  GraphQLArgument,
+} from './definition';
 
 /**
  * Test if the given value is a GraphQL directive.

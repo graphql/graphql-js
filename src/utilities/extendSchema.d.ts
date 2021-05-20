@@ -1,5 +1,5 @@
-import { DocumentNode } from '../language/ast';
-import {
+import type { DocumentNode } from '../language/ast';
+import type {
   GraphQLSchemaValidationOptions,
   GraphQLSchema,
   GraphQLSchemaNormalizedConfig,
