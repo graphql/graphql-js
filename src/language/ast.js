@@ -301,6 +301,7 @@ export type FieldNode = {|
   +arguments?: $ReadOnlyArray<ArgumentNode>,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet?: SelectionSetNode,
+  +required?: Boolean,
 |};
 
 export type ArgumentNode = {|
