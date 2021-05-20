@@ -1,5 +1,5 @@
-import { ASTVisitor } from '../../language/visitor';
-import { ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from '../../language/visitor';
+import type { ASTValidationContext } from '../ValidationContext';
 
 /**
  * Unique operation names

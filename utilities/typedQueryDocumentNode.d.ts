@@ -1,4 +1,4 @@
-import { DocumentNode, ExecutableDefinitionNode } from '../language/ast';
+import type { DocumentNode, ExecutableDefinitionNode } from '../language/ast';
 
 /**
  * Wrapper type that contains DocumentNode and types that can be deduced from it.

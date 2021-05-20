@@ -1,7 +1,7 @@
-import { Maybe } from '../jsutils/Maybe';
-import { ObjMap } from '../jsutils/ObjMap';
+import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
 
-import { ValueNode } from '../language/ast';
+import type { ValueNode } from '../language/ast';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.

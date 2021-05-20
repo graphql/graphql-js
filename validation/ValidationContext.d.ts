@@ -1,8 +1,8 @@
-import { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe';
 
-import { GraphQLError } from '../error/GraphQLError';
-import { ASTVisitor } from '../language/visitor';
-import {
+import type { GraphQLError } from '../error/GraphQLError';
+import type { ASTVisitor } from '../language/visitor';
+import type {
   DocumentNode,
   OperationDefinitionNode,
   VariableNode,
@@ -10,9 +10,9 @@ import {
   FragmentSpreadNode,
   FragmentDefinitionNode,
 } from '../language/ast';
-import { GraphQLSchema } from '../type/schema';
-import { GraphQLDirective } from '../type/directives';
-import {
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type {
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLCompositeType,
@@ -20,7 +20,7 @@ import {
   GraphQLArgument,
   GraphQLEnumValue,
 } from '../type/definition';
-import { TypeInfo } from '../utilities/TypeInfo';
+import type { TypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {

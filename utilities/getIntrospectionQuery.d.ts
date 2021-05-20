@@ -1,6 +1,6 @@
-import { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe';
 
-import { DirectiveLocationEnum } from '../language/directiveLocation';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export interface IntrospectionOptions {
   // Whether to include descriptions in the introspection result.

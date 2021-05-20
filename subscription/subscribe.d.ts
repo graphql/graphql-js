@@ -1,9 +1,9 @@
-import { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe';
 
-import { DocumentNode } from '../language/ast';
-import { ExecutionResult } from '../execution/execute';
-import { GraphQLSchema } from '../type/schema';
-import { GraphQLFieldResolver } from '../type/definition';
+import type { DocumentNode } from '../language/ast';
+import type { ExecutionResult } from '../execution/execute';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLFieldResolver } from '../type/definition';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;

@@ -1,6 +1,6 @@
-import { Token } from './ast';
-import { Source } from './source';
-import { TokenKindEnum } from './tokenKind';
+import type { Token } from './ast';
+import type { Source } from './source';
+import type { TokenKindEnum } from './tokenKind';
 
 /**
  * Given a Source object, this returns a Lexer for that source.
