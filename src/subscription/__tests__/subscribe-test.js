@@ -716,7 +716,7 @@ describe('Subscription Publish Phase', () => {
     });
 
     payload = subscription.next();
-    subscription.return();
+    await subscription.return();
 
     // A new email arrives!
     expect(
