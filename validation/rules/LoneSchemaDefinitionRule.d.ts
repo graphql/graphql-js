@@ -1,5 +1,5 @@
-import { ASTVisitor } from '../../language/visitor';
-import { SDLValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from '../../language/visitor';
+import type { SDLValidationContext } from '../ValidationContext';
 
 /**
  * Lone Schema definition

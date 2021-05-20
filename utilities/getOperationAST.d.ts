@@ -1,6 +1,6 @@
-import { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe';
 
-import { DocumentNode, OperationDefinitionNode } from '../language/ast';
+import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 
 /**
  * Returns an operation AST given a document AST and optionally an operation

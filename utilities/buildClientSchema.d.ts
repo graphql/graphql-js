@@ -1,6 +1,9 @@
-import { GraphQLSchema, GraphQLSchemaValidationOptions } from '../type/schema';
+import type {
+  GraphQLSchema,
+  GraphQLSchemaValidationOptions,
+} from '../type/schema';
 
-import { IntrospectionQuery } from './getIntrospectionQuery';
+import type { IntrospectionQuery } from './getIntrospectionQuery';
 
 /**
  * Build a GraphQLSchema for use by client tools.

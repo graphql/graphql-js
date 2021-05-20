@@ -1,7 +1,7 @@
-import { Maybe } from '../jsutils/Maybe';
-import { GraphQLError } from '../error/GraphQLError';
+import type { Maybe } from '../jsutils/Maybe';
+import type { GraphQLError } from '../error/GraphQLError';
 
-import {
+import type {
   Token,
   NameNode,
   VariableNode,
@@ -53,9 +53,9 @@ import {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
 } from './ast';
-import { TokenKindEnum } from './tokenKind';
-import { Source } from './source';
-import { Lexer } from './lexer';
+import type { TokenKindEnum } from './tokenKind';
+import type { Source } from './source';
+import type { Lexer } from './lexer';
 /**
  * Configuration options to control parser behavior
  */
