@@ -665,6 +665,10 @@ overrides:
       '@typescript-eslint/space-before-function-paren': off
       '@typescript-eslint/space-infix-ops': off
       '@typescript-eslint/type-annotation-spacing': off
+  - files: 'src/**/*.d.ts'
+    rules:
+      import/order: off
+      import/newline-after-import: off
   - files: 'src/**/__*__/**'
     rules:
       node/no-unpublished-import: [error, { allowModules: ['chai', 'mocha'] }]

@@ -1,5 +1,4 @@
 export { Path as ResponsePath } from '../jsutils/Path';
-
 export {
   // Predicate
   isSchema,
@@ -10,7 +9,6 @@ export {
   GraphQLSchemaConfig,
   GraphQLSchemaExtensions,
 } from './schema';
-
 export {
   // Predicates
   isType,
@@ -115,7 +113,6 @@ export {
   GraphQLScalarValueParser,
   GraphQLScalarLiteralParser,
 } from './definition';
-
 export {
   // Predicate
   isDirective,
@@ -136,7 +133,6 @@ export {
   GraphQLDirectiveConfig,
   GraphQLDirectiveExtensions,
 } from './directives';
-
 // Common built-in scalar instances.
 export {
   isSpecifiedScalarType,
@@ -147,7 +143,6 @@ export {
   GraphQLBoolean,
   GraphQLID,
 } from './scalars';
-
 export {
   // "Enum" of Type Kinds
   TypeKind,
@@ -167,5 +162,4 @@ export {
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from './introspection';
-
 export { validateSchema, assertValidSchema } from './validate';

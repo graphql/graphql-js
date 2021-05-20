@@ -1,8 +1,6 @@
 import type { Maybe } from '../jsutils/Maybe';
-
 import type { ValueNode } from '../language/ast';
 import type { GraphQLInputType } from '../type/definition';
-
 /**
  * Produces a GraphQL Value AST given a JavaScript value.
  *
