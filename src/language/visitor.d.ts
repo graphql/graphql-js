@@ -1,24 +1,19 @@
 import type { Maybe } from '../jsutils/Maybe';
-
 import type { ASTNode, ASTKindToNode } from './ast';
-
 /**
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
 export type ASTVisitor = EnterLeaveVisitor<ASTNode> & KindVisitor;
-
 type KindVisitor = {
   readonly [K in keyof ASTKindToNode]?:
     | ASTVisitFn<ASTKindToNode[K]>
     | EnterLeaveVisitor<ASTKindToNode[K]>;
 };
-
 type EnterLeaveVisitor<TVisitedNode extends ASTNode> = {
   readonly enter?: ASTVisitFn<TVisitedNode>;
   readonly leave?: ASTVisitFn<TVisitedNode>;
 };
-
 /**
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
@@ -39,9 +34,7 @@ export type ASTVisitFn<TVisitedNode extends ASTNode> = (
    */
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
-
 export const BREAK: any;
-
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the
@@ -114,7 +107,6 @@ export const BREAK: any;
  *     })
  */
 export function visit(root: ASTNode, visitor: ASTVisitor): any;
-
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
  * parallel. Each visitor will be visited for each node before moving on.
@@ -124,7 +116,6 @@ export function visit(root: ASTNode, visitor: ASTVisitor): any;
 export function visitInParallel(
   visitors: ReadonlyArray<ASTVisitor>,
 ): ASTVisitor;
-
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.

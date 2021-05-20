@@ -3,7 +3,6 @@ import type {
   ValidationContext,
   SDLValidationContext,
 } from '../ValidationContext';
-
 /**
  * Provided required arguments
  *
@@ -13,7 +12,6 @@ import type {
 export function ProvidedRequiredArgumentsRule(
   context: ValidationContext,
 ): ASTVisitor;
-
 /**
  * @internal
  */

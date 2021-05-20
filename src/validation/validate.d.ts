@@ -1,15 +1,9 @@
 import type { Maybe } from '../jsutils/Maybe';
-
 import type { GraphQLError } from '../error/GraphQLError';
-
 import type { DocumentNode } from '../language/ast';
-
 import type { GraphQLSchema } from '../type/schema';
-
 import type { TypeInfo } from '../utilities/TypeInfo';
-
 import type { ValidationRule, SDLValidationRule } from './ValidationContext';
-
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -31,11 +25,9 @@ export function validate(
   documentAST: DocumentNode,
   rules?: ReadonlyArray<ValidationRule>,
   options?: { maxErrors?: number },
-
   // @deprecate will be removed in 17.0.0
   typeInfo?: TypeInfo,
 ): ReadonlyArray<GraphQLError>;
-
 /**
  * @internal
  */
@@ -44,7 +36,6 @@ export function validateSDL(
   schemaToExtend?: Maybe<GraphQLSchema>,
   rules?: ReadonlyArray<SDLValidationRule>,
 ): Readonly<GraphQLError>;
-
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
  * if it is invalid.
@@ -52,7 +43,6 @@ export function validateSDL(
  * @internal
  */
 export function assertValidSDL(documentAST: DocumentNode): void;
-
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
  * if it is invalid.

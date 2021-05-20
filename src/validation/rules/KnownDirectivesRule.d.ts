@@ -3,7 +3,6 @@ import type {
   ValidationContext,
   SDLValidationContext,
 } from '../ValidationContext';
-
 /**
  * Known directives
  *

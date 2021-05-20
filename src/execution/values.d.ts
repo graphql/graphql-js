@@ -1,21 +1,17 @@
 import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
-
 import type { GraphQLError } from '../error/GraphQLError';
 import type {
   FieldNode,
   DirectiveNode,
   VariableDefinitionNode,
 } from '../language/ast';
-
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLField } from '../type/definition';
-
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
   | { errors?: never; coerced: { [key: string]: unknown } };
-
 /**
  * Prepares an object map of variableValues of the correct type based on the
  * provided variable definitions and arbitrary input. If the input cannot be
@@ -31,7 +27,6 @@ export function getVariableValues(
   inputs: { [key: string]: unknown },
   options?: { maxErrors?: number },
 ): CoercedVariableValues;
-
 /**
  * Prepares an object map of argument values given a list of argument
  * definitions and list of argument AST nodes.
@@ -45,7 +40,6 @@ export function getArgumentValues(
   node: FieldNode | DirectiveNode,
   variableValues?: Maybe<ObjMap<unknown>>,
 ): { [key: string]: unknown };
-
 /**
  * Prepares an object map of argument values given a directive definition
  * and a AST node which may contain directives. Optionally also accepts a map

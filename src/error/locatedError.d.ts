@@ -1,9 +1,6 @@
 import type { Maybe } from '../jsutils/Maybe';
-
 import type { ASTNode } from '../language/ast';
-
 import type { GraphQLError } from './GraphQLError';
-
 /**
  * Given an arbitrary value, presumably thrown while attempting to execute a
  * GraphQL operation, produce a new GraphQLError aware of the location in the
