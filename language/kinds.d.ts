@@ -4,7 +4,6 @@
 export const Kind: Readonly<{
   // Name
   NAME: 'Name';
-
   // Document
   DOCUMENT: 'Document';
   OPERATION_DEFINITION: 'OperationDefinition';
@@ -12,12 +11,10 @@ export const Kind: Readonly<{
   SELECTION_SET: 'SelectionSet';
   FIELD: 'Field';
   ARGUMENT: 'Argument';
-
   // Fragments
   FRAGMENT_SPREAD: 'FragmentSpread';
   INLINE_FRAGMENT: 'InlineFragment';
   FRAGMENT_DEFINITION: 'FragmentDefinition';
-
   // Values
   VARIABLE: 'Variable';
   INT: 'IntValue';
@@ -29,19 +26,15 @@ export const Kind: Readonly<{
   LIST: 'ListValue';
   OBJECT: 'ObjectValue';
   OBJECT_FIELD: 'ObjectField';
-
   // Directives
   DIRECTIVE: 'Directive';
-
   // Types
   NAMED_TYPE: 'NamedType';
   LIST_TYPE: 'ListType';
   NON_NULL_TYPE: 'NonNullType';
-
   // Type System Definitions
   SCHEMA_DEFINITION: 'SchemaDefinition';
   OPERATION_TYPE_DEFINITION: 'OperationTypeDefinition';
-
   // Type Definitions
   SCALAR_TYPE_DEFINITION: 'ScalarTypeDefinition';
   OBJECT_TYPE_DEFINITION: 'ObjectTypeDefinition';
@@ -52,13 +45,10 @@ export const Kind: Readonly<{
   ENUM_TYPE_DEFINITION: 'EnumTypeDefinition';
   ENUM_VALUE_DEFINITION: 'EnumValueDefinition';
   INPUT_OBJECT_TYPE_DEFINITION: 'InputObjectTypeDefinition';
-
   // Directive Definitions
   DIRECTIVE_DEFINITION: 'DirectiveDefinition';
-
   // Type System Extensions
   SCHEMA_EXTENSION: 'SchemaExtension';
-
   // Type Extensions
   SCALAR_TYPE_EXTENSION: 'ScalarTypeExtension';
   OBJECT_TYPE_EXTENSION: 'ObjectTypeExtension';
@@ -67,7 +57,6 @@ export const Kind: Readonly<{
   ENUM_TYPE_EXTENSION: 'EnumTypeExtension';
   INPUT_OBJECT_TYPE_EXTENSION: 'InputObjectTypeExtension';
 }>;
-
 /**
  * The enum type representing the possible kind values of AST nodes.
  */

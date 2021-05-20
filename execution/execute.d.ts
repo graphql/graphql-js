@@ -1,12 +1,9 @@
 import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
-
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type { Path } from '../jsutils/Path';
-
 import type { GraphQLError } from '../error/GraphQLError';
 import type { GraphQLFormattedError } from '../error/formatError';
-
 import type {
   DocumentNode,
   OperationDefinitionNode,
@@ -22,7 +19,6 @@ import type {
   GraphQLTypeResolver,
   GraphQLObjectType,
 } from '../type/definition';
-
 /**
  * Terminology
  *
@@ -42,7 +38,6 @@ import type {
  * 2) fragment "spreads" e.g. "...c"
  * 3) inline fragment "spreads" e.g. "...on Type { a }"
  */
-
 /**
  * Data that must be available at all points during query execution.
  *
@@ -60,7 +55,6 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   errors: Array<GraphQLError>;
 }
-
 /**
  * The result of GraphQL execution.
  *
@@ -77,7 +71,6 @@ export interface ExecutionResult<
   data?: TData | null;
   extensions?: TExtensions;
 }
-
 export interface FormattedExecutionResult<
   TData = { [key: string]: any },
   TExtensions = { [key: string]: any },
@@ -87,7 +80,6 @@ export interface FormattedExecutionResult<
   data?: TData | null;
   extensions?: TExtensions;
 }
-
 export interface ExecutionArgs {
   schema: GraphQLSchema;
   document: DocumentNode;
@@ -98,7 +90,6 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
-
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.
  *
@@ -110,14 +101,12 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult>;
-
 /**
  * Also implements the "Evaluating requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
 export function executeSync(args: ExecutionArgs): ExecutionResult;
-
 /**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
@@ -129,7 +118,6 @@ export function assertValidExecutionArguments(
   document: DocumentNode,
   rawVariableValues: Maybe<{ [key: string]: unknown }>,
 ): void;
-
 /**
  * Constructs a ExecutionContext object from the arguments passed to
  * execute, which we will pass throughout the other execution methods.
@@ -148,7 +136,6 @@ export function buildExecutionContext(
   fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
   typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
 ): ReadonlyArray<GraphQLError> | ExecutionContext;
-
 /**
  * Given a selectionSet, adds all of the fields in that selection to
  * the passed in map of fields, and returns it at the end.
@@ -166,7 +153,6 @@ export function collectFields(
   fields: ObjMap<Array<FieldNode>>,
   visitedFragmentNames: ObjMap<boolean>,
 ): ObjMap<Array<FieldNode>>;
-
 /**
  * @internal
  */
@@ -177,7 +163,6 @@ export function buildResolveInfo(
   parentType: GraphQLObjectType,
   path: Path,
 ): GraphQLResolveInfo;
-
 /**
  * If a resolveType function is not given, then a default resolve behavior is
  * used which attempts two strategies:
@@ -189,7 +174,6 @@ export function buildResolveInfo(
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
 export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown>;
-
 /**
  * If a resolve function is not given, then a default resolve behavior is used
  * which takes the property of the source object of the same name as the field
@@ -197,7 +181,6 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown>;
  * of calling that function while passing along args and context value.
  */
 export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown>;
-
 /**
  * This method looks up the field on the given type definition.
  * It has special casing for the three introspection fields,

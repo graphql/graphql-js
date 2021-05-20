@@ -1,8 +1,6 @@
 export { Source } from './source';
 export { getLocation, SourceLocation } from './location';
-
 export { printLocation, printSourceLocation } from './printLocation';
-
 export { Kind, KindEnum } from './kinds';
 export { TokenKind, TokenKindEnum } from './tokenKind';
 export { Lexer } from './lexer';
@@ -22,7 +20,6 @@ export {
   ASTVisitor,
   ASTVisitFn,
 } from './visitor';
-
 export {
   Location,
   Token,
@@ -89,7 +86,6 @@ export {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
 } from './ast';
-
 export {
   isDefinitionNode,
   isExecutableDefinitionNode,
@@ -102,5 +98,4 @@ export {
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
 } from './predicates';
-
 export { DirectiveLocation, DirectiveLocationEnum } from './directiveLocation';

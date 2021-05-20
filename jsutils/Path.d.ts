@@ -3,7 +3,6 @@ export interface Path {
   key: string | number;
   typename: string | undefined;
 }
-
 /**
  * Given a Path and a key, return a new Path containing the new key.
  */
@@ -12,7 +11,6 @@ export function addPath(
   key: string | number,
   typename: string | undefined,
 ): Path;
-
 /**
  * Given a Path, return an Array of the path keys.
  */

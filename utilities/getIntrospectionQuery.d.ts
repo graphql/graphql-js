@@ -1,35 +1,26 @@
 import type { Maybe } from '../jsutils/Maybe';
-
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
-
 export interface IntrospectionOptions {
   // Whether to include descriptions in the introspection result.
   // Default: true
   descriptions?: boolean;
-
   // Whether to include `specifiedByURL` in the introspection result.
   // Default: false
   specifiedByUrl?: boolean;
-
   // Whether to include `isRepeatable` flag on directives.
   // Default: false
   directiveIsRepeatable?: boolean;
-
   // Whether to include `description` field on schema.
   // Default: false
   schemaDescription?: boolean;
-
   // Whether target GraphQL server support deprecation of input values.
   // Default: false
   inputValueDeprecation?: boolean;
 }
-
 export function getIntrospectionQuery(options?: IntrospectionOptions): string;
-
 export interface IntrospectionQuery {
   readonly __schema: IntrospectionSchema;
 }
-
 export interface IntrospectionSchema {
   readonly description?: Maybe<string>;
   readonly queryType: IntrospectionNamedTypeRef<IntrospectionObjectType>;
@@ -42,7 +33,6 @@ export interface IntrospectionSchema {
   readonly types: ReadonlyArray<IntrospectionType>;
   readonly directives: ReadonlyArray<IntrospectionDirective>;
 }
-
 export type IntrospectionType =
   | IntrospectionScalarType
   | IntrospectionObjectType
@@ -50,26 +40,22 @@ export type IntrospectionType =
   | IntrospectionUnionType
   | IntrospectionEnumType
   | IntrospectionInputObjectType;
-
 export type IntrospectionOutputType =
   | IntrospectionScalarType
   | IntrospectionObjectType
   | IntrospectionInterfaceType
   | IntrospectionUnionType
   | IntrospectionEnumType;
-
 export type IntrospectionInputType =
   | IntrospectionScalarType
   | IntrospectionEnumType
   | IntrospectionInputObjectType;
-
 export interface IntrospectionScalarType {
   readonly kind: 'SCALAR';
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly specifiedByURL?: Maybe<string>;
 }
-
 export interface IntrospectionObjectType {
   readonly kind: 'OBJECT';
   readonly name: string;
@@ -79,7 +65,6 @@ export interface IntrospectionObjectType {
     IntrospectionNamedTypeRef<IntrospectionInterfaceType>
   >;
 }
-
 export interface IntrospectionInterfaceType {
   readonly kind: 'INTERFACE';
   readonly name: string;
@@ -92,7 +77,6 @@ export interface IntrospectionInterfaceType {
     IntrospectionNamedTypeRef<IntrospectionObjectType>
   >;
 }
-
 export interface IntrospectionUnionType {
   readonly kind: 'UNION';
   readonly name: string;
@@ -101,42 +85,36 @@ export interface IntrospectionUnionType {
     IntrospectionNamedTypeRef<IntrospectionObjectType>
   >;
 }
-
 export interface IntrospectionEnumType {
   readonly kind: 'ENUM';
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly enumValues: ReadonlyArray<IntrospectionEnumValue>;
 }
-
 export interface IntrospectionInputObjectType {
   readonly kind: 'INPUT_OBJECT';
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly inputFields: ReadonlyArray<IntrospectionInputValue>;
 }
-
 export interface IntrospectionListTypeRef<
   T extends IntrospectionTypeRef = IntrospectionTypeRef,
 > {
   readonly kind: 'LIST';
   readonly ofType: T;
 }
-
 export interface IntrospectionNonNullTypeRef<
   T extends IntrospectionTypeRef = IntrospectionTypeRef,
 > {
   readonly kind: 'NON_NULL';
   readonly ofType: T;
 }
-
 export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef
   | IntrospectionListTypeRef
   | IntrospectionNonNullTypeRef<
       IntrospectionNamedTypeRef | IntrospectionListTypeRef
     >;
-
 export type IntrospectionOutputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionOutputType>
   | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
@@ -144,7 +122,6 @@ export type IntrospectionOutputTypeRef =
       | IntrospectionNamedTypeRef<IntrospectionOutputType>
       | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
     >;
-
 export type IntrospectionInputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionInputType>
   | IntrospectionListTypeRef<IntrospectionInputTypeRef>
@@ -152,14 +129,12 @@ export type IntrospectionInputTypeRef =
       | IntrospectionNamedTypeRef<IntrospectionInputType>
       | IntrospectionListTypeRef<IntrospectionInputTypeRef>
     >;
-
 export interface IntrospectionNamedTypeRef<
   T extends IntrospectionType = IntrospectionType,
 > {
   readonly kind: T['kind'];
   readonly name: string;
 }
-
 export interface IntrospectionField {
   readonly name: string;
   readonly description?: Maybe<string>;
@@ -168,7 +143,6 @@ export interface IntrospectionField {
   readonly isDeprecated: boolean;
   readonly deprecationReason: Maybe<string>;
 }
-
 export interface IntrospectionInputValue {
   readonly name: string;
   readonly description?: Maybe<string>;
@@ -177,14 +151,12 @@ export interface IntrospectionInputValue {
   readonly isDeprecated?: boolean;
   readonly deprecationReason?: Maybe<string>;
 }
-
 export interface IntrospectionEnumValue {
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly isDeprecated: boolean;
   readonly deprecationReason: Maybe<string>;
 }
-
 export interface IntrospectionDirective {
   readonly name: string;
   readonly description?: Maybe<string>;

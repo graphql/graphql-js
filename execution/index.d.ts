@@ -1,5 +1,4 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path';
-
 export {
   execute,
   executeSync,
@@ -9,5 +8,4 @@ export {
   ExecutionResult,
   FormattedExecutionResult,
 } from './execute';
-
 export { getDirectiveValues } from './values';

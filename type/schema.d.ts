@@ -1,11 +1,9 @@
 import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
-
 import type {
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../language/ast';
-
 import type { GraphQLDirective } from './directives';
 import type {
   GraphQLNamedType,
@@ -13,13 +11,11 @@ import type {
   GraphQLObjectType,
   GraphQLInterfaceType,
 } from './definition';
-
 /**
  * Test if the given value is a GraphQL schema.
  */
 export function isSchema(schema: unknown): schema is GraphQLSchema;
 export function assertSchema(schema: unknown): GraphQLSchema;
-
 /**
  * Custom extensions
  *
@@ -32,7 +28,6 @@ export function assertSchema(schema: unknown): GraphQLSchema;
 export interface GraphQLSchemaExtensions {
   [attributeName: string]: unknown;
 }
-
 /**
  * Schema Definition
  *
@@ -64,30 +59,24 @@ export class GraphQLSchema {
   extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
-
   constructor(config: Readonly<GraphQLSchemaConfig>);
   getQueryType(): Maybe<GraphQLObjectType>;
   getMutationType(): Maybe<GraphQLObjectType>;
   getSubscriptionType(): Maybe<GraphQLObjectType>;
   getTypeMap(): TypeMap;
   getType(name: string): Maybe<GraphQLNamedType>;
-
   getPossibleTypes(
     abstractType: GraphQLAbstractType,
   ): ReadonlyArray<GraphQLObjectType>;
-
   getImplementations(
     interfaceType: GraphQLInterfaceType,
   ): InterfaceImplementations;
-
   isSubType(
     abstractType: GraphQLAbstractType,
     maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
   ): boolean;
-
   getDirectives(): ReadonlyArray<GraphQLDirective>;
   getDirective(name: string): Maybe<GraphQLDirective>;
-
   toConfig(): GraphQLSchemaConfig & {
     types: Array<GraphQLNamedType>;
     directives: Array<GraphQLDirective>;
@@ -97,14 +86,11 @@ export class GraphQLSchema {
   };
   get [Symbol.toStringTag](): string;
 }
-
 type TypeMap = ObjMap<GraphQLNamedType>;
-
 interface InterfaceImplementations {
   objects: ReadonlyArray<GraphQLObjectType>;
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
 }
-
 export interface GraphQLSchemaValidationOptions {
   /**
    * When building a schema from a GraphQL service's introspection result, it
@@ -115,7 +101,6 @@ export interface GraphQLSchemaValidationOptions {
    */
   assumeValid?: boolean;
 }
-
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   description?: Maybe<string>;
   query?: Maybe<GraphQLObjectType>;
@@ -127,7 +112,6 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 }
-
 /**
  * @internal
  */

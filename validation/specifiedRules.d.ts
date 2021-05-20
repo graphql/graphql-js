@@ -1,5 +1,4 @@
 import type { ValidationRule, SDLValidationRule } from './ValidationContext';
-
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  *
@@ -7,7 +6,6 @@ import type { ValidationRule, SDLValidationRule } from './ValidationContext';
  * most clear output when encountering multiple validation errors.
  */
 export const specifiedRules: ReadonlyArray<ValidationRule>;
-
 /**
  * @internal
  */

@@ -1,6 +1,5 @@
 import type { ASTVisitor } from '../../language/visitor';
 import type { ValidationContext } from '../ValidationContext';
-
 /**
  * Variables are input types
  *

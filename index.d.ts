@@ -1,5 +1,4 @@
 // Minimum TypeScript Version: 3.7
-
 /**
  * GraphQL.js provides a reference implementation for the GraphQL specification
  * but is also a useful utility for operating on GraphQL files and building
@@ -23,13 +22,10 @@
  *     import { parse } from 'graphql';
  *     import { parse } from 'graphql/language';
  */
-
 // The GraphQL.js version info.
 export { version, versionInfo } from './version';
-
 // The primary entry point into fulfilling a GraphQL request.
 export { GraphQLArgs, graphql, graphqlSync } from './graphql';
-
 // Create and operate on GraphQL type definitions and schema.
 export {
   // Definitions
@@ -126,7 +122,6 @@ export {
   validateSchema,
   assertValidSchema,
 } from './type/index';
-
 export {
   GraphQLType,
   GraphQLInputType,
@@ -184,7 +179,6 @@ export {
   GraphQLScalarValueParser,
   GraphQLScalarLiteralParser,
 } from './type/index';
-
 // Parse and operate on GraphQL language source files.
 export {
   Token,
@@ -223,7 +217,6 @@ export {
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
 } from './language/index';
-
 export {
   ParseOptions,
   SourceLocation,
@@ -297,7 +290,6 @@ export {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
 } from './language/index';
-
 // Execute GraphQL queries.
 export {
   execute,
@@ -310,13 +302,11 @@ export {
   ExecutionResult,
   FormattedExecutionResult,
 } from './execution/index';
-
 export {
   subscribe,
   createSourceEventStream,
   SubscriptionArgs,
 } from './subscription/index';
-
 // Validate GraphQL documents.
 export {
   validate,
@@ -363,7 +353,6 @@ export {
   NoSchemaIntrospectionCustomRule,
   ValidationRule,
 } from './validation/index';
-
 // Create, format, and print GraphQL errors.
 export {
   GraphQLError,
@@ -373,7 +362,6 @@ export {
   formatError,
   GraphQLFormattedError,
 } from './error/index';
-
 // Utilities for operating on GraphQL type schema and parsed sources.
 export {
   // Produce the GraphQL query recommended for a full schema introspection.
@@ -438,7 +426,6 @@ export {
   findBreakingChanges,
   findDangerousChanges,
 } from './utilities/index';
-
 export {
   IntrospectionOptions,
   IntrospectionQuery,

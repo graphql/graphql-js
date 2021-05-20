@@ -1,7 +1,5 @@
 import type { GraphQLError } from '../error/GraphQLError';
-
 import type { GraphQLSchema } from './schema';
-
 /**
  * Implements the "Type Validation" sub-sections of the specification's
  * "Type System" section.
@@ -12,7 +10,6 @@ import type { GraphQLSchema } from './schema';
 export function validateSchema(
   schema: GraphQLSchema,
 ): ReadonlyArray<GraphQLError>;
-
 /**
  * Utility function which asserts a schema is valid by throwing an error if
  * it is invalid.

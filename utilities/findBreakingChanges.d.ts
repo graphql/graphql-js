@@ -1,5 +1,4 @@
 import type { GraphQLSchema } from '../type/schema';
-
 export const BreakingChangeType: {
   TYPE_REMOVED: 'TYPE_REMOVED';
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND';
@@ -18,7 +17,6 @@ export const BreakingChangeType: {
   DIRECTIVE_REPEATABLE_REMOVED: 'DIRECTIVE_REPEATABLE_REMOVED';
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED';
 };
-
 export const DangerousChangeType: {
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM';
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION';
@@ -27,17 +25,14 @@ export const DangerousChangeType: {
   IMPLEMENTED_INTERFACE_ADDED: 'IMPLEMENTED_INTERFACE_ADDED';
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE';
 };
-
 export interface BreakingChange {
   type: keyof typeof BreakingChangeType;
   description: string;
 }
-
 export interface DangerousChange {
   type: keyof typeof DangerousChangeType;
   description: string;
 }
-
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of breaking changes covered by the other functions down below.
@@ -46,7 +41,6 @@ export function findBreakingChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<BreakingChange>;
-
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of potentially dangerous changes covered by the other functions down below.

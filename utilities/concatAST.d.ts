@@ -1,5 +1,4 @@
 import type { DocumentNode } from '../language/ast';
-
 /**
  * Provided a collection of ASTs, presumably each from different files,
  * concatenate the ASTs together into batched AST, useful for validating many
