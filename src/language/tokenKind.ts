@@ -25,6 +25,7 @@ export const TokenKind = Object.freeze({
   STRING: 'String',
   BLOCK_STRING: 'BlockString',
   COMMENT: 'Comment',
+  QUESTION_MARK: '?',
 } as const);
 
 /**

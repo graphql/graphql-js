@@ -29,7 +29,7 @@ import type {
 import { Kind } from '../language/kinds';
 
 import type { GraphQLSchema } from '../type/schema';
-import type {
+import {
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLLeafType,
@@ -39,6 +39,7 @@ import type {
   GraphQLResolveInfo,
   GraphQLTypeResolver,
   GraphQLList,
+  getNullableType,
 } from '../type/definition';
 import { assertValidSchema } from '../type/validate';
 import {
@@ -607,9 +608,15 @@ function resolveField(
     return;
   }
 
-  const returnType = fieldNodes[0].required // TODO: Need to update FieldNode
-    ? new GraphQLNonNull(fieldDef.type)
-    : fieldDef.type;
+  let returnType
+  if (fieldNodes[0].required === 'required') {
+    returnType = new GraphQLNonNull(fieldDef.type)
+  } else if(fieldNodes[0].required === 'optional' ){
+    returnType = getNullableType(fieldDef.type)
+  } else {
+    returnType = fieldDef.type
+  }
+
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(

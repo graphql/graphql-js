@@ -288,7 +288,7 @@ export interface SelectionSetNode {
 
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
-type RequiredStatus = 'required' | 'optional' | 'unset';
+export type RequiredStatus = 'required' | 'optional' | 'unset';
 
 export interface FieldNode {
   readonly kind: 'Field';
