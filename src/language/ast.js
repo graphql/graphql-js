@@ -225,7 +225,7 @@ export type ASTKindToNode = {
   InputObjectTypeExtension: InputObjectTypeExtensionNode,
 };
 
-// Name
+/** Name */
 
 export type NameNode = {
   +kind: 'Name',
@@ -233,7 +233,7 @@ export type NameNode = {
   +value: string,
 };
 
-// Document
+/** Document */
 
 export type DocumentNode = {
   +kind: 'Document',
@@ -309,7 +309,7 @@ export type ConstArgumentNode = {
   +value: ConstValueNode,
 };
 
-// Fragments
+/** Fragments */
 
 export type FragmentSpreadNode = {
   +kind: 'FragmentSpread',
@@ -330,14 +330,14 @@ export type FragmentDefinitionNode = {
   +kind: 'FragmentDefinition',
   +loc?: Location,
   +name: NameNode,
-  // Note: fragment variable definitions are deprecated and will removed in v17.0.0
+  /** @deprecated variableDefinitions will be removed in v17.0.0 */
   +variableDefinitions?: $ReadOnlyArray<VariableDefinitionNode>,
   +typeCondition: NamedTypeNode,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet: SelectionSetNode,
 };
 
-// Values
+/** Values */
 
 export type ValueNode =
   | VariableNode
@@ -434,7 +434,7 @@ export type ConstObjectFieldNode = {
   +value: ConstValueNode,
 };
 
-// Directives
+/** Directives */
 
 export type DirectiveNode = {
   +kind: 'Directive',
@@ -450,7 +450,7 @@ export type ConstDirectiveNode = {
   +arguments?: $ReadOnlyArray<ConstArgumentNode>,
 };
 
-// Type Reference
+/** Type Reference */
 
 export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
 
@@ -472,7 +472,7 @@ export type NonNullTypeNode = {
   +type: NamedTypeNode | ListTypeNode,
 };
 
-// Type System Definition
+/** Type System Definition */
 
 export type TypeSystemDefinitionNode =
   | SchemaDefinitionNode
@@ -494,7 +494,7 @@ export type OperationTypeDefinitionNode = {
   +type: NamedTypeNode,
 };
 
-// Type Definition
+/** Type Definition */
 
 export type TypeDefinitionNode =
   | ScalarTypeDefinitionNode
@@ -587,7 +587,7 @@ export type InputObjectTypeDefinitionNode = {
   +fields?: $ReadOnlyArray<InputValueDefinitionNode>,
 };
 
-// Directive Definitions
+/** Directive Definitions */
 
 export type DirectiveDefinitionNode = {
   +kind: 'DirectiveDefinition',
@@ -599,7 +599,7 @@ export type DirectiveDefinitionNode = {
   +locations: $ReadOnlyArray<NameNode>,
 };
 
-// Type System Extensions
+/** Type System Extensions */
 
 export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 
@@ -610,7 +610,7 @@ export type SchemaExtensionNode = {
   +operationTypes?: $ReadOnlyArray<OperationTypeDefinitionNode>,
 };
 
-// Type Extensions
+/** Type Extensions */
 
 export type TypeExtensionNode =
   | ScalarTypeExtensionNode

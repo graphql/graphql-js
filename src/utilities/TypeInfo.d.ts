@@ -20,10 +20,12 @@ import type {
 export class TypeInfo {
   constructor(
     schema: GraphQLSchema,
-    // Initial type may be provided in rare cases to facilitate traversals
-    // beginning somewhere other than documents.
+    /**
+     * Initial type may be provided in rare cases to facilitate traversals
+     *  beginning somewhere other than documents.
+     */
     initialType?: GraphQLType,
-    // @deprecated will be removed in 17.0.0
+    /** @deprecated will be removed in 17.0.0 */
     getFieldDefFn?: getFieldDef,
   );
   getType(): Maybe<GraphQLOutputType>;

@@ -1,20 +1,30 @@
 import type { Maybe } from '../jsutils/Maybe';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 export interface IntrospectionOptions {
-  // Whether to include descriptions in the introspection result.
-  // Default: true
+  /**
+   * Whether to include descriptions in the introspection result.
+   * Default: true
+   */
   descriptions?: boolean;
-  // Whether to include `specifiedByURL` in the introspection result.
-  // Default: false
+  /**
+   * Whether to include `specifiedByURL` in the introspection result.
+   * Default: false
+   */
   specifiedByUrl?: boolean;
-  // Whether to include `isRepeatable` flag on directives.
-  // Default: false
+  /**
+   * Whether to include `isRepeatable` flag on directives.
+   * Default: false
+   */
   directiveIsRepeatable?: boolean;
-  // Whether to include `description` field on schema.
-  // Default: false
+  /**
+   * Whether to include `description` field on schema.
+   * Default: false
+   */
   schemaDescription?: boolean;
-  // Whether target GraphQL server support deprecation of input values.
-  // Default: false
+  /**
+   * Whether target GraphQL server support deprecation of input values.
+   * Default: false
+   */
   inputValueDeprecation?: boolean;
 }
 export function getIntrospectionQuery(options?: IntrospectionOptions): string;
