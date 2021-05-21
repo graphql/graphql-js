@@ -19,8 +19,6 @@ export {
   VisitorKeyMap,
 } from './visitor';
 
-export { Optionality, OptionalityEnum } from './optionality';
-
 export {
   Location,
   Token,
@@ -80,6 +78,7 @@ export {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  RequiredStatus,
 } from './ast';
 
 export {

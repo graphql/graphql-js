@@ -26,7 +26,6 @@ import type {
   FragmentDefinitionNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { Optionality } from '../language/optionality';
 
 import type { GraphQLSchema } from '../type/schema';
 import type {
@@ -69,6 +68,7 @@ import {
   getArgumentValues,
   getDirectiveValues,
 } from './values';
+import { modifiedOutputType } from '../utilities/applyRequiredStatus';
 
 /**
  * Terminology
@@ -643,14 +643,7 @@ function resolveField(
     return;
   }
 
-  let returnType;
-  if (fieldNodes[0].optionality === Optionality.REQUIRED) {
-    returnType = new GraphQLNonNull(fieldDef.type)
-  } else if (fieldNodes[0].optionality === Optionality.OPTIONAL && isNonNullType(fieldDef.type)) {
-    returnType = getNullableType(fieldDef.type)
-  } else {
-    returnType = fieldDef.type
-  }
+  const returnType = modifiedOutputType(fieldDef.type, fieldNodes[0].requied);
 
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 

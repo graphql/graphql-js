@@ -1,7 +1,6 @@
 import type { ASTNode } from './ast';
 
 import { visit } from './visitor';
-import { Optionality } from './optionality';
 import { printBlockString } from './blockString';
 
 /**
@@ -44,11 +43,11 @@ const printDocASTReducer: any = {
     wrap(' ', join(directives, ' ')),
   SelectionSet: ({ selections }) => block(selections),
 
-  Field: ({ alias, name, arguments: args, directives, selectionSet, optionality }) => {
+  Field: ({ alias, name, arguments: args, directives, selectionSet, required }) => {
     let prefix = wrap('', alias, ': ') + name;
-    if (optionality === Optionality.REQUIRED) {
+    if (required === 'required') {
       prefix += '!'
-    } else if (optionality === Optionality.OPTIONAL) {
+    } else if (required === 'optional') {
       prefix += '?'
     }
     let argsLine = prefix + wrap('(', join(args, ', '), ')');

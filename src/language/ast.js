@@ -2,7 +2,6 @@ import defineInspect from '../jsutils/defineInspect';
 
 import type { Source } from './source';
 import type { TokenKindEnum } from './tokenKind';
-import type { OptionalityEnum } from './optionality';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
@@ -294,6 +293,8 @@ export type SelectionSetNode = {|
 
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
+export type RequiredStatus = 'required' | 'optional' | 'unset';
+
 export type FieldNode = {|
   +kind: 'Field',
   +loc?: Location,
@@ -302,7 +303,7 @@ export type FieldNode = {|
   +arguments?: $ReadOnlyArray<ArgumentNode>,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet?: SelectionSetNode,
-  +optionality: OptionalityEnum,
+  +required: RequiredStatus,
 |};
 
 export type ArgumentNode = {|

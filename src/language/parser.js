@@ -47,6 +47,7 @@ import type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  RequiredStatus,
 } from './ast';
 import { Kind } from './kinds';
 import { Location } from './ast';
@@ -54,8 +55,6 @@ import { TokenKind } from './tokenKind';
 import { Source, isSource } from './source';
 import { DirectiveLocation } from './directiveLocation';
 import { Lexer, isPunctuatorTokenKind } from './lexer';
-import type { OptionalityEnum } from './optionality';
-import { Optionality } from './optionality';
 
 /**
  * Configuration options to control parser behavior
@@ -394,7 +393,7 @@ export class Parser {
       name = nameOrAlias;
     }
 
-    const optionality = this.parseOptionality()
+    const required = this.parseOptionality()
 
     return {
       kind: Kind.FIELD,
@@ -406,20 +405,20 @@ export class Parser {
         ? this.parseSelectionSet()
         : undefined,
       loc: this.loc(start),
-      optionality,
+      required,
     };
   }
 
-  parseOptionality(): OptionalityEnum {
+  parseOptionality(): RequiredStatus {
     if(this.expectOptionalToken(TokenKind.BANG)) {
-      return Optionality.REQUIRED;
+      return 'required';
     }
 
     if(this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-      return Optionality.OPTIONAL;
+      return 'optional';
     }
 
-    return Optionality.DEFAULT;
+    return 'unset';
   }
 
   /**
