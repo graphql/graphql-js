@@ -36,7 +36,7 @@ export function validate(
   rules: $ReadOnlyArray<ValidationRule> = specifiedRules,
   options: { maxErrors?: number } = { maxErrors: undefined },
 
-  // @deprecate will be removed in 17.0.0
+  /** @deprecate will be removed in 17.0.0 */
   typeInfo: TypeInfo = new TypeInfo(schema),
 ): $ReadOnlyArray<GraphQLError> {
   devAssert(documentAST, 'Must provide document.');

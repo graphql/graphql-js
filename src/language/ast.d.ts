@@ -179,13 +179,13 @@ export interface ASTKindToNode {
   EnumTypeExtension: EnumTypeExtensionNode;
   InputObjectTypeExtension: InputObjectTypeExtensionNode;
 }
-// Name
+/** Name */
 export interface NameNode {
   readonly kind: 'Name';
   readonly loc?: Location;
   readonly value: string;
 }
-// Document
+/** Document */
 export interface DocumentNode {
   readonly kind: 'Document';
   readonly loc?: Location;
@@ -248,7 +248,7 @@ export interface ConstArgumentNode {
   readonly name: NameNode;
   readonly value: ConstValueNode;
 }
-// Fragments
+/** Fragments */
 export interface FragmentSpreadNode {
   readonly kind: 'FragmentSpread';
   readonly loc?: Location;
@@ -266,13 +266,13 @@ export interface FragmentDefinitionNode {
   readonly kind: 'FragmentDefinition';
   readonly loc?: Location;
   readonly name: NameNode;
-  // Note: fragment variable definitions are deprecated and will removed in v17.0.0
+  /** @deprecated variableDefinitions will be removed in v17.0.0 */
   readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
   readonly typeCondition: NamedTypeNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
 }
-// Values
+/** Values */
 export type ValueNode =
   | VariableNode
   | IntValueNode
@@ -354,7 +354,7 @@ export interface ConstObjectFieldNode {
   readonly name: NameNode;
   readonly value: ConstValueNode;
 }
-// Directives
+/** Directives */
 export interface DirectiveNode {
   readonly kind: 'Directive';
   readonly loc?: Location;
@@ -367,7 +367,7 @@ export interface ConstDirectiveNode {
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<ConstArgumentNode>;
 }
-// Type Reference
+/** Type Reference */
 export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
 export interface NamedTypeNode {
   readonly kind: 'NamedType';
@@ -384,7 +384,7 @@ export interface NonNullTypeNode {
   readonly loc?: Location;
   readonly type: NamedTypeNode | ListTypeNode;
 }
-// Type System Definition
+/** Type System Definition */
 export type TypeSystemDefinitionNode =
   | SchemaDefinitionNode
   | TypeDefinitionNode
@@ -402,7 +402,7 @@ export interface OperationTypeDefinitionNode {
   readonly operation: OperationTypeNode;
   readonly type: NamedTypeNode;
 }
-// Type Definition
+/** Type Definition */
 export type TypeDefinitionNode =
   | ScalarTypeDefinitionNode
   | ObjectTypeDefinitionNode
@@ -484,7 +484,7 @@ export interface InputObjectTypeDefinitionNode {
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly fields?: ReadonlyArray<InputValueDefinitionNode>;
 }
-// Directive Definitions
+/** Directive Definitions */
 export interface DirectiveDefinitionNode {
   readonly kind: 'DirectiveDefinition';
   readonly loc?: Location;
@@ -494,7 +494,7 @@ export interface DirectiveDefinitionNode {
   readonly repeatable: boolean;
   readonly locations: ReadonlyArray<NameNode>;
 }
-// Type System Extensions
+/** Type System Extensions */
 export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 export interface SchemaExtensionNode {
   readonly kind: 'SchemaExtension';
@@ -502,7 +502,7 @@ export interface SchemaExtensionNode {
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly operationTypes?: ReadonlyArray<OperationTypeDefinitionNode>;
 }
-// Type Extensions
+/** Type Extensions */
 export type TypeExtensionNode =
   | ScalarTypeExtensionNode
   | ObjectTypeExtensionNode
