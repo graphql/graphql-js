@@ -583,13 +583,25 @@ function findConflict(
         [node2],
       ];
     }
+  }
 
-    // For now, fail the validation if the nullability status is different
-    if (
-      (node1.required || isNonNullType(def1.type)) !==
-      (node2.required || isNonNullType(def2.type))
-    ) {
-      console.log(isNonNullType(def1.type), isNonNullType(def2.type));
+  // For now, fail the validation if the nullability status is different
+  if (node1.required === 'required') {
+    // if node1 is marked non-nullable,
+    if (node2.required !== 'required' && def2 && !isNonNullType(def2.type)) {
+      // if node2 is not marked non-nullable, and type is known and marked nullable
+      return [
+        [responseName, 'they have differing nullability status'],
+        [node1],
+        [node2],
+      ];
+    }
+  }
+
+  if (node2.required === 'required') {
+    // if node1 is marked non-nullable,
+    if (node1.required !== 'required' && def1 && !isNonNullType(def1.type)) {
+      // if node2 is not marked non-nullable, and type is known and marked nullable
       return [
         [responseName, 'they have differing nullability status'],
         [node1],
@@ -602,7 +614,7 @@ function findConflict(
   const type1 = def1?.type;
   const type2 = def2?.type;
 
-  if (type1 && type2 && doDefsConflict(def1, def2)) {
+  if (type1 && type2 && doTypesConflict(type1, type2)) {
     return [
       [
         responseName,
@@ -657,35 +669,31 @@ function sameValue(value1: ValueNode, value2: ValueNode): boolean {
   return print(value1) === print(value2);
 }
 
-function isNonNullDef(def: GraphQLField<unknown, unknown>): boolean {
-  return isNonNullType(def.type) || def.astNode?.required;
-}
-
 // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.
-function doDefsConflict(
-  def1: GraphQLField<unknown, unknown>,
-  def2: GraphQLField<unknown, unknown>,
+function doTypesConflict(
+  type1: GraphQLOutputType,
+  type2: GraphQLOutputType,
 ): boolean {
-  if (isListType(def1.type)) {
-    return isListType(def2.type)
-      ? doDefsConflict(def1.type.ofType, def2.type.ofType)
+  if (isListType(type1)) {
+    return isListType(type2)
+      ? doTypesConflict(type1.ofType, type2.ofType)
       : true;
   }
-  if (isListType(def2.type)) {
+  if (isListType(type2)) {
     return true;
   }
-  if (isNonNullDef(def1)) {
-    return isNonNullDef(def2)
-      ? doDefsConflict(def1.type.ofType, def2.type.ofType)
+  if (isNonNullType(type1)) {
+    return isNonNullType(type2)
+      ? doTypesConflict(type1.ofType, type2.ofType)
       : true;
   }
-  if (isNonNullDef(def2)) {
+  if (isNonNullType(type2)) {
     return true;
   }
-  if (isLeafType(def1.type) || isLeafType(def2.type)) {
-    return def1.type !== def2.type;
+  if (isLeafType(type1) || isLeafType(type2)) {
+    return type1 !== type2;
   }
   return false;
 }
