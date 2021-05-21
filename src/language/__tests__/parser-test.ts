@@ -215,6 +215,16 @@ describe('Parser', () => {
     ).to.not.throw();
   });
 
+  it('parses optional field', () => {
+    expect(() =>
+      parse(`
+      query {
+        optionalField?
+      }
+    `),
+    ).to.not.throw();
+  });
+
   it('parses required with alias', () => {
     expect(() =>
       parse(`
