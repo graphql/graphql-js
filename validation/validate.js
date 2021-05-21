@@ -31,7 +31,8 @@ export function validate(
   rules = specifiedRules,
   options = {
     maxErrors: undefined,
-  }, // @deprecate will be removed in 17.0.0
+  },
+  /** @deprecate will be removed in 17.0.0 */
   typeInfo = new TypeInfo(schema),
 ) {
   documentAST || devAssert(false, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
