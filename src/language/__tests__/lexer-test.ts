@@ -162,16 +162,16 @@ describe('Lexer', () => {
   it('errors respect whitespace', () => {
     let caughtError;
     try {
-      lexOne(['', '', '    ?', ''].join('\n'));
+      lexOne(['', '', '    ~', ''].join('\n'));
     } catch (error) {
       caughtError = error;
     }
     expect(String(caughtError)).to.equal(dedent`
-      Syntax Error: Cannot parse the unexpected character "?".
+      Syntax Error: Cannot parse the unexpected character "~".
 
       GraphQL request:3:5
       2 |
-      3 |     ?
+      3 |     ~
         |     ^
       4 |
     `);
@@ -180,18 +180,18 @@ describe('Lexer', () => {
   it('updates line numbers in error for file context', () => {
     let caughtError;
     try {
-      const str = ['', '', '     ?', ''].join('\n');
+      const str = ['', '', '     ~', ''].join('\n');
       const source = new Source(str, 'foo.js', { line: 11, column: 12 });
       new Lexer(source).advance();
     } catch (error) {
       caughtError = error;
     }
     expect(String(caughtError)).to.equal(dedent`
-      Syntax Error: Cannot parse the unexpected character "?".
+      Syntax Error: Cannot parse the unexpected character "~".
 
       foo.js:13:6
       12 |
-      13 |      ?
+      13 |      ~
          |      ^
       14 |
     `);
@@ -200,16 +200,16 @@ describe('Lexer', () => {
   it('updates column numbers in error for file context', () => {
     let caughtError;
     try {
-      const source = new Source('?', 'foo.js', { line: 1, column: 5 });
+      const source = new Source('~', 'foo.js', { line: 1, column: 5 });
       new Lexer(source).advance();
     } catch (error) {
       caughtError = error;
     }
     expect(String(caughtError)).to.equal(dedent`
-      Syntax Error: Cannot parse the unexpected character "?".
+      Syntax Error: Cannot parse the unexpected character "~".
 
       foo.js:1:5
-      1 |     ?
+      1 |     ~
         |     ^
     `);
   });
@@ -820,8 +820,8 @@ describe('Lexer', () => {
       locations: [{ line: 1, column: 1 }],
     });
 
-    expectSyntaxError('?').to.deep.equal({
-      message: 'Syntax Error: Cannot parse the unexpected character "?".',
+    expectSyntaxError('~').to.deep.equal({
+      message: 'Syntax Error: Cannot parse the unexpected character "~".',
       locations: [{ line: 1, column: 1 }],
     });
 
