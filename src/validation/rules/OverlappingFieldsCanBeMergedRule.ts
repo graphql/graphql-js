@@ -682,18 +682,6 @@ function doTypesConflict(
   return false;
 }
 
-function isNonNullWithRequiredStatus(
-  type: GraphQLOutputType,
-  required: RequiredStatus
-): boolean {
-  if (required === 'required') {
-    return true
-  } else if (required === 'optional') {
-    return false
-  }
-  return isNonNullType(type)
-}
-
 // Given a selection set, return the collection of fields (a mapping of response
 // name to field nodes and definitions) as well as a list of fragment names
 // referenced via fragment spreads.

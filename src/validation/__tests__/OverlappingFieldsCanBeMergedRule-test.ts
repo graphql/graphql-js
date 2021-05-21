@@ -257,7 +257,7 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('allows different nullability status where no conflict is possible', () => {
     // This is valid since no object can be both a "Dog" and a "Cat", thus
     // these fields can never overlap.
-    expectValid(`
+    expectErrors(`
       fragment conflictingArgs on Pet {
         ... on Dog {
           name!
@@ -266,7 +266,16 @@ describe('Validate: Overlapping fields can be merged', () => {
           name
         }
       }
-    `);
+    `).to.deep.equal([
+      {
+        message:
+          'Fields "name" conflict because they return conflicting types "String!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 4, column: 11 },
+          { line: 7, column: 11 },
+        ],
+      },
+    ]);
   });
 
   it('encounters conflict in fragments', () => {
