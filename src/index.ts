@@ -437,6 +437,7 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
+  modifiedOutputType,
 } from './utilities/index';
 
 export type {
