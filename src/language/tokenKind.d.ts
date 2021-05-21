@@ -25,6 +25,7 @@ export const TokenKind: {
   STRING: 'String';
   BLOCK_STRING: 'BlockString';
   COMMENT: 'Comment';
+  QUESTION_MARK: '?';
 };
 
 /**

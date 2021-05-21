@@ -2,6 +2,7 @@ import defineInspect from '../jsutils/defineInspect';
 
 import type { Source } from './source';
 import type { TokenKindEnum } from './tokenKind';
+import type { OptionalityEnum } from './optionality';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
@@ -301,7 +302,7 @@ export type FieldNode = {|
   +arguments?: $ReadOnlyArray<ArgumentNode>,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet?: SelectionSetNode,
-  +required?: Boolean,
+  +optionality: OptionalityEnum,
 |};
 
 export type ArgumentNode = {|

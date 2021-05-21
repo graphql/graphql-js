@@ -26,6 +26,7 @@ import type {
   FragmentDefinitionNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
+import { Optionality } from '../language/optionality';
 
 import type { GraphQLSchema } from '../type/schema';
 import type {
@@ -57,6 +58,7 @@ import {
   isLeafType,
   isListType,
   isNonNullType,
+  getNullableType,
 } from '../type/definition';
 
 import { typeFromAST } from '../utilities/typeFromAST';
@@ -641,9 +643,15 @@ function resolveField(
     return;
   }
 
-  const returnType = fieldNodes[0].required // TODO: Need to update FieldNode
-    ? new GraphQLNonNull(fieldDef.type)
-    : fieldDef.type;
+  let returnType;
+  if (fieldNodes[0].optionality === Optionality.REQUIRED) {
+    returnType = new GraphQLNonNull(fieldDef.type)
+  } else if (fieldNodes[0].optionality === Optionality.OPTIONAL && isNonNullType(fieldDef.type)) {
+    returnType = getNullableType(fieldDef.type)
+  } else {
+    returnType = fieldDef.type
+  }
+
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(

@@ -54,6 +54,8 @@ import { TokenKind } from './tokenKind';
 import { Source, isSource } from './source';
 import { DirectiveLocation } from './directiveLocation';
 import { Lexer, isPunctuatorTokenKind } from './lexer';
+import type { OptionalityEnum } from './optionality';
+import { Optionality } from './optionality';
 
 /**
  * Configuration options to control parser behavior
@@ -384,16 +386,15 @@ export class Parser {
     const nameOrAlias = this.parseName();
     let alias;
     let name;
-    let required;
 
     if (this.expectOptionalToken(TokenKind.COLON)) {
       alias = nameOrAlias;
       name = this.parseName();
-      required = !!this.expectOptionalToken(TokenKind.BANG);
     } else {
       name = nameOrAlias;
-      required = !!this.expectOptionalToken(TokenKind.BANG)
     }
+
+    const optionality = this.parseOptionality()
 
     return {
       kind: Kind.FIELD,
@@ -405,8 +406,20 @@ export class Parser {
         ? this.parseSelectionSet()
         : undefined,
       loc: this.loc(start),
-      required: required,
+      optionality,
     };
+  }
+
+  parseOptionality(): OptionalityEnum {
+    if(this.expectOptionalToken(TokenKind.BANG)) {
+      return Optionality.REQUIRED;
+    }
+
+    if(this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+      return Optionality.OPTIONAL;
+    }
+
+    return Optionality.DEFAULT;
   }
 
   /**

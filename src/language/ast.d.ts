@@ -1,5 +1,6 @@
 import { Source } from './source';
 import { TokenKindEnum } from './tokenKind';
+import type { OptionalityEnum } from './optionality';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
@@ -267,7 +268,7 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
-  readonly required?: boolean;
+  readonly optionality: OptionalityEnum;
 }
 
 export interface ArgumentNode {

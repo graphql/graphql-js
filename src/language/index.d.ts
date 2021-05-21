@@ -19,6 +19,8 @@ export {
   VisitorKeyMap,
 } from './visitor';
 
+export { Optionality, OptionalityEnum } from './optionality';
+
 export {
   Location,
   Token,

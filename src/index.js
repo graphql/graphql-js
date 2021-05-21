@@ -204,6 +204,8 @@ export {
   isTypeDefinitionNode,
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
+  OptionalityEnum,
+  Optionality,
 } from './language/index';
 
 export type {

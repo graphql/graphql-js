@@ -21,6 +21,9 @@ export { print } from './printer';
 export { visit, visitInParallel, getVisitFn, BREAK } from './visitor';
 export type { ASTVisitor, Visitor, VisitFn, VisitorKeyMap } from './visitor';
 
+export type { OptionalityEnum } from './optionality';
+export { Optionality } from './optionality';
+
 export { Location, Token } from './ast';
 export type {
   ASTNode,
