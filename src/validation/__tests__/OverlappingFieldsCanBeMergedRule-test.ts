@@ -167,7 +167,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
-  it('different nullability, second adds an argument', () => {
+  it('different nullability', () => {
     expectErrors(`
       fragment conflictingArgs on Dog {
         doesKnowCommand
@@ -176,7 +176,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).to.deep.equal([
       {
         message:
-          'Fields "doesKnowCommand" conflict because they have differing nullability status. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "doesKnowCommand" conflict because they return conflicting types "Boolean" and "Boolean!". Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 9 },
@@ -691,7 +691,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         ).to.deep.equal([
           {
             message:
-              'Fields "unrelatedField" conflict because they have differing nullability status. Use different aliases on the fields to fetch both if this was intentional.',
+              'Fields "unrelatedField" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
             locations: [
               { line: 5, column: 19 },
               { line: 8, column: 19 },
@@ -829,8 +829,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         `,
       ).to.deep.equal([
         {
-          message:
-            'Fields "deepBox" conflict because subfields "unrelatedField" conflict because they have differing nullability status. Use different aliases on the fields to fetch both if this was intentional.',
+          message: 'Fields "deepBox" conflict because subfields "unrelatedField" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
           locations: [
             { line: 5, column: 17 },
             { line: 6, column: 19 },
@@ -1002,7 +1001,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             },
           ],
           message:
-            'Fields "scalar" conflict because they have differing nullability status. Use different aliases on the fields to fetch both if this was intentional.',
+            'Fields "scalar" conflict because they return conflicting types "Int" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
         },
       ]);
     });

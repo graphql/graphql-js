@@ -68,6 +68,7 @@ import {
   getArgumentValues,
   getDirectiveValues,
 } from './values';
+import { modifiedOutputType } from '../utilities/applyRequiredStatus';
 
 /**
  * Terminology
@@ -608,14 +609,7 @@ function resolveField(
     return;
   }
 
-  let returnType
-  if (fieldNodes[0].required === 'required' && !isNonNullType(fieldDef.type)) {
-    returnType = new GraphQLNonNull(fieldDef.type)
-  } else if(fieldNodes[0].required === 'optional' ){
-    returnType = getNullableType(fieldDef.type)
-  } else {
-    returnType = fieldDef.type
-  }
+  const returnType = modifiedOutputType(fieldDef.type, fieldNodes[0].required)
 
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
