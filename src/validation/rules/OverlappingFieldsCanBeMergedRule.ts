@@ -10,14 +10,17 @@ import type {
   FieldNode,
   ArgumentNode,
   FragmentDefinitionNode,
+  RequiredStatus,
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 
-import type {
+import {
   GraphQLNamedType,
   GraphQLOutputType,
   GraphQLField,
+  GraphQLNonNull,
+  getNullableType,
 } from '../../type/definition';
 import {
   getNamedType,
@@ -33,6 +36,7 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 import type { Maybe } from '../../jsutils/Maybe';
 
 import type { ValidationContext } from '../ValidationContext';
+import { getIntrospectionQuery } from '../../../old_dts';
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
@@ -585,23 +589,8 @@ function findConflict(
     }
   }
 
-  // For now, fail the validation if the nullability status is different
-  if (node1.required === 'required') {
-    // if node1 is marked non-nullable,
-    if (node2.required !== 'required' && def2 && !isNonNullType(def2.type)) {
-      // if node2 is not marked non-nullable, and type is known and marked nullable
-      return [
-        [responseName, 'they have differing nullability status'],
-        [node1],
-        [node2],
-      ];
-    }
-  }
-
-  if (node2.required === 'required') {
-    // if node1 is marked non-nullable,
-    if (node1.required !== 'required' && def1 && !isNonNullType(def1.type)) {
-      // if node2 is not marked non-nullable, and type is known and marked nullable
+  if (node1.required !== node2.required) {
+    if (def1 && def2 && isNonNullWithRequiredStatus(def1.type, node1.required) !== isNonNullWithRequiredStatus(def2.type, node2.required)) {
       return [
         [responseName, 'they have differing nullability status'],
         [node1],
@@ -696,6 +685,18 @@ function doTypesConflict(
     return type1 !== type2;
   }
   return false;
+}
+
+function isNonNullWithRequiredStatus(
+  type: GraphQLOutputType,
+  required: RequiredStatus
+): boolean {
+  if (required === 'required') {
+    return true
+  } else if (required === 'optional') {
+    return false
+  }
+  return isNonNullType(type)
 }
 
 // Given a selection set, return the collection of fields (a mapping of response

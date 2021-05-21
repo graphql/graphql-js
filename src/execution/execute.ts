@@ -609,7 +609,7 @@ function resolveField(
   }
 
   let returnType
-  if (fieldNodes[0].required === 'required') {
+  if (fieldNodes[0].required === 'required' && !isNonNullType(fieldDef.type)) {
     returnType = new GraphQLNonNull(fieldDef.type)
   } else if(fieldNodes[0].required === 'optional' ){
     returnType = getNullableType(fieldDef.type)

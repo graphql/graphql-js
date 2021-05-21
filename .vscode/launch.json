@@ -7,7 +7,7 @@
       "name": "Mocha Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
-        "src/language/__tests__/printer-test.ts"
+        "src/validation/__tests__/OverlappingFieldsCanBeMergedRule-test.ts"
       ],
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**"]
