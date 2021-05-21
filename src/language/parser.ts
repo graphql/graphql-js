@@ -382,16 +382,16 @@ export class Parser {
     const nameOrAlias = this.parseName();
     let alias;
     let name;
-    let required;
 
     if (this.expectOptionalToken(TokenKind.COLON)) {
       alias = nameOrAlias;
       name = this.parseName();
-      required = !!this.expectOptionalToken(TokenKind.BANG);
     } else {
       name = nameOrAlias;
-      required = !!this.expectOptionalToken(TokenKind.BANG)
     }
+    const required = this.expectOptionalToken(TokenKind.BANG)
+      ? 'required'
+      : 'unset';
 
     return this.node<FieldNode>(start, {
       kind: Kind.FIELD,
@@ -402,7 +402,7 @@ export class Parser {
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
         : undefined,
-      required: required,
+      required,
     });
   }
 

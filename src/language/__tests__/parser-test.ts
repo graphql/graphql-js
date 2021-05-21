@@ -296,7 +296,7 @@ describe('Parser', () => {
                   },
                 ],
                 directives: [],
-                required: false,
+                required: 'unset',
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 16, end: 38 },
@@ -312,7 +312,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      required: false,
+                      required: 'unset',
                       selectionSet: undefined,
                     },
                     {
@@ -326,7 +326,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      required: false,
+                      required: 'unset',
                       selectionSet: undefined,
                     },
                   ],
@@ -374,7 +374,7 @@ describe('Parser', () => {
                 },
                 arguments: [],
                 directives: [],
-                required: false,
+                required: 'unset',
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 15, end: 27 },
@@ -390,7 +390,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      required: false,
+                      required: 'unset',
                       selectionSet: undefined,
                     },
                   ],
@@ -682,17 +682,16 @@ describe('Parser', () => {
 // With schema
 //
 
-// non-null on a non-null field 
+// non-null on a non-null field
 //
 // Person {
 //   name: String!
 // }
 // query {
-//   name! 
+//   name!
 // }
 //
 // We decided this should be valid: https://github.com/graphql/graphql-spec/issues/867#issuecomment-840807186
-
 
 // Invalid
 // query {
