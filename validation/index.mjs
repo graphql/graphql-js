@@ -1,59 +1,87 @@
 export { validate } from './validate.mjs';
 export { ValidationContext } from './ValidationContext.mjs';
-// All validation rules in the GraphQL Specification.
-export { specifiedRules } from './specifiedRules.mjs'; // Spec Section: "Executable Definitions"
 
-export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.mjs'; // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
+/** All validation rules in the GraphQL Specification. */
+export { specifiedRules } from './specifiedRules.mjs';
+/** Spec Section: "Executable Definitions" */
 
-export { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule.mjs'; // Spec Section: "Fragments on Composite Types"
+export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.mjs';
+/** Spec Section: "Field Selections on Objects, Interfaces, and Unions Types" */
 
-export { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypesRule.mjs'; // Spec Section: "Argument Names"
+export { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule.mjs';
+/** Spec Section: "Fragments on Composite Types" */
 
-export { KnownArgumentNamesRule } from './rules/KnownArgumentNamesRule.mjs'; // Spec Section: "Directives Are Defined"
+export { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypesRule.mjs';
+/** Spec Section: "Argument Names" */
 
-export { KnownDirectivesRule } from './rules/KnownDirectivesRule.mjs'; // Spec Section: "Fragment spread target defined"
+export { KnownArgumentNamesRule } from './rules/KnownArgumentNamesRule.mjs';
+/** Spec Section: "Directives Are Defined" */
 
-export { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.mjs'; // Spec Section: "Fragment Spread Type Existence"
+export { KnownDirectivesRule } from './rules/KnownDirectivesRule.mjs';
+/** Spec Section: "Fragment spread target defined" */
 
-export { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.mjs'; // Spec Section: "Lone Anonymous Operation"
+export { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.mjs';
+/** Spec Section: "Fragment Spread Type Existence" */
 
-export { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.mjs'; // Spec Section: "Fragments must not form cycles"
+export { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.mjs';
+/** Spec Section: "Lone Anonymous Operation" */
 
-export { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.mjs'; // Spec Section: "All Variable Used Defined"
+export { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.mjs';
+/** Spec Section: "Fragments must not form cycles" */
 
-export { NoUndefinedVariablesRule } from './rules/NoUndefinedVariablesRule.mjs'; // Spec Section: "Fragments must be used"
+export { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.mjs';
+/** Spec Section: "All Variable Used Defined" */
 
-export { NoUnusedFragmentsRule } from './rules/NoUnusedFragmentsRule.mjs'; // Spec Section: "All Variables Used"
+export { NoUndefinedVariablesRule } from './rules/NoUndefinedVariablesRule.mjs';
+/** Spec Section: "Fragments must be used" */
 
-export { NoUnusedVariablesRule } from './rules/NoUnusedVariablesRule.mjs'; // Spec Section: "Field Selection Merging"
+export { NoUnusedFragmentsRule } from './rules/NoUnusedFragmentsRule.mjs';
+/** Spec Section: "All Variables Used" */
 
-export { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBeMergedRule.mjs'; // Spec Section: "Fragment spread is possible"
+export { NoUnusedVariablesRule } from './rules/NoUnusedVariablesRule.mjs';
+/** Spec Section: "Field Selection Merging" */
 
-export { PossibleFragmentSpreadsRule } from './rules/PossibleFragmentSpreadsRule.mjs'; // Spec Section: "Argument Optionality"
+export { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBeMergedRule.mjs';
+/** Spec Section: "Fragment spread is possible" */
 
-export { ProvidedRequiredArgumentsRule } from './rules/ProvidedRequiredArgumentsRule.mjs'; // Spec Section: "Leaf Field Selections"
+export { PossibleFragmentSpreadsRule } from './rules/PossibleFragmentSpreadsRule.mjs';
+/** Spec Section: "Argument Optionality" */
 
-export { ScalarLeafsRule } from './rules/ScalarLeafsRule.mjs'; // Spec Section: "Subscriptions with Single Root Field"
+export { ProvidedRequiredArgumentsRule } from './rules/ProvidedRequiredArgumentsRule.mjs';
+/** Spec Section: "Leaf Field Selections" */
 
-export { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule.mjs'; // Spec Section: "Argument Uniqueness"
+export { ScalarLeafsRule } from './rules/ScalarLeafsRule.mjs';
+/** Spec Section: "Subscriptions with Single Root Field" */
 
-export { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule.mjs'; // Spec Section: "Directives Are Unique Per Location"
+export { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule.mjs';
+/** Spec Section: "Argument Uniqueness" */
 
-export { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLocationRule.mjs'; // Spec Section: "Fragment Name Uniqueness"
+export { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule.mjs';
+/** Spec Section: "Directives Are Unique Per Location" */
 
-export { UniqueFragmentNamesRule } from './rules/UniqueFragmentNamesRule.mjs'; // Spec Section: "Input Object Field Uniqueness"
+export { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLocationRule.mjs';
+/** Spec Section: "Fragment Name Uniqueness" */
 
-export { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule.mjs'; // Spec Section: "Operation Name Uniqueness"
+export { UniqueFragmentNamesRule } from './rules/UniqueFragmentNamesRule.mjs';
+/** Spec Section: "Input Object Field Uniqueness" */
 
-export { UniqueOperationNamesRule } from './rules/UniqueOperationNamesRule.mjs'; // Spec Section: "Variable Uniqueness"
+export { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule.mjs';
+/** Spec Section: "Operation Name Uniqueness" */
 
-export { UniqueVariableNamesRule } from './rules/UniqueVariableNamesRule.mjs'; // Spec Section: "Values Type Correctness"
+export { UniqueOperationNamesRule } from './rules/UniqueOperationNamesRule.mjs';
+/** Spec Section: "Variable Uniqueness" */
 
-export { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule.mjs'; // Spec Section: "Variables are Input Types"
+export { UniqueVariableNamesRule } from './rules/UniqueVariableNamesRule.mjs';
+/** Spec Section: "Values Type Correctness" */
 
-export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.mjs'; // Spec Section: "All Variable Usages Are Allowed"
+export { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule.mjs';
+/** Spec Section: "Variables are Input Types" */
 
-export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule.mjs'; // SDL-specific validation rules
+export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.mjs';
+/** Spec Section: "All Variable Usages Are Allowed" */
+
+export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule.mjs';
+/** SDL-specific validation rules */
 
 export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.mjs';
 export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule.mjs';
@@ -61,7 +89,8 @@ export { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule.mjs';
 export { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule.mjs';
 export { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule.mjs';
 export { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule.mjs';
-export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule.mjs'; // Optional rules not defined by the GraphQL Specification
+export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule.mjs';
+/** Optional rules not defined by the GraphQL Specification */
 
 export { NoDeprecatedCustomRule } from './rules/custom/NoDeprecatedCustomRule.mjs';
 export { NoSchemaIntrospectionCustomRule } from './rules/custom/NoSchemaIntrospectionCustomRule.mjs';

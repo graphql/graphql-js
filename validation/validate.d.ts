@@ -25,7 +25,7 @@ export function validate(
   documentAST: DocumentNode,
   rules?: ReadonlyArray<ValidationRule>,
   options?: { maxErrors?: number },
-  // @deprecate will be removed in 17.0.0
+  /** @deprecate will be removed in 17.0.0 */
   typeInfo?: TypeInfo,
 ): ReadonlyArray<GraphQLError>;
 /**

@@ -9,7 +9,7 @@ exports.DirectiveLocation = void 0;
  * The set of allowed directive location values.
  */
 const DirectiveLocation = Object.freeze({
-  // Request Definitions
+  /** Request Definitions */
   QUERY: 'QUERY',
   MUTATION: 'MUTATION',
   SUBSCRIPTION: 'SUBSCRIPTION',
@@ -18,7 +18,8 @@ const DirectiveLocation = Object.freeze({
   FRAGMENT_SPREAD: 'FRAGMENT_SPREAD',
   INLINE_FRAGMENT: 'INLINE_FRAGMENT',
   VARIABLE_DEFINITION: 'VARIABLE_DEFINITION',
-  // Type System Definitions
+
+  /** Type System Definitions */
   SCHEMA: 'SCHEMA',
   SCALAR: 'SCALAR',
   OBJECT: 'OBJECT',

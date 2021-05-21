@@ -284,11 +284,11 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   name: string;
   description?: Maybe<string>;
   specifiedBy?: Maybe<string>;
-  // Serializes an internal value to include in a response.
+  /** Serializes an internal value to include in a response. */
   serialize?: GraphQLScalarSerializer<TExternal>;
-  // Parses an externally provided value to use as an input.
+  /** Parses an externally provided value to use as an input. */
   parseValue?: GraphQLScalarValueParser<TInternal>;
-  // Parses an externally provided literal value to use as an input.
+  /** Parses an externally provided literal value to use as an input. */
   parseLiteral?: GraphQLScalarLiteralParser<TInternal>;
   extensions?: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
   astNode?: Maybe<ScalarTypeDefinitionNode>;

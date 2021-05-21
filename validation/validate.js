@@ -44,7 +44,8 @@ function validate(
   rules = _specifiedRules.specifiedRules,
   options = {
     maxErrors: undefined,
-  }, // @deprecate will be removed in 17.0.0
+  },
+  /** @deprecate will be removed in 17.0.0 */
   typeInfo = new _TypeInfo.TypeInfo(schema),
 ) {
   documentAST || (0, _devAssert.devAssert)(false, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.

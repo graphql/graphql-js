@@ -25,9 +25,13 @@ var _typeFromAST = require('./typeFromAST.js');
  */
 class TypeInfo {
   constructor(
-    schema, // Initial type may be provided in rare cases to facilitate traversals
-    // beginning somewhere other than documents.
-    initialType, // @deprecated will be removed in 17.0.0
+    schema,
+    /**
+     * Initial type may be provided in rare cases to facilitate traversals
+     *  beginning somewhere other than documents.
+     */
+    initialType,
+    /** @deprecated will be removed in 17.0.0 */
     getFieldDefFn,
   ) {
     this._schema = schema;
