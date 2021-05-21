@@ -254,11 +254,9 @@ describe('Validate: Overlapping fields can be merged', () => {
     `);
   });
 
-  it('allows different nullability status where no conflict is possible', () => {
-    // This is valid since no object can be both a "Dog" and a "Cat", thus
-    // these fields can never overlap.
+  it('disallows different nullability status even the types are mutual execlusive', () => {
     expectErrors(`
-      fragment conflictingArgs on Pet {
+      fragment conflictingNullability on Pet {
         ... on Dog {
           name!
         }
