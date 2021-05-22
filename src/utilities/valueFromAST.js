@@ -38,7 +38,7 @@ export function valueFromAST(
   valueNode: ?ValueNode,
   type: GraphQLInputType,
   variables?: ?ObjMap<mixed>,
-): mixed | void {
+): mixed {
   if (!valueNode) {
     // When there is no node, then there is also no value.
     // Importantly, this is different from returning the value null.
