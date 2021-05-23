@@ -26,7 +26,7 @@ export class TypeInfo {
      */
     initialType?: GraphQLType,
     /** @deprecated will be removed in 17.0.0 */
-    getFieldDefFn?: getFieldDef,
+    getFieldDefFn?: GetFieldDefFn,
   );
   getType(): Maybe<GraphQLOutputType>;
   getParentType(): Maybe<GraphQLCompositeType>;
@@ -40,7 +40,7 @@ export class TypeInfo {
   enter(node: ASTNode): any;
   leave(node: ASTNode): any;
 }
-type getFieldDef = (
+type GetFieldDefFn = (
   schema: GraphQLSchema,
   parentType: GraphQLType,
   fieldNode: FieldNode,
