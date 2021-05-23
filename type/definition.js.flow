@@ -24,25 +24,25 @@ import { GraphQLError } from '../error/GraphQLError';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 import type {
+  FieldNode,
+  ValueNode,
+  OperationDefinitionNode,
+  FragmentDefinitionNode,
   ScalarTypeDefinitionNode,
+  ScalarTypeExtensionNode,
   ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
   FieldDefinitionNode,
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
+  InterfaceTypeExtensionNode,
   UnionTypeDefinitionNode,
+  UnionTypeExtensionNode,
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
-  InputObjectTypeDefinitionNode,
-  ScalarTypeExtensionNode,
-  ObjectTypeExtensionNode,
-  InterfaceTypeExtensionNode,
-  UnionTypeExtensionNode,
   EnumTypeExtensionNode,
+  InputObjectTypeDefinitionNode,
   InputObjectTypeExtensionNode,
-  OperationDefinitionNode,
-  FieldNode,
-  FragmentDefinitionNode,
-  ValueNode,
 } from '../language/ast';
 
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';

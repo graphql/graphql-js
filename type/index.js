@@ -459,12 +459,6 @@ Object.defineProperty(exports, '__TypeKind', {
     return _introspection.__TypeKind;
   },
 });
-Object.defineProperty(exports, 'TypeKind', {
-  enumerable: true,
-  get: function () {
-    return _introspection.TypeKind;
-  },
-});
 Object.defineProperty(exports, 'SchemaMetaFieldDef', {
   enumerable: true,
   get: function () {
