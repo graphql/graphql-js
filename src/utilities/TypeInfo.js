@@ -51,7 +51,7 @@ export class TypeInfo {
   _directive: ?GraphQLDirective;
   _argument: ?GraphQLArgument;
   _enumValue: ?GraphQLEnumValue;
-  _getFieldDef: typeof getFieldDef;
+  _getFieldDef: GetFieldDefFn;
 
   constructor(
     schema: GraphQLSchema,
@@ -62,7 +62,7 @@ export class TypeInfo {
     initialType?: ?GraphQLType,
 
     /** @deprecated will be removed in 17.0.0 */
-    getFieldDefFn?: typeof getFieldDef,
+    getFieldDefFn?: GetFieldDefFn,
   ) {
     this._schema = schema;
     this._typeStack = [];
@@ -291,6 +291,12 @@ export class TypeInfo {
     }
   }
 }
+
+type GetFieldDefFn = (
+  schema: GraphQLSchema,
+  parentType: GraphQLType,
+  fieldNode: FieldNode,
+) => ?GraphQLField<mixed, mixed>;
 
 /**
  * Not exactly the same as the executor's definition of getFieldDef, in this
