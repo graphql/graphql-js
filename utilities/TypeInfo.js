@@ -342,14 +342,14 @@ class TypeInfo {
     }
   }
 }
+
+exports.TypeInfo = TypeInfo;
+
 /**
  * Not exactly the same as the executor's definition of getFieldDef, in this
  * statically evaluated environment we do not always have an Object type,
  * and need to handle Interface and Union types.
  */
-
-exports.TypeInfo = TypeInfo;
-
 function getFieldDef(schema, parentType, fieldNode) {
   const name = fieldNode.name.value;
 
