@@ -102,8 +102,6 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
-  /** "Enum" of Type Kinds */
-  TypeKind,
   /** Meta-field definitions. */
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
