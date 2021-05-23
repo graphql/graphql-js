@@ -24,17 +24,19 @@ type EnterLeaveVisitor<TVisitedNode: ASTNode> = {
  * during the visitor's traversal.
  */
 export type ASTVisitFn<TVisitedNode: ASTNode> = (
-  // The current node being visiting.
+  /** The current node being visiting. */
   node: TVisitedNode,
-  // The index or key to this node from the parent node or Array.
+  /** The index or key to this node from the parent node or Array. */
   key: string | number | void,
-  // The parent immediately above this node, which may be an Array.
+  /** The parent immediately above this node, which may be an Array. */
   parent: ASTNode | $ReadOnlyArray<ASTNode> | void,
-  // The key path to get to this node from the root node.
+  /** The key path to get to this node from the root node. */
   path: $ReadOnlyArray<string | number>,
-  // All nodes and Arrays visited before reaching parent of this node.
-  // These correspond to array indices in `path`.
-  // Note: ancestors includes arrays which contain the parent of visited node.
+  /**
+   * All nodes and Arrays visited before reaching parent of this node.
+   * These correspond to array indices in `path`.
+   * Note: ancestors includes arrays which contain the parent of visited node.
+   */
   ancestors: $ReadOnlyArray<ASTNode | $ReadOnlyArray<ASTNode>>,
 ) => any;
 
