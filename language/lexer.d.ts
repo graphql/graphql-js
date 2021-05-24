@@ -1,8 +1,8 @@
-import type { Token } from './ast';
 import type { Source } from './source';
 import type { TokenKindEnum } from './tokenKind';
+import { Token } from './ast';
 /**
- * Given a Source object, this returns a Lexer for that source.
+ * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
  * it is advanced, it returns the next token in the Source. Assuming the
  * source lexes, the final Token emitted by the lexer will be of kind

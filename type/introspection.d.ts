@@ -1,9 +1,5 @@
-import type {
-  GraphQLObjectType,
-  GraphQLField,
-  GraphQLEnumType,
-  GraphQLNamedType,
-} from './definition';
+import type { GraphQLNamedType, GraphQLField } from './definition';
+import { GraphQLObjectType, GraphQLEnumType } from './definition';
 export const __Schema: GraphQLObjectType;
 export const __Directive: GraphQLObjectType;
 export const __DirectiveLocation: GraphQLEnumType;
@@ -12,14 +8,14 @@ export const __Field: GraphQLObjectType;
 export const __InputValue: GraphQLObjectType;
 export const __EnumValue: GraphQLObjectType;
 export const TypeKind: Readonly<{
-  SCALAR: 'SCALAR';
-  OBJECT: 'OBJECT';
-  INTERFACE: 'INTERFACE';
-  UNION: 'UNION';
-  ENUM: 'ENUM';
-  INPUT_OBJECT: 'INPUT_OBJECT';
-  LIST: 'LIST';
-  NON_NULL: 'NON_NULL';
+  readonly SCALAR: 'SCALAR';
+  readonly OBJECT: 'OBJECT';
+  readonly INTERFACE: 'INTERFACE';
+  readonly UNION: 'UNION';
+  readonly ENUM: 'ENUM';
+  readonly INPUT_OBJECT: 'INPUT_OBJECT';
+  readonly LIST: 'LIST';
+  readonly NON_NULL: 'NON_NULL';
 }>;
 export const __TypeKind: GraphQLEnumType;
 /**

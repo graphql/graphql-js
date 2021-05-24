@@ -1,6 +1,6 @@
-import type { Maybe } from '../jsutils/Maybe';
 import type { ASTVisitor } from '../language/visitor';
 import type { ASTNode, FieldNode } from '../language/ast';
+import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLDirective } from '../type/directives';
 import type {
@@ -18,13 +18,23 @@ import type {
  * AST during a recursive descent by calling `enter(node)` and `leave(node)`.
  */
 export class TypeInfo {
+  private _schema;
+  private _typeStack;
+  private _parentTypeStack;
+  private _inputTypeStack;
+  private _fieldDefStack;
+  private _defaultValueStack;
+  private _directive;
+  private _argument;
+  private _enumValue;
+  private _getFieldDef;
   constructor(
     schema: GraphQLSchema,
     /**
      * Initial type may be provided in rare cases to facilitate traversals
      *  beginning somewhere other than documents.
      */
-    initialType?: GraphQLType,
+    initialType?: Maybe<GraphQLType>,
     /** @deprecated will be removed in 17.0.0 */
     getFieldDefFn?: GetFieldDefFn,
   );
@@ -37,8 +47,8 @@ export class TypeInfo {
   getDirective(): Maybe<GraphQLDirective>;
   getArgument(): Maybe<GraphQLArgument>;
   getEnumValue(): Maybe<GraphQLEnumValue>;
-  enter(node: ASTNode): any;
-  leave(node: ASTNode): any;
+  enter(node: ASTNode): void;
+  leave(node: ASTNode): void;
 }
 type GetFieldDefFn = (
   schema: GraphQLSchema,

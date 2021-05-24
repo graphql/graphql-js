@@ -1,4 +1,5 @@
-import type { GraphQLScalarType, GraphQLNamedType } from './definition';
+import type { GraphQLNamedType } from './definition';
+import { GraphQLScalarType } from './definition';
 export const GraphQLInt: GraphQLScalarType;
 export const GraphQLFloat: GraphQLScalarType;
 export const GraphQLString: GraphQLScalarType;

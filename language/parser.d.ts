@@ -1,5 +1,6 @@
 import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLError } from '../error/GraphQLError';
+import type { TokenKindEnum } from './tokenKind';
 import type {
   Token,
   NameNode,
@@ -52,9 +53,8 @@ import type {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
 } from './ast';
-import type { TokenKindEnum } from './tokenKind';
-import type { Source } from './source';
-import type { Lexer } from './lexer';
+import { Location } from './ast';
+import { Source } from './source';
 /**
  * Configuration options to control parser behavior
  */
@@ -90,11 +90,14 @@ export function parse(
   options?: ParseOptions,
 ): DocumentNode;
 /**
- * Given a string containing a GraphQL value, parse the AST for that value.
+ * Given a string containing a GraphQL value (ex. `[42]`), parse the AST for
+ * that value.
  * Throws GraphQLError if a syntax error is encountered.
  *
  * This is useful within tools that operate upon GraphQL Values directly and
  * in isolation of complete GraphQL documents.
+ *
+ * Consider providing the results to the utility function: valueFromAST().
  */
 export function parseValue(
   source: string | Source,
@@ -133,9 +136,9 @@ export function parseType(
  *
  * @internal
  */
-export declare class Parser {
-  _options: Maybe<ParseOptions>;
-  _lexer: Lexer;
+export class Parser {
+  private _options;
+  private _lexer;
   constructor(source: string | Source, options?: ParseOptions);
   /**
    * Converts a name lex token into a name parse node.
@@ -204,7 +207,7 @@ export declare class Parser {
    * Argument[Const] : Name : Value[?Const]
    */
   parseArgument(isConst: true): ConstArgumentNode;
-  parseArgument(isConst: boolean): ArgumentNode;
+  parseArgument(isConst?: boolean): ArgumentNode;
   parseConstArgument(): ConstArgumentNode;
   /**
    * Corresponds to both FragmentSpread and InlineFragment in the spec.
@@ -245,6 +248,7 @@ export declare class Parser {
    */
   parseValueLiteral(isConst: true): ConstValueNode;
   parseValueLiteral(isConst: boolean): ValueNode;
+  parseConstValueLiteral(): ConstValueNode;
   parseStringLiteral(): StringValueNode;
   /**
    * ListValue[Const] :
@@ -270,6 +274,7 @@ export declare class Parser {
    */
   parseDirectives(isConst: true): Array<ConstDirectiveNode>;
   parseDirectives(isConst: boolean): Array<DirectiveNode>;
+  parseConstDirectives(): Array<ConstDirectiveNode>;
   /**
    * Directive[Const] : @ Name Arguments[?Const]?
    */
@@ -462,7 +467,11 @@ export declare class Parser {
    * location object, used to identify the place in the source that created a
    * given parsed object.
    */
-  node<T>(startToken: Token, node: T): T;
+  node<
+    T extends {
+      loc?: Location;
+    },
+  >(startToken: Token, node: T): T;
   /**
    * Determines if the next token is of a given kind
    */

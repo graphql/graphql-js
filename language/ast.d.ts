@@ -26,7 +26,10 @@ export class Location {
    */
   readonly source: Source;
   constructor(startToken: Token, endToken: Token, source: Source);
-  toJSON(): { start: number; end: number };
+  toJSON(): {
+    start: number;
+    end: number;
+  };
 }
 /**
  * Represents a range of characters represented by a lexical token
@@ -56,7 +59,7 @@ export class Token {
   /**
    * For non-punctuation tokens, represents the interpreted value of the token.
    */
-  readonly value: string | undefined;
+  readonly value?: string;
   /**
    * Tokens exist as nodes in a double-linked-list amongst all tokens
    * including ignored tokens. <SOF> is always the first node and <EOF>
@@ -75,7 +78,7 @@ export class Token {
   );
   toJSON(): {
     kind: TokenKindEnum;
-    value: string | undefined;
+    value?: string;
     line: number;
     column: number;
   };

@@ -1,9 +1,11 @@
 import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 /**
  * No unused fragments
  *
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
  */
-export function NoUnusedFragmentsRule(context: ValidationContext): ASTVisitor;
+export function NoUnusedFragmentsRule(
+  context: ASTValidationContext,
+): ASTVisitor;
