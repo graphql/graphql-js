@@ -714,7 +714,8 @@ export class Parser {
    */
   parseTypeSystemDefinition(): TypeSystemDefinitionNode {
     // Many definitions begin with a description and require a lookahead.
-    const keywordToken = this.peekDescription()
+    const hasDescription = this.peekDescription();
+    const keywordToken = hasDescription
       ? this._lexer.lookahead()
       : this._lexer.token;
 
@@ -737,6 +738,14 @@ export class Parser {
         case 'directive':
           return this.parseDirectiveDefinition();
       }
+    }
+
+    if (hasDescription && keywordToken.value === 'extend') {
+      throw syntaxError(
+        this._lexer.source,
+        keywordToken.start,
+        'Unexpected Name "extend". Extension do not include descriptions.',
+      );
     }
 
     throw this.unexpected(keywordToken);
