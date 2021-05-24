@@ -354,7 +354,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>);
-  getFields(): GraphQLFieldMap<any, TContext>;
+  getFields(): GraphQLFieldMap<TSource, TContext>;
   getInterfaces(): Array<GraphQLInterfaceType>;
   toConfig(): GraphQLObjectTypeConfig<any, any> & {
     interfaces: Array<GraphQLInterfaceType>;
@@ -795,7 +795,7 @@ export interface GraphQLInputObjectTypeConfig {
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputFieldExtensions {
-  [attributeName: string]: any;
+  [attributeName: string]: unknown;
 }
 export interface GraphQLInputFieldConfig {
   description?: Maybe<string>;
