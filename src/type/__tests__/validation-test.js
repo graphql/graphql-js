@@ -641,7 +641,7 @@ describe('Type System: Union types must be valid', () => {
     ]);
   });
 
-  it('rejects a Union type with non-Object members types', () => {
+  it('rejects a Union type with non-Object member types', () => {
     let schema = buildSchema(`
       type Query {
         test: BadUnion
@@ -700,6 +700,47 @@ describe('Type System: Union types must be valid', () => {
         },
       ]);
     }
+  });
+
+  it('rejects a Union type with duplicate non-Object member types', () => {
+    let schema = buildSchema(`
+      type Query {
+        test: BadUnion
+      }
+
+      type TypeA {
+        field: String
+      }
+
+      union BadUnion =
+        | Int
+        | String
+        | TypeA
+        | Int
+        | String
+    `);
+
+    schema = extendSchema(schema, parse('extend union BadUnion = Int'));
+
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message:
+          'Union type BadUnion can only include Object types, it cannot include Int.',
+        locations: [
+          { line: 11, column: 11 },
+          { line: 14, column: 11 },
+          { line: 1, column: 25 },
+        ],
+      },
+      {
+        message:
+          'Union type BadUnion can only include Object types, it cannot include String.',
+        locations: [
+          { line: 12, column: 11 },
+          { line: 15, column: 11 },
+        ],
+      },
+    ]);
   });
 });
 
