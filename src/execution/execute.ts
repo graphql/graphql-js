@@ -112,16 +112,22 @@ export interface ExecutionContext {
  *   - `data` is the result of a successful execution of the query.
  *   - `extensions` is reserved for adding non-standard properties.
  */
-export interface ExecutionResult {
+export interface ExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
   errors?: ReadonlyArray<GraphQLError>;
-  data?: ObjMap<unknown> | null;
-  extensions?: ObjMap<unknown>;
+  data?: TData | null;
+  extensions?: TExtensions;
 }
 
-export interface FormattedExecutionResult {
+export interface FormattedExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
   errors?: ReadonlyArray<GraphQLFormattedError>;
-  data?: ObjMap<unknown> | null;
-  extensions?: ObjMap<unknown>;
+  data?: TData | null;
+  extensions?: TExtensions;
 }
 
 export interface ExecutionArgs {

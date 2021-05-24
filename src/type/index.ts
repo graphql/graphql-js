@@ -8,7 +8,7 @@ export {
   /** GraphQL Schema definition */
   GraphQLSchema,
 } from './schema';
-export type { GraphQLSchemaConfig } from './schema';
+export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema';
 
 export {
   /** Predicates */
@@ -80,28 +80,38 @@ export type {
   ThunkObjMap,
   GraphQLArgument,
   GraphQLArgumentConfig,
+  GraphQLArgumentExtensions,
   GraphQLEnumTypeConfig,
+  GraphQLEnumTypeExtensions,
   GraphQLEnumValue,
   GraphQLEnumValueConfig,
   GraphQLEnumValueConfigMap,
+  GraphQLEnumValueExtensions,
   GraphQLField,
   GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
+  GraphQLFieldExtensions,
   GraphQLFieldMap,
   GraphQLFieldResolver,
   GraphQLInputField,
   GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
+  GraphQLInputFieldExtensions,
   GraphQLInputFieldMap,
   GraphQLInputObjectTypeConfig,
+  GraphQLInputObjectTypeExtensions,
   GraphQLInterfaceTypeConfig,
+  GraphQLInterfaceTypeExtensions,
   GraphQLIsTypeOfFn,
   GraphQLObjectTypeConfig,
+  GraphQLObjectTypeExtensions,
   GraphQLResolveInfo,
   GraphQLScalarTypeConfig,
+  GraphQLScalarTypeExtensions,
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
+  GraphQLUnionTypeExtensions,
   GraphQLScalarSerializer,
   GraphQLScalarValueParser,
   GraphQLScalarLiteralParser,
@@ -125,7 +135,10 @@ export {
   DEFAULT_DEPRECATION_REASON,
 } from './directives';
 
-export type { GraphQLDirectiveConfig } from './directives';
+export type {
+  GraphQLDirectiveConfig,
+  GraphQLDirectiveExtensions,
+} from './directives';
 
 /** Common built-in scalar instances. */
 export {
