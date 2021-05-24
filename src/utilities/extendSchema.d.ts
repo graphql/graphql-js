@@ -1,9 +1,9 @@
 import type { DocumentNode } from '../language/ast';
 import type {
   GraphQLSchemaValidationOptions,
-  GraphQLSchema,
   GraphQLSchemaNormalizedConfig,
 } from '../type/schema';
+import { GraphQLSchema } from '../type/schema';
 interface Options extends GraphQLSchemaValidationOptions {
   /**
    * Set to true to assume the SDL is valid.

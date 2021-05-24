@@ -1,4 +1,4 @@
-export { Path as ResponsePath } from '../jsutils/Path';
+export type { Path as ResponsePath } from '../jsutils/Path';
 export {
   /** Predicate */
   isSchema,
@@ -6,9 +6,8 @@ export {
   assertSchema,
   /** GraphQL Schema definition */
   GraphQLSchema,
-  GraphQLSchemaConfig,
-  GraphQLSchemaExtensions,
 } from './schema';
+export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema';
 export {
   /** Predicates */
   isType,
@@ -61,7 +60,8 @@ export {
   /** Type Wrappers */
   GraphQLList,
   GraphQLNonNull,
-  /** type */
+} from './definition';
+export type {
   GraphQLType,
   GraphQLInputType,
   GraphQLOutputType,
@@ -129,13 +129,16 @@ export {
   GraphQLSpecifiedByDirective,
   /** Constant Deprecation Reason */
   DEFAULT_DEPRECATION_REASON,
-  /** type */
+} from './directives';
+export type {
   GraphQLDirectiveConfig,
   GraphQLDirectiveExtensions,
 } from './directives';
 /** Common built-in scalar instances. */
 export {
+  /** Predicate */
   isSpecifiedScalarType,
+  /** Standard GraphQL Scalars */
   specifiedScalarTypes,
   GraphQLInt,
   GraphQLFloat,
@@ -144,10 +147,9 @@ export {
   GraphQLID,
 } from './scalars';
 export {
-  /** "Enum" of Type Kinds */
-  TypeKind,
-  /** GraphQL Types for introspection. */
+  /** Predicate */
   isIntrospectionType,
+  /** GraphQL Types for introspection. */
   introspectionTypes,
   __Schema,
   __Directive,
@@ -162,4 +164,9 @@ export {
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from './introspection';
+export type {
+  /** "Enum" of Type Kinds */
+  TypeKind,
+} from './introspection';
+/** Validate GraphQL schema. */
 export { validateSchema, assertValidSchema } from './validate';

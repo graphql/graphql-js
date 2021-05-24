@@ -1,4 +1,3 @@
-// Minimum TypeScript Version: 3.7
 /**
  * GraphQL.js provides a reference implementation for the GraphQL specification
  * but is also a useful utility for operating on GraphQL files and building
@@ -25,7 +24,8 @@
 /** The GraphQL.js version info. */
 export { version, versionInfo } from './version';
 /** The primary entry point into fulfilling a GraphQL request. */
-export { GraphQLArgs, graphql, graphqlSync } from './graphql';
+export type { GraphQLArgs } from './graphql';
+export { graphql, graphqlSync } from './graphql';
 /** Create and operate on GraphQL type definitions and schema. */
 export {
   /** Definitions */
@@ -122,7 +122,7 @@ export {
   validateSchema,
   assertValidSchema,
 } from './type/index';
-export {
+export type {
   GraphQLType,
   GraphQLInputType,
   GraphQLOutputType,
@@ -147,19 +147,19 @@ export {
   GraphQLEnumTypeExtensions,
   GraphQLEnumValue,
   GraphQLEnumValueConfig,
-  GraphQLEnumValueExtensions,
   GraphQLEnumValueConfigMap,
+  GraphQLEnumValueExtensions,
   GraphQLField,
   GraphQLFieldConfig,
-  GraphQLFieldExtensions,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
+  GraphQLFieldExtensions,
   GraphQLFieldMap,
   GraphQLFieldResolver,
   GraphQLInputField,
   GraphQLInputFieldConfig,
-  GraphQLInputFieldExtensions,
   GraphQLInputFieldConfigMap,
+  GraphQLInputFieldExtensions,
   GraphQLInputFieldMap,
   GraphQLInputObjectTypeConfig,
   GraphQLInputObjectTypeExtensions,
@@ -217,7 +217,7 @@ export {
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
 } from './language/index';
-export {
+export type {
   ParseOptions,
   SourceLocation,
   TokenKindEnum,
@@ -298,15 +298,14 @@ export {
   defaultTypeResolver,
   responsePathAsArray,
   getDirectiveValues,
+} from './execution/index';
+export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
 } from './execution/index';
-export {
-  subscribe,
-  createSourceEventStream,
-  SubscriptionArgs,
-} from './subscription/index';
+export { subscribe, createSourceEventStream } from './subscription/index';
+export type { SubscriptionArgs } from './subscription/index';
 /** Validate GraphQL documents. */
 export {
   validate,
@@ -351,8 +350,8 @@ export {
   /** Custom validation rules */
   NoDeprecatedCustomRule,
   NoSchemaIntrospectionCustomRule,
-  ValidationRule,
 } from './validation/index';
+export type { ValidationRule } from './validation/index';
 /** Create, format, and print GraphQL errors. */
 export {
   GraphQLError,
@@ -360,8 +359,8 @@ export {
   locatedError,
   printError,
   formatError,
-  GraphQLFormattedError,
 } from './error/index';
+export type { GraphQLFormattedError } from './error/index';
 /** Utilities for operating on GraphQL type schema and parsed sources. */
 export {
   /**
@@ -424,7 +423,7 @@ export {
   findBreakingChanges,
   findDangerousChanges,
 } from './utilities/index';
-export {
+export type {
   IntrospectionOptions,
   IntrospectionQuery,
   IntrospectionSchema,

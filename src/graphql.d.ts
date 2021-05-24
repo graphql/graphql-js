@@ -1,10 +1,10 @@
 import type { Maybe } from './jsutils/Maybe';
 import type { Source } from './language/source';
-import type { GraphQLSchema } from './type/schema';
 import type {
   GraphQLFieldResolver,
   GraphQLTypeResolver,
 } from './type/definition';
+import type { GraphQLSchema } from './type/schema';
 import type { ExecutionResult } from './execution/execute';
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -50,7 +50,9 @@ export interface GraphQLArgs {
   source: string | Source;
   rootValue?: unknown;
   contextValue?: unknown;
-  variableValues?: Maybe<{ [key: string]: unknown }>;
+  variableValues?: Maybe<{
+    readonly [variable: string]: unknown;
+  }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;

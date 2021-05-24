@@ -1,9 +1,9 @@
-export {
-  /**
-   * Produce the GraphQL query recommended for a full schema introspection.
-   * Accepts optional IntrospectionOptions.
-   */
-  getIntrospectionQuery,
+/**
+ * Produce the GraphQL query recommended for a full schema introspection.
+ * Accepts optional IntrospectionOptions.
+ */
+export { getIntrospectionQuery } from './getIntrospectionQuery';
+export type {
   IntrospectionOptions,
   IntrospectionQuery,
   IntrospectionSchema,
@@ -27,20 +27,17 @@ export {
   IntrospectionEnumValue,
   IntrospectionDirective,
 } from './getIntrospectionQuery';
-/** Gets the target Operation from a Document */
+/** Gets the target Operation from a Document. */
 export { getOperationAST } from './getOperationAST';
 /** Gets the Type for the target Operation AST. */
 export { getOperationRootType } from './getOperationRootType';
-/** Convert a GraphQLSchema to an IntrospectionQuery */
+/** Convert a GraphQLSchema to an IntrospectionQuery. */
 export { introspectionFromSchema } from './introspectionFromSchema';
 /** Build a GraphQLSchema from an introspection result. */
 export { buildClientSchema } from './buildClientSchema';
 /** Build a GraphQLSchema from GraphQL Schema language. */
-export {
-  buildASTSchema,
-  buildSchema,
-  BuildSchemaOptions,
-} from './buildASTSchema';
+export { buildASTSchema, buildSchema } from './buildASTSchema';
+export type { BuildSchemaOptions } from './buildASTSchema';
 /** Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST. */
 export { extendSchema } from './extendSchema';
 /** Sort a GraphQLSchema. */
@@ -59,8 +56,7 @@ export { valueFromAST } from './valueFromAST';
 export { valueFromASTUntyped } from './valueFromASTUntyped';
 /** Create a GraphQL language AST from a JavaScript value. */
 export { astFromValue } from './astFromValue';
-/** A helper to use within recursive-descent visitors which need to be aware of */
-/** the GraphQL type system. */
+/** A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system. */
 export { TypeInfo, visitWithTypeInfo } from './TypeInfo';
 /** Coerces a JavaScript value to a GraphQL type, or produces errors. */
 export { coerceInputValue } from './coerceInputValue';
@@ -84,8 +80,7 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-  BreakingChange,
-  DangerousChange,
 } from './findBreakingChanges';
+export type { BreakingChange, DangerousChange } from './findBreakingChanges';
 /** Wrapper type that contains DocumentNode and types that can be deduced from it. */
 export { TypedQueryDocumentNode } from './typedQueryDocumentNode';

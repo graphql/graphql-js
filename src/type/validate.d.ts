@@ -1,4 +1,4 @@
-import type { GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from '../error/GraphQLError';
 import type { GraphQLSchema } from './schema';
 /**
  * Implements the "Type Validation" sub-sections of the specification's

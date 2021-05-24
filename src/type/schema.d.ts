@@ -1,16 +1,17 @@
-import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
+import type { Maybe } from '../jsutils/Maybe';
+import type { GraphQLError } from '../error/GraphQLError';
 import type {
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../language/ast';
-import type { GraphQLDirective } from './directives';
 import type {
   GraphQLNamedType,
   GraphQLAbstractType,
   GraphQLObjectType,
   GraphQLInterfaceType,
 } from './definition';
+import type { GraphQLDirective } from './directives';
 /**
  * Test if the given value is a GraphQL schema.
  */
@@ -42,6 +43,43 @@ export interface GraphQLSchemaExtensions {
  *       mutation: MyAppMutationRootType,
  *     })
  *
+ * Note: When the schema is constructed, by default only the types that are
+ * reachable by traversing the root types are included, other types must be
+ * explicitly referenced.
+ *
+ * Example:
+ *
+ *     const characterInterface = new GraphQLInterfaceType({
+ *       name: 'Character',
+ *       ...
+ *     });
+ *
+ *     const humanType = new GraphQLObjectType({
+ *       name: 'Human',
+ *       interfaces: [characterInterface],
+ *       ...
+ *     });
+ *
+ *     const droidType = new GraphQLObjectType({
+ *       name: 'Droid',
+ *       interfaces: [characterInterface],
+ *       ...
+ *     });
+ *
+ *     const schema = new GraphQLSchema({
+ *       query: new GraphQLObjectType({
+ *         name: 'Query',
+ *         fields: {
+ *           hero: { type: characterInterface, ... },
+ *         }
+ *       }),
+ *       ...
+ *       // Since this schema references only the `Character` interface it's
+ *       // necessary to explicitly list the types that implement it if
+ *       // you want them to be included in the final schema.
+ *       types: [humanType, droidType],
+ *     })
+ *
  * Note: If an array of `directives` are provided to GraphQLSchema, that will be
  * the exact list of directives represented and allowed. If `directives` is not
  * provided then a default set of the specified directives (e.g. @include and
@@ -59,6 +97,14 @@ export class GraphQLSchema {
   extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
+  __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
+  private _queryType;
+  private _mutationType;
+  private _subscriptionType;
+  private _directives;
+  private _typeMap;
+  private _subTypeMap;
+  private _implementationsMap;
   constructor(config: Readonly<GraphQLSchemaConfig>);
   getQueryType(): Maybe<GraphQLObjectType>;
   getMutationType(): Maybe<GraphQLObjectType>;
@@ -68,29 +114,20 @@ export class GraphQLSchema {
   getPossibleTypes(
     abstractType: GraphQLAbstractType,
   ): ReadonlyArray<GraphQLObjectType>;
-  getImplementations(
-    interfaceType: GraphQLInterfaceType,
-  ): InterfaceImplementations;
+  getImplementations(interfaceType: GraphQLInterfaceType): {
+    objects: Array<GraphQLObjectType>;
+    interfaces: Array<GraphQLInterfaceType>;
+  };
   isSubType(
     abstractType: GraphQLAbstractType,
     maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
   ): boolean;
   getDirectives(): ReadonlyArray<GraphQLDirective>;
   getDirective(name: string): Maybe<GraphQLDirective>;
-  toConfig(): GraphQLSchemaConfig & {
-    types: Array<GraphQLNamedType>;
-    directives: Array<GraphQLDirective>;
-    extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
-    extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
-    assumeValid: boolean;
-  };
+  toConfig(): GraphQLSchemaNormalizedConfig;
   get [Symbol.toStringTag](): string;
 }
 type TypeMap = ObjMap<GraphQLNamedType>;
-interface InterfaceImplementations {
-  objects: ReadonlyArray<GraphQLObjectType>;
-  interfaces: ReadonlyArray<GraphQLInterfaceType>;
-}
 export interface GraphQLSchemaValidationOptions {
   /**
    * When building a schema from a GraphQL service's introspection result, it

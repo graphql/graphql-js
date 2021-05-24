@@ -1,5 +1,5 @@
+import { GraphQLError } from '../error/GraphQLError';
 import type { GraphQLInputType } from '../type/definition';
-import type { GraphQLError } from '../error/GraphQLError';
 type OnErrorCB = (
   path: ReadonlyArray<string | number>,
   invalidValue: unknown,
