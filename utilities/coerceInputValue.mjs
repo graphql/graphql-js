@@ -18,7 +18,7 @@ import {
  * Coerces a JavaScript value given a GraphQL Input Type.
  */
 export function coerceInputValue(inputValue, type, onError = defaultOnError) {
-  return coerceInputValueImpl(inputValue, type, onError);
+  return coerceInputValueImpl(inputValue, type, onError, undefined);
 }
 
 function defaultOnError(path, invalidValue, error) {

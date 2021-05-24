@@ -29,7 +29,7 @@ var _definition = require('../type/definition.js');
  * Coerces a JavaScript value given a GraphQL Input Type.
  */
 function coerceInputValue(inputValue, type, onError = defaultOnError) {
-  return coerceInputValueImpl(inputValue, type, onError);
+  return coerceInputValueImpl(inputValue, type, onError, undefined);
 }
 
 function defaultOnError(path, invalidValue, error) {
