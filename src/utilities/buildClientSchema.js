@@ -213,7 +213,7 @@ export function buildClientSchema(
     // TODO: Temporary workaround until GraphQL ecosystem will fully support
     // 'interfaces' on interface types.
     if (
-      implementingIntrospection.interfaces === null &&
+      !implementingIntrospection.interfaces &&
       implementingIntrospection.kind === TypeKind.INTERFACE
     ) {
       return [];
