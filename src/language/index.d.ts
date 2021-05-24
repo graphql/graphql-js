@@ -1,28 +1,19 @@
 export { Source } from './source';
-export { getLocation, SourceLocation } from './location';
+export { getLocation } from './location';
+export type { SourceLocation } from './location';
 export { printLocation, printSourceLocation } from './printLocation';
-export { Kind, KindEnum } from './kinds';
-export { TokenKind, TokenKindEnum } from './tokenKind';
+export { Kind } from './kinds';
+export type { KindEnum } from './kinds';
+export { TokenKind } from './tokenKind';
+export type { TokenKindEnum } from './tokenKind';
 export { Lexer } from './lexer';
-export {
-  parse,
-  parseValue,
-  parseConstValue,
-  parseType,
-  ParseOptions,
-} from './parser';
+export { parse, parseValue, parseConstValue, parseType } from './parser';
+export type { ParseOptions } from './parser';
 export { print } from './printer';
-export {
-  visit,
-  visitInParallel,
-  getVisitFn,
-  BREAK,
-  ASTVisitor,
-  ASTVisitFn,
-} from './visitor';
-export {
-  Location,
-  Token,
+export { visit, visitInParallel, getVisitFn, BREAK } from './visitor';
+export type { ASTVisitor, ASTVisitFn } from './visitor';
+export { Location, Token } from './ast';
+export type {
   ASTNode,
   ASTKindToNode,
   /** Each kind of AST node */
@@ -98,4 +89,5 @@ export {
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
 } from './predicates';
-export { DirectiveLocation, DirectiveLocationEnum } from './directiveLocation';
+export { DirectiveLocation } from './directiveLocation';
+export type { DirectiveLocationEnum } from './directiveLocation';

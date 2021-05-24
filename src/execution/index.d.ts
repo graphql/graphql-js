@@ -4,6 +4,8 @@ export {
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
+} from './execute';
+export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
