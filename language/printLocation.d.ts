@@ -1,5 +1,5 @@
-import type { Location } from './ast';
 import type { Source } from './source';
+import type { Location } from './ast';
 import type { SourceLocation } from './location';
 /**
  * Render a helpful description of the location in the GraphQL Source document.

@@ -9,15 +9,6 @@ import type { SourceLocation } from '../language/location';
  * GraphQL document and/or execution result that correspond to the Error.
  */
 export class GraphQLError extends Error {
-  constructor(
-    message: string,
-    nodes?: Maybe<ReadonlyArray<ASTNode> | ASTNode>,
-    source?: Maybe<Source>,
-    positions?: Maybe<ReadonlyArray<number>>,
-    path?: Maybe<ReadonlyArray<string | number>>,
-    originalError?: Maybe<Error>,
-    extensions?: Maybe<{ [key: string]: unknown }>,
-  );
   /**
    * A message describing the Error for debugging purposes.
    *
@@ -36,30 +27,30 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  readonly locations: ReadonlyArray<SourceLocation> | undefined;
+  readonly locations?: ReadonlyArray<SourceLocation>;
   /**
    * An array describing the JSON-path into the execution response which
    * corresponds to this error. Only included for errors during execution.
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  readonly path: ReadonlyArray<string | number> | undefined;
+  readonly path?: ReadonlyArray<string | number>;
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
-  readonly nodes: ReadonlyArray<ASTNode> | undefined;
+  readonly nodes?: ReadonlyArray<ASTNode>;
   /**
-   * The source GraphQL document corresponding to this error.
+   * The source GraphQL document for the first location of this error.
    *
    * Note that if this Error represents more than one node, the source may not
    * represent nodes after the first node.
    */
-  readonly source: Source | undefined;
+  readonly source?: Source;
   /**
    * An array of character offsets within the source GraphQL document
    * which correspond to this error.
    */
-  readonly positions: ReadonlyArray<number> | undefined;
+  readonly positions?: ReadonlyArray<number>;
   /**
    * The original error thrown from a field resolver during execution.
    */
@@ -67,7 +58,26 @@ export class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  readonly extensions: { [key: string]: unknown } | undefined;
+  readonly extensions?: {
+    [key: string]: unknown;
+  };
+  constructor(
+    message: string,
+    nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
+    source?: Maybe<Source>,
+    positions?: Maybe<ReadonlyArray<number>>,
+    path?: Maybe<ReadonlyArray<string | number>>,
+    originalError?: Maybe<
+      Error & {
+        readonly extensions?: unknown;
+      }
+    >,
+    extensions?: Maybe<{
+      [key: string]: unknown;
+    }>,
+  );
+  toString(): string;
+  get [Symbol.toStringTag](): string;
 }
 /**
  * Prints a GraphQLError to a string, representing useful location information

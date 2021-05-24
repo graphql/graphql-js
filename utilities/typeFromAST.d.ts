@@ -1,14 +1,12 @@
 import type {
+  TypeNode,
   NamedTypeNode,
   ListTypeNode,
   NonNullTypeNode,
 } from '../language/ast';
 import type { GraphQLSchema } from '../type/schema';
-import type {
-  GraphQLNamedType,
-  GraphQLList,
-  GraphQLNonNull,
-} from '../type/definition';
+import type { GraphQLType, GraphQLNamedType } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/definition';
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType
  * definition which applies to that type. For example, if provided the parsed
@@ -28,3 +26,7 @@ export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NonNullTypeNode,
 ): GraphQLNonNull<any> | undefined;
+export function typeFromAST(
+  schema: GraphQLSchema,
+  typeNode: TypeNode,
+): GraphQLType | undefined;

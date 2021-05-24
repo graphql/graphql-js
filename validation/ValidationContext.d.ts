@@ -19,7 +19,7 @@ import type {
   GraphQLArgument,
   GraphQLEnumValue,
 } from '../type/definition';
-import type { TypeInfo } from '../utilities/TypeInfo';
+import { TypeInfo } from '../utilities/TypeInfo';
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
@@ -32,8 +32,13 @@ interface VariableUsage {
  * validation rule.
  */
 export class ASTValidationContext {
+  private _ast;
+  private _onError;
+  private _fragments;
+  private _fragmentSpreads;
+  private _recursivelyReferencedFragments;
   constructor(ast: DocumentNode, onError: (error: GraphQLError) => void);
-  reportError(error: GraphQLError): undefined;
+  reportError(error: GraphQLError): void;
   getDocument(): DocumentNode;
   getFragment(name: string): Maybe<FragmentDefinitionNode>;
   getFragmentSpreads(node: SelectionSetNode): ReadonlyArray<FragmentSpreadNode>;
@@ -41,7 +46,9 @@ export class ASTValidationContext {
     operation: OperationDefinitionNode,
   ): ReadonlyArray<FragmentDefinitionNode>;
 }
+export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
 export class SDLValidationContext extends ASTValidationContext {
+  private _schema;
   constructor(
     ast: DocumentNode,
     schema: Maybe<GraphQLSchema>,
@@ -51,6 +58,10 @@ export class SDLValidationContext extends ASTValidationContext {
 }
 export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 export class ValidationContext extends ASTValidationContext {
+  private _schema;
+  private _typeInfo;
+  private _variableUsages;
+  private _recursiveVariableUsages;
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
@@ -59,9 +70,9 @@ export class ValidationContext extends ASTValidationContext {
   );
   getSchema(): GraphQLSchema;
   getVariableUsages(node: NodeWithSelectionSet): ReadonlyArray<VariableUsage>;
-  getRecursivelyReferencedFragments(
+  getRecursiveVariableUsages(
     operation: OperationDefinitionNode,
-  ): ReadonlyArray<FragmentDefinitionNode>;
+  ): ReadonlyArray<VariableUsage>;
   getType(): Maybe<GraphQLOutputType>;
   getParentType(): Maybe<GraphQLCompositeType>;
   getInputType(): Maybe<GraphQLInputType>;

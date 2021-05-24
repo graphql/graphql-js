@@ -10,10 +10,10 @@ type KindVisitor = {
     | ASTVisitFn<ASTKindToNode[K]>
     | EnterLeaveVisitor<ASTKindToNode[K]>;
 };
-type EnterLeaveVisitor<TVisitedNode extends ASTNode> = {
+interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
   readonly enter?: ASTVisitFn<TVisitedNode>;
   readonly leave?: ASTVisitFn<TVisitedNode>;
-};
+}
 /**
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
@@ -34,7 +34,7 @@ export type ASTVisitFn<TVisitedNode extends ASTNode> = (
    */
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
-export const BREAK: any;
+export const BREAK: unknown;
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the

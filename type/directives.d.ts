@@ -2,8 +2,8 @@ import type { Maybe } from '../jsutils/Maybe';
 import type { DirectiveDefinitionNode } from '../language/ast';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import type {
-  GraphQLFieldConfigArgumentMap,
   GraphQLArgument,
+  GraphQLFieldConfigArgumentMap,
 } from './definition';
 /**
  * Test if the given value is a GraphQL directive.
@@ -30,19 +30,14 @@ export class GraphQLDirective {
   name: string;
   description: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
+  args: ReadonlyArray<GraphQLArgument>;
   isRepeatable: boolean;
-  args: Array<GraphQLArgument>;
   extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode: Maybe<DirectiveDefinitionNode>;
   constructor(config: Readonly<GraphQLDirectiveConfig>);
-  toConfig(): GraphQLDirectiveConfig & {
-    args: GraphQLFieldConfigArgumentMap;
-    isRepeatable: boolean;
-    extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
-  };
+  toConfig(): GraphQLDirectiveNormalizedConfig;
   toString(): string;
   toJSON(): string;
-  inspect(): string;
   get [Symbol.toStringTag](): string;
 }
 export interface GraphQLDirectiveConfig {
@@ -54,6 +49,11 @@ export interface GraphQLDirectiveConfig {
   extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
+interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
+  args: GraphQLFieldConfigArgumentMap;
+  isRepeatable: boolean;
+  extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
+}
 /**
  * Used to conditionally include fields or fragments.
  */
@@ -63,17 +63,17 @@ export const GraphQLIncludeDirective: GraphQLDirective;
  */
 export const GraphQLSkipDirective: GraphQLDirective;
 /**
- * Used to provide a URL for specifying the behavior of custom scalar definitions.
- */
-export const GraphQLSpecifiedByDirective: GraphQLDirective;
-/**
  * Constant string used for default reason for a deprecation.
  */
-export const DEFAULT_DEPRECATION_REASON: 'No longer supported';
+export const DEFAULT_DEPRECATION_REASON = 'No longer supported';
 /**
  * Used to declare element of a GraphQL schema as deprecated.
  */
 export const GraphQLDeprecatedDirective: GraphQLDirective;
+/**
+ * Used to provide a URL for specifying the behaviour of custom scalar definitions.
+ */
+export const GraphQLSpecifiedByDirective: GraphQLDirective;
 /**
  * The full list of specified directives.
  */

@@ -1,9 +1,9 @@
-import type { Maybe } from '../jsutils/Maybe';
+import type { Path } from '../jsutils/Path';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import type { Path } from '../jsutils/Path';
-import type { GraphQLError } from '../error/GraphQLError';
+import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLFormattedError } from '../error/formatError';
+import { GraphQLError } from '../error/GraphQLError';
 import type {
   DocumentNode,
   OperationDefinitionNode,
@@ -13,11 +13,11 @@ import type {
 } from '../language/ast';
 import type { GraphQLSchema } from '../type/schema';
 import type {
+  GraphQLObjectType,
   GraphQLField,
   GraphQLFieldResolver,
   GraphQLResolveInfo,
   GraphQLTypeResolver,
-  GraphQLObjectType,
 } from '../type/definition';
 /**
  * Terminology
@@ -46,11 +46,13 @@ import type {
  */
 export interface ExecutionContext {
   schema: GraphQLSchema;
+  fragments: ObjMap<FragmentDefinitionNode>;
   rootValue: unknown;
   contextValue: unknown;
-  fragments: ObjMap<FragmentDefinitionNode>;
   operation: OperationDefinitionNode;
-  variableValues: { [key: string]: unknown };
+  variableValues: {
+    [variable: string]: unknown;
+  };
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   errors: Array<GraphQLError>;
@@ -63,20 +65,18 @@ export interface ExecutionContext {
  *   - `extensions` is reserved for adding non-standard properties.
  */
 export interface ExecutionResult<
-  TData = { [key: string]: any },
-  TExtensions = { [key: string]: any },
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLError>;
-  // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
   data?: TData | null;
   extensions?: TExtensions;
 }
 export interface FormattedExecutionResult<
-  TData = { [key: string]: any },
-  TExtensions = { [key: string]: any },
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
-  // TS_SPECIFIC: TData. Motivation: https://github.com/graphql/graphql-js/pull/2490#issuecomment-639154229
   data?: TData | null;
   extensions?: TExtensions;
 }
@@ -85,7 +85,9 @@ export interface ExecutionArgs {
   document: DocumentNode;
   rootValue?: unknown;
   contextValue?: unknown;
-  variableValues?: Maybe<{ [key: string]: unknown }>;
+  variableValues?: Maybe<{
+    readonly [variable: string]: unknown;
+  }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
@@ -116,7 +118,9 @@ export function executeSync(args: ExecutionArgs): ExecutionResult;
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: Maybe<{ [key: string]: unknown }>,
+  rawVariableValues: Maybe<{
+    readonly [variable: string]: unknown;
+  }>,
 ): void;
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -131,7 +135,9 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: unknown,
   contextValue: unknown,
-  rawVariableValues: Maybe<{ [key: string]: unknown }>,
+  rawVariableValues: Maybe<{
+    readonly [variable: string]: unknown;
+  }>,
   operationName: Maybe<string>,
   fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
   typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
@@ -150,9 +156,9 @@ export function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: ObjMap<Array<FieldNode>>,
-  visitedFragmentNames: ObjMap<boolean>,
-): ObjMap<Array<FieldNode>>;
+  fields: Map<string, Array<FieldNode>>,
+  visitedFragmentNames: Set<string>,
+): Map<string, Array<FieldNode>>;
 /**
  * @internal
  */
@@ -195,5 +201,5 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown>;
 export function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
-  fieldName: string,
+  fieldNode: FieldNode,
 ): Maybe<GraphQLField<unknown, unknown>>;
