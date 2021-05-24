@@ -1,8 +1,4 @@
-import type {
-  ObjMap,
-  ReadOnlyObjMap,
-  ReadOnlyObjMapLike,
-} from '../jsutils/ObjMap';
+import type { ObjMap } from '../jsutils/ObjMap';
 import { inspect } from '../jsutils/inspect';
 import { toObjMap } from '../jsutils/toObjMap';
 import { devAssert } from '../jsutils/devAssert';
@@ -47,6 +43,19 @@ export function assertSchema(schema: unknown): GraphQLSchema {
     throw new Error(`Expected ${inspect(schema)} to be a GraphQL schema.`);
   }
   return schema;
+}
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLSchemaExtensions {
+  [attributeName: string]: unknown;
 }
 
 /**
@@ -114,7 +123,7 @@ export function assertSchema(schema: unknown): GraphQLSchema {
  */
 export class GraphQLSchema {
   description: Maybe<string>;
-  extensions: Maybe<ReadOnlyObjMap<unknown>>;
+  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
 
@@ -360,7 +369,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   subscription?: Maybe<GraphQLObjectType>;
   types?: Maybe<Array<GraphQLNamedType>>;
   directives?: Maybe<Array<GraphQLDirective>>;
-  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>;
+  extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
 }
@@ -372,7 +381,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
   types: Array<GraphQLNamedType>;
   directives: Array<GraphQLDirective>;
-  extensions: Maybe<ReadOnlyObjMap<unknown>>;
+  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
 }

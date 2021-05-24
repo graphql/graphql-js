@@ -1,4 +1,3 @@
-import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from '../jsutils/ObjMap';
 import { inspect } from '../jsutils/inspect';
 import { toObjMap } from '../jsutils/toObjMap';
 import { devAssert } from '../jsutils/devAssert';
@@ -38,6 +37,19 @@ export function assertDirective(directive: unknown): GraphQLDirective {
 }
 
 /**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLDirectiveExtensions {
+  [attributeName: string]: unknown;
+}
+
+/**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
@@ -47,7 +59,7 @@ export class GraphQLDirective {
   locations: Array<DirectiveLocationEnum>;
   args: ReadonlyArray<GraphQLArgument>;
   isRepeatable: boolean;
-  extensions: Maybe<ReadOnlyObjMap<unknown>>;
+  extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
@@ -104,14 +116,14 @@ export interface GraphQLDirectiveConfig {
   locations: Array<DirectiveLocationEnum>;
   args?: Maybe<GraphQLFieldConfigArgumentMap>;
   isRepeatable?: Maybe<boolean>;
-  extensions?: Maybe<ReadOnlyObjMapLike<unknown>>;
+  extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
 
 interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
   args: GraphQLFieldConfigArgumentMap;
   isRepeatable: boolean;
-  extensions: Maybe<ReadOnlyObjMap<unknown>>;
+  extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
 }
 
 /**
