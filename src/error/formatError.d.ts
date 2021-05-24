@@ -8,9 +8,7 @@ export function formatError(error: GraphQLError): GraphQLFormattedError;
 /**
  * @see https://github.com/graphql/graphql-spec/blob/master/spec/Section%207%20--%20Response.md#errors
  */
-export interface GraphQLFormattedError<
-  TExtensions extends Record<string, unknown> = Record<string, unknown>,
-> {
+export interface GraphQLFormattedError {
   /**
    * A short, human-readable summary of the problem that **SHOULD NOT** change
    * from occurrence to occurrence of the problem, except for purposes of
@@ -33,5 +31,5 @@ export interface GraphQLFormattedError<
    * Reserved for implementors to extend the protocol however they see fit,
    * and hence there are no additional restrictions on its contents.
    */
-  readonly extensions?: TExtensions;
+  readonly extensions?: { [key: string]: unknown };
 }
