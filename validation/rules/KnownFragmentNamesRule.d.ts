@@ -6,4 +6,6 @@ import type { ValidationContext } from '../ValidationContext';
  * A GraphQL document is only valid if all `...Fragment` fragment spreads refer
  * to fragments defined in the same document.
  */
-export function KnownFragmentNamesRule(context: ValidationContext): ASTVisitor;
+export declare function KnownFragmentNamesRule(
+  context: ValidationContext,
+): ASTVisitor;

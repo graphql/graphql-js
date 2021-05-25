@@ -14,7 +14,6 @@ import {
  * Test if the given value is a GraphQL directive.
  */
 
-// eslint-disable-next-line no-redeclare
 export function isDirective(directive) {
   return instanceOf(directive, GraphQLDirective);
 }
@@ -28,10 +27,19 @@ export function assertDirective(directive) {
   return directive;
 }
 /**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+
+/**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
-
 export class GraphQLDirective {
   constructor(config) {
     var _config$isRepeatable, _config$args;
@@ -79,7 +87,7 @@ export class GraphQLDirective {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLDirective';

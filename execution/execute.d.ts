@@ -102,20 +102,22 @@ export interface ExecutionArgs {
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
-export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult>;
+export declare function execute(
+  args: ExecutionArgs,
+): PromiseOrValue<ExecutionResult>;
 /**
  * Also implements the "Evaluating requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
-export function executeSync(args: ExecutionArgs): ExecutionResult;
+export declare function executeSync(args: ExecutionArgs): ExecutionResult;
 /**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
  *
  * @internal
  */
-export function assertValidExecutionArguments(
+export declare function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
   rawVariableValues: Maybe<{
@@ -130,7 +132,7 @@ export function assertValidExecutionArguments(
  *
  * @internal
  */
-export function buildExecutionContext(
+export declare function buildExecutionContext(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue: unknown,
@@ -152,7 +154,7 @@ export function buildExecutionContext(
  *
  * @internal
  */
-export function collectFields(
+export declare function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
@@ -162,7 +164,7 @@ export function collectFields(
 /**
  * @internal
  */
-export function buildResolveInfo(
+export declare function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<unknown, unknown>,
   fieldNodes: ReadonlyArray<FieldNode>,
@@ -179,14 +181,17 @@ export function buildResolveInfo(
  * Otherwise, test each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
-export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown>;
+export declare const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown>;
 /**
  * If a resolve function is not given, then a default resolve behavior is used
  * which takes the property of the source object of the same name as the field
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context value.
  */
-export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown>;
+export declare const defaultFieldResolver: GraphQLFieldResolver<
+  unknown,
+  unknown
+>;
 /**
  * This method looks up the field on the given type definition.
  * It has special casing for the three introspection fields,
@@ -198,7 +203,7 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown>;
  *
  * @internal
  */
-export function getFieldDef(
+export declare function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
   fieldNode: FieldNode,

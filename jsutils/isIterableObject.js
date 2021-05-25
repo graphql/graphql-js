@@ -21,7 +21,6 @@ exports.isIterableObject = isIterableObject;
  * isIterableObject({ key: 'value' }) // false
  * isIterableObject({ length: 1, 0: 'Alpha' }) // false
  */
-// eslint-disable-next-line no-redeclare
 function isIterableObject(maybeIterable) {
   return (
     typeof maybeIterable === 'object' &&

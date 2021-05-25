@@ -20,7 +20,7 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext';
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-export function validate(
+export declare function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules?: ReadonlyArray<ValidationRule>,
@@ -33,7 +33,7 @@ export function validate(
 /**
  * @internal
  */
-export function validateSDL(
+export declare function validateSDL(
   documentAST: DocumentNode,
   schemaToExtend?: Maybe<GraphQLSchema>,
   rules?: ReadonlyArray<SDLValidationRule>,
@@ -44,14 +44,14 @@ export function validateSDL(
  *
  * @internal
  */
-export function assertValidSDL(documentAST: DocumentNode): void;
+export declare function assertValidSDL(documentAST: DocumentNode): void;
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
  * if it is invalid.
  *
  * @internal
  */
-export function assertValidSDLExtension(
+export declare function assertValidSDLExtension(
   documentAST: DocumentNode,
   schema: GraphQLSchema,
 ): void;

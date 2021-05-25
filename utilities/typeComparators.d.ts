@@ -3,12 +3,15 @@ import type { GraphQLType, GraphQLCompositeType } from '../type/definition';
 /**
  * Provided two types, return true if the types are equal (invariant).
  */
-export function isEqualType(typeA: GraphQLType, typeB: GraphQLType): boolean;
+export declare function isEqualType(
+  typeA: GraphQLType,
+  typeB: GraphQLType,
+): boolean;
 /**
  * Provided a type and a super type, return true if the first type is either
  * equal or a subset of the second super type (covariant).
  */
-export function isTypeSubTypeOf(
+export declare function isTypeSubTypeOf(
   schema: GraphQLSchema,
   maybeSubType: GraphQLType,
   superType: GraphQLType,
@@ -22,7 +25,7 @@ export function isTypeSubTypeOf(
  *
  * This function is commutative.
  */
-export function doTypesOverlap(
+export declare function doTypesOverlap(
   schema: GraphQLSchema,
   typeA: GraphQLCompositeType,
   typeB: GraphQLCompositeType,

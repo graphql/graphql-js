@@ -63,7 +63,8 @@ function validate(
           new _GraphQLError.GraphQLError(
             'Too many validation errors, error limit reached. Validation aborted.',
           ),
-        );
+        ); // eslint-disable-next-line @typescript-eslint/no-throw-literal
+
         throw abortObj;
       }
 

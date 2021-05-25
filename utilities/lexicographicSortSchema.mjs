@@ -46,18 +46,18 @@ export function lexicographicSortSchema(schema) {
 
   function replaceType(type) {
     if (isListType(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new GraphQLList(replaceType(type.ofType));
     } else if (isNonNullType(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
-    }
+    } // @ts-expect-error FIXME: TS Conversion
 
     return replaceNamedType(type);
   }
 
   function replaceNamedType(type) {
-    // $FlowFixMe[incompatible-return]
+    // @ts-expect-error
     return typeMap[type.name];
   }
 

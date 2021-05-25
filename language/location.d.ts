@@ -10,4 +10,7 @@ export interface SourceLocation {
  * Takes a Source and a UTF-8 character offset, and returns the corresponding
  * line and column as a SourceLocation.
  */
-export function getLocation(source: Source, position: number): SourceLocation;
+export declare function getLocation(
+  source: Source,
+  position: number,
+): SourceLocation;

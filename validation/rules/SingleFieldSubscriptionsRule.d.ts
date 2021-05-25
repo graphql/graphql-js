@@ -5,6 +5,6 @@ import type { ASTValidationContext } from '../ValidationContext';
  *
  * A GraphQL subscription is valid only if it contains a single root field.
  */
-export function SingleFieldSubscriptionsRule(
+export declare function SingleFieldSubscriptionsRule(
   context: ASTValidationContext,
 ): ASTVisitor;

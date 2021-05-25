@@ -74,7 +74,7 @@ class Lexer {
       do {
         var _token$next;
 
-        // $FlowFixMe[cannot-write] next is only mutable during parsing, so we cast to allow this.
+        // @ts-expect-error next is only mutable during parsing, so we cast to allow this.
         token =
           (_token$next = token.next) !== null && _token$next !== void 0
             ? _token$next

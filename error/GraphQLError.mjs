@@ -1,5 +1,3 @@
-// FIXME:
-// flowlint uninitialized-instance-property:off
 import { isObjectLike } from '../jsutils/isObjectLike.mjs';
 import { getLocation } from '../language/location.mjs';
 import {
@@ -95,9 +93,11 @@ export class GraphQLError extends Error {
           : _nodes$0$loc.source;
     }
 
-    let _positions = positions;
+    let _positions;
 
-    if (!_positions && _nodes) {
+    if (positions) {
+      _positions = positions;
+    } else if (_nodes) {
       _positions = [];
 
       for (const node of _nodes) {
@@ -133,7 +133,7 @@ export class GraphQLError extends Error {
       if (isObjectLike(originalExtensions)) {
         _extensions = originalExtensions;
       }
-    } // $FlowFixMe[cannot-write] FIXME
+    }
 
     Object.defineProperties(this, {
       name: {
@@ -227,7 +227,6 @@ export class GraphQLError extends Error {
   toString() {
     return printError(this);
   } // FIXME: workaround to not break chai comparisons, should be remove in v16
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
   get [Symbol.toStringTag]() {
     return 'Object';

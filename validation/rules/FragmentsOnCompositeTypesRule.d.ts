@@ -7,6 +7,6 @@ import type { ValidationContext } from '../ValidationContext';
  * can only be spread into a composite type (object, interface, or union), the
  * type condition must also be a composite type.
  */
-export function FragmentsOnCompositeTypesRule(
+export declare function FragmentsOnCompositeTypesRule(
   context: ValidationContext,
 ): ASTVisitor;

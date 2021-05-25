@@ -5,8 +5,8 @@ import type { ValidationRule, SDLValidationRule } from './ValidationContext';
  * The order of the rules in this list has been adjusted to lead to the
  * most clear output when encountering multiple validation errors.
  */
-export const specifiedRules: ReadonlyArray<ValidationRule>;
+export declare const specifiedRules: ReadonlyArray<ValidationRule>;
 /**
  * @internal
  */
-export const specifiedSDLRules: ReadonlyArray<SDLValidationRule>;
+export declare const specifiedSDLRules: ReadonlyArray<SDLValidationRule>;

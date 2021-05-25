@@ -5,6 +5,6 @@ import type { SDLValidationContext } from '../ValidationContext';
  *
  * A GraphQL enum type is only valid if all its values are uniquely named.
  */
-export function UniqueEnumValueNamesRule(
+export declare function UniqueEnumValueNamesRule(
   context: SDLValidationContext,
 ): ASTVisitor;

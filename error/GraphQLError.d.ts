@@ -8,7 +8,7 @@ import type { SourceLocation } from '../language/location';
  * and stack trace, it also includes information about the locations in a
  * GraphQL document and/or execution result that correspond to the Error.
  */
-export class GraphQLError extends Error {
+export declare class GraphQLError extends Error {
   /**
    * A message describing the Error for debugging purposes.
    *
@@ -83,4 +83,4 @@ export class GraphQLError extends Error {
  * Prints a GraphQLError to a string, representing useful location information
  * about the error's position in the source.
  */
-export function printError(error: GraphQLError): string;
+export declare function printError(error: GraphQLError): string;

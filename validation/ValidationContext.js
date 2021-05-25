@@ -62,6 +62,7 @@ class ASTValidationContext {
 
         for (const selection of set.selections) {
           if (selection.kind === _kinds.Kind.FRAGMENT_SPREAD) {
+            // @ts-expect-error FIXME: TS Conversion
             spreads.push(selection);
           } else if (selection.selectionSet) {
             setsToVisit.push(selection.selectionSet);
@@ -94,6 +95,7 @@ class ASTValidationContext {
             const fragment = this.getFragment(fragName);
 
             if (fragment) {
+              // @ts-expect-error FIXME: TS Conversion
               fragments.push(fragment);
               nodesToVisit.push(fragment.selectionSet);
             }

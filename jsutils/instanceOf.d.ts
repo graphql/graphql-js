@@ -4,7 +4,11 @@
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
  */
-export const instanceOf: (value: unknown, constructor: Constructor) => boolean;
+export declare const instanceOf: (
+  value: unknown,
+  constructor: Constructor,
+) => boolean;
 interface Constructor extends Function {
   name: string;
 }
+export {};

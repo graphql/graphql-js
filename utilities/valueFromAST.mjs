@@ -8,6 +8,7 @@ import {
   isListType,
   isNonNullType,
 } from '../type/definition.mjs';
+
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -24,11 +25,10 @@ import {
  * | Boolean              | Boolean       |
  * | String               | String        |
  * | Int / Float          | Number        |
- * | Enum Value           | Mixed         |
+ * | Enum Value           | Unknown       |
  * | NullValue            | null          |
  *
  */
-
 export function valueFromAST(valueNode, type, variables) {
   if (!valueNode) {
     // When there is no node, then there is also no value.

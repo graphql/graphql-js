@@ -8,8 +8,10 @@ import type {
 /**
  * Test if the given value is a GraphQL directive.
  */
-export function isDirective(directive: unknown): directive is GraphQLDirective;
-export function assertDirective(directive: unknown): GraphQLDirective;
+export declare function isDirective(
+  directive: unknown,
+): directive is GraphQLDirective;
+export declare function assertDirective(directive: unknown): GraphQLDirective;
 /**
  * Custom extensions
  *
@@ -26,7 +28,7 @@ export interface GraphQLDirectiveExtensions {
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
-export class GraphQLDirective {
+export declare class GraphQLDirective {
   name: string;
   description: Maybe<string>;
   locations: Array<DirectiveLocationEnum>;
@@ -57,25 +59,28 @@ interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
 /**
  * Used to conditionally include fields or fragments.
  */
-export const GraphQLIncludeDirective: GraphQLDirective;
+export declare const GraphQLIncludeDirective: GraphQLDirective;
 /**
  * Used to conditionally skip (exclude) fields or fragments.
  */
-export const GraphQLSkipDirective: GraphQLDirective;
+export declare const GraphQLSkipDirective: GraphQLDirective;
 /**
  * Constant string used for default reason for a deprecation.
  */
-export const DEFAULT_DEPRECATION_REASON = 'No longer supported';
+export declare const DEFAULT_DEPRECATION_REASON = 'No longer supported';
 /**
  * Used to declare element of a GraphQL schema as deprecated.
  */
-export const GraphQLDeprecatedDirective: GraphQLDirective;
+export declare const GraphQLDeprecatedDirective: GraphQLDirective;
 /**
  * Used to provide a URL for specifying the behaviour of custom scalar definitions.
  */
-export const GraphQLSpecifiedByDirective: GraphQLDirective;
+export declare const GraphQLSpecifiedByDirective: GraphQLDirective;
 /**
  * The full list of specified directives.
  */
-export const specifiedDirectives: ReadonlyArray<GraphQLDirective>;
-export function isSpecifiedDirective(directive: GraphQLDirective): boolean;
+export declare const specifiedDirectives: ReadonlyArray<GraphQLDirective>;
+export declare function isSpecifiedDirective(
+  directive: GraphQLDirective,
+): boolean;
+export {};

@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/ban-types */
 /**
  * Memoizes the provided three-argument function.
  */
-export function memoize3<
+export declare function memoize3<
   A1 extends object,
   A2 extends object,
   A3 extends object,

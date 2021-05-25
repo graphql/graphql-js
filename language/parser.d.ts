@@ -85,7 +85,7 @@ export interface ParseOptions {
  * Given a GraphQL source, parses it into a Document.
  * Throws GraphQLError if a syntax error is encountered.
  */
-export function parse(
+export declare function parse(
   source: string | Source,
   options?: ParseOptions,
 ): DocumentNode;
@@ -99,7 +99,7 @@ export function parse(
  *
  * Consider providing the results to the utility function: valueFromAST().
  */
-export function parseValue(
+export declare function parseValue(
   source: string | Source,
   options?: ParseOptions,
 ): ValueNode;
@@ -107,7 +107,7 @@ export function parseValue(
  * Similar to parseValue(), but raises a parse error if it encounters a
  * variable. The return type will be a constant value.
  */
-export function parseConstValue(
+export declare function parseConstValue(
   source: string | Source,
   options?: ParseOptions,
 ): ConstValueNode;
@@ -121,7 +121,7 @@ export function parseConstValue(
  *
  * Consider providing the results to the utility function: typeFromAST().
  */
-export function parseType(
+export declare function parseType(
   source: string | Source,
   options?: ParseOptions,
 ): TypeNode;
@@ -136,7 +136,7 @@ export function parseType(
  *
  * @internal
  */
-export class Parser {
+export declare class Parser {
   private _options;
   private _lexer;
   constructor(source: string | Source, options?: ParseOptions);

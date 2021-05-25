@@ -46,7 +46,7 @@ class Source {
         false,
         'column in locationOffset is 1-indexed and must be positive.',
       );
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'Source';
@@ -60,7 +60,6 @@ class Source {
 
 exports.Source = Source;
 
-// eslint-disable-next-line no-redeclare
 function isSource(source) {
   return (0, _instanceOf.instanceOf)(source, Source);
 }

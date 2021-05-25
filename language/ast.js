@@ -109,7 +109,12 @@ class Token {
 exports.Token = Token;
 
 function isNode(maybeNode) {
-  return maybeNode != null && typeof maybeNode.kind === 'string';
+  // eslint-disable-next-line @typescript-eslint/dot-notation
+  return (
+    typeof (maybeNode === null || maybeNode === void 0
+      ? void 0
+      : maybeNode['kind']) === 'string'
+  );
 }
 /**
  * The list of all possible AST node types.

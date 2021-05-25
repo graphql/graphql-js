@@ -189,6 +189,12 @@ Object.defineProperty(exports, 'findDangerousChanges', {
     return _findBreakingChanges.findDangerousChanges;
   },
 });
+Object.defineProperty(exports, 'TypedQueryDocumentNode', {
+  enumerable: true,
+  get: function () {
+    return _typedQueryDocumentNode.TypedQueryDocumentNode;
+  },
+});
 
 var _getIntrospectionQuery = require('./getIntrospectionQuery.js');
 
@@ -231,3 +237,5 @@ var _typeComparators = require('./typeComparators.js');
 var _assertValidName = require('./assertValidName.js');
 
 var _findBreakingChanges = require('./findBreakingChanges.js');
+
+var _typedQueryDocumentNode = require('./typedQueryDocumentNode.js');

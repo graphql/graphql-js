@@ -5,6 +5,6 @@ import type { ASTValidationContext } from '../ValidationContext';
  *
  * A GraphQL document is only valid if all defined operations have unique names.
  */
-export function UniqueOperationNamesRule(
+export declare function UniqueOperationNamesRule(
   context: ASTValidationContext,
 ): ASTVisitor;

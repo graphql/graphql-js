@@ -14,6 +14,6 @@
  * isIterableObject({ key: 'value' }) // false
  * isIterableObject({ length: 1, 0: 'Alpha' }) // false
  */
-export function isIterableObject(
+export declare function isIterableObject(
   maybeIterable: unknown,
 ): maybeIterable is Iterable<unknown>;

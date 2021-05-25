@@ -36,7 +36,6 @@ export function assertType(type) {
  * There are predicates for each kind of GraphQL type.
  */
 
-// eslint-disable-next-line no-redeclare
 export function isScalarType(type) {
   return instanceOf(type, GraphQLScalarType);
 }
@@ -47,7 +46,6 @@ export function assertScalarType(type) {
 
   return type;
 }
-// eslint-disable-next-line no-redeclare
 export function isObjectType(type) {
   return instanceOf(type, GraphQLObjectType);
 }
@@ -58,7 +56,6 @@ export function assertObjectType(type) {
 
   return type;
 }
-// eslint-disable-next-line no-redeclare
 export function isInterfaceType(type) {
   return instanceOf(type, GraphQLInterfaceType);
 }
@@ -71,7 +68,6 @@ export function assertInterfaceType(type) {
 
   return type;
 }
-// eslint-disable-next-line no-redeclare
 export function isUnionType(type) {
   return instanceOf(type, GraphQLUnionType);
 }
@@ -82,7 +78,6 @@ export function assertUnionType(type) {
 
   return type;
 }
-// eslint-disable-next-line no-redeclare
 export function isEnumType(type) {
   return instanceOf(type, GraphQLEnumType);
 }
@@ -93,7 +88,6 @@ export function assertEnumType(type) {
 
   return type;
 }
-// eslint-disable-next-line no-redeclare
 export function isInputObjectType(type) {
   return instanceOf(type, GraphQLInputObjectType);
 }
@@ -106,7 +100,6 @@ export function assertInputObjectType(type) {
 
   return type;
 }
-// eslint-disable-next-line no-redeclare
 export function isListType(type) {
   return instanceOf(type, GraphQLList);
 }
@@ -117,7 +110,6 @@ export function assertListType(type) {
 
   return type;
 }
-// eslint-disable-next-line no-redeclare
 export function isNonNullType(type) {
   return instanceOf(type, GraphQLNonNull);
 }
@@ -244,7 +236,7 @@ export class GraphQLList {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLList';
@@ -287,7 +279,7 @@ export class GraphQLNonNull {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLNonNull';
@@ -321,10 +313,7 @@ export function assertNullableType(type) {
 
   return type;
 }
-/* eslint-disable no-redeclare */
-
 export function getNullableType(type) {
-  /* eslint-enable no-redeclare */
   if (type) {
     return isNonNullType(type) ? type.ofType : type;
   }
@@ -350,10 +339,7 @@ export function assertNamedType(type) {
 
   return type;
 }
-/* eslint-disable no-redeclare */
-
 export function getNamedType(type) {
-  /* eslint-enable no-redeclare */
   if (type) {
     let unwrappedType = type;
 
@@ -376,6 +362,16 @@ function resolveArrayThunk(thunk) {
 function resolveObjMapThunk(thunk) {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+
 /**
  * Scalar Type Definition
  *
@@ -400,7 +396,6 @@ function resolveObjMapThunk(thunk) {
  *     });
  *
  */
-
 export class GraphQLScalarType {
   constructor(config) {
     var _config$parseValue,
@@ -479,7 +474,7 @@ export class GraphQLScalarType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLScalarType';
@@ -584,7 +579,7 @@ export class GraphQLObjectType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLObjectType';
@@ -614,7 +609,8 @@ function defineFieldMap(config) {
     devAssert(
       false,
       `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
-    );
+    ); // @ts-expect-error FIXME: TS Conversion
+
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     var _fieldConfig$args;
 
@@ -783,7 +779,7 @@ export class GraphQLInterfaceType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLInterfaceType';
@@ -864,7 +860,7 @@ export class GraphQLUnionType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLUnionType';
@@ -1020,7 +1016,7 @@ export class GraphQLEnumType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLEnumType';
@@ -1126,7 +1122,7 @@ export class GraphQLInputObjectType {
 
   toJSON() {
     return this.toString();
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLInputObjectType';

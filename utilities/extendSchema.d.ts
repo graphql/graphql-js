@@ -24,7 +24,7 @@ interface Options extends GraphQLSchemaValidationOptions {
  * This algorithm copies the provided schema, applying extensions while
  * producing the copy. The original schema remains unaltered.
  */
-export function extendSchema(
+export declare function extendSchema(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   options?: Options,
@@ -32,8 +32,9 @@ export function extendSchema(
 /**
  * @internal
  */
-export function extendSchemaImpl(
+export declare function extendSchemaImpl(
   schemaConfig: GraphQLSchemaNormalizedConfig,
   documentAST: DocumentNode,
   options?: Options,
 ): GraphQLSchemaNormalizedConfig;
+export {};

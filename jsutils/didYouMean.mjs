@@ -3,7 +3,6 @@ const MAX_SUGGESTIONS = 5;
  * Given [ A, B, C ] return ' Did you mean A, B, or C?'.
  */
 
-// eslint-disable-next-line no-redeclare
 export function didYouMean(firstArg, secondArg) {
   const [subMessage, suggestionsArg] =
     typeof firstArg === 'string'

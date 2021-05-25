@@ -7,6 +7,6 @@ import type { ValidationContext } from '../ValidationContext';
  * fragments) either correspond to distinct response names or can be merged
  * without ambiguity.
  */
-export function OverlappingFieldsCanBeMergedRule(
+export declare function OverlappingFieldsCanBeMergedRule(
   context: ValidationContext,
 ): ASTVisitor;

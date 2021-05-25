@@ -9,12 +9,12 @@ import type {
  * A field or directive is only valid if all required (non-null without a
  * default value) field arguments have been provided.
  */
-export function ProvidedRequiredArgumentsRule(
+export declare function ProvidedRequiredArgumentsRule(
   context: ValidationContext,
 ): ASTVisitor;
 /**
  * @internal
  */
-export function ProvidedRequiredArgumentsOnDirectivesRule(
+export declare function ProvidedRequiredArgumentsOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

@@ -139,6 +139,7 @@ export function buildClientSchema(introspection, options) {
   // GraphQLType instance.
 
   function buildType(type) {
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     if (type != null && type.name != null && type.kind != null) {
       switch (type.kind) {
         case TypeKind.SCALAR:

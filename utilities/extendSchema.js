@@ -175,14 +175,14 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
   function replaceType(type) {
     if ((0, _definition.isListType)(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new _definition.GraphQLList(replaceType(type.ofType));
     }
 
     if ((0, _definition.isNonNullType)(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new _definition.GraphQLNonNull(replaceType(type.ofType));
-    }
+    } // @ts-expect-error FIXME
 
     return replaceNamedType(type);
   }
@@ -377,7 +377,6 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     return {
       ...field,
       type: replaceType(field.type),
-      // $FlowFixMe[incompatible-call]
       args: (0, _mapValue.mapValue)(field.args, extendArg),
     };
   }
@@ -405,8 +404,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     } // Note: While this could make early assertions to get the correctly
     // typed values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    // $FlowFixMe[incompatible-return]
-    // $FlowFixMe[incompatible-exact]
+    // @ts-expect-error
 
     return opTypes;
   }
@@ -434,7 +432,6 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     }
 
     if (node.kind === _kinds.Kind.NON_NULL_TYPE) {
-      // $FlowFixMe[incompatible-call]
       return new _definition.GraphQLNonNull(getWrappedType(node.type));
     }
 
@@ -451,7 +448,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         _node$description === void 0
           ? void 0
           : _node$description.value,
-      // $FlowFixMe[incompatible-call]
+      // @ts-expect-error
       locations: node.locations.map(({ value }) => value),
       isRepeatable: node.repeatable,
       args: buildArgumentMap(node.arguments),
@@ -595,7 +592,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     // Note: While this could make assertions to get the correctly typed
     // values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    // $FlowFixMe[incompatible-return]
+    // @ts-expect-error
     return nodes.flatMap(
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       (node) => {
@@ -617,7 +614,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     // Note: While this could make assertions to get the correctly typed
     // values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    // $FlowFixMe[incompatible-return]
+    // @ts-expect-error
     return nodes.flatMap(
       // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
       (node) => {
@@ -758,6 +755,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 }
 
 const stdTypeMap = (0, _keyMap.keyMap)(
+  // @ts-expect-error FIXME: TS Conversion
   _scalars.specifiedScalarTypes.concat(_introspection.introspectionTypes),
   (type) => type.name,
 );
@@ -770,7 +768,7 @@ function getDeprecationReason(node) {
   const deprecated = (0, _values.getDirectiveValues)(
     _directives.GraphQLDeprecatedDirective,
     node,
-  ); // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
+  ); // @ts-expect-error validated by `getDirectiveValues`
 
   return deprecated === null || deprecated === void 0
     ? void 0
@@ -784,7 +782,7 @@ function getSpecifiedByURL(node) {
   const specifiedBy = (0, _values.getDirectiveValues)(
     _directives.GraphQLSpecifiedByDirective,
     node,
-  ); // $FlowExpectedError[incompatible-return] validated by `getDirectiveValues`
+  ); // @ts-expect-error validated by `getDirectiveValues`
 
   return specifiedBy === null || specifiedBy === void 0
     ? void 0

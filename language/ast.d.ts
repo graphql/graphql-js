@@ -4,7 +4,7 @@ import type { TokenKindEnum } from './tokenKind';
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
  */
-export class Location {
+export declare class Location {
   /**
    * The character offset at which this Node begins.
    */
@@ -35,7 +35,7 @@ export class Location {
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
-export class Token {
+export declare class Token {
   /**
    * The kind of Token.
    */
@@ -86,11 +86,11 @@ export class Token {
 /**
  * @internal
  */
-export function isNode(maybeNode: unknown): maybeNode is ASTNode;
+export declare function isNode(maybeNode: unknown): maybeNode is ASTNode;
 /**
  * The list of all possible AST node types.
  */
-export type ASTNode =
+export declare type ASTNode =
   | NameNode
   | DocumentNode
   | OperationDefinitionNode
@@ -194,11 +194,11 @@ export interface DocumentNode {
   readonly loc?: Location;
   readonly definitions: ReadonlyArray<DefinitionNode>;
 }
-export type DefinitionNode =
+export declare type DefinitionNode =
   | ExecutableDefinitionNode
   | TypeSystemDefinitionNode
   | TypeSystemExtensionNode;
-export type ExecutableDefinitionNode =
+export declare type ExecutableDefinitionNode =
   | OperationDefinitionNode
   | FragmentDefinitionNode;
 export interface OperationDefinitionNode {
@@ -210,7 +210,7 @@ export interface OperationDefinitionNode {
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
 }
-export type OperationTypeNode = 'query' | 'mutation' | 'subscription';
+export declare type OperationTypeNode = 'query' | 'mutation' | 'subscription';
 export interface VariableDefinitionNode {
   readonly kind: 'VariableDefinition';
   readonly loc?: Location;
@@ -229,7 +229,10 @@ export interface SelectionSetNode {
   loc?: Location;
   selections: ReadonlyArray<SelectionNode>;
 }
-export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
+export declare type SelectionNode =
+  | FieldNode
+  | FragmentSpreadNode
+  | InlineFragmentNode;
 export interface FieldNode {
   readonly kind: 'Field';
   readonly loc?: Location;
@@ -276,7 +279,7 @@ export interface FragmentDefinitionNode {
   readonly selectionSet: SelectionSetNode;
 }
 /** Values */
-export type ValueNode =
+export declare type ValueNode =
   | VariableNode
   | IntValueNode
   | FloatValueNode
@@ -286,7 +289,7 @@ export type ValueNode =
   | EnumValueNode
   | ListValueNode
   | ObjectValueNode;
-export type ConstValueNode =
+export declare type ConstValueNode =
   | IntValueNode
   | FloatValueNode
   | StringValueNode
@@ -371,7 +374,7 @@ export interface ConstDirectiveNode {
   readonly arguments?: ReadonlyArray<ConstArgumentNode>;
 }
 /** Type Reference */
-export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
+export declare type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
 export interface NamedTypeNode {
   readonly kind: 'NamedType';
   readonly loc?: Location;
@@ -388,7 +391,7 @@ export interface NonNullTypeNode {
   readonly type: NamedTypeNode | ListTypeNode;
 }
 /** Type System Definition */
-export type TypeSystemDefinitionNode =
+export declare type TypeSystemDefinitionNode =
   | SchemaDefinitionNode
   | TypeDefinitionNode
   | DirectiveDefinitionNode;
@@ -406,7 +409,7 @@ export interface OperationTypeDefinitionNode {
   readonly type: NamedTypeNode;
 }
 /** Type Definition */
-export type TypeDefinitionNode =
+export declare type TypeDefinitionNode =
   | ScalarTypeDefinitionNode
   | ObjectTypeDefinitionNode
   | InterfaceTypeDefinitionNode
@@ -498,7 +501,9 @@ export interface DirectiveDefinitionNode {
   readonly locations: ReadonlyArray<NameNode>;
 }
 /** Type System Extensions */
-export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
+export declare type TypeSystemExtensionNode =
+  | SchemaExtensionNode
+  | TypeExtensionNode;
 export interface SchemaExtensionNode {
   readonly kind: 'SchemaExtension';
   readonly loc?: Location;
@@ -506,7 +511,7 @@ export interface SchemaExtensionNode {
   readonly operationTypes?: ReadonlyArray<OperationTypeDefinitionNode>;
 }
 /** Type Extensions */
-export type TypeExtensionNode =
+export declare type TypeExtensionNode =
   | ScalarTypeExtensionNode
   | ObjectTypeExtensionNode
   | InterfaceTypeExtensionNode

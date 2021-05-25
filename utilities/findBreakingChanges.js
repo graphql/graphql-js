@@ -59,7 +59,7 @@ exports.DangerousChangeType = DangerousChangeType;
  * of breaking changes covered by the other functions down below.
  */
 function findBreakingChanges(oldSchema, newSchema) {
-  // $FlowFixMe[prop-missing]
+  // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in BreakingChangeType,
   );
@@ -70,7 +70,7 @@ function findBreakingChanges(oldSchema, newSchema) {
  */
 
 function findDangerousChanges(oldSchema, newSchema) {
-  // $FlowFixMe[prop-missing]
+  // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in DangerousChangeType,
   );

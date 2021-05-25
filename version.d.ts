@@ -1,13 +1,13 @@
 /**
  * A string containing the version of the GraphQL.js library
  */
-export const version: string;
+export declare const version = '16.0.0-alpha.2';
 /**
  * An object containing the components of the GraphQL.js version string
  */
-export const versionInfo: Readonly<{
+export declare const versionInfo: Readonly<{
   major: number;
   minor: number;
   patch: number;
-  preReleaseTag: string | null;
+  preReleaseTag: string;
 }>;

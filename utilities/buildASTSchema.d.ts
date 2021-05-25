@@ -21,7 +21,7 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
  */
-export function buildASTSchema(
+export declare function buildASTSchema(
   documentAST: DocumentNode,
   options?: BuildSchemaOptions,
 ): GraphQLSchema;
@@ -29,7 +29,7 @@ export function buildASTSchema(
  * A helper function to build a GraphQLSchema directly from a source
  * document.
  */
-export function buildSchema(
+export declare function buildSchema(
   source: string | Source,
   options?: BuildSchemaOptions & ParseOptions,
 ): GraphQLSchema;

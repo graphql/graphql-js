@@ -6,7 +6,7 @@ import { GraphQLError } from './GraphQLError';
  * GraphQL operation, produce a new GraphQLError aware of the location in the
  * document responsible for the original Error.
  */
-export function locatedError(
+export declare function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
   path?: Maybe<ReadonlyArray<string | number>>,

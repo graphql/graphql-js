@@ -7,7 +7,6 @@ export interface TypedQueryDocumentNode<
   TRequestVariables = Record<string, any>,
 > extends DocumentNode {
   readonly definitions: ReadonlyArray<ExecutableDefinitionNode>;
-  // FIXME: remove once TS implements proper way to enforce nominal typing
   /**
    * This type is used to ensure that the variables you pass in to the query are assignable to Variables
    * and that the Result is assignable to whatever you pass your result to. The method is never actually

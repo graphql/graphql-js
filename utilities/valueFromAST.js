@@ -31,7 +31,7 @@ var _definition = require('../type/definition.js');
  * | Boolean              | Boolean       |
  * | String               | String        |
  * | Int / Float          | Number        |
- * | Enum Value           | Mixed         |
+ * | Enum Value           | Unknown       |
  * | NullValue            | null          |
  *
  */

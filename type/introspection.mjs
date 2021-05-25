@@ -222,17 +222,20 @@ export const __Type = new GraphQLObjectType({
     },
     name: {
       type: GraphQLString,
+      // @ts-expect-error FIXME: TS Conversion
       resolve: (type) => (type.name !== undefined ? type.name : undefined),
     },
     description: {
       type: GraphQLString,
-      resolve: (type) =>
-        type.description !== undefined ? type.description : undefined,
+      resolve: (
+        type, // @ts-expect-error FIXME: TS Conversion
+      ) => (type.description !== undefined ? type.description : undefined),
     },
     specifiedByURL: {
       type: GraphQLString,
-      resolve: (obj) =>
-        obj.specifiedByURL !== undefined ? obj.specifiedByURL : undefined,
+      resolve: (
+        obj, // @ts-expect-error FIXME: TS Conversion
+      ) => (obj.specifiedByURL !== undefined ? obj.specifiedByURL : undefined),
     },
     fields: {
       type: new GraphQLList(new GraphQLNonNull(__Field)),
@@ -308,7 +311,9 @@ export const __Type = new GraphQLObjectType({
     },
     ofType: {
       type: __Type,
-      resolve: (type) => (type.ofType !== undefined ? type.ofType : undefined),
+      resolve: (
+        type, // @ts-expect-error FIXME: TS Conversion
+      ) => (type.ofType !== undefined ? type.ofType : undefined),
     },
   }),
 });

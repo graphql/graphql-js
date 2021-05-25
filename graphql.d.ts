@@ -57,11 +57,11 @@ export interface GraphQLArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
-export function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
+export declare function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,
  * validating, and executing a GraphQL document along side a GraphQL schema.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
-export function graphqlSync(args: GraphQLArgs): ExecutionResult;
+export declare function graphqlSync(args: GraphQLArgs): ExecutionResult;

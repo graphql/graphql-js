@@ -1,6 +1,4 @@
-/* eslint-disable no-redeclare */
 export function toObjMap(obj) {
-  /* eslint-enable no-redeclare */
   if (Object.getPrototypeOf(obj) === null) {
     return obj;
   }

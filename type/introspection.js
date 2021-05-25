@@ -257,17 +257,20 @@ const __Type = new _definition.GraphQLObjectType({
     },
     name: {
       type: _scalars.GraphQLString,
+      // @ts-expect-error FIXME: TS Conversion
       resolve: (type) => (type.name !== undefined ? type.name : undefined),
     },
     description: {
       type: _scalars.GraphQLString,
-      resolve: (type) =>
-        type.description !== undefined ? type.description : undefined,
+      resolve: (
+        type, // @ts-expect-error FIXME: TS Conversion
+      ) => (type.description !== undefined ? type.description : undefined),
     },
     specifiedByURL: {
       type: _scalars.GraphQLString,
-      resolve: (obj) =>
-        obj.specifiedByURL !== undefined ? obj.specifiedByURL : undefined,
+      resolve: (
+        obj, // @ts-expect-error FIXME: TS Conversion
+      ) => (obj.specifiedByURL !== undefined ? obj.specifiedByURL : undefined),
     },
     fields: {
       type: new _definition.GraphQLList(
@@ -355,7 +358,9 @@ const __Type = new _definition.GraphQLObjectType({
     },
     ofType: {
       type: __Type,
-      resolve: (type) => (type.ofType !== undefined ? type.ofType : undefined),
+      resolve: (
+        type, // @ts-expect-error FIXME: TS Conversion
+      ) => (type.ofType !== undefined ? type.ofType : undefined),
     },
   }),
 });

@@ -22,7 +22,7 @@ import type { ObjMap } from './ObjMap';
  *     const jennyEntry = entriesByName['Jenny']
  *
  */
-export function keyMap<T>(
+export declare function keyMap<T>(
   list: ReadonlyArray<T>,
   keyFn: (item: T) => string,
 ): ObjMap<T>;

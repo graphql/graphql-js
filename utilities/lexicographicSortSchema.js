@@ -44,18 +44,18 @@ function lexicographicSortSchema(schema) {
 
   function replaceType(type) {
     if ((0, _definition.isListType)(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new _definition.GraphQLList(replaceType(type.ofType));
     } else if ((0, _definition.isNonNullType)(type)) {
-      // $FlowFixMe[incompatible-return]
+      // @ts-expect-error
       return new _definition.GraphQLNonNull(replaceType(type.ofType));
-    }
+    } // @ts-expect-error FIXME: TS Conversion
 
     return replaceNamedType(type);
   }
 
   function replaceNamedType(type) {
-    // $FlowFixMe[incompatible-return]
+    // @ts-expect-error
     return typeMap[type.name];
   }
 

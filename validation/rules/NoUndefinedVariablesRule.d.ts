@@ -6,6 +6,6 @@ import type { ValidationContext } from '../ValidationContext';
  * A GraphQL operation is only valid if all variables encountered, both directly
  * and via fragment spreads, are defined by that operation.
  */
-export function NoUndefinedVariablesRule(
+export declare function NoUndefinedVariablesRule(
   context: ValidationContext,
 ): ASTVisitor;

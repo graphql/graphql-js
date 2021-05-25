@@ -51,7 +51,7 @@ export const DangerousChangeType = Object.freeze({
  * of breaking changes covered by the other functions down below.
  */
 export function findBreakingChanges(oldSchema, newSchema) {
-  // $FlowFixMe[prop-missing]
+  // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in BreakingChangeType,
   );
@@ -62,7 +62,7 @@ export function findBreakingChanges(oldSchema, newSchema) {
  */
 
 export function findDangerousChanges(oldSchema, newSchema) {
-  // $FlowFixMe[prop-missing]
+  // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
     (change) => change.type in DangerousChangeType,
   );

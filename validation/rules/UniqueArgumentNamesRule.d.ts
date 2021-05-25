@@ -6,6 +6,6 @@ import type { ASTValidationContext } from '../ValidationContext';
  * A GraphQL field or directive is only valid if all supplied arguments are
  * uniquely named.
  */
-export function UniqueArgumentNamesRule(
+export declare function UniqueArgumentNamesRule(
   context: ASTValidationContext,
 ): ASTVisitor;

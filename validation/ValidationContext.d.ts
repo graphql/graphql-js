@@ -20,7 +20,9 @@ import type {
   GraphQLEnumValue,
 } from '../type/definition';
 import { TypeInfo } from '../utilities/TypeInfo';
-type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
+declare type NodeWithSelectionSet =
+  | OperationDefinitionNode
+  | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
@@ -31,7 +33,7 @@ interface VariableUsage {
  * allowing access to commonly useful contextual information from within a
  * validation rule.
  */
-export class ASTValidationContext {
+export declare class ASTValidationContext {
   private _ast;
   private _onError;
   private _fragments;
@@ -46,8 +48,10 @@ export class ASTValidationContext {
     operation: OperationDefinitionNode,
   ): ReadonlyArray<FragmentDefinitionNode>;
 }
-export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
-export class SDLValidationContext extends ASTValidationContext {
+export declare type ASTValidationRule = (
+  context: ASTValidationContext,
+) => ASTVisitor;
+export declare class SDLValidationContext extends ASTValidationContext {
   private _schema;
   constructor(
     ast: DocumentNode,
@@ -56,8 +60,10 @@ export class SDLValidationContext extends ASTValidationContext {
   );
   getSchema(): Maybe<GraphQLSchema>;
 }
-export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
-export class ValidationContext extends ASTValidationContext {
+export declare type SDLValidationRule = (
+  context: SDLValidationContext,
+) => ASTVisitor;
+export declare class ValidationContext extends ASTValidationContext {
   private _schema;
   private _typeInfo;
   private _variableUsages;
@@ -82,4 +88,5 @@ export class ValidationContext extends ASTValidationContext {
   getArgument(): Maybe<GraphQLArgument>;
   getEnumValue(): Maybe<GraphQLEnumValue>;
 }
-export type ValidationRule = (context: ValidationContext) => ASTVisitor;
+export declare type ValidationRule = (context: ValidationContext) => ASTVisitor;
+export {};

@@ -1,7 +1,7 @@
 /**
  * The set of allowed kind values for AST nodes.
  */
-export const Kind: Readonly<{
+export declare const Kind: Readonly<{
   /** Name */
   readonly NAME: 'Name';
   /** Document */
@@ -60,4 +60,4 @@ export const Kind: Readonly<{
 /**
  * The enum type representing the possible kind values of AST nodes.
  */
-export type KindEnum = typeof Kind[keyof typeof Kind];
+export declare type KindEnum = typeof Kind[keyof typeof Kind];

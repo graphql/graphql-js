@@ -1,6 +1,6 @@
 import { GraphQLError } from '../error/GraphQLError';
 import type { GraphQLInputType } from '../type/definition';
-type OnErrorCB = (
+declare type OnErrorCB = (
   path: ReadonlyArray<string | number>,
   invalidValue: unknown,
   error: GraphQLError,
@@ -8,8 +8,9 @@ type OnErrorCB = (
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
  */
-export function coerceInputValue(
+export declare function coerceInputValue(
   inputValue: unknown,
   type: GraphQLInputType,
   onError?: OnErrorCB,
 ): unknown;
+export {};

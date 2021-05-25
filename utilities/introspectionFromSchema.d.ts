@@ -12,7 +12,7 @@ import type {
  * This is the inverse of buildClientSchema. The primary use case is outside
  * of the server context, for instance when doing schema comparisons.
  */
-export function introspectionFromSchema(
+export declare function introspectionFromSchema(
   schema: GraphQLSchema,
   options?: IntrospectionOptions,
 ): IntrospectionQuery;

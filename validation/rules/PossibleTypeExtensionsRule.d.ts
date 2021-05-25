@@ -5,6 +5,6 @@ import type { SDLValidationContext } from '../ValidationContext';
  *
  * A type extension is only valid if the type is defined and has the same kind.
  */
-export function PossibleTypeExtensionsRule(
+export declare function PossibleTypeExtensionsRule(
   context: SDLValidationContext,
 ): ASTVisitor;

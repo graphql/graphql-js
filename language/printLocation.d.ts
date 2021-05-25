@@ -4,11 +4,11 @@ import type { SourceLocation } from './location';
 /**
  * Render a helpful description of the location in the GraphQL Source document.
  */
-export function printLocation(location: Location): string;
+export declare function printLocation(location: Location): string;
 /**
  * Render a helpful description of the location in the GraphQL Source document.
  */
-export function printSourceLocation(
+export declare function printSourceLocation(
   source: Source,
   sourceLocation: SourceLocation,
 ): string;

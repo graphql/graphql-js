@@ -9,7 +9,7 @@ interface Location {
  * be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
-export class Source {
+export declare class Source {
   body: string;
   name: string;
   locationOffset: Location;
@@ -21,4 +21,5 @@ export class Source {
  *
  * @internal
  */
-export function isSource(source: unknown): source is Source;
+export declare function isSource(source: unknown): source is Source;
+export {};

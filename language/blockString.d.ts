@@ -6,11 +6,11 @@
  *
  * @internal
  */
-export function dedentBlockStringValue(rawString: string): string;
+export declare function dedentBlockStringValue(rawString: string): string;
 /**
  * @internal
  */
-export function getBlockStringIndentation(value: string): number;
+export declare function getBlockStringIndentation(value: string): number;
 /**
  * Print a block string in the indented block form by adding a leading and
  * trailing blank line. However, if a block string starts with whitespace and is
@@ -18,7 +18,7 @@ export function getBlockStringIndentation(value: string): number;
  *
  * @internal
  */
-export function printBlockString(
+export declare function printBlockString(
   value: string,
   preferMultipleLines?: boolean,
 ): string;

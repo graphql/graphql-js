@@ -1,5 +1,5 @@
 import type { GraphQLSchema } from '../type/schema';
-export const BreakingChangeType: Readonly<{
+export declare const BreakingChangeType: Readonly<{
   readonly TYPE_REMOVED: 'TYPE_REMOVED';
   readonly TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND';
   readonly TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION';
@@ -17,7 +17,7 @@ export const BreakingChangeType: Readonly<{
   readonly DIRECTIVE_REPEATABLE_REMOVED: 'DIRECTIVE_REPEATABLE_REMOVED';
   readonly DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED';
 }>;
-export const DangerousChangeType: Readonly<{
+export declare const DangerousChangeType: Readonly<{
   readonly VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM';
   readonly TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION';
   readonly OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED';
@@ -37,7 +37,7 @@ export interface DangerousChange {
  * Given two schemas, returns an Array containing descriptions of all the types
  * of breaking changes covered by the other functions down below.
  */
-export function findBreakingChanges(
+export declare function findBreakingChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<BreakingChange>;
@@ -45,7 +45,7 @@ export function findBreakingChanges(
  * Given two schemas, returns an Array containing descriptions of all the types
  * of potentially dangerous changes covered by the other functions down below.
  */
-export function findDangerousChanges(
+export declare function findDangerousChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<DangerousChange>;

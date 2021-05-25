@@ -15,8 +15,8 @@ import type { GraphQLDirective } from './directives';
 /**
  * Test if the given value is a GraphQL schema.
  */
-export function isSchema(schema: unknown): schema is GraphQLSchema;
-export function assertSchema(schema: unknown): GraphQLSchema;
+export declare function isSchema(schema: unknown): schema is GraphQLSchema;
+export declare function assertSchema(schema: unknown): GraphQLSchema;
 /**
  * Custom extensions
  *
@@ -92,7 +92,7 @@ export interface GraphQLSchemaExtensions {
  *     })
  *
  */
-export class GraphQLSchema {
+export declare class GraphQLSchema {
   description: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode: Maybe<SchemaDefinitionNode>;
@@ -127,7 +127,7 @@ export class GraphQLSchema {
   toConfig(): GraphQLSchemaNormalizedConfig;
   get [Symbol.toStringTag](): string;
 }
-type TypeMap = ObjMap<GraphQLNamedType>;
+declare type TypeMap = ObjMap<GraphQLNamedType>;
 export interface GraphQLSchemaValidationOptions {
   /**
    * When building a schema from a GraphQL service's introspection result, it
@@ -160,3 +160,4 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
 }
+export {};

@@ -9,7 +9,7 @@ import { Token } from './ast';
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-export class Lexer {
+export declare class Lexer {
   source: Source;
   /**
    * The previously focused non-ignored token.
@@ -41,4 +41,4 @@ export class Lexer {
 /**
  * @internal
  */
-export function isPunctuatorTokenKind(kind: TokenKindEnum): boolean;
+export declare function isPunctuatorTokenKind(kind: TokenKindEnum): boolean;

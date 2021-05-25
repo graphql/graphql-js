@@ -12,6 +12,7 @@ export function mapAsyncIterator(iterable, callback) {
     }
 
     try {
+      // @ts-expect-error FIXME: TS Conversion
       return {
         value: await callback(result.value),
         done: false,

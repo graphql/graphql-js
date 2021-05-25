@@ -14,19 +14,19 @@ import { GraphQLList, GraphQLNonNull } from '../type/definition';
  * the type called "User" found in the schema. If a type called "User" is not
  * found in the schema, then undefined will be returned.
  */
-export function typeFromAST(
+export declare function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NamedTypeNode,
 ): GraphQLNamedType | undefined;
-export function typeFromAST(
+export declare function typeFromAST(
   schema: GraphQLSchema,
   typeNode: ListTypeNode,
 ): GraphQLList<any> | undefined;
-export function typeFromAST(
+export declare function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NonNullTypeNode,
 ): GraphQLNonNull<any> | undefined;
-export function typeFromAST(
+export declare function typeFromAST(
   schema: GraphQLSchema,
   typeNode: TypeNode,
 ): GraphQLType | undefined;

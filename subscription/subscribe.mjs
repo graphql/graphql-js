@@ -46,8 +46,7 @@ export async function subscribe(args) {
     operationName,
     fieldResolver,
     subscribeFieldResolver,
-  } = args; // $FlowFixMe[incompatible-call]
-
+  } = args;
   const resultOrStream = await createSourceEventStream(
     schema,
     document,
@@ -138,7 +137,7 @@ export async function createSourceEventStream(
       return {
         errors: exeContext,
       };
-    }
+    } // @ts-expect-error FIXME: TS Conversion
 
     const eventStream = await executeSubscription(exeContext); // Assert field returned an event stream, otherwise yield an error.
 

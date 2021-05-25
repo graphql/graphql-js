@@ -3,6 +3,6 @@ import type { ValidationContext } from '../ValidationContext';
 /**
  * Variables passed to field arguments conform to type
  */
-export function VariablesInAllowedPositionRule(
+export declare function VariablesInAllowedPositionRule(
   context: ValidationContext,
 ): ASTVisitor;

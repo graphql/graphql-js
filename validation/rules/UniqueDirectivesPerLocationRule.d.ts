@@ -9,6 +9,6 @@ import type {
  * A GraphQL document is only valid if all non-repeatable directives at
  * a given location are uniquely named.
  */
-export function UniqueDirectivesPerLocationRule(
+export declare function UniqueDirectivesPerLocationRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

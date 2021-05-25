@@ -17,7 +17,7 @@ import type {
  * of the current field and type definitions at any point in a GraphQL document
  * AST during a recursive descent by calling `enter(node)` and `leave(node)`.
  */
-export class TypeInfo {
+export declare class TypeInfo {
   private _schema;
   private _typeStack;
   private _parentTypeStack;
@@ -50,7 +50,7 @@ export class TypeInfo {
   enter(node: ASTNode): void;
   leave(node: ASTNode): void;
 }
-type GetFieldDefFn = (
+declare type GetFieldDefFn = (
   schema: GraphQLSchema,
   parentType: GraphQLType,
   fieldNode: FieldNode,
@@ -59,7 +59,8 @@ type GetFieldDefFn = (
  * Creates a new visitor instance which maintains a provided TypeInfo instance
  * along with visiting visitor.
  */
-export function visitWithTypeInfo(
+export declare function visitWithTypeInfo(
   typeInfo: TypeInfo,
   visitor: ASTVisitor,
 ): ASTVisitor;
+export {};

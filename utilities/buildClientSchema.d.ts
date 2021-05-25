@@ -13,7 +13,7 @@ import type { IntrospectionQuery } from './getIntrospectionQuery';
  * This function expects a complete introspection result. Don't forget to check
  * the "errors" field of a server response before calling this function.
  */
-export function buildClientSchema(
+export declare function buildClientSchema(
   introspection: IntrospectionQuery,
   options?: GraphQLSchemaValidationOptions,
 ): GraphQLSchema;

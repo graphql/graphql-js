@@ -5,6 +5,6 @@ import type { SDLValidationContext } from '../ValidationContext';
  *
  * A GraphQL document is only valid if it has only one type per operation.
  */
-export function UniqueOperationTypesRule(
+export declare function UniqueOperationTypesRule(
   context: SDLValidationContext,
 ): ASTVisitor;

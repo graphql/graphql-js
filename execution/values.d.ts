@@ -9,7 +9,7 @@ import type {
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLField } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
-type CoercedVariableValues =
+declare type CoercedVariableValues =
   | {
       errors: ReadonlyArray<GraphQLError>;
       coerced?: never;
@@ -31,7 +31,7 @@ type CoercedVariableValues =
  *
  * @internal
  */
-export function getVariableValues(
+export declare function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: {
@@ -51,7 +51,7 @@ export function getVariableValues(
  *
  * @internal
  */
-export function getArgumentValues(
+export declare function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
   variableValues?: Maybe<ObjMap<unknown>>,
@@ -69,7 +69,7 @@ export function getArgumentValues(
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-export function getDirectiveValues(
+export declare function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: {
     readonly directives?: ReadonlyArray<DirectiveNode>;
@@ -80,3 +80,4 @@ export function getDirectiveValues(
   | {
       [argument: string]: unknown;
     };
+export {};

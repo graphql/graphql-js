@@ -10,4 +10,6 @@ import type { ValidationContext } from '../../ValidationContext';
  * Specification. The main purpose of this rule is detection of deprecated usages and not
  * necessarily to forbid their use when querying a service.
  */
-export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor;
+export declare function NoDeprecatedCustomRule(
+  context: ValidationContext,
+): ASTVisitor;

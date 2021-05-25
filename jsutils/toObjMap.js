@@ -5,9 +5,7 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.toObjMap = toObjMap;
 
-/* eslint-disable no-redeclare */
 function toObjMap(obj) {
-  /* eslint-enable no-redeclare */
   if (Object.getPrototypeOf(obj) === null) {
     return obj;
   }

@@ -24,19 +24,20 @@ function locatedError(rawOriginalError, nodes, path) {
       : new Error(
           'Unexpected error value: ' + (0, _inspect.inspect)(rawOriginalError),
         ); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
+  // @ts-expect-error FIXME: TS Conversion
 
   if (Array.isArray(originalError.path)) {
-    // $FlowExpectedError[incompatible-return]
+    // @ts-expect-error
     return originalError;
   }
 
   return new _GraphQLError.GraphQLError(
-    originalError.message, // $FlowFixMe[prop-missing] FIXME
+    originalError.message, // @ts-expect-error FIXME
     (_originalError$nodes = originalError.nodes) !== null &&
     _originalError$nodes !== void 0
       ? _originalError$nodes
-      : nodes, // $FlowFixMe[prop-missing] FIXME
-    originalError.source, // $FlowFixMe[prop-missing] FIXME
+      : nodes, // @ts-expect-error FIXME
+    originalError.source, // @ts-expect-error FIXME
     originalError.positions,
     path,
     originalError,

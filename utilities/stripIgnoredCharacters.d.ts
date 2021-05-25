@@ -51,4 +51,4 @@ import { Source } from '../language/source';
  *
  * """Type description""" type Foo{"""Field description""" bar:String}
  */
-export function stripIgnoredCharacters(source: string | Source): string;
+export declare function stripIgnoredCharacters(source: string | Source): string;

@@ -9,6 +9,6 @@ import type {
  * A GraphQL document is only valid if referenced types (specifically
  * variable definitions and fragment conditions) are defined by the type schema.
  */
-export function KnownTypeNamesRule(
+export declare function KnownTypeNamesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

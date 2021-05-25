@@ -12,9 +12,6 @@ var _location = require('../language/location.js');
 
 var _printLocation = require('../language/printLocation.js');
 
-// FIXME:
-// flowlint uninitialized-instance-property:off
-
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
@@ -103,9 +100,11 @@ class GraphQLError extends Error {
           : _nodes$0$loc.source;
     }
 
-    let _positions = positions;
+    let _positions;
 
-    if (!_positions && _nodes) {
+    if (positions) {
+      _positions = positions;
+    } else if (_nodes) {
       _positions = [];
 
       for (const node of _nodes) {
@@ -145,7 +144,7 @@ class GraphQLError extends Error {
       if ((0, _isObjectLike.isObjectLike)(originalExtensions)) {
         _extensions = originalExtensions;
       }
-    } // $FlowFixMe[cannot-write] FIXME
+    }
 
     Object.defineProperties(this, {
       name: {
@@ -239,7 +238,6 @@ class GraphQLError extends Error {
   toString() {
     return printError(this);
   } // FIXME: workaround to not break chai comparisons, should be remove in v16
-  // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
 
   get [Symbol.toStringTag]() {
     return 'Object';

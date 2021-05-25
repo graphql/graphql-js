@@ -9,6 +9,6 @@ import type {
  * A GraphQL document is only valid if all `@directives` are known by the
  * schema and legally positioned.
  */
-export function KnownDirectivesRule(
+export declare function KnownDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

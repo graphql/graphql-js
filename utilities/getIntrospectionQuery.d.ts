@@ -27,7 +27,9 @@ export interface IntrospectionOptions {
    */
   inputValueDeprecation?: boolean;
 }
-export function getIntrospectionQuery(options?: IntrospectionOptions): string;
+export declare function getIntrospectionQuery(
+  options?: IntrospectionOptions,
+): string;
 export interface IntrospectionQuery {
   readonly __schema: IntrospectionSchema;
 }
@@ -43,20 +45,20 @@ export interface IntrospectionSchema {
   readonly types: ReadonlyArray<IntrospectionType>;
   readonly directives: ReadonlyArray<IntrospectionDirective>;
 }
-export type IntrospectionType =
+export declare type IntrospectionType =
   | IntrospectionScalarType
   | IntrospectionObjectType
   | IntrospectionInterfaceType
   | IntrospectionUnionType
   | IntrospectionEnumType
   | IntrospectionInputObjectType;
-export type IntrospectionOutputType =
+export declare type IntrospectionOutputType =
   | IntrospectionScalarType
   | IntrospectionObjectType
   | IntrospectionInterfaceType
   | IntrospectionUnionType
   | IntrospectionEnumType;
-export type IntrospectionInputType =
+export declare type IntrospectionInputType =
   | IntrospectionScalarType
   | IntrospectionEnumType
   | IntrospectionInputObjectType;
@@ -119,20 +121,20 @@ export interface IntrospectionNonNullTypeRef<
   readonly kind: 'NON_NULL';
   readonly ofType: T;
 }
-export type IntrospectionTypeRef =
+export declare type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef
   | IntrospectionListTypeRef
   | IntrospectionNonNullTypeRef<
       IntrospectionNamedTypeRef | IntrospectionListTypeRef
     >;
-export type IntrospectionOutputTypeRef =
+export declare type IntrospectionOutputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionOutputType>
   | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
   | IntrospectionNonNullTypeRef<
       | IntrospectionNamedTypeRef<IntrospectionOutputType>
       | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
     >;
-export type IntrospectionInputTypeRef =
+export declare type IntrospectionInputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionInputType>
   | IntrospectionListTypeRef<IntrospectionInputTypeRef>
   | IntrospectionNonNullTypeRef<

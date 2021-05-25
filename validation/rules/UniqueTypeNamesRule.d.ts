@@ -5,4 +5,6 @@ import type { SDLValidationContext } from '../ValidationContext';
  *
  * A GraphQL document is only valid if all defined types have unique names.
  */
-export function UniqueTypeNamesRule(context: SDLValidationContext): ASTVisitor;
+export declare function UniqueTypeNamesRule(
+  context: SDLValidationContext,
+): ASTVisitor;

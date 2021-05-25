@@ -5,7 +5,7 @@ import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
  * name. If a name is not provided, an operation is only returned if only one is
  * provided in the document.
  */
-export function getOperationAST(
+export declare function getOperationAST(
   documentAST: DocumentNode,
   operationName?: Maybe<string>,
 ): Maybe<OperationDefinitionNode>;

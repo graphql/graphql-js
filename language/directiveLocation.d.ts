@@ -1,7 +1,7 @@
 /**
  * The set of allowed directive location values.
  */
-export const DirectiveLocation: Readonly<{
+export declare const DirectiveLocation: Readonly<{
   /** Request Definitions */
   readonly QUERY: 'QUERY';
   readonly MUTATION: 'MUTATION';
@@ -27,5 +27,5 @@ export const DirectiveLocation: Readonly<{
 /**
  * The enum type representing the directive location values.
  */
-export type DirectiveLocationEnum =
+export declare type DirectiveLocationEnum =
   typeof DirectiveLocation[keyof typeof DirectiveLocation];

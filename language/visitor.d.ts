@@ -4,8 +4,8 @@ import type { ASTNode, ASTKindToNode } from './ast';
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export type ASTVisitor = EnterLeaveVisitor<ASTNode> & KindVisitor;
-type KindVisitor = {
+export declare type ASTVisitor = EnterLeaveVisitor<ASTNode> & KindVisitor;
+declare type KindVisitor = {
   readonly [K in keyof ASTKindToNode]?:
     | ASTVisitFn<ASTKindToNode[K]>
     | EnterLeaveVisitor<ASTKindToNode[K]>;
@@ -18,7 +18,7 @@ interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
  */
-export type ASTVisitFn<TVisitedNode extends ASTNode> = (
+export declare type ASTVisitFn<TVisitedNode extends ASTNode> = (
   /** The current node being visiting. */
   node: TVisitedNode,
   /** The index or key to this node from the parent node or Array. */
@@ -34,7 +34,7 @@ export type ASTVisitFn<TVisitedNode extends ASTNode> = (
    */
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
-export const BREAK: unknown;
+export declare const BREAK: unknown;
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the
@@ -106,22 +106,23 @@ export const BREAK: unknown;
  *       }
  *     })
  */
-export function visit(root: ASTNode, visitor: ASTVisitor): any;
+export declare function visit(root: ASTNode, visitor: ASTVisitor): any;
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
  * parallel. Each visitor will be visited for each node before moving on.
  *
  * If a prior visitor edits a node, no following visitors will see that node.
  */
-export function visitInParallel(
+export declare function visitInParallel(
   visitors: ReadonlyArray<ASTVisitor>,
 ): ASTVisitor;
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.
  */
-export function getVisitFn(
+export declare function getVisitFn(
   visitor: ASTVisitor,
   kind: string,
   isLeaving: boolean,
 ): Maybe<ASTVisitFn<ASTNode>>;
+export {};

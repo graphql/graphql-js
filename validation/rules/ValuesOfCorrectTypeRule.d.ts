@@ -6,4 +6,6 @@ import type { ValidationContext } from '../ValidationContext';
  * A GraphQL document is only valid if all value literals are of the type
  * expected at their position.
  */
-export function ValuesOfCorrectTypeRule(context: ValidationContext): ASTVisitor;
+export declare function ValuesOfCorrectTypeRule(
+  context: ValidationContext,
+): ASTVisitor;

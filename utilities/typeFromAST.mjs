@@ -10,10 +10,7 @@ import { GraphQLList, GraphQLNonNull } from '../type/definition.mjs';
  * found in the schema, then undefined will be returned.
  */
 
-/* eslint-disable no-redeclare */
-
 export function typeFromAST(schema, typeNode) {
-  /* eslint-enable no-redeclare */
   let innerType;
 
   if (typeNode.kind === Kind.LIST_TYPE) {

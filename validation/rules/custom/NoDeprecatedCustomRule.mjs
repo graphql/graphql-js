@@ -68,8 +68,7 @@ export function NoDeprecatedCustomRule(context) {
       const inputObjectDef = getNamedType(context.getParentInputType());
 
       if (isInputObjectType(inputObjectDef)) {
-        const inputFieldDef = inputObjectDef.getFields()[node.name.value]; // flowlint-next-line unnecessary-optional-chain:off
-
+        const inputFieldDef = inputObjectDef.getFields()[node.name.value];
         const deprecationReason =
           inputFieldDef === null || inputFieldDef === void 0
             ? void 0

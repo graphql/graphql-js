@@ -45,6 +45,7 @@ function UniqueDirectivesPerLocationRule(context) {
     // them all, just listen for entering any node, and check to see if it
     // defines any directives.
     enter(node) {
+      // @ts-expect-error FIXME: TS Conversion
       if (node.directives == null) {
         return;
       }
@@ -68,7 +69,7 @@ function UniqueDirectivesPerLocationRule(context) {
         }
       } else {
         seenDirectives = Object.create(null);
-      }
+      } // @ts-expect-error FIXME: TS Conversion
 
       for (const directive of node.directives) {
         const directiveName = directive.name.value;

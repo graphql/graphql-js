@@ -6,7 +6,7 @@ import type { PromiseOrValue } from './PromiseOrValue';
  * If the callback does not return a Promise, then this function will also not
  * return a Promise.
  */
-export function promiseReduce<T, U>(
+export declare function promiseReduce<T, U>(
   values: Iterable<T>,
   callbackFn: (accumulator: U, currentValue: T) => PromiseOrValue<U>,
   initialValue: PromiseOrValue<U>,

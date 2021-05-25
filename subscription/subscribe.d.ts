@@ -36,7 +36,7 @@ export interface SubscriptionArgs {
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-export function subscribe(
+export declare function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
 /**
@@ -67,7 +67,7 @@ export function subscribe(
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
-export function createSourceEventStream(
+export declare function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: unknown,

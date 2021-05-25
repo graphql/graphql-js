@@ -18,11 +18,11 @@ import type { Maybe } from '../jsutils/Maybe';
  * | Boolean              | Boolean       |
  * | String               | String        |
  * | Int / Float          | Number        |
- * | Enum Value           | Mixed         |
+ * | Enum Value           | Unknown       |
  * | NullValue            | null          |
  *
  */
-export function valueFromAST(
+export declare function valueFromAST(
   valueNode: Maybe<ValueNode>,
   type: GraphQLInputType,
   variables?: Maybe<ObjMap<unknown>>,

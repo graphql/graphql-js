@@ -4,5 +4,7 @@ import type {
   ReadOnlyObjMap,
   ReadOnlyObjMapLike,
 } from './ObjMap';
-export function toObjMap<T>(obj: ObjMapLike<T>): ObjMap<T>;
-export function toObjMap<T>(obj: ReadOnlyObjMapLike<T>): ReadOnlyObjMap<T>;
+export declare function toObjMap<T>(obj: ObjMapLike<T>): ObjMap<T>;
+export declare function toObjMap<T>(
+  obj: ReadOnlyObjMapLike<T>,
+): ReadOnlyObjMap<T>;

@@ -114,7 +114,7 @@ export class TypeInfo {
   }
 
   enter(node) {
-    const schema = this._schema; // Note: many of the types below are explicitly typed as "mixed" to drop
+    const schema = this._schema; // Note: many of the types below are explicitly typed as "unknown" to drop
     // any assumptions of a valid schema to ensure runtime types are properly
     // checked before continuing since TypeInfo is used as part of validation
     // which occurs before guarantees of schema and document validity.

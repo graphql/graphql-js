@@ -9,10 +9,12 @@ import type {
  * A GraphQL field is only valid if all supplied arguments are defined by
  * that field.
  */
-export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor;
+export declare function KnownArgumentNamesRule(
+  context: ValidationContext,
+): ASTVisitor;
 /**
  * @internal
  */
-export function KnownArgumentNamesOnDirectivesRule(
+export declare function KnownArgumentNamesOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor;

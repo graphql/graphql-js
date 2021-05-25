@@ -109,8 +109,10 @@ export function execute(args) {
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
+  // @ts-expect-error FIXME: TS Conversion
 
-  const data = executeOperation(exeContext, exeContext.operation, rootValue);
+  const data = executeOperation(exeContext, exeContext.operation, rootValue); // @ts-expect-error FIXME: TS Conversion
+
   return buildResponse(exeContext, data);
 }
 /**
@@ -250,7 +252,7 @@ export function buildExecutionContext(
 
   if (coercedVariableValues.errors) {
     return coercedVariableValues.errors;
-  } // $FlowFixMe[incompatible-return]
+  }
 
   return {
     schema,

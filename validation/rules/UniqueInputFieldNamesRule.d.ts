@@ -6,6 +6,6 @@ import type { ASTValidationContext } from '../ValidationContext';
  * A GraphQL input object value is only valid if all supplied fields are
  * uniquely named.
  */
-export function UniqueInputFieldNamesRule(
+export declare function UniqueInputFieldNamesRule(
   context: ASTValidationContext,
 ): ASTVisitor;

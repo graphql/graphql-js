@@ -1,9 +1,9 @@
 import type { GraphQLNamedType } from './definition';
 import { GraphQLScalarType } from './definition';
-export const GraphQLInt: GraphQLScalarType;
-export const GraphQLFloat: GraphQLScalarType;
-export const GraphQLString: GraphQLScalarType;
-export const GraphQLBoolean: GraphQLScalarType;
-export const GraphQLID: GraphQLScalarType;
-export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType>;
-export function isSpecifiedScalarType(type: GraphQLNamedType): boolean;
+export declare const GraphQLInt: GraphQLScalarType;
+export declare const GraphQLFloat: GraphQLScalarType;
+export declare const GraphQLString: GraphQLScalarType;
+export declare const GraphQLBoolean: GraphQLScalarType;
+export declare const GraphQLID: GraphQLScalarType;
+export declare const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType>;
+export declare function isSpecifiedScalarType(type: GraphQLNamedType): boolean;

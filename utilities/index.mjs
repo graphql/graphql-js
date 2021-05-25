@@ -76,3 +76,6 @@ export {
   findBreakingChanges,
   findDangerousChanges,
 } from './findBreakingChanges.mjs';
+
+/** Wrapper type that contains DocumentNode and types that can be deduced from it. */
+export { TypedQueryDocumentNode } from './typedQueryDocumentNode.mjs';

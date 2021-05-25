@@ -16,7 +16,6 @@ import {
  * Test if the given value is a GraphQL schema.
  */
 
-// eslint-disable-next-line no-redeclare
 export function isSchema(schema) {
   return instanceOf(schema, GraphQLSchema);
 }
@@ -27,6 +26,16 @@ export function assertSchema(schema) {
 
   return schema;
 }
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+
 /**
  * Schema Definition
  *
@@ -90,7 +99,6 @@ export function assertSchema(schema) {
  *     })
  *
  */
-
 export class GraphQLSchema {
   // Used as a cache for validateSchema().
   constructor(config) {
@@ -314,7 +322,7 @@ export class GraphQLSchema {
       extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined,
     };
-  } // $FlowFixMe[unsupported-syntax] Flow doesn't support computed properties yet
+  }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLSchema';

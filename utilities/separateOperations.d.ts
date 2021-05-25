@@ -6,6 +6,6 @@ import type { DocumentNode } from '../language/ast';
  * which contains a single operation as well the fragment definitions it
  * refers to.
  */
-export function separateOperations(
+export declare function separateOperations(
   documentAST: DocumentNode,
 ): ObjMap<DocumentNode>;

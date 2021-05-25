@@ -16,7 +16,7 @@ import type { ObjMap } from './ObjMap';
  *     )
  *
  */
-export function keyValMap<T, V>(
+export declare function keyValMap<T, V>(
   list: ReadonlyArray<T>,
   keyFn: (item: T) => string,
   valFn: (item: T) => V,

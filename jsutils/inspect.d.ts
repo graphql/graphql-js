@@ -1,4 +1,4 @@
 /**
  * Used to print values in error messages.
  */
-export function inspect(value: unknown): string;
+export declare function inspect(value: unknown): string;
