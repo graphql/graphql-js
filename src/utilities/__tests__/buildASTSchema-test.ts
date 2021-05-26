@@ -89,7 +89,7 @@ describe('Schema Builder', () => {
 
     const source = '{ add(x: 34, y: 55) }';
     const rootValue = {
-      add: ({ x, y }) => x + y,
+      add: ({ x, y }: { x: number; y: number }) => x + y,
     };
     expect(graphqlSync({ schema, source, rootValue })).to.deep.equal({
       data: { add: 89 },
@@ -1095,6 +1095,7 @@ describe('Schema Builder', () => {
   });
 
   it('Rejects invalid AST', () => {
+    // TODO ts-expect-error (First parameter expected to be DocumentNode)
     expect(() => buildASTSchema(null)).to.throw(
       'Must provide valid Document AST',
     );

@@ -561,9 +561,9 @@ function diff<T extends { name: string }>(
   removed: Array<T>;
   persisted: Array<[T, T]>;
 } {
-  const added = [];
-  const removed = [];
-  const persisted = [];
+  const added: Array<T> = [];
+  const removed: Array<T> = [];
+  const persisted: Array<[T, T]> = [];
 
   const oldMap = keyMap(oldArray, ({ name }) => name);
   const newMap = keyMap(newArray, ({ name }) => name);

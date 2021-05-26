@@ -54,7 +54,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     ? descriptions
     : '';
 
-  function inputDeprecation(str) {
+  function inputDeprecation(str: string) {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
 

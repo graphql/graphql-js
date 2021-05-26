@@ -379,7 +379,7 @@ export function extendSchemaImpl(
     return {
       ...field,
       type: replaceType(field.type),
-      args: mapValue(field.args, extendArg),
+      args: field.args && mapValue(field.args, extendArg),
     };
   }
 
@@ -393,9 +393,9 @@ export function extendSchemaImpl(
   function getOperationTypes(
     nodes: ReadonlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
   ): {
-    query: Maybe<GraphQLObjectType>;
-    mutation: Maybe<GraphQLObjectType>;
-    subscription: Maybe<GraphQLObjectType>;
+    query?: Maybe<GraphQLObjectType>;
+    mutation?: Maybe<GraphQLObjectType>;
+    subscription?: Maybe<GraphQLObjectType>;
   } {
     const opTypes = {};
     for (const node of nodes) {
@@ -403,14 +403,14 @@ export function extendSchemaImpl(
       const operationTypesNodes = node.operationTypes ?? [];
 
       for (const operationType of operationTypesNodes) {
+        // Note: While this could make early assertions to get the correctly
+        // typed values below, that would throw immediately while type system
+        // validation with validateSchema() will produce more actionable results.
+        // TODO ts-expect-error
         opTypes[operationType.operation] = getNamedType(operationType.type);
       }
     }
 
-    // Note: While this could make early assertions to get the correctly
-    // typed values below, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    // @ts-expect-error
     return opTypes;
   }
 
@@ -656,8 +656,7 @@ export function extendSchemaImpl(
 }
 
 const stdTypeMap = keyMap(
-  // @ts-expect-error FIXME: TS Conversion
-  specifiedScalarTypes.concat(introspectionTypes),
+  [...specifiedScalarTypes, ...introspectionTypes],
   (type) => type.name,
 );
 

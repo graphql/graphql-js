@@ -58,7 +58,7 @@ describe('visitWithTypeInfo', () => {
     `);
     const typeInfo = new TypeInfo(schema);
 
-    const rootTypes = {};
+    const rootTypes: any = {};
     visit(
       ast,
       visitWithTypeInfo(typeInfo, {
@@ -80,7 +80,7 @@ describe('visitWithTypeInfo', () => {
       '{ human(id: 4) { name, pets { ... { name } }, unknown } }',
     );
 
-    const visitorArgs = [];
+    const visitorArgs: Array<any> = [];
     visit(ast, {
       enter(...args) {
         visitorArgs.push(['enter', ...args]);
@@ -90,7 +90,7 @@ describe('visitWithTypeInfo', () => {
       },
     });
 
-    const wrappedVisitorArgs = [];
+    const wrappedVisitorArgs: Array<any> = [];
     const typeInfo = new TypeInfo(testSchema);
     visit(
       ast,
@@ -108,7 +108,7 @@ describe('visitWithTypeInfo', () => {
   });
 
   it('maintains type info during visit', () => {
-    const visited = [];
+    const visited: Array<any> = [];
 
     const typeInfo = new TypeInfo(testSchema);
 
@@ -193,7 +193,7 @@ describe('visitWithTypeInfo', () => {
   });
 
   it('maintains type info during edit', () => {
-    const visited = [];
+    const visited: Array<any> = [];
     const typeInfo = new TypeInfo(testSchema);
 
     const ast = parse('{ human(id: 4) { name, pets }, alien }');
@@ -314,7 +314,7 @@ describe('visitWithTypeInfo', () => {
 
     const typeInfo = new TypeInfo(testSchema, complexInputType);
 
-    const visited = [];
+    const visited: Array<any> = [];
     visit(
       ast,
       visitWithTypeInfo(typeInfo, {
@@ -363,7 +363,7 @@ describe('visitWithTypeInfo', () => {
     const operationNode = ast.definitions[0];
     invariant(operationNode.kind === 'OperationDefinition');
 
-    const visited = [];
+    const visited: Array<any> = [];
     visit(
       operationNode.selectionSet,
       visitWithTypeInfo(typeInfo, {

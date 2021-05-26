@@ -1,4 +1,4 @@
-import type { DocumentNode } from '../language/ast';
+import type { DocumentNode, DefinitionNode } from '../language/ast';
 
 /**
  * Provided a collection of ASTs, presumably each from different files,
@@ -8,9 +8,9 @@ import type { DocumentNode } from '../language/ast';
 export function concatAST(
   documents: ReadonlyArray<DocumentNode>,
 ): DocumentNode {
-  let definitions = [];
+  const definitions: Array<DefinitionNode> = [];
   for (const doc of documents) {
-    definitions = definitions.concat(doc.definitions);
+    definitions.push(...doc.definitions);
   }
   return { kind: 'Document', definitions };
 }

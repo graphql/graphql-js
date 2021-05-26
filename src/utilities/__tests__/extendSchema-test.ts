@@ -1143,6 +1143,7 @@ describe('extendSchema', () => {
   it('Rejects invalid AST', () => {
     const schema = new GraphQLSchema({});
 
+    // TODO ts-expect-error (Second argument expects DocumentNode)
     expect(() => extendSchema(schema, null)).to.throw(
       'Must provide valid Document AST',
     );

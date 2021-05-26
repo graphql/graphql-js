@@ -95,7 +95,7 @@ function coerceInputValueImpl(
       return;
     }
 
-    const coercedValue = {};
+    const coercedValue: any = {};
     const fieldDefs = type.getFields();
 
     for (const field of Object.values(fieldDefs)) {
