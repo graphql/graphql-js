@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { DirectiveNode } from '../../language/ast';
 import { parse } from '../../language/parser';
 
 import { TypeInfo } from '../../utilities/TypeInfo';
@@ -15,6 +16,7 @@ import { testSchema } from './harness';
 
 describe('Validate: Supports full validation', () => {
   it('rejects invalid documents', () => {
+    // TODO ts-expect-error (expects a DocumentNode as a second parameter)
     expect(() => validate(testSchema, null)).to.throw('Must provide document.');
   });
 
@@ -96,7 +98,7 @@ describe('Validate: Supports full validation', () => {
 
     function customRule(context: ValidationContext) {
       return {
-        Directive(node) {
+        Directive(node: DirectiveNode) {
           const directiveDef = context.getDirective();
           const error = new GraphQLError(
             'Reporting directive: ' + String(directiveDef),

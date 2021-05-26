@@ -45,7 +45,7 @@ export function validate(
   assertValidSchema(schema);
 
   const abortObj = Object.freeze({});
-  const errors = [];
+  const errors: Array<GraphQLError> = [];
   const context = new ValidationContext(
     schema,
     documentAST,
@@ -87,7 +87,7 @@ export function validateSDL(
   schemaToExtend?: Maybe<GraphQLSchema>,
   rules: ReadonlyArray<SDLValidationRule> = specifiedSDLRules,
 ): ReadonlyArray<GraphQLError> {
-  const errors = [];
+  const errors: Array<GraphQLError> = [];
   const context = new SDLValidationContext(
     documentAST,
     schemaToExtend,
