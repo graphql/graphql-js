@@ -33,7 +33,9 @@ describe('mapAsyncIterator', () => {
 
       next(): Promise<IteratorResult<number, void>> {
         if (items.length > 0) {
-          return Promise.resolve({ done: false, value: items.shift() });
+          const value = items[0];
+          items.shift();
+          return Promise.resolve({ done: false, value });
         }
 
         return Promise.resolve({ done: true, value: undefined });
@@ -105,8 +107,7 @@ describe('mapAsyncIterator', () => {
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
 
     // Early return
-    // @ts-expect-error FIXME: TS Conversion
-    expect(await doubles.return()).to.deep.equal({
+    expect(await doubles.return('')).to.deep.equal({
       value: 'The End',
       done: true,
     });
@@ -130,9 +131,11 @@ describe('mapAsyncIterator', () => {
         return this;
       },
       next() {
+        const value = items[0];
+        items.shift();
         return Promise.resolve({
           done: items.length === 0,
-          value: items.shift(),
+          value,
         });
       },
     };
@@ -143,8 +146,7 @@ describe('mapAsyncIterator', () => {
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
 
     // Early return
-    // @ts-expect-error FIXME: TS Conversion
-    expect(await doubles.return()).to.deep.equal({
+    expect(await doubles.return(0)).to.deep.equal({
       value: undefined,
       done: true,
     });
@@ -194,9 +196,11 @@ describe('mapAsyncIterator', () => {
         return this;
       },
       next() {
+        const value = items[0];
+        items.shift();
         return Promise.resolve({
           done: items.length === 0,
-          value: items.shift(),
+          value,
         });
       },
     };
