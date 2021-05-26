@@ -1,5 +1,6 @@
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { VariableDefinitionNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { ValidationContext } from '../ValidationContext';
@@ -11,7 +12,7 @@ import type { ValidationContext } from '../ValidationContext';
  * are used, either directly or within a spread fragment.
  */
 export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
-  let variableDefs = [];
+  let variableDefs: Array<VariableDefinitionNode> = [];
 
   return {
     OperationDefinition: {
