@@ -68,13 +68,12 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
-    // @ts-expect-error
-    return typeMap[type.name];
+    return typeMap[type.name] as T;
   }
 
-  function replaceMaybeType<T extends Maybe<GraphQLNamedType>>(
-    maybeType: T,
-  ): T {
+  function replaceMaybeType<T extends GraphQLNamedType>(
+    maybeType: Maybe<T>,
+  ): Maybe<T> {
     return maybeType && replaceNamedType(maybeType);
   }
 
@@ -98,7 +97,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
-      args: sortArgs(field.args),
+      args: field.args && sortArgs(field.args),
     }));
   }
 

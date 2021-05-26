@@ -36,6 +36,5 @@ export function introspectionFromSchema(
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
   const result = executeSync({ schema, document });
   invariant(!result.errors && result.data);
-  // @ts-expect-error FIXME
-  return result.data;
+  return result.data as any;
 }

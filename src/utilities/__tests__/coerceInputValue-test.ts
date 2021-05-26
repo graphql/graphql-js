@@ -15,18 +15,20 @@ import { coerceInputValue } from '../coerceInputValue';
 
 interface CoerceResult {
   value: unknown;
-  errors: ReadonlyArray<{
-    path: ReadonlyArray<string | number>;
-    value: unknown;
-    error: string;
-  }>;
+  errors: ReadonlyArray<CoerceError>;
+}
+
+interface CoerceError {
+  path: ReadonlyArray<string | number>;
+  value: unknown;
+  error: string;
 }
 
 function coerceValue(
   inputValue: unknown,
   type: GraphQLInputType,
 ): CoerceResult {
-  const errors = [];
+  const errors: Array<CoerceError> = [];
   const value = coerceInputValue(
     inputValue,
     type,
@@ -82,7 +84,7 @@ describe('coerceInputValue', () => {
   describe('for GraphQLScalar', () => {
     const TestScalar = new GraphQLScalarType({
       name: 'TestScalar',
-      parseValue(input: { error?: string; value?: unknown }) {
+      parseValue(input: any) {
         if (input.error != null) {
           throw new Error(input.error);
         }
@@ -272,7 +274,7 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLInputObject with default value', () => {
-    const makeTestInputObject = (defaultValue) =>
+    const makeTestInputObject = (defaultValue: any) =>
       new GraphQLInputObjectType({
         name: 'TestInputObject',
         fields: {
