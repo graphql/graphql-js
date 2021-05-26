@@ -42,7 +42,8 @@ const InboxType = new GraphQLObjectType({
     },
     unread: {
       type: GraphQLInt,
-      resolve: (inbox) => inbox.emails.filter((email) => email.unread).length,
+      resolve: (inbox) =>
+        inbox.emails.filter((email: any) => email.unread).length,
     },
     emails: { type: new GraphQLList(EmailType) },
   },
@@ -103,7 +104,7 @@ function createSubscription(pubsub: SimplePubSub<Email>) {
     },
   ];
 
-  const data = {
+  const data: any = {
     inbox: { emails },
     // FIXME: we shouldn't use mapAsyncIterator here since it makes tests way more complex
     importantEmail: pubsub.getSubscriber((newEmail) => {
@@ -122,7 +123,7 @@ function createSubscription(pubsub: SimplePubSub<Email>) {
 }
 
 async function expectPromise(promise: Promise<unknown>) {
-  let caughtError;
+  let caughtError: Error;
 
   try {
     await promise;
@@ -136,7 +137,7 @@ async function expectPromise(promise: Promise<unknown>) {
     toReject() {
       expect(caughtError).to.be.an.instanceOf(Error);
     },
-    toRejectWith(message) {
+    toRejectWith(message: string) {
       expect(caughtError).to.be.an.instanceOf(Error);
       expect(caughtError).to.have.property('message', message);
     },
@@ -312,6 +313,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
+    // TODO ts-expect-error (schema must not be null)
     (await expectPromise(subscribe({ schema: null, document }))).toRejectWith(
       'Expected null to be a GraphQL schema.',
     );
@@ -321,6 +323,7 @@ describe('Subscription Initialization Phase', () => {
       'Expected undefined to be a GraphQL schema.',
     );
 
+    // TODO ts-expect-error (document must not be null)
     (await expectPromise(subscribe({ schema, document: null }))).toRejectWith(
       'Must provide document.',
     );

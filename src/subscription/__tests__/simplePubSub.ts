@@ -1,3 +1,5 @@
+import { invariant } from '../../jsutils/invariant';
+
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
  * PubSub system for tests.
@@ -18,7 +20,7 @@ export class SimplePubSub<T> {
 
   getSubscriber<R>(transform: (value: T) => R): AsyncGenerator<R, void, void> {
     const pullQueue: Array<(result: IteratorResult<R, void>) => void> = [];
-    const pushQueue = [];
+    const pushQueue: Array<R> = [];
     let listening = true;
     this._subscribers.add(pushValue);
 
@@ -33,13 +35,15 @@ export class SimplePubSub<T> {
     };
 
     return {
-      next() {
+      next(): Promise<IteratorResult<R, void>> {
         if (!listening) {
           return Promise.resolve({ value: undefined, done: true });
         }
 
         if (pushQueue.length > 0) {
-          return Promise.resolve({ value: pushQueue.shift(), done: false });
+          const value = pushQueue[0];
+          pushQueue.shift();
+          return Promise.resolve({ value, done: false });
         }
         return new Promise((resolve) => pullQueue.push(resolve));
       },
@@ -59,7 +63,9 @@ export class SimplePubSub<T> {
     function pushValue(event: T): void {
       const value: R = transform(event);
       if (pullQueue.length > 0) {
-        pullQueue.shift()({ value, done: false });
+        const receiver = pullQueue.shift();
+        invariant(receiver);
+        receiver({ value, done: false });
       } else {
         pushQueue.push(value);
       }
