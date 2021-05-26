@@ -659,7 +659,7 @@ export type GraphQLScalarValueParser<TInternal> = (
 
 export type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
-  variables: Maybe<ObjMap<unknown>>,
+  variables?: Maybe<ObjMap<unknown>>,
 ) => Maybe<TInternal>;
 
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
@@ -758,8 +758,8 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
-    this._fields = defineFieldMap.bind(undefined, config);
-    this._interfaces = defineInterfaces.bind(undefined, config);
+    this._fields = () => defineFieldMap(config);
+    this._interfaces = () => defineInterfaces(config);
     devAssert(typeof config.name === 'string', 'Must provide name.');
     devAssert(
       config.isTypeOf == null || typeof config.isTypeOf === 'function',
@@ -810,8 +810,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
 
 function defineInterfaces(
   config: Readonly<
-    | GraphQLObjectTypeConfig<unknown, unknown>
-    | GraphQLInterfaceTypeConfig<unknown, unknown>
+    GraphQLObjectTypeConfig<any, any> | GraphQLInterfaceTypeConfig<any, any>
   >,
 ): Array<GraphQLInterfaceType> {
   const interfaces = resolveArrayThunk(config.interfaces ?? []);
@@ -834,7 +833,6 @@ function defineFieldMap<TSource, TContext>(
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
   );
 
-  // @ts-expect-error FIXME: TS Conversion
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     devAssert(
       isPlainObj(fieldConfig),
@@ -1048,7 +1046,7 @@ export interface GraphQLField<
   name: string;
   description: Maybe<string>;
   type: GraphQLOutputType;
-  args: Array<GraphQLArgument>;
+  args: ReadonlyArray<GraphQLArgument>;
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   deprecationReason: Maybe<string>;

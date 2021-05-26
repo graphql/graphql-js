@@ -27,7 +27,7 @@ describe('Type System: Schema', () => {
       },
     });
 
-    const BlogAuthor = new GraphQLObjectType({
+    const BlogAuthor: GraphQLObjectType = new GraphQLObjectType({
       name: 'Author',
       fields: () => ({
         id: { type: GraphQLString },
@@ -40,7 +40,7 @@ describe('Type System: Schema', () => {
       }),
     });
 
-    const BlogArticle = new GraphQLObjectType({
+    const BlogArticle: GraphQLObjectType = new GraphQLObjectType({
       name: 'Article',
       fields: {
         id: { type: GraphQLString },

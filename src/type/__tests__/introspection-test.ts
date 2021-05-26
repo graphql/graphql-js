@@ -6,6 +6,8 @@ import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 
 import { graphqlSync } from '../../graphql';
 
+import type { GraphQLResolveInfo } from '../definition';
+
 describe('Introspection', () => {
   it('executes an introspection query', () => {
     const schema = buildSchema(`
@@ -1566,12 +1568,17 @@ describe('Introspection', () => {
     });
 
     // istanbul ignore next (Called only to fail test)
-    function fieldResolver(_1, _2, _3, info): never {
+    function fieldResolver(
+      _1: any,
+      _2: any,
+      _3: any,
+      info: GraphQLResolveInfo,
+    ): never {
       expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
     // istanbul ignore next (Called only to fail test)
-    function typeResolver(_1, _2, info): never {
+    function typeResolver(_1: any, _2: any, info: GraphQLResolveInfo): never {
       expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
 

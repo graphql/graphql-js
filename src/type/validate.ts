@@ -9,6 +9,12 @@ import type {
   NamedTypeNode,
   DirectiveNode,
   OperationTypeNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
+  InterfaceTypeDefinitionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeDefinitionNode,
+  UnionTypeExtensionNode,
 } from '../language/ast';
 
 import { isValidNameError } from '../utilities/assertValidName';
@@ -21,6 +27,7 @@ import type {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInputField,
 } from './definition';
 import { assertSchema } from './schema';
 import { isIntrospectionType } from './introspection';
@@ -85,7 +92,7 @@ class SchemaValidationContext {
   readonly _errors: Array<GraphQLError>;
   readonly schema: GraphQLSchema;
 
-  constructor(schema) {
+  constructor(schema: GraphQLSchema) {
     this._errors = [];
     this.schema = schema;
   }
@@ -94,7 +101,9 @@ class SchemaValidationContext {
     message: string,
     nodes?: ReadonlyArray<Maybe<ASTNode>> | Maybe<ASTNode>,
   ): void {
-    const _nodes = Array.isArray(nodes) ? nodes.filter(Boolean) : nodes;
+    const _nodes = Array.isArray(nodes)
+      ? (nodes.filter(Boolean) as ReadonlyArray<ASTNode>)
+      : (nodes as Maybe<ASTNode>);
     this.addError(new GraphQLError(message, _nodes));
   }
 
@@ -117,8 +126,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
       `Query root type must be Object type, it cannot be ${inspect(
         queryType,
       )}.`,
-      // @ts-expect-error FIXME: TS Conversion
-      getOperationTypeNode(schema, 'query') ?? queryType.astNode,
+      getOperationTypeNode(schema, 'query') ?? (queryType as any).astNode,
     );
   }
 
@@ -127,8 +135,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     context.reportError(
       'Mutation root type must be Object type if provided, it cannot be ' +
         `${inspect(mutationType)}.`,
-      // @ts-expect-error FIXME: TS Conversion
-      getOperationTypeNode(schema, 'mutation') ?? mutationType.astNode,
+      getOperationTypeNode(schema, 'mutation') ?? (mutationType as any).astNode,
     );
   }
 
@@ -137,8 +144,8 @@ function validateRootTypes(context: SchemaValidationContext): void {
     context.reportError(
       'Subscription root type must be Object type if provided, it cannot be ' +
         `${inspect(subscriptionType)}.`,
-      // @ts-expect-error FIXME: TS Conversion
-      getOperationTypeNode(schema, 'subscription') ?? subscriptionType.astNode,
+      getOperationTypeNode(schema, 'subscription') ??
+        (subscriptionType as any).astNode,
     );
   }
 }
@@ -148,13 +155,9 @@ function getOperationTypeNode(
   operation: OperationTypeNode,
 ): Maybe<ASTNode> {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return (
-    [schema.astNode]
-      // @ts-expect-error FIXME: TS Conversion
-      .concat(schema.extensionASTNodes)
-      .flatMap((schemaNode) => schemaNode?.operationTypes ?? [])
-      .find((operationNode) => operationNode.operation === operation)?.type
-  );
+  return [schema.astNode, ...schema.extensionASTNodes]
+    .flatMap((schemaNode) => schemaNode?.operationTypes ?? [])
+    .find((operationNode) => operationNode.operation === operation)?.type;
 }
 
 function validateDirectives(context: SchemaValidationContext): void {
@@ -163,8 +166,7 @@ function validateDirectives(context: SchemaValidationContext): void {
     if (!isDirective(directive)) {
       context.reportError(
         `Expected directive but got: ${inspect(directive)}.`,
-        // @ts-expect-error FIXME: TS Conversion
-        directive?.astNode,
+        (directive as any)?.astNode,
       );
       continue;
     }
@@ -218,8 +220,7 @@ function validateTypes(context: SchemaValidationContext): void {
     if (!isNamedType(type)) {
       context.reportError(
         `Expected GraphQL named type but got: ${inspect(type)}.`,
-        // @ts-expect-error FIXME: TS Conversion
-        type.astNode,
+        (type as any).astNode,
       );
       continue;
     }
@@ -559,7 +560,7 @@ function createInputObjectCircularRefsValidator(
   const visitedTypes = Object.create(null);
 
   // Array of types nodes used to produce meaningful errors
-  const fieldPath = [];
+  const fieldPath: Array<GraphQLInputField> = [];
 
   // Position in the type path
   const fieldPathIndexByTypeName = Object.create(null);
@@ -607,8 +608,12 @@ function getAllImplementsInterfaceNodes(
   iface: GraphQLInterfaceType,
 ): ReadonlyArray<NamedTypeNode> {
   const { astNode, extensionASTNodes } = type;
-  const nodes =
-    astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
+  const nodes: ReadonlyArray<
+    | ObjectTypeDefinitionNode
+    | ObjectTypeExtensionNode
+    | InterfaceTypeDefinitionNode
+    | InterfaceTypeExtensionNode
+  > = astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
 
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return nodes
@@ -621,7 +626,7 @@ function getUnionMemberTypeNodes(
   typeName: string,
 ): Maybe<ReadonlyArray<NamedTypeNode>> {
   const { astNode, extensionASTNodes } = union;
-  const nodes =
+  const nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode> =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
 
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
