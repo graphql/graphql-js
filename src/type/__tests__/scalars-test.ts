@@ -507,7 +507,7 @@ describe('Type System: Specified scalar types', () => {
         serialize({
           value: true,
           valueOf() {
-            return this.value;
+            return (this as { value: boolean }).value;
           },
         }),
       ).to.equal(true);
