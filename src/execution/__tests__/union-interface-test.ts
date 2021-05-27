@@ -65,14 +65,14 @@ const NamedType = new GraphQLInterfaceType({
   },
 });
 
-const LifeType = new GraphQLInterfaceType({
+const LifeType: GraphQLInterfaceType = new GraphQLInterfaceType({
   name: 'Life',
   fields: () => ({
     progeny: { type: new GraphQLList(LifeType) },
   }),
 });
 
-const MammalType = new GraphQLInterfaceType({
+const MammalType: GraphQLInterfaceType = new GraphQLInterfaceType({
   name: 'Mammal',
   interfaces: [LifeType],
   fields: () => ({
@@ -82,7 +82,7 @@ const MammalType = new GraphQLInterfaceType({
   }),
 });
 
-const DogType = new GraphQLObjectType({
+const DogType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Dog',
   interfaces: [MammalType, LifeType, NamedType],
   fields: () => ({
@@ -95,7 +95,7 @@ const DogType = new GraphQLObjectType({
   isTypeOf: (value) => value instanceof Dog,
 });
 
-const CatType = new GraphQLObjectType({
+const CatType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Cat',
   interfaces: [MammalType, LifeType, NamedType],
   fields: () => ({
@@ -125,7 +125,7 @@ const PetType = new GraphQLUnionType({
   },
 });
 
-const PersonType = new GraphQLObjectType({
+const PersonType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Person',
   interfaces: [NamedType, MammalType, LifeType],
   fields: () => ({
@@ -503,7 +503,7 @@ describe('Execute: Union and intersection types', () => {
     let encounteredSchema;
     let encounteredRootValue;
 
-    const NamedType2 = new GraphQLInterfaceType({
+    const NamedType2: GraphQLInterfaceType = new GraphQLInterfaceType({
       name: 'Named',
       fields: {
         name: { type: GraphQLString },
@@ -516,7 +516,7 @@ describe('Execute: Union and intersection types', () => {
       },
     });
 
-    const PersonType2 = new GraphQLObjectType({
+    const PersonType2: GraphQLObjectType = new GraphQLObjectType({
       name: 'Person',
       interfaces: [NamedType2],
       fields: {

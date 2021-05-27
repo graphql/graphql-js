@@ -29,7 +29,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       },
     });
 
-    const BlogAuthor = new GraphQLObjectType({
+    const BlogAuthor: GraphQLObjectType = new GraphQLObjectType({
       name: 'Author',
       fields: () => ({
         id: { type: GraphQLString },
