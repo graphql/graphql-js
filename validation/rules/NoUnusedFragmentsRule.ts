@@ -1,4 +1,8 @@
 import { GraphQLError } from '../../error/GraphQLError.ts';
+import type {
+  FragmentDefinitionNode,
+  OperationDefinitionNode,
+} from '../../language/ast.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 import type { ASTValidationContext } from '../ValidationContext.ts';
 /**
@@ -11,8 +15,8 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
 export function NoUnusedFragmentsRule(
   context: ASTValidationContext,
 ): ASTVisitor {
-  const operationDefs = [];
-  const fragmentDefs = [];
+  const operationDefs: Array<OperationDefinitionNode> = [];
+  const fragmentDefs: Array<FragmentDefinitionNode> = [];
   return {
     OperationDefinition(node) {
       operationDefs.push(node);

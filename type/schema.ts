@@ -278,7 +278,7 @@ export class GraphQLSchema {
     return this._typeMap;
   }
 
-  getType(name: string): Maybe<GraphQLNamedType> {
+  getType(name: string): GraphQLNamedType | undefined {
     return this.getTypeMap()[name];
   }
 

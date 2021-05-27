@@ -1,4 +1,5 @@
 import { GraphQLError } from '../../error/GraphQLError.ts';
+import type { VariableDefinitionNode } from '../../language/ast.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**
@@ -9,7 +10,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
  */
 
 export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
-  let variableDefs = [];
+  let variableDefs: Array<VariableDefinitionNode> = [];
   return {
     OperationDefinition: {
       enter() {

@@ -1,5 +1,6 @@
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { ASTNode } from './ast.ts';
+import type { ASTReducer } from './visitor.ts';
 import { visit } from './visitor.ts';
 import { printBlockString } from './blockString.ts';
 /**
@@ -10,9 +11,8 @@ import { printBlockString } from './blockString.ts';
 export function print(ast: ASTNode): string {
   return visit(ast, printDocASTReducer);
 }
-const MAX_LINE_LENGTH = 80; // TODO: provide better type coverage in future
-
-const printDocASTReducer: any = {
+const MAX_LINE_LENGTH = 80;
+const printDocASTReducer: ASTReducer<string> = {
   Name: {
     leave: (node) => node.value,
   },
@@ -293,7 +293,10 @@ const printDocASTReducer: any = {
  * print all items together separated by separator if provided
  */
 
-function join(maybeArray: Maybe<Array<string>>, separator = ''): string {
+function join(
+  maybeArray: Maybe<ReadonlyArray<string | undefined>>,
+  separator = '',
+): string {
   return maybeArray?.filter((x) => x).join(separator) ?? '';
 }
 /**
@@ -301,7 +304,7 @@ function join(maybeArray: Maybe<Array<string>>, separator = ''): string {
  * indented "{ }" block.
  */
 
-function block(array: Maybe<Array<string>>): string {
+function block(array: Maybe<ReadonlyArray<string | undefined>>): string {
   return wrap('{\n', indent(join(array, '\n')), '\n}');
 }
 /**
@@ -322,7 +325,7 @@ function indent(str: string): string {
   return wrap('  ', str.replace(/\n/g, '\n  '));
 }
 
-function hasMultilineItems(maybeArray: Maybe<Array<string>>): boolean {
+function hasMultilineItems(maybeArray: Maybe<ReadonlyArray<string>>): boolean {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return maybeArray?.some((str) => str.includes('\n')) ?? false;
 }

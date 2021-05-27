@@ -81,9 +81,12 @@ export class Token {
   readonly column: number;
   /**
    * For non-punctuation tokens, represents the interpreted value of the token.
+   *
+   * Note: is undefined for punctuation tokens, but typed as string for
+   * convenience in the parser.
    */
 
-  readonly value?: string;
+  readonly value: string;
   /**
    * Tokens exist as nodes in a double-linked-list amongst all tokens
    * including ignored tokens. <SOF> is always the first node and <EOF>
@@ -107,7 +110,7 @@ export class Token {
     this.end = end;
     this.line = line;
     this.column = column;
-    this.value = value;
+    this.value = value as string;
     this.prev = prev;
     this.next = null;
   }
@@ -130,9 +133,8 @@ export class Token {
  * @internal
  */
 
-export function isNode(maybeNode: unknown): maybeNode is ASTNode {
-  // eslint-disable-next-line @typescript-eslint/dot-notation
-  return typeof maybeNode?.['kind'] === 'string';
+export function isNode(maybeNode: any): maybeNode is ASTNode {
+  return typeof maybeNode?.kind === 'string';
 }
 /**
  * The list of all possible AST node types.

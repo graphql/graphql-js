@@ -33,7 +33,6 @@ export function introspectionFromSchema(
     schema,
     document,
   });
-  (!result.errors && result.data) || invariant(false); // @ts-expect-error FIXME
-
-  return result.data;
+  (!result.errors && result.data) || invariant(false);
+  return result.data as any;
 }

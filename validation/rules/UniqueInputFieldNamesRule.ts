@@ -1,4 +1,7 @@
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
+import { invariant } from '../../jsutils/invariant.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
+import type { NameNode } from '../../language/ast.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 import type { ASTValidationContext } from '../ValidationContext.ts';
 /**
@@ -11,8 +14,8 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
 export function UniqueInputFieldNamesRule(
   context: ASTValidationContext,
 ): ASTVisitor {
-  const knownNameStack = [];
-  let knownNames = Object.create(null);
+  const knownNameStack: Array<ObjMap<NameNode>> = [];
+  let knownNames: ObjMap<NameNode> = Object.create(null);
   return {
     ObjectValue: {
       enter() {
@@ -21,7 +24,9 @@ export function UniqueInputFieldNamesRule(
       },
 
       leave() {
-        knownNames = knownNameStack.pop();
+        const prevKnownNames = knownNameStack.pop();
+        prevKnownNames || invariant(false);
+        knownNames = prevKnownNames;
       },
     },
 

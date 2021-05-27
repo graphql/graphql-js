@@ -18,19 +18,21 @@ export function locatedError(
     rawOriginalError instanceof Error
       ? rawOriginalError
       : new Error('Unexpected error value: ' + inspect(rawOriginalError)); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
-  // @ts-expect-error FIXME: TS Conversion
 
-  if (Array.isArray(originalError.path)) {
-    // @ts-expect-error
+  if (isLocatedGraphQLError(originalError)) {
     return originalError;
   }
 
   return new GraphQLError(
-    originalError.message, // @ts-expect-error FIXME
-    originalError.nodes ?? nodes, // @ts-expect-error FIXME
-    originalError.source, // @ts-expect-error FIXME
-    originalError.positions,
+    originalError.message,
+    (originalError as GraphQLError).nodes ?? nodes,
+    (originalError as GraphQLError).source,
+    (originalError as GraphQLError).positions,
     path,
     originalError,
   );
+}
+
+function isLocatedGraphQLError(error: any): error is GraphQLError {
+  return Array.isArray(error.path);
 }

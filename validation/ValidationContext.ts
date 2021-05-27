@@ -38,14 +38,11 @@ interface VariableUsage {
 export class ASTValidationContext {
   private _ast: DocumentNode;
   private _onError: (error: GraphQLError) => void;
-  private _fragments: Maybe<ObjMap<FragmentDefinitionNode>>;
-  private _fragmentSpreads: Map<
-    SelectionSetNode,
-    ReadonlyArray<FragmentSpreadNode>
-  >;
+  private _fragments: ObjMap<FragmentDefinitionNode> | undefined;
+  private _fragmentSpreads: Map<SelectionSetNode, Array<FragmentSpreadNode>>;
   private _recursivelyReferencedFragments: Map<
     OperationDefinitionNode,
-    ReadonlyArray<FragmentDefinitionNode>
+    Array<FragmentDefinitionNode>
   >;
 
   constructor(ast: DocumentNode, onError: (error: GraphQLError) => void) {
@@ -65,17 +62,23 @@ export class ASTValidationContext {
   }
 
   getFragment(name: string): Maybe<FragmentDefinitionNode> {
-    if (!this._fragments) {
-      const fragments = (this._fragments = Object.create(null));
+    let fragments: ObjMap<FragmentDefinitionNode>;
+
+    if (this._fragments) {
+      fragments = this._fragments;
+    } else {
+      fragments = Object.create(null);
 
       for (const defNode of this.getDocument().definitions) {
         if (defNode.kind === Kind.FRAGMENT_DEFINITION) {
           fragments[defNode.name.value] = defNode;
         }
       }
+
+      this._fragments = fragments;
     }
 
-    return this._fragments[name];
+    return fragments[name];
   }
 
   getFragmentSpreads(
@@ -86,13 +89,11 @@ export class ASTValidationContext {
     if (!spreads) {
       spreads = [];
       const setsToVisit: Array<SelectionSetNode> = [node];
+      let set: SelectionSetNode | undefined;
 
-      while (setsToVisit.length !== 0) {
-        const set = setsToVisit.pop();
-
+      while ((set = setsToVisit.pop())) {
         for (const selection of set.selections) {
           if (selection.kind === Kind.FRAGMENT_SPREAD) {
-            // @ts-expect-error FIXME: TS Conversion
             spreads.push(selection);
           } else if (selection.selectionSet) {
             setsToVisit.push(selection.selectionSet);
@@ -115,10 +116,9 @@ export class ASTValidationContext {
       fragments = [];
       const collectedNames = Object.create(null);
       const nodesToVisit: Array<SelectionSetNode> = [operation.selectionSet];
+      let node: SelectionSetNode | undefined;
 
-      while (nodesToVisit.length !== 0) {
-        const node = nodesToVisit.pop();
-
+      while ((node = nodesToVisit.pop())) {
         for (const spread of this.getFragmentSpreads(node)) {
           const fragName = spread.name.value;
 
@@ -127,7 +127,6 @@ export class ASTValidationContext {
             const fragment = this.getFragment(fragName);
 
             if (fragment) {
-              // @ts-expect-error FIXME: TS Conversion
               fragments.push(fragment);
               nodesToVisit.push(fragment.selectionSet);
             }
@@ -192,7 +191,7 @@ export class ValidationContext extends ASTValidationContext {
     let usages = this._variableUsages.get(node);
 
     if (!usages) {
-      const newUsages = [];
+      const newUsages: Array<VariableUsage> = [];
       const typeInfo = new TypeInfo(this._schema);
       visit(
         node,

@@ -8,7 +8,6 @@ export function mapAsyncIterator<T, U, R = undefined>(
   iterable: AsyncGenerator<T, R, void> | AsyncIterable<T>,
   callback: (value: T) => PromiseOrValue<U>,
 ): AsyncGenerator<U, R, void> {
-  // $FlowIssue[incompatible-use]
   const iterator = iterable[Symbol.asyncIterator]();
 
   async function mapResult(
@@ -19,7 +18,6 @@ export function mapAsyncIterator<T, U, R = undefined>(
     }
 
     try {
-      // @ts-expect-error FIXME: TS Conversion
       return {
         value: await callback(result.value),
         done: false,
@@ -44,10 +42,11 @@ export function mapAsyncIterator<T, U, R = undefined>(
     },
 
     async return(): Promise<IteratorResult<U, R>> {
+      // If iterator.return() does not exist, then type R must be undefined.
       return typeof iterator.return === 'function'
         ? mapResult(await iterator.return())
         : {
-            value: undefined,
+            value: undefined as any,
             done: true,
           };
     },

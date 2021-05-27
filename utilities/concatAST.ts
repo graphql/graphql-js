@@ -1,4 +1,4 @@
-import type { DocumentNode } from '../language/ast.ts';
+import type { DocumentNode, DefinitionNode } from '../language/ast.ts';
 /**
  * Provided a collection of ASTs, presumably each from different files,
  * concatenate the ASTs together into batched AST, useful for validating many
@@ -8,10 +8,10 @@ import type { DocumentNode } from '../language/ast.ts';
 export function concatAST(
   documents: ReadonlyArray<DocumentNode>,
 ): DocumentNode {
-  let definitions = [];
+  const definitions: Array<DefinitionNode> = [];
 
   for (const doc of documents) {
-    definitions = definitions.concat(doc.definitions);
+    definitions.push(...doc.definitions);
   }
 
   return {

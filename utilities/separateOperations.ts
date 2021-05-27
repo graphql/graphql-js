@@ -80,7 +80,7 @@ function collectTransitiveDependencies(
 }
 
 function collectDependencies(selectionSet: SelectionSetNode): Array<string> {
-  const dependencies = [];
+  const dependencies: Array<string> = [];
   visit(selectionSet, {
     FragmentSpread(node) {
       dependencies.push(node.name.value);

@@ -1,3 +1,4 @@
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { inspect } from '../../jsutils/inspect.ts';
 import { invariant } from '../../jsutils/invariant.ts';
 import { didYouMean } from '../../jsutils/didYouMean.ts';
@@ -5,7 +6,7 @@ import { suggestionList } from '../../jsutils/suggestionList.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type { KindEnum } from '../../language/kinds.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
-import type { TypeExtensionNode } from '../../language/ast.ts';
+import type { DefinitionNode, TypeExtensionNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { isTypeDefinitionNode } from '../../language/predicates.ts';
 import type { GraphQLNamedType } from '../../type/definition.ts';
@@ -28,7 +29,7 @@ export function PossibleTypeExtensionsRule(
   context: SDLValidationContext,
 ): ASTVisitor {
   const schema = context.getSchema();
-  const definedTypes = Object.create(null);
+  const definedTypes: ObjMap<DefinitionNode> = Object.create(null);
 
   for (const def of context.getDocument().definitions) {
     if (isTypeDefinitionNode(def)) {
@@ -49,7 +50,7 @@ export function PossibleTypeExtensionsRule(
     const typeName = node.name.value;
     const defNode = definedTypes[typeName];
     const existingType = schema?.getType(typeName);
-    let expectedKind;
+    let expectedKind: KindEnum | undefined;
 
     if (defNode) {
       expectedKind = defKindToExtKind[defNode.kind];
@@ -83,7 +84,7 @@ export function PossibleTypeExtensionsRule(
     }
   }
 }
-const defKindToExtKind = {
+const defKindToExtKind: ObjMap<KindEnum> = {
   [Kind.SCALAR_TYPE_DEFINITION]: Kind.SCALAR_TYPE_EXTENSION,
   [Kind.OBJECT_TYPE_DEFINITION]: Kind.OBJECT_TYPE_EXTENSION,
   [Kind.INTERFACE_TYPE_DEFINITION]: Kind.INTERFACE_TYPE_EXTENSION,

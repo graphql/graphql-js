@@ -174,7 +174,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     typeResolver,
   ); // Return early errors if execution context failed.
 
-  if (Array.isArray(exeContext)) {
+  if (!('schema' in exeContext)) {
     return {
       errors: exeContext,
     };
@@ -185,10 +185,8 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  // @ts-expect-error FIXME: TS Conversion
 
-  const data = executeOperation(exeContext, exeContext.operation, rootValue); // @ts-expect-error FIXME: TS Conversion
-
+  const data = executeOperation(exeContext, exeContext.operation, rootValue);
   return buildResponse(exeContext, data);
 }
 /**

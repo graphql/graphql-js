@@ -7,7 +7,7 @@ import { isNode } from './ast.ts';
  * relevant functions to be called during the visitor's traversal.
  */
 
-export type ASTVisitor = EnterLeaveVisitor<ASTNode> & KindVisitor;
+export type ASTVisitor = EnterLeaveVisitor<ASTNode> | KindVisitor;
 type KindVisitor = {
   readonly [K in keyof ASTKindToNode]?:
     | ASTVisitFn<ASTKindToNode[K]>
@@ -38,6 +38,38 @@ export type ASTVisitFn<TVisitedNode extends ASTNode> = (
    */
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
+/**
+ * A reducer is comprised of reducer functions which convert AST nodes into
+ * another form.
+ */
+
+export type ASTReducer<R> = {
+  readonly [K in keyof ASTKindToNode]?: {
+    readonly enter?: ASTVisitFn<ASTKindToNode[K]>;
+    readonly leave: ASTReducerFn<ASTKindToNode[K], R>;
+  };
+};
+type ASTReducerFn<TReducedNode extends ASTNode, R> = (
+  /** The current node being visiting. */
+  node: { [K in keyof TReducedNode]: ReducedField<TReducedNode[K], R> },
+  /** The index or key to this node from the parent node or Array. */
+  key: string | number | undefined,
+  /** The parent immediately above this node, which may be an Array. */
+  parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
+  /** The key path to get to this node from the root node. */
+  path: ReadonlyArray<string | number>,
+  /**
+   * All nodes and Arrays visited before reaching parent of this node.
+   * These correspond to array indices in `path`.
+   * Note: ancestors includes arrays which contain the parent of visited node.
+   */
+  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+) => R;
+type ReducedField<T, R> = T extends null | undefined
+  ? T
+  : T extends ReadonlyArray<any>
+  ? ReadonlyArray<R>
+  : R;
 const QueryDocumentKeys = {
   Name: [],
   Document: ['definitions'],
@@ -185,7 +217,12 @@ export const BREAK: unknown = Object.freeze({});
  *     })
  */
 
-export function visit(root: ASTNode, visitor: ASTVisitor): any {
+export function visit<N extends ASTNode>(root: N, visitor: ASTVisitor): N;
+export function visit<R>(root: ASTNode, visitor: ASTReducer<R>): R;
+export function visit(
+  root: ASTNode,
+  visitor: ASTVisitor | ASTReducer<any>,
+): any {
   /* eslint-disable no-undef-init */
   let stack: any = undefined;
   let inArray = Array.isArray(root);
@@ -302,7 +339,7 @@ export function visit(root: ASTNode, visitor: ASTVisitor): any {
         prev: stack,
       };
       inArray = Array.isArray(node);
-      keys = inArray ? node : QueryDocumentKeys[node.kind] ?? [];
+      keys = inArray ? node : (QueryDocumentKeys as any)[node.kind] ?? [];
       index = -1;
       edits = [];
 
@@ -332,7 +369,9 @@ export function visitInParallel(
 ): ASTVisitor {
   const skipping = new Array(visitors.length);
   return {
-    enter(node) {
+    enter(...args) {
+      const node = args[0];
+
       for (let i = 0; i < visitors.length; i++) {
         if (skipping[i] == null) {
           const fn = getVisitFn(
@@ -343,7 +382,7 @@ export function visitInParallel(
           );
 
           if (fn) {
-            const result = fn.apply(visitors[i], arguments);
+            const result = fn.apply(visitors[i], args);
 
             if (result === false) {
               skipping[i] = node;
@@ -357,7 +396,9 @@ export function visitInParallel(
       }
     },
 
-    leave(node) {
+    leave(...args) {
+      const node = args[0];
+
       for (let i = 0; i < visitors.length; i++) {
         if (skipping[i] == null) {
           const fn = getVisitFn(
@@ -368,7 +409,7 @@ export function visitInParallel(
           );
 
           if (fn) {
-            const result = fn.apply(visitors[i], arguments);
+            const result = fn.apply(visitors[i], args);
 
             if (result === BREAK) {
               skipping[i] = BREAK;
@@ -390,31 +431,22 @@ export function visitInParallel(
 
 export function getVisitFn(
   visitor: ASTVisitor,
-  kind: string,
+  kind: keyof ASTKindToNode,
   isLeaving: boolean,
 ): Maybe<ASTVisitFn<ASTNode>> {
-  const kindVisitor = visitor[kind];
+  const kindVisitor:
+    | ASTVisitFn<ASTNode>
+    | EnterLeaveVisitor<ASTNode>
+    | undefined = (visitor as any)[kind];
 
   if (kindVisitor) {
-    if (!isLeaving && typeof kindVisitor === 'function') {
+    if (typeof kindVisitor === 'function') {
       // { Kind() {} }
-      return kindVisitor;
-    }
+      return isLeaving ? undefined : kindVisitor;
+    } // { Kind: { enter() {}, leave() {} } }
 
-    const kindSpecificVisitor = isLeaving
-      ? kindVisitor.leave
-      : kindVisitor.enter;
+    return isLeaving ? kindVisitor.leave : kindVisitor.enter;
+  } // { enter() {}, leave() {} }
 
-    if (typeof kindSpecificVisitor === 'function') {
-      // { Kind: { enter() {}, leave() {} } }
-      return kindSpecificVisitor;
-    }
-  } else {
-    const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
-
-    if (specificVisitor) {
-      // { enter() {}, leave() {} }
-      return specificVisitor;
-    }
-  }
+  return isLeaving ? (visitor as any).leave : (visitor as any).enter;
 }

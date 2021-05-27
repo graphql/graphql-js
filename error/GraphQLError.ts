@@ -17,14 +17,6 @@ import {
 
 export class GraphQLError extends Error {
   /**
-   * A message describing the Error for debugging purposes.
-   *
-   * Enumerable, and appears in the result of JSON.stringify().
-   *
-   * Note: should be treated as readonly, despite invariant usage.
-   */
-  message: string;
-  /**
    * An array of { line, column } locations within the source GraphQL document
    * which correspond to this error.
    *
@@ -34,7 +26,6 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-
   readonly locations?: ReadonlyArray<SourceLocation>;
   /**
    * An array describing the JSON-path into the execution response which

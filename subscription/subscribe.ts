@@ -88,7 +88,7 @@ export async function subscribe(
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
 
-  const mapSourceToResponse = (payload) =>
+  const mapSourceToResponse = (payload: unknown) =>
     execute({
       schema,
       document,
@@ -157,11 +157,11 @@ export async function createSourceEventStream(
       fieldResolver,
     ); // Return early errors if execution context failed.
 
-    if (Array.isArray(exeContext)) {
+    if (!('schema' in exeContext)) {
       return {
         errors: exeContext,
       };
-    } // @ts-expect-error FIXME: TS Conversion
+    }
 
     const eventStream = await executeSubscription(exeContext); // Assert field returned an event stream, otherwise yield an error.
 

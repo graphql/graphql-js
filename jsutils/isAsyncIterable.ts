@@ -3,7 +3,7 @@
  * implementing a `Symbol.asyncIterator` method.
  */
 export function isAsyncIterable(
-  maybeAsyncIterable: unknown,
+  maybeAsyncIterable: any,
 ): maybeAsyncIterable is AsyncIterable<unknown> {
   return typeof maybeAsyncIterable?.[Symbol.asyncIterator] === 'function';
 }

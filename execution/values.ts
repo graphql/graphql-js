@@ -94,7 +94,9 @@ function coerceVariableValues(
 ): {
   [variable: string]: unknown;
 } {
-  const coercedValues = {};
+  const coercedValues: {
+    [variable: string]: unknown;
+  } = {};
 
   for (const varDefNode of varDefNodes) {
     const varName = varDefNode.variable.name.value;
@@ -187,7 +189,9 @@ export function getArgumentValues(
 ): {
   [argument: string]: unknown;
 } {
-  const coercedValues = {}; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  const coercedValues: {
+    [argument: string]: unknown;
+  } = {}; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
 
   const argumentNodes = node.arguments ?? [];
   const argNodeMap = keyMap(argumentNodes, (arg) => arg.name.value);

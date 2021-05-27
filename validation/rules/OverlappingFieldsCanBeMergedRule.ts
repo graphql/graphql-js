@@ -14,7 +14,6 @@ import { print } from '../../language/printer.ts';
 import type {
   GraphQLNamedType,
   GraphQLOutputType,
-  GraphQLCompositeType,
   GraphQLField,
 } from '../../type/definition.ts';
 import {
@@ -90,12 +89,14 @@ type ConflictReason = [string, ConflictReasonMessage]; // Reason is a string, or
 type ConflictReasonMessage = string | Array<ConflictReason>; // Tuple defining a field node in a context.
 
 type NodeAndDef = [
-  GraphQLCompositeType,
+  Maybe<GraphQLNamedType>,
   FieldNode,
   Maybe<GraphQLField<unknown, unknown>>,
 ]; // Map of array of those.
 
 type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
+type FragmentNames = Array<string>;
+type FieldsAndFragmentNames = readonly [NodeAndDefCollection, FragmentNames];
 /**
  * Algorithm:
  *
@@ -156,12 +157,12 @@ type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
 
 function findConflictsWithinSelectionSet(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFragmentPairs: PairSet,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
 ): Array<Conflict> {
-  const conflicts = [];
+  const conflicts: Array<Conflict> = [];
   const [fieldMap, fragmentNames] = getFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
@@ -216,7 +217,7 @@ function findConflictsWithinSelectionSet(
 function collectConflictsBetweenFieldsAndFragment(
   context: ValidationContext,
   conflicts: Array<Conflict>,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFragmentPairs: PairSet,
   areMutuallyExclusive: boolean,
   fieldMap: NodeAndDefCollection,
@@ -267,7 +268,7 @@ function collectConflictsBetweenFieldsAndFragment(
 function collectConflictsBetweenFragments(
   context: ValidationContext,
   conflicts: Array<Conflict>,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFragmentPairs: PairSet,
   areMutuallyExclusive: boolean,
   fragmentName1: string,
@@ -349,7 +350,7 @@ function collectConflictsBetweenFragments(
 
 function findConflictsBetweenSubSelectionSets(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFragmentPairs: PairSet,
   areMutuallyExclusive: boolean,
   parentType1: Maybe<GraphQLNamedType>,
@@ -357,7 +358,7 @@ function findConflictsBetweenSubSelectionSets(
   parentType2: Maybe<GraphQLNamedType>,
   selectionSet2: SelectionSetNode,
 ): Array<Conflict> {
-  const conflicts = [];
+  const conflicts: Array<Conflict> = [];
   const [fieldMap1, fragmentNames1] = getFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
@@ -433,7 +434,7 @@ function findConflictsBetweenSubSelectionSets(
 function collectConflictsWithin(
   context: ValidationContext,
   conflicts: Array<Conflict>,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFragmentPairs: PairSet,
   fieldMap: NodeAndDefCollection,
 ): void {
@@ -474,7 +475,7 @@ function collectConflictsWithin(
 function collectConflictsBetween(
   context: ValidationContext,
   conflicts: Array<Conflict>,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFragmentPairs: PairSet,
   parentFieldsAreMutuallyExclusive: boolean,
   fieldMap1: NodeAndDefCollection,
@@ -513,7 +514,7 @@ function collectConflictsBetween(
 
 function findConflict(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFragmentPairs: PairSet,
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
@@ -660,35 +661,36 @@ function doTypesConflict(
 
 function getFieldsAndFragmentNames(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
-): [NodeAndDefCollection, Array<string>] {
-  let cached = cachedFieldsAndFragmentNames.get(selectionSet);
+): FieldsAndFragmentNames {
+  const cached = cachedFieldsAndFragmentNames.get(selectionSet);
 
-  if (!cached) {
-    const nodeAndDefs = Object.create(null);
-    const fragmentNames = Object.create(null);
-
-    _collectFieldsAndFragmentNames(
-      context,
-      parentType,
-      selectionSet,
-      nodeAndDefs,
-      fragmentNames,
-    );
-
-    cached = [nodeAndDefs, Object.keys(fragmentNames)];
-    cachedFieldsAndFragmentNames.set(selectionSet, cached);
+  if (cached) {
+    return cached;
   }
 
-  return cached;
+  const nodeAndDefs: NodeAndDefCollection = Object.create(null);
+  const fragmentNames: ObjMap<boolean> = Object.create(null);
+
+  _collectFieldsAndFragmentNames(
+    context,
+    parentType,
+    selectionSet,
+    nodeAndDefs,
+    fragmentNames,
+  );
+
+  const result = [nodeAndDefs, Object.keys(fragmentNames)] as const;
+  cachedFieldsAndFragmentNames.set(selectionSet, result);
+  return result;
 } // Given a reference to a fragment, return the represented collection of fields
 // as well as a list of nested fragment names referenced via fragment spreads.
 
 function getReferencedFieldsAndFragmentNames(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   fragment: FragmentDefinitionNode,
 ) {
   // Short-circuit building a type from the node if possible.
@@ -711,8 +713,8 @@ function _collectFieldsAndFragmentNames(
   context: ValidationContext,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
-  nodeAndDefs,
-  fragmentNames,
+  nodeAndDefs: NodeAndDefCollection,
+  fragmentNames: ObjMap<boolean>,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {

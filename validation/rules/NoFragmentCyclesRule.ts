@@ -1,17 +1,21 @@
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
+import type {
+  FragmentDefinitionNode,
+  FragmentSpreadNode,
+} from '../../language/ast.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
-import type { FragmentDefinitionNode } from '../../language/ast.ts';
 import type { ASTValidationContext } from '../ValidationContext.ts';
 export function NoFragmentCyclesRule(
   context: ASTValidationContext,
 ): ASTVisitor {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
-  const visitedFrags = Object.create(null); // Array of AST nodes used to produce meaningful errors
+  const visitedFrags: ObjMap<boolean> = Object.create(null); // Array of AST nodes used to produce meaningful errors
 
-  const spreadPath = []; // Position in the spread path
+  const spreadPath: Array<FragmentSpreadNode> = []; // Position in the spread path
 
-  const spreadPathIndexByName = Object.create(null);
+  const spreadPathIndexByName: ObjMap<number | undefined> = Object.create(null);
   return {
     OperationDefinition: () => false,
 

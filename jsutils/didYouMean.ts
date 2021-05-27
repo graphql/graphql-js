@@ -12,10 +12,9 @@ export function didYouMean(
   firstArg: string | ReadonlyArray<string>,
   secondArg?: ReadonlyArray<string>,
 ) {
-  const [subMessage, suggestionsArg] =
-    typeof firstArg === 'string'
-      ? [firstArg, secondArg]
-      : [undefined, firstArg];
+  const [subMessage, suggestionsArg] = secondArg
+    ? [firstArg as string, secondArg]
+    : [undefined, firstArg as ReadonlyArray<string>];
   let message = ' Did you mean ';
 
   if (subMessage) {

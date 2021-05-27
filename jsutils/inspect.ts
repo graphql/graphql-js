@@ -25,7 +25,7 @@ function formatValue(value: unknown, seenValues: Array<unknown>): string {
 }
 
 function formatObjectValue(
-  value: Object,
+  value: object | null,
   previouslySeenValues: Array<unknown>,
 ): string {
   if (value === null) {
@@ -36,11 +36,10 @@ function formatObjectValue(
     return '[Circular]';
   }
 
-  const seenValues = [...previouslySeenValues, value]; // @ts-expect-error FIXME: TS Conversion
+  const seenValues = [...previouslySeenValues, value];
 
-  if (typeof value.toJSON === 'function') {
-    // @ts-expect-error FIXME: TS Conversion
-    const jsonValue = (value.toJSON as () => unknown)(); // check for infinite recursion
+  if (isJSONable(value)) {
+    const jsonValue = value.toJSON(); // check for infinite recursion
 
     if (jsonValue !== value) {
       return typeof jsonValue === 'string'
@@ -54,7 +53,13 @@ function formatObjectValue(
   return formatObject(value, seenValues);
 }
 
-function formatObject(object: Object, seenValues: Array<unknown>): string {
+function isJSONable(value: any): value is {
+  toJSON: () => unknown;
+} {
+  return typeof value.toJSON === 'function';
+}
+
+function formatObject(object: object, seenValues: Array<unknown>): string {
   const entries = Object.entries(object);
 
   if (entries.length === 0) {
@@ -100,7 +105,7 @@ function formatArray(
   return '[' + items.join(', ') + ']';
 }
 
-function getObjectTag(object: Object): string {
+function getObjectTag(object: object): string {
   const tag = Object.prototype.toString
     .call(object)
     .replace(/^\[object /, '')

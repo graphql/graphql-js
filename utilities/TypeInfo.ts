@@ -396,7 +396,8 @@ export function visitWithTypeInfo(
   visitor: ASTVisitor,
 ): ASTVisitor {
   return {
-    enter(node) {
+    enter(...args) {
+      const node = args[0];
       typeInfo.enter(node);
       const fn = getVisitFn(
         visitor,
@@ -406,7 +407,7 @@ export function visitWithTypeInfo(
       );
 
       if (fn) {
-        const result = fn.apply(visitor, arguments);
+        const result = fn.apply(visitor, args);
 
         if (result !== undefined) {
           typeInfo.leave(node);
@@ -420,7 +421,8 @@ export function visitWithTypeInfo(
       }
     },
 
-    leave(node) {
+    leave(...args) {
+      const node = args[0];
       const fn = getVisitFn(
         visitor,
         node.kind,
@@ -430,7 +432,7 @@ export function visitWithTypeInfo(
       let result;
 
       if (fn) {
-        result = fn.apply(visitor, arguments);
+        result = fn.apply(visitor, args);
       }
 
       typeInfo.leave(node);

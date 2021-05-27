@@ -69,11 +69,10 @@ function getDirectiveLocationForASTPath(
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ): DirectiveLocationEnum | undefined {
   const appliedTo = ancestors[ancestors.length - 1];
-  !Array.isArray(appliedTo) || invariant(false); // @ts-expect-error FIXME: TS Conversion
+  'kind' in appliedTo || invariant(false);
 
   switch (appliedTo.kind) {
     case Kind.OPERATION_DEFINITION:
-      // @ts-expect-error FIXME: TS Conversion
       return getDirectiveLocationForOperation(appliedTo.operation);
 
     case Kind.FIELD:
@@ -126,8 +125,8 @@ function getDirectiveLocationForASTPath(
       return DirectiveLocation.INPUT_OBJECT;
 
     case Kind.INPUT_VALUE_DEFINITION: {
-      const parentNode = ancestors[ancestors.length - 3]; // @ts-expect-error FIXME: TS Conversion
-
+      const parentNode = ancestors[ancestors.length - 3];
+      'kind' in parentNode || invariant(false);
       return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION
         ? DirectiveLocation.INPUT_FIELD_DEFINITION
         : DirectiveLocation.ARGUMENT_DEFINITION;

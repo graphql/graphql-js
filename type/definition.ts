@@ -434,6 +434,9 @@ export function getNullableType<T extends GraphQLNullableType>(
 ): T;
 export function getNullableType(
   type: Maybe<GraphQLType>,
+): GraphQLNullableType | undefined;
+export function getNullableType(
+  type: Maybe<GraphQLType>,
 ): GraphQLNullableType | undefined {
   if (type) {
     return isNonNullType(type) ? type.ofType : type;
@@ -475,6 +478,9 @@ export function getNamedType(type: undefined | null): void;
 export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
 export function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
 export function getNamedType(type: GraphQLType): GraphQLNamedType;
+export function getNamedType(
+  type: Maybe<GraphQLType>,
+): GraphQLNamedType | undefined;
 export function getNamedType(
   type: Maybe<GraphQLType>,
 ): GraphQLNamedType | undefined {
@@ -626,7 +632,7 @@ export type GraphQLScalarValueParser<TInternal> = (
 ) => Maybe<TInternal>;
 export type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
-  variables: Maybe<ObjMap<unknown>>,
+  variables?: Maybe<ObjMap<unknown>>,
 ) => Maybe<TInternal>;
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   name: string;
@@ -724,8 +730,11 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._fields = defineFieldMap.bind(undefined, config);
-    this._interfaces = defineInterfaces.bind(undefined, config);
+
+    this._fields = () => defineFieldMap(config);
+
+    this._interfaces = () => defineInterfaces(config);
+
     typeof config.name === 'string' || devAssert(false, 'Must provide name.');
     config.isTypeOf == null ||
       typeof config.isTypeOf === 'function' ||
@@ -780,8 +789,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
 
 function defineInterfaces(
   config: Readonly<
-    | GraphQLObjectTypeConfig<unknown, unknown>
-    | GraphQLInterfaceTypeConfig<unknown, unknown>
+    GraphQLObjectTypeConfig<any, any> | GraphQLInterfaceTypeConfig<any, any>
   >,
 ): Array<GraphQLInterfaceType> {
   const interfaces = resolveArrayThunk(config.interfaces ?? []);
@@ -804,8 +812,7 @@ function defineFieldMap<TSource, TContext>(
     devAssert(
       false,
       `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
-    ); // @ts-expect-error FIXME: TS Conversion
-
+    );
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     isPlainObj(fieldConfig) ||
       devAssert(
@@ -1020,7 +1027,7 @@ export interface GraphQLField<
   name: string;
   description: Maybe<string>;
   type: GraphQLOutputType;
-  args: Array<GraphQLArgument>;
+  args: ReadonlyArray<GraphQLArgument>;
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   deprecationReason: Maybe<string>;
