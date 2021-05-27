@@ -33,8 +33,7 @@ export function SingleFieldSubscriptionsRule(
         if (subscriptionType) {
           const operationName = node.name ? node.name.value : null;
           const variableValues: {
-            [variable: string]: mixed,
-            ...
+            [variable: string]: any;
           } = Object.create(null);
           const document = context.getDocument();
           const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
