@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
-import type { ASTNode } from '../ast';
+import type { ASTNode, SelectionSetNode } from '../ast';
 import { isNode } from '../ast';
 import { Kind } from '../kinds';
 import { parse } from '../parser';
@@ -51,8 +51,7 @@ function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
 }
 
 function getValue(node: ASTNode) {
-  // @ts-expect-error FIXME: TS Conversion
-  return node.value != null ? node.value : undefined;
+  return 'value' in node ? node.value : undefined;
 }
 
 describe('Visitor', () => {
@@ -62,7 +61,7 @@ describe('Visitor', () => {
   });
 
   it('validates path argument', () => {
-    const visited = [];
+    const visited: Array<any> = [];
 
     const ast = parse('{ a }', { noLocation: true });
 
@@ -93,7 +92,7 @@ describe('Visitor', () => {
 
   it('validates ancestors argument', () => {
     const ast = parse('{ a }', { noLocation: true });
-    const visitedNodes = [];
+    const visitedNodes: Array<any> = [];
 
     visit(ast, {
       enter(node, key, parent, _path, ancestors) {
@@ -122,7 +121,7 @@ describe('Visitor', () => {
   it('allows editing a node both on enter and on leave', () => {
     const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
 
-    let selectionSet;
+    let selectionSet: SelectionSetNode;
 
     const editedAST = visit(ast, {
       OperationDefinition: {
@@ -265,8 +264,7 @@ describe('Visitor', () => {
         if (node.kind === 'Field' && node.name.value === 'a') {
           return {
             kind: 'Field',
-            // @ts-expect-error FIXME: TS Conversion
-            selectionSet: [addedField].concat(node.selectionSet),
+            selectionSet: [addedField, node.selectionSet],
           };
         }
         if (node === addedField) {
@@ -279,7 +277,7 @@ describe('Visitor', () => {
   });
 
   it('allows skipping a sub-tree', () => {
-    const visited = [];
+    const visited: Array<any> = [];
 
     const ast = parse('{ a, b { x }, c }', { noLocation: true });
     visit(ast, {
@@ -317,7 +315,7 @@ describe('Visitor', () => {
   });
 
   it('allows early exit while visiting', () => {
-    const visited = [];
+    const visited: Array<any> = [];
 
     const ast = parse('{ a, b { x }, c }', { noLocation: true });
     visit(ast, {
@@ -352,7 +350,7 @@ describe('Visitor', () => {
   });
 
   it('allows early exit while leaving', () => {
-    const visited = [];
+    const visited: Array<any> = [];
 
     const ast = parse('{ a, b { x }, c }', { noLocation: true });
     visit(ast, {
@@ -389,7 +387,7 @@ describe('Visitor', () => {
   });
 
   it('allows a named functions visitor API', () => {
-    const visited = [];
+    const visited: Array<any> = [];
 
     const ast = parse('{ a, b { x }, c }', { noLocation: true });
     visit(ast, {
@@ -438,7 +436,7 @@ describe('Visitor', () => {
       },
     });
 
-    const visited = [];
+    const visited: Array<any> = [];
     visit(customAST, {
       enter(node) {
         visited.push(['enter', node.kind, getValue(node)]);
@@ -469,7 +467,7 @@ describe('Visitor', () => {
       noLocation: true,
       allowLegacyFragmentVariables: true,
     });
-    const visited = [];
+    const visited: Array<any> = [];
 
     visit(ast, {
       enter(node) {
@@ -516,8 +514,8 @@ describe('Visitor', () => {
 
   it('visits kitchen sink', () => {
     const ast = parse(kitchenSinkQuery);
-    const visited = [];
-    const argsStack = [];
+    const visited: Array<any> = [];
+    const argsStack: Array<any> = [];
 
     visit(ast, {
       enter(node, key, parent) {
@@ -895,7 +893,7 @@ describe('Visitor', () => {
     // Note: nearly identical to the above test of the same test but
     // using visitInParallel.
     it('allows skipping a sub-tree', () => {
-      const visited = [];
+      const visited: Array<any> = [];
 
       const ast = parse('{ a, b { x }, c }');
       visit(
@@ -938,7 +936,7 @@ describe('Visitor', () => {
     });
 
     it('allows skipping different sub-trees', () => {
-      const visited = [];
+      const visited: Array<any> = [];
 
       const ast = parse('{ a { x }, b { y} }');
       visit(
@@ -1014,7 +1012,7 @@ describe('Visitor', () => {
     // Note: nearly identical to the above test of the same test but
     // using visitInParallel.
     it('allows early exit while visiting', () => {
-      const visited = [];
+      const visited: Array<any> = [];
 
       const ast = parse('{ a, b { x }, c }');
       visit(
@@ -1054,7 +1052,7 @@ describe('Visitor', () => {
     });
 
     it('allows early exit from different points', () => {
-      const visited = [];
+      const visited: Array<any> = [];
 
       const ast = parse('{ a { y }, b { x } }');
       visit(
@@ -1116,7 +1114,7 @@ describe('Visitor', () => {
     // Note: nearly identical to the above test of the same test but
     // using visitInParallel.
     it('allows early exit while leaving', () => {
-      const visited = [];
+      const visited: Array<any> = [];
 
       const ast = parse('{ a, b { x }, c }');
       visit(
@@ -1157,7 +1155,7 @@ describe('Visitor', () => {
     });
 
     it('allows early exit from leaving different points', () => {
-      const visited = [];
+      const visited: Array<any> = [];
 
       const ast = parse('{ a { y }, b { x } }');
       visit(
@@ -1233,7 +1231,7 @@ describe('Visitor', () => {
     });
 
     it('allows for editing on enter', () => {
-      const visited = [];
+      const visited: Array<any> = [];
 
       const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
       const editedAST = visit(
@@ -1297,7 +1295,7 @@ describe('Visitor', () => {
     });
 
     it('allows for editing on leave', () => {
-      const visited = [];
+      const visited: Array<any> = [];
 
       const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
       const editedAST = visit(

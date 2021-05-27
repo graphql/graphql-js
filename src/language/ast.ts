@@ -76,8 +76,11 @@ export class Token {
 
   /**
    * For non-punctuation tokens, represents the interpreted value of the token.
+   *
+   * Note: is undefined for punctuation tokens, but typed as string for
+   * convenience in the parser.
    */
-  readonly value?: string;
+  readonly value: string;
 
   /**
    * Tokens exist as nodes in a double-linked-list amongst all tokens
@@ -124,9 +127,8 @@ export class Token {
 /**
  * @internal
  */
-export function isNode(maybeNode: unknown): maybeNode is ASTNode {
-  // eslint-disable-next-line @typescript-eslint/dot-notation
-  return typeof maybeNode?.['kind'] === 'string';
+export function isNode(maybeNode: any): maybeNode is ASTNode {
+  return typeof maybeNode?.kind === 'string';
 }
 
 /**

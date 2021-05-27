@@ -7,6 +7,7 @@ import { inspect } from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
+import type { Token } from '../ast';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { Lexer, isPunctuatorTokenKind } from '../lexer';
@@ -876,7 +877,7 @@ describe('Lexer', () => {
     expect(endToken.next).to.equal(null);
 
     const tokens = [];
-    for (let tok = startToken; tok; tok = tok.next) {
+    for (let tok: Token | null = startToken; tok; tok = tok.next) {
       if (tokens.length) {
         // Tokens are double-linked, prev should point to last seen token.
         expect(tok.prev).to.equal(tokens[tokens.length - 1]);
