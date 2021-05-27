@@ -10,14 +10,6 @@ import type { SourceLocation } from '../language/location';
  */
 export declare class GraphQLError extends Error {
   /**
-   * A message describing the Error for debugging purposes.
-   *
-   * Enumerable, and appears in the result of JSON.stringify().
-   *
-   * Note: should be treated as readonly, despite invariant usage.
-   */
-  message: string;
-  /**
    * An array of { line, column } locations within the source GraphQL document
    * which correspond to this error.
    *

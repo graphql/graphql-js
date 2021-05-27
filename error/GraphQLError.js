@@ -20,14 +20,6 @@ var _printLocation = require('../language/printLocation.js');
  */
 class GraphQLError extends Error {
   /**
-   * A message describing the Error for debugging purposes.
-   *
-   * Enumerable, and appears in the result of JSON.stringify().
-   *
-   * Note: should be treated as readonly, despite invariant usage.
-   */
-
-  /**
    * An array of { line, column } locations within the source GraphQL document
    * which correspond to this error.
    *

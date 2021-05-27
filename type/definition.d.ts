@@ -237,6 +237,9 @@ export declare function getNullableType(type: undefined | null): void;
 export declare function getNullableType<T extends GraphQLNullableType>(
   type: T | GraphQLNonNull<T>,
 ): T;
+export declare function getNullableType(
+  type: Maybe<GraphQLType>,
+): GraphQLNullableType | undefined;
 /**
  * These named types do not include modifiers like List or NonNull.
  */
@@ -263,6 +266,9 @@ export declare function getNamedType(
   type: GraphQLOutputType,
 ): GraphQLNamedOutputType;
 export declare function getNamedType(type: GraphQLType): GraphQLNamedType;
+export declare function getNamedType(
+  type: Maybe<GraphQLType>,
+): GraphQLNamedType | undefined;
 /**
  * Used while defining GraphQL types to allow for circular references in
  * otherwise immutable type definitions.
@@ -329,7 +335,7 @@ export declare type GraphQLScalarValueParser<TInternal> = (
 ) => Maybe<TInternal>;
 export declare type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
-  variables: Maybe<ObjMap<unknown>>,
+  variables?: Maybe<ObjMap<unknown>>,
 ) => Maybe<TInternal>;
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   name: string;
@@ -559,7 +565,7 @@ export interface GraphQLField<
   name: string;
   description: Maybe<string>;
   type: GraphQLOutputType;
-  args: Array<GraphQLArgument>;
+  args: ReadonlyArray<GraphQLArgument>;
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>;
   deprecationReason: Maybe<string>;

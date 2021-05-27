@@ -4,10 +4,10 @@
  * GraphQL source files which together represent one conceptual application.
  */
 export function concatAST(documents) {
-  let definitions = [];
+  const definitions = [];
 
   for (const doc of documents) {
-    definitions = definitions.concat(doc.definitions);
+    definitions.push(...doc.definitions);
   }
 
   return {

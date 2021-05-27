@@ -10,7 +10,6 @@ exports.mapAsyncIterator = mapAsyncIterator;
  * which produces values mapped via calling the callback function.
  */
 function mapAsyncIterator(iterable, callback) {
-  // $FlowIssue[incompatible-use]
   const iterator = iterable[Symbol.asyncIterator]();
 
   async function mapResult(result) {
@@ -19,7 +18,6 @@ function mapAsyncIterator(iterable, callback) {
     }
 
     try {
-      // @ts-expect-error FIXME: TS Conversion
       return {
         value: await callback(result.value),
         done: false,
@@ -44,6 +42,7 @@ function mapAsyncIterator(iterable, callback) {
     },
 
     async return() {
+      // If iterator.return() does not exist, then type R must be undefined.
       return typeof iterator.return === 'function'
         ? mapResult(await iterator.return())
         : {

@@ -37,9 +37,9 @@ export function printSourceLocation(source, sourceLocation) {
     return (
       locationStr +
       printPrefixedLines([
-        [`${lineNum} |`, subLines[0]], // @ts-expect-error FIXME: TS Conversion
-        ...subLines.slice(1, subLineIndex + 1).map((subLine) => ['|', subLine]), // @ts-expect-error FIXME: TS Conversion
-        ['|', '^'.padStart(subLineColumnNum)], // @ts-expect-error FIXME: TS Conversion
+        [`${lineNum} |`, subLines[0]],
+        ...subLines.slice(1, subLineIndex + 1).map((subLine) => ['|', subLine]),
+        ['|', '^'.padStart(subLineColumnNum)],
         ['|', subLines[subLineIndex + 1]],
       ])
     );

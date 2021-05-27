@@ -636,25 +636,26 @@ function getFieldsAndFragmentNames(
   parentType,
   selectionSet,
 ) {
-  let cached = cachedFieldsAndFragmentNames.get(selectionSet);
+  const cached = cachedFieldsAndFragmentNames.get(selectionSet);
 
-  if (!cached) {
-    const nodeAndDefs = Object.create(null);
-    const fragmentNames = Object.create(null);
-
-    _collectFieldsAndFragmentNames(
-      context,
-      parentType,
-      selectionSet,
-      nodeAndDefs,
-      fragmentNames,
-    );
-
-    cached = [nodeAndDefs, Object.keys(fragmentNames)];
-    cachedFieldsAndFragmentNames.set(selectionSet, cached);
+  if (cached) {
+    return cached;
   }
 
-  return cached;
+  const nodeAndDefs = Object.create(null);
+  const fragmentNames = Object.create(null);
+
+  _collectFieldsAndFragmentNames(
+    context,
+    parentType,
+    selectionSet,
+    nodeAndDefs,
+    fragmentNames,
+  );
+
+  const result = [nodeAndDefs, Object.keys(fragmentNames)];
+  cachedFieldsAndFragmentNames.set(selectionSet, result);
+  return result;
 } // Given a reference to a fragment, return the represented collection of fields
 // as well as a list of nested fragment names referenced via fragment spreads.
 

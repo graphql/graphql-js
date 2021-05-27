@@ -37,7 +37,6 @@ function introspectionFromSchema(schema, options) {
     schema,
     document,
   });
-  (!result.errors && result.data) || (0, _invariant.invariant)(false); // @ts-expect-error FIXME
-
+  (!result.errors && result.data) || (0, _invariant.invariant)(false);
   return result.data;
 }

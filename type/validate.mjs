@@ -91,7 +91,7 @@ function validateRootTypes(context) {
     context.reportError(
       `Query root type must be Object type, it cannot be ${inspect(
         queryType,
-      )}.`, // @ts-expect-error FIXME: TS Conversion
+      )}.`,
       (_getOperationTypeNode = getOperationTypeNode(schema, 'query')) !==
         null && _getOperationTypeNode !== void 0
         ? _getOperationTypeNode
@@ -106,7 +106,7 @@ function validateRootTypes(context) {
 
     context.reportError(
       'Mutation root type must be Object type if provided, it cannot be ' +
-        `${inspect(mutationType)}.`, // @ts-expect-error FIXME: TS Conversion
+        `${inspect(mutationType)}.`,
       (_getOperationTypeNode2 = getOperationTypeNode(schema, 'mutation')) !==
         null && _getOperationTypeNode2 !== void 0
         ? _getOperationTypeNode2
@@ -121,7 +121,7 @@ function validateRootTypes(context) {
 
     context.reportError(
       'Subscription root type must be Object type if provided, it cannot be ' +
-        `${inspect(subscriptionType)}.`, // @ts-expect-error FIXME: TS Conversion
+        `${inspect(subscriptionType)}.`,
       (_getOperationTypeNode3 = getOperationTypeNode(
         schema,
         'subscription',
@@ -133,11 +133,10 @@ function validateRootTypes(context) {
 }
 
 function getOperationTypeNode(schema, operation) {
-  var _concat$flatMap$find;
+  var _flatMap$find;
 
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-  return (_concat$flatMap$find = [schema.astNode] // @ts-expect-error FIXME: TS Conversion // @ts-expect-error FIXME: TS Conversion
-    .concat(schema.extensionASTNodes)
+  return (_flatMap$find = [schema.astNode, ...schema.extensionASTNodes]
     .flatMap((schemaNode) => {
       var _schemaNode$operation;
 
@@ -150,9 +149,9 @@ function getOperationTypeNode(schema, operation) {
         : [];
     })
     .find((operationNode) => operationNode.operation === operation)) === null ||
-    _concat$flatMap$find === void 0
+    _flatMap$find === void 0
     ? void 0
-    : _concat$flatMap$find.type;
+    : _flatMap$find.type;
 }
 
 function validateDirectives(context) {
@@ -160,7 +159,7 @@ function validateDirectives(context) {
     // Ensure all directives are in fact GraphQL directives.
     if (!isDirective(directive)) {
       context.reportError(
-        `Expected directive but got: ${inspect(directive)}.`, // @ts-expect-error FIXME: TS Conversion
+        `Expected directive but got: ${inspect(directive)}.`,
         directive === null || directive === void 0 ? void 0 : directive.astNode,
       );
       continue;
@@ -216,7 +215,7 @@ function validateTypes(context) {
     // Ensure all provided types are in fact GraphQL type.
     if (!isNamedType(type)) {
       context.reportError(
-        `Expected GraphQL named type but got: ${inspect(type)}.`, // @ts-expect-error FIXME: TS Conversion
+        `Expected GraphQL named type but got: ${inspect(type)}.`,
         type.astNode,
       );
       continue;

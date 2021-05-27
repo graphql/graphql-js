@@ -15,7 +15,7 @@ var _GraphQLError = require('./GraphQLError.js');
  * document responsible for the original Error.
  */
 function locatedError(rawOriginalError, nodes, path) {
-  var _originalError$nodes;
+  var _nodes;
 
   // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
   const originalError =
@@ -24,22 +24,23 @@ function locatedError(rawOriginalError, nodes, path) {
       : new Error(
           'Unexpected error value: ' + (0, _inspect.inspect)(rawOriginalError),
         ); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
-  // @ts-expect-error FIXME: TS Conversion
 
-  if (Array.isArray(originalError.path)) {
-    // @ts-expect-error
+  if (isLocatedGraphQLError(originalError)) {
     return originalError;
   }
 
   return new _GraphQLError.GraphQLError(
-    originalError.message, // @ts-expect-error FIXME
-    (_originalError$nodes = originalError.nodes) !== null &&
-    _originalError$nodes !== void 0
-      ? _originalError$nodes
-      : nodes, // @ts-expect-error FIXME
-    originalError.source, // @ts-expect-error FIXME
+    originalError.message,
+    (_nodes = originalError.nodes) !== null && _nodes !== void 0
+      ? _nodes
+      : nodes,
+    originalError.source,
     originalError.positions,
     path,
     originalError,
   );
+}
+
+function isLocatedGraphQLError(error) {
+  return Array.isArray(error.path);
 }

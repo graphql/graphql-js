@@ -3,9 +3,8 @@
  * otherwise returns false.
  */
 export function isPromise(value) {
-  // eslint-disable-next-line @typescript-eslint/dot-notation
   return (
-    typeof (value === null || value === void 0 ? void 0 : value['then']) ===
+    typeof (value === null || value === void 0 ? void 0 : value.then) ===
     'function'
   );
 }

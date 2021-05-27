@@ -261,7 +261,7 @@ export function visit(root, visitor) {
     if (isLeaving) {
       path.pop();
     } else {
-      var _QueryDocumentKeys$no;
+      var _node$kind;
 
       stack = {
         inArray,
@@ -273,9 +273,9 @@ export function visit(root, visitor) {
       inArray = Array.isArray(node);
       keys = inArray
         ? node
-        : (_QueryDocumentKeys$no = QueryDocumentKeys[node.kind]) !== null &&
-          _QueryDocumentKeys$no !== void 0
-        ? _QueryDocumentKeys$no
+        : (_node$kind = QueryDocumentKeys[node.kind]) !== null &&
+          _node$kind !== void 0
+        ? _node$kind
         : [];
       index = -1;
       edits = [];
@@ -304,7 +304,9 @@ export function visit(root, visitor) {
 export function visitInParallel(visitors) {
   const skipping = new Array(visitors.length);
   return {
-    enter(node) {
+    enter(...args) {
+      const node = args[0];
+
       for (let i = 0; i < visitors.length; i++) {
         if (skipping[i] == null) {
           const fn = getVisitFn(
@@ -315,7 +317,7 @@ export function visitInParallel(visitors) {
           );
 
           if (fn) {
-            const result = fn.apply(visitors[i], arguments);
+            const result = fn.apply(visitors[i], args);
 
             if (result === false) {
               skipping[i] = node;
@@ -329,7 +331,9 @@ export function visitInParallel(visitors) {
       }
     },
 
-    leave(node) {
+    leave(...args) {
+      const node = args[0];
+
       for (let i = 0; i < visitors.length; i++) {
         if (skipping[i] == null) {
           const fn = getVisitFn(
@@ -340,7 +344,7 @@ export function visitInParallel(visitors) {
           );
 
           if (fn) {
-            const result = fn.apply(visitors[i], arguments);
+            const result = fn.apply(visitors[i], args);
 
             if (result === BREAK) {
               skipping[i] = BREAK;
@@ -364,25 +368,13 @@ export function getVisitFn(visitor, kind, isLeaving) {
   const kindVisitor = visitor[kind];
 
   if (kindVisitor) {
-    if (!isLeaving && typeof kindVisitor === 'function') {
+    if (typeof kindVisitor === 'function') {
       // { Kind() {} }
-      return kindVisitor;
-    }
+      return isLeaving ? undefined : kindVisitor;
+    } // { Kind: { enter() {}, leave() {} } }
 
-    const kindSpecificVisitor = isLeaving
-      ? kindVisitor.leave
-      : kindVisitor.enter;
+    return isLeaving ? kindVisitor.leave : kindVisitor.enter;
+  } // { enter() {}, leave() {} }
 
-    if (typeof kindSpecificVisitor === 'function') {
-      // { Kind: { enter() {}, leave() {} } }
-      return kindSpecificVisitor;
-    }
-  } else {
-    const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
-
-    if (specificVisitor) {
-      // { enter() {}, leave() {} }
-      return specificVisitor;
-    }
-  }
+  return isLeaving ? visitor.leave : visitor.enter;
 }

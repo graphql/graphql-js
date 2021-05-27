@@ -33,10 +33,9 @@ function formatObjectValue(value, previouslySeenValues) {
     return '[Circular]';
   }
 
-  const seenValues = [...previouslySeenValues, value]; // @ts-expect-error FIXME: TS Conversion
+  const seenValues = [...previouslySeenValues, value];
 
-  if (typeof value.toJSON === 'function') {
-    // @ts-expect-error FIXME: TS Conversion
+  if (isJSONable(value)) {
     const jsonValue = value.toJSON(); // check for infinite recursion
 
     if (jsonValue !== value) {
@@ -49,6 +48,10 @@ function formatObjectValue(value, previouslySeenValues) {
   }
 
   return formatObject(value, seenValues);
+}
+
+function isJSONable(value) {
+  return typeof value.toJSON === 'function';
 }
 
 function formatObject(object, seenValues) {

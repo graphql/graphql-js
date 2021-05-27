@@ -8,8 +8,7 @@ import { printBlockString } from './blockString.mjs';
 export function print(ast) {
   return visit(ast, printDocASTReducer);
 }
-const MAX_LINE_LENGTH = 80; // TODO: provide better type coverage in future
-
+const MAX_LINE_LENGTH = 80;
 const printDocASTReducer = {
   Name: {
     leave: (node) => node.value,

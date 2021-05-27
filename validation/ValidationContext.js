@@ -37,17 +37,23 @@ class ASTValidationContext {
   }
 
   getFragment(name) {
-    if (!this._fragments) {
-      const fragments = (this._fragments = Object.create(null));
+    let fragments;
+
+    if (this._fragments) {
+      fragments = this._fragments;
+    } else {
+      fragments = Object.create(null);
 
       for (const defNode of this.getDocument().definitions) {
         if (defNode.kind === _kinds.Kind.FRAGMENT_DEFINITION) {
           fragments[defNode.name.value] = defNode;
         }
       }
+
+      this._fragments = fragments;
     }
 
-    return this._fragments[name];
+    return fragments[name];
   }
 
   getFragmentSpreads(node) {
@@ -56,13 +62,11 @@ class ASTValidationContext {
     if (!spreads) {
       spreads = [];
       const setsToVisit = [node];
+      let set;
 
-      while (setsToVisit.length !== 0) {
-        const set = setsToVisit.pop();
-
+      while ((set = setsToVisit.pop())) {
         for (const selection of set.selections) {
           if (selection.kind === _kinds.Kind.FRAGMENT_SPREAD) {
-            // @ts-expect-error FIXME: TS Conversion
             spreads.push(selection);
           } else if (selection.selectionSet) {
             setsToVisit.push(selection.selectionSet);
@@ -83,10 +87,9 @@ class ASTValidationContext {
       fragments = [];
       const collectedNames = Object.create(null);
       const nodesToVisit = [operation.selectionSet];
+      let node;
 
-      while (nodesToVisit.length !== 0) {
-        const node = nodesToVisit.pop();
-
+      while ((node = nodesToVisit.pop())) {
         for (const spread of this.getFragmentSpreads(node)) {
           const fragName = spread.name.value;
 
@@ -95,7 +98,6 @@ class ASTValidationContext {
             const fragment = this.getFragment(fragName);
 
             if (fragment) {
-              // @ts-expect-error FIXME: TS Conversion
               fragments.push(fragment);
               nodesToVisit.push(fragment.selectionSet);
             }

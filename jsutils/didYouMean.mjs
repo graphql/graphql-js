@@ -4,10 +4,9 @@ const MAX_SUGGESTIONS = 5;
  */
 
 export function didYouMean(firstArg, secondArg) {
-  const [subMessage, suggestionsArg] =
-    typeof firstArg === 'string'
-      ? [firstArg, secondArg]
-      : [undefined, firstArg];
+  const [subMessage, suggestionsArg] = secondArg
+    ? [firstArg, secondArg]
+    : [undefined, firstArg];
   let message = ' Did you mean ';
 
   if (subMessage) {

@@ -67,7 +67,7 @@ const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(
 
 function isSDLNode(value) {
   return (
-    !Array.isArray(value) && // @ts-expect-error FIXME: TS Conversion
+    'kind' in value &&
     (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value))
   );
 }

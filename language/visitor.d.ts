@@ -4,7 +4,7 @@ import type { ASTNode, ASTKindToNode } from './ast';
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
-export declare type ASTVisitor = EnterLeaveVisitor<ASTNode> & KindVisitor;
+export declare type ASTVisitor = EnterLeaveVisitor<ASTNode> | KindVisitor;
 declare type KindVisitor = {
   readonly [K in keyof ASTKindToNode]?:
     | ASTVisitFn<ASTKindToNode[K]>
@@ -34,6 +34,39 @@ export declare type ASTVisitFn<TVisitedNode extends ASTNode> = (
    */
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
+/**
+ * A reducer is comprised of reducer functions which convert AST nodes into
+ * another form.
+ */
+export declare type ASTReducer<R> = {
+  readonly [K in keyof ASTKindToNode]?: {
+    readonly enter?: ASTVisitFn<ASTKindToNode[K]>;
+    readonly leave: ASTReducerFn<ASTKindToNode[K], R>;
+  };
+};
+declare type ASTReducerFn<TReducedNode extends ASTNode, R> = (
+  /** The current node being visiting. */
+  node: {
+    [K in keyof TReducedNode]: ReducedField<TReducedNode[K], R>;
+  },
+  /** The index or key to this node from the parent node or Array. */
+  key: string | number | undefined,
+  /** The parent immediately above this node, which may be an Array. */
+  parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
+  /** The key path to get to this node from the root node. */
+  path: ReadonlyArray<string | number>,
+  /**
+   * All nodes and Arrays visited before reaching parent of this node.
+   * These correspond to array indices in `path`.
+   * Note: ancestors includes arrays which contain the parent of visited node.
+   */
+  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+) => R;
+declare type ReducedField<T, R> = T extends null | undefined
+  ? T
+  : T extends ReadonlyArray<any>
+  ? ReadonlyArray<R>
+  : R;
 export declare const BREAK: unknown;
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
@@ -106,7 +139,11 @@ export declare const BREAK: unknown;
  *       }
  *     })
  */
-export declare function visit(root: ASTNode, visitor: ASTVisitor): any;
+export declare function visit<N extends ASTNode>(
+  root: N,
+  visitor: ASTVisitor,
+): N;
+export declare function visit<R>(root: ASTNode, visitor: ASTReducer<R>): R;
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
  * parallel. Each visitor will be visited for each node before moving on.
@@ -122,7 +159,7 @@ export declare function visitInParallel(
  */
 export declare function getVisitFn(
   visitor: ASTVisitor,
-  kind: string,
+  kind: keyof ASTKindToNode,
   isLeaving: boolean,
 ): Maybe<ASTVisitFn<ASTNode>>;
 export {};

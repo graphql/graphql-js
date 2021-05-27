@@ -377,7 +377,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     return {
       ...field,
       type: replaceType(field.type),
-      args: (0, _mapValue.mapValue)(field.args, extendArg),
+      args: field.args && (0, _mapValue.mapValue)(field.args, extendArg),
     };
   }
 
@@ -399,12 +399,13 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
           : [];
 
       for (const operationType of operationTypesNodes) {
+        // Note: While this could make early assertions to get the correctly
+        // typed values below, that would throw immediately while type system
+        // validation with validateSchema() will produce more actionable results.
+        // @ts-expect-error
         opTypes[operationType.operation] = getNamedType(operationType.type);
       }
-    } // Note: While this could make early assertions to get the correctly
-    // typed values below, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    // @ts-expect-error
+    }
 
     return opTypes;
   }
@@ -755,8 +756,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 }
 
 const stdTypeMap = (0, _keyMap.keyMap)(
-  // @ts-expect-error FIXME: TS Conversion
-  _scalars.specifiedScalarTypes.concat(_introspection.introspectionTypes),
+  [..._scalars.specifiedScalarTypes, ..._introspection.introspectionTypes],
   (type) => type.name,
 );
 /**

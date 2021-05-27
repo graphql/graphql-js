@@ -70,11 +70,10 @@ function KnownDirectivesRule(context) {
 
 function getDirectiveLocationForASTPath(ancestors) {
   const appliedTo = ancestors[ancestors.length - 1];
-  !Array.isArray(appliedTo) || (0, _invariant.invariant)(false); // @ts-expect-error FIXME: TS Conversion
+  'kind' in appliedTo || (0, _invariant.invariant)(false);
 
   switch (appliedTo.kind) {
     case _kinds.Kind.OPERATION_DEFINITION:
-      // @ts-expect-error FIXME: TS Conversion
       return getDirectiveLocationForOperation(appliedTo.operation);
 
     case _kinds.Kind.FIELD:
@@ -127,8 +126,8 @@ function getDirectiveLocationForASTPath(ancestors) {
       return _directiveLocation.DirectiveLocation.INPUT_OBJECT;
 
     case _kinds.Kind.INPUT_VALUE_DEFINITION: {
-      const parentNode = ancestors[ancestors.length - 3]; // @ts-expect-error FIXME: TS Conversion
-
+      const parentNode = ancestors[ancestors.length - 3];
+      'kind' in parentNode || (0, _invariant.invariant)(false);
       return parentNode.kind === _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION
         ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION
         : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;

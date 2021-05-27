@@ -55,7 +55,6 @@ function lexicographicSortSchema(schema) {
   }
 
   function replaceNamedType(type) {
-    // @ts-expect-error
     return typeMap[type.name];
   }
 
@@ -80,7 +79,7 @@ function lexicographicSortSchema(schema) {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
-      args: sortArgs(field.args),
+      args: field.args && sortArgs(field.args),
     }));
   }
 

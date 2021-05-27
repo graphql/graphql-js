@@ -25,7 +25,6 @@ export function introspectionFromSchema(schema, options) {
     schema,
     document,
   });
-  (!result.errors && result.data) || invariant(false); // @ts-expect-error FIXME
-
+  (!result.errors && result.data) || invariant(false);
   return result.data;
 }

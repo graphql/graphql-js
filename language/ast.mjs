@@ -65,6 +65,9 @@ export class Token {
 
   /**
    * For non-punctuation tokens, represents the interpreted value of the token.
+   *
+   * Note: is undefined for punctuation tokens, but typed as string for
+   * convenience in the parser.
    */
 
   /**
@@ -97,11 +100,10 @@ export class Token {
  */
 
 export function isNode(maybeNode) {
-  // eslint-disable-next-line @typescript-eslint/dot-notation
   return (
     typeof (maybeNode === null || maybeNode === void 0
       ? void 0
-      : maybeNode['kind']) === 'string'
+      : maybeNode.kind) === 'string'
   );
 }
 /**

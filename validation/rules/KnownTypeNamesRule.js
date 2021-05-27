@@ -78,7 +78,7 @@ const standardTypeNames = [
 
 function isSDLNode(value) {
   return (
-    !Array.isArray(value) && // @ts-expect-error FIXME: TS Conversion
+    'kind' in value &&
     ((0, _predicates.isTypeSystemDefinitionNode)(value) ||
       (0, _predicates.isTypeSystemExtensionNode)(value))
   );

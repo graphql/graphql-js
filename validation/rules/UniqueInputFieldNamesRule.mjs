@@ -1,3 +1,4 @@
+import { invariant } from '../../jsutils/invariant.mjs';
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 
 /**
@@ -17,7 +18,9 @@ export function UniqueInputFieldNamesRule(context) {
       },
 
       leave() {
-        knownNames = knownNameStack.pop();
+        const prevKnownNames = knownNameStack.pop();
+        prevKnownNames || invariant(false);
+        knownNames = prevKnownNames;
       },
     },
 

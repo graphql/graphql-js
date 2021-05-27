@@ -388,7 +388,8 @@ function getFieldDef(schema, parentType, fieldNode) {
 
 function visitWithTypeInfo(typeInfo, visitor) {
   return {
-    enter(node) {
+    enter(...args) {
+      const node = args[0];
       typeInfo.enter(node);
       const fn = (0, _visitor.getVisitFn)(
         visitor,
@@ -398,7 +399,7 @@ function visitWithTypeInfo(typeInfo, visitor) {
       );
 
       if (fn) {
-        const result = fn.apply(visitor, arguments);
+        const result = fn.apply(visitor, args);
 
         if (result !== undefined) {
           typeInfo.leave(node);
@@ -412,7 +413,8 @@ function visitWithTypeInfo(typeInfo, visitor) {
       }
     },
 
-    leave(node) {
+    leave(...args) {
+      const node = args[0];
       const fn = (0, _visitor.getVisitFn)(
         visitor,
         node.kind,
@@ -422,7 +424,7 @@ function visitWithTypeInfo(typeInfo, visitor) {
       let result;
 
       if (fn) {
-        result = fn.apply(visitor, arguments);
+        result = fn.apply(visitor, args);
       }
 
       typeInfo.leave(node);

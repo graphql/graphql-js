@@ -5,6 +5,8 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.UniqueInputFieldNamesRule = UniqueInputFieldNamesRule;
 
+var _invariant = require('../../jsutils/invariant.js');
+
 var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
@@ -24,7 +26,9 @@ function UniqueInputFieldNamesRule(context) {
       },
 
       leave() {
-        knownNames = knownNameStack.pop();
+        const prevKnownNames = knownNameStack.pop();
+        prevKnownNames || (0, _invariant.invariant)(false);
+        knownNames = prevKnownNames;
       },
     },
 

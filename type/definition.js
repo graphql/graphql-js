@@ -675,8 +675,11 @@ class GraphQLObjectType {
       _config$extensionASTN2 !== void 0
         ? _config$extensionASTN2
         : [];
-    this._fields = defineFieldMap.bind(undefined, config);
-    this._interfaces = defineInterfaces.bind(undefined, config);
+
+    this._fields = () => defineFieldMap(config);
+
+    this._interfaces = () => defineInterfaces(config);
+
     typeof config.name === 'string' ||
       (0, _devAssert.devAssert)(false, 'Must provide name.');
     config.isTypeOf == null ||
@@ -755,8 +758,7 @@ function defineFieldMap(config) {
     (0, _devAssert.devAssert)(
       false,
       `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
-    ); // @ts-expect-error FIXME: TS Conversion
-
+    );
   return (0, _mapValue.mapValue)(fieldMap, (fieldConfig, fieldName) => {
     var _fieldConfig$args;
 
