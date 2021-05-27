@@ -1036,7 +1036,7 @@ describe('Type System: Object fields must have output types', () => {
   }
 
   it('rejects an empty Object field type', () => {
-    // TODO ts-expect-error (type field must not be undefined)
+    // @ts-expect-error (type field must not be undefined)
     const schema = schemaWithObjectField({ type: undefined });
     expect(validateSchema(schema)).to.deep.equal([
       {
@@ -1098,7 +1098,7 @@ describe('Type System: Objects can only implement unique interfaces', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'BadObject',
-        // TODO ts-expect-error (interfaces must not contain undefined)
+        // @ts-expect-error (interfaces must not contain undefined)
         interfaces: [undefined],
         fields: { f: { type: GraphQLString } },
       }),
@@ -1357,7 +1357,7 @@ describe('Type System: Interface fields must have output types', () => {
   }
 
   it('rejects an empty Interface field type', () => {
-    // TODO ts-expect-error (type field must not be undefined)
+    // @ts-expect-error (type field must not be undefined)
     const schema = schemaWithInterfaceField({ type: undefined });
     expect(validateSchema(schema)).to.deep.equal([
       {
@@ -1493,7 +1493,7 @@ describe('Type System: Arguments must have input types', () => {
   }
 
   it('rejects an empty field arg type', () => {
-    // TODO ts-expect-error (type field must not be undefined)
+    // @ts-expect-error (type field must not be undefined)
     const schema = schemaWithArg({ type: undefined });
     expect(validateSchema(schema)).to.deep.equal([
       {
@@ -1631,7 +1631,7 @@ describe('Type System: Input Object fields must have input types', () => {
   }
 
   it('rejects an empty input field type', () => {
-    // TODO ts-expect-error (type field must not be undefined)
+    // @ts-expect-error (type field must not be undefined)
     const schema = schemaWithInputField({ type: undefined });
     expect(validateSchema(schema)).to.deep.equal([
       {

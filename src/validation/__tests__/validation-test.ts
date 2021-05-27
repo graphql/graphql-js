@@ -16,7 +16,7 @@ import { testSchema } from './harness';
 
 describe('Validate: Supports full validation', () => {
   it('rejects invalid documents', () => {
-    // TODO ts-expect-error (expects a DocumentNode as a second parameter)
+    // @ts-expect-error (expects a DocumentNode as a second parameter)
     expect(() => validate(testSchema, null)).to.throw('Must provide document.');
   });
 
