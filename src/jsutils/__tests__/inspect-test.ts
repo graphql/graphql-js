@@ -132,13 +132,13 @@ describe('inspect', () => {
       '{ self: [Circular], deepSelf: { self: [Circular] } }',
     );
 
-    const array = [];
+    const array: any = [];
     array[0] = array;
     array[1] = [array];
 
     expect(inspect(array)).to.equal('[[Circular], [[Circular]]]');
 
-    const mixed = { array: [] };
+    const mixed: any = { array: [] };
     mixed.array[0] = mixed;
 
     expect(inspect(mixed)).to.equal('{ array: [[Circular]] }');
@@ -165,14 +165,21 @@ describe('inspect', () => {
 
     expect(inspect([[new Foo()]])).to.equal('[[[Foo]]]');
 
-    Foo.prototype[Symbol.toStringTag] = 'Bar';
-    expect(inspect([[new Foo()]])).to.equal('[[[Bar]]]');
+    class Foo2 {
+      foo: string;
+
+      [Symbol.toStringTag] = 'Bar';
+
+      constructor() {
+        this.foo = 'bar';
+      }
+    }
+    expect(inspect([[new Foo2()]])).to.equal('[[[Bar]]]');
 
     // eslint-disable-next-line func-names
-    const objectWithoutClassName = new (function () {
-      // eslint-disable-next-line @typescript-eslint/no-invalid-this
+    const objectWithoutClassName = new (function (this: any) {
       this.foo = 1;
-    })();
+    } as any)();
     expect(inspect([[objectWithoutClassName]])).to.equal('[[[Object]]]');
   });
 });
