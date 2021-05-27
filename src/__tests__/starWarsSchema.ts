@@ -98,7 +98,7 @@ const episodeEnum = new GraphQLEnumType({
  *     secretBackstory: String
  *   }
  */
-const characterInterface = new GraphQLInterfaceType({
+const characterInterface: GraphQLInterfaceType = new GraphQLInterfaceType({
   name: 'Character',
   description: 'A character in the Star Wars Trilogy',
   fields: () => ({
