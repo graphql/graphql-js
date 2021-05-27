@@ -35,7 +35,7 @@ export function SingleFieldSubscriptionsRule(
           const variableValues: {
             [variable: string]: mixed,
             ...
-          } = {};
+          } = Object.create(null);
           const document = context.getDocument();
           const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
           for (const definition of document.definitions) {
@@ -58,8 +58,8 @@ export function SingleFieldSubscriptionsRule(
             fakeExecutionContext,
             subscriptionType,
             node.selectionSet,
-            {},
-            {},
+            new Map(),
+            new Set(),
           );
           const responseKeys = Object.keys(fields);
           if (responseKeys.length > 1) {
