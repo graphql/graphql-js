@@ -1,3 +1,5 @@
+import { invariant } from '../jsutils/invariant';
+
 import type { Source } from './source';
 
 const LineRegExp = /\r\n|[\n\r]/g;
@@ -19,6 +21,7 @@ export function getLocation(source: Source, position: number): SourceLocation {
   let line = 1;
 
   for (const match of source.body.matchAll(LineRegExp)) {
+    invariant(typeof match.index === 'number');
     if (match.index >= position) {
       break;
     }
