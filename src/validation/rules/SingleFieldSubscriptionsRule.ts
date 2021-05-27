@@ -61,11 +61,9 @@ export function SingleFieldSubscriptionsRule(
             new Set(),
           );
           if (fields.size > 1) {
-            const responseKeys = [...fields.keys()];
-            const extraResponseKeys = responseKeys.slice(1);
-            const extraFieldSelections = extraResponseKeys.flatMap((key) =>
-              fields.get(key),
-            );
+            const fieldSelectionLists = [...fields.values()];
+            const extraFieldSelectionLists = fieldSelectionLists.slice(1);
+            const extraFieldSelections = extraFieldSelectionLists.flat();
             context.reportError(
               new GraphQLError(
                 operationName != null
