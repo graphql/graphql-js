@@ -577,9 +577,9 @@ describe('Execute: Handles execution of abstract types', () => {
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    assertInterfaceType(schema.getType('Pet')).resolveType =
-      // @ts-expect-error
-      () => schema.getType('Cat');
+    // @ts-expect-error
+    assertInterfaceType(schema.getType('Pet')).resolveType = () =>
+      schema.getType('Cat');
     expectError({ forTypeName: undefined }).toEqual(
       'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
     );

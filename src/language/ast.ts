@@ -104,7 +104,7 @@ export class Token {
     this.end = end;
     this.line = line;
     this.column = column;
-    this.value = value;
+    this.value = value as string;
     this.prev = prev;
     this.next = null;
   }

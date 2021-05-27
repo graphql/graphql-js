@@ -1095,7 +1095,7 @@ describe('Schema Builder', () => {
   });
 
   it('Rejects invalid AST', () => {
-    // TODO ts-expect-error (First parameter expected to be DocumentNode)
+    // @ts-expect-error (First parameter expected to be DocumentNode)
     expect(() => buildASTSchema(null)).to.throw(
       'Must provide valid Document AST',
     );
