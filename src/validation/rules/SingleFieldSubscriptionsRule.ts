@@ -60,11 +60,11 @@ export function SingleFieldSubscriptionsRule(
             new Map(),
             new Set(),
           );
-          const responseKeys = Object.keys(fields);
-          if (responseKeys.length > 1) {
+          if (fields.size > 1) {
+            const responseKeys = [...fields.keys()];
             const extraResponseKeys = responseKeys.slice(1);
-            const extraFieldSelections = extraResponseKeys.flatMap(
-              (key) => fields[key],
+            const extraFieldSelections = extraResponseKeys.flatMap((key) =>
+              fields.get(key),
             );
             context.reportError(
               new GraphQLError(
@@ -75,8 +75,8 @@ export function SingleFieldSubscriptionsRule(
               ),
             );
           }
-          for (const responseKey of Object.keys(fields)) {
-            const field = fields[responseKey][0];
+          for (const fieldNodes of fields.values()) {
+            const field = fieldNodes[0];
             const fieldName = field.name.value;
             if (fieldName[0] === '_' && fieldName[1] === '_') {
               context.reportError(
@@ -84,7 +84,7 @@ export function SingleFieldSubscriptionsRule(
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',
-                  fields[responseKey],
+                  fieldNodes,
                 ),
               );
             }
