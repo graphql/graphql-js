@@ -94,7 +94,7 @@ describe('Execute: Handles basic execution tasks', () => {
       return Promise.resolve(data);
     }
 
-    const DataType = new GraphQLObjectType({
+    const DataType: GraphQLObjectType = new GraphQLObjectType({
       name: 'DataType',
       fields: () => ({
         a: { type: GraphQLString },
@@ -185,7 +185,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('merges parallel fragments', () => {
-    const Type = new GraphQLObjectType({
+    const Type: GraphQLObjectType = new GraphQLObjectType({
       name: 'Type',
       fields: () => ({
         a: { type: GraphQLString, resolve: () => 'Apple' },
@@ -624,7 +624,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('Full response path is included for non-nullable fields', () => {
-    const A = new GraphQLObjectType({
+    const A: GraphQLObjectType = new GraphQLObjectType({
       name: 'A',
       fields: () => ({
         nullableA: {

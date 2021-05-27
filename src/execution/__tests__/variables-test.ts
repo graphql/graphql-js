@@ -7,7 +7,10 @@ import { invariant } from '../../jsutils/invariant';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
-import type { GraphQLArgumentConfig } from '../../type/definition';
+import type {
+  GraphQLFieldConfig,
+  GraphQLArgumentConfig,
+} from '../../type/definition';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
 import {
@@ -64,7 +67,9 @@ const TestEnum = new GraphQLEnumType({
   },
 });
 
-function fieldWithInputArg(inputArg: GraphQLArgumentConfig) {
+function fieldWithInputArg(
+  inputArg: GraphQLArgumentConfig,
+): GraphQLFieldConfig<any, any> {
   return {
     type: GraphQLString,
     args: { input: inputArg },
