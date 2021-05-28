@@ -523,6 +523,25 @@ export function getNamedType(
 }
 
 /**
+ * The base class for all Schema Elements.
+ */
+export class GraphQLSchemaElement {
+  readonly coordinate: string;
+
+  constructor(coordinate: string) {
+    this.coordinate = coordinate;
+  }
+
+  toString(): string {
+    return this.coordinate;
+  }
+
+  toJSON(): string {
+    return this.toString();
+  }
+}
+
+/**
  * Used while defining GraphQL types to allow for circular references in
  * otherwise immutable type definitions.
  */
@@ -574,7 +593,7 @@ export interface GraphQLScalarTypeExtensions {
  *     });
  *
  */
-export class GraphQLScalarType {
+export class GraphQLScalarType extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   specifiedByURL: Maybe<string>;
@@ -586,6 +605,7 @@ export class GraphQLScalarType {
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 
   constructor(config: Readonly<GraphQLScalarTypeConfig<unknown, unknown>>) {
+    super(config.name);
     const parseValue = config.parseValue ?? identityFunc;
     this.name = config.name;
     this.description = config.description;
@@ -634,14 +654,6 @@ export class GraphQLScalarType {
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 
   get [Symbol.toStringTag]() {
@@ -739,7 +751,10 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  *     });
  *
  */
-export class GraphQLObjectType<TSource = any, TContext = any> {
+export class GraphQLObjectType<
+  TSource = any,
+  TContext = any,
+> extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
@@ -751,6 +766,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   private _interfaces: ThunkArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
+    super(config.name);
     this.name = config.name;
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
@@ -787,20 +803,12 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
       name: this.name,
       description: this.description,
       interfaces: this.getInterfaces(),
-      fields: fieldsToFieldsConfig(this.getFields()),
+      fields: mapValue(this.getFields(), (field) => field.toConfig()),
       isTypeOf: this.isTypeOf,
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 
   get [Symbol.toStringTag]() {
@@ -833,88 +841,15 @@ function defineFieldMap<TSource, TContext>(
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
   );
 
-  return mapValue(fieldMap, (fieldConfig, fieldName) => {
-    devAssert(
-      isPlainObj(fieldConfig),
-      `${config.name}.${fieldName} field config must be an object.`,
-    );
-    devAssert(
-      fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function',
-      `${config.name}.${fieldName} field resolver must be a function if ` +
-        `provided, but got: ${inspect(fieldConfig.resolve)}.`,
-    );
-
-    const argsConfig = fieldConfig.args ?? {};
-    devAssert(
-      isPlainObj(argsConfig),
-      `${config.name}.${fieldName} args must be an object with argument names as keys.`,
-    );
-
-    return {
-      name: fieldName,
-      description: fieldConfig.description,
-      type: fieldConfig.type,
-      args: defineArguments(argsConfig),
-      resolve: fieldConfig.resolve,
-      subscribe: fieldConfig.subscribe,
-      deprecationReason: fieldConfig.deprecationReason,
-      extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
-      astNode: fieldConfig.astNode,
-    };
-  });
-}
-
-export function defineArguments(
-  config: GraphQLFieldConfigArgumentMap,
-): ReadonlyArray<GraphQLArgument> {
-  return Object.entries(config).map(([argName, argConfig]) => ({
-    name: argName,
-    description: argConfig.description,
-    type: argConfig.type,
-    defaultValue: argConfig.defaultValue,
-    deprecationReason: argConfig.deprecationReason,
-    extensions: argConfig.extensions && toObjMap(argConfig.extensions),
-    astNode: argConfig.astNode,
-  }));
+  return mapValue(
+    fieldMap,
+    (fieldConfig, fieldName) =>
+      new GraphQLField(config.name, fieldName, fieldConfig),
+  );
 }
 
 function isPlainObj(obj: unknown): boolean {
   return isObjectLike(obj) && !Array.isArray(obj);
-}
-
-function fieldsToFieldsConfig<TSource, TContext>(
-  fields: GraphQLFieldMap<TSource, TContext>,
-): GraphQLFieldConfigMap<TSource, TContext> {
-  return mapValue(fields, (field) => ({
-    description: field.description,
-    type: field.type,
-    args: argsToArgsConfig(field.args),
-    resolve: field.resolve,
-    subscribe: field.subscribe,
-    deprecationReason: field.deprecationReason,
-    extensions: field.extensions,
-    astNode: field.astNode,
-  }));
-}
-
-/**
- * @internal
- */
-export function argsToArgsConfig(
-  args: ReadonlyArray<GraphQLArgument>,
-): GraphQLFieldConfigArgumentMap {
-  return keyValMap(
-    args,
-    (arg) => arg.name,
-    (arg) => ({
-      description: arg.description,
-      type: arg.type,
-      defaultValue: arg.defaultValue,
-      deprecationReason: arg.deprecationReason,
-      extensions: arg.extensions,
-      astNode: arg.astNode,
-    }),
-  );
 }
 
 export interface GraphQLObjectTypeConfig<TSource, TContext> {
@@ -1038,11 +973,11 @@ export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldConfig<TSource, TContext>
 >;
 
-export interface GraphQLField<
+export class GraphQLField<
   TSource,
   TContext,
   TArgs = { [argument: string]: any },
-> {
+> extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   type: GraphQLOutputType;
@@ -1052,9 +987,65 @@ export interface GraphQLField<
   deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLFieldExtensions<TSource, TContext, TArgs>>>;
   astNode: Maybe<FieldDefinitionNode>;
+
+  constructor(
+    parentCoordinate: string,
+    name: string,
+    config: GraphQLFieldConfig<TSource, TContext, TArgs>,
+  ) {
+    const coordinate = `${parentCoordinate}.${name}`;
+
+    devAssert(
+      isPlainObj(config),
+      `${coordinate} field config must be an object.`,
+    );
+
+    devAssert(
+      config.resolve == null || typeof config.resolve === 'function',
+      `${coordinate} field resolver must be a function if ` +
+        `provided, but got: ${inspect(config.resolve)}.`,
+    );
+
+    const argsConfig = config.args ?? {};
+    devAssert(
+      isPlainObj(argsConfig),
+      `${coordinate} args must be an object with argument names as keys.`,
+    );
+
+    super(coordinate);
+    this.name = name;
+    this.description = config.description;
+    this.type = config.type;
+    this.args = Object.entries(argsConfig).map(
+      ([argName, argConfig]) =>
+        new GraphQLArgument(coordinate, argName, argConfig),
+    );
+    this.resolve = config.resolve;
+    this.subscribe = config.subscribe;
+    this.deprecationReason = config.deprecationReason;
+    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.astNode = config.astNode;
+  }
+
+  toConfig(): GraphQLFieldConfig<TSource, TContext, TArgs> {
+    return {
+      description: this.description,
+      type: this.type,
+      args: keyValMap(
+        this.args,
+        (arg) => arg.name,
+        (arg) => arg.toConfig(),
+      ),
+      resolve: this.resolve,
+      subscribe: this.subscribe,
+      deprecationReason: this.deprecationReason,
+      extensions: this.extensions,
+      astNode: this.astNode,
+    };
+  }
 }
 
-export interface GraphQLArgument {
+export class GraphQLArgument extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   type: GraphQLInputType;
@@ -1062,6 +1053,33 @@ export interface GraphQLArgument {
   deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLArgumentExtensions>>;
   astNode: Maybe<InputValueDefinitionNode>;
+
+  constructor(
+    parentCoordinate: string,
+    name: string,
+    config: GraphQLArgumentConfig,
+  ) {
+    const coordinate = `${parentCoordinate}(${name}:)`;
+    super(coordinate);
+    this.name = name;
+    this.description = config.description;
+    this.type = config.type;
+    this.defaultValue = config.defaultValue;
+    this.deprecationReason = config.deprecationReason;
+    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.astNode = config.astNode;
+  }
+
+  toConfig(): GraphQLArgumentConfig {
+    return {
+      description: this.description,
+      type: this.type,
+      defaultValue: this.defaultValue,
+      deprecationReason: this.deprecationReason,
+      extensions: this.extensions,
+      astNode: this.astNode,
+    };
+  }
 }
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean {
@@ -1103,7 +1121,7 @@ export interface GraphQLInterfaceTypeExtensions {
  *     });
  *
  */
-export class GraphQLInterfaceType {
+export class GraphQLInterfaceType extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
@@ -1115,6 +1133,7 @@ export class GraphQLInterfaceType {
   private _interfaces: ThunkArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>) {
+    super(config.name);
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1151,20 +1170,12 @@ export class GraphQLInterfaceType {
       name: this.name,
       description: this.description,
       interfaces: this.getInterfaces(),
-      fields: fieldsToFieldsConfig(this.getFields()),
+      fields: mapValue(this.getFields(), (field) => field.toConfig()),
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 
   get [Symbol.toStringTag]() {
@@ -1232,7 +1243,7 @@ export interface GraphQLUnionTypeExtensions {
  *     });
  *
  */
-export class GraphQLUnionType {
+export class GraphQLUnionType extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
@@ -1243,6 +1254,7 @@ export class GraphQLUnionType {
   private _types: ThunkArray<GraphQLObjectType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
+    super(config.name);
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1276,14 +1288,6 @@ export class GraphQLUnionType {
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 
   get [Symbol.toStringTag]() {
@@ -1358,7 +1362,7 @@ export interface GraphQLEnumTypeExtensions {
  * Note: If a value is not provided in a definition, the name of the enum value
  * will be used as its internal value.
  */
-export class GraphQLEnumType /* <T> */ {
+export class GraphQLEnumType /* <T> */ extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLEnumTypeExtensions>>;
@@ -1370,13 +1374,21 @@ export class GraphQLEnumType /* <T> */ {
   private _nameLookup: ObjMap<GraphQLEnumValue>;
 
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
+    super(config.name);
     this.name = config.name;
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
-    this._values = defineEnumValues(this.name, config.values);
+    devAssert(
+      isPlainObj(config.values),
+      `${this.name} values must be an object with value names as keys.`,
+    );
+    this._values = Object.entries(config.values).map(
+      ([valueName, valueConfig]) =>
+        new GraphQLEnumValue(config.name, valueName, valueConfig),
+    );
     this._valueLookup = new Map(
       this._values.map((enumValue) => [enumValue.value, enumValue]),
     );
@@ -1449,34 +1461,18 @@ export class GraphQLEnumType /* <T> */ {
   }
 
   toConfig(): GraphQLEnumTypeNormalizedConfig {
-    const values = keyValMap(
-      this.getValues(),
-      (value) => value.name,
-      (value) => ({
-        description: value.description,
-        value: value.value,
-        deprecationReason: value.deprecationReason,
-        extensions: value.extensions,
-        astNode: value.astNode,
-      }),
-    );
-
     return {
       name: this.name,
       description: this.description,
-      values,
+      values: keyValMap(
+        this.getValues(),
+        (value) => value.name,
+        (value) => value.toConfig(),
+      ),
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 
   get [Symbol.toStringTag]() {
@@ -1492,31 +1488,6 @@ function didYouMeanEnumValue(
   const suggestedValues = suggestionList(unknownValueStr, allNames);
 
   return didYouMean('the enum value', suggestedValues);
-}
-
-function defineEnumValues(
-  typeName: string,
-  valueMap: GraphQLEnumValueConfigMap /* <T> */,
-): Array<GraphQLEnumValue /* <T> */> {
-  devAssert(
-    isPlainObj(valueMap),
-    `${typeName} values must be an object with value names as keys.`,
-  );
-  return Object.entries(valueMap).map(([valueName, valueConfig]) => {
-    devAssert(
-      isPlainObj(valueConfig),
-      `${typeName}.${valueName} must refer to an object with a "value" key ` +
-        `representing an internal value but got: ${inspect(valueConfig)}.`,
-    );
-    return {
-      name: valueName,
-      description: valueConfig.description,
-      value: valueConfig.value !== undefined ? valueConfig.value : valueName,
-      deprecationReason: valueConfig.deprecationReason,
-      extensions: valueConfig.extensions && toObjMap(valueConfig.extensions),
-      astNode: valueConfig.astNode,
-    };
-  });
 }
 
 export interface GraphQLEnumTypeConfig {
@@ -1557,13 +1528,45 @@ export interface GraphQLEnumValueConfig {
   astNode?: Maybe<EnumValueDefinitionNode>;
 }
 
-export interface GraphQLEnumValue {
+export class GraphQLEnumValue extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   value: any /* T */;
   deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLEnumValueExtensions>>;
   astNode: Maybe<EnumValueDefinitionNode>;
+
+  constructor(
+    parentCoordinate: string,
+    name: string,
+    config: GraphQLEnumValueConfig,
+  ) {
+    const coordinate = `${parentCoordinate}.${name}`;
+
+    devAssert(
+      isPlainObj(config),
+      `${coordinate} must refer to an object with a "value" key ` +
+        `representing an internal value but got: ${inspect(config)}.`,
+    );
+
+    super(coordinate);
+    this.name = name;
+    this.description = config.description;
+    this.value = config.value !== undefined ? config.value : name;
+    this.deprecationReason = config.deprecationReason;
+    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.astNode = config.astNode;
+  }
+
+  toConfig(): GraphQLEnumValueConfig {
+    return {
+      description: this.description,
+      value: this.value,
+      deprecationReason: this.deprecationReason,
+      extensions: this.extensions,
+      astNode: this.astNode,
+    };
+  }
 }
 
 /**
@@ -1599,7 +1602,7 @@ export interface GraphQLInputObjectTypeExtensions {
  *     });
  *
  */
-export class GraphQLInputObjectType {
+export class GraphQLInputObjectType extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLInputObjectTypeExtensions>>;
@@ -1609,6 +1612,7 @@ export class GraphQLInputObjectType {
   private _fields: ThunkObjMap<GraphQLInputField>;
 
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
+    super(config.name);
     this.name = config.name;
     this.description = config.description;
     this.extensions = config.extensions && toObjMap(config.extensions);
@@ -1627,30 +1631,14 @@ export class GraphQLInputObjectType {
   }
 
   toConfig(): GraphQLInputObjectTypeNormalizedConfig {
-    const fields = mapValue(this.getFields(), (field) => ({
-      description: field.description,
-      type: field.type,
-      defaultValue: field.defaultValue,
-      extensions: field.extensions,
-      astNode: field.astNode,
-    }));
-
     return {
       name: this.name,
       description: this.description,
-      fields,
+      fields: mapValue(this.getFields(), (field) => field.toConfig()),
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 
   get [Symbol.toStringTag]() {
@@ -1666,22 +1654,11 @@ function defineInputFieldMap(
     isPlainObj(fieldMap),
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
   );
-  return mapValue(fieldMap, (fieldConfig, fieldName) => {
-    devAssert(
-      !('resolve' in fieldConfig),
-      `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
-    );
-
-    return {
-      name: fieldName,
-      description: fieldConfig.description,
-      type: fieldConfig.type,
-      defaultValue: fieldConfig.defaultValue,
-      deprecationReason: fieldConfig.deprecationReason,
-      extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
-      astNode: fieldConfig.astNode,
-    };
-  });
+  return mapValue(
+    fieldMap,
+    (fieldConfig, fieldName) =>
+      new GraphQLInputField(config.name, fieldName, fieldConfig),
+  );
 }
 
 export interface GraphQLInputObjectTypeConfig {
@@ -1724,7 +1701,7 @@ export interface GraphQLInputFieldConfig {
 
 export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
-export interface GraphQLInputField {
+export class GraphQLInputField extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   type: GraphQLInputType;
@@ -1732,6 +1709,38 @@ export interface GraphQLInputField {
   deprecationReason: Maybe<string>;
   extensions: Maybe<Readonly<GraphQLInputFieldExtensions>>;
   astNode: Maybe<InputValueDefinitionNode>;
+
+  constructor(
+    parentCoordinate: string,
+    name: string,
+    config: GraphQLInputFieldConfig,
+  ) {
+    const coordinate = `${parentCoordinate}.${name}`;
+
+    devAssert(
+      !('resolve' in config),
+      `${coordinate} field has a resolve property, but Input Types cannot define resolvers.`,
+    );
+
+    super(coordinate);
+    this.name = name;
+    this.description = config.description;
+    this.type = config.type;
+    this.defaultValue = config.defaultValue;
+    this.deprecationReason = config.deprecationReason;
+    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.astNode = config.astNode;
+  }
+
+  toConfig(): GraphQLInputFieldConfig {
+    return {
+      description: this.description,
+      type: this.type,
+      defaultValue: this.defaultValue,
+      extensions: this.extensions,
+      astNode: this.astNode,
+    };
+  }
 }
 
 export function isRequiredInputField(field: GraphQLInputField): boolean {

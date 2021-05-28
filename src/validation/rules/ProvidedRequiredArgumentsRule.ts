@@ -44,10 +44,9 @@ export function ProvidedRequiredArgumentsRule(
         );
         for (const argDef of fieldDef.args) {
           if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
-            const argTypeStr = inspect(argDef.type);
             context.reportError(
               new GraphQLError(
-                `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
+                `Argument ${argDef} of type "${argDef.type}" is required, but it was not provided.`,
                 fieldNode,
               ),
             );
@@ -107,7 +106,7 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
                 : print(argDef.type);
               context.reportError(
                 new GraphQLError(
-                  `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
+                  `Argument @${directiveName}(${argName}:) of type "${argType}" is required, but it was not provided.`,
                   directiveNode,
                 ),
               );

@@ -1,4 +1,3 @@
-import { inspect } from '../../jsutils/inspect';
 import type { Maybe } from '../../jsutils/Maybe';
 
 import { GraphQLError } from '../../error/GraphQLError';
@@ -53,11 +52,9 @@ export function VariablesInAllowedPositionRule(
                 defaultValue,
               )
             ) {
-              const varTypeStr = inspect(varType);
-              const typeStr = inspect(type);
               context.reportError(
                 new GraphQLError(
-                  `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
+                  `Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`,
                   [varDef, node],
                 ),
               );

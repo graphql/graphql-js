@@ -203,7 +203,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Argument "input" has invalid value ["foo", "bar", "baz"].',
+                'Argument TestType.fieldWithObjectInput(input:) of type TestInputObject has invalid value ["foo", "bar", "baz"].',
               path: ['fieldWithObjectInput'],
               locations: [{ line: 3, column: 41 }],
             },
@@ -617,7 +617,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$value" of required type "String!" was not provided.',
+              'Variable "$value" of required type String! was not provided.',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -636,7 +636,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$value" of non-null type "String!" must not be null.',
+              'Variable "$value" of non-null type String! must not be null.',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -682,7 +682,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Argument "input" of required type "String!" was not provided.',
+              'Argument TestType.fieldWithNonNullableStringInput(input:) of required type String! was not provided.',
             locations: [{ line: 1, column: 3 }],
             path: ['fieldWithNonNullableStringInput'],
           },
@@ -730,7 +730,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Argument "input" of required type "String!" was provided the variable "$foo" which was not provided a runtime value.',
+              'Argument TestType.fieldWithNonNullableStringInput(input:) of required type String! was provided the variable "$foo" which was not provided a runtime value.',
             locations: [{ line: 3, column: 50 }],
             path: ['fieldWithNonNullableStringInput'],
           },
@@ -785,7 +785,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" of non-null type "[String]!" must not be null.',
+              'Variable "$input" of non-null type [String]! must not be null.',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -867,7 +867,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" of non-null type "[String!]!" must not be null.',
+              'Variable "$input" of non-null type [String!]! must not be null.',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -916,7 +916,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" expected value of type "TestType!" which cannot be used as an input type.',
+              'Variable "$input" expected value of type TestType! which cannot be used as an input type.',
             locations: [{ line: 2, column: 24 }],
           },
         ],
@@ -935,7 +935,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" expected value of type "UnknownType!" which cannot be used as an input type.',
+              'Variable "$input" expected value of type UnknownType! which cannot be used as an input type.',
             locations: [{ line: 2, column: 24 }],
           },
         ],
@@ -981,7 +981,8 @@ describe('Execute: Handles inputs', () => {
         },
         errors: [
           {
-            message: 'Argument "input" has invalid value WRONG_TYPE.',
+            message:
+              'Argument TestType.fieldWithDefaultArgumentValue(input:) of type String has invalid value WRONG_TYPE.',
             locations: [{ line: 3, column: 48 }],
             path: ['fieldWithDefaultArgumentValue'],
           },
