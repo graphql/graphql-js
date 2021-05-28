@@ -377,32 +377,38 @@ describe('Type System: build schema from introspection', () => {
 
     // Client types do not get server-only values, so `value` mirrors `name`,
     // rather than using the integers defined in the "server" schema.
-    expect(clientFoodEnum.getValues()).to.deep.equal([
-      {
-        name: 'VEGETABLES',
-        description: 'Foods that are vegetables.',
-        value: 'VEGETABLES',
-        deprecationReason: null,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'FRUITS',
-        description: null,
-        value: 'FRUITS',
-        deprecationReason: null,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'OILS',
-        description: null,
-        value: 'OILS',
-        deprecationReason: 'Too fatty',
-        extensions: {},
-        astNode: undefined,
-      },
-    ]);
+    const values = clientFoodEnum.getValues();
+    expect(values).to.have.lengthOf(3);
+
+    expect(values[0]).to.deep.include({
+      coordinate: 'Food.VEGETABLES',
+      name: 'VEGETABLES',
+      description: 'Foods that are vegetables.',
+      value: 'VEGETABLES',
+      deprecationReason: null,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[1]).to.deep.include({
+      coordinate: 'Food.FRUITS',
+      name: 'FRUITS',
+      description: null,
+      value: 'FRUITS',
+      deprecationReason: null,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[2]).to.deep.include({
+      coordinate: 'Food.OILS',
+      name: 'OILS',
+      description: null,
+      value: 'OILS',
+      deprecationReason: 'Too fatty',
+      extensions: {},
+      astNode: undefined,
+    });
   });
 
   it('builds a schema with an input object', () => {
