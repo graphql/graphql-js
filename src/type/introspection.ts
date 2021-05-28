@@ -8,7 +8,6 @@ import { valueToLiteral } from '../utilities/valueToLiteral.js';
 
 import type {
   GraphQLEnumValue,
-  GraphQLField,
   GraphQLFieldConfigMap,
   GraphQLInputField,
   GraphQLNamedType,
@@ -16,6 +15,7 @@ import type {
 } from './definition.js';
 import {
   GraphQLEnumType,
+  GraphQLField,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -511,53 +511,24 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   },
 });
 
-/**
- * Note that these are GraphQLField and not GraphQLFieldConfig,
- * so the format for args is different.
- */
-
-export const SchemaMetaFieldDef: GraphQLField<unknown, unknown> = {
-  name: '__schema',
+export const SchemaMetaFieldDef = new GraphQLField('<meta>', '__schema', {
   type: new GraphQLNonNull(__Schema),
   description: 'Access the current type schema of this server.',
-  args: [],
   resolve: (_source, _args, _context, { schema }) => schema,
-  deprecationReason: undefined,
-  extensions: Object.create(null),
-  astNode: undefined,
-};
+});
 
-export const TypeMetaFieldDef: GraphQLField<unknown, unknown> = {
-  name: '__type',
+export const TypeMetaFieldDef = new GraphQLField('<meta>', '__type', {
   type: __Type,
   description: 'Request the type information of a single type.',
-  args: [
-    {
-      name: 'name',
-      description: undefined,
-      type: new GraphQLNonNull(GraphQLString),
-      defaultValue: undefined,
-      deprecationReason: undefined,
-      extensions: Object.create(null),
-      astNode: undefined,
-    },
-  ],
+  args: { name: { type: new GraphQLNonNull(GraphQLString) } },
   resolve: (_source, { name }, _context, { schema }) => schema.getType(name),
-  deprecationReason: undefined,
-  extensions: Object.create(null),
-  astNode: undefined,
-};
+});
 
-export const TypeNameMetaFieldDef: GraphQLField<unknown, unknown> = {
-  name: '__typename',
+export const TypeNameMetaFieldDef = new GraphQLField('<meta>', '__typename', {
   type: new GraphQLNonNull(GraphQLString),
   description: 'The name of the current Object type at runtime.',
-  args: [],
   resolve: (_source, _args, _context, { parentType }) => parentType.name,
-  deprecationReason: undefined,
-  extensions: Object.create(null),
-  astNode: undefined,
-};
+});
 
 export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
   Object.freeze([

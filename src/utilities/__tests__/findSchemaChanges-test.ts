@@ -149,7 +149,7 @@ describe('findSchemaChanges', () => {
       {
         type: SafeChangeType.DESCRIPTION_CHANGED,
         description:
-          'Description of argument Query.foo(x) has changed to "New Description".',
+          'Description of argument Query.foo(x:) has changed to "New Description".',
       },
     ]);
   });

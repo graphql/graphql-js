@@ -88,7 +88,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             message:
               // This type of error would be caught at validation-time
               // hence the vague error message here.
-              'Argument "input" has invalid value: Expected variable "$input" provided to type "TestInputObject!" to provide a runtime value.',
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$input" provided to type "TestInputObject!" to provide a runtime value.',
             path: ['test'],
           },
         ],
@@ -229,7 +229,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             // A nullable variable in a oneOf field position would be caught at validation-time
             // hence the vague error message here.
             message:
-              'Argument "input" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" not to be null.',
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" not to be null.',
             locations: [{ line: 3, column: 23 }],
             path: ['test'],
           },
@@ -257,7 +257,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             // A nullable variable in a oneOf field position would be caught at validation-time
             // hence the vague error message here.
             message:
-              'Argument "input" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
             locations: [{ line: 3, column: 23 }],
             path: ['test'],
           },
@@ -288,7 +288,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             // A nullable variable in a oneOf field position would be caught at validation-time
             // hence the vague error message here.
             message:
-              'Argument "input" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" not to be null.',
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" not to be null.',
             locations: [{ line: 6, column: 23 }],
             path: ['test'],
           },
@@ -319,7 +319,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             // A nullable variable in a oneOf field position would be caught at validation-time
             // hence the vague error message here.
             message:
-              'Argument "input" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
             locations: [{ line: 6, column: 23 }],
             path: ['test'],
           },

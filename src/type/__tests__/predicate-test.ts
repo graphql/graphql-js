@@ -3,11 +3,7 @@ import { describe, it } from 'mocha';
 
 import { DirectiveLocation } from '../../language/directiveLocation.js';
 
-import type {
-  GraphQLArgument,
-  GraphQLInputField,
-  GraphQLInputType,
-} from '../definition.js';
+import type { GraphQLInputType } from '../definition.js';
 import {
   assertAbstractType,
   assertCompositeType,
@@ -28,7 +24,9 @@ import {
   assertWrappingType,
   getNamedType,
   getNullableType,
+  GraphQLArgument,
   GraphQLEnumType,
+  GraphQLInputField,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
   GraphQLList,
@@ -570,18 +568,7 @@ describe('Type predicates', () => {
       type: GraphQLInputType;
       defaultValue?: unknown;
     }): GraphQLArgument {
-      return {
-        name: 'someArg',
-        type: config.type,
-        description: undefined,
-        defaultValue:
-          config.defaultValue !== undefined
-            ? { value: config.defaultValue }
-            : undefined,
-        deprecationReason: null,
-        extensions: Object.create(null),
-        astNode: undefined,
-      };
+      return new GraphQLArgument('SomeType.someField', 'someArg', config);
     }
 
     it('returns true for required arguments', () => {
@@ -621,18 +608,7 @@ describe('Type predicates', () => {
       type: GraphQLInputType;
       defaultValue?: unknown;
     }): GraphQLInputField {
-      return {
-        name: 'someInputField',
-        type: config.type,
-        description: undefined,
-        defaultValue:
-          config.defaultValue !== undefined
-            ? { value: config.defaultValue }
-            : undefined,
-        deprecationReason: null,
-        extensions: Object.create(null),
-        astNode: undefined,
-      };
+      return new GraphQLInputField('SomeType', 'someInputField', config);
     }
 
     it('returns true for required input field', () => {
