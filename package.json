@@ -30,7 +30,7 @@
     "changelog": "node resources/gen-changelog.js",
     "benchmark": "node benchmark/benchmark.js",
     "test": "npm run lint && npm run check && npm run testonly && npm run prettier:check && npm run check:spelling && npm run check:integrations",
-    "lint": "eslint --cache .",
+    "lint": "eslint --cache --max-warnings 0 .",
     "check": "tsc --pretty",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.ts",
     "testonly:cover": "nyc npm run testonly",
