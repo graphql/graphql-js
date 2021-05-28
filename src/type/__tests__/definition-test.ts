@@ -329,6 +329,7 @@ describe('Type System: Objects', () => {
       }),
     });
     expect(objType.getFields().f).to.deep.include({
+      coordinate: 'SomeObject.f',
       parentType: objType,
       name: 'f',
       description: undefined,
@@ -358,6 +359,7 @@ describe('Type System: Objects', () => {
     const f = objType.getFields().f;
 
     expect(f).to.deep.include({
+      coordinate: 'SomeObject.f',
       parentType: objType,
       name: 'f',
       description: undefined,
@@ -372,6 +374,7 @@ describe('Type System: Objects', () => {
     expect(f.args).to.have.lengthOf(1);
 
     expect(f.args[0]).to.deep.include({
+      coordinate: 'SomeObject.f(arg:)',
       parent: f,
       name: 'arg',
       description: undefined,
@@ -736,6 +739,8 @@ describe('Type System: Enums', () => {
     expect(values).to.have.lengthOf(3);
 
     expect(values[0]).to.deep.include({
+      coordinate: 'EnumWithNullishValue.NULL',
+      parentEnum: EnumTypeWithNullishValue,
       name: 'NULL',
       description: undefined,
       value: null,
@@ -745,6 +750,8 @@ describe('Type System: Enums', () => {
     });
 
     expect(values[1]).to.deep.include({
+      coordinate: 'EnumWithNullishValue.NAN',
+      parentEnum: EnumTypeWithNullishValue,
       name: 'NAN',
       description: undefined,
       value: NaN,
@@ -754,6 +761,8 @@ describe('Type System: Enums', () => {
     });
 
     expect(values[2]).to.deep.include({
+      coordinate: 'EnumWithNullishValue.NO_CUSTOM_VALUE',
+      parentEnum: EnumTypeWithNullishValue,
       name: 'NO_CUSTOM_VALUE',
       description: undefined,
       value: 'NO_CUSTOM_VALUE',
@@ -856,6 +865,7 @@ describe('Type System: Input Objects', () => {
         },
       });
       expect(inputObjType.getFields().f).to.deep.include({
+        coordinate: 'SomeInputObject.f',
         parentType: inputObjType,
         name: 'f',
         description: undefined,
@@ -876,6 +886,7 @@ describe('Type System: Input Objects', () => {
         }),
       });
       expect(inputObjType.getFields().f).to.deep.include({
+        coordinate: 'SomeInputObject.f',
         parentType: inputObjType,
         name: 'f',
         description: undefined,

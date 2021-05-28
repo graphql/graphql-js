@@ -34,24 +34,23 @@ export type { GraphQLArgs } from './graphql.js';
 export { graphql, graphqlSync } from './graphql.js';
 
 // Create and operate on GraphQL type definitions and schema.
-export type {
-  GraphQLField,
-  GraphQLArgument,
-  GraphQLEnumValue,
-  GraphQLInputField,
-} from './type/index.js';
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
   // Definitions
   GraphQLSchema,
   GraphQLDirective,
+  GraphQLSchemaElement,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
+  GraphQLInputField,
   GraphQLList,
   GraphQLNonNull,
   // Standard GraphQL Scalars

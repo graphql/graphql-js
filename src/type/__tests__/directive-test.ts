@@ -40,6 +40,7 @@ describe('Type System: Directive', () => {
     expect(directive.args).to.have.lengthOf(2);
 
     expect(directive.args[0]).to.deep.include({
+      coordinate: '@Foo(foo:)',
       parent: directive,
       name: 'foo',
       description: undefined,
@@ -52,6 +53,7 @@ describe('Type System: Directive', () => {
     });
 
     expect(directive.args[1]).to.deep.include({
+      coordinate: '@Foo(bar:)',
       parent: directive,
       name: 'bar',
       description: undefined,

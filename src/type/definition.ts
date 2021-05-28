@@ -365,9 +365,7 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  * })
  * ```
  */
-export class GraphQLList<T extends GraphQLType>
-  implements GraphQLSchemaElement
-{
+export class GraphQLList<T extends GraphQLType> {
   readonly ofType: T;
 
   constructor(ofType: T) {
@@ -408,9 +406,7 @@ export class GraphQLList<T extends GraphQLType>
  * ```
  * Note: the enforcement of non-nullability occurs within the executor.
  */
-export class GraphQLNonNull<T extends GraphQLNullableType>
-  implements GraphQLSchemaElement
-{
+export class GraphQLNonNull<T extends GraphQLNullableType> {
   readonly ofType: T;
 
   constructor(ofType: T) {
@@ -535,12 +531,28 @@ export function getNamedType(
 }
 
 /**
- * An interface for all Schema Elements.
+ * The base class for all Schema Elements.
  */
+export class GraphQLSchemaElement {
+  readonly coordinate: string;
 
-export interface GraphQLSchemaElement {
-  toString: () => string;
-  toJSON: () => string;
+  constructor(coordinate: string) {
+    this.coordinate = coordinate;
+  }
+
+  // TODO: add coverage
+  /* c8 ignore next 3*/
+  get [Symbol.toStringTag]() {
+    return 'GraphQLSchemaElement';
+  }
+
+  toString(): string {
+    return this.coordinate;
+  }
+
+  toJSON(): string {
+    return this.toString();
+  }
 }
 
 /**
@@ -648,9 +660,10 @@ export interface GraphQLScalarTypeExtensions {
  *    `coerceInputLiteral()` method.
  *
  */
-export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
-  implements GraphQLSchemaElement
-{
+export class GraphQLScalarType<
+  TInternal = unknown,
+  TExternal = TInternal,
+> extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   specifiedByURL: Maybe<string>;
@@ -669,6 +682,8 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 
   constructor(config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>) {
+    const coordinate = config.name;
+    super(coordinate);
     this.name = assertName(config.name);
     this.description = config.description;
     this.specifiedByURL = config.specifiedByURL;
@@ -709,7 +724,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
     }
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLScalarType';
   }
 
@@ -729,14 +744,6 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 }
 
@@ -866,9 +873,10 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * });
  * ```
  */
-export class GraphQLObjectType<TSource = any, TContext = any>
-  implements GraphQLSchemaElement
-{
+export class GraphQLObjectType<
+  TSource = any,
+  TContext = any,
+> extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
@@ -880,6 +888,8 @@ export class GraphQLObjectType<TSource = any, TContext = any>
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
+    const coordinate = config.name;
+    super(coordinate);
     this.name = assertName(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
@@ -894,7 +904,7 @@ export class GraphQLObjectType<TSource = any, TContext = any>
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLObjectType';
   }
 
@@ -923,14 +933,6 @@ export class GraphQLObjectType<TSource = any, TContext = any>
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 }
 
@@ -1090,9 +1092,11 @@ export type GraphQLFieldNormalizedConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldNormalizedConfig<TSource, TContext>
 >;
 
-export class GraphQLField<TSource = any, TContext = any, TArgs = any>
-  implements GraphQLSchemaElement
-{
+export class GraphQLField<
+  TSource = any,
+  TContext = any,
+  TArgs = any,
+> extends GraphQLSchemaElement {
   parentType:
     | GraphQLObjectType<TSource, TContext>
     | GraphQLInterfaceType<TSource, TContext>
@@ -1115,6 +1119,8 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
     name: string,
     config: GraphQLFieldConfig<TSource, TContext, TArgs>,
   ) {
+    const coordinate = `${parentType ?? '<meta>'}.${name}`;
+    super(coordinate);
     this.parentType = parentType;
     this.name = assertName(name);
     this.description = config.description;
@@ -1135,7 +1141,7 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
     this.astNode = config.astNode;
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLField';
   }
 
@@ -1155,17 +1161,9 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
       astNode: this.astNode,
     };
   }
-
-  toString(): string {
-    return `${this.parentType ?? '<meta>'}.${this.name}`;
-  }
-
-  toJSON(): string {
-    return this.toString();
-  }
 }
 
-export class GraphQLArgument implements GraphQLSchemaElement {
+export class GraphQLArgument extends GraphQLSchemaElement {
   parent: GraphQLField | GraphQLDirective;
   name: string;
   description: Maybe<string>;
@@ -1181,6 +1179,8 @@ export class GraphQLArgument implements GraphQLSchemaElement {
     name: string,
     config: GraphQLArgumentConfig,
   ) {
+    const coordinate = `${parent}(${name}:)`;
+    super(coordinate);
     this.parent = parent;
     this.name = assertName(name);
     this.description = config.description;
@@ -1192,7 +1192,7 @@ export class GraphQLArgument implements GraphQLSchemaElement {
     this.astNode = config.astNode;
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLArgument';
   }
 
@@ -1206,14 +1206,6 @@ export class GraphQLArgument implements GraphQLSchemaElement {
       extensions: this.extensions,
       astNode: this.astNode,
     };
-  }
-
-  toString(): string {
-    return `${this.parent}(${this.name}:)`;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 }
 
@@ -1267,9 +1259,10 @@ export interface GraphQLInterfaceTypeExtensions {
  * });
  * ```
  */
-export class GraphQLInterfaceType<TSource = any, TContext = any>
-  implements GraphQLSchemaElement
-{
+export class GraphQLInterfaceType<
+  TSource = any,
+  TContext = any,
+> extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<TSource, TContext>>;
@@ -1281,6 +1274,8 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>) {
+    const coordinate = config.name;
+    super(coordinate);
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1295,7 +1290,7 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLInterfaceType';
   }
 
@@ -1324,14 +1319,6 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 }
 
@@ -1396,7 +1383,7 @@ export interface GraphQLUnionTypeExtensions {
  * });
  * ```
  */
-export class GraphQLUnionType implements GraphQLSchemaElement {
+export class GraphQLUnionType extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
@@ -1407,6 +1394,8 @@ export class GraphQLUnionType implements GraphQLSchemaElement {
   private _types: ThunkReadonlyArray<GraphQLObjectType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
+    const coordinate = config.name;
+    super(coordinate);
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1417,7 +1406,7 @@ export class GraphQLUnionType implements GraphQLSchemaElement {
     this._types = defineTypes.bind(undefined, config.types);
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLUnionType';
   }
 
@@ -1438,14 +1427,6 @@ export class GraphQLUnionType implements GraphQLSchemaElement {
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 }
 
@@ -1513,7 +1494,7 @@ export interface GraphQLEnumTypeExtensions {
  * Note: If a value is not provided in a definition, the name of the enum value
  * will be used as its internal value.
  */
-export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
+export class GraphQLEnumType /* <T> */ extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLEnumTypeExtensions>;
@@ -1528,6 +1509,8 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
   private _nameLookup: ObjMap<GraphQLEnumValue> | null;
 
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
+    const coordinate = config.name;
+    super(coordinate);
     this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1545,7 +1528,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
     this._nameLookup = null;
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLEnumType';
   }
 
@@ -1674,14 +1657,6 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
       extensionASTNodes: this.extensionASTNodes,
     };
   }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
-  }
 }
 
 function didYouMeanEnumValue(
@@ -1741,7 +1716,7 @@ export interface GraphQLEnumValueNormalizedConfig
   extensions: Readonly<GraphQLEnumValueExtensions>;
 }
 
-export class GraphQLEnumValue implements GraphQLSchemaElement {
+export class GraphQLEnumValue extends GraphQLSchemaElement {
   parentEnum: GraphQLEnumType;
   name: string;
   description: Maybe<string>;
@@ -1755,6 +1730,7 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
     name: string,
     config: GraphQLEnumValueConfig,
   ) {
+    super(`${parentEnum}.${name}`);
     this.parentEnum = parentEnum;
     this.name = assertEnumValueName(name);
     this.description = config.description;
@@ -1764,7 +1740,7 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
     this.astNode = config.astNode;
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLEnumValue';
   }
 
@@ -1776,14 +1752,6 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
       extensions: this.extensions,
       astNode: this.astNode,
     };
-  }
-
-  toString(): string {
-    return `${this.parentEnum.name}.${this.name}`;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 }
 
@@ -1821,7 +1789,7 @@ export interface GraphQLInputObjectTypeExtensions {
  * });
  * ```
  */
-export class GraphQLInputObjectType implements GraphQLSchemaElement {
+export class GraphQLInputObjectType extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;
@@ -1832,6 +1800,7 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
   private _fields: ThunkObjMap<GraphQLInputField>;
 
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
+    super(config.name);
     this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1842,7 +1811,7 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
     this._fields = defineInputFieldMap.bind(undefined, this, config.fields);
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLInputObjectType';
   }
 
@@ -1863,14 +1832,6 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
       extensionASTNodes: this.extensionASTNodes,
       isOneOf: this.isOneOf,
     };
-  }
-
-  toString(): string {
-    return this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 }
 
@@ -1938,7 +1899,7 @@ export interface GraphQLInputFieldNormalizedConfig
 export type GraphQLInputFieldNormalizedConfigMap =
   ObjMap<GraphQLInputFieldNormalizedConfig>;
 
-export class GraphQLInputField implements GraphQLSchemaElement {
+export class GraphQLInputField extends GraphQLSchemaElement {
   parentType: GraphQLInputObjectType;
   name: string;
   description: Maybe<string>;
@@ -1954,9 +1915,12 @@ export class GraphQLInputField implements GraphQLSchemaElement {
     name: string,
     config: GraphQLInputFieldConfig,
   ) {
+    const coordinate = `${parentType}.${name}`;
+    super(coordinate);
+
     devAssert(
       !('resolve' in config),
-      `${parentType}.${name} field has a resolve property, but Input Types cannot define resolvers.`,
+      `${coordinate} field has a resolve property, but Input Types cannot define resolvers.`,
     );
 
     this.parentType = parentType;
@@ -1970,7 +1934,7 @@ export class GraphQLInputField implements GraphQLSchemaElement {
     this.astNode = config.astNode;
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLInputField';
   }
 
@@ -1984,14 +1948,6 @@ export class GraphQLInputField implements GraphQLSchemaElement {
       extensions: this.extensions,
       astNode: this.astNode,
     };
-  }
-
-  toString(): string {
-    return `${this.parentType}.${this.name}`;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 }
 

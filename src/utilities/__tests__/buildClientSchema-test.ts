@@ -381,6 +381,8 @@ describe('Type System: build schema from introspection', () => {
     expect(values).to.have.lengthOf(3);
 
     expect(values[0]).to.deep.include({
+      coordinate: 'Food.VEGETABLES',
+      parentEnum: clientFoodEnum,
       name: 'VEGETABLES',
       description: 'Foods that are vegetables.',
       value: 'VEGETABLES',
@@ -390,6 +392,8 @@ describe('Type System: build schema from introspection', () => {
     });
 
     expect(values[1]).to.deep.include({
+      coordinate: 'Food.FRUITS',
+      parentEnum: clientFoodEnum,
       name: 'FRUITS',
       description: null,
       value: 'FRUITS',
@@ -399,6 +403,8 @@ describe('Type System: build schema from introspection', () => {
     });
 
     expect(values[2]).to.deep.include({
+      coordinate: 'Food.OILS',
+      parentEnum: clientFoodEnum,
       name: 'OILS',
       description: null,
       value: 'OILS',

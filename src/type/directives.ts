@@ -14,9 +14,12 @@ import { assertName } from './assertName.js';
 import type {
   GraphQLArgumentConfig,
   GraphQLFieldNormalizedConfigArgumentMap,
+} from './definition.js';
+import {
+  GraphQLArgument,
+  GraphQLNonNull,
   GraphQLSchemaElement,
 } from './definition.js';
-import { GraphQLArgument, GraphQLNonNull } from './definition.js';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
 
 /**
@@ -52,7 +55,7 @@ export interface GraphQLDirectiveExtensions {
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
-export class GraphQLDirective implements GraphQLSchemaElement {
+export class GraphQLDirective extends GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;
@@ -62,6 +65,8 @@ export class GraphQLDirective implements GraphQLSchemaElement {
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
+    const coordinate = `@${config.name}`;
+    super(coordinate);
     this.name = assertName(config.name);
     this.description = config.description;
     this.locations = config.locations;
@@ -71,13 +76,13 @@ export class GraphQLDirective implements GraphQLSchemaElement {
 
     devAssert(
       Array.isArray(config.locations),
-      `@${this.name} locations must be an Array.`,
+      `${coordinate} locations must be an Array.`,
     );
 
     const args = config.args ?? {};
     devAssert(
       isObjectLike(args) && !Array.isArray(args),
-      `@${this.name} args must be an object with argument names as keys.`,
+      `@${coordinate} args must be an object with argument names as keys.`,
     );
 
     this.args = Object.entries(args).map(
@@ -85,7 +90,7 @@ export class GraphQLDirective implements GraphQLSchemaElement {
     );
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'GraphQLDirective';
   }
 
@@ -103,14 +108,6 @@ export class GraphQLDirective implements GraphQLSchemaElement {
       extensions: this.extensions,
       astNode: this.astNode,
     };
-  }
-
-  toString(): string {
-    return '@' + this.name;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 }
 

@@ -398,6 +398,7 @@ describe('Type System: Enum Values', () => {
 
     expect(values[0]).to.deep.include({
       parentEnum: ComplexEnum,
+      coordinate: 'Complex.ONE',
       name: 'ONE',
       description: undefined,
       value: Complex1,
@@ -408,6 +409,7 @@ describe('Type System: Enum Values', () => {
 
     expect(values[1]).to.deep.include({
       parentEnum: ComplexEnum,
+      coordinate: 'Complex.TWO',
       name: 'TWO',
       description: undefined,
       value: Complex2,

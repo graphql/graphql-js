@@ -10,12 +10,6 @@ export {
 } from './schema.js';
 export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema.js';
 
-export type {
-  GraphQLField,
-  GraphQLArgument,
-  GraphQLEnumValue,
-  GraphQLInputField,
-} from './definition.js';
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
@@ -69,12 +63,17 @@ export {
   getNullableType,
   getNamedType,
   // Definitions
+  GraphQLSchemaElement,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
+  GraphQLInputField,
   // Type Wrappers
   GraphQLList,
   GraphQLNonNull,
