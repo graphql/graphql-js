@@ -620,7 +620,7 @@ describe('Execute: handles non-nullable types', () => {
         errors: [
           {
             message:
-              'Argument "cannotBeNull" of required type "String!" was not provided.',
+              'Argument Query.withNonNullArg(cannotBeNull:) of required type String! was not provided.',
             locations: [{ line: 3, column: 13 }],
             path: ['withNonNullArg'],
           },
@@ -647,7 +647,7 @@ describe('Execute: handles non-nullable types', () => {
         errors: [
           {
             message:
-              'Argument "cannotBeNull" of non-null type "String!" must not be null.',
+              'Argument Query.withNonNullArg(cannotBeNull:) of non-null type String! must not be null.',
             locations: [{ line: 3, column: 42 }],
             path: ['withNonNullArg'],
           },
@@ -677,7 +677,7 @@ describe('Execute: handles non-nullable types', () => {
         errors: [
           {
             message:
-              'Argument "cannotBeNull" of required type "String!" was provided the variable "$testVar" which was not provided a runtime value.',
+              'Argument Query.withNonNullArg(cannotBeNull:) of required type String! was provided the variable "$testVar" which was not provided a runtime value.',
             locations: [{ line: 3, column: 42 }],
             path: ['withNonNullArg'],
           },
@@ -705,7 +705,7 @@ describe('Execute: handles non-nullable types', () => {
         errors: [
           {
             message:
-              'Argument "cannotBeNull" of non-null type "String!" must not be null.',
+              'Argument Query.withNonNullArg(cannotBeNull:) of non-null type String! must not be null.',
             locations: [{ line: 3, column: 43 }],
             path: ['withNonNullArg'],
           },
