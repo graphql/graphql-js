@@ -342,6 +342,7 @@ describe('Type System: Enum Values', () => {
     const values = ComplexEnum.getValues();
     expect(values).to.have.deep.ordered.members([
       {
+        coordinate: 'Complex.ONE',
         name: 'ONE',
         description: undefined,
         value: Complex1,
@@ -350,6 +351,7 @@ describe('Type System: Enum Values', () => {
         astNode: undefined,
       },
       {
+        coordinate: 'Complex.TWO',
         name: 'TWO',
         description: undefined,
         value: Complex2,

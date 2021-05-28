@@ -33,6 +33,7 @@ describe('Type System: Directive', () => {
       name: 'Foo',
       args: [
         {
+          coordinate: '@Foo(foo:)',
           name: 'foo',
           description: undefined,
           type: GraphQLString,
@@ -42,6 +43,7 @@ describe('Type System: Directive', () => {
           astNode: undefined,
         },
         {
+          coordinate: '@Foo(bar:)',
           name: 'bar',
           description: undefined,
           type: GraphQLInt,

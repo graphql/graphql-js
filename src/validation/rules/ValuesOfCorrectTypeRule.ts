@@ -1,5 +1,4 @@
 import { keyMap } from '../../jsutils/keyMap';
-import { inspect } from '../../jsutils/inspect';
 import { didYouMean } from '../../jsutils/didYouMean';
 import { suggestionList } from '../../jsutils/suggestionList';
 
@@ -51,10 +50,9 @@ export function ValuesOfCorrectTypeRule(
       for (const fieldDef of Object.values(type.getFields())) {
         const fieldNode = fieldNodeMap[fieldDef.name];
         if (!fieldNode && isRequiredInputField(fieldDef)) {
-          const typeStr = inspect(fieldDef.type);
           context.reportError(
             new GraphQLError(
-              `Field "${type.name}.${fieldDef.name}" of required type "${typeStr}" was not provided.`,
+              `Field "${fieldDef}" of required type "${fieldDef.type}" was not provided.`,
               node,
             ),
           );
@@ -71,7 +69,7 @@ export function ValuesOfCorrectTypeRule(
         );
         context.reportError(
           new GraphQLError(
-            `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
+            `Field "${node.name.value}" is not defined by type "${parentType}".` +
               didYouMean(suggestions),
             node,
           ),
@@ -83,7 +81,7 @@ export function ValuesOfCorrectTypeRule(
       if (isNonNullType(type)) {
         context.reportError(
           new GraphQLError(
-            `Expected value of type "${inspect(type)}", found ${print(node)}.`,
+            `Expected value of type "${type}", found ${print(node)}.`,
             node,
           ),
         );
@@ -111,10 +109,9 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   const type = getNamedType(locationType);
 
   if (!isLeafType(type)) {
-    const typeStr = inspect(locationType);
     context.reportError(
       new GraphQLError(
-        `Expected value of type "${typeStr}", found ${print(node)}.`,
+        `Expected value of type "${locationType}", found ${print(node)}.`,
         node,
       ),
     );
@@ -126,22 +123,20 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   try {
     const parseResult = type.parseLiteral(node, undefined /* variables */);
     if (parseResult === undefined) {
-      const typeStr = inspect(locationType);
       context.reportError(
         new GraphQLError(
-          `Expected value of type "${typeStr}", found ${print(node)}.`,
+          `Expected value of type "${locationType}", found ${print(node)}.`,
           node,
         ),
       );
     }
   } catch (error) {
-    const typeStr = inspect(locationType);
     if (error instanceof GraphQLError) {
       context.reportError(error);
     } else {
       context.reportError(
         new GraphQLError(
-          `Expected value of type "${typeStr}", found ${print(node)}; ` +
+          `Expected value of type "${locationType}", found ${print(node)}; ` +
             error.message,
           node,
           undefined,
