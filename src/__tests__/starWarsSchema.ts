@@ -27,6 +27,7 @@ import { getFriends, getHero, getHuman, getDroid } from './starWarsData';
  * Using our shorthand to describe type systems, the type system for our
  * Star Wars example is:
  *
+ * ```graphql
  * enum Episode { NEW_HOPE, EMPIRE, JEDI }
  *
  * interface Character {
@@ -57,6 +58,7 @@ import { getFriends, getHero, getHuman, getDroid } from './starWarsData';
  *   human(id: String!): Human
  *   droid(id: String!): Droid
  * }
+ * ```
  *
  * We begin by setting up our schema.
  */
@@ -65,7 +67,9 @@ import { getFriends, getHero, getHuman, getDroid } from './starWarsData';
  * The original trilogy consists of three movies.
  *
  * This implements the following type system shorthand:
- *   enum Episode { NEW_HOPE, EMPIRE, JEDI }
+ * ```graphql
+ * enum Episode { NEW_HOPE, EMPIRE, JEDI }
+ * ```
  */
 const episodeEnum = new GraphQLEnumType({
   name: 'Episode',
@@ -90,13 +94,15 @@ const episodeEnum = new GraphQLEnumType({
  * Characters in the Star Wars trilogy are either humans or droids.
  *
  * This implements the following type system shorthand:
- *   interface Character {
- *     id: String!
- *     name: String
- *     friends: [Character]
- *     appearsIn: [Episode]
- *     secretBackstory: String
- *   }
+ * ```graphql
+ * interface Character {
+ *   id: String!
+ *   name: String
+ *   friends: [Character]
+ *   appearsIn: [Episode]
+ *   secretBackstory: String
+ * }
+ * ```
  */
 const characterInterface: GraphQLInterfaceType = new GraphQLInterfaceType({
   name: 'Character',
@@ -141,13 +147,15 @@ const characterInterface: GraphQLInterfaceType = new GraphQLInterfaceType({
  * We define our human type, which implements the character interface.
  *
  * This implements the following type system shorthand:
- *   type Human : Character {
- *     id: String!
- *     name: String
- *     friends: [Character]
- *     appearsIn: [Episode]
- *     secretBackstory: String
- *   }
+ * ```graphql
+ * type Human : Character {
+ *   id: String!
+ *   name: String
+ *   friends: [Character]
+ *   appearsIn: [Episode]
+ *   secretBackstory: String
+ * }
+ * ```
  */
 const humanType = new GraphQLObjectType({
   name: 'Human',
@@ -190,14 +198,16 @@ const humanType = new GraphQLObjectType({
  * The other type of character in Star Wars is a droid.
  *
  * This implements the following type system shorthand:
- *   type Droid : Character {
- *     id: String!
- *     name: String
- *     friends: [Character]
- *     appearsIn: [Episode]
- *     secretBackstory: String
- *     primaryFunction: String
- *   }
+ * ```graphql
+ * type Droid : Character {
+ *   id: String!
+ *   name: String
+ *   friends: [Character]
+ *   appearsIn: [Episode]
+ *   secretBackstory: String
+ *   primaryFunction: String
+ * }
+ * ```
  */
 const droidType = new GraphQLObjectType({
   name: 'Droid',
@@ -243,12 +253,13 @@ const droidType = new GraphQLObjectType({
  * of the Star Wars trilogy, R2-D2, directly.
  *
  * This implements the following type system shorthand:
- *   type Query {
- *     hero(episode: Episode): Character
- *     human(id: String!): Human
- *     droid(id: String!): Droid
- *   }
- *
+ * ```graphql
+ * type Query {
+ *   hero(episode: Episode): Character
+ *   human(id: String!): Human
+ *   droid(id: String!): Droid
+ * }
+ * ```
  */
 const queryType = new GraphQLObjectType({
   name: 'Query',

@@ -90,10 +90,11 @@ export interface ParseOptions {
    *
    * The syntax is identical to normal, query-defined variables. For example:
    *
-   *   fragment A($var: Boolean = false) on T  {
-   *     ...
-   *   }
-   *
+   * ```graphql
+   * fragment A($var: Boolean = false) on T {
+   *   ...
+   * }
+   * ```
    */
   allowLegacyFragmentVariables?: boolean;
 }
@@ -346,7 +347,9 @@ export class Parser {
   }
 
   /**
+   * ```
    * SelectionSet : { Selection+ }
+   * ```
    */
   parseSelectionSet(): SelectionSetNode {
     return this.node<SelectionSetNode>(this._lexer.token, {
@@ -616,9 +619,11 @@ export class Parser {
   }
 
   /**
+   * ```
    * ObjectValue[Const] :
    *   - { }
    *   - { ObjectField[?Const]+ }
+   * ```
    */
   parseObject(isConst: true): ConstObjectValueNode;
   parseObject(isConst: boolean): ObjectValueNode;
@@ -666,7 +671,9 @@ export class Parser {
   }
 
   /**
+   * ```
    * Directive[Const] : @ Name Arguments[?Const]?
+   * ```
    */
   parseDirective(isConst: true): ConstDirectiveNode;
   parseDirective(isConst: boolean): DirectiveNode;
@@ -782,7 +789,9 @@ export class Parser {
   }
 
   /**
+   * ```
    * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
+   * ```
    */
   parseSchemaDefinition(): SchemaDefinitionNode {
     const start = this._lexer.token;
@@ -869,7 +878,9 @@ export class Parser {
   }
 
   /**
+   * ```
    * FieldsDefinition : { FieldDefinition+ }
+   * ```
    */
   parseFieldsDefinition(): Array<FieldDefinitionNode> {
     return this.optionalMany(
@@ -1011,7 +1022,9 @@ export class Parser {
   }
 
   /**
+   * ```
    * EnumValuesDefinition : { EnumValueDefinition+ }
+   * ```
    */
   parseEnumValuesDefinition(): Array<EnumValueDefinitionNode> {
     return this.optionalMany(
@@ -1060,7 +1073,9 @@ export class Parser {
   }
 
   /**
+   * ```
    * InputFieldsDefinition : { InputValueDefinition+ }
+   * ```
    */
   parseInputFieldsDefinition(): Array<InputValueDefinitionNode> {
     return this.optionalMany(
@@ -1109,9 +1124,11 @@ export class Parser {
   }
 
   /**
+   * ```
    * SchemaExtension :
    *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
    *  - extend schema Directives[Const]
+   * ```
    */
   parseSchemaExtension(): SchemaExtensionNode {
     const start = this._lexer.token;
@@ -1283,8 +1300,10 @@ export class Parser {
   }
 
   /**
+   * ```
    * DirectiveDefinition :
    *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
+   * ```
    */
   parseDirectiveDefinition(): DirectiveDefinitionNode {
     const start = this._lexer.token;

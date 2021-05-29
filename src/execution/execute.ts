@@ -71,9 +71,9 @@ import { collectFields } from './collectFields';
  *
  * "Selections" are the definitions that can appear legally and at
  * single level of the query. These include:
- * 1) field references e.g "a"
- * 2) fragment "spreads" e.g. "...c"
- * 3) inline fragment "spreads" e.g. "...on Type { a }"
+ * 1) field references e.g `a`
+ * 2) fragment "spreads" e.g. `...c`
+ * 3) inline fragment "spreads" e.g. `...on Type { a }`
  */
 
 /**
@@ -201,7 +201,7 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
 }
 
 /**
- * Given a completed execution context and data, build the { errors, data }
+ * Given a completed execution context and data, build the `{ errors, data }`
  * response defined by the "Response" section of the GraphQL specification.
  */
 function buildResponse(
