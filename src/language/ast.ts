@@ -299,7 +299,7 @@ export interface FieldNode {
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
   readonly required?: RequiredStatus;
-};
+}
 
 export interface ArgumentNode {
   readonly kind: 'Argument';
