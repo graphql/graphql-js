@@ -1,6 +1,5 @@
 import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
-import type { Mutable } from '../jsutils/mutable';
 
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
@@ -105,7 +104,7 @@ export class GraphQLError extends Error {
       _positions = undefined;
     }
 
-    let _locations: Array<SourceLocation>;
+    let _locations;
     if (positions && source) {
       _locations = positions.map((pos) => getLocation(source, pos));
     } else if (_nodes) {
@@ -121,7 +120,6 @@ export class GraphQLError extends Error {
     if (_extensions == null && originalError != null) {
       const originalExtensions = originalError.extensions;
       if (isObjectLike(originalExtensions)) {
-        // @ts-expect-error FIXME: TS Conversion
         _extensions = originalExtensions;
       }
     }

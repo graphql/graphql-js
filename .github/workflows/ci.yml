@@ -29,7 +29,7 @@ jobs:
       - name: Lint ESLint
         run: npm run lint
 
-      - name: Lint Flow
+      - name: Check Types
         run: npm run check
 
       - name: Lint Prettier
