@@ -622,7 +622,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     `);
 
-    it.skip('conflicting return types which potentially overlap', () => {
+    it('conflicting return types which potentially overlap', () => {
       // This is invalid since an object could potentially be both the Object
       // type IntBox and the interface type NonNullStringBox1. While that
       // condition does not exist in the current schema, the schema could
@@ -935,7 +935,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       ]);
     });
 
-    it.skip('disallows differing return type nullability despite no overlap', () => {
+    it('disallows differing return type nullability despite no overlap', () => {
       expectErrorsWithSchema(
         schema,
         `
