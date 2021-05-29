@@ -4,13 +4,12 @@ import { describe, it } from 'mocha';
 import { dedent } from '../../__testUtils__/dedent';
 import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
 
-import type { ScalarTypeDefinitionNode } from '../ast';
 import { parse } from '../parser';
 import { print } from '../printer';
 
 describe('Printer: SDL document', () => {
   it('prints minimal ast', () => {
-    const ast: ScalarTypeDefinitionNode = {
+    const ast = {
       kind: 'ScalarTypeDefinition',
       name: { kind: 'Name', value: 'foo' },
     } as const;

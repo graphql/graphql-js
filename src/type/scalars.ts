@@ -138,7 +138,6 @@ function serializeObject(outputValue: unknown): unknown {
         return valueOfResult;
       }
     }
-    // @ts-expect-error FIXME: TS Conversion
     if (typeof outputValue.toJSON === 'function') {
       return outputValue.toJSON();
     }

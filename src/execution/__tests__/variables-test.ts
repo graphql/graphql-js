@@ -6,7 +6,6 @@ import { invariant } from '../../jsutils/invariant';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
-import type { OperationDefinitionNode } from '../../language/ast';
 
 import type {
   GraphQLFieldConfig,
@@ -1013,7 +1012,7 @@ describe('Execute: Handles inputs', () => {
       }
     `);
 
-    const operation = doc.definitions[0] as OperationDefinitionNode;
+    const operation = doc.definitions[0];
     invariant(operation.kind === Kind.OPERATION_DEFINITION);
     const { variableDefinitions } = operation;
     invariant(variableDefinitions != null);

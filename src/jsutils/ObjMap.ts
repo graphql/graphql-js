@@ -10,4 +10,4 @@ export interface ReadOnlyObjMap<T> {
 
 export type ReadOnlyObjMapLike<T> =
   | ReadOnlyObjMap<T>
-  | Readonly<Record<string, T>>;
+  | { readonly [key: string]: T };

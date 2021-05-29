@@ -10,7 +10,6 @@ export function toJSONDeep(value: unknown): unknown {
     return value;
   }
 
-  // @ts-expect-error FIXME: TS Conversion
   if (typeof value.toJSON === 'function') {
     return value.toJSON();
   }
@@ -19,6 +18,5 @@ export function toJSONDeep(value: unknown): unknown {
     return value.map(toJSONDeep);
   }
 
-  // @ts-expect-error FIXME: TS Conversion
   return mapValue(value, toJSONDeep);
 }
