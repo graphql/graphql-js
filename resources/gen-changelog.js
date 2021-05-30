@@ -5,7 +5,7 @@ const https = require('https');
 
 const packageJSON = require('../package.json');
 
-const { exec } = require('./utils');
+const { exec } = require('./utils.js');
 
 const graphqlRequest = util.promisify(graphqlRequestImpl);
 const labelsConfig = {

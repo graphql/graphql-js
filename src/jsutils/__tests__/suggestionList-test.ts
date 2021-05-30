@@ -22,9 +22,11 @@ describe('suggestionList', () => {
   });
 
   it('Rejects options with distance that exceeds threshold', () => {
+    // spell-checker:disable
     expectSuggestions('aaaa', ['aaab']).to.deep.equal(['aaab']);
     expectSuggestions('aaaa', ['aabb']).to.deep.equal(['aabb']);
     expectSuggestions('aaaa', ['abbb']).to.deep.equal([]);
+    // spell-checker:enable
 
     expectSuggestions('ab', ['ca']).to.deep.equal([]);
   });
