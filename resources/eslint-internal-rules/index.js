@@ -1,7 +1,7 @@
 'use strict';
 
-const onlyASCII = require('./only-ascii');
-const noDirImport = require('./no-dir-import');
+const onlyASCII = require('./only-ascii.js');
+const noDirImport = require('./no-dir-import.js');
 
 module.exports = {
   rules: {
