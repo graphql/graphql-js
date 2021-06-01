@@ -25,8 +25,12 @@ import type {
   FragmentSpreadNode,
   InlineFragmentNode,
   FragmentDefinitionNode,
+  ArgumentNode,
+  ValueNode,
+  DirectiveNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
+import { print } from '../language/printer';
 
 import type { GraphQLSchema } from '../type/schema';
 import type {
@@ -66,6 +70,7 @@ import {
   getArgumentValues,
   getDirectiveValues,
 } from './values';
+import { visit } from '../language';
 
 /**
  * Terminology
@@ -511,10 +516,14 @@ export function collectFields(
         ) {
           continue;
         }
+        const selectionSet = selectionSetWithFragmentArgumentsApplied(
+          fragment,
+          selection.arguments,
+        );
         collectFields(
           exeContext,
           runtimeType,
-          fragment.selectionSet,
+          selectionSet,
           fields,
           visitedFragmentNames,
         );
@@ -523,6 +532,38 @@ export function collectFields(
     }
   }
   return fields;
+}
+
+function selectionSetWithFragmentArgumentsApplied(fragment: FragmentDefinitionNode, fragmentArguments?: ReadonlyArray<ArgumentNode>): SelectionSetNode {
+  if (fragment.variableDefinitions == null) {
+    return fragment.selectionSet;
+  }
+
+  const providedArguments: Map<string, ArgumentNode> = new Map();
+  for (const arg of fragmentArguments ?? []) {
+    providedArguments.set(arg.name.value, arg);
+  }
+  const fragmentArgumentValues: Map<string, ValueNode> = new Map();
+  for (const argDef of fragment.variableDefinitions ?? []) {
+    const argName = argDef.variable.name.value;
+    const providedArg = providedArguments.get(argName);
+    const argDefaultValue = argDef.defaultValue;
+    if (providedArg != null) {
+      fragmentArgumentValues.set(argName, providedArg.value);
+    } else if (argDefaultValue != null) {
+      fragmentArgumentValues.set(argName, argDefaultValue);
+    }
+  }
+
+  return visit(fragment.selectionSet, {
+    Variable(variable) {
+      const replacementValue = fragmentArgumentValues.get(variable.name.value);
+      if (replacementValue != null) {
+        return replacementValue;
+      }
+      return variable;
+    }
+  });
 }
 
 /**

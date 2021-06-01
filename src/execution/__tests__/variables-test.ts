@@ -130,6 +130,14 @@ function executeQuery(
   return executeSync({ schema, document, variableValues });
 }
 
+function executeQueryWithFragmentArguments(
+  query: string,
+  variableValues?: { [variable: string]: unknown },
+) {
+  const document = parse(query, {allowFragmentArguments: true});
+  return executeSync({ schema, document, variableValues });
+}
+
 describe('Execute: Handles inputs', () => {
   describe('Handles objects and nullability', () => {
     describe('using inline structs', () => {
@@ -1002,6 +1010,25 @@ describe('Execute: Handles inputs', () => {
             '"Hello World"',
         },
       });
+    });
+  });
+
+  describe('using fragment arguments', () => {
+    const result = executeQueryWithFragmentArguments(`
+      query {
+        ...a(value: "A")
+      }
+
+      fragment a($value: String!) on TestType {
+        fieldWithNonNullableStringInput(input: $value)
+      }
+    `);
+    console.log(JSON.stringify(result));
+    expect(result).to.deep.equal({
+      data: {
+        fieldWithNonNullableStringInput:
+          '"A"',
+      },
     });
   });
 
