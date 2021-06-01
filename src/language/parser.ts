@@ -82,11 +82,13 @@ export interface ParseOptions {
   noLocation?: boolean;
 
   /**
-   * @deprecated will be removed in the v17.0.0
-   *
    * If enabled, the parser will understand and parse variable definitions
    * contained in a fragment definition. They'll be represented in the
    * `variableDefinitions` field of the FragmentDefinitionNode.
+   *
+   * Additionally, the parser will understand arguments passed to fragment
+   * spreads. They'll be represented in the `arguments` field of the
+   * FragmentSpreadNode.
    *
    * The syntax is identical to normal, query-defined variables. For example:
    *
@@ -95,7 +97,7 @@ export interface ParseOptions {
    *   }
    *
    */
-  allowLegacyFragmentVariables?: boolean;
+  allowFragmentArguments?: boolean;
 }
 
 /**
@@ -437,7 +439,7 @@ export class Parser {
   /**
    * Corresponds to both FragmentSpread and InlineFragment in the spec.
    *
-   * FragmentSpread : ... FragmentName Directives?
+   * FragmentSpread : ... FragmentName Arguments? Directives?
    *
    * InlineFragment : ... TypeCondition? Directives? SelectionSet
    */
@@ -447,6 +449,14 @@ export class Parser {
 
     const hasTypeCondition = this.expectOptionalKeyword('on');
     if (!hasTypeCondition && this.peek(TokenKind.NAME)) {
+      if (this._options?.allowFragmentArguments === true) {
+        return this.node<FragmentSpreadNode>(start, {
+          kind: Kind.FRAGMENT_SPREAD,
+          name: this.parseFragmentName(),
+          arguments: this.parseArguments(false),
+          directives: this.parseDirectives(false),
+        });
+      }
       return this.node<FragmentSpreadNode>(start, {
         kind: Kind.FRAGMENT_SPREAD,
         name: this.parseFragmentName(),
@@ -473,7 +483,7 @@ export class Parser {
     // Legacy support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options?.allowLegacyFragmentVariables === true) {
+    if (this._options?.allowFragmentArguments === true) {
       return this.node<FragmentDefinitionNode>(start, {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),

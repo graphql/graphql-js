@@ -71,8 +71,16 @@ const printDocASTReducer: ASTReducer<string> = {
   // Fragments
 
   FragmentSpread: {
-    leave: ({ name, directives }) =>
-      '...' + name + wrap(' ', join(directives, ' ')),
+    leave: ({ name, arguments: args, directives }) => {
+      const prefix = '...' + name;
+      let argsLine = prefix + wrap('(', join(args, ', '), ')');
+
+      if (argsLine.length > MAX_LINE_LENGTH) {
+        argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+      }
+
+      return argsLine + wrap(' ', join(directives, ' '));
+    },
   },
 
   InlineFragment: {

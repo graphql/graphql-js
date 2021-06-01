@@ -92,11 +92,10 @@ const QueryDocumentKeys = {
   Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
   Argument: ['name', 'value'],
 
-  FragmentSpread: ['name', 'directives'],
+  FragmentSpread: ['name', 'arguments', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [
     'name',
-    // Note: fragment variable definitions are deprecated and will removed in v17.0.0
     'variableDefinitions',
     'typeCondition',
     'directives',

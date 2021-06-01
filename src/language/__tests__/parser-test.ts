@@ -363,11 +363,20 @@ describe('Parser', () => {
     expect('loc' in result).to.equal(false);
   });
 
-  it('Legacy: allows parsing fragment defined variables', () => {
+  it('allows parsing fragment defined variables', () => {
     const document = 'fragment a($v: Boolean = false) on t { f(v: $v) }';
 
     expect(() =>
-      parse(document, { allowLegacyFragmentVariables: true }),
+      parse(document, { allowFragmentArguments: true }),
+    ).to.not.throw();
+    expect(() => parse(document)).to.throw('Syntax Error');
+  });
+
+  it('allows parsing fragment spread arguments', () => {
+    const document = 'fragment a on t { ...b(v: $v) }';
+
+    expect(() =>
+      parse(document, { allowFragmentArguments: true }),
     ).to.not.throw();
     expect(() => parse(document)).to.throw('Syntax Error');
   });
