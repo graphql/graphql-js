@@ -55,6 +55,24 @@ jobs:
             exit 1
           fi
 
+  checkPackageLock:
+    name: Check health of package-lock.json file
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+
+      - name: Run npm install
+        run: npm install --package-lock-only --engine-strict --strict-peer-deps
+
+      - name: Check that package-lock.json is in sync with package.json
+        run: git diff --exit-code package-lock.json
+
   integrationTests:
     name: Run integration tests
     runs-on: ubuntu-latest
