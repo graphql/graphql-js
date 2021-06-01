@@ -551,6 +551,14 @@ function selectionSetWithFragmentArgumentsApplied(
     const variableName = argDef.variable.name.value;
     const providedArg = providedArguments.get(variableName);
     if (providedArg != null) {
+      if (providedArg.value.kind === Kind.NULL && isNonNullType(argDef.type)) {
+        exeContext.errors.push(
+          new GraphQLError(
+            `Fragment argument "$${variableName}" on fragment "${fragment.name.value}" is non-null, but null was provided.`,
+            [providedArg, argDef],
+          ),
+        );
+      }
       fragmentArgumentValues.set(variableName, providedArg.value);
     } else if (argDef.defaultValue != null) {
       fragmentArgumentValues.set(variableName, argDef.defaultValue);
