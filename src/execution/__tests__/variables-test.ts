@@ -134,7 +134,7 @@ function executeQueryWithFragmentArguments(
   query: string,
   variableValues?: { [variable: string]: unknown },
 ) {
-  const document = parse(query, {allowFragmentArguments: true});
+  const document = parse(query, { allowFragmentArguments: true });
   return executeSync({ schema, document, variableValues });
 }
 
@@ -1014,21 +1014,73 @@ describe('Execute: Handles inputs', () => {
   });
 
   describe('using fragment arguments', () => {
-    const result = executeQueryWithFragmentArguments(`
-      query {
-        ...a(value: "A")
-      }
+    it('when a value is required and provided', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query {
+          ...a(value: "A")
+        }
 
-      fragment a($value: String!) on TestType {
-        fieldWithNonNullableStringInput(input: $value)
-      }
-    `);
-    console.log(JSON.stringify(result));
-    expect(result).to.deep.equal({
-      data: {
-        fieldWithNonNullableStringInput:
-          '"A"',
-      },
+        fragment a($value: String!) on TestType {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: '"A"',
+        },
+      });
+    });
+
+    it('when the definition has a default and is provided', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query {
+          ...a(value: "A")
+        }
+
+        fragment a($value: String! = "B") on TestType {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: '"A"',
+        },
+      });
+    });
+
+    it('when the definition has a default and is not provided', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query {
+          ...a
+        }
+
+        fragment a($value: String! = "B") on TestType {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: '"B"',
+        },
+      });
+    });
+
+    it('when the definition has no default and is not provided', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query {
+          ...a
+        }
+
+        fragment a($value: String) on TestType {
+          fieldWithNonNullableStringInputAndDefaultArgumentValue(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInputAndDefaultArgumentValue:
+            '"Hello World"',
+        },
+      });
     });
   });
 

@@ -27,10 +27,9 @@ import type {
   FragmentDefinitionNode,
   ArgumentNode,
   ValueNode,
-  DirectiveNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
+import { visit } from '../language/visitor';
 
 import type { GraphQLSchema } from '../type/schema';
 import type {
@@ -70,7 +69,6 @@ import {
   getArgumentValues,
   getDirectiveValues,
 } from './values';
-import { visit } from '../language';
 
 /**
  * Terminology
@@ -516,14 +514,15 @@ export function collectFields(
         ) {
           continue;
         }
-        const selectionSet = selectionSetWithFragmentArgumentsApplied(
+        const updatedSelectionSet = selectionSetWithFragmentArgumentsApplied(
+          exeContext,
           fragment,
-          selection.arguments,
+          selection,
         );
         collectFields(
           exeContext,
           runtimeType,
-          selectionSet,
+          updatedSelectionSet,
           fields,
           visitedFragmentNames,
         );
@@ -534,35 +533,57 @@ export function collectFields(
   return fields;
 }
 
-function selectionSetWithFragmentArgumentsApplied(fragment: FragmentDefinitionNode, fragmentArguments?: ReadonlyArray<ArgumentNode>): SelectionSetNode {
+function selectionSetWithFragmentArgumentsApplied(
+  exeContext: ExecutionContext,
+  fragment: FragmentDefinitionNode,
+  fragmentSpread: FragmentSpreadNode,
+): SelectionSetNode {
   if (fragment.variableDefinitions == null) {
     return fragment.selectionSet;
   }
 
   const providedArguments: Map<string, ArgumentNode> = new Map();
-  for (const arg of fragmentArguments ?? []) {
+  for (const arg of fragmentSpread.arguments ?? []) {
     providedArguments.set(arg.name.value, arg);
   }
-  const fragmentArgumentValues: Map<string, ValueNode> = new Map();
+  const fragmentArgumentValues: Map<string, ValueNode | null> = new Map();
   for (const argDef of fragment.variableDefinitions ?? []) {
-    const argName = argDef.variable.name.value;
-    const providedArg = providedArguments.get(argName);
-    const argDefaultValue = argDef.defaultValue;
+    const variableName = argDef.variable.name.value;
+    const providedArg = providedArguments.get(variableName);
     if (providedArg != null) {
-      fragmentArgumentValues.set(argName, providedArg.value);
-    } else if (argDefaultValue != null) {
-      fragmentArgumentValues.set(argName, argDefaultValue);
+      fragmentArgumentValues.set(variableName, providedArg.value);
+    } else if (argDef.defaultValue != null) {
+      fragmentArgumentValues.set(variableName, argDef.defaultValue);
+    } else {
+      if (isNonNullType(argDef.type)) {
+        exeContext.errors.push(
+          new GraphQLError(
+            `Fragment argument "$${variableName}" on fragment "${fragment.name.value}" is required but not provided.`,
+            [fragmentSpread, argDef],
+          ),
+        );
+      }
+      fragmentArgumentValues.set(variableName, null);
     }
   }
 
   return visit(fragment.selectionSet, {
-    Variable(variable) {
-      const replacementValue = fragmentArgumentValues.get(variable.name.value);
-      if (replacementValue != null) {
-        return replacementValue;
+    Argument(node) {
+      if (node.value.kind === Kind.VARIABLE) {
+        const variable = node.value;
+        if (fragmentArgumentValues.has(variable.name.value)) {
+          const replacementValue = fragmentArgumentValues.get(
+            variable.name.value,
+          );
+          if (replacementValue == null) {
+            // Remove the argument if the provided value is unset.
+            return null;
+          }
+
+          return { ...node, value: replacementValue };
+        }
       }
-      return variable;
-    }
+    },
   });
 }
 
