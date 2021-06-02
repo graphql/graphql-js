@@ -216,7 +216,7 @@ function readNextToken(lexer: Lexer, start: number): Token {
 
     // IntValue | FloatValue
     // 0-9 | -
-    if ((code >= 0x0030 && code <= 0x0039) || code === 0x002d) {
+    if (isDigit(code) || code === 0x002d) {
       return readNumber(lexer, position, code);
     }
 
@@ -295,7 +295,7 @@ function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
   if (code === 0x0030) {
     // 0
     code = body.charCodeAt(++position);
-    if (code >= 0x0030 && code <= 0x0039) {
+    if (isDigit(code)) {
       throw syntaxError(
         lexer.source,
         position,
@@ -351,21 +351,26 @@ function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
  * Returns the new position in the source after reading digits.
  */
 function readDigits(lexer: Lexer, start: number, firstCode: number): number {
+  if (!isDigit(firstCode)) {
+    throw syntaxError(
+      lexer.source,
+      start,
+      `Invalid number, expected digit but got: ${printCharCode(firstCode)}.`,
+    );
+  }
+
   const body = lexer.source.body;
   let position = start;
   let code = firstCode;
-  if (code >= 0x0030 && code <= 0x0039) {
-    // 0 - 9
-    do {
-      code = body.charCodeAt(++position);
-    } while (code >= 0x0030 && code <= 0x0039); // 0 - 9
-    return position;
-  }
-  throw syntaxError(
-    lexer.source,
-    position,
-    `Invalid number, expected digit but got: ${printCharCode(code)}.`,
-  );
+  do {
+    code = body.charCodeAt(++position);
+  } while (isDigit(code));
+  return position;
+}
+
+// 0 - 9
+function isDigit(code: number): boolean {
+  return code >= 0x0030 && code <= 0x0039;
 }
 
 /**
@@ -569,7 +574,7 @@ function uniCharCode(a: number, b: number, c: number, d: number): number {
  * Returns -1 on error.
  */
 function char2hex(a: number): number {
-  return a >= 0x0030 && a <= 0x0039
+  return isDigit(a)
     ? a - 0x0030 // 0-9
     : a >= 0x0041 && a <= 0x0046
     ? a - 0x0037 // A-F
@@ -592,7 +597,7 @@ function readName(lexer: Lexer, start: number): Token {
     position !== bodyLength &&
     !isNaN((code = body.charCodeAt(position))) &&
     (code === 0x005f || // _
-      (code >= 0x0030 && code <= 0x0039) || // 0-9
+      isDigit(code) ||
       (code >= 0x0041 && code <= 0x005a) || // A-Z
       (code >= 0x0061 && code <= 0x007a)) // a-z
   ) {
