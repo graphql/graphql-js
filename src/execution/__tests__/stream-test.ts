@@ -133,16 +133,18 @@ async function complete(document: DocumentNode) {
   return result;
 }
 
-async function completeAsync(document, numCalls) {
+async function completeAsync(document: DocumentNode, numCalls: number) {
   const schema = new GraphQLSchema({ query });
 
   const result = await execute({ schema, document, rootValue: {} });
 
   invariant(isAsyncIterable(result));
 
+  const iterator = result[Symbol.asyncIterator]();
+
   const promises = [];
   for (let i = 0; i < numCalls; i++) {
-    promises.push(result.next());
+    promises.push(iterator.next());
   }
   return Promise.all(promises);
 }
