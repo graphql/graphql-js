@@ -104,4 +104,4 @@ export {
 export type { BreakingChange, DangerousChange } from './findBreakingChanges.ts';
 /** Wrapper type that contains DocumentNode and types that can be deduced from it. */
 
-export { TypedQueryDocumentNode } from './typedQueryDocumentNode.ts';
+export type { TypedQueryDocumentNode } from './typedQueryDocumentNode.ts';
