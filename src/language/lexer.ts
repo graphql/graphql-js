@@ -68,7 +68,7 @@ export class Lexer {
           token = token.next;
         } else {
           // Read the next token and form a link in the token linked-list.
-          const nextToken = readNextToken(this, token);
+          const nextToken = readNextToken(this, token.end);
           // @ts-expect-error next is only mutable during parsing.
           token.next = nextToken;
           // @ts-expect-error prev is only mutable during parsing.
@@ -117,90 +117,101 @@ function printCharCode(code: number): string {
 }
 
 /**
+ * Create a token with line and column location information.
+ */
+function createToken(
+  lexer: Lexer,
+  kind: TokenKindEnum,
+  start: number,
+  end: number,
+  value?: string,
+): Token {
+  const line = lexer.line;
+  const col = 1 + start - lexer.lineStart;
+  return new Token(kind, start, end, line, col, value);
+}
+
+/**
  * Gets the next token from the source starting at the given position.
  *
  * This skips over whitespace until it finds the next lexable token, then lexes
  * punctuators immediately or calls the appropriate helper function for more
  * complicated tokens.
  */
-function readNextToken(lexer: Lexer, prev: Token): Token {
-  const source = lexer.source;
-  const body = source.body;
+function readNextToken(lexer: Lexer, start: number): Token {
+  const body = lexer.source.body;
   const bodyLength = body.length;
 
-  let pos = prev.end;
-  while (pos < bodyLength) {
-    const code = body.charCodeAt(pos);
-
-    const line = lexer.line;
-    const col = 1 + pos - lexer.lineStart;
+  let position = start;
+  while (position < bodyLength) {
+    const code = body.charCodeAt(position);
 
     // SourceCharacter
     switch (code) {
       case 0xfeff: // <BOM>
-      case 0x0009: // \t
+      case 0x0009: //  \t
       case 0x0020: // <space>
       case 0x002c: // ,
-        ++pos;
+        ++position;
         continue;
       case 0x000a: // \n
-        ++pos;
+        ++position;
         ++lexer.line;
-        lexer.lineStart = pos;
+        lexer.lineStart = position;
         continue;
       case 0x000d: // \r
-        if (body.charCodeAt(pos + 1) === 0x000a) {
-          pos += 2;
+        if (body.charCodeAt(position + 1) === 0x000a) {
+          position += 2;
         } else {
-          ++pos;
+          ++position;
         }
         ++lexer.line;
-        lexer.lineStart = pos;
+        lexer.lineStart = position;
         continue;
       case 0x0021: // !
-        return new Token(TokenKind.BANG, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.BANG, position, position + 1);
       case 0x0023: // #
-        return readComment(source, pos, line, col);
+        return readComment(lexer, position);
       case 0x0024: // $
-        return new Token(TokenKind.DOLLAR, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.DOLLAR, position, position + 1);
       case 0x0026: // &
-        return new Token(TokenKind.AMP, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.AMP, position, position + 1);
       case 0x0028: // (
-        return new Token(TokenKind.PAREN_L, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.PAREN_L, position, position + 1);
       case 0x0029: // )
-        return new Token(TokenKind.PAREN_R, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.PAREN_R, position, position + 1);
       case 0x002e: // .
         if (
-          body.charCodeAt(pos + 1) === 0x002e &&
-          body.charCodeAt(pos + 2) === 0x002e
+          body.charCodeAt(position + 1) === 0x002e &&
+          body.charCodeAt(position + 2) === 0x002e
         ) {
-          return new Token(TokenKind.SPREAD, pos, pos + 3, line, col);
+          return createToken(lexer, TokenKind.SPREAD, position, position + 3);
         }
         break;
       case 0x003a: // :
-        return new Token(TokenKind.COLON, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.COLON, position, position + 1);
       case 0x003d: // =
-        return new Token(TokenKind.EQUALS, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.EQUALS, position, position + 1);
       case 0x0040: // @
-        return new Token(TokenKind.AT, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.AT, position, position + 1);
       case 0x005b: // [
-        return new Token(TokenKind.BRACKET_L, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.BRACKET_L, position, position + 1);
       case 0x005d: // ]
-        return new Token(TokenKind.BRACKET_R, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.BRACKET_R, position, position + 1);
       case 0x007b: // {
-        return new Token(TokenKind.BRACE_L, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.BRACE_L, position, position + 1);
       case 0x007c: // |
-        return new Token(TokenKind.PIPE, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.PIPE, position, position + 1);
       case 0x007d: // }
-        return new Token(TokenKind.BRACE_R, pos, pos + 1, line, col);
+        return createToken(lexer, TokenKind.BRACE_R, position, position + 1);
       case 0x0022: // "
         if (
-          body.charCodeAt(pos + 1) === 0x0022 &&
-          body.charCodeAt(pos + 2) === 0x0022
+          body.charCodeAt(position + 1) === 0x0022 &&
+          body.charCodeAt(position + 2) === 0x0022
         ) {
-          return readBlockString(source, pos, line, col, lexer);
+          return readBlockString(lexer, position);
         }
-        return readString(source, pos, line, col);
+        return readString(lexer, position);
       case 0x002d: // -
       case 0x0030: // 0
       case 0x0031: // 1
@@ -212,7 +223,7 @@ function readNextToken(lexer: Lexer, prev: Token): Token {
       case 0x0037: // 7
       case 0x0038: // 8
       case 0x0039: // 9
-        return readNumber(source, pos, code, line, col);
+        return readNumber(lexer, position, code);
       case 0x0041: // A
       case 0x0042: // B
       case 0x0043: // C
@@ -266,15 +277,13 @@ function readNextToken(lexer: Lexer, prev: Token): Token {
       case 0x0078: // x
       case 0x0079: // y
       case 0x007a: // z
-        return readName(source, pos, line, col);
+        return readName(lexer, position);
     }
 
-    throw syntaxError(source, pos, unexpectedCharacterMessage(code));
+    throw syntaxError(lexer.source, position, unexpectedCharacterMessage(code));
   }
 
-  const line = lexer.line;
-  const col = 1 + pos - lexer.lineStart;
-  return new Token(TokenKind.EOF, bodyLength, bodyLength, line, col);
+  return createToken(lexer, TokenKind.EOF, bodyLength, bodyLength);
 }
 
 /**
@@ -298,13 +307,8 @@ function unexpectedCharacterMessage(code: number): string {
  *
  * #[\u0009\u0020-\uFFFF]*
  */
-function readComment(
-  source: Source,
-  start: number,
-  line: number,
-  col: number,
-): Token {
-  const body = source.body;
+function readComment(lexer: Lexer, start: number): Token {
+  const body = lexer.source.body;
   let code;
   let position = start;
 
@@ -316,12 +320,11 @@ function readComment(
     (code > 0x001f || code === 0x0009)
   );
 
-  return new Token(
+  return createToken(
+    lexer,
     TokenKind.COMMENT,
     start,
     position,
-    line,
-    col,
     body.slice(start + 1, position),
   );
 }
@@ -333,14 +336,8 @@ function readComment(
  * Int:   -?(0|[1-9][0-9]*)
  * Float: -?(0|[1-9][0-9]*)(\.[0-9]+)?((E|e)(+|-)?[0-9]+)?
  */
-function readNumber(
-  source: Source,
-  start: number,
-  firstCode: number,
-  line: number,
-  col: number,
-): Token {
-  const body = source.body;
+function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
+  const body = lexer.source.body;
   let code = firstCode;
   let position = start;
   let isFloat = false;
@@ -355,13 +352,13 @@ function readNumber(
     code = body.charCodeAt(++position);
     if (code >= 0x0030 && code <= 0x0039) {
       throw syntaxError(
-        source,
+        lexer.source,
         position,
         `Invalid number, unexpected digit after 0: ${printCharCode(code)}.`,
       );
     }
   } else {
-    position = readDigits(source, position, code);
+    position = readDigits(lexer, position, code);
     code = body.charCodeAt(position);
   }
 
@@ -370,7 +367,7 @@ function readNumber(
     isFloat = true;
 
     code = body.charCodeAt(++position);
-    position = readDigits(source, position, code);
+    position = readDigits(lexer, position, code);
     code = body.charCodeAt(position);
   }
 
@@ -383,25 +380,24 @@ function readNumber(
       // + -
       code = body.charCodeAt(++position);
     }
-    position = readDigits(source, position, code);
+    position = readDigits(lexer, position, code);
     code = body.charCodeAt(position);
   }
 
   // Numbers cannot be followed by . or NameStart
   if (code === 0x002e || isNameStart(code)) {
     throw syntaxError(
-      source,
+      lexer.source,
       position,
       `Invalid number, expected digit but got: ${printCharCode(code)}.`,
     );
   }
 
-  return new Token(
+  return createToken(
+    lexer,
     isFloat ? TokenKind.FLOAT : TokenKind.INT,
     start,
     position,
-    line,
-    col,
     body.slice(start, position),
   );
 }
@@ -409,8 +405,8 @@ function readNumber(
 /**
  * Returns the new position in the source after reading digits.
  */
-function readDigits(source: Source, start: number, firstCode: number): number {
-  const body = source.body;
+function readDigits(lexer: Lexer, start: number, firstCode: number): number {
+  const body = lexer.source.body;
   let position = start;
   let code = firstCode;
   if (code >= 0x0030 && code <= 0x0039) {
@@ -421,7 +417,7 @@ function readDigits(source: Source, start: number, firstCode: number): number {
     return position;
   }
   throw syntaxError(
-    source,
+    lexer.source,
     position,
     `Invalid number, expected digit but got: ${printCharCode(code)}.`,
   );
@@ -432,13 +428,8 @@ function readDigits(source: Source, start: number, firstCode: number): number {
  *
  * "([^"\\\u000A\u000D]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
  */
-function readString(
-  source: Source,
-  start: number,
-  line: number,
-  col: number,
-): Token {
-  const body = source.body;
+function readString(lexer: Lexer, start: number): Token {
+  const body = lexer.source.body;
   let position = start + 1;
   let chunkStart = position;
   let code = 0;
@@ -454,13 +445,13 @@ function readString(
     // Closing Quote (")
     if (code === 0x0022) {
       value += body.slice(chunkStart, position);
-      return new Token(TokenKind.STRING, start, position + 1, line, col, value);
+      return createToken(lexer, TokenKind.STRING, start, position + 1, value);
     }
 
     // SourceCharacter
     if (code < 0x0020 && code !== 0x0009) {
       throw syntaxError(
-        source,
+        lexer.source,
         position,
         `Invalid character within String: ${printCharCode(code)}.`,
       );
@@ -507,7 +498,7 @@ function readString(
           if (charCode < 0) {
             const invalidSequence = body.slice(position + 1, position + 5);
             throw syntaxError(
-              source,
+              lexer.source,
               position,
               `Invalid character escape sequence: \\u${invalidSequence}.`,
             );
@@ -518,7 +509,7 @@ function readString(
         }
         default:
           throw syntaxError(
-            source,
+            lexer.source,
             position,
             `Invalid character escape sequence: \\${String.fromCharCode(
               code,
@@ -530,7 +521,7 @@ function readString(
     }
   }
 
-  throw syntaxError(source, position, 'Unterminated string.');
+  throw syntaxError(lexer.source, position, 'Unterminated string.');
 }
 
 /**
@@ -538,14 +529,8 @@ function readString(
  *
  * """("?"?(\\"""|\\(?!=""")|[^"\\]))*"""
  */
-function readBlockString(
-  source: Source,
-  start: number,
-  line: number,
-  col: number,
-  lexer: Lexer,
-): Token {
-  const body = source.body;
+function readBlockString(lexer: Lexer, start: number): Token {
+  const body = lexer.source.body;
   let position = start + 3;
   let chunkStart = position;
   let code = 0;
@@ -559,12 +544,11 @@ function readBlockString(
       body.charCodeAt(position + 2) === 0x0022
     ) {
       rawValue += body.slice(chunkStart, position);
-      return new Token(
+      return createToken(
+        lexer,
         TokenKind.BLOCK_STRING,
         start,
         position + 3,
-        line,
-        col,
         dedentBlockStringValue(rawValue),
       );
     }
@@ -577,7 +561,7 @@ function readBlockString(
       code !== 0x000d
     ) {
       throw syntaxError(
-        source,
+        lexer.source,
         position,
         `Invalid character within String: ${printCharCode(code)}.`,
       );
@@ -612,7 +596,7 @@ function readBlockString(
     }
   }
 
-  throw syntaxError(source, position, 'Unterminated string.');
+  throw syntaxError(lexer.source, position, 'Unterminated string.');
 }
 
 /**
@@ -654,13 +638,8 @@ function char2hex(a: number): number {
  *
  * [_A-Za-z][_0-9A-Za-z]*
  */
-function readName(
-  source: Source,
-  start: number,
-  line: number,
-  col: number,
-): Token {
-  const body = source.body;
+function readName(lexer: Lexer, start: number): Token {
+  const body = lexer.source.body;
   const bodyLength = body.length;
   let position = start + 1;
   let code = 0;
@@ -674,12 +653,11 @@ function readName(
   ) {
     ++position;
   }
-  return new Token(
+  return createToken(
+    lexer,
     TokenKind.NAME,
     start,
     position,
-    line,
-    col,
     body.slice(start, position),
   );
 }
