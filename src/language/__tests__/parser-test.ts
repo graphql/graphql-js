@@ -366,19 +366,13 @@ describe('Parser', () => {
   it('allows parsing fragment defined variables', () => {
     const document = 'fragment a($v: Boolean = false) on t { f(v: $v) }';
 
-    expect(() =>
-      parse(document, { allowFragmentArguments: true }),
-    ).to.not.throw();
-    expect(() => parse(document)).to.throw('Syntax Error');
+    expect(() => parse(document)).to.not.throw();
   });
 
   it('allows parsing fragment spread arguments', () => {
     const document = 'fragment a on t { ...b(v: $v) }';
 
-    expect(() =>
-      parse(document, { allowFragmentArguments: true }),
-    ).to.not.throw();
-    expect(() => parse(document)).to.throw('Syntax Error');
+    expect(() => parse(document)).to.not.throw();
   });
 
   it('contains location information that only stringifies start/end', () => {

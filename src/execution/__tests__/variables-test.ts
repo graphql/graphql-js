@@ -130,14 +130,6 @@ function executeQuery(
   return executeSync({ schema, document, variableValues });
 }
 
-function executeQueryWithFragmentArguments(
-  query: string,
-  variableValues?: { [variable: string]: unknown },
-) {
-  const document = parse(query, { allowFragmentArguments: true });
-  return executeSync({ schema, document, variableValues });
-}
-
 describe('Execute: Handles inputs', () => {
   describe('Handles objects and nullability', () => {
     describe('using inline structs', () => {
@@ -1032,7 +1024,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when a value is required and provided', () => {
-      const result = executeQueryWithFragmentArguments(`
+      const result = executeQuery(`
         query {
           ...a(value: "A")
         }
@@ -1049,7 +1041,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when a value is required and not provided', () => {
-      const result = executeQueryWithFragmentArguments(`
+      const result = executeQuery(`
         query {
           ...a
         }
@@ -1076,7 +1068,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when the definition has a default and is provided', () => {
-      const result = executeQueryWithFragmentArguments(`
+      const result = executeQuery(`
         query {
           ...a(value: "A")
         }
@@ -1093,7 +1085,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when the definition has a default and is not provided', () => {
-      const result = executeQueryWithFragmentArguments(`
+      const result = executeQuery(`
         query {
           ...a
         }
@@ -1110,7 +1102,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when the definition has a non-nullable default and is provided null', () => {
-      const result = executeQueryWithFragmentArguments(`
+      const result = executeQuery(`
         query {
           ...a(value: null)
         }
@@ -1137,7 +1129,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when the definition has no default and is not provided', () => {
-      const result = executeQueryWithFragmentArguments(`
+      const result = executeQuery(`
         query {
           ...a
         }
@@ -1155,7 +1147,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when the argument variable is nested in a complex type', () => {
-      const result = executeQueryWithFragmentArguments(`
+      const result = executeQuery(`
         query {
           ...a(value: "C")
         }
@@ -1172,7 +1164,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when argument variables are used recursively', () => {
-      const result = executeQueryWithFragmentArguments(`
+      const result = executeQuery(`
         query {
           ...a(aValue: "C")
         }

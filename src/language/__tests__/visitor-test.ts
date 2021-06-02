@@ -465,7 +465,6 @@ describe('Visitor', () => {
   it('visits variables defined in fragments', () => {
     const ast = parse('fragment a($v: Boolean = false) on t { f }', {
       noLocation: true,
-      allowFragmentArguments: true,
     });
     const visited: Array<any> = [];
 
@@ -515,7 +514,6 @@ describe('Visitor', () => {
   it('visits arguments on fragment spreads', () => {
     const ast = parse('fragment a on t { ...s(v: false) }', {
       noLocation: true,
-      allowFragmentArguments: true,
     });
     const visited: Array<any> = [];
 

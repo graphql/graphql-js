@@ -80,24 +80,6 @@ export interface ParseOptions {
    * disables that behavior for performance or testing.
    */
   noLocation?: boolean;
-
-  /**
-   * If enabled, the parser will understand and parse variable definitions
-   * contained in a fragment definition. They'll be represented in the
-   * `variableDefinitions` field of the FragmentDefinitionNode.
-   *
-   * Additionally, the parser will understand arguments passed to fragment
-   * spreads. They'll be represented in the `arguments` field of the
-   * FragmentSpreadNode.
-   *
-   * The syntax is identical to normal, query-defined variables. For example:
-   *
-   *   fragment A($var: Boolean = false) on T  {
-   *     ...
-   *   }
-   *
-   */
-  allowFragmentArguments?: boolean;
 }
 
 /**
@@ -450,10 +432,7 @@ export class Parser {
     const hasTypeCondition = this.expectOptionalKeyword('on');
     if (!hasTypeCondition && this.peek(TokenKind.NAME)) {
       const name = this.parseFragmentName();
-      if (
-        this._options?.allowFragmentArguments === true &&
-        this.peek(TokenKind.PAREN_L)
-      ) {
+      if (this.peek(TokenKind.PAREN_L)) {
         return this.node<FragmentSpreadNode>(start, {
           kind: Kind.FRAGMENT_SPREAD,
           name,
@@ -484,13 +463,11 @@ export class Parser {
   parseFragmentDefinition(): FragmentDefinitionNode {
     const start = this._lexer.token;
     this.expectKeyword('fragment');
-    // Legacy support for defining variables within fragments changes
-    // the grammar of FragmentDefinition:
-    //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options?.allowFragmentArguments === true) {
+    const name = this.parseFragmentName();
+    if (this.peek(TokenKind.PAREN_L)) {
       return this.node<FragmentDefinitionNode>(start, {
         kind: Kind.FRAGMENT_DEFINITION,
-        name: this.parseFragmentName(),
+        name,
         variableDefinitions: this.parseVariableDefinitions(),
         typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
         directives: this.parseDirectives(false),
@@ -499,7 +476,7 @@ export class Parser {
     }
     return this.node<FragmentDefinitionNode>(start, {
       kind: Kind.FRAGMENT_DEFINITION,
-      name: this.parseFragmentName(),
+      name,
       typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
       directives: this.parseDirectives(false),
       selectionSet: this.parseSelectionSet(),

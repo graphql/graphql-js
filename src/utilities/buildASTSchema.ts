@@ -99,7 +99,6 @@ export function buildSchema(
 ): GraphQLSchema {
   const document = parse(source, {
     noLocation: options?.noLocation,
-    allowFragmentArguments: options?.allowFragmentArguments,
   });
 
   return buildASTSchema(document, {
