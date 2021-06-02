@@ -38,7 +38,7 @@ export class Lexer {
   lineStart: number;
 
   constructor(source: Source) {
-    const startOfFileToken = new Token(TokenKind.SOF, 0, 0, 0, 0, null);
+    const startOfFileToken = new Token(TokenKind.SOF, 0, 0, 0, 0);
 
     this.source = source;
     this.lastToken = startOfFileToken;
@@ -64,8 +64,17 @@ export class Lexer {
     let token = this.token;
     if (token.kind !== TokenKind.EOF) {
       do {
-        // @ts-expect-error next is only mutable during parsing, so we cast to allow this.
-        token = token.next ?? (token.next = readToken(this, token));
+        if (token.next) {
+          token = token.next;
+        } else {
+          // Read the next token and form a link in the token linked-list.
+          const nextToken = readNextToken(this, token);
+          // @ts-expect-error next is only mutable during parsing.
+          token.next = nextToken;
+          // @ts-expect-error prev is only mutable during parsing.
+          nextToken.prev = token;
+          token = nextToken;
+        }
       } while (token.kind === TokenKind.COMMENT);
     }
     return token;
@@ -114,7 +123,7 @@ function printCharCode(code: number): string {
  * punctuators immediately or calls the appropriate helper function for more
  * complicated tokens.
  */
-function readToken(lexer: Lexer, prev: Token): Token {
+function readNextToken(lexer: Lexer, prev: Token): Token {
   const source = lexer.source;
   const body = source.body;
   const bodyLength = body.length;
@@ -149,49 +158,49 @@ function readToken(lexer: Lexer, prev: Token): Token {
         lexer.lineStart = pos;
         continue;
       case 0x0021: // !
-        return new Token(TokenKind.BANG, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.BANG, pos, pos + 1, line, col);
       case 0x0023: // #
-        return readComment(source, pos, line, col, prev);
+        return readComment(source, pos, line, col);
       case 0x0024: // $
-        return new Token(TokenKind.DOLLAR, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.DOLLAR, pos, pos + 1, line, col);
       case 0x0026: // &
-        return new Token(TokenKind.AMP, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.AMP, pos, pos + 1, line, col);
       case 0x0028: // (
-        return new Token(TokenKind.PAREN_L, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.PAREN_L, pos, pos + 1, line, col);
       case 0x0029: // )
-        return new Token(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.PAREN_R, pos, pos + 1, line, col);
       case 0x002e: // .
         if (
           body.charCodeAt(pos + 1) === 0x002e &&
           body.charCodeAt(pos + 2) === 0x002e
         ) {
-          return new Token(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
+          return new Token(TokenKind.SPREAD, pos, pos + 3, line, col);
         }
         break;
       case 0x003a: // :
-        return new Token(TokenKind.COLON, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.COLON, pos, pos + 1, line, col);
       case 0x003d: // =
-        return new Token(TokenKind.EQUALS, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.EQUALS, pos, pos + 1, line, col);
       case 0x0040: // @
-        return new Token(TokenKind.AT, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.AT, pos, pos + 1, line, col);
       case 0x005b: // [
-        return new Token(TokenKind.BRACKET_L, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.BRACKET_L, pos, pos + 1, line, col);
       case 0x005d: // ]
-        return new Token(TokenKind.BRACKET_R, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.BRACKET_R, pos, pos + 1, line, col);
       case 0x007b: // {
-        return new Token(TokenKind.BRACE_L, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.BRACE_L, pos, pos + 1, line, col);
       case 0x007c: // |
-        return new Token(TokenKind.PIPE, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.PIPE, pos, pos + 1, line, col);
       case 0x007d: // }
-        return new Token(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
+        return new Token(TokenKind.BRACE_R, pos, pos + 1, line, col);
       case 0x0022: // "
         if (
           body.charCodeAt(pos + 1) === 0x0022 &&
           body.charCodeAt(pos + 2) === 0x0022
         ) {
-          return readBlockString(source, pos, line, col, prev, lexer);
+          return readBlockString(source, pos, line, col, lexer);
         }
-        return readString(source, pos, line, col, prev);
+        return readString(source, pos, line, col);
       case 0x002d: // -
       case 0x0030: // 0
       case 0x0031: // 1
@@ -203,7 +212,7 @@ function readToken(lexer: Lexer, prev: Token): Token {
       case 0x0037: // 7
       case 0x0038: // 8
       case 0x0039: // 9
-        return readNumber(source, pos, code, line, col, prev);
+        return readNumber(source, pos, code, line, col);
       case 0x0041: // A
       case 0x0042: // B
       case 0x0043: // C
@@ -257,7 +266,7 @@ function readToken(lexer: Lexer, prev: Token): Token {
       case 0x0078: // x
       case 0x0079: // y
       case 0x007a: // z
-        return readName(source, pos, line, col, prev);
+        return readName(source, pos, line, col);
     }
 
     throw syntaxError(source, pos, unexpectedCharacterMessage(code));
@@ -265,7 +274,7 @@ function readToken(lexer: Lexer, prev: Token): Token {
 
   const line = lexer.line;
   const col = 1 + pos - lexer.lineStart;
-  return new Token(TokenKind.EOF, bodyLength, bodyLength, line, col, prev);
+  return new Token(TokenKind.EOF, bodyLength, bodyLength, line, col);
 }
 
 /**
@@ -294,7 +303,6 @@ function readComment(
   start: number,
   line: number,
   col: number,
-  prev: Token | null,
 ): Token {
   const body = source.body;
   let code;
@@ -314,7 +322,6 @@ function readComment(
     position,
     line,
     col,
-    prev,
     body.slice(start + 1, position),
   );
 }
@@ -332,7 +339,6 @@ function readNumber(
   firstCode: number,
   line: number,
   col: number,
-  prev: Token | null,
 ): Token {
   const body = source.body;
   let code = firstCode;
@@ -396,7 +402,6 @@ function readNumber(
     position,
     line,
     col,
-    prev,
     body.slice(start, position),
   );
 }
@@ -432,7 +437,6 @@ function readString(
   start: number,
   line: number,
   col: number,
-  prev: Token | null,
 ): Token {
   const body = source.body;
   let position = start + 1;
@@ -450,15 +454,7 @@ function readString(
     // Closing Quote (")
     if (code === 0x0022) {
       value += body.slice(chunkStart, position);
-      return new Token(
-        TokenKind.STRING,
-        start,
-        position + 1,
-        line,
-        col,
-        prev,
-        value,
-      );
+      return new Token(TokenKind.STRING, start, position + 1, line, col, value);
     }
 
     // SourceCharacter
@@ -547,7 +543,6 @@ function readBlockString(
   start: number,
   line: number,
   col: number,
-  prev: Token | null,
   lexer: Lexer,
 ): Token {
   const body = source.body;
@@ -570,7 +565,6 @@ function readBlockString(
         position + 3,
         line,
         col,
-        prev,
         dedentBlockStringValue(rawValue),
       );
     }
@@ -665,7 +659,6 @@ function readName(
   start: number,
   line: number,
   col: number,
-  prev: Token | null,
 ): Token {
   const body = source.body;
   const bodyLength = body.length;
@@ -687,7 +680,6 @@ function readName(
     position,
     line,
     col,
-    prev,
     body.slice(start, position),
   );
 }
