@@ -449,17 +449,21 @@ export class Parser {
 
     const hasTypeCondition = this.expectOptionalKeyword('on');
     if (!hasTypeCondition && this.peek(TokenKind.NAME)) {
-      if (this._options?.allowFragmentArguments === true) {
+      const name = this.parseFragmentName();
+      if (
+        this._options?.allowFragmentArguments === true &&
+        this.peek(TokenKind.PAREN_L)
+      ) {
         return this.node<FragmentSpreadNode>(start, {
           kind: Kind.FRAGMENT_SPREAD,
-          name: this.parseFragmentName(),
+          name,
           arguments: this.parseArguments(false),
           directives: this.parseDirectives(false),
         });
       }
       return this.node<FragmentSpreadNode>(start, {
         kind: Kind.FRAGMENT_SPREAD,
-        name: this.parseFragmentName(),
+        name,
         directives: this.parseDirectives(false),
       });
     }
