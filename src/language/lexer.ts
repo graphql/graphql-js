@@ -212,72 +212,17 @@ function readNextToken(lexer: Lexer, start: number): Token {
           return readBlockString(lexer, position);
         }
         return readString(lexer, position);
-      case 0x002d: // -
-      case 0x0030: // 0
-      case 0x0031: // 1
-      case 0x0032: // 2
-      case 0x0033: // 3
-      case 0x0034: // 4
-      case 0x0035: // 5
-      case 0x0036: // 6
-      case 0x0037: // 7
-      case 0x0038: // 8
-      case 0x0039: // 9
-        return readNumber(lexer, position, code);
-      case 0x0041: // A
-      case 0x0042: // B
-      case 0x0043: // C
-      case 0x0044: // D
-      case 0x0045: // E
-      case 0x0046: // F
-      case 0x0047: // G
-      case 0x0048: // H
-      case 0x0049: // I
-      case 0x004a: // J
-      case 0x004b: // K
-      case 0x004c: // L
-      case 0x004d: // M
-      case 0x004e: // N
-      case 0x004f: // O
-      case 0x0050: // P
-      case 0x0051: // Q
-      case 0x0052: // R
-      case 0x0053: // S
-      case 0x0054: // T
-      case 0x0055: // U
-      case 0x0056: // V
-      case 0x0057: // W
-      case 0x0058: // X
-      case 0x0059: // Y
-      case 0x005a: // Z
-      case 0x005f: // _
-      case 0x0061: // a
-      case 0x0062: // b
-      case 0x0063: // c
-      case 0x0064: // d
-      case 0x0065: // e
-      case 0x0066: // f
-      case 0x0067: // g
-      case 0x0068: // h
-      case 0x0069: // i
-      case 0x006a: // j
-      case 0x006b: // k
-      case 0x006c: // l
-      case 0x006d: // m
-      case 0x006e: // n
-      case 0x006f: // o
-      case 0x0070: // p
-      case 0x0071: // q
-      case 0x0072: // r
-      case 0x0073: // s
-      case 0x0074: // t
-      case 0x0075: // u
-      case 0x0076: // v
-      case 0x0077: // w
-      case 0x0078: // x
-      case 0x0079: // y
-      case 0x007a: // z
-        return readName(lexer, position);
+    }
+
+    // IntValue | FloatValue
+    // 0-9 | -
+    if ((code >= 0x0030 && code <= 0x0039) || code === 0x002d) {
+      return readNumber(lexer, position, code);
+    }
+
+    // Name
+    if (isNameStart(code)) {
+      return readName(lexer, position);
     }
 
     throw syntaxError(lexer.source, position, unexpectedCharacterMessage(code));
@@ -662,11 +607,11 @@ function readName(lexer: Lexer, start: number): Token {
   );
 }
 
-// _ A-Z a-z
+// a-z | A-Z | _
 function isNameStart(code: number): boolean {
   return (
-    code === 0x005f ||
+    (code >= 0x0061 && code <= 0x007a) ||
     (code >= 0x0041 && code <= 0x005a) ||
-    (code >= 0x0061 && code <= 0x007a)
+    code === 0x005f
   );
 }
