@@ -1411,7 +1411,7 @@ export class Parser {
    * If the next token is a given keyword, advance the lexer.
    * Otherwise, do not change the parser state and throw an error.
    */
-  expectKeyword(value: string) {
+  expectKeyword(value: string): void {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
       this._lexer.advance();

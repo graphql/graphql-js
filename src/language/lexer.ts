@@ -68,7 +68,7 @@ export class Lexer {
           token = token.next;
         } else {
           // Read the next token and form a link in the token linked-list.
-          const nextToken = readNextToken(this, token);
+          const nextToken = readNextToken(this, token.end);
           // @ts-expect-error next is only mutable during parsing.
           token.next = nextToken;
           // @ts-expect-error prev is only mutable during parsing.
@@ -161,10 +161,10 @@ function createToken(
  * punctuators immediately or calls the appropriate helper function for more
  * complicated tokens.
  */
-function readNextToken(lexer: Lexer, prev: Token): Token {
+function readNextToken(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
   const bodyLength = body.length;
-  let position = prev.end;
+  let position = start;
 
   while (position < bodyLength) {
     const code = body.charCodeAt(position);
@@ -185,22 +185,22 @@ function readNextToken(lexer: Lexer, prev: Token): Token {
       //   - "Space (U+0020)"
       //
       // Comma :: ,
-      case 0x0009: //  \t
-      case 0x0020: //  <space>
-      case 0x002c: //  ,
-      case 0xfeff: //  <BOM>
+      case 0xfeff: // <BOM>
+      case 0x0009: // \t
+      case 0x0020: // <space>
+      case 0x002c: // ,
         ++position;
         continue;
       // LineTerminator ::
       //   - "New Line (U+000A)"
       //   - "Carriage Return (U+000D)" [lookahead != "New Line (U+000A)"]
       //   - "Carriage Return (U+000D)" "New Line (U+000A)"
-      case 0x000a: //  \n
+      case 0x000a: // \n
         ++position;
         ++lexer.line;
         lexer.lineStart = position;
         continue;
-      case 0x000d: //  \r
+      case 0x000d: // \r
         if (body.charCodeAt(position + 1) === 0x000a) {
           position += 2;
         } else {
@@ -210,7 +210,7 @@ function readNextToken(lexer: Lexer, prev: Token): Token {
         lexer.lineStart = position;
         continue;
       // Comment
-      case 0x0023: //  #
+      case 0x0023: // #
         return readComment(lexer, position);
       // Token ::
       //   - Punctuator
@@ -220,17 +220,17 @@ function readNextToken(lexer: Lexer, prev: Token): Token {
       //   - StringValue
       //
       // Punctuator :: one of ! $ & ( ) ... : = @ [ ] { | }
-      case 0x0021: //  !
+      case 0x0021: // !
         return createToken(lexer, TokenKind.BANG, position, position + 1);
-      case 0x0024: //  $
+      case 0x0024: // $
         return createToken(lexer, TokenKind.DOLLAR, position, position + 1);
-      case 0x0026: //  &
+      case 0x0026: // &
         return createToken(lexer, TokenKind.AMP, position, position + 1);
-      case 0x0028: //  (
+      case 0x0028: // (
         return createToken(lexer, TokenKind.PAREN_L, position, position + 1);
-      case 0x0029: //  )
+      case 0x0029: // )
         return createToken(lexer, TokenKind.PAREN_R, position, position + 1);
-      case 0x002e: //  .
+      case 0x002e: // .
         if (
           body.charCodeAt(position + 1) === 0x002e &&
           body.charCodeAt(position + 2) === 0x002e
@@ -238,24 +238,24 @@ function readNextToken(lexer: Lexer, prev: Token): Token {
           return createToken(lexer, TokenKind.SPREAD, position, position + 3);
         }
         break;
-      case 0x003a: //  :
+      case 0x003a: // :
         return createToken(lexer, TokenKind.COLON, position, position + 1);
-      case 0x003d: //  =
+      case 0x003d: // =
         return createToken(lexer, TokenKind.EQUALS, position, position + 1);
-      case 0x0040: //  @
+      case 0x0040: // @
         return createToken(lexer, TokenKind.AT, position, position + 1);
-      case 0x005b: //  [
+      case 0x005b: // [
         return createToken(lexer, TokenKind.BRACKET_L, position, position + 1);
-      case 0x005d: //  ]
+      case 0x005d: // ]
         return createToken(lexer, TokenKind.BRACKET_R, position, position + 1);
-      case 0x007b: //  {
+      case 0x007b: // {
         return createToken(lexer, TokenKind.BRACE_L, position, position + 1);
-      case 0x007c: //  |
+      case 0x007c: // |
         return createToken(lexer, TokenKind.PIPE, position, position + 1);
-      case 0x007d: //  }
+      case 0x007d: // }
         return createToken(lexer, TokenKind.BRACE_R, position, position + 1);
       // StringValue
-      case 0x0022: //  "
+      case 0x0022: // "
         if (
           body.charCodeAt(position + 1) === 0x0022 &&
           body.charCodeAt(position + 2) === 0x0022
@@ -265,9 +265,8 @@ function readNextToken(lexer: Lexer, prev: Token): Token {
         return readString(lexer, position);
     }
 
-    // IntValue | FloatValue
-    // 0-9 | -
-    if ((code >= 0x0030 && code <= 0x0039) || code === 0x002d) {
+    // IntValue | FloatValue (Digit | -)
+    if (isDigit(code) || code === 0x002d) {
       return readNumber(lexer, position, code);
     }
 
@@ -305,7 +304,7 @@ function readComment(lexer: Lexer, start: number): Token {
   while (position < bodyLength) {
     const code = body.charCodeAt(position);
 
-    // LineTerminator (\n or \r)
+    // LineTerminator (\n | \r)
     if (code === 0x000a || code === 0x000d) {
       break;
     }
@@ -330,9 +329,6 @@ function readComment(lexer: Lexer, start: number): Token {
 /**
  * Reads a number token from the source file, either a FloatValue or an IntValue
  * depending on whether a FractionalPart or ExponentPart is encountered.
- *
- * Digit :: one of
- *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
  *
  * IntValue :: IntegerPart [lookahead != {Digit, `.`, NameStart}]
  *
@@ -371,8 +367,7 @@ function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
   // Zero (0)
   if (code === 0x0030) {
     code = body.charCodeAt(++position);
-    // Digit (0-9)
-    if (code >= 0x0030 && code <= 0x0039) {
+    if (isDigit(code)) {
       throw syntaxError(
         lexer.source,
         position,
@@ -434,25 +429,26 @@ function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
  * Returns the new position in the source after reading one or more digits.
  */
 function readDigits(lexer: Lexer, start: number, firstCode: number): number {
+  if (!isDigit(firstCode)) {
+    throw syntaxError(
+      lexer.source,
+      start,
+      `Invalid number, expected digit but got: ${printCodePointAt(
+        lexer,
+        start,
+      )}.`,
+    );
+  }
+
   const body = lexer.source.body;
   let position = start;
   let code = firstCode;
 
-  // 0 - 9
-  if (code >= 0x0030 && code <= 0x0039) {
-    do {
-      code = body.charCodeAt(++position);
-    } while (code >= 0x0030 && code <= 0x0039); // 0 - 9
-    return position;
-  }
-  throw syntaxError(
-    lexer.source,
-    position,
-    `Invalid number, expected digit but got: ${printCodePointAt(
-      lexer,
-      position,
-    )}.`,
-  );
+  do {
+    code = body.charCodeAt(++position);
+  } while (isDigit(code));
+
+  return position;
 }
 
 /**
@@ -500,7 +496,7 @@ function readString(lexer: Lexer, start: number): Token {
       continue;
     }
 
-    // LineTerminator (\n or \r)
+    // LineTerminator (\n | \r)
     if (code === 0x000a || code === 0x000d) {
       break;
     }
@@ -545,40 +541,39 @@ function readEscapedUnicode(lexer: Lexer, position: number): EscapeSequence {
 }
 
 /**
- * Reads four hexadecimal chars and returns the integer that 16bit hexadecimal
- * string represents. For example, "000f" will return 15, and "dead" will
- * return 57005.
+ * Reads four hexadecimal characters and returns the positive integer that 16bit
+ * hexadecimal string represents. For example, "000f" will return 15, and "dead"
+ * will return 57005.
  *
  * Returns a negative number if any char was not a valid hexadecimal digit.
- *
- * This is implemented by noting that hexValue() returns -1 on error,
- * which means the result of ORing the hexValue() will also be negative.
  */
 function read16BitHexCode(body: string, position: number): number {
+  // readHexDigit() returns -1 on error. ORing a negative value with any other
+  // value always produces a negative value.
   return (
-    (hexValue(body.charCodeAt(position)) << 12) |
-    (hexValue(body.charCodeAt(position + 1)) << 8) |
-    (hexValue(body.charCodeAt(position + 2)) << 4) |
-    hexValue(body.charCodeAt(position + 3))
+    (readHexDigit(body.charCodeAt(position)) << 12) |
+    (readHexDigit(body.charCodeAt(position + 1)) << 8) |
+    (readHexDigit(body.charCodeAt(position + 2)) << 4) |
+    readHexDigit(body.charCodeAt(position + 3))
   );
 }
 
 /**
- * Converts a hex character to its integer value.
+ * Reads a hexadecimal character and returns its positive integer value (0-15).
  *
  * '0' becomes 0, '9' becomes 9
  * 'A' becomes 10, 'F' becomes 15
  * 'a' becomes 10, 'f' becomes 15
  *
- * Any other input returns -1.
+ * Returns -1 if the provided character code was not a valid hexadecimal digit.
  */
-function hexValue(code: number): number {
-  return code >= 0x0030 && code <= 0x0039
-    ? code - 0x0030 // 0-9
-    : code >= 0x0041 && code <= 0x0046
-    ? code - 0x0037 // A-F
-    : code >= 0x0061 && code <= 0x0066
-    ? code - 0x0057 // a-f
+function readHexDigit(code: number): number {
+  return code >= 0x0030 && code <= 0x0039 // 0-9
+    ? code - 0x0030
+    : code >= 0x0041 && code <= 0x0046 // A-F
+    ? code - 0x0037
+    : code >= 0x0061 && code <= 0x0066 // a-f
+    ? code - 0x0057
     : -1;
 }
 
@@ -718,15 +713,6 @@ function readBlockString(lexer: Lexer, start: number): Token {
  *   - Letter
  *   - Digit
  *   - `_`
- *
- * Letter :: one of
- *   - `A` `B` `C` `D` `E` `F` `G` `H` `I` `J` `K` `L` `M`
- *   - `N` `O` `P` `Q` `R` `S` `T` `U` `V` `W` `X` `Y` `Z`
- *   - `a` `b` `c` `d` `e` `f` `g` `h` `i` `j` `k` `l` `m`
- *   - `n` `o` `p` `q` `r` `s` `t` `u` `v` `w` `x` `y` `z`
- *
- * Digit :: one of
- *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
  */
 function readName(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
@@ -736,17 +722,13 @@ function readName(lexer: Lexer, start: number): Token {
   while (position < bodyLength) {
     const code = body.charCodeAt(position);
     // NameContinue
-    if (
-      (code >= 0x0061 && code <= 0x007a) || // a-z
-      (code >= 0x0041 && code <= 0x005a) || // A-Z
-      (code >= 0x0030 && code <= 0x0039) || // 0-9
-      code === 0x005f // _
-    ) {
+    if (isLetter(code) || isDigit(code) || code === 0x005f) {
       ++position;
     } else {
       break;
     }
   }
+
   return createToken(
     lexer,
     TokenKind.NAME,
@@ -756,11 +738,28 @@ function readName(lexer: Lexer, start: number): Token {
   );
 }
 
-// a-z | A-Z | _
 function isNameStart(code: number): boolean {
+  return isLetter(code) || code === 0x005f;
+}
+
+/**
+ * Digit :: one of
+ *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
+ */
+function isDigit(code: number): boolean {
+  return code >= 0x0030 && code <= 0x0039;
+}
+
+/**
+ * Letter :: one of
+ *   - `A` `B` `C` `D` `E` `F` `G` `H` `I` `J` `K` `L` `M`
+ *   - `N` `O` `P` `Q` `R` `S` `T` `U` `V` `W` `X` `Y` `Z`
+ *   - `a` `b` `c` `d` `e` `f` `g` `h` `i` `j` `k` `l` `m`
+ *   - `n` `o` `p` `q` `r` `s` `t` `u` `v` `w` `x` `y` `z`
+ */
+function isLetter(code: number): boolean {
   return (
-    (code >= 0x0061 && code <= 0x007a) ||
-    (code >= 0x0041 && code <= 0x005a) ||
-    code === 0x005f
+    (code >= 0x0061 && code <= 0x007a) || // A-Z
+    (code >= 0x0041 && code <= 0x005a) // a-z
   );
 }
