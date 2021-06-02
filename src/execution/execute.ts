@@ -1784,47 +1784,62 @@ export class Dispatcher {
         done: false,
       });
     }
-    return new Promise<{
-      promise: Promise<IteratorResult<DispatcherResult, void>>;
-    }>((resolve) => {
+    return new Promise((resolve) => {
+      let resolved = false;
       this._subsequentPayloads.forEach((promise) => {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        promise.then(() => {
-          // resolve with actual promise, not resolved value of promise so we can remove it from this._subsequentPayloads
-          resolve({ promise });
+        promise.then((payload) => {
+          if (resolved) {
+            return;
+          }
+
+          resolved = true;
+
+          if (this._subsequentPayloads.length === 0) {
+            // a different call to next has exhausted all payloads
+            resolve({ value: undefined, done: true });
+            return;
+          }
+
+          const index = this._subsequentPayloads.indexOf(promise);
+
+          if (index === -1) {
+            // a different call to next has consumed this payload
+            resolve(this._race());
+            return;
+          }
+
+          this._subsequentPayloads.splice(index, 1);
+
+          const { value, done } = payload;
+
+          if (done && this._subsequentPayloads.length === 0) {
+            // async iterable resolver just finished and no more pending payloads
+            resolve({
+              value: {
+                hasNext: false,
+              },
+              done: false,
+            });
+            return;
+          } else if (done) {
+            // async iterable resolver just finished but there are pending payloads
+            // return the next one
+            resolve(this._race());
+            return;
+          }
+
+          const returnValue: ExecutionPatchResult = {
+            ...value,
+            hasNext: this._subsequentPayloads.length > 0,
+          };
+          resolve({
+            value: returnValue,
+            done: false,
+          });
         });
       });
-    })
-      .then(({ promise }) => {
-        this._subsequentPayloads.splice(
-          this._subsequentPayloads.indexOf(promise),
-          1,
-        );
-        return promise;
-      })
-      .then(({ value, done }) => {
-        if (done && this._subsequentPayloads.length === 0) {
-          // async iterable resolver just finished and no more pending payloads
-          return {
-            value: {
-              hasNext: false,
-            },
-            done: false,
-          };
-        } else if (done) {
-          // async iterable resolver just finished but there are pending payloads
-          // return the next one
-          return this._race();
-        }
-        const returnValue: ExecutionPatchResult = {
-          ...value,
-          hasNext: this._subsequentPayloads.length > 0,
-        };
-        return {
-          value: returnValue,
-          done: false,
-        };
-      });
+    });
   }
 
   _next(): Promise<IteratorResult<AsyncExecutionResult, void>> {
