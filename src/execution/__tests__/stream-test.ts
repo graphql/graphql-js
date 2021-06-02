@@ -133,6 +133,22 @@ async function complete(document: DocumentNode) {
   return result;
 }
 
+async function completeAsync(document: DocumentNode, numCalls: number) {
+  const schema = new GraphQLSchema({ query });
+
+  const result = await execute({ schema, document, rootValue: {} });
+
+  invariant(isAsyncIterable(result));
+
+  const iterator = result[Symbol.asyncIterator]();
+
+  const promises = [];
+  for (let i = 0; i < numCalls; i++) {
+    promises.push(iterator.next());
+  }
+  return Promise.all(promises);
+}
+
 describe('Execute: stream directive', () => {
   it('Can stream a list field', async () => {
     const document = parse('{ scalarList @stream(initialCount: 1) }');
@@ -434,6 +450,58 @@ describe('Execute: stream directive', () => {
       },
       {
         hasNext: false,
+      },
+    ]);
+  });
+  it('Can stream a field that returns an async iterable', async () => {
+    const document = parse(`
+      query { 
+        asyncIterableList @stream(initialCount: 2) {
+          name
+          id
+        }
+      }
+    `);
+    const result = await completeAsync(document, 4);
+    expect(result).to.deep.equal([
+      {
+        done: false,
+        value: {
+          data: {
+            asyncIterableList: [
+              {
+                name: 'Luke',
+                id: '1',
+              },
+              {
+                name: 'Han',
+                id: '2',
+              },
+            ],
+          },
+          hasNext: true,
+        },
+      },
+      {
+        done: false,
+        value: {
+          data: {
+            name: 'Leia',
+            id: '3',
+          },
+          path: ['asyncIterableList', 2],
+          hasNext: true,
+        },
+      },
+      {
+        done: false,
+        value: {
+          hasNext: false,
+        },
+      },
+      {
+        done: true,
+        value: undefined,
       },
     ]);
   });
