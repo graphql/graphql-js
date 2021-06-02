@@ -129,18 +129,18 @@ function readToken(lexer: Lexer, prev: Token): Token {
     // SourceCharacter
     switch (code) {
       case 0xfeff: // <BOM>
-      case 9: //   \t
-      case 32: //  <space>
-      case 44: //  ,
+      case 0x0009: // \t
+      case 0x0020: // <space>
+      case 0x002c: // ,
         ++pos;
         continue;
-      case 10: //  \n
+      case 0x000a: // \n
         ++pos;
         ++lexer.line;
         lexer.lineStart = pos;
         continue;
-      case 13: //  \r
-        if (body.charCodeAt(pos + 1) === 10) {
+      case 0x000d: // \r
+        if (body.charCodeAt(pos + 1) === 0x000a) {
           pos += 2;
         } else {
           ++pos;
@@ -148,115 +148,115 @@ function readToken(lexer: Lexer, prev: Token): Token {
         ++lexer.line;
         lexer.lineStart = pos;
         continue;
-      case 33: //  !
+      case 0x0021: // !
         return new Token(TokenKind.BANG, pos, pos + 1, line, col, prev);
-      case 35: //  #
+      case 0x0023: // #
         return readComment(source, pos, line, col, prev);
-      case 36: //  $
+      case 0x0024: // $
         return new Token(TokenKind.DOLLAR, pos, pos + 1, line, col, prev);
-      case 38: //  &
+      case 0x0026: // &
         return new Token(TokenKind.AMP, pos, pos + 1, line, col, prev);
-      case 40: //  (
+      case 0x0028: // (
         return new Token(TokenKind.PAREN_L, pos, pos + 1, line, col, prev);
-      case 41: //  )
+      case 0x0029: // )
         return new Token(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
-      case 46: //  .
+      case 0x002e: // .
         if (
-          body.charCodeAt(pos + 1) === 46 &&
-          body.charCodeAt(pos + 2) === 46
+          body.charCodeAt(pos + 1) === 0x002e &&
+          body.charCodeAt(pos + 2) === 0x002e
         ) {
           return new Token(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
         }
         break;
-      case 58: //  :
+      case 0x003a: // :
         return new Token(TokenKind.COLON, pos, pos + 1, line, col, prev);
-      case 61: //  =
+      case 0x003d: // =
         return new Token(TokenKind.EQUALS, pos, pos + 1, line, col, prev);
-      case 64: //  @
+      case 0x0040: // @
         return new Token(TokenKind.AT, pos, pos + 1, line, col, prev);
-      case 91: //  [
+      case 0x005b: // [
         return new Token(TokenKind.BRACKET_L, pos, pos + 1, line, col, prev);
-      case 93: //  ]
+      case 0x005d: // ]
         return new Token(TokenKind.BRACKET_R, pos, pos + 1, line, col, prev);
-      case 123: // {
+      case 0x007b: // {
         return new Token(TokenKind.BRACE_L, pos, pos + 1, line, col, prev);
-      case 124: // |
+      case 0x007c: // |
         return new Token(TokenKind.PIPE, pos, pos + 1, line, col, prev);
-      case 125: // }
+      case 0x007d: // }
         return new Token(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
-      case 34: //  "
+      case 0x0022: // "
         if (
-          body.charCodeAt(pos + 1) === 34 &&
-          body.charCodeAt(pos + 2) === 34
+          body.charCodeAt(pos + 1) === 0x0022 &&
+          body.charCodeAt(pos + 2) === 0x0022
         ) {
           return readBlockString(source, pos, line, col, prev, lexer);
         }
         return readString(source, pos, line, col, prev);
-      case 45: //  -
-      case 48: //  0
-      case 49: //  1
-      case 50: //  2
-      case 51: //  3
-      case 52: //  4
-      case 53: //  5
-      case 54: //  6
-      case 55: //  7
-      case 56: //  8
-      case 57: //  9
+      case 0x002d: // -
+      case 0x0030: // 0
+      case 0x0031: // 1
+      case 0x0032: // 2
+      case 0x0033: // 3
+      case 0x0034: // 4
+      case 0x0035: // 5
+      case 0x0036: // 6
+      case 0x0037: // 7
+      case 0x0038: // 8
+      case 0x0039: // 9
         return readNumber(source, pos, code, line, col, prev);
-      case 65: //  A
-      case 66: //  B
-      case 67: //  C
-      case 68: //  D
-      case 69: //  E
-      case 70: //  F
-      case 71: //  G
-      case 72: //  H
-      case 73: //  I
-      case 74: //  J
-      case 75: //  K
-      case 76: //  L
-      case 77: //  M
-      case 78: //  N
-      case 79: //  O
-      case 80: //  P
-      case 81: //  Q
-      case 82: //  R
-      case 83: //  S
-      case 84: //  T
-      case 85: //  U
-      case 86: //  V
-      case 87: //  W
-      case 88: //  X
-      case 89: //  Y
-      case 90: //  Z
-      case 95: //  _
-      case 97: //  a
-      case 98: //  b
-      case 99: //  c
-      case 100: // d
-      case 101: // e
-      case 102: // f
-      case 103: // g
-      case 104: // h
-      case 105: // i
-      case 106: // j
-      case 107: // k
-      case 108: // l
-      case 109: // m
-      case 110: // n
-      case 111: // o
-      case 112: // p
-      case 113: // q
-      case 114: // r
-      case 115: // s
-      case 116: // t
-      case 117: // u
-      case 118: // v
-      case 119: // w
-      case 120: // x
-      case 121: // y
-      case 122: // z
+      case 0x0041: // A
+      case 0x0042: // B
+      case 0x0043: // C
+      case 0x0044: // D
+      case 0x0045: // E
+      case 0x0046: // F
+      case 0x0047: // G
+      case 0x0048: // H
+      case 0x0049: // I
+      case 0x004a: // J
+      case 0x004b: // K
+      case 0x004c: // L
+      case 0x004d: // M
+      case 0x004e: // N
+      case 0x004f: // O
+      case 0x0050: // P
+      case 0x0051: // Q
+      case 0x0052: // R
+      case 0x0053: // S
+      case 0x0054: // T
+      case 0x0055: // U
+      case 0x0056: // V
+      case 0x0057: // W
+      case 0x0058: // X
+      case 0x0059: // Y
+      case 0x005a: // Z
+      case 0x005f: // _
+      case 0x0061: // a
+      case 0x0062: // b
+      case 0x0063: // c
+      case 0x0064: // d
+      case 0x0065: // e
+      case 0x0066: // f
+      case 0x0067: // g
+      case 0x0068: // h
+      case 0x0069: // i
+      case 0x006a: // j
+      case 0x006b: // k
+      case 0x006c: // l
+      case 0x006d: // m
+      case 0x006e: // n
+      case 0x006f: // o
+      case 0x0070: // p
+      case 0x0071: // q
+      case 0x0072: // r
+      case 0x0073: // s
+      case 0x0074: // t
+      case 0x0075: // u
+      case 0x0076: // v
+      case 0x0077: // w
+      case 0x0078: // x
+      case 0x0079: // y
+      case 0x007a: // z
         return readName(source, pos, line, col, prev);
     }
 
@@ -276,7 +276,7 @@ function unexpectedCharacterMessage(code: number): string {
     return `Cannot contain the invalid character ${printCharCode(code)}.`;
   }
 
-  if (code === 39) {
+  if (code === 0x0027) {
     // '
     return 'Unexpected single quote character (\'), did you mean to use a double quote (")?';
   }
@@ -339,15 +339,15 @@ function readNumber(
   let position = start;
   let isFloat = false;
 
-  if (code === 45) {
+  if (code === 0x002d) {
     // -
     code = body.charCodeAt(++position);
   }
 
-  if (code === 48) {
+  if (code === 0x0030) {
     // 0
     code = body.charCodeAt(++position);
-    if (code >= 48 && code <= 57) {
+    if (code >= 0x0030 && code <= 0x0039) {
       throw syntaxError(
         source,
         position,
@@ -359,7 +359,7 @@ function readNumber(
     code = body.charCodeAt(position);
   }
 
-  if (code === 46) {
+  if (code === 0x002e) {
     // .
     isFloat = true;
 
@@ -368,12 +368,12 @@ function readNumber(
     code = body.charCodeAt(position);
   }
 
-  if (code === 69 || code === 101) {
+  if (code === 0x0045 || code === 0x0065) {
     // E e
     isFloat = true;
 
     code = body.charCodeAt(++position);
-    if (code === 43 || code === 45) {
+    if (code === 0x002b || code === 0x002d) {
       // + -
       code = body.charCodeAt(++position);
     }
@@ -382,7 +382,7 @@ function readNumber(
   }
 
   // Numbers cannot be followed by . or NameStart
-  if (code === 46 || isNameStart(code)) {
+  if (code === 0x002e || isNameStart(code)) {
     throw syntaxError(
       source,
       position,
@@ -408,11 +408,11 @@ function readDigits(source: Source, start: number, firstCode: number): number {
   const body = source.body;
   let position = start;
   let code = firstCode;
-  if (code >= 48 && code <= 57) {
+  if (code >= 0x0030 && code <= 0x0039) {
     // 0 - 9
     do {
       code = body.charCodeAt(++position);
-    } while (code >= 48 && code <= 57); // 0 - 9
+    } while (code >= 0x0030 && code <= 0x0039); // 0 - 9
     return position;
   }
   throw syntaxError(
@@ -448,7 +448,7 @@ function readString(
     code !== 0x000d
   ) {
     // Closing Quote (")
-    if (code === 34) {
+    if (code === 0x0022) {
       value += body.slice(chunkStart, position);
       return new Token(
         TokenKind.STRING,
@@ -471,36 +471,36 @@ function readString(
     }
 
     ++position;
-    if (code === 92) {
+    if (code === 0x005c) {
       // \
       value += body.slice(chunkStart, position - 1);
       code = body.charCodeAt(position);
       switch (code) {
-        case 34:
+        case 0x0022:
           value += '"';
           break;
-        case 47:
+        case 0x002f:
           value += '/';
           break;
-        case 92:
+        case 0x005c:
           value += '\\';
           break;
-        case 98:
+        case 0x0062:
           value += '\b';
           break;
-        case 102:
+        case 0x0066:
           value += '\f';
           break;
-        case 110:
+        case 0x006e:
           value += '\n';
           break;
-        case 114:
+        case 0x0072:
           value += '\r';
           break;
-        case 116:
+        case 0x0074:
           value += '\t';
           break;
-        case 117: {
+        case 0x0075: {
           // uXXXX
           const charCode = uniCharCode(
             body.charCodeAt(position + 1),
@@ -559,9 +559,9 @@ function readBlockString(
   while (position < body.length && !isNaN((code = body.charCodeAt(position)))) {
     // Closing Triple-Quote (""")
     if (
-      code === 34 &&
-      body.charCodeAt(position + 1) === 34 &&
-      body.charCodeAt(position + 2) === 34
+      code === 0x0022 &&
+      body.charCodeAt(position + 1) === 0x0022 &&
+      body.charCodeAt(position + 2) === 0x0022
     ) {
       rawValue += body.slice(chunkStart, position);
       return new Token(
@@ -589,14 +589,14 @@ function readBlockString(
       );
     }
 
-    if (code === 10) {
+    if (code === 0x000a) {
       // new line
       ++position;
       ++lexer.line;
       lexer.lineStart = position;
-    } else if (code === 13) {
+    } else if (code === 0x000d) {
       // carriage return
-      if (body.charCodeAt(position + 1) === 10) {
+      if (body.charCodeAt(position + 1) === 0x000a) {
         position += 2;
       } else {
         ++position;
@@ -605,10 +605,10 @@ function readBlockString(
       lexer.lineStart = position;
     } else if (
       // Escape Triple-Quote (\""")
-      code === 92 &&
-      body.charCodeAt(position + 1) === 34 &&
-      body.charCodeAt(position + 2) === 34 &&
-      body.charCodeAt(position + 3) === 34
+      code === 0x005c &&
+      body.charCodeAt(position + 1) === 0x0022 &&
+      body.charCodeAt(position + 2) === 0x0022 &&
+      body.charCodeAt(position + 3) === 0x0022
     ) {
       rawValue += body.slice(chunkStart, position) + '"""';
       position += 4;
@@ -646,12 +646,12 @@ function uniCharCode(a: number, b: number, c: number, d: number): number {
  * Returns -1 on error.
  */
 function char2hex(a: number): number {
-  return a >= 48 && a <= 57
-    ? a - 48 // 0-9
-    : a >= 65 && a <= 70
-    ? a - 55 // A-F
-    : a >= 97 && a <= 102
-    ? a - 87 // a-f
+  return a >= 0x0030 && a <= 0x0039
+    ? a - 0x0030 // 0-9
+    : a >= 0x0041 && a <= 0x0046
+    ? a - 0x0037 // A-F
+    : a >= 0x0061 && a <= 0x0066
+    ? a - 0x0057 // a-f
     : -1;
 }
 
@@ -674,10 +674,10 @@ function readName(
   while (
     position !== bodyLength &&
     !isNaN((code = body.charCodeAt(position))) &&
-    (code === 95 || // _
-      (code >= 48 && code <= 57) || // 0-9
-      (code >= 65 && code <= 90) || // A-Z
-      (code >= 97 && code <= 122)) // a-z
+    (code === 0x005f || // _
+      (code >= 0x0030 && code <= 0x0039) || // 0-9
+      (code >= 0x0041 && code <= 0x005a) || // A-Z
+      (code >= 0x0061 && code <= 0x007a)) // a-z
   ) {
     ++position;
   }
@@ -695,6 +695,8 @@ function readName(
 // _ A-Z a-z
 function isNameStart(code: number): boolean {
   return (
-    code === 95 || (code >= 65 && code <= 90) || (code >= 97 && code <= 122)
+    code === 0x005f ||
+    (code >= 0x0041 && code <= 0x005a) ||
+    (code >= 0x0061 && code <= 0x007a)
   );
 }
