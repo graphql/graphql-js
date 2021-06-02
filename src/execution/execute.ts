@@ -1787,6 +1787,7 @@ export class Dispatcher {
     return new Promise((resolve) => {
       let resolved = false;
       this._subsequentPayloads.forEach((promise) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         promise.then((payload) => {
           if (resolved) {
             return;
