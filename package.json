@@ -25,7 +25,7 @@
   },
   "scripts": {
     "preversion": ". ./resources/checkgit.sh && npm ci",
-    "version": "node resources/gen-version.js && npm test && git add src/version.js",
+    "version": "node resources/gen-version.js && npm test && git add src/version.ts",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
     "changelog": "node resources/gen-changelog.js",
     "benchmark": "node benchmark/benchmark.js",
