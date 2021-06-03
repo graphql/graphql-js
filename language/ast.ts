@@ -102,7 +102,6 @@ export class Token {
     end: number,
     line: number,
     column: number,
-    prev: Token | null,
     value?: string,
   ) {
     this.kind = kind;
@@ -111,7 +110,7 @@ export class Token {
     this.line = line;
     this.column = column;
     this.value = value as string;
-    this.prev = prev;
+    this.prev = null;
     this.next = null;
   }
 

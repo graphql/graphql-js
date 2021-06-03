@@ -593,9 +593,9 @@ export class Parser {
       case TokenKind.DOLLAR:
         if (isConst) {
           this.expectToken(TokenKind.DOLLAR);
-          const varName = this.expectOptionalToken(TokenKind.NAME)?.value;
 
-          if (varName != null) {
+          if (this._lexer.token.kind === TokenKind.NAME) {
+            const varName = this._lexer.token.value;
             throw syntaxError(
               this._lexer.source,
               token.start,
@@ -1466,27 +1466,27 @@ export class Parser {
     );
   }
   /**
-   * If the next token is of the given kind, return that token after advancing the lexer.
-   * Otherwise, do not change the parser state and return undefined.
+   * If the next token is of the given kind, return "true" after advancing the lexer.
+   * Otherwise, do not change the parser state and return "false".
    */
 
-  expectOptionalToken(kind: TokenKindEnum): Maybe<Token> {
+  expectOptionalToken(kind: TokenKindEnum): boolean {
     const token = this._lexer.token;
 
     if (token.kind === kind) {
       this._lexer.advance();
 
-      return token;
+      return true;
     }
 
-    return undefined;
+    return false;
   }
   /**
    * If the next token is a given keyword, advance the lexer.
    * Otherwise, do not change the parser state and throw an error.
    */
 
-  expectKeyword(value: string) {
+  expectKeyword(value: string): void {
     const token = this._lexer.token;
 
     if (token.kind === TokenKind.NAME && token.value === value) {
