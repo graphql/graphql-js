@@ -80,8 +80,6 @@ import {
   GraphQLInputObjectType,
 } from '../type/definition';
 
-import { coerceInputLiteral } from './coerceInputValue';
-
 interface Options extends GraphQLSchemaValidationOptions {
   /**
    * Set to true to assume the SDL is valid.
@@ -491,9 +489,7 @@ export function extendSchemaImpl(
       argConfigMap[arg.name.value] = {
         type,
         description: arg.description?.value,
-        defaultValue: arg.defaultValue
-          ? coerceInputLiteral(arg.defaultValue, type)
-          : undefined,
+        defaultValueLiteral: arg.defaultValue,
         deprecationReason: getDeprecationReason(arg),
         astNode: arg,
       };
@@ -520,9 +516,7 @@ export function extendSchemaImpl(
         inputFieldMap[field.name.value] = {
           type,
           description: field.description?.value,
-          defaultValue: field.defaultValue
-            ? coerceInputLiteral(field.defaultValue, type)
-            : undefined,
+          defaultValueLiteral: field.defaultValue,
           deprecationReason: getDeprecationReason(field),
           astNode: field,
         };

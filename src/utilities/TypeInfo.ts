@@ -17,6 +17,7 @@ import type {
   GraphQLArgument,
   GraphQLInputField,
   GraphQLEnumValue,
+  GraphQLDefaultValueUsage,
 } from '../type/definition';
 import {
   isObjectType,
@@ -49,7 +50,7 @@ export class TypeInfo {
   private _parentTypeStack: Array<Maybe<GraphQLCompositeType>>;
   private _inputTypeStack: Array<Maybe<GraphQLInputType>>;
   private _fieldDefStack: Array<Maybe<GraphQLField<unknown, unknown>>>;
-  private _defaultValueStack: Array<Maybe<unknown>>;
+  private _defaultValueStack: Array<GraphQLDefaultValueUsage | undefined>;
   private _directive: Maybe<GraphQLDirective>;
   private _argument: Maybe<GraphQLArgument>;
   private _enumValue: Maybe<GraphQLEnumValue>;
@@ -119,7 +120,7 @@ export class TypeInfo {
     }
   }
 
-  getDefaultValue(): Maybe<unknown> {
+  getDefaultValue(): GraphQLDefaultValueUsage | undefined {
     if (this._defaultValueStack.length > 0) {
       return this._defaultValueStack[this._defaultValueStack.length - 1];
     }

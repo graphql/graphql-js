@@ -24,7 +24,11 @@ import {
   GraphQLInputObjectType,
 } from '../../type/definition';
 
-import { coerceInputValue, coerceInputLiteral } from '../coerceInputValue';
+import {
+  coerceInputValue,
+  coerceInputLiteral,
+  coerceDefaultValue,
+} from '../coerceInputValue';
 
 interface CoerceResult {
   value: unknown;
@@ -610,10 +614,14 @@ describe('coerceInputLiteral', () => {
       name: 'TestInput',
       fields: {
         int: { type: GraphQLInt, defaultValue: 42 },
+        float: {
+          type: GraphQLFloat,
+          defaultValueLiteral: { kind: 'FloatValue', value: '3.14' },
+        },
       },
     });
 
-    test('{}', type, { int: 42 });
+    test('{}', type, { int: 42, float: 3.14 });
   });
 
   const testInputObj = new GraphQLInputObjectType({
@@ -679,5 +687,28 @@ describe('coerceInputLiteral', () => {
       int: 42,
       requiredBool: true,
     });
+  });
+});
+
+describe('coerceDefaultValue', () => {
+  it('memoizes coercion', () => {
+    const parseValueCalls: any = [];
+
+    const spyScalar = new GraphQLScalarType({
+      name: 'SpyScalar',
+      parseValue(value) {
+        parseValueCalls.push(value);
+        return value;
+      },
+    });
+
+    const defaultValueUsage = {
+      literal: { kind: 'StringValue', value: 'hello' },
+    } as const;
+    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+
+    // Call a second time
+    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+    expect(parseValueCalls).to.deep.equal(['hello']);
   });
 });

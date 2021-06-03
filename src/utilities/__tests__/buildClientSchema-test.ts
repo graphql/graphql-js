@@ -444,6 +444,7 @@ describe('Type System: build schema from introspection', () => {
       }
 
       type Query {
+        defaultID(intArg: ID = "123"): String
         defaultInt(intArg: Int = 30): String
         defaultList(listArg: [Int] = [1, 2, 3]): String
         defaultObject(objArg: Geo = {lat: 37.485, lon: -122.148}): String
@@ -597,6 +598,28 @@ describe('Type System: build schema from introspection', () => {
     });
 
     expect(result.data).to.deep.equal({ foo: 'bar' });
+  });
+
+  it('can use client schema for execution if resolvers are added', () => {
+    const schema = buildSchema(`
+      type Query {
+        foo(bar: String = "abc"): String
+      }
+    `);
+
+    const introspection = introspectionFromSchema(schema);
+    const clientSchema = buildClientSchema(introspection);
+
+    const QueryType: GraphQLObjectType = clientSchema.getType('Query') as any;
+    QueryType.getFields().foo.resolve = (_value, args) => args.bar;
+
+    const result = graphqlSync({
+      schema: clientSchema,
+      source: '{ foo }',
+    });
+
+    expect(result.data).to.deep.equal({ foo: 'abc' });
+    expect(result.data).to.deep.equal({ foo: 'abc' });
   });
 
   it('can build invalid schema', () => {
