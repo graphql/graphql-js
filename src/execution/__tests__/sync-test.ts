@@ -111,6 +111,24 @@ describe('Execute: synchronously when possible', () => {
         });
       }).to.throw('GraphQL execution failed to complete synchronously.');
     });
+
+    it('throws if encountering async iterable execution', () => {
+      const doc = `
+        query Example {
+          ...deferFrag @defer(label: "deferLabel")
+        }
+        fragment deferFrag on Query {
+          syncField
+        }
+      `;
+      expect(() => {
+        executeSync({
+          schema,
+          document: parse(doc),
+          rootValue: 'rootValue',
+        });
+      }).to.throw('GraphQL execution failed to complete synchronously.');
+    });
   });
 
   describe('graphqlSync', () => {
