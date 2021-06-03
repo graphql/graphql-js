@@ -77,11 +77,18 @@ export { replaceVariables } from './replaceVariables';
 export { valueToLiteral } from './valueToLiteral';
 
 export {
-  /** Coerces a JavaScript value to a GraphQL type, or produces errors. */
+  /** Coerces a JavaScript value to a GraphQL type, or returns undefined. */
   coerceInputValue,
   /** Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined. */
   coerceInputLiteral,
 } from './coerceInputValue';
+
+export {
+  /** Validate a JavaScript value with a GraphQL type, collecting all errors. */
+  validateInputValue,
+  /** Validate a GraphQL literal (AST) with a GraphQL type, collecting all errors. */
+  validateInputLiteral,
+} from './validateInputValue';
 
 /** Concatenates multiple AST together. */
 export { concatAST } from './concatAST';
