@@ -6,6 +6,8 @@ import { print } from '../language/printer';
 
 import { GraphQLError } from '../error/GraphQLError';
 
+import { defaultScalarValueToLiteral } from '../utilities/valueToLiteral';
+
 import type { GraphQLNamedType } from './definition';
 import { GraphQLScalarType } from './definition';
 
@@ -79,6 +81,16 @@ export const GraphQLInt: GraphQLScalarType = new GraphQLScalarType({
     }
     return num;
   },
+  valueToLiteral(value) {
+    if (
+      typeof value === 'number' &&
+      Number.isInteger(value) &&
+      value <= MAX_INT &&
+      value >= MIN_INT
+    ) {
+      return { kind: Kind.INT, value: String(value) };
+    }
+  },
 });
 
 function serializeFloat(outputValue: unknown): number {
@@ -124,6 +136,12 @@ export const GraphQLFloat: GraphQLScalarType = new GraphQLScalarType({
       );
     }
     return parseFloat(valueNode.value);
+  },
+  valueToLiteral(value) {
+    const literal = defaultScalarValueToLiteral(value);
+    if (literal.kind === Kind.FLOAT || literal.kind === Kind.INT) {
+      return literal;
+    }
   },
 });
 
@@ -188,6 +206,12 @@ export const GraphQLString: GraphQLScalarType = new GraphQLScalarType({
     }
     return valueNode.value;
   },
+  valueToLiteral(value) {
+    const literal = defaultScalarValueToLiteral(value);
+    if (literal.kind === Kind.STRING) {
+      return literal;
+    }
+  },
 });
 
 function serializeBoolean(outputValue: unknown): boolean {
@@ -226,6 +250,12 @@ export const GraphQLBoolean: GraphQLScalarType = new GraphQLScalarType({
       );
     }
     return valueNode.value;
+  },
+  valueToLiteral(value) {
+    const literal = defaultScalarValueToLiteral(value);
+    if (literal.kind === Kind.BOOLEAN) {
+      return literal;
+    }
   },
 });
 
@@ -266,6 +296,16 @@ export const GraphQLID: GraphQLScalarType = new GraphQLScalarType({
       );
     }
     return valueNode.value;
+  },
+  valueToLiteral(value) {
+    // ID types can use number values and Int literals.
+    const stringValue = Number.isInteger(value) ? String(value) : value;
+    if (typeof stringValue === 'string') {
+      // Will parse as an IntValue.
+      return /^-?(?:0|[1-9][0-9]*)$/.test(stringValue)
+        ? { kind: Kind.INT, value: stringValue }
+        : { kind: Kind.STRING, value: stringValue, block: false };
+    }
   },
 });
 
