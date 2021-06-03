@@ -1974,7 +1974,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Object field AnotherObject.field includes required argument requiredArg that is missing from the Interface field AnotherInterface.field.',
+          'Argument AnotherObject.field(requiredArg:) must not be required type String! if not provided by the Interface field AnotherInterface.field.',
         locations: [
           { line: 13, column: 11 },
           { line: 7, column: 9 },
@@ -2169,11 +2169,11 @@ describe('Interfaces must adhere to Interface they implement', () => {
       }
 
       interface ParentInterface {
-        field(input: String): String
+        field(input: String!): String
       }
 
       interface ChildInterface implements ParentInterface {
-        field(input: String, anotherInput: String): String
+        field(input: String!, anotherInput: String): String
       }
     `);
     expect(validateSchema(schema)).to.deep.equal([]);
@@ -2431,7 +2431,7 @@ describe('Interfaces must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Object field ChildInterface.field includes required argument requiredArg that is missing from the Interface field ParentInterface.field.',
+          'Argument ChildInterface.field(requiredArg:) must not be required type String! if not provided by the Interface field ParentInterface.field.',
         locations: [
           { line: 13, column: 11 },
           { line: 7, column: 9 },

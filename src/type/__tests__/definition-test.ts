@@ -165,11 +165,11 @@ describe('Type System: Objects', () => {
       },
     };
     const testObject1 = new GraphQLObjectType({
-      name: 'Test1',
+      name: 'Test',
       fields: outputFields,
     });
     const testObject2 = new GraphQLObjectType({
-      name: 'Test2',
+      name: 'Test',
       fields: outputFields,
     });
 
@@ -191,11 +191,11 @@ describe('Type System: Objects', () => {
       field2: { type: ScalarType },
     };
     const testInputObject1 = new GraphQLInputObjectType({
-      name: 'Test1',
+      name: 'Test',
       fields: inputFields,
     });
     const testInputObject2 = new GraphQLInputObjectType({
-      name: 'Test2',
+      name: 'Test',
       fields: inputFields,
     });
 
@@ -243,6 +243,7 @@ describe('Type System: Objects', () => {
     });
     expect(objType.getFields()).to.deep.equal({
       f: {
+        coordinate: 'SomeObject.f',
         name: 'f',
         description: undefined,
         type: ScalarType,
@@ -270,11 +271,13 @@ describe('Type System: Objects', () => {
     });
     expect(objType.getFields()).to.deep.equal({
       f: {
+        coordinate: 'SomeObject.f',
         name: 'f',
         description: undefined,
         type: ScalarType,
         args: [
           {
+            coordinate: 'SomeObject.f(arg:)',
             name: 'arg',
             description: undefined,
             type: ScalarType,
@@ -624,6 +627,7 @@ describe('Type System: Enums', () => {
 
     expect(EnumTypeWithNullishValue.getValues()).to.deep.equal([
       {
+        coordinate: 'EnumWithNullishValue.NULL',
         name: 'NULL',
         description: undefined,
         value: null,
@@ -632,6 +636,7 @@ describe('Type System: Enums', () => {
         astNode: undefined,
       },
       {
+        coordinate: 'EnumWithNullishValue.NAN',
         name: 'NAN',
         description: undefined,
         value: NaN,
@@ -640,6 +645,7 @@ describe('Type System: Enums', () => {
         astNode: undefined,
       },
       {
+        coordinate: 'EnumWithNullishValue.NO_CUSTOM_VALUE',
         name: 'NO_CUSTOM_VALUE',
         description: undefined,
         value: 'NO_CUSTOM_VALUE',
@@ -730,6 +736,7 @@ describe('Type System: Input Objects', () => {
       });
       expect(inputObjType.getFields()).to.deep.equal({
         f: {
+          coordinate: 'SomeInputObject.f',
           name: 'f',
           description: undefined,
           type: ScalarType,
@@ -750,6 +757,7 @@ describe('Type System: Input Objects', () => {
       });
       expect(inputObjType.getFields()).to.deep.equal({
         f: {
+          coordinate: 'SomeInputObject.f',
           name: 'f',
           description: undefined,
           type: ScalarType,

@@ -381,6 +381,7 @@ describe('Type System: build schema from introspection', () => {
     // rather than using the integers defined in the "server" schema.
     expect(clientFoodEnum.getValues()).to.deep.equal([
       {
+        coordinate: 'Food.VEGETABLES',
         name: 'VEGETABLES',
         description: 'Foods that are vegetables.',
         value: 'VEGETABLES',
@@ -389,6 +390,7 @@ describe('Type System: build schema from introspection', () => {
         astNode: undefined,
       },
       {
+        coordinate: 'Food.FRUITS',
         name: 'FRUITS',
         description: null,
         value: 'FRUITS',
@@ -397,6 +399,7 @@ describe('Type System: build schema from introspection', () => {
         astNode: undefined,
       },
       {
+        coordinate: 'Food.OILS',
         name: 'OILS',
         description: null,
         value: 'OILS',

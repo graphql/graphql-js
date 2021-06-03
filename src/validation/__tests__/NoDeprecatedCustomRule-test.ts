@@ -106,7 +106,7 @@ describe('Validate: no deprecated', () => {
       `).to.deep.equal([
         {
           message:
-            'Field "Query.someField" argument "deprecatedArg" is deprecated. Some arg reason.',
+            'The argument Query.someField(deprecatedArg:) is deprecated. Some arg reason.',
           locations: [{ line: 3, column: 21 }],
         },
       ]);
@@ -150,7 +150,7 @@ describe('Validate: no deprecated', () => {
       `).to.deep.equal([
         {
           message:
-            'Directive "@someDirective" argument "deprecatedArg" is deprecated. Some arg reason.',
+            'The argument @someDirective(deprecatedArg:) is deprecated. Some arg reason.',
           locations: [{ line: 3, column: 36 }],
         },
       ]);
@@ -255,7 +255,7 @@ describe('Validate: no deprecated', () => {
 
     it('reports error when a deprecated enum value is used', () => {
       const message =
-        'The enum value "EnumType.DEPRECATED_VALUE" is deprecated. Some enum reason.';
+        'The enum value EnumType.DEPRECATED_VALUE is deprecated. Some enum reason.';
 
       expectErrors(`
         query (

@@ -1,11 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type {
-  GraphQLArgument,
-  GraphQLInputField,
-  GraphQLInputType,
-} from '../definition';
+import type { GraphQLInputType } from '../definition';
 import {
   GraphQLDirective,
   GraphQLSkipDirective,
@@ -29,8 +25,10 @@ import {
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInputField,
   GraphQLInterfaceType,
   GraphQLObjectType,
+  GraphQLArgument,
   GraphQLUnionType,
   isType,
   isScalarType,
@@ -567,15 +565,7 @@ describe('Type predicates', () => {
       type: GraphQLInputType;
       defaultValue?: unknown;
     }): GraphQLArgument {
-      return {
-        name: 'someArg',
-        type: config.type,
-        description: undefined,
-        defaultValue: config.defaultValue,
-        deprecationReason: null,
-        extensions: undefined,
-        astNode: undefined,
-      };
+      return new GraphQLArgument('SomeType.someField', 'someArg', config);
     }
 
     it('returns true for required arguments', () => {
@@ -615,15 +605,7 @@ describe('Type predicates', () => {
       type: GraphQLInputType;
       defaultValue?: unknown;
     }): GraphQLInputField {
-      return {
-        name: 'someInputField',
-        type: config.type,
-        description: undefined,
-        defaultValue: config.defaultValue,
-        deprecationReason: null,
-        extensions: undefined,
-        astNode: undefined,
-      };
+      return new GraphQLInputField('SomeType', 'someInputField', config);
     }
 
     it('returns true for required input field', () => {
