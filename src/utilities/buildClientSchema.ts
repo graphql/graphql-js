@@ -3,7 +3,7 @@ import { devAssert } from '../jsutils/devAssert';
 import { keyValMap } from '../jsutils/keyValMap';
 import { isObjectLike } from '../jsutils/isObjectLike';
 
-import { parseValue } from '../language/parser';
+import { parseConstValue } from '../language/parser';
 
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
 import type {
@@ -47,7 +47,7 @@ import type {
   IntrospectionTypeRef,
   IntrospectionNamedTypeRef,
 } from './getIntrospectionQuery';
-import { valueFromAST } from './valueFromAST';
+import { coerceInputLiteral } from './coerceInputValue';
 
 /**
  * Build a GraphQLSchema for use by client tools.
@@ -368,7 +368,10 @@ export function buildClientSchema(
 
     const defaultValue =
       inputValueIntrospection.defaultValue != null
-        ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type)
+        ? coerceInputLiteral(
+            parseConstValue(inputValueIntrospection.defaultValue),
+            type,
+          )
         : undefined;
     return {
       description: inputValueIntrospection.description,

@@ -118,8 +118,6 @@ export function parse(
  *
  * This is useful within tools that operate upon GraphQL Values directly and
  * in isolation of complete GraphQL documents.
- *
- * Consider providing the results to the utility function: valueFromAST().
  */
 export function parseValue(
   source: string | Source,

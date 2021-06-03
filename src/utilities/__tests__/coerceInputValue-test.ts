@@ -1,8 +1,21 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type { ObjMap } from '../../jsutils/ObjMap';
+import { invariant } from '../../jsutils/invariant';
+import { identityFunc } from '../../jsutils/identityFunc';
+
+import { print } from '../../language/printer';
+import { parseValue } from '../../language/parser';
+
 import type { GraphQLInputType } from '../../type/definition';
-import { GraphQLInt } from '../../type/scalars';
+import {
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLString,
+  GraphQLBoolean,
+  GraphQLID,
+} from '../../type/scalars';
 import {
   GraphQLList,
   GraphQLNonNull,
@@ -11,7 +24,7 @@ import {
   GraphQLInputObjectType,
 } from '../../type/definition';
 
-import { coerceInputValue } from '../coerceInputValue';
+import { coerceInputValue, coerceInputLiteral } from '../coerceInputValue';
 
 interface CoerceResult {
   value: unknown;
@@ -424,6 +437,247 @@ describe('coerceInputValue', () => {
       ).to.throw(
         'Invalid value null at "value[0]": Expected non-nullable type "Int!" not to be null.',
       );
+    });
+  });
+});
+
+describe('coerceInputLiteral', () => {
+  function test(
+    valueText: string,
+    type: GraphQLInputType,
+    expected: unknown,
+    variables?: ObjMap<unknown>,
+  ) {
+    const ast = parseValue(valueText);
+    const value = coerceInputLiteral(ast, type, variables);
+    expect(value).to.deep.equal(expected);
+  }
+
+  function testWithVariables(
+    variables: ObjMap<unknown>,
+    valueText: string,
+    type: GraphQLInputType,
+    expected: unknown,
+  ) {
+    test(valueText, type, expected, variables);
+  }
+
+  it('converts according to input coercion rules', () => {
+    test('true', GraphQLBoolean, true);
+    test('false', GraphQLBoolean, false);
+    test('123', GraphQLInt, 123);
+    test('123', GraphQLFloat, 123);
+    test('123.456', GraphQLFloat, 123.456);
+    test('"abc123"', GraphQLString, 'abc123');
+    test('123456', GraphQLID, '123456');
+    test('"123456"', GraphQLID, '123456');
+  });
+
+  it('does not convert when input coercion rules reject a value', () => {
+    test('123', GraphQLBoolean, undefined);
+    test('123.456', GraphQLInt, undefined);
+    test('true', GraphQLInt, undefined);
+    test('"123"', GraphQLInt, undefined);
+    test('"123"', GraphQLFloat, undefined);
+    test('123', GraphQLString, undefined);
+    test('true', GraphQLString, undefined);
+    test('123.456', GraphQLString, undefined);
+    test('123.456', GraphQLID, undefined);
+  });
+
+  it('convert using parseLiteral from a custom scalar type', () => {
+    const passthroughScalar = new GraphQLScalarType({
+      name: 'PassthroughScalar',
+      parseLiteral(node) {
+        invariant(node.kind === 'StringValue');
+        return node.value;
+      },
+      parseValue: identityFunc,
+    });
+
+    test('"value"', passthroughScalar, 'value');
+
+    const printScalar = new GraphQLScalarType({
+      name: 'PrintScalar',
+      parseLiteral(node) {
+        return `~~~${print(node)}~~~`;
+      },
+      parseValue: identityFunc,
+    });
+
+    test('"value"', printScalar, '~~~"value"~~~');
+
+    const throwScalar = new GraphQLScalarType({
+      name: 'ThrowScalar',
+      parseLiteral() {
+        throw new Error('Test');
+      },
+      parseValue: identityFunc,
+    });
+
+    test('value', throwScalar, undefined);
+
+    const returnUndefinedScalar = new GraphQLScalarType({
+      name: 'ReturnUndefinedScalar',
+      parseLiteral() {
+        return undefined;
+      },
+      parseValue: identityFunc,
+    });
+
+    test('value', returnUndefinedScalar, undefined);
+  });
+
+  it('converts enum values according to input coercion rules', () => {
+    const testEnum = new GraphQLEnumType({
+      name: 'TestColor',
+      values: {
+        RED: { value: 1 },
+        GREEN: { value: 2 },
+        BLUE: { value: 3 },
+        NULL: { value: null },
+        NAN: { value: NaN },
+        NO_CUSTOM_VALUE: { value: undefined },
+      },
+    });
+
+    test('RED', testEnum, 1);
+    test('BLUE', testEnum, 3);
+    test('3', testEnum, undefined);
+    test('"BLUE"', testEnum, undefined);
+    test('null', testEnum, null);
+    test('NULL', testEnum, null);
+    test('NULL', new GraphQLNonNull(testEnum), null);
+    test('NAN', testEnum, NaN);
+    test('NO_CUSTOM_VALUE', testEnum, 'NO_CUSTOM_VALUE');
+  });
+
+  // Boolean!
+  const nonNullBool = new GraphQLNonNull(GraphQLBoolean);
+  // [Boolean]
+  const listOfBool = new GraphQLList(GraphQLBoolean);
+  // [Boolean!]
+  const listOfNonNullBool = new GraphQLList(nonNullBool);
+  // [Boolean]!
+  const nonNullListOfBool = new GraphQLNonNull(listOfBool);
+  // [Boolean!]!
+  const nonNullListOfNonNullBool = new GraphQLNonNull(listOfNonNullBool);
+
+  it('coerces to null unless non-null', () => {
+    test('null', GraphQLBoolean, null);
+    test('null', nonNullBool, undefined);
+  });
+
+  it('coerces lists of values', () => {
+    test('true', listOfBool, [true]);
+    test('123', listOfBool, undefined);
+    test('null', listOfBool, null);
+    test('[true, false]', listOfBool, [true, false]);
+    test('[true, 123]', listOfBool, undefined);
+    test('[true, null]', listOfBool, [true, null]);
+    test('{ true: true }', listOfBool, undefined);
+  });
+
+  it('coerces non-null lists of values', () => {
+    test('true', nonNullListOfBool, [true]);
+    test('123', nonNullListOfBool, undefined);
+    test('null', nonNullListOfBool, undefined);
+    test('[true, false]', nonNullListOfBool, [true, false]);
+    test('[true, 123]', nonNullListOfBool, undefined);
+    test('[true, null]', nonNullListOfBool, [true, null]);
+  });
+
+  it('coerces lists of non-null values', () => {
+    test('true', listOfNonNullBool, [true]);
+    test('123', listOfNonNullBool, undefined);
+    test('null', listOfNonNullBool, null);
+    test('[true, false]', listOfNonNullBool, [true, false]);
+    test('[true, 123]', listOfNonNullBool, undefined);
+    test('[true, null]', listOfNonNullBool, undefined);
+  });
+
+  it('coerces non-null lists of non-null values', () => {
+    test('true', nonNullListOfNonNullBool, [true]);
+    test('123', nonNullListOfNonNullBool, undefined);
+    test('null', nonNullListOfNonNullBool, undefined);
+    test('[true, false]', nonNullListOfNonNullBool, [true, false]);
+    test('[true, 123]', nonNullListOfNonNullBool, undefined);
+    test('[true, null]', nonNullListOfNonNullBool, undefined);
+  });
+
+  it('uses default values for unprovided fields', () => {
+    const type = new GraphQLInputObjectType({
+      name: 'TestInput',
+      fields: {
+        int: { type: GraphQLInt, defaultValue: 42 },
+      },
+    });
+
+    test('{}', type, { int: 42 });
+  });
+
+  const testInputObj = new GraphQLInputObjectType({
+    name: 'TestInput',
+    fields: {
+      int: { type: GraphQLInt, defaultValue: 42 },
+      bool: { type: GraphQLBoolean },
+      requiredBool: { type: nonNullBool },
+    },
+  });
+
+  it('coerces input objects according to input coercion rules', () => {
+    test('null', testInputObj, null);
+    test('123', testInputObj, undefined);
+    test('[]', testInputObj, undefined);
+    test('{ requiredBool: true }', testInputObj, {
+      int: 42,
+      requiredBool: true,
+    });
+    test('{ int: null, requiredBool: true }', testInputObj, {
+      int: null,
+      requiredBool: true,
+    });
+    test('{ int: 123, requiredBool: false }', testInputObj, {
+      int: 123,
+      requiredBool: false,
+    });
+    test('{ bool: true, requiredBool: false }', testInputObj, {
+      int: 42,
+      bool: true,
+      requiredBool: false,
+    });
+    test('{ int: true, requiredBool: true }', testInputObj, undefined);
+    test('{ requiredBool: null }', testInputObj, undefined);
+    test('{ bool: true }', testInputObj, undefined);
+    test('{ requiredBool: true, unknown: 123 }', testInputObj, undefined);
+  });
+
+  it('accepts variable values assuming already coerced', () => {
+    test('$var', GraphQLBoolean, undefined);
+    testWithVariables({ var: true }, '$var', GraphQLBoolean, true);
+    testWithVariables({ var: null }, '$var', GraphQLBoolean, null);
+    testWithVariables({ var: null }, '$var', nonNullBool, undefined);
+  });
+
+  it('asserts variables are provided as items in lists', () => {
+    test('[ $foo ]', listOfBool, [null]);
+    test('[ $foo ]', listOfNonNullBool, undefined);
+    testWithVariables({ foo: true }, '[ $foo ]', listOfNonNullBool, [true]);
+    // Note: variables are expected to have already been coerced, so we
+    // do not expect the singleton wrapping behavior for variables.
+    testWithVariables({ foo: true }, '$foo', listOfNonNullBool, true);
+    testWithVariables({ foo: [true] }, '$foo', listOfNonNullBool, [true]);
+  });
+
+  it('omits input object fields for unprovided variables', () => {
+    test('{ int: $foo, bool: $foo, requiredBool: true }', testInputObj, {
+      int: 42,
+      requiredBool: true,
+    });
+    test('{ requiredBool: $foo }', testInputObj, undefined);
+    testWithVariables({ foo: true }, '{ requiredBool: $foo }', testInputObj, {
+      int: 42,
+      requiredBool: true,
     });
   });
 });
