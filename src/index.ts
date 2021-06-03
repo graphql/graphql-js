@@ -312,6 +312,9 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  ExecutionPatchResult,
+  FormattedExecutionPatchResult,
+  AsyncExecutionResult,
 } from './execution/index';
 
 export { subscribe, createSourceEventStream } from './subscription/index';
