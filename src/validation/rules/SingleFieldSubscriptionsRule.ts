@@ -42,6 +42,7 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = definition;
             }
           }
+          // FIXME: refactor out `collectFields` into utility function that doesn't need fake context.
           const fakeExecutionContext: ExecutionContext = {
             schema,
             fragments,
