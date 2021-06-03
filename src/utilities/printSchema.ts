@@ -33,7 +33,7 @@ import {
   isInputObjectType,
 } from '../type/definition';
 
-import { astFromValue } from './astFromValue';
+import { valueToLiteral } from './valueToLiteral';
 
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(
@@ -263,7 +263,7 @@ function printInputValue(arg: GraphQLInputField): string {
   if (arg.defaultValue) {
     const literal =
       arg.defaultValue.literal ??
-      astFromValue(arg.defaultValue.value, arg.type);
+      valueToLiteral(arg.defaultValue.value, arg.type);
     invariant(literal, 'Invalid default value');
     argDecl += ` = ${print(literal)}`;
   }
