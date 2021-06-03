@@ -85,14 +85,14 @@ class Token {
    * including ignored tokens. <SOF> is always the first node and <EOF>
    * the last.
    */
-  constructor(kind, start, end, line, column, prev, value) {
+  constructor(kind, start, end, line, column, value) {
     this.kind = kind;
     this.start = start;
     this.end = end;
     this.line = line;
     this.column = column;
     this.value = value;
-    this.prev = prev;
+    this.prev = null;
     this.next = null;
   }
 

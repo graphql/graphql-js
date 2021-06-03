@@ -482,10 +482,10 @@ export declare class Parser {
    */
   expectToken(kind: TokenKindEnum): Token;
   /**
-   * If the next token is of the given kind, return that token after advancing the lexer.
-   * Otherwise, do not change the parser state and return undefined.
+   * If the next token is of the given kind, return "true" after advancing the lexer.
+   * Otherwise, do not change the parser state and return "false".
    */
-  expectOptionalToken(kind: TokenKindEnum): Maybe<Token>;
+  expectOptionalToken(kind: TokenKindEnum): boolean;
   /**
    * If the next token is a given keyword, advance the lexer.
    * Otherwise, do not change the parser state and throw an error.
