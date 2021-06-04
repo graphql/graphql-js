@@ -4,13 +4,6 @@ import { describe, it } from 'mocha';
 import { version, versionInfo } from '../version';
 
 describe('Version', () => {
-  it('version', () => {
-    expect(version).to.be.a('string');
-    expect(version).to.match(
-      /^\d+\.\d+\.\d(-(alpha|beta|rc|(experimental-[\w-]+))\.\d+)?$/,
-    );
-  });
-
   it('versionInfo', () => {
     expect(versionInfo).to.be.an('object');
     expect(versionInfo).to.have.all.keys(
@@ -21,20 +14,38 @@ describe('Version', () => {
     );
 
     const { major, minor, patch, preReleaseTag } = versionInfo;
-
-    expect(major).to.be.a('number');
-    expect(minor).to.be.a('number');
-    expect(patch).to.be.a('number');
+    expect(major).to.be.a('number').at.least(0);
+    expect(minor).to.be.a('number').at.least(0);
+    expect(patch).to.be.a('number').at.least(0);
 
     // istanbul ignore next (Can't be verified on all versions)
-    if (preReleaseTag !== null) {
-      expect(preReleaseTag).to.be.a('string');
+    switch (preReleaseTag?.split('.').length) {
+      case null:
+        break;
+      case 2:
+        expect(preReleaseTag).to.match(
+          /^(alpha|beta|rc|experimental-[\w-]+)\.\d+/,
+        );
+        break;
+      case 4:
+        expect(preReleaseTag).to.match(
+          /^(alpha|beta|rc)\.\d+.experimental-[\w-]+\.\d+/,
+        );
+        break;
+      default:
+        expect.fail('Invalid pre-release tag: ' + preReleaseTag);
     }
+  });
 
-    expect(
-      `${major}.${minor}.${patch}` +
-        // istanbul ignore next (Can't be verified on all versions)
-        (preReleaseTag !== null ? '-' + preReleaseTag : ''),
-    ).to.equal(version);
+  it('version', () => {
+    expect(version).to.be.a('string');
+
+    const { major, minor, patch, preReleaseTag } = versionInfo;
+    expect(version).to.equal(
+      // istanbul ignore next (Can't be verified on all versions)
+      preReleaseTag === null
+        ? `${major}.${minor}.${patch}`
+        : `${major}.${minor}.${patch}-${preReleaseTag}`,
+    );
   });
 });
