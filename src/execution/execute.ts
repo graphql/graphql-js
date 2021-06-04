@@ -381,7 +381,7 @@ function executeFieldsSerially(
     fields.entries(),
     (results, [responseName, fieldNodes]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
-      const result = resolveField(
+      const result = executeField(
         exeContext,
         parentType,
         sourceValue,
@@ -420,7 +420,7 @@ function executeFields(
 
   for (const [responseName, fieldNodes] of fields.entries()) {
     const fieldPath = addPath(path, responseName, parentType.name);
-    const result = resolveField(
+    const result = executeField(
       exeContext,
       parentType,
       sourceValue,
@@ -583,12 +583,12 @@ function getFieldEntryKey(node: FieldNode): string {
 }
 
 /**
- * Resolves the field on the given source object. In particular, this
- * figures out the value that the field returns by calling its resolve function,
- * then calls completeValue to complete promises, serialize scalars, or execute
- * the sub-selection-set for objects.
+ * Implements the "Executing field" section of the spec
+ * In particular, this function figures out the value that the field returns by
+ * calling its resolve function, then calls completeValue to complete promises,
+ * serialize scalars, or execute the sub-selection-set for objects.
  */
-function resolveField(
+function executeField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: unknown,
