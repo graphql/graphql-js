@@ -4,3 +4,4 @@ require:
   - 'resources/ts-register.js'
 extension:
   - 'ts'
+  
