@@ -368,7 +368,7 @@ function executeOperation(
 
 /**
  * Implements the "Executing selection sets" section of the spec
- * for "write" mode.
+ * for fields that must be executed serially.
  */
 function executeFieldsSerially(
   exeContext: ExecutionContext,
@@ -406,7 +406,7 @@ function executeFieldsSerially(
 
 /**
  * Implements the "Executing selection sets" section of the spec
- * for "read" mode.
+ * for fields that may be executed in parallel.
  */
 function executeFields(
   exeContext: ExecutionContext,
