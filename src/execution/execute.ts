@@ -142,7 +142,7 @@ export interface ExecutionArgs {
 }
 
 /**
- * Implements the "Evaluating requests" section of the GraphQL specification.
+ * Implements the "Executing requests" section of the GraphQL specification.
  *
  * Returns either a synchronous ExecutionResult (if all encountered resolvers
  * are synchronous), or a Promise of an ExecutionResult that will eventually be
@@ -196,7 +196,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
 }
 
 /**
- * Also implements the "Evaluating requests" section of the GraphQL specification.
+ * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
@@ -327,7 +327,7 @@ export function buildExecutionContext(
 }
 
 /**
- * Implements the "Evaluating operations" section of the spec.
+ * Implements the "Executing operations" section of the spec.
  */
 function executeOperation(
   exeContext: ExecutionContext,
@@ -367,7 +367,7 @@ function executeOperation(
 }
 
 /**
- * Implements the "Evaluating selection sets" section of the spec
+ * Implements the "Executing selection sets" section of the spec
  * for "write" mode.
  */
 function executeFieldsSerially(
@@ -405,7 +405,7 @@ function executeFieldsSerially(
 }
 
 /**
- * Implements the "Evaluating selection sets" section of the spec
+ * Implements the "Executing selection sets" section of the spec
  * for "read" mode.
  */
 function executeFields(
@@ -722,7 +722,7 @@ function handleFieldError(
  * and then complete based on that type
  *
  * Otherwise, the field type expects a sub-selection set, and will complete the
- * value by evaluating all sub-selections.
+ * value by executing all sub-selections.
  */
 function completeValue(
   exeContext: ExecutionContext,
