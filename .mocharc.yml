@@ -2,3 +2,5 @@ throw-deprecation: true
 check-leaks: true
 require:
   - 'resources/ts-register.js'
+extension:
+  - 'ts'
