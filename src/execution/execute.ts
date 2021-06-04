@@ -1068,7 +1068,7 @@ async function completeAsyncIteratorValue(
       );
       break;
     }
-    
+
     const itemPath = addPath(path, index, undefined);
 
     let iteratorResult: IteratorResult<unknown>;
@@ -1169,7 +1169,7 @@ function completeListValue(
       index++;
       continue;
     }
-    
+
     if (
       completeListItemValue(
         completedResults,
@@ -1641,21 +1641,21 @@ interface DispatcherResult {
  * all the AsyncExecutionResults as they are resolved.
  */
 export class Dispatcher {
-  _subsequentPayloads: Array<Promise<IteratorResult<DispatcherResult, void>>>;
+  _subsequentPayloads: Set<Promise<IteratorResult<DispatcherResult, void>>>;
   _initialResult?: ExecutionResult;
-  _iterators: Array<AsyncIterator<unknown>>;
+  _iterators: Set<AsyncIterator<unknown>>;
   _isDone: boolean;
   _hasReturnedInitialResult: boolean;
 
   constructor() {
-    this._subsequentPayloads = [];
-    this._iterators = [];
+    this._subsequentPayloads = new Set();
+    this._iterators = new Set();
     this._isDone = false;
     this._hasReturnedInitialResult = false;
   }
 
   hasSubsequentPayloads() {
-    return this._subsequentPayloads.length !== 0;
+    return this._subsequentPayloads.size > 0;
   }
 
   addFields(
@@ -1664,7 +1664,7 @@ export class Dispatcher {
     label?: string,
     path?: Path,
   ): void {
-    this._subsequentPayloads.push(
+    this._subsequentPayloads.add(
       Promise.resolve(promiseOrData).then((data) => ({
         value: createPatchResult(data, label, path, errors),
         done: false,
@@ -1682,7 +1682,7 @@ export class Dispatcher {
     label?: string,
   ): void {
     const errors: Array<GraphQLError> = [];
-    this._subsequentPayloads.push(
+    this._subsequentPayloads.add(
       Promise.resolve(promiseOrData)
         .then((resolved) =>
           completeValue(
@@ -1720,15 +1720,15 @@ export class Dispatcher {
   ): void {
     const subsequentPayloads = this._subsequentPayloads;
     const iterators = this._iterators;
-    iterators.push(iterator);
+    iterators.add(iterator);
     function next(index: number) {
       const fieldPath = addPath(path, index, undefined);
       const patchErrors: Array<GraphQLError> = [];
-      subsequentPayloads.push(
+      subsequentPayloads.add(
         iterator.next().then(
           ({ value: data, done }) => {
             if (done) {
-              iterators.splice(iterators.indexOf(iterator), 1);
+              iterators.delete(iterator);
               return { value: undefined, done: true };
             }
 
@@ -1818,25 +1818,23 @@ export class Dispatcher {
 
           resolved = true;
 
-          if (this._subsequentPayloads.length === 0) {
+          if (this._subsequentPayloads.size === 0) {
             // a different call to next has exhausted all payloads
             resolve({ value: undefined, done: true });
             return;
           }
 
-          const index = this._subsequentPayloads.indexOf(promise);
-
-          if (index === -1) {
+          if (!this._subsequentPayloads.has(promise)) {
             // a different call to next has consumed this payload
             resolve(this._race());
             return;
           }
 
-          this._subsequentPayloads.splice(index, 1);
+          this._subsequentPayloads.delete(promise);
 
           const { value, done } = payload;
 
-          if (done && this._subsequentPayloads.length === 0) {
+          if (done && this._subsequentPayloads.size === 0) {
             // async iterable resolver just finished and no more pending payloads
             resolve({
               value: {
@@ -1854,7 +1852,7 @@ export class Dispatcher {
 
           const returnValue: ExecutionPatchResult = {
             ...value,
-            hasNext: this._subsequentPayloads.length > 0,
+            hasNext: this._subsequentPayloads.size > 0,
           };
           resolve({
             value: returnValue,
@@ -1875,14 +1873,18 @@ export class Dispatcher {
         },
         done: false,
       });
-    } else if (this._subsequentPayloads.length === 0) {
+    } else if (this._subsequentPayloads.size === 0) {
       return Promise.resolve({ value: undefined, done: true });
     }
     return this._race();
   }
 
   async _return(): Promise<IteratorResult<AsyncExecutionResult, void>> {
-    await Promise.all(this._iterators.map((iterator) => iterator.return?.()));
+    await Promise.all(
+      Array.from(this._iterators.values()).map((iterator) =>
+        iterator.return?.(),
+      ),
+    );
     this._isDone = true;
     return { value: undefined, done: true };
   }
@@ -1890,7 +1892,11 @@ export class Dispatcher {
   async _throw(
     error?: unknown,
   ): Promise<IteratorResult<AsyncExecutionResult, void>> {
-    await Promise.all(this._iterators.map((iterator) => iterator.return?.()));
+    await Promise.all(
+      Array.from(this._iterators.values()).map((iterator) =>
+        iterator.return?.(),
+      ),
+    );
     this._isDone = true;
     return Promise.reject(error);
   }
