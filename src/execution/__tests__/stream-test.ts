@@ -23,6 +23,15 @@ const friendType = new GraphQLObjectType({
         return Promise.resolve(rootValue.name);
       },
     },
+    variablyDelayedAsyncName: {
+      type: GraphQLString,
+      async resolve(rootValue) {
+        await new Promise((r) =>
+          setTimeout(r, (10 - parseInt(rootValue.id, 10)) * 10),
+        );
+        return rootValue.name;
+      },
+    },
   },
   name: 'Friend',
 });
@@ -453,7 +462,53 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
-  it('Can stream a field that returns an async iterable', async () => {
+  it('Can stream a field that returns an async iterable, returning items in proper order', async () => {
+    const document = parse(`
+      query { 
+        asyncIterableList @stream {
+          variablyDelayedAsyncName
+          id
+        }
+      }
+    `);
+    const result = await complete(document);
+    expect(result).to.deep.equal([
+      {
+        data: {
+          asyncIterableList: [],
+        },
+        hasNext: true,
+      },
+      {
+        data: {
+          variablyDelayedAsyncName: 'Luke',
+          id: '1',
+        },
+        path: ['asyncIterableList', 0],
+        hasNext: true,
+      },
+      {
+        data: {
+          variablyDelayedAsyncName: 'Han',
+          id: '2',
+        },
+        path: ['asyncIterableList', 1],
+        hasNext: true,
+      },
+      {
+        data: {
+          variablyDelayedAsyncName: 'Leia',
+          id: '3',
+        },
+        path: ['asyncIterableList', 2],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Can stream a field that returns an async iterable even with concurrent calls to next', async () => {
     const document = parse(`
       query { 
         asyncIterableList @stream(initialCount: 2) {
