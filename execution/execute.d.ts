@@ -93,7 +93,7 @@ export interface ExecutionArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 /**
- * Implements the "Evaluating requests" section of the GraphQL specification.
+ * Implements the "Executing requests" section of the GraphQL specification.
  *
  * Returns either a synchronous ExecutionResult (if all encountered resolvers
  * are synchronous), or a Promise of an ExecutionResult that will eventually be
@@ -106,7 +106,7 @@ export declare function execute(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult>;
 /**
- * Also implements the "Evaluating requests" section of the GraphQL specification.
+ * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
