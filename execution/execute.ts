@@ -138,7 +138,7 @@ export interface ExecutionArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 /**
- * Implements the "Evaluating requests" section of the GraphQL specification.
+ * Implements the "Executing requests" section of the GraphQL specification.
  *
  * Returns either a synchronous ExecutionResult (if all encountered resolvers
  * are synchronous), or a Promise of an ExecutionResult that will eventually be
@@ -190,7 +190,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   return buildResponse(exeContext, data);
 }
 /**
- * Also implements the "Evaluating requests" section of the GraphQL specification.
+ * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
@@ -335,7 +335,7 @@ export function buildExecutionContext(
   };
 }
 /**
- * Implements the "Evaluating operations" section of the spec.
+ * Implements the "Executing operations" section of the spec.
  */
 
 function executeOperation(
@@ -375,8 +375,8 @@ function executeOperation(
   }
 }
 /**
- * Implements the "Evaluating selection sets" section of the spec
- * for "write" mode.
+ * Implements the "Executing selection sets" section of the spec
+ * for fields that must be executed serially.
  */
 
 function executeFieldsSerially(
@@ -390,7 +390,7 @@ function executeFieldsSerially(
     fields.entries(),
     (results, [responseName, fieldNodes]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
-      const result = resolveField(
+      const result = executeField(
         exeContext,
         parentType,
         sourceValue,
@@ -416,8 +416,8 @@ function executeFieldsSerially(
   );
 }
 /**
- * Implements the "Evaluating selection sets" section of the spec
- * for "read" mode.
+ * Implements the "Executing selection sets" section of the spec
+ * for fields that may be executed in parallel.
  */
 
 function executeFields(
@@ -432,7 +432,7 @@ function executeFields(
 
   for (const [responseName, fieldNodes] of fields.entries()) {
     const fieldPath = addPath(path, responseName, parentType.name);
-    const result = resolveField(
+    const result = executeField(
       exeContext,
       parentType,
       sourceValue,
@@ -612,13 +612,13 @@ function getFieldEntryKey(node: FieldNode): string {
   return node.alias ? node.alias.value : node.name.value;
 }
 /**
- * Resolves the field on the given source object. In particular, this
- * figures out the value that the field returns by calling its resolve function,
- * then calls completeValue to complete promises, serialize scalars, or execute
- * the sub-selection-set for objects.
+ * Implements the "Executing field" section of the spec
+ * In particular, this function figures out the value that the field returns by
+ * calling its resolve function, then calls completeValue to complete promises,
+ * serialize scalars, or execute the sub-selection-set for objects.
  */
 
-function resolveField(
+function executeField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: unknown,
@@ -748,7 +748,7 @@ function handleFieldError(
  * and then complete based on that type
  *
  * Otherwise, the field type expects a sub-selection set, and will complete the
- * value by evaluating all sub-selections.
+ * value by executing all sub-selections.
  */
 
 function completeValue(
