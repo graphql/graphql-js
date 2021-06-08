@@ -130,23 +130,8 @@ export const testSchema: GraphQLSchema = buildSchema(`
     complicatedArgs: ComplicatedArgs
   }
 
-  type Message {
-    body: String
-    sender: String
-  }
-
-  type SubscriptionRoot {
-    importantEmails: [String]
-    notImportantEmails: [String]
-    moreImportantEmails: [String]
-    spamEmails: [String]
-    deletedEmails: [String]
-    newMessage: Message
-  }
-
   schema {
     query: QueryRoot
-    subscription: SubscriptionRoot
   }
 
   directive @onQuery on QUERY
@@ -157,16 +142,6 @@ export const testSchema: GraphQLSchema = buildSchema(`
   directive @onFragmentSpread on FRAGMENT_SPREAD
   directive @onInlineFragment on INLINE_FRAGMENT
   directive @onVariableDefinition on VARIABLE_DEFINITION
-`);
-
-export const emptySchema: GraphQLSchema = buildSchema(`
-  type QueryRoot {
-    empty: Boolean
-  }
-
-  schema {
-    query: QueryRoot
-  }
 `);
 
 export function expectValidationErrorsWithSchema(
