@@ -1,20 +1,47 @@
 import { describe, it } from 'mocha';
 
+import { buildSchema } from '../../utilities/buildASTSchema';
+
 import { SingleFieldSubscriptionsRule } from '../rules/SingleFieldSubscriptionsRule';
 
-import {
-  expectValidationErrors,
-  expectValidationErrorsWithSchema,
-  emptySchema,
-} from './harness';
+import { expectValidationErrorsWithSchema } from './harness';
 
 function expectErrors(queryStr: string) {
-  return expectValidationErrors(SingleFieldSubscriptionsRule, queryStr);
+  return expectValidationErrorsWithSchema(
+    schema,
+    SingleFieldSubscriptionsRule,
+    queryStr,
+  );
 }
 
 function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
+
+const schema = buildSchema(`
+  type Message {
+    body: String
+    sender: String
+  }
+
+  type SubscriptionRoot {
+    importantEmails: [String]
+    notImportantEmails: [String]
+    moreImportantEmails: [String]
+    spamEmails: [String]
+    deletedEmails: [String]
+    newMessage: Message
+  }
+
+  type QueryRoot {
+    dummy: String
+  }
+
+  schema {
+    query: QueryRoot
+    subscription: SubscriptionRoot
+  }
+`);
 
 describe('Validate: Subscriptions with single field', () => {
   it('valid subscription', () => {
@@ -260,6 +287,12 @@ describe('Validate: Subscriptions with single field', () => {
   });
 
   it('skips if not subscription type', () => {
+    const emptySchema = buildSchema(`
+      type Query {
+        dummy: String
+      }
+    `);
+
     expectValidationErrorsWithSchema(
       emptySchema,
       SingleFieldSubscriptionsRule,
