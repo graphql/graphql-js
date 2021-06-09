@@ -6,13 +6,13 @@ import type {
   FragmentDefinitionNode,
 } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
-import type { ValidationContext } from '../ValidationContext.ts';
 import type { ExecutionContext } from '../../execution/execute.ts';
 import {
   collectFields,
   defaultFieldResolver,
   defaultTypeResolver,
 } from '../../execution/execute.ts';
+import type { ValidationContext } from '../ValidationContext.ts';
 /**
  * Subscriptions must only include a non-introspection field.
  *
