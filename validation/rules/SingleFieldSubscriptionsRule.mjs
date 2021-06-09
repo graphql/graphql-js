@@ -5,13 +5,13 @@ import {
   defaultFieldResolver,
   defaultTypeResolver,
 } from '../../execution/execute.mjs';
+
 /**
  * Subscriptions must only include a non-introspection field.
  *
  * A GraphQL subscription is valid only if it contains a single root field and
  * that root field is not an introspection field.
  */
-
 export function SingleFieldSubscriptionsRule(context) {
   return {
     OperationDefinition(node) {
