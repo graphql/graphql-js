@@ -817,7 +817,7 @@ function completeValue(
  * Complete a async iterator value by completing the result and calling
  * recursively until all the results are completed.
  */
-function completeAsyncIteratorValue(
+async function completeAsyncIteratorValue(
   exeContext: ExecutionContext,
   itemType: GraphQLOutputType,
   fieldNodes: ReadonlyArray<FieldNode>,
@@ -825,59 +825,48 @@ function completeAsyncIteratorValue(
   path: Path,
   iterator: AsyncIterator<unknown>,
 ): Promise<ReadonlyArray<unknown>> {
+  // This is specified as a simple map, however we're optimizing the path
+  // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
-  return new Promise<ReadonlyArray<unknown>>((resolve) => {
-    function next(index: number, completedResults: Array<unknown>) {
-      const fieldPath = addPath(path, index, undefined);
-      iterator.next().then(
-        ({ value, done }) => {
-          if (done) {
-            resolve(completedResults);
-            return;
-          }
-          // TODO can the error checking logic be consolidated with completeListValue?
-          try {
-            const completedItem = completeValue(
-              exeContext,
-              itemType,
-              fieldNodes,
-              info,
-              fieldPath,
-              value,
-            );
-            if (isPromise(completedItem)) {
-              containsPromise = true;
-            }
-            completedResults.push(completedItem);
-          } catch (rawError) {
-            completedResults.push(null);
-            const error = locatedError(
-              rawError,
-              fieldNodes,
-              pathToArray(fieldPath),
-            );
-            handleFieldError(error, itemType, exeContext);
-            resolve(completedResults);
-          }
+  const completedResults: Array<unknown> = [];
+  let index = 0;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const itemPath = addPath(path, index, undefined);
 
-          next(index + 1, completedResults);
-        },
-        (rawError) => {
-          completedResults.push(null);
-          const error = locatedError(
-            rawError,
-            fieldNodes,
-            pathToArray(fieldPath),
-          );
-          handleFieldError(error, itemType, exeContext);
-          resolve(completedResults);
-        },
-      );
+    let iteratorResult: IteratorResult<unknown>;
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      iteratorResult = await iterator.next();
+    } catch (rawError) {
+      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+      completedResults.push(handleFieldError(error, itemType, exeContext));
+      break;
     }
-    next(0, []);
-  }).then((completedResults) =>
-    containsPromise ? Promise.all(completedResults) : completedResults,
-  );
+
+    const { value: item, done } = iteratorResult;
+    if (done) {
+      break;
+    }
+
+    if (
+      completeListItemValue(
+        completedResults,
+        item,
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+      )
+    ) {
+      containsPromise = true;
+    }
+
+    index++;
+  }
+
+  return containsPromise ? Promise.all(completedResults) : completedResults;
 }
 
 /**
@@ -916,55 +905,93 @@ function completeListValue(
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
-  const completedResults = Array.from(result, (item, index) => {
-    // No need to modify the info object containing the path,
-    // since from here on it is not ever accessed by resolver functions.
+  const completedResults: Array<unknown> = [];
+  let index = 0;
+  for (const item of result) {
     const itemPath = addPath(path, index, undefined);
-    try {
-      let completedItem;
-      if (isPromise(item)) {
-        completedItem = item.then((resolved) =>
-          completeValue(
-            exeContext,
-            itemType,
-            fieldNodes,
-            info,
-            itemPath,
-            resolved,
-          ),
-        );
-      } else {
-        completedItem = completeValue(
+
+    if (
+      completeListItemValue(
+        completedResults,
+        item,
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+      )
+    ) {
+      containsPromise = true;
+    }
+
+    index++;
+  }
+
+  return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+
+/**
+ * Complete a single item in the list and append the result to the given list.
+ *
+ * Returns `true` if the result is a promise.
+ */
+function completeListItemValue(
+  completedResults: Array<unknown>,
+  item: unknown,
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  itemPath: Path,
+): boolean {
+  let completedItem;
+
+  try {
+    if (isPromise(item)) {
+      completedItem = item.then((resolved) =>
+        completeValue(
           exeContext,
           itemType,
           fieldNodes,
           info,
           itemPath,
-          item,
-        );
-      }
+          resolved,
+        ),
+      );
+    } else {
+      completedItem = completeValue(
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+        item,
+      );
+    }
 
-      if (isPromise(completedItem)) {
-        containsPromise = true;
-        // Note: we don't rely on a `catch` method, but we do expect "thenable"
-        // to take a second callback for the error case.
-        return completedItem.then(undefined, (rawError) => {
+    if (isPromise(completedItem)) {
+      // Note: we don't rely on a `catch` method, but we do expect "thenable"
+      // to take a second callback for the error case.
+      completedResults.push(
+        completedItem.then(undefined, (rawError) => {
           const error = locatedError(
             rawError,
             fieldNodes,
             pathToArray(itemPath),
           );
           return handleFieldError(error, itemType, exeContext);
-        });
-      }
-      return completedItem;
-    } catch (rawError) {
-      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      return handleFieldError(error, itemType, exeContext);
+        }),
+      );
+      return true;
     }
-  });
 
-  return containsPromise ? Promise.all(completedResults) : completedResults;
+    completedResults.push(completedItem);
+    return false;
+  } catch (rawError) {
+    const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+    completedResults.push(handleFieldError(error, itemType, exeContext));
+    return false;
+  }
 }
 
 /**
