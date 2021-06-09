@@ -90,14 +90,17 @@ function buildPackageJSON() {
   const { preReleaseTag } = versionMatch.groups;
 
   if (preReleaseTag != null) {
-    const [tag] = preReleaseTag.split('.');
+    const splittedTag = preReleaseTag.split('.');
+    // Note: `experimental-*` take precedence over `alpha`, `beta` or `rc`.
+    const publishTag = splittedTag[2] ?? splittedTag[0];
     assert(
-      tag.startsWith('experimental-') || ['alpha', 'beta', 'rc'].includes(tag),
-      `"${tag}" tag is supported.`,
+      ['alpha', 'beta', 'rc'].includes(publishTag) ||
+        publishTag.startsWith('experimental-'),
+      `"${publishTag}" tag is supported.`,
     );
 
     assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
-    packageJSON.publishConfig = { tag: tag || 'latest' };
+    packageJSON.publishConfig = { tag: publishTag || 'latest' };
   }
 
   return packageJSON;
