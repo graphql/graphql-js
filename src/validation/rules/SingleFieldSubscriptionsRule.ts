@@ -8,13 +8,14 @@ import type {
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 
-import type { ValidationContext } from '../ValidationContext';
 import type { ExecutionContext } from '../../execution/execute';
 import {
   collectFields,
   defaultFieldResolver,
   defaultTypeResolver,
 } from '../../execution/execute';
+
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * Subscriptions must only include a non-introspection field.
