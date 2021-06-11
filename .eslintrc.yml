@@ -22,6 +22,7 @@ rules:
 
   internal-rules/only-ascii: error
   internal-rules/no-dir-import: error
+  internal-rules/require-to-string-tag: off
 
   ##############################################################################
   # `eslint-plugin-istanbul` rule list based on `v0.1.2`
@@ -610,8 +611,12 @@ overrides:
       '@typescript-eslint/space-before-function-paren': off
       '@typescript-eslint/space-infix-ops': off
       '@typescript-eslint/type-annotation-spacing': off
+  - files: 'src/**'
+    rules:
+      internal-rules/require-to-string-tag: error
   - files: 'src/**/__*__/**'
     rules:
+      internal-rules/require-to-string-tag: off
       node/no-unpublished-import: [error, { allowModules: ['chai', 'mocha'] }]
       import/no-restricted-paths: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]

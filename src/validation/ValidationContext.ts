@@ -131,6 +131,10 @@ export class ASTValidationContext {
     }
     return fragments;
   }
+
+  get [Symbol.toStringTag]() {
+    return 'ASTValidationContext';
+  }
 }
 
 export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
@@ -149,6 +153,10 @@ export class SDLValidationContext extends ASTValidationContext {
 
   getSchema(): Maybe<GraphQLSchema> {
     return this._schema;
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'SDLValidationContext';
   }
 }
 
@@ -252,6 +260,10 @@ export class ValidationContext extends ASTValidationContext {
 
   getEnumValue(): Maybe<GraphQLEnumValue> {
     return this._typeInfo.getEnumValue();
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'ValidationContext';
   }
 }
 

@@ -114,8 +114,13 @@ describe('Lexer', () => {
     });
   });
 
-  it('can be JSON.stringified, util.inspected or jsutils.inspect', () => {
-    const token = lexOne('foo');
+  it('can be Object.toStringified, JSON.stringified, or jsutils.inspected', () => {
+    const lexer = new Lexer(new Source('foo'));
+    const token = lexer.advance();
+
+    expect(Object.prototype.toString.call(lexer)).to.equal('[object Lexer]');
+
+    expect(Object.prototype.toString.call(token)).to.equal('[object Token]');
     expect(JSON.stringify(token)).to.equal(
       '{"kind":"Name","value":"foo","line":1,"column":1}',
     );
