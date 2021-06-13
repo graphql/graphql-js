@@ -15,6 +15,14 @@ import { TypeInfo, visitWithTypeInfo } from '../TypeInfo';
 import { testSchema } from '../../validation/__tests__/harness';
 
 describe('TypeInfo', () => {
+  it('can be Object.toStringified', () => {
+    const typeInfo = new TypeInfo(testSchema);
+
+    expect(Object.prototype.toString.call(typeInfo)).to.equal(
+      '[object TypeInfo]',
+    );
+  });
+
   it('allow all methods to be called before entering any node', () => {
     const typeInfo = new TypeInfo(testSchema);
 

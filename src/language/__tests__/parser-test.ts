@@ -372,11 +372,12 @@ describe('Parser', () => {
     expect(() => parse(document)).to.throw('Syntax Error');
   });
 
-  it('contains location information that only stringifies start/end', () => {
-    const result = parse('{ id }');
+  it('contains location that can be Object.toStringified, JSON.stringified, or jsutils.inspected', () => {
+    const { loc } = parse('{ id }');
 
-    expect(JSON.stringify(result.loc)).to.equal('{"start":0,"end":6}');
-    expect(inspect(result.loc)).to.equal('{ start: 0, end: 6 }');
+    expect(Object.prototype.toString.call(loc)).to.equal('[object Location]');
+    expect(JSON.stringify(loc)).to.equal('{"start":0,"end":6}');
+    expect(inspect(loc)).to.equal('{ start: 0, end: 6 }');
   });
 
   it('contains references to source', () => {

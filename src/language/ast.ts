@@ -42,6 +42,10 @@ export class Location {
   toJSON(): { start: number; end: number } {
     return { start: this.start, end: this.end };
   }
+
+  get [Symbol.toStringTag]() {
+    return 'Location';
+  }
 }
 
 /**
@@ -120,6 +124,10 @@ export class Token {
       line: this.line,
       column: this.column,
     };
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'Token';
   }
 }
 
