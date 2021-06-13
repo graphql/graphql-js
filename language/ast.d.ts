@@ -30,6 +30,7 @@ export declare class Location {
     start: number;
     end: number;
   };
+  get [Symbol.toStringTag](): string;
 }
 /**
  * Represents a range of characters represented by a lexical token
@@ -84,6 +85,7 @@ export declare class Token {
     line: number;
     column: number;
   };
+  get [Symbol.toStringTag](): string;
 }
 /**
  * @internal

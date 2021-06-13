@@ -44,6 +44,10 @@ class Location {
       end: this.end,
     };
   }
+
+  get [Symbol.toStringTag]() {
+    return 'Location';
+  }
 }
 /**
  * Represents a range of characters represented by a lexical token
@@ -103,6 +107,10 @@ class Token {
       line: this.line,
       column: this.column,
     };
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'Token';
   }
 }
 /**

@@ -110,6 +110,10 @@ class ASTValidationContext {
 
     return fragments;
   }
+
+  get [Symbol.toStringTag]() {
+    return 'ASTValidationContext';
+  }
 }
 
 exports.ASTValidationContext = ASTValidationContext;
@@ -122,6 +126,10 @@ class SDLValidationContext extends ASTValidationContext {
 
   getSchema() {
     return this._schema;
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'SDLValidationContext';
   }
 }
 
@@ -214,6 +222,10 @@ class ValidationContext extends ASTValidationContext {
 
   getEnumValue() {
     return this._typeInfo.getEnumValue();
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'ValidationContext';
   }
 }
 

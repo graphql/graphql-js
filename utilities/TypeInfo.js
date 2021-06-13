@@ -341,6 +341,10 @@ class TypeInfo {
         break;
     }
   }
+
+  get [Symbol.toStringTag]() {
+    return 'TypeInfo';
+  }
 }
 
 exports.TypeInfo = TypeInfo;

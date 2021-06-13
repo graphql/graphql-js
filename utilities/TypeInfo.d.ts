@@ -49,6 +49,7 @@ export declare class TypeInfo {
   getEnumValue(): Maybe<GraphQLEnumValue>;
   enter(node: ASTNode): void;
   leave(node: ASTNode): void;
+  get [Symbol.toStringTag](): string;
 }
 declare type GetFieldDefFn = (
   schema: GraphQLSchema,

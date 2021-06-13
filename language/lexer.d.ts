@@ -37,6 +37,7 @@ export declare class Lexer {
    * the state of Lexer.
    */
   lookahead(): Token;
+  get [Symbol.toStringTag](): string;
 }
 /**
  * @internal

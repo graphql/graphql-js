@@ -47,6 +47,7 @@ export declare class ASTValidationContext {
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
   ): ReadonlyArray<FragmentDefinitionNode>;
+  get [Symbol.toStringTag](): string;
 }
 export declare type ASTValidationRule = (
   context: ASTValidationContext,
@@ -59,6 +60,7 @@ export declare class SDLValidationContext extends ASTValidationContext {
     onError: (error: GraphQLError) => void,
   );
   getSchema(): Maybe<GraphQLSchema>;
+  get [Symbol.toStringTag](): string;
 }
 export declare type SDLValidationRule = (
   context: SDLValidationContext,
@@ -87,6 +89,7 @@ export declare class ValidationContext extends ASTValidationContext {
   getDirective(): Maybe<GraphQLDirective>;
   getArgument(): Maybe<GraphQLArgument>;
   getEnumValue(): Maybe<GraphQLEnumValue>;
+  get [Symbol.toStringTag](): string;
 }
 export declare type ValidationRule = (context: ValidationContext) => ASTVisitor;
 export {};
