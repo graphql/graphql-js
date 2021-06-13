@@ -348,6 +348,10 @@ export class TypeInfo {
         break;
     }
   }
+
+  get [Symbol.toStringTag]() {
+    return 'TypeInfo';
+  }
 }
 type GetFieldDefFn = (
   schema: GraphQLSchema,

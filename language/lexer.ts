@@ -79,6 +79,10 @@ export class Lexer {
 
     return token;
   }
+
+  get [Symbol.toStringTag]() {
+    return 'Lexer';
+  }
 }
 /**
  * @internal
