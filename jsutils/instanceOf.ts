@@ -1,25 +1,32 @@
+import { inspect } from './inspect.ts';
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
  */
+
 export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
   process.env.NODE_ENV === 'production' // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
     ? function instanceOf(value: unknown, constructor: Constructor): boolean {
         return value instanceof constructor;
       }
-    : function instanceOf(value: any, constructor: Constructor): boolean {
+    : function instanceOf(value: unknown, constructor: Constructor): boolean {
         if (value instanceof constructor) {
           return true;
         }
 
-        if (value) {
-          const valueClass = value.constructor;
-          const className = constructor.name;
+        if (typeof value === 'object' && value !== null) {
+          // Prefer Symbol.toStringTag since it is immune to minification.
+          const className = constructor.prototype[Symbol.toStringTag];
+          const valueClassName = // We still need to support constructor's name to detect conflicts with older versions of this library.
+            Symbol.toStringTag in value // @ts-expect-error TS bug see, https://github.com/microsoft/TypeScript/issues/38009
+              ? value[Symbol.toStringTag]
+              : value.constructor?.name;
 
-          if (className && valueClass && valueClass.name === className) {
-            throw new Error(`Cannot use ${className} "${value}" from another module or realm.
+          if (className === valueClassName) {
+            const stringifiedValue = inspect(value);
+            throw new Error(`Cannot use ${className} "${stringifiedValue}" from another module or realm.
 
 Ensure that there is only one instance of "graphql" in the node_modules
 directory. If different versions of "graphql" are the dependencies of other
@@ -37,5 +44,7 @@ spurious results.`);
         return false;
       };
 interface Constructor extends Function {
-  name: string;
+  prototype: {
+    [Symbol.toStringTag]: string;
+  };
 }
