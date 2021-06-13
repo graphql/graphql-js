@@ -5,6 +5,8 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.instanceOf = void 0;
 
+var _inspect = require('./inspect.js');
+
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
@@ -21,12 +23,22 @@ const instanceOf =
           return true;
         }
 
-        if (value) {
-          const valueClass = value.constructor;
-          const className = constructor.name;
+        if (typeof value === 'object' && value !== null) {
+          var _value$constructor;
 
-          if (className && valueClass && valueClass.name === className) {
-            throw new Error(`Cannot use ${className} "${value}" from another module or realm.
+          // Prefer Symbol.toStringTag since it is immune to minification.
+          const className = constructor.prototype[Symbol.toStringTag];
+          const valueClassName = // We still need to support constructor's name to detect conflicts with older versions of this library.
+            Symbol.toStringTag in value // @ts-expect-error TS bug see, https://github.com/microsoft/TypeScript/issues/38009
+              ? value[Symbol.toStringTag]
+              : (_value$constructor = value.constructor) === null ||
+                _value$constructor === void 0
+              ? void 0
+              : _value$constructor.name;
+
+          if (className === valueClassName) {
+            const stringifiedValue = (0, _inspect.inspect)(value);
+            throw new Error(`Cannot use ${className} "${stringifiedValue}" from another module or realm.
 
 Ensure that there is only one instance of "graphql" in the node_modules
 directory. If different versions of "graphql" are the dependencies of other

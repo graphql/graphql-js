@@ -9,6 +9,8 @@ export declare const instanceOf: (
   constructor: Constructor,
 ) => boolean;
 interface Constructor extends Function {
-  name: string;
+  prototype: {
+    [Symbol.toStringTag]: string;
+  };
 }
 export {};
