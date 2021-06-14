@@ -81,7 +81,7 @@ describe('Validate: Known type names', () => {
   it('references to standard scalars that are missing in schema', () => {
     const schema = buildSchema('type Query { foo: String }');
     const query = `
-      query ($id: ID, $float: Float, $int: Int) {
+      query ($id: ID, $float: Float) {
         __typename
       }
     `;
@@ -93,10 +93,6 @@ describe('Validate: Known type names', () => {
       {
         message: 'Unknown type "Float".',
         locations: [{ line: 2, column: 31 }],
-      },
-      {
-        message: 'Unknown type "Int".',
-        locations: [{ line: 2, column: 44 }],
       },
     ]);
   });

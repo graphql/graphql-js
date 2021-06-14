@@ -8,7 +8,11 @@ import { locatedError } from '../error/locatedError';
 
 import type { DocumentNode } from '../language/ast';
 
-import type { ExecutionResult, ExecutionContext } from '../execution/execute';
+import type {
+  ExecutionResult,
+  ExecutionContext,
+  AsyncExecutionResult,
+} from '../execution/execute';
 import { getArgumentValues } from '../execution/values';
 import {
   assertValidExecutionArguments,
@@ -25,6 +29,7 @@ import type { GraphQLFieldResolver } from '../type/definition';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
 import { mapAsyncIterator } from './mapAsyncIterator';
+import { flattenAsyncIterator } from './flattenAsyncIterator';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
@@ -60,7 +65,10 @@ export interface SubscriptionArgs {
  */
 export async function subscribe(
   args: SubscriptionArgs,
-): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+): Promise<
+  | AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void>
+  | ExecutionResult
+> {
   const {
     schema,
     document,
@@ -104,7 +112,9 @@ export async function subscribe(
     });
 
   // Map every source value to a ExecutionResult value as described above.
-  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
+  return flattenAsyncIterator<ExecutionResult, AsyncExecutionResult>(
+    mapAsyncIterator(resultOrStream, mapSourceToResponse),
+  );
 }
 
 /**
@@ -191,11 +201,12 @@ async function executeSubscription(
 ): Promise<unknown> {
   const { schema, operation, variableValues, rootValue } = exeContext;
   const type = getOperationRootType(schema, operation);
-  const fields = collectFields(
+  const { fields } = collectFields(
     exeContext,
     type,
     operation.selectionSet,
     new Map(),
+    [],
     new Set(),
   );
   const [responseName, fieldNodes] = [...fields.entries()][0];
