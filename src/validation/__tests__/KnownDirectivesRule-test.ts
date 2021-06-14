@@ -6,10 +6,17 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { KnownDirectivesRule } from '../rules/KnownDirectivesRule';
 
-import { expectValidationErrors, expectSDLValidationErrors } from './harness';
+import {
+  expectValidationErrorsWithSchema,
+  expectSDLValidationErrors,
+} from './harness';
 
 function expectErrors(queryStr: string) {
-  return expectValidationErrors(KnownDirectivesRule, queryStr);
+  return expectValidationErrorsWithSchema(
+    schemaWithDirectives,
+    KnownDirectivesRule,
+    queryStr,
+  );
 }
 
 function expectValid(queryStr: string) {
@@ -23,6 +30,21 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
   expectSDLErrors(sdlStr, schema).to.deep.equal([]);
 }
+
+const schemaWithDirectives = buildSchema(`
+  type Query {
+    dummy: String
+  }
+
+  directive @onQuery on QUERY
+  directive @onMutation on MUTATION
+  directive @onSubscription on SUBSCRIPTION
+  directive @onField on FIELD
+  directive @onFragmentDefinition on FRAGMENT_DEFINITION
+  directive @onFragmentSpread on FRAGMENT_SPREAD
+  directive @onInlineFragment on INLINE_FRAGMENT
+  directive @onVariableDefinition on VARIABLE_DEFINITION
+`);
 
 const schemaWithSDLDirectives = buildSchema(`
   directive @onSchema on SCHEMA
