@@ -74,14 +74,16 @@ describe('Validate: Known directives', () => {
     `);
   });
 
-  it('with known directives', () => {
+  it('with standard directives', () => {
     expectValid(`
       {
-        dog @include(if: true) {
-          name
-        }
         human @skip(if: false) {
           name
+          pets {
+            ... on Dog @include(if: true) {
+              name
+            }
+          }
         }
       }
     `);
@@ -90,14 +92,14 @@ describe('Validate: Known directives', () => {
   it('with unknown directive', () => {
     expectErrors(`
       {
-        dog @unknown(directive: "value") {
+        human @unknown(directive: "value") {
           name
         }
       }
     `).to.deep.equal([
       {
         message: 'Unknown directive "@unknown".',
-        locations: [{ line: 3, column: 13 }],
+        locations: [{ line: 3, column: 15 }],
       },
     ]);
   });
@@ -105,12 +107,10 @@ describe('Validate: Known directives', () => {
   it('with many unknown directives', () => {
     expectErrors(`
       {
-        dog @unknown(directive: "value") {
+        __typename @unknown
+        human @unknown {
           name
-        }
-        human @unknown(directive: "value") {
-          name
-          pets @unknown(directive: "value") {
+          pets @unknown {
             name
           }
         }
@@ -118,93 +118,114 @@ describe('Validate: Known directives', () => {
     `).to.deep.equal([
       {
         message: 'Unknown directive "@unknown".',
-        locations: [{ line: 3, column: 13 }],
+        locations: [{ line: 3, column: 20 }],
       },
       {
         message: 'Unknown directive "@unknown".',
-        locations: [{ line: 6, column: 15 }],
+        locations: [{ line: 4, column: 15 }],
       },
       {
         message: 'Unknown directive "@unknown".',
-        locations: [{ line: 8, column: 16 }],
+        locations: [{ line: 6, column: 16 }],
       },
     ]);
   });
 
   it('with well placed directives', () => {
     expectValid(`
-      query ($var: Boolean) @onQuery {
-        name @include(if: $var)
-        ...Frag @include(if: true)
-        skippedField @skip(if: true)
-        ...SkippedFrag @skip(if: true)
-
-        ... @skip(if: true) {
-          skippedField
+      query ($var: Boolean @onVariableDefinition) @onQuery {
+        human @onField {
+          ...Frag @onFragmentSpread
+          ... @onInlineFragment {
+            name @onField
+          }
         }
       }
 
       mutation @onMutation {
-        someField
+        someField @onField
       }
 
       subscription @onSubscription {
-        someField
+        someField @onField
       }
 
-      fragment Frag on SomeType @onFragmentDefinition {
-        someField
-      }
-    `);
-  });
-
-  it('with well placed variable definition directive', () => {
-    expectValid(`
-      query Foo($var: Boolean @onVariableDefinition) {
-        name
+      fragment Frag on Human @onFragmentDefinition {
+        name @onField
       }
     `);
   });
 
   it('with misplaced directives', () => {
     expectErrors(`
-      query Foo($var: Boolean) @include(if: true) {
-        name @onQuery @include(if: $var)
-        ...Frag @onQuery
+      query ($var: Boolean @onQuery) @onMutation {
+        human @onQuery {
+          ...Frag @onQuery
+          ... @onQuery {
+            name @onQuery
+          }
+        }
       }
 
-      mutation Bar @onQuery {
-        someField
+      mutation @onQuery {
+        someField @onQuery
+      }
+
+      subscription @onQuery {
+        someField @onQuery
+      }
+
+      fragment Frag on Human @onQuery {
+        name @onQuery
       }
     `).to.deep.equal([
       {
-        message: 'Directive "@include" may not be used on QUERY.',
-        locations: [{ line: 2, column: 32 }],
+        message: 'Directive "@onQuery" may not be used on VARIABLE_DEFINITION.',
+        locations: [{ line: 2, column: 28 }],
+      },
+      {
+        message: 'Directive "@onMutation" may not be used on QUERY.',
+        locations: [{ line: 2, column: 38 }],
       },
       {
         message: 'Directive "@onQuery" may not be used on FIELD.',
-        locations: [{ line: 3, column: 14 }],
+        locations: [{ line: 3, column: 15 }],
       },
       {
         message: 'Directive "@onQuery" may not be used on FRAGMENT_SPREAD.',
-        locations: [{ line: 4, column: 17 }],
+        locations: [{ line: 4, column: 19 }],
+      },
+      {
+        message: 'Directive "@onQuery" may not be used on INLINE_FRAGMENT.',
+        locations: [{ line: 5, column: 15 }],
+      },
+      {
+        message: 'Directive "@onQuery" may not be used on FIELD.',
+        locations: [{ line: 6, column: 18 }],
       },
       {
         message: 'Directive "@onQuery" may not be used on MUTATION.',
-        locations: [{ line: 7, column: 20 }],
+        locations: [{ line: 11, column: 16 }],
       },
-    ]);
-  });
-
-  it('with misplaced variable definition directive', () => {
-    expectErrors(`
-      query Foo($var: Boolean @onField) {
-        name
-      }
-    `).to.deep.equal([
       {
-        message: 'Directive "@onField" may not be used on VARIABLE_DEFINITION.',
-        locations: [{ line: 2, column: 31 }],
+        message: 'Directive "@onQuery" may not be used on FIELD.',
+        locations: [{ column: 19, line: 12 }],
+      },
+      {
+        message: 'Directive "@onQuery" may not be used on SUBSCRIPTION.',
+        locations: [{ column: 20, line: 15 }],
+      },
+      {
+        message: 'Directive "@onQuery" may not be used on FIELD.',
+        locations: [{ column: 19, line: 16 }],
+      },
+      {
+        message: 'Directive "@onQuery" may not be used on FRAGMENT_DEFINITION.',
+        locations: [{ column: 30, line: 19 }],
+      },
+      {
+        message: 'Directive "@onQuery" may not be used on FIELD.',
+        locations: [{ column: 14, line: 20 }],
       },
     ]);
   });
