@@ -12,20 +12,16 @@ import { validate, validateSDL } from '../validate';
 import type { ValidationRule, SDLValidationRule } from '../ValidationContext';
 
 export const testSchema: GraphQLSchema = buildSchema(`
-  interface Being {
-    name(surname: Boolean): String
-  }
-
   interface Mammal {
     mother: Mammal
     father: Mammal
   }
 
-  interface Pet implements Being {
+  interface Pet {
     name(surname: Boolean): String
   }
 
-  interface Canine implements Mammal & Being {
+  interface Canine implements Mammal {
     name(surname: Boolean): String
     mother: Canine
     father: Canine
@@ -37,7 +33,7 @@ export const testSchema: GraphQLSchema = buildSchema(`
     DOWN
   }
 
-  type Dog implements Being & Pet & Mammal & Canine {
+  type Dog implements Pet & Mammal & Canine {
     name(surname: Boolean): String
     nickname: String
     barkVolume: Int
@@ -49,7 +45,7 @@ export const testSchema: GraphQLSchema = buildSchema(`
     father: Dog
   }
 
-  type Cat implements Being & Pet {
+  type Cat implements Pet {
     name(surname: Boolean): String
     nickname: String
     meows: Boolean
@@ -59,26 +55,11 @@ export const testSchema: GraphQLSchema = buildSchema(`
 
   union CatOrDog = Cat | Dog
 
-  interface Intelligent {
-    iq: Int
-  }
-
-  type Human implements Being & Intelligent {
+  type Human {
     name(surname: Boolean): String
     pets: [Pet]
     relatives: [Human]
-    iq: Int
   }
-
-  type Alien implements Being & Intelligent {
-    name(surname: Boolean): String
-    numEyes: Int
-    iq: Int
-  }
-
-  union DogOrHuman = Dog | Human
-
-  union HumanOrAlien = Human | Alien
 
   enum FurColor {
     BROWN
@@ -120,13 +101,10 @@ export const testSchema: GraphQLSchema = buildSchema(`
 
   type QueryRoot {
     human(id: ID): Human
-    alien: Alien
     dog: Dog
     cat: Cat
     pet: Pet
     catOrDog: CatOrDog
-    dogOrHuman: DogOrHuman
-    humanOrAlien: HumanOrAlien
     complicatedArgs: ComplicatedArgs
   }
 
