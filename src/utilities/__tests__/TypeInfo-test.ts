@@ -7,16 +7,49 @@ import { parse, parseValue } from '../../language/parser';
 import { print } from '../../language/printer';
 import { visit } from '../../language/visitor';
 
+import { GraphQLSchema } from '../../type/schema';
 import { getNamedType, isCompositeType } from '../../type/definition';
 
 import { buildSchema } from '../buildASTSchema';
 import { TypeInfo, visitWithTypeInfo } from '../TypeInfo';
 
-import { testSchema } from '../../validation/__tests__/harness';
+const testSchema = buildSchema(`
+  interface Pet {
+    name: String
+  }
+
+  type Dog implements Pet {
+    name: String
+  }
+
+  type Cat implements Pet {
+    name: String
+  }
+
+  type Human {
+    name: String
+    pets: [Pet]
+  }
+
+  type Alien {
+    name(surname: Boolean): String
+  }
+
+  type QueryRoot {
+    human(id: ID): Human
+    alien: Alien
+  }
+
+  schema {
+    query: QueryRoot
+  }
+`);
 
 describe('TypeInfo', () => {
+  const schema = new GraphQLSchema({});
+
   it('can be Object.toStringified', () => {
-    const typeInfo = new TypeInfo(testSchema);
+    const typeInfo = new TypeInfo(schema);
 
     expect(Object.prototype.toString.call(typeInfo)).to.equal(
       '[object TypeInfo]',
@@ -24,7 +57,7 @@ describe('TypeInfo', () => {
   });
 
   it('allow all methods to be called before entering any node', () => {
-    const typeInfo = new TypeInfo(testSchema);
+    const typeInfo = new TypeInfo(schema);
 
     expect(typeInfo.getType()).to.equal(undefined);
     expect(typeInfo.getParentType()).to.equal(undefined);
@@ -316,11 +349,16 @@ describe('visitWithTypeInfo', () => {
   });
 
   it('supports traversals of input values', () => {
+    const schema = buildSchema(`
+      input ComplexInput {
+        stringListField: [String]
+      }
+    `);
     const ast = parseValue('{ stringListField: ["foo"] }');
-    const complexInputType = testSchema.getType('ComplexInput');
+    const complexInputType = schema.getType('ComplexInput');
     invariant(complexInputType != null);
 
-    const typeInfo = new TypeInfo(testSchema, complexInputType);
+    const typeInfo = new TypeInfo(schema, complexInputType);
 
     const visited: Array<any> = [];
     visit(
