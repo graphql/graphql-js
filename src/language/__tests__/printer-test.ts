@@ -182,7 +182,7 @@ describe('Printer: Query document', () => {
         }
       }
 
-      subscription StoryLikeSubscription($input: StoryLikeSubscribeInput) @onSubscription {
+      subscription StoryLikeSubscription($input: StoryLikeSubscribeInput @onVariableDefinition) @onSubscription {
         storyLikeSubscribe(input: $input) {
           story {
             likers {

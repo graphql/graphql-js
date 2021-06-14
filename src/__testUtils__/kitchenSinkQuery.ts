@@ -28,7 +28,9 @@ mutation likeStory @onMutation {
   }
 }
 
-subscription StoryLikeSubscription($input: StoryLikeSubscribeInput)
+subscription StoryLikeSubscription(
+  $input: StoryLikeSubscribeInput @onVariableDefinition
+)
   @onSubscription {
   storyLikeSubscribe(input: $input) {
     story {
