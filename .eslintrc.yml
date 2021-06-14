@@ -588,8 +588,8 @@ overrides:
       '@typescript-eslint/no-use-before-define': off
       '@typescript-eslint/no-duplicate-imports': off # Superseded by `import/no-duplicates`
 
-      # Bellow rules are disabled because coflicts with Prettier, see:
-      # https://github.com/prettier/eslint-config-prettier/blob/master/%40typescript-eslint.js
+      # Below rules are disabled because they conflict with Prettier, see:
+      # https://github.com/prettier/eslint-config-prettier/blob/main/index.js
       '@typescript-eslint/object-curly-spacing': off
       '@typescript-eslint/quotes': off
       '@typescript-eslint/brace-style': off
