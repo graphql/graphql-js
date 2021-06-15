@@ -13,6 +13,7 @@ import {
   collectFields,
   defaultFieldResolver,
   defaultTypeResolver,
+  Dispatcher,
 } from '../../execution/execute';
 
 import type { ValidationContext } from '../ValidationContext';
@@ -54,12 +55,14 @@ export function SingleFieldSubscriptionsRule(
             fieldResolver: defaultFieldResolver,
             typeResolver: defaultTypeResolver,
             errors: [],
+            dispatcher: new Dispatcher(),
           };
-          const fields = collectFields(
+          const { fields } = collectFields(
             fakeExecutionContext,
             subscriptionType,
             node.selectionSet,
             new Map(),
+            [],
             new Set(),
           );
           if (fields.size > 1) {
