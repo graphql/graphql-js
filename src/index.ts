@@ -138,7 +138,7 @@ export type {
   GraphQLNamedType,
   GraphQLNamedInputType,
   GraphQLNamedOutputType,
-  ThunkArray,
+  ThunkReadonlyArray,
   ThunkObjMap,
   GraphQLSchemaConfig,
   GraphQLSchemaExtensions,
