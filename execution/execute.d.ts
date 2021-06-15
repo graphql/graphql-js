@@ -160,7 +160,7 @@ export declare function collectFields(
   selectionSet: SelectionSetNode,
   fields: Map<string, Array<FieldNode>>,
   visitedFragmentNames: Set<string>,
-): Map<string, Array<FieldNode>>;
+): Map<string, ReadonlyArray<FieldNode>>;
 /**
  * @internal
  */
