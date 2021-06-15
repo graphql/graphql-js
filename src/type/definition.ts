@@ -526,10 +526,12 @@ export function getNamedType(
  * Used while defining GraphQL types to allow for circular references in
  * otherwise immutable type definitions.
  */
-export type ThunkArray<T> = (() => Array<T>) | Array<T>;
+export type ThunkReadonlyArray<T> = (() => ReadonlyArray<T>) | ReadonlyArray<T>;
 export type ThunkObjMap<T> = (() => ObjMap<T>) | ObjMap<T>;
 
-function resolveArrayThunk<T>(thunk: ThunkArray<T>): Array<T> {
+function resolveReadonlyArrayThunk<T>(
+  thunk: ThunkReadonlyArray<T>,
+): ReadonlyArray<T> {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -748,7 +750,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
 
   private _fields: ThunkObjMap<GraphQLField<TSource, TContext>>;
-  private _interfaces: ThunkArray<GraphQLInterfaceType>;
+  private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
     this.name = config.name;
@@ -775,7 +777,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     return this._fields;
   }
 
-  getInterfaces(): Array<GraphQLInterfaceType> {
+  getInterfaces(): ReadonlyArray<GraphQLInterfaceType> {
     if (typeof this._interfaces === 'function') {
       this._interfaces = this._interfaces();
     }
@@ -812,8 +814,8 @@ function defineInterfaces(
   config: Readonly<
     GraphQLObjectTypeConfig<any, any> | GraphQLInterfaceTypeConfig<any, any>
   >,
-): Array<GraphQLInterfaceType> {
-  const interfaces = resolveArrayThunk(config.interfaces ?? []);
+): ReadonlyArray<GraphQLInterfaceType> {
+  const interfaces = resolveReadonlyArrayThunk(config.interfaces ?? []);
   devAssert(
     Array.isArray(interfaces),
     `${config.name} interfaces must be an Array or a function which returns an Array.`,
@@ -920,7 +922,7 @@ export function argsToArgsConfig(
 export interface GraphQLObjectTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  interfaces?: ThunkReadonlyArray<GraphQLInterfaceType>;
   fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
   extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
@@ -930,7 +932,7 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
 
 interface GraphQLObjectTypeNormalizedConfig<TSource, TContext>
   extends GraphQLObjectTypeConfig<any, any> {
-  interfaces: Array<GraphQLInterfaceType>;
+  interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMap<any, any>;
   extensions: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
@@ -1112,7 +1114,7 @@ export class GraphQLInterfaceType {
   extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
 
   private _fields: ThunkObjMap<GraphQLField<any, any>>;
-  private _interfaces: ThunkArray<GraphQLInterfaceType>;
+  private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>) {
     this.name = config.name;
@@ -1139,7 +1141,7 @@ export class GraphQLInterfaceType {
     return this._fields;
   }
 
-  getInterfaces(): Array<GraphQLInterfaceType> {
+  getInterfaces(): ReadonlyArray<GraphQLInterfaceType> {
     if (typeof this._interfaces === 'function') {
       this._interfaces = this._interfaces();
     }
@@ -1175,7 +1177,7 @@ export class GraphQLInterfaceType {
 export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  interfaces?: ThunkReadonlyArray<GraphQLInterfaceType>;
   fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
@@ -1190,7 +1192,7 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
 
 export interface GraphQLInterfaceTypeNormalizedConfig
   extends GraphQLInterfaceTypeConfig<any, any> {
-  interfaces: Array<GraphQLInterfaceType>;
+  interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMap<any, any>;
   extensions: Maybe<Readonly<GraphQLInterfaceTypeExtensions>>;
   extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
@@ -1240,7 +1242,7 @@ export class GraphQLUnionType {
   astNode: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
 
-  private _types: ThunkArray<GraphQLObjectType>;
+  private _types: ThunkReadonlyArray<GraphQLObjectType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
     this.name = config.name;
@@ -1259,7 +1261,7 @@ export class GraphQLUnionType {
     );
   }
 
-  getTypes(): Array<GraphQLObjectType> {
+  getTypes(): ReadonlyArray<GraphQLObjectType> {
     if (typeof this._types === 'function') {
       this._types = this._types();
     }
@@ -1293,8 +1295,8 @@ export class GraphQLUnionType {
 
 function defineTypes(
   config: Readonly<GraphQLUnionTypeConfig<unknown, unknown>>,
-): Array<GraphQLObjectType> {
-  const types = resolveArrayThunk(config.types);
+): ReadonlyArray<GraphQLObjectType> {
+  const types = resolveReadonlyArrayThunk(config.types);
   devAssert(
     Array.isArray(types),
     `Must provide Array of types or a function which returns such an array for Union ${config.name}.`,
@@ -1305,7 +1307,7 @@ function defineTypes(
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  types: ThunkArray<GraphQLObjectType>;
+  types: ThunkReadonlyArray<GraphQLObjectType>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -1319,7 +1321,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
 
 interface GraphQLUnionTypeNormalizedConfig
   extends GraphQLUnionTypeConfig<any, any> {
-  types: Array<GraphQLObjectType>;
+  types: ReadonlyArray<GraphQLObjectType>;
   extensions: Maybe<Readonly<GraphQLUnionTypeExtensions>>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
 }
@@ -1365,8 +1367,8 @@ export class GraphQLEnumType /* <T> */ {
   astNode: Maybe<EnumTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<EnumTypeExtensionNode>;
 
-  private _values: Array<GraphQLEnumValue /* <T> */>;
-  private _valueLookup: Map<any /* T */, GraphQLEnumValue>;
+  private _values: ReadonlyArray<GraphQLEnumValue /* <T> */>;
+  private _valueLookup: ReadonlyMap<any /* T */, GraphQLEnumValue>;
   private _nameLookup: ObjMap<GraphQLEnumValue>;
 
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
@@ -1385,7 +1387,7 @@ export class GraphQLEnumType /* <T> */ {
     devAssert(typeof config.name === 'string', 'Must provide name.');
   }
 
-  getValues(): Array<GraphQLEnumValue /* <T> */> {
+  getValues(): ReadonlyArray<GraphQLEnumValue /* <T> */> {
     return this._values;
   }
 
@@ -1497,7 +1499,7 @@ function didYouMeanEnumValue(
 function defineEnumValues(
   typeName: string,
   valueMap: GraphQLEnumValueConfigMap /* <T> */,
-): Array<GraphQLEnumValue /* <T> */> {
+): ReadonlyArray<GraphQLEnumValue /* <T> */> {
   devAssert(
     isPlainObj(valueMap),
     `${typeName} values must be an object with value names as keys.`,

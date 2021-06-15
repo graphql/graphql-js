@@ -78,15 +78,17 @@ export function buildASTSchema(
     }
   }
 
-  const { directives } = config;
-  // If specified directives were not explicitly declared, add them.
-  for (const stdDirective of specifiedDirectives) {
-    if (directives.every((directive) => directive.name !== stdDirective.name)) {
-      directives.push(stdDirective);
-    }
-  }
+  const directives = [
+    ...config.directives,
+    // If specified directives were not explicitly declared, add them.
+    ...specifiedDirectives.filter((stdDirective) =>
+      config.directives.every(
+        (directive) => directive.name !== stdDirective.name,
+      ),
+    ),
+  ];
 
-  return new GraphQLSchema(config);
+  return new GraphQLSchema({ ...config, directives });
 }
 
 /**
