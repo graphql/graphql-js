@@ -291,10 +291,8 @@ export class GraphQLSchema {
   }
 
   getImplementations(interfaceType: GraphQLInterfaceType): {
-    objects: /* $ReadOnly */
-    Array<GraphQLObjectType>;
-    interfaces: /* $ReadOnly */
-    Array<GraphQLInterfaceType>;
+    objects: ReadonlyArray<GraphQLObjectType>;
+    interfaces: ReadonlyArray<GraphQLInterfaceType>;
   } {
     const implementations = this._implementationsMap[interfaceType.name];
     return (
@@ -351,7 +349,7 @@ export class GraphQLSchema {
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
       types: Object.values(this.getTypeMap()),
-      directives: this.getDirectives().slice(),
+      directives: this.getDirectives(),
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
@@ -379,8 +377,8 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   query?: Maybe<GraphQLObjectType>;
   mutation?: Maybe<GraphQLObjectType>;
   subscription?: Maybe<GraphQLObjectType>;
-  types?: Maybe<Array<GraphQLNamedType>>;
-  directives?: Maybe<Array<GraphQLDirective>>;
+  types?: Maybe<ReadonlyArray<GraphQLNamedType>>;
+  directives?: Maybe<ReadonlyArray<GraphQLDirective>>;
   extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
@@ -391,8 +389,8 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
 
 export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
-  types: Array<GraphQLNamedType>;
-  directives: Array<GraphQLDirective>;
+  types: ReadonlyArray<GraphQLNamedType>;
+  directives: ReadonlyArray<GraphQLDirective>;
   extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
