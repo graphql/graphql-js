@@ -115,8 +115,8 @@ export declare class GraphQLSchema {
     abstractType: GraphQLAbstractType,
   ): ReadonlyArray<GraphQLObjectType>;
   getImplementations(interfaceType: GraphQLInterfaceType): {
-    objects: Array<GraphQLObjectType>;
-    interfaces: Array<GraphQLInterfaceType>;
+    objects: ReadonlyArray<GraphQLObjectType>;
+    interfaces: ReadonlyArray<GraphQLInterfaceType>;
   };
   isSubType(
     abstractType: GraphQLAbstractType,
@@ -143,8 +143,8 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   query?: Maybe<GraphQLObjectType>;
   mutation?: Maybe<GraphQLObjectType>;
   subscription?: Maybe<GraphQLObjectType>;
-  types?: Maybe<Array<GraphQLNamedType>>;
-  directives?: Maybe<Array<GraphQLDirective>>;
+  types?: Maybe<ReadonlyArray<GraphQLNamedType>>;
+  directives?: Maybe<ReadonlyArray<GraphQLDirective>>;
   extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
@@ -154,8 +154,8 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
  */
 export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
-  types: Array<GraphQLNamedType>;
-  directives: Array<GraphQLDirective>;
+  types: ReadonlyArray<GraphQLNamedType>;
+  directives: ReadonlyArray<GraphQLDirective>;
   extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;

@@ -82,15 +82,15 @@ function buildASTSchema(documentAST, options) {
     }
   }
 
-  const { directives } = config; // If specified directives were not explicitly declared, add them.
-
-  for (const stdDirective of _directives.specifiedDirectives) {
-    if (directives.every((directive) => directive.name !== stdDirective.name)) {
-      directives.push(stdDirective);
-    }
-  }
-
-  return new _schema.GraphQLSchema(config);
+  const directives = [
+    ...config.directives, // If specified directives were not explicitly declared, add them.
+    ..._directives.specifiedDirectives.filter((stdDirective) =>
+      config.directives.every(
+        (directive) => directive.name !== stdDirective.name,
+      ),
+    ),
+  ];
+  return new _schema.GraphQLSchema({ ...config, directives });
 }
 /**
  * A helper function to build a GraphQLSchema directly from a source

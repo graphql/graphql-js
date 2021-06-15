@@ -355,7 +355,7 @@ export function getNamedType(type) {
  * otherwise immutable type definitions.
  */
 
-function resolveArrayThunk(thunk) {
+function resolveReadonlyArrayThunk(thunk) {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -592,7 +592,7 @@ export class GraphQLObjectType {
 function defineInterfaces(config) {
   var _config$interfaces;
 
-  const interfaces = resolveArrayThunk(
+  const interfaces = resolveReadonlyArrayThunk(
     (_config$interfaces = config.interfaces) !== null &&
       _config$interfaces !== void 0
       ? _config$interfaces
@@ -870,7 +870,7 @@ export class GraphQLUnionType {
 }
 
 function defineTypes(config) {
-  const types = resolveArrayThunk(config.types);
+  const types = resolveReadonlyArrayThunk(config.types);
   Array.isArray(types) ||
     devAssert(
       false,

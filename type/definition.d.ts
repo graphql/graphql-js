@@ -273,7 +273,9 @@ export declare function getNamedType(
  * Used while defining GraphQL types to allow for circular references in
  * otherwise immutable type definitions.
  */
-export declare type ThunkArray<T> = (() => Array<T>) | Array<T>;
+export declare type ThunkReadonlyArray<T> =
+  | (() => ReadonlyArray<T>)
+  | ReadonlyArray<T>;
 export declare type ThunkObjMap<T> = (() => ObjMap<T>) | ObjMap<T>;
 /**
  * Custom extensions
@@ -422,7 +424,7 @@ export declare class GraphQLObjectType<TSource = any, TContext = any> {
   private _interfaces;
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>);
   getFields(): GraphQLFieldMap<TSource, TContext>;
-  getInterfaces(): Array<GraphQLInterfaceType>;
+  getInterfaces(): ReadonlyArray<GraphQLInterfaceType>;
   toConfig(): GraphQLObjectTypeNormalizedConfig<TSource, TContext>;
   toString(): string;
   toJSON(): string;
@@ -440,7 +442,7 @@ export declare function argsToArgsConfig(
 export interface GraphQLObjectTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  interfaces?: ThunkReadonlyArray<GraphQLInterfaceType>;
   fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
   isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
   extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
@@ -449,7 +451,7 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
 }
 interface GraphQLObjectTypeNormalizedConfig<TSource, TContext>
   extends GraphQLObjectTypeConfig<any, any> {
-  interfaces: Array<GraphQLInterfaceType>;
+  interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMap<any, any>;
   extensions: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
@@ -626,7 +628,7 @@ export declare class GraphQLInterfaceType {
   private _interfaces;
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>);
   getFields(): GraphQLFieldMap<any, any>;
-  getInterfaces(): Array<GraphQLInterfaceType>;
+  getInterfaces(): ReadonlyArray<GraphQLInterfaceType>;
   toConfig(): GraphQLInterfaceTypeNormalizedConfig;
   toString(): string;
   toJSON(): string;
@@ -635,7 +637,7 @@ export declare class GraphQLInterfaceType {
 export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  interfaces?: ThunkArray<GraphQLInterfaceType>;
+  interfaces?: ThunkReadonlyArray<GraphQLInterfaceType>;
   fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
@@ -649,7 +651,7 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
 }
 export interface GraphQLInterfaceTypeNormalizedConfig
   extends GraphQLInterfaceTypeConfig<any, any> {
-  interfaces: Array<GraphQLInterfaceType>;
+  interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMap<any, any>;
   extensions: Maybe<Readonly<GraphQLInterfaceTypeExtensions>>;
   extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
@@ -698,7 +700,7 @@ export declare class GraphQLUnionType {
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
   private _types;
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>);
-  getTypes(): Array<GraphQLObjectType>;
+  getTypes(): ReadonlyArray<GraphQLObjectType>;
   toConfig(): GraphQLUnionTypeNormalizedConfig;
   toString(): string;
   toJSON(): string;
@@ -707,7 +709,7 @@ export declare class GraphQLUnionType {
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  types: ThunkArray<GraphQLObjectType>;
+  types: ThunkReadonlyArray<GraphQLObjectType>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -720,7 +722,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
 }
 interface GraphQLUnionTypeNormalizedConfig
   extends GraphQLUnionTypeConfig<any, any> {
-  types: Array<GraphQLObjectType>;
+  types: ReadonlyArray<GraphQLObjectType>;
   extensions: Maybe<Readonly<GraphQLUnionTypeExtensions>>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
 }
@@ -767,7 +769,7 @@ export declare class GraphQLEnumType {
   private _valueLookup;
   private _nameLookup;
   constructor(config: Readonly<GraphQLEnumTypeConfig>);
-  getValues(): Array<GraphQLEnumValue>;
+  getValues(): ReadonlyArray<GraphQLEnumValue>;
   getValue(name: string): Maybe<GraphQLEnumValue>;
   serialize(outputValue: unknown): Maybe<string>;
   parseValue(inputValue: unknown): Maybe<any>;

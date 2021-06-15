@@ -73,7 +73,7 @@ export type {
   GraphQLNamedType,
   GraphQLNamedInputType,
   GraphQLNamedOutputType,
-  ThunkArray,
+  ThunkReadonlyArray,
   ThunkObjMap,
   GraphQLArgument,
   GraphQLArgumentConfig,

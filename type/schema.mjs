@@ -316,7 +316,7 @@ export class GraphQLSchema {
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
       types: Object.values(this.getTypeMap()),
-      directives: this.getDirectives().slice(),
+      directives: this.getDirectives(),
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
