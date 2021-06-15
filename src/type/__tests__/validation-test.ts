@@ -79,7 +79,7 @@ function withModifiers<T extends GraphQLNamedType>(
   ];
 }
 
-const outputTypes: Array<GraphQLOutputType> = [
+const outputTypes: ReadonlyArray<GraphQLOutputType> = [
   ...withModifiers(GraphQLString),
   ...withModifiers(SomeScalarType),
   ...withModifiers(SomeEnumType),
@@ -88,18 +88,18 @@ const outputTypes: Array<GraphQLOutputType> = [
   ...withModifiers(SomeInterfaceType),
 ];
 
-const notOutputTypes: Array<GraphQLInputType> = [
+const notOutputTypes: ReadonlyArray<GraphQLInputType> = [
   ...withModifiers(SomeInputObjectType),
 ];
 
-const inputTypes: Array<GraphQLInputType> = [
+const inputTypes: ReadonlyArray<GraphQLInputType> = [
   ...withModifiers(GraphQLString),
   ...withModifiers(SomeScalarType),
   ...withModifiers(SomeEnumType),
   ...withModifiers(SomeInputObjectType),
 ];
 
-const notInputTypes: Array<GraphQLOutputType> = [
+const notInputTypes: ReadonlyArray<GraphQLOutputType> = [
   ...withModifiers(SomeObjectType),
   ...withModifiers(SomeUnionType),
   ...withModifiers(SomeInterfaceType),

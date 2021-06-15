@@ -37,7 +37,7 @@ describe('Execute: Accepts any iterable as list value', () => {
   });
 
   it('Accepts function arguments as a List value', () => {
-    function getArgs(..._args: Array<string>) {
+    function getArgs(..._args: ReadonlyArray<string>) {
       return arguments;
     }
     const listField = getArgs('one', 'two');

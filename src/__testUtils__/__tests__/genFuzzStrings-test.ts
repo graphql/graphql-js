@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 import { genFuzzStrings } from '../genFuzzStrings';
 
 function expectFuzzStrings(options: {
-  allowedChars: Array<string>;
+  allowedChars: ReadonlyArray<string>;
   maxLength: number;
 }) {
   return expect([...genFuzzStrings(options)]);

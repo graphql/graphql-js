@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import { suggestionList } from '../suggestionList';
 
-function expectSuggestions(input: string, options: Array<string>) {
+function expectSuggestions(input: string, options: ReadonlyArray<string>) {
   return expect(suggestionList(input, options));
 }
 
