@@ -63,7 +63,7 @@ export function separateOperations(
   return separatedDocumentASTs;
 }
 
-type DepGraph = ObjMap<Array<string>>;
+type DepGraph = ObjMap<ReadonlyArray<string>>;
 
 // From a dependency graph, collects a list of transitive dependencies by
 // recursing through a dependency graph.

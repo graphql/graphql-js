@@ -19,7 +19,7 @@ class Dog {
   barks: boolean;
   mother?: Dog;
   father?: Dog;
-  progeny: Array<Dog>;
+  progeny: ReadonlyArray<Dog>;
 
   constructor(name: string, barks: boolean) {
     this.name = name;
@@ -33,7 +33,7 @@ class Cat {
   meows: boolean;
   mother?: Cat;
   father?: Cat;
-  progeny: Array<Cat>;
+  progeny: ReadonlyArray<Cat>;
 
   constructor(name: string, meows: boolean) {
     this.name = name;
@@ -44,13 +44,13 @@ class Cat {
 
 class Person {
   name: string;
-  pets?: Array<Dog | Cat>;
-  friends?: Array<Dog | Cat | Person>;
+  pets?: ReadonlyArray<Dog | Cat>;
+  friends?: ReadonlyArray<Dog | Cat | Person>;
 
   constructor(
     name: string,
-    pets?: Array<Dog | Cat>,
-    friends?: Array<Dog | Cat | Person>,
+    pets?: ReadonlyArray<Dog | Cat>,
+    friends?: ReadonlyArray<Dog | Cat | Person>,
   ) {
     this.name = name;
     this.pets = pets;
