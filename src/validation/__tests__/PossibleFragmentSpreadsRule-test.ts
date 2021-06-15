@@ -1,16 +1,69 @@
 import { describe, it } from 'mocha';
 
+import { buildSchema } from '../../utilities/buildASTSchema';
+
 import { PossibleFragmentSpreadsRule } from '../rules/PossibleFragmentSpreadsRule';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrorsWithSchema } from './harness';
 
 function expectErrors(queryStr: string) {
-  return expectValidationErrors(PossibleFragmentSpreadsRule, queryStr);
+  return expectValidationErrorsWithSchema(
+    testSchema,
+    PossibleFragmentSpreadsRule,
+    queryStr,
+  );
 }
 
 function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
+
+const testSchema = buildSchema(`
+  interface Being {
+    name: String
+  }
+
+  interface Pet implements Being {
+    name: String
+  }
+
+  type Dog implements Being & Pet {
+    name: String
+    barkVolume: Int
+  }
+
+  type Cat implements Being & Pet {
+    name: String
+    meowVolume: Int
+  }
+
+  union CatOrDog = Cat | Dog
+
+  interface Intelligent {
+    iq: Int
+  }
+
+  type Human implements Being & Intelligent {
+    name: String
+    pets: [Pet]
+    iq: Int
+  }
+
+  type Alien implements Being & Intelligent {
+    name: String
+    iq: Int
+  }
+
+  union DogOrHuman = Dog | Human
+
+  union HumanOrAlien = Human | Alien
+
+  type Query {
+    catOrDog: CatOrDog
+    dogOrHuman: DogOrHuman
+    humanOrAlien: HumanOrAlien
+  }
+`);
 
 describe('Validate: Possible fragment spreads', () => {
   it('of the same object', () => {

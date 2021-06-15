@@ -10,15 +10,48 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import { validate } from '../validate';
 import { FieldsOnCorrectTypeRule } from '../rules/FieldsOnCorrectTypeRule';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrorsWithSchema } from './harness';
 
 function expectErrors(queryStr: string) {
-  return expectValidationErrors(FieldsOnCorrectTypeRule, queryStr);
+  return expectValidationErrorsWithSchema(
+    testSchema,
+    FieldsOnCorrectTypeRule,
+    queryStr,
+  );
 }
 
 function expectValid(queryStr: string) {
   expectErrors(queryStr).to.deep.equal([]);
 }
+
+const testSchema = buildSchema(`
+  interface Pet {
+    name: String
+  }
+
+  type Dog implements Pet {
+    name: String
+    nickname: String
+    barkVolume: Int
+  }
+
+  type Cat implements Pet {
+    name: String
+    nickname: String
+    meowVolume: Int
+  }
+
+  union CatOrDog = Cat | Dog
+
+  type Human {
+    name: String
+    pets: [Pet]
+  }
+
+  type Query {
+    human: Human
+  }
+`);
 
 describe('Validate: Fields on correct type', () => {
   it('Object field selection', () => {
@@ -237,7 +270,7 @@ describe('Validate: Fields on correct type', () => {
     `).to.deep.equal([
       {
         message:
-          'Cannot query field "name" on type "CatOrDog". Did you mean to use an inline fragment on "Being", "Pet", "Canine", "Cat", or "Dog"?',
+          'Cannot query field "name" on type "CatOrDog". Did you mean to use an inline fragment on "Pet", "Cat", or "Dog"?',
         locations: [{ line: 3, column: 9 }],
       },
     ]);
@@ -332,7 +365,7 @@ describe('Validate: Fields on correct type', () => {
     });
 
     it('Sort type suggestions based on inheritance order', () => {
-      const schema = buildSchema(`
+      const interfaceSchema = buildSchema(`
         interface T { bar: String }
         type Query { t: T }
 
@@ -352,8 +385,26 @@ describe('Validate: Fields on correct type', () => {
         }
       `);
 
-      expectErrorMessage(schema, '{ t { foo } }').to.equal(
+      expectErrorMessage(interfaceSchema, '{ t { foo } }').to.equal(
         'Cannot query field "foo" on type "T". Did you mean to use an inline fragment on "Z", "Y", or "X"?',
+      );
+
+      const unionSchema = buildSchema(`
+        interface Animal { name: String }
+        interface Mammal implements Animal { name: String }
+
+        interface Canine implements Animal & Mammal { name: String }
+        type Dog implements Animal & Mammal & Canine { name: String }
+
+        interface Feline implements Animal & Mammal { name: String }
+        type Cat implements Animal & Mammal & Feline { name: String }
+
+        union CatOrDog = Cat | Dog
+        type Query { catOrDog: CatOrDog }
+      `);
+
+      expectErrorMessage(unionSchema, '{ catOrDog { name } }').to.equal(
+        'Cannot query field "name" on type "CatOrDog". Did you mean to use an inline fragment on "Animal", "Mammal", "Canine", "Dog", or "Feline"?',
       );
     });
 

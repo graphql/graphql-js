@@ -23,12 +23,14 @@ describe('Validate: Supports full validation', () => {
   it('validates queries', () => {
     const doc = parse(`
       query {
-        catOrDog {
-          ... on Cat {
-            furColor
-          }
-          ... on Dog {
-            isHouseTrained
+        human {
+          pets {
+            ... on Cat {
+              meowsVolume
+            }
+            ... on Dog {
+              barkVolume
+            }
           }
         }
       }
@@ -60,12 +62,14 @@ describe('Validate: Supports full validation', () => {
 
     const doc = parse(`
       query {
-        catOrDog {
-          ... on Cat {
-            furColor
-          }
-          ... on Dog {
-            isHouseTrained
+        human {
+          pets {
+            ... on Cat {
+              meowsVolume
+            }
+            ... on Dog {
+              barkVolume
+            }
           }
         }
       }
@@ -75,9 +79,9 @@ describe('Validate: Supports full validation', () => {
     const errorMessages = errors.map((error) => error.message);
 
     expect(errorMessages).to.deep.equal([
-      'Cannot query field "catOrDog" on type "QueryRoot". Did you mean "catOrDog"?',
-      'Cannot query field "furColor" on type "Cat". Did you mean "furColor"?',
-      'Cannot query field "isHouseTrained" on type "Dog". Did you mean "isHouseTrained"?',
+      'Cannot query field "human" on type "QueryRoot". Did you mean "human"?',
+      'Cannot query field "meowsVolume" on type "Cat". Did you mean "meowsVolume"?',
+      'Cannot query field "barkVolume" on type "Dog". Did you mean "barkVolume"?',
     ]);
   });
 
