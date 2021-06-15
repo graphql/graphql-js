@@ -8,7 +8,10 @@ export function inspect(value: unknown): string {
   return formatValue(value, []);
 }
 
-function formatValue(value: unknown, seenValues: Array<unknown>): string {
+function formatValue(
+  value: unknown,
+  seenValues: ReadonlyArray<unknown>,
+): string {
   switch (typeof value) {
     case 'string':
       return JSON.stringify(value);
@@ -26,7 +29,7 @@ function formatValue(value: unknown, seenValues: Array<unknown>): string {
 
 function formatObjectValue(
   value: object | null,
-  previouslySeenValues: Array<unknown>,
+  previouslySeenValues: ReadonlyArray<unknown>,
 ): string {
   if (value === null) {
     return 'null';
@@ -59,7 +62,10 @@ function isJSONable(value: any): value is {
   return typeof value.toJSON === 'function';
 }
 
-function formatObject(object: object, seenValues: Array<unknown>): string {
+function formatObject(
+  object: object,
+  seenValues: ReadonlyArray<unknown>,
+): string {
   const entries = Object.entries(object);
 
   if (entries.length === 0) {
@@ -77,8 +83,8 @@ function formatObject(object: object, seenValues: Array<unknown>): string {
 }
 
 function formatArray(
-  array: Array<unknown>,
-  seenValues: Array<unknown>,
+  array: ReadonlyArray<unknown>,
+  seenValues: ReadonlyArray<unknown>,
 ): string {
   if (array.length === 0) {
     return '[]';

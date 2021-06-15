@@ -384,7 +384,7 @@ function executeFieldsSerially(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
-  fields: Map<string, Array<FieldNode>>,
+  fields: Map<string, ReadonlyArray<FieldNode>>,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
     fields.entries(),
@@ -425,7 +425,7 @@ function executeFields(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
-  fields: Map<string, Array<FieldNode>>,
+  fields: Map<string, ReadonlyArray<FieldNode>>,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
   let containsPromise = false;
@@ -474,7 +474,7 @@ export function collectFields(
   selectionSet: SelectionSetNode,
   fields: Map<string, Array<FieldNode>>,
   visitedFragmentNames: Set<string>,
-): Map<string, Array<FieldNode>> {
+): Map<string, ReadonlyArray<FieldNode>> {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
@@ -1102,7 +1102,7 @@ function _collectSubfields(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
   fieldNodes: ReadonlyArray<FieldNode>,
-): Map<string, Array<FieldNode>> {
+): Map<string, ReadonlyArray<FieldNode>> {
   let subFieldNodes = new Map();
   const visitedFragmentNames = new Set<string>();
 
