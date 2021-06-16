@@ -96,3 +96,4 @@ export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
 /** Optional rules not defined by the GraphQL Specification */
 export { NoDeprecatedCustomRule } from './rules/custom/NoDeprecatedCustomRule';
 export { NoSchemaIntrospectionCustomRule } from './rules/custom/NoSchemaIntrospectionCustomRule';
+export { NoFragmentArgumentUsageRule } from './rules/custom/NoFragmentArgumentUsageRule';

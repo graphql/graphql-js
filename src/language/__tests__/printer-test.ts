@@ -113,10 +113,9 @@ describe('Printer: Query document', () => {
     );
   });
 
-  it('Legacy: prints fragment with variable directives', () => {
+  it('prints fragment with variable directives', () => {
     const queryASTWithVariableDirective = parse(
       'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
-      { allowLegacyFragmentVariables: true },
     );
     expect(print(queryASTWithVariableDirective)).to.equal(dedent`
       fragment Foo($foo: TestType @test) on TestType @testDirective {
@@ -125,18 +124,43 @@ describe('Printer: Query document', () => {
     `);
   });
 
-  it('Legacy: correctly prints fragment defined variables', () => {
+  it('correctly prints fragment defined variables', () => {
     const fragmentWithVariable = parse(
       `
         fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
           id
         }
       `,
-      { allowLegacyFragmentVariables: true },
     );
     expect(print(fragmentWithVariable)).to.equal(dedent`
       fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
         id
+      }
+    `);
+  });
+
+  it('prints fragment spread with arguments', () => {
+    const queryASTWithVariableDirective = parse(
+      'fragment Foo on TestType { ...Bar(a: {x: $x}, b: true) }',
+    );
+    expect(print(queryASTWithVariableDirective)).to.equal(dedent`
+      fragment Foo on TestType {
+        ...Bar(a: {x: $x}, b: true)
+      }
+    `);
+  });
+
+  it('prints fragment spread with multi-line arguments', () => {
+    const queryASTWithVariableDirective = parse(
+      'fragment Foo on TestType { ...Bar(a: {x: $x, y: $y, z: $z, xy: $xy}, b: true, c: "a long string extending arguments over max length") }',
+    );
+    expect(print(queryASTWithVariableDirective)).to.equal(dedent`
+      fragment Foo on TestType {
+        ...Bar(
+          a: {x: $x, y: $y, z: $z, xy: $xy}
+          b: true
+          c: "a long string extending arguments over max length"
+        )
       }
     `);
   });

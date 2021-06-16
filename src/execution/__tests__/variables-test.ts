@@ -1005,6 +1005,186 @@ describe('Execute: Handles inputs', () => {
     });
   });
 
+  describe('using fragment arguments', () => {
+    it('when there are no fragment arguments', () => {
+      const result = executeQuery(`
+        query {
+          ...a
+        }
+
+        fragment a on TestType {
+          fieldWithNonNullableStringInput(input: "A")
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: '"A"',
+        },
+      });
+    });
+
+    it('when a value is required and provided', () => {
+      const result = executeQuery(`
+        query {
+          ...a(value: "A")
+        }
+
+        fragment a($value: String!) on TestType {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: '"A"',
+        },
+      });
+    });
+
+    it('when a value is required and not provided', () => {
+      const result = executeQuery(`
+        query {
+          ...a
+        }
+
+        fragment a($value: String!) on TestType {
+          fieldWithNullableStringInput(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNullableStringInput: null,
+        },
+        errors: [
+          {
+            message:
+              'Fragment argument "$value" on fragment "a" is required but not provided.',
+            locations: [
+              { line: 3, column: 11 },
+              { line: 6, column: 20 },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('when the definition has a default and is provided', () => {
+      const result = executeQuery(`
+        query {
+          ...a(value: "A")
+        }
+
+        fragment a($value: String! = "B") on TestType {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: '"A"',
+        },
+      });
+    });
+
+    it('when the definition has a default and is not provided', () => {
+      const result = executeQuery(`
+        query {
+          ...a
+        }
+
+        fragment a($value: String! = "B") on TestType {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: '"B"',
+        },
+      });
+    });
+
+    it('when the definition has a non-nullable default and is provided null', () => {
+      const result = executeQuery(`
+        query {
+          ...a(value: null)
+        }
+
+        fragment a($value: String! = "B") on TestType {
+          fieldWithNullableStringInput(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNullableStringInput: 'null',
+        },
+        errors: [
+          {
+            message:
+              'Fragment argument "$value" on fragment "a" is non-null, but null was provided.',
+            locations: [
+              { line: 3, column: 16 },
+              { line: 6, column: 20 },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('when the definition has no default and is not provided', () => {
+      const result = executeQuery(`
+        query {
+          ...a
+        }
+
+        fragment a($value: String) on TestType {
+          fieldWithNonNullableStringInputAndDefaultArgumentValue(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInputAndDefaultArgumentValue:
+            '"Hello World"',
+        },
+      });
+    });
+
+    it('when the argument variable is nested in a complex type', () => {
+      const result = executeQuery(`
+        query {
+          ...a(value: "C")
+        }
+
+        fragment a($value: String) on TestType {
+          list(input: ["A", "B", $value, "D"])
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          list: '["A", "B", "C", "D"]',
+        },
+      });
+    });
+
+    it('when argument variables are used recursively', () => {
+      const result = executeQuery(`
+        query {
+          ...a(aValue: "C")
+        }
+
+        fragment a($aValue: String) on TestType {
+          ...b(bValue: $aValue)
+        }
+
+        fragment b($bValue: String) on TestType {
+          list(input: ["A", "B", $bValue, "D"])
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          list: '["A", "B", "C", "D"]',
+        },
+      });
+    });
+  });
+
   describe('getVariableValues: limit maximum number of coercion errors', () => {
     const doc = parse(`
       query ($input: [String!]) {

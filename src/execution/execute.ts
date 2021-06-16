@@ -25,8 +25,11 @@ import type {
   FragmentSpreadNode,
   InlineFragmentNode,
   FragmentDefinitionNode,
+  ArgumentNode,
+  ValueNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
+import { visit } from '../language/visitor';
 
 import type { GraphQLSchema } from '../type/schema';
 import type {
@@ -511,10 +514,15 @@ export function collectFields(
         ) {
           continue;
         }
+        const updatedSelectionSet = selectionSetWithFragmentArgumentsApplied(
+          exeContext,
+          fragment,
+          selection,
+        );
         collectFields(
           exeContext,
           runtimeType,
-          fragment.selectionSet,
+          updatedSelectionSet,
           fields,
           visitedFragmentNames,
         );
@@ -523,6 +531,60 @@ export function collectFields(
     }
   }
   return fields;
+}
+
+function selectionSetWithFragmentArgumentsApplied(
+  exeContext: ExecutionContext,
+  fragment: FragmentDefinitionNode,
+  fragmentSpread: FragmentSpreadNode,
+): SelectionSetNode {
+  const variableDefinitions = fragment.variableDefinitions;
+  if (variableDefinitions == null) {
+    return fragment.selectionSet;
+  }
+
+  const providedArguments: Map<string, ArgumentNode> = new Map();
+  for (const arg of fragmentSpread.arguments ?? []) {
+    providedArguments.set(arg.name.value, arg);
+  }
+  const fragmentArgumentValues: Map<string, ValueNode> = new Map();
+  for (const argDef of variableDefinitions) {
+    const variableName = argDef.variable.name.value;
+    const providedArg = providedArguments.get(variableName);
+    if (providedArg != null) {
+      if (
+        providedArg.value.kind === Kind.NULL &&
+        argDef.type.kind === Kind.NON_NULL_TYPE
+      ) {
+        exeContext.errors.push(
+          new GraphQLError(
+            `Fragment argument "$${variableName}" on fragment "${fragment.name.value}" is non-null, but null was provided.`,
+            [providedArg, argDef],
+          ),
+        );
+      }
+      fragmentArgumentValues.set(variableName, providedArg.value);
+    } else if (argDef.defaultValue != null) {
+      fragmentArgumentValues.set(variableName, argDef.defaultValue);
+    } else if (argDef.type.kind === Kind.NON_NULL_TYPE) {
+      exeContext.errors.push(
+        new GraphQLError(
+          `Fragment argument "$${variableName}" on fragment "${fragment.name.value}" is required but not provided.`,
+          [fragmentSpread, argDef],
+        ),
+      );
+    }
+    // Otherwise just preserve the variable as-is: it will be treated as unset by the executor.
+  }
+
+  return visit(fragment.selectionSet, {
+    Variable(node) {
+      const replacementValue = fragmentArgumentValues.get(node.name.value);
+      if (replacementValue != null) {
+        return replacementValue;
+      }
+    },
+  });
 }
 
 /**

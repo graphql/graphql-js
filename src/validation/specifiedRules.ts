@@ -93,6 +93,9 @@ import { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNam
 import { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule';
 import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
 
+// Prevent not-yet-in-spec usage of Fragment Arguments by default
+import { NoFragmentArgumentUsageRule } from './rules/custom/NoFragmentArgumentUsageRule';
+
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  *
@@ -114,6 +117,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   NoUnusedFragmentsRule,
   PossibleFragmentSpreadsRule,
   NoFragmentCyclesRule,
+  NoFragmentArgumentUsageRule,
   UniqueVariableNamesRule,
   NoUndefinedVariablesRule,
   NoUnusedVariablesRule,
