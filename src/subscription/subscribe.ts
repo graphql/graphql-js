@@ -8,13 +8,13 @@ import { locatedError } from '../error/locatedError';
 
 import type { DocumentNode } from '../language/ast';
 
-import type { ExecutionResult, ExecutionContext } from '../execution/execute';
+import type { ExecutionResult } from '../execution/execute';
 import { collectFields } from '../execution/collectFields';
 import { getArgumentValues } from '../execution/values';
 import {
+  Executor,
   assertValidExecutionArguments,
   buildExecutionContext,
-  buildResolveInfo,
   execute,
   getFieldDef,
 } from '../execution/execute';
@@ -165,7 +165,9 @@ export async function createSourceEventStream(
       return { errors: exeContext };
     }
 
-    const eventStream = await executeSubscription(exeContext);
+    const executor = new SubscriptionExecutor(exeContext);
+
+    const eventStream = await executor.executeSubscription();
 
     // Assert field returned an event stream, otherwise yield an error.
     if (!isAsyncIterable(eventStream)) {
@@ -186,58 +188,64 @@ export async function createSourceEventStream(
   }
 }
 
-async function executeSubscription(
-  exeContext: ExecutionContext,
-): Promise<unknown> {
-  const { schema, fragments, operation, variableValues, rootValue } =
-    exeContext;
-  const type = getOperationRootType(schema, operation);
-  const fields = collectFields(
-    schema,
-    fragments,
-    variableValues,
-    type,
-    operation.selectionSet,
-    new Map(),
-    new Set(),
-  );
-  const [responseName, fieldNodes] = [...fields.entries()][0];
-  const fieldDef = getFieldDef(schema, type, fieldNodes[0]);
-
-  if (!fieldDef) {
-    const fieldName = fieldNodes[0].name.value;
-    throw new GraphQLError(
-      `The subscription field "${fieldName}" is not defined.`,
-      fieldNodes,
+class SubscriptionExecutor extends Executor {
+  public async executeSubscription(): Promise<unknown> {
+    const {
+      schema,
+      fragments,
+      rootValue,
+      contextValue,
+      operation,
+      variableValues,
+      fieldResolver,
+    } = this._exeContext;
+    const type = getOperationRootType(schema, operation);
+    const fields = collectFields(
+      schema,
+      fragments,
+      variableValues,
+      type,
+      operation.selectionSet,
+      new Map(),
+      new Set(),
     );
-  }
+    const [responseName, fieldNodes] = [...fields.entries()][0];
+    const fieldDef = getFieldDef(schema, type, fieldNodes[0]);
 
-  const path = addPath(undefined, responseName, type.name);
-  const info = buildResolveInfo(exeContext, fieldDef, fieldNodes, type, path);
-
-  try {
-    // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.
-    // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
-
-    // Build a JS object of arguments from the field.arguments AST, using the
-    // variables scope to fulfill any variable references.
-    const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues);
-
-    // The resolve function's optional third argument is a context value that
-    // is provided to every resolve function within an execution. It is commonly
-    // used to represent an authenticated user, or request-specific caches.
-    const contextValue = exeContext.contextValue;
-
-    // Call the `subscribe()` resolver or the default resolver to produce an
-    // AsyncIterable yielding raw payloads.
-    const resolveFn = fieldDef.subscribe ?? exeContext.fieldResolver;
-    const eventStream = await resolveFn(rootValue, args, contextValue, info);
-
-    if (eventStream instanceof Error) {
-      throw eventStream;
+    if (!fieldDef) {
+      const fieldName = fieldNodes[0].name.value;
+      throw new GraphQLError(
+        `The subscription field "${fieldName}" is not defined.`,
+        fieldNodes,
+      );
     }
-    return eventStream;
-  } catch (error) {
-    throw locatedError(error, fieldNodes, pathToArray(path));
+
+    const path = addPath(undefined, responseName, type.name);
+    const info = this.buildResolveInfo(fieldDef, fieldNodes, type, path);
+
+    try {
+      // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.
+      // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
+
+      // Build a JS object of arguments from the field.arguments AST, using the
+      // variables scope to fulfill any variable references.
+      const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues);
+
+      // Call the `subscribe()` resolver or the default resolver to produce an
+      // AsyncIterable yielding raw payloads.
+      const resolveFn = fieldDef.subscribe ?? fieldResolver;
+
+      // The resolve function's optional third argument is a context value that
+      // is provided to every resolve function within an execution. It is commonly
+      // used to represent an authenticated user, or request-specific caches.
+      const eventStream = await resolveFn(rootValue, args, contextValue, info);
+
+      if (eventStream instanceof Error) {
+        throw eventStream;
+      }
+      return eventStream;
+    } catch (error) {
+      throw locatedError(error, fieldNodes, pathToArray(path));
+    }
   }
 }
