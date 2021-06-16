@@ -160,14 +160,12 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
+  /** "Enum" of Type Kinds */
+  TypeKind,
   /** Meta-field definitions. */
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
-} from './introspection.ts';
-export type {
-  /** "Enum" of Type Kinds */
-  TypeKind,
 } from './introspection.ts';
 /** Validate GraphQL schema. */
 
