@@ -8,12 +8,7 @@ import type {
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 
-import type { ExecutionContext } from '../../execution/execute';
-import {
-  collectFields,
-  defaultFieldResolver,
-  defaultTypeResolver,
-} from '../../execution/execute';
+import { collectFields } from '../../execution/collectFields';
 
 import type { ValidationContext } from '../ValidationContext';
 
@@ -43,20 +38,10 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = definition;
             }
           }
-          // FIXME: refactor out `collectFields` into utility function that doesn't need fake context.
-          const fakeExecutionContext: ExecutionContext = {
+          const fields = collectFields(
             schema,
             fragments,
-            rootValue: undefined,
-            contextValue: undefined,
-            operation: node,
             variableValues,
-            fieldResolver: defaultFieldResolver,
-            typeResolver: defaultTypeResolver,
-            errors: [],
-          };
-          const fields = collectFields(
-            fakeExecutionContext,
             subscriptionType,
             node.selectionSet,
             new Map(),

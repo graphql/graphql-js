@@ -9,12 +9,12 @@ import { locatedError } from '../error/locatedError';
 import type { DocumentNode } from '../language/ast';
 
 import type { ExecutionResult, ExecutionContext } from '../execution/execute';
+import { collectFields } from '../execution/collectFields';
 import { getArgumentValues } from '../execution/values';
 import {
   assertValidExecutionArguments,
   buildExecutionContext,
   buildResolveInfo,
-  collectFields,
   execute,
   getFieldDef,
 } from '../execution/execute';
@@ -189,10 +189,13 @@ export async function createSourceEventStream(
 async function executeSubscription(
   exeContext: ExecutionContext,
 ): Promise<unknown> {
-  const { schema, operation, variableValues, rootValue } = exeContext;
+  const { schema, fragments, operation, variableValues, rootValue } =
+    exeContext;
   const type = getOperationRootType(schema, operation);
   const fields = collectFields(
-    exeContext,
+    schema,
+    fragments,
+    variableValues,
     type,
     operation.selectionSet,
     new Map(),
