@@ -191,26 +191,26 @@ export async function createSourceEventStream(
 class SubscriptionExecutor extends Executor {
   public async executeSubscription(): Promise<unknown> {
     const {
-      schema,
-      fragments,
-      rootValue,
-      contextValue,
-      operation,
-      variableValues,
-      fieldResolver,
-    } = this._exeContext;
-    const type = getOperationRootType(schema, operation);
+      _schema,
+      _fragments,
+      _rootValue,
+      _contextValue,
+      _operation,
+      _variableValues,
+      _fieldResolver,
+    } = this;
+    const type = getOperationRootType(_schema, _operation);
     const fields = collectFields(
-      schema,
-      fragments,
-      variableValues,
+      _schema,
+      _fragments,
+      _variableValues,
       type,
-      operation.selectionSet,
+      _operation.selectionSet,
       new Map(),
       new Set(),
     );
     const [responseName, fieldNodes] = [...fields.entries()][0];
-    const fieldDef = getFieldDef(schema, type, fieldNodes[0]);
+    const fieldDef = getFieldDef(_schema, type, fieldNodes[0]);
 
     if (!fieldDef) {
       const fieldName = fieldNodes[0].name.value;
@@ -229,16 +229,21 @@ class SubscriptionExecutor extends Executor {
 
       // Build a JS object of arguments from the field.arguments AST, using the
       // variables scope to fulfill any variable references.
-      const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues);
+      const args = getArgumentValues(fieldDef, fieldNodes[0], _variableValues);
 
       // Call the `subscribe()` resolver or the default resolver to produce an
       // AsyncIterable yielding raw payloads.
-      const resolveFn = fieldDef.subscribe ?? fieldResolver;
+      const resolveFn = fieldDef.subscribe ?? _fieldResolver;
 
       // The resolve function's optional third argument is a context value that
       // is provided to every resolve function within an execution. It is commonly
       // used to represent an authenticated user, or request-specific caches.
-      const eventStream = await resolveFn(rootValue, args, contextValue, info);
+      const eventStream = await resolveFn(
+        _rootValue,
+        args,
+        _contextValue,
+        info,
+      );
 
       if (eventStream instanceof Error) {
         throw eventStream;
