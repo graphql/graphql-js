@@ -8,7 +8,7 @@ import { locatedError } from '../error/locatedError';
 
 import type { DocumentNode } from '../language/ast';
 
-import type { ExecutionResult } from '../execution/execute';
+import type { ExecutionContext, ExecutionResult } from '../execution/execute';
 import { collectFields } from '../execution/collectFields';
 import { getArgumentValues } from '../execution/values';
 import { Executor, getFieldDef } from '../execution/executor';
@@ -68,27 +68,8 @@ export async function subscribe(
     return { errors: exeContext };
   }
 
-  const executor = new SubscriptionExecutor(exeContext);
-  const resultOrStream = await executor.createSourceEventStream();
-
-  if (!isAsyncIterable(resultOrStream)) {
-    return resultOrStream;
-  }
-
-  // For each payload yielded from a subscription, map it over the normal
-  // GraphQL `execute` function, with `payload` as the rootValue.
-  // This implements the "MapSourceToResponseEvent" algorithm described in
-  // the GraphQL specification. The `execute` function provides the
-  // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
-  // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = (payload: unknown) =>
-    execute({
-      ...args,
-      rootValue: payload,
-    });
-
-  // Map every source value to a ExecutionResult value as described above.
-  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
+  const executor = new SubscriptionExecutor(exeContext, args.document);
+  return executor.executeSubscription();
 }
 
 /**
@@ -103,6 +84,40 @@ export async function subscribe(
  * @internal
  */
 export class SubscriptionExecutor extends Executor {
+  protected _document: DocumentNode;
+
+  constructor(exeContext: ExecutionContext, document: DocumentNode) {
+    super(exeContext);
+    this._document = document;
+  }
+
+  async executeSubscription(): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+    const resultOrStream = await this.createSourceEventStream();
+
+    if (!isAsyncIterable(resultOrStream)) {
+      return resultOrStream;
+    }
+  
+    // For each payload yielded from a subscription, map it over the normal
+    // GraphQL `execute` function, with `payload` as the rootValue.
+    // This implements the "MapSourceToResponseEvent" algorithm described in
+    // the GraphQL specification. The `execute` function provides the
+    // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
+    // "ExecuteQuery" algorithm, for which `execute` is also used.
+    const mapSourceToResponse = (payload: unknown) =>
+      execute({
+        schema: this._schema,
+        document: this._document,
+        rootValue: payload,
+        contextValue: this._contextValue,
+        variableValues: this._variableValues,
+        fieldResolver: this._fieldResolver,
+      });
+  
+    // Map every source value to a ExecutionResult value as described above.
+    return mapAsyncIterator(resultOrStream, mapSourceToResponse);  
+  }
+
   /**
    * Implements the "CreateSourceEventStream" algorithm described in the
    * GraphQL specification, resolving the subscription source event stream.
