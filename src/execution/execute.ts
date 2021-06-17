@@ -128,8 +128,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  const data = executor.executeOperation();
-  return executor.buildResponse(data);
+  return executor.execute();
 }
 
 /**
@@ -179,7 +178,9 @@ export function assertValidExecutionArguments(
  *
  * @internal
  */
-export function buildExecutionContext(args: ExecutionArgs): ReadonlyArray<GraphQLError> | ExecutionContext {
+export function buildExecutionContext(
+  args: ExecutionArgs,
+): ReadonlyArray<GraphQLError> | ExecutionContext {
   const {
     schema,
     document,

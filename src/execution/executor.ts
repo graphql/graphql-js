@@ -105,6 +105,11 @@ export class Executor {
     this._errors = errors;
   }
 
+  execute(): PromiseOrValue<ExecutionResult> {
+    const data = this.executeOperation();
+    return this.buildResponse(data);
+  }
+
   /**
    * Implements the "Executing operations" section of the spec.
    */
