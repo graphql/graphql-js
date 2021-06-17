@@ -5,7 +5,6 @@ import type { DocumentNode } from '../language/ast';
 import { Executor } from '../execution/executor';
 
 import type { ExecutionResult } from '../execution/execute';
-import { buildExecutionContext } from '../execution/execute';
 
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
@@ -47,7 +46,7 @@ export async function subscribe(
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args);
+  const exeContext = Executor.buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
