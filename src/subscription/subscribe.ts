@@ -8,6 +8,8 @@ import type { ExecutionResult } from '../execution/execute';
 
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
+import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
+import { GraphQLError } from '../error/GraphQLError';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
@@ -44,15 +46,27 @@ export interface SubscriptionArgs {
 export async function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = Executor.buildExecutionContext(args);
+  try {
+    // TODO:
+    // Consider allowing removal of the await keyword below. It is currently
+    // necessary because without the explicit await, the function may directly
+    // throw, rather than returning a promise that rejects.
 
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return Promise.resolve({ errors: exeContext });
+    const executor = new Executor(args);
+    return await executor.executeSubscription();
+  } catch (error) {
+    // If it GraphQLError or GraphQLAggregateError, report it as an ExecutionResult,
+    // containing only errors and no data.
+    // Otherwise, treat the error as a system-class error and re-throw it.
+
+    if (error instanceof GraphQLAggregateError) {
+      return Promise.resolve({ errors: error.errors });
+    }
+
+    if (error instanceof GraphQLError) {
+      return Promise.resolve({ errors: [error] });
+    }
+
+    throw error;
   }
-
-  const executor = new Executor(exeContext);
-  return executor.executeSubscription();
 }

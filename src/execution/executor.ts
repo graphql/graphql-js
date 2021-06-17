@@ -54,6 +54,8 @@ import { getOperationRootType } from '../utilities/getOperationRootType';
 
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 
+import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
+
 import type {
   ExecutionArgs,
   ExecutionContext,
@@ -100,18 +102,27 @@ export class Executor {
   protected _subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   protected _errors: Array<GraphQLError>;
 
-  constructor({
-    schema,
-    fragments,
-    rootValue,
-    contextValue,
-    operation,
-    variableValues,
-    fieldResolver,
-    typeResolver,
-    subscribeFieldResolver,
-    errors,
-  }: ExecutionContext) {
+  constructor(
+    argsOrExecutionContext: BuildExecutionContextArgs | ExecutionContext,
+  ) {
+    const executionContext =
+      'fragments' in argsOrExecutionContext
+        ? argsOrExecutionContext
+        : Executor.buildExecutionContext(argsOrExecutionContext);
+
+    const {
+      schema,
+      fragments,
+      rootValue,
+      contextValue,
+      operation,
+      variableValues,
+      fieldResolver,
+      typeResolver,
+      subscribeFieldResolver,
+      errors,
+    } = executionContext;
+
     this._schema = schema;
     this._fragments = fragments;
     this._rootValue = rootValue;
@@ -134,7 +145,7 @@ export class Executor {
    */
   static buildExecutionContext(
     args: BuildExecutionContextArgs,
-  ): ReadonlyArray<GraphQLError> | ExecutionContext {
+  ): ExecutionContext {
     const {
       schema,
       document,
@@ -157,11 +168,9 @@ export class Executor {
         case Kind.OPERATION_DEFINITION:
           if (operationName == null) {
             if (operation !== undefined) {
-              return [
-                new GraphQLError(
-                  'Must provide operation name if query contains multiple operations.',
-                ),
-              ];
+              throw new GraphQLError(
+                'Must provide operation name if query contains multiple operations.',
+              );
             }
             operation = definition;
           } else if (definition.name?.value === operationName) {
@@ -176,11 +185,9 @@ export class Executor {
 
     if (!operation) {
       if (operationName != null) {
-        return [
-          new GraphQLError(`Unknown operation named "${operationName}".`),
-        ];
+        throw new GraphQLError(`Unknown operation named "${operationName}".`);
       }
-      return [new GraphQLError('Must provide an operation.')];
+      throw new GraphQLError('Must provide an operation.');
     }
 
     // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
@@ -194,7 +201,7 @@ export class Executor {
     );
 
     if (coercedVariableValues.errors) {
-      return coercedVariableValues.errors;
+      throw new GraphQLAggregateError(coercedVariableValues.errors);
     }
 
     return {

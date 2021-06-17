@@ -4,7 +4,6 @@ import type { Maybe } from '../jsutils/Maybe';
 import { isPromise } from '../jsutils/isPromise';
 
 import type { GraphQLFormattedError } from '../error/formatError';
-import type { GraphQLError } from '../error/GraphQLError';
 
 import type {
   DocumentNode,
@@ -17,6 +16,9 @@ import type {
   GraphQLFieldResolver,
   GraphQLTypeResolver,
 } from '../type/definition';
+
+import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
+import { GraphQLError } from '../error/GraphQLError';
 
 import { Executor } from './executor';
 
@@ -106,25 +108,31 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = Executor.buildExecutionContext(args);
+  try {
+    const executor = new Executor(args);
+    // Return a Promise that will eventually resolve to the data described by
+    // The "Response" section of the GraphQL specification.
+    //
+    // If errors are encountered while executing a GraphQL field, only that
+    // field and its descendants will be omitted, and sibling fields will still
+    // be executed. An execution which encounters errors will still result in a
+    // resolved Promise.
+    return executor.executeQueryOrMutation();
+  } catch (error) {
+    // If it GraphQLError or GraphQLAggregateError, report it as an ExecutionResult,
+    // containing only errors and no data.
+    // Otherwise, treat the error as a system-class error and re-throw it.
 
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
+    if (error instanceof GraphQLAggregateError) {
+      return { errors: error.errors };
+    }
+
+    if (error instanceof GraphQLError) {
+      return { errors: [error] };
+    }
+
+    throw error;
   }
-
-  const executor = new Executor(exeContext);
-
-  // Return a Promise that will eventually resolve to the data described by
-  // The "Response" section of the GraphQL specification.
-  //
-  // If errors are encountered while executing a GraphQL field, only that
-  // field and its descendants will be omitted, and sibling fields will still
-  // be executed. An execution which encounters errors will still result in a
-  // resolved Promise.
-  return executor.executeQueryOrMutation();
 }
 
 /**
