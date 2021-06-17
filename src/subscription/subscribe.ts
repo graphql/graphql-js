@@ -157,31 +157,34 @@ export async function createSourceEventStream(
   }
 
   const executor = new SubscriptionExecutor(exeContext);
-
-  try {
-    const eventStream = await executor.executeSubscription();
-
-    // Assert field returned an event stream, otherwise yield an error.
-    if (!isAsyncIterable(eventStream)) {
-      throw new Error(
-        'Subscription field must return Async Iterable. ' +
-          `Received: ${inspect(eventStream)}.`,
-      );
-    }
-
-    return eventStream;
-  } catch (error) {
-    // If it GraphQLError, report it as an ExecutionResult, containing only errors and no data.
-    // Otherwise treat the error as a system-class error and re-throw it.
-    if (error instanceof GraphQLError) {
-      return { errors: [error] };
-    }
-    throw error;
-  }
+  return executor.createSourceEventStream();
 }
 
 class SubscriptionExecutor extends Executor {
-  public async executeSubscription(): Promise<unknown> {
+  async createSourceEventStream(): Promise<AsyncIterable<unknown> | ExecutionResult> {
+    try {
+      const eventStream = await this._createSourceEventStream();
+  
+      // Assert field returned an event stream, otherwise yield an error.
+      if (!isAsyncIterable(eventStream)) {
+        throw new Error(
+          'Subscription field must return Async Iterable. ' +
+            `Received: ${inspect(eventStream)}.`,
+        );
+      }
+  
+      return eventStream;
+    } catch (error) {
+      // If it GraphQLError, report it as an ExecutionResult, containing only errors and no data.
+      // Otherwise treat the error as a system-class error and re-throw it.
+      if (error instanceof GraphQLError) {
+        return { errors: [error] };
+      }
+      throw error;
+    }  
+  }
+
+  public async _createSourceEventStream(): Promise<unknown> {
     const {
       _schema,
       _fragments,
