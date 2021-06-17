@@ -47,9 +47,12 @@ import {
 
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
+import { isAsyncIterable } from '../jsutils/isAsyncIterable';
+
 import type { ExecutionContext, ExecutionResult } from './execute';
 import { getArgumentValues } from './values';
 import { collectFields } from './collectFields';
+import { mapAsyncIterator } from './mapAsyncIterator';
 
 /**
  * This class is exported only to assist people in implementing their own executors
@@ -81,6 +84,7 @@ export class Executor {
   protected _variableValues: { [variable: string]: unknown };
   protected _fieldResolver: GraphQLFieldResolver<any, any>;
   protected _typeResolver: GraphQLTypeResolver<any, any>;
+  protected _subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   protected _errors: Array<GraphQLError>;
 
   constructor({
@@ -92,6 +96,7 @@ export class Executor {
     variableValues,
     fieldResolver,
     typeResolver,
+    subscribeFieldResolver,
     errors,
   }: ExecutionContext) {
     this._schema = schema;
@@ -102,18 +107,15 @@ export class Executor {
     this._variableValues = variableValues;
     this._fieldResolver = fieldResolver;
     this._typeResolver = typeResolver;
+    this._subscribeFieldResolver = subscribeFieldResolver;
     this._errors = errors;
   }
 
-  execute(): PromiseOrValue<ExecutionResult> {
-    const data = this.executeOperation();
-    return this.buildResponse(data);
-  }
-
   /**
-   * Implements the "Executing operations" section of the spec.
+   * Implements the "Executing operations" section of the spec for
+   * queries and mutations.
    */
-  executeOperation(): PromiseOrValue<ObjMap<unknown> | null> {
+  executeQueryOrMutation(): PromiseOrValue<ExecutionResult> {
     const { _schema, _fragments, _rootValue, _operation, _variableValues } =
       this;
     const type = getOperationRootType(_schema, _operation);
@@ -138,15 +140,17 @@ export class Executor {
           ? this.executeFieldsSerially(type, _rootValue, path, fields)
           : this.executeFields(type, _rootValue, path, fields);
       if (isPromise(result)) {
-        return result.then(undefined, (error) => {
-          this._errors.push(error);
-          return Promise.resolve(null);
-        });
+        return this.buildResponse(
+          result.then(undefined, (error) => {
+            this._errors.push(error);
+            return Promise.resolve(null);
+          }),
+        );
       }
-      return result;
+      return this.buildResponse(result);
     } catch (error) {
       this._errors.push(error);
-      return null;
+      return this.buildResponse(null);
     }
   }
 
@@ -663,6 +667,159 @@ export class Executor {
     }
 
     return this.executeFields(returnType, result, path, subFieldNodes);
+  }
+
+  async executeSubscription(): Promise<
+    AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
+  > {
+    const resultOrStream = await this.createSourceEventStream();
+
+    if (!isAsyncIterable(resultOrStream)) {
+      return resultOrStream;
+    }
+
+    // For each payload yielded from a subscription, map it over the normal
+    // GraphQL `execute` function, with `payload` as the rootValue.
+    // This implements the "MapSourceToResponseEvent" algorithm described in
+    // the GraphQL specification. The `execute` function provides the
+    // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
+    // "ExecuteQuery" algorithm, for which `execute` is also used.
+    const mapSourceToResponse = (payload: unknown) => {
+      const executor = new Executor({
+        schema: this._schema,
+        fragments: this._fragments,
+        rootValue: payload,
+        contextValue: this._contextValue,
+        operation: this._operation,
+        variableValues: this._variableValues,
+        fieldResolver: this._fieldResolver,
+        typeResolver: this._typeResolver,
+        errors: [],
+      });
+
+      return executor.executeQueryOrMutation();
+    };
+
+    // Map every source value to a ExecutionResult value as described above.
+    return mapAsyncIterator(resultOrStream, mapSourceToResponse);
+  }
+
+  /**
+   * Implements the "CreateSourceEventStream" algorithm described in the
+   * GraphQL specification, resolving the subscription source event stream.
+   *
+   * Returns a Promise which resolves to either an AsyncIterable (if successful)
+   * or an ExecutionResult (error). The promise will be rejected if the schema or
+   * other arguments to this function are invalid, or if the resolved event stream
+   * is not an async iterable.
+   *
+   * If the client-provided arguments to this function do not result in a
+   * compliant subscription, a GraphQL Response (ExecutionResult) with
+   * descriptive errors and no data will be returned.
+   *
+   * If the the source stream could not be created due to faulty subscription
+   * resolver logic or underlying systems, the promise will resolve to a single
+   * ExecutionResult containing `errors` and no `data`.
+   *
+   * If the operation succeeded, the promise resolves to the AsyncIterable for the
+   * event stream returned by the resolver.
+   *
+   * A Source Event Stream represents a sequence of events, each of which triggers
+   * a GraphQL execution for that event.
+   *
+   * This may be useful when hosting the stateful subscription service in a
+   * different process or machine than the stateless GraphQL execution engine,
+   * or otherwise separating these two steps. For more on this, see the
+   * "Supporting Subscriptions at Scale" information in the GraphQL specification.
+   */
+  async createSourceEventStream(): Promise<
+    AsyncIterable<unknown> | ExecutionResult
+  > {
+    try {
+      const eventStream = await this._createSourceEventStream();
+
+      // Assert field returned an event stream, otherwise yield an error.
+      if (!isAsyncIterable(eventStream)) {
+        throw new Error(
+          'Subscription field must return Async Iterable. ' +
+            `Received: ${inspect(eventStream)}.`,
+        );
+      }
+
+      return eventStream;
+    } catch (error) {
+      // If it GraphQLError, report it as an ExecutionResult, containing only errors and no data.
+      // Otherwise treat the error as a system-class error and re-throw it.
+      if (error instanceof GraphQLError) {
+        return { errors: [error] };
+      }
+      throw error;
+    }
+  }
+
+  public async _createSourceEventStream(): Promise<unknown> {
+    const {
+      _schema,
+      _fragments,
+      _rootValue,
+      _contextValue,
+      _operation,
+      _variableValues,
+      _fieldResolver,
+    } = this;
+    const type = getOperationRootType(_schema, _operation);
+    const fields = collectFields(
+      _schema,
+      _fragments,
+      _variableValues,
+      type,
+      _operation.selectionSet,
+      new Map(),
+      new Set(),
+    );
+    const [responseName, fieldNodes] = [...fields.entries()][0];
+    const fieldDef = getFieldDef(_schema, type, fieldNodes[0]);
+
+    if (!fieldDef) {
+      const fieldName = fieldNodes[0].name.value;
+      throw new GraphQLError(
+        `The subscription field "${fieldName}" is not defined.`,
+        fieldNodes,
+      );
+    }
+
+    const path = addPath(undefined, responseName, type.name);
+    const info = this.buildResolveInfo(fieldDef, fieldNodes, type, path);
+
+    try {
+      // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.
+      // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
+
+      // Build a JS object of arguments from the field.arguments AST, using the
+      // variables scope to fulfill any variable references.
+      const args = getArgumentValues(fieldDef, fieldNodes[0], _variableValues);
+
+      // Call the `subscribe()` resolver or the default resolver to produce an
+      // AsyncIterable yielding raw payloads.
+      const resolveFn = fieldDef.subscribe ?? _fieldResolver;
+
+      // The resolve function's optional third argument is a context value that
+      // is provided to every resolve function within an execution. It is commonly
+      // used to represent an authenticated user, or request-specific caches.
+      const eventStream = await resolveFn(
+        _rootValue,
+        args,
+        _contextValue,
+        info,
+      );
+
+      if (eventStream instanceof Error) {
+        throw eventStream;
+      }
+      return eventStream;
+    } catch (error) {
+      throw locatedError(error, fieldNodes, pathToArray(path));
+    }
   }
 
   /**

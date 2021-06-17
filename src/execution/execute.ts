@@ -60,6 +60,7 @@ export interface ExecutionContext {
   variableValues: { [variable: string]: unknown };
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   errors: Array<GraphQLError>;
 }
 
@@ -128,7 +129,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  return executor.execute();
+  return executor.executeQueryOrMutation();
 }
 
 /**
@@ -170,6 +171,10 @@ export function assertValidExecutionArguments(
   );
 }
 
+export interface BuildExecutionContextArgs extends ExecutionArgs {
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+}
+
 /**
  * Constructs a ExecutionContext object from the arguments passed to
  * execute, which we will pass throughout the other execution methods.
@@ -179,7 +184,7 @@ export function assertValidExecutionArguments(
  * @internal
  */
 export function buildExecutionContext(
-  args: ExecutionArgs,
+  args: BuildExecutionContextArgs,
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
   const {
     schema,
@@ -190,6 +195,7 @@ export function buildExecutionContext(
     operationName,
     fieldResolver,
     typeResolver,
+    subscribeFieldResolver,
   } = args;
 
   // If arguments are missing or incorrect, throw an error.
@@ -249,6 +255,7 @@ export function buildExecutionContext(
     variableValues: coercedVariableValues.coerced,
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
+    subscribeFieldResolver,
     errors: [],
   };
 }

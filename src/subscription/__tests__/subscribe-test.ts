@@ -12,7 +12,7 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
-import { SubscriptionExecutor, subscribe } from '../subscribe';
+import { subscribe } from '../subscribe';
 
 import { SimplePubSub } from './simplePubSub';
 

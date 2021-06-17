@@ -2,13 +2,13 @@ import type { Maybe } from '../jsutils/Maybe';
 
 import type { DocumentNode } from '../language/ast';
 
+import { Executor } from '../execution/executor';
+
 import type { ExecutionResult } from '../execution/execute';
 import { buildExecutionContext } from '../execution/execute';
 
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
-
-import { SubscriptionExecutor } from './subscriptionExecutor';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
@@ -47,16 +47,13 @@ export async function subscribe(
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext({
-    ...args,
-    fieldResolver: args.subscribeFieldResolver,
-  });
+  const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
     return Promise.resolve({ errors: exeContext });
   }
 
-  const executor = new SubscriptionExecutor(exeContext, args.document);
+  const executor = new Executor(exeContext);
   return executor.executeSubscription();
 }
