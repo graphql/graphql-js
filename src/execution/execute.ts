@@ -305,16 +305,17 @@ export function buildExecutionContext(
  * @internal
  */
 export class Executor {
-  protected _exeContext: ExecutionContext;
   /**
    * A memoized collection of relevant subfields with regard to the return
    * type. Memoizing ensures the subfields are not repeatedly calculated, which
    * saves overhead when resolving lists of values.
    */
-  protected collectSubfields = memoize2(
+  collectSubfields = memoize2(
     (returnType: GraphQLObjectType, fieldNodes: ReadonlyArray<FieldNode>) =>
       this._collectSubfields(returnType, fieldNodes),
   );
+
+  protected _exeContext: ExecutionContext;
 
   constructor(exeContext: ExecutionContext) {
     this._exeContext = exeContext;
@@ -323,7 +324,7 @@ export class Executor {
   /**
    * Implements the "Executing operations" section of the spec.
    */
-  public executeOperation(): PromiseOrValue<ObjMap<unknown> | null> {
+  executeOperation(): PromiseOrValue<ObjMap<unknown> | null> {
     const { schema, fragments, rootValue, operation, variableValues, errors } =
       this._exeContext;
     const type = getOperationRootType(schema, operation);
@@ -364,7 +365,7 @@ export class Executor {
    * Given a completed execution context and data, build the { errors, data }
    * response defined by the "Response" section of the GraphQL specification.
    */
-  public buildResponse(
+  buildResponse(
     data: PromiseOrValue<ObjMap<unknown> | null>,
   ): PromiseOrValue<ExecutionResult> {
     if (isPromise(data)) {
@@ -378,7 +379,7 @@ export class Executor {
    * Implements the "Executing selection sets" section of the spec
    * for fields that must be executed serially.
    */
-  protected executeFieldsSerially(
+  executeFieldsSerially(
     parentType: GraphQLObjectType,
     sourceValue: unknown,
     path: Path | undefined,
@@ -414,7 +415,7 @@ export class Executor {
    * Implements the "Executing selection sets" section of the spec
    * for fields that may be executed in parallel.
    */
-  protected executeFields(
+  executeFields(
     parentType: GraphQLObjectType,
     sourceValue: unknown,
     path: Path | undefined,
@@ -457,7 +458,7 @@ export class Executor {
    * calling its resolve function, then calls completeValue to complete promises,
    * serialize scalars, or execute the sub-selection-set for objects.
    */
-  protected executeField(
+  executeField(
     parentType: GraphQLObjectType,
     source: unknown,
     fieldNodes: ReadonlyArray<FieldNode>,
@@ -521,7 +522,7 @@ export class Executor {
   /**
    * @internal
    */
-  protected buildResolveInfo(
+  buildResolveInfo(
     fieldDef: GraphQLField<unknown, unknown>,
     fieldNodes: ReadonlyArray<FieldNode>,
     parentType: GraphQLObjectType,
@@ -546,10 +547,7 @@ export class Executor {
     };
   }
 
-  protected handleFieldError(
-    error: GraphQLError,
-    returnType: GraphQLOutputType,
-  ): null {
+  handleFieldError(error: GraphQLError, returnType: GraphQLOutputType): null {
     // If the field type is non-nullable, then it is resolved without any
     // protection from errors, however it still properly locates the error.
     if (isNonNullType(returnType)) {
@@ -583,7 +581,7 @@ export class Executor {
    * Otherwise, the field type expects a sub-selection set, and will complete the
    * value by executing all sub-selections.
    */
-  protected completeValue(
+  completeValue(
     returnType: GraphQLOutputType,
     fieldNodes: ReadonlyArray<FieldNode>,
     info: GraphQLResolveInfo,
@@ -664,7 +662,7 @@ export class Executor {
    * Complete a list value by completing each item in the list with the
    * inner type
    */
-  protected completeListValue(
+  completeListValue(
     returnType: GraphQLList<GraphQLOutputType>,
     fieldNodes: ReadonlyArray<FieldNode>,
     info: GraphQLResolveInfo,
@@ -728,10 +726,7 @@ export class Executor {
    * Complete a Scalar or Enum by serializing to a valid value, returning
    * null if serialization is not possible.
    */
-  protected completeLeafValue(
-    returnType: GraphQLLeafType,
-    result: unknown,
-  ): unknown {
+  completeLeafValue(returnType: GraphQLLeafType, result: unknown): unknown {
     const serializedResult = returnType.serialize(result);
     if (serializedResult === undefined) {
       throw new Error(
@@ -746,7 +741,7 @@ export class Executor {
    * Complete a value of an abstract type by determining the runtime object type
    * of that value, then complete the value for that type.
    */
-  protected completeAbstractValue(
+  completeAbstractValue(
     returnType: GraphQLAbstractType,
     fieldNodes: ReadonlyArray<FieldNode>,
     info: GraphQLResolveInfo,
@@ -791,7 +786,7 @@ export class Executor {
     );
   }
 
-  protected ensureValidRuntimeType(
+  ensureValidRuntimeType(
     runtimeTypeName: unknown,
     returnType: GraphQLAbstractType,
     fieldNodes: ReadonlyArray<FieldNode>,
@@ -849,7 +844,7 @@ export class Executor {
   /**
    * Complete an Object value by executing all sub-selections.
    */
-  protected completeObjectValue(
+  completeObjectValue(
     returnType: GraphQLObjectType,
     fieldNodes: ReadonlyArray<FieldNode>,
     info: GraphQLResolveInfo,
