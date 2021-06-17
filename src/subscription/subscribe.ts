@@ -11,12 +11,11 @@ import type { DocumentNode } from '../language/ast';
 import type { ExecutionResult } from '../execution/execute';
 import { collectFields } from '../execution/collectFields';
 import { getArgumentValues } from '../execution/values';
+import { Executor, getFieldDef } from '../execution/executor';
 import {
-  Executor,
   assertValidExecutionArguments,
   buildExecutionContext,
   execute,
-  getFieldDef,
 } from '../execution/execute';
 
 import type { GraphQLSchema } from '../type/schema';

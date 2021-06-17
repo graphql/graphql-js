@@ -1,5 +1,7 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 
+export { Executor } from './executor';
+
 export {
   execute,
   executeSync,
