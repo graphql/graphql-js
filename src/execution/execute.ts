@@ -110,32 +110,9 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  } = args;
-
-  // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema, document, variableValues);
-
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  );
+  const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
@@ -202,16 +179,21 @@ export function assertValidExecutionArguments(
  *
  * @internal
  */
-export function buildExecutionContext(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue: unknown,
-  contextValue: unknown,
-  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName: Maybe<string>,
-  fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
-): ReadonlyArray<GraphQLError> | ExecutionContext {
+export function buildExecutionContext(args: ExecutionArgs): ReadonlyArray<GraphQLError> | ExecutionContext {
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues: rawVariableValues,
+    operationName,
+    fieldResolver,
+    typeResolver,
+  } = args;
+
+  // If arguments are missing or incorrect, throw an error.
+  assertValidExecutionArguments(schema, document, rawVariableValues);
+
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {

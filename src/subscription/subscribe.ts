@@ -12,11 +12,7 @@ import type { ExecutionResult } from '../execution/execute';
 import { collectFields } from '../execution/collectFields';
 import { getArgumentValues } from '../execution/values';
 import { Executor, getFieldDef } from '../execution/executor';
-import {
-  assertValidExecutionArguments,
-  buildExecutionContext,
-  execute,
-} from '../execution/execute';
+import { buildExecutionContext, execute } from '../execution/execute';
 
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
@@ -143,29 +139,26 @@ export async function createSourceEventStream(
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): Promise<AsyncIterable<unknown> | ExecutionResult> {
-  // If arguments are missing or incorrectly typed, this is an internal
-  // developer mistake which should throw an early error.
-  assertValidExecutionArguments(schema, document, variableValues);
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  const exeContext = buildExecutionContext({
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+  });
+
+  // Return early errors if execution context failed.
+  if (!('schema' in exeContext)) {
+    return { errors: exeContext };
+  }
+
+  const executor = new SubscriptionExecutor(exeContext);
 
   try {
-    // If a valid context cannot be created due to incorrect arguments, this will throw an error.
-    const exeContext = buildExecutionContext(
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
-    );
-
-    // Return early errors if execution context failed.
-    if (!('schema' in exeContext)) {
-      return { errors: exeContext };
-    }
-
-    const executor = new SubscriptionExecutor(exeContext);
-
     const eventStream = await executor.executeSubscription();
 
     // Assert field returned an event stream, otherwise yield an error.
