@@ -34,6 +34,7 @@ export interface SubscriptionArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  CustomExecutor?: Maybe<typeof SubscriptionExecutor>;
 }
 
 /**
@@ -69,6 +70,7 @@ export async function subscribe(
     operationName,
     fieldResolver,
     subscribeFieldResolver,
+    CustomExecutor,
   } = args;
 
   const resultOrStream = await createSourceEventStream(
@@ -79,6 +81,7 @@ export async function subscribe(
     variableValues,
     operationName,
     subscribeFieldResolver,
+    CustomExecutor,
   );
 
   if (!isAsyncIterable(resultOrStream)) {
@@ -100,6 +103,7 @@ export async function subscribe(
       variableValues,
       operationName,
       fieldResolver,
+      CustomExecutor,
     });
 
   // Map every source value to a ExecutionResult value as described above.
@@ -142,6 +146,7 @@ export async function createSourceEventStream(
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  CustomExecutor?: Maybe<typeof SubscriptionExecutor>,
 ): Promise<AsyncIterable<unknown> | ExecutionResult> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
@@ -164,7 +169,7 @@ export async function createSourceEventStream(
       return { errors: exeContext };
     }
 
-    const executor = new SubscriptionExecutor(exeContext);
+    const executor = new (CustomExecutor ?? SubscriptionExecutor)(exeContext);
 
     const eventStream = await executor.executeSubscription();
 

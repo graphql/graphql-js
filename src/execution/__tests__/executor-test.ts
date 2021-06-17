@@ -18,6 +18,7 @@ import {
   GraphQLUnionType,
 } from '../../type/definition';
 
+import { Executor } from '../executor';
 import { execute, executeSync } from '../execute';
 
 describe('Execute: Handles basic execution tasks', () => {
@@ -1149,6 +1150,32 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const result = executeSync({ schema, document });
     expect(result).to.deep.equal({ data: { foo: null } });
+  });
+
+  it('uses a custom Executor', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+    const document = parse('{ foo }');
+
+    class CustomExecutor extends Executor {
+      executeField() {
+        return 'foo';
+      }
+    }
+
+    const result = executeSync({
+      schema,
+      document,
+      CustomExecutor,
+    });
+
+    expect(result).to.deep.equal({ data: { foo: 'foo' } });
   });
 
   it('uses a custom field resolver', () => {

@@ -97,6 +97,7 @@ export interface ExecutionArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  CustomExecutor?: Maybe<typeof Executor>;
 }
 
 /**
@@ -119,6 +120,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    CustomExecutor,
   } = args;
 
   // If arguments are missing or incorrect, throw an error.
@@ -142,7 +144,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
-  const executor = new Executor(exeContext);
+  const executor = new (CustomExecutor ?? Executor)(exeContext);
 
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.

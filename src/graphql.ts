@@ -14,6 +14,7 @@ import type {
 import type { GraphQLSchema } from './type/schema';
 import { validateSchema } from './type/validate';
 
+import type { Executor } from './execution/executor';
 import type { ExecutionResult } from './execution/execute';
 import { execute } from './execution/execute';
 
@@ -55,6 +56,18 @@ import { execute } from './execution/execute';
  *    A type resolver function to use when none is provided by the schema.
  *    If not provided, the default type resolver is used (which looks for a
  *    `__typename` field or alternatively calls the `isTypeOf` method).
+ * CustomExecutor:
+ *    A custom Executor class to allow overriding execution behavior.
+ *
+ *    Note: The Executor class is exported only to assist people in
+ *    implementing their own executors without duplicating too much code and
+ *    should be used only as last resort for cases requiring custom execution
+ *    or if certain features could not be contributed upstream.
+ *
+ *    It is still part of the internal API and is versioned, so any changes to
+ *    it are never considered breaking changes. If you still need to support
+ *    multiple versions of the library, please use the `versionInfo` variable
+ *    for version detection.
  */
 export interface GraphQLArgs {
   schema: GraphQLSchema;
@@ -65,6 +78,7 @@ export interface GraphQLArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  CustomExecutor?: Maybe<typeof Executor>;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
@@ -99,6 +113,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    CustomExecutor,
   } = args;
 
   // Validate Schema
@@ -131,5 +146,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    CustomExecutor,
   });
 }
