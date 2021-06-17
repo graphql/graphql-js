@@ -56,26 +56,20 @@ export interface SubscriptionArgs {
 export async function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    subscribeFieldResolver,
-  } = args;
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  const exeContext = buildExecutionContext({
+    ...args,
+    fieldResolver: args.subscribeFieldResolver,
+  });
 
-  const resultOrStream = await createSourceEventStream(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  );
+  // Return early errors if execution context failed.
+  if (!('schema' in exeContext)) {
+    return { errors: exeContext };
+  }
+
+  const executor = new SubscriptionExecutor(exeContext);
+  const resultOrStream = await executor.createSourceEventStream();
 
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
@@ -89,13 +83,8 @@ export async function subscribe(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   const mapSourceToResponse = (payload: unknown) =>
     execute({
-      schema,
-      document,
+      ...args,
       rootValue: payload,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
     });
 
   // Map every source value to a ExecutionResult value as described above.
@@ -103,64 +92,45 @@ export async function subscribe(
 }
 
 /**
- * Implements the "CreateSourceEventStream" algorithm described in the
- * GraphQL specification, resolving the subscription source event stream.
+ * This class is exported only to assist people in implementing their own executors
+ * without duplicating too much code and should be used only as last resort for cases
+ * requiring custom execution or if certain features could not be contributed upstream.
  *
- * Returns a Promise which resolves to either an AsyncIterable (if successful)
- * or an ExecutionResult (error). The promise will be rejected if the schema or
- * other arguments to this function are invalid, or if the resolved event stream
- * is not an async iterable.
+ * It is still part of the internal API and is versioned, so any changes to it are never
+ * considered breaking changes. If you still need to support multiple versions of the
+ * library, please use the `versionInfo` variable for version detection.
  *
- * If the client-provided arguments to this function do not result in a
- * compliant subscription, a GraphQL Response (ExecutionResult) with
- * descriptive errors and no data will be returned.
- *
- * If the the source stream could not be created due to faulty subscription
- * resolver logic or underlying systems, the promise will resolve to a single
- * ExecutionResult containing `errors` and no `data`.
- *
- * If the operation succeeded, the promise resolves to the AsyncIterable for the
- * event stream returned by the resolver.
- *
- * A Source Event Stream represents a sequence of events, each of which triggers
- * a GraphQL execution for that event.
- *
- * This may be useful when hosting the stateful subscription service in a
- * different process or machine than the stateless GraphQL execution engine,
- * or otherwise separating these two steps. For more on this, see the
- * "Supporting Subscriptions at Scale" information in the GraphQL specification.
+ * @internal
  */
-export async function createSourceEventStream(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): Promise<AsyncIterable<unknown> | ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext({
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-  });
-
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
-  }
-
-  const executor = new SubscriptionExecutor(exeContext);
-  return executor.createSourceEventStream();
-}
-
-class SubscriptionExecutor extends Executor {
+export class SubscriptionExecutor extends Executor {
+  /**
+   * Implements the "CreateSourceEventStream" algorithm described in the
+   * GraphQL specification, resolving the subscription source event stream.
+   *
+   * Returns a Promise which resolves to either an AsyncIterable (if successful)
+   * or an ExecutionResult (error). The promise will be rejected if the schema or
+   * other arguments to this function are invalid, or if the resolved event stream
+   * is not an async iterable.
+   *
+   * If the client-provided arguments to this function do not result in a
+   * compliant subscription, a GraphQL Response (ExecutionResult) with
+   * descriptive errors and no data will be returned.
+   *
+   * If the the source stream could not be created due to faulty subscription
+   * resolver logic or underlying systems, the promise will resolve to a single
+   * ExecutionResult containing `errors` and no `data`.
+   *
+   * If the operation succeeded, the promise resolves to the AsyncIterable for the
+   * event stream returned by the resolver.
+   *
+   * A Source Event Stream represents a sequence of events, each of which triggers
+   * a GraphQL execution for that event.
+   *
+   * This may be useful when hosting the stateful subscription service in a
+   * different process or machine than the stateless GraphQL execution engine,
+   * or otherwise separating these two steps. For more on this, see the
+   * "Supporting Subscriptions at Scale" information in the GraphQL specification.
+   */
   async createSourceEventStream(): Promise<AsyncIterable<unknown> | ExecutionResult> {
     try {
       const eventStream = await this._createSourceEventStream();

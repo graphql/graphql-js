@@ -12,7 +12,7 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
-import { createSourceEventStream, subscribe } from '../subscribe';
+import { SubscriptionExecutor, subscribe } from '../subscribe';
 
 import { SimplePubSub } from './simplePubSub';
 
@@ -406,10 +406,6 @@ describe('Subscription Initialization Phase', () => {
       });
       const document = parse('subscription { foo }');
       const result = await subscribe({ schema, document });
-
-      expect(await createSourceEventStream(schema, document)).to.deep.equal(
-        result,
-      );
       return result;
     }
 
