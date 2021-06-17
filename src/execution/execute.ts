@@ -315,25 +315,51 @@ export class Executor {
       this._collectSubfields(returnType, fieldNodes),
   );
 
-  protected _exeContext: ExecutionContext;
+  protected _schema: GraphQLSchema;
+  protected _fragments: ObjMap<FragmentDefinitionNode>;
+  protected _rootValue: unknown;
+  protected _contextValue: unknown;
+  protected _operation: OperationDefinitionNode;
+  protected _variableValues: { [variable: string]: unknown };
+  protected _fieldResolver: GraphQLFieldResolver<any, any>;
+  protected _typeResolver: GraphQLTypeResolver<any, any>;
+  protected _errors: Array<GraphQLError>;
 
-  constructor(exeContext: ExecutionContext) {
-    this._exeContext = exeContext;
+  constructor({
+    schema,
+    fragments,
+    rootValue,
+    contextValue,
+    operation,
+    variableValues,
+    fieldResolver,
+    typeResolver,
+    errors,
+  }: ExecutionContext) {
+    this._schema = schema;
+    this._fragments = fragments;
+    this._rootValue = rootValue;
+    this._contextValue = contextValue;
+    this._operation = operation;
+    this._variableValues = variableValues;
+    this._fieldResolver = fieldResolver;
+    this._typeResolver = typeResolver;
+    this._errors = errors;
   }
 
   /**
    * Implements the "Executing operations" section of the spec.
    */
   executeOperation(): PromiseOrValue<ObjMap<unknown> | null> {
-    const { schema, fragments, rootValue, operation, variableValues, errors } =
-      this._exeContext;
-    const type = getOperationRootType(schema, operation);
+    const { _schema, _fragments, _rootValue, _operation, _variableValues } =
+      this;
+    const type = getOperationRootType(_schema, _operation);
     const fields = collectFields(
-      schema,
-      fragments,
-      variableValues,
+      _schema,
+      _fragments,
+      _variableValues,
       type,
-      operation.selectionSet,
+      _operation.selectionSet,
       new Map(),
       new Set(),
     );
@@ -345,18 +371,18 @@ export class Executor {
     // in this case is the entire response.
     try {
       const result =
-        operation.operation === 'mutation'
-          ? this.executeFieldsSerially(type, rootValue, path, fields)
-          : this.executeFields(type, rootValue, path, fields);
+        _operation.operation === 'mutation'
+          ? this.executeFieldsSerially(type, _rootValue, path, fields)
+          : this.executeFields(type, _rootValue, path, fields);
       if (isPromise(result)) {
         return result.then(undefined, (error) => {
-          errors.push(error);
+          this._errors.push(error);
           return Promise.resolve(null);
         });
       }
       return result;
     } catch (error) {
-      errors.push(error);
+      this._errors.push(error);
       return null;
     }
   }
@@ -371,8 +397,9 @@ export class Executor {
     if (isPromise(data)) {
       return data.then((resolved) => this.buildResponse(resolved));
     }
-    const errors = this._exeContext.errors;
-    return errors.length === 0 ? { data } : { errors, data };
+    return this._errors.length === 0
+      ? { data }
+      : { errors: this._errors, data };
   }
 
   /**
@@ -464,16 +491,15 @@ export class Executor {
     fieldNodes: ReadonlyArray<FieldNode>,
     path: Path,
   ): PromiseOrValue<unknown> {
-    const { schema, contextValue, variableValues, fieldResolver } =
-      this._exeContext;
+    const { _schema, _contextValue, _variableValues, _fieldResolver } = this;
 
-    const fieldDef = getFieldDef(schema, parentType, fieldNodes[0]);
+    const fieldDef = getFieldDef(_schema, parentType, fieldNodes[0]);
     if (!fieldDef) {
       return;
     }
 
     const returnType = fieldDef.type;
-    const resolveFn = fieldDef.resolve ?? fieldResolver;
+    const resolveFn = fieldDef.resolve ?? _fieldResolver;
 
     const info = this.buildResolveInfo(fieldDef, fieldNodes, parentType, path);
 
@@ -482,12 +508,12 @@ export class Executor {
       // Build a JS object of arguments from the field.arguments AST, using the
       // variables scope to fulfill any variable references.
       // TODO: find a way to memoize, in case this field is within a List type.
-      const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues);
+      const args = getArgumentValues(fieldDef, fieldNodes[0], _variableValues);
 
       // The resolve function's optional third argument is a context value that
       // is provided to every resolve function within an execution. It is commonly
       // used to represent an authenticated user, or request-specific caches.
-      const result = resolveFn(source, args, contextValue, info);
+      const result = resolveFn(source, args, _contextValue, info);
 
       let completed;
       if (isPromise(result)) {
@@ -528,8 +554,8 @@ export class Executor {
     parentType: GraphQLObjectType,
     path: Path,
   ): GraphQLResolveInfo {
-    const { schema, fragments, rootValue, operation, variableValues } =
-      this._exeContext;
+    const { _schema, _fragments, _rootValue, _operation, _variableValues } =
+      this;
 
     // The resolve function's optional fourth argument is a collection of
     // information about the current execution state.
@@ -539,11 +565,11 @@ export class Executor {
       returnType: fieldDef.type,
       parentType,
       path,
-      schema,
-      fragments,
-      rootValue,
-      operation,
-      variableValues,
+      schema: _schema,
+      fragments: _fragments,
+      rootValue: _rootValue,
+      operation: _operation,
+      variableValues: _variableValues,
     };
   }
 
@@ -556,7 +582,7 @@ export class Executor {
 
     // Otherwise, error protection is applied, logging the error and resolving
     // a null value for this field if one is encountered.
-    this._exeContext.errors.push(error);
+    this._errors.push(error);
     return null;
   }
 
@@ -748,10 +774,10 @@ export class Executor {
     path: Path,
     result: unknown,
   ): PromiseOrValue<ObjMap<unknown>> {
-    const { contextValue, typeResolver } = this._exeContext;
+    const { _contextValue, _typeResolver } = this;
 
-    const resolveTypeFn = returnType.resolveType ?? typeResolver;
-    const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
+    const resolveTypeFn = returnType.resolveType ?? _typeResolver;
+    const runtimeType = resolveTypeFn(result, _contextValue, info, returnType);
 
     if (isPromise(runtimeType)) {
       return runtimeType.then((resolvedRuntimeType) =>
@@ -815,8 +841,7 @@ export class Executor {
       );
     }
 
-    const { schema } = this._exeContext;
-    const runtimeType = schema.getType(runtimeTypeName);
+    const runtimeType = this._schema.getType(runtimeTypeName);
     if (runtimeType == null) {
       throw new GraphQLError(
         `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
@@ -831,7 +856,7 @@ export class Executor {
       );
     }
 
-    if (!schema.isSubType(returnType, runtimeType)) {
+    if (!this._schema.isSubType(returnType, runtimeType)) {
       throw new GraphQLError(
         `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
         fieldNodes,
@@ -858,11 +883,7 @@ export class Executor {
     // current result. If isTypeOf returns false, then raise an error rather
     // than continuing execution.
     if (returnType.isTypeOf) {
-      const isTypeOf = returnType.isTypeOf(
-        result,
-        this._exeContext.contextValue,
-        info,
-      );
+      const isTypeOf = returnType.isTypeOf(result, this._contextValue, info);
 
       if (isPromise(isTypeOf)) {
         return isTypeOf.then((resolvedIsTypeOf) => {
@@ -889,16 +910,16 @@ export class Executor {
     returnType: GraphQLObjectType,
     fieldNodes: ReadonlyArray<FieldNode>,
   ): Map<string, ReadonlyArray<FieldNode>> {
-    const { schema, fragments, variableValues } = this._exeContext;
+    const { _schema, _fragments, _variableValues } = this;
 
     let subFieldNodes = new Map();
     const visitedFragmentNames = new Set<string>();
     for (const node of fieldNodes) {
       if (node.selectionSet) {
         subFieldNodes = collectFields(
-          schema,
-          fragments,
-          variableValues,
+          _schema,
+          _fragments,
+          _variableValues,
           returnType,
           node.selectionSet,
           subFieldNodes,
