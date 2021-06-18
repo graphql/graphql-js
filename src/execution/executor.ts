@@ -12,9 +12,11 @@ import { promiseReduce } from '../jsutils/promiseReduce';
 import { promiseForObject } from '../jsutils/promiseForObject';
 import { addPath, pathToArray } from '../jsutils/Path';
 import { isIterableObject } from '../jsutils/isIterableObject';
+import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
+import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
 
 import type {
   DocumentNode,
@@ -51,10 +53,6 @@ import {
 } from '../type/definition';
 
 import { getOperationRootType } from '../utilities/getOperationRootType';
-
-import { isAsyncIterable } from '../jsutils/isAsyncIterable';
-
-import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
 
 import type {
   ExecutionArgs,
