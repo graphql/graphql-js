@@ -773,6 +773,10 @@ export class Executor {
     return this.executeFields(returnType, result, path, subFieldNodes);
   }
 
+  /**
+   * Implements the "Executing operations" section of the spec for
+   * subscriptions.
+   */
   async executeSubscription(): Promise<
     AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
   > {
