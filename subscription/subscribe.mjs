@@ -3,12 +3,12 @@ import { isAsyncIterable } from '../jsutils/isAsyncIterable.mjs';
 import { addPath, pathToArray } from '../jsutils/Path.mjs';
 import { GraphQLError } from '../error/GraphQLError.mjs';
 import { locatedError } from '../error/locatedError.mjs';
+import { collectFields } from '../execution/collectFields.mjs';
 import { getArgumentValues } from '../execution/values.mjs';
 import {
   assertValidExecutionArguments,
   buildExecutionContext,
   buildResolveInfo,
-  collectFields,
   execute,
   getFieldDef,
 } from '../execution/execute.mjs';
@@ -163,10 +163,13 @@ export async function createSourceEventStream(
 }
 
 async function executeSubscription(exeContext) {
-  const { schema, operation, variableValues, rootValue } = exeContext;
+  const { schema, fragments, operation, variableValues, rootValue } =
+    exeContext;
   const type = getOperationRootType(schema, operation);
   const fields = collectFields(
-    exeContext,
+    schema,
+    fragments,
+    variableValues,
     type,
     operation.selectionSet,
     new Map(),

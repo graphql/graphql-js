@@ -9,7 +9,7 @@ var _GraphQLError = require('../../error/GraphQLError.js');
 
 var _kinds = require('../../language/kinds.js');
 
-var _execute = require('../../execution/execute.js');
+var _collectFields = require('../../execution/collectFields.js');
 
 /**
  * Subscriptions must only include a non-introspection field.
@@ -34,21 +34,12 @@ function SingleFieldSubscriptionsRule(context) {
             if (definition.kind === _kinds.Kind.FRAGMENT_DEFINITION) {
               fragments[definition.name.value] = definition;
             }
-          } // FIXME: refactor out `collectFields` into utility function that doesn't need fake context.
+          }
 
-          const fakeExecutionContext = {
+          const fields = (0, _collectFields.collectFields)(
             schema,
             fragments,
-            rootValue: undefined,
-            contextValue: undefined,
-            operation: node,
             variableValues,
-            fieldResolver: _execute.defaultFieldResolver,
-            typeResolver: _execute.defaultTypeResolver,
-            errors: [],
-          };
-          const fields = (0, _execute.collectFields)(
-            fakeExecutionContext,
             subscriptionType,
             node.selectionSet,
             new Map(),

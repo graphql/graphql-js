@@ -7,7 +7,6 @@ import { GraphQLError } from '../error/GraphQLError';
 import type {
   DocumentNode,
   OperationDefinitionNode,
-  SelectionSetNode,
   FieldNode,
   FragmentDefinitionNode,
 } from '../language/ast';
@@ -144,23 +143,6 @@ export declare function buildExecutionContext(
   fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
   typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
 ): ReadonlyArray<GraphQLError> | ExecutionContext;
-/**
- * Given a selectionSet, adds all of the fields in that selection to
- * the passed in map of fields, and returns it at the end.
- *
- * CollectFields requires the "runtime type" of an object. For a field which
- * returns an Interface or Union type, the "runtime type" will be the actual
- * Object type returned by that field.
- *
- * @internal
- */
-export declare function collectFields(
-  exeContext: ExecutionContext,
-  runtimeType: GraphQLObjectType,
-  selectionSet: SelectionSetNode,
-  fields: Map<string, Array<FieldNode>>,
-  visitedFragmentNames: Set<string>,
-): Map<string, ReadonlyArray<FieldNode>>;
 /**
  * @internal
  */

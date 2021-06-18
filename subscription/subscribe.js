@@ -16,6 +16,8 @@ var _GraphQLError = require('../error/GraphQLError.js');
 
 var _locatedError = require('../error/locatedError.js');
 
+var _collectFields = require('../execution/collectFields.js');
+
 var _values = require('../execution/values.js');
 
 var _execute = require('../execution/execute.js');
@@ -175,13 +177,16 @@ async function createSourceEventStream(
 }
 
 async function executeSubscription(exeContext) {
-  const { schema, operation, variableValues, rootValue } = exeContext;
+  const { schema, fragments, operation, variableValues, rootValue } =
+    exeContext;
   const type = (0, _getOperationRootType.getOperationRootType)(
     schema,
     operation,
   );
-  const fields = (0, _execute.collectFields)(
-    exeContext,
+  const fields = (0, _collectFields.collectFields)(
+    schema,
+    fragments,
+    variableValues,
     type,
     operation.selectionSet,
     new Map(),

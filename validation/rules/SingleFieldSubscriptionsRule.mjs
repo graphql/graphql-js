@@ -1,10 +1,6 @@
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import { Kind } from '../../language/kinds.mjs';
-import {
-  collectFields,
-  defaultFieldResolver,
-  defaultTypeResolver,
-} from '../../execution/execute.mjs';
+import { collectFields } from '../../execution/collectFields.mjs';
 
 /**
  * Subscriptions must only include a non-introspection field.
@@ -29,21 +25,12 @@ export function SingleFieldSubscriptionsRule(context) {
             if (definition.kind === Kind.FRAGMENT_DEFINITION) {
               fragments[definition.name.value] = definition;
             }
-          } // FIXME: refactor out `collectFields` into utility function that doesn't need fake context.
+          }
 
-          const fakeExecutionContext = {
+          const fields = collectFields(
             schema,
             fragments,
-            rootValue: undefined,
-            contextValue: undefined,
-            operation: node,
             variableValues,
-            fieldResolver: defaultFieldResolver,
-            typeResolver: defaultTypeResolver,
-            errors: [],
-          };
-          const fields = collectFields(
-            fakeExecutionContext,
             subscriptionType,
             node.selectionSet,
             new Map(),

@@ -18,23 +18,15 @@ import {
   TypeNameMetaFieldDef,
 } from '../type/introspection.mjs';
 import {
-  GraphQLIncludeDirective,
-  GraphQLSkipDirective,
-} from '../type/directives.mjs';
-import {
   isObjectType,
   isAbstractType,
   isLeafType,
   isListType,
   isNonNullType,
 } from '../type/definition.mjs';
-import { typeFromAST } from '../utilities/typeFromAST.mjs';
 import { getOperationRootType } from '../utilities/getOperationRootType.mjs';
-import {
-  getVariableValues,
-  getArgumentValues,
-  getDirectiveValues,
-} from './values.mjs';
+import { getVariableValues, getArgumentValues } from './values.mjs';
+import { collectFields } from './collectFields.mjs';
 /**
  * Terminology
  *
@@ -277,7 +269,9 @@ export function buildExecutionContext(
 function executeOperation(exeContext, operation, rootValue) {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
-    exeContext,
+    exeContext.schema,
+    exeContext.fragments,
+    exeContext.variableValues,
     type,
     operation.selectionSet,
     new Map(),
@@ -382,155 +376,6 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
   // same map, but with any promises replaced with the values they resolved to.
 
   return promiseForObject(results);
-}
-/**
- * Given a selectionSet, adds all of the fields in that selection to
- * the passed in map of fields, and returns it at the end.
- *
- * CollectFields requires the "runtime type" of an object. For a field which
- * returns an Interface or Union type, the "runtime type" will be the actual
- * Object type returned by that field.
- *
- * @internal
- */
-
-export function collectFields(
-  exeContext,
-  runtimeType,
-  selectionSet,
-  fields,
-  visitedFragmentNames,
-) {
-  for (const selection of selectionSet.selections) {
-    switch (selection.kind) {
-      case Kind.FIELD: {
-        if (!shouldIncludeNode(exeContext, selection)) {
-          continue;
-        }
-
-        const name = getFieldEntryKey(selection);
-        const fieldList = fields.get(name);
-
-        if (fieldList !== undefined) {
-          fieldList.push(selection);
-        } else {
-          fields.set(name, [selection]);
-        }
-
-        break;
-      }
-
-      case Kind.INLINE_FRAGMENT: {
-        if (
-          !shouldIncludeNode(exeContext, selection) ||
-          !doesFragmentConditionMatch(exeContext, selection, runtimeType)
-        ) {
-          continue;
-        }
-
-        collectFields(
-          exeContext,
-          runtimeType,
-          selection.selectionSet,
-          fields,
-          visitedFragmentNames,
-        );
-        break;
-      }
-
-      case Kind.FRAGMENT_SPREAD: {
-        const fragName = selection.name.value;
-
-        if (
-          visitedFragmentNames.has(fragName) ||
-          !shouldIncludeNode(exeContext, selection)
-        ) {
-          continue;
-        }
-
-        visitedFragmentNames.add(fragName);
-        const fragment = exeContext.fragments[fragName];
-
-        if (
-          !fragment ||
-          !doesFragmentConditionMatch(exeContext, fragment, runtimeType)
-        ) {
-          continue;
-        }
-
-        collectFields(
-          exeContext,
-          runtimeType,
-          fragment.selectionSet,
-          fields,
-          visitedFragmentNames,
-        );
-        break;
-      }
-    }
-  }
-
-  return fields;
-}
-/**
- * Determines if a field should be included based on the @include and @skip
- * directives, where @skip has higher precedence than @include.
- */
-
-function shouldIncludeNode(exeContext, node) {
-  const skip = getDirectiveValues(
-    GraphQLSkipDirective,
-    node,
-    exeContext.variableValues,
-  );
-
-  if ((skip === null || skip === void 0 ? void 0 : skip.if) === true) {
-    return false;
-  }
-
-  const include = getDirectiveValues(
-    GraphQLIncludeDirective,
-    node,
-    exeContext.variableValues,
-  );
-
-  if (
-    (include === null || include === void 0 ? void 0 : include.if) === false
-  ) {
-    return false;
-  }
-
-  return true;
-}
-/**
- * Determines if a fragment is applicable to the given type.
- */
-
-function doesFragmentConditionMatch(exeContext, fragment, type) {
-  const typeConditionNode = fragment.typeCondition;
-
-  if (!typeConditionNode) {
-    return true;
-  }
-
-  const conditionalType = typeFromAST(exeContext.schema, typeConditionNode);
-
-  if (conditionalType === type) {
-    return true;
-  }
-
-  if (isAbstractType(conditionalType)) {
-    return exeContext.schema.isSubType(conditionalType, type);
-  }
-
-  return false;
-}
-/**
- * Implements the logic to compute the key of a given field's entry
- */
-
-function getFieldEntryKey(node) {
-  return node.alias ? node.alias.value : node.name.value;
 }
 /**
  * Implements the "Executing field" section of the spec
@@ -1014,7 +859,9 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
   for (const node of fieldNodes) {
     if (node.selectionSet) {
       subFieldNodes = collectFields(
-        exeContext,
+        exeContext.schema,
+        exeContext.fragments,
+        exeContext.variableValues,
         returnType,
         node.selectionSet,
         subFieldNodes,
