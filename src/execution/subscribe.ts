@@ -2,14 +2,14 @@ import type { Maybe } from '../jsutils/Maybe';
 
 import type { DocumentNode } from '../language/ast';
 
-import { Executor } from '../execution/executor';
-
-import type { ExecutionResult } from '../execution/execute';
-
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
 import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
 import { GraphQLError } from '../error/GraphQLError';
+
+import { Executor } from './executor';
+
+import type { ExecutionResult } from './execute';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;

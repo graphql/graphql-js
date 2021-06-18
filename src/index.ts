@@ -305,16 +305,15 @@ export {
   defaultTypeResolver,
   responsePathAsArray,
   getDirectiveValues,
+  subscribe,
 } from './execution/index';
 
 export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  SubscriptionArgs,
 } from './execution/index';
-
-export { subscribe } from './subscription/index';
-export type { SubscriptionArgs } from './subscription/index';
 
 /** Validate GraphQL documents. */
 export {
