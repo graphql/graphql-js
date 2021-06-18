@@ -6,6 +6,7 @@ import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 import { invariant } from '../../jsutils/invariant';
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 
+import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -442,6 +443,29 @@ describe('Subscription Initialization Phase', () => {
     ).to.deep.equal(expectedResult);
   });
 
+  it('resolves to an error if no operation is provided', async () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+
+    // If we receive variables that cannot be coerced correctly, subscribe() will
+    // resolve to an ExecutionResult that contains an informative error description.
+    const result = await subscribe({ schema, document: { kind: Kind.DOCUMENT, definitions: [] } });
+    expect(result).to.deep.equal({
+      errors: [
+        {
+          message: 'Must provide an operation.',
+        },
+      ],
+    });
+  });
+
   it('resolves to an error if variables were wrong type', async () => {
     const schema = new GraphQLSchema({
       query: DummyQueryType,
@@ -456,7 +480,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const variableValues = { arg: 'meow' };
+      const variableValues = { arg: 'meow' };
     const document = parse(`
       subscription ($arg: Int) {
         foo(arg: $arg)
