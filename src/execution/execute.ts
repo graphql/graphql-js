@@ -22,6 +22,7 @@ import type {
   OperationDefinitionNode,
   FieldNode,
   FragmentDefinitionNode,
+  ASTNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
 
@@ -525,15 +526,13 @@ function executeField(
     if (isPromise(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return completed.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(path));
-        return handleFieldError(error, returnType, exeContext);
-      });
+      return completed.then(undefined, (rawError) =>
+        handleRawError(exeContext, returnType, rawError, fieldNodes, path),
+      );
     }
     return completed;
   } catch (rawError) {
-    const error = locatedError(rawError, fieldNodes, pathToArray(path));
-    return handleFieldError(error, returnType, exeContext);
+    return handleRawError(exeContext, returnType, rawError, fieldNodes, path);
   }
 }
 
@@ -563,11 +562,15 @@ export function buildResolveInfo(
   };
 }
 
-function handleFieldError(
-  error: GraphQLError,
-  returnType: GraphQLOutputType,
+function handleRawError(
   exeContext: ExecutionContext,
+  returnType: GraphQLOutputType,
+  rawError: unknown,
+  fieldNodes: ReadonlyArray<ASTNode>,
+  path?: Maybe<Readonly<Path>>,
 ): null {
+  const error = locatedError(rawError, fieldNodes, pathToArray(path));
+
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
   if (isNonNullType(returnType)) {
@@ -743,19 +746,19 @@ function completeListValue(
         containsPromise = true;
         // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
-        return completedItem.then(undefined, (rawError) => {
-          const error = locatedError(
-            rawError,
-            fieldNodes,
-            pathToArray(itemPath),
-          );
-          return handleFieldError(error, itemType, exeContext);
-        });
+        return completedItem.then(undefined, (rawError) =>
+          handleRawError(exeContext, itemType, rawError, fieldNodes, itemPath),
+        );
       }
       return completedItem;
     } catch (rawError) {
-      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      return handleFieldError(error, itemType, exeContext);
+      return handleRawError(
+        exeContext,
+        itemType,
+        rawError,
+        fieldNodes,
+        itemPath,
+      );
     }
   });
 
