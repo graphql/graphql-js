@@ -6,12 +6,7 @@ import type {
   FragmentDefinitionNode,
 } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
-import type { ExecutionContext } from '../../execution/execute.ts';
-import {
-  collectFields,
-  defaultFieldResolver,
-  defaultTypeResolver,
-} from '../../execution/execute.ts';
+import { collectFields } from '../../execution/collectFields.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**
  * Subscriptions must only include a non-introspection field.
@@ -41,21 +36,12 @@ export function SingleFieldSubscriptionsRule(
             if (definition.kind === Kind.FRAGMENT_DEFINITION) {
               fragments[definition.name.value] = definition;
             }
-          } // FIXME: refactor out `collectFields` into utility function that doesn't need fake context.
+          }
 
-          const fakeExecutionContext: ExecutionContext = {
+          const fields = collectFields(
             schema,
             fragments,
-            rootValue: undefined,
-            contextValue: undefined,
-            operation: node,
             variableValues,
-            fieldResolver: defaultFieldResolver,
-            typeResolver: defaultTypeResolver,
-            errors: [],
-          };
-          const fields = collectFields(
-            fakeExecutionContext,
             subscriptionType,
             node.selectionSet,
             new Map(),

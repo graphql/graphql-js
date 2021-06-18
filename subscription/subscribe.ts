@@ -9,12 +9,12 @@ import type {
   ExecutionResult,
   ExecutionContext,
 } from '../execution/execute.ts';
+import { collectFields } from '../execution/collectFields.ts';
 import { getArgumentValues } from '../execution/values.ts';
 import {
   assertValidExecutionArguments,
   buildExecutionContext,
   buildResolveInfo,
-  collectFields,
   execute,
   getFieldDef,
 } from '../execution/execute.ts';
@@ -189,10 +189,13 @@ export async function createSourceEventStream(
 async function executeSubscription(
   exeContext: ExecutionContext,
 ): Promise<unknown> {
-  const { schema, operation, variableValues, rootValue } = exeContext;
+  const { schema, fragments, operation, variableValues, rootValue } =
+    exeContext;
   const type = getOperationRootType(schema, operation);
   const fields = collectFields(
-    exeContext,
+    schema,
+    fragments,
+    variableValues,
     type,
     operation.selectionSet,
     new Map(),
