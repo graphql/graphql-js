@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "webpack && node test.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz",
+    "webpack": "5.x.x",
+    "webpack-cli": "4.x.x"
+  }
+}

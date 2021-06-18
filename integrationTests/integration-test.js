@@ -42,4 +42,8 @@ describe('Integration Tests', () => {
   it('Should work on all supported node versions', () => {
     testOnNodeProject('node');
   }).timeout(40000);
+
+  it('Should be compatible with Webpack', () => {
+    testOnNodeProject('webpack');
+  }).timeout(40000);
 });
