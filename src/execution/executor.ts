@@ -59,13 +59,10 @@ import type {
   ExecutionContext,
   ExecutionResult,
 } from './execute';
+import type { SubscriptionArgs } from './subscribe';
 import { getVariableValues, getArgumentValues } from './values';
 import { collectFields } from './collectFields';
 import { mapAsyncIterator } from './mapAsyncIterator';
-
-export interface BuildExecutionContextArgs extends ExecutionArgs {
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-}
 
 /**
  * This class is exported only to assist people in implementing their own executors
@@ -101,7 +98,9 @@ export class Executor {
   protected _errors: Array<GraphQLError>;
 
   constructor(
-    argsOrExecutionContext: BuildExecutionContextArgs | ExecutionContext,
+    argsOrExecutionContext:
+      | (ExecutionArgs & SubscriptionArgs)
+      | ExecutionContext,
   ) {
     const executionContext =
       'fragments' in argsOrExecutionContext
@@ -142,7 +141,7 @@ export class Executor {
    * @internal
    */
   static buildExecutionContext(
-    args: BuildExecutionContextArgs,
+    args: ExecutionArgs & SubscriptionArgs,
   ): ExecutionContext {
     const {
       schema,
