@@ -456,7 +456,10 @@ describe('Subscription Initialization Phase', () => {
 
     // If we receive variables that cannot be coerced correctly, subscribe() will
     // resolve to an ExecutionResult that contains an informative error description.
-    const result = await subscribe({ schema, document: { kind: Kind.DOCUMENT, definitions: [] } });
+    const result = await subscribe({
+      schema,
+      document: { kind: Kind.DOCUMENT, definitions: [] },
+    });
     expect(result).to.deep.equal({
       errors: [
         {
@@ -480,7 +483,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-      const variableValues = { arg: 'meow' };
+    const variableValues = { arg: 'meow' };
     const document = parse(`
       subscription ($arg: Int) {
         foo(arg: $arg)
