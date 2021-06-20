@@ -630,6 +630,7 @@ overrides:
     rules:
       node/no-sync: off
       node/no-missing-require: [error, { allowModules: ['graphql'] }]
+      import/no-commonjs: off
       import/no-nodejs-modules: off
       no-console: off
   - files: 'benchmark/**'
