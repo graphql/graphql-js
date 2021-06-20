@@ -31,17 +31,16 @@ function exec(command, options = {}) {
 // and returns path to its 'dist' directory.
 function prepareBenchmarkProjects(revisionList) {
   const tmpDir = path.join(os.tmpdir(), 'graphql-js-benchmark');
-  fs.rmdirSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { recursive: true, force: true });
   fs.mkdirSync(tmpDir);
 
   const setupDir = path.join(tmpDir, 'setup');
-  fs.rmdirSync(setupDir, { recursive: true, force: true });
   fs.mkdirSync(setupDir);
 
   return revisionList.map((revision) => {
     console.log(`🍳  Preparing ${revision}...`);
     const projectPath = path.join(setupDir, revision);
-    fs.rmdirSync(projectPath, { recursive: true });
+    fs.rmSync(projectPath, { recursive: true, force: true });
     fs.mkdirSync(projectPath);
 
     fs.writeFileSync(
@@ -73,12 +72,12 @@ function prepareBenchmarkProjects(revisionList) {
     }
 
     const repoDir = path.join(tmpDir, hash);
-    fs.rmdirSync(repoDir, { recursive: true, force: true });
+    fs.rmSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
     exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
     exec('npm --quiet ci', { cwd: repoDir });
     fs.renameSync(buildNPMArchive(repoDir), archivePath);
-    fs.rmdirSync(repoDir, { recursive: true, force: true });
+    fs.rmSync(repoDir, { recursive: true });
     return archivePath;
   }
 

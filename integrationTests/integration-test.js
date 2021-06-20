@@ -17,7 +17,7 @@ function exec(command, options = {}) {
 
 describe('Integration Tests', () => {
   const tmpDir = path.join(os.tmpdir(), 'graphql-js-integrationTmp');
-  fs.rmdirSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { recursive: true, force: true });
   fs.mkdirSync(tmpDir);
 
   const distDir = path.resolve('./npmDist');
