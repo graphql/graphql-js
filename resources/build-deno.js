@@ -8,7 +8,7 @@ const babel = require('@babel/core');
 const { readdirRecursive, showDirStats } = require('./utils');
 
 if (require.main === module) {
-  fs.rmdirSync('./denoDist', { recursive: true, force: true });
+  fs.rmSync('./denoDist', { recursive: true, force: true });
   fs.mkdirSync('./denoDist');
 
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
