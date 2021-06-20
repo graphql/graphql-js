@@ -4,6 +4,41 @@ import { describe, it } from 'mocha';
 import { instanceOf } from '../instanceOf';
 
 describe('instanceOf', () => {
+  it('do not throw on values without prototype', () => {
+    class Foo {
+      // $FlowFixMe[unsupported-syntax]
+      get [Symbol.toStringTag]() {
+        return 'Foo';
+      }
+    }
+
+    expect(instanceOf(true, Foo)).to.equal(false);
+    expect(instanceOf(null, Foo)).to.equal(false);
+    expect(instanceOf(Object.create(null), Foo)).to.equal(false);
+  });
+
+  it('detect name clashes with older versions of this lib', () => {
+    function oldVersion() {
+      class Foo {}
+      return Foo;
+    }
+
+    function newVersion() {
+      class Foo {
+        // $FlowFixMe[unsupported-syntax]
+        get [Symbol.toStringTag]() {
+          return 'Foo';
+        }
+      }
+      return Foo;
+    }
+
+    const NewClass = newVersion();
+    const OldClass = oldVersion();
+    expect(instanceOf(new NewClass(), NewClass)).to.equal(true);
+    expect(() => instanceOf(new OldClass(), NewClass)).to.throw();
+  });
+
   it('allows instances to have share the same constructor name', () => {
     function getMinifiedClass(tag: string) {
       class SomeNameAfterMinification {
