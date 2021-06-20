@@ -96,11 +96,11 @@ function buildPackageJSON() {
     assert(
       ['alpha', 'beta', 'rc'].includes(publishTag) ||
         publishTag.startsWith('experimental-'),
-      `"${publishTag}" tag is supported.`,
+      `"${publishTag}" tag is not supported.`,
     );
 
     assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
-    packageJSON.publishConfig = { tag: publishTag || 'latest' };
+    packageJSON.publishConfig = { tag: publishTag };
   }
 
   return packageJSON;
