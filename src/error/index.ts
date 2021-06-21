@@ -1,3 +1,4 @@
+export { GraphQLAggregateError } from './GraphQLAggregateError';
 export { GraphQLError, printError, formatError } from './GraphQLError';
 export type { GraphQLFormattedError } from './GraphQLError';
 

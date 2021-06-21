@@ -3,7 +3,7 @@ title: graphql/error
 layout: ../_core/GraphQLJSLayout
 category: API Reference
 permalink: /graphql-js/error/
-sublinks: formatError,GraphQLError,locatedError,syntaxError
+sublinks: formatError,GraphQLError,locatedError,syntaxError,GraphQLAggregateError
 next: /graphql-js/execution/
 ---
 
@@ -107,3 +107,20 @@ type GraphQLErrorLocation = {
 
 Given a GraphQLError, format it according to the rules described by the
 Response Format, Errors section of the GraphQL Specification.
+
+### GraphQLAggregateError
+
+```js
+class GraphQLAggregateError extends Error {
+ constructor(
+   errors: Array<Error>,
+   message?: string
+ )
+}
+```
+
+A helper class for bundling multiple distinct errors. When a
+GraphQLAggregateError is thrown during execution of a GraphQL operation,
+a GraphQLError will be produced from each individual errors and will be
+reported separately, according to the rules described by the Response
+Format, Errors section of the GraphQL Specification.

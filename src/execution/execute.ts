@@ -14,6 +14,7 @@ import { addPath, pathToArray } from '../jsutils/Path';
 import { isIterableObject } from '../jsutils/isIterableObject';
 
 import type { GraphQLFormattedError } from '../error/GraphQLError';
+import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
@@ -569,7 +570,16 @@ function handleRawError(
   fieldNodes: ReadonlyArray<ASTNode>,
   path?: Maybe<Readonly<Path>>,
 ): null {
-  const error = locatedError(rawError, fieldNodes, pathToArray(path));
+  const pathAsArray = pathToArray(path);
+  const error =
+    rawError instanceof GraphQLAggregateError
+      ? new GraphQLAggregateError(
+          rawError.errors.map((subError) =>
+            locatedError(subError, fieldNodes, pathAsArray),
+          ),
+          rawError.message,
+        )
+      : locatedError(rawError, fieldNodes, pathAsArray);
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
@@ -579,6 +589,11 @@ function handleRawError(
 
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
+  if (error instanceof GraphQLAggregateError) {
+    exeContext.errors.push(...error.errors);
+    return null;
+  }
+
   exeContext.errors.push(error);
   return null;
 }
