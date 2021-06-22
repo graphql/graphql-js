@@ -274,9 +274,9 @@ async function runBenchmarks(benchmarks, benchmarkProjects) {
 }
 
 function getArguments(argv) {
-  const revsIdx = argv.indexOf('--revs');
-  const revisions = revsIdx === -1 ? [] : argv.slice(revsIdx + 1);
-  const benchmarks = revsIdx === -1 ? argv : argv.slice(0, revsIdx);
+  const revsIndex = argv.indexOf('--revs');
+  const revisions = revsIndex === -1 ? [] : argv.slice(revsIndex + 1);
+  const benchmarks = revsIndex === -1 ? argv : argv.slice(0, revsIndex);
 
   switch (revisions.length) {
     case 0:
