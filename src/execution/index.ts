@@ -1,5 +1,6 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 
+export type { ExecutorArgs, ExecutionContext } from './executor';
 export {
   Executor,
   defaultFieldResolver,
