@@ -9,11 +9,7 @@ import type {
 } from '../type/definition';
 
 import type { ExecutionResult } from './execute';
-import {
-  assertValidExecutionArguments,
-  buildExecutionContext,
-  executeSubscription,
-} from './execute';
+import { buildExecutionContext, executeSubscription } from './execute';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
@@ -51,34 +47,9 @@ export interface SubscriptionArgs {
 export async function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-    subscribeFieldResolver,
-  } = args;
-
-  // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema, document, variableValues);
-
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-    subscribeFieldResolver,
-  );
+  const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
