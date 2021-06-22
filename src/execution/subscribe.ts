@@ -1,11 +1,9 @@
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
-import { addPath, pathToArray } from '../jsutils/Path';
+import { addPath } from '../jsutils/Path';
 import type { Maybe } from '../jsutils/Maybe';
 
-import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
 import { GraphQLError } from '../error/GraphQLError';
-import { locatedError } from '../error/locatedError';
 
 import type { DocumentNode } from '../language/ast';
 
@@ -14,15 +12,16 @@ import type { GraphQLFieldResolver } from '../type/definition';
 
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
-import type { ExecutionResult, ExecutionContext } from './execute';
 import { collectFields } from './collectFields';
 import { getArgumentValues } from './values';
+import type { ExecutionResult, ExecutionContext } from './execute';
 import {
   assertValidExecutionArguments,
   buildExecutionContext,
   buildResolveInfo,
   execute,
   getFieldDef,
+  handleRawError,
 } from './execute';
 import { mapAsyncIterator } from './mapAsyncIterator';
 
@@ -164,32 +163,21 @@ export async function createSourceEventStream(
     return { errors: exeContext };
   }
 
-  try {
-    const eventStream = await executeSubscription(exeContext);
+  const eventStream = await executeSubscription(exeContext);
 
-    // Assert field returned an event stream, otherwise yield an error.
-    if (!isAsyncIterable(eventStream)) {
-      throw new Error(
-        'Subscription field must return Async Iterable. ' +
-          `Received: ${inspect(eventStream)}.`,
-      );
-    }
-
-    return eventStream;
-  } catch (error) {
-    // If it GraphQLError, report it as an ExecutionResult, containing only errors and no data.
-    // Otherwise treat the error as a system-class error and re-throw it.
-    if (
-      error instanceof GraphQLAggregateError &&
-      error.errors.every((subError) => subError instanceof GraphQLError)
-    ) {
-      return { errors: error.errors };
-    }
-    if (error instanceof GraphQLError) {
-      return { errors: [error] };
-    }
-    throw error;
+  if (exeContext.errors.length !== 0) {
+    return { errors: exeContext.errors };
   }
+
+  // Assert field returned an event stream, otherwise yield an error.
+  if (!isAsyncIterable(eventStream)) {
+    throw new Error(
+      'Subscription field must return Async Iterable. ' +
+        `Received: ${inspect(eventStream)}.`,
+    );
+  }
+
+  return eventStream;
 }
 
 async function executeSubscription(
@@ -210,10 +198,13 @@ async function executeSubscription(
 
   if (!fieldDef) {
     const fieldName = fieldNodes[0].name.value;
-    throw new GraphQLError(
-      `The subscription field "${fieldName}" is not defined.`,
-      fieldNodes,
+    exeContext.errors.push(
+      new GraphQLError(
+        `The subscription field "${fieldName}" is not defined.`,
+        fieldNodes,
+      ),
     );
+    return null;
   }
 
   const path = addPath(undefined, responseName, type.name);
@@ -241,15 +232,13 @@ async function executeSubscription(
       throw eventStream;
     }
     return eventStream;
-  } catch (error) {
-    const pathAsArray = pathToArray(path);
-    if (error instanceof GraphQLAggregateError) {
-      throw new GraphQLAggregateError(
-        error.errors.map((subError) =>
-          locatedError(subError, fieldNodes, pathAsArray),
-        ),
-      );
-    }
-    throw locatedError(error, fieldNodes, pathAsArray);
+  } catch (rawError) {
+    return handleRawError(
+      exeContext,
+      fieldDef.type,
+      rawError,
+      fieldNodes,
+      path,
+    );
   }
 }
