@@ -299,6 +299,7 @@ export type {
 
 /** Execute GraphQL queries. */
 export {
+  Executor,
   execute,
   executeSync,
   defaultFieldResolver,
@@ -308,12 +309,14 @@ export {
 } from './execution/index';
 
 export type {
+  ExecutorArgs,
   ExecutionArgs,
+  ExecutionContext,
   ExecutionResult,
   FormattedExecutionResult,
 } from './execution/index';
 
-export { subscribe, createSourceEventStream } from './execution/index';
+export { subscribe } from './execution/index';
 export type { SubscriptionArgs } from './execution/index';
 
 /** Validate GraphQL documents. */
