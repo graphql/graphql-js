@@ -49,32 +49,11 @@ export interface SubscriptionArgs {
 export async function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-    subscribeFieldResolver,
-  } = args;
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   let exeContext: ExecutionContext;
   try {
-    exeContext = buildExecutionContext(
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
-      typeResolver,
-      subscribeFieldResolver,
-    );
+    exeContext = buildExecutionContext(args);
   } catch (error) {
     // Note: if buildExecutionContext throws a GraphQLAggregateError, it will
     // be of type GraphQLAggregateError<GraphQLError>, but this is checked explicitly.

@@ -411,7 +411,7 @@ describe('Subscription Initialization Phase', () => {
       const document = parse('subscription { foo }');
       const result = await subscribe({ schema, document });
 
-      const exeContext = buildExecutionContext(schema, document);
+      const exeContext = buildExecutionContext({ schema, document });
       expect(await createSourceEventStream(exeContext)).to.deep.equal(result);
       return result;
     }

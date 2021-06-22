@@ -172,30 +172,11 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  } = args;
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   let exeContext: ExecutionContext;
   try {
-    exeContext = buildExecutionContext(
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
-      typeResolver,
-    );
+    exeContext = buildExecutionContext(args);
   } catch (error) {
     // Note: if buildExecutionContext throws a GraphQLAggregateError, it will
     // be of type GraphQLAggregateError<GraphQLError>, but this is checked explicitly.
@@ -284,17 +265,29 @@ function assertValidExecutionArguments(
  *
  * @internal
  */
-export function buildExecutionContext(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  rawVariableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>,
-): ExecutionContext {
+export function buildExecutionContext(args: {
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName?: Maybe<string>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>;
+}): ExecutionContext {
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues: rawVariableValues,
+    operationName,
+    fieldResolver,
+    typeResolver,
+    subscribeFieldResolver,
+  } = args;
+
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(schema, document, rawVariableValues);
 
