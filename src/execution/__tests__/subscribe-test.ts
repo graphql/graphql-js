@@ -15,7 +15,7 @@ import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
 import { GraphQLAggregateError } from '../../error/GraphQLAggregateError';
 
-import { Executor } from '../execute';
+import { Executor } from '../executor';
 import { subscribe } from '../subscribe';
 
 import { SimplePubSub } from './simplePubSub';

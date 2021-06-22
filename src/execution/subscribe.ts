@@ -10,8 +10,8 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition';
 
+import { Executor } from './executor';
 import type { ExecutionResult } from './execute';
-import { Executor } from './execute';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
