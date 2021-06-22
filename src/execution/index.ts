@@ -1,6 +1,7 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 
 export {
+  createSourceEventStream,
   execute,
   executeSync,
   defaultFieldResolver,
@@ -15,6 +16,6 @@ export type {
 
 export { getDirectiveValues } from './values';
 
-export { subscribe, createSourceEventStream } from './subscribe';
+export { subscribe } from './subscribe';
 
 export type { SubscriptionArgs } from './subscribe';

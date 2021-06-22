@@ -15,7 +15,8 @@ import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
 import { GraphQLAggregateError } from '../../error/GraphQLAggregateError';
 
-import { createSourceEventStream, subscribe } from '../subscribe';
+import { createSourceEventStream } from '../execute';
+import { subscribe } from '../subscribe';
 
 import { SimplePubSub } from './simplePubSub';
 
