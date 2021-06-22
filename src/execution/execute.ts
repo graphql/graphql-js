@@ -182,10 +182,6 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     fieldResolver,
     typeResolver,
   } = args;
-
-  // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema, document, variableValues);
-
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   let exeContext: ExecutionContext;
@@ -263,7 +259,7 @@ function buildResponse(
  *
  * @internal
  */
-export function assertValidExecutionArguments(
+function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
   rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
@@ -299,6 +295,9 @@ export function buildExecutionContext(
   typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>,
 ): ExecutionContext {
+  // If arguments are missing or incorrect, throw an error.
+  assertValidExecutionArguments(schema, document, rawVariableValues);
+
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {

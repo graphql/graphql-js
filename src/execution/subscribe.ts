@@ -11,11 +11,7 @@ import type {
 } from '../type/definition';
 
 import type { ExecutionContext, ExecutionResult } from './execute';
-import {
-  assertValidExecutionArguments,
-  buildExecutionContext,
-  executeSubscription,
-} from './execute';
+import { buildExecutionContext, executeSubscription } from './execute';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
@@ -64,10 +60,6 @@ export async function subscribe(
     typeResolver,
     subscribeFieldResolver,
   } = args;
-
-  // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema, document, variableValues);
-
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   let exeContext: ExecutionContext;
