@@ -117,6 +117,7 @@ export interface ExecutionContext {
   variableValues: { [variable: string]: unknown };
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
+  subscribeFieldResolver: Maybe<GraphQLFieldResolver<any, any>>;
   errors: Array<GraphQLError>;
 }
 
@@ -293,6 +294,7 @@ export function buildExecutionContext(
   operationName: Maybe<string>,
   fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
   typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>,
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -348,6 +350,7 @@ export function buildExecutionContext(
     variableValues: coercedVariableValues.coerced,
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
+    subscribeFieldResolver,
     errors: [],
   };
 }
@@ -1105,34 +1108,8 @@ export function getFieldDef(
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export async function createSourceEventStream(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  exeContext: ExecutionContext,
 ): Promise<AsyncIterable<unknown> | ExecutionResult> {
-  // If arguments are missing or incorrectly typed, this is an internal
-  // developer mistake which should throw an early error.
-  assertValidExecutionArguments(schema, document, variableValues);
-
-  // If a valid context cannot be created due to incorrect arguments, this will throw an error.
-  const exeContext = buildExecutionContext(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-  );
-
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
-  }
-
   const eventStream = await executeSubscriptionRootField(exeContext);
 
   if (exeContext.errors.length !== 0) {

@@ -4,10 +4,18 @@ import type { Maybe } from '../jsutils/Maybe';
 import type { DocumentNode } from '../language/ast';
 
 import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLFieldResolver } from '../type/definition';
+import type {
+  GraphQLFieldResolver,
+  GraphQLTypeResolver,
+} from '../type/definition';
 
 import type { ExecutionResult } from './execute';
-import { createSourceEventStream, execute } from './execute';
+import {
+  assertValidExecutionArguments,
+  buildExecutionContext,
+  createSourceEventStream,
+  execute,
+} from './execute';
 import { mapAsyncIterator } from './mapAsyncIterator';
 
 export interface SubscriptionArgs {
@@ -18,6 +26,7 @@ export interface SubscriptionArgs {
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
@@ -53,18 +62,33 @@ export async function subscribe(
     variableValues,
     operationName,
     fieldResolver,
+    typeResolver,
     subscribeFieldResolver,
   } = args;
 
-  const resultOrStream = await createSourceEventStream(
+  // If arguments are missing or incorrect, throw an error.
+  assertValidExecutionArguments(schema, document, variableValues);
+
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  const exeContext = buildExecutionContext(
     schema,
     document,
     rootValue,
     contextValue,
     variableValues,
     operationName,
+    fieldResolver,
+    typeResolver,
     subscribeFieldResolver,
   );
+
+  // Return early errors if execution context failed.
+  if (!('schema' in exeContext)) {
+    return { errors: exeContext };
+  }
+
+  const resultOrStream = await createSourceEventStream(exeContext);
 
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
