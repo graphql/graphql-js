@@ -313,8 +313,8 @@ export type {
   FormattedExecutionResult,
 } from './execution/index';
 
-export { subscribe, createSourceEventStream } from './subscription/index';
-export type { SubscriptionArgs } from './subscription/index';
+export { subscribe, createSourceEventStream } from './execution/index';
+export type { SubscriptionArgs } from './execution/index';
 
 /** Validate GraphQL documents. */
 export {
