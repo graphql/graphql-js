@@ -1,6 +1,7 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 
 export {
+  createSourceEventStream,
   execute,
   executeSync,
   defaultFieldResolver,
@@ -13,7 +14,7 @@ export type {
   FormattedExecutionResult,
 } from './execute';
 
-export { subscribe, createSourceEventStream } from './subscribe';
+export { subscribe } from './subscribe';
 
 export type { SubscriptionArgs } from './subscribe';
 

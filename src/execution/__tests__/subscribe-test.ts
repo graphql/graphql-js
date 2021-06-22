@@ -13,7 +13,8 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
-import { createSourceEventStream, subscribe } from '../subscribe';
+import { createSourceEventStream } from '../execute';
+import { subscribe } from '../subscribe';
 
 import { SimplePubSub } from './simplePubSub';
 
