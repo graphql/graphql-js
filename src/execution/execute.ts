@@ -200,7 +200,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
-  return executeQueryOrMutation(exeContext, exeContext.operation, rootValue);
+  return executeQueryOrMutation(exeContext);
 }
 
 /**
@@ -225,14 +225,8 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
  */
 function executeQueryOrMutation(
   exeContext: ExecutionContext,
-  operation: OperationDefinitionNode,
-  rootValue: unknown,
 ): PromiseOrValue<ExecutionResult> {
-  const data = executeQueryOrMutationRootFields(
-    exeContext,
-    operation,
-    rootValue,
-  );
+  const data = executeQueryOrMutationRootFields(exeContext);
 
   if (isPromise(data)) {
     return data.then((resolved) => buildResponse(exeContext, resolved));
@@ -366,14 +360,14 @@ export function buildExecutionContext(
  * */
 function executeQueryOrMutationRootFields(
   exeContext: ExecutionContext,
-  operation: OperationDefinitionNode,
-  rootValue: unknown,
 ): PromiseOrValue<ObjMap<unknown> | null> {
-  const type = getOperationRootType(exeContext.schema, operation);
+  const { schema, fragments, rootValue, operation, variableValues } =
+    exeContext;
+  const type = getOperationRootType(schema, operation);
   const fields = collectFields(
-    exeContext.schema,
-    exeContext.fragments,
-    exeContext.variableValues,
+    schema,
+    fragments,
+    variableValues,
     type,
     operation.selectionSet,
   );
@@ -568,6 +562,9 @@ export function buildResolveInfo(
   parentType: GraphQLObjectType,
   path: Path,
 ): GraphQLResolveInfo {
+  const { schema, fragments, rootValue, operation, variableValues } =
+    exeContext;
+
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
   return {
@@ -576,11 +573,11 @@ export function buildResolveInfo(
     returnType: fieldDef.type,
     parentType,
     path,
-    schema: exeContext.schema,
-    fragments: exeContext.fragments,
-    rootValue: exeContext.rootValue,
-    operation: exeContext.operation,
-    variableValues: exeContext.variableValues,
+    schema,
+    fragments,
+    rootValue,
+    operation,
+    variableValues,
   };
 }
 
@@ -1078,17 +1075,18 @@ export async function executeSubscription(
   }
 
   // For each payload yielded from a subscription, map it over the normal
-  // GraphQL `execute` function, with `payload` as the rootValue.
+  // GraphQL `execute` function, with `payload` as the rootValue and with
+  // an empty set of errors.
   // This implements the "MapSourceToResponseEvent" algorithm described in
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   const mapSourceToResponse = (payload: unknown) =>
-    executeQueryOrMutation(
-      { ...exeContext, errors: [] },
-      exeContext.operation,
-      payload,
-    );
+    executeQueryOrMutation({
+      ...exeContext,
+      rootValue: payload,
+      errors: [],
+    });
 
   // Map every source value to a ExecutionResult value as described above.
   return mapAsyncIterator(resultOrStream, mapSourceToResponse);
