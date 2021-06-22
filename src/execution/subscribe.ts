@@ -10,7 +10,7 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition';
 
-import type { ExecutionContext, ExecutionResult } from './execute';
+import type { ExecutionResult } from './execute';
 import { Executor } from './execute';
 
 export interface SubscriptionArgs {
@@ -49,20 +49,19 @@ export interface SubscriptionArgs {
 export async function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
-  const executor = new Executor();
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  let exeContext: ExecutionContext;
+  let executor: Executor;
   try {
-    exeContext = executor.buildExecutionContext(args);
+    executor = new Executor(args);
   } catch (error) {
-    // Note: if buildExecutionContext throws a GraphQLAggregateError, it will
-    // be of type GraphQLAggregateError<GraphQLError>, but this is checked explicitly.
+    // Note: if the Executor constructor throws a GraphQLAggregateError, it will be
+    // of type GraphQLAggregateError<GraphQLError>, but this is checked explicitly.
     if (isAggregateOfGraphQLErrors(error)) {
       return { errors: error.errors };
     }
     throw error;
   }
 
-  return executor.executeSubscription(exeContext);
+  return executor.executeSubscription();
 }
