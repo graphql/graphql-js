@@ -198,15 +198,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
-  // Return a Promise that will eventually resolve to the data described by
-  // The "Response" section of the GraphQL specification.
-  //
-  // If errors are encountered while executing a GraphQL field, only that
-  // field and its descendants will be omitted, and sibling fields will still
-  // be executed. An execution which encounters errors will still result in a
-  // resolved Promise.
-  const data = executeOperation(exeContext, exeContext.operation, rootValue);
-  return buildResponse(exeContext, data);
+  return executeQueryOrMutation(exeContext, exeContext.operation, rootValue);
 }
 
 /**
@@ -226,16 +218,35 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
 }
 
 /**
+ * Implements the "Executing operations" section of the spec for queries and
+ * mutations.
+ */
+function executeQueryOrMutation(
+  exeContext: ExecutionContext,
+  operation: OperationDefinitionNode,
+  rootValue: unknown,
+): PromiseOrValue<ExecutionResult> {
+  const data = executeQueryOrMutationRootFields(
+    exeContext,
+    operation,
+    rootValue,
+  );
+
+  if (isPromise(data)) {
+    return data.then((resolved) => buildResponse(exeContext, resolved));
+  }
+
+  return buildResponse(exeContext, data);
+}
+
+/**
  * Given a completed execution context and data, build the `{ errors, data }`
  * response defined by the "Response" section of the GraphQL specification.
  */
 function buildResponse(
   exeContext: ExecutionContext,
-  data: PromiseOrValue<ObjMap<unknown> | null>,
-): PromiseOrValue<ExecutionResult> {
-  if (isPromise(data)) {
-    return data.then((resolved) => buildResponse(exeContext, resolved));
-  }
+  data: ObjMap<unknown> | null,
+): ExecutionResult {
   return exeContext.errors.length === 0
     ? { data }
     : { errors: exeContext.errors, data };
@@ -341,9 +352,15 @@ export function buildExecutionContext(
 }
 
 /**
- * Implements the "Executing operations" section of the spec.
- */
-function executeOperation(
+ * Return the data (or a Promise that will eventually resolve to the data)
+ * described by the "Response" section of the GraphQL specification.
+ *
+ * If errors are encountered while executing a GraphQL field, only that
+ * field and its descendants will be omitted, and sibling fields will still
+ * be executed. An execution which encounters errors will still result in a
+ * returned value or resolved Promise.
+ * */
+function executeQueryOrMutationRootFields(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: unknown,
