@@ -15,7 +15,10 @@ import { isIterableObject } from '../jsutils/isIterableObject';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 
 import type { GraphQLFormattedError } from '../error/GraphQLError';
-import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
+import {
+  GraphQLAggregateError,
+  isAggregateOfGraphQLErrors,
+} from '../error/GraphQLAggregateError';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
@@ -185,20 +188,25 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
 
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  );
-
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
+  let exeContext: ExecutionContext;
+  try {
+    exeContext = buildExecutionContext(
+      schema,
+      document,
+      rootValue,
+      contextValue,
+      variableValues,
+      operationName,
+      fieldResolver,
+      typeResolver,
+    );
+  } catch (error) {
+    // Note: if buildExecutionContext throws a GraphQLAggregateError, it will
+    // be of type GraphQLAggregateError<GraphQLError>, but this is checked explicitly.
+    if (isAggregateOfGraphQLErrors(error)) {
+      return { errors: error.errors };
+    }
+    throw error;
   }
 
   return executeQueryOrMutation(exeContext);
@@ -290,7 +298,7 @@ export function buildExecutionContext(
   fieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>,
   typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>,
-): ReadonlyArray<GraphQLError> | ExecutionContext {
+): ExecutionContext {
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {
@@ -298,11 +306,11 @@ export function buildExecutionContext(
       case Kind.OPERATION_DEFINITION:
         if (operationName == null) {
           if (operation !== undefined) {
-            return [
+            throw new GraphQLAggregateError([
               new GraphQLError(
                 'Must provide operation name if query contains multiple operations.',
               ),
-            ];
+            ]);
           }
           operation = definition;
         } else if (definition.name?.value === operationName) {
@@ -317,9 +325,13 @@ export function buildExecutionContext(
 
   if (!operation) {
     if (operationName != null) {
-      return [new GraphQLError(`Unknown operation named "${operationName}".`)];
+      throw new GraphQLAggregateError([
+        new GraphQLError(`Unknown operation named "${operationName}".`),
+      ]);
     }
-    return [new GraphQLError('Must provide an operation.')];
+    throw new GraphQLAggregateError([
+      new GraphQLError('Must provide an operation.'),
+    ]);
   }
 
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
@@ -333,7 +345,7 @@ export function buildExecutionContext(
   );
 
   if (coercedVariableValues.errors) {
-    return coercedVariableValues.errors;
+    throw new GraphQLAggregateError(coercedVariableValues.errors);
   }
 
   return {
