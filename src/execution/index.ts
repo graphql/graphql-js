@@ -1,7 +1,7 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 
 export {
-  createSourceEventStream,
+  Executor,
   execute,
   executeSync,
   defaultFieldResolver,

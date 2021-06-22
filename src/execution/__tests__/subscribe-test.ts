@@ -15,7 +15,7 @@ import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
 import { GraphQLAggregateError } from '../../error/GraphQLAggregateError';
 
-import { buildExecutionContext, createSourceEventStream } from '../execute';
+import { Executor } from '../execute';
 import { subscribe } from '../subscribe';
 
 import { SimplePubSub } from './simplePubSub';
@@ -411,8 +411,11 @@ describe('Subscription Initialization Phase', () => {
       const document = parse('subscription { foo }');
       const result = await subscribe({ schema, document });
 
-      const exeContext = buildExecutionContext({ schema, document });
-      expect(await createSourceEventStream(exeContext)).to.deep.equal(result);
+      const executor = new Executor();
+      const exeContext = executor.buildExecutionContext({ schema, document });
+      expect(await executor.createSourceEventStream(exeContext)).to.deep.equal(
+        result,
+      );
       return result;
     }
 

@@ -11,7 +11,7 @@ import type {
 } from '../type/definition';
 
 import type { ExecutionContext, ExecutionResult } from './execute';
-import { buildExecutionContext, executeSubscription } from './execute';
+import { Executor } from './execute';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
@@ -49,11 +49,12 @@ export interface SubscriptionArgs {
 export async function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+  const executor = new Executor();
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   let exeContext: ExecutionContext;
   try {
-    exeContext = buildExecutionContext(args);
+    exeContext = executor.buildExecutionContext(args);
   } catch (error) {
     // Note: if buildExecutionContext throws a GraphQLAggregateError, it will
     // be of type GraphQLAggregateError<GraphQLError>, but this is checked explicitly.
@@ -63,5 +64,5 @@ export async function subscribe(
     throw error;
   }
 
-  return executeSubscription(exeContext);
+  return executor.executeSubscription(exeContext);
 }
