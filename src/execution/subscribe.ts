@@ -2,18 +2,16 @@ import type { Maybe } from '../jsutils/Maybe';
 
 import type { DocumentNode } from '../language/ast';
 
+import { isAggregateOfGraphQLErrors } from '../error/GraphQLAggregateError';
+
 import type { GraphQLSchema } from '../type/schema';
 import type {
   GraphQLFieldResolver,
   GraphQLTypeResolver,
 } from '../type/definition';
 
-import type { ExecutionResult } from './execute';
-import {
-  assertValidExecutionArguments,
-  buildExecutionContext,
-  executeSubscription,
-} from './execute';
+import type { ExecutionContext, ExecutionResult } from './execute';
+import { buildExecutionContext, executeSubscription } from './execute';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
@@ -51,38 +49,18 @@ export interface SubscriptionArgs {
 export async function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-    subscribeFieldResolver,
-  } = args;
-
-  // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema, document, variableValues);
-
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-    subscribeFieldResolver,
-  );
-
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
+  let exeContext: ExecutionContext;
+  try {
+    exeContext = buildExecutionContext(args);
+  } catch (error) {
+    // Note: if buildExecutionContext throws a GraphQLAggregateError, it will
+    // be of type GraphQLAggregateError<GraphQLError>, but this is checked explicitly.
+    if (isAggregateOfGraphQLErrors(error)) {
+      return { errors: error.errors };
+    }
+    throw error;
   }
 
   return executeSubscription(exeContext);

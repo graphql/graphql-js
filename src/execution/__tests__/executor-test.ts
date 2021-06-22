@@ -36,6 +36,22 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(() => executeSync({ schema })).to.throw('Must provide document.');
   });
 
+  it('throws if invalid document is provided', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Type',
+        fields: {
+          a: { type: GraphQLString },
+        },
+      }),
+    });
+
+    // @ts-expect-error
+    expect(() => executeSync({ schema, document: {} })).to.throw(
+      'document.definitions is not iterable',
+    );
+  });
+
   it('throws if no schema is provided', () => {
     const document = parse('{ field }');
 

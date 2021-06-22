@@ -1,3 +1,5 @@
+import { GraphQLError } from './GraphQLError';
+
 /**
  * A GraphQLAggregateError is a container for multiple errors.
  *
@@ -33,4 +35,13 @@ export class GraphQLAggregateError<T = Error> extends Error {
   get [Symbol.toStringTag](): string {
     return 'GraphQLAggregateError';
   }
+}
+
+export function isAggregateOfGraphQLErrors(
+  error: unknown,
+): error is GraphQLAggregateError<GraphQLError> {
+  return (
+    error instanceof GraphQLAggregateError &&
+    error.errors.every((subError) => subError instanceof GraphQLError)
+  );
 }
