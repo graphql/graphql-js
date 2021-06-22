@@ -579,7 +579,7 @@ export function buildResolveInfo(
   };
 }
 
-function handleRawError(
+export function handleRawError(
   exeContext: ExecutionContext,
   returnType: GraphQLOutputType,
   rawError: unknown,
