@@ -163,7 +163,7 @@ export async function createSourceEventStream(
     return { errors: exeContext };
   }
 
-  const eventStream = await executeSubscription(exeContext);
+  const eventStream = await executeSubscriptionRootField(exeContext);
 
   if (exeContext.errors.length !== 0) {
     return { errors: exeContext.errors };
@@ -180,7 +180,7 @@ export async function createSourceEventStream(
   return eventStream;
 }
 
-async function executeSubscription(
+async function executeSubscriptionRootField(
   exeContext: ExecutionContext,
 ): Promise<unknown> {
   const { schema, fragments, operation, variableValues, rootValue } =
