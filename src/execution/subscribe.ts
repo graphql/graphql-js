@@ -9,22 +9,21 @@ import { locatedError } from '../error/locatedError';
 
 import type { DocumentNode } from '../language/ast';
 
-import type { ExecutionResult, ExecutionContext } from '../execution/execute';
-import { collectFields } from '../execution/collectFields';
-import { getArgumentValues } from '../execution/values';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLFieldResolver } from '../type/definition';
+
+import { getOperationRootType } from '../utilities/getOperationRootType';
+
+import type { ExecutionResult, ExecutionContext } from './execute';
+import { collectFields } from './collectFields';
+import { getArgumentValues } from './values';
 import {
   assertValidExecutionArguments,
   buildExecutionContext,
   buildResolveInfo,
   execute,
   getFieldDef,
-} from '../execution/execute';
-
-import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLFieldResolver } from '../type/definition';
-
-import { getOperationRootType } from '../utilities/getOperationRootType';
-
+} from './execute';
 import { mapAsyncIterator } from './mapAsyncIterator';
 
 export interface SubscriptionArgs {
