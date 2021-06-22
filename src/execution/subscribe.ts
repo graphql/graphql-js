@@ -1,4 +1,3 @@
-import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import type { Maybe } from '../jsutils/Maybe';
 
 import type { DocumentNode } from '../language/ast';
@@ -13,10 +12,8 @@ import type { ExecutionResult } from './execute';
 import {
   assertValidExecutionArguments,
   buildExecutionContext,
-  createSourceEventStream,
-  execute,
+  executeSubscription,
 } from './execute';
-import { mapAsyncIterator } from './mapAsyncIterator';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
@@ -88,29 +85,5 @@ export async function subscribe(
     return { errors: exeContext };
   }
 
-  const resultOrStream = await createSourceEventStream(exeContext);
-
-  if (!isAsyncIterable(resultOrStream)) {
-    return resultOrStream;
-  }
-
-  // For each payload yielded from a subscription, map it over the normal
-  // GraphQL `execute` function, with `payload` as the rootValue.
-  // This implements the "MapSourceToResponseEvent" algorithm described in
-  // the GraphQL specification. The `execute` function provides the
-  // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
-  // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = (payload: unknown) =>
-    execute({
-      schema,
-      document,
-      rootValue: payload,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
-    });
-
-  // Map every source value to a ExecutionResult value as described above.
-  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
+  return executeSubscription(exeContext);
 }

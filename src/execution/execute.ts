@@ -60,6 +60,7 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
+import { mapAsyncIterator } from './mapAsyncIterator';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
@@ -287,11 +288,11 @@ export function assertValidExecutionArguments(
 export function buildExecutionContext(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rootValue: unknown,
-  contextValue: unknown,
-  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName: Maybe<string>,
-  fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
+  rootValue?: unknown,
+  contextValue?: unknown,
+  rawVariableValues?: Maybe<{ readonly [variable: string]: unknown }>,
+  operationName?: Maybe<string>,
+  fieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>,
   typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>,
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
@@ -1062,6 +1063,35 @@ export function getFieldDef(
     return TypeNameMetaFieldDef;
   }
   return parentType.getFields()[fieldName];
+}
+
+/**
+ * Implements the "Executing operations" section of the spec for subscriptions
+ */
+export async function executeSubscription(
+  exeContext: ExecutionContext,
+): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+  const resultOrStream = await createSourceEventStream(exeContext);
+
+  if (!isAsyncIterable(resultOrStream)) {
+    return resultOrStream;
+  }
+
+  // For each payload yielded from a subscription, map it over the normal
+  // GraphQL `execute` function, with `payload` as the rootValue.
+  // This implements the "MapSourceToResponseEvent" algorithm described in
+  // the GraphQL specification. The `execute` function provides the
+  // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
+  // "ExecuteQuery" algorithm, for which `execute` is also used.
+  const mapSourceToResponse = (payload: unknown) =>
+    executeQueryOrMutation(
+      { ...exeContext, errors: [] },
+      exeContext.operation,
+      payload,
+    );
+
+  // Map every source value to a ExecutionResult value as described above.
+  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
 }
 
 /**
