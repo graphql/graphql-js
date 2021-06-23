@@ -43,8 +43,8 @@ const printDocASTReducer: any = {
     wrap(' ', join(directives, ' ')),
   SelectionSet: ({ selections }) => block(selections),
 
-  Field: ({ alias, name, arguments: args, directives, selectionSet }) => {
-    const prefix = wrap('', alias, ': ') + name;
+  Field: ({ alias, name, arguments: args, directives, selectionSet, required }) => {
+    const prefix = wrap('', alias, ': ') + name + (required ? '!' : '');
     let argsLine = prefix + wrap('(', join(args, ', '), ')');
 
     if (argsLine.length > MAX_LINE_LENGTH) {
@@ -55,6 +55,7 @@ const printDocASTReducer: any = {
   },
 
   Argument: ({ name, value }) => name + ': ' + value,
+
 
   // Fragments
 
