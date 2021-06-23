@@ -47,6 +47,7 @@ import type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  RequiredStatus,
 } from './ast';
 import { Kind } from './kinds';
 import { Location } from './ast';
@@ -384,12 +385,15 @@ export class Parser {
     const nameOrAlias = this.parseName();
     let alias;
     let name;
+
     if (this.expectOptionalToken(TokenKind.COLON)) {
       alias = nameOrAlias;
       name = this.parseName();
     } else {
       name = nameOrAlias;
     }
+
+    const required = this.parseOptionality()
 
     return {
       kind: Kind.FIELD,
@@ -401,7 +405,20 @@ export class Parser {
         ? this.parseSelectionSet()
         : undefined,
       loc: this.loc(start),
+      required,
     };
+  }
+
+  parseOptionality(): RequiredStatus {
+    if(this.expectOptionalToken(TokenKind.BANG)) {
+      return 'required';
+    }
+
+    if(this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+      return 'optional';
+    }
+
+    return 'unset';
   }
 
   /**

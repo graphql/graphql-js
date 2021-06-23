@@ -51,11 +51,13 @@ import {
 } from '../type/directives';
 import {
   isNamedType,
+  GraphQLNonNull,
   isObjectType,
   isAbstractType,
   isLeafType,
   isListType,
   isNonNullType,
+  getNullableType,
 } from '../type/definition';
 
 import { typeFromAST } from '../utilities/typeFromAST';
@@ -66,6 +68,7 @@ import {
   getArgumentValues,
   getDirectiveValues,
 } from './values';
+import { modifiedOutputType } from '../utilities/applyRequiredStatus';
 
 /**
  * Terminology
@@ -640,7 +643,8 @@ function resolveField(
     return;
   }
 
-  const returnType = fieldDef.type;
+  const returnType = modifiedOutputType(fieldDef.type, fieldNodes[0].requied);
+
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(

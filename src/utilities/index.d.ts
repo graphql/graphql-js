@@ -117,3 +117,4 @@ export { TypedQueryDocumentNode } from './typedQueryDocumentNode';
 
 // @deprecated: Report all deprecated usage within a GraphQL document.
 export { findDeprecatedUsages } from './findDeprecatedUsages';
+export { modifiedOutputType } from './applyRequiredStatus'

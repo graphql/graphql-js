@@ -293,6 +293,8 @@ export type SelectionSetNode = {|
 
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
+export type RequiredStatus = 'required' | 'optional' | 'unset';
+
 export type FieldNode = {|
   +kind: 'Field',
   +loc?: Location,
@@ -301,6 +303,7 @@ export type FieldNode = {|
   +arguments?: $ReadOnlyArray<ArgumentNode>,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet?: SelectionSetNode,
+  +required: RequiredStatus,
 |};
 
 export type ArgumentNode = {|

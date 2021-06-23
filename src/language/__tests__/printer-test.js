@@ -164,6 +164,8 @@ describe('Printer: Query document', () => {
                 ...frag @onFragmentSpread
               }
             }
+            field3!
+            requiredField4: field4!
           }
           ... @skip(unless: $foo) {
             id

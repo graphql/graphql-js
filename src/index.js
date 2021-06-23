@@ -274,6 +274,7 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  RequiredStatus,
 } from './language/index';
 
 // Execute GraphQL queries.
@@ -422,6 +423,7 @@ export {
   findDangerousChanges,
   // @deprecated: Report all deprecated usage within a GraphQL document.
   findDeprecatedUsages,
+  modifiedOutputType,
 } from './utilities/index';
 
 export type {
