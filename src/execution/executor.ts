@@ -335,13 +335,13 @@ export class Executor {
           : this.executeFields(type, _rootValue, path, fields);
       if (isPromise(result)) {
         return result.then(undefined, (error) => {
-          this._errors.push(error);
+          this.logError(error);
           return Promise.resolve(null);
         });
       }
       return result;
     } catch (error) {
-      this._errors.push(error);
+      this.logError(error);
       return null;
     }
   }
@@ -544,13 +544,17 @@ export class Executor {
 
     // Otherwise, error protection is applied, logging the error and resolving
     // a null value for this field if one is encountered.
+    this.logError(error);
+    return null;
+  }
+
+  logError(error: GraphQLError | GraphQLAggregateError<GraphQLError>) {
     if (error instanceof GraphQLAggregateError) {
       this._errors.push(...error.errors);
-      return null;
+      return;
     }
 
     this._errors.push(error);
-    return null;
   }
 
   /**
