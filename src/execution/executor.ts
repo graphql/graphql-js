@@ -335,13 +335,25 @@ export class Executor {
           : this.executeFields(type, _rootValue, path, fields);
       if (isPromise(result)) {
         return result.then(undefined, (error) => {
-          this.logError(error);
+          // The underlying executeField method catches all errors, converts
+          // them to GraphQLErrors, and, assuming error protection is not
+          // applied, rethrows only converted errors.
+          // Moreover, we cannot use instanceof to formally check this, as
+          // the conversion is done using locatedError which uses a branch
+          // check to allow errors from other contexts.
+          this.logError(error as GraphQLError);
           return Promise.resolve(null);
         });
       }
       return result;
     } catch (error) {
-      this.logError(error);
+      // The underlying executeField method catches all errors, converts
+      // them to GraphQLErrors, and, assuming error protection is not
+      // applied, rethrows only converted errors.
+      // Moreover, we cannot use instanceof to formally check this, as
+      // the conversion is done using locatedError which uses a branch
+      // check to allow errors from other contexts.
+      this.logError(error as GraphQLError);
       return null;
     }
   }
