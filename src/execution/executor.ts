@@ -9,7 +9,8 @@ import { devAssert } from '../jsutils/devAssert';
 import { isPromise } from '../jsutils/isPromise';
 import { isObjectLike } from '../jsutils/isObjectLike';
 import { promiseReduce } from '../jsutils/promiseReduce';
-import { promiseForObject } from '../jsutils/promiseForObject';
+import { MaybePromise } from '../jsutils/maybePromise';
+import { maybePromiseForObject } from '../jsutils/maybePromiseForObject';
 import { addPath, pathToArray } from '../jsutils/Path';
 import { isIterableObject } from '../jsutils/isIterableObject';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
@@ -185,11 +186,9 @@ export class Executor {
   executeQueryOrMutation(): PromiseOrValue<ExecutionResult> {
     const data = this.executeQueryOrMutationRootFields();
 
-    if (isPromise(data)) {
-      return data.then((resolved) => this.buildResponse(resolved));
-    }
-
-    return this.buildResponse(data);
+    return new MaybePromise(() => data)
+      .then((resolved) => this.buildResponse(resolved))
+      .resolve();
   }
 
   /**
@@ -340,22 +339,22 @@ export class Executor {
     // Errors from sub-fields of a NonNull type may propagate to the top level,
     // at which point we still log the error and null the parent field, which
     // in this case is the entire response.
-    try {
-      const result =
-        _operation.operation === 'mutation'
-          ? this.executeFieldsSerially(type, _rootValue, path, fields)
-          : this.executeFields(type, _rootValue, path, fields);
-      if (isPromise(result)) {
-        return result.then(undefined, (error) => {
-          this._errors.push(error);
-          return Promise.resolve(null);
-        });
-      }
-      return result;
-    } catch (error) {
-      this._errors.push(error);
-      return null;
-    }
+    return new MaybePromise(() =>
+      _operation.operation === 'mutation'
+        ? this.executeFieldsSerially(type, _rootValue, path, fields)
+        : this.executeFields(type, _rootValue, path, fields),
+    )
+      .catch((error) => {
+        // The underlying executeField method catches all errors, converts
+        // them to GraphQLErrors, and, assuming error protection is not
+        // applied, rethrows only converted errors.
+        // Moreover, we cannot use instanceof to formally check this, as
+        // the conversion is done using locatedError which uses a branch
+        // check to allow errors from other contexts.
+        this.logError(error as GraphQLError);
+        return null;
+      })
+      .resolve();
   }
 
   /**
@@ -381,14 +380,12 @@ export class Executor {
         if (result === undefined) {
           return results;
         }
-        if (isPromise(result)) {
-          return result.then((resolvedResult) => {
+        return new MaybePromise(() => result)
+          .then((resolvedResult) => {
             results[responseName] = resolvedResult;
             return results;
-          });
-        }
-        results[responseName] = result;
-        return results;
+          })
+          .resolve();
       },
       Object.create(null),
     );
@@ -405,7 +402,6 @@ export class Executor {
     fields: Map<string, ReadonlyArray<FieldNode>>,
   ): PromiseOrValue<ObjMap<unknown>> {
     const results = Object.create(null);
-    let containsPromise = false;
 
     for (const [responseName, fieldNodes] of fields.entries()) {
       const fieldPath = addPath(path, responseName, parentType.name);
@@ -417,22 +413,14 @@ export class Executor {
       );
 
       if (result !== undefined) {
-        results[responseName] = result;
-        if (isPromise(result)) {
-          containsPromise = true;
-        }
+        results[responseName] = new MaybePromise(() => result);
       }
-    }
-
-    // If there are no promises, we can just return the object
-    if (!containsPromise) {
-      return results;
     }
 
     // Otherwise, results is a map from field name to the result of resolving that
     // field, which is possibly a promise. Return a promise that will return this
     // same map, but with any promises replaced with the values they resolved to.
-    return promiseForObject(results);
+    return maybePromiseForObject(results).resolve();
   }
 
   /**
@@ -457,8 +445,8 @@ export class Executor {
 
     const info = this.buildResolveInfo(fieldDef, fieldNodes, parentType, path);
 
-    // Get the resolve function, regardless of if its result is normal or abrupt (error).
-    try {
+    // Run the resolve function, regardless of if its result is normal or abrupt (error).
+    return new MaybePromise(() => {
       // Build a JS object of arguments from the field.arguments AST, using the
       // variables scope to fulfill any variable references.
       // TODO: find a way to memoize, in case this field is within a List type.
@@ -473,34 +461,16 @@ export class Executor {
       // used to represent an authenticated user, or request-specific caches.
       const contextValue = this._contextValue;
 
-      const result = resolveFn(source, args, contextValue, info);
-
-      let completed;
-      if (isPromise(result)) {
-        completed = result.then((resolved) =>
-          this.completeValue(returnType, fieldNodes, info, path, resolved),
-        );
-      } else {
-        completed = this.completeValue(
-          returnType,
-          fieldNodes,
-          info,
-          path,
-          result,
-        );
-      }
-
-      if (isPromise(completed)) {
-        // Note: we don't rely on a `catch` method, but we do expect "thenable"
-        // to take a second callback for the error case.
-        return completed.then(undefined, (rawError) =>
-          this.handleRawError(returnType, rawError, fieldNodes, path),
-        );
-      }
-      return completed;
-    } catch (rawError) {
-      return this.handleRawError(returnType, rawError, fieldNodes, path);
-    }
+      return resolveFn(source, args, contextValue, info);
+    })
+      .then((resolved) =>
+        this.completeValue(returnType, fieldNodes, info, path, resolved),
+      )
+      .catch((rawError) => {
+        this.handleRawError(returnType, rawError, fieldNodes, path);
+        return null;
+      })
+      .resolve();
   }
 
   /**
@@ -556,13 +526,17 @@ export class Executor {
 
     // Otherwise, error protection is applied, logging the error and resolving
     // a null value for this field if one is encountered.
+    this.logError(error);
+    return null;
+  }
+
+  logError(error: GraphQLError | GraphQLAggregateError<GraphQLError>) {
     if (error instanceof GraphQLAggregateError) {
       this._errors.push(...error.errors);
-      return null;
+      return;
     }
 
     this._errors.push(error);
-    return null;
   }
 
   /**
@@ -683,42 +657,29 @@ export class Executor {
     // This is specified as a simple map, however we're optimizing the path
     // where the list contains no Promises by avoiding creating another Promise.
     const itemType = returnType.ofType;
-    let containsPromise = false;
     const completedResults = Array.from(result, (item, index) => {
       // No need to modify the info object containing the path,
       // since from here on it is not ever accessed by resolver functions.
       const itemPath = addPath(path, index, undefined);
-      try {
-        let completedItem;
-        if (isPromise(item)) {
-          completedItem = item.then((resolved) =>
-            this.completeValue(itemType, fieldNodes, info, itemPath, resolved),
-          );
-        } else {
+      let completedItem: unknown;
+      return new MaybePromise(() => item)
+        .then((resolved) => {
           completedItem = this.completeValue(
             itemType,
             fieldNodes,
             info,
             itemPath,
-            item,
+            resolved,
           );
-        }
-
-        if (isPromise(completedItem)) {
-          containsPromise = true;
-          // Note: we don't rely on a `catch` method, but we do expect "thenable"
-          // to take a second callback for the error case.
-          return completedItem.then(undefined, (rawError) =>
-            this.handleRawError(itemType, rawError, fieldNodes, itemPath),
-          );
-        }
-        return completedItem;
-      } catch (rawError) {
-        return this.handleRawError(itemType, rawError, fieldNodes, itemPath);
-      }
+          return completedItem;
+        })
+        .catch((rawError) => {
+          this.handleRawError(itemType, rawError, fieldNodes, itemPath);
+          return null;
+        });
     });
 
-    return containsPromise ? Promise.all(completedResults) : completedResults;
+    return MaybePromise.all(completedResults).resolve();
   }
 
   /**
@@ -751,8 +712,8 @@ export class Executor {
     const contextValue = this._contextValue;
     const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
-    if (isPromise(runtimeType)) {
-      return runtimeType.then((resolvedRuntimeType) =>
+    return new MaybePromise(() => runtimeType)
+      .then((resolvedRuntimeType) =>
         this.completeObjectValue(
           this.ensureValidRuntimeType(
             resolvedRuntimeType,
@@ -766,22 +727,8 @@ export class Executor {
           path,
           result,
         ),
-      );
-    }
-
-    return this.completeObjectValue(
-      this.ensureValidRuntimeType(
-        runtimeType,
-        returnType,
-        fieldNodes,
-        info,
-        result,
-      ),
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
+      )
+      .resolve();
   }
 
   ensureValidRuntimeType(
@@ -857,18 +804,14 @@ export class Executor {
     if (returnType.isTypeOf) {
       const isTypeOf = returnType.isTypeOf(result, this._contextValue, info);
 
-      if (isPromise(isTypeOf)) {
-        return isTypeOf.then((resolvedIsTypeOf) => {
+      return new MaybePromise(() => isTypeOf)
+        .then((resolvedIsTypeOf) => {
           if (!resolvedIsTypeOf) {
             throw this.invalidReturnTypeError(returnType, result, fieldNodes);
           }
           return this.executeFields(returnType, result, path, subFieldNodes);
-        });
-      }
-
-      if (!isTypeOf) {
-        throw this.invalidReturnTypeError(returnType, result, fieldNodes);
-      }
+        })
+        .resolve();
     }
 
     return this.executeFields(returnType, result, path, subFieldNodes);
