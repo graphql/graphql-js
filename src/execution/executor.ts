@@ -658,39 +658,27 @@ export class Executor {
     // This is specified as a simple map, however we're optimizing the path
     // where the list contains no Promises by avoiding creating another Promise.
     const itemType = returnType.ofType;
+
     let containsPromise = false;
     const completedResults = Array.from(result, (item, index) => {
       // No need to modify the info object containing the path,
       // since from here on it is not ever accessed by resolver functions.
       const itemPath = addPath(path, index, undefined);
-      try {
-        let completedItem;
-        if (isPromise(item)) {
-          completedItem = item.then((resolved) =>
-            this.completeValue(itemType, fieldNodes, info, itemPath, resolved),
-          );
-        } else {
-          completedItem = this.completeValue(
-            itemType,
-            fieldNodes,
-            info,
-            itemPath,
-            item,
-          );
-        }
+      const completedItem = new MaybePromise(() => item)
+        .then((resolved) =>
+          this.completeValue(itemType, fieldNodes, info, itemPath, resolved),
+        )
+        .catch((rawError) => {
+          this.handleRawError(itemType, rawError, fieldNodes, itemPath);
+          return null;
+        })
+        .resolve();
 
-        if (isPromise(completedItem)) {
-          containsPromise = true;
-          // Note: we don't rely on a `catch` method, but we do expect "thenable"
-          // to take a second callback for the error case.
-          return completedItem.then(undefined, (rawError) =>
-            this.handleRawError(itemType, rawError, fieldNodes, itemPath),
-          );
-        }
-        return completedItem;
-      } catch (rawError) {
-        return this.handleRawError(itemType, rawError, fieldNodes, itemPath);
+      if (isPromise(completedItem)) {
+        containsPromise = true;
       }
+
+      return completedItem;
     });
 
     return containsPromise ? Promise.all(completedResults) : completedResults;
