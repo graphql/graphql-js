@@ -808,18 +808,14 @@ export class Executor {
     if (returnType.isTypeOf) {
       const isTypeOf = returnType.isTypeOf(result, this._contextValue, info);
 
-      if (isPromise(isTypeOf)) {
-        return isTypeOf.then((resolvedIsTypeOf) => {
+      return new MaybePromise(() => isTypeOf)
+        .then((resolvedIsTypeOf) => {
           if (!resolvedIsTypeOf) {
             throw this.invalidReturnTypeError(returnType, result, fieldNodes);
           }
           return this.executeFields(returnType, result, path, subFieldNodes);
-        });
-      }
-
-      if (!isTypeOf) {
-        throw this.invalidReturnTypeError(returnType, result, fieldNodes);
-      }
+        })
+        .resolve();
     }
 
     return this.executeFields(returnType, result, path, subFieldNodes);
