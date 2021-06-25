@@ -7,3 +7,15 @@ graphql(schema, query).then((result) => {
   // }
   console.log(result);
 });
+var query = '{ BoyHowdy }';
+
+graphql(schema, query).then((result) => {
+  // Prints
+  // {
+  //   errors: [
+  //     { message: 'Cannot query field BoyHowdy on RootQueryType',
+  //       locations: [ { line: 1, column: 3 } ] }
+  //   ]
+  // }
+  console.log(result);
+});
