@@ -716,8 +716,8 @@ export class Executor {
     const contextValue = this._contextValue;
     const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
-    if (isPromise(runtimeType)) {
-      return runtimeType.then((resolvedRuntimeType) =>
+    return new MaybePromise(() => runtimeType)
+      .then((resolvedRuntimeType) =>
         this.completeObjectValue(
           this.ensureValidRuntimeType(
             resolvedRuntimeType,
@@ -731,22 +731,8 @@ export class Executor {
           path,
           result,
         ),
-      );
-    }
-
-    return this.completeObjectValue(
-      this.ensureValidRuntimeType(
-        runtimeType,
-        returnType,
-        fieldNodes,
-        info,
-        result,
-      ),
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
+      )
+      .resolve();
   }
 
   ensureValidRuntimeType(
