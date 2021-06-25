@@ -446,8 +446,8 @@ export class Executor {
 
     const info = this.buildResolveInfo(fieldDef, fieldNodes, parentType, path);
 
-    // Get the resolve function, regardless of if its result is normal or abrupt (error).
-    try {
+    // Run the resolve function, regardless of if its result is normal or abrupt (error).
+    return new MaybePromise(() => {
       // Build a JS object of arguments from the field.arguments AST, using the
       // variables scope to fulfill any variable references.
       // TODO: find a way to memoize, in case this field is within a List type.
@@ -462,34 +462,16 @@ export class Executor {
       // used to represent an authenticated user, or request-specific caches.
       const contextValue = this._contextValue;
 
-      const result = resolveFn(source, args, contextValue, info);
-
-      let completed;
-      if (isPromise(result)) {
-        completed = result.then((resolved) =>
-          this.completeValue(returnType, fieldNodes, info, path, resolved),
-        );
-      } else {
-        completed = this.completeValue(
-          returnType,
-          fieldNodes,
-          info,
-          path,
-          result,
-        );
-      }
-
-      if (isPromise(completed)) {
-        // Note: we don't rely on a `catch` method, but we do expect "thenable"
-        // to take a second callback for the error case.
-        return completed.then(undefined, (rawError) =>
-          this.handleRawError(returnType, rawError, fieldNodes, path),
-        );
-      }
-      return completed;
-    } catch (rawError) {
-      return this.handleRawError(returnType, rawError, fieldNodes, path);
-    }
+      return resolveFn(source, args, contextValue, info);
+    })
+      .then((resolved) =>
+        this.completeValue(returnType, fieldNodes, info, path, resolved),
+      )
+      .catch((rawError) => {
+        this.handleRawError(returnType, rawError, fieldNodes, path);
+        return null;
+      })
+      .resolve();
   }
 
   /**
