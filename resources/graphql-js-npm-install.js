@@ -19,3 +19,4 @@ var schema = new GraphQLSchema({
     },
   }),
 });
+npm install graphql@git://github.com/graphql/graphql-js.git#npm
