@@ -7,12 +7,13 @@
  * TypedArray, etc. but excludes string literals.
  *
  * @example
- *
+ * ```ts
  * isIterableObject([ 1, 2, 3 ]) // true
  * isIterableObject(new Map()) // true
  * isIterableObject('ABC') // false
  * isIterableObject({ key: 'value' }) // false
  * isIterableObject({ length: 1, 0: 'Alpha' }) // false
+ * ```
  */
 export function isIterableObject(
   maybeIterable: any,

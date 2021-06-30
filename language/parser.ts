@@ -87,10 +87,11 @@ export interface ParseOptions {
    *
    * The syntax is identical to normal, query-defined variables. For example:
    *
-   *   fragment A($var: Boolean = false) on T  {
-   *     ...
-   *   }
-   *
+   * ```graphql
+   * fragment A($var: Boolean = false) on T {
+   *   ...
+   * }
+   * ```
    */
 
   allowLegacyFragmentVariables?: boolean;
@@ -350,7 +351,9 @@ export class Parser {
     });
   }
   /**
+   * ```
    * SelectionSet : { Selection+ }
+   * ```
    */
 
   parseSelectionSet(): SelectionSetNode {
@@ -645,9 +648,11 @@ export class Parser {
     });
   }
   /**
+   * ```
    * ObjectValue[Const] :
    *   - { }
    *   - { ObjectField[?Const]+ }
+   * ```
    */
 
   parseObject(isConst: true): ConstObjectValueNode;
@@ -700,7 +705,9 @@ export class Parser {
     return this.parseDirectives(true);
   }
   /**
+   * ```
    * Directive[Const] : @ Name Arguments[?Const]?
+   * ```
    */
 
   parseDirective(isConst: true): ConstDirectiveNode;
@@ -823,7 +830,9 @@ export class Parser {
     }
   }
   /**
+   * ```
    * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
+   * ```
    */
 
   parseSchemaDefinition(): SchemaDefinitionNode {
@@ -910,7 +919,9 @@ export class Parser {
       : [];
   }
   /**
+   * ```
    * FieldsDefinition : { FieldDefinition+ }
+   * ```
    */
 
   parseFieldsDefinition(): Array<FieldDefinitionNode> {
@@ -1054,7 +1065,9 @@ export class Parser {
     });
   }
   /**
+   * ```
    * EnumValuesDefinition : { EnumValueDefinition+ }
+   * ```
    */
 
   parseEnumValuesDefinition(): Array<EnumValueDefinitionNode> {
@@ -1103,7 +1116,9 @@ export class Parser {
     });
   }
   /**
+   * ```
    * InputFieldsDefinition : { InputValueDefinition+ }
+   * ```
    */
 
   parseInputFieldsDefinition(): Array<InputValueDefinitionNode> {
@@ -1158,9 +1173,11 @@ export class Parser {
     throw this.unexpected(keywordToken);
   }
   /**
+   * ```
    * SchemaExtension :
    *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
    *  - extend schema Directives[Const]
+   * ```
    */
 
   parseSchemaExtension(): SchemaExtensionNode {
@@ -1346,8 +1363,10 @@ export class Parser {
     });
   }
   /**
+   * ```
    * DirectiveDefinition :
    *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
+   * ```
    */
 
   parseDirectiveDefinition(): DirectiveDefinitionNode {

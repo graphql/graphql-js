@@ -114,8 +114,8 @@ export function collectFields(
   return fields;
 }
 /**
- * Determines if a field should be included based on the @include and @skip
- * directives, where @skip has higher precedence than @include.
+ * Determines if a field should be included based on the `@include` and `@skip`
+ * directives, where `@skip` has higher precedence than `@include`.
  */
 
 function shouldIncludeNode(

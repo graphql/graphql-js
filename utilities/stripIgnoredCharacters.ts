@@ -27,6 +27,7 @@ import {
  *
  * Query example:
  *
+ * ```graphql
  * query SomeQuery($foo: String!, $bar: String) {
  *   someField(foo: $foo, bar: $bar) {
  *     a
@@ -36,13 +37,17 @@ import {
  *     }
  *   }
  * }
+ * ```
  *
  * Becomes:
  *
+ * ```graphql
  * query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}
+ * ```
  *
  * SDL example:
  *
+ * ```graphql
  * """
  * Type description
  * """
@@ -52,10 +57,13 @@ import {
  *   """
  *   bar: String
  * }
+ * ```
  *
  * Becomes:
  *
+ * ```graphql
  * """Type description""" type Foo{"""Field description""" bar:String}
+ * ```
  */
 
 export function stripIgnoredCharacters(source: string | Source): string {

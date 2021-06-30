@@ -18,8 +18,10 @@
  * You may also import from each sub-directory directly. For example, the
  * following two import statements are equivalent:
  *
- *     import { parse } from 'graphql';
- *     import { parse } from 'graphql/language';
+ * ```ts
+ * import { parse } from 'graphql';
+ * import { parse } from 'graphql/language';
+ * ```
  */
 
 /** The GraphQL.js version info. */

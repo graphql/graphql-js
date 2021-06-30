@@ -38,7 +38,7 @@ export function validate(
   } = {
     maxErrors: undefined,
   },
-  /** @deprecate will be removed in 17.0.0 */
+  /** @deprecated will be removed in 17.0.0 */
   typeInfo: TypeInfo = new TypeInfo(schema),
 ): ReadonlyArray<GraphQLError> {
   documentAST || devAssert(false, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.

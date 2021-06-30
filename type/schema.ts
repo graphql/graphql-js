@@ -63,10 +63,12 @@ export interface GraphQLSchemaExtensions {
  *
  * Example:
  *
- *     const MyAppSchema = new GraphQLSchema({
- *       query: MyAppQueryRootType,
- *       mutation: MyAppMutationRootType,
- *     })
+ * ```ts
+ * const MyAppSchema = new GraphQLSchema({
+ *   query: MyAppQueryRootType,
+ *   mutation: MyAppMutationRootType,
+ * })
+ * ```
  *
  * Note: When the schema is constructed, by default only the types that are
  * reachable by traversing the root types are included, other types must be
@@ -74,48 +76,51 @@ export interface GraphQLSchemaExtensions {
  *
  * Example:
  *
- *     const characterInterface = new GraphQLInterfaceType({
- *       name: 'Character',
- *       ...
- *     });
+ * ```ts
+ * const characterInterface = new GraphQLInterfaceType({
+ *   name: 'Character',
+ *   ...
+ * });
  *
- *     const humanType = new GraphQLObjectType({
- *       name: 'Human',
- *       interfaces: [characterInterface],
- *       ...
- *     });
+ * const humanType = new GraphQLObjectType({
+ *   name: 'Human',
+ *   interfaces: [characterInterface],
+ *   ...
+ * });
  *
- *     const droidType = new GraphQLObjectType({
- *       name: 'Droid',
- *       interfaces: [characterInterface],
- *       ...
- *     });
+ * const droidType = new GraphQLObjectType({
+ *   name: 'Droid',
+ *   interfaces: [characterInterface],
+ *   ...
+ * });
  *
- *     const schema = new GraphQLSchema({
- *       query: new GraphQLObjectType({
- *         name: 'Query',
- *         fields: {
- *           hero: { type: characterInterface, ... },
- *         }
- *       }),
- *       ...
- *       // Since this schema references only the `Character` interface it's
- *       // necessary to explicitly list the types that implement it if
- *       // you want them to be included in the final schema.
- *       types: [humanType, droidType],
- *     })
+ * const schema = new GraphQLSchema({
+ *   query: new GraphQLObjectType({
+ *     name: 'Query',
+ *     fields: {
+ *       hero: { type: characterInterface, ... },
+ *     }
+ *   }),
+ *   ...
+ *   // Since this schema references only the `Character` interface it's
+ *   // necessary to explicitly list the types that implement it if
+ *   // you want them to be included in the final schema.
+ *   types: [humanType, droidType],
+ * })
+ * ```
  *
  * Note: If an array of `directives` are provided to GraphQLSchema, that will be
  * the exact list of directives represented and allowed. If `directives` is not
- * provided then a default set of the specified directives (e.g. @include and
- * @skip) will be used. If you wish to provide *additional* directives to these
+ * provided then a default set of the specified directives (e.g. `@include` and
+ * `@skip`) will be used. If you wish to provide *additional* directives to these
  * specified directives, you must explicitly declare them. Example:
  *
- *     const MyAppSchema = new GraphQLSchema({
- *       ...
- *       directives: specifiedDirectives.concat([ myCustomDirective ]),
- *     })
- *
+ * ```ts
+ * const MyAppSchema = new GraphQLSchema({
+ *   ...
+ *   directives: specifiedDirectives.concat([ myCustomDirective ]),
+ * })
+ * ```
  */
 
 export class GraphQLSchema {
