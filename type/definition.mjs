@@ -213,14 +213,15 @@ export function assertAbstractType(type) {
  *
  * Example:
  *
- *     const PersonType = new GraphQLObjectType({
- *       name: 'Person',
- *       fields: () => ({
- *         parents: { type: new GraphQLList(PersonType) },
- *         children: { type: new GraphQLList(PersonType) },
- *       })
- *     })
- *
+ * ```ts
+ * const PersonType = new GraphQLObjectType({
+ *   name: 'Person',
+ *   fields: () => ({
+ *     parents: { type: new GraphQLList(PersonType) },
+ *     children: { type: new GraphQLList(PersonType) },
+ *   })
+ * })
+ * ```
  */
 
 export class GraphQLList {
@@ -253,13 +254,14 @@ export class GraphQLList {
  *
  * Example:
  *
- *     const RowType = new GraphQLObjectType({
- *       name: 'Row',
- *       fields: () => ({
- *         id: { type: new GraphQLNonNull(GraphQLString) },
- *       })
- *     })
- *
+ * ```ts
+ * const RowType = new GraphQLObjectType({
+ *   name: 'Row',
+ *   fields: () => ({
+ *     id: { type: new GraphQLNonNull(GraphQLString) },
+ *   })
+ * })
+ * ```
  * Note: the enforcement of non-nullability occurs within the executor.
  */
 
@@ -386,15 +388,16 @@ function resolveObjMapThunk(thunk) {
  *
  * Example:
  *
- *     const OddType = new GraphQLScalarType({
- *       name: 'Odd',
- *       serialize(value) {
- *         if (value % 2 === 1) {
- *           return value;
- *         }
- *       }
- *     });
- *
+ * ```ts
+ * const OddType = new GraphQLScalarType({
+ *   name: 'Odd',
+ *   serialize(value) {
+ *     if (value % 2 === 1) {
+ *       return value;
+ *     }
+ *   }
+ * });
+ * ```
  */
 export class GraphQLScalarType {
   constructor(config) {
@@ -489,19 +492,21 @@ export class GraphQLScalarType {
  *
  * Example:
  *
- *     const AddressType = new GraphQLObjectType({
- *       name: 'Address',
- *       fields: {
- *         street: { type: GraphQLString },
- *         number: { type: GraphQLInt },
- *         formatted: {
- *           type: GraphQLString,
- *           resolve(obj) {
- *             return obj.number + ' ' + obj.street
- *           }
- *         }
+ * ```ts
+ * const AddressType = new GraphQLObjectType({
+ *   name: 'Address',
+ *   fields: {
+ *     street: { type: GraphQLString },
+ *     number: { type: GraphQLInt },
+ *     formatted: {
+ *       type: GraphQLString,
+ *       resolve(obj) {
+ *         return obj.number + ' ' + obj.street
  *       }
- *     });
+ *     }
+ *   }
+ * });
+ * ```
  *
  * When two types need to refer to each other, or a type needs to refer to
  * itself in a field, you can use a function expression (aka a closure or a
@@ -509,14 +514,15 @@ export class GraphQLScalarType {
  *
  * Example:
  *
- *     const PersonType = new GraphQLObjectType({
- *       name: 'Person',
- *       fields: () => ({
- *         name: { type: GraphQLString },
- *         bestFriend: { type: PersonType },
- *       })
- *     });
- *
+ * ```ts
+ * const PersonType = new GraphQLObjectType({
+ *   name: 'Person',
+ *   fields: () => ({
+ *     name: { type: GraphQLString },
+ *     bestFriend: { type: PersonType },
+ *   })
+ * });
+ * ```
  */
 export class GraphQLObjectType {
   constructor(config) {
@@ -712,13 +718,14 @@ export function isRequiredArgument(arg) {
  *
  * Example:
  *
- *     const EntityType = new GraphQLInterfaceType({
- *       name: 'Entity',
- *       fields: {
- *         name: { type: GraphQLString }
- *       }
- *     });
- *
+ * ```ts
+ * const EntityType = new GraphQLInterfaceType({
+ *   name: 'Entity',
+ *   fields: {
+ *     name: { type: GraphQLString }
+ *   }
+ * });
+ * ```
  */
 export class GraphQLInterfaceType {
   constructor(config) {
@@ -797,19 +804,20 @@ export class GraphQLInterfaceType {
  *
  * Example:
  *
- *     const PetType = new GraphQLUnionType({
- *       name: 'Pet',
- *       types: [ DogType, CatType ],
- *       resolveType(value) {
- *         if (value instanceof Dog) {
- *           return DogType;
- *         }
- *         if (value instanceof Cat) {
- *           return CatType;
- *         }
- *       }
- *     });
- *
+ * ```ts
+ * const PetType = new GraphQLUnionType({
+ *   name: 'Pet',
+ *   types: [ DogType, CatType ],
+ *   resolveType(value) {
+ *     if (value instanceof Dog) {
+ *       return DogType;
+ *     }
+ *     if (value instanceof Cat) {
+ *       return CatType;
+ *     }
+ *   }
+ * });
+ * ```
  */
 export class GraphQLUnionType {
   constructor(config) {
@@ -888,14 +896,16 @@ function defineTypes(config) {
  *
  * Example:
  *
- *     const RGBType = new GraphQLEnumType({
- *       name: 'RGB',
- *       values: {
- *         RED: { value: 0 },
- *         GREEN: { value: 1 },
- *         BLUE: { value: 2 }
- *       }
- *     });
+ * ```ts
+ * const RGBType = new GraphQLEnumType({
+ *   name: 'RGB',
+ *   values: {
+ *     RED: { value: 0 },
+ *     GREEN: { value: 1 },
+ *     BLUE: { value: 2 }
+ *   }
+ * });
+ * ```
  *
  * Note: If a value is not provided in a definition, the name of the enum value
  * will be used as its internal value.
@@ -1065,15 +1075,16 @@ function defineEnumValues(typeName, valueMap) {
  *
  * Example:
  *
- *     const GeoPoint = new GraphQLInputObjectType({
- *       name: 'GeoPoint',
- *       fields: {
- *         lat: { type: new GraphQLNonNull(GraphQLFloat) },
- *         lon: { type: new GraphQLNonNull(GraphQLFloat) },
- *         alt: { type: GraphQLFloat, defaultValue: 0 },
- *       }
- *     });
- *
+ * ```ts
+ * const GeoPoint = new GraphQLInputObjectType({
+ *   name: 'GeoPoint',
+ *   fields: {
+ *     lat: { type: new GraphQLNonNull(GraphQLFloat) },
+ *     lon: { type: new GraphQLNonNull(GraphQLFloat) },
+ *     alt: { type: GraphQLFloat, defaultValue: 0 },
+ *   }
+ * });
+ * ```
  */
 export class GraphQLInputObjectType {
   constructor(config) {

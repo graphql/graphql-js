@@ -116,7 +116,7 @@ function executeSync(args) {
   return result;
 }
 /**
- * Given a completed execution context and data, build the { errors, data }
+ * Given a completed execution context and data, build the `{ errors, data }`
  * response defined by the "Response" section of the GraphQL specification.
  */
 

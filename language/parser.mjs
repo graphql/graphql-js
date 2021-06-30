@@ -248,7 +248,9 @@ export class Parser {
     });
   }
   /**
+   * ```
    * SelectionSet : { Selection+ }
+   * ```
    */
 
   parseSelectionSet() {
@@ -537,9 +539,11 @@ export class Parser {
     });
   }
   /**
+   * ```
    * ObjectValue[Const] :
    *   - { }
    *   - { ObjectField[?Const]+ }
+   * ```
    */
 
   parseObject(isConst) {
@@ -583,7 +587,9 @@ export class Parser {
     return this.parseDirectives(true);
   }
   /**
+   * ```
    * Directive[Const] : @ Name Arguments[?Const]?
+   * ```
    */
 
   parseDirective(isConst) {
@@ -703,7 +709,9 @@ export class Parser {
     }
   }
   /**
+   * ```
    * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
+   * ```
    */
 
   parseSchemaDefinition() {
@@ -790,7 +798,9 @@ export class Parser {
       : [];
   }
   /**
+   * ```
    * FieldsDefinition : { FieldDefinition+ }
+   * ```
    */
 
   parseFieldsDefinition() {
@@ -934,7 +944,9 @@ export class Parser {
     });
   }
   /**
+   * ```
    * EnumValuesDefinition : { EnumValueDefinition+ }
+   * ```
    */
 
   parseEnumValuesDefinition() {
@@ -983,7 +995,9 @@ export class Parser {
     });
   }
   /**
+   * ```
    * InputFieldsDefinition : { InputValueDefinition+ }
+   * ```
    */
 
   parseInputFieldsDefinition() {
@@ -1038,9 +1052,11 @@ export class Parser {
     throw this.unexpected(keywordToken);
   }
   /**
+   * ```
    * SchemaExtension :
    *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
    *  - extend schema Directives[Const]
+   * ```
    */
 
   parseSchemaExtension() {
@@ -1226,8 +1242,10 @@ export class Parser {
     });
   }
   /**
+   * ```
    * DirectiveDefinition :
    *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
+   * ```
    */
 
   parseDirectiveDefinition() {

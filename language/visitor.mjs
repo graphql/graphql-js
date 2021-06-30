@@ -94,24 +94,26 @@ export const BREAK = Object.freeze({});
  * a new version of the AST with the changes applied will be returned from the
  * visit function.
  *
- *     const editedAST = visit(ast, {
- *       enter(node, key, parent, path, ancestors) {
- *         // @return
- *         //   undefined: no action
- *         //   false: skip visiting this node
- *         //   visitor.BREAK: stop visiting altogether
- *         //   null: delete this node
- *         //   any value: replace this node with the returned value
- *       },
- *       leave(node, key, parent, path, ancestors) {
- *         // @return
- *         //   undefined: no action
- *         //   false: no action
- *         //   visitor.BREAK: stop visiting altogether
- *         //   null: delete this node
- *         //   any value: replace this node with the returned value
- *       }
- *     });
+ * ```ts
+ * const editedAST = visit(ast, {
+ *   enter(node, key, parent, path, ancestors) {
+ *     // @return
+ *     //   undefined: no action
+ *     //   false: skip visiting this node
+ *     //   visitor.BREAK: stop visiting altogether
+ *     //   null: delete this node
+ *     //   any value: replace this node with the returned value
+ *   },
+ *   leave(node, key, parent, path, ancestors) {
+ *     // @return
+ *     //   undefined: no action
+ *     //   false: no action
+ *     //   visitor.BREAK: stop visiting altogether
+ *     //   null: delete this node
+ *     //   any value: replace this node with the returned value
+ *   }
+ * });
+ * ```
  *
  * Alternatively to providing enter() and leave() functions, a visitor can
  * instead provide functions named the same as the kinds of AST nodes, or
@@ -120,36 +122,41 @@ export const BREAK = Object.freeze({});
  *
  * 1) Named visitors triggered when entering a node of a specific kind.
  *
- *     visit(ast, {
- *       Kind(node) {
- *         // enter the "Kind" node
- *       }
- *     })
+ * ```ts
+ * visit(ast, {
+ *   Kind(node) {
+ *     // enter the "Kind" node
+ *   }
+ * })
+ * ```
  *
- * 2) Named visitors that trigger upon entering and leaving a node of
- *    a specific kind.
+ * 2) Named visitors that trigger upon entering and leaving a node of a specific kind.
  *
- *     visit(ast, {
- *       Kind: {
- *         enter(node) {
- *           // enter the "Kind" node
- *         }
- *         leave(node) {
- *           // leave the "Kind" node
- *         }
- *       }
- *     })
+ * ```ts
+ * visit(ast, {
+ *   Kind: {
+ *     enter(node) {
+ *       // enter the "Kind" node
+ *     }
+ *     leave(node) {
+ *       // leave the "Kind" node
+ *     }
+ *   }
+ * })
+ * ```
  *
  * 3) Generic visitors that trigger upon entering and leaving any node.
  *
- *     visit(ast, {
- *       enter(node) {
- *         // enter any node
- *       },
- *       leave(node) {
- *         // leave any node
- *       }
- *     })
+ * ```ts
+ * visit(ast, {
+ *   enter(node) {
+ *     // enter any node
+ *   },
+ *   leave(node) {
+ *     // leave any node
+ *   }
+ * })
+ * ```
  */
 
 export function visit(root, visitor) {

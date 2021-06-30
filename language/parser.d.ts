@@ -74,10 +74,11 @@ export interface ParseOptions {
    *
    * The syntax is identical to normal, query-defined variables. For example:
    *
-   *   fragment A($var: Boolean = false) on T  {
-   *     ...
-   *   }
-   *
+   * ```graphql
+   * fragment A($var: Boolean = false) on T {
+   *   ...
+   * }
+   * ```
    */
   allowLegacyFragmentVariables?: boolean;
 }
@@ -182,7 +183,9 @@ export declare class Parser {
    */
   parseVariable(): VariableNode;
   /**
+   * ```
    * SelectionSet : { Selection+ }
+   * ```
    */
   parseSelectionSet(): SelectionSetNode;
   /**
@@ -258,9 +261,11 @@ export declare class Parser {
   parseList(isConst: true): ConstListValueNode;
   parseList(isConst: boolean): ListValueNode;
   /**
+   * ```
    * ObjectValue[Const] :
    *   - { }
    *   - { ObjectField[?Const]+ }
+   * ```
    */
   parseObject(isConst: true): ConstObjectValueNode;
   parseObject(isConst: boolean): ObjectValueNode;
@@ -276,7 +281,9 @@ export declare class Parser {
   parseDirectives(isConst: boolean): Array<DirectiveNode>;
   parseConstDirectives(): Array<ConstDirectiveNode>;
   /**
+   * ```
    * Directive[Const] : @ Name Arguments[?Const]?
+   * ```
    */
   parseDirective(isConst: true): ConstDirectiveNode;
   parseDirective(isConst: boolean): DirectiveNode;
@@ -312,7 +319,9 @@ export declare class Parser {
    */
   parseDescription(): undefined | StringValueNode;
   /**
+   * ```
    * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
+   * ```
    */
   parseSchemaDefinition(): SchemaDefinitionNode;
   /**
@@ -336,7 +345,9 @@ export declare class Parser {
    */
   parseImplementsInterfaces(): Array<NamedTypeNode>;
   /**
+   * ```
    * FieldsDefinition : { FieldDefinition+ }
+   * ```
    */
   parseFieldsDefinition(): Array<FieldDefinitionNode>;
   /**
@@ -375,7 +386,9 @@ export declare class Parser {
    */
   parseEnumTypeDefinition(): EnumTypeDefinitionNode;
   /**
+   * ```
    * EnumValuesDefinition : { EnumValueDefinition+ }
+   * ```
    */
   parseEnumValuesDefinition(): Array<EnumValueDefinitionNode>;
   /**
@@ -390,7 +403,9 @@ export declare class Parser {
    */
   parseInputObjectTypeDefinition(): InputObjectTypeDefinitionNode;
   /**
+   * ```
    * InputFieldsDefinition : { InputValueDefinition+ }
+   * ```
    */
   parseInputFieldsDefinition(): Array<InputValueDefinitionNode>;
   /**
@@ -408,9 +423,11 @@ export declare class Parser {
    */
   parseTypeSystemExtension(): TypeSystemExtensionNode;
   /**
+   * ```
    * SchemaExtension :
    *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
    *  - extend schema Directives[Const]
+   * ```
    */
   parseSchemaExtension(): SchemaExtensionNode;
   /**
@@ -451,8 +468,10 @@ export declare class Parser {
    */
   parseInputObjectTypeExtension(): InputObjectTypeExtensionNode;
   /**
+   * ```
    * DirectiveDefinition :
    *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
+   * ```
    */
   parseDirectiveDefinition(): DirectiveDefinitionNode;
   /**

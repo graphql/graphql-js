@@ -27,7 +27,7 @@ export declare function validate(
   options?: {
     maxErrors?: number;
   },
-  /** @deprecate will be removed in 17.0.0 */
+  /** @deprecated will be removed in 17.0.0 */
   typeInfo?: TypeInfo,
 ): ReadonlyArray<GraphQLError>;
 /**

@@ -313,8 +313,7 @@ function join(maybeArray, separator = '') {
     : '';
 }
 /**
- * Given array, print each item on its own line, wrapped in an
- * indented "{ }" block.
+ * Given array, print each item on its own line, wrapped in an indented `{ }` block.
  */
 
 function block(array) {

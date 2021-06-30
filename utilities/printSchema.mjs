@@ -75,11 +75,13 @@ function printSchemaDefinition(schema) {
  * the same as any other type and can be named in any manner, however there is
  * a common naming convention:
  *
+ * ```graphql
  *   schema {
  *     query: Query
  *     mutation: Mutation
  *     subscription: Subscription
  *   }
+ * ```
  *
  * When using this naming convention, the schema description can be omitted.
  */

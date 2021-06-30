@@ -266,7 +266,9 @@ class Parser {
     });
   }
   /**
+   * ```
    * SelectionSet : { Selection+ }
+   * ```
    */
 
   parseSelectionSet() {
@@ -563,9 +565,11 @@ class Parser {
     });
   }
   /**
+   * ```
    * ObjectValue[Const] :
    *   - { }
    *   - { ObjectField[?Const]+ }
+   * ```
    */
 
   parseObject(isConst) {
@@ -613,7 +617,9 @@ class Parser {
     return this.parseDirectives(true);
   }
   /**
+   * ```
    * Directive[Const] : @ Name Arguments[?Const]?
+   * ```
    */
 
   parseDirective(isConst) {
@@ -736,7 +742,9 @@ class Parser {
     }
   }
   /**
+   * ```
    * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
+   * ```
    */
 
   parseSchemaDefinition() {
@@ -823,7 +831,9 @@ class Parser {
       : [];
   }
   /**
+   * ```
    * FieldsDefinition : { FieldDefinition+ }
+   * ```
    */
 
   parseFieldsDefinition() {
@@ -967,7 +977,9 @@ class Parser {
     });
   }
   /**
+   * ```
    * EnumValuesDefinition : { EnumValueDefinition+ }
+   * ```
    */
 
   parseEnumValuesDefinition() {
@@ -1016,7 +1028,9 @@ class Parser {
     });
   }
   /**
+   * ```
    * InputFieldsDefinition : { InputValueDefinition+ }
+   * ```
    */
 
   parseInputFieldsDefinition() {
@@ -1071,9 +1085,11 @@ class Parser {
     throw this.unexpected(keywordToken);
   }
   /**
+   * ```
    * SchemaExtension :
    *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
    *  - extend schema Directives[Const]
+   * ```
    */
 
   parseSchemaExtension() {
@@ -1259,8 +1275,10 @@ class Parser {
     });
   }
   /**
+   * ```
    * DirectiveDefinition :
    *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
+   * ```
    */
 
   parseDirectiveDefinition() {

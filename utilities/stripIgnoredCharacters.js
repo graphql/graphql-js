@@ -35,6 +35,7 @@ var _blockString = require('../language/blockString.js');
  *
  * Query example:
  *
+ * ```graphql
  * query SomeQuery($foo: String!, $bar: String) {
  *   someField(foo: $foo, bar: $bar) {
  *     a
@@ -44,13 +45,17 @@ var _blockString = require('../language/blockString.js');
  *     }
  *   }
  * }
+ * ```
  *
  * Becomes:
  *
+ * ```graphql
  * query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}
+ * ```
  *
  * SDL example:
  *
+ * ```graphql
  * """
  * Type description
  * """
@@ -60,10 +65,13 @@ var _blockString = require('../language/blockString.js');
  *   """
  *   bar: String
  * }
+ * ```
  *
  * Becomes:
  *
+ * ```graphql
  * """Type description""" type Foo{"""Field description""" bar:String}
+ * ```
  */
 function stripIgnoredCharacters(source) {
   const sourceObj = (0, _source.isSource)(source)

@@ -6,7 +6,7 @@ import type { GraphQLError } from './GraphQLError';
  */
 export declare function formatError(error: GraphQLError): GraphQLFormattedError;
 /**
- * @see https://github.com/graphql/graphql-spec/blob/master/spec/Section%207%20--%20Response.md#errors
+ * See: https://spec.graphql.org/draft/#sec-Errors
  */
 export interface GraphQLFormattedError {
   /**

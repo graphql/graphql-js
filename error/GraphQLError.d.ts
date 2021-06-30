@@ -10,7 +10,7 @@ import type { SourceLocation } from '../language/location';
  */
 export declare class GraphQLError extends Error {
   /**
-   * An array of { line, column } locations within the source GraphQL document
+   * An array of `{ line, column }` locations within the source GraphQL document
    * which correspond to this error.
    *
    * Errors during validation often contain multiple locations, for example to

@@ -117,11 +117,13 @@ function isPunctuatorTokenKind(kind) {
   );
 }
 /**
+ * ```
  * SourceCharacter ::
  *   - U+0009 (Horizontal Tab)
  *   - U+000A (New Line)
  *   - U+000D (Carriage Return)
  *   - U+0020-U+FFFF
+ * ```
  */
 
 function isSourceCharacter(code) {
@@ -411,9 +413,11 @@ function readNextToken(lexer, start) {
 /**
  * Reads a comment token from the source file.
  *
+ * ```
  * Comment :: # CommentChar* [lookahead != CommentChar]
  *
  * CommentChar :: SourceCharacter but not LineTerminator
+ * ```
  */
 
 function readComment(lexer, start) {
@@ -447,6 +451,7 @@ function readComment(lexer, start) {
  * Reads a number token from the source file, either a FloatValue or an IntValue
  * depending on whether a FractionalPart or ExponentPart is encountered.
  *
+ * ```
  * IntValue :: IntegerPart [lookahead != {Digit, `.`, NameStart}]
  *
  * IntegerPart ::
@@ -469,6 +474,7 @@ function readComment(lexer, start) {
  * ExponentIndicator :: one of `e` `E`
  *
  * Sign :: one of + -
+ * ```
  */
 
 function readNumber(lexer, start, firstCode) {
@@ -566,6 +572,7 @@ function readDigits(lexer, start, firstCode) {
 /**
  * Reads a single-quote string token from the source file.
  *
+ * ```
  * StringValue ::
  *   - `""` [lookahead != `"`]
  *   - `"` StringCharacter+ `"`
@@ -578,6 +585,7 @@ function readDigits(lexer, start, firstCode) {
  * EscapedUnicode :: /[0-9A-Fa-f]{4}/
  *
  * EscapedCharacter :: one of `"` `\` `/` `b` `f` `n` `r` `t`
+ * ```
  */
 
 function readString(lexer, start) {
@@ -695,14 +703,14 @@ function readHexDigit(code) {
 /**
  * | Escaped Character | Code Point | Character Name               |
  * | ----------------- | ---------- | ---------------------------- |
- * | {`"`}             | U+0022     | double quote                 |
- * | {`\`}             | U+005C     | reverse solidus (back slash) |
- * | {`/`}             | U+002F     | solidus (forward slash)      |
- * | {`b`}             | U+0008     | backspace                    |
- * | {`f`}             | U+000C     | form feed                    |
- * | {`n`}             | U+000A     | line feed (new line)         |
- * | {`r`}             | U+000D     | carriage return              |
- * | {`t`}             | U+0009     | horizontal tab               |
+ * | `"`               | U+0022     | double quote                 |
+ * | `\`               | U+005C     | reverse solidus (back slash) |
+ * | `/`               | U+002F     | solidus (forward slash)      |
+ * | `b`               | U+0008     | backspace                    |
+ * | `f`               | U+000C     | form feed                    |
+ * | `n`               | U+000A     | line feed (new line)         |
+ * | `r`               | U+000D     | carriage return              |
+ * | `t`               | U+0009     | horizontal tab               |
  */
 
 function readEscapedCharacter(lexer, position) {
@@ -779,12 +787,14 @@ function readEscapedCharacter(lexer, position) {
 /**
  * Reads a block string token from the source file.
  *
+ * ```
  * StringValue ::
  *   - `"""` BlockStringCharacter* `"""`
  *
  * BlockStringCharacter ::
  *   - SourceCharacter but not `"""` or `\"""`
  *   - `\"""`
+ * ```
  */
 
 function readBlockString(lexer, start) {
@@ -859,6 +869,7 @@ function readBlockString(lexer, start) {
 /**
  * Reads an alphanumeric + underscore name from the source.
  *
+ * ```
  * Name ::
  *   - NameStart NameContinue* [lookahead != NameContinue]
  *
@@ -870,6 +881,7 @@ function readBlockString(lexer, start) {
  *   - Letter
  *   - Digit
  *   - `_`
+ * ```
  */
 
 function readName(lexer, start) {
@@ -900,19 +912,23 @@ function isNameStart(code) {
   return isLetter(code) || code === 0x005f;
 }
 /**
+ * ```
  * Digit :: one of
  *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
+ * ```
  */
 
 function isDigit(code) {
   return code >= 0x0030 && code <= 0x0039;
 }
 /**
+ * ```
  * Letter :: one of
  *   - `A` `B` `C` `D` `E` `F` `G` `H` `I` `J` `K` `L` `M`
  *   - `N` `O` `P` `Q` `R` `S` `T` `U` `V` `W` `X` `Y` `Z`
  *   - `a` `b` `c` `d` `e` `f` `g` `h` `i` `j` `k` `l` `m`
  *   - `n` `o` `p` `q` `r` `s` `t` `u` `v` `w` `x` `y` `z`
+ * ```
  */
 
 function isLetter(code) {
