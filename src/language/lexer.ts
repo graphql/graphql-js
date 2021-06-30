@@ -108,11 +108,13 @@ export function isPunctuatorTokenKind(kind: TokenKindEnum): boolean {
 }
 
 /**
+ * ```
  * SourceCharacter ::
  *   - U+0009 (Horizontal Tab)
  *   - U+000A (New Line)
  *   - U+000D (Carriage Return)
  *   - U+0020-U+FFFF
+ * ```
  */
 function isSourceCharacter(code: number): boolean {
   return (
@@ -296,9 +298,11 @@ function readNextToken(lexer: Lexer, start: number): Token {
 /**
  * Reads a comment token from the source file.
  *
+ * ```
  * Comment :: # CommentChar* [lookahead != CommentChar]
  *
  * CommentChar :: SourceCharacter but not LineTerminator
+ * ```
  */
 function readComment(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
@@ -334,6 +338,7 @@ function readComment(lexer: Lexer, start: number): Token {
  * Reads a number token from the source file, either a FloatValue or an IntValue
  * depending on whether a FractionalPart or ExponentPart is encountered.
  *
+ * ```
  * IntValue :: IntegerPart [lookahead != {Digit, `.`, NameStart}]
  *
  * IntegerPart ::
@@ -356,6 +361,7 @@ function readComment(lexer: Lexer, start: number): Token {
  * ExponentIndicator :: one of `e` `E`
  *
  * Sign :: one of + -
+ * ```
  */
 function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
   const body = lexer.source.body;
@@ -458,6 +464,7 @@ function readDigits(lexer: Lexer, start: number, firstCode: number): number {
 /**
  * Reads a single-quote string token from the source file.
  *
+ * ```
  * StringValue ::
  *   - `""` [lookahead != `"`]
  *   - `"` StringCharacter+ `"`
@@ -470,6 +477,7 @@ function readDigits(lexer: Lexer, start: number, firstCode: number): number {
  * EscapedUnicode :: /[0-9A-Fa-f]{4}/
  *
  * EscapedCharacter :: one of `"` `\` `/` `b` `f` `n` `r` `t`
+ * ```
  */
 function readString(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
@@ -584,14 +592,14 @@ function readHexDigit(code: number): number {
 /**
  * | Escaped Character | Code Point | Character Name               |
  * | ----------------- | ---------- | ---------------------------- |
- * | {`"`}             | U+0022     | double quote                 |
- * | {`\`}             | U+005C     | reverse solidus (back slash) |
- * | {`/`}             | U+002F     | solidus (forward slash)      |
- * | {`b`}             | U+0008     | backspace                    |
- * | {`f`}             | U+000C     | form feed                    |
- * | {`n`}             | U+000A     | line feed (new line)         |
- * | {`r`}             | U+000D     | carriage return              |
- * | {`t`}             | U+0009     | horizontal tab               |
+ * | `"`               | U+0022     | double quote                 |
+ * | `\`               | U+005C     | reverse solidus (back slash) |
+ * | `/`               | U+002F     | solidus (forward slash)      |
+ * | `b`               | U+0008     | backspace                    |
+ * | `f`               | U+000C     | form feed                    |
+ * | `n`               | U+000A     | line feed (new line)         |
+ * | `r`               | U+000D     | carriage return              |
+ * | `t`               | U+0009     | horizontal tab               |
  */
 function readEscapedCharacter(lexer: Lexer, position: number): EscapeSequence {
   const body = lexer.source.body;
@@ -627,12 +635,14 @@ function readEscapedCharacter(lexer: Lexer, position: number): EscapeSequence {
 /**
  * Reads a block string token from the source file.
  *
+ * ```
  * StringValue ::
  *   - `"""` BlockStringCharacter* `"""`
  *
  * BlockStringCharacter ::
  *   - SourceCharacter but not `"""` or `\"""`
  *   - `\"""`
+ * ```
  */
 function readBlockString(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
@@ -706,6 +716,7 @@ function readBlockString(lexer: Lexer, start: number): Token {
 /**
  * Reads an alphanumeric + underscore name from the source.
  *
+ * ```
  * Name ::
  *   - NameStart NameContinue* [lookahead != NameContinue]
  *
@@ -717,6 +728,7 @@ function readBlockString(lexer: Lexer, start: number): Token {
  *   - Letter
  *   - Digit
  *   - `_`
+ * ```
  */
 function readName(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
@@ -747,19 +759,23 @@ function isNameStart(code: number): boolean {
 }
 
 /**
+ * ```
  * Digit :: one of
  *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
+ * ```
  */
 function isDigit(code: number): boolean {
   return code >= 0x0030 && code <= 0x0039;
 }
 
 /**
+ * ```
  * Letter :: one of
  *   - `A` `B` `C` `D` `E` `F` `G` `H` `I` `J` `K` `L` `M`
  *   - `N` `O` `P` `Q` `R` `S` `T` `U` `V` `W` `X` `Y` `Z`
  *   - `a` `b` `c` `d` `e` `f` `g` `h` `i` `j` `k` `l` `m`
  *   - `n` `o` `p` `q` `r` `s` `t` `u` `v` `w` `x` `y` `z`
+ * ```
  */
 function isLetter(code: number): boolean {
   return (

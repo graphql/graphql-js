@@ -449,9 +449,17 @@ overrides:
       project: ['tsconfig.json']
     plugins:
       - '@typescript-eslint'
+      - 'eslint-plugin-tsdoc'
     extends:
       - plugin:import/typescript
     rules:
+      ##########################################################################
+      # `eslint-plugin-tsdoc` rule list based on `v0.2.x`
+      # https://github.com/microsoft/tsdoc/tree/master/eslint-plugin
+      ##########################################################################
+
+      tsdoc/syntax: error
+
       ##########################################################################
       # `@typescript-eslint/eslint-plugin` rule list based on `v4.28.x`
       ##########################################################################

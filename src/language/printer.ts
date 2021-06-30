@@ -316,8 +316,7 @@ function join(
 }
 
 /**
- * Given array, print each item on its own line, wrapped in an
- * indented "{ }" block.
+ * Given array, print each item on its own line, wrapped in an indented `{ }` block.
  */
 function block(array: Maybe<ReadonlyArray<string | undefined>>): string {
   return wrap('{\n', indent(join(array, '\n')), '\n}');

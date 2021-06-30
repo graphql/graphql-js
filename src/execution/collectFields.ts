@@ -106,8 +106,8 @@ export function collectFields(
 }
 
 /**
- * Determines if a field should be included based on the @include and @skip
- * directives, where @skip has higher precedence than @include.
+ * Determines if a field should be included based on the `@include` and `@skip`
+ * directives, where `@skip` has higher precedence than `@include`.
  */
 function shouldIncludeNode(
   variableValues: { [variable: string]: unknown },
