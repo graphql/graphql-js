@@ -209,6 +209,30 @@ jobs:
       - name: Run Benchmark
         run: 'npm run benchmark -- --revs HEAD HEAD~1'
 
+  diff-npm-package:
+    name: Diff content of NPM package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+
+      - name: Generate report
+        run: 'node resources/diff-npm-package.js ${{ github.event.pull_request.base.sha }} HEAD'
+
+      - name: Upload generated report
+        uses: actions/upload-artifact@v2
+        with:
+          name: npm-dist-diff.html
+          path: ./npm-dist-diff.html
+          if-no-files-found: ignore
+
   deploy-to-npm-branch:
     name: Deploy to `npm` branch
     runs-on: ubuntu-latest
