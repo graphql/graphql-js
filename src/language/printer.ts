@@ -4,6 +4,7 @@ import type { ASTNode } from './ast';
 import type { ASTReducer } from './visitor';
 import { visit } from './visitor';
 import { printBlockString } from './blockString';
+import { printString } from './printString';
 
 /**
  * Converts an AST into a string, using one set of reasonable
@@ -109,7 +110,7 @@ const printDocASTReducer: ASTReducer<string> = {
   FloatValue: { leave: ({ value }) => value },
   StringValue: {
     leave: ({ value, block: isBlockString }) =>
-      isBlockString ? printBlockString(value) : JSON.stringify(value),
+      isBlockString ? printBlockString(value) : printString(value),
   },
   BooleanValue: { leave: ({ value }) => (value ? 'true' : 'false') },
   NullValue: { leave: () => 'null' },
