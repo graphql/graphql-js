@@ -357,6 +357,7 @@ export {
   UniqueTypeNamesRule,
   UniqueEnumValueNamesRule,
   UniqueFieldDefinitionNamesRule,
+  UniqueArgumentDefinitionNamesRule,
   UniqueDirectiveNamesRule,
   PossibleTypeExtensionsRule,
   /** Custom validation rules */
