@@ -639,7 +639,7 @@ export interface ScalarTypeExtensionNode {
 }
 
 export interface ObjectTypeExtensionNode {
-  readonly kind: typeof Kind.OBJECT_TYPE_DEFINITION;
+  readonly kind: typeof Kind.OBJECT_TYPE_EXTENSION;
   readonly loc?: Location;
   readonly name: NameNode;
   readonly interfaces?: ReadonlyArray<NamedTypeNode>;
@@ -648,7 +648,7 @@ export interface ObjectTypeExtensionNode {
 }
 
 export interface InterfaceTypeExtensionNode {
-  readonly kind: typeof Kind.INTERFACE_TYPE_DEFINITION;
+  readonly kind: typeof Kind.INTERFACE_TYPE_EXTENSION;
   readonly loc?: Location;
   readonly name: NameNode;
   readonly interfaces?: ReadonlyArray<NamedTypeNode>;
@@ -657,7 +657,7 @@ export interface InterfaceTypeExtensionNode {
 }
 
 export interface UnionTypeExtensionNode {
-  readonly kind: typeof Kind.UNION_TYPE_DEFINITION;
+  readonly kind: typeof Kind.UNION_TYPE_EXTENSION;
   readonly loc?: Location;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
@@ -665,7 +665,7 @@ export interface UnionTypeExtensionNode {
 }
 
 export interface EnumTypeExtensionNode {
-  readonly kind: typeof Kind.ENUM_TYPE_DEFINITION;
+  readonly kind: typeof Kind.ENUM_TYPE_EXTENSION;
   readonly loc?: Location;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
@@ -673,7 +673,7 @@ export interface EnumTypeExtensionNode {
 }
 
 export interface InputObjectTypeExtensionNode {
-  readonly kind: typeof Kind.INPUT_OBJECT_TYPE_DEFINITION;
+  readonly kind: typeof Kind.INPUT_OBJECT_TYPE_EXTENSION;
   readonly loc?: Location;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
