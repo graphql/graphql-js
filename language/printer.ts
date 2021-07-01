@@ -3,6 +3,7 @@ import type { ASTNode } from './ast.ts';
 import type { ASTReducer } from './visitor.ts';
 import { visit } from './visitor.ts';
 import { printBlockString } from './blockString.ts';
+import { printString } from './printString.ts';
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
@@ -100,7 +101,7 @@ const printDocASTReducer: ASTReducer<string> = {
   },
   StringValue: {
     leave: ({ value, block: isBlockString }) =>
-      isBlockString ? printBlockString(value) : JSON.stringify(value),
+      isBlockString ? printBlockString(value) : printString(value),
   },
   BooleanValue: {
     leave: ({ value }) => (value ? 'true' : 'false'),
