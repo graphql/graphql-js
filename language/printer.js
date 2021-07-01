@@ -9,6 +9,8 @@ var _visitor = require('./visitor.js');
 
 var _blockString = require('./blockString.js');
 
+var _printString = require('./printString.js');
+
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
@@ -108,7 +110,7 @@ const printDocASTReducer = {
     leave: ({ value, block: isBlockString }) =>
       isBlockString
         ? (0, _blockString.printBlockString)(value)
-        : JSON.stringify(value),
+        : (0, _printString.printString)(value),
   },
   BooleanValue: {
     leave: ({ value }) => (value ? 'true' : 'false'),

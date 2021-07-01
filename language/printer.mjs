@@ -1,5 +1,6 @@
 import { visit } from './visitor.mjs';
 import { printBlockString } from './blockString.mjs';
+import { printString } from './printString.mjs';
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
@@ -97,7 +98,7 @@ const printDocASTReducer = {
   },
   StringValue: {
     leave: ({ value, block: isBlockString }) =>
-      isBlockString ? printBlockString(value) : JSON.stringify(value),
+      isBlockString ? printBlockString(value) : printString(value),
   },
   BooleanValue: {
     leave: ({ value }) => (value ? 'true' : 'false'),
