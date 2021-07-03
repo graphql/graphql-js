@@ -30,6 +30,13 @@ const heroType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
+    delayedName: {
+      type: GraphQLString,
+      async resolve(rootValue) {
+        await new Promise((r) => setTimeout(r, 1));
+        return rootValue.name;
+      },
+    },
     errorField: {
       type: GraphQLString,
       resolve: () => {
@@ -265,6 +272,67 @@ describe('Execute: defer directive', () => {
             path: ['hero', 'errorField'],
           },
         ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Can defer fragments at multiple levels, returning fragments in path order', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ...HeroFragment @defer(label: "DeferHero")
+        }
+      }
+      fragment HeroFragment on Hero {
+        delayedName
+        friends {
+          ...FriendFragment @defer(label: "DeferFriend")
+        }
+      }
+      fragment FriendFragment on Friend {
+        name
+      }
+    `);
+    const result = await complete(document);
+
+    expect(result).to.deep.equal([
+      {
+        data: {
+          hero: {},
+        },
+        hasNext: true,
+      },
+      {
+        data: {
+          delayedName: 'Luke',
+          friends: [{}, {}, {}],
+        },
+        path: ['hero'],
+        label: 'DeferHero',
+        hasNext: true,
+      },
+      {
+        data: {
+          name: 'Han',
+        },
+        path: ['hero', 'friends', 0],
+        label: 'DeferFriend',
+        hasNext: true,
+      },
+      {
+        data: {
+          name: 'Leia',
+        },
+        path: ['hero', 'friends', 1],
+        label: 'DeferFriend',
+        hasNext: true,
+      },
+      {
+        data: {
+          name: 'C-3PO',
+        },
+        path: ['hero', 'friends', 2],
+        label: 'DeferFriend',
         hasNext: false,
       },
     ]);
