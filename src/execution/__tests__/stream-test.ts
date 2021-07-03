@@ -42,8 +42,33 @@ const friends = [
   { name: 'Leia', id: 3 },
 ];
 
+const heroType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    delayedName: {
+      type: GraphQLString,
+      async resolve(rootValue) {
+        await new Promise((r) => setTimeout(r, 1));
+        return rootValue.name;
+      },
+    },
+    friends: {
+      type: new GraphQLList(friendType),
+      resolve: () => friends,
+    },
+  },
+  name: 'Hero',
+});
+
+const hero = { name: 'R2-D2', id: 1 };
+
 const query = new GraphQLObjectType({
   fields: {
+    hero: {
+      type: heroType,
+      resolve: () => hero,
+    },
     scalarList: {
       type: new GraphQLList(GraphQLString),
       resolve: () => ['apple', 'banana', 'coconut'],
@@ -322,6 +347,62 @@ describe('Execute: stream directive', () => {
           id: '3',
         },
         path: ['asyncList', 2],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Can nest a streamed field within a deferred fragment, returning streamed items after empty list', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ...HeroFragment @defer
+        }
+      }
+      fragment HeroFragment on Hero {
+        delayedName
+        friends @stream {
+          ...FriendFragment
+        }
+      }
+      fragment FriendFragment on Friend {
+        name
+      }
+    `);
+    const result = await complete(document);
+    expect(result).to.deep.equal([
+      {
+        data: {
+          hero: {},
+        },
+        hasNext: true,
+      },
+      {
+        data: {
+          delayedName: 'R2-D2',
+          friends: [],
+        },
+        path: ['hero'],
+        hasNext: true,
+      },
+      {
+        data: {
+          name: 'Luke',
+        },
+        path: ['hero', 'friends', 0],
+        hasNext: true,
+      },
+      {
+        data: {
+          name: 'Han',
+        },
+        path: ['hero', 'friends', 1],
+        hasNext: true,
+      },
+      {
+        data: {
+          name: 'Leia',
+        },
+        path: ['hero', 'friends', 2],
         hasNext: false,
       },
     ]);
