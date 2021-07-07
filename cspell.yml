@@ -1,6 +1,7 @@
 language: en
 ignorePaths:
   # Copied from '.gitignore', please keep it in sync.
+  - diff-npm-package.html
   - .eslintcache
   - node_modules
   - coverage
