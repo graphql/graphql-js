@@ -90,6 +90,7 @@ export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule';
 export { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule';
 export { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule';
 export { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule';
+export { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule';
 export { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule';
 export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
 
