@@ -184,7 +184,8 @@ export type ASTNode =
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
-  | InputObjectTypeExtensionNode;
+  | InputObjectTypeExtensionNode
+  | SchemaCoordinateNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -233,6 +234,7 @@ export interface ASTKindToNode {
   UnionTypeExtension: UnionTypeExtensionNode;
   EnumTypeExtension: EnumTypeExtensionNode;
   InputObjectTypeExtension: InputObjectTypeExtensionNode;
+  SchemaCoordinate: SchemaCoordinateNode;
 }
 
 /** Name */
@@ -677,4 +679,15 @@ export interface InputObjectTypeExtensionNode {
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly fields?: ReadonlyArray<InputValueDefinitionNode>;
+}
+
+// Schema Coordinates
+
+export interface SchemaCoordinateNode {
+  readonly kind: 'SchemaCoordinate';
+  readonly loc?: Location;
+  readonly ofDirective: boolean;
+  readonly name: NameNode;
+  readonly memberName?: NameNode;
+  readonly argumentName?: NameNode;
 }
