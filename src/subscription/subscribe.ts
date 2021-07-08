@@ -3,6 +3,7 @@ import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { addPath, pathToArray } from '../jsutils/Path';
 import type { Maybe } from '../jsutils/Maybe';
 
+import { GraphQLAggregateError } from '../error/GraphQLAggregateError';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
@@ -179,6 +180,12 @@ export async function createSourceEventStream(
   } catch (error) {
     // If it GraphQLError, report it as an ExecutionResult, containing only errors and no data.
     // Otherwise treat the error as a system-class error and re-throw it.
+    if (
+      error instanceof GraphQLAggregateError &&
+      error.errors.every((subError) => subError instanceof GraphQLError)
+    ) {
+      return { errors: error.errors };
+    }
     if (error instanceof GraphQLError) {
       return { errors: [error] };
     }
@@ -238,6 +245,14 @@ async function executeSubscription(
     }
     return eventStream;
   } catch (error) {
-    throw locatedError(error, fieldNodes, pathToArray(path));
+    const pathAsArray = pathToArray(path);
+    if (error instanceof GraphQLAggregateError) {
+      throw new GraphQLAggregateError(
+        error.errors.map((subError) =>
+          locatedError(subError, fieldNodes, pathAsArray),
+        ),
+      );
+    }
+    throw locatedError(error, fieldNodes, pathAsArray);
   }
 }

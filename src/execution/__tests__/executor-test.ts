@@ -7,6 +7,7 @@ import { invariant } from '../../jsutils/invariant';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
+import { GraphQLAggregateError } from '../../error/GraphQLAggregateError';
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLInt, GraphQLBoolean, GraphQLString } from '../../type/scalars';
 import {
@@ -401,17 +402,22 @@ describe('Execute: Handles basic execution tasks', () => {
         fields: {
           sync: { type: GraphQLString },
           syncError: { type: GraphQLString },
+          syncAggregateError: { type: GraphQLString },
           syncRawError: { type: GraphQLString },
           syncReturnError: { type: GraphQLString },
+          syncReturnAggregateError: { type: GraphQLString },
           syncReturnErrorList: { type: new GraphQLList(GraphQLString) },
           async: { type: GraphQLString },
           asyncReject: { type: GraphQLString },
+          asyncRejectAggregate: { type: GraphQLString },
           asyncRejectWithExtensions: { type: GraphQLString },
           asyncRawReject: { type: GraphQLString },
           asyncEmptyReject: { type: GraphQLString },
           asyncError: { type: GraphQLString },
+          asyncAggregateError: { type: GraphQLString },
           asyncRawError: { type: GraphQLString },
           asyncReturnError: { type: GraphQLString },
+          asyncReturnAggregateError: { type: GraphQLString },
           asyncReturnErrorWithExtensions: { type: GraphQLString },
         },
       }),
@@ -421,16 +427,22 @@ describe('Execute: Handles basic execution tasks', () => {
       {
         sync
         syncError
+        syncAggregateError
         syncRawError
         syncReturnError
+        syncReturnAggregateError
         syncReturnErrorList
         async
         asyncReject
+        asyncRejectAggregate
         asyncRawReject
+        asyncRawRejectAggregate
         asyncEmptyReject
         asyncError
+        asyncAggregateError
         asyncRawError
         asyncReturnError
+        asyncReturnAggregateError
         asyncReturnErrorWithExtensions
       }
     `);
@@ -442,12 +454,24 @@ describe('Execute: Handles basic execution tasks', () => {
       syncError() {
         throw new Error('Error getting syncError');
       },
+      syncAggregateError() {
+        throw new GraphQLAggregateError([
+          new Error('Error1 getting syncAggregateError'),
+          new Error('Error2 getting syncAggregateError'),
+        ]);
+      },
       syncRawError() {
         // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw 'Error getting syncRawError';
       },
       syncReturnError() {
         return new Error('Error getting syncReturnError');
+      },
+      syncReturnAggregateError() {
+        return new GraphQLAggregateError([
+          new Error('Error1 getting syncReturnAggregateError'),
+          new Error('Error2 getting syncReturnAggregateError'),
+        ]);
       },
       syncReturnErrorList() {
         return [
@@ -465,6 +489,16 @@ describe('Execute: Handles basic execution tasks', () => {
           reject(new Error('Error getting asyncReject')),
         );
       },
+      asyncRejectAggregate() {
+        return new Promise((_, reject) =>
+          reject(
+            new GraphQLAggregateError([
+              new Error('Error1 getting asyncRejectAggregate'),
+              new Error('Error2 getting asyncRejectAggregate'),
+            ]),
+          ),
+        );
+      },
       asyncRawReject() {
         // eslint-disable-next-line prefer-promise-reject-errors
         return Promise.reject('Error getting asyncRawReject');
@@ -478,6 +512,14 @@ describe('Execute: Handles basic execution tasks', () => {
           throw new Error('Error getting asyncError');
         });
       },
+      asyncAggregateError() {
+        return new Promise(() => {
+          throw new GraphQLAggregateError([
+            new Error('Error1 getting asyncAggregateError'),
+            new Error('Error2 getting asyncAggregateError'),
+          ]);
+        });
+      },
       asyncRawError() {
         return new Promise(() => {
           // eslint-disable-next-line @typescript-eslint/no-throw-literal
@@ -486,6 +528,14 @@ describe('Execute: Handles basic execution tasks', () => {
       },
       asyncReturnError() {
         return Promise.resolve(new Error('Error getting asyncReturnError'));
+      },
+      asyncReturnAggregateError() {
+        return Promise.resolve(
+          new GraphQLAggregateError([
+            new Error('Error1 getting asyncReturnAggregateError'),
+            new Error('Error2 getting asyncReturnAggregateError'),
+          ]),
+        );
       },
       asyncReturnErrorWithExtensions() {
         const error = new Error('Error getting asyncReturnErrorWithExtensions');
@@ -501,16 +551,21 @@ describe('Execute: Handles basic execution tasks', () => {
       data: {
         sync: 'sync',
         syncError: null,
+        syncAggregateError: null,
         syncRawError: null,
         syncReturnError: null,
+        syncReturnAggregateError: null,
         syncReturnErrorList: ['sync0', null, 'sync2', null],
         async: 'async',
         asyncReject: null,
+        asyncRejectAggregate: null,
         asyncRawReject: null,
         asyncEmptyReject: null,
         asyncError: null,
+        asyncAggregateError: null,
         asyncRawError: null,
         asyncReturnError: null,
+        asyncReturnAggregateError: null,
         asyncReturnErrorWithExtensions: null,
       },
       errors: [
@@ -520,58 +575,108 @@ describe('Execute: Handles basic execution tasks', () => {
           path: ['syncError'],
         },
         {
-          message: 'Unexpected error value: "Error getting syncRawError"',
+          message: 'Error1 getting syncAggregateError',
           locations: [{ line: 5, column: 9 }],
+          path: ['syncAggregateError'],
+        },
+        {
+          message: 'Error2 getting syncAggregateError',
+          locations: [{ line: 5, column: 9 }],
+          path: ['syncAggregateError'],
+        },
+        {
+          message: 'Unexpected error value: "Error getting syncRawError"',
+          locations: [{ line: 6, column: 9 }],
           path: ['syncRawError'],
         },
         {
           message: 'Error getting syncReturnError',
-          locations: [{ line: 6, column: 9 }],
+          locations: [{ line: 7, column: 9 }],
           path: ['syncReturnError'],
         },
         {
+          message: 'Error1 getting syncReturnAggregateError',
+          locations: [{ line: 8, column: 9 }],
+          path: ['syncReturnAggregateError'],
+        },
+        {
+          message: 'Error2 getting syncReturnAggregateError',
+          locations: [{ line: 8, column: 9 }],
+          path: ['syncReturnAggregateError'],
+        },
+        {
           message: 'Error getting syncReturnErrorList1',
-          locations: [{ line: 7, column: 9 }],
+          locations: [{ line: 9, column: 9 }],
           path: ['syncReturnErrorList', 1],
         },
         {
           message: 'Error getting syncReturnErrorList3',
-          locations: [{ line: 7, column: 9 }],
+          locations: [{ line: 9, column: 9 }],
           path: ['syncReturnErrorList', 3],
         },
         {
           message: 'Error getting asyncReject',
-          locations: [{ line: 9, column: 9 }],
+          locations: [{ line: 11, column: 9 }],
           path: ['asyncReject'],
         },
         {
+          message: 'Error1 getting asyncRejectAggregate',
+          locations: [{ line: 12, column: 9 }],
+          path: ['asyncRejectAggregate'],
+        },
+        {
+          message: 'Error2 getting asyncRejectAggregate',
+          locations: [{ line: 12, column: 9 }],
+          path: ['asyncRejectAggregate'],
+        },
+        {
           message: 'Unexpected error value: "Error getting asyncRawReject"',
-          locations: [{ line: 10, column: 9 }],
+          locations: [{ line: 13, column: 9 }],
           path: ['asyncRawReject'],
         },
         {
           message: 'Unexpected error value: undefined',
-          locations: [{ line: 11, column: 9 }],
+          locations: [{ line: 15, column: 9 }],
           path: ['asyncEmptyReject'],
         },
         {
           message: 'Error getting asyncError',
-          locations: [{ line: 12, column: 9 }],
+          locations: [{ line: 16, column: 9 }],
           path: ['asyncError'],
         },
         {
+          message: 'Error1 getting asyncAggregateError',
+          locations: [{ line: 17, column: 9 }],
+          path: ['asyncAggregateError'],
+        },
+        {
+          message: 'Error2 getting asyncAggregateError',
+          locations: [{ line: 17, column: 9 }],
+          path: ['asyncAggregateError'],
+        },
+        {
           message: 'Unexpected error value: "Error getting asyncRawError"',
-          locations: [{ line: 13, column: 9 }],
+          locations: [{ line: 18, column: 9 }],
           path: ['asyncRawError'],
         },
         {
           message: 'Error getting asyncReturnError',
-          locations: [{ line: 14, column: 9 }],
+          locations: [{ line: 19, column: 9 }],
           path: ['asyncReturnError'],
         },
         {
+          message: 'Error1 getting asyncReturnAggregateError',
+          locations: [{ line: 20, column: 9 }],
+          path: ['asyncReturnAggregateError'],
+        },
+        {
+          message: 'Error2 getting asyncReturnAggregateError',
+          locations: [{ line: 20, column: 9 }],
+          path: ['asyncReturnAggregateError'],
+        },
+        {
           message: 'Error getting asyncReturnErrorWithExtensions',
-          locations: [{ line: 15, column: 9 }],
+          locations: [{ line: 21, column: 9 }],
           path: ['asyncReturnErrorWithExtensions'],
           extensions: { foo: 'bar' },
         },

@@ -12,6 +12,8 @@ import { GraphQLSchema } from '../../type/schema';
 import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
+import { GraphQLAggregateError } from '../../error/GraphQLAggregateError';
+
 import { createSourceEventStream, subscribe } from '../subscribe';
 
 import { SimplePubSub } from './simplePubSub';
@@ -413,7 +415,7 @@ describe('Subscription Initialization Phase', () => {
       return result;
     }
 
-    const expectedResult = {
+    const singleErrorResult = {
       errors: [
         {
           message: 'test error',
@@ -426,24 +428,66 @@ describe('Subscription Initialization Phase', () => {
     expect(
       // Returning an error
       await subscribeWithFn(() => new Error('test error')),
-    ).to.deep.equal(expectedResult);
+    ).to.deep.equal(singleErrorResult);
 
     expect(
       // Throwing an error
       await subscribeWithFn(() => {
         throw new Error('test error');
       }),
-    ).to.deep.equal(expectedResult);
+    ).to.deep.equal(singleErrorResult);
 
     expect(
       // Resolving to an error
       await subscribeWithFn(() => Promise.resolve(new Error('test error'))),
-    ).to.deep.equal(expectedResult);
+    ).to.deep.equal(singleErrorResult);
 
     expect(
       // Rejecting with an error
       await subscribeWithFn(() => Promise.reject(new Error('test error'))),
-    ).to.deep.equal(expectedResult);
+    ).to.deep.equal(singleErrorResult);
+
+    const multipleErrorsResult = {
+      errors: [
+        {
+          message: 'test error1',
+          locations: [{ line: 1, column: 16 }],
+          path: ['foo'],
+        },
+        {
+          message: 'test error2',
+          locations: [{ line: 1, column: 16 }],
+          path: ['foo'],
+        },
+      ],
+    };
+
+    const aggregateError = new GraphQLAggregateError([
+      new Error('test error1'),
+      new Error('test error2'),
+    ]);
+
+    expect(
+      // Returning an error
+      await subscribeWithFn(() => aggregateError),
+    ).to.deep.equal(multipleErrorsResult);
+
+    expect(
+      // Throwing an error
+      await subscribeWithFn(() => {
+        throw aggregateError;
+      }),
+    ).to.deep.equal(multipleErrorsResult);
+
+    expect(
+      // Resolving to an error
+      await subscribeWithFn(() => Promise.resolve(aggregateError)),
+    ).to.deep.equal(multipleErrorsResult);
+
+    expect(
+      // Rejecting with an error
+      await subscribeWithFn(() => Promise.reject(aggregateError)),
+    ).to.deep.equal(multipleErrorsResult);
   });
 
   it('resolves to an error if variables were wrong type', async () => {

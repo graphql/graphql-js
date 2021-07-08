@@ -1,3 +1,5 @@
+export { GraphQLAggregateError } from './GraphQLAggregateError';
+
 export { GraphQLError, printError } from './GraphQLError';
 
 export { syntaxError } from './syntaxError';
