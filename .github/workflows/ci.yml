@@ -1,5 +1,9 @@
 name: CI
-on: [push, pull_request]
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
 env:
   NODE_VERSION_USED_FOR_DEVELOPMENT: 16
 jobs:
