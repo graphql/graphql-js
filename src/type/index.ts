@@ -169,6 +169,7 @@ export {
   /** "Enum" of Type Kinds */
   TypeKind,
   /** Meta-field definitions. */
+  FulfilledMetaFieldDef,
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,

@@ -72,6 +72,7 @@ export {
   __EnumValue,
   __TypeKind,
   /** Meta-field definitions. */
+  FulfilledMetaFieldDef,
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
