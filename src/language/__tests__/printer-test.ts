@@ -213,6 +213,11 @@ describe('Printer: Query document', () => {
       {
         __typename
       }
+
+      query Fulfilled {
+        __fulfilled
+        a: __fulfilled(label: "a")
+      }
     `),
     );
   });

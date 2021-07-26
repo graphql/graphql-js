@@ -528,6 +528,27 @@ export const TypeNameMetaFieldDef: GraphQLField<unknown, unknown> = {
   astNode: undefined,
 };
 
+export const FulfilledMetaFieldDef: GraphQLField<unknown, unknown> = {
+  name: '__fulfilled',
+  type: new GraphQLNonNull(GraphQLBoolean),
+  description: 'If the current selection was included at runtime.',
+  args: [
+    {
+      name: 'label',
+      description: undefined,
+      type: GraphQLString,
+      defaultValue: undefined,
+      deprecationReason: undefined,
+      extensions: undefined,
+      astNode: undefined,
+    },
+  ],
+  resolve: (_source, _args, _context, _info) => true,
+  deprecationReason: undefined,
+  extensions: undefined,
+  astNode: undefined,
+};
+
 export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
   Object.freeze([
     __Schema,
