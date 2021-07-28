@@ -15,6 +15,45 @@
   },
   "sideEffects": false,
   "homepage": "https://github.com/graphql/graphql-js",
+  "exports": {
+    ".": {
+      "require": "./index.js",
+      "import": "./index.mjs"
+    },
+    "./package.json": "./package.json",
+    "./error": {
+      "require": "./error/index.js",
+      "import": "./error/index.mjs"
+    },
+    "./execution": {
+      "require": "./execution/index.js",
+      "import": "./execution/index.mjs"
+    },
+    "./language": {
+      "require": "./language/index.js",
+      "import": "./language/index.mjs"
+    },
+    "./subscription": {
+      "require": "./subscription/index.js",
+      "import": "./subscription/index.mjs"
+    },
+    "./type": {
+      "require": "./type/index.js",
+      "import": "./type/index.mjs"
+    },
+    "./utilities": {
+      "require": "./utilities/index.js",
+      "import": "./utilities/index.mjs"
+    },
+    "./validation": {
+      "require": "./validation/index.js",
+      "import": "./validation/index.mjs"
+    },
+    "./*": {
+      "require": "./*.js",
+      "import": "./*.mjs"
+    }
+  },
   "bugs": {
     "url": "https://github.com/graphql/graphql-js/issues"
   },
