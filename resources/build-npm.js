@@ -18,9 +18,10 @@ if (require.main === module) {
   fs.rmSync('./npmDist', { recursive: true, force: true });
   fs.mkdirSync('./npmDist');
 
-  const packageJSON = buildPackageJSON();
-
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
+
+  const packageJSON = buildPackageJSON(srcFiles);
+
   for (const filepath of srcFiles) {
     const srcPath = path.join('./src', filepath);
     const destPath = path.join('./npmDist', filepath);
@@ -91,7 +92,7 @@ function babelBuild(srcPath, options) {
   return code + '\n';
 }
 
-function buildPackageJSON() {
+function buildPackageJSON(srcFiles) {
   const packageJSON = JSON.parse(
     fs.readFileSync(require.resolve('../package.json'), 'utf-8'),
   );
@@ -120,6 +121,20 @@ function buildPackageJSON() {
 
     assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
     packageJSON.publishConfig = { tag: publishTag };
+  }
+
+  /**
+   * This prevents breaking previous versions of imports with explicit extensions
+   * Like `require("graphql/language/parser.js")`
+   */
+  for (const srcFile of srcFiles) {
+    if (srcFile.endsWith('.ts')) {
+      const srcFilePath = srcFile.slice(0, srcFile.length - 3);
+      packageJSON.exports[`./${srcFilePath}.js`] = {
+        require: `./${srcFilePath}.js`,
+        import: `./${srcFilePath}.mjs`,
+      };
+    }
   }
 
   return packageJSON;
