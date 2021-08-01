@@ -12,3 +12,6 @@
 /coverage
 /npmDist
 /denoDist
+/npm
+/deno
+/www
