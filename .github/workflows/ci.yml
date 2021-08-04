@@ -223,8 +223,21 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
       - name: Generate report
-        run: 'node resources/diff-npm-package.js ${{ github.event.pull_request.base.sha }} HEAD'
+        run: 'node resources/diff-npm-package.js $BASE_COMMIT HEAD'
+        env:
+          BASE_COMMIT: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
 
       - name: Upload generated report
         uses: actions/upload-artifact@v2
