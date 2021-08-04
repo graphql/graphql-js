@@ -235,7 +235,7 @@ jobs:
         run: npm ci
 
       - name: Generate report
-        run: "node resources/diff-npm-package.js $BASE_COMMIT HEAD"
+        run: 'node resources/diff-npm-package.js $BASE_COMMIT HEAD'
         env:
           BASE_COMMIT: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
 
