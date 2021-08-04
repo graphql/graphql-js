@@ -120,6 +120,26 @@ describe('Parser', () => {
     });
   });
 
+  it('does not allow "true", "false", or "null" as enum value', () => {
+    expectSyntaxError('enum Test { VALID, true }').to.deep.equal({
+      message:
+        'Syntax Error: Name "true" is reserved and cannot be used for an enum value.',
+      locations: [{ line: 1, column: 20 }],
+    });
+
+    expectSyntaxError('enum Test { VALID, false }').to.deep.equal({
+      message:
+        'Syntax Error: Name "false" is reserved and cannot be used for an enum value.',
+      locations: [{ line: 1, column: 20 }],
+    });
+
+    expectSyntaxError('enum Test { VALID, null }').to.deep.equal({
+      message:
+        'Syntax Error: Name "null" is reserved and cannot be used for an enum value.',
+      locations: [{ line: 1, column: 20 }],
+    });
+  });
+
   it('parses multi-byte characters', () => {
     // Note: \u0A0A could be naively interpreted as two line-feed chars.
     const ast = parse(`
