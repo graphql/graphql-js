@@ -393,10 +393,12 @@ export declare class Parser {
   parseEnumValuesDefinition(): Array<EnumValueDefinitionNode>;
   /**
    * EnumValueDefinition : Description? EnumValue Directives[Const]?
-   *
-   * EnumValue : Name
    */
   parseEnumValueDefinition(): EnumValueDefinitionNode;
+  /**
+   * EnumValue : Name but not `true`, `false` or `null`
+   */
+  parseEnumValueName(): NameNode;
   /**
    * InputObjectTypeDefinition :
    *   - Description? input Name Directives[Const]? InputFieldsDefinition?

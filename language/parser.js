@@ -991,14 +991,12 @@ class Parser {
   }
   /**
    * EnumValueDefinition : Description? EnumValue Directives[Const]?
-   *
-   * EnumValue : Name
    */
 
   parseEnumValueDefinition() {
     const start = this._lexer.token;
     const description = this.parseDescription();
-    const name = this.parseName();
+    const name = this.parseEnumValueName();
     const directives = this.parseConstDirectives();
     return this.node(start, {
       kind: _kinds.Kind.ENUM_VALUE_DEFINITION,
@@ -1006,6 +1004,27 @@ class Parser {
       name,
       directives,
     });
+  }
+  /**
+   * EnumValue : Name but not `true`, `false` or `null`
+   */
+
+  parseEnumValueName() {
+    if (
+      this._lexer.token.value === 'true' ||
+      this._lexer.token.value === 'false' ||
+      this._lexer.token.value === 'null'
+    ) {
+      throw (0, _syntaxError.syntaxError)(
+        this._lexer.source,
+        this._lexer.token.start,
+        `${getTokenDesc(
+          this._lexer.token,
+        )} is reserved and cannot be used for an enum value.`,
+      );
+    }
+
+    return this.parseName();
   }
   /**
    * InputObjectTypeDefinition :
