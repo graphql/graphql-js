@@ -316,32 +316,35 @@ export interface GraphQLScalarTypeExtensions {
  * });
  * ```
  */
-export declare class GraphQLScalarType {
+export declare class GraphQLScalarType<
+  TInternal = unknown,
+  TExternal = TInternal,
+> {
   name: string;
   description: Maybe<string>;
   specifiedByURL: Maybe<string>;
-  serialize: GraphQLScalarSerializer<unknown>;
-  parseValue: GraphQLScalarValueParser<unknown>;
-  parseLiteral: GraphQLScalarLiteralParser<unknown>;
+  serialize: GraphQLScalarSerializer<TExternal>;
+  parseValue: GraphQLScalarValueParser<TInternal>;
+  parseLiteral: GraphQLScalarLiteralParser<TInternal>;
   extensions: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
-  constructor(config: Readonly<GraphQLScalarTypeConfig<unknown, unknown>>);
-  toConfig(): GraphQLScalarTypeNormalizedConfig;
+  constructor(config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>);
+  toConfig(): GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>;
   toString(): string;
   toJSON(): string;
   get [Symbol.toStringTag](): string;
 }
 export declare type GraphQLScalarSerializer<TExternal> = (
   outputValue: unknown,
-) => Maybe<TExternal>;
+) => TExternal;
 export declare type GraphQLScalarValueParser<TInternal> = (
   inputValue: unknown,
-) => Maybe<TInternal>;
+) => TInternal;
 export declare type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
   variables?: Maybe<ObjMap<unknown>>,
-) => Maybe<TInternal>;
+) => TInternal;
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   name: string;
   description?: Maybe<string>;
@@ -356,11 +359,11 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   astNode?: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
 }
-interface GraphQLScalarTypeNormalizedConfig
-  extends GraphQLScalarTypeConfig<unknown, unknown> {
-  serialize: GraphQLScalarSerializer<unknown>;
-  parseValue: GraphQLScalarValueParser<unknown>;
-  parseLiteral: GraphQLScalarLiteralParser<unknown>;
+interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
+  extends GraphQLScalarTypeConfig<TInternal, TExternal> {
+  serialize: GraphQLScalarSerializer<TExternal>;
+  parseValue: GraphQLScalarValueParser<TInternal>;
+  parseLiteral: GraphQLScalarLiteralParser<TInternal>;
   extensions: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 }
