@@ -676,10 +676,13 @@ function completeListValue(
 function completeLeafValue(returnType, result) {
   const serializedResult = returnType.serialize(result);
 
-  if (serializedResult === undefined) {
+  if (serializedResult == null) {
     throw new Error(
-      `Expected a value of type "${(0, _inspect.inspect)(returnType)}" but ` +
-        `received: ${(0, _inspect.inspect)(result)}`,
+      `Expected \`${(0, _inspect.inspect)(returnType)}.serialize(${(0,
+      _inspect.inspect)(result)})\` to ` +
+        `return non-nullable value, returned: ${(0, _inspect.inspect)(
+          serializedResult,
+        )}`,
     );
   }
 
