@@ -750,10 +750,10 @@ function completeLeafValue(
   result: unknown,
 ): unknown {
   const serializedResult = returnType.serialize(result);
-  if (serializedResult === undefined) {
+  if (serializedResult == null) {
     throw new Error(
-      `Expected a value of type "${inspect(returnType)}" but ` +
-        `received: ${inspect(result)}`,
+      `Expected \`${inspect(returnType)}.serialize(${inspect(result)})\` to ` +
+        `return non-nullable value, returned: ${inspect(serializedResult)}`,
     );
   }
   return serializedResult;
