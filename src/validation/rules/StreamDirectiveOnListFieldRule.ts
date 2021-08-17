@@ -24,6 +24,7 @@ export function StreamDirectiveOnListFieldRule(
         fieldDef &&
         parentType &&
         isDirective(GraphQLStreamDirective) &&
+        node.name.value === "stream" &&
         !isListType(fieldDef.type)
       ) {
         context.reportError(
