@@ -27,8 +27,8 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
  * This takes the ast of a schema document produced by the parse function in
  * src/language/parser.js.
  *
- * If no schema definition is provided, then it will look for types named Query
- * and Mutation.
+ * If no schema definition is provided, then it will look for types named Query,
+ * Mutation and Subscription.
  *
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
