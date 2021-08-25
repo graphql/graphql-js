@@ -31,7 +31,6 @@ import type {
   ConstDirectiveNode,
   TypeNode,
   NamedTypeNode,
-  TypeSystemDefinitionNode,
   SchemaDefinitionNode,
   OperationTypeDefinitionNode,
   ScalarTypeDefinitionNode,
@@ -158,6 +157,19 @@ export declare class Parser {
    * ExecutableDefinition :
    *   - OperationDefinition
    *   - FragmentDefinition
+   *
+   * TypeSystemDefinition :
+   *   - SchemaDefinition
+   *   - TypeDefinition
+   *   - DirectiveDefinition
+   *
+   * TypeDefinition :
+   *   - ScalarTypeDefinition
+   *   - ObjectTypeDefinition
+   *   - InterfaceTypeDefinition
+   *   - UnionTypeDefinition
+   *   - EnumTypeDefinition
+   *   - InputObjectTypeDefinition
    */
   parseDefinition(): DefinitionNode;
   /**
@@ -298,21 +310,6 @@ export declare class Parser {
    * NamedType : Name
    */
   parseNamedType(): NamedTypeNode;
-  /**
-   * TypeSystemDefinition :
-   *   - SchemaDefinition
-   *   - TypeDefinition
-   *   - DirectiveDefinition
-   *
-   * TypeDefinition :
-   *   - ScalarTypeDefinition
-   *   - ObjectTypeDefinition
-   *   - InterfaceTypeDefinition
-   *   - UnionTypeDefinition
-   *   - EnumTypeDefinition
-   *   - InputObjectTypeDefinition
-   */
-  parseTypeSystemDefinition(): TypeSystemDefinitionNode;
   peekDescription(): boolean;
   /**
    * Description : StringValue
