@@ -39,7 +39,6 @@ import type {
   NamedTypeNode,
   ListTypeNode,
   NonNullTypeNode,
-  TypeSystemDefinitionNode,
   SchemaDefinitionNode,
   OperationTypeDefinitionNode,
   ScalarTypeDefinitionNode,
@@ -221,11 +220,67 @@ export class Parser {
    * ExecutableDefinition :
    *   - OperationDefinition
    *   - FragmentDefinition
+   *
+   * TypeSystemDefinition :
+   *   - SchemaDefinition
+   *   - TypeDefinition
+   *   - DirectiveDefinition
+   *
+   * TypeDefinition :
+   *   - ScalarTypeDefinition
+   *   - ObjectTypeDefinition
+   *   - InterfaceTypeDefinition
+   *   - UnionTypeDefinition
+   *   - EnumTypeDefinition
+   *   - InputObjectTypeDefinition
    */
 
   parseDefinition(): DefinitionNode {
-    if (this.peek(TokenKind.NAME)) {
-      switch (this._lexer.token.value) {
+    if (this.peek(TokenKind.BRACE_L)) {
+      return this.parseOperationDefinition();
+    } // Many definitions begin with a description and require a lookahead.
+
+    const hasDescription = this.peekDescription();
+    const keywordToken = hasDescription
+      ? this._lexer.lookahead()
+      : this._lexer.token;
+
+    if (keywordToken.kind === TokenKind.NAME) {
+      switch (keywordToken.value) {
+        case 'schema':
+          return this.parseSchemaDefinition();
+
+        case 'scalar':
+          return this.parseScalarTypeDefinition();
+
+        case 'type':
+          return this.parseObjectTypeDefinition();
+
+        case 'interface':
+          return this.parseInterfaceTypeDefinition();
+
+        case 'union':
+          return this.parseUnionTypeDefinition();
+
+        case 'enum':
+          return this.parseEnumTypeDefinition();
+
+        case 'input':
+          return this.parseInputObjectTypeDefinition();
+
+        case 'directive':
+          return this.parseDirectiveDefinition();
+      }
+
+      if (hasDescription) {
+        throw syntaxError(
+          this._lexer.source,
+          this._lexer.token.start,
+          'Unexpected description, descriptions are supported only on type definitions.',
+        );
+      }
+
+      switch (keywordToken.value) {
         case 'query':
         case 'mutation':
         case 'subscription':
@@ -234,26 +289,12 @@ export class Parser {
         case 'fragment':
           return this.parseFragmentDefinition();
 
-        case 'schema':
-        case 'scalar':
-        case 'type':
-        case 'interface':
-        case 'union':
-        case 'enum':
-        case 'input':
-        case 'directive':
-          return this.parseTypeSystemDefinition();
-
         case 'extend':
           return this.parseTypeSystemExtension();
       }
-    } else if (this.peek(TokenKind.BRACE_L)) {
-      return this.parseOperationDefinition();
-    } else if (this.peekDescription()) {
-      return this.parseTypeSystemDefinition();
     }
 
-    throw this.unexpected();
+    throw this.unexpected(keywordToken);
   } // Implements the parsing rules in the Operations section.
 
   /**
@@ -764,58 +805,6 @@ export class Parser {
       name: this.parseName(),
     });
   } // Implements the parsing rules in the Type Definition section.
-
-  /**
-   * TypeSystemDefinition :
-   *   - SchemaDefinition
-   *   - TypeDefinition
-   *   - DirectiveDefinition
-   *
-   * TypeDefinition :
-   *   - ScalarTypeDefinition
-   *   - ObjectTypeDefinition
-   *   - InterfaceTypeDefinition
-   *   - UnionTypeDefinition
-   *   - EnumTypeDefinition
-   *   - InputObjectTypeDefinition
-   */
-
-  parseTypeSystemDefinition(): TypeSystemDefinitionNode {
-    // Many definitions begin with a description and require a lookahead.
-    const keywordToken = this.peekDescription()
-      ? this._lexer.lookahead()
-      : this._lexer.token;
-
-    if (keywordToken.kind === TokenKind.NAME) {
-      switch (keywordToken.value) {
-        case 'schema':
-          return this.parseSchemaDefinition();
-
-        case 'scalar':
-          return this.parseScalarTypeDefinition();
-
-        case 'type':
-          return this.parseObjectTypeDefinition();
-
-        case 'interface':
-          return this.parseInterfaceTypeDefinition();
-
-        case 'union':
-          return this.parseUnionTypeDefinition();
-
-        case 'enum':
-          return this.parseEnumTypeDefinition();
-
-        case 'input':
-          return this.parseInputObjectTypeDefinition();
-
-        case 'directive':
-          return this.parseDirectiveDefinition();
-      }
-    }
-
-    throw this.unexpected(keywordToken);
-  }
 
   peekDescription(): boolean {
     return this.peek(TokenKind.STRING) || this.peek(TokenKind.BLOCK_STRING);
