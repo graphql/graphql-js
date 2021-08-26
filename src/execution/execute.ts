@@ -56,6 +56,8 @@ import { getOperationRootType } from '../utilities/getOperationRootType';
 import { getVariableValues, getArgumentValues } from './values';
 import { collectFields } from './collectFields';
 
+export { collectFields };
+
 /**
  * Terminology
  *
