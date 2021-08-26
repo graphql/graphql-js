@@ -1,3 +1,4 @@
+const path = require('path');
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
@@ -31,6 +32,11 @@ module.exports = {
           href: 'https://github.com/graphql/graphql-js',
           label: 'GitHub',
           position: 'right',
+        },
+        {
+          to: 'api',
+          label: 'API',
+          position: 'left',
         },
       ],
     },
@@ -111,6 +117,15 @@ module.exports = {
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
+      },
+    ],
+  ],
+  plugins: [
+    [
+      'docusaurus-plugin-typedoc-api',
+      {
+        projectRoot: path.join(__dirname, '..'),
+        packages: ['.'],
       },
     ],
   ],
