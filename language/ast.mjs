@@ -84,7 +84,8 @@ export class Token {
     this.start = start;
     this.end = end;
     this.line = line;
-    this.column = column;
+    this.column = column; // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     this.value = value;
     this.prev = null;
     this.next = null;

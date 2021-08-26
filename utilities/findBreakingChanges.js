@@ -413,7 +413,7 @@ function isChangeSafeForObjectOrInterfaceField(oldType, newType) {
         isChangeSafeForObjectOrInterfaceField(
           oldType.ofType,
           newType.ofType,
-        )) || // moving from nullable to non-null of the same underlying type is safe
+        )) ||
       ((0, _definition.isNonNullType)(newType) &&
         isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
     );
@@ -429,7 +429,7 @@ function isChangeSafeForObjectOrInterfaceField(oldType, newType) {
 
   return (
     // if they're both named types, see if their names are equivalent
-    ((0, _definition.isNamedType)(newType) && oldType.name === newType.name) || // moving from nullable to non-null of the same underlying type is safe
+    ((0, _definition.isNamedType)(newType) && oldType.name === newType.name) ||
     ((0, _definition.isNonNullType)(newType) &&
       isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
   );
@@ -452,7 +452,7 @@ function isChangeSafeForInputObjectFieldOrFieldArg(oldType, newType) {
         isChangeSafeForInputObjectFieldOrFieldArg(
           oldType.ofType,
           newType.ofType,
-        )) || // moving from non-null to nullable of the same underlying type is safe
+        )) ||
       (!(0, _definition.isNonNullType)(newType) &&
         isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType))
     );
