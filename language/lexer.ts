@@ -972,7 +972,6 @@ function isDigit(code: number): boolean {
 
 function isLetter(code: number): boolean {
   return (
-    (code >= 0x0061 && code <= 0x007a) || // A-Z
-    (code >= 0x0041 && code <= 0x005a) // a-z
+    (code >= 0x0061 && code <= 0x007a) || (code >= 0x0041 && code <= 0x005a) // a-z
   );
 }

@@ -112,8 +112,9 @@ export class Token {
     this.start = start;
     this.end = end;
     this.line = line;
-    this.column = column;
-    this.value = value as string;
+    this.column = column; // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
+    this.value = value!;
     this.prev = null;
     this.next = null;
   }
