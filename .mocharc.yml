@@ -1,3 +1,4 @@
+fail-zero: true
 throw-deprecation: true
 check-leaks: true
 require:
