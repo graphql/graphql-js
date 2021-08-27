@@ -179,8 +179,8 @@ export function parseType(
  * @internal
  */
 export class Parser {
-  private _options: Maybe<ParseOptions>;
-  private _lexer: Lexer;
+  protected _options: Maybe<ParseOptions>;
+  protected _lexer: Lexer;
 
   constructor(source: string | Source, options?: ParseOptions) {
     const sourceObj = isSource(source) ? source : new Source(source);
