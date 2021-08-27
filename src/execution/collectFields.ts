@@ -14,12 +14,23 @@ import type { GraphQLObjectType } from '../type/definition';
 import {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+  GraphQLDeferDirective,
 } from '../type/directives';
 import { isAbstractType } from '../type/definition';
 
 import { typeFromAST } from '../utilities/typeFromAST';
 
 import { getDirectiveValues } from './values';
+
+export interface PatchFields {
+  label?: string;
+  fields: Map<string, ReadonlyArray<FieldNode>>;
+}
+
+export interface FieldsAndPatches {
+  fields: Map<string, ReadonlyArray<FieldNode>>;
+  patches: Array<PatchFields>;
+}
 
 /**
  * Given a selectionSet, adds all of the fields in that selection to
@@ -38,8 +49,9 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
   fields: Map<string, Array<FieldNode>>,
+  patches: Array<PatchFields>,
   visitedFragmentNames: Set<string>,
-): Map<string, ReadonlyArray<FieldNode>> {
+): FieldsAndPatches {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
@@ -62,26 +74,50 @@ export function collectFields(
         ) {
           continue;
         }
-        collectFields(
-          schema,
-          fragments,
-          variableValues,
-          runtimeType,
-          selection.selectionSet,
-          fields,
-          visitedFragmentNames,
-        );
+
+        const defer = getDeferValues(variableValues, selection);
+
+        if (defer) {
+          const { fields: patchFields } = collectFields(
+            schema,
+            fragments,
+            variableValues,
+            runtimeType,
+            selection.selectionSet,
+            new Map(),
+            patches,
+            visitedFragmentNames,
+          );
+          patches.push({
+            label: defer.label,
+            fields: patchFields,
+          });
+        } else {
+          collectFields(
+            schema,
+            fragments,
+            variableValues,
+            runtimeType,
+            selection.selectionSet,
+            fields,
+            patches,
+            visitedFragmentNames,
+          );
+        }
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
         const fragName = selection.name.value;
-        if (
-          visitedFragmentNames.has(fragName) ||
-          !shouldIncludeNode(variableValues, selection)
-        ) {
+
+        if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        visitedFragmentNames.add(fragName);
+
+        const defer = getDeferValues(variableValues, selection);
+        if (visitedFragmentNames.has(fragName) && !defer) {
+          continue;
+        }
+
         const fragment = fragments[fragName];
         if (
           !fragment ||
@@ -89,20 +125,64 @@ export function collectFields(
         ) {
           continue;
         }
-        collectFields(
-          schema,
-          fragments,
-          variableValues,
-          runtimeType,
-          fragment.selectionSet,
-          fields,
-          visitedFragmentNames,
-        );
+        visitedFragmentNames.add(fragName);
+
+        if (defer) {
+          const { fields: patchFields } = collectFields(
+            schema,
+            fragments,
+            variableValues,
+            runtimeType,
+            fragment.selectionSet,
+            new Map(),
+            patches,
+            visitedFragmentNames,
+          );
+          patches.push({
+            label: defer.label,
+            fields: patchFields,
+          });
+        } else {
+          collectFields(
+            schema,
+            fragments,
+            variableValues,
+            runtimeType,
+            fragment.selectionSet,
+            fields,
+            patches,
+            visitedFragmentNames,
+          );
+        }
         break;
       }
     }
   }
-  return fields;
+  return { fields, patches };
+}
+
+/**
+ * Returns an object containing the `@defer` arguments if a field should be
+ * deferred based on the experimental flag, defer directive present and
+ * not disabled by the "if" argument.
+ */
+function getDeferValues(
+  variableValues: { [variable: string]: unknown },
+  node: FragmentSpreadNode | InlineFragmentNode,
+): undefined | { label?: string } {
+  const defer = getDirectiveValues(GraphQLDeferDirective, node, variableValues);
+
+  if (!defer) {
+    return;
+  }
+
+  if (defer.if === false) {
+    return;
+  }
+
+  return {
+    label: typeof defer.label === 'string' ? defer.label : undefined,
+  };
 }
 
 /**

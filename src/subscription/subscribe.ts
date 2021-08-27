@@ -1,6 +1,7 @@
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { addPath, pathToArray } from '../jsutils/Path';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -92,8 +93,8 @@ export async function subscribe(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = (payload: unknown) =>
-    execute({
+  const mapSourceToResponse = (payload: unknown) => {
+    const executionResult = execute({
       schema,
       document,
       rootValue: payload,
@@ -102,6 +103,14 @@ export async function subscribe(
       operationName,
       fieldResolver,
     });
+    /* istanbul ignore if - TODO: implement support for defer/stream in subscriptions */
+    if (isAsyncIterable(executionResult)) {
+      throw new Error(
+        'TODO: implement support for defer/stream in subscriptions',
+      );
+    }
+    return executionResult as PromiseOrValue<ExecutionResult>;
+  };
 
   // Map every source value to a ExecutionResult value as described above.
   return mapAsyncIterator(resultOrStream, mapSourceToResponse);
@@ -192,13 +201,14 @@ async function executeSubscription(
   const { schema, fragments, operation, variableValues, rootValue } =
     exeContext;
   const type = getOperationRootType(schema, operation);
-  const fields = collectFields(
+  const { fields } = collectFields(
     schema,
     fragments,
     variableValues,
     type,
     operation.selectionSet,
     new Map(),
+    [],
     new Set(),
   );
   const [responseName, fieldNodes] = [...fields.entries()][0];

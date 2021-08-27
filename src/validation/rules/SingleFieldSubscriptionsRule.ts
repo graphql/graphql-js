@@ -38,13 +38,14 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = definition;
             }
           }
-          const fields = collectFields(
+          const { fields } = collectFields(
             schema,
             fragments,
             variableValues,
             subscriptionType,
             node.selectionSet,
             new Map(),
+            [],
             new Set(),
           );
           if (fields.size > 1) {
