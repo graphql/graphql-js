@@ -627,6 +627,7 @@ overrides:
     rules:
       internal-rules/require-to-string-tag: off
       node/no-unpublished-import: [error, { allowModules: ['chai', 'mocha'] }]
+      import/no-deprecated: off
       import/no-restricted-paths: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
   - files: 'integrationTests/*'

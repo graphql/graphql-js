@@ -198,7 +198,21 @@ export class GraphQLError extends Error {
   }
 
   toString(): string {
-    return printError(this);
+    let output = this.message;
+
+    if (this.nodes) {
+      for (const node of this.nodes) {
+        if (node.loc) {
+          output += '\n\n' + printLocation(node.loc);
+        }
+      }
+    } else if (this.source && this.locations) {
+      for (const location of this.locations) {
+        output += '\n\n' + printSourceLocation(this.source, location);
+      }
+    }
+
+    return output;
   }
 
   // FIXME: workaround to not break chai comparisons, should be remove in v16
@@ -210,21 +224,9 @@ export class GraphQLError extends Error {
 /**
  * Prints a GraphQLError to a string, representing useful location information
  * about the error's position in the source.
+ *
+ * @deprecated Please use `error.toString` instead. Will be removed in v17
  */
 export function printError(error: GraphQLError): string {
-  let output = error.message;
-
-  if (error.nodes) {
-    for (const node of error.nodes) {
-      if (node.loc) {
-        output += '\n\n' + printLocation(node.loc);
-      }
-    }
-  } else if (error.source && error.locations) {
-    for (const location of error.locations) {
-      output += '\n\n' + printSourceLocation(error.source, location);
-    }
-  }
-
-  return output;
+  return error.toString();
 }
