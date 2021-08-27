@@ -54,6 +54,7 @@ import type {
 } from './ast';
 import { Location } from './ast';
 import { Source } from './source';
+import { Lexer } from './lexer';
 /**
  * Configuration options to control parser behavior
  */
@@ -137,8 +138,8 @@ export declare function parseType(
  * @internal
  */
 export declare class Parser {
-  private _options;
-  private _lexer;
+  protected _options: Maybe<ParseOptions>;
+  protected _lexer: Lexer;
   constructor(source: string | Source, options?: ParseOptions);
   /**
    * Converts a name lex token into a name parse node.
