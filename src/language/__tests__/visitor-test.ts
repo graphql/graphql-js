@@ -896,7 +896,7 @@ describe('Visitor', () => {
 
   it('visits only the specified `Kind` in visitorKeyMap', () => {
     const visited: Array<[string, string, ReturnType<typeof getValue>]> = [];
-    
+
     const visitorKeyMap: VisitorKeyMap<ASTKindToNode> = {
       Document: ['definitions'],
       OperationDefinition: ['name'],
@@ -910,10 +910,10 @@ describe('Visitor', () => {
         visited.push(['leave', node.kind, getValue(node)]);
       },
     };
-    
+
     const exampleDocumentAST = parse(/* GraphQL */ `
-      query ExampleOperation { 
-        someField 
+      query ExampleOperation {
+        someField
       }
     `);
 
