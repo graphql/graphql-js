@@ -553,6 +553,14 @@ describe('Execute: Handles execution of abstract types', () => {
       };
     }
 
+    function expectNoError({ forTypeName }: { forTypeName: unknown }) {
+      const rootValue = { pet: { __typename: forTypeName } };
+      const result = executeSync({ schema, document, rootValue });
+      expect(result).to.deep.equal({
+        data: { pet: { name: null } },
+      });
+    }
+
     expectError({ forTypeName: undefined }).toEqual(
       'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
     );
@@ -580,8 +588,6 @@ describe('Execute: Handles execution of abstract types', () => {
     // @ts-expect-error
     assertInterfaceType(schema.getType('Pet')).resolveType = () =>
       schema.getType('Cat');
-    expectError({ forTypeName: undefined }).toEqual(
-      'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
-    );
+    expectNoError({ forTypeName: undefined });
   });
 });
