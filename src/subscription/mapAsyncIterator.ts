@@ -52,3 +52,7 @@ export function mapAsyncIterator<T, U, R = undefined>(
     },
   };
 }
+
+// mapAsyncIterator is exported for easier backwards-compat for libraries that support GraphQL.js 15 and 16
+// eslint-disable-next-line import/no-default-export
+export default mapAsyncIterator;
