@@ -1,7 +1,6 @@
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { addPath, pathToArray } from '../jsutils/Path';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -9,7 +8,11 @@ import { locatedError } from '../error/locatedError';
 
 import type { DocumentNode } from '../language/ast';
 
-import type { ExecutionResult, ExecutionContext } from '../execution/execute';
+import type {
+  ExecutionResult,
+  ExecutionContext,
+  AsyncExecutionResult,
+} from '../execution/execute';
 import { collectFields } from '../execution/collectFields';
 import { getArgumentValues } from '../execution/values';
 import {
@@ -26,6 +29,7 @@ import type { GraphQLFieldResolver } from '../type/definition';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
 import { mapAsyncIterator } from './mapAsyncIterator';
+import { flattenAsyncIterator } from './flattenAsyncIterator';
 
 export interface SubscriptionArgs {
   schema: GraphQLSchema;
@@ -61,7 +65,10 @@ export interface SubscriptionArgs {
  */
 export async function subscribe(
   args: SubscriptionArgs,
-): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+): Promise<
+  | AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void>
+  | ExecutionResult
+> {
   const {
     schema,
     document,
@@ -93,8 +100,8 @@ export async function subscribe(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = (payload: unknown) => {
-    const executionResult = execute({
+  const mapSourceToResponse = (payload: unknown) =>
+    execute({
       schema,
       document,
       rootValue: payload,
@@ -103,17 +110,11 @@ export async function subscribe(
       operationName,
       fieldResolver,
     });
-    /* istanbul ignore if - TODO: implement support for defer/stream in subscriptions */
-    if (isAsyncIterable(executionResult)) {
-      throw new Error(
-        'TODO: implement support for defer/stream in subscriptions',
-      );
-    }
-    return executionResult as PromiseOrValue<ExecutionResult>;
-  };
 
   // Map every source value to a ExecutionResult value as described above.
-  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
+  return flattenAsyncIterator<ExecutionResult, AsyncExecutionResult>(
+    mapAsyncIterator(resultOrStream, mapSourceToResponse),
+  );
 }
 
 /**
