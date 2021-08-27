@@ -36,6 +36,7 @@ import type {
   GraphQLResolveInfo,
   GraphQLTypeResolver,
   GraphQLList,
+  GraphQLNamedType,
 } from '../type/definition';
 import { assertValidSchema } from '../type/validate';
 import {
@@ -813,46 +814,46 @@ function completeAbstractValue(
 }
 
 function ensureValidRuntimeType(
-  runtimeTypeName: unknown,
+  runtimeObjectTypeOrTypeName: unknown,
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   result: unknown,
 ): GraphQLObjectType {
-  if (runtimeTypeName == null) {
+  if (runtimeObjectTypeOrTypeName == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
       fieldNodes,
     );
   }
 
+  let runtimeType: GraphQLNamedType | undefined;
+
   // releases before 16.0.0 supported returning `GraphQLObjectType` from `resolveType`
   // TODO: remove in 17.0.0 release
-  if (isObjectType(runtimeTypeName)) {
-    throw new GraphQLError(
-      'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
-    );
-  }
-
-  if (typeof runtimeTypeName !== 'string') {
+  if (isObjectType(runtimeObjectTypeOrTypeName)) {
+    runtimeType = runtimeObjectTypeOrTypeName;
+  } else if (typeof runtimeObjectTypeOrTypeName !== 'string') {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` +
-        `value ${inspect(result)}, received "${inspect(runtimeTypeName)}".`,
+        `value ${inspect(result)}, ` +
+        `received "${inspect(runtimeObjectTypeOrTypeName)}".`,
     );
+  } else {
+    runtimeType = exeContext.schema.getType(runtimeObjectTypeOrTypeName);
   }
 
-  const runtimeType = exeContext.schema.getType(runtimeTypeName);
   if (runtimeType == null) {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
+      `Abstract type "${returnType.name}" was resolved to a type "${runtimeObjectTypeOrTypeName}" that does not exist inside the schema.`,
       fieldNodes,
     );
   }
 
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
+      `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeObjectTypeOrTypeName}".`,
       fieldNodes,
     );
   }
