@@ -234,6 +234,7 @@ export type {
   /** Visitor utilities */
   ASTVisitor,
   ASTVisitFn,
+  VisitorKeyMap,
   /** AST nodes */
   ASTNode,
   ASTKindToNode,

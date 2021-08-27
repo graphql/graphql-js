@@ -3,10 +3,11 @@ import { describe, it } from 'mocha';
 
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
-import type { ASTNode, SelectionSetNode } from '../ast';
+import type { ASTKindToNode, ASTNode, SelectionSetNode } from '../ast';
 import { isNode } from '../ast';
 import { Kind } from '../kinds';
 import { parse } from '../parser';
+import type { VisitorKeyMap, ASTVisitor } from '../visitor';
 import { visit, visitInParallel, BREAK } from '../visitor';
 
 function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
@@ -890,6 +891,41 @@ describe('Visitor', () => {
       ['leave', 'SelectionSet', 'selectionSet', 'OperationDefinition'],
       ['leave', 'OperationDefinition', 5, undefined],
       ['leave', 'Document', undefined, undefined],
+    ]);
+  });
+
+  it('visits only the specified `Kind` in visitorKeyMap', () => {
+    const visited: Array<[string, string, ReturnType<typeof getValue>]> = [];
+    
+    const visitorKeyMap: VisitorKeyMap<ASTKindToNode> = {
+      Document: ['definitions'],
+      OperationDefinition: ['name'],
+    };
+
+    const visitor: ASTVisitor = {
+      enter(node) {
+        visited.push(['enter', node.kind, getValue(node)]);
+      },
+      leave(node) {
+        visited.push(['leave', node.kind, getValue(node)]);
+      },
+    };
+    
+    const exampleDocumentAST = parse(/* GraphQL */ `
+      query ExampleOperation { 
+        someField 
+      }
+    `);
+
+    visit(exampleDocumentAST, visitor, visitorKeyMap);
+
+    expect(visited).to.deep.equal([
+      ['enter', Kind.DOCUMENT, undefined],
+      ['enter', Kind.OPERATION_DEFINITION, undefined],
+      ['enter', Kind.NAME, 'ExampleOperation'],
+      ['leave', Kind.NAME, 'ExampleOperation'],
+      ['leave', Kind.OPERATION_DEFINITION, undefined],
+      ['leave', Kind.DOCUMENT, undefined],
     ]);
   });
 
