@@ -44,6 +44,7 @@ import {
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection';
+import { GraphQLStreamDirective } from '../type/directives';
 import {
   isObjectType,
   isAbstractType,
@@ -54,7 +55,11 @@ import {
 
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
-import { getVariableValues, getArgumentValues } from './values';
+import {
+  getVariableValues,
+  getArgumentValues,
+  getDirectiveValues,
+} from './values';
 import type { FieldsAndPatches, PatchFields } from './collectFields';
 import { collectFields } from './collectFields';
 
@@ -136,7 +141,7 @@ export interface FormattedExecutionResult<
  *   - `extensions` is reserved for adding non-standard properties.
  */
 export interface ExecutionPatchResult<
-  TData = ObjMap<unknown>,
+  TData = ObjMap<unknown> | unknown,
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLError>;
@@ -148,7 +153,7 @@ export interface ExecutionPatchResult<
 }
 
 export interface FormattedExecutionPatchResult<
-  TData = ObjMap<unknown>,
+  TData = ObjMap<unknown> | unknown,
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
@@ -763,6 +768,44 @@ function completeValue(
 }
 
 /**
+ * Returns an object containing the `@stream` arguments if a field should be
+ * streamed based on the experimental flag, stream directive present and
+ * not disabled by the "if" argument.
+ */
+function getStreamValues(
+  exeContext: ExecutionContext,
+  fieldNodes: ReadonlyArray<FieldNode>,
+):
+  | undefined
+  | {
+      initialCount?: number;
+      label?: string;
+    } {
+  // validation only allows equivalent streams on multiple fields, so it is
+  // safe to only check the first fieldNode for the stream directive
+  const stream = getDirectiveValues(
+    GraphQLStreamDirective,
+    fieldNodes[0],
+    exeContext.variableValues,
+  );
+
+  if (!stream) {
+    return;
+  }
+
+  if (stream.if === false) {
+    return;
+  }
+
+  return {
+    initialCount:
+      // istanbul ignore next (initialCount is required number argument)
+      typeof stream.initialCount === 'number' ? stream.initialCount : undefined,
+    label: typeof stream.label === 'string' ? stream.label : undefined,
+  };
+}
+
+/**
  * Complete a async iterator value by completing the result and calling
  * recursively until all the results are completed.
  */
@@ -776,8 +819,28 @@ function completeAsyncIteratorValue(
   errors: Array<GraphQLError>,
 ): Promise<ReadonlyArray<unknown>> {
   let containsPromise = false;
+  const stream = getStreamValues(exeContext, fieldNodes);
   return new Promise<ReadonlyArray<unknown>>((resolve) => {
     function next(index: number, completedResults: Array<unknown>) {
+      if (
+        stream &&
+        typeof stream.initialCount === 'number' &&
+        index >= stream.initialCount
+      ) {
+        exeContext.dispatcher.addAsyncIteratorValue(
+          index,
+          iterator,
+          exeContext,
+          fieldNodes,
+          info,
+          itemType,
+          path,
+          stream.label,
+        );
+        resolve(completedResults);
+        return;
+      }
+
       const fieldPath = addPath(path, index, undefined);
       iterator.next().then(
         ({ value, done }) => {
@@ -866,15 +929,37 @@ function completeListValue(
     );
   }
 
+  const stream = getStreamValues(exeContext, fieldNodes);
+
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
-  const completedResults = Array.from(result, (item, index) => {
+  const completedResults = [];
+  let index = 0;
+  for (const item of result) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = addPath(path, index, undefined);
     try {
       let completedItem;
+
+      if (
+        stream &&
+        typeof stream.initialCount === 'number' &&
+        index >= stream.initialCount
+      ) {
+        exeContext.dispatcher.addValue(
+          itemPath,
+          item,
+          exeContext,
+          fieldNodes,
+          info,
+          itemType,
+          stream.label,
+        );
+        index++;
+        continue;
+      }
       if (isPromise(item)) {
         completedItem = item.then((resolved) =>
           completeValue(
@@ -903,21 +988,25 @@ function completeListValue(
         containsPromise = true;
         // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
-        return completedItem.then(undefined, (rawError) => {
-          const error = locatedError(
-            rawError,
-            fieldNodes,
-            pathToArray(itemPath),
-          );
-          return handleFieldError(error, itemType, errors);
-        });
+        completedResults.push(
+          completedItem.then(undefined, (rawError) => {
+            const error = locatedError(
+              rawError,
+              fieldNodes,
+              pathToArray(itemPath),
+            );
+            return handleFieldError(error, itemType, errors);
+          }),
+        );
+      } else {
+        completedResults.push(completedItem);
       }
-      return completedItem;
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      return handleFieldError(error, itemType, errors);
+      completedResults.push(handleFieldError(error, itemType, errors));
     }
-  });
+    index++;
+  }
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }
@@ -1295,7 +1384,7 @@ export function getFieldDef(
  */
 interface DispatcherResult {
   errors?: ReadonlyArray<GraphQLError>;
-  data?: ObjMap<unknown> | null;
+  data?: ObjMap<unknown> | unknown | null;
   path: ReadonlyArray<string | number>;
   label?: string;
   extensions?: ObjMap<unknown>;
@@ -1335,6 +1424,129 @@ export class Dispatcher {
     );
   }
 
+  addValue(
+    path: Path,
+    promiseOrData: PromiseOrValue<unknown>,
+    exeContext: ExecutionContext,
+    fieldNodes: ReadonlyArray<FieldNode>,
+    info: GraphQLResolveInfo,
+    itemType: GraphQLOutputType,
+    label?: string,
+  ): void {
+    const errors: Array<GraphQLError> = [];
+    this._subsequentPayloads.push(
+      Promise.resolve(promiseOrData)
+        .then((resolved) =>
+          completeValue(
+            exeContext,
+            itemType,
+            fieldNodes,
+            info,
+            path,
+            resolved,
+            errors,
+          ),
+        )
+        // Note: we don't rely on a `catch` method, but we do expect "thenable"
+        // to take a second callback for the error case.
+        .then(undefined, (rawError) => {
+          const error = locatedError(rawError, fieldNodes, pathToArray(path));
+          return handleFieldError(error, itemType, errors);
+        })
+        .then((data) => ({
+          value: createPatchResult(data, label, path, errors),
+          done: false,
+        })),
+    );
+  }
+
+  addAsyncIteratorValue(
+    initialIndex: number,
+    iterator: AsyncIterator<unknown>,
+    exeContext: ExecutionContext,
+    fieldNodes: ReadonlyArray<FieldNode>,
+    info: GraphQLResolveInfo,
+    itemType: GraphQLOutputType,
+    path?: Path,
+    label?: string,
+  ): void {
+    const subsequentPayloads = this._subsequentPayloads;
+    function next(index: number) {
+      const fieldPath = addPath(path, index, undefined);
+      const patchErrors: Array<GraphQLError> = [];
+      subsequentPayloads.push(
+        iterator.next().then(
+          ({ value: data, done }) => {
+            if (done) {
+              return { value: undefined, done: true };
+            }
+
+            // eslint-disable-next-line node/callback-return
+            next(index + 1);
+
+            try {
+              const completedItem = completeValue(
+                exeContext,
+                itemType,
+                fieldNodes,
+                info,
+                fieldPath,
+                data,
+                patchErrors,
+              );
+
+              if (isPromise(completedItem)) {
+                return completedItem.then((resolveItem) => ({
+                  value: createPatchResult(
+                    resolveItem,
+                    label,
+                    fieldPath,
+                    patchErrors,
+                  ),
+                  done: false,
+                }));
+              }
+
+              return {
+                value: createPatchResult(
+                  completedItem,
+                  label,
+                  fieldPath,
+                  patchErrors,
+                ),
+                done: false,
+              };
+            } catch (rawError) {
+              const error = locatedError(
+                rawError,
+                fieldNodes,
+                pathToArray(fieldPath),
+              );
+              handleFieldError(error, itemType, patchErrors);
+              return {
+                value: createPatchResult(null, label, fieldPath, patchErrors),
+                done: false,
+              };
+            }
+          },
+          (rawError) => {
+            const error = locatedError(
+              rawError,
+              fieldNodes,
+              pathToArray(fieldPath),
+            );
+            handleFieldError(error, itemType, patchErrors);
+            return {
+              value: createPatchResult(null, label, fieldPath, patchErrors),
+              done: false,
+            };
+          },
+        ),
+      );
+    }
+    next(initialIndex);
+  }
+
   _race(): Promise<IteratorResult<ExecutionPatchResult, void>> {
     return new Promise<{
       promise: Promise<IteratorResult<DispatcherResult, void>>;
@@ -1354,7 +1566,20 @@ export class Dispatcher {
         );
         return promise;
       })
-      .then(({ value }) => {
+      .then(({ value, done }) => {
+        if (done && this._subsequentPayloads.length === 0) {
+          // async iterable resolver just finished and no more pending payloads
+          return {
+            value: {
+              hasNext: false,
+            },
+            done: false,
+          };
+        } else if (done) {
+          // async iterable resolver just finished but there are pending payloads
+          // return the next one
+          return this._race();
+        }
         const returnValue: ExecutionPatchResult = {
           ...value,
           hasNext: this._subsequentPayloads.length > 0,
@@ -1396,7 +1621,7 @@ export class Dispatcher {
 }
 
 function createPatchResult(
-  data: ObjMap<unknown> | null,
+  data: ObjMap<unknown> | unknown | null,
   label?: string,
   path?: Path,
   errors?: ReadonlyArray<GraphQLError>,
