@@ -14,3 +14,5 @@ export type {
 } from './execute';
 
 export { getDirectiveValues } from './values';
+
+export { collectFields } from './collectFields';
