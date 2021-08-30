@@ -132,10 +132,15 @@ describe('GraphQLError', () => {
   });
 });
 
-describe('printError', () => {
+describe('toString', () => {
+  it('Deprecated: prints an error using printError', () => {
+    const error = new GraphQLError('Error');
+    expect(printError(error)).to.equal('Error');
+  });
+
   it('prints an error without location', () => {
     const error = new GraphQLError('Error without location');
-    expect(printError(error)).to.equal('Error without location');
+    expect(error.toString()).to.equal('Error without location');
   });
 
   it('prints an error using node without location', () => {
@@ -143,7 +148,7 @@ describe('printError', () => {
       'Error attached to node without location',
       parse('{ foo }', { noLocation: true }),
     );
-    expect(printError(error)).to.equal(
+    expect(error.toString()).to.equal(
       'Error attached to node without location',
     );
   });
@@ -182,7 +187,7 @@ describe('printError', () => {
       fieldB.type,
     ]);
 
-    expect(printError(error)).to.equal(dedent`
+    expect(error.toString()).to.equal(dedent`
       Example error with two nodes
 
       SourceA:2:10

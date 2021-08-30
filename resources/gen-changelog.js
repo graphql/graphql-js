@@ -12,6 +12,9 @@ const labelsConfig = {
   'PR: breaking change 💥': {
     section: 'Breaking Change 💥',
   },
+  'PR: deprecation ⚠': {
+    section: 'Deprecation ⚠',
+  },
   'PR: feature 🚀': {
     section: 'New Feature 🚀',
   },
