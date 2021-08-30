@@ -1,7 +1,7 @@
 /**
  * A string containing the version of the GraphQL.js library
  */
-export declare const version = '16.0.0-rc.1';
+export declare const version = '16.0.0-rc.2';
 /**
  * An object containing the components of the GraphQL.js version string
  */
