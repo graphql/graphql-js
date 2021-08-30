@@ -74,5 +74,7 @@ export declare class GraphQLError extends Error {
 /**
  * Prints a GraphQLError to a string, representing useful location information
  * about the error's position in the source.
+ *
+ * @deprecated Please use `error.toString` instead. Will be removed in v17
  */
 export declare function printError(error: GraphQLError): string;
