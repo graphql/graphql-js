@@ -218,11 +218,11 @@ export class Parser {
   /**
    * Arguments[Const] : ( Argument[?Const]+ )
    */
-  parseArguments: Array<ArgumentNode>;
+  parseArguments(): Array<ArgumentNode>;
   /**
    * Argument[Const] : Name : Value[?Const]
    */
-  parseArgument: ArgumentNode;
+  parseArgument(): ArgumentNode;
   /**
    * Corresponds to both FragmentSpread and InlineFragment in the spec.
    *
