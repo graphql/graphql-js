@@ -9,7 +9,7 @@ import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
 
-import { GraphQLError, printError } from '../GraphQLError';
+import { GraphQLError, printError, formatError } from '../GraphQLError';
 
 const source = new Source(dedent`
   {
@@ -202,5 +202,39 @@ describe('toString', () => {
         |          ^
       3 | }
     `);
+  });
+});
+
+describe('toJSON', () => {
+  it('Deprecated: format an error using formatError', () => {
+    const error = new GraphQLError('Example Error');
+    expect(formatError(error)).to.deep.equal({
+      message: 'Example Error',
+    });
+  });
+
+  it('includes path', () => {
+    const error = new GraphQLError('msg', null, null, null, [
+      'path',
+      3,
+      'to',
+      'field',
+    ]);
+
+    expect(error.toJSON()).to.deep.equal({
+      message: 'msg',
+      path: ['path', 3, 'to', 'field'],
+    });
+  });
+
+  it('includes extension fields', () => {
+    const error = new GraphQLError('msg', null, null, null, null, null, {
+      foo: 'bar',
+    });
+
+    expect(error.toJSON()).to.deep.equal({
+      message: 'msg',
+      extensions: { foo: 'bar' },
+    });
   });
 });
