@@ -1650,6 +1650,7 @@ export class GraphQLInputObjectType {
       defaultValue: field.defaultValue,
       extensions: field.extensions,
       astNode: field.astNode,
+      deprecationReason: field.deprecationReason,
     }));
 
     return {
