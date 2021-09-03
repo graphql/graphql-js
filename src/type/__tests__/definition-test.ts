@@ -818,6 +818,22 @@ describe('Type System: Input Objects', () => {
       );
     });
   });
+
+  describe('Deprecation reason is preserved on fields', () => {
+    const inputObjType = new GraphQLInputObjectType({
+      name: 'SomeInputObject',
+      fields: {
+        deprecatedField: {
+          type: ScalarType,
+          deprecationReason: 'not used anymore',
+        },
+      },
+    });
+    const config = inputObjType.toConfig();
+    expect(config.fields.deprecatedField.deprecationReason).to.equal(
+      'not used anymore',
+    );
+  });
 });
 
 describe('Type System: List', () => {
