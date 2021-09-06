@@ -12,7 +12,7 @@ import { promiseReduce } from '../jsutils/promiseReduce.ts';
 import { promiseForObject } from '../jsutils/promiseForObject.ts';
 import { addPath, pathToArray } from '../jsutils/Path.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
-import type { GraphQLFormattedError } from '../error/formatError.ts';
+import type { GraphQLFormattedError } from '../error/GraphQLError.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { locatedError } from '../error/locatedError.ts';
 import type {
