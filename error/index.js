@@ -15,6 +15,12 @@ Object.defineProperty(exports, 'printError', {
     return _GraphQLError.printError;
   },
 });
+Object.defineProperty(exports, 'formatError', {
+  enumerable: true,
+  get: function () {
+    return _GraphQLError.formatError;
+  },
+});
 Object.defineProperty(exports, 'syntaxError', {
   enumerable: true,
   get: function () {
@@ -27,17 +33,9 @@ Object.defineProperty(exports, 'locatedError', {
     return _locatedError.locatedError;
   },
 });
-Object.defineProperty(exports, 'formatError', {
-  enumerable: true,
-  get: function () {
-    return _formatError.formatError;
-  },
-});
 
 var _GraphQLError = require('./GraphQLError.js');
 
 var _syntaxError = require('./syntaxError.js');
 
 var _locatedError = require('./locatedError.js');
-
-var _formatError = require('./formatError.js');

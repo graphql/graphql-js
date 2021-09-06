@@ -4,6 +4,7 @@ Object.defineProperty(exports, '__esModule', {
   value: true,
 });
 exports.printError = printError;
+exports.formatError = formatError;
 exports.GraphQLError = void 0;
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
@@ -245,21 +246,54 @@ class GraphQLError extends Error {
     }
 
     return output;
-  } // FIXME: workaround to not break chai comparisons, should be remove in v16
+  }
+
+  toJSON() {
+    const formattedError = {
+      message: this.message,
+    };
+
+    if (this.locations != null) {
+      formattedError.locations = this.locations;
+    }
+
+    if (this.path != null) {
+      formattedError.path = this.path;
+    }
+
+    if (this.extensions != null) {
+      formattedError.extensions = this.extensions;
+    }
+
+    return formattedError;
+  }
 
   get [Symbol.toStringTag]() {
     return 'Object';
   }
 }
 /**
+ * See: https://spec.graphql.org/draft/#sec-Errors
+ */
+
+exports.GraphQLError = GraphQLError;
+
+/**
  * Prints a GraphQLError to a string, representing useful location information
  * about the error's position in the source.
  *
  * @deprecated Please use `error.toString` instead. Will be removed in v17
  */
-
-exports.GraphQLError = GraphQLError;
-
 function printError(error) {
   return error.toString();
+}
+/**
+ * Given a GraphQLError, format it according to the rules described by the
+ * Response Format, Errors section of the GraphQL Specification.
+ *
+ * @deprecated Please use `error.toString` instead. Will be removed in v17
+ */
+
+function formatError(error) {
+  return error.toJSON();
 }

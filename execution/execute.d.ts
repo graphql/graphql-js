@@ -2,7 +2,7 @@ import type { Path } from '../jsutils/Path';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type { Maybe } from '../jsutils/Maybe';
-import type { GraphQLFormattedError } from '../error/formatError';
+import type { GraphQLFormattedError } from '../error/GraphQLError';
 import { GraphQLError } from '../error/GraphQLError';
 import type {
   DocumentNode,

@@ -69,7 +69,38 @@ export declare class GraphQLError extends Error {
     }>,
   );
   toString(): string;
+  toJSON(): GraphQLFormattedError;
   get [Symbol.toStringTag](): string;
+}
+/**
+ * See: https://spec.graphql.org/draft/#sec-Errors
+ */
+export interface GraphQLFormattedError {
+  /**
+   * A short, human-readable summary of the problem that **SHOULD NOT** change
+   * from occurrence to occurrence of the problem, except for purposes of
+   * localization.
+   */
+  readonly message: string;
+  /**
+   * If an error can be associated to a particular point in the requested
+   * GraphQL document, it should contain a list of locations.
+   */
+  readonly locations?: ReadonlyArray<SourceLocation>;
+  /**
+   * If an error can be associated to a particular field in the GraphQL result,
+   * it _must_ contain an entry with the key `path` that details the path of
+   * the response field which experienced the error. This allows clients to
+   * identify whether a null result is intentional or caused by a runtime error.
+   */
+  readonly path?: ReadonlyArray<string | number>;
+  /**
+   * Reserved for implementors to extend the protocol however they see fit,
+   * and hence there are no additional restrictions on its contents.
+   */
+  readonly extensions?: {
+    [key: string]: unknown;
+  };
 }
 /**
  * Prints a GraphQLError to a string, representing useful location information
@@ -78,3 +109,10 @@ export declare class GraphQLError extends Error {
  * @deprecated Please use `error.toString` instead. Will be removed in v17
  */
 export declare function printError(error: GraphQLError): string;
+/**
+ * Given a GraphQLError, format it according to the rules described by the
+ * Response Format, Errors section of the GraphQL Specification.
+ *
+ * @deprecated Please use `error.toString` instead. Will be removed in v17
+ */
+export declare function formatError(error: GraphQLError): GraphQLFormattedError;
