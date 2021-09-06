@@ -819,7 +819,7 @@ describe('Type System: Input Objects', () => {
     });
   });
 
-  describe('Deprecation reason is preserved on fields', () => {
+  it('Deprecation reason is preserved on fields', () => {
     const inputObjType = new GraphQLInputObjectType({
       name: 'SomeInputObject',
       fields: {
@@ -829,8 +829,8 @@ describe('Type System: Input Objects', () => {
         },
       },
     });
-    const config = inputObjType.toConfig();
-    expect(config.fields.deprecatedField.deprecationReason).to.equal(
+    expect(inputObjType.toConfig()).to.have.nested.property(
+      'fields.deprecatedField.deprecationReason',
       'not used anymore',
     );
   });

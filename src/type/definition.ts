@@ -1648,9 +1648,9 @@ export class GraphQLInputObjectType {
       description: field.description,
       type: field.type,
       defaultValue: field.defaultValue,
+      deprecationReason: field.deprecationReason,
       extensions: field.extensions,
       astNode: field.astNode,
-      deprecationReason: field.deprecationReason,
     }));
 
     return {
