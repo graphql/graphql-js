@@ -231,7 +231,6 @@ export {
   isTypeDefinitionNode,
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
-  RequiredStatus,
 } from './language/index';
 
 export type {
