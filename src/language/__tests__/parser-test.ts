@@ -305,7 +305,6 @@ describe('Parser', () => {
           name: undefined,
           variableDefinitions: [],
           directives: [],
-          required: 'unset',
           selectionSet: {
             kind: Kind.SELECTION_SET,
             loc: { start: 0, end: 40 },
@@ -352,6 +351,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
+                      required: 'unset',
                       selectionSet: undefined,
                     },
                     {
@@ -365,6 +365,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
+                      required: 'unset',
                       selectionSet: undefined,
                     },
                   ],
