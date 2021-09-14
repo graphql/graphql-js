@@ -175,10 +175,10 @@ describe('Lexer', () => {
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Unexpected character: "~".
 
-      GraphQL request:3:5
+      GraphQL request:3:2
       2 |
-      3 |     ~
-        |     ^
+      3 |  ~
+        |  ^
       4 |
     `);
   });
