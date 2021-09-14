@@ -254,11 +254,31 @@ describe('Parser', () => {
     ).to.not.throw();
   });
 
+  it('parses optional with alias', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField: field?
+      }
+    `),
+    ).to.not.throw();
+  });
+
   it('does not parse aliased field with bang on left of colon', () => {
     expect(() =>
       parse(`
       query {
         requiredField!: field
+      }
+    `),
+    ).to.throw();
+  });
+
+  it('does not parse aliased field with question mark on left of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField?: field
       }
     `),
     ).to.throw();
@@ -274,11 +294,31 @@ describe('Parser', () => {
     ).to.throw();
   });
 
+  it('does not parse aliased field with question mark on left and right of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField?: field?
+      }
+    `),
+    ).to.throw();
+  });
+
   it('parses required within fragment', () => {
     expect(() =>
       parse(`
       fragment MyFragment on Query {
         field!
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('parses optional within fragment', () => {
+    expect(() =>
+      parse(`
+      fragment MyFragment on Query {
+        field?
       }
     `),
     ).to.not.throw();
