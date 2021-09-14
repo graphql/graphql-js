@@ -231,6 +231,7 @@ export {
   isTypeDefinitionNode,
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
+  RequiredStatus,
 } from './language/index';
 
 export type {
@@ -305,6 +306,7 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  RequiredStatus,
 } from './language/index';
 
 /** Execute GraphQL queries. */
@@ -451,6 +453,7 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
+  modifiedOutputType,
 } from './utilities/index';
 
 export type {

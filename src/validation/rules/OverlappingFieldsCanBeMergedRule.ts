@@ -19,6 +19,7 @@ import type {
   GraphQLOutputType,
   GraphQLField,
 } from '../../type/definition';
+
 import {
   getNamedType,
   isNonNullType,
@@ -33,6 +34,7 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 import type { Maybe } from '../../jsutils/Maybe';
 
 import type { ValidationContext } from '../ValidationContext';
+import { modifiedOutputType } from '../../utilities/applyRequiredStatus';
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
@@ -590,17 +592,22 @@ function findConflict(
   const type1 = def1?.type;
   const type2 = def2?.type;
 
-  if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [
-      [
-        responseName,
-        `they return conflicting types "${inspect(type1)}" and "${inspect(
-          type2,
-        )}"`,
-      ],
-      [node1],
-      [node2],
-    ];
+  if (type1 && type2) {
+    const modifiedType1 = modifiedOutputType(type1, node1.required);
+    const modifiedType2 = modifiedOutputType(type2, node2.required);
+
+    if (doTypesConflict(modifiedType1, modifiedType2)) {
+      return [
+        [
+          responseName,
+          `they return conflicting types "${inspect(
+            modifiedType1,
+          )}" and "${inspect(modifiedType2)}"`,
+        ],
+        [node1],
+        [node2],
+      ];
+    }
   }
 
   // Collect and compare sub-fields. Use the same "visited fragment names" list

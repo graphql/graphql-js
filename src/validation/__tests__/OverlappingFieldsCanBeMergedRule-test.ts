@@ -167,6 +167,24 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
+  it('different nullability', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        doesKnowCommand
+        doesKnowCommand!
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Fields "doesKnowCommand" conflict because they return conflicting types "Boolean" and "Boolean!". Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
   it('different args, second missing an argument', () => {
     expectErrors(`
       fragment conflictingArgs on Dog {
@@ -234,6 +252,28 @@ describe('Validate: Overlapping fields can be merged', () => {
         }
       }
     `);
+  });
+
+  it('disallows different nullability status even if the types are mutual exclusive', () => {
+    expectErrors(`
+      fragment conflictingNullability on Pet {
+        ... on Dog {
+          name!
+        }
+        ... on Cat {
+          name
+        }
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Fields "name" conflict because they return conflicting types "String!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 4, column: 11 },
+          { line: 7, column: 11 },
+        ],
+      },
+    ]);
   });
 
   it('encounters conflict in fragments', () => {
@@ -613,6 +653,139 @@ describe('Validate: Overlapping fields can be merged', () => {
       ]);
     });
 
+    describe('nullable field on types which potentially overlap', () => {
+      it('matching nullability status', () => {
+        // This is invalid since an object could potentially be both the Object
+        // type IntBox and the interface type NonNullStringBox1. While that
+        // condition does not exist in the current schema, the schema could
+        // expand in the future to allow this. Thus it is invalid.
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  unrelatedField!
+                }
+                ...on IntBox {
+                  unrelatedField!
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('conflicting nullability status', () => {
+        // This is invalid since an object could potentially be both the Object
+        // type IntBox and the interface type NonNullStringBox1. While that
+        // condition does not exist in the current schema, the schema could
+        // expand in the future to allow this. Thus it is invalid.
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  unrelatedField
+                }
+                ...on IntBox {
+                  unrelatedField!
+                }
+              }
+            }
+          `,
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "unrelatedField" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+
+      it('conflicting nullability status with aliases', () => {
+        // This is invalid since an object could potentially be both the Object
+        // type IntBox and the interface type NonNullStringBox1. While that
+        // condition does not exist in the current schema, the schema could
+        // expand in the future to allow this. Thus it is invalid.
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  nullable: unrelatedField
+                }
+                ...on IntBox {
+                  nonNullable: unrelatedField!
+                }
+              }
+            }
+          `,
+        );
+      });
+    });
+
+    describe('non-nullable field on types which potentially overlap', () => {
+      it('matching nullability status', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on NonNullStringBox1 {
+                  scalar!
+                }
+                ...on NonNullStringBox1Impl {
+                  scalar!
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('conflicting nullability status', () => {
+        expectValidWithSchema(
+          schema,
+          `
+              {
+                someBox {
+                  ...on NonNullStringBox1 {
+                    scalar!
+                  }
+                  ...on NonNullStringBox1Impl {
+                    scalar
+                  }
+                }
+              }
+            `,
+        );
+      });
+
+      it('conflicting nullability status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+              {
+                someBox {
+                  ...on NonNullStringBox1 {
+                    nonNullable: scalar!
+                  }
+                  ...on NonNullStringBox1Impl {
+                    nullable: scalar
+                  }
+                }
+              }
+            `,
+        );
+      });
+    });
+
     it('compatible return shapes on different return types', () => {
       // In this case `deepBox` returns `SomeBox` in the first usage, and
       // `StringBox` in the second usage. These return types are not the same!
@@ -636,6 +809,43 @@ describe('Validate: Overlapping fields can be merged', () => {
           }
         `,
       );
+    });
+
+    it('nested conflicting nullability status which potentially overlap', () => {
+      // This is invalid since an object could potentially be both the Object
+      // type IntBox and the interface type NonNullStringBox1. While that
+      // condition does not exist in the current schema, the schema could
+      // expand in the future to allow this. Thus it is invalid.
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            someBox {
+              ... on SomeBox {
+                deepBox {
+                  unrelatedField
+                }
+              }
+              ... on StringBox {
+                deepBox {
+                  unrelatedField!
+                }
+              }
+            }
+          }
+        `,
+      ).to.deep.equal([
+        {
+          message:
+            'Fields "deepBox" conflict because subfields "unrelatedField" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 6, column: 19 },
+            { line: 10, column: 17 },
+            { line: 11, column: 19 },
+          ],
+        },
+      ]);
     });
 
     it('disallows differing return types despite no overlap', () => {
@@ -749,6 +959,57 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 5, column: 17 },
             { line: 8, column: 17 },
           ],
+        },
+      ]);
+    });
+
+    it('allows the nullability status based on ! operator', () => {
+      expectValidWithSchema(
+        schema,
+        `
+          {
+            someBox {
+              ... on NonNullStringBox1 {
+                scalar
+              }
+              ... on StringBox {
+                scalar!
+              }
+            }
+          }
+        `,
+      );
+    });
+
+    it('disallows conflicting nullability statuses based on ! operator', () => {
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            someBox {
+              ... on IntBox {
+                scalar
+              }
+              ... on StringBox {
+                scalar!
+              }
+            }
+          }
+        `,
+      ).to.deep.equal([
+        {
+          locations: [
+            {
+              column: 17,
+              line: 5,
+            },
+            {
+              column: 17,
+              line: 8,
+            },
+          ],
+          message:
+            'Fields "scalar" conflict because they return conflicting types "Int" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
         },
       ]);
     });

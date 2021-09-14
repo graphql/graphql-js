@@ -13,6 +13,7 @@ describe('Printer: Query document', () => {
     const ast = {
       kind: Kind.FIELD,
       name: { kind: Kind.NAME, value: 'foo' },
+      required: 'unset',
     } as const;
     expect(print(ast)).to.equal('foo');
   });
@@ -165,6 +166,10 @@ describe('Printer: Query document', () => {
                 ...frag @onFragmentSpread
               }
             }
+            field3!
+            requiredField4: field4!
+            field5?
+            optionalField6: field6?
           }
           ... @skip(unless: $foo) {
             id

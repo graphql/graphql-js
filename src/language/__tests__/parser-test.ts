@@ -224,6 +224,66 @@ describe('Parser', () => {
     ).to.not.throw();
   });
 
+  it('parses required field', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField!
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('parses optional field', () => {
+    expect(() =>
+      parse(`
+      query {
+        optionalField?
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('parses required with alias', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField: field!
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('does not parse aliased field with bang on left of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField!: field
+      }
+    `),
+    ).to.throw();
+  });
+
+  it('does not parse aliased field with bang on left and right of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField!: field!
+      }
+    `),
+    ).to.throw();
+  });
+
+  it('parses required within fragment', () => {
+    expect(() =>
+      parse(`
+      fragment MyFragment on Query {
+        field!
+      }
+    `),
+    ).to.not.throw();
+  });
+
   it('creates ast', () => {
     const result = parse(dedent`
       {
@@ -245,6 +305,7 @@ describe('Parser', () => {
           name: undefined,
           variableDefinitions: [],
           directives: [],
+          required: 'unset',
           selectionSet: {
             kind: Kind.SELECTION_SET,
             loc: { start: 0, end: 40 },
@@ -275,6 +336,7 @@ describe('Parser', () => {
                   },
                 ],
                 directives: [],
+                required: 'unset',
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 16, end: 38 },
@@ -335,6 +397,7 @@ describe('Parser', () => {
           name: undefined,
           variableDefinitions: [],
           directives: [],
+          required: 'unset',
           selectionSet: {
             kind: Kind.SELECTION_SET,
             loc: { start: 6, end: 29 },
@@ -350,6 +413,7 @@ describe('Parser', () => {
                 },
                 arguments: [],
                 directives: [],
+                required: 'unset',
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 15, end: 27 },

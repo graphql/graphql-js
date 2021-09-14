@@ -52,6 +52,8 @@ import {
   isNonNullType,
 } from '../type/definition';
 
+import { modifiedOutputType } from '../utilities/applyRequiredStatus';
+
 import { getVariableValues, getArgumentValues } from './values';
 import {
   collectFields,
@@ -489,7 +491,7 @@ function executeField(
     return;
   }
 
-  const returnType = fieldDef.type;
+  const returnType = modifiedOutputType(fieldDef.type, fieldNodes[0].required);
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(

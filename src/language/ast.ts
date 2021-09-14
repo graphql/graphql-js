@@ -352,6 +352,8 @@ export interface SelectionSetNode {
 
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
+export type RequiredStatus = 'required' | 'optional' | 'unset';
+
 export interface FieldNode {
   readonly kind: Kind.FIELD;
   readonly loc?: Location;
@@ -360,6 +362,7 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
+  readonly required: RequiredStatus;
 }
 
 export interface ArgumentNode {
