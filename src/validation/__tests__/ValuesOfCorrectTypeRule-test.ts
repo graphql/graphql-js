@@ -1,11 +1,17 @@
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
+
 import { inspect } from '../../jsutils/inspect';
+
+import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLScalarType, GraphQLObjectType } from '../../type/definition';
 
+import { validate } from '../validate';
 import { ValuesOfCorrectTypeRule } from '../rules/ValuesOfCorrectTypeRule';
 
 import {
@@ -962,12 +968,10 @@ describe('Validate: Values of correct type', () => {
         }),
       });
 
-      const expectedErrors = expectErrorsWithSchema(
-        schema,
-        '{ invalidArg(arg: 123) }',
-      );
+      const doc = parse('{ invalidArg(arg: 123) }');
+      const errors = validate(schema, doc, [ValuesOfCorrectTypeRule]);
 
-      expectedErrors.to.deep.equal([
+      expectJSON(errors).to.deep.equal([
         {
           message:
             'Expected value of type "Invalid", found 123; Invalid scalar is always invalid: 123',
@@ -975,8 +979,8 @@ describe('Validate: Values of correct type', () => {
         },
       ]);
 
-      expectedErrors.to.have.nested.property(
-        '[0].originalError.message',
+      expect(errors[0]).to.have.nested.property(
+        'originalError.message',
         'Invalid scalar is always invalid: 123',
       );
     });

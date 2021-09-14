@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
+
 import { buildSchema } from '../../utilities/buildASTSchema';
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 
@@ -1522,7 +1524,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync({ schema, source })).to.deep.equal({
+    expectJSON(graphqlSync({ schema, source })).to.deep.equal({
       errors: [
         {
           message:

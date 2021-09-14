@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../__testUtils__/expectJSON';
+
 import { graphql } from '../graphql';
 
 import { StarWarsSchema as schema } from './starWarsSchema';
@@ -393,7 +395,7 @@ describe('Star Wars Query Tests', () => {
       `;
 
       const result = await graphql({ schema, source });
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         data: {
           hero: {
             name: 'R2-D2',
@@ -424,7 +426,7 @@ describe('Star Wars Query Tests', () => {
       `;
 
       const result = await graphql({ schema, source });
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         data: {
           hero: {
             name: 'R2-D2',
@@ -475,7 +477,7 @@ describe('Star Wars Query Tests', () => {
       `;
 
       const result = await graphql({ schema, source });
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         data: {
           mainHero: {
             name: 'R2-D2',
