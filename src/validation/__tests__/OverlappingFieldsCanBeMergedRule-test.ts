@@ -254,26 +254,92 @@ describe('Validate: Overlapping fields can be merged', () => {
     `);
   });
 
-  it('disallows different nullability status even if the types are mutual exclusive', () => {
-    expectErrors(`
-      fragment conflictingNullability on Pet {
-        ... on Dog {
-          name!
+  describe('disallows different nullability status even if the types are mutually exclusive', () => {
+    it('for required and unset', () => {
+      expectErrors(`
+        fragment conflictingNullability on Pet {
+          ... on Dog {
+            name!
+          }
+          ... on Cat {
+            name
+          }
         }
-        ... on Cat {
-          name
+      `).to.deep.equal([
+        {
+          message:
+            'Fields "name" conflict because they return conflicting types "String!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 4, column: 13 },
+            { line: 7, column: 13 },
+          ],
+        },
+      ]);
+    });
+
+    it('for required and optional', () => {
+      expectErrors(`
+        fragment conflictingNullability on Pet {
+          ... on Dog {
+            name!
+          }
+          ... on Cat {
+            name?
+          }
         }
-      }
-    `).to.deep.equal([
-      {
-        message:
-          'Fields "name" conflict because they return conflicting types "String!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [
-          { line: 4, column: 11 },
-          { line: 7, column: 11 },
-        ],
-      },
-    ]);
+      `).to.deep.equal([
+        {
+          message:
+            'Fields "name" conflict because they return conflicting types "String!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 4, column: 13 },
+            { line: 7, column: 13 },
+          ],
+        },
+      ]);
+    });
+  });
+
+  describe('allows same nullability on mutually exclusive types', () => {
+    it('for optional and unset', () => {
+      // this should be valid because name is nullable by default
+      expectValid(`
+        fragment conflictingNullability on Pet {
+          ... on Dog {
+            name?
+          }
+          ... on Cat {
+            name
+          }
+        }
+      `);
+    });
+
+    it('for optional and optional', () => {
+      expectValid(`
+        fragment conflictingNullability on Pet {
+          ... on Dog {
+            name?
+          }
+          ... on Cat {
+            name?
+          }
+        }
+      `);
+    });
+
+    it('for unset and unset', () => {
+      expectValid(`
+        fragment conflictingNullability on Pet {
+          ... on Dog {
+            name
+          }
+          ... on Cat {
+            name
+          }
+        }
+      `);
+    });
   });
 
   it('encounters conflict in fragments', () => {
@@ -654,11 +720,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     });
 
     describe('nullable field on types which potentially overlap', () => {
-      it('matching nullability status', () => {
-        // This is invalid since an object could potentially be both the Object
-        // type IntBox and the interface type NonNullStringBox1. While that
-        // condition does not exist in the current schema, the schema could
-        // expand in the future to allow this. Thus it is invalid.
+      it('matching required status', () => {
         expectValidWithSchema(
           schema,
           `
@@ -676,11 +738,61 @@ describe('Validate: Overlapping fields can be merged', () => {
         );
       });
 
-      it('conflicting nullability status', () => {
-        // This is invalid since an object could potentially be both the Object
-        // type IntBox and the interface type NonNullStringBox1. While that
-        // condition does not exist in the current schema, the schema could
-        // expand in the future to allow this. Thus it is invalid.
+      it('matching optional status', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  unrelatedField?
+                }
+                ...on IntBox {
+                  unrelatedField?
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('matching unset status', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  unrelatedField
+                }
+                ...on IntBox {
+                  unrelatedField
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('matching optional and unset (optional) status', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  unrelatedField?
+                }
+                ...on IntBox {
+                  unrelatedField
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('conflicting required and unset (optional) status', () => {
         expectErrorsWithSchema(
           schema,
           `
@@ -707,11 +819,34 @@ describe('Validate: Overlapping fields can be merged', () => {
         ]);
       });
 
-      it('conflicting nullability status with aliases', () => {
-        // This is invalid since an object could potentially be both the Object
-        // type IntBox and the interface type NonNullStringBox1. While that
-        // condition does not exist in the current schema, the schema could
-        // expand in the future to allow this. Thus it is invalid.
+      it('conflicting required and optional status', () => {
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  unrelatedField?
+                }
+                ...on IntBox {
+                  unrelatedField!
+                }
+              }
+            }
+          `,
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "unrelatedField" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+
+      it('conflicting required and unset (optional) status with aliases', () => {
         expectValidWithSchema(
           schema,
           `
@@ -722,6 +857,96 @@ describe('Validate: Overlapping fields can be merged', () => {
                 }
                 ...on IntBox {
                   nonNullable: unrelatedField!
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('conflicting required and optional status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  nullable: unrelatedField!
+                }
+                ...on IntBox {
+                  nonNullable: unrelatedField?
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('matching optional and unset (optional) status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  unset: unrelatedField
+                }
+                ...on IntBox {
+                  nonNullable: unrelatedField?
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('matching required and required status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  otherNonnullable: unrelatedField!
+                }
+                ...on IntBox {
+                  nonNullable: unrelatedField!
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('matching optional and optional status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  nullable: unrelatedField?
+                }
+                ...on IntBox {
+                  otherNullable: unrelatedField?
+                }
+              }
+            }
+          `,
+        );
+      });
+
+      it('matching unset and unset status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on SomeBox {
+                  unset: unrelatedField
+                }
+                ...on IntBox {
+                  otherUnset: unrelatedField
                 }
               }
             }
