@@ -255,7 +255,7 @@ export class GraphQLError extends Error {
   }
 
   get [Symbol.toStringTag](): string {
-    return 'Object';
+    return 'GraphQLError';
   }
 }
 /**
