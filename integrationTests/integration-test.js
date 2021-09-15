@@ -39,7 +39,7 @@ describe('Integration Tests', () => {
       const cwd = path.join(tmpDir, projectName);
       exec('npm --quiet install', { cwd, stdio: 'inherit' });
       exec('npm --quiet test', { cwd, stdio: 'inherit' });
-    }).timeout(40000);
+    }).timeout(60000);
   }
 
   testOnNodeProject('ts');
