@@ -28,22 +28,21 @@ describe('Integration Tests', () => {
   );
 
   function testOnNodeProject(projectName) {
-    exec(`cp -R ${path.join(__dirname, projectName)} ${tmpDir}`);
+    const projectPath = path.join(__dirname, projectName);
 
-    const cwd = path.join(tmpDir, projectName);
-    exec('npm --quiet install', { cwd, stdio: 'inherit' });
-    exec('npm --quiet test', { cwd, stdio: 'inherit' });
+    const packageJSONPath = path.join(projectPath, 'package.json');
+    const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf-8'));
+
+    it(packageJSON.description, () => {
+      exec(`cp -R ${projectPath} ${tmpDir}`);
+
+      const cwd = path.join(tmpDir, projectName);
+      exec('npm --quiet install', { cwd, stdio: 'inherit' });
+      exec('npm --quiet test', { cwd, stdio: 'inherit' });
+    }).timeout(40000);
   }
 
-  it('Should compile with all supported TS versions', () => {
-    testOnNodeProject('ts');
-  }).timeout(40000);
-
-  it('Should work on all supported node versions', () => {
-    testOnNodeProject('node');
-  }).timeout(40000);
-
-  it('Should be compatible with Webpack', () => {
-    testOnNodeProject('webpack');
-  }).timeout(40000);
+  testOnNodeProject('ts');
+  testOnNodeProject('node');
+  testOnNodeProject('webpack');
 });

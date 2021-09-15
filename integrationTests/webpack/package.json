@@ -1,5 +1,6 @@
 {
   "private": true,
+  "description": "graphql-js should be compatible with Webpack",
   "scripts": {
     "test": "webpack && node test.js"
   },
