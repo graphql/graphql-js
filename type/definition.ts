@@ -943,12 +943,13 @@ export type GraphQLFieldResolver<
   TArgs = {
     [argument: string]: any;
   },
+  TResult = unknown,
 > = (
   source: TSource,
   args: TArgs,
   context: TContext,
   info: GraphQLResolveInfo,
-) => unknown;
+) => TResult;
 export interface GraphQLResolveInfo {
   readonly fieldName: string;
   readonly fieldNodes: ReadonlyArray<FieldNode>;
