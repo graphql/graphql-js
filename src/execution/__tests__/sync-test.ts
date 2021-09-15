@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
+
 import { parse } from '../../language/parser';
 
 import { validate } from '../../validation/validate';
@@ -52,7 +54,7 @@ describe('Execute: synchronously when possible', () => {
       document: parse(doc),
       rootValue: 'rootValue',
     });
-    expect(result).to.deep.equal({
+    expectJSON(result).to.deep.equal({
       errors: [{ message: 'Must provide an operation.' }],
     });
   });
@@ -120,7 +122,7 @@ describe('Execute: synchronously when possible', () => {
         schema: badSchema,
         source: '{ __typename }',
       });
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [{ message: 'Query root type must be provided.' }],
       });
     });
@@ -131,7 +133,7 @@ describe('Execute: synchronously when possible', () => {
         schema,
         source: doc,
       });
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message: 'Syntax Error: Expected Name, found "{".',

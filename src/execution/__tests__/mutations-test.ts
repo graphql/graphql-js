@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
+
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
 import { parse } from '../../language/parser';
@@ -167,7 +169,7 @@ describe('Execute: Handles mutation execution ordering', () => {
     const rootValue = new Root(6);
     const result = await execute({ schema, document, rootValue });
 
-    expect(result).to.deep.equal({
+    expectJSON(result).to.deep.equal({
       data: {
         first: { theNumber: 1 },
         second: { theNumber: 2 },

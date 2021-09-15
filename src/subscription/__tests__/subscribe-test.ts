@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
 import { invariant } from '../../jsutils/invariant';
@@ -347,7 +348,7 @@ describe('Subscription Initialization Phase', () => {
     const document = parse('subscription { unknownField }');
 
     const result = await subscribe({ schema, document });
-    expect(result).to.deep.equal({
+    expectJSON(result).to.deep.equal({
       errors: [
         {
           message: 'The subscription field "unknownField" is not defined.',
@@ -423,24 +424,24 @@ describe('Subscription Initialization Phase', () => {
       ],
     };
 
-    expect(
+    expectJSON(
       // Returning an error
       await subscribeWithFn(() => new Error('test error')),
     ).to.deep.equal(expectedResult);
 
-    expect(
+    expectJSON(
       // Throwing an error
       await subscribeWithFn(() => {
         throw new Error('test error');
       }),
     ).to.deep.equal(expectedResult);
 
-    expect(
+    expectJSON(
       // Resolving to an error
       await subscribeWithFn(() => Promise.resolve(new Error('test error'))),
     ).to.deep.equal(expectedResult);
 
-    expect(
+    expectJSON(
       // Rejecting with an error
       await subscribeWithFn(() => Promise.reject(new Error('test error'))),
     ).to.deep.equal(expectedResult);
@@ -470,7 +471,7 @@ describe('Subscription Initialization Phase', () => {
     // If we receive variables that cannot be coerced correctly, subscribe() will
     // resolve to an ExecutionResult that contains an informative error description.
     const result = await subscribe({ schema, document, variableValues });
-    expect(result).to.deep.equal({
+    expectJSON(result).to.deep.equal({
       errors: [
         {
           message:
@@ -892,7 +893,7 @@ describe('Subscription Publish Phase', () => {
     });
 
     // An error in execution is presented as such.
-    expect(await subscription.next()).to.deep.equal({
+    expectJSON(await subscription.next()).to.deep.equal({
       done: false,
       value: {
         data: { newMessage: null },
@@ -908,7 +909,7 @@ describe('Subscription Publish Phase', () => {
 
     // However that does not close the response event stream.
     // Subsequent events are still executed.
-    expect(await subscription.next()).to.deep.equal({
+    expectJSON(await subscription.next()).to.deep.equal({
       done: false,
       value: {
         data: { newMessage: 'Bonjour' },

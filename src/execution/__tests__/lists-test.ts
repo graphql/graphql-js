@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
+
 import { parse } from '../../language/parser';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
@@ -50,7 +52,7 @@ describe('Execute: Accepts any iterable as list value', () => {
   it('Does not accept (Iterable) String-literal as a List value', () => {
     const listField = 'Singular';
 
-    expect(complete({ listField })).to.deep.equal({
+    expectJSON(complete({ listField })).to.deep.equal({
       data: { listField: null },
       errors: [
         {
@@ -129,11 +131,11 @@ describe('Execute: Handles list nullability', () => {
     expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
       data: { listField: [1, null, 2] },
     });
-    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]' })).to.deep.equal({
       data: { listField: null },
       errors,
     });
-    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
       data: null,
       errors,
     });
@@ -152,14 +154,14 @@ describe('Execute: Handles list nullability', () => {
     expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
       data: { listField: null },
     });
-    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]!' })).to.deep.equal({
       data: null,
       errors,
     });
     expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
       data: { listField: null },
     });
-    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
       data: null,
       errors,
     });
@@ -175,19 +177,19 @@ describe('Execute: Handles list nullability', () => {
       },
     ];
 
-    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]' })).to.deep.equal({
       data: { listField: [1, null, 2] },
       errors,
     });
-    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]!' })).to.deep.equal({
       data: { listField: [1, null, 2] },
       errors,
     });
-    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]' })).to.deep.equal({
       data: { listField: null },
       errors,
     });
-    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
       data: null,
       errors,
     });
@@ -203,19 +205,19 @@ describe('Execute: Handles list nullability', () => {
       },
     ];
 
-    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]' })).to.deep.equal({
       data: { listField: null },
       errors,
     });
-    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]!' })).to.deep.equal({
       data: null,
       errors,
     });
-    expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]' })).to.deep.equal({
       data: { listField: null },
       errors,
     });
-    expect(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
       data: null,
       errors,
     });

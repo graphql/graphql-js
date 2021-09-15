@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import type { Maybe } from '../../jsutils/Maybe';
 
@@ -122,7 +122,7 @@ export function expectValidationErrorsWithSchema(
 ): any {
   const doc = parse(queryStr);
   const errors = validate(schema, doc, [rule]);
-  return expect(errors);
+  return expectJSON(errors);
 }
 
 export function expectValidationErrors(
@@ -139,5 +139,5 @@ export function expectSDLValidationErrors(
 ): any {
   const doc = parse(sdlStr);
   const errors = validateSDL(doc, schema, [rule]);
-  return expect(errors);
+  return expectJSON(errors);
 }

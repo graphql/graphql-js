@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
+
 import { inspect } from '../../jsutils/inspect';
 import { invariant } from '../../jsutils/invariant';
 
@@ -196,7 +198,7 @@ describe('Execute: Handles inputs', () => {
           }
         `);
 
-        expect(result).to.deep.equal({
+        expectJSON(result).to.deep.equal({
           data: {
             fieldWithObjectInput: null,
           },
@@ -369,7 +371,7 @@ describe('Execute: Handles inputs', () => {
         const params = { input: { a: 'foo', b: 'bar', c: null } };
         const result = executeQuery(doc, params);
 
-        expect(result).to.deep.equal({
+        expectJSON(result).to.deep.equal({
           errors: [
             {
               message:
@@ -383,7 +385,7 @@ describe('Execute: Handles inputs', () => {
       it('errors on incorrect type', () => {
         const result = executeQuery(doc, { input: 'foo bar' });
 
-        expect(result).to.deep.equal({
+        expectJSON(result).to.deep.equal({
           errors: [
             {
               message:
@@ -397,7 +399,7 @@ describe('Execute: Handles inputs', () => {
       it('errors on omission of nested non-null', () => {
         const result = executeQuery(doc, { input: { a: 'foo', b: 'bar' } });
 
-        expect(result).to.deep.equal({
+        expectJSON(result).to.deep.equal({
           errors: [
             {
               message:
@@ -416,7 +418,7 @@ describe('Execute: Handles inputs', () => {
         `;
         const result = executeQuery(nestedDoc, { input: { na: { a: 'foo' } } });
 
-        expect(result).to.deep.equal({
+        expectJSON(result).to.deep.equal({
           errors: [
             {
               message:
@@ -438,7 +440,7 @@ describe('Execute: Handles inputs', () => {
         };
         const result = executeQuery(doc, params);
 
-        expect(result).to.deep.equal({
+        expectJSON(result).to.deep.equal({
           errors: [
             {
               message:
@@ -613,7 +615,7 @@ describe('Execute: Handles inputs', () => {
         }
       `);
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message:
@@ -632,7 +634,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { value: null });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message:
@@ -675,7 +677,7 @@ describe('Execute: Handles inputs', () => {
     it('reports error for missing non-nullable inputs', () => {
       const result = executeQuery('{ fieldWithNonNullableStringInput }');
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: null,
         },
@@ -698,7 +700,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { value: [1, 2, 3] });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message:
@@ -723,7 +725,7 @@ describe('Execute: Handles inputs', () => {
         }
       `);
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: null,
         },
@@ -781,7 +783,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: null });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message:
@@ -844,7 +846,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: ['A', null, 'B'] });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message:
@@ -863,7 +865,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: null });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message:
@@ -893,7 +895,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: ['A', null, 'B'] });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message:
@@ -912,7 +914,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: { list: ['A', 'B'] } });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message:
@@ -931,7 +933,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: 'WhoKnows' });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           {
             message:
@@ -975,7 +977,7 @@ describe('Execute: Handles inputs', () => {
         }
       `);
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         data: {
           fieldWithDefaultArgumentValue: null,
         },
@@ -1029,7 +1031,7 @@ describe('Execute: Handles inputs', () => {
     it('return all errors by default', () => {
       const result = getVariableValues(schema, variableDefinitions, inputValue);
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           invalidValueError(0, 0),
           invalidValueError(1, 1),
@@ -1046,7 +1048,7 @@ describe('Execute: Handles inputs', () => {
         { maxErrors: 3 },
       );
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           invalidValueError(0, 0),
           invalidValueError(1, 1),
@@ -1063,7 +1065,7 @@ describe('Execute: Handles inputs', () => {
         { maxErrors: 2 },
       );
 
-      expect(result).to.deep.equal({
+      expectJSON(result).to.deep.equal({
         errors: [
           invalidValueError(0, 0),
           invalidValueError(1, 1),

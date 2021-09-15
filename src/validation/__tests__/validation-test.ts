@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
+
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { DirectiveNode } from '../../language/ast';
@@ -37,7 +39,7 @@ describe('Validate: Supports full validation', () => {
     `);
 
     const errors = validate(testSchema, doc);
-    expect(errors).to.deep.equal([]);
+    expectJSON(errors).to.deep.equal([]);
   });
 
   it('detects unknown fields', () => {
@@ -48,7 +50,7 @@ describe('Validate: Supports full validation', () => {
     `);
 
     const errors = validate(testSchema, doc);
-    expect(errors).to.deep.equal([
+    expectJSON(errors).to.deep.equal([
       {
         locations: [{ line: 3, column: 9 }],
         message: 'Cannot query field "unknown" on type "QueryRoot".',
@@ -114,7 +116,7 @@ describe('Validate: Supports full validation', () => {
     }
 
     const errors = validate(schema, doc, [customRule]);
-    expect(errors).to.deep.equal([
+    expectJSON(errors).to.deep.equal([
       {
         message: 'Reporting directive: @custom',
         locations: [{ line: 3, column: 14 }],
@@ -146,7 +148,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
 
   it('when maxErrors is equal to number of errors', () => {
     const errors = validateDocument({ maxErrors: 3 });
-    expect(errors).to.be.deep.equal([
+    expectJSON(errors).to.be.deep.equal([
       invalidFieldError('firstUnknownField'),
       invalidFieldError('secondUnknownField'),
       invalidFieldError('thirdUnknownField'),
@@ -155,7 +157,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
 
   it('when maxErrors is less than number of errors', () => {
     const errors = validateDocument({ maxErrors: 2 });
-    expect(errors).to.be.deep.equal([
+    expectJSON(errors).to.be.deep.equal([
       invalidFieldError('firstUnknownField'),
       invalidFieldError('secondUnknownField'),
       {

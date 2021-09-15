@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
+
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -204,7 +206,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    expect(await executeQuery({ schema, query })).to.deep.equal({
+    expectJSON(await executeQuery({ schema, query })).to.deep.equal({
       data: {
         pets: [null, null],
       },
@@ -358,7 +360,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    expect(await executeQuery({ schema, query })).to.deep.equal({
+    expectJSON(await executeQuery({ schema, query })).to.deep.equal({
       data: {
         pets: [null, null],
       },
@@ -539,7 +541,7 @@ describe('Execute: Handles execution of abstract types', () => {
       const result = executeSync({ schema, document, rootValue });
       return {
         toEqual(message: string) {
-          expect(result).to.deep.equal({
+          expectJSON(result).to.deep.equal({
             data: { pet: null },
             errors: [
               {
