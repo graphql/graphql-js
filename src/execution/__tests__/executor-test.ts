@@ -1270,7 +1270,7 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(possibleTypes).to.deep.equal([fooObject]);
   });
 
-  it('bubbles null up to nearest nullable parent', () => {
+  describe('deals with ! and ?', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -1294,130 +1294,173 @@ describe('Execute: Handles basic execution tasks', () => {
       }),
     });
 
-    const plainDocument = parse(`
-      query {
-        food {
-          name
-          calories
-        }
-      }
-    `);
-    const plainResult = executeSync({ schema, document: plainDocument });
-
-    expect(plainResult).to.deep.equal({
-      data: { food: { name: null, calories: 10 } },
-    });
-
-    const singleNonNullOnNullValueDocument = parse(`
-      query {
-        food {
-          name!
-          calories
-        }
-      }
-    `);
-    const singleNonNullOnNullValueResult = executeSync({
-      schema,
-      document: singleNonNullOnNullValueDocument,
-    });
-
-    expect(singleNonNullOnNullValueResult).to.deep.equal({
-      data: { food: null },
-      errors: [
-        {
-          locations: [{ column: 11, line: 4 }],
-          message: 'Cannot return null for non-nullable field Food.name.',
-          path: ['food', 'name'],
-        },
-      ],
-    });
-
-    const bothNonNullOnNullValueDocument = parse(`
-      query {
-        food {
-          name!
-          calories!
-        }
-      }
-    `);
-    const bothNonNullOnNullValueResult = executeSync({
-      schema,
-      document: bothNonNullOnNullValueDocument,
-    });
-
-    expect(bothNonNullOnNullValueResult).to.deep.equal({
-      data: { food: null },
-      errors: [
-        {
-          locations: [{ column: 11, line: 4 }],
-          message: 'Cannot return null for non-nullable field Food.name.',
-          path: ['food', 'name'],
-        },
-      ],
-    });
-
-    const singleNonNullOnNonNullValueDocument = parse(`
-      query {
-        food {
-          calories!
-        }
-      }
-    `);
-    const singleNonNullOnNonNullValueResult = executeSync({
-      schema,
-      document: singleNonNullOnNonNullValueDocument,
-    });
-
-    expect(singleNonNullOnNonNullValueResult).to.deep.equal({
-      data: { food: { calories: 10 } },
-    });
-
-    const nonNullAliasOnNullValueDocument = parse(`
-      query {
-        food {
-          theNameOfTheFood: name!
-        }
-      }
-    `);
-    const nonNullAliasOnNullValueResult = executeSync({
-      schema,
-      document: nonNullAliasOnNullValueDocument,
-    });
-
-    expect(nonNullAliasOnNullValueResult).to.deep.equal({
-      data: { food: null },
-      errors: [
-        {
-          locations: [{ column: 11, line: 4 }],
-          message: 'Cannot return null for non-nullable field Food.name.',
-          path: ['food', 'theNameOfTheFood'],
-        },
-      ],
-    });
-
-    const nonNullInFragmentDocument = parse(`
-      query {
-        food {
-          ... on Food {
-            name!
+    it('smoketest', () => {
+      const plainDocument = parse(`
+        query {
+          food {
+            name
+            calories
           }
         }
-      }
-    `);
-    const nonNullInFragmentResult = executeSync({
-      schema,
-      document: nonNullInFragmentDocument,
+      `);
+      const plainResult = executeSync({ schema, document: plainDocument });
+
+      expect(plainResult).to.deep.equal({
+        data: { food: { name: null, calories: 10 } },
+      });
     });
 
-    expect(nonNullInFragmentResult).to.deep.equal({
-      data: { food: null },
-      errors: [
-        {
-          locations: [{ column: 13, line: 5 }],
-          message: 'Cannot return null for non-nullable field Food.name.',
-          path: ['food', 'name'],
-        },
-      ],
+    it('null bubbles up when field that returns null is required', () => {
+      const singleNonNullOnNullValueDocument = parse(`
+        query {
+          food {
+            name!
+            calories
+          }
+        }
+      `);
+      const singleNonNullOnNullValueResult = executeSync({
+        schema,
+        document: singleNonNullOnNullValueDocument,
+      });
+
+      expect(singleNonNullOnNullValueResult).to.deep.equal({
+        data: { food: null },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['food', 'name'],
+          },
+        ],
+      });
+    });
+
+    it('null bubbles up when field that returns null and field that does not are both required', () => {
+      const bothNonNullOnNullValueDocument = parse(`
+        query {
+          food {
+            name!
+            calories!
+          }
+        }
+      `);
+      const bothNonNullOnNullValueResult = executeSync({
+        schema,
+        document: bothNonNullOnNullValueDocument,
+      });
+
+      expect(bothNonNullOnNullValueResult).to.deep.equal({
+        data: { food: null },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['food', 'name'],
+          },
+        ],
+      });
+    });
+    
+    it('null bubbles up when field that returns null is required', () => {
+      const singleNonNullOnNonNullValueDocument = parse(`
+        query {
+          food {
+            calories!
+          }
+        }
+      `);
+      const singleNonNullOnNonNullValueResult = executeSync({
+        schema,
+        document: singleNonNullOnNonNullValueDocument,
+      });
+
+      expect(singleNonNullOnNonNullValueResult).to.deep.equal({
+        data: { food: { calories: 10 } },
+      });
+    });
+
+    it('null bubbles up when field that returns null is aliased and required', () => {
+      const nonNullAliasOnNullValueDocument = parse(`
+        query {
+          food {
+            theNameOfTheFood: name!
+          }
+        }
+      `);
+      const nonNullAliasOnNullValueResult = executeSync({
+        schema,
+        document: nonNullAliasOnNullValueDocument,
+      });
+
+      expect(nonNullAliasOnNullValueResult).to.deep.equal({
+        data: { food: null },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['food', 'theNameOfTheFood'],
+          },
+        ],
+      });
+    });
+
+    it('null bubbles up when field that returns null is required and inside an inline fragment', () => {
+      const nonNullInFragmentDocument = parse(`
+        query {
+          food {
+            ... on Food {
+              name!
+            }
+          }
+        }
+      `);
+      const nonNullInFragmentResult = executeSync({
+        schema,
+        document: nonNullInFragmentDocument,
+      });
+
+      expect(nonNullInFragmentResult).to.deep.equal({
+        data: { food: null },
+        errors: [
+          {
+            locations: [{ column: 15, line: 5 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['food', 'name'],
+          },
+        ],
+      });
+    });
+
+    it('null bubbles up when field that returns null is required, but other aliased value is unaffected', () => {
+      const aliasedNullAndNonNull = parse(`
+        query {
+          nonNullable: food {
+            name!
+            calories!
+          }
+
+          nullable: food {
+            name
+            calories!
+          }
+        }
+      `);
+      const aliasedNullAndNonNullResult = executeSync({
+        schema,
+        document: aliasedNullAndNonNull,
+      });
+
+      expect(aliasedNullAndNonNullResult).to.deep.equal({
+        data: { nonNullable: null, nullable: { calories: 10, name: null } },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['nonNullable', 'name'],
+          },
+        ],
+      });
     });
   });
 });

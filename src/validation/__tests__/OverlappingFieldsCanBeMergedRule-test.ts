@@ -956,7 +956,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     });
 
     describe('non-nullable field on types which potentially overlap', () => {
-      it('matching nullability status', () => {
+      it('matching required status', () => {
         expectValidWithSchema(
           schema,
           `
@@ -974,7 +974,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         );
       });
 
-      it('conflicting nullability status', () => {
+      it('matching required and unset (required) nullability status', () => {
         expectValidWithSchema(
           schema,
           `
@@ -990,6 +990,96 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             `,
         );
+      });
+      
+      it('matching optional and optional nullability status', () => {
+        expectValidWithSchema(
+          schema,
+          `
+              {
+                someBox {
+                  ...on NonNullStringBox1 {
+                    scalar?
+                  }
+                  ...on NonNullStringBox1Impl {
+                    scalar?
+                  }
+                }
+              }
+            `,
+        );
+      });
+
+      it('matching unset and unset nullability status', () => {
+        expectValidWithSchema(
+          schema,
+          `
+              {
+                someBox {
+                  ...on NonNullStringBox1 {
+                    scalar
+                  }
+                  ...on NonNullStringBox1Impl {
+                    scalar
+                  }
+                }
+              }
+            `,
+        );
+      });
+      
+      it('conflicting optional and required nullability status', () => {
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on NonNullStringBox1 {
+                  scalar?
+                }
+                ...on NonNullStringBox1Impl {
+                  scalar!
+                }
+              }
+            }
+          `,
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "scalar" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+
+      it('conflicting optional and unset (required) nullability status', () => {
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ...on NonNullStringBox1 {
+                  scalar?
+                }
+                ...on NonNullStringBox1Impl {
+                  scalar
+                }
+              }
+            }
+          `,
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "scalar" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
       });
 
       it('conflicting nullability status with aliases', () => {
