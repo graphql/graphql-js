@@ -420,49 +420,6 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('visit nodes with unknown kinds but does not traverse deeper', () => {
-    const customAST = parse('{ a }');
-    // @ts-expect-error
-    customAST.definitions[0].selectionSet.selections.push({
-      kind: 'CustomField',
-      name: { kind: 'Name', value: 'NamedNodeToBeSkipped' },
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'CustomField',
-            name: { kind: 'Name', value: 'NamedNodeToBeSkipped' },
-          },
-        ],
-      },
-    });
-
-    const visited: Array<any> = [];
-    visit(customAST, {
-      enter(node) {
-        visited.push(['enter', node.kind, getValue(node)]);
-      },
-      leave(node) {
-        visited.push(['leave', node.kind, getValue(node)]);
-      },
-    });
-
-    expect(visited).to.deep.equal([
-      ['enter', 'Document', undefined],
-      ['enter', 'OperationDefinition', undefined],
-      ['enter', 'SelectionSet', undefined],
-      ['enter', 'Field', undefined],
-      ['enter', 'Name', 'a'],
-      ['leave', 'Name', 'a'],
-      ['leave', 'Field', undefined],
-      ['enter', 'CustomField', undefined],
-      ['leave', 'CustomField', undefined],
-      ['leave', 'SelectionSet', undefined],
-      ['leave', 'OperationDefinition', undefined],
-      ['leave', 'Document', undefined],
-    ]);
-  });
-
   it('visits only the specified `Kind` in visitorKeyMap', () => {
     const visited: Array<any> = [];
 
