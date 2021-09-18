@@ -490,11 +490,10 @@ function readDigits(lexer: Lexer, start: number, firstCode: number): number {
 
   const body = lexer.source.body;
   let position = start;
-  let code = firstCode;
 
   do {
-    code = body.charCodeAt(++position);
-  } while (isDigit(code));
+    // empty
+  } while (isDigit(body.charCodeAt(++position)));
 
   return position;
 }
