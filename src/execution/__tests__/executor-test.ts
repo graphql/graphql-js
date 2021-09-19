@@ -1362,7 +1362,7 @@ describe('Execute: Handles basic execution tasks', () => {
       });
     });
     
-    it('null bubbles up when field that returns null is required', () => {
+    it('null does not bubble up when field that returns does not return null is required', () => {
       const singleNonNullOnNonNullValueDocument = parse(`
         query {
           food {
