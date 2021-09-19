@@ -1101,6 +1101,170 @@ describe('Validate: Overlapping fields can be merged', () => {
       });
     });
 
+    describe('Exclusive types without aliases', () => {
+      it('conflicting optional and required nullability status', () =>{
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ... on IntBox {
+                  scalar!
+                }
+                ... on StringBox {
+                  scalar?
+                }
+              }
+            }
+          `
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "scalar" conflict because they return conflicting types "Int!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+
+      it('matching optional and optional nullability status', () =>{
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ... on IntBox {
+                  scalar?
+                }
+                ... on StringBox {
+                  scalar?
+                }
+              }
+            }
+          `
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+
+      it('matching required and required nullability status', () =>{
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ... on IntBox {
+                  scalar!
+                }
+                ... on StringBox {
+                  scalar!
+                }
+              }
+            }
+          `
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "scalar" conflict because they return conflicting types "Int!" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+
+      it('conflicting unset (optional) and required nullability status', () =>{
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ... on IntBox {
+                  scalar
+                }
+                ... on StringBox {
+                  scalar!
+                }
+              }
+            }
+          `
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "scalar" conflict because they return conflicting types "Int" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+
+      it('matching unset (optional) and optional nullability status', () =>{
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ... on IntBox {
+                  scalar
+                }
+                ... on StringBox {
+                  scalar?
+                }
+              }
+            }
+          `
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+
+      it('matching unset (optional) and unset (optional) nullability status', () =>{
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              someBox {
+                ... on IntBox {
+                  scalar
+                }
+                ... on StringBox {
+                  scalar
+                }
+              }
+            }
+          `
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+    });
+
     it('compatible return shapes on different return types', () => {
       // In this case `deepBox` returns `SomeBox` in the first usage, and
       // `StringBox` in the second usage. These return types are not the same!
