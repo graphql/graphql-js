@@ -49,8 +49,17 @@ export type VisitFn<TAnyNode, TVisitedNode = TAnyNode> = (
 
 /**
  * A KeyMap describes each the traversable properties of each kind of node.
+ *
+ * @deprecated Please using ASTVisitorKeyMap instead
  */
 export type VisitorKeyMap<T> = { [P in keyof T]: ReadonlyArray<keyof T[P]> };
+
+/**
+ * A KeyMap describes each the traversable properties of each kind of node.
+ */
+export type ASTVisitorKeyMap = {
+  [P in keyof ASTKindToNode]?: ReadonlyArray<keyof ASTKindToNode[P]>;
+};
 
 // TODO: Should be `[]`, but that requires TypeScript@3
 type EmptyTuple = Array<never>;
