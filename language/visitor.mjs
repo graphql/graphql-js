@@ -5,8 +5,7 @@ import { isNode } from './ast.mjs';
  * relevant functions to be called during the visitor's traversal.
  */
 
-const QueryDocumentKeys = {
-  Name: [],
+export const QueryDocumentKeys = {
   Document: ['definitions'],
   OperationDefinition: [
     'name',
@@ -28,12 +27,6 @@ const QueryDocumentKeys = {
     'directives',
     'selectionSet',
   ],
-  IntValue: [],
-  FloatValue: [],
-  StringValue: [],
-  BooleanValue: [],
-  NullValue: [],
-  EnumValue: [],
   ListValue: ['values'],
   ObjectValue: ['fields'],
   ObjectField: ['name', 'value'],
@@ -159,7 +152,7 @@ export const BREAK = Object.freeze({});
  * ```
  */
 
-export function visit(root, visitor) {
+export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
   /* eslint-disable no-undef-init */
   let stack = undefined;
   let inArray = Array.isArray(root);
@@ -280,7 +273,7 @@ export function visit(root, visitor) {
       inArray = Array.isArray(node);
       keys = inArray
         ? node
-        : (_node$kind = QueryDocumentKeys[node.kind]) !== null &&
+        : (_node$kind = visitorKeys[node.kind]) !== null &&
           _node$kind !== void 0
         ? _node$kind
         : [];

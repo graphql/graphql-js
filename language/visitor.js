@@ -6,14 +6,13 @@ Object.defineProperty(exports, '__esModule', {
 exports.visit = visit;
 exports.visitInParallel = visitInParallel;
 exports.getVisitFn = getVisitFn;
-exports.BREAK = void 0;
+exports.BREAK = exports.QueryDocumentKeys = void 0;
 
 var _inspect = require('../jsutils/inspect.js');
 
 var _ast = require('./ast.js');
 
 const QueryDocumentKeys = {
-  Name: [],
   Document: ['definitions'],
   OperationDefinition: [
     'name',
@@ -35,12 +34,6 @@ const QueryDocumentKeys = {
     'directives',
     'selectionSet',
   ],
-  IntValue: [],
-  FloatValue: [],
-  StringValue: [],
-  BooleanValue: [],
-  NullValue: [],
-  EnumValue: [],
   ListValue: ['values'],
   ObjectValue: ['fields'],
   ObjectField: ['name', 'value'],
@@ -86,6 +79,7 @@ const QueryDocumentKeys = {
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
+exports.QueryDocumentKeys = QueryDocumentKeys;
 const BREAK = Object.freeze({});
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
@@ -168,7 +162,7 @@ const BREAK = Object.freeze({});
 
 exports.BREAK = BREAK;
 
-function visit(root, visitor) {
+function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
   /* eslint-disable no-undef-init */
   let stack = undefined;
   let inArray = Array.isArray(root);
@@ -289,7 +283,7 @@ function visit(root, visitor) {
       inArray = Array.isArray(node);
       keys = inArray
         ? node
-        : (_node$kind = QueryDocumentKeys[node.kind]) !== null &&
+        : (_node$kind = visitorKeys[node.kind]) !== null &&
           _node$kind !== void 0
         ? _node$kind
         : [];

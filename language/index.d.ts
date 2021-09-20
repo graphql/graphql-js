@@ -11,7 +11,7 @@ export { parse, parseValue, parseConstValue, parseType } from './parser';
 export type { ParseOptions } from './parser';
 export { print } from './printer';
 export { visit, visitInParallel, getVisitFn, BREAK } from './visitor';
-export type { ASTVisitor, ASTVisitFn } from './visitor';
+export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap } from './visitor';
 export { Location, Token } from './ast';
 export type {
   ASTNode,

@@ -67,6 +67,13 @@ declare type ReducedField<T, R> = T extends null | undefined
   : T extends ReadonlyArray<any>
   ? ReadonlyArray<R>
   : R;
+/**
+ * A KeyMap describes each the traversable properties of each kind of node.
+ */
+export declare type ASTVisitorKeyMap = {
+  [P in keyof ASTKindToNode]?: ReadonlyArray<keyof ASTKindToNode[P]>;
+};
+export declare const QueryDocumentKeys: ASTVisitorKeyMap;
 export declare const BREAK: unknown;
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
@@ -149,8 +156,13 @@ export declare const BREAK: unknown;
 export declare function visit<N extends ASTNode>(
   root: N,
   visitor: ASTVisitor,
+  visitorKeys?: ASTVisitorKeyMap,
 ): N;
-export declare function visit<R>(root: ASTNode, visitor: ASTReducer<R>): R;
+export declare function visit<R>(
+  root: ASTNode,
+  visitor: ASTReducer<R>,
+  visitorKeys?: ASTVisitorKeyMap,
+): R;
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
  * parallel. Each visitor will be visited for each node before moving on.
