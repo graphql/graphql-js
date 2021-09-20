@@ -70,8 +70,14 @@ type ReducedField<T, R> = T extends null | undefined
   : T extends ReadonlyArray<any>
   ? ReadonlyArray<R>
   : R;
-const QueryDocumentKeys = {
-  Name: [],
+/**
+ * A KeyMap describes each the traversable properties of each kind of node.
+ */
+
+export type ASTVisitorKeyMap = {
+  [P in keyof ASTKindToNode]?: ReadonlyArray<keyof ASTKindToNode[P]>;
+};
+export const QueryDocumentKeys: ASTVisitorKeyMap = {
   Document: ['definitions'],
   OperationDefinition: [
     'name',
@@ -93,12 +99,6 @@ const QueryDocumentKeys = {
     'directives',
     'selectionSet',
   ],
-  IntValue: [],
-  FloatValue: [],
-  StringValue: [],
-  BooleanValue: [],
-  NullValue: [],
-  EnumValue: [],
   ListValue: ['values'],
   ObjectValue: ['fields'],
   ObjectField: ['name', 'value'],
@@ -224,11 +224,20 @@ export const BREAK: unknown = Object.freeze({});
  * ```
  */
 
-export function visit<N extends ASTNode>(root: N, visitor: ASTVisitor): N;
-export function visit<R>(root: ASTNode, visitor: ASTReducer<R>): R;
+export function visit<N extends ASTNode>(
+  root: N,
+  visitor: ASTVisitor,
+  visitorKeys?: ASTVisitorKeyMap,
+): N;
+export function visit<R>(
+  root: ASTNode,
+  visitor: ASTReducer<R>,
+  visitorKeys?: ASTVisitorKeyMap,
+): R;
 export function visit(
   root: ASTNode,
   visitor: ASTVisitor | ASTReducer<any>,
+  visitorKeys: ASTVisitorKeyMap = QueryDocumentKeys,
 ): any {
   /* eslint-disable no-undef-init */
   let stack: any = undefined;
@@ -346,7 +355,7 @@ export function visit(
         prev: stack,
       };
       inArray = Array.isArray(node);
-      keys = inArray ? node : (QueryDocumentKeys as any)[node.kind] ?? [];
+      keys = inArray ? node : (visitorKeys as any)[node.kind] ?? [];
       index = -1;
       edits = [];
 

@@ -232,6 +232,7 @@ export type {
   /** Visitor utilities */
   ASTVisitor,
   ASTVisitFn,
+  ASTVisitorKeyMap,
   /** AST nodes */
   ASTNode,
   ASTKindToNode,
