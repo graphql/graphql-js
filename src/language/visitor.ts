@@ -79,11 +79,11 @@ type ReducedField<T, R> = T extends null | undefined
 /**
  * A KeyMap describes each the traversable properties of each kind of node.
  */
-export type VisitorKeyMap<KindToNode> = {
-  [P in keyof KindToNode]?: ReadonlyArray<keyof KindToNode[P]>;
+export type ASTVisitorKeyMap = {
+  [P in keyof ASTKindToNode]?: ReadonlyArray<keyof ASTKindToNode[P]>;
 };
 
-export const QueryDocumentKeys: VisitorKeyMap<ASTKindToNode> = {
+export const QueryDocumentKeys: ASTVisitorKeyMap = {
   Document: ['definitions'],
   OperationDefinition: [
     'name',
@@ -244,17 +244,17 @@ export const BREAK: unknown = Object.freeze({});
 export function visit<N extends ASTNode>(
   root: N,
   visitor: ASTVisitor,
-  visitorKeys?: VisitorKeyMap<ASTKindToNode>,
+  visitorKeys?: ASTVisitorKeyMap,
 ): N;
 export function visit<R>(
   root: ASTNode,
   visitor: ASTReducer<R>,
-  visitorKeys?: VisitorKeyMap<ASTKindToNode>,
+  visitorKeys?: ASTVisitorKeyMap,
 ): R;
 export function visit(
   root: ASTNode,
   visitor: ASTVisitor | ASTReducer<any>,
-  visitorKeys: VisitorKeyMap<ASTKindToNode> = QueryDocumentKeys,
+  visitorKeys: ASTVisitorKeyMap = QueryDocumentKeys,
 ): any {
   /* eslint-disable no-undef-init */
   let stack: any = undefined;
