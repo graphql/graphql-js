@@ -509,12 +509,11 @@ function readDigits(lexer, start, firstCode) {
   }
 
   const body = lexer.source.body;
-  let position = start;
-  let code = firstCode;
+  let position = start + 1; // +1 to skip first firstCode
 
-  do {
-    code = body.charCodeAt(++position);
-  } while (isDigit(code));
+  while (isDigit(body.charCodeAt(position))) {
+    ++position;
+  }
 
   return position;
 }
