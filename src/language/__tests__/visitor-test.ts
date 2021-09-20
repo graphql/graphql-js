@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import type { ASTNode, SelectionSetNode } from '../ast';
+import type { ASTVisitorKeyMap, ASTVisitor } from '../visitor';
 import { isNode } from '../ast';
 import { Kind } from '../kinds';
 import { parse } from '../parser';
@@ -457,6 +458,41 @@ describe('Visitor', () => {
       ['enter', 'CustomField', undefined],
       ['leave', 'CustomField', undefined],
       ['leave', 'SelectionSet', undefined],
+      ['leave', 'OperationDefinition', undefined],
+      ['leave', 'Document', undefined],
+    ]);
+  });
+
+  it('visits only the specified `Kind` in visitorKeyMap', () => {
+    const visited: Array<any> = [];
+
+    const visitorKeyMap: ASTVisitorKeyMap = {
+      Document: ['definitions'],
+      OperationDefinition: ['name'],
+    };
+
+    const visitor: ASTVisitor = {
+      enter(node) {
+        visited.push(['enter', node.kind, getValue(node)]);
+      },
+      leave(node) {
+        visited.push(['leave', node.kind, getValue(node)]);
+      },
+    };
+
+    const exampleDocumentAST = parse(`
+      query ExampleOperation {
+        someField
+      }
+    `);
+
+    visit(exampleDocumentAST, visitor, visitorKeyMap);
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Document', undefined],
+      ['enter', 'OperationDefinition', undefined],
+      ['enter', 'Name', 'ExampleOperation'],
+      ['leave', 'Name', 'ExampleOperation'],
       ['leave', 'OperationDefinition', undefined],
       ['leave', 'Document', undefined],
     ]);
