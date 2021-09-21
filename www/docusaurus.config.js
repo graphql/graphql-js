@@ -6,7 +6,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 module.exports = {
   title: 'graphql-js',
   tagline: 'A reference implementation of GraphQL for JavaScript',
-  url: 'https://graphql-js.graphql.org',
+  url: 'https://js.graphql.org',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -23,18 +23,17 @@ module.exports = {
       items: [
         {
           type: 'doc',
-          docId: 'intro',
+          docId: 'index',
           position: 'left',
           label: 'Tutorial',
         },
-        { to: '/blog', label: 'Blog', position: 'left' },
         {
           href: 'https://github.com/graphql/graphql-js',
           label: 'GitHub',
           position: 'right',
         },
         {
-          to: 'api',
+          to: 'api/graphql-js',
           label: 'API',
           position: 'left',
         },
@@ -48,7 +47,7 @@ module.exports = {
           items: [
             {
               label: 'Tutorial',
-              to: '/docs/intro',
+              to: 'tutorials',
             },
           ],
         },
@@ -107,6 +106,8 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         docs: {
+          path: 'tutorials',
+          routeBasePath: 'tutorials',
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/graphql/graphql-js/edit/main/www/',
         },

@@ -1,9 +1,6 @@
 ---
 title: Mutations and Input Types
-layout: ../_core/GraphQLJSLayout
-category: GraphQL.js Tutorial
-permalink: /graphql-js/mutations-and-input-types/
-next: /graphql-js/authentication-and-express-middleware/
+sidebar_position: 6
 ---
 
 If you have an API endpoint that alters data, like inserting data into a database or altering data already in a database, you should make this endpoint a `Mutation` rather than a `Query`. This is as simple as making the API endpoint part of the top-level `Mutation` type instead of the top-level `Query` type.
@@ -190,4 +187,4 @@ fetch('/graphql', {
   .then((data) => console.log('data returned:', data));
 ```
 
-One particular type of mutation is operations that change users, like signing up a new user. While you can implement this using GraphQL mutations, you can reuse many existing libraries if you learn about [GraphQL with authentication and Express middleware](/graphql-js/authentication-and-express-middleware/).
+One particular type of mutation is operations that change users, like signing up a new user. While you can implement this using GraphQL mutations, you can reuse many existing libraries if you learn about [GraphQL with authentication and Express middleware](./authentication-and-express-middleware.md).

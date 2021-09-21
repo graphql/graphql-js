@@ -1,12 +1,9 @@
 ---
 title: Passing Arguments
-layout: ../_core/GraphQLJSLayout
-category: GraphQL.js Tutorial
-permalink: /graphql-js/passing-arguments/
-next: /graphql-js/object-types/
+sidebar_position: 4
 ---
 
-Just like a REST API, it's common to pass arguments to an endpoint in a GraphQL API. By defining the arguments in the schema language, type checking happens automatically. Each argument must be named and have a type. For example, in the [Basic Types documentation](/graphql-js/basic-types/) we had an endpoint called `rollThreeDice`:
+Just like a REST API, it's common to pass arguments to an endpoint in a GraphQL API. By defining the arguments in the schema language, type checking happens automatically. Each argument must be named and have a type. For example, in the [Basic Types documentation](./basic-types.md) we had an endpoint called `rollThreeDice`:
 
 ```graphql
 type Query {
@@ -131,4 +128,4 @@ fetch('/graphql', {
 
 Using `$dice` and `$sides` as variables in GraphQL means we don't have to worry about escaping on the client side.
 
-With basic types and argument passing, you can implement anything you can implement in a REST API. But GraphQL supports even more powerful queries. You can replace multiple API calls with a single API call if you learn how to [define your own object types](/graphql-js/object-types/).
+With basic types and argument passing, you can implement anything you can implement in a REST API. But GraphQL supports even more powerful queries. You can replace multiple API calls with a single API call if you learn how to [define your own object types](./object-types.md).
