@@ -33,7 +33,8 @@ module.exports = {
           position: 'right',
         },
         {
-          to: 'api/graphql-js',
+          // to: 'api/graphql-js', // for now https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/6
+          to: 'api',
           label: 'API',
           position: 'left',
         },
