@@ -15,6 +15,7 @@ import {
   isTypeDefinitionNode,
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
+  isSchemaCoordinateNode,
 } from '../predicates';
 
 function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
@@ -139,6 +140,12 @@ describe('AST node predicates', () => {
       'UnionTypeExtension',
       'EnumTypeExtension',
       'InputObjectTypeExtension',
+    ]);
+  });
+
+  it('isSchemaCoordinateNode', () => {
+    expect(filterNodes(isSchemaCoordinateNode)).to.deep.equal([
+      'SchemaCoordinate',
     ]);
   });
 });

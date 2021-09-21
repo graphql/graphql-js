@@ -159,6 +159,8 @@ export const QueryDocumentKeys: ASTVisitorKeyMap = {
   UnionTypeExtension: ['name', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
+
+  SchemaCoordinate: ['name', 'memberName', 'argumentName'],
 };
 
 export const BREAK: unknown = Object.freeze({});

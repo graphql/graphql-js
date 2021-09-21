@@ -3,8 +3,8 @@ import { describe, it } from 'mocha';
 
 import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
+import { parseSchemaCoordinate, parse } from '../parser';
 
-import { parse } from '../parser';
 import { print } from '../printer';
 
 describe('Printer: Query document', () => {
@@ -214,6 +214,20 @@ describe('Printer: Query document', () => {
         __typename
       }
     `),
+    );
+  });
+
+  it('prints schema coordinates', () => {
+    expect(print(parseSchemaCoordinate('  Name  '))).to.equal('Name');
+    expect(print(parseSchemaCoordinate('  Name . field '))).to.equal(
+      'Name.field',
+    );
+    expect(print(parseSchemaCoordinate('  Name . field ( arg: )'))).to.equal(
+      'Name.field(arg:)',
+    );
+    expect(print(parseSchemaCoordinate(' @ name  '))).to.equal('@name');
+    expect(print(parseSchemaCoordinate(' @ name (arg:) '))).to.equal(
+      '@name(arg:)',
     );
   });
 });
