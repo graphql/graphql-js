@@ -208,6 +208,7 @@ export {
   visit,
   visitInParallel,
   getVisitFn,
+  getEnterLeaveForKind,
   BREAK,
   Kind,
   DirectiveLocation,

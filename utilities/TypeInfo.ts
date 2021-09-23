@@ -2,7 +2,7 @@ import type { ASTVisitor } from '../language/visitor.ts';
 import type { ASTNode, FieldNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import { isNode } from '../language/ast.ts';
-import { getVisitFn } from '../language/visitor.ts';
+import { getEnterLeaveForKind } from '../language/visitor.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 import type { GraphQLDirective } from '../type/directives.ts';
@@ -403,12 +403,7 @@ export function visitWithTypeInfo(
     enter(...args) {
       const node = args[0];
       typeInfo.enter(node);
-      const fn = getVisitFn(
-        visitor,
-        node.kind,
-        /* isLeaving */
-        false,
-      );
+      const fn = getEnterLeaveForKind(visitor, node.kind).enter;
 
       if (fn) {
         const result = fn.apply(visitor, args);
@@ -427,12 +422,7 @@ export function visitWithTypeInfo(
 
     leave(...args) {
       const node = args[0];
-      const fn = getVisitFn(
-        visitor,
-        node.kind,
-        /* isLeaving */
-        true,
-      );
+      const fn = getEnterLeaveForKind(visitor, node.kind).leave;
       let result;
 
       if (fn) {
