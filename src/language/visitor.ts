@@ -1,7 +1,8 @@
 import { inspect } from '../jsutils/inspect';
+import { devAssert } from '../jsutils/devAssert';
 
 import type { ASTNode, ASTKindToNode } from './ast';
-import { isNode } from './ast';
+import { isNode, QueryDocumentKeys } from './ast';
 import { Kind } from './kinds';
 
 /**
@@ -81,84 +82,6 @@ type ReducedField<T, R> = T extends null | undefined
  */
 export type ASTVisitorKeyMap = {
   [P in keyof ASTKindToNode]?: ReadonlyArray<keyof ASTKindToNode[P]>;
-};
-
-export const QueryDocumentKeys: ASTVisitorKeyMap = {
-  Document: ['definitions'],
-  OperationDefinition: [
-    'name',
-    'variableDefinitions',
-    'directives',
-    'selectionSet',
-  ],
-  VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
-  Variable: ['name'],
-  SelectionSet: ['selections'],
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
-  Argument: ['name', 'value'],
-
-  FragmentSpread: ['name', 'directives'],
-  InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
-  FragmentDefinition: [
-    'name',
-    // Note: fragment variable definitions are deprecated and will removed in v17.0.0
-    'variableDefinitions',
-    'typeCondition',
-    'directives',
-    'selectionSet',
-  ],
-
-  ListValue: ['values'],
-  ObjectValue: ['fields'],
-  ObjectField: ['name', 'value'],
-
-  Directive: ['name', 'arguments'],
-
-  NamedType: ['name'],
-  ListType: ['type'],
-  NonNullType: ['type'],
-
-  SchemaDefinition: ['description', 'directives', 'operationTypes'],
-  OperationTypeDefinition: ['type'],
-
-  ScalarTypeDefinition: ['description', 'name', 'directives'],
-  ObjectTypeDefinition: [
-    'description',
-    'name',
-    'interfaces',
-    'directives',
-    'fields',
-  ],
-  FieldDefinition: ['description', 'name', 'arguments', 'type', 'directives'],
-  InputValueDefinition: [
-    'description',
-    'name',
-    'type',
-    'defaultValue',
-    'directives',
-  ],
-  InterfaceTypeDefinition: [
-    'description',
-    'name',
-    'interfaces',
-    'directives',
-    'fields',
-  ],
-  UnionTypeDefinition: ['description', 'name', 'directives', 'types'],
-  EnumTypeDefinition: ['description', 'name', 'directives', 'values'],
-  EnumValueDefinition: ['description', 'name', 'directives'],
-  InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
-
-  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
-
-  SchemaExtension: ['directives', 'operationTypes'],
-
-  ScalarTypeExtension: ['name', 'directives'],
-  ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
-  InterfaceTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
-  UnionTypeExtension: ['name', 'directives', 'types'],
-  EnumTypeExtension: ['name', 'directives', 'values'],
-  InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
 
 export const BREAK: unknown = Object.freeze({});
@@ -324,9 +247,8 @@ export function visit(
 
     let result;
     if (!Array.isArray(node)) {
-      if (!isNode(node)) {
-        throw new Error(`Invalid AST Node: ${inspect(node)}.`);
-      }
+      devAssert(isNode(node), `Invalid AST Node: ${inspect(node)}.`);
+
       const visitFn = isLeaving
         ? enterLeaveMap.get(node.kind)?.leave
         : enterLeaveMap.get(node.kind)?.enter;
