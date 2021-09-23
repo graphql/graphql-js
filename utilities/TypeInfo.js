@@ -395,12 +395,7 @@ function visitWithTypeInfo(typeInfo, visitor) {
     enter(...args) {
       const node = args[0];
       typeInfo.enter(node);
-      const fn = (0, _visitor.getVisitFn)(
-        visitor,
-        node.kind,
-        /* isLeaving */
-        false,
-      );
+      const fn = (0, _visitor.getEnterLeaveForKind)(visitor, node.kind).enter;
 
       if (fn) {
         const result = fn.apply(visitor, args);
@@ -419,12 +414,7 @@ function visitWithTypeInfo(typeInfo, visitor) {
 
     leave(...args) {
       const node = args[0];
-      const fn = (0, _visitor.getVisitFn)(
-        visitor,
-        node.kind,
-        /* isLeaving */
-        true,
-      );
+      const fn = (0, _visitor.getEnterLeaveForKind)(visitor, node.kind).leave;
       let result;
 
       if (fn) {

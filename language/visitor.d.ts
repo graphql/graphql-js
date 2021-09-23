@@ -1,4 +1,3 @@
-import type { Maybe } from '../jsutils/Maybe';
 import type { ASTNode, ASTKindToNode } from './ast';
 /**
  * A visitor is provided to visit, it contains the collection of
@@ -173,12 +172,21 @@ export declare function visitInParallel(
   visitors: ReadonlyArray<ASTVisitor>,
 ): ASTVisitor;
 /**
+ * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
+ */
+export declare function getEnterLeaveForKind(
+  visitor: ASTVisitor,
+  kind: keyof ASTKindToNode,
+): EnterLeaveVisitor<ASTNode>;
+/**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.
+ *
+ * @deprecated Please use `getEnterLeaveForKind` instead. Will be removed in v17
  */
 export declare function getVisitFn(
   visitor: ASTVisitor,
   kind: keyof ASTKindToNode,
   isLeaving: boolean,
-): Maybe<ASTVisitFn<ASTNode>>;
+): ASTVisitFn<ASTNode> | undefined;
 export {};

@@ -5,12 +5,15 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.visit = visit;
 exports.visitInParallel = visitInParallel;
+exports.getEnterLeaveForKind = getEnterLeaveForKind;
 exports.getVisitFn = getVisitFn;
 exports.BREAK = exports.QueryDocumentKeys = void 0;
 
 var _inspect = require('../jsutils/inspect.js');
 
 var _ast = require('./ast.js');
+
+var _kinds = require('./kinds.js');
 
 const QueryDocumentKeys = {
   Document: ['definitions'],
@@ -163,7 +166,13 @@ const BREAK = Object.freeze({});
 exports.BREAK = BREAK;
 
 function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
+  const enterLeaveMap = new Map();
+
+  for (const kind of Object.values(_kinds.Kind)) {
+    enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
+  }
   /* eslint-disable no-undef-init */
+
   let stack = undefined;
   let inArray = Array.isArray(root);
   let keys = [root];
@@ -231,34 +240,44 @@ function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
     let result;
 
     if (!Array.isArray(node)) {
+      var _enterLeaveMap$get, _enterLeaveMap$get2;
+
       if (!(0, _ast.isNode)(node)) {
         throw new Error(`Invalid AST Node: ${(0, _inspect.inspect)(node)}.`);
       }
 
-      const visitFn = getVisitFn(visitor, node.kind, isLeaving);
+      const visitFn = isLeaving
+        ? (_enterLeaveMap$get = enterLeaveMap.get(node.kind)) === null ||
+          _enterLeaveMap$get === void 0
+          ? void 0
+          : _enterLeaveMap$get.leave
+        : (_enterLeaveMap$get2 = enterLeaveMap.get(node.kind)) === null ||
+          _enterLeaveMap$get2 === void 0
+        ? void 0
+        : _enterLeaveMap$get2.enter;
+      result =
+        visitFn === null || visitFn === void 0
+          ? void 0
+          : visitFn.call(visitor, node, key, parent, path, ancestors);
 
-      if (visitFn) {
-        result = visitFn.call(visitor, node, key, parent, path, ancestors);
+      if (result === BREAK) {
+        break;
+      }
 
-        if (result === BREAK) {
-          break;
+      if (result === false) {
+        if (!isLeaving) {
+          path.pop();
+          continue;
         }
+      } else if (result !== undefined) {
+        edits.push([key, result]);
 
-        if (result === false) {
-          if (!isLeaving) {
+        if (!isLeaving) {
+          if ((0, _ast.isNode)(result)) {
+            node = result;
+          } else {
             path.pop();
             continue;
-          }
-        } else if (result !== undefined) {
-          edits.push([key, result]);
-
-          if (!isLeaving) {
-            if ((0, _ast.isNode)(result)) {
-              node = result;
-            } else {
-              path.pop();
-              continue;
-            }
           }
         }
       }
@@ -312,22 +331,37 @@ function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
  */
 
 function visitInParallel(visitors) {
-  const skipping = new Array(visitors.length);
-  return {
-    enter(...args) {
-      const node = args[0];
+  const skipping = new Array(visitors.length).fill(null);
+  const mergedVisitor = Object.create(null);
 
-      for (let i = 0; i < visitors.length; i++) {
-        if (skipping[i] == null) {
-          const fn = getVisitFn(
-            visitors[i],
-            node.kind,
-            /* isLeaving */
-            false,
-          );
+  for (const kind of Object.values(_kinds.Kind)) {
+    let hasVisitor = false;
+    const enterList = new Array(visitors.length).fill(undefined);
+    const leaveList = new Array(visitors.length).fill(undefined);
 
-          if (fn) {
-            const result = fn.apply(visitors[i], args);
+    for (let i = 0; i < visitors.length; ++i) {
+      const { enter, leave } = getEnterLeaveForKind(visitors[i], kind);
+      hasVisitor || (hasVisitor = enter != null || leave != null);
+      enterList[i] = enter;
+      leaveList[i] = leave;
+    }
+
+    if (!hasVisitor) {
+      continue;
+    }
+
+    const mergedEnterLeave = {
+      enter(...args) {
+        const node = args[0];
+
+        for (let i = 0; i < visitors.length; i++) {
+          if (skipping[i] === null) {
+            var _enterList$i;
+
+            const result =
+              (_enterList$i = enterList[i]) === null || _enterList$i === void 0
+                ? void 0
+                : _enterList$i.apply(visitors[i], args);
 
             if (result === false) {
               skipping[i] = node;
@@ -338,53 +372,68 @@ function visitInParallel(visitors) {
             }
           }
         }
-      }
-    },
+      },
 
-    leave(...args) {
-      const node = args[0];
+      leave(...args) {
+        const node = args[0];
 
-      for (let i = 0; i < visitors.length; i++) {
-        if (skipping[i] == null) {
-          const fn = getVisitFn(
-            visitors[i],
-            node.kind,
-            /* isLeaving */
-            true,
-          );
+        for (let i = 0; i < visitors.length; i++) {
+          if (skipping[i] === null) {
+            var _leaveList$i;
 
-          if (fn) {
-            const result = fn.apply(visitors[i], args);
+            const result =
+              (_leaveList$i = leaveList[i]) === null || _leaveList$i === void 0
+                ? void 0
+                : _leaveList$i.apply(visitors[i], args);
 
             if (result === BREAK) {
               skipping[i] = BREAK;
             } else if (result !== undefined && result !== false) {
               return result;
             }
+          } else if (skipping[i] === node) {
+            skipping[i] = null;
           }
-        } else if (skipping[i] === node) {
-          skipping[i] = null;
         }
-      }
-    },
+      },
+    };
+    mergedVisitor[kind] = mergedEnterLeave;
+  }
+
+  return mergedVisitor;
+}
+/**
+ * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
+ */
+
+function getEnterLeaveForKind(visitor, kind) {
+  const kindVisitor = visitor[kind];
+
+  if (typeof kindVisitor === 'object') {
+    // { Kind: { enter() {}, leave() {} } }
+    return kindVisitor;
+  } else if (typeof kindVisitor === 'function') {
+    // { Kind() {} }
+    return {
+      enter: kindVisitor,
+      leave: undefined,
+    };
+  } // { enter() {}, leave() {} }
+
+  return {
+    enter: visitor.enter,
+    leave: visitor.leave,
   };
 }
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.
+ *
+ * @deprecated Please use `getEnterLeaveForKind` instead. Will be removed in v17
  */
+// istanbul ignore next (Deprecated code)
 
 function getVisitFn(visitor, kind, isLeaving) {
-  const kindVisitor = visitor[kind];
-
-  if (kindVisitor) {
-    if (typeof kindVisitor === 'function') {
-      // { Kind() {} }
-      return isLeaving ? undefined : kindVisitor;
-    } // { Kind: { enter() {}, leave() {} } }
-
-    return isLeaving ? kindVisitor.leave : kindVisitor.enter;
-  } // { enter() {}, leave() {} }
-
-  return isLeaving ? visitor.leave : visitor.enter;
+  const { enter, leave } = getEnterLeaveForKind(visitor, kind);
+  return isLeaving ? leave : enter;
 }

@@ -615,6 +615,12 @@ Object.defineProperty(exports, 'getVisitFn', {
     return _index2.getVisitFn;
   },
 });
+Object.defineProperty(exports, 'getEnterLeaveForKind', {
+  enumerable: true,
+  get: function () {
+    return _index2.getEnterLeaveForKind;
+  },
+});
 Object.defineProperty(exports, 'BREAK', {
   enumerable: true,
   get: function () {

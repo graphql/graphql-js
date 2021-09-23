@@ -1,6 +1,6 @@
 import { Kind } from '../language/kinds.mjs';
 import { isNode } from '../language/ast.mjs';
-import { getVisitFn } from '../language/visitor.mjs';
+import { getEnterLeaveForKind } from '../language/visitor.mjs';
 import {
   isObjectType,
   isInterfaceType,
@@ -372,12 +372,7 @@ export function visitWithTypeInfo(typeInfo, visitor) {
     enter(...args) {
       const node = args[0];
       typeInfo.enter(node);
-      const fn = getVisitFn(
-        visitor,
-        node.kind,
-        /* isLeaving */
-        false,
-      );
+      const fn = getEnterLeaveForKind(visitor, node.kind).enter;
 
       if (fn) {
         const result = fn.apply(visitor, args);
@@ -396,12 +391,7 @@ export function visitWithTypeInfo(typeInfo, visitor) {
 
     leave(...args) {
       const node = args[0];
-      const fn = getVisitFn(
-        visitor,
-        node.kind,
-        /* isLeaving */
-        true,
-      );
+      const fn = getEnterLeaveForKind(visitor, node.kind).leave;
       let result;
 
       if (fn) {
