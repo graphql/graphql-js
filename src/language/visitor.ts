@@ -1,8 +1,8 @@
 import { inspect } from '../jsutils/inspect';
-import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode, ASTKindToNode } from './ast';
 import { isNode } from './ast';
+import { Kind } from './kinds';
 
 /**
  * A visitor is provided to visit, it contains the collection of
@@ -256,6 +256,15 @@ export function visit(
   visitor: ASTVisitor | ASTReducer<any>,
   visitorKeys: ASTVisitorKeyMap = QueryDocumentKeys,
 ): any {
+  const enterLeaveMap = new Map<
+    keyof ASTKindToNode,
+    EnterLeaveVisitor<ASTNode>
+  >();
+
+  for (const kind of Object.values(Kind)) {
+    enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
+  }
+
   /* eslint-disable no-undef-init */
   let stack: any = undefined;
   let inArray = Array.isArray(root);
@@ -318,28 +327,29 @@ export function visit(
       if (!isNode(node)) {
         throw new Error(`Invalid AST Node: ${inspect(node)}.`);
       }
-      const visitFn = getVisitFn(visitor, node.kind, isLeaving);
-      if (visitFn) {
-        result = visitFn.call(visitor, node, key, parent, path, ancestors);
+      const visitFn = isLeaving
+        ? enterLeaveMap.get(node.kind)?.leave
+        : enterLeaveMap.get(node.kind)?.enter;
 
-        if (result === BREAK) {
-          break;
+      result = visitFn?.call(visitor, node, key, parent, path, ancestors);
+
+      if (result === BREAK) {
+        break;
+      }
+
+      if (result === false) {
+        if (!isLeaving) {
+          path.pop();
+          continue;
         }
-
-        if (result === false) {
-          if (!isLeaving) {
+      } else if (result !== undefined) {
+        edits.push([key, result]);
+        if (!isLeaving) {
+          if (isNode(result)) {
+            node = result;
+          } else {
             path.pop();
             continue;
-          }
-        } else if (result !== undefined) {
-          edits.push([key, result]);
-          if (!isLeaving) {
-            if (isNode(result)) {
-              node = result;
-            } else {
-              path.pop();
-              continue;
-            }
           }
         }
       }
@@ -380,16 +390,31 @@ export function visit(
 export function visitInParallel(
   visitors: ReadonlyArray<ASTVisitor>,
 ): ASTVisitor {
-  const skipping = new Array(visitors.length);
+  const skipping = new Array(visitors.length).fill(null);
+  const mergedVisitor = Object.create(null);
 
-  return {
-    enter(...args) {
-      const node = args[0];
-      for (let i = 0; i < visitors.length; i++) {
-        if (skipping[i] == null) {
-          const fn = getVisitFn(visitors[i], node.kind, /* isLeaving */ false);
-          if (fn) {
-            const result = fn.apply(visitors[i], args);
+  for (const kind of Object.values(Kind)) {
+    let hasVisitor = false;
+    const enterList = new Array(visitors.length).fill(undefined);
+    const leaveList = new Array(visitors.length).fill(undefined);
+
+    for (let i = 0; i < visitors.length; ++i) {
+      const { enter, leave } = getEnterLeaveForKind(visitors[i], kind);
+      hasVisitor ||= enter != null || leave != null;
+      enterList[i] = enter;
+      leaveList[i] = leave;
+    }
+
+    if (!hasVisitor) {
+      continue;
+    }
+
+    const mergedEnterLeave: EnterLeaveVisitor<ASTNode> = {
+      enter(...args) {
+        const node = args[0];
+        for (let i = 0; i < visitors.length; i++) {
+          if (skipping[i] === null) {
+            const result = enterList[i]?.apply(visitors[i], args);
             if (result === false) {
               skipping[i] = node;
             } else if (result === BREAK) {
@@ -399,50 +424,66 @@ export function visitInParallel(
             }
           }
         }
-      }
-    },
-    leave(...args) {
-      const node = args[0];
-      for (let i = 0; i < visitors.length; i++) {
-        if (skipping[i] == null) {
-          const fn = getVisitFn(visitors[i], node.kind, /* isLeaving */ true);
-          if (fn) {
-            const result = fn.apply(visitors[i], args);
+      },
+      leave(...args) {
+        const node = args[0];
+        for (let i = 0; i < visitors.length; i++) {
+          if (skipping[i] === null) {
+            const result = leaveList[i]?.apply(visitors[i], args);
             if (result === BREAK) {
               skipping[i] = BREAK;
             } else if (result !== undefined && result !== false) {
               return result;
             }
+          } else if (skipping[i] === node) {
+            skipping[i] = null;
           }
-        } else if (skipping[i] === node) {
-          skipping[i] = null;
         }
-      }
-    },
-  };
+      },
+    };
+
+    mergedVisitor[kind] = mergedEnterLeave;
+  }
+
+  return mergedVisitor;
+}
+
+/**
+ * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
+ */
+export function getEnterLeaveForKind(
+  visitor: ASTVisitor,
+  kind: keyof ASTKindToNode,
+): EnterLeaveVisitor<ASTNode> {
+  const kindVisitor:
+    | ASTVisitFn<ASTNode>
+    | EnterLeaveVisitor<ASTNode>
+    | undefined = (visitor as any)[kind];
+
+  if (typeof kindVisitor === 'object') {
+    // { Kind: { enter() {}, leave() {} } }
+    return kindVisitor;
+  } else if (typeof kindVisitor === 'function') {
+    // { Kind() {} }
+    return { enter: kindVisitor, leave: undefined };
+  }
+
+  // { enter() {}, leave() {} }
+  return { enter: (visitor as any).enter, leave: (visitor as any).leave };
 }
 
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.
+ *
+ * @deprecated Please use `getEnterLeaveForKind` instead. Will be removed in v17
  */
+// istanbul ignore next (Deprecated code)
 export function getVisitFn(
   visitor: ASTVisitor,
   kind: keyof ASTKindToNode,
   isLeaving: boolean,
-): Maybe<ASTVisitFn<ASTNode>> {
-  const kindVisitor:
-    | ASTVisitFn<ASTNode>
-    | EnterLeaveVisitor<ASTNode>
-    | undefined = (visitor as any)[kind];
-  if (kindVisitor) {
-    if (typeof kindVisitor === 'function') {
-      // { Kind() {} }
-      return isLeaving ? undefined : kindVisitor;
-    }
-    // { Kind: { enter() {}, leave() {} } }
-    return isLeaving ? kindVisitor.leave : kindVisitor.enter;
-  }
-  // { enter() {}, leave() {} }
-  return isLeaving ? (visitor as any).leave : (visitor as any).enter;
+): ASTVisitFn<ASTNode> | undefined {
+  const { enter, leave } = getEnterLeaveForKind(visitor, kind);
+  return isLeaving ? leave : enter;
 }

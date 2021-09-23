@@ -2,7 +2,7 @@ import type { ASTVisitor } from '../language/visitor';
 import type { ASTNode, FieldNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 import { isNode } from '../language/ast';
-import { getVisitFn } from '../language/visitor';
+import { getEnterLeaveForKind } from '../language/visitor';
 
 import type { Maybe } from '../jsutils/Maybe';
 
@@ -344,7 +344,7 @@ export function visitWithTypeInfo(
     enter(...args) {
       const node = args[0];
       typeInfo.enter(node);
-      const fn = getVisitFn(visitor, node.kind, /* isLeaving */ false);
+      const fn = getEnterLeaveForKind(visitor, node.kind).enter;
       if (fn) {
         const result = fn.apply(visitor, args);
         if (result !== undefined) {
@@ -358,7 +358,7 @@ export function visitWithTypeInfo(
     },
     leave(...args) {
       const node = args[0];
-      const fn = getVisitFn(visitor, node.kind, /* isLeaving */ true);
+      const fn = getEnterLeaveForKind(visitor, node.kind).leave;
       let result;
       if (fn) {
         result = fn.apply(visitor, args);
