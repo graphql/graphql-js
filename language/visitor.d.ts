@@ -72,7 +72,6 @@ declare type ReducedField<T, R> = T extends null | undefined
 export declare type ASTVisitorKeyMap = {
   [P in keyof ASTKindToNode]?: ReadonlyArray<keyof ASTKindToNode[P]>;
 };
-export declare const QueryDocumentKeys: ASTVisitorKeyMap;
 export declare const BREAK: unknown;
 /**
  * visit() will walk through an AST using a depth-first traversal, calling

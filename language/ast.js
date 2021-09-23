@@ -4,7 +4,7 @@ Object.defineProperty(exports, '__esModule', {
   value: true,
 });
 exports.isNode = isNode;
-exports.Token = exports.Location = void 0;
+exports.QueryDocumentKeys = exports.Token = exports.Location = void 0;
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
@@ -115,18 +115,97 @@ class Token {
   }
 }
 /**
- * @internal
+ * The list of all possible AST node types.
  */
 
 exports.Token = Token;
 
-function isNode(maybeNode) {
-  return (
-    typeof (maybeNode === null || maybeNode === void 0
-      ? void 0
-      : maybeNode.kind) === 'string'
-  );
-}
 /**
- * The list of all possible AST node types.
+ * @internal
  */
+const QueryDocumentKeys = {
+  Name: [],
+  Document: ['definitions'],
+  OperationDefinition: [
+    'name',
+    'variableDefinitions',
+    'directives',
+    'selectionSet',
+  ],
+  VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
+  Variable: ['name'],
+  SelectionSet: ['selections'],
+  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
+  Argument: ['name', 'value'],
+  FragmentSpread: ['name', 'directives'],
+  InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
+  FragmentDefinition: [
+    'name', // Note: fragment variable definitions are deprecated and will removed in v17.0.0
+    'variableDefinitions',
+    'typeCondition',
+    'directives',
+    'selectionSet',
+  ],
+  IntValue: [],
+  FloatValue: [],
+  StringValue: [],
+  BooleanValue: [],
+  NullValue: [],
+  EnumValue: [],
+  ListValue: ['values'],
+  ObjectValue: ['fields'],
+  ObjectField: ['name', 'value'],
+  Directive: ['name', 'arguments'],
+  NamedType: ['name'],
+  ListType: ['type'],
+  NonNullType: ['type'],
+  SchemaDefinition: ['description', 'directives', 'operationTypes'],
+  OperationTypeDefinition: ['type'],
+  ScalarTypeDefinition: ['description', 'name', 'directives'],
+  ObjectTypeDefinition: [
+    'description',
+    'name',
+    'interfaces',
+    'directives',
+    'fields',
+  ],
+  FieldDefinition: ['description', 'name', 'arguments', 'type', 'directives'],
+  InputValueDefinition: [
+    'description',
+    'name',
+    'type',
+    'defaultValue',
+    'directives',
+  ],
+  InterfaceTypeDefinition: [
+    'description',
+    'name',
+    'interfaces',
+    'directives',
+    'fields',
+  ],
+  UnionTypeDefinition: ['description', 'name', 'directives', 'types'],
+  EnumTypeDefinition: ['description', 'name', 'directives', 'values'],
+  EnumValueDefinition: ['description', 'name', 'directives'],
+  InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
+  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
+  SchemaExtension: ['directives', 'operationTypes'],
+  ScalarTypeExtension: ['name', 'directives'],
+  ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
+  InterfaceTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
+  UnionTypeExtension: ['name', 'directives', 'types'],
+  EnumTypeExtension: ['name', 'directives', 'values'],
+  InputObjectTypeExtension: ['name', 'directives', 'fields'],
+};
+exports.QueryDocumentKeys = QueryDocumentKeys;
+const kindValues = new Set(Object.keys(QueryDocumentKeys));
+/**
+ * @internal
+ */
+
+function isNode(maybeNode) {
+  const maybeKind =
+    maybeNode === null || maybeNode === void 0 ? void 0 : maybeNode.kind;
+  return typeof maybeKind === 'string' && kindValues.has(maybeKind);
+}
+/** Name */

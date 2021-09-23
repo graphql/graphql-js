@@ -88,10 +88,6 @@ export declare class Token {
   get [Symbol.toStringTag](): string;
 }
 /**
- * @internal
- */
-export declare function isNode(maybeNode: any): maybeNode is ASTNode;
-/**
  * The list of all possible AST node types.
  */
 export declare type ASTNode =
@@ -186,6 +182,16 @@ export interface ASTKindToNode {
   EnumTypeExtension: EnumTypeExtensionNode;
   InputObjectTypeExtension: InputObjectTypeExtensionNode;
 }
+/**
+ * @internal
+ */
+export declare const QueryDocumentKeys: {
+  [P in keyof ASTKindToNode]: ReadonlyArray<keyof ASTKindToNode[P]>;
+};
+/**
+ * @internal
+ */
+export declare function isNode(maybeNode: any): maybeNode is ASTNode;
 /** Name */
 export interface NameNode {
   readonly kind: 'Name';
