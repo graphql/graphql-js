@@ -54,7 +54,30 @@ import {
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
 import { getVariableValues, getArgumentValues } from './values';
-import { collectFields } from './collectFields';
+import {
+  collectFields,
+  collectSubfields as _collectSubfields,
+} from './collectFields';
+
+/**
+ * A memoized collection of relevant subfields with regard to the return
+ * type. Memoizing ensures the subfields are not repeatedly calculated, which
+ * saves overhead when resolving lists of values.
+ */
+const collectSubfields = memoize3(
+  (
+    exeContext: ExecutionContext,
+    returnType: GraphQLObjectType,
+    fieldNodes: ReadonlyArray<FieldNode>,
+  ) =>
+    _collectSubfields(
+      exeContext.schema,
+      exeContext.fragments,
+      exeContext.variableValues,
+      returnType,
+      fieldNodes,
+    ),
+);
 
 /**
  * Terminology
@@ -330,8 +353,6 @@ function executeOperation(
     exeContext.variableValues,
     type,
     operation.selectionSet,
-    new Map(),
-    new Set(),
   );
 
   const path = undefined;
@@ -919,35 +940,6 @@ function invalidReturnTypeError(
     `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
     fieldNodes,
   );
-}
-
-/**
- * A memoized collection of relevant subfields with regard to the return
- * type. Memoizing ensures the subfields are not repeatedly calculated, which
- * saves overhead when resolving lists of values.
- */
-const collectSubfields = memoize3(_collectSubfields);
-function _collectSubfields(
-  exeContext: ExecutionContext,
-  returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-): Map<string, ReadonlyArray<FieldNode>> {
-  let subFieldNodes = new Map();
-  const visitedFragmentNames = new Set<string>();
-  for (const node of fieldNodes) {
-    if (node.selectionSet) {
-      subFieldNodes = collectFields(
-        exeContext.schema,
-        exeContext.fragments,
-        exeContext.variableValues,
-        returnType,
-        node.selectionSet,
-        subFieldNodes,
-        visitedFragmentNames,
-      );
-    }
-  }
-  return subFieldNodes;
 }
 
 /**
