@@ -763,7 +763,17 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'args',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'SCALAR',
+                        name: 'Boolean',
+                        ofType: null,
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,
