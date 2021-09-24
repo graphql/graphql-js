@@ -49,7 +49,30 @@ import {
 } from '../type/definition.ts';
 import { getOperationRootType } from '../utilities/getOperationRootType.ts';
 import { getVariableValues, getArgumentValues } from './values.ts';
-import { collectFields } from './collectFields.ts';
+import {
+  collectFields,
+  collectSubfields as _collectSubfields,
+} from './collectFields.ts';
+/**
+ * A memoized collection of relevant subfields with regard to the return
+ * type. Memoizing ensures the subfields are not repeatedly calculated, which
+ * saves overhead when resolving lists of values.
+ */
+
+const collectSubfields = memoize3(
+  (
+    exeContext: ExecutionContext,
+    returnType: GraphQLObjectType,
+    fieldNodes: ReadonlyArray<FieldNode>,
+  ) =>
+    _collectSubfields(
+      exeContext.schema,
+      exeContext.fragments,
+      exeContext.variableValues,
+      returnType,
+      fieldNodes,
+    ),
+);
 /**
  * Terminology
  *
@@ -339,8 +362,6 @@ function executeOperation(
     exeContext.variableValues,
     type,
     operation.selectionSet,
-    new Map(),
-    new Set(),
   );
   const path = undefined; // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
@@ -926,38 +947,6 @@ function invalidReturnTypeError(
     `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
     fieldNodes,
   );
-}
-/**
- * A memoized collection of relevant subfields with regard to the return
- * type. Memoizing ensures the subfields are not repeatedly calculated, which
- * saves overhead when resolving lists of values.
- */
-
-const collectSubfields = memoize3(_collectSubfields);
-
-function _collectSubfields(
-  exeContext: ExecutionContext,
-  returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-): Map<string, ReadonlyArray<FieldNode>> {
-  let subFieldNodes = new Map();
-  const visitedFragmentNames = new Set<string>();
-
-  for (const node of fieldNodes) {
-    if (node.selectionSet) {
-      subFieldNodes = collectFields(
-        exeContext.schema,
-        exeContext.fragments,
-        exeContext.variableValues,
-        returnType,
-        node.selectionSet,
-        subFieldNodes,
-        visitedFragmentNames,
-      );
-    }
-  }
-
-  return subFieldNodes;
 }
 /**
  * If a resolveType function is not given, then a default resolve behavior is

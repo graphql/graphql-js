@@ -17,8 +17,7 @@ import { isAbstractType } from '../type/definition.ts';
 import { typeFromAST } from '../utilities/typeFromAST.ts';
 import { getDirectiveValues } from './values.ts';
 /**
- * Given a selectionSet, adds all of the fields in that selection to
- * the passed in map of fields, and returns it at the end.
+ * Given a selectionSet, collect all of the fields and returns it at the end.
  *
  * CollectFields requires the "runtime type" of an object. For a field which
  * returns an Interface or Union type, the "runtime type" will be the actual
@@ -35,9 +34,70 @@ export function collectFields(
   },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
+): Map<string, ReadonlyArray<FieldNode>> {
+  const fields = new Map();
+  collectFieldsImpl(
+    schema,
+    fragments,
+    variableValues,
+    runtimeType,
+    selectionSet,
+    fields,
+    new Set(),
+  );
+  return fields;
+}
+/**
+ * Given an array of field nodes, collects all of the subfields of the passed
+ * in fields, and returns it at the end.
+ *
+ * CollectFields requires the "return type" of an object. For a field which
+ * returns an Interface or Union type, the "return type" will be the actual
+ * Object type returned by that field.
+ *
+ * @internal
+ */
+
+export function collectSubfields(
+  schema: GraphQLSchema,
+  fragments: ObjMap<FragmentDefinitionNode>,
+  variableValues: {
+    [variable: string]: unknown;
+  },
+  returnType: GraphQLObjectType,
+  fieldNodes: ReadonlyArray<FieldNode>,
+): Map<string, ReadonlyArray<FieldNode>> {
+  const subFieldNodes = new Map();
+  const visitedFragmentNames = new Set<string>();
+
+  for (const node of fieldNodes) {
+    if (node.selectionSet) {
+      collectFieldsImpl(
+        schema,
+        fragments,
+        variableValues,
+        returnType,
+        node.selectionSet,
+        subFieldNodes,
+        visitedFragmentNames,
+      );
+    }
+  }
+
+  return subFieldNodes;
+}
+
+function collectFieldsImpl(
+  schema: GraphQLSchema,
+  fragments: ObjMap<FragmentDefinitionNode>,
+  variableValues: {
+    [variable: string]: unknown;
+  },
+  runtimeType: GraphQLObjectType,
+  selectionSet: SelectionSetNode,
   fields: Map<string, Array<FieldNode>>,
   visitedFragmentNames: Set<string>,
-): Map<string, ReadonlyArray<FieldNode>> {
+): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
@@ -65,7 +125,7 @@ export function collectFields(
           continue;
         }
 
-        collectFields(
+        collectFieldsImpl(
           schema,
           fragments,
           variableValues,
@@ -97,7 +157,7 @@ export function collectFields(
           continue;
         }
 
-        collectFields(
+        collectFieldsImpl(
           schema,
           fragments,
           variableValues,
@@ -110,8 +170,6 @@ export function collectFields(
       }
     }
   }
-
-  return fields;
 }
 /**
  * Determines if a field should be included based on the `@include` and `@skip`
