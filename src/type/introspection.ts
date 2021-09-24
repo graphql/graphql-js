@@ -104,7 +104,17 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
         type: new GraphQLNonNull(
           new GraphQLList(new GraphQLNonNull(__InputValue)),
         ),
-        resolve: (directive) => directive.args,
+        args: {
+          includeDeprecated: {
+            type: GraphQLBoolean,
+            defaultValue: false,
+          },
+        },
+        resolve(field, { includeDeprecated }) {
+          return includeDeprecated
+            ? field.args
+            : field.args.filter((arg) => arg.deprecationReason == null);
+        },
       },
     } as GraphQLFieldConfigMap<GraphQLDirective, unknown>),
 });

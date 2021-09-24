@@ -1,11 +1,25 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { parse } from '../../language/parser';
+
+import { validate } from '../../validation/validate';
+
 import type { IntrospectionOptions } from '../getIntrospectionQuery';
+import { buildSchema } from '../buildASTSchema';
 import { getIntrospectionQuery } from '../getIntrospectionQuery';
+
+const dummySchema = buildSchema(`
+  type Query {
+    dummy: String
+  }
+`);
 
 function expectIntrospectionQuery(options?: IntrospectionOptions) {
   const query = getIntrospectionQuery(options);
+
+  const validationErrors = validate(dummySchema, parse(query));
+  expect(validationErrors).to.deep.equal([]);
 
   return {
     toMatch(name: string, times: number = 1): void {
