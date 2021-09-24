@@ -114,7 +114,18 @@ const __Directive = new _definition.GraphQLObjectType({
           new _definition.GraphQLNonNull(__InputValue),
         ),
       ),
-      resolve: (directive) => directive.args,
+      args: {
+        includeDeprecated: {
+          type: _scalars.GraphQLBoolean,
+          defaultValue: false,
+        },
+      },
+
+      resolve(field, { includeDeprecated }) {
+        return includeDeprecated
+          ? field.args
+          : field.args.filter((arg) => arg.deprecationReason == null);
+      },
     },
   }),
 });
