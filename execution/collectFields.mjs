@@ -7,8 +7,7 @@ import { isAbstractType } from '../type/definition.mjs';
 import { typeFromAST } from '../utilities/typeFromAST.mjs';
 import { getDirectiveValues } from './values.mjs';
 /**
- * Given a selectionSet, adds all of the fields in that selection to
- * the passed in map of fields, and returns it at the end.
+ * Given a selectionSet, collect all of the fields and returns it at the end.
  *
  * CollectFields requires the "runtime type" of an object. For a field which
  * returns an Interface or Union type, the "runtime type" will be the actual
@@ -18,6 +17,63 @@ import { getDirectiveValues } from './values.mjs';
  */
 
 export function collectFields(
+  schema,
+  fragments,
+  variableValues,
+  runtimeType,
+  selectionSet,
+) {
+  const fields = new Map();
+  collectFieldsImpl(
+    schema,
+    fragments,
+    variableValues,
+    runtimeType,
+    selectionSet,
+    fields,
+    new Set(),
+  );
+  return fields;
+}
+/**
+ * Given an array of field nodes, collects all of the subfields of the passed
+ * in fields, and returns it at the end.
+ *
+ * CollectFields requires the "return type" of an object. For a field which
+ * returns an Interface or Union type, the "return type" will be the actual
+ * Object type returned by that field.
+ *
+ * @internal
+ */
+
+export function collectSubfields(
+  schema,
+  fragments,
+  variableValues,
+  returnType,
+  fieldNodes,
+) {
+  const subFieldNodes = new Map();
+  const visitedFragmentNames = new Set();
+
+  for (const node of fieldNodes) {
+    if (node.selectionSet) {
+      collectFieldsImpl(
+        schema,
+        fragments,
+        variableValues,
+        returnType,
+        node.selectionSet,
+        subFieldNodes,
+        visitedFragmentNames,
+      );
+    }
+  }
+
+  return subFieldNodes;
+}
+
+function collectFieldsImpl(
   schema,
   fragments,
   variableValues,
@@ -53,7 +109,7 @@ export function collectFields(
           continue;
         }
 
-        collectFields(
+        collectFieldsImpl(
           schema,
           fragments,
           variableValues,
@@ -85,7 +141,7 @@ export function collectFields(
           continue;
         }
 
-        collectFields(
+        collectFieldsImpl(
           schema,
           fragments,
           variableValues,
@@ -98,8 +154,6 @@ export function collectFields(
       }
     }
   }
-
-  return fields;
 }
 /**
  * Determines if a field should be included based on the `@include` and `@skip`

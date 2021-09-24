@@ -50,6 +50,48 @@ var _values = require('./values.js');
 var _collectFields = require('./collectFields.js');
 
 /**
+ * A memoized collection of relevant subfields with regard to the return
+ * type. Memoizing ensures the subfields are not repeatedly calculated, which
+ * saves overhead when resolving lists of values.
+ */
+const collectSubfields = (0, _memoize.memoize3)(
+  (exeContext, returnType, fieldNodes) =>
+    (0, _collectFields.collectSubfields)(
+      exeContext.schema,
+      exeContext.fragments,
+      exeContext.variableValues,
+      returnType,
+      fieldNodes,
+    ),
+);
+/**
+ * Terminology
+ *
+ * "Definitions" are the generic name for top-level statements in the document.
+ * Examples of this include:
+ * 1) Operations (such as a query)
+ * 2) Fragments
+ *
+ * "Operations" are a generic name for requests in the document.
+ * Examples of this include:
+ * 1) query,
+ * 2) mutation
+ *
+ * "Selections" are the definitions that can appear legally and at
+ * single level of the query. These include:
+ * 1) field references e.g `a`
+ * 2) fragment "spreads" e.g. `...c`
+ * 3) inline fragment "spreads" e.g. `...on Type { a }`
+ */
+
+/**
+ * Data that must be available at all points during query execution.
+ *
+ * Namely, schema of the type system that is currently executing,
+ * and the fragments defined in the query document
+ */
+
+/**
  * Implements the "Executing requests" section of the GraphQL specification.
  *
  * Returns either a synchronous ExecutionResult (if all encountered resolvers
@@ -272,8 +314,6 @@ function executeOperation(exeContext, operation, rootValue) {
     exeContext.variableValues,
     type,
     operation.selectionSet,
-    new Map(),
-    new Set(),
   );
   const path = undefined; // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
@@ -853,34 +893,6 @@ function invalidReturnTypeError(returnType, result, fieldNodes) {
     _inspect.inspect)(result)}.`,
     fieldNodes,
   );
-}
-/**
- * A memoized collection of relevant subfields with regard to the return
- * type. Memoizing ensures the subfields are not repeatedly calculated, which
- * saves overhead when resolving lists of values.
- */
-
-const collectSubfields = (0, _memoize.memoize3)(_collectSubfields);
-
-function _collectSubfields(exeContext, returnType, fieldNodes) {
-  let subFieldNodes = new Map();
-  const visitedFragmentNames = new Set();
-
-  for (const node of fieldNodes) {
-    if (node.selectionSet) {
-      subFieldNodes = (0, _collectFields.collectFields)(
-        exeContext.schema,
-        exeContext.fragments,
-        exeContext.variableValues,
-        returnType,
-        node.selectionSet,
-        subFieldNodes,
-        visitedFragmentNames,
-      );
-    }
-  }
-
-  return subFieldNodes;
 }
 /**
  * If a resolveType function is not given, then a default resolve behavior is

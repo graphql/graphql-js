@@ -33,8 +33,6 @@ export function SingleFieldSubscriptionsRule(context) {
             variableValues,
             subscriptionType,
             node.selectionSet,
-            new Map(),
-            new Set(),
           );
 
           if (fields.size > 1) {

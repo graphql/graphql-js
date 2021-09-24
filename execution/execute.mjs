@@ -26,7 +26,25 @@ import {
 } from '../type/definition.mjs';
 import { getOperationRootType } from '../utilities/getOperationRootType.mjs';
 import { getVariableValues, getArgumentValues } from './values.mjs';
-import { collectFields } from './collectFields.mjs';
+import {
+  collectFields,
+  collectSubfields as _collectSubfields,
+} from './collectFields.mjs';
+/**
+ * A memoized collection of relevant subfields with regard to the return
+ * type. Memoizing ensures the subfields are not repeatedly calculated, which
+ * saves overhead when resolving lists of values.
+ */
+
+const collectSubfields = memoize3((exeContext, returnType, fieldNodes) =>
+  _collectSubfields(
+    exeContext.schema,
+    exeContext.fragments,
+    exeContext.variableValues,
+    returnType,
+    fieldNodes,
+  ),
+);
 /**
  * Terminology
  *
@@ -274,8 +292,6 @@ function executeOperation(exeContext, operation, rootValue) {
     exeContext.variableValues,
     type,
     operation.selectionSet,
-    new Map(),
-    new Set(),
   );
   const path = undefined; // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
@@ -843,34 +859,6 @@ function invalidReturnTypeError(returnType, result, fieldNodes) {
     `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
     fieldNodes,
   );
-}
-/**
- * A memoized collection of relevant subfields with regard to the return
- * type. Memoizing ensures the subfields are not repeatedly calculated, which
- * saves overhead when resolving lists of values.
- */
-
-const collectSubfields = memoize3(_collectSubfields);
-
-function _collectSubfields(exeContext, returnType, fieldNodes) {
-  let subFieldNodes = new Map();
-  const visitedFragmentNames = new Set();
-
-  for (const node of fieldNodes) {
-    if (node.selectionSet) {
-      subFieldNodes = collectFields(
-        exeContext.schema,
-        exeContext.fragments,
-        exeContext.variableValues,
-        returnType,
-        node.selectionSet,
-        subFieldNodes,
-        visitedFragmentNames,
-      );
-    }
-  }
-
-  return subFieldNodes;
 }
 /**
  * If a resolveType function is not given, then a default resolve behavior is
