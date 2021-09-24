@@ -766,7 +766,7 @@ describe('Type System Printer', () => {
         description: String
         isRepeatable: Boolean!
         locations: [__DirectiveLocation!]!
-        args: [__InputValue!]!
+        args(includeDeprecated: Boolean = false): [__InputValue!]!
       }
 
       """
