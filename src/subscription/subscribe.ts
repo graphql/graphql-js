@@ -198,8 +198,6 @@ async function executeSubscription(
     variableValues,
     type,
     operation.selectionSet,
-    new Map(),
-    new Set(),
   );
   const [responseName, fieldNodes] = [...fields.entries()][0];
   const fieldDef = getFieldDef(schema, type, fieldNodes[0]);

@@ -44,8 +44,6 @@ export function SingleFieldSubscriptionsRule(
             variableValues,
             subscriptionType,
             node.selectionSet,
-            new Map(),
-            new Set(),
           );
           if (fields.size > 1) {
             const fieldSelectionLists = [...fields.values()];
