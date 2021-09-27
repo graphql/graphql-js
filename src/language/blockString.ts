@@ -35,8 +35,8 @@ export function dedentBlockStringValue(rawString: string): string {
 }
 
 function isBlank(str: string): boolean {
-  for (let i = 0; i < str.length; ++i) {
-    if (str[i] !== ' ' && str[i] !== '\t') {
+  for (const char of str) {
+    if (char !== ' ' && char !== '\t') {
       return false;
     }
   }
@@ -96,9 +96,9 @@ export function printBlockString(
   preferMultipleLines: boolean = false,
 ): string {
   const isSingleLine = !value.includes('\n');
-  const hasLeadingSpace = value[0] === ' ' || value[0] === '\t';
-  const hasTrailingQuote = value[value.length - 1] === '"';
-  const hasTrailingSlash = value[value.length - 1] === '\\';
+  const hasLeadingSpace = value.startsWith(' ') || value.startsWith('\t');
+  const hasTrailingQuote = value.endsWith('"');
+  const hasTrailingSlash = value.endsWith('\\');
   const printAsMultipleLines =
     !isSingleLine ||
     hasTrailingQuote ||

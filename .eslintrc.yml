@@ -473,7 +473,8 @@ overrides:
       '@typescript-eslint/ban-tslint-comment': error
       '@typescript-eslint/ban-types': off # TODO temporarily disabled
       '@typescript-eslint/class-literal-property-style': off # TODO enable after TS conversion
-      '@typescript-eslint/consistent-indexed-object-style': off # TODO enable after TS conversion
+      '@typescript-eslint/consistent-indexed-object-style':
+        [error, index-signature]
       '@typescript-eslint/consistent-type-assertions': off # TODO temporarily disable
       '@typescript-eslint/consistent-type-definitions': error
       '@typescript-eslint/consistent-type-imports': error
@@ -507,7 +508,7 @@ overrides:
       '@typescript-eslint/no-require-imports': error
       '@typescript-eslint/no-this-alias': error
       '@typescript-eslint/no-type-alias': off # TODO consider
-      '@typescript-eslint/no-unnecessary-boolean-literal-compare': off # FIXME requires on strictNullChecks
+      '@typescript-eslint/no-unnecessary-boolean-literal-compare': error
       '@typescript-eslint/no-unnecessary-condition': off # TODO temporary disable
       '@typescript-eslint/no-unnecessary-qualifier': error
       '@typescript-eslint/no-unnecessary-type-arguments': error
@@ -522,9 +523,9 @@ overrides:
       '@typescript-eslint/non-nullable-type-assertion-style': off #TODO temporarily disabled
       '@typescript-eslint/prefer-as-const': error
       '@typescript-eslint/prefer-enum-initializers': error
-      '@typescript-eslint/prefer-for-of': off # TODO switch to error after TS migration
+      '@typescript-eslint/prefer-for-of': error
       '@typescript-eslint/prefer-function-type': error
-      '@typescript-eslint/prefer-includes': off # TODO switch to error after IE11 drop
+      '@typescript-eslint/prefer-includes': error
       '@typescript-eslint/prefer-literal-enum-member': error
       '@typescript-eslint/prefer-namespace-keyword': error
       '@typescript-eslint/prefer-nullish-coalescing': error
@@ -534,7 +535,7 @@ overrides:
       '@typescript-eslint/prefer-reduce-type-parameter': error
       '@typescript-eslint/prefer-regexp-exec': off
       '@typescript-eslint/prefer-return-this-type': error
-      '@typescript-eslint/prefer-string-starts-ends-with': off # TODO switch to error after IE11 drop
+      '@typescript-eslint/prefer-string-starts-ends-with': error
       '@typescript-eslint/prefer-ts-expect-error': error
       '@typescript-eslint/promise-function-async': off
       '@typescript-eslint/require-array-sort-compare': error

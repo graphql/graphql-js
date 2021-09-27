@@ -112,9 +112,8 @@ function dedentBlockString(blockStr: string): string {
     body = '\n' + body;
   }
 
-  const lastChar = body[body.length - 1];
-  const hasTrailingQuote = lastChar === '"' && body.slice(-4) !== '\\"""';
-  if (hasTrailingQuote || lastChar === '\\') {
+  const hasTrailingQuote = body.endsWith('"') && !body.endsWith('\\"""');
+  if (hasTrailingQuote || body.endsWith('\\')) {
     body += '\n';
   }
 
