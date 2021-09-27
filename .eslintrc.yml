@@ -461,7 +461,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.29.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v4.31.x`
       ##########################################################################
 
       # Supported Rules
@@ -534,8 +534,8 @@ overrides:
       '@typescript-eslint/prefer-reduce-type-parameter': error
       '@typescript-eslint/prefer-regexp-exec': off
       '@typescript-eslint/prefer-return-this-type': error
-      '@typescript-eslint/prefer-ts-expect-error': error
       '@typescript-eslint/prefer-string-starts-ends-with': off # TODO switch to error after IE11 drop
+      '@typescript-eslint/prefer-ts-expect-error': error
       '@typescript-eslint/promise-function-async': off
       '@typescript-eslint/require-array-sort-compare': error
       '@typescript-eslint/restrict-plus-operands': off #TODO temporarily disabled
