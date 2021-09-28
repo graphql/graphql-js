@@ -62,7 +62,7 @@ function SingleFieldSubscriptionsRule(context) {
             const field = fieldNodes[0];
             const fieldName = field.name.value;
 
-            if (fieldName[0] === '_' && fieldName[1] === '_') {
+            if (fieldName.startsWith('__')) {
               context.reportError(
                 new _GraphQLError.GraphQLError(
                   operationName != null

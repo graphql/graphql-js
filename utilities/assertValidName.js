@@ -32,7 +32,7 @@ function isValidNameError(name) {
   typeof name === 'string' ||
     (0, _devAssert.devAssert)(false, 'Expected name to be a string.');
 
-  if (name.length > 1 && name[0] === '_' && name[1] === '_') {
+  if (name.startsWith('__')) {
     return new _GraphQLError.GraphQLError(
       `Name "${name}" must not begin with "__", which is reserved by GraphQL introspection.`,
     );

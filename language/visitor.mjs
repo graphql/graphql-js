@@ -119,23 +119,27 @@ export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
       parent = ancestors.pop();
 
       if (isEdited) {
-        node = inArray
-          ? node.slice()
-          : Object.defineProperties({}, Object.getOwnPropertyDescriptors(node));
-        let editOffset = 0;
+        if (inArray) {
+          node = node.slice();
+          let editOffset = 0;
 
-        for (let ii = 0; ii < edits.length; ii++) {
-          let editKey = edits[ii][0];
-          const editValue = edits[ii][1];
+          for (const [editKey, editValue] of edits) {
+            const arrayKey = editKey - editOffset;
 
-          if (inArray) {
-            editKey -= editOffset;
+            if (editValue === null) {
+              node.splice(arrayKey, 1);
+              editOffset++;
+            } else {
+              node[arrayKey] = editValue;
+            }
           }
+        } else {
+          node = Object.defineProperties(
+            {},
+            Object.getOwnPropertyDescriptors(node),
+          );
 
-          if (inArray && editValue === null) {
-            node.splice(editKey, 1);
-            editOffset++;
-          } else {
+          for (const [editKey, editValue] of edits) {
             node[editKey] = editValue;
           }
         }

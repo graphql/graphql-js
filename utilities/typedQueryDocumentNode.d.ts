@@ -3,8 +3,12 @@ import type { DocumentNode, ExecutableDefinitionNode } from '../language/ast';
  * Wrapper type that contains DocumentNode and types that can be deduced from it.
  */
 export interface TypedQueryDocumentNode<
-  TResponseData = Record<string, any>,
-  TRequestVariables = Record<string, any>,
+  TResponseData = {
+    [key: string]: any;
+  },
+  TRequestVariables = {
+    [key: string]: any;
+  },
 > extends DocumentNode {
   readonly definitions: ReadonlyArray<ExecutableDefinitionNode>;
   /**
