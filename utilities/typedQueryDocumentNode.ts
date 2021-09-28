@@ -7,8 +7,12 @@ import type {
  */
 
 export interface TypedQueryDocumentNode<
-  TResponseData = Record<string, any>,
-  TRequestVariables = Record<string, any>,
+  TResponseData = {
+    [key: string]: any;
+  },
+  TRequestVariables = {
+    [key: string]: any;
+  },
 > extends DocumentNode {
   readonly definitions: ReadonlyArray<ExecutableDefinitionNode>; // FIXME: remove once TS implements proper way to enforce nominal typing
 

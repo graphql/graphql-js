@@ -21,7 +21,7 @@ export function assertValidName(name: string): string {
 export function isValidNameError(name: string): GraphQLError | undefined {
   typeof name === 'string' || devAssert(false, 'Expected name to be a string.');
 
-  if (name.length > 1 && name[0] === '_' && name[1] === '_') {
+  if (name.startsWith('__')) {
     return new GraphQLError(
       `Name "${name}" must not begin with "__", which is reserved by GraphQL introspection.`,
     );

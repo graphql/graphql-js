@@ -229,11 +229,12 @@ function collectConflictsBetweenFieldsAndFragment(
     return;
   }
 
-  const [fieldMap2, fragmentNames2] = getReferencedFieldsAndFragmentNames(
-    context,
-    cachedFieldsAndFragmentNames,
-    fragment,
-  ); // Do not compare a fragment's fieldMap to itself.
+  const [fieldMap2, referencedFragmentNames] =
+    getReferencedFieldsAndFragmentNames(
+      context,
+      cachedFieldsAndFragmentNames,
+      fragment,
+    ); // Do not compare a fragment's fieldMap to itself.
 
   if (fieldMap === fieldMap2) {
     return;
@@ -251,7 +252,7 @@ function collectConflictsBetweenFieldsAndFragment(
   ); // (E) Then collect any conflicts between the provided collection of fields
   // and any fragment names found in the given fragment.
 
-  for (let i = 0; i < fragmentNames2.length; i++) {
+  for (const referencedFragmentName of referencedFragmentNames) {
     collectConflictsBetweenFieldsAndFragment(
       context,
       conflicts,
@@ -259,7 +260,7 @@ function collectConflictsBetweenFieldsAndFragment(
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap,
-      fragmentNames2[i],
+      referencedFragmentName,
     );
   }
 } // Collect all conflicts found between two fragments, including via spreading in
@@ -297,16 +298,18 @@ function collectConflictsBetweenFragments(
     return;
   }
 
-  const [fieldMap1, fragmentNames1] = getReferencedFieldsAndFragmentNames(
-    context,
-    cachedFieldsAndFragmentNames,
-    fragment1,
-  );
-  const [fieldMap2, fragmentNames2] = getReferencedFieldsAndFragmentNames(
-    context,
-    cachedFieldsAndFragmentNames,
-    fragment2,
-  ); // (F) First, collect all conflicts between these two collections of fields
+  const [fieldMap1, referencedFragmentNames1] =
+    getReferencedFieldsAndFragmentNames(
+      context,
+      cachedFieldsAndFragmentNames,
+      fragment1,
+    );
+  const [fieldMap2, referencedFragmentNames2] =
+    getReferencedFieldsAndFragmentNames(
+      context,
+      cachedFieldsAndFragmentNames,
+      fragment2,
+    ); // (F) First, collect all conflicts between these two collections of fields
   // (not including any nested fragments).
 
   collectConflictsBetween(
@@ -320,7 +323,7 @@ function collectConflictsBetweenFragments(
   ); // (G) Then collect conflicts between the first fragment and any nested
   // fragments spread in the second fragment.
 
-  for (let j = 0; j < fragmentNames2.length; j++) {
+  for (const referencedFragmentName2 of referencedFragmentNames2) {
     collectConflictsBetweenFragments(
       context,
       conflicts,
@@ -328,19 +331,19 @@ function collectConflictsBetweenFragments(
       comparedFragmentPairs,
       areMutuallyExclusive,
       fragmentName1,
-      fragmentNames2[j],
+      referencedFragmentName2,
     );
   } // (G) Then collect conflicts between the second fragment and any nested
   // fragments spread in the first fragment.
 
-  for (let i = 0; i < fragmentNames1.length; i++) {
+  for (const referencedFragmentName1 of referencedFragmentNames1) {
     collectConflictsBetweenFragments(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
       comparedFragmentPairs,
       areMutuallyExclusive,
-      fragmentNames1[i],
+      referencedFragmentName1,
       fragmentName2,
     );
   }
@@ -383,47 +386,43 @@ function findConflictsBetweenSubSelectionSets(
   ); // (I) Then collect conflicts between the first collection of fields and
   // those referenced by each fragment name associated with the second.
 
-  if (fragmentNames2.length !== 0) {
-    for (let j = 0; j < fragmentNames2.length; j++) {
-      collectConflictsBetweenFieldsAndFragment(
-        context,
-        conflicts,
-        cachedFieldsAndFragmentNames,
-        comparedFragmentPairs,
-        areMutuallyExclusive,
-        fieldMap1,
-        fragmentNames2[j],
-      );
-    }
+  for (const fragmentName2 of fragmentNames2) {
+    collectConflictsBetweenFieldsAndFragment(
+      context,
+      conflicts,
+      cachedFieldsAndFragmentNames,
+      comparedFragmentPairs,
+      areMutuallyExclusive,
+      fieldMap1,
+      fragmentName2,
+    );
   } // (I) Then collect conflicts between the second collection of fields and
   // those referenced by each fragment name associated with the first.
 
-  if (fragmentNames1.length !== 0) {
-    for (let i = 0; i < fragmentNames1.length; i++) {
-      collectConflictsBetweenFieldsAndFragment(
-        context,
-        conflicts,
-        cachedFieldsAndFragmentNames,
-        comparedFragmentPairs,
-        areMutuallyExclusive,
-        fieldMap2,
-        fragmentNames1[i],
-      );
-    }
+  for (const fragmentName1 of fragmentNames1) {
+    collectConflictsBetweenFieldsAndFragment(
+      context,
+      conflicts,
+      cachedFieldsAndFragmentNames,
+      comparedFragmentPairs,
+      areMutuallyExclusive,
+      fieldMap2,
+      fragmentName1,
+    );
   } // (J) Also collect conflicts between any fragment names by the first and
   // fragment names by the second. This compares each item in the first set of
   // names to each item in the second set of names.
 
-  for (let i = 0; i < fragmentNames1.length; i++) {
-    for (let j = 0; j < fragmentNames2.length; j++) {
+  for (const fragmentName1 of fragmentNames1) {
+    for (const fragmentName2 of fragmentNames2) {
       collectConflictsBetweenFragments(
         context,
         conflicts,
         cachedFieldsAndFragmentNames,
         comparedFragmentPairs,
         areMutuallyExclusive,
-        fragmentNames1[i],
-        fragmentNames2[j],
+        fragmentName1,
+        fragmentName2,
       );
     }
   }
@@ -490,16 +489,16 @@ function collectConflictsBetween(
     const fields2 = fieldMap2[responseName];
 
     if (fields2) {
-      for (let i = 0; i < fields1.length; i++) {
-        for (let j = 0; j < fields2.length; j++) {
+      for (const field1 of fields1) {
+        for (const field2 of fields2) {
           const conflict = findConflict(
             context,
             cachedFieldsAndFragmentNames,
             comparedFragmentPairs,
             parentFieldsAreMutuallyExclusive,
             responseName,
-            fields1[i],
-            fields2[j],
+            field1,
+            field2,
           );
 
           if (conflict) {
