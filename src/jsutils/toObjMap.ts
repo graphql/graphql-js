@@ -1,13 +1,13 @@
-import type {
-  ObjMap,
-  ObjMapLike,
-  ReadOnlyObjMap,
-  ReadOnlyObjMapLike,
-} from './ObjMap';
+import type { Maybe } from './Maybe';
+import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from './ObjMap';
 
-export function toObjMap<T>(obj: ObjMapLike<T>): ObjMap<T>;
-export function toObjMap<T>(obj: ReadOnlyObjMapLike<T>): ReadOnlyObjMap<T>;
-export function toObjMap<T>(obj: ObjMapLike<T> | ReadOnlyObjMapLike<T>) {
+export function toObjMap<T>(
+  obj: Maybe<ReadOnlyObjMapLike<T>>,
+): ReadOnlyObjMap<T> {
+  if (obj == null) {
+    return Object.create(null);
+  }
+
   if (Object.getPrototypeOf(obj) === null) {
     return obj;
   }

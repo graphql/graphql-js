@@ -128,7 +128,7 @@ export interface GraphQLSchemaExtensions {
  */
 export class GraphQLSchema {
   description: Maybe<string>;
-  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
+  extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
 
@@ -164,7 +164,7 @@ export class GraphQLSchema {
     );
 
     this.description = config.description;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
@@ -386,7 +386,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
   types: ReadonlyArray<GraphQLNamedType>;
   directives: ReadonlyArray<GraphQLDirective>;
-  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
+  extensions: Readonly<GraphQLSchemaExtensions>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
 }
