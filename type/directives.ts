@@ -57,7 +57,7 @@ export class GraphQLDirective {
   locations: ReadonlyArray<DirectiveLocationEnum>;
   args: ReadonlyArray<GraphQLArgument>;
   isRepeatable: boolean;
-  extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
+  extensions: Readonly<GraphQLDirectiveExtensions>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
@@ -65,7 +65,7 @@ export class GraphQLDirective {
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable ?? false;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     config.name || devAssert(false, 'Directive must be named.');
     Array.isArray(config.locations) ||
@@ -115,7 +115,7 @@ export interface GraphQLDirectiveConfig {
 interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
   args: GraphQLFieldConfigArgumentMap;
   isRepeatable: boolean;
-  extensions: Maybe<Readonly<GraphQLDirectiveExtensions>>;
+  extensions: Readonly<GraphQLDirectiveExtensions>;
 }
 /**
  * Used to conditionally include fields or fragments.

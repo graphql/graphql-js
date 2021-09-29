@@ -511,7 +511,7 @@ export const SchemaMetaFieldDef: GraphQLField<unknown, unknown> = {
   args: [],
   resolve: (_source, _args, _context, { schema }) => schema,
   deprecationReason: undefined,
-  extensions: undefined,
+  extensions: Object.create(null),
   astNode: undefined,
 };
 export const TypeMetaFieldDef: GraphQLField<unknown, unknown> = {
@@ -525,13 +525,13 @@ export const TypeMetaFieldDef: GraphQLField<unknown, unknown> = {
       type: new GraphQLNonNull(GraphQLString),
       defaultValue: undefined,
       deprecationReason: undefined,
-      extensions: undefined,
+      extensions: Object.create(null),
       astNode: undefined,
     },
   ],
   resolve: (_source, { name }, _context, { schema }) => schema.getType(name),
   deprecationReason: undefined,
-  extensions: undefined,
+  extensions: Object.create(null),
   astNode: undefined,
 };
 export const TypeNameMetaFieldDef: GraphQLField<unknown, unknown> = {
@@ -541,7 +541,7 @@ export const TypeNameMetaFieldDef: GraphQLField<unknown, unknown> = {
   args: [],
   resolve: (_source, _args, _context, { parentType }) => parentType.name,
   deprecationReason: undefined,
-  extensions: undefined,
+  extensions: Object.create(null),
   astNode: undefined,
 };
 export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =

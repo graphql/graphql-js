@@ -125,7 +125,7 @@ export interface GraphQLSchemaExtensions {
 
 export class GraphQLSchema {
   description: Maybe<string>;
-  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
+  extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>; // Used as a cache for validateSchema().
 
@@ -162,7 +162,7 @@ export class GraphQLSchema {
           `${inspect(config.directives)}.`,
       );
     this.description = config.description;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this._queryType = config.query;
@@ -396,7 +396,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
   types: ReadonlyArray<GraphQLNamedType>;
   directives: ReadonlyArray<GraphQLDirective>;
-  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
+  extensions: Readonly<GraphQLSchemaExtensions>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
 }
