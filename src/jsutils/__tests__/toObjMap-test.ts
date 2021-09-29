@@ -8,6 +8,18 @@ import { toObjMap } from '../toObjMap';
 const __proto__ = '__proto__';
 
 describe('toObjMap', () => {
+  it('convert undefined to ObjMap', () => {
+    const result = toObjMap(undefined);
+    expect(result).to.deep.equal({});
+    expect(Object.getPrototypeOf(result)).to.equal(null);
+  });
+
+  it('convert null to ObjMap', () => {
+    const result = toObjMap(null);
+    expect(result).to.deep.equal({});
+    expect(Object.getPrototypeOf(result)).to.equal(null);
+  });
+
   it('convert empty object to ObjMap', () => {
     const result = toObjMap({});
     expect(result).to.deep.equal({});

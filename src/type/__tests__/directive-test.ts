@@ -38,7 +38,7 @@ describe('Type System: Directive', () => {
           type: GraphQLString,
           defaultValue: undefined,
           deprecationReason: undefined,
-          extensions: undefined,
+          extensions: {},
           astNode: undefined,
         },
         {
@@ -47,7 +47,7 @@ describe('Type System: Directive', () => {
           type: GraphQLInt,
           defaultValue: undefined,
           deprecationReason: undefined,
-          extensions: undefined,
+          extensions: {},
           astNode: undefined,
         },
       ],

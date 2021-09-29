@@ -61,12 +61,12 @@ const schema: GraphQLSchema = new GraphQLSchema({
 
 function checkExtensionTypes(_test: SomeExtension | null | undefined) {}
 
-checkExtensionTypes(queryType?.extensions?.someObjectExtension);
+checkExtensionTypes(queryType.extensions.someObjectExtension);
 
-const sayHiField = queryType?.getFields()?.sayHi;
-checkExtensionTypes(sayHiField?.extensions?.someFieldExtension);
+const sayHiField = queryType.getFields().sayHi;
+checkExtensionTypes(sayHiField.extensions.someFieldExtension);
 
-checkExtensionTypes(sayHiField?.args?.[0]?.extensions?.someArgumentExtension);
+checkExtensionTypes(sayHiField.args[0].extensions.someArgumentExtension);
 
 const result: ExecutionResult = graphqlSync({
   schema,

@@ -26,10 +26,10 @@ describe('Type System: Extensions', () => {
   describe('GraphQLScalarType', () => {
     it('without extensions', () => {
       const someScalar = new GraphQLScalarType({ name: 'SomeScalar' });
-      expect(someScalar.extensions).to.equal(undefined);
+      expect(someScalar.extensions).to.deep.equal({});
 
       const config = someScalar.toConfig();
-      expect(config.extensions).to.equal(undefined);
+      expect(config.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -62,19 +62,19 @@ describe('Type System: Extensions', () => {
         },
       });
 
-      expect(someObject.extensions).to.equal(undefined);
+      expect(someObject.extensions).to.deep.equal({});
       const someField = someObject.getFields().someField;
-      expect(someField.extensions).to.equal(undefined);
+      expect(someField.extensions).to.deep.equal({});
       const someArg = someField.args[0];
-      expect(someArg.extensions).to.equal(undefined);
+      expect(someArg.extensions).to.deep.equal({});
 
       const config = someObject.toConfig();
-      expect(config.extensions).to.equal(undefined);
+      expect(config.extensions).to.deep.equal({});
       const someFieldConfig = config.fields.someField;
-      expect(someFieldConfig.extensions).to.equal(undefined);
+      expect(someFieldConfig.extensions).to.deep.equal({});
       invariant(someFieldConfig.args);
       const someArgConfig = someFieldConfig.args.someArg;
-      expect(someArgConfig.extensions).to.equal(undefined);
+      expect(someArgConfig.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -131,19 +131,19 @@ describe('Type System: Extensions', () => {
         },
       });
 
-      expect(someInterface.extensions).to.equal(undefined);
+      expect(someInterface.extensions).to.deep.equal({});
       const someField = someInterface.getFields().someField;
-      expect(someField.extensions).to.equal(undefined);
+      expect(someField.extensions).to.deep.equal({});
       const someArg = someField.args[0];
-      expect(someArg.extensions).to.equal(undefined);
+      expect(someArg.extensions).to.deep.equal({});
 
       const config = someInterface.toConfig();
-      expect(config.extensions).to.equal(undefined);
+      expect(config.extensions).to.deep.equal({});
       const someFieldConfig = config.fields.someField;
-      expect(someFieldConfig.extensions).to.equal(undefined);
+      expect(someFieldConfig.extensions).to.deep.equal({});
       invariant(someFieldConfig.args);
       const someArgConfig = someFieldConfig.args.someArg;
-      expect(someArgConfig.extensions).to.equal(undefined);
+      expect(someArgConfig.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -193,10 +193,10 @@ describe('Type System: Extensions', () => {
         types: [],
       });
 
-      expect(someUnion.extensions).to.equal(undefined);
+      expect(someUnion.extensions).to.deep.equal({});
 
       const config = someUnion.toConfig();
-      expect(config.extensions).to.equal(undefined);
+      expect(config.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -224,14 +224,14 @@ describe('Type System: Extensions', () => {
         },
       });
 
-      expect(someEnum.extensions).to.equal(undefined);
+      expect(someEnum.extensions).to.deep.equal({});
       const someValue = someEnum.getValues()[0];
-      expect(someValue.extensions).to.equal(undefined);
+      expect(someValue.extensions).to.deep.equal({});
 
       const config = someEnum.toConfig();
-      expect(config.extensions).to.equal(undefined);
+      expect(config.extensions).to.deep.equal({});
       const someValueConfig = config.values.SOME_VALUE;
-      expect(someValueConfig.extensions).to.equal(undefined);
+      expect(someValueConfig.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -270,14 +270,14 @@ describe('Type System: Extensions', () => {
         },
       });
 
-      expect(someInputObject.extensions).to.equal(undefined);
+      expect(someInputObject.extensions).to.deep.equal({});
       const someInputField = someInputObject.getFields().someInputField;
-      expect(someInputField.extensions).to.equal(undefined);
+      expect(someInputField.extensions).to.deep.equal({});
 
       const config = someInputObject.toConfig();
-      expect(config.extensions).to.equal(undefined);
+      expect(config.extensions).to.deep.equal({});
       const someInputFieldConfig = config.fields.someInputField;
-      expect(someInputFieldConfig.extensions).to.equal(undefined);
+      expect(someInputFieldConfig.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -328,14 +328,14 @@ describe('Type System: Extensions', () => {
         locations: [],
       });
 
-      expect(someDirective.extensions).to.equal(undefined);
+      expect(someDirective.extensions).to.deep.equal({});
       const someArg = someDirective.args[0];
-      expect(someArg.extensions).to.equal(undefined);
+      expect(someArg.extensions).to.deep.equal({});
 
       const config = someDirective.toConfig();
-      expect(config.extensions).to.equal(undefined);
+      expect(config.extensions).to.deep.equal({});
       const someArgConfig = config.args.someArg;
-      expect(someArgConfig.extensions).to.equal(undefined);
+      expect(someArgConfig.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -371,10 +371,10 @@ describe('Type System: Extensions', () => {
     it('without extensions', () => {
       const schema = new GraphQLSchema({});
 
-      expect(schema.extensions).to.equal(undefined);
+      expect(schema.extensions).to.deep.equal({});
 
       const config = schema.toConfig();
-      expect(config.extensions).to.equal(undefined);
+      expect(config.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
