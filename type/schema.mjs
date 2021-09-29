@@ -129,7 +129,7 @@ export class GraphQLSchema {
           `${inspect(config.directives)}.`,
       );
     this.description = config.description;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes =
       (_config$extensionASTN = config.extensionASTNodes) !== null &&

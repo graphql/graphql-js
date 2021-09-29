@@ -495,7 +495,7 @@ export const SchemaMetaFieldDef = {
   args: [],
   resolve: (_source, _args, _context, { schema }) => schema,
   deprecationReason: undefined,
-  extensions: undefined,
+  extensions: Object.create(null),
   astNode: undefined,
 };
 export const TypeMetaFieldDef = {
@@ -509,13 +509,13 @@ export const TypeMetaFieldDef = {
       type: new GraphQLNonNull(GraphQLString),
       defaultValue: undefined,
       deprecationReason: undefined,
-      extensions: undefined,
+      extensions: Object.create(null),
       astNode: undefined,
     },
   ],
   resolve: (_source, { name }, _context, { schema }) => schema.getType(name),
   deprecationReason: undefined,
-  extensions: undefined,
+  extensions: Object.create(null),
   astNode: undefined,
 };
 export const TypeNameMetaFieldDef = {
@@ -525,7 +525,7 @@ export const TypeNameMetaFieldDef = {
   args: [],
   resolve: (_source, _args, _context, { parentType }) => parentType.name,
   deprecationReason: undefined,
-  extensions: undefined,
+  extensions: Object.create(null),
   astNode: undefined,
 };
 export const introspectionTypes = Object.freeze([

@@ -52,7 +52,7 @@ export class GraphQLDirective {
       _config$isRepeatable !== void 0
         ? _config$isRepeatable
         : false;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     config.name || devAssert(false, 'Directive must be named.');
     Array.isArray(config.locations) ||

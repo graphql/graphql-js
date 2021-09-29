@@ -34,7 +34,7 @@ export function buildASTSchema(documentAST, options) {
     description: undefined,
     types: [],
     directives: [],
-    extensions: undefined,
+    extensions: Object.create(null),
     extensionASTNodes: [],
     assumeValid: false,
   };

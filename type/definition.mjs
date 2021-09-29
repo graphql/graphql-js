@@ -425,7 +425,7 @@ export class GraphQLScalarType {
       _config$parseLiteral !== void 0
         ? _config$parseLiteral
         : (node, variables) => parseValue(valueFromASTUntyped(node, variables));
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes =
       (_config$extensionASTN = config.extensionASTNodes) !== null &&
@@ -531,7 +531,7 @@ export class GraphQLObjectType {
     this.name = config.name;
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes =
       (_config$extensionASTN2 = config.extensionASTNodes) !== null &&
@@ -652,7 +652,7 @@ function defineFieldMap(config) {
       resolve: fieldConfig.resolve,
       subscribe: fieldConfig.subscribe,
       deprecationReason: fieldConfig.deprecationReason,
-      extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
+      extensions: toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode,
     };
   });
@@ -665,7 +665,7 @@ export function defineArguments(config) {
     type: argConfig.type,
     defaultValue: argConfig.defaultValue,
     deprecationReason: argConfig.deprecationReason,
-    extensions: argConfig.extensions && toObjMap(argConfig.extensions),
+    extensions: toObjMap(argConfig.extensions),
     astNode: argConfig.astNode,
   }));
 }
@@ -734,7 +734,7 @@ export class GraphQLInterfaceType {
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes =
       (_config$extensionASTN3 = config.extensionASTNodes) !== null &&
@@ -826,7 +826,7 @@ export class GraphQLUnionType {
     this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes =
       (_config$extensionASTN4 = config.extensionASTNodes) !== null &&
@@ -917,7 +917,7 @@ export class GraphQLEnumType {
 
     this.name = config.name;
     this.description = config.description;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes =
       (_config$extensionASTN5 = config.extensionASTNodes) !== null &&
@@ -1059,7 +1059,7 @@ function defineEnumValues(typeName, valueMap) {
       description: valueConfig.description,
       value: valueConfig.value !== undefined ? valueConfig.value : valueName,
       deprecationReason: valueConfig.deprecationReason,
-      extensions: valueConfig.extensions && toObjMap(valueConfig.extensions),
+      extensions: toObjMap(valueConfig.extensions),
       astNode: valueConfig.astNode,
     };
   });
@@ -1092,7 +1092,7 @@ export class GraphQLInputObjectType {
 
     this.name = config.name;
     this.description = config.description;
-    this.extensions = config.extensions && toObjMap(config.extensions);
+    this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes =
       (_config$extensionASTN6 = config.extensionASTNodes) !== null &&
@@ -1162,7 +1162,7 @@ function defineInputFieldMap(config) {
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
       deprecationReason: fieldConfig.deprecationReason,
-      extensions: fieldConfig.extensions && toObjMap(fieldConfig.extensions),
+      extensions: toObjMap(fieldConfig.extensions),
       astNode: fieldConfig.astNode,
     };
   });

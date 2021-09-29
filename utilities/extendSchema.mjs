@@ -165,7 +165,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
       ...schemaConfig.directives.map(replaceDirective),
       ...directiveDefs.map(buildDirective),
     ],
-    extensions: undefined,
+    extensions: Object.create(null),
     astNode:
       (_schemaDef2 = schemaDef) !== null && _schemaDef2 !== void 0
         ? _schemaDef2

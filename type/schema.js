@@ -144,8 +144,7 @@ class GraphQLSchema {
           `${(0, _inspect.inspect)(config.directives)}.`,
       );
     this.description = config.description;
-    this.extensions =
-      config.extensions && (0, _toObjMap.toObjMap)(config.extensions);
+    this.extensions = (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes =
       (_config$extensionASTN = config.extensionASTNodes) !== null &&

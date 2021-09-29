@@ -99,7 +99,7 @@ export interface GraphQLSchemaExtensions {
  */
 export declare class GraphQLSchema {
   description: Maybe<string>;
-  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
+  extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
@@ -161,7 +161,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
   types: ReadonlyArray<GraphQLNamedType>;
   directives: ReadonlyArray<GraphQLDirective>;
-  extensions: Maybe<Readonly<GraphQLSchemaExtensions>>;
+  extensions: Readonly<GraphQLSchemaExtensions>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
 }

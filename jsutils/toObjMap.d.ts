@@ -1,10 +1,5 @@
-import type {
-  ObjMap,
-  ObjMapLike,
-  ReadOnlyObjMap,
-  ReadOnlyObjMapLike,
-} from './ObjMap';
-export declare function toObjMap<T>(obj: ObjMapLike<T>): ObjMap<T>;
+import type { Maybe } from './Maybe';
+import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from './ObjMap';
 export declare function toObjMap<T>(
-  obj: ReadOnlyObjMapLike<T>,
+  obj: Maybe<ReadOnlyObjMapLike<T>>,
 ): ReadOnlyObjMap<T>;

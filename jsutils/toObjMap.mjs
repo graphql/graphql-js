@@ -1,4 +1,8 @@
 export function toObjMap(obj) {
+  if (obj == null) {
+    return Object.create(null);
+  }
+
   if (Object.getPrototypeOf(obj) === null) {
     return obj;
   }
