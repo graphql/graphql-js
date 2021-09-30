@@ -21,6 +21,23 @@ describe('Validate: Variables are input types', () => {
     `);
   });
 
+  it('unknown types are invalid', () => {
+    expectErrors(`
+      query Foo($a: Unknown, $b: [[Unknown!]]!) {
+        field(a: $a, b: $b)
+      }
+    `).to.deep.equal([
+      {
+        locations: [{ line: 2, column: 21 }],
+        message: 'Variable "$a" references unknown type "Unknown".',
+      },
+      {
+        locations: [{ line: 2, column: 34 }],
+        message: 'Variable "$b" references unknown type "[[Unknown!]]!".',
+      },
+    ]);
+  });
+
   it('output types are invalid', () => {
     expectErrors(`
       query Foo($a: Dog, $b: [[CatOrDog!]]!, $c: Pet) {

@@ -23,13 +23,26 @@ export function VariablesAreInputTypesRule(
     VariableDefinition(node: VariableDefinitionNode) {
       const type = typeFromAST(context.getSchema(), node.type);
 
-      if (type && !isInputType(type)) {
+      if (!type) {
         const variableName = node.variable.name.value;
-        const typeName = print(node.type);
+        const typeReference = print(node.type);
 
         context.reportError(
           new GraphQLError(
-            `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
+            `Variable "$${variableName}" references unknown type "${typeReference}".`,
+            node.type,
+          ),
+        );
+        return;
+      }
+
+      if (!isInputType(type)) {
+        const variableName = node.variable.name.value;
+        const typeReference = print(node.type);
+
+        context.reportError(
+          new GraphQLError(
+            `Variable "$${variableName}" cannot be non-input type "${typeReference}".`,
             node.type,
           ),
         );
