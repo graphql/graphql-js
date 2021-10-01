@@ -25,6 +25,10 @@ import {
  * (see the language/visitor API). Visitor methods are expected to return
  * GraphQLErrors, or Arrays of GraphQLErrors when invalid.
  *
+ * Validate will stop validation after a `maxErrors` limit has been reached.
+ * Attackers can send pathologically invalid queries to induce a DoS attack,
+ * so by default `maxErrors` set to 100 errors.
+ *
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
@@ -33,14 +37,13 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
-  options: {
+  options?: {
     maxErrors?: number;
-  } = {
-    maxErrors: undefined,
   },
   /** @deprecated will be removed in 17.0.0 */
   typeInfo: TypeInfo = new TypeInfo(schema),
 ): ReadonlyArray<GraphQLError> {
+  const maxErrors = options?.maxErrors ?? 100;
   documentAST || devAssert(false, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
 
   assertValidSchema(schema);
@@ -51,7 +54,7 @@ export function validate(
     documentAST,
     typeInfo,
     (error) => {
-      if (options.maxErrors != null && errors.length >= options.maxErrors) {
+      if (errors.length >= maxErrors) {
         errors.push(
           new GraphQLError(
             'Too many validation errors, error limit reached. Validation aborted.',
