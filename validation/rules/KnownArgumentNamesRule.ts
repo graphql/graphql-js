@@ -13,6 +13,9 @@ import type {
  *
  * A GraphQL field is only valid if all supplied arguments are defined by
  * that field.
+ *
+ * See https://spec.graphql.org/draft/#sec-Argument-Names
+ * See https://spec.graphql.org/draft/#sec-Directives-Are-In-Valid-Locations
  */
 
 export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {

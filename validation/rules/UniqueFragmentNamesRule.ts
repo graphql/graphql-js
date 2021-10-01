@@ -5,6 +5,8 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  * Unique fragment names
  *
  * A GraphQL document is only valid if all defined fragments have unique names.
+ *
+ * See https://spec.graphql.org/draft/#sec-Fragment-Name-Uniqueness
  */
 
 export function UniqueFragmentNamesRule(

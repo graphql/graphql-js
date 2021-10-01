@@ -6,6 +6,8 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  *
  * A GraphQL field or directive is only valid if all supplied arguments are
  * uniquely named.
+ *
+ * See https://spec.graphql.org/draft/#sec-Argument-Names
  */
 
 export function UniqueArgumentNamesRule(

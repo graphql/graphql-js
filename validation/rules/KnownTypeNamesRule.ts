@@ -19,6 +19,8 @@ import type {
  *
  * A GraphQL document is only valid if referenced types (specifically
  * variable definitions and fragment conditions) are defined by the type schema.
+ *
+ * See https://spec.graphql.org/draft/#sec-Fragment-Spread-Type-Existence
  */
 
 export function KnownTypeNamesRule(

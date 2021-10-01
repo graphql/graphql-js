@@ -11,7 +11,11 @@ import { typeFromAST } from '../../utilities/typeFromAST.ts';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**
- * Variables passed to field arguments conform to type
+ * Variables in allowed position
+ *
+ * Variable usages must be compatible with the arguments they are passed to.
+ *
+ * See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
  */
 
 export function VariablesInAllowedPositionRule(
