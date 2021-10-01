@@ -11,6 +11,8 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  * Unique fragment names
  *
  * A GraphQL document is only valid if all defined fragments have unique names.
+ *
+ * See https://spec.graphql.org/draft/#sec-Fragment-Name-Uniqueness
  */
 function UniqueFragmentNamesRule(context) {
   const knownFragmentNames = Object.create(null);

@@ -12,6 +12,8 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  *
  * A GraphQL operation is only valid if all variables encountered, both directly
  * and via fragment spreads, are defined by that operation.
+ *
+ * See https://spec.graphql.org/draft/#sec-All-Variable-Uses-Defined
  */
 function NoUndefinedVariablesRule(context) {
   let variableNameDefined = Object.create(null);

@@ -8,6 +8,8 @@ import type {
  *
  * A GraphQL document is only valid if all non-repeatable directives at
  * a given location are uniquely named.
+ *
+ * See https://spec.graphql.org/draft/#sec-Directives-Are-Unique-Per-Location
  */
 export declare function UniqueDirectivesPerLocationRule(
   context: ValidationContext | SDLValidationContext,

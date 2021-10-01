@@ -14,6 +14,8 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  *
  * A GraphQL input object value is only valid if all supplied fields are
  * uniquely named.
+ *
+ * See https://spec.graphql.org/draft/#sec-Input-Object-Field-Uniqueness
  */
 function UniqueInputFieldNamesRule(context) {
   const knownNameStack = [];

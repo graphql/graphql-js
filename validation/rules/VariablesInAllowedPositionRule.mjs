@@ -6,7 +6,11 @@ import { typeFromAST } from '../../utilities/typeFromAST.mjs';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators.mjs';
 
 /**
- * Variables passed to field arguments conform to type
+ * Variables in allowed position
+ *
+ * Variable usages must be compatible with the arguments they are passed to.
+ *
+ * See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
  */
 export function VariablesInAllowedPositionRule(context) {
   let varDefMap = Object.create(null);

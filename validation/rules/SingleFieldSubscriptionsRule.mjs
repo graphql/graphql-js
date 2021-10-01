@@ -7,6 +7,8 @@ import { collectFields } from '../../execution/collectFields.mjs';
  *
  * A GraphQL subscription is valid only if it contains a single root field and
  * that root field is not an introspection field.
+ *
+ * See https://spec.graphql.org/draft/#sec-Single-root-field
  */
 export function SingleFieldSubscriptionsRule(context) {
   return {

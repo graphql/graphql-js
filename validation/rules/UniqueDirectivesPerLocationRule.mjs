@@ -11,6 +11,8 @@ import { specifiedDirectives } from '../../type/directives.mjs';
  *
  * A GraphQL document is only valid if all non-repeatable directives at
  * a given location are uniquely named.
+ *
+ * See https://spec.graphql.org/draft/#sec-Directives-Are-Unique-Per-Location
  */
 export function UniqueDirectivesPerLocationRule(context) {
   const uniqueDirectiveMap = Object.create(null);

@@ -12,6 +12,8 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  *
  * A GraphQL field or directive is only valid if all supplied arguments are
  * uniquely named.
+ *
+ * See https://spec.graphql.org/draft/#sec-Argument-Names
  */
 function UniqueArgumentNamesRule(context) {
   let knownArgNames = Object.create(null);

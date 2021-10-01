@@ -22,6 +22,8 @@ var _directives = require('../../type/directives.js');
  *
  * A GraphQL document is only valid if all `@directives` are known by the
  * schema and legally positioned.
+ *
+ * See https://spec.graphql.org/draft/#sec-Directives-Are-Defined
  */
 function KnownDirectivesRule(context) {
   const locationsMap = Object.create(null);

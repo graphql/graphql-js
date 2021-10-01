@@ -16,6 +16,8 @@ var _collectFields = require('../../execution/collectFields.js');
  *
  * A GraphQL subscription is valid only if it contains a single root field and
  * that root field is not an introspection field.
+ *
+ * See https://spec.graphql.org/draft/#sec-Single-root-field
  */
 function SingleFieldSubscriptionsRule(context) {
   return {

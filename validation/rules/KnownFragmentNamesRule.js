@@ -12,6 +12,8 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  *
  * A GraphQL document is only valid if all `...Fragment` fragment spreads refer
  * to fragments defined in the same document.
+ *
+ * See https://spec.graphql.org/draft/#sec-Fragment-spread-target-defined
  */
 function KnownFragmentNamesRule(context) {
   return {

@@ -24,6 +24,8 @@ var _definition = require('../../type/definition.js');
  *
  * A GraphQL document is only valid if all value literals are of the type
  * expected at their position.
+ *
+ * See https://spec.graphql.org/draft/#sec-Values-of-Correct-Type
  */
 function ValuesOfCorrectTypeRule(context) {
   return {
