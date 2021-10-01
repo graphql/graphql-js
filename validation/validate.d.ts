@@ -17,6 +17,10 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext';
  * (see the language/visitor API). Visitor methods are expected to return
  * GraphQLErrors, or Arrays of GraphQLErrors when invalid.
  *
+ * Validate will stop validation after a `maxErrors` limit has been reached.
+ * Attackers can send pathologically invalid queries to induce a DoS attack,
+ * so by default `maxErrors` set to 100 errors.
+ *
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
