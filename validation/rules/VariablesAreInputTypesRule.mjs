@@ -14,7 +14,7 @@ export function VariablesAreInputTypesRule(context) {
     VariableDefinition(node) {
       const type = typeFromAST(context.getSchema(), node.type);
 
-      if (type && !isInputType(type)) {
+      if (type !== undefined && !isInputType(type)) {
         const variableName = node.variable.name.value;
         const typeName = print(node.type);
         context.reportError(

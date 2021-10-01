@@ -27,7 +27,7 @@ function VariablesAreInputTypesRule(context) {
         node.type,
       );
 
-      if (type && !(0, _definition.isInputType)(type)) {
+      if (type !== undefined && !(0, _definition.isInputType)(type)) {
         const variableName = node.variable.name.value;
         const typeName = (0, _printer.print)(node.type);
         context.reportError(
