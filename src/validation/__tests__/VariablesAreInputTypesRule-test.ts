@@ -13,6 +13,14 @@ function expectValid(queryStr: string) {
 }
 
 describe('Validate: Variables are input types', () => {
+  it('unknown types are ignored', () => {
+    expectValid(`
+      query Foo($a: Unknown, $b: [[Unknown!]]!) {
+        field(a: $a, b: $b)
+      }
+    `);
+  });
+
   it('input types are valid', () => {
     expectValid(`
       query Foo($a: String, $b: [Boolean!]!, $c: ComplexInput) {

@@ -53,7 +53,7 @@ describe('Validate: Known type names', () => {
 
   it('unknown type names are invalid', () => {
     expectErrors(`
-      query Foo($var: JumbledUpLetters) {
+      query Foo($var: [JumbledUpLetters!]!) {
         user(id: 4) {
           name
           pets { ... on Badger { name }, ...PetFields }
@@ -65,7 +65,7 @@ describe('Validate: Known type names', () => {
     `).to.deep.equal([
       {
         message: 'Unknown type "JumbledUpLetters".',
-        locations: [{ line: 2, column: 23 }],
+        locations: [{ line: 2, column: 24 }],
       },
       {
         message: 'Unknown type "Badger".',
