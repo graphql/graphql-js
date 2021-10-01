@@ -17,7 +17,11 @@ import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import type { ValidationContext } from '../ValidationContext';
 
 /**
- * Variables passed to field arguments conform to type
+ * Variables in allowed position
+ *
+ * Variable usages must be compatible with the arguments they are passed to.
+ *
+ * See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
  */
 export function VariablesInAllowedPositionRule(
   context: ValidationContext,
