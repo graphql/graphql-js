@@ -11,6 +11,8 @@ import type { ASTValidationContext } from '../ValidationContext';
  *
  * A GraphQL document is only valid for execution if all definitions are either
  * operation or fragment definitions.
+ *
+ * See https://spec.graphql.org/draft/#sec-Executable-Definitions
  */
 export function ExecutableDefinitionsRule(
   context: ASTValidationContext,
