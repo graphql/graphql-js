@@ -493,7 +493,7 @@ describe('Type System: Objects must have fields', () => {
     expectJSON(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "bad-name-with-dashes" does not.',
+          'Names must only contain [_a-zA-Z0-9] but "bad-name-with-dashes" does not.',
       },
     ]);
   });
@@ -535,7 +535,7 @@ describe('Type System: Fields args must be properly named', () => {
     expectJSON(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "bad-name-with-dashes" does not.',
+          'Names must only contain [_a-zA-Z0-9] but "bad-name-with-dashes" does not.',
       },
     ]);
   });
@@ -968,16 +968,14 @@ describe('Type System: Enum types must be well defined', () => {
     const schema1 = schemaWithEnum({ '#value': {} });
     expectJSON(validateSchema(schema1)).to.deep.equal([
       {
-        message:
-          'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "#value" does not.',
+        message: 'Names must start with [_a-zA-Z] but "#value" does not.',
       },
     ]);
 
     const schema2 = schemaWithEnum({ '1value': {} });
     expectJSON(validateSchema(schema2)).to.deep.equal([
       {
-        message:
-          'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "1value" does not.',
+        message: 'Names must start with [_a-zA-Z] but "1value" does not.',
       },
     ]);
 
@@ -985,7 +983,7 @@ describe('Type System: Enum types must be well defined', () => {
     expectJSON(validateSchema(schema3)).to.deep.equal([
       {
         message:
-          'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "KEBAB-CASE" does not.',
+          'Names must only contain [_a-zA-Z0-9] but "KEBAB-CASE" does not.',
       },
     ]);
 

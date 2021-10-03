@@ -19,7 +19,21 @@ describe('assertValidName()', () => {
     expect(() => assertValidName({})).to.throw('Expected name to be a string.');
   });
 
+  it('throws on empty strings', () => {
+    expect(() => assertValidName('')).to.throw(
+      'Expected name to be a non-empty string.',
+    );
+  });
+
   it('throws for names with invalid characters', () => {
-    expect(() => assertValidName('>--()-->')).to.throw(/Names must match/);
+    expect(() => assertValidName('>--()-->')).to.throw(
+      'Names must only contain [_a-zA-Z0-9] but ">--()-->" does not.',
+    );
+  });
+
+  it('throws for names starting with invalid characters', () => {
+    expect(() => assertValidName('42MeaningsOfLife')).to.throw(
+      'Names must start with [_a-zA-Z] but "42MeaningsOfLife" does not.',
+    );
   });
 });
