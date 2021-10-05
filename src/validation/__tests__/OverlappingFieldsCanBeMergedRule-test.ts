@@ -719,7 +719,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       ]);
     });
 
-    describe('nullable field on types which potentially overlap', () => {
+    describe('Nullable field on types which potentially overlap', () => {
       it('matching required status', () => {
         expectValidWithSchema(
           schema,
@@ -955,7 +955,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       });
     });
 
-    describe('non-nullable field on types which potentially overlap', () => {
+    describe('Non-nullable field on types which potentially overlap', () => {
       it('matching required status', () => {
         expectValidWithSchema(
           schema,
@@ -1082,7 +1082,61 @@ describe('Validate: Overlapping fields can be merged', () => {
         ]);
       });
 
-      it('conflicting nullability status with aliases', () => {
+      it('conflicting requred and optional nullability status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+              {
+                someBox {
+                  ...on NonNullStringBox1 {
+                    nonNullable: scalar!
+                  }
+                  ...on NonNullStringBox1Impl {
+                    nullable: scalar?
+                  }
+                }
+              }
+            `,
+        );
+      });
+
+      it('matching optional and optional nullability status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+              {
+                someBox {
+                  ...on NonNullStringBox1 {
+                    alsoNullable: scalar?
+                  }
+                  ...on NonNullStringBox1Impl {
+                    nullable: scalar?
+                  }
+                }
+              }
+            `,
+        );
+      });
+
+      it('matching required and required nullability status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+              {
+                someBox {
+                  ...on NonNullStringBox1 {
+                    nonNullable: scalar!
+                  }
+                  ...on NonNullStringBox1Impl {
+                    alsoNonNullable: scalar!
+                  }
+                }
+              }
+            `,
+        );
+      });
+
+      it('conflicting required and unset (requred) nullability status with aliases', () => {
         expectValidWithSchema(
           schema,
           `
@@ -1093,6 +1147,42 @@ describe('Validate: Overlapping fields can be merged', () => {
                   }
                   ...on NonNullStringBox1Impl {
                     nullable: scalar
+                  }
+                }
+              }
+            `,
+        );
+      });
+
+      it('matching optional and unset (required) nullability status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+              {
+                someBox {
+                  ...on NonNullStringBox1 {
+                    nullable: scalar?
+                  }
+                  ...on NonNullStringBox1Impl {
+                    nonNullable: scalar
+                  }
+                }
+              }
+            `,
+        );
+      });
+
+      it('matching unset (required) and unset (required) nullability status with aliases', () => {
+        expectValidWithSchema(
+          schema,
+          `
+              {
+                someBox {
+                  ...on NonNullStringBox1 {
+                    nonNullable: scalar
+                  }
+                  ...on NonNullStringBox1Impl {
+                    alsoNonNullable: scalar
                   }
                 }
               }
