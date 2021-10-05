@@ -13,6 +13,7 @@ import type {
   GraphQLArgument,
   GraphQLFieldConfigArgumentMap,
 } from './definition';
+import { assertName } from './assertName';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import {
   defineArguments,
@@ -63,14 +64,13 @@ export class GraphQLDirective {
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable ?? false;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
 
-    devAssert(config.name, 'Directive must be named.');
     devAssert(
       Array.isArray(config.locations),
       `@${config.name} locations must be an Array.`,

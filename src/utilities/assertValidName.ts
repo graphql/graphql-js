@@ -1,11 +1,14 @@
 import { devAssert } from '../jsutils/devAssert';
 
 import { GraphQLError } from '../error/GraphQLError';
-import { isNameStart, isNameContinue } from '../language/characterClasses';
+
+import { assertName } from '../type/assertName';
 
 /**
  * Upholds the spec rules about naming.
+ * @deprecated Please use `assertName` instead. Will be removed in v17
  */
+// istanbul ignore next (Deprecated code)
 export function assertValidName(name: string): string {
   const error = isValidNameError(name);
   if (error) {
@@ -16,7 +19,9 @@ export function assertValidName(name: string): string {
 
 /**
  * Returns an Error if a name is invalid.
+ * @deprecated Please use `assertName` instead. Will be removed in v17
  */
+// istanbul ignore next (Deprecated code)
 export function isValidNameError(name: string): GraphQLError | undefined {
   devAssert(typeof name === 'string', 'Expected name to be a string.');
 
@@ -26,21 +31,9 @@ export function isValidNameError(name: string): GraphQLError | undefined {
     );
   }
 
-  if (name.length === 0) {
-    return new GraphQLError('Expected name to be a non-empty string.');
-  }
-
-  for (let i = 1; i < name.length; ++i) {
-    if (!isNameContinue(name.charCodeAt(i))) {
-      return new GraphQLError(
-        `Names must only contain [_a-zA-Z0-9] but "${name}" does not.`,
-      );
-    }
-  }
-
-  if (!isNameStart(name.charCodeAt(0))) {
-    return new GraphQLError(
-      `Names must start with [_a-zA-Z] but "${name}" does not.`,
-    );
+  try {
+    assertName(name);
+  } catch (error) {
+    return error;
   }
 }

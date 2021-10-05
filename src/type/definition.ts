@@ -43,6 +43,7 @@ import type {
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 
 import type { GraphQLSchema } from './schema';
+import { assertName, assertEnumValueName } from './assertName';
 
 // Predicates & Assertions
 
@@ -595,7 +596,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
       config.parseValue ??
       (identityFunc as GraphQLScalarValueParser<TInternal>);
 
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.specifiedByURL = config.specifiedByURL;
     this.serialize =
@@ -607,8 +608,6 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-
-    devAssert(typeof config.name === 'string', 'Must provide name.');
 
     devAssert(
       config.specifiedByURL == null ||
@@ -763,7 +762,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
     this.extensions = toObjMap(config.extensions);
@@ -772,7 +771,6 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
 
     this._fields = () => defineFieldMap(config);
     this._interfaces = () => defineInterfaces(config);
-    devAssert(typeof config.name === 'string', 'Must provide name.');
     devAssert(
       config.isTypeOf == null || typeof config.isTypeOf === 'function',
       `${this.name} must provide "isTypeOf" as a function, ` +
@@ -863,7 +861,7 @@ function defineFieldMap<TSource, TContext>(
     );
 
     return {
-      name: fieldName,
+      name: assertName(fieldName),
       description: fieldConfig.description,
       type: fieldConfig.type,
       args: defineArguments(argsConfig),
@@ -880,7 +878,7 @@ export function defineArguments(
   config: GraphQLFieldConfigArgumentMap,
 ): ReadonlyArray<GraphQLArgument> {
   return Object.entries(config).map(([argName, argConfig]) => ({
-    name: argName,
+    name: assertName(argName),
     description: argConfig.description,
     type: argConfig.type,
     defaultValue: argConfig.defaultValue,
@@ -1129,7 +1127,7 @@ export class GraphQLInterfaceType {
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMap(config.extensions);
@@ -1138,7 +1136,6 @@ export class GraphQLInterfaceType {
 
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
-    devAssert(typeof config.name === 'string', 'Must provide name.');
     devAssert(
       config.resolveType == null || typeof config.resolveType === 'function',
       `${this.name} must provide "resolveType" as a function, ` +
@@ -1258,7 +1255,7 @@ export class GraphQLUnionType {
   private _types: ThunkReadonlyArray<GraphQLObjectType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMap(config.extensions);
@@ -1266,7 +1263,6 @@ export class GraphQLUnionType {
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
     this._types = defineTypes.bind(undefined, config);
-    devAssert(typeof config.name === 'string', 'Must provide name.');
     devAssert(
       config.resolveType == null || typeof config.resolveType === 'function',
       `${this.name} must provide "resolveType" as a function, ` +
@@ -1387,7 +1383,7 @@ export class GraphQLEnumType /* <T> */ {
   private _nameLookup: ObjMap<GraphQLEnumValue>;
 
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
@@ -1398,8 +1394,6 @@ export class GraphQLEnumType /* <T> */ {
       this._values.map((enumValue) => [enumValue.value, enumValue]),
     );
     this._nameLookup = keyMap(this._values, (value) => value.name);
-
-    devAssert(typeof config.name === 'string', 'Must provide name.');
   }
 
   getValues(): ReadonlyArray<GraphQLEnumValue /* <T> */> {
@@ -1526,7 +1520,7 @@ function defineEnumValues(
         `representing an internal value but got: ${inspect(valueConfig)}.`,
     );
     return {
-      name: valueName,
+      name: assertEnumValueName(valueName),
       description: valueConfig.description,
       value: valueConfig.value !== undefined ? valueConfig.value : valueName,
       deprecationReason: valueConfig.deprecationReason,
@@ -1627,14 +1621,13 @@ export class GraphQLInputObjectType {
   private _fields: ThunkObjMap<GraphQLInputField>;
 
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
     this._fields = defineInputFieldMap.bind(undefined, config);
-    devAssert(typeof config.name === 'string', 'Must provide name.');
   }
 
   getFields(): GraphQLInputFieldMap {
@@ -1692,7 +1685,7 @@ function defineInputFieldMap(
     );
 
     return {
-      name: fieldName,
+      name: assertName(fieldName),
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,

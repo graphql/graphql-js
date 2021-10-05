@@ -18,7 +18,6 @@ import type {
   GraphQLFieldConfig,
   GraphQLArgumentConfig,
   GraphQLInputFieldConfig,
-  GraphQLEnumValueConfigMap,
 } from '../definition';
 import { GraphQLSchema } from '../schema';
 import { GraphQLString } from '../scalars';
@@ -487,13 +486,15 @@ describe('Type System: Objects must have fields', () => {
     const schema = schemaWithFieldType(
       new GraphQLObjectType({
         name: 'SomeObject',
-        fields: { 'bad-name-with-dashes': { type: GraphQLString } },
+        fields: {
+          __badName: { type: GraphQLString },
+        },
       }),
     );
     expectJSON(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Names must only contain [_a-zA-Z0-9] but "bad-name-with-dashes" does not.',
+          'Name "__badName" must not begin with "__", which is reserved by GraphQL introspection.',
       },
     ]);
   });
@@ -525,7 +526,7 @@ describe('Type System: Fields args must be properly named', () => {
           badField: {
             type: GraphQLString,
             args: {
-              'bad-name-with-dashes': { type: GraphQLString },
+              __badName: { type: GraphQLString },
             },
           },
         },
@@ -535,7 +536,7 @@ describe('Type System: Fields args must be properly named', () => {
     expectJSON(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Names must only contain [_a-zA-Z0-9] but "bad-name-with-dashes" does not.',
+          'Name "__badName" must not begin with "__", which is reserved by GraphQL introspection.',
       },
     ]);
   });
@@ -956,50 +957,20 @@ describe('Type System: Enum types must be well defined', () => {
   });
 
   it('rejects an Enum type with incorrectly named values', () => {
-    function schemaWithEnum(values: GraphQLEnumValueConfigMap): GraphQLSchema {
-      return schemaWithFieldType(
-        new GraphQLEnumType({
-          name: 'SomeEnum',
-          values,
-        }),
-      );
-    }
+    const schema = schemaWithFieldType(
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          __badName: {},
+        },
+      }),
+    );
 
-    const schema1 = schemaWithEnum({ '#value': {} });
-    expectJSON(validateSchema(schema1)).to.deep.equal([
-      {
-        message: 'Names must start with [_a-zA-Z] but "#value" does not.',
-      },
-    ]);
-
-    const schema2 = schemaWithEnum({ '1value': {} });
-    expectJSON(validateSchema(schema2)).to.deep.equal([
-      {
-        message: 'Names must start with [_a-zA-Z] but "1value" does not.',
-      },
-    ]);
-
-    const schema3 = schemaWithEnum({ 'KEBAB-CASE': {} });
-    expectJSON(validateSchema(schema3)).to.deep.equal([
+    expectJSON(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Names must only contain [_a-zA-Z0-9] but "KEBAB-CASE" does not.',
+          'Name "__badName" must not begin with "__", which is reserved by GraphQL introspection.',
       },
-    ]);
-
-    const schema4 = schemaWithEnum({ true: {} });
-    expectJSON(validateSchema(schema4)).to.deep.equal([
-      { message: 'Enum type SomeEnum cannot include value: true.' },
-    ]);
-
-    const schema5 = schemaWithEnum({ false: {} });
-    expectJSON(validateSchema(schema5)).to.deep.equal([
-      { message: 'Enum type SomeEnum cannot include value: false.' },
-    ]);
-
-    const schema6 = schemaWithEnum({ null: {} });
-    expectJSON(validateSchema(schema6)).to.deep.equal([
-      { message: 'Enum type SomeEnum cannot include value: null.' },
     ]);
   });
 });

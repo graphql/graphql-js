@@ -126,6 +126,9 @@ export {
   /** Validate GraphQL schema. */
   validateSchema,
   assertValidSchema,
+  /** Upholds the spec rules about naming. */
+  assertName,
+  assertEnumValueName,
 } from './type/index';
 
 export type {
