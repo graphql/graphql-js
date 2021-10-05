@@ -14,6 +14,8 @@ var _tokenKind = require('./tokenKind.js');
 
 var _blockString = require('./blockString.js');
 
+var _characterClasses = require('./characterClasses.js');
+
 /**
  * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
@@ -425,11 +427,11 @@ function readNextToken(lexer, start) {
         return readString(lexer, position);
     } // IntValue | FloatValue (Digit | -)
 
-    if (isDigit(code) || code === 0x002d) {
+    if ((0, _characterClasses.isDigit)(code) || code === 0x002d) {
       return readNumber(lexer, position, code);
     } // Name
 
-    if (isNameStart(code)) {
+    if ((0, _characterClasses.isNameStart)(code)) {
       return readName(lexer, position);
     }
 
@@ -528,7 +530,7 @@ function readNumber(lexer, start, firstCode) {
   if (code === 0x0030) {
     code = body.charCodeAt(++position);
 
-    if (isDigit(code)) {
+    if ((0, _characterClasses.isDigit)(code)) {
       throw (0, _syntaxError.syntaxError)(
         lexer.source,
         position,
@@ -562,7 +564,7 @@ function readNumber(lexer, start, firstCode) {
     code = body.charCodeAt(position);
   } // Numbers cannot be followed by . or NameStart
 
-  if (code === 0x002e || isNameStart(code)) {
+  if (code === 0x002e || (0, _characterClasses.isNameStart)(code)) {
     throw (0, _syntaxError.syntaxError)(
       lexer.source,
       position,
@@ -586,7 +588,7 @@ function readNumber(lexer, start, firstCode) {
  */
 
 function readDigits(lexer, start, firstCode) {
-  if (!isDigit(firstCode)) {
+  if (!(0, _characterClasses.isDigit)(firstCode)) {
     throw (0, _syntaxError.syntaxError)(
       lexer.source,
       start,
@@ -600,7 +602,7 @@ function readDigits(lexer, start, firstCode) {
   const body = lexer.source.body;
   let position = start + 1; // +1 to skip first firstCode
 
-  while (isDigit(body.charCodeAt(position))) {
+  while ((0, _characterClasses.isDigit)(body.charCodeAt(position))) {
     ++position;
   }
 
@@ -987,15 +989,6 @@ function readBlockString(lexer, start) {
  * ```
  * Name ::
  *   - NameStart NameContinue* [lookahead != NameContinue]
- *
- * NameStart ::
- *   - Letter
- *   - `_`
- *
- * NameContinue ::
- *   - Letter
- *   - Digit
- *   - `_`
  * ```
  */
 
@@ -1005,9 +998,9 @@ function readName(lexer, start) {
   let position = start + 1;
 
   while (position < bodyLength) {
-    const code = body.charCodeAt(position); // NameContinue
+    const code = body.charCodeAt(position);
 
-    if (isLetter(code) || isDigit(code) || code === 0x005f) {
+    if ((0, _characterClasses.isNameContinue)(code)) {
       ++position;
     } else {
       break;
@@ -1020,34 +1013,5 @@ function readName(lexer, start) {
     start,
     position,
     body.slice(start, position),
-  );
-}
-
-function isNameStart(code) {
-  return isLetter(code) || code === 0x005f;
-}
-/**
- * ```
- * Digit :: one of
- *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
- * ```
- */
-
-function isDigit(code) {
-  return code >= 0x0030 && code <= 0x0039;
-}
-/**
- * ```
- * Letter :: one of
- *   - `A` `B` `C` `D` `E` `F` `G` `H` `I` `J` `K` `L` `M`
- *   - `N` `O` `P` `Q` `R` `S` `T` `U` `V` `W` `X` `Y` `Z`
- *   - `a` `b` `c` `d` `e` `f` `g` `h` `i` `j` `k` `l` `m`
- *   - `n` `o` `p` `q` `r` `s` `t` `u` `v` `w` `x` `y` `z`
- * ```
- */
-
-function isLetter(code) {
-  return (
-    (code >= 0x0061 && code <= 0x007a) || (code >= 0x0041 && code <= 0x005a) // a-z
   );
 }
