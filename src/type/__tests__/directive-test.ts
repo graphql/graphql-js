@@ -84,11 +84,10 @@ describe('Type System: Directive', () => {
     );
   });
 
-  it('rejects an unnamed directive', () => {
-    // @ts-expect-error
-    expect(() => new GraphQLDirective({ locations: ['QUERY'] })).to.throw(
-      'Directive must be named.',
-    );
+  it('rejects a directive with invalid name', () => {
+    expect(
+      () => new GraphQLDirective({ name: 'bad-name', locations: ['QUERY'] }),
+    ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
   it('rejects a directive with incorrectly typed args', () => {
@@ -101,6 +100,19 @@ describe('Type System: Directive', () => {
           args: [],
         }),
     ).to.throw('@Foo args must be an object with argument names as keys.');
+  });
+
+  it('rejects a directive with incorrectly named arg', () => {
+    expect(
+      () =>
+        new GraphQLDirective({
+          name: 'Foo',
+          locations: ['QUERY'],
+          args: {
+            'bad-name': { type: GraphQLString },
+          },
+        }),
+    ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
   it('rejects a directive with undefined locations', () => {
