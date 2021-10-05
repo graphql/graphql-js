@@ -83,6 +83,8 @@ var _printer = require('../language/printer.js');
 
 var _valueFromASTUntyped = require('../utilities/valueFromASTUntyped.js');
 
+var _assertName = require('./assertName.js');
+
 function isType(type) {
   return (
     isScalarType(type) ||
@@ -546,7 +548,7 @@ class GraphQLScalarType {
       _config$parseValue !== void 0
         ? _config$parseValue
         : _identityFunc.identityFunc;
-    this.name = config.name;
+    this.name = (0, _assertName.assertName)(config.name);
     this.description = config.description;
     this.specifiedByURL = config.specifiedByURL;
     this.serialize =
@@ -570,8 +572,6 @@ class GraphQLScalarType {
       _config$extensionASTN !== void 0
         ? _config$extensionASTN
         : [];
-    typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(false, 'Must provide name.');
     config.specifiedByURL == null ||
       typeof config.specifiedByURL === 'string' ||
       (0, _devAssert.devAssert)(
@@ -669,7 +669,7 @@ class GraphQLObjectType {
   constructor(config) {
     var _config$extensionASTN2;
 
-    this.name = config.name;
+    this.name = (0, _assertName.assertName)(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
     this.extensions = (0, _toObjMap.toObjMap)(config.extensions);
@@ -684,8 +684,6 @@ class GraphQLObjectType {
 
     this._interfaces = () => defineInterfaces(config);
 
-    typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(false, 'Must provide name.');
     config.isTypeOf == null ||
       typeof config.isTypeOf === 'function' ||
       (0, _devAssert.devAssert)(
@@ -789,7 +787,7 @@ function defineFieldMap(config) {
         `${config.name}.${fieldName} args must be an object with argument names as keys.`,
       );
     return {
-      name: fieldName,
+      name: (0, _assertName.assertName)(fieldName),
       description: fieldConfig.description,
       type: fieldConfig.type,
       args: defineArguments(argsConfig),
@@ -804,7 +802,7 @@ function defineFieldMap(config) {
 
 function defineArguments(config) {
   return Object.entries(config).map(([argName, argConfig]) => ({
-    name: argName,
+    name: (0, _assertName.assertName)(argName),
     description: argConfig.description,
     type: argConfig.type,
     defaultValue: argConfig.defaultValue,
@@ -876,7 +874,7 @@ class GraphQLInterfaceType {
   constructor(config) {
     var _config$extensionASTN3;
 
-    this.name = config.name;
+    this.name = (0, _assertName.assertName)(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = (0, _toObjMap.toObjMap)(config.extensions);
@@ -888,8 +886,6 @@ class GraphQLInterfaceType {
         : [];
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
-    typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(false, 'Must provide name.');
     config.resolveType == null ||
       typeof config.resolveType === 'function' ||
       (0, _devAssert.devAssert)(
@@ -971,7 +967,7 @@ class GraphQLUnionType {
   constructor(config) {
     var _config$extensionASTN4;
 
-    this.name = config.name;
+    this.name = (0, _assertName.assertName)(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = (0, _toObjMap.toObjMap)(config.extensions);
@@ -982,8 +978,6 @@ class GraphQLUnionType {
         ? _config$extensionASTN4
         : [];
     this._types = defineTypes.bind(undefined, config);
-    typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(false, 'Must provide name.');
     config.resolveType == null ||
       typeof config.resolveType === 'function' ||
       (0, _devAssert.devAssert)(
@@ -1066,7 +1060,7 @@ class GraphQLEnumType {
   constructor(config) {
     var _config$extensionASTN5;
 
-    this.name = config.name;
+    this.name = (0, _assertName.assertName)(config.name);
     this.description = config.description;
     this.extensions = (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
@@ -1080,8 +1074,6 @@ class GraphQLEnumType {
       this._values.map((enumValue) => [enumValue.value, enumValue]),
     );
     this._nameLookup = (0, _keyMap.keyMap)(this._values, (value) => value.name);
-    typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(false, 'Must provide name.');
   }
 
   getValues() {
@@ -1216,7 +1208,7 @@ function defineEnumValues(typeName, valueMap) {
           )}.`,
       );
     return {
-      name: valueName,
+      name: (0, _assertName.assertEnumValueName)(valueName),
       description: valueConfig.description,
       value: valueConfig.value !== undefined ? valueConfig.value : valueName,
       deprecationReason: valueConfig.deprecationReason,
@@ -1251,7 +1243,7 @@ class GraphQLInputObjectType {
   constructor(config) {
     var _config$extensionASTN6;
 
-    this.name = config.name;
+    this.name = (0, _assertName.assertName)(config.name);
     this.description = config.description;
     this.extensions = (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
@@ -1261,8 +1253,6 @@ class GraphQLInputObjectType {
         ? _config$extensionASTN6
         : [];
     this._fields = defineInputFieldMap.bind(undefined, config);
-    typeof config.name === 'string' ||
-      (0, _devAssert.devAssert)(false, 'Must provide name.');
   }
 
   getFields() {
@@ -1321,7 +1311,7 @@ function defineInputFieldMap(config) {
         `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
       );
     return {
-      name: fieldName,
+      name: (0, _assertName.assertName)(fieldName),
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,

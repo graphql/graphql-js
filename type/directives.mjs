@@ -4,6 +4,7 @@ import { devAssert } from '../jsutils/devAssert.mjs';
 import { instanceOf } from '../jsutils/instanceOf.mjs';
 import { isObjectLike } from '../jsutils/isObjectLike.mjs';
 import { DirectiveLocation } from '../language/directiveLocation.mjs';
+import { assertName } from './assertName.mjs';
 import { GraphQLString, GraphQLBoolean } from './scalars.mjs';
 import {
   defineArguments,
@@ -44,7 +45,7 @@ export class GraphQLDirective {
   constructor(config) {
     var _config$isRepeatable, _config$args;
 
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable =
@@ -54,7 +55,6 @@ export class GraphQLDirective {
         : false;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
-    config.name || devAssert(false, 'Directive must be named.');
     Array.isArray(config.locations) ||
       devAssert(false, `@${config.name} locations must be an Array.`);
     const args =

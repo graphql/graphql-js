@@ -27,6 +27,8 @@ var _isObjectLike = require('../jsutils/isObjectLike.js');
 
 var _directiveLocation = require('../language/directiveLocation.js');
 
+var _assertName = require('./assertName.js');
+
 var _scalars = require('./scalars.js');
 
 var _definition = require('./definition.js');
@@ -65,7 +67,7 @@ class GraphQLDirective {
   constructor(config) {
     var _config$isRepeatable, _config$args;
 
-    this.name = config.name;
+    this.name = (0, _assertName.assertName)(config.name);
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable =
@@ -75,7 +77,6 @@ class GraphQLDirective {
         : false;
     this.extensions = (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
-    config.name || (0, _devAssert.devAssert)(false, 'Directive must be named.');
     Array.isArray(config.locations) ||
       (0, _devAssert.devAssert)(
         false,

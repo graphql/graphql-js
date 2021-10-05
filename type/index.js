@@ -495,6 +495,18 @@ Object.defineProperty(exports, 'assertValidSchema', {
     return _validate.assertValidSchema;
   },
 });
+Object.defineProperty(exports, 'assertName', {
+  enumerable: true,
+  get: function () {
+    return _assertName.assertName;
+  },
+});
+Object.defineProperty(exports, 'assertEnumValueName', {
+  enumerable: true,
+  get: function () {
+    return _assertName.assertEnumValueName;
+  },
+});
 
 var _schema = require('./schema.js');
 
@@ -507,3 +519,5 @@ var _scalars = require('./scalars.js');
 var _introspection = require('./introspection.js');
 
 var _validate = require('./validate.js');
+
+var _assertName = require('./assertName.js');

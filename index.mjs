@@ -125,6 +125,9 @@ export {
   /** Validate GraphQL schema. */
   validateSchema,
   assertValidSchema,
+  /** Upholds the spec rules about naming. */
+  assertName,
+  assertEnumValueName,
 } from './type/index.mjs';
 
 /** Parse and operate on GraphQL language source files. */

@@ -10,10 +10,6 @@ var _inspect = require('../jsutils/inspect.js');
 
 var _GraphQLError = require('../error/GraphQLError.js');
 
-var _locatedError = require('../error/locatedError.js');
-
-var _assertValidName = require('../utilities/assertValidName.js');
-
 var _typeComparators = require('../utilities/typeComparators.js');
 
 var _schema = require('./schema.js');
@@ -71,11 +67,7 @@ class SchemaValidationContext {
   reportError(message, nodes) {
     const _nodes = Array.isArray(nodes) ? nodes.filter(Boolean) : nodes;
 
-    this.addError(new _GraphQLError.GraphQLError(message, _nodes));
-  }
-
-  addError(error) {
-    this._errors.push(error);
+    this._errors.push(new _GraphQLError.GraphQLError(message, _nodes));
   }
 
   getErrors() {
@@ -205,10 +197,11 @@ function validateDirectives(context) {
 
 function validateName(context, node) {
   // Ensure names are valid, however introspection types opt out.
-  const error = (0, _assertValidName.isValidNameError)(node.name);
-
-  if (error) {
-    context.addError((0, _locatedError.locatedError)(error, node.astNode));
+  if (node.name.startsWith('__')) {
+    context.reportError(
+      `Name "${node.name}" must not begin with "__", which is reserved by GraphQL introspection.`,
+      node.astNode,
+    );
   }
 }
 
@@ -513,16 +506,8 @@ function validateEnumValues(context, enumType) {
   }
 
   for (const enumValue of enumValues) {
-    const valueName = enumValue.name; // Ensure valid name.
-
+    // Ensure valid name.
     validateName(context, enumValue);
-
-    if (valueName === 'true' || valueName === 'false' || valueName === 'null') {
-      context.reportError(
-        `Enum type ${enumType.name} cannot include value: ${valueName}.`,
-        enumValue.astNode,
-      );
-    }
   }
 }
 

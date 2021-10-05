@@ -112,3 +112,6 @@ export {
 /** Validate GraphQL schema. */
 
 export { validateSchema, assertValidSchema } from './validate.mjs';
+/** Upholds the spec rules about naming. */
+
+export { assertName, assertEnumValueName } from './assertName.mjs';

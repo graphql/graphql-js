@@ -10,11 +10,13 @@ var _devAssert = require('../jsutils/devAssert.js');
 
 var _GraphQLError = require('../error/GraphQLError.js');
 
-var _characterClasses = require('../language/characterClasses.js');
+var _assertName = require('../type/assertName.js');
 
 /**
  * Upholds the spec rules about naming.
+ * @deprecated Please use `assertName` instead. Will be removed in v17
  */
+// istanbul ignore next (Deprecated code)
 function assertValidName(name) {
   const error = isValidNameError(name);
 
@@ -26,7 +28,9 @@ function assertValidName(name) {
 }
 /**
  * Returns an Error if a name is invalid.
+ * @deprecated Please use `assertName` instead. Will be removed in v17
  */
+// istanbul ignore next (Deprecated code)
 
 function isValidNameError(name) {
   typeof name === 'string' ||
@@ -38,23 +42,9 @@ function isValidNameError(name) {
     );
   }
 
-  if (name.length === 0) {
-    return new _GraphQLError.GraphQLError(
-      'Expected name to be a non-empty string.',
-    );
-  }
-
-  for (let i = 1; i < name.length; ++i) {
-    if (!(0, _characterClasses.isNameContinue)(name.charCodeAt(i))) {
-      return new _GraphQLError.GraphQLError(
-        `Names must only contain [_a-zA-Z0-9] but "${name}" does not.`,
-      );
-    }
-  }
-
-  if (!(0, _characterClasses.isNameStart)(name.charCodeAt(0))) {
-    return new _GraphQLError.GraphQLError(
-      `Names must start with [_a-zA-Z] but "${name}" does not.`,
-    );
+  try {
+    (0, _assertName.assertName)(name);
+  } catch (error) {
+    return error;
   }
 }

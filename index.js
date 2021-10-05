@@ -519,6 +519,18 @@ Object.defineProperty(exports, 'assertValidSchema', {
     return _index.assertValidSchema;
   },
 });
+Object.defineProperty(exports, 'assertName', {
+  enumerable: true,
+  get: function () {
+    return _index.assertName;
+  },
+});
+Object.defineProperty(exports, 'assertEnumValueName', {
+  enumerable: true,
+  get: function () {
+    return _index.assertEnumValueName;
+  },
+});
 Object.defineProperty(exports, 'Token', {
   enumerable: true,
   get: function () {
