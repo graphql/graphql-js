@@ -5,6 +5,7 @@ import type { TokenKindEnum } from './tokenKind';
 import { Token } from './ast';
 import { TokenKind } from './tokenKind';
 import { dedentBlockStringValue } from './blockString';
+import { isDigit, isNameStart, isNameContinue } from './characterClasses';
 
 /**
  * Given a Source object, creates a Lexer for that source.
@@ -836,15 +837,6 @@ function readBlockString(lexer: Lexer, start: number): Token {
  * ```
  * Name ::
  *   - NameStart NameContinue* [lookahead != NameContinue]
- *
- * NameStart ::
- *   - Letter
- *   - `_`
- *
- * NameContinue ::
- *   - Letter
- *   - Digit
- *   - `_`
  * ```
  */
 function readName(lexer: Lexer, start: number): Token {
@@ -854,8 +846,7 @@ function readName(lexer: Lexer, start: number): Token {
 
   while (position < bodyLength) {
     const code = body.charCodeAt(position);
-    // NameContinue
-    if (isLetter(code) || isDigit(code) || code === 0x005f) {
+    if (isNameContinue(code)) {
       ++position;
     } else {
       break;
@@ -868,35 +859,5 @@ function readName(lexer: Lexer, start: number): Token {
     start,
     position,
     body.slice(start, position),
-  );
-}
-
-function isNameStart(code: number): boolean {
-  return isLetter(code) || code === 0x005f;
-}
-
-/**
- * ```
- * Digit :: one of
- *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
- * ```
- */
-function isDigit(code: number): boolean {
-  return code >= 0x0030 && code <= 0x0039;
-}
-
-/**
- * ```
- * Letter :: one of
- *   - `A` `B` `C` `D` `E` `F` `G` `H` `I` `J` `K` `L` `M`
- *   - `N` `O` `P` `Q` `R` `S` `T` `U` `V` `W` `X` `Y` `Z`
- *   - `a` `b` `c` `d` `e` `f` `g` `h` `i` `j` `k` `l` `m`
- *   - `n` `o` `p` `q` `r` `s` `t` `u` `v` `w` `x` `y` `z`
- * ```
- */
-function isLetter(code: number): boolean {
-  return (
-    (code >= 0x0061 && code <= 0x007a) || // A-Z
-    (code >= 0x0041 && code <= 0x005a) // a-z
   );
 }
