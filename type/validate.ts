@@ -1,7 +1,6 @@
 import { inspect } from '../jsutils/inspect.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
-import { locatedError } from '../error/locatedError.ts';
 import type {
   ASTNode,
   NamedTypeNode,
@@ -14,7 +13,6 @@ import type {
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
 } from '../language/ast.ts';
-import { isValidNameError } from '../utilities/assertValidName.ts';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.ts';
 import type { GraphQLSchema } from './schema.ts';
 import type {
@@ -99,11 +97,7 @@ class SchemaValidationContext {
       ? (nodes.filter(Boolean) as ReadonlyArray<ASTNode>)
       : (nodes as Maybe<ASTNode>);
 
-    this.addError(new GraphQLError(message, _nodes));
-  }
-
-  addError(error: GraphQLError): void {
-    this._errors.push(error);
+    this._errors.push(new GraphQLError(message, _nodes));
   }
 
   getErrors(): ReadonlyArray<GraphQLError> {
@@ -202,10 +196,11 @@ function validateName(
   },
 ): void {
   // Ensure names are valid, however introspection types opt out.
-  const error = isValidNameError(node.name);
-
-  if (error) {
-    context.addError(locatedError(error, node.astNode));
+  if (node.name.startsWith('__')) {
+    context.reportError(
+      `Name "${node.name}" must not begin with "__", which is reserved by GraphQL introspection.`,
+      node.astNode,
+    );
   }
 }
 
@@ -483,16 +478,8 @@ function validateEnumValues(
   }
 
   for (const enumValue of enumValues) {
-    const valueName = enumValue.name; // Ensure valid name.
-
+    // Ensure valid name.
     validateName(context, enumValue);
-
-    if (valueName === 'true' || valueName === 'false' || valueName === 'null') {
-      context.reportError(
-        `Enum type ${enumType.name} cannot include value: ${valueName}.`,
-        enumValue.astNode,
-      );
-    }
   }
 }
 

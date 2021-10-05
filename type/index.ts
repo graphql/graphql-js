@@ -170,3 +170,6 @@ export {
 /** Validate GraphQL schema. */
 
 export { validateSchema, assertValidSchema } from './validate.ts';
+/** Upholds the spec rules about naming. */
+
+export { assertName, assertEnumValueName } from './assertName.ts';

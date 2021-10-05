@@ -38,7 +38,8 @@ import type {
   InputObjectTypeExtensionNode,
 } from '../language/ast.ts';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.ts';
-import type { GraphQLSchema } from './schema.ts'; // Predicates & Assertions
+import type { GraphQLSchema } from './schema.ts';
+import { assertName, assertEnumValueName } from './assertName.ts'; // Predicates & Assertions
 
 /**
  * These are all of the possible kinds of types.
@@ -567,7 +568,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
     const parseValue =
       config.parseValue ??
       (identityFunc as GraphQLScalarValueParser<TInternal>);
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.specifiedByURL = config.specifiedByURL;
     this.serialize =
@@ -581,7 +582,6 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    typeof config.name === 'string' || devAssert(false, 'Must provide name.');
     config.specifiedByURL == null ||
       typeof config.specifiedByURL === 'string' ||
       devAssert(
@@ -735,7 +735,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
     this.extensions = toObjMap(config.extensions);
@@ -746,7 +746,6 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
 
     this._interfaces = () => defineInterfaces(config);
 
-    typeof config.name === 'string' || devAssert(false, 'Must provide name.');
     config.isTypeOf == null ||
       typeof config.isTypeOf === 'function' ||
       devAssert(
@@ -844,7 +843,7 @@ function defineFieldMap<TSource, TContext>(
         `${config.name}.${fieldName} args must be an object with argument names as keys.`,
       );
     return {
-      name: fieldName,
+      name: assertName(fieldName),
       description: fieldConfig.description,
       type: fieldConfig.type,
       args: defineArguments(argsConfig),
@@ -861,7 +860,7 @@ export function defineArguments(
   config: GraphQLFieldConfigArgumentMap,
 ): ReadonlyArray<GraphQLArgument> {
   return Object.entries(config).map(([argName, argConfig]) => ({
-    name: argName,
+    name: assertName(argName),
     description: argConfig.description,
     type: argConfig.type,
     defaultValue: argConfig.defaultValue,
@@ -1105,7 +1104,7 @@ export class GraphQLInterfaceType {
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMap(config.extensions);
@@ -1113,7 +1112,6 @@ export class GraphQLInterfaceType {
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
-    typeof config.name === 'string' || devAssert(false, 'Must provide name.');
     config.resolveType == null ||
       typeof config.resolveType === 'function' ||
       devAssert(
@@ -1235,14 +1233,13 @@ export class GraphQLUnionType {
   private _types: ThunkReadonlyArray<GraphQLObjectType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this._types = defineTypes.bind(undefined, config);
-    typeof config.name === 'string' || devAssert(false, 'Must provide name.');
     config.resolveType == null ||
       typeof config.resolveType === 'function' ||
       devAssert(
@@ -1375,7 +1372,7 @@ export class GraphQLEnumType {
     config: Readonly<GraphQLEnumTypeConfig>,
     /* <T> */
   ) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
@@ -1385,7 +1382,6 @@ export class GraphQLEnumType {
       this._values.map((enumValue) => [enumValue.value, enumValue]),
     );
     this._nameLookup = keyMap(this._values, (value) => value.name);
-    typeof config.name === 'string' || devAssert(false, 'Must provide name.');
   }
 
   getValues(): ReadonlyArray<GraphQLEnumValue> {
@@ -1526,7 +1522,7 @@ function defineEnumValues(
           `representing an internal value but got: ${inspect(valueConfig)}.`,
       );
     return {
-      name: valueName,
+      name: assertEnumValueName(valueName),
       description: valueConfig.description,
       value: valueConfig.value !== undefined ? valueConfig.value : valueName,
       deprecationReason: valueConfig.deprecationReason,
@@ -1627,13 +1623,12 @@ export class GraphQLInputObjectType {
   private _fields: ThunkObjMap<GraphQLInputField>;
 
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
-    this.name = config.name;
+    this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this._fields = defineInputFieldMap.bind(undefined, config);
-    typeof config.name === 'string' || devAssert(false, 'Must provide name.');
   }
 
   getFields(): GraphQLInputFieldMap {
@@ -1692,7 +1687,7 @@ function defineInputFieldMap(
         `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
       );
     return {
-      name: fieldName,
+      name: assertName(fieldName),
       description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
