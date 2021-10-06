@@ -14,8 +14,11 @@ import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
 import type { ExecutionContext } from '../execute';
-import { buildExecutionContext, createSourceEventStream } from '../execute';
-import { subscribe } from '../subscribe';
+import {
+  buildExecutionContext,
+  createSourceEventStream,
+  subscribe,
+} from '../execute';
 
 import { SimplePubSub } from './simplePubSub';
 
@@ -316,6 +319,9 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
+    // NOTE: in contrast to the below tests, executeRequest() will directly throw the
+    // error rather than return a promise that rejects.
+
     // @ts-expect-error (schema must not be null)
     (await expectPromise(subscribe({ schema: null, document }))).toRejectWith(
       'Expected null to be a GraphQL schema.',
@@ -371,6 +377,9 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
+    // NOTE: in contrast to the below test, executeRequest() will directly throw the
+    // error rather than return a promise that rejects.
+
     // @ts-expect-error
     (await expectPromise(subscribe({ schema, document: {} }))).toReject();
   });
@@ -391,7 +400,8 @@ describe('Subscription Initialization Phase', () => {
 
     const document = parse('subscription { foo }');
 
-    (await expectPromise(subscribe({ schema, document }))).toRejectWith(
+    const result = subscribe({ schema, document }) as Promise<unknown>;
+    (await expectPromise(result)).toRejectWith(
       'Subscription field must return Async Iterable. Received: "test".',
     );
   });
@@ -474,6 +484,9 @@ describe('Subscription Initialization Phase', () => {
 
     // If we receive variables that cannot be coerced correctly, subscribe() will
     // resolve to an ExecutionResult that contains an informative error description.
+
+    // NOTE: in contrast, executeRequest() will directly return the error as an
+    // ExecutionResult rather than a promise.
     const result = await subscribe({ schema, document, variableValues });
     expectJSON(result).to.deep.equal({
       errors: [

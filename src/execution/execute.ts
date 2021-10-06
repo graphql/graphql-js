@@ -153,23 +153,55 @@ export interface ExecutionArgs {
   contextValue?: unknown;
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
   operationName?: Maybe<string>;
+  disableSubscription?: Maybe<boolean>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>;
 }
+
+// Exported for backwards compatibility, see below.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface SubscriptionArgs extends ExecutionArgs {}
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
  *
+ * For queries and mutations:
  * Returns either a synchronous ExecutionResult (if all encountered resolvers
  * are synchronous), or a Promise of an ExecutionResult that will eventually be
  * resolved and never rejected.
  *
- * If the arguments to this function do not result in a legal execution context,
- * a GraphQLError will be thrown immediately explaining the invalid input.
+ * For subscriptions:
+ * Returns a Promise which resolves to either an AsyncIterator (if successful)
+ * or an ExecutionResult (error). The promise will be rejected if the resolved
+ * event stream is not an async iterable.
+ *
+ * If the source stream could not be created due to faulty subscription
+ * resolver logic or underlying systems, the promise will resolve to a single
+ * ExecutionResult containing `errors` and no `data`.
+ *
+ * If the operation succeeded, the promise resolves to an AsyncIterator, which
+ * yields a stream of ExecutionResults representing the response stream.
+ *
+ * For queries, mutations and subscriptions:
+ * If a valid execution context cannot be created due to incorrect arguments
+ * an ExecutionResult containing descriptive errors will be returned.
+ *
+ * NOTE: the below always async `subscribe` function will return a Promise
+ * that resolves to the ExecutionResult containing the errors, rather than the
+ * ExecutionResult itself.
+ *
+ * The `executeRequest` function, in contrast, aligns the return type in the
+ * case of incorrect arguments between all operation types. `executeRequest`
+ * always returns an ExecutionResult with the errors, even for subscriptions,
+ * rather than a promise that resolves to the ExecutionResult with the errors.
+ *
  */
-export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
+export function executeRequest(
+  args: ExecutionArgs,
+):
+  | ExecutionResult
+  | Promise<ExecutionResult | AsyncGenerator<ExecutionResult, void, void>> {
   const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
@@ -177,7 +209,36 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
+  if (
+    !args.disableSubscription &&
+    exeContext.operation.operation === 'subscription'
+  ) {
+    return executeSubscription(exeContext);
+  }
+
   return executeQueryOrMutation(exeContext);
+}
+
+/**
+ * Also implements the "Executing requests" section of the GraphQL specification.
+ * The `execute` function presumes the request contains a query or mutation
+ * and has a narrower return type than `executeRequest`.
+ *
+ * The below use of the new `disableSubscription` argument preserves the
+ * previous default behavior of executing documents containing subscription
+ * operations as queries.
+ *
+ * Note: In a future version the `execute` function may be entirely replaced
+ * with the `executeRequest` function, and the `executeRequest` function may
+ * be renamed to `execute`. The `disableSubscription` option may be replaced
+ * by an `operationType` option that changes that overrides the operation
+ * type stored within the document.
+ */
+export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  return executeRequest({
+    ...args,
+    disableSubscription: true,
+  }) as PromiseOrValue<ExecutionResult>;
 }
 
 /**
@@ -194,6 +255,22 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
   }
 
   return result;
+}
+
+/**
+ * Also implements the "Executing requests" section of the GraphQL specification.
+ * The `subscribe` function presumes the request contains a subscription
+ * and has a narrower return type than `executeRequest`.
+ *
+ * Note: In a future version the `subscribe` function may be entirely replaced
+ * with the `executeRequest` function as above.
+ */
+export async function subscribe(
+  args: SubscriptionArgs,
+): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+  return executeRequest(args) as Promise<
+    AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
+  >;
 }
 
 /**
@@ -250,23 +327,15 @@ export function assertValidExecutionArguments(
 
 /**
  * Constructs a ExecutionContext object from the arguments passed to
- * execute, which we will pass throughout the other execution methods.
+ * executeRequest, which we will pass throughout the other execution methods.
  *
  * Throws a GraphQLError if a valid execution context cannot be created.
  *
  * @internal
  */
-export function buildExecutionContext(args: {
-  schema: GraphQLSchema;
-  document: DocumentNode;
-  rootValue?: Maybe<unknown>;
-  contextValue?: Maybe<unknown>;
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
-  operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>;
-  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>;
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>;
-}): ReadonlyArray<GraphQLError> | ExecutionContext {
+export function buildExecutionContext(
+  args: ExecutionArgs,
+): ReadonlyArray<GraphQLError> | ExecutionContext {
   const {
     schema,
     document,
