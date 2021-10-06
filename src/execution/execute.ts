@@ -76,7 +76,7 @@ const collectSubfields = memoize3(
     _collectSubfields(
       exeContext.schema,
       exeContext.fragments,
-      exeContext.variableValues,
+      exeContext.coercedVariableValues,
       returnType,
       fieldNodes,
     ),
@@ -114,7 +114,7 @@ export interface ExecutionContext {
   rootValue: unknown;
   contextValue: unknown;
   operation: OperationDefinitionNode;
-  variableValues: { [variable: string]: unknown };
+  coercedVariableValues: { [variable: string]: unknown };
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: Maybe<GraphQLFieldResolver<any, any>>;
@@ -311,7 +311,7 @@ function buildResponse(
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
+  variableValues: Maybe<{ readonly [variable: string]: unknown }>,
 ): void {
   devAssert(document, 'Must provide document.');
 
@@ -320,7 +320,7 @@ export function assertValidExecutionArguments(
 
   // Variables, if provided, must be an object.
   devAssert(
-    rawVariableValues == null || isObjectLike(rawVariableValues),
+    variableValues == null || isObjectLike(variableValues),
     'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
   );
 }
@@ -341,14 +341,13 @@ export function buildExecutionContext(
     document,
     rootValue,
     contextValue,
-    variableValues: rawVariableValues,
+    variableValues,
     operationName,
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
   } = args;
-
-  assertValidExecutionArguments(schema, document, rawVariableValues);
+  assertValidExecutionArguments(schema, document, variableValues);
 
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -387,8 +386,10 @@ export function buildExecutionContext(
   const coercedVariableValues = getVariableValues(
     schema,
     variableDefinitions,
-    rawVariableValues ?? {},
-    { maxErrors: 50 },
+    variableValues ?? {},
+    {
+      maxErrors: 50,
+    },
   );
 
   if (coercedVariableValues.errors) {
@@ -401,7 +402,7 @@ export function buildExecutionContext(
     rootValue,
     contextValue,
     operation,
-    variableValues: coercedVariableValues.coerced,
+    coercedVariableValues: coercedVariableValues.coerced,
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver,
@@ -421,13 +422,13 @@ export function buildExecutionContext(
 function executeQueryOrMutationRootFields(
   exeContext: ExecutionContext,
 ): PromiseOrValue<ObjMap<unknown> | null> {
-  const { schema, fragments, rootValue, operation, variableValues } =
+  const { schema, fragments, rootValue, operation, coercedVariableValues } =
     exeContext;
   const type = getOperationRootType(schema, operation);
   const fields = collectFields(
     schema,
     fragments,
-    variableValues,
+    coercedVariableValues,
     type,
     operation.selectionSet,
   );
@@ -573,7 +574,7 @@ function executeField(
     const args = getArgumentValues(
       fieldDef,
       fieldNodes[0],
-      exeContext.variableValues,
+      exeContext.coercedVariableValues,
     );
 
     // The resolve function's optional third argument is a context value that
@@ -622,7 +623,7 @@ export function buildResolveInfo(
   parentType: GraphQLObjectType,
   path: Path,
 ): GraphQLResolveInfo {
-  const { schema, fragments, rootValue, operation, variableValues } =
+  const { schema, fragments, rootValue, operation, coercedVariableValues } =
     exeContext;
 
   // The resolve function's optional fourth argument is a collection of
@@ -637,7 +638,7 @@ export function buildResolveInfo(
     fragments,
     rootValue,
     operation,
-    variableValues,
+    variableValues: coercedVariableValues,
   };
 }
 
@@ -1203,13 +1204,13 @@ export async function createSourceEventStream(
 async function executeSubscriptionRootField(
   exeContext: ExecutionContext,
 ): Promise<unknown> {
-  const { schema, fragments, operation, variableValues, rootValue } =
+  const { schema, fragments, operation, coercedVariableValues, rootValue } =
     exeContext;
   const type = getOperationRootType(schema, operation);
   const fields = collectFields(
     schema,
     fragments,
-    variableValues,
+    coercedVariableValues,
     type,
     operation.selectionSet,
   );
@@ -1236,7 +1237,11 @@ async function executeSubscriptionRootField(
 
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
-    const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues);
+    const args = getArgumentValues(
+      fieldDef,
+      fieldNodes[0],
+      coercedVariableValues,
+    );
 
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
