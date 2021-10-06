@@ -1,25 +1,15 @@
 import { GraphQLString, GraphQLObjectType } from 'graphql/type';
 
 interface SomeExtension {
-  number: number;
-  string: string;
+  meaningOfLife: 42;
 }
 
-const example: SomeExtension = {
-  number: 42,
-  string: 'Meaning of life',
-};
-
 declare module 'graphql' {
-  interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
+  interface GraphQLObjectTypeExtensions<_TSource, _TContext> {
     someObjectExtension?: SomeExtension;
   }
 
-  interface GraphQLFieldExtensions<
-    _TSource,
-    _TContext,
-    _TArgs = { [argName: string]: any },
-  > {
+  interface GraphQLFieldExtensions<_TSource, _TContext, _TArgs> {
     someFieldExtension?: SomeExtension;
   }
 
@@ -37,18 +27,18 @@ const queryType: GraphQLObjectType = new GraphQLObjectType({
         who: {
           type: GraphQLString,
           extensions: {
-            someArgumentExtension: example,
+            someArgumentExtension: { meaningOfLife: 42 },
           },
         },
       },
       resolve: (_root, args) => 'Hello ' + (args.who || 'World'),
       extensions: {
-        someFieldExtension: example,
+        someFieldExtension: { meaningOfLife: 42 },
       },
     },
   }),
   extensions: {
-    someObjectExtension: example,
+    someObjectExtension: { meaningOfLife: 42 },
   },
 });
 
