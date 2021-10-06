@@ -368,7 +368,7 @@ function executeOperation(
     if (isPromise(result)) {
       return result.then(undefined, (error) => {
         exeContext.errors.push(error);
-        return Promise.resolve(null);
+        return null;
       });
     }
     return result;
