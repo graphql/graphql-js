@@ -102,6 +102,18 @@ const collectSubfields = memoize3(
  * 3) inline fragment "spreads" e.g. `...on Type { a }`
  */
 
+type NormalizedExecutableDocument =
+  | {
+      errors: ReadonlyArray<GraphQLError>;
+      operation?: never;
+      fragments?: never;
+    }
+  | {
+      operation: OperationDefinitionNode;
+      fragments: ObjMap<FragmentDefinitionNode>;
+      errors?: never;
+    };
+
 /**
  * Data that must be available at all points during query execution.
  *
@@ -197,22 +209,59 @@ export interface SubscriptionArgs extends ExecutionArgs {}
  * rather than a promise that resolves to the ExecutionResult with the errors.
  *
  */
-export function executeRequest(
-  args: ExecutionArgs,
-):
+export function executeRequest({
+  schema,
+  document,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  disableSubscription,
+  fieldResolver,
+  typeResolver,
+  subscribeFieldResolver,
+}: ExecutionArgs):
   | ExecutionResult
   | Promise<ExecutionResult | AsyncGenerator<ExecutionResult, void, void>> {
-  const exeContext = buildExecutionContext(args);
+  // If arguments are missing or incorrect, throw an error.
+  assertValidExecutionArguments(schema, document, variableValues);
 
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
+  // If an error is encountered while selecting an operation, return it.
+  const normalizedExecutableDocument = getNormalizedExecutableDefinitions(
+    document,
+    operationName,
+  );
+  if (normalizedExecutableDocument.errors) {
+    return { errors: normalizedExecutableDocument.errors };
   }
 
-  if (
-    !args.disableSubscription &&
-    exeContext.operation.operation === 'subscription'
-  ) {
+  const { operation, fragments } = normalizedExecutableDocument;
+
+  // If errors are encountered while coercing variable values, return them.
+  const coercedVariableValues = getCoercedVariableValues(
+    schema,
+    operation,
+    variableValues,
+  );
+  if (coercedVariableValues.errors) {
+    return { errors: coercedVariableValues.errors };
+  }
+
+  // Set up the execution context
+  const exeContext = {
+    schema,
+    fragments,
+    rootValue,
+    contextValue,
+    operation,
+    coercedVariableValues: coercedVariableValues.coerced,
+    fieldResolver: fieldResolver ?? defaultFieldResolver,
+    typeResolver: typeResolver ?? defaultTypeResolver,
+    subscribeFieldResolver,
+    errors: [],
+  };
+
+  if (!disableSubscription && operation.operation === 'subscription') {
     return executeSubscription(exeContext);
   }
 
@@ -326,29 +375,17 @@ export function assertValidExecutionArguments(
 }
 
 /**
- * Constructs a ExecutionContext object from the arguments passed to
- * executeRequest, which we will pass throughout the other execution methods.
+ * Normalizes executable definitions within a document based on the given
+ * operation name.
  *
- * Throws a GraphQLError if a valid execution context cannot be created.
+ * Returns a GraphQLError if a single matching operation cannot be found.
  *
  * @internal
  */
-export function buildExecutionContext(
-  args: ExecutionArgs,
-): ReadonlyArray<GraphQLError> | ExecutionContext {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-    subscribeFieldResolver,
-  } = args;
-  assertValidExecutionArguments(schema, document, variableValues);
-
+export function getNormalizedExecutableDefinitions(
+  document: DocumentNode,
+  operationName?: Maybe<string>,
+): NormalizedExecutableDocument {
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {
@@ -356,11 +393,13 @@ export function buildExecutionContext(
       case Kind.OPERATION_DEFINITION:
         if (operationName == null) {
           if (operation !== undefined) {
-            return [
-              new GraphQLError(
-                'Must provide operation name if query contains multiple operations.',
-              ),
-            ];
+            return {
+              errors: [
+                new GraphQLError(
+                  'Must provide operation name if query contains multiple operations.',
+                ),
+              ],
+            };
           }
           operation = definition;
         } else if (definition.name?.value === operationName) {
@@ -375,26 +414,63 @@ export function buildExecutionContext(
 
   if (!operation) {
     if (operationName != null) {
-      return [new GraphQLError(`Unknown operation named "${operationName}".`)];
+      return {
+        errors: [
+          new GraphQLError(`Unknown operation named "${operationName}".`),
+        ],
+      };
     }
-    return [new GraphQLError('Must provide an operation.')];
+    return { errors: [new GraphQLError('Must provide an operation.')] };
   }
 
+  return {
+    operation,
+    fragments,
+  };
+}
+
+/**
+ * Gets coerced variable values based on a given schema and operation.
+ *
+ * A thin wrapper around getVariableValues.
+ *
+ * @internal
+ */
+function getCoercedVariableValues(
+  schema: GraphQLSchema,
+  operation: OperationDefinitionNode,
+  variableValues: Maybe<{ readonly [variable: string]: unknown }>,
+) {
   // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   const variableDefinitions = operation.variableDefinitions ?? [];
 
-  const coercedVariableValues = getVariableValues(
-    schema,
-    variableDefinitions,
-    variableValues ?? {},
-    {
-      maxErrors: 50,
-    },
-  );
+  return getVariableValues(schema, variableDefinitions, variableValues ?? {}, {
+    maxErrors: 50,
+  });
+}
 
-  if (coercedVariableValues.errors) {
-    return coercedVariableValues.errors;
-  }
+/**
+ * Constructs a ExecutionContext object from the arguments passed to
+ * executeRequest, the normalized executable definitions, and the coerced
+ * variable values. The ExecutionContext will be passed throughout the
+ * other execution methods.
+ *
+ * @internal
+ */
+export function buildExecutionContext(
+  args: ExecutionArgs,
+  operation: OperationDefinitionNode,
+  fragments: ObjMap<FragmentDefinitionNode>,
+  coercedVariableValues: { [variable: string]: unknown },
+): ExecutionContext {
+  const {
+    schema,
+    rootValue,
+    contextValue,
+    fieldResolver,
+    typeResolver,
+    subscribeFieldResolver,
+  } = args;
 
   return {
     schema,
@@ -402,7 +478,7 @@ export function buildExecutionContext(
     rootValue,
     contextValue,
     operation,
-    coercedVariableValues: coercedVariableValues.coerced,
+    coercedVariableValues,
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver,

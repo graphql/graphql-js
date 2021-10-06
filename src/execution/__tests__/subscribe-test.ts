@@ -4,19 +4,24 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../__testUtils__/expectJSON';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
+import type { ObjMap } from '../../jsutils/ObjMap';
 import { invariant } from '../../jsutils/invariant';
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 
+import type {
+  FragmentDefinitionNode,
+  OperationDefinitionNode,
+} from '../../language/ast';
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
 import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
-import type { ExecutionContext } from '../execute';
 import {
   buildExecutionContext,
   createSourceEventStream,
+  getNormalizedExecutableDefinitions,
   subscribe,
 } from '../execute';
 
@@ -420,10 +425,14 @@ describe('Subscription Initialization Phase', () => {
       const document = parse('subscription { foo }');
       const result = await subscribe({ schema, document });
 
-      const exeContext = buildExecutionContext({
-        schema,
-        document,
-      }) as ExecutionContext;
+      const { operation, fragments } =
+        getNormalizedExecutableDefinitions(document);
+      const exeContext = buildExecutionContext(
+        { schema, document },
+        operation as OperationDefinitionNode,
+        fragments as ObjMap<FragmentDefinitionNode>,
+        {},
+      );
       expect(await createSourceEventStream(exeContext)).to.deep.equal(result);
       return result;
     }
