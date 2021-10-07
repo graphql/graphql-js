@@ -196,15 +196,8 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
-  // Return a Promise that will eventually resolve to the data described by
-  // The "Response" section of the GraphQL specification.
-  //
-  // If errors are encountered while executing a GraphQL field, only that
-  // field and its descendants will be omitted, and sibling fields will still
-  // be executed. An execution which encounters errors will still result in a
-  // resolved Promise.
-  const data = executeOperation(exeContext, exeContext.operation, rootValue);
-  return buildResponse(exeContext, data);
+  // Execute the operation.
+  return executeQueryOrMutation(exeContext);
 }
 
 /**
@@ -221,6 +214,24 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
   }
 
   return result;
+}
+
+/**
+ * Implements the "Executing operations" section of the spec for queries and mutations.
+ *
+ * Return data or a Promise that will eventually resolve to the data described by
+ * The "Response" section of the GraphQL specification.
+ *
+ * If errors are encountered while executing a GraphQL field, only that
+ * field and its descendants will be omitted, and sibling fields will still
+ * be executed. An execution which encounters errors will still result in
+ * resolved data.
+ */
+function executeQueryOrMutation(
+  exeContext: ExecutionContext,
+): PromiseOrValue<ExecutionResult> {
+  const data = executeQueryOrMutationRootFields(exeContext);
+  return buildResponse(exeContext, data);
 }
 
 /**
@@ -339,14 +350,13 @@ export function buildExecutionContext(
 }
 
 /**
- * Implements the "Executing operations" section of the spec.
+ * Executes the root fields specified by query or mutation operation.
  */
-function executeOperation(
+function executeQueryOrMutationRootFields(
   exeContext: ExecutionContext,
-  operation: OperationDefinitionNode,
-  rootValue: unknown,
 ): PromiseOrValue<ObjMap<unknown> | null> {
-  const type = getOperationRootType(exeContext.schema, operation);
+  const { schema, operation, rootValue } = exeContext;
+  const type = getOperationRootType(schema, operation);
   const fields = collectFields(
     exeContext.schema,
     exeContext.fragments,
