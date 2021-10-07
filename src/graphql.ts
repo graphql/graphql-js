@@ -14,7 +14,7 @@ import type {
 import type { GraphQLSchema } from './type/schema';
 import { validateSchema } from './type/validate';
 
-import type { ExecutionResult } from './execution/execute';
+import type { ExecutionResult } from './execution/executor';
 import { execute } from './execution/execute';
 
 /**

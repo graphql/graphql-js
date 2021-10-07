@@ -5,12 +5,12 @@ import type { DocumentNode } from '../language/ast';
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
 
-import type { ExecutionArgs, ExecutionResult } from './execute';
+import type { ExecutionArgs, ExecutionResult } from './executor';
 import {
   buildExecutionContext,
   createSourceEventStreamImpl,
   executeSubscription,
-} from './execute';
+} from './executor';
 
 /**
  * @deprecated use ExecutionArgs instead.

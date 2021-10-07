@@ -11,7 +11,7 @@ import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import type { ExecutionResult } from '../execute';
+import type { ExecutionResult } from '../executor';
 import { execute, executeSync } from '../execute';
 
 const syncError = new Error('sync');
