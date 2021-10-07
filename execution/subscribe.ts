@@ -5,22 +5,19 @@ import type { Maybe } from '../jsutils/Maybe.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { locatedError } from '../error/locatedError.ts';
 import type { DocumentNode } from '../language/ast.ts';
-import type {
-  ExecutionResult,
-  ExecutionContext,
-} from '../execution/execute.ts';
-import { collectFields } from '../execution/collectFields.ts';
-import { getArgumentValues } from '../execution/values.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
+import type { GraphQLFieldResolver } from '../type/definition.ts';
+import { getOperationRootType } from '../utilities/getOperationRootType.ts';
+import type { ExecutionResult, ExecutionContext } from './execute.ts';
+import { collectFields } from './collectFields.ts';
+import { getArgumentValues } from './values.ts';
 import {
   assertValidExecutionArguments,
   buildExecutionContext,
   buildResolveInfo,
   execute,
   getFieldDef,
-} from '../execution/execute.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
-import type { GraphQLFieldResolver } from '../type/definition.ts';
-import { getOperationRootType } from '../utilities/getOperationRootType.ts';
+} from './execute.ts';
 import { mapAsyncIterator } from './mapAsyncIterator.ts';
 export interface SubscriptionArgs {
   schema: GraphQLSchema;

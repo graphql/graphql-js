@@ -310,14 +310,15 @@ export {
   defaultTypeResolver,
   responsePathAsArray,
   getDirectiveValues,
+  subscribe,
+  createSourceEventStream,
 } from './execution/index.ts';
 export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  SubscriptionArgs,
 } from './execution/index.ts';
-export { subscribe, createSourceEventStream } from './subscription/index.ts';
-export type { SubscriptionArgs } from './subscription/index.ts';
 /** Validate GraphQL documents. */
 
 export {
