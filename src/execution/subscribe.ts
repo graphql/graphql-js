@@ -24,7 +24,7 @@ import {
   assertValidExecutionArguments,
   buildExecutionContext,
   buildResolveInfo,
-  execute,
+  executeQueryOrMutation,
   getFieldDef,
 } from './execute';
 import { mapAsyncIterator } from './mapAsyncIterator';
@@ -64,26 +64,28 @@ export interface SubscriptionArgs extends ExecutionArgs {}
 export async function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    subscribeFieldResolver,
-  } = args;
+  const { schema, document, variableValues } = args;
 
-  const resultOrStream = await createSourceEventStream(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  );
+  // If arguments are missing or incorrectly typed, this is an internal
+  // developer mistake which should throw an early error.
+  assertValidExecutionArguments(schema, document, variableValues);
+
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  const exeContext = buildExecutionContext(args);
+
+  // Return early errors if execution context failed.
+  if (!('schema' in exeContext)) {
+    return { errors: exeContext };
+  }
+
+  return executeSubscription(exeContext);
+}
+
+async function executeSubscription(
+  exeContext: ExecutionContext,
+): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+  const resultOrStream = await createSourceEventStreamImpl(exeContext);
 
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
@@ -96,14 +98,10 @@ export async function subscribe(
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   const mapSourceToResponse = (payload: unknown) =>
-    execute({
-      schema,
-      document,
+    executeQueryOrMutation({
+      ...exeContext,
       rootValue: payload,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
+      errors: [],
     });
 
   // Map every source value to a ExecutionResult value as described above.
@@ -168,6 +166,12 @@ export async function createSourceEventStream(
     return { errors: exeContext };
   }
 
+  return createSourceEventStreamImpl(exeContext);
+}
+
+export async function createSourceEventStreamImpl(
+  exeContext: ExecutionContext,
+): Promise<AsyncIterable<unknown> | ExecutionResult> {
   try {
     const eventStream = await executeSubscriptionRootField(exeContext);
 

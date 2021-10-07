@@ -502,8 +502,7 @@ describe('Subscription Initialization Phase', () => {
 
     // If we receive variables that cannot be coerced correctly, subscribe() will
     // resolve to an ExecutionResult that contains an informative error description.
-    const result = await subscribe({ schema, document, variableValues });
-    expectJSON(result).to.deep.equal({
+    const expectedResult = {
       errors: [
         {
           message:
@@ -511,7 +510,21 @@ describe('Subscription Initialization Phase', () => {
           locations: [{ line: 2, column: 21 }],
         },
       ],
-    });
+    };
+
+    expectJSON(
+      await subscribe({ schema, document, variableValues }),
+    ).to.deep.equal(expectedResult);
+
+    expectJSON(
+      await createSourceEventStream(
+        schema,
+        document,
+        undefined,
+        undefined,
+        variableValues,
+      ),
+    ).to.deep.equal(expectedResult);
   });
 });
 

@@ -180,7 +180,11 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
-  // Return data or a  Promise that will eventually resolve to the data described
+  return executeQueryOrMutation(exeContext);
+}
+
+export function executeQueryOrMutation(exeContext: ExecutionContext) {
+  // Return data or a Promise that will eventually resolve to the data described
   // by the "Response" section of the GraphQL specification.
 
   // If errors are encountered while executing a GraphQL field, only that
