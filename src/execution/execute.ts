@@ -2,7 +2,7 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { isPromise } from '../jsutils/isPromise';
 
 import type { ExecutionArgs, ExecutionResult } from './executor';
-import { buildExecutionContext, executeQueryOrMutation } from './executor';
+import { Executor } from './executor';
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -15,16 +15,9 @@ import { buildExecutionContext, executeQueryOrMutation } from './executor';
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args);
+  const executor = new Executor(args);
 
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
-  }
-
-  return executeQueryOrMutation(exeContext);
+  return executor.executeQueryOrMutation();
 }
 
 /**

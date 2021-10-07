@@ -6,11 +6,7 @@ import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
 
 import type { ExecutionArgs, ExecutionResult } from './executor';
-import {
-  buildExecutionContext,
-  createSourceEventStreamImpl,
-  executeSubscription,
-} from './executor';
+import { Executor } from './executor';
 
 /**
  * @deprecated use ExecutionArgs instead.
@@ -47,16 +43,9 @@ export interface SubscriptionArgs extends ExecutionArgs {}
 export async function subscribe(
   args: SubscriptionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args);
+  const executor = new Executor(args);
 
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
-  }
-
-  return executeSubscription(exeContext);
+  return executor.executeSubscription();
 }
 
 /**
@@ -96,9 +85,7 @@ export async function createSourceEventStream(
   operationName?: Maybe<string>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): Promise<AsyncIterable<unknown> | ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext({
+  const executor = new Executor({
     schema,
     document,
     rootValue,
@@ -108,10 +95,5 @@ export async function createSourceEventStream(
     subscribeFieldResolver,
   });
 
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
-  }
-
-  return createSourceEventStreamImpl(exeContext);
+  return executor.createSourceEventStream();
 }
