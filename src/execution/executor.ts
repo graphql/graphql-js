@@ -138,6 +138,16 @@ export interface ExecutionArgs {
 }
 
 /**
+ * Executor class responsible for implementing the Execution section of the GraphQL spec.
+ *
+ * This class is exported only to assist people in implementing their own executors
+ * without duplicating too much code and should be used only as last resort for cases
+ * such as experimental syntax or if certain features could not be contributed upstream.
+ *
+ * It is still part of the internal API and is versioned, so any changes to it are never
+ * considered breaking changes. If you still need to support multiple versions of the
+ * library, please use the `versionInfo` variable for version detection.
+ *
  * @internal
  */
 export class Executor {

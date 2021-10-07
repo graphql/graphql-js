@@ -306,6 +306,7 @@ export type {
 
 /** Execute GraphQL queries. */
 export {
+  Executor,
   execute,
   executeSync,
   defaultFieldResolver,

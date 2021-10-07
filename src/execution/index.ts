@@ -8,6 +8,8 @@ export type {
   FormattedExecutionResult,
 } from './executor';
 
+export { Executor } from './executor';
+
 export { execute, executeSync } from './execute';
 
 export { subscribe, createSourceEventStream } from './subscribe';
