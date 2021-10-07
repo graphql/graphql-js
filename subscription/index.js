@@ -16,4 +16,4 @@ Object.defineProperty(exports, 'createSourceEventStream', {
   },
 });
 
-var _subscribe = require('./subscribe.js');
+var _subscribe = require('../execution/subscribe.js');

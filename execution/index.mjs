@@ -5,4 +5,5 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
 } from './execute.mjs';
+export { subscribe, createSourceEventStream } from './subscribe.mjs';
 export { getDirectiveValues } from './values.mjs';

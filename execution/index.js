@@ -33,6 +33,18 @@ Object.defineProperty(exports, 'defaultTypeResolver', {
     return _execute.defaultTypeResolver;
   },
 });
+Object.defineProperty(exports, 'subscribe', {
+  enumerable: true,
+  get: function () {
+    return _subscribe.subscribe;
+  },
+});
+Object.defineProperty(exports, 'createSourceEventStream', {
+  enumerable: true,
+  get: function () {
+    return _subscribe.createSourceEventStream;
+  },
+});
 Object.defineProperty(exports, 'getDirectiveValues', {
   enumerable: true,
   get: function () {
@@ -43,5 +55,7 @@ Object.defineProperty(exports, 'getDirectiveValues', {
 var _Path = require('../jsutils/Path.js');
 
 var _execute = require('./execute.js');
+
+var _subscribe = require('./subscribe.js');
 
 var _values = require('./values.js');

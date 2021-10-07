@@ -750,457 +750,457 @@ Object.defineProperty(exports, 'getDirectiveValues', {
 Object.defineProperty(exports, 'subscribe', {
   enumerable: true,
   get: function () {
-    return _index4.subscribe;
+    return _index3.subscribe;
   },
 });
 Object.defineProperty(exports, 'createSourceEventStream', {
   enumerable: true,
   get: function () {
-    return _index4.createSourceEventStream;
+    return _index3.createSourceEventStream;
   },
 });
 Object.defineProperty(exports, 'validate', {
   enumerable: true,
   get: function () {
-    return _index5.validate;
+    return _index4.validate;
   },
 });
 Object.defineProperty(exports, 'ValidationContext', {
   enumerable: true,
   get: function () {
-    return _index5.ValidationContext;
+    return _index4.ValidationContext;
   },
 });
 Object.defineProperty(exports, 'specifiedRules', {
   enumerable: true,
   get: function () {
-    return _index5.specifiedRules;
+    return _index4.specifiedRules;
   },
 });
 Object.defineProperty(exports, 'ExecutableDefinitionsRule', {
   enumerable: true,
   get: function () {
-    return _index5.ExecutableDefinitionsRule;
+    return _index4.ExecutableDefinitionsRule;
   },
 });
 Object.defineProperty(exports, 'FieldsOnCorrectTypeRule', {
   enumerable: true,
   get: function () {
-    return _index5.FieldsOnCorrectTypeRule;
+    return _index4.FieldsOnCorrectTypeRule;
   },
 });
 Object.defineProperty(exports, 'FragmentsOnCompositeTypesRule', {
   enumerable: true,
   get: function () {
-    return _index5.FragmentsOnCompositeTypesRule;
+    return _index4.FragmentsOnCompositeTypesRule;
   },
 });
 Object.defineProperty(exports, 'KnownArgumentNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.KnownArgumentNamesRule;
+    return _index4.KnownArgumentNamesRule;
   },
 });
 Object.defineProperty(exports, 'KnownDirectivesRule', {
   enumerable: true,
   get: function () {
-    return _index5.KnownDirectivesRule;
+    return _index4.KnownDirectivesRule;
   },
 });
 Object.defineProperty(exports, 'KnownFragmentNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.KnownFragmentNamesRule;
+    return _index4.KnownFragmentNamesRule;
   },
 });
 Object.defineProperty(exports, 'KnownTypeNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.KnownTypeNamesRule;
+    return _index4.KnownTypeNamesRule;
   },
 });
 Object.defineProperty(exports, 'LoneAnonymousOperationRule', {
   enumerable: true,
   get: function () {
-    return _index5.LoneAnonymousOperationRule;
+    return _index4.LoneAnonymousOperationRule;
   },
 });
 Object.defineProperty(exports, 'NoFragmentCyclesRule', {
   enumerable: true,
   get: function () {
-    return _index5.NoFragmentCyclesRule;
+    return _index4.NoFragmentCyclesRule;
   },
 });
 Object.defineProperty(exports, 'NoUndefinedVariablesRule', {
   enumerable: true,
   get: function () {
-    return _index5.NoUndefinedVariablesRule;
+    return _index4.NoUndefinedVariablesRule;
   },
 });
 Object.defineProperty(exports, 'NoUnusedFragmentsRule', {
   enumerable: true,
   get: function () {
-    return _index5.NoUnusedFragmentsRule;
+    return _index4.NoUnusedFragmentsRule;
   },
 });
 Object.defineProperty(exports, 'NoUnusedVariablesRule', {
   enumerable: true,
   get: function () {
-    return _index5.NoUnusedVariablesRule;
+    return _index4.NoUnusedVariablesRule;
   },
 });
 Object.defineProperty(exports, 'OverlappingFieldsCanBeMergedRule', {
   enumerable: true,
   get: function () {
-    return _index5.OverlappingFieldsCanBeMergedRule;
+    return _index4.OverlappingFieldsCanBeMergedRule;
   },
 });
 Object.defineProperty(exports, 'PossibleFragmentSpreadsRule', {
   enumerable: true,
   get: function () {
-    return _index5.PossibleFragmentSpreadsRule;
+    return _index4.PossibleFragmentSpreadsRule;
   },
 });
 Object.defineProperty(exports, 'ProvidedRequiredArgumentsRule', {
   enumerable: true,
   get: function () {
-    return _index5.ProvidedRequiredArgumentsRule;
+    return _index4.ProvidedRequiredArgumentsRule;
   },
 });
 Object.defineProperty(exports, 'ScalarLeafsRule', {
   enumerable: true,
   get: function () {
-    return _index5.ScalarLeafsRule;
+    return _index4.ScalarLeafsRule;
   },
 });
 Object.defineProperty(exports, 'SingleFieldSubscriptionsRule', {
   enumerable: true,
   get: function () {
-    return _index5.SingleFieldSubscriptionsRule;
+    return _index4.SingleFieldSubscriptionsRule;
   },
 });
 Object.defineProperty(exports, 'UniqueArgumentNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueArgumentNamesRule;
+    return _index4.UniqueArgumentNamesRule;
   },
 });
 Object.defineProperty(exports, 'UniqueDirectivesPerLocationRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueDirectivesPerLocationRule;
+    return _index4.UniqueDirectivesPerLocationRule;
   },
 });
 Object.defineProperty(exports, 'UniqueFragmentNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueFragmentNamesRule;
+    return _index4.UniqueFragmentNamesRule;
   },
 });
 Object.defineProperty(exports, 'UniqueInputFieldNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueInputFieldNamesRule;
+    return _index4.UniqueInputFieldNamesRule;
   },
 });
 Object.defineProperty(exports, 'UniqueOperationNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueOperationNamesRule;
+    return _index4.UniqueOperationNamesRule;
   },
 });
 Object.defineProperty(exports, 'UniqueVariableNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueVariableNamesRule;
+    return _index4.UniqueVariableNamesRule;
   },
 });
 Object.defineProperty(exports, 'ValuesOfCorrectTypeRule', {
   enumerable: true,
   get: function () {
-    return _index5.ValuesOfCorrectTypeRule;
+    return _index4.ValuesOfCorrectTypeRule;
   },
 });
 Object.defineProperty(exports, 'VariablesAreInputTypesRule', {
   enumerable: true,
   get: function () {
-    return _index5.VariablesAreInputTypesRule;
+    return _index4.VariablesAreInputTypesRule;
   },
 });
 Object.defineProperty(exports, 'VariablesInAllowedPositionRule', {
   enumerable: true,
   get: function () {
-    return _index5.VariablesInAllowedPositionRule;
+    return _index4.VariablesInAllowedPositionRule;
   },
 });
 Object.defineProperty(exports, 'LoneSchemaDefinitionRule', {
   enumerable: true,
   get: function () {
-    return _index5.LoneSchemaDefinitionRule;
+    return _index4.LoneSchemaDefinitionRule;
   },
 });
 Object.defineProperty(exports, 'UniqueOperationTypesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueOperationTypesRule;
+    return _index4.UniqueOperationTypesRule;
   },
 });
 Object.defineProperty(exports, 'UniqueTypeNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueTypeNamesRule;
+    return _index4.UniqueTypeNamesRule;
   },
 });
 Object.defineProperty(exports, 'UniqueEnumValueNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueEnumValueNamesRule;
+    return _index4.UniqueEnumValueNamesRule;
   },
 });
 Object.defineProperty(exports, 'UniqueFieldDefinitionNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueFieldDefinitionNamesRule;
+    return _index4.UniqueFieldDefinitionNamesRule;
   },
 });
 Object.defineProperty(exports, 'UniqueDirectiveNamesRule', {
   enumerable: true,
   get: function () {
-    return _index5.UniqueDirectiveNamesRule;
+    return _index4.UniqueDirectiveNamesRule;
   },
 });
 Object.defineProperty(exports, 'PossibleTypeExtensionsRule', {
   enumerable: true,
   get: function () {
-    return _index5.PossibleTypeExtensionsRule;
+    return _index4.PossibleTypeExtensionsRule;
   },
 });
 Object.defineProperty(exports, 'NoDeprecatedCustomRule', {
   enumerable: true,
   get: function () {
-    return _index5.NoDeprecatedCustomRule;
+    return _index4.NoDeprecatedCustomRule;
   },
 });
 Object.defineProperty(exports, 'NoSchemaIntrospectionCustomRule', {
   enumerable: true,
   get: function () {
-    return _index5.NoSchemaIntrospectionCustomRule;
+    return _index4.NoSchemaIntrospectionCustomRule;
   },
 });
 Object.defineProperty(exports, 'GraphQLError', {
   enumerable: true,
   get: function () {
-    return _index6.GraphQLError;
+    return _index5.GraphQLError;
   },
 });
 Object.defineProperty(exports, 'syntaxError', {
   enumerable: true,
   get: function () {
-    return _index6.syntaxError;
+    return _index5.syntaxError;
   },
 });
 Object.defineProperty(exports, 'locatedError', {
   enumerable: true,
   get: function () {
-    return _index6.locatedError;
+    return _index5.locatedError;
   },
 });
 Object.defineProperty(exports, 'printError', {
   enumerable: true,
   get: function () {
-    return _index6.printError;
+    return _index5.printError;
   },
 });
 Object.defineProperty(exports, 'formatError', {
   enumerable: true,
   get: function () {
-    return _index6.formatError;
+    return _index5.formatError;
   },
 });
 Object.defineProperty(exports, 'getIntrospectionQuery', {
   enumerable: true,
   get: function () {
-    return _index7.getIntrospectionQuery;
+    return _index6.getIntrospectionQuery;
   },
 });
 Object.defineProperty(exports, 'getOperationAST', {
   enumerable: true,
   get: function () {
-    return _index7.getOperationAST;
+    return _index6.getOperationAST;
   },
 });
 Object.defineProperty(exports, 'getOperationRootType', {
   enumerable: true,
   get: function () {
-    return _index7.getOperationRootType;
+    return _index6.getOperationRootType;
   },
 });
 Object.defineProperty(exports, 'introspectionFromSchema', {
   enumerable: true,
   get: function () {
-    return _index7.introspectionFromSchema;
+    return _index6.introspectionFromSchema;
   },
 });
 Object.defineProperty(exports, 'buildClientSchema', {
   enumerable: true,
   get: function () {
-    return _index7.buildClientSchema;
+    return _index6.buildClientSchema;
   },
 });
 Object.defineProperty(exports, 'buildASTSchema', {
   enumerable: true,
   get: function () {
-    return _index7.buildASTSchema;
+    return _index6.buildASTSchema;
   },
 });
 Object.defineProperty(exports, 'buildSchema', {
   enumerable: true,
   get: function () {
-    return _index7.buildSchema;
+    return _index6.buildSchema;
   },
 });
 Object.defineProperty(exports, 'extendSchema', {
   enumerable: true,
   get: function () {
-    return _index7.extendSchema;
+    return _index6.extendSchema;
   },
 });
 Object.defineProperty(exports, 'lexicographicSortSchema', {
   enumerable: true,
   get: function () {
-    return _index7.lexicographicSortSchema;
+    return _index6.lexicographicSortSchema;
   },
 });
 Object.defineProperty(exports, 'printSchema', {
   enumerable: true,
   get: function () {
-    return _index7.printSchema;
+    return _index6.printSchema;
   },
 });
 Object.defineProperty(exports, 'printType', {
   enumerable: true,
   get: function () {
-    return _index7.printType;
+    return _index6.printType;
   },
 });
 Object.defineProperty(exports, 'printIntrospectionSchema', {
   enumerable: true,
   get: function () {
-    return _index7.printIntrospectionSchema;
+    return _index6.printIntrospectionSchema;
   },
 });
 Object.defineProperty(exports, 'typeFromAST', {
   enumerable: true,
   get: function () {
-    return _index7.typeFromAST;
+    return _index6.typeFromAST;
   },
 });
 Object.defineProperty(exports, 'valueFromAST', {
   enumerable: true,
   get: function () {
-    return _index7.valueFromAST;
+    return _index6.valueFromAST;
   },
 });
 Object.defineProperty(exports, 'valueFromASTUntyped', {
   enumerable: true,
   get: function () {
-    return _index7.valueFromASTUntyped;
+    return _index6.valueFromASTUntyped;
   },
 });
 Object.defineProperty(exports, 'astFromValue', {
   enumerable: true,
   get: function () {
-    return _index7.astFromValue;
+    return _index6.astFromValue;
   },
 });
 Object.defineProperty(exports, 'TypeInfo', {
   enumerable: true,
   get: function () {
-    return _index7.TypeInfo;
+    return _index6.TypeInfo;
   },
 });
 Object.defineProperty(exports, 'visitWithTypeInfo', {
   enumerable: true,
   get: function () {
-    return _index7.visitWithTypeInfo;
+    return _index6.visitWithTypeInfo;
   },
 });
 Object.defineProperty(exports, 'coerceInputValue', {
   enumerable: true,
   get: function () {
-    return _index7.coerceInputValue;
+    return _index6.coerceInputValue;
   },
 });
 Object.defineProperty(exports, 'concatAST', {
   enumerable: true,
   get: function () {
-    return _index7.concatAST;
+    return _index6.concatAST;
   },
 });
 Object.defineProperty(exports, 'separateOperations', {
   enumerable: true,
   get: function () {
-    return _index7.separateOperations;
+    return _index6.separateOperations;
   },
 });
 Object.defineProperty(exports, 'stripIgnoredCharacters', {
   enumerable: true,
   get: function () {
-    return _index7.stripIgnoredCharacters;
+    return _index6.stripIgnoredCharacters;
   },
 });
 Object.defineProperty(exports, 'isEqualType', {
   enumerable: true,
   get: function () {
-    return _index7.isEqualType;
+    return _index6.isEqualType;
   },
 });
 Object.defineProperty(exports, 'isTypeSubTypeOf', {
   enumerable: true,
   get: function () {
-    return _index7.isTypeSubTypeOf;
+    return _index6.isTypeSubTypeOf;
   },
 });
 Object.defineProperty(exports, 'doTypesOverlap', {
   enumerable: true,
   get: function () {
-    return _index7.doTypesOverlap;
+    return _index6.doTypesOverlap;
   },
 });
 Object.defineProperty(exports, 'assertValidName', {
   enumerable: true,
   get: function () {
-    return _index7.assertValidName;
+    return _index6.assertValidName;
   },
 });
 Object.defineProperty(exports, 'isValidNameError', {
   enumerable: true,
   get: function () {
-    return _index7.isValidNameError;
+    return _index6.isValidNameError;
   },
 });
 Object.defineProperty(exports, 'BreakingChangeType', {
   enumerable: true,
   get: function () {
-    return _index7.BreakingChangeType;
+    return _index6.BreakingChangeType;
   },
 });
 Object.defineProperty(exports, 'DangerousChangeType', {
   enumerable: true,
   get: function () {
-    return _index7.DangerousChangeType;
+    return _index6.DangerousChangeType;
   },
 });
 Object.defineProperty(exports, 'findBreakingChanges', {
   enumerable: true,
   get: function () {
-    return _index7.findBreakingChanges;
+    return _index6.findBreakingChanges;
   },
 });
 Object.defineProperty(exports, 'findDangerousChanges', {
   enumerable: true,
   get: function () {
-    return _index7.findDangerousChanges;
+    return _index6.findDangerousChanges;
   },
 });
 
@@ -1214,10 +1214,8 @@ var _index2 = require('./language/index.js');
 
 var _index3 = require('./execution/index.js');
 
-var _index4 = require('./subscription/index.js');
+var _index4 = require('./validation/index.js');
 
-var _index5 = require('./validation/index.js');
+var _index5 = require('./error/index.js');
 
-var _index6 = require('./error/index.js');
-
-var _index7 = require('./utilities/index.js');
+var _index6 = require('./utilities/index.js');

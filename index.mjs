@@ -178,8 +178,9 @@ export {
   defaultTypeResolver,
   responsePathAsArray,
   getDirectiveValues,
+  subscribe,
+  createSourceEventStream,
 } from './execution/index.mjs';
-export { subscribe, createSourceEventStream } from './subscription/index.mjs';
 
 /** Validate GraphQL documents. */
 export {
