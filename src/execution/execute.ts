@@ -196,8 +196,17 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
-  // Execute the operation.
-  return executeQueryOrMutation(exeContext);
+  // Return data or a  Promise that will eventually resolve to the data described
+  // by the "Response" section of the GraphQL specification.
+
+  // If errors are encountered while executing a GraphQL field, only that
+  // field and its descendants will be omitted, and sibling fields will still
+  // be executed. An execution which encounters errors will still result in a
+  // resolved Promise.
+  const data = executeQueryOrMutationRootFields(exeContext);
+
+  // Return the response.
+  return buildResponse(exeContext, data);
 }
 
 /**
@@ -214,24 +223,6 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
   }
 
   return result;
-}
-
-/**
- * Implements the "Executing operations" section of the spec for queries and mutations.
- *
- * Return data or a Promise that will eventually resolve to the data described by
- * The "Response" section of the GraphQL specification.
- *
- * If errors are encountered while executing a GraphQL field, only that
- * field and its descendants will be omitted, and sibling fields will still
- * be executed. An execution which encounters errors will still result in
- * resolved data.
- */
-function executeQueryOrMutation(
-  exeContext: ExecutionContext,
-): PromiseOrValue<ExecutionResult> {
-  const data = executeQueryOrMutationRootFields(exeContext);
-  return buildResponse(exeContext, data);
 }
 
 /**
