@@ -140,26 +140,26 @@ export async function createSourceEventStream(
 ): Promise<AsyncIterable<unknown> | ExecutionResult> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
-  assertValidExecutionArguments(schema, document, variableValues);
+  assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+
+  const exeContext = buildExecutionContext(
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+  ); // Return early errors if execution context failed.
+
+  if (!('schema' in exeContext)) {
+    return {
+      errors: exeContext,
+    };
+  }
 
   try {
-    // If a valid context cannot be created due to incorrect arguments, this will throw an error.
-    const exeContext = buildExecutionContext(
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
-    ); // Return early errors if execution context failed.
-
-    if (!('schema' in exeContext)) {
-      return {
-        errors: exeContext,
-      };
-    }
-
     const eventStream = await executeSubscription(exeContext); // Assert field returned an event stream, otherwise yield an error.
 
     if (!isAsyncIterable(eventStream)) {
