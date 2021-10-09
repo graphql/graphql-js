@@ -232,7 +232,7 @@ async function executeSubscriptionRootField(
 
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
-    const resolveFn = fieldDef.subscribe ?? exeContext.fieldResolver;
+    const resolveFn = fieldDef.subscribe ?? exeContext.subscribeFieldResolver;
     const eventStream = await resolveFn(rootValue, args, contextValue, info);
 
     if (eventStream instanceof Error) {
