@@ -261,7 +261,7 @@ export function buildExecutionContext({
   document,
   rootValue,
   contextValue,
-  variableValues,
+  variableValues: rawVariableValues,
   operationName,
   fieldResolver,
   typeResolver,
@@ -304,7 +304,7 @@ export function buildExecutionContext({
   const coercedVariableValues = getVariableValues(
     schema,
     variableDefinitions,
-    variableValues ?? {},
+    rawVariableValues ?? {},
     { maxErrors: 50 },
   );
 
