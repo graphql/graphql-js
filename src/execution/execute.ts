@@ -227,7 +227,7 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
  * Given a completed execution context and data, build the `{ errors, data }`
  * response defined by the "Response" section of the GraphQL specification.
  */
-function buildResponse(
+export function buildResponse(
   exeContext: ExecutionContext,
   data: PromiseOrValue<ObjMap<unknown> | null>,
 ): PromiseOrValue<ExecutionResult> {
@@ -341,7 +341,7 @@ export function buildExecutionContext(
 /**
  * Implements the "Executing operations" section of the spec.
  */
-function executeOperation(
+export function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: unknown,
