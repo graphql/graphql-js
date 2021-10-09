@@ -114,7 +114,7 @@ export interface ExecutionContext {
   variableValues: { [variable: string]: unknown };
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
-  subscribeFieldResolver?: GraphQLFieldResolver<any, any>;
+  subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
 }
 
@@ -321,7 +321,7 @@ export function buildExecutionContext({
     variableValues: coercedVariableValues.coerced,
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
-    subscribeFieldResolver: subscribeFieldResolver ?? undefined,
+    subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
   };
 }
