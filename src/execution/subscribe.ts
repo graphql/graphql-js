@@ -30,7 +30,9 @@ import {
 import { mapAsyncIterator } from './mapAsyncIterator';
 
 /**
- * Note: ExecutionArgs has been broadened to include all properties
+ * @deprecated use ExecutionArgs instead.
+ *
+ * ExecutionArgs has been broadened to include all properties
  * within SubscriptionArgs. The SubscriptionArgs type is retained
  * for backwards compatibility and will be removed in the next major
  * version.
