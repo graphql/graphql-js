@@ -133,26 +133,26 @@ async function createSourceEventStream(
 ) {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
-  (0, _execute.assertValidExecutionArguments)(schema, document, variableValues);
+  (0, _execute.assertValidExecutionArguments)(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+
+  const exeContext = (0, _execute.buildExecutionContext)(
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+  ); // Return early errors if execution context failed.
+
+  if (!('schema' in exeContext)) {
+    return {
+      errors: exeContext,
+    };
+  }
 
   try {
-    // If a valid context cannot be created due to incorrect arguments, this will throw an error.
-    const exeContext = (0, _execute.buildExecutionContext)(
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
-    ); // Return early errors if execution context failed.
-
-    if (!('schema' in exeContext)) {
-      return {
-        errors: exeContext,
-      };
-    }
-
     const eventStream = await executeSubscription(exeContext); // Assert field returned an event stream, otherwise yield an error.
 
     if (!(0, _isAsyncIterable.isAsyncIterable)(eventStream)) {
