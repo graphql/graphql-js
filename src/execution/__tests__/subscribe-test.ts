@@ -256,6 +256,38 @@ describe('Subscription Initialization Phase', () => {
     await subscription.return();
   });
 
+  it('uses a custom default subscribeFieldResolver', async () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+
+    async function* fooGenerator() {
+      yield { foo: 'FooValue' };
+    }
+
+    const subscription = await subscribe({
+      schema,
+      document: parse('subscription { foo }'),
+      rootValue: { customFoo: fooGenerator },
+      subscribeFieldResolver: (root) => root.customFoo(),
+    });
+    invariant(isAsyncIterable(subscription));
+
+    expect(await subscription.next()).to.deep.equal({
+      done: false,
+      value: { data: { foo: 'FooValue' } },
+    });
+
+    // Close subscription
+    await subscription.return();
+  });
+
   it('should only resolve the first field of invalid multi-field', async () => {
     async function* fooGenerator() {
       yield { foo: 'FooValue' };
