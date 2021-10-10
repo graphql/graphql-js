@@ -52,9 +52,11 @@ function mapAsyncIterator(iterable, callback) {
     },
 
     async throw(error) {
-      return typeof iterator.throw === 'function'
-        ? mapResult(await iterator.throw(error))
-        : Promise.reject(error);
+      if (typeof iterator.throw === 'function') {
+        return mapResult(await iterator.throw(error));
+      }
+
+      throw error;
     },
 
     [Symbol.asyncIterator]() {
