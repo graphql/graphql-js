@@ -256,17 +256,21 @@ export function assertValidExecutionArguments(
  *
  * @internal
  */
-export function buildExecutionContext({
-  schema,
-  document,
-  rootValue,
-  contextValue,
-  variableValues: rawVariableValues,
-  operationName,
-  fieldResolver,
-  typeResolver,
-  subscribeFieldResolver,
-}: ExecutionArgs): ReadonlyArray<GraphQLError> | ExecutionContext {
+export function buildExecutionContext(
+  args: ExecutionArgs,
+): ReadonlyArray<GraphQLError> | ExecutionContext {
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues: rawVariableValues,
+    operationName,
+    fieldResolver,
+    typeResolver,
+    subscribeFieldResolver,
+  } = args;
+
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {
