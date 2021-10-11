@@ -5,6 +5,8 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.UniqueArgumentDefinitionNamesRule = UniqueArgumentDefinitionNamesRule;
 
+var _groupBy = require('../../jsutils/groupBy.js');
+
 var _GraphQLError = require('../../error/GraphQLError.js');
 
 /**
@@ -61,7 +63,10 @@ function UniqueArgumentDefinitionNamesRule(context) {
   }
 
   function checkArgUniqueness(parentName, argumentNodes) {
-    const seenArgs = groupBy(argumentNodes, (arg) => arg.name.value);
+    const seenArgs = (0, _groupBy.groupBy)(
+      argumentNodes,
+      (arg) => arg.name.value,
+    );
 
     for (const [argName, argNodes] of seenArgs) {
       if (argNodes.length > 1) {
@@ -76,21 +81,4 @@ function UniqueArgumentDefinitionNamesRule(context) {
 
     return false;
   }
-}
-
-function groupBy(list, keyFn) {
-  const result = new Map();
-
-  for (const item of list) {
-    const key = keyFn(item);
-    const group = result.get(key);
-
-    if (group === undefined) {
-      result.set(key, [item]);
-    } else {
-      group.push(item);
-    }
-  }
-
-  return result;
 }

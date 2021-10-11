@@ -1,3 +1,4 @@
+import { groupBy } from '../../jsutils/groupBy.mjs';
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 
 /**
@@ -69,21 +70,4 @@ export function UniqueArgumentDefinitionNamesRule(context) {
 
     return false;
   }
-}
-
-function groupBy(list, keyFn) {
-  const result = new Map();
-
-  for (const item of list) {
-    const key = keyFn(item);
-    const group = result.get(key);
-
-    if (group === undefined) {
-      result.set(key, [item]);
-    } else {
-      group.push(item);
-    }
-  }
-
-  return result;
 }
