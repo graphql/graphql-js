@@ -7,6 +7,7 @@ import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { GraphQLError } from '../error/GraphQLError.ts';
 import type {
+  OperationTypeNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../language/ast.ts';
@@ -277,6 +278,19 @@ export class GraphQLSchema {
 
   getSubscriptionType(): Maybe<GraphQLObjectType> {
     return this._subscriptionType;
+  }
+
+  getRootType(operation: OperationTypeNode): Maybe<GraphQLObjectType> {
+    switch (operation) {
+      case 'query':
+        return this.getQueryType();
+
+      case 'mutation':
+        return this.getMutationType();
+
+      case 'subscription':
+        return this.getSubscriptionType();
+    }
   }
 
   getTypeMap(): TypeMap {

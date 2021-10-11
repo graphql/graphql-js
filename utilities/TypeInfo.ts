@@ -178,23 +178,9 @@ export class TypeInfo {
         break;
 
       case Kind.OPERATION_DEFINITION: {
-        let type: unknown;
+        const rootType = schema.getRootType(node.operation);
 
-        switch (node.operation) {
-          case 'query':
-            type = schema.getQueryType();
-            break;
-
-          case 'mutation':
-            type = schema.getMutationType();
-            break;
-
-          case 'subscription':
-            type = schema.getSubscriptionType();
-            break;
-        }
-
-        this._typeStack.push(isObjectType(type) ? type : undefined);
+        this._typeStack.push(isObjectType(rootType) ? rootType : undefined);
 
         break;
       }

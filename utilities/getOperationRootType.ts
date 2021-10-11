@@ -7,6 +7,8 @@ import type { GraphQLSchema } from '../type/schema.ts';
 import type { GraphQLObjectType } from '../type/definition.ts';
 /**
  * Extracts the root type of the operation from the schema.
+ *
+ * @deprecated Please use `GraphQLSchema.getRootType` instead. Will be removed in v17
  */
 
 export function getOperationRootType(
