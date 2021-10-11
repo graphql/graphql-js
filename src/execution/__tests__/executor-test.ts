@@ -917,18 +917,42 @@ describe('Execute: Handles basic execution tasks', () => {
       subscription S { __typename }
     `);
 
-    // FIXME: errors should be wrapped into ExecutionResult
-    expect(() =>
+    expectJSON(
       executeSync({ schema, document, operationName: 'Q' }),
-    ).to.throw('Schema is not configured to execute query operation.');
+    ).to.deep.equal({
+      data: null,
+      errors: [
+        {
+          message: 'Schema is not configured to execute query operation.',
+          locations: [{ line: 2, column: 7 }],
+        },
+      ],
+    });
 
-    expect(() =>
+    expectJSON(
       executeSync({ schema, document, operationName: 'M' }),
-    ).to.throw('Schema is not configured to execute mutation operation.');
+    ).to.deep.equal({
+      data: null,
+      errors: [
+        {
+          message: 'Schema is not configured to execute mutation operation.',
+          locations: [{ line: 3, column: 7 }],
+        },
+      ],
+    });
 
-    expect(() =>
+    expectJSON(
       executeSync({ schema, document, operationName: 'S' }),
-    ).to.throw('Schema is not configured to execute subscription operation.');
+    ).to.deep.equal({
+      data: null,
+      errors: [
+        {
+          message:
+            'Schema is not configured to execute subscription operation.',
+          locations: [{ line: 4, column: 7 }],
+        },
+      ],
+    });
   });
 
   it('correct field ordering despite execution order', async () => {
