@@ -317,8 +317,8 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
-  SubscriptionArgs,
 } from './execution/index.ts';
+export type { SubscriptionArgs } from './subscription/index.ts';
 /** Validate GraphQL documents. */
 
 export {

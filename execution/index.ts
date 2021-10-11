@@ -11,5 +11,4 @@ export type {
   FormattedExecutionResult,
 } from './execute.ts';
 export { subscribe, createSourceEventStream } from './subscribe.ts';
-export type { SubscriptionArgs } from './subscribe.ts';
 export { getDirectiveValues } from './values.ts';
