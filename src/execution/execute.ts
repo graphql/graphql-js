@@ -114,6 +114,7 @@ export interface ExecutionContext {
   variableValues: { [variable: string]: unknown };
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
+  subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
 }
 
@@ -151,6 +152,7 @@ export interface ExecutionArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
 /**
@@ -164,32 +166,14 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  } = args;
+  const { schema, document, variableValues, rootValue } = args;
 
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(schema, document, variableValues);
 
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  );
+  const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
@@ -271,15 +255,20 @@ export function assertValidExecutionArguments(
  * @internal
  */
 export function buildExecutionContext(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue: unknown,
-  contextValue: unknown,
-  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName: Maybe<string>,
-  fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
+  args: ExecutionArgs,
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues: rawVariableValues,
+    operationName,
+    fieldResolver,
+    typeResolver,
+    subscribeFieldResolver,
+  } = args;
+
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {
@@ -334,6 +323,7 @@ export function buildExecutionContext(
     variableValues: coercedVariableValues.coerced,
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
+    subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
   };
 }

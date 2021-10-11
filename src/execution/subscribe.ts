@@ -13,7 +13,11 @@ import type { GraphQLFieldResolver } from '../type/definition';
 
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
-import type { ExecutionResult, ExecutionContext } from './execute';
+import type {
+  ExecutionArgs,
+  ExecutionResult,
+  ExecutionContext,
+} from './execute';
 import { collectFields } from './collectFields';
 import { getArgumentValues } from './values';
 import {
@@ -25,16 +29,15 @@ import {
 } from './execute';
 import { mapAsyncIterator } from './mapAsyncIterator';
 
-export interface SubscriptionArgs {
-  schema: GraphQLSchema;
-  document: DocumentNode;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
-  operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-}
+/**
+ * @deprecated use ExecutionArgs instead. Will be removed in v17
+ *
+ * ExecutionArgs has been broadened to include all properties
+ * within SubscriptionArgs. The SubscriptionArgs type is retained
+ * for backwards compatibility.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface SubscriptionArgs extends ExecutionArgs {}
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -141,7 +144,7 @@ export async function createSourceEventStream(
   contextValue?: unknown,
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
   operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): Promise<AsyncIterable<unknown> | ExecutionResult> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
@@ -149,15 +152,15 @@ export async function createSourceEventStream(
 
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(
+  const exeContext = buildExecutionContext({
     schema,
     document,
     rootValue,
     contextValue,
     variableValues,
     operationName,
-    fieldResolver,
-  );
+    subscribeFieldResolver,
+  });
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
@@ -228,7 +231,7 @@ async function executeSubscription(
 
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
-    const resolveFn = fieldDef.subscribe ?? exeContext.fieldResolver;
+    const resolveFn = fieldDef.subscribe ?? exeContext.subscribeFieldResolver;
     const eventStream = await resolveFn(rootValue, args, contextValue, info);
 
     if (eventStream instanceof Error) {
