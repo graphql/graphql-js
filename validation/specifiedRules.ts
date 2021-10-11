@@ -63,6 +63,7 @@ import { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule.ts';
 import { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule.ts';
 import { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule.ts';
 import { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule.ts';
+import { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule.ts';
 import { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule.ts';
 import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule.ts';
 /**
@@ -111,6 +112,7 @@ export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
     UniqueTypeNamesRule,
     UniqueEnumValueNamesRule,
     UniqueFieldDefinitionNamesRule,
+    UniqueArgumentDefinitionNamesRule,
     UniqueDirectiveNamesRule,
     KnownTypeNamesRule,
     KnownDirectivesRule,

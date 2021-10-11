@@ -89,6 +89,7 @@ export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule.ts';
 export { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule.ts';
 export { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule.ts';
 export { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule.ts';
+export { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule.ts';
 export { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule.ts';
 export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule.ts';
 /** Optional rules not defined by the GraphQL Specification */
