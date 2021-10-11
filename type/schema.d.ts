@@ -2,6 +2,7 @@ import type { ObjMap } from '../jsutils/ObjMap';
 import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLError } from '../error/GraphQLError';
 import type {
+  OperationTypeNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../language/ast';
@@ -114,6 +115,7 @@ export declare class GraphQLSchema {
   getQueryType(): Maybe<GraphQLObjectType>;
   getMutationType(): Maybe<GraphQLObjectType>;
   getSubscriptionType(): Maybe<GraphQLObjectType>;
+  getRootType(operation: OperationTypeNode): Maybe<GraphQLObjectType>;
   getTypeMap(): TypeMap;
   getType(name: string): GraphQLNamedType | undefined;
   getPossibleTypes(

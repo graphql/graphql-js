@@ -2,6 +2,8 @@ import { GraphQLError } from '../error/GraphQLError.mjs';
 
 /**
  * Extracts the root type of the operation from the schema.
+ *
+ * @deprecated Please use `GraphQLSchema.getRootType` instead. Will be removed in v17
  */
 export function getOperationRootType(schema, operation) {
   if (operation.operation === 'query') {

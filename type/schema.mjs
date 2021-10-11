@@ -254,6 +254,19 @@ export class GraphQLSchema {
     return this._subscriptionType;
   }
 
+  getRootType(operation) {
+    switch (operation) {
+      case 'query':
+        return this.getQueryType();
+
+      case 'mutation':
+        return this.getMutationType();
+
+      case 'subscription':
+        return this.getSubscriptionType();
+    }
+  }
+
   getTypeMap() {
     return this._typeMap;
   }

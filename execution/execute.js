@@ -43,8 +43,6 @@ var _introspection = require('../type/introspection.js');
 
 var _definition = require('../type/definition.js');
 
-var _getOperationRootType = require('../utilities/getOperationRootType.js');
-
 var _values = require('./values.js');
 
 var _collectFields = require('./collectFields.js');
@@ -292,15 +290,20 @@ function buildExecutionContext(args) {
  */
 
 function executeOperation(exeContext, operation, rootValue) {
-  const type = (0, _getOperationRootType.getOperationRootType)(
-    exeContext.schema,
-    operation,
-  );
-  const fields = (0, _collectFields.collectFields)(
+  const rootType = exeContext.schema.getRootType(operation.operation);
+
+  if (rootType == null) {
+    throw new _GraphQLError.GraphQLError(
+      `Schema is not configured to execute ${operation.operation} operation.`,
+      operation,
+    );
+  }
+
+  const rootFields = (0, _collectFields.collectFields)(
     exeContext.schema,
     exeContext.fragments,
     exeContext.variableValues,
-    type,
+    rootType,
     operation.selectionSet,
   );
   const path = undefined; // Errors from sub-fields of a NonNull type may propagate to the top level,
@@ -310,8 +313,14 @@ function executeOperation(exeContext, operation, rootValue) {
   try {
     const result =
       operation.operation === 'mutation'
-        ? executeFieldsSerially(exeContext, type, rootValue, path, fields)
-        : executeFields(exeContext, type, rootValue, path, fields);
+        ? executeFieldsSerially(
+            exeContext,
+            rootType,
+            rootValue,
+            path,
+            rootFields,
+          )
+        : executeFields(exeContext, rootType, rootValue, path, rootFields);
 
     if ((0, _isPromise.isPromise)(result)) {
       return result.then(undefined, (error) => {

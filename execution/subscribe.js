@@ -16,8 +16,6 @@ var _GraphQLError = require('../error/GraphQLError.js');
 
 var _locatedError = require('../error/locatedError.js');
 
-var _getOperationRootType = require('../utilities/getOperationRootType.js');
-
 var _collectFields = require('./collectFields.js');
 
 var _values = require('./values.js');
@@ -179,19 +177,24 @@ async function createSourceEventStream(
 async function executeSubscription(exeContext) {
   const { schema, fragments, operation, variableValues, rootValue } =
     exeContext;
-  const type = (0, _getOperationRootType.getOperationRootType)(
-    schema,
-    operation,
-  );
-  const fields = (0, _collectFields.collectFields)(
+  const rootType = schema.getSubscriptionType();
+
+  if (rootType == null) {
+    throw new _GraphQLError.GraphQLError(
+      'Schema is not configured to execute subscription operation.',
+      operation,
+    );
+  }
+
+  const rootFields = (0, _collectFields.collectFields)(
     schema,
     fragments,
     variableValues,
-    type,
+    rootType,
     operation.selectionSet,
   );
-  const [responseName, fieldNodes] = [...fields.entries()][0];
-  const fieldDef = (0, _execute.getFieldDef)(schema, type, fieldNodes[0]);
+  const [responseName, fieldNodes] = [...rootFields.entries()][0];
+  const fieldDef = (0, _execute.getFieldDef)(schema, rootType, fieldNodes[0]);
 
   if (!fieldDef) {
     const fieldName = fieldNodes[0].name.value;
@@ -201,12 +204,12 @@ async function executeSubscription(exeContext) {
     );
   }
 
-  const path = (0, _Path.addPath)(undefined, responseName, type.name);
+  const path = (0, _Path.addPath)(undefined, responseName, rootType.name);
   const info = (0, _execute.buildResolveInfo)(
     exeContext,
     fieldDef,
     fieldNodes,
-    type,
+    rootType,
     path,
   );
 
