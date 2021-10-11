@@ -51,8 +51,6 @@ import {
   isNonNullType,
 } from '../type/definition';
 
-import { getOperationRootType } from '../utilities/getOperationRootType';
-
 import { getVariableValues, getArgumentValues } from './values';
 import {
   collectFields,
@@ -336,12 +334,19 @@ function executeOperation(
   operation: OperationDefinitionNode,
   rootValue: unknown,
 ): PromiseOrValue<ObjMap<unknown> | null> {
-  const type = getOperationRootType(exeContext.schema, operation);
-  const fields = collectFields(
+  const rootType = exeContext.schema.getRootType(operation.operation);
+  if (rootType == null) {
+    throw new GraphQLError(
+      `Schema is not configured to execute ${operation.operation} operation.`,
+      operation,
+    );
+  }
+
+  const rootFields = collectFields(
     exeContext.schema,
     exeContext.fragments,
     exeContext.variableValues,
-    type,
+    rootType,
     operation.selectionSet,
   );
 
@@ -353,8 +358,14 @@ function executeOperation(
   try {
     const result =
       operation.operation === 'mutation'
-        ? executeFieldsSerially(exeContext, type, rootValue, path, fields)
-        : executeFields(exeContext, type, rootValue, path, fields);
+        ? executeFieldsSerially(
+            exeContext,
+            rootType,
+            rootValue,
+            path,
+            rootFields,
+          )
+        : executeFields(exeContext, rootType, rootValue, path, rootFields);
     if (isPromise(result)) {
       return result.then(undefined, (error) => {
         exeContext.errors.push(error);

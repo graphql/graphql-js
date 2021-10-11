@@ -367,6 +367,22 @@ describe('Subscription Initialization Phase', () => {
     );
   });
 
+  it('resolves to an error if schema does not support subscriptions', async () => {
+    const schema = new GraphQLSchema({ query: DummyQueryType });
+    const document = parse('subscription { unknownField }');
+
+    const result = await subscribe({ schema, document });
+    expectJSON(result).to.deep.equal({
+      errors: [
+        {
+          message:
+            'Schema is not configured to execute subscription operation.',
+          locations: [{ line: 1, column: 1 }],
+        },
+      ],
+    });
+  });
+
   it('resolves to an error for unknown subscription field', async () => {
     const schema = new GraphQLSchema({
       query: DummyQueryType,

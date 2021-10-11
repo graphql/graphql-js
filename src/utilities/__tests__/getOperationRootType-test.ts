@@ -40,7 +40,7 @@ function getOperationNode(doc: DocumentNode): OperationDefinitionNode {
   return operationNode;
 }
 
-describe('getOperationRootType', () => {
+describe('Deprecated - getOperationRootType', () => {
   it('Gets a Query type for an unnamed OperationDefinitionNode', () => {
     const testSchema = new GraphQLSchema({
       query: queryType,
