@@ -185,8 +185,27 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  const data = executeOperation(exeContext, exeContext.operation, rootValue);
-  return buildResponse(exeContext, data);
+  //
+  // Errors from sub-fields of a NonNull type may propagate to the top level,
+  // at which point we still log the error and null the parent field, which
+  // in this case is the entire response.
+  try {
+    const { operation } = exeContext;
+    const result = executeOperation(exeContext, operation, rootValue);
+    if (isPromise(result)) {
+      return result.then(
+        (data) => buildResponse(data, exeContext.errors),
+        (error) => {
+          exeContext.errors.push(error);
+          return buildResponse(null, exeContext.errors);
+        },
+      );
+    }
+    return buildResponse(result, exeContext.errors);
+  } catch (error) {
+    exeContext.errors.push(error);
+    return buildResponse(null, exeContext.errors);
+  }
 }
 
 /**
@@ -210,15 +229,10 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
  * response defined by the "Response" section of the GraphQL specification.
  */
 function buildResponse(
-  exeContext: ExecutionContext,
-  data: PromiseOrValue<ObjMap<unknown> | null>,
-): PromiseOrValue<ExecutionResult> {
-  if (isPromise(data)) {
-    return data.then((resolved) => buildResponse(exeContext, resolved));
-  }
-  return exeContext.errors.length === 0
-    ? { data }
-    : { errors: exeContext.errors, data };
+  data: ObjMap<unknown> | null,
+  errors: ReadonlyArray<GraphQLError>,
+): ExecutionResult {
+  return errors.length === 0 ? { data } : { errors, data };
 }
 
 /**
@@ -349,33 +363,23 @@ function executeOperation(
     rootType,
     operation.selectionSet,
   );
-
   const path = undefined;
 
-  // Errors from sub-fields of a NonNull type may propagate to the top level,
-  // at which point we still log the error and null the parent field, which
-  // in this case is the entire response.
-  try {
-    const result =
-      operation.operation === 'mutation'
-        ? executeFieldsSerially(
-            exeContext,
-            rootType,
-            rootValue,
-            path,
-            rootFields,
-          )
-        : executeFields(exeContext, rootType, rootValue, path, rootFields);
-    if (isPromise(result)) {
-      return result.then(undefined, (error) => {
-        exeContext.errors.push(error);
-        return null;
-      });
-    }
-    return result;
-  } catch (error) {
-    exeContext.errors.push(error);
-    return null;
+  switch (operation.operation) {
+    case 'query':
+      return executeFields(exeContext, rootType, rootValue, path, rootFields);
+    case 'mutation':
+      return executeFieldsSerially(
+        exeContext,
+        rootType,
+        rootValue,
+        path,
+        rootFields,
+      );
+    case 'subscription':
+      // TODO: deprecate `subscribe` and move all logic here
+      // Temporary solution until we finish merging execute and subscribe together
+      return executeFields(exeContext, rootType, rootValue, path, rootFields);
   }
 }
 
