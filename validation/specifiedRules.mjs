@@ -62,6 +62,7 @@ import { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule.mjs';
 import { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule.mjs';
 import { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule.mjs';
 import { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule.mjs';
+import { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule.mjs';
 import { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule.mjs';
 import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule.mjs';
 /**
@@ -109,6 +110,7 @@ export const specifiedSDLRules = Object.freeze([
   UniqueTypeNamesRule,
   UniqueEnumValueNamesRule,
   UniqueFieldDefinitionNamesRule,
+  UniqueArgumentDefinitionNamesRule,
   UniqueDirectiveNamesRule,
   KnownTypeNamesRule,
   KnownDirectivesRule,

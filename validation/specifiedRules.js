@@ -67,6 +67,8 @@ var _UniqueEnumValueNamesRule = require('./rules/UniqueEnumValueNamesRule.js');
 
 var _UniqueFieldDefinitionNamesRule = require('./rules/UniqueFieldDefinitionNamesRule.js');
 
+var _UniqueArgumentDefinitionNamesRule = require('./rules/UniqueArgumentDefinitionNamesRule.js');
+
 var _UniqueDirectiveNamesRule = require('./rules/UniqueDirectiveNamesRule.js');
 
 var _PossibleTypeExtensionsRule = require('./rules/PossibleTypeExtensionsRule.js');
@@ -144,6 +146,7 @@ const specifiedSDLRules = Object.freeze([
   _UniqueTypeNamesRule.UniqueTypeNamesRule,
   _UniqueEnumValueNamesRule.UniqueEnumValueNamesRule,
   _UniqueFieldDefinitionNamesRule.UniqueFieldDefinitionNamesRule,
+  _UniqueArgumentDefinitionNamesRule.UniqueArgumentDefinitionNamesRule,
   _UniqueDirectiveNamesRule.UniqueDirectiveNamesRule,
   _KnownTypeNamesRule.KnownTypeNamesRule,
   _KnownDirectivesRule.KnownDirectivesRule,

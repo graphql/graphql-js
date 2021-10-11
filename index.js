@@ -963,6 +963,12 @@ Object.defineProperty(exports, 'UniqueFieldDefinitionNamesRule', {
     return _index4.UniqueFieldDefinitionNamesRule;
   },
 });
+Object.defineProperty(exports, 'UniqueArgumentDefinitionNamesRule', {
+  enumerable: true,
+  get: function () {
+    return _index4.UniqueArgumentDefinitionNamesRule;
+  },
+});
 Object.defineProperty(exports, 'UniqueDirectiveNamesRule', {
   enumerable: true,
   get: function () {

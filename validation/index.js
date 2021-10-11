@@ -207,6 +207,12 @@ Object.defineProperty(exports, 'UniqueFieldDefinitionNamesRule', {
     return _UniqueFieldDefinitionNamesRule.UniqueFieldDefinitionNamesRule;
   },
 });
+Object.defineProperty(exports, 'UniqueArgumentDefinitionNamesRule', {
+  enumerable: true,
+  get: function () {
+    return _UniqueArgumentDefinitionNamesRule.UniqueArgumentDefinitionNamesRule;
+  },
+});
 Object.defineProperty(exports, 'UniqueDirectiveNamesRule', {
   enumerable: true,
   get: function () {
@@ -299,6 +305,8 @@ var _UniqueTypeNamesRule = require('./rules/UniqueTypeNamesRule.js');
 var _UniqueEnumValueNamesRule = require('./rules/UniqueEnumValueNamesRule.js');
 
 var _UniqueFieldDefinitionNamesRule = require('./rules/UniqueFieldDefinitionNamesRule.js');
+
+var _UniqueArgumentDefinitionNamesRule = require('./rules/UniqueArgumentDefinitionNamesRule.js');
 
 var _UniqueDirectiveNamesRule = require('./rules/UniqueDirectiveNamesRule.js');
 
