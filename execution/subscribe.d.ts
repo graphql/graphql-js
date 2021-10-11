@@ -4,14 +4,6 @@ import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
 import type { ExecutionArgs, ExecutionResult } from './execute';
 /**
- * @deprecated use ExecutionArgs instead. Will be removed in v17
- *
- * ExecutionArgs has been broadened to include all properties
- * within SubscriptionArgs. The SubscriptionArgs type is retained
- * for backwards compatibility.
- */
-export interface SubscriptionArgs extends ExecutionArgs {}
-/**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
  * Returns a Promise which resolves to either an AsyncIterator (if successful)
@@ -33,7 +25,7 @@ export interface SubscriptionArgs extends ExecutionArgs {}
  * Accepts either an object with named arguments, or individual arguments.
  */
 export declare function subscribe(
-  args: SubscriptionArgs,
+  args: ExecutionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the

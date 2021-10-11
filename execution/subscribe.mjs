@@ -14,15 +14,6 @@ import {
 } from './execute.mjs';
 import { mapAsyncIterator } from './mapAsyncIterator.mjs';
 /**
- * @deprecated use ExecutionArgs instead. Will be removed in v17
- *
- * ExecutionArgs has been broadened to include all properties
- * within SubscriptionArgs. The SubscriptionArgs type is retained
- * for backwards compatibility.
- */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-
-/**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
  * Returns a Promise which resolves to either an AsyncIterator (if successful)
@@ -43,6 +34,7 @@ import { mapAsyncIterator } from './mapAsyncIterator.mjs';
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
+
 export async function subscribe(args) {
   const {
     schema,
