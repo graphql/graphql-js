@@ -31,12 +31,6 @@ describe('Validate: Unique variable names', () => {
         locations: [
           { line: 2, column: 16 },
           { line: 2, column: 25 },
-        ],
-      },
-      {
-        message: 'There can be only one variable named "$x".',
-        locations: [
-          { line: 2, column: 16 },
           { line: 2, column: 34 },
         ],
       },

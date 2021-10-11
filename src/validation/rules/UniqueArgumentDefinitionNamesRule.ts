@@ -1,3 +1,5 @@
+import { groupBy } from '../../jsutils/groupBy';
+
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ASTVisitor } from '../../language/visitor';
@@ -71,21 +73,4 @@ export function UniqueArgumentDefinitionNamesRule(
 
     return false;
   }
-}
-
-function groupBy<K, T>(
-  list: ReadonlyArray<T>,
-  keyFn: (item: T) => K,
-): Map<K, Array<T>> {
-  const result = new Map<K, Array<T>>();
-  for (const item of list) {
-    const key = keyFn(item);
-    const group = result.get(key);
-    if (group === undefined) {
-      result.set(key, [item]);
-    } else {
-      group.push(item);
-    }
-  }
-  return result;
 }
