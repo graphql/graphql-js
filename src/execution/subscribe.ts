@@ -11,8 +11,6 @@ import type { DocumentNode } from '../language/ast';
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
 
-import { getOperationRootType } from '../utilities/getOperationRootType';
-
 import type {
   ExecutionArgs,
   ExecutionResult,
@@ -194,16 +192,24 @@ async function executeSubscription(
 ): Promise<unknown> {
   const { schema, fragments, operation, variableValues, rootValue } =
     exeContext;
-  const type = getOperationRootType(schema, operation);
-  const fields = collectFields(
+
+  const rootType = schema.getSubscriptionType();
+  if (rootType == null) {
+    throw new GraphQLError(
+      'Schema is not configured to execute subscription operation.',
+      operation,
+    );
+  }
+
+  const rootFields = collectFields(
     schema,
     fragments,
     variableValues,
-    type,
+    rootType,
     operation.selectionSet,
   );
-  const [responseName, fieldNodes] = [...fields.entries()][0];
-  const fieldDef = getFieldDef(schema, type, fieldNodes[0]);
+  const [responseName, fieldNodes] = [...rootFields.entries()][0];
+  const fieldDef = getFieldDef(schema, rootType, fieldNodes[0]);
 
   if (!fieldDef) {
     const fieldName = fieldNodes[0].name.value;
@@ -213,8 +219,14 @@ async function executeSubscription(
     );
   }
 
-  const path = addPath(undefined, responseName, type.name);
-  const info = buildResolveInfo(exeContext, fieldDef, fieldNodes, type, path);
+  const path = addPath(undefined, responseName, rootType.name);
+  const info = buildResolveInfo(
+    exeContext,
+    fieldDef,
+    fieldNodes,
+    rootType,
+    path,
+  );
 
   try {
     // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.

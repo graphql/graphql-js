@@ -169,19 +169,8 @@ export class TypeInfo {
         this._directive = schema.getDirective(node.name.value);
         break;
       case Kind.OPERATION_DEFINITION: {
-        let type: unknown;
-        switch (node.operation) {
-          case 'query':
-            type = schema.getQueryType();
-            break;
-          case 'mutation':
-            type = schema.getMutationType();
-            break;
-          case 'subscription':
-            type = schema.getSubscriptionType();
-            break;
-        }
-        this._typeStack.push(isObjectType(type) ? type : undefined);
+        const rootType = schema.getRootType(node.operation);
+        this._typeStack.push(isObjectType(rootType) ? rootType : undefined);
         break;
       }
       case Kind.INLINE_FRAGMENT:

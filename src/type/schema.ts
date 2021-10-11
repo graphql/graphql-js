@@ -9,6 +9,7 @@ import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLError } from '../error/GraphQLError';
 
 import type {
+  OperationTypeNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../language/ast';
@@ -273,6 +274,17 @@ export class GraphQLSchema {
 
   getSubscriptionType(): Maybe<GraphQLObjectType> {
     return this._subscriptionType;
+  }
+
+  getRootType(operation: OperationTypeNode): Maybe<GraphQLObjectType> {
+    switch (operation) {
+      case 'query':
+        return this.getQueryType();
+      case 'mutation':
+        return this.getMutationType();
+      case 'subscription':
+        return this.getSubscriptionType();
+    }
   }
 
   getTypeMap(): TypeMap {

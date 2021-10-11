@@ -908,6 +908,29 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result).to.deep.equal({ data: { a: 'b' } });
   });
 
+  it('resolves to an error if schema does not support operation', () => {
+    const schema = new GraphQLSchema({ assumeValid: true });
+
+    const document = parse(`
+      query Q { __typename }
+      mutation M { __typename }
+      subscription S { __typename }
+    `);
+
+    // FIXME: errors should be wrapped into ExecutionResult
+    expect(() =>
+      executeSync({ schema, document, operationName: 'Q' }),
+    ).to.throw('Schema is not configured to execute query operation.');
+
+    expect(() =>
+      executeSync({ schema, document, operationName: 'M' }),
+    ).to.throw('Schema is not configured to execute mutation operation.');
+
+    expect(() =>
+      executeSync({ schema, document, operationName: 'S' }),
+    ).to.throw('Schema is not configured to execute subscription operation.');
+  });
+
   it('correct field ordering despite execution order', async () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
