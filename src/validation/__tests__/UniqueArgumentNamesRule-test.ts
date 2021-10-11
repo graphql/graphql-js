@@ -113,12 +113,6 @@ describe('Validate: Unique argument names', () => {
         locations: [
           { line: 3, column: 15 },
           { line: 3, column: 30 },
-        ],
-      },
-      {
-        message: 'There can be only one argument named "arg1".',
-        locations: [
-          { line: 3, column: 15 },
           { line: 3, column: 45 },
         ],
       },
@@ -152,12 +146,6 @@ describe('Validate: Unique argument names', () => {
         locations: [
           { line: 3, column: 26 },
           { line: 3, column: 41 },
-        ],
-      },
-      {
-        message: 'There can be only one argument named "arg1".',
-        locations: [
-          { line: 3, column: 26 },
           { line: 3, column: 56 },
         ],
       },
