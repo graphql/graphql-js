@@ -30,12 +30,11 @@ import {
 import { mapAsyncIterator } from './mapAsyncIterator';
 
 /**
- * @deprecated use ExecutionArgs instead.
+ * @deprecated use ExecutionArgs instead. Will be removed in v17
  *
  * ExecutionArgs has been broadened to include all properties
  * within SubscriptionArgs. The SubscriptionArgs type is retained
- * for backwards compatibility and will be removed in the next major
- * version.
+ * for backwards compatibility.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SubscriptionArgs extends ExecutionArgs {}
