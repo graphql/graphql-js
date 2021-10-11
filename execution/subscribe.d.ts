@@ -2,19 +2,15 @@ import type { Maybe } from '../jsutils/Maybe';
 import type { DocumentNode } from '../language/ast';
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLFieldResolver } from '../type/definition';
-import type { ExecutionResult } from './execute';
-export interface SubscriptionArgs {
-  schema: GraphQLSchema;
-  document: DocumentNode;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Maybe<{
-    readonly [variable: string]: unknown;
-  }>;
-  operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-}
+import type { ExecutionArgs, ExecutionResult } from './execute';
+/**
+ * @deprecated use ExecutionArgs instead. Will be removed in v17
+ *
+ * ExecutionArgs has been broadened to include all properties
+ * within SubscriptionArgs. The SubscriptionArgs type is retained
+ * for backwards compatibility.
+ */
+export interface SubscriptionArgs extends ExecutionArgs {}
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
@@ -76,5 +72,5 @@ export declare function createSourceEventStream(
     readonly [variable: string]: unknown;
   }>,
   operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): Promise<AsyncIterable<unknown> | ExecutionResult>;

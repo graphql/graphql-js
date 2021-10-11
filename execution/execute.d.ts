@@ -54,6 +54,7 @@ export interface ExecutionContext {
   };
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
+  subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
 }
 /**
@@ -90,6 +91,7 @@ export interface ExecutionArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -132,16 +134,7 @@ export declare function assertValidExecutionArguments(
  * @internal
  */
 export declare function buildExecutionContext(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue: unknown,
-  contextValue: unknown,
-  rawVariableValues: Maybe<{
-    readonly [variable: string]: unknown;
-  }>,
-  operationName: Maybe<string>,
-  fieldResolver: Maybe<GraphQLFieldResolver<unknown, unknown>>,
-  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>,
+  args: ExecutionArgs,
 ): ReadonlyArray<GraphQLError> | ExecutionContext;
 /**
  * @internal

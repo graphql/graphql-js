@@ -102,30 +102,12 @@ const collectSubfields = (0, _memoize.memoize3)(
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 function execute(args) {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  } = args; // If arguments are missing or incorrect, throw an error.
+  const { schema, document, variableValues, rootValue } = args; // If arguments are missing or incorrect, throw an error.
 
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
 
-  const exeContext = buildExecutionContext(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-  ); // Return early errors if execution context failed.
+  const exeContext = buildExecutionContext(args); // Return early errors if execution context failed.
 
   if (!('schema' in exeContext)) {
     return {
@@ -204,18 +186,20 @@ function assertValidExecutionArguments(schema, document, rawVariableValues) {
  * @internal
  */
 
-function buildExecutionContext(
-  schema,
-  document,
-  rootValue,
-  contextValue,
-  rawVariableValues,
-  operationName,
-  fieldResolver,
-  typeResolver,
-) {
+function buildExecutionContext(args) {
   var _definition$name, _operation$variableDe;
 
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues: rawVariableValues,
+    operationName,
+    fieldResolver,
+    typeResolver,
+    subscribeFieldResolver,
+  } = args;
   let operation;
   const fragments = Object.create(null);
 
@@ -296,6 +280,10 @@ function buildExecutionContext(
       typeResolver !== null && typeResolver !== void 0
         ? typeResolver
         : defaultTypeResolver,
+    subscribeFieldResolver:
+      subscribeFieldResolver !== null && subscribeFieldResolver !== void 0
+        ? subscribeFieldResolver
+        : defaultFieldResolver,
     errors: [],
   };
 }

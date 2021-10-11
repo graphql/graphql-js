@@ -14,6 +14,14 @@ import {
   getFieldDef,
 } from './execute.mjs';
 import { mapAsyncIterator } from './mapAsyncIterator.mjs';
+/**
+ * @deprecated use ExecutionArgs instead. Will be removed in v17
+ *
+ * ExecutionArgs has been broadened to include all properties
+ * within SubscriptionArgs. The SubscriptionArgs type is retained
+ * for backwards compatibility.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -115,22 +123,22 @@ export async function createSourceEventStream(
   contextValue,
   variableValues,
   operationName,
-  fieldResolver,
+  subscribeFieldResolver,
 ) {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
 
-  const exeContext = buildExecutionContext(
+  const exeContext = buildExecutionContext({
     schema,
     document,
     rootValue,
     contextValue,
     variableValues,
     operationName,
-    fieldResolver,
-  ); // Return early errors if execution context failed.
+    subscribeFieldResolver,
+  }); // Return early errors if execution context failed.
 
   if (!('schema' in exeContext)) {
     return {
@@ -205,7 +213,7 @@ async function executeSubscription(exeContext) {
       (_fieldDef$subscribe = fieldDef.subscribe) !== null &&
       _fieldDef$subscribe !== void 0
         ? _fieldDef$subscribe
-        : exeContext.fieldResolver;
+        : exeContext.subscribeFieldResolver;
     const eventStream = await resolveFn(rootValue, args, contextValue, info);
 
     if (eventStream instanceof Error) {
