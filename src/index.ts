@@ -320,8 +320,9 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
-  SubscriptionArgs,
 } from './execution/index';
+
+export type { SubscriptionArgs } from './subscription/index';
 
 /** Validate GraphQL documents. */
 export {
