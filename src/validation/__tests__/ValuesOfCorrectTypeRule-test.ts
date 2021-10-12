@@ -32,11 +32,11 @@ function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
-  expectErrorsWithSchema(schema, queryStr).to.deep.equal([]);
+  expectErrorsWithSchema(schema, queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Values of correct type', () => {
@@ -188,7 +188,7 @@ describe('Validate: Values of correct type', () => {
             stringArgField(stringArg: 1)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'String cannot represent a non string value: 1',
           locations: [{ line: 4, column: 39 }],
@@ -203,7 +203,7 @@ describe('Validate: Values of correct type', () => {
             stringArgField(stringArg: 1.0)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'String cannot represent a non string value: 1.0',
           locations: [{ line: 4, column: 39 }],
@@ -218,7 +218,7 @@ describe('Validate: Values of correct type', () => {
             stringArgField(stringArg: true)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'String cannot represent a non string value: true',
           locations: [{ line: 4, column: 39 }],
@@ -233,7 +233,7 @@ describe('Validate: Values of correct type', () => {
             stringArgField(stringArg: BAR)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'String cannot represent a non string value: BAR',
           locations: [{ line: 4, column: 39 }],
@@ -250,7 +250,7 @@ describe('Validate: Values of correct type', () => {
             intArgField(intArg: "3")
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Int cannot represent non-integer value: "3"',
           locations: [{ line: 4, column: 33 }],
@@ -265,7 +265,7 @@ describe('Validate: Values of correct type', () => {
             intArgField(intArg: 829384293849283498239482938)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Int cannot represent non 32-bit signed integer value: 829384293849283498239482938',
@@ -281,7 +281,7 @@ describe('Validate: Values of correct type', () => {
             intArgField(intArg: FOO)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Int cannot represent non-integer value: FOO',
           locations: [{ line: 4, column: 33 }],
@@ -296,7 +296,7 @@ describe('Validate: Values of correct type', () => {
             intArgField(intArg: 3.0)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Int cannot represent non-integer value: 3.0',
           locations: [{ line: 4, column: 33 }],
@@ -311,7 +311,7 @@ describe('Validate: Values of correct type', () => {
             intArgField(intArg: 3.333)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Int cannot represent non-integer value: 3.333',
           locations: [{ line: 4, column: 33 }],
@@ -328,7 +328,7 @@ describe('Validate: Values of correct type', () => {
             floatArgField(floatArg: "3.333")
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Float cannot represent non numeric value: "3.333"',
           locations: [{ line: 4, column: 37 }],
@@ -343,7 +343,7 @@ describe('Validate: Values of correct type', () => {
             floatArgField(floatArg: true)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Float cannot represent non numeric value: true',
           locations: [{ line: 4, column: 37 }],
@@ -358,7 +358,7 @@ describe('Validate: Values of correct type', () => {
             floatArgField(floatArg: FOO)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Float cannot represent non numeric value: FOO',
           locations: [{ line: 4, column: 37 }],
@@ -375,7 +375,7 @@ describe('Validate: Values of correct type', () => {
             booleanArgField(booleanArg: 2)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Boolean cannot represent a non boolean value: 2',
           locations: [{ line: 4, column: 41 }],
@@ -390,7 +390,7 @@ describe('Validate: Values of correct type', () => {
             booleanArgField(booleanArg: 1.0)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Boolean cannot represent a non boolean value: 1.0',
           locations: [{ line: 4, column: 41 }],
@@ -405,7 +405,7 @@ describe('Validate: Values of correct type', () => {
             booleanArgField(booleanArg: "true")
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Boolean cannot represent a non boolean value: "true"',
           locations: [{ line: 4, column: 41 }],
@@ -420,7 +420,7 @@ describe('Validate: Values of correct type', () => {
             booleanArgField(booleanArg: TRUE)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Boolean cannot represent a non boolean value: TRUE',
           locations: [{ line: 4, column: 41 }],
@@ -437,7 +437,7 @@ describe('Validate: Values of correct type', () => {
             idArgField(idArg: 1.0)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'ID cannot represent a non-string and non-integer value: 1.0',
@@ -453,7 +453,7 @@ describe('Validate: Values of correct type', () => {
             idArgField(idArg: true)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'ID cannot represent a non-string and non-integer value: true',
@@ -469,7 +469,7 @@ describe('Validate: Values of correct type', () => {
             idArgField(idArg: SOMETHING)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'ID cannot represent a non-string and non-integer value: SOMETHING',
@@ -487,7 +487,7 @@ describe('Validate: Values of correct type', () => {
             doesKnowCommand(dogCommand: 2)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Enum "DogCommand" cannot represent non-enum value: 2.',
           locations: [{ line: 4, column: 41 }],
@@ -502,7 +502,7 @@ describe('Validate: Values of correct type', () => {
             doesKnowCommand(dogCommand: 1.0)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Enum "DogCommand" cannot represent non-enum value: 1.0.',
           locations: [{ line: 4, column: 41 }],
@@ -517,7 +517,7 @@ describe('Validate: Values of correct type', () => {
             doesKnowCommand(dogCommand: "SIT")
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Enum "DogCommand" cannot represent non-enum value: "SIT". Did you mean the enum value "SIT"?',
@@ -533,7 +533,7 @@ describe('Validate: Values of correct type', () => {
             doesKnowCommand(dogCommand: true)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Enum "DogCommand" cannot represent non-enum value: true.',
           locations: [{ line: 4, column: 41 }],
@@ -548,7 +548,7 @@ describe('Validate: Values of correct type', () => {
             doesKnowCommand(dogCommand: JUGGLE)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Value "JUGGLE" does not exist in "DogCommand" enum.',
           locations: [{ line: 4, column: 41 }],
@@ -563,7 +563,7 @@ describe('Validate: Values of correct type', () => {
             doesKnowCommand(dogCommand: sit)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Value "sit" does not exist in "DogCommand" enum. Did you mean the enum value "SIT"?',
@@ -623,7 +623,7 @@ describe('Validate: Values of correct type', () => {
             stringListArgField(stringListArg: ["one", 2])
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'String cannot represent a non string value: 2',
           locations: [{ line: 4, column: 55 }],
@@ -638,7 +638,7 @@ describe('Validate: Values of correct type', () => {
             stringListArgField(stringListArg: 1)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'String cannot represent a non string value: 1',
           locations: [{ line: 4, column: 47 }],
@@ -757,7 +757,7 @@ describe('Validate: Values of correct type', () => {
             multipleReqs(req2: "two", req1: "one")
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Int cannot represent non-integer value: "two"',
           locations: [{ line: 4, column: 32 }],
@@ -776,7 +776,7 @@ describe('Validate: Values of correct type', () => {
             multipleReqs(req1: "one")
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Int cannot represent non-integer value: "one"',
           locations: [{ line: 4, column: 32 }],
@@ -791,7 +791,7 @@ describe('Validate: Values of correct type', () => {
             multipleReqs(req1: null)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Expected value of type "Int!", found null.',
           locations: [{ line: 4, column: 32 }],
@@ -882,7 +882,7 @@ describe('Validate: Values of correct type', () => {
             complexArgField(complexArg: { intField: 4 })
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Field "ComplexInput.requiredField" of required type "Boolean!" was not provided.',
@@ -901,7 +901,7 @@ describe('Validate: Values of correct type', () => {
             })
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'String cannot represent a non string value: 2',
           locations: [{ line: 5, column: 40 }],
@@ -919,7 +919,7 @@ describe('Validate: Values of correct type', () => {
             })
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Expected value of type "Boolean!", found null.',
           locations: [{ line: 6, column: 29 }],
@@ -937,7 +937,7 @@ describe('Validate: Values of correct type', () => {
             })
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Field "invalidField" is not defined by type "ComplexInput". Did you mean "intField"?',
@@ -971,7 +971,7 @@ describe('Validate: Values of correct type', () => {
       const doc = parse('{ invalidArg(arg: 123) }');
       const errors = validate(schema, doc, [ValuesOfCorrectTypeRule]);
 
-      expectJSON(errors).to.deep.equal([
+      expectJSON(errors).toDeepEqual([
         {
           message:
             'Expected value of type "Invalid", found 123; Invalid scalar is always invalid: 123',
@@ -1005,7 +1005,7 @@ describe('Validate: Values of correct type', () => {
         }),
       });
 
-      expectErrorsWithSchema(schema, '{ invalidArg(arg: 123) }').to.deep.equal([
+      expectErrorsWithSchema(schema, '{ invalidArg(arg: 123) }').toDeepEqual([
         {
           message: 'Expected value of type "CustomScalar", found 123.',
           locations: [{ line: 1, column: 19 }],
@@ -1062,7 +1062,7 @@ describe('Validate: Values of correct type', () => {
             name @skip(if: ENUM)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Boolean cannot represent a non boolean value: "yes"',
           locations: [{ line: 3, column: 28 }],
@@ -1110,7 +1110,7 @@ describe('Validate: Values of correct type', () => {
         ) {
           dog { name }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Expected value of type "Int!", found null.',
           locations: [{ line: 3, column: 22 }],
@@ -1135,7 +1135,7 @@ describe('Validate: Values of correct type', () => {
         ) {
           dog { name }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Int cannot represent non-integer value: "one"',
           locations: [{ line: 3, column: 21 }],
@@ -1159,7 +1159,7 @@ describe('Validate: Values of correct type', () => {
         ) {
           dog { name }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Boolean cannot represent a non boolean value: 123',
           locations: [{ line: 3, column: 47 }],
@@ -1176,7 +1176,7 @@ describe('Validate: Values of correct type', () => {
         query MissingRequiredField($a: ComplexInput = {intField: 3}) {
           dog { name }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Field "ComplexInput.requiredField" of required type "Boolean!" was not provided.',
@@ -1190,7 +1190,7 @@ describe('Validate: Values of correct type', () => {
         query InvalidItem($a: [String] = ["one", 2]) {
           dog { name }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'String cannot represent a non string value: 2',
           locations: [{ line: 2, column: 50 }],

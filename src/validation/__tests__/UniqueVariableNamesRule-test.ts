@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Unique variable names', () => {
@@ -25,7 +25,7 @@ describe('Validate: Unique variable names', () => {
       query A($x: Int, $x: Int, $x: String) { __typename }
       query B($x: String, $x: Int) { __typename }
       query C($x: Int, $x: Int) { __typename }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one variable named "$x".',
         locations: [

@@ -372,7 +372,7 @@ describe('Subscription Initialization Phase', () => {
     const document = parse('subscription { unknownField }');
 
     const result = await subscribe({ schema, document });
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message:
@@ -396,7 +396,7 @@ describe('Subscription Initialization Phase', () => {
     const document = parse('subscription { unknownField }');
 
     const result = await subscribe({ schema, document });
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message: 'The subscription field "unknownField" is not defined.',
@@ -456,7 +456,7 @@ describe('Subscription Initialization Phase', () => {
       const document = parse('subscription { foo }');
       const result = await subscribe({ schema, document });
 
-      expect(await createSourceEventStream(schema, document)).to.deep.equal(
+      expectJSON(await createSourceEventStream(schema, document)).toDeepEqual(
         result,
       );
       return result;
@@ -475,24 +475,24 @@ describe('Subscription Initialization Phase', () => {
     expectJSON(
       // Returning an error
       await subscribeWithFn(() => new Error('test error')),
-    ).to.deep.equal(expectedResult);
+    ).toDeepEqual(expectedResult);
 
     expectJSON(
       // Throwing an error
       await subscribeWithFn(() => {
         throw new Error('test error');
       }),
-    ).to.deep.equal(expectedResult);
+    ).toDeepEqual(expectedResult);
 
     expectJSON(
       // Resolving to an error
       await subscribeWithFn(() => Promise.resolve(new Error('test error'))),
-    ).to.deep.equal(expectedResult);
+    ).toDeepEqual(expectedResult);
 
     expectJSON(
       // Rejecting with an error
       await subscribeWithFn(() => Promise.reject(new Error('test error'))),
-    ).to.deep.equal(expectedResult);
+    ).toDeepEqual(expectedResult);
   });
 
   it('resolves to an error if variables were wrong type', async () => {
@@ -519,7 +519,7 @@ describe('Subscription Initialization Phase', () => {
     // If we receive variables that cannot be coerced correctly, subscribe() will
     // resolve to an ExecutionResult that contains an informative error description.
     const result = await subscribe({ schema, document, variableValues });
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message:
@@ -941,7 +941,7 @@ describe('Subscription Publish Phase', () => {
     });
 
     // An error in execution is presented as such.
-    expectJSON(await subscription.next()).to.deep.equal({
+    expectJSON(await subscription.next()).toDeepEqual({
       done: false,
       value: {
         data: { newMessage: null },
@@ -957,7 +957,7 @@ describe('Subscription Publish Phase', () => {
 
     // However that does not close the response event stream.
     // Subsequent events are still executed.
-    expectJSON(await subscription.next()).to.deep.equal({
+    expectJSON(await subscription.next()).toDeepEqual({
       done: false,
       value: {
         data: { newMessage: 'Bonjour' },

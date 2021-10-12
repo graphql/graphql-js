@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Unique input field names', () => {
@@ -58,7 +58,7 @@ describe('Validate: Unique input field names', () => {
       {
         field(arg: { f1: "value", f1: "value" })
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one input field named "f1".',
         locations: [
@@ -74,7 +74,7 @@ describe('Validate: Unique input field names', () => {
       {
         field(arg: { f1: "value", f1: "value", f1: "value" })
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one input field named "f1".',
         locations: [
@@ -97,7 +97,7 @@ describe('Validate: Unique input field names', () => {
       {
         field(arg: { f1: {f2: "value", f2: "value" }})
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one input field named "f2".',
         locations: [

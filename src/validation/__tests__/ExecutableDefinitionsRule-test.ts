@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Executable definitions', () => {
@@ -53,7 +53,7 @@ describe('Validate: Executable definitions', () => {
       extend type Dog {
         color: String
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'The "Cow" definition is not executable.',
         locations: [{ line: 8, column: 7 }],
@@ -76,7 +76,7 @@ describe('Validate: Executable definitions', () => {
       }
 
       extend schema @directive
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'The schema definition is not executable.',
         locations: [{ line: 2, column: 7 }],

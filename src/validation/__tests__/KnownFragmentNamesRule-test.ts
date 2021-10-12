@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Known fragment names', () => {
@@ -53,7 +53,7 @@ describe('Validate: Known fragment names', () => {
         name
         ...UnknownFragment3
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown fragment "UnknownFragment1".',
         locations: [{ line: 4, column: 14 }],

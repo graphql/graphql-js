@@ -149,7 +149,7 @@ describe('Type System: Enum Values', () => {
   it('does not accept string literals', () => {
     const result = executeQuery('{ colorEnum(fromEnum: "GREEN") }');
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message:
@@ -163,7 +163,7 @@ describe('Type System: Enum Values', () => {
   it('does not accept values not in the enum', () => {
     const result = executeQuery('{ colorEnum(fromEnum: GREENISH) }');
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message:
@@ -177,7 +177,7 @@ describe('Type System: Enum Values', () => {
   it('does not accept values with incorrect casing', () => {
     const result = executeQuery('{ colorEnum(fromEnum: green) }');
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message:
@@ -191,7 +191,7 @@ describe('Type System: Enum Values', () => {
   it('does not accept incorrect internal value', () => {
     const result = executeQuery('{ colorEnum(fromString: "GREEN") }');
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       data: { colorEnum: null },
       errors: [
         {
@@ -206,7 +206,7 @@ describe('Type System: Enum Values', () => {
   it('does not accept internal value in place of enum literal', () => {
     const result = executeQuery('{ colorEnum(fromEnum: 1) }');
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message: 'Enum "Color" cannot represent non-enum value: 1.',
@@ -219,7 +219,7 @@ describe('Type System: Enum Values', () => {
   it('does not accept enum literal in place of int', () => {
     const result = executeQuery('{ colorEnum(fromInt: GREEN) }');
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message: 'Int cannot represent non-integer value: GREEN',
@@ -261,7 +261,7 @@ describe('Type System: Enum Values', () => {
     const doc = 'query ($color: Color!) { colorEnum(fromEnum: $color) }';
     const result = executeQuery(doc, { color: 2 });
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message:
@@ -276,7 +276,7 @@ describe('Type System: Enum Values', () => {
     const doc = 'query ($color: String!) { colorEnum(fromEnum: $color) }';
     const result = executeQuery(doc, { color: 'BLUE' });
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message:
@@ -294,7 +294,7 @@ describe('Type System: Enum Values', () => {
     const doc = 'query ($color: Int!) { colorEnum(fromEnum: $color) }';
     const result = executeQuery(doc, { color: 2 });
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [
         {
           message:
@@ -381,7 +381,7 @@ describe('Type System: Enum Values', () => {
       }
     `);
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       data: {
         first: 'ONE',
         second: 'TWO',

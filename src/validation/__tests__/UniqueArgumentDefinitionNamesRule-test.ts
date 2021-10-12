@@ -13,7 +13,7 @@ function expectSDLErrors(sdlStr: string) {
 }
 
 function expectValidSDL(sdlStr: string) {
-  expectSDLErrors(sdlStr).to.deep.equal([]);
+  expectSDLErrors(sdlStr).toDeepEqual([]);
 }
 
 describe('Validate: Unique argument definition names', () => {
@@ -91,7 +91,7 @@ describe('Validate: Unique argument definition names', () => {
         bar: String
         foo: String
       ) on QUERY
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Argument "SomeObject.someField(foo:)" can only be defined once.',

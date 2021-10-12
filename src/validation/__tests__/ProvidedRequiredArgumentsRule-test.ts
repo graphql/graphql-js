@@ -16,7 +16,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
@@ -28,7 +28,7 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 }
 
 function expectValidSDL(sdlStr: string) {
-  expectSDLErrors(sdlStr).to.deep.equal([]);
+  expectSDLErrors(sdlStr).toDeepEqual([]);
 }
 
 describe('Validate: Provided required arguments', () => {
@@ -162,7 +162,7 @@ describe('Validate: Provided required arguments', () => {
             multipleReqs(req2: 2)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Field "multipleReqs" argument "req1" of type "Int!" is required, but it was not provided.',
@@ -178,7 +178,7 @@ describe('Validate: Provided required arguments', () => {
             multipleReqs
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Field "multipleReqs" argument "req1" of type "Int!" is required, but it was not provided.',
@@ -199,7 +199,7 @@ describe('Validate: Provided required arguments', () => {
             multipleReqs(req1: "one")
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Field "multipleReqs" argument "req2" of type "Int!" is required, but it was not provided.',
@@ -238,7 +238,7 @@ describe('Validate: Provided required arguments', () => {
             name @skip
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Directive "@include" argument "if" of type "Boolean!" is required, but it was not provided.',
@@ -271,7 +271,7 @@ describe('Validate: Provided required arguments', () => {
         }
 
         directive @test(arg: String!) on FIELD_DEFINITION
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
@@ -285,7 +285,7 @@ describe('Validate: Provided required arguments', () => {
         type Query {
           foo: String @include
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Directive "@include" argument "if" of type "Boolean!" is required, but it was not provided.',
@@ -300,7 +300,7 @@ describe('Validate: Provided required arguments', () => {
           foo: String @deprecated
         }
         directive @deprecated(reason: String!) on FIELD
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Directive "@deprecated" argument "reason" of type "String!" is required, but it was not provided.',
@@ -322,7 +322,7 @@ describe('Validate: Provided required arguments', () => {
           extend type Query  @test
         `,
         schema,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           message:
             'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
@@ -344,7 +344,7 @@ describe('Validate: Provided required arguments', () => {
           extend type Query @test
         `,
         schema,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           message:
             'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',

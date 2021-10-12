@@ -39,7 +39,7 @@ describe('Validate: Supports full validation', () => {
     `);
 
     const errors = validate(testSchema, doc);
-    expectJSON(errors).to.deep.equal([]);
+    expectJSON(errors).toDeepEqual([]);
   });
 
   it('detects unknown fields', () => {
@@ -50,7 +50,7 @@ describe('Validate: Supports full validation', () => {
     `);
 
     const errors = validate(testSchema, doc);
-    expectJSON(errors).to.deep.equal([
+    expectJSON(errors).toDeepEqual([
       {
         locations: [{ line: 3, column: 9 }],
         message: 'Cannot query field "unknown" on type "QueryRoot".',
@@ -116,7 +116,7 @@ describe('Validate: Supports full validation', () => {
     }
 
     const errors = validate(schema, doc, [customRule]);
-    expectJSON(errors).to.deep.equal([
+    expectJSON(errors).toDeepEqual([
       {
         message: 'Reporting directive: @custom',
         locations: [{ line: 3, column: 14 }],
@@ -148,7 +148,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
 
   it('when maxErrors is equal to number of errors', () => {
     const errors = validateDocument({ maxErrors: 3 });
-    expectJSON(errors).to.be.deep.equal([
+    expectJSON(errors).toDeepEqual([
       invalidFieldError('firstUnknownField'),
       invalidFieldError('secondUnknownField'),
       invalidFieldError('thirdUnknownField'),
@@ -157,7 +157,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
 
   it('when maxErrors is less than number of errors', () => {
     const errors = validateDocument({ maxErrors: 2 });
-    expectJSON(errors).to.be.deep.equal([
+    expectJSON(errors).toDeepEqual([
       invalidFieldError('firstUnknownField'),
       invalidFieldError('secondUnknownField'),
       {

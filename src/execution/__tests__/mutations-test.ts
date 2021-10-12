@@ -169,7 +169,7 @@ describe('Execute: Handles mutation execution ordering', () => {
     const rootValue = new Root(6);
     const result = await execute({ schema, document, rootValue });
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       data: {
         first: { theNumber: 1 },
         second: { theNumber: 2 },
