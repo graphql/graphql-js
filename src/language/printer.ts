@@ -69,7 +69,7 @@ const printDocASTReducer: ASTReducer<string> = {
       } else if (required === 'optional') {
         prefix += '?';
       }
-      
+
       let argsLine = prefix + wrap('(', join(args, ', '), ')');
 
       if (argsLine.length > MAX_LINE_LENGTH) {

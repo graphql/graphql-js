@@ -991,7 +991,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             `,
         );
       });
-      
+
       it('matching optional and optional nullability status', () => {
         expectValidWithSchema(
           schema,
@@ -1027,7 +1027,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             `,
         );
       });
-      
+
       it('conflicting optional and required nullability status', () => {
         expectErrorsWithSchema(
           schema,
@@ -1192,7 +1192,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     });
 
     describe('Exclusive types without aliases', () => {
-      it('conflicting optional and required nullability status', () =>{
+      it('conflicting optional and required nullability status', () => {
         expectErrorsWithSchema(
           schema,
           `
@@ -1206,7 +1206,7 @@ describe('Validate: Overlapping fields can be merged', () => {
                 }
               }
             }
-          `
+          `,
         ).to.deep.equal([
           {
             message:
@@ -1219,7 +1219,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         ]);
       });
 
-      it('matching optional and optional nullability status', () =>{
+      it('matching optional and optional nullability status', () => {
         expectErrorsWithSchema(
           schema,
           `
@@ -1233,7 +1233,7 @@ describe('Validate: Overlapping fields can be merged', () => {
                 }
               }
             }
-          `
+          `,
         ).to.deep.equal([
           {
             message:
@@ -1246,7 +1246,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         ]);
       });
 
-      it('matching required and required nullability status', () =>{
+      it('matching required and required nullability status', () => {
         expectErrorsWithSchema(
           schema,
           `
@@ -1260,7 +1260,7 @@ describe('Validate: Overlapping fields can be merged', () => {
                 }
               }
             }
-          `
+          `,
         ).to.deep.equal([
           {
             message:
@@ -1273,7 +1273,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         ]);
       });
 
-      it('conflicting unset (optional) and required nullability status', () =>{
+      it('conflicting unset (optional) and required nullability status', () => {
         expectErrorsWithSchema(
           schema,
           `
@@ -1287,7 +1287,7 @@ describe('Validate: Overlapping fields can be merged', () => {
                 }
               }
             }
-          `
+          `,
         ).to.deep.equal([
           {
             message:
@@ -1300,7 +1300,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         ]);
       });
 
-      it('matching unset (optional) and optional nullability status', () =>{
+      it('matching unset (optional) and optional nullability status', () => {
         expectErrorsWithSchema(
           schema,
           `
@@ -1314,7 +1314,7 @@ describe('Validate: Overlapping fields can be merged', () => {
                 }
               }
             }
-          `
+          `,
         ).to.deep.equal([
           {
             message:
@@ -1327,7 +1327,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         ]);
       });
 
-      it('matching unset (optional) and unset (optional) nullability status', () =>{
+      it('matching unset (optional) and unset (optional) nullability status', () => {
         expectErrorsWithSchema(
           schema,
           `
@@ -1341,7 +1341,7 @@ describe('Validate: Overlapping fields can be merged', () => {
                 }
               }
             }
-          `
+          `,
         ).to.deep.equal([
           {
             message:
