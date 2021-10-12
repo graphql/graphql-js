@@ -1324,7 +1324,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: singleNonNullOnNullValueDocument,
       });
 
-      expect(singleNonNullOnNullValueResult).to.deep.equal({
+      expectJSON(singleNonNullOnNullValueResult).to.deep.equal({
         data: { food: null },
         errors: [
           {
@@ -1350,7 +1350,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: bothNonNullOnNullValueDocument,
       });
 
-      expect(bothNonNullOnNullValueResult).to.deep.equal({
+      expectJSON(bothNonNullOnNullValueResult).to.deep.equal({
         data: { food: null },
         errors: [
           {
@@ -1393,7 +1393,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: nonNullAliasOnNullValueDocument,
       });
 
-      expect(nonNullAliasOnNullValueResult).to.deep.equal({
+      expectJSON(nonNullAliasOnNullValueResult).to.deep.equal({
         data: { food: null },
         errors: [
           {
@@ -1420,7 +1420,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: nonNullInFragmentDocument,
       });
 
-      expect(nonNullInFragmentResult).to.deep.equal({
+      expectJSON(nonNullInFragmentResult).to.deep.equal({
         data: { food: null },
         errors: [
           {
@@ -1451,7 +1451,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: aliasedNullAndNonNull,
       });
 
-      expect(aliasedNullAndNonNullResult).to.deep.equal({
+      expectJSON(aliasedNullAndNonNullResult).to.deep.equal({
         data: { nonNullable: null, nullable: { calories: 10, name: null } },
         errors: [
           {
