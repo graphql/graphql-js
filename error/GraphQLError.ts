@@ -26,7 +26,7 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  readonly locations?: ReadonlyArray<SourceLocation>;
+  readonly locations: ReadonlyArray<SourceLocation> | undefined;
   /**
    * An array describing the JSON-path into the execution response which
    * corresponds to this error. Only included for errors during execution.
@@ -34,12 +34,12 @@ export class GraphQLError extends Error {
    * Enumerable, and appears in the result of JSON.stringify().
    */
 
-  readonly path?: ReadonlyArray<string | number>;
+  readonly path: ReadonlyArray<string | number> | undefined;
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
 
-  readonly nodes?: ReadonlyArray<ASTNode>;
+  readonly nodes: ReadonlyArray<ASTNode> | undefined;
   /**
    * The source GraphQL document for the first location of this error.
    *
@@ -47,25 +47,27 @@ export class GraphQLError extends Error {
    * represent nodes after the first node.
    */
 
-  readonly source?: Source;
+  readonly source: Source | undefined;
   /**
    * An array of character offsets within the source GraphQL document
    * which correspond to this error.
    */
 
-  readonly positions?: ReadonlyArray<number>;
+  readonly positions: ReadonlyArray<number> | undefined;
   /**
    * The original error thrown from a field resolver during execution.
    */
 
-  readonly originalError: Maybe<Error>;
+  readonly originalError: Error | undefined;
   /**
    * Extension fields to add to the formatted error.
    */
 
-  readonly extensions?: {
-    [key: string]: unknown;
-  };
+  readonly extensions:
+    | {
+        [key: string]: unknown;
+      }
+    | undefined;
 
   constructor(
     message: string,
@@ -82,9 +84,12 @@ export class GraphQLError extends Error {
       [key: string]: unknown;
     }>,
   ) {
-    super(message); // Compute list of blame nodes.
+    super(message);
+    this.name = 'GraphQLError';
+    this.path = path ?? undefined;
+    this.originalError = originalError ?? undefined; // Compute list of blame nodes.
 
-    const _nodes = Array.isArray(nodes)
+    this.nodes = Array.isArray(nodes)
       ? nodes.length !== 0
         ? nodes
         : undefined
@@ -92,106 +97,49 @@ export class GraphQLError extends Error {
       ? [nodes]
       : undefined; // Compute locations in the source for the given nodes/positions.
 
-    let _source = source;
+    this.source = source ?? undefined;
 
-    if (!_source && _nodes) {
-      _source = _nodes[0].loc?.source;
+    if (!this.source && this.nodes) {
+      this.source = this.nodes[0].loc?.source;
     }
-
-    let _positions;
 
     if (positions) {
-      _positions = positions;
-    } else if (_nodes) {
-      _positions = [];
+      this.positions = positions;
+    } else if (this.nodes) {
+      const positionsFromNodes = [];
 
-      for (const node of _nodes) {
+      for (const node of this.nodes) {
         if (node.loc) {
-          _positions.push(node.loc.start);
+          positionsFromNodes.push(node.loc.start);
         }
       }
+
+      this.positions = positionsFromNodes;
     }
 
-    if (_positions && _positions.length === 0) {
-      _positions = undefined;
+    if (this.positions && this.positions.length === 0) {
+      this.positions = undefined;
     }
-
-    let _locations;
 
     if (positions && source) {
-      _locations = positions.map((pos) => getLocation(source, pos));
-    } else if (_nodes) {
-      _locations = [];
+      this.locations = positions.map((pos) => getLocation(source, pos));
+    } else if (this.nodes) {
+      const locationsFromNodes = [];
 
-      for (const node of _nodes) {
+      for (const node of this.nodes) {
         if (node.loc) {
-          _locations.push(getLocation(node.loc.source, node.loc.start));
+          locationsFromNodes.push(getLocation(node.loc.source, node.loc.start));
         }
       }
+
+      this.locations = locationsFromNodes;
     }
 
-    let _extensions = extensions;
+    const originalExtensions = isObjectLike(originalError?.extensions)
+      ? originalError?.extensions
+      : undefined; // TODO: merge `extensions` and `originalExtensions`
 
-    if (_extensions == null && originalError != null) {
-      const originalExtensions = originalError.extensions;
-
-      if (isObjectLike(originalExtensions)) {
-        _extensions = originalExtensions;
-      }
-    }
-
-    Object.defineProperties(this, {
-      name: {
-        value: 'GraphQLError',
-      },
-      message: {
-        value: message,
-        // By being enumerable, JSON.stringify will include `message` in the
-        // resulting output. This ensures that the simplest possible GraphQL
-        // service adheres to the spec.
-        enumerable: true,
-        writable: true,
-      },
-      locations: {
-        // Coercing falsy values to undefined ensures they will not be included
-        // in JSON.stringify() when not provided.
-        value: _locations ?? undefined,
-        // By being enumerable, JSON.stringify will include `locations` in the
-        // resulting output. This ensures that the simplest possible GraphQL
-        // service adheres to the spec.
-        enumerable: _locations != null,
-      },
-      path: {
-        // Coercing falsy values to undefined ensures they will not be included
-        // in JSON.stringify() when not provided.
-        value: path ?? undefined,
-        // By being enumerable, JSON.stringify will include `path` in the
-        // resulting output. This ensures that the simplest possible GraphQL
-        // service adheres to the spec.
-        enumerable: path != null,
-      },
-      nodes: {
-        value: _nodes ?? undefined,
-      },
-      source: {
-        value: _source ?? undefined,
-      },
-      positions: {
-        value: _positions ?? undefined,
-      },
-      originalError: {
-        value: originalError,
-      },
-      extensions: {
-        // Coercing falsy values to undefined ensures they will not be included
-        // in JSON.stringify() when not provided.
-        value: _extensions ?? undefined,
-        // By being enumerable, JSON.stringify will include `path` in the
-        // resulting output. This ensures that the simplest possible GraphQL
-        // service adheres to the spec.
-        enumerable: _extensions != null,
-      },
-    }); // Include (non-enumerable) stack trace.
+    this.extensions = extensions ?? originalExtensions; // Include (non-enumerable) stack trace.
 
     if (originalError?.stack) {
       Object.defineProperty(this, 'stack', {
