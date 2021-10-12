@@ -39,7 +39,7 @@ async function executeQuery(args: {
     contextValue: { async: true },
   });
 
-  expect(result).to.deep.equal(asyncResult);
+  expectJSON(result).toDeepEqual(asyncResult);
   return result;
 }
 
@@ -206,7 +206,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    expectJSON(await executeQuery({ schema, query })).to.deep.equal({
+    expectJSON(await executeQuery({ schema, query })).toDeepEqual({
       data: {
         pets: [null, null],
       },
@@ -360,7 +360,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    expectJSON(await executeQuery({ schema, query })).to.deep.equal({
+    expectJSON(await executeQuery({ schema, query })).toDeepEqual({
       data: {
         pets: [null, null],
       },
@@ -541,7 +541,7 @@ describe('Execute: Handles execution of abstract types', () => {
       const result = executeSync({ schema, document, rootValue });
       return {
         toEqual(message: string) {
-          expectJSON(result).to.deep.equal({
+          expectJSON(result).toDeepEqual({
             data: { pet: null },
             errors: [
               {

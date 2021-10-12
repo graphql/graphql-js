@@ -23,8 +23,18 @@ function toJSONDeep(value: unknown): unknown {
   return mapValue(value, toJSONDeep);
 }
 
-export function expectJSON(value: unknown) {
-  return expect(toJSONDeep(value));
+export function expectJSON(actual: unknown) {
+  return {
+    toDeepEqual(expected: unknown) {
+      expect(toJSONDeep(actual)).to.deep.equal(toJSONDeep(expected));
+    },
+    toDeepNestedProperty(path: string, expected: unknown) {
+      expect(toJSONDeep(actual)).to.deep.nested.property(
+        path,
+        toJSONDeep(expected),
+      );
+    },
+  };
 }
 
 export function expectToThrowJSON(fn: () => unknown) {

@@ -132,7 +132,7 @@ async function executeSyncAndAsync(query: string, rootValue: unknown) {
     rootValue,
   });
 
-  expectJSON(asyncResult).to.deep.equal(patchData(syncResult));
+  expectJSON(asyncResult).toDeepEqual(patchData(syncResult));
   return syncResult;
 }
 
@@ -153,7 +153,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: { sync: null },
         errors: [
           {
@@ -177,7 +177,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeSyncAndAsync(query, nullingData);
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: { syncNest: null },
         errors: [
           {
@@ -192,7 +192,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: { syncNest: null },
         errors: [
           {
@@ -244,7 +244,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeQuery(query, throwingData);
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data,
         errors: [
           {
@@ -370,7 +370,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeQuery(query, nullingData);
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data,
         errors: [
           {
@@ -431,7 +431,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeQuery(query, throwingData);
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data,
         errors: [
           {
@@ -496,7 +496,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeSyncAndAsync(query, nullingData);
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: null,
         errors: [
           {
@@ -511,7 +511,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: null,
         errors: [
           {
@@ -611,7 +611,7 @@ describe('Execute: handles non-nullable types', () => {
         `),
       });
 
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           withNonNullArg: null,
         },
@@ -638,7 +638,7 @@ describe('Execute: handles non-nullable types', () => {
         `),
       });
 
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           withNonNullArg: null,
         },
@@ -668,7 +668,7 @@ describe('Execute: handles non-nullable types', () => {
         },
       });
 
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           withNonNullArg: null,
         },
@@ -696,7 +696,7 @@ describe('Execute: handles non-nullable types', () => {
         },
       });
 
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           withNonNullArg: null,
         },

@@ -21,7 +21,7 @@ function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
@@ -29,7 +29,7 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Known type names', () => {
@@ -62,7 +62,7 @@ describe('Validate: Known type names', () => {
       fragment PetFields on Peat {
         name
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown type "JumbledUpLetters".',
         locations: [{ line: 2, column: 24 }],
@@ -85,7 +85,7 @@ describe('Validate: Known type names', () => {
         __typename
       }
     `;
-    expectErrorsWithSchema(schema, query).to.deep.equal([
+    expectErrorsWithSchema(schema, query).toDeepEqual([
       {
         message: 'Unknown type "ID".',
         locations: [{ line: 2, column: 19 }],
@@ -176,7 +176,7 @@ describe('Validate: Known type names', () => {
           mutation: M
           subscription: N
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Unknown type "C". Did you mean "A" or "B"?',
           locations: [{ line: 5, column: 36 }],
@@ -237,7 +237,7 @@ describe('Validate: Known type names', () => {
         type Query {
           foo: Foo
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Unknown type "Foo".',
           locations: [{ line: 7, column: 16 }],
@@ -307,7 +307,7 @@ describe('Validate: Known type names', () => {
         }
       `;
 
-      expectSDLErrors(sdl, schema).to.deep.equal([
+      expectSDLErrors(sdl, schema).toDeepEqual([
         {
           message: 'Unknown type "C". Did you mean "A" or "B"?',
           locations: [{ line: 4, column: 36 }],

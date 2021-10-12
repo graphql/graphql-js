@@ -21,7 +21,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 const testSchema = buildSchema(`
@@ -114,7 +114,7 @@ describe('Validate: Fields on correct type', () => {
           }
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot query field "unknown_pet_field" on type "Pet".',
         locations: [{ line: 3, column: 9 }],
@@ -131,7 +131,7 @@ describe('Validate: Fields on correct type', () => {
       fragment fieldNotDefined on Dog {
         meowVolume
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Cannot query field "meowVolume" on type "Dog". Did you mean "barkVolume"?',
@@ -147,7 +147,7 @@ describe('Validate: Fields on correct type', () => {
           deeper_unknown_field
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot query field "unknown_field" on type "Dog".',
         locations: [{ line: 3, column: 9 }],
@@ -162,7 +162,7 @@ describe('Validate: Fields on correct type', () => {
           unknown_field
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot query field "unknown_field" on type "Pet".',
         locations: [{ line: 4, column: 11 }],
@@ -177,7 +177,7 @@ describe('Validate: Fields on correct type', () => {
           meowVolume
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Cannot query field "meowVolume" on type "Dog". Did you mean "barkVolume"?',
@@ -191,7 +191,7 @@ describe('Validate: Fields on correct type', () => {
       fragment aliasedFieldTargetNotDefined on Dog {
         volume : mooVolume
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Cannot query field "mooVolume" on type "Dog". Did you mean "barkVolume"?',
@@ -205,7 +205,7 @@ describe('Validate: Fields on correct type', () => {
       fragment aliasedLyingFieldTargetNotDefined on Dog {
         barkVolume : kawVolume
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Cannot query field "kawVolume" on type "Dog". Did you mean "barkVolume"?',
@@ -219,7 +219,7 @@ describe('Validate: Fields on correct type', () => {
       fragment notDefinedOnInterface on Pet {
         tailLength
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot query field "tailLength" on type "Pet".',
         locations: [{ line: 3, column: 9 }],
@@ -232,7 +232,7 @@ describe('Validate: Fields on correct type', () => {
       fragment definedOnImplementorsButNotInterface on Pet {
         nickname
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Cannot query field "nickname" on type "Pet". Did you mean to use an inline fragment on "Cat" or "Dog"?',
@@ -254,7 +254,7 @@ describe('Validate: Fields on correct type', () => {
       fragment directFieldSelectionOnUnion on CatOrDog {
         directField
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot query field "directField" on type "CatOrDog".',
         locations: [{ line: 3, column: 9 }],
@@ -267,7 +267,7 @@ describe('Validate: Fields on correct type', () => {
       fragment definedOnImplementorsQueriedOnUnion on CatOrDog {
         name
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Cannot query field "name" on type "CatOrDog". Did you mean to use an inline fragment on "Pet", "Cat", or "Dog"?',

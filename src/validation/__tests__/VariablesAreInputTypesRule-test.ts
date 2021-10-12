@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Variables are input types', () => {
@@ -34,7 +34,7 @@ describe('Validate: Variables are input types', () => {
       query Foo($a: Dog, $b: [[CatOrDog!]]!, $c: Pet) {
         field(a: $a, b: $b, c: $c)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         locations: [{ line: 2, column: 21 }],
         message: 'Variable "$a" cannot be non-input type "Dog".',

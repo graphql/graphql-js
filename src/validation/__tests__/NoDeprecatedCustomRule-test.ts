@@ -19,7 +19,7 @@ function buildAssertion(sdlStr: string) {
   }
 
   function expectValid(queryStr: string) {
-    expectErrors(queryStr).to.deep.equal([]);
+    expectErrors(queryStr).toDeepEqual([]);
   }
 }
 
@@ -64,7 +64,7 @@ describe('Validate: no deprecated', () => {
         fragment QueryFragment on Query {
           deprecatedField
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         { message, locations: [{ line: 3, column: 11 }] },
         { message, locations: [{ line: 7, column: 11 }] },
       ]);
@@ -103,7 +103,7 @@ describe('Validate: no deprecated', () => {
         {
           someField(deprecatedArg: "")
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Field "Query.someField" argument "deprecatedArg" is deprecated. Some arg reason.',
@@ -147,7 +147,7 @@ describe('Validate: no deprecated', () => {
         {
           someField @someDirective(deprecatedArg: "")
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Directive "@someDirective" argument "deprecatedArg" is deprecated. Some arg reason.',
@@ -209,7 +209,7 @@ describe('Validate: no deprecated', () => {
             someArg: { deprecatedField: "" }
           ) @someDirective(someArg: { deprecatedField: "" })
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         { message, locations: [{ line: 4, column: 24 }] },
         { message, locations: [{ line: 5, column: 39 }] },
       ]);
@@ -263,7 +263,7 @@ describe('Validate: no deprecated', () => {
         ) {
           someField(enumArg: DEPRECATED_VALUE)
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         { message, locations: [{ line: 3, column: 33 }] },
         { message, locations: [{ line: 5, column: 30 }] },
       ]);

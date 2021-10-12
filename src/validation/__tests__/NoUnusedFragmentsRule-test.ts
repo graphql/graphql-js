@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: No unused fragments', () => {
@@ -89,7 +89,7 @@ describe('Validate: No unused fragments', () => {
       fragment Unused2 on Human {
         name
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Fragment "Unused1" is never used.',
         locations: [{ line: 22, column: 7 }],
@@ -131,7 +131,7 @@ describe('Validate: No unused fragments', () => {
         name
         ...Unused1
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Fragment "Unused1" is never used.',
         locations: [{ line: 22, column: 7 }],
@@ -153,7 +153,7 @@ describe('Validate: No unused fragments', () => {
       fragment foo on Human {
         name
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Fragment "foo" is never used.',
         locations: [{ line: 7, column: 7 }],

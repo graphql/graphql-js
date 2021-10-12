@@ -54,7 +54,7 @@ describe('Execute: synchronously when possible', () => {
       document: parse(doc),
       rootValue: 'rootValue',
     });
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [{ message: 'Must provide an operation.' }],
     });
   });
@@ -122,7 +122,7 @@ describe('Execute: synchronously when possible', () => {
         schema: badSchema,
         source: '{ __typename }',
       });
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         errors: [{ message: 'Query root type must be provided.' }],
       });
     });
@@ -133,7 +133,7 @@ describe('Execute: synchronously when possible', () => {
         schema,
         source: doc,
       });
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         errors: [
           {
             message: 'Syntax Error: Expected Name, found "{".',

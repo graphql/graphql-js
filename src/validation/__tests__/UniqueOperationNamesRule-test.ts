@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Unique operation names', () => {
@@ -84,7 +84,7 @@ describe('Validate: Unique operation names', () => {
       query Foo {
         fieldB
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one operation named "Foo".',
         locations: [
@@ -103,7 +103,7 @@ describe('Validate: Unique operation names', () => {
       mutation Foo {
         fieldB
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one operation named "Foo".',
         locations: [
@@ -122,7 +122,7 @@ describe('Validate: Unique operation names', () => {
       subscription Foo {
         fieldB
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one operation named "Foo".',
         locations: [

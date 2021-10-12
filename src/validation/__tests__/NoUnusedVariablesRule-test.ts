@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: No unused variables', () => {
@@ -105,7 +105,7 @@ describe('Validate: No unused variables', () => {
       query ($a: String, $b: String, $c: String) {
         field(a: $a, b: $b)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$c" is never used.',
         locations: [{ line: 2, column: 38 }],
@@ -118,7 +118,7 @@ describe('Validate: No unused variables', () => {
       query Foo($a: String, $b: String, $c: String) {
         field(b: $b)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$a" is never used in operation "Foo".',
         locations: [{ line: 2, column: 17 }],
@@ -148,7 +148,7 @@ describe('Validate: No unused variables', () => {
       fragment FragC on Type {
         field
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$c" is never used in operation "Foo".',
         locations: [{ line: 2, column: 41 }],
@@ -174,7 +174,7 @@ describe('Validate: No unused variables', () => {
       fragment FragC on Type {
         field
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$a" is never used in operation "Foo".',
         locations: [{ line: 2, column: 17 }],
@@ -197,7 +197,7 @@ describe('Validate: No unused variables', () => {
       fragment FragB on Type {
         field(b: $b)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$b" is never used in operation "Foo".',
         locations: [{ line: 2, column: 17 }],
@@ -219,7 +219,7 @@ describe('Validate: No unused variables', () => {
       fragment FragB on Type {
         field(b: $b)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$b" is never used in operation "Foo".',
         locations: [{ line: 2, column: 17 }],

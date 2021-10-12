@@ -395,7 +395,7 @@ describe('Star Wars Query Tests', () => {
       `;
 
       const result = await graphql({ schema, source });
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           hero: {
             name: 'R2-D2',
@@ -426,7 +426,7 @@ describe('Star Wars Query Tests', () => {
       `;
 
       const result = await graphql({ schema, source });
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           hero: {
             name: 'R2-D2',
@@ -477,7 +477,7 @@ describe('Star Wars Query Tests', () => {
       `;
 
       const result = await graphql({ schema, source });
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           mainHero: {
             name: 'R2-D2',

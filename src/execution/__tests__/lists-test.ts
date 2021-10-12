@@ -52,7 +52,7 @@ describe('Execute: Accepts any iterable as list value', () => {
   it('Does not accept (Iterable) String-literal as a List value', () => {
     const listField = 'Singular';
 
-    expectJSON(complete({ listField })).to.deep.equal({
+    expectJSON(complete({ listField })).toDeepEqual({
       data: { listField: null },
       errors: [
         {
@@ -74,14 +74,14 @@ describe('Execute: Handles list nullability', () => {
 
     const result = await executeQuery(listField);
     // Promise<Array<T>> === Array<T>
-    expect(await executeQuery(promisify(listField))).to.deep.equal(result);
+    expectJSON(await executeQuery(promisify(listField))).toDeepEqual(result);
     if (Array.isArray(listField)) {
       const listOfPromises = listField.map(promisify);
 
       // Array<Promise<T>> === Array<T>
-      expect(await executeQuery(listOfPromises)).to.deep.equal(result);
+      expectJSON(await executeQuery(listOfPromises)).toDeepEqual(result);
       // Promise<Array<Promise<T>>> === Array<T>
-      expect(await executeQuery(promisify(listOfPromises))).to.deep.equal(
+      expectJSON(await executeQuery(promisify(listOfPromises))).toDeepEqual(
         result,
       );
     }
@@ -131,11 +131,11 @@ describe('Execute: Handles list nullability', () => {
     expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
       data: { listField: [1, null, 2] },
     });
-    expectJSON(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]' })).toDeepEqual({
       data: { listField: null },
       errors,
     });
-    expectJSON(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
       data: null,
       errors,
     });
@@ -154,14 +154,14 @@ describe('Execute: Handles list nullability', () => {
     expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
       data: { listField: null },
     });
-    expectJSON(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]!' })).toDeepEqual({
       data: null,
       errors,
     });
     expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
       data: { listField: null },
     });
-    expectJSON(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
       data: null,
       errors,
     });
@@ -177,19 +177,19 @@ describe('Execute: Handles list nullability', () => {
       },
     ];
 
-    expectJSON(await complete({ listField, as: '[Int]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]' })).toDeepEqual({
       data: { listField: [1, null, 2] },
       errors,
     });
-    expectJSON(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]!' })).toDeepEqual({
       data: { listField: [1, null, 2] },
       errors,
     });
-    expectJSON(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]' })).toDeepEqual({
       data: { listField: null },
       errors,
     });
-    expectJSON(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
       data: null,
       errors,
     });
@@ -205,19 +205,19 @@ describe('Execute: Handles list nullability', () => {
       },
     ];
 
-    expectJSON(await complete({ listField, as: '[Int]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]' })).toDeepEqual({
       data: { listField: null },
       errors,
     });
-    expectJSON(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int]!' })).toDeepEqual({
       data: null,
       errors,
     });
-    expectJSON(await complete({ listField, as: '[Int!]' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]' })).toDeepEqual({
       data: { listField: null },
       errors,
     });
-    expectJSON(await complete({ listField, as: '[Int!]!' })).to.deep.equal({
+    expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
       data: null,
       errors,
     });

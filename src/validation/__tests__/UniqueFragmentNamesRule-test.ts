@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Unique fragment names', () => {
@@ -87,7 +87,7 @@ describe('Validate: Unique fragment names', () => {
       fragment fragA on Type {
         fieldB
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one fragment named "fragA".',
         locations: [
@@ -106,7 +106,7 @@ describe('Validate: Unique fragment names', () => {
       fragment fragA on Type {
         fieldB
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one fragment named "fragA".',
         locations: [

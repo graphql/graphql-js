@@ -15,7 +15,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 const schema = buildSchema(`
@@ -93,7 +93,7 @@ describe('Validate: Subscriptions with single field', () => {
         importantEmails
         notImportantEmails
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Subscription "ImportantEmails" must select only one top level field.',
@@ -108,7 +108,7 @@ describe('Validate: Subscriptions with single field', () => {
         importantEmails
         __typename
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Subscription "ImportantEmails" must select only one top level field.',
@@ -131,7 +131,7 @@ describe('Validate: Subscriptions with single field', () => {
       fragment Introspection on SubscriptionRoot {
         typename: __typename
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Subscription "ImportantEmails" must select only one top level field.',
@@ -152,7 +152,7 @@ describe('Validate: Subscriptions with single field', () => {
         notImportantEmails
         spamEmails
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Subscription "ImportantEmails" must select only one top level field.',
@@ -181,7 +181,7 @@ describe('Validate: Subscriptions with single field', () => {
       fragment SpamEmails on SubscriptionRoot {
         spamEmails
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Subscription "ImportantEmails" must select only one top level field.',
@@ -203,7 +203,7 @@ describe('Validate: Subscriptions with single field', () => {
       fragment A on SubscriptionRoot {
         ...A
       }
-    `).to.deep.equal([]);
+    `).toDeepEqual([]);
   });
 
   it('fails with many more than one root field via fragments (anonymous)', () => {
@@ -230,7 +230,7 @@ describe('Validate: Subscriptions with single field', () => {
         spamEmails
         ...NonExistentFragment
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Anonymous Subscription must select only one top level field.',
         locations: [
@@ -250,7 +250,7 @@ describe('Validate: Subscriptions with single field', () => {
         importantEmails
         notImportantEmails
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Anonymous Subscription must select only one top level field.',
         locations: [{ line: 4, column: 9 }],
@@ -263,7 +263,7 @@ describe('Validate: Subscriptions with single field', () => {
       subscription ImportantEmails {
         __typename
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Subscription "ImportantEmails" must not select an introspection top level field.',
@@ -277,7 +277,7 @@ describe('Validate: Subscriptions with single field', () => {
       subscription {
         __typename
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Anonymous Subscription must not select an introspection top level field.',
@@ -301,6 +301,6 @@ describe('Validate: Subscriptions with single field', () => {
           __typename
         }
       `,
-    ).to.deep.equal([]);
+    ).toDeepEqual([]);
   });
 });

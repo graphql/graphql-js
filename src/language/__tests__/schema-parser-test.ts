@@ -83,7 +83,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -114,7 +114,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.nested.property('definitions[0].description', {
+    expectJSON(doc).toDeepNestedProperty('definitions[0].description', {
       kind: 'StringValue',
       value: 'Description',
       block: false,
@@ -133,7 +133,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.nested.property('definitions[0].description', {
+    expectJSON(doc).toDeepNestedProperty('definitions[0].description', {
       kind: 'StringValue',
       value: 'Description',
       block: true,
@@ -149,7 +149,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.nested.property('definitions[0].description', {
+    expectJSON(doc).toDeepNestedProperty('definitions[0].description', {
       kind: 'StringValue',
       value: 'Description',
       block: false,
@@ -171,7 +171,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -196,7 +196,7 @@ describe('Schema Parser', () => {
   it('Object extension without fields', () => {
     const doc = parse('extend type Hello implements Greeting');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -214,7 +214,7 @@ describe('Schema Parser', () => {
 
   it('Interface extension without fields', () => {
     const doc = parse('extend interface Hello implements Greeting');
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -237,7 +237,7 @@ describe('Schema Parser', () => {
       extend type Hello implements SecondGreeting
     `);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -299,7 +299,7 @@ describe('Schema Parser', () => {
 
       extend interface Hello implements SecondGreeting
     `);
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -373,7 +373,7 @@ describe('Schema Parser', () => {
         mutation: Mutation
       }`;
     const doc = parse(body);
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -397,7 +397,7 @@ describe('Schema Parser', () => {
   it('Schema extension with only directives', () => {
     const body = 'extend schema @directive';
     const doc = parse(body);
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -439,7 +439,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -468,7 +468,7 @@ describe('Schema Parser', () => {
 
   it('Simple interface inheriting interface', () => {
     const doc = parse('interface Hello implements World { field: String }');
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -494,7 +494,7 @@ describe('Schema Parser', () => {
   it('Simple type inheriting interface', () => {
     const doc = parse('type Hello implements World { field: String }');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -520,7 +520,7 @@ describe('Schema Parser', () => {
   it('Simple type inheriting multiple interfaces', () => {
     const doc = parse('type Hello implements Wo & rld { field: String }');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -548,7 +548,7 @@ describe('Schema Parser', () => {
 
   it('Simple interface inheriting multiple interfaces', () => {
     const doc = parse('interface Hello implements Wo & rld { field: String }');
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -577,7 +577,7 @@ describe('Schema Parser', () => {
   it('Simple type inheriting multiple interfaces with leading ampersand', () => {
     const doc = parse('type Hello implements & Wo & rld { field: String }');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -607,7 +607,7 @@ describe('Schema Parser', () => {
     const doc = parse(
       'interface Hello implements & Wo & rld { field: String }',
     );
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -636,7 +636,7 @@ describe('Schema Parser', () => {
   it('Single value enum', () => {
     const doc = parse('enum Hello { WORLD }');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -655,7 +655,7 @@ describe('Schema Parser', () => {
   it('Double value enum', () => {
     const doc = parse('enum Hello { WO, RLD }');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -681,7 +681,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -711,7 +711,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -749,7 +749,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -791,7 +791,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -833,7 +833,7 @@ describe('Schema Parser', () => {
       }
     `);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -873,7 +873,7 @@ describe('Schema Parser', () => {
   it('Simple union', () => {
     const doc = parse('union Hello = World');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -892,7 +892,7 @@ describe('Schema Parser', () => {
   it('Union with two types', () => {
     const doc = parse('union Hello = Wo | Rld');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -914,7 +914,7 @@ describe('Schema Parser', () => {
   it('Union with two types and leading pipe', () => {
     const doc = parse('union Hello = | Wo | Rld');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -964,7 +964,7 @@ describe('Schema Parser', () => {
   it('Scalar', () => {
     const doc = parse('scalar Hello');
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -985,7 +985,7 @@ input Hello {
   world: String
 }`);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -1023,7 +1023,7 @@ input Hello {
     const body = 'directive @foo on OBJECT | INTERFACE';
     const doc = parse(body);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {
@@ -1059,7 +1059,7 @@ input Hello {
     const body = 'directive @foo repeatable on OBJECT | INTERFACE';
     const doc = parse(body);
 
-    expectJSON(doc).to.deep.equal({
+    expectJSON(doc).toDeepEqual({
       kind: 'Document',
       definitions: [
         {

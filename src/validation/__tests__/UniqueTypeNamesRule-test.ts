@@ -13,7 +13,7 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Unique type names', () => {
@@ -57,7 +57,7 @@ describe('Validate: Unique type names', () => {
       union Foo
       enum Foo
       input Foo
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one type named "Foo".',
         locations: [
@@ -126,7 +126,7 @@ describe('Validate: Unique type names', () => {
       input Foo
     `;
 
-    expectSDLErrors(sdl, schema).to.deep.equal([
+    expectSDLErrors(sdl, schema).toDeepEqual([
       {
         message:
           'Type "Foo" already exists in the schema. It cannot also be defined in this type definition.',

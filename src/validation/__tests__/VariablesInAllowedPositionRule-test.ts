@@ -9,7 +9,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Variables are in allowed positions', () => {
@@ -158,7 +158,7 @@ describe('Validate: Variables are in allowed positions', () => {
           nonNullIntArgField(nonNullIntArg: $intArg)
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Variable "$intArg" of type "Int" used in position expecting type "Int!".',
@@ -181,7 +181,7 @@ describe('Validate: Variables are in allowed positions', () => {
           ...nonNullIntArgFieldFrag
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Variable "$intArg" of type "Int" used in position expecting type "Int!".',
@@ -208,7 +208,7 @@ describe('Validate: Variables are in allowed positions', () => {
           ...outerFrag
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Variable "$intArg" of type "Int" used in position expecting type "Int!".',
@@ -227,7 +227,7 @@ describe('Validate: Variables are in allowed positions', () => {
           booleanArgField(booleanArg: $stringVar)
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Variable "$stringVar" of type "String" used in position expecting type "Boolean".',
@@ -246,7 +246,7 @@ describe('Validate: Variables are in allowed positions', () => {
           stringListArgField(stringListArg: $stringVar)
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Variable "$stringVar" of type "String" used in position expecting type "[String]".',
@@ -263,7 +263,7 @@ describe('Validate: Variables are in allowed positions', () => {
       query Query($boolVar: Boolean) {
         dog @include(if: $boolVar)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Variable "$boolVar" of type "Boolean" used in position expecting type "Boolean!".',
@@ -280,7 +280,7 @@ describe('Validate: Variables are in allowed positions', () => {
       query Query($stringVar: String) {
         dog @include(if: $stringVar)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Variable "$stringVar" of type "String" used in position expecting type "Boolean!".',
@@ -300,7 +300,7 @@ describe('Validate: Variables are in allowed positions', () => {
           stringListNonNullArgField(stringListNonNullArg: $stringListVar)
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Variable "$stringListVar" of type "[String]" used in position expecting type "[String!]".',
@@ -320,7 +320,7 @@ describe('Validate: Variables are in allowed positions', () => {
             nonNullIntArgField(nonNullIntArg: $intVar)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Variable "$intVar" of type "Int" used in position expecting type "Int!".',

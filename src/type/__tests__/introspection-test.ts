@@ -1534,7 +1534,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expectJSON(graphqlSync({ schema, source })).to.deep.equal({
+    expectJSON(graphqlSync({ schema, source })).toDeepEqual({
       errors: [
         {
           message:

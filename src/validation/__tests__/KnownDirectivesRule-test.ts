@@ -20,7 +20,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
@@ -28,7 +28,7 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 const schemaWithDirectives = buildSchema(`
@@ -96,7 +96,7 @@ describe('Validate: Known directives', () => {
           name
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown directive "@unknown".',
         locations: [{ line: 3, column: 15 }],
@@ -115,7 +115,7 @@ describe('Validate: Known directives', () => {
           }
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown directive "@unknown".',
         locations: [{ line: 3, column: 20 }],
@@ -178,7 +178,7 @@ describe('Validate: Known directives', () => {
       fragment Frag on Human @onQuery {
         name @onQuery
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Directive "@onQuery" may not be used on VARIABLE_DEFINITION.',
         locations: [{ line: 2, column: 28 }],
@@ -301,7 +301,7 @@ describe('Validate: Known directives', () => {
           extend type Query @unknown
         `,
         schema,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           message: 'Unknown directive "@unknown".',
           locations: [{ line: 2, column: 29 }],
@@ -384,7 +384,7 @@ describe('Validate: Known directives', () => {
           extend schema @onObject
         `,
         schemaWithSDLDirectives,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           message: 'Directive "@onInterface" may not be used on OBJECT.',
           locations: [{ line: 2, column: 45 }],

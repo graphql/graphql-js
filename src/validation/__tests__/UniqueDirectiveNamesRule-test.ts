@@ -13,7 +13,7 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Unique directive names', () => {
@@ -52,7 +52,7 @@ describe('Validate: Unique directive names', () => {
       directive @foo on SCHEMA
 
       directive @foo on SCHEMA
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one directive named "@foo".',
         locations: [
@@ -72,7 +72,7 @@ describe('Validate: Unique directive names', () => {
   it('adding new directive with standard name to existing schema', () => {
     const schema = buildSchema('type foo');
 
-    expectSDLErrors('directive @skip on SCHEMA', schema).to.deep.equal([
+    expectSDLErrors('directive @skip on SCHEMA', schema).toDeepEqual([
       {
         message:
           'Directive "@skip" already exists in the schema. It cannot be redefined.',
@@ -90,7 +90,7 @@ describe('Validate: Unique directive names', () => {
   it('adding conflicting directives to existing schema', () => {
     const schema = buildSchema('directive @foo on SCHEMA');
 
-    expectSDLErrors('directive @foo on SCHEMA', schema).to.deep.equal([
+    expectSDLErrors('directive @foo on SCHEMA', schema).toDeepEqual([
       {
         message:
           'Directive "@foo" already exists in the schema. It cannot be redefined.',

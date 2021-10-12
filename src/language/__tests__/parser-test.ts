@@ -234,7 +234,7 @@ describe('Parser', () => {
       }
     `);
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 40 },
       definitions: [
@@ -324,7 +324,7 @@ describe('Parser', () => {
       }
     `);
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 29 },
       definitions: [
@@ -419,7 +419,7 @@ describe('Parser', () => {
   describe('parseValue', () => {
     it('parses null value', () => {
       const result = parseValue('null');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.NULL,
         loc: { start: 0, end: 4 },
       });
@@ -427,7 +427,7 @@ describe('Parser', () => {
 
     it('parses list values', () => {
       const result = parseValue('[123 "abc"]');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST,
         loc: { start: 0, end: 11 },
         values: [
@@ -448,7 +448,7 @@ describe('Parser', () => {
 
     it('parses block strings', () => {
       const result = parseValue('["""long""" "short"]');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST,
         loc: { start: 0, end: 20 },
         values: [
@@ -470,7 +470,7 @@ describe('Parser', () => {
 
     it('allows variables', () => {
       const result = parseValue('{ field: $var }');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.OBJECT,
         loc: { start: 0, end: 15 },
         fields: [
@@ -518,7 +518,7 @@ describe('Parser', () => {
   describe('parseConstValue', () => {
     it('parses values', () => {
       const result = parseConstValue('[123 "abc"]');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST,
         loc: { start: 0, end: 11 },
         values: [
@@ -560,7 +560,7 @@ describe('Parser', () => {
   describe('parseType', () => {
     it('parses well known types', () => {
       const result = parseType('String');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.NAMED_TYPE,
         loc: { start: 0, end: 6 },
         name: {
@@ -573,7 +573,7 @@ describe('Parser', () => {
 
     it('parses custom types', () => {
       const result = parseType('MyType');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.NAMED_TYPE,
         loc: { start: 0, end: 6 },
         name: {
@@ -586,7 +586,7 @@ describe('Parser', () => {
 
     it('parses list types', () => {
       const result = parseType('[MyType]');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST_TYPE,
         loc: { start: 0, end: 8 },
         type: {
@@ -603,7 +603,7 @@ describe('Parser', () => {
 
     it('parses non-null types', () => {
       const result = parseType('MyType!');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.NON_NULL_TYPE,
         loc: { start: 0, end: 7 },
         type: {
@@ -620,7 +620,7 @@ describe('Parser', () => {
 
     it('parses nested types', () => {
       const result = parseType('[MyType!]');
-      expectJSON(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST_TYPE,
         loc: { start: 0, end: 9 },
         type: {
