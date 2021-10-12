@@ -907,7 +907,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             {
               someBox {
                 ...on SomeBox {
-                  otherNonnullable: unrelatedField!
+                  otherNonNullable: unrelatedField!
                 }
                 ...on IntBox {
                   nonNullable: unrelatedField!
@@ -1082,7 +1082,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         ]);
       });
 
-      it('conflicting requred and optional nullability status with aliases', () => {
+      it('conflicting required and optional nullability status with aliases', () => {
         expectValidWithSchema(
           schema,
           `
@@ -1136,7 +1136,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         );
       });
 
-      it('conflicting required and unset (requred) nullability status with aliases', () => {
+      it('conflicting required and unset (required) nullability status with aliases', () => {
         expectValidWithSchema(
           schema,
           `

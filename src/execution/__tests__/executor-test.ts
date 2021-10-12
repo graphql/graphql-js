@@ -1294,7 +1294,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }),
     });
 
-    it('smoketest', () => {
+    it('smoke test', () => {
       const plainDocument = parse(`
         query {
           food {
