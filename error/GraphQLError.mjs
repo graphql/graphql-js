@@ -62,6 +62,8 @@ export class GraphQLError extends Error {
     originalError,
     extensions,
   ) {
+    var _ref;
+
     super(message);
     this.name = 'GraphQLError';
     this.path = path !== null && path !== void 0 ? path : undefined;
@@ -133,9 +135,12 @@ export class GraphQLError extends Error {
       : undefined; // TODO: merge `extensions` and `originalExtensions`
 
     this.extensions =
-      extensions !== null && extensions !== void 0
-        ? extensions
-        : originalExtensions; // Include (non-enumerable) stack trace.
+      (_ref =
+        extensions !== null && extensions !== void 0
+          ? extensions
+          : originalExtensions) !== null && _ref !== void 0
+        ? _ref
+        : Object.create(null); // Include (non-enumerable) stack trace.
 
     if (
       originalError !== null &&
@@ -192,7 +197,7 @@ export class GraphQLError extends Error {
       formattedError.path = this.path;
     }
 
-    if (this.extensions != null) {
+    if (this.extensions != null && Object.keys(this.extensions).length > 0) {
       formattedError.extensions = this.extensions;
     }
 

@@ -50,11 +50,9 @@ export declare class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  readonly extensions:
-    | {
-        [key: string]: unknown;
-      }
-    | undefined;
+  readonly extensions: {
+    [key: string]: unknown;
+  };
   constructor(
     message: string,
     nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
