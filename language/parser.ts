@@ -9,7 +9,6 @@ import type {
   DocumentNode,
   DefinitionNode,
   OperationDefinitionNode,
-  OperationTypeNode,
   VariableDefinitionNode,
   SelectionSetNode,
   SelectionNode,
@@ -61,7 +60,7 @@ import type {
   InputObjectTypeExtensionNode,
 } from './ast.ts';
 import { Kind } from './kinds.ts';
-import { Location } from './ast.ts';
+import { Location, OperationTypeNode } from './ast.ts';
 import { TokenKind } from './tokenKind.ts';
 import { Source, isSource } from './source.ts';
 import { DirectiveLocation } from './directiveLocation.ts';
@@ -309,7 +308,7 @@ export class Parser {
     if (this.peek(TokenKind.BRACE_L)) {
       return this.node<OperationDefinitionNode>(start, {
         kind: Kind.OPERATION_DEFINITION,
-        operation: 'query',
+        operation: OperationTypeNode.QUERY,
         name: undefined,
         variableDefinitions: [],
         directives: [],
@@ -342,13 +341,13 @@ export class Parser {
 
     switch (operationToken.value) {
       case 'query':
-        return 'query';
+        return OperationTypeNode.QUERY;
 
       case 'mutation':
-        return 'mutation';
+        return OperationTypeNode.MUTATION;
 
       case 'subscription':
-        return 'subscription';
+        return OperationTypeNode.SUBSCRIPTION;
     }
 
     throw this.unexpected(operationToken);

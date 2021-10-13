@@ -21,6 +21,7 @@ import type {
   FieldNode,
   FragmentDefinitionNode,
 } from '../language/ast.ts';
+import { OperationTypeNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 import type {
@@ -377,10 +378,10 @@ function executeOperation(
   const path = undefined;
 
   switch (operation.operation) {
-    case 'query':
+    case OperationTypeNode.QUERY:
       return executeFields(exeContext, rootType, rootValue, path, rootFields);
 
-    case 'mutation':
+    case OperationTypeNode.MUTATION:
       return executeFieldsSerially(
         exeContext,
         rootType,
@@ -389,7 +390,7 @@ function executeOperation(
         rootFields,
       );
 
-    case 'subscription':
+    case OperationTypeNode.SUBSCRIPTION:
       // TODO: deprecate `subscribe` and move all logic here
       // Temporary solution until we finish merging execute and subscribe together
       return executeFields(exeContext, rootType, rootValue, path, rootFields);

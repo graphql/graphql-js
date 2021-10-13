@@ -354,7 +354,11 @@ export interface OperationDefinitionNode {
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
 }
-export type OperationTypeNode = 'query' | 'mutation' | 'subscription';
+export enum OperationTypeNode {
+  QUERY = 'query',
+  MUTATION = 'mutation',
+  SUBSCRIPTION = 'subscription',
+}
 export interface VariableDefinitionNode {
   readonly kind: typeof Kind.VARIABLE_DEFINITION;
   readonly loc?: Location;

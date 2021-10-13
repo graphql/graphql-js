@@ -5,7 +5,6 @@ import type {
   ASTNode,
   NamedTypeNode,
   DirectiveNode,
-  OperationTypeNode,
   ObjectTypeDefinitionNode,
   ObjectTypeExtensionNode,
   InterfaceTypeDefinitionNode,
@@ -13,6 +12,7 @@ import type {
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
 } from '../language/ast.ts';
+import { OperationTypeNode } from '../language/ast.ts';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.ts';
 import type { GraphQLSchema } from './schema.ts';
 import type {
@@ -116,7 +116,8 @@ function validateRootTypes(context: SchemaValidationContext): void {
       `Query root type must be Object type, it cannot be ${inspect(
         queryType,
       )}.`,
-      getOperationTypeNode(schema, 'query') ?? (queryType as any).astNode,
+      getOperationTypeNode(schema, OperationTypeNode.QUERY) ??
+        (queryType as any).astNode,
     );
   }
 
@@ -126,7 +127,8 @@ function validateRootTypes(context: SchemaValidationContext): void {
     context.reportError(
       'Mutation root type must be Object type if provided, it cannot be ' +
         `${inspect(mutationType)}.`,
-      getOperationTypeNode(schema, 'mutation') ?? (mutationType as any).astNode,
+      getOperationTypeNode(schema, OperationTypeNode.MUTATION) ??
+        (mutationType as any).astNode,
     );
   }
 
@@ -136,7 +138,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     context.reportError(
       'Subscription root type must be Object type if provided, it cannot be ' +
         `${inspect(subscriptionType)}.`,
-      getOperationTypeNode(schema, 'subscription') ??
+      getOperationTypeNode(schema, OperationTypeNode.SUBSCRIPTION) ??
         (subscriptionType as any).astNode,
     );
   }
