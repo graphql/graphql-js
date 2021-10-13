@@ -3,6 +3,18 @@ import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
 import type { SourceLocation } from '../language/location';
 /**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLErrorExtensions {
+  [attributeName: string]: unknown;
+}
+/**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
  * and stack trace, it also includes information about the locations in a
@@ -50,9 +62,7 @@ export declare class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  readonly extensions: {
-    [key: string]: unknown;
-  };
+  readonly extensions: GraphQLErrorExtensions;
   constructor(
     message: string,
     nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
@@ -64,9 +74,7 @@ export declare class GraphQLError extends Error {
         readonly extensions?: unknown;
       }
     >,
-    extensions?: Maybe<{
-      [key: string]: unknown;
-    }>,
+    extensions?: Maybe<GraphQLErrorExtensions>,
   );
   toString(): string;
   toJSON(): GraphQLFormattedError;

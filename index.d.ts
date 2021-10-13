@@ -369,7 +369,10 @@ export {
   printError,
   formatError,
 } from './error/index';
-export type { GraphQLFormattedError } from './error/index';
+export type {
+  GraphQLFormattedError,
+  GraphQLErrorExtensions,
+} from './error/index';
 /** Utilities for operating on GraphQL type schema and parsed sources. */
 export {
   /**

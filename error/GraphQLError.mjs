@@ -5,12 +5,21 @@ import {
   printSourceLocation,
 } from '../language/printLocation.mjs';
 /**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+
+/**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
  * and stack trace, it also includes information about the locations in a
  * GraphQL document and/or execution result that correspond to the Error.
  */
-
 export class GraphQLError extends Error {
   /**
    * An array of `{ line, column }` locations within the source GraphQL document
