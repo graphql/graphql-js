@@ -14,7 +14,6 @@ import type {
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
 } from '../language/ast';
-
 import { OperationTypeNode } from '../language/ast';
 
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
