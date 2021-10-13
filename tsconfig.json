@@ -8,6 +8,7 @@
     "useUnknownInCatchVariables": false,
     "noEmit": true,
     "isolatedModules": true,
+    "importsNotUsedAsValues": "error",
     "forceConsistentCasingInFileNames": true
   }
 }
