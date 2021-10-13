@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql/error';
 import { GraphQLString, GraphQLObjectType } from 'graphql/type';
 
 interface SomeExtension {
@@ -50,3 +51,12 @@ const sayHiField = queryType.getFields().sayHi;
 checkExtensionTypes(sayHiField.extensions.someFieldExtension);
 
 checkExtensionTypes(sayHiField.args[0].extensions.someArgumentExtension);
+
+declare module 'graphql' {
+  export interface GraphQLErrorExtensions {
+    someErrorExtension?: SomeExtension;
+  }
+}
+
+const error = new GraphQLError('foo');
+checkExtensionTypes(error.extensions.someErrorExtension);
