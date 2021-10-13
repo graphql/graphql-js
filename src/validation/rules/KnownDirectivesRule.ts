@@ -4,9 +4,10 @@ import { invariant } from '../../jsutils/invariant';
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ASTVisitor } from '../../language/visitor';
-import type { ASTNode, OperationTypeNode } from '../../language/ast';
+import type { ASTNode } from '../../language/ast';
 import type { DirectiveLocationEnum } from '../../language/directiveLocation';
 import { Kind } from '../../language/kinds';
+import { OperationTypeNode } from '../../language/ast';
 import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { specifiedDirectives } from '../../type/directives';
@@ -127,11 +128,11 @@ function getDirectiveLocationForOperation(
   operation: OperationTypeNode,
 ): DirectiveLocationEnum {
   switch (operation) {
-    case 'query':
+    case OperationTypeNode.QUERY:
       return DirectiveLocation.QUERY;
-    case 'mutation':
+    case OperationTypeNode.MUTATION:
       return DirectiveLocation.MUTATION;
-    case 'subscription':
+    case OperationTypeNode.SUBSCRIPTION:
       return DirectiveLocation.SUBSCRIPTION;
   }
 
