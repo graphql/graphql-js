@@ -376,7 +376,10 @@ export {
   printError,
   formatError,
 } from './error/index.ts';
-export type { GraphQLFormattedError } from './error/index.ts';
+export type {
+  GraphQLFormattedError,
+  GraphQLErrorExtensions,
+} from './error/index.ts';
 /** Utilities for operating on GraphQL type schema and parsed sources. */
 
 export {
