@@ -63,11 +63,9 @@ export class GraphQLError extends Error {
    * Extension fields to add to the formatted error.
    */
 
-  readonly extensions:
-    | {
-        [key: string]: unknown;
-      }
-    | undefined;
+  readonly extensions: {
+    [key: string]: unknown;
+  };
 
   constructor(
     message: string,
@@ -139,7 +137,7 @@ export class GraphQLError extends Error {
       ? originalError?.extensions
       : undefined; // TODO: merge `extensions` and `originalExtensions`
 
-    this.extensions = extensions ?? originalExtensions; // Include (non-enumerable) stack trace.
+    this.extensions = extensions ?? originalExtensions ?? Object.create(null); // Include (non-enumerable) stack trace.
 
     if (originalError?.stack) {
       Object.defineProperty(this, 'stack', {
@@ -195,7 +193,7 @@ export class GraphQLError extends Error {
       formattedError.path = this.path;
     }
 
-    if (this.extensions != null) {
+    if (this.extensions != null && Object.keys(this.extensions).length > 0) {
       formattedError.extensions = this.extensions;
     }
 
