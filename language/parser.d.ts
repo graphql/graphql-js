@@ -8,7 +8,6 @@ import type {
   DocumentNode,
   DefinitionNode,
   OperationDefinitionNode,
-  OperationTypeNode,
   VariableDefinitionNode,
   SelectionSetNode,
   SelectionNode,
@@ -52,7 +51,7 @@ import type {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
 } from './ast';
-import { Location } from './ast';
+import { Location, OperationTypeNode } from './ast';
 import { Source } from './source';
 import { Lexer } from './lexer';
 /**

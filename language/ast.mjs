@@ -196,3 +196,11 @@ export function isNode(maybeNode) {
   return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
 /** Name */
+
+export let OperationTypeNode;
+
+(function (OperationTypeNode) {
+  OperationTypeNode['QUERY'] = 'query';
+  OperationTypeNode['MUTATION'] = 'mutation';
+  OperationTypeNode['SUBSCRIPTION'] = 'subscription';
+})(OperationTypeNode || (OperationTypeNode = {}));

@@ -2,6 +2,7 @@ import { inspect } from '../../jsutils/inspect.mjs';
 import { invariant } from '../../jsutils/invariant.mjs';
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import { Kind } from '../../language/kinds.mjs';
+import { OperationTypeNode } from '../../language/ast.mjs';
 import { DirectiveLocation } from '../../language/directiveLocation.mjs';
 import { specifiedDirectives } from '../../type/directives.mjs';
 
@@ -127,13 +128,13 @@ function getDirectiveLocationForASTPath(ancestors) {
 
 function getDirectiveLocationForOperation(operation) {
   switch (operation) {
-    case 'query':
+    case OperationTypeNode.QUERY:
       return DirectiveLocation.QUERY;
 
-    case 'mutation':
+    case OperationTypeNode.MUTATION:
       return DirectiveLocation.MUTATION;
 
-    case 'subscription':
+    case OperationTypeNode.SUBSCRIPTION:
       return DirectiveLocation.SUBSCRIPTION;
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 

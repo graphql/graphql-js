@@ -10,6 +10,8 @@ var _inspect = require('../jsutils/inspect.js');
 
 var _GraphQLError = require('../error/GraphQLError.js');
 
+var _ast = require('../language/ast.js');
+
 var _typeComparators = require('../utilities/typeComparators.js');
 
 var _schema = require('./schema.js');
@@ -87,8 +89,10 @@ function validateRootTypes(context) {
     context.reportError(
       `Query root type must be Object type, it cannot be ${(0,
       _inspect.inspect)(queryType)}.`,
-      (_getOperationTypeNode = getOperationTypeNode(schema, 'query')) !==
-        null && _getOperationTypeNode !== void 0
+      (_getOperationTypeNode = getOperationTypeNode(
+        schema,
+        _ast.OperationTypeNode.QUERY,
+      )) !== null && _getOperationTypeNode !== void 0
         ? _getOperationTypeNode
         : queryType.astNode,
     );
@@ -102,8 +106,10 @@ function validateRootTypes(context) {
     context.reportError(
       'Mutation root type must be Object type if provided, it cannot be ' +
         `${(0, _inspect.inspect)(mutationType)}.`,
-      (_getOperationTypeNode2 = getOperationTypeNode(schema, 'mutation')) !==
-        null && _getOperationTypeNode2 !== void 0
+      (_getOperationTypeNode2 = getOperationTypeNode(
+        schema,
+        _ast.OperationTypeNode.MUTATION,
+      )) !== null && _getOperationTypeNode2 !== void 0
         ? _getOperationTypeNode2
         : mutationType.astNode,
     );
@@ -119,7 +125,7 @@ function validateRootTypes(context) {
         `${(0, _inspect.inspect)(subscriptionType)}.`,
       (_getOperationTypeNode3 = getOperationTypeNode(
         schema,
-        'subscription',
+        _ast.OperationTypeNode.SUBSCRIPTION,
       )) !== null && _getOperationTypeNode3 !== void 0
         ? _getOperationTypeNode3
         : subscriptionType.astNode,

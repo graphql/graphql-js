@@ -1,6 +1,6 @@
 import { syntaxError } from '../error/syntaxError.mjs';
 import { Kind } from './kinds.mjs';
-import { Location } from './ast.mjs';
+import { Location, OperationTypeNode } from './ast.mjs';
 import { TokenKind } from './tokenKind.mjs';
 import { Source, isSource } from './source.mjs';
 import { DirectiveLocation } from './directiveLocation.mjs';
@@ -207,7 +207,7 @@ export class Parser {
     if (this.peek(TokenKind.BRACE_L)) {
       return this.node(start, {
         kind: Kind.OPERATION_DEFINITION,
-        operation: 'query',
+        operation: OperationTypeNode.QUERY,
         name: undefined,
         variableDefinitions: [],
         directives: [],
@@ -240,13 +240,13 @@ export class Parser {
 
     switch (operationToken.value) {
       case 'query':
-        return 'query';
+        return OperationTypeNode.QUERY;
 
       case 'mutation':
-        return 'mutation';
+        return OperationTypeNode.MUTATION;
 
       case 'subscription':
-        return 'subscription';
+        return OperationTypeNode.SUBSCRIPTION;
     }
 
     throw this.unexpected(operationToken);

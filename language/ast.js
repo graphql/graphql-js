@@ -4,7 +4,11 @@ Object.defineProperty(exports, '__esModule', {
   value: true,
 });
 exports.isNode = isNode;
-exports.QueryDocumentKeys = exports.Token = exports.Location = void 0;
+exports.OperationTypeNode =
+  exports.QueryDocumentKeys =
+  exports.Token =
+  exports.Location =
+    void 0;
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
@@ -209,3 +213,12 @@ function isNode(maybeNode) {
   return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
 /** Name */
+
+let OperationTypeNode;
+exports.OperationTypeNode = OperationTypeNode;
+
+(function (OperationTypeNode) {
+  OperationTypeNode['QUERY'] = 'query';
+  OperationTypeNode['MUTATION'] = 'mutation';
+  OperationTypeNode['SUBSCRIPTION'] = 'subscription';
+})(OperationTypeNode || (exports.OperationTypeNode = OperationTypeNode = {}));

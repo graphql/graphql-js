@@ -13,6 +13,8 @@ var _GraphQLError = require('../../error/GraphQLError.js');
 
 var _kinds = require('../../language/kinds.js');
 
+var _ast = require('../../language/ast.js');
+
 var _directiveLocation = require('../../language/directiveLocation.js');
 
 var _directives = require('../../type/directives.js');
@@ -139,13 +141,13 @@ function getDirectiveLocationForASTPath(ancestors) {
 
 function getDirectiveLocationForOperation(operation) {
   switch (operation) {
-    case 'query':
+    case _ast.OperationTypeNode.QUERY:
       return _directiveLocation.DirectiveLocation.QUERY;
 
-    case 'mutation':
+    case _ast.OperationTypeNode.MUTATION:
       return _directiveLocation.DirectiveLocation.MUTATION;
 
-    case 'subscription':
+    case _ast.OperationTypeNode.SUBSCRIPTION:
       return _directiveLocation.DirectiveLocation.SUBSCRIPTION;
   } // istanbul ignore next (Not reachable. All possible types have been considered)
 

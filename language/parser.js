@@ -223,7 +223,7 @@ class Parser {
     if (this.peek(_tokenKind.TokenKind.BRACE_L)) {
       return this.node(start, {
         kind: _kinds.Kind.OPERATION_DEFINITION,
-        operation: 'query',
+        operation: _ast.OperationTypeNode.QUERY,
         name: undefined,
         variableDefinitions: [],
         directives: [],
@@ -256,13 +256,13 @@ class Parser {
 
     switch (operationToken.value) {
       case 'query':
-        return 'query';
+        return _ast.OperationTypeNode.QUERY;
 
       case 'mutation':
-        return 'mutation';
+        return _ast.OperationTypeNode.MUTATION;
 
       case 'subscription':
-        return 'subscription';
+        return _ast.OperationTypeNode.SUBSCRIPTION;
     }
 
     throw this.unexpected(operationToken);

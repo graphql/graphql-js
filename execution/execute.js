@@ -35,6 +35,8 @@ var _GraphQLError = require('../error/GraphQLError.js');
 
 var _locatedError = require('../error/locatedError.js');
 
+var _ast = require('../language/ast.js');
+
 var _kinds = require('../language/kinds.js');
 
 var _validate = require('../type/validate.js');
@@ -326,10 +328,10 @@ function executeOperation(exeContext, operation, rootValue) {
   const path = undefined;
 
   switch (operation.operation) {
-    case 'query':
+    case _ast.OperationTypeNode.QUERY:
       return executeFields(exeContext, rootType, rootValue, path, rootFields);
 
-    case 'mutation':
+    case _ast.OperationTypeNode.MUTATION:
       return executeFieldsSerially(
         exeContext,
         rootType,
@@ -338,7 +340,7 @@ function executeOperation(exeContext, operation, rootValue) {
         rootFields,
       );
 
-    case 'subscription':
+    case _ast.OperationTypeNode.SUBSCRIPTION:
       // TODO: deprecate `subscribe` and move all logic here
       // Temporary solution until we finish merging execute and subscribe together
       return executeFields(exeContext, rootType, rootValue, path, rootFields);
