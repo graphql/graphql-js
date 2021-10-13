@@ -1,6 +1,6 @@
+import type { Kind } from './kinds';
 import type { Source } from './source';
 import type { TokenKindEnum } from './tokenKind';
-import type { Kind } from './kinds';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
