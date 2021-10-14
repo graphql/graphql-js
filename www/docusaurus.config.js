@@ -127,7 +127,7 @@ module.exports = {
       'docusaurus-plugin-typedoc-api',
       {
         projectRoot: path.join(__dirname, '..'),
-        packages: ['.'],
+        packages: [{ path: '.', slug: 'graphql-js' }],
       },
     ],
   ],

@@ -38,7 +38,7 @@
     ]
   },
   "devDependencies": {
-    "docusaurus-plugin-typedoc-api": "^1.3.0",
+    "docusaurus-plugin-typedoc-api": "^1.4.0",
     "typedoc": "^0.21.6"
   }
 }
