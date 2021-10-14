@@ -15,7 +15,7 @@ module.exports = {
   projectName: 'graphql-js', // Usually your repo name.
   themeConfig: {
     navbar: {
-      title: 'grahql-js',
+      title: 'graphql-js',
       logo: {
         alt: 'GraphQL Logo',
         src: 'img/logo.svg',
@@ -33,7 +33,7 @@ module.exports = {
           position: 'right',
         },
         {
-          // to: 'api/graphql-js', // for now https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/6
+          to: 'api/graphql-js',
           to: 'api',
           label: 'API',
           position: 'left',
