@@ -117,6 +117,12 @@ Object.defineProperty(exports, 'Token', {
     return _ast.Token;
   },
 });
+Object.defineProperty(exports, 'OperationTypeNode', {
+  enumerable: true,
+  get: function () {
+    return _ast.OperationTypeNode;
+  },
+});
 Object.defineProperty(exports, 'isDefinitionNode', {
   enumerable: true,
   get: function () {

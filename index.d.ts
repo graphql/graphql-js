@@ -189,6 +189,7 @@ export {
   Token,
   Source,
   Location,
+  OperationTypeNode,
   getLocation,
   /** Print source location */
   printLocation,
@@ -242,7 +243,6 @@ export type {
   DefinitionNode,
   ExecutableDefinitionNode,
   OperationDefinitionNode,
-  OperationTypeNode,
   VariableDefinitionNode,
   VariableNode,
   SelectionSetNode,

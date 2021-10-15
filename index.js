@@ -549,6 +549,12 @@ Object.defineProperty(exports, 'Location', {
     return _index2.Location;
   },
 });
+Object.defineProperty(exports, 'OperationTypeNode', {
+  enumerable: true,
+  get: function () {
+    return _index2.OperationTypeNode;
+  },
+});
 Object.defineProperty(exports, 'getLocation', {
   enumerable: true,
   get: function () {

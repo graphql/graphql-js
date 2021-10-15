@@ -13,7 +13,7 @@ export {
   getEnterLeaveForKind,
   BREAK,
 } from './visitor.mjs';
-export { Location, Token } from './ast.mjs';
+export { Location, Token, OperationTypeNode } from './ast.mjs';
 export {
   isDefinitionNode,
   isExecutableDefinitionNode,

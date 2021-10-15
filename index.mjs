@@ -135,6 +135,7 @@ export {
   Token,
   Source,
   Location,
+  OperationTypeNode,
   getLocation,
   /** Print source location */
   printLocation,

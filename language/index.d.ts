@@ -18,7 +18,7 @@ export {
   BREAK,
 } from './visitor';
 export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap } from './visitor';
-export { Location, Token } from './ast';
+export { Location, Token, OperationTypeNode } from './ast';
 export type {
   ASTNode,
   ASTKindToNode,
@@ -28,7 +28,6 @@ export type {
   DefinitionNode,
   ExecutableDefinitionNode,
   OperationDefinitionNode,
-  OperationTypeNode,
   VariableDefinitionNode,
   VariableNode,
   SelectionSetNode,
