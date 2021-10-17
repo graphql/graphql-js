@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { DirectiveLocation } from '../../language/directiveLocation';
+
 import type {
   GraphQLArgument,
   GraphQLInputField,
@@ -86,7 +88,7 @@ const InputObjectType = new GraphQLInputObjectType({
 const ScalarType = new GraphQLScalarType({ name: 'Scalar' });
 const Directive = new GraphQLDirective({
   name: 'Directive',
-  locations: ['QUERY'],
+  locations: [DirectiveLocation.QUERY],
 });
 
 describe('Type predicates', () => {

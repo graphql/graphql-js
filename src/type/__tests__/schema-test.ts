@@ -3,6 +3,8 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
+import { DirectiveLocation } from '../../language/directiveLocation';
+
 import { printSchema } from '../../utilities/printSchema';
 
 import { GraphQLSchema } from '../schema';
@@ -240,7 +242,7 @@ describe('Type System: Schema', () => {
     it('includes input types only used in directives', () => {
       const directive = new GraphQLDirective({
         name: 'dir',
-        locations: ['OBJECT'],
+        locations: [DirectiveLocation.OBJECT],
         args: {
           arg: {
             type: new GraphQLInputObjectType({ name: 'Foo', fields: {} }),

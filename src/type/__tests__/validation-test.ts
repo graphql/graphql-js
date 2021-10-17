@@ -7,6 +7,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 import { inspect } from '../../jsutils/inspect';
 
 import { parse } from '../../language/parser';
+import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { extendSchema } from '../../utilities/extendSchema';
 import { buildSchema } from '../../utilities/buildASTSchema';
@@ -1448,7 +1449,7 @@ describe('Type System: Arguments must have input types', () => {
           args: {
             badArg: argConfig,
           },
-          locations: ['QUERY'],
+          locations: [DirectiveLocation.QUERY],
         }),
       ],
     });

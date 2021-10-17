@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { DirectiveLocation } from '../../language/directiveLocation';
+
 import { GraphQLDirective } from '../directives';
 import { GraphQLString, GraphQLInt } from '../scalars';
 
@@ -8,7 +10,7 @@ describe('Type System: Directive', () => {
   it('defines a directive with no args', () => {
     const directive = new GraphQLDirective({
       name: 'Foo',
-      locations: ['QUERY'],
+      locations: [DirectiveLocation.QUERY],
     });
 
     expect(directive).to.deep.include({
@@ -26,7 +28,7 @@ describe('Type System: Directive', () => {
         foo: { type: GraphQLString },
         bar: { type: GraphQLInt },
       },
-      locations: ['QUERY'],
+      locations: [DirectiveLocation.QUERY],
     });
 
     expect(directive).to.deep.include({
@@ -60,7 +62,7 @@ describe('Type System: Directive', () => {
     const directive = new GraphQLDirective({
       name: 'Foo',
       isRepeatable: true,
-      locations: ['QUERY'],
+      locations: [DirectiveLocation.QUERY],
     });
 
     expect(directive).to.deep.include({
@@ -74,7 +76,7 @@ describe('Type System: Directive', () => {
   it('can be stringified, JSON.stringified and Object.toStringified', () => {
     const directive = new GraphQLDirective({
       name: 'Foo',
-      locations: ['QUERY'],
+      locations: [DirectiveLocation.QUERY],
     });
 
     expect(String(directive)).to.equal('@Foo');
@@ -86,7 +88,11 @@ describe('Type System: Directive', () => {
 
   it('rejects a directive with invalid name', () => {
     expect(
-      () => new GraphQLDirective({ name: 'bad-name', locations: ['QUERY'] }),
+      () =>
+        new GraphQLDirective({
+          name: 'bad-name',
+          locations: [DirectiveLocation.QUERY],
+        }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
@@ -95,7 +101,7 @@ describe('Type System: Directive', () => {
       () =>
         new GraphQLDirective({
           name: 'Foo',
-          locations: ['QUERY'],
+          locations: [DirectiveLocation.QUERY],
           // @ts-expect-error
           args: [],
         }),
@@ -107,7 +113,7 @@ describe('Type System: Directive', () => {
       () =>
         new GraphQLDirective({
           name: 'Foo',
-          locations: ['QUERY'],
+          locations: [DirectiveLocation.QUERY],
           args: {
             'bad-name': { type: GraphQLString },
           },

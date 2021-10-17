@@ -6,7 +6,6 @@ import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
 
 import type { DirectiveDefinitionNode } from '../language/ast';
-import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import { DirectiveLocation } from '../language/directiveLocation';
 
 import type {
@@ -57,7 +56,7 @@ export interface GraphQLDirectiveExtensions {
 export class GraphQLDirective {
   name: string;
   description: Maybe<string>;
-  locations: ReadonlyArray<DirectiveLocationEnum>;
+  locations: ReadonlyArray<DirectiveLocation>;
   args: ReadonlyArray<GraphQLArgument>;
   isRepeatable: boolean;
   extensions: Readonly<GraphQLDirectiveExtensions>;
@@ -113,7 +112,7 @@ export class GraphQLDirective {
 export interface GraphQLDirectiveConfig {
   name: string;
   description?: Maybe<string>;
-  locations: ReadonlyArray<DirectiveLocationEnum>;
+  locations: ReadonlyArray<DirectiveLocation>;
   args?: Maybe<GraphQLFieldConfigArgumentMap>;
   isRepeatable?: Maybe<boolean>;
   extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;

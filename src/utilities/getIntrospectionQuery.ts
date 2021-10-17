@@ -1,5 +1,5 @@
 import type { Maybe } from '../jsutils/Maybe';
-import type { DirectiveLocationEnum } from '../language/directiveLocation';
+import type { DirectiveLocation } from '../language/directiveLocation';
 
 export interface IntrospectionOptions {
   /**
@@ -321,6 +321,6 @@ export interface IntrospectionDirective {
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly isRepeatable?: boolean;
-  readonly locations: ReadonlyArray<DirectiveLocationEnum>;
+  readonly locations: ReadonlyArray<DirectiveLocation>;
   readonly args: ReadonlyArray<IntrospectionInputValue>;
 }
