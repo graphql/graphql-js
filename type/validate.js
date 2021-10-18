@@ -3,8 +3,8 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.validateSchema = validateSchema;
 exports.assertValidSchema = assertValidSchema;
+exports.validateSchema = validateSchema;
 
 var _inspect = require('../jsutils/inspect.js');
 

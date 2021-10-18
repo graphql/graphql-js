@@ -37,10 +37,10 @@ export declare class GraphQLDirective {
   extensions: Readonly<GraphQLDirectiveExtensions>;
   astNode: Maybe<DirectiveDefinitionNode>;
   constructor(config: Readonly<GraphQLDirectiveConfig>);
+  get [Symbol.toStringTag](): string;
   toConfig(): GraphQLDirectiveNormalizedConfig;
   toString(): string;
   toJSON(): string;
-  get [Symbol.toStringTag](): string;
 }
 export interface GraphQLDirectiveConfig {
   name: string;

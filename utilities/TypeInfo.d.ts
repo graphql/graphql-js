@@ -38,6 +38,7 @@ export declare class TypeInfo {
     /** @deprecated will be removed in 17.0.0 */
     getFieldDefFn?: GetFieldDefFn,
   );
+  get [Symbol.toStringTag](): string;
   getType(): Maybe<GraphQLOutputType>;
   getParentType(): Maybe<GraphQLCompositeType>;
   getInputType(): Maybe<GraphQLInputType>;
@@ -49,7 +50,6 @@ export declare class TypeInfo {
   getEnumValue(): Maybe<GraphQLEnumValue>;
   enter(node: ASTNode): void;
   leave(node: ASTNode): void;
-  get [Symbol.toStringTag](): string;
 }
 declare type GetFieldDefFn = (
   schema: GraphQLSchema,

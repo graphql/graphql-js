@@ -3,11 +3,11 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.visit = visit;
-exports.visitInParallel = visitInParallel;
+exports.BREAK = void 0;
 exports.getEnterLeaveForKind = getEnterLeaveForKind;
 exports.getVisitFn = getVisitFn;
-exports.BREAK = void 0;
+exports.visit = visit;
+exports.visitInParallel = visitInParallel;
 
 var _inspect = require('../jsutils/inspect.js');
 

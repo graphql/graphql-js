@@ -3,8 +3,8 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.subscribe = subscribe;
 exports.createSourceEventStream = createSourceEventStream;
+exports.subscribe = subscribe;
 
 var _inspect = require('../jsutils/inspect.js');
 

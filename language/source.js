@@ -3,8 +3,8 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.isSource = isSource;
 exports.Source = void 0;
+exports.isSource = isSource;
 
 var _inspect = require('../jsutils/inspect.js');
 

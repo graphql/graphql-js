@@ -3,8 +3,8 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.isPunctuatorTokenKind = isPunctuatorTokenKind;
 exports.Lexer = void 0;
+exports.isPunctuatorTokenKind = isPunctuatorTokenKind;
 
 var _syntaxError = require('../error/syntaxError.js');
 
@@ -54,6 +54,10 @@ class Lexer {
     this.line = 1;
     this.lineStart = 0;
   }
+
+  get [Symbol.toStringTag]() {
+    return 'Lexer';
+  }
   /**
    * Advances the token stream to the next non-ignored token.
    */
@@ -88,10 +92,6 @@ class Lexer {
     }
 
     return token;
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'Lexer';
   }
 }
 /**

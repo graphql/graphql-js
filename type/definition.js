@@ -3,55 +3,55 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.isType = isType;
-exports.assertType = assertType;
-exports.isScalarType = isScalarType;
-exports.assertScalarType = assertScalarType;
-exports.isObjectType = isObjectType;
-exports.assertObjectType = assertObjectType;
-exports.isInterfaceType = isInterfaceType;
-exports.assertInterfaceType = assertInterfaceType;
-exports.isUnionType = isUnionType;
-exports.assertUnionType = assertUnionType;
-exports.isEnumType = isEnumType;
-exports.assertEnumType = assertEnumType;
-exports.isInputObjectType = isInputObjectType;
-exports.assertInputObjectType = assertInputObjectType;
-exports.isListType = isListType;
-exports.assertListType = assertListType;
-exports.isNonNullType = isNonNullType;
-exports.assertNonNullType = assertNonNullType;
-exports.isInputType = isInputType;
-exports.assertInputType = assertInputType;
-exports.isOutputType = isOutputType;
-exports.assertOutputType = assertOutputType;
-exports.isLeafType = isLeafType;
-exports.assertLeafType = assertLeafType;
-exports.isCompositeType = isCompositeType;
-exports.assertCompositeType = assertCompositeType;
-exports.isAbstractType = isAbstractType;
-exports.assertAbstractType = assertAbstractType;
-exports.isWrappingType = isWrappingType;
-exports.assertWrappingType = assertWrappingType;
-exports.isNullableType = isNullableType;
-exports.assertNullableType = assertNullableType;
-exports.getNullableType = getNullableType;
-exports.isNamedType = isNamedType;
-exports.assertNamedType = assertNamedType;
-exports.getNamedType = getNamedType;
-exports.defineArguments = defineArguments;
-exports.argsToArgsConfig = argsToArgsConfig;
-exports.isRequiredArgument = isRequiredArgument;
-exports.isRequiredInputField = isRequiredInputField;
-exports.GraphQLInputObjectType =
-  exports.GraphQLEnumType =
-  exports.GraphQLUnionType =
-  exports.GraphQLInterfaceType =
-  exports.GraphQLObjectType =
+exports.GraphQLUnionType =
   exports.GraphQLScalarType =
+  exports.GraphQLObjectType =
   exports.GraphQLNonNull =
   exports.GraphQLList =
+  exports.GraphQLInterfaceType =
+  exports.GraphQLInputObjectType =
+  exports.GraphQLEnumType =
     void 0;
+exports.argsToArgsConfig = argsToArgsConfig;
+exports.assertAbstractType = assertAbstractType;
+exports.assertCompositeType = assertCompositeType;
+exports.assertEnumType = assertEnumType;
+exports.assertInputObjectType = assertInputObjectType;
+exports.assertInputType = assertInputType;
+exports.assertInterfaceType = assertInterfaceType;
+exports.assertLeafType = assertLeafType;
+exports.assertListType = assertListType;
+exports.assertNamedType = assertNamedType;
+exports.assertNonNullType = assertNonNullType;
+exports.assertNullableType = assertNullableType;
+exports.assertObjectType = assertObjectType;
+exports.assertOutputType = assertOutputType;
+exports.assertScalarType = assertScalarType;
+exports.assertType = assertType;
+exports.assertUnionType = assertUnionType;
+exports.assertWrappingType = assertWrappingType;
+exports.defineArguments = defineArguments;
+exports.getNamedType = getNamedType;
+exports.getNullableType = getNullableType;
+exports.isAbstractType = isAbstractType;
+exports.isCompositeType = isCompositeType;
+exports.isEnumType = isEnumType;
+exports.isInputObjectType = isInputObjectType;
+exports.isInputType = isInputType;
+exports.isInterfaceType = isInterfaceType;
+exports.isLeafType = isLeafType;
+exports.isListType = isListType;
+exports.isNamedType = isNamedType;
+exports.isNonNullType = isNonNullType;
+exports.isNullableType = isNullableType;
+exports.isObjectType = isObjectType;
+exports.isOutputType = isOutputType;
+exports.isRequiredArgument = isRequiredArgument;
+exports.isRequiredInputField = isRequiredInputField;
+exports.isScalarType = isScalarType;
+exports.isType = isType;
+exports.isUnionType = isUnionType;
+exports.isWrappingType = isWrappingType;
 
 var _inspect = require('../jsutils/inspect.js');
 
@@ -351,16 +351,16 @@ class GraphQLList {
     this.ofType = ofType;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLList';
+  }
+
   toString() {
     return '[' + String(this.ofType) + ']';
   }
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLList';
   }
 }
 /**
@@ -399,16 +399,16 @@ class GraphQLNonNull {
     this.ofType = ofType;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLNonNull';
+  }
+
   toString() {
     return String(this.ofType) + '!';
   }
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLNonNull';
   }
 }
 /**
@@ -596,6 +596,10 @@ class GraphQLScalarType {
     }
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLScalarType';
+  }
+
   toConfig() {
     return {
       name: this.name,
@@ -616,10 +620,6 @@ class GraphQLScalarType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLScalarType';
   }
 }
 
@@ -693,6 +693,10 @@ class GraphQLObjectType {
       );
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLObjectType';
+  }
+
   getFields() {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
@@ -728,10 +732,6 @@ class GraphQLObjectType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLObjectType';
   }
 }
 
@@ -895,6 +895,10 @@ class GraphQLInterfaceType {
       );
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLInterfaceType';
+  }
+
   getFields() {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
@@ -930,10 +934,6 @@ class GraphQLInterfaceType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLInterfaceType';
   }
 }
 
@@ -987,6 +987,10 @@ class GraphQLUnionType {
       );
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLUnionType';
+  }
+
   getTypes() {
     if (typeof this._types === 'function') {
       this._types = this._types();
@@ -1013,10 +1017,6 @@ class GraphQLUnionType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLUnionType';
   }
 }
 
@@ -1074,6 +1074,10 @@ class GraphQLEnumType {
       this._values.map((enumValue) => [enumValue.value, enumValue]),
     );
     this._nameLookup = (0, _keyMap.keyMap)(this._values, (value) => value.name);
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'GraphQLEnumType';
   }
 
   getValues() {
@@ -1175,10 +1179,6 @@ class GraphQLEnumType {
   toJSON() {
     return this.toString();
   }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLEnumType';
-  }
 }
 
 exports.GraphQLEnumType = GraphQLEnumType;
@@ -1255,6 +1255,10 @@ class GraphQLInputObjectType {
     this._fields = defineInputFieldMap.bind(undefined, config);
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLInputObjectType';
+  }
+
   getFields() {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
@@ -1288,10 +1292,6 @@ class GraphQLInputObjectType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLInputObjectType';
   }
 }
 

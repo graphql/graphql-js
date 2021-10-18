@@ -28,6 +28,10 @@ class ASTValidationContext {
     this._onError = onError;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'ASTValidationContext';
+  }
+
   reportError(error) {
     this._onError(error);
   }
@@ -110,10 +114,6 @@ class ASTValidationContext {
 
     return fragments;
   }
-
-  get [Symbol.toStringTag]() {
-    return 'ASTValidationContext';
-  }
 }
 
 exports.ASTValidationContext = ASTValidationContext;
@@ -124,12 +124,12 @@ class SDLValidationContext extends ASTValidationContext {
     this._schema = schema;
   }
 
-  getSchema() {
-    return this._schema;
-  }
-
   get [Symbol.toStringTag]() {
     return 'SDLValidationContext';
+  }
+
+  getSchema() {
+    return this._schema;
   }
 }
 
@@ -142,6 +142,10 @@ class ValidationContext extends ASTValidationContext {
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'ValidationContext';
   }
 
   getSchema() {
@@ -222,10 +226,6 @@ class ValidationContext extends ASTValidationContext {
 
   getEnumValue() {
     return this._typeInfo.getEnumValue();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'ValidationContext';
   }
 }
 

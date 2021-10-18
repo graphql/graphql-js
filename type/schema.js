@@ -3,9 +3,9 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.isSchema = isSchema;
-exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
+exports.assertSchema = assertSchema;
+exports.isSchema = isSchema;
 
 var _inspect = require('../jsutils/inspect.js');
 
@@ -257,6 +257,10 @@ class GraphQLSchema {
     }
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLSchema';
+  }
+
   getQueryType() {
     return this._queryType;
   }
@@ -355,10 +359,6 @@ class GraphQLSchema {
       extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined,
     };
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLSchema';
   }
 }
 

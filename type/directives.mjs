@@ -69,6 +69,10 @@ export class GraphQLDirective {
     this.args = defineArguments(args);
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLDirective';
+  }
+
   toConfig() {
     return {
       name: this.name,
@@ -87,10 +91,6 @@ export class GraphQLDirective {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLDirective';
   }
 }
 

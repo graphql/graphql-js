@@ -3,11 +3,11 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
+exports.Parser = void 0;
 exports.parse = parse;
-exports.parseValue = parseValue;
 exports.parseConstValue = parseConstValue;
 exports.parseType = parseType;
-exports.Parser = void 0;
+exports.parseValue = parseValue;
 
 var _syntaxError = require('../error/syntaxError.js');
 

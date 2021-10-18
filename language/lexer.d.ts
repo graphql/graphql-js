@@ -28,6 +28,7 @@ export declare class Lexer {
    */
   lineStart: number;
   constructor(source: Source);
+  get [Symbol.toStringTag](): string;
   /**
    * Advances the token stream to the next non-ignored token.
    */
@@ -37,7 +38,6 @@ export declare class Lexer {
    * the state of Lexer.
    */
   lookahead(): Token;
-  get [Symbol.toStringTag](): string;
 }
 /**
  * @internal

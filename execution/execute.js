@@ -3,13 +3,13 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.execute = execute;
-exports.executeSync = executeSync;
 exports.assertValidExecutionArguments = assertValidExecutionArguments;
 exports.buildExecutionContext = buildExecutionContext;
 exports.buildResolveInfo = buildResolveInfo;
+exports.defaultTypeResolver = exports.defaultFieldResolver = void 0;
+exports.execute = execute;
+exports.executeSync = executeSync;
 exports.getFieldDef = getFieldDef;
-exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
 
 var _inspect = require('../jsutils/inspect.js');
 

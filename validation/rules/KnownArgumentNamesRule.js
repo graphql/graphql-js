@@ -3,8 +3,8 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.KnownArgumentNamesRule = KnownArgumentNamesRule;
 exports.KnownArgumentNamesOnDirectivesRule = KnownArgumentNamesOnDirectivesRule;
+exports.KnownArgumentNamesRule = KnownArgumentNamesRule;
 
 var _didYouMean = require('../../jsutils/didYouMean.js');
 

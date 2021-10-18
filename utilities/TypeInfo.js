@@ -3,8 +3,8 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.visitWithTypeInfo = visitWithTypeInfo;
 exports.TypeInfo = void 0;
+exports.visitWithTypeInfo = visitWithTypeInfo;
 
 var _kinds = require('../language/kinds.js');
 
@@ -61,6 +61,10 @@ class TypeInfo {
         this._typeStack.push(initialType);
       }
     }
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'TypeInfo';
   }
 
   getType() {
@@ -326,10 +330,6 @@ class TypeInfo {
         this._enumValue = null;
         break;
     }
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'TypeInfo';
   }
 }
 

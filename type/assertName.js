@@ -3,8 +3,8 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.assertName = assertName;
 exports.assertEnumValueName = assertEnumValueName;
+exports.assertName = assertName;
 
 var _devAssert = require('../jsutils/devAssert.js');
 

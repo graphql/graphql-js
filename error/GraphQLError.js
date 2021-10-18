@@ -3,9 +3,9 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.printError = printError;
-exports.formatError = formatError;
 exports.GraphQLError = void 0;
+exports.formatError = formatError;
+exports.printError = printError;
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
 
@@ -178,6 +178,10 @@ class GraphQLError extends Error {
     }
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLError';
+  }
+
   toString() {
     let output = this.message;
 
@@ -216,10 +220,6 @@ class GraphQLError extends Error {
     }
 
     return formattedError;
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLError';
   }
 }
 /**

@@ -112,6 +112,7 @@ export declare class GraphQLSchema {
   private _subTypeMap;
   private _implementationsMap;
   constructor(config: Readonly<GraphQLSchemaConfig>);
+  get [Symbol.toStringTag](): string;
   getQueryType(): Maybe<GraphQLObjectType>;
   getMutationType(): Maybe<GraphQLObjectType>;
   getSubscriptionType(): Maybe<GraphQLObjectType>;
@@ -132,7 +133,6 @@ export declare class GraphQLSchema {
   getDirectives(): ReadonlyArray<GraphQLDirective>;
   getDirective(name: string): Maybe<GraphQLDirective>;
   toConfig(): GraphQLSchemaNormalizedConfig;
-  get [Symbol.toStringTag](): string;
 }
 declare type TypeMap = ObjMap<GraphQLNamedType>;
 export interface GraphQLSchemaValidationOptions {

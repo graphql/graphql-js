@@ -3,14 +3,14 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.isSpecifiedScalarType = isSpecifiedScalarType;
-exports.specifiedScalarTypes =
-  exports.GraphQLID =
-  exports.GraphQLBoolean =
-  exports.GraphQLString =
-  exports.GraphQLFloat =
+exports.GraphQLString =
   exports.GraphQLInt =
+  exports.GraphQLID =
+  exports.GraphQLFloat =
+  exports.GraphQLBoolean =
     void 0;
+exports.isSpecifiedScalarType = isSpecifiedScalarType;
+exports.specifiedScalarTypes = void 0;
 
 var _inspect = require('../jsutils/inspect.js');
 

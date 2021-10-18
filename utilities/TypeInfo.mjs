@@ -65,6 +65,10 @@ export class TypeInfo {
     }
   }
 
+  get [Symbol.toStringTag]() {
+    return 'TypeInfo';
+  }
+
   getType() {
     if (this._typeStack.length > 0) {
       return this._typeStack[this._typeStack.length - 1];
@@ -314,10 +318,6 @@ export class TypeInfo {
         this._enumValue = null;
         break;
     }
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'TypeInfo';
   }
 }
 

@@ -3,28 +3,16 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-Object.defineProperty(exports, 'Source', {
+Object.defineProperty(exports, 'BREAK', {
   enumerable: true,
   get: function () {
-    return _source.Source;
+    return _visitor.BREAK;
   },
 });
-Object.defineProperty(exports, 'getLocation', {
+Object.defineProperty(exports, 'DirectiveLocation', {
   enumerable: true,
   get: function () {
-    return _location.getLocation;
-  },
-});
-Object.defineProperty(exports, 'printLocation', {
-  enumerable: true,
-  get: function () {
-    return _printLocation.printLocation;
-  },
-});
-Object.defineProperty(exports, 'printSourceLocation', {
-  enumerable: true,
-  get: function () {
-    return _printLocation.printSourceLocation;
+    return _directiveLocation.DirectiveLocation;
   },
 });
 Object.defineProperty(exports, 'Kind', {
@@ -33,76 +21,10 @@ Object.defineProperty(exports, 'Kind', {
     return _kinds.Kind;
   },
 });
-Object.defineProperty(exports, 'TokenKind', {
-  enumerable: true,
-  get: function () {
-    return _tokenKind.TokenKind;
-  },
-});
 Object.defineProperty(exports, 'Lexer', {
   enumerable: true,
   get: function () {
     return _lexer.Lexer;
-  },
-});
-Object.defineProperty(exports, 'parse', {
-  enumerable: true,
-  get: function () {
-    return _parser.parse;
-  },
-});
-Object.defineProperty(exports, 'parseValue', {
-  enumerable: true,
-  get: function () {
-    return _parser.parseValue;
-  },
-});
-Object.defineProperty(exports, 'parseConstValue', {
-  enumerable: true,
-  get: function () {
-    return _parser.parseConstValue;
-  },
-});
-Object.defineProperty(exports, 'parseType', {
-  enumerable: true,
-  get: function () {
-    return _parser.parseType;
-  },
-});
-Object.defineProperty(exports, 'print', {
-  enumerable: true,
-  get: function () {
-    return _printer.print;
-  },
-});
-Object.defineProperty(exports, 'visit', {
-  enumerable: true,
-  get: function () {
-    return _visitor.visit;
-  },
-});
-Object.defineProperty(exports, 'visitInParallel', {
-  enumerable: true,
-  get: function () {
-    return _visitor.visitInParallel;
-  },
-});
-Object.defineProperty(exports, 'getVisitFn', {
-  enumerable: true,
-  get: function () {
-    return _visitor.getVisitFn;
-  },
-});
-Object.defineProperty(exports, 'getEnterLeaveForKind', {
-  enumerable: true,
-  get: function () {
-    return _visitor.getEnterLeaveForKind;
-  },
-});
-Object.defineProperty(exports, 'BREAK', {
-  enumerable: true,
-  get: function () {
-    return _visitor.BREAK;
   },
 });
 Object.defineProperty(exports, 'Location', {
@@ -111,16 +33,52 @@ Object.defineProperty(exports, 'Location', {
     return _ast.Location;
   },
 });
+Object.defineProperty(exports, 'OperationTypeNode', {
+  enumerable: true,
+  get: function () {
+    return _ast.OperationTypeNode;
+  },
+});
+Object.defineProperty(exports, 'Source', {
+  enumerable: true,
+  get: function () {
+    return _source.Source;
+  },
+});
 Object.defineProperty(exports, 'Token', {
   enumerable: true,
   get: function () {
     return _ast.Token;
   },
 });
-Object.defineProperty(exports, 'OperationTypeNode', {
+Object.defineProperty(exports, 'TokenKind', {
   enumerable: true,
   get: function () {
-    return _ast.OperationTypeNode;
+    return _tokenKind.TokenKind;
+  },
+});
+Object.defineProperty(exports, 'getEnterLeaveForKind', {
+  enumerable: true,
+  get: function () {
+    return _visitor.getEnterLeaveForKind;
+  },
+});
+Object.defineProperty(exports, 'getLocation', {
+  enumerable: true,
+  get: function () {
+    return _location.getLocation;
+  },
+});
+Object.defineProperty(exports, 'getVisitFn', {
+  enumerable: true,
+  get: function () {
+    return _visitor.getVisitFn;
+  },
+});
+Object.defineProperty(exports, 'isConstValueNode', {
+  enumerable: true,
+  get: function () {
+    return _predicates.isConstValueNode;
   },
 });
 Object.defineProperty(exports, 'isDefinitionNode', {
@@ -141,16 +99,16 @@ Object.defineProperty(exports, 'isSelectionNode', {
     return _predicates.isSelectionNode;
   },
 });
-Object.defineProperty(exports, 'isValueNode', {
+Object.defineProperty(exports, 'isTypeDefinitionNode', {
   enumerable: true,
   get: function () {
-    return _predicates.isValueNode;
+    return _predicates.isTypeDefinitionNode;
   },
 });
-Object.defineProperty(exports, 'isConstValueNode', {
+Object.defineProperty(exports, 'isTypeExtensionNode', {
   enumerable: true,
   get: function () {
-    return _predicates.isConstValueNode;
+    return _predicates.isTypeExtensionNode;
   },
 });
 Object.defineProperty(exports, 'isTypeNode', {
@@ -165,28 +123,70 @@ Object.defineProperty(exports, 'isTypeSystemDefinitionNode', {
     return _predicates.isTypeSystemDefinitionNode;
   },
 });
-Object.defineProperty(exports, 'isTypeDefinitionNode', {
-  enumerable: true,
-  get: function () {
-    return _predicates.isTypeDefinitionNode;
-  },
-});
 Object.defineProperty(exports, 'isTypeSystemExtensionNode', {
   enumerable: true,
   get: function () {
     return _predicates.isTypeSystemExtensionNode;
   },
 });
-Object.defineProperty(exports, 'isTypeExtensionNode', {
+Object.defineProperty(exports, 'isValueNode', {
   enumerable: true,
   get: function () {
-    return _predicates.isTypeExtensionNode;
+    return _predicates.isValueNode;
   },
 });
-Object.defineProperty(exports, 'DirectiveLocation', {
+Object.defineProperty(exports, 'parse', {
   enumerable: true,
   get: function () {
-    return _directiveLocation.DirectiveLocation;
+    return _parser.parse;
+  },
+});
+Object.defineProperty(exports, 'parseConstValue', {
+  enumerable: true,
+  get: function () {
+    return _parser.parseConstValue;
+  },
+});
+Object.defineProperty(exports, 'parseType', {
+  enumerable: true,
+  get: function () {
+    return _parser.parseType;
+  },
+});
+Object.defineProperty(exports, 'parseValue', {
+  enumerable: true,
+  get: function () {
+    return _parser.parseValue;
+  },
+});
+Object.defineProperty(exports, 'print', {
+  enumerable: true,
+  get: function () {
+    return _printer.print;
+  },
+});
+Object.defineProperty(exports, 'printLocation', {
+  enumerable: true,
+  get: function () {
+    return _printLocation.printLocation;
+  },
+});
+Object.defineProperty(exports, 'printSourceLocation', {
+  enumerable: true,
+  get: function () {
+    return _printLocation.printSourceLocation;
+  },
+});
+Object.defineProperty(exports, 'visit', {
+  enumerable: true,
+  get: function () {
+    return _visitor.visit;
+  },
+});
+Object.defineProperty(exports, 'visitInParallel', {
+  enumerable: true,
+  get: function () {
+    return _visitor.visitInParallel;
   },
 });
 

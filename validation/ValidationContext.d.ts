@@ -40,6 +40,7 @@ export declare class ASTValidationContext {
   private _fragmentSpreads;
   private _recursivelyReferencedFragments;
   constructor(ast: DocumentNode, onError: (error: GraphQLError) => void);
+  get [Symbol.toStringTag](): string;
   reportError(error: GraphQLError): void;
   getDocument(): DocumentNode;
   getFragment(name: string): Maybe<FragmentDefinitionNode>;
@@ -47,7 +48,6 @@ export declare class ASTValidationContext {
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
   ): ReadonlyArray<FragmentDefinitionNode>;
-  get [Symbol.toStringTag](): string;
 }
 export declare type ASTValidationRule = (
   context: ASTValidationContext,
@@ -59,8 +59,8 @@ export declare class SDLValidationContext extends ASTValidationContext {
     schema: Maybe<GraphQLSchema>,
     onError: (error: GraphQLError) => void,
   );
-  getSchema(): Maybe<GraphQLSchema>;
   get [Symbol.toStringTag](): string;
+  getSchema(): Maybe<GraphQLSchema>;
 }
 export declare type SDLValidationRule = (
   context: SDLValidationContext,
@@ -76,6 +76,7 @@ export declare class ValidationContext extends ASTValidationContext {
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
   );
+  get [Symbol.toStringTag](): string;
   getSchema(): GraphQLSchema;
   getVariableUsages(node: NodeWithSelectionSet): ReadonlyArray<VariableUsage>;
   getRecursiveVariableUsages(
@@ -89,7 +90,6 @@ export declare class ValidationContext extends ASTValidationContext {
   getDirective(): Maybe<GraphQLDirective>;
   getArgument(): Maybe<GraphQLArgument>;
   getEnumValue(): Maybe<GraphQLEnumValue>;
-  get [Symbol.toStringTag](): string;
 }
 export declare type ValidationRule = (context: ValidationContext) => ASTVisitor;
 export {};

@@ -30,15 +30,15 @@ export class Location {
     this.source = source;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'Location';
+  }
+
   toJSON() {
     return {
       start: this.start,
       end: this.end,
     };
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'Location';
   }
 }
 /**
@@ -91,6 +91,10 @@ export class Token {
     this.next = null;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'Token';
+  }
+
   toJSON() {
     return {
       kind: this.kind,
@@ -98,10 +102,6 @@ export class Token {
       line: this.line,
       column: this.column,
     };
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'Token';
   }
 }
 /**

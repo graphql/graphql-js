@@ -3,17 +3,17 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.isDirective = isDirective;
-exports.assertDirective = assertDirective;
-exports.isSpecifiedDirective = isSpecifiedDirective;
-exports.specifiedDirectives =
-  exports.GraphQLSpecifiedByDirective =
-  exports.GraphQLDeprecatedDirective =
-  exports.DEFAULT_DEPRECATION_REASON =
+exports.GraphQLSpecifiedByDirective =
   exports.GraphQLSkipDirective =
   exports.GraphQLIncludeDirective =
   exports.GraphQLDirective =
+  exports.GraphQLDeprecatedDirective =
+  exports.DEFAULT_DEPRECATION_REASON =
     void 0;
+exports.assertDirective = assertDirective;
+exports.isDirective = isDirective;
+exports.isSpecifiedDirective = isSpecifiedDirective;
+exports.specifiedDirectives = void 0;
 
 var _inspect = require('../jsutils/inspect.js');
 
@@ -94,6 +94,10 @@ class GraphQLDirective {
     this.args = (0, _definition.defineArguments)(args);
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLDirective';
+  }
+
   toConfig() {
     return {
       name: this.name,
@@ -112,10 +116,6 @@ class GraphQLDirective {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLDirective';
   }
 }
 

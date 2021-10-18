@@ -3,21 +3,21 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.isIntrospectionType = isIntrospectionType;
 exports.introspectionTypes =
-  exports.TypeNameMetaFieldDef =
-  exports.TypeMetaFieldDef =
-  exports.SchemaMetaFieldDef =
   exports.__TypeKind =
-  exports.TypeKind =
-  exports.__EnumValue =
+  exports.__Type =
+  exports.__Schema =
   exports.__InputValue =
   exports.__Field =
-  exports.__Type =
+  exports.__EnumValue =
   exports.__DirectiveLocation =
   exports.__Directive =
-  exports.__Schema =
+  exports.TypeNameMetaFieldDef =
+  exports.TypeMetaFieldDef =
+  exports.TypeKind =
+  exports.SchemaMetaFieldDef =
     void 0;
+exports.isIntrospectionType = isIntrospectionType;
 
 var _inspect = require('../jsutils/inspect.js');
 

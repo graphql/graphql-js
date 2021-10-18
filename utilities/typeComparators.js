@@ -3,9 +3,9 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
+exports.doTypesOverlap = doTypesOverlap;
 exports.isEqualType = isEqualType;
 exports.isTypeSubTypeOf = isTypeSubTypeOf;
-exports.doTypesOverlap = doTypesOverlap;
 
 var _definition = require('../type/definition.js');
 

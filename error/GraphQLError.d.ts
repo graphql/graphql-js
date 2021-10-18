@@ -76,9 +76,9 @@ export declare class GraphQLError extends Error {
     >,
     extensions?: Maybe<GraphQLErrorExtensions>,
   );
+  get [Symbol.toStringTag](): string;
   toString(): string;
   toJSON(): GraphQLFormattedError;
-  get [Symbol.toStringTag](): string;
 }
 /**
  * See: https://spec.graphql.org/draft/#sec-Errors

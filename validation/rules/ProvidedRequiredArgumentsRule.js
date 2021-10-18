@@ -3,9 +3,9 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.ProvidedRequiredArgumentsRule = ProvidedRequiredArgumentsRule;
 exports.ProvidedRequiredArgumentsOnDirectivesRule =
   ProvidedRequiredArgumentsOnDirectivesRule;
+exports.ProvidedRequiredArgumentsRule = ProvidedRequiredArgumentsRule;
 
 var _inspect = require('../../jsutils/inspect.js');
 

@@ -27,11 +27,11 @@ export declare class Location {
    */
   readonly source: Source;
   constructor(startToken: Token, endToken: Token, source: Source);
+  get [Symbol.toStringTag](): string;
   toJSON(): {
     start: number;
     end: number;
   };
-  get [Symbol.toStringTag](): string;
 }
 /**
  * Represents a range of characters represented by a lexical token
@@ -80,13 +80,13 @@ export declare class Token {
     column: number,
     value?: string,
   );
+  get [Symbol.toStringTag](): string;
   toJSON(): {
     kind: TokenKind;
     value?: string;
     line: number;
     column: number;
   };
-  get [Symbol.toStringTag](): string;
 }
 /**
  * The list of all possible AST node types.

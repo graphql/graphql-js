@@ -178,9 +178,9 @@ export declare function assertAbstractType(type: unknown): GraphQLAbstractType;
 export declare class GraphQLList<T extends GraphQLType> {
   readonly ofType: T;
   constructor(ofType: T);
+  get [Symbol.toStringTag](): string;
   toString(): string;
   toJSON(): string;
-  get [Symbol.toStringTag](): string;
 }
 /**
  * Non-Null Type Wrapper
@@ -206,9 +206,9 @@ export declare class GraphQLList<T extends GraphQLType> {
 export declare class GraphQLNonNull<T extends GraphQLNullableType> {
   readonly ofType: T;
   constructor(ofType: T);
+  get [Symbol.toStringTag](): string;
   toString(): string;
   toJSON(): string;
-  get [Symbol.toStringTag](): string;
 }
 /**
  * These types wrap and modify other types
@@ -330,10 +330,10 @@ export declare class GraphQLScalarType<
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
   constructor(config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>);
+  get [Symbol.toStringTag](): string;
   toConfig(): GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>;
   toString(): string;
   toJSON(): string;
-  get [Symbol.toStringTag](): string;
 }
 export declare type GraphQLScalarSerializer<TExternal> = (
   outputValue: unknown,
@@ -432,12 +432,12 @@ export declare class GraphQLObjectType<TSource = any, TContext = any> {
   private _fields;
   private _interfaces;
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>);
+  get [Symbol.toStringTag](): string;
   getFields(): GraphQLFieldMap<TSource, TContext>;
   getInterfaces(): ReadonlyArray<GraphQLInterfaceType>;
   toConfig(): GraphQLObjectTypeNormalizedConfig<TSource, TContext>;
   toString(): string;
   toJSON(): string;
-  get [Symbol.toStringTag](): string;
 }
 export declare function defineArguments(
   config: GraphQLFieldConfigArgumentMap,
@@ -638,12 +638,12 @@ export declare class GraphQLInterfaceType {
   private _fields;
   private _interfaces;
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>);
+  get [Symbol.toStringTag](): string;
   getFields(): GraphQLFieldMap<any, any>;
   getInterfaces(): ReadonlyArray<GraphQLInterfaceType>;
   toConfig(): GraphQLInterfaceTypeNormalizedConfig;
   toString(): string;
   toJSON(): string;
-  get [Symbol.toStringTag](): string;
 }
 export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   name: string;
@@ -712,11 +712,11 @@ export declare class GraphQLUnionType {
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
   private _types;
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>);
+  get [Symbol.toStringTag](): string;
   getTypes(): ReadonlyArray<GraphQLObjectType>;
   toConfig(): GraphQLUnionTypeNormalizedConfig;
   toString(): string;
   toJSON(): string;
-  get [Symbol.toStringTag](): string;
 }
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
   name: string;
@@ -783,6 +783,7 @@ export declare class GraphQLEnumType {
   private _valueLookup;
   private _nameLookup;
   constructor(config: Readonly<GraphQLEnumTypeConfig>);
+  get [Symbol.toStringTag](): string;
   getValues(): ReadonlyArray<GraphQLEnumValue>;
   getValue(name: string): Maybe<GraphQLEnumValue>;
   serialize(outputValue: unknown): Maybe<string>;
@@ -794,7 +795,6 @@ export declare class GraphQLEnumType {
   toConfig(): GraphQLEnumTypeNormalizedConfig;
   toString(): string;
   toJSON(): string;
-  get [Symbol.toStringTag](): string;
 }
 export interface GraphQLEnumTypeConfig {
   name: string;
@@ -877,11 +877,11 @@ export declare class GraphQLInputObjectType {
   extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
   private _fields;
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>);
+  get [Symbol.toStringTag](): string;
   getFields(): GraphQLInputFieldMap;
   toConfig(): GraphQLInputObjectTypeNormalizedConfig;
   toString(): string;
   toJSON(): string;
-  get [Symbol.toStringTag](): string;
 }
 export interface GraphQLInputObjectTypeConfig {
   name: string;

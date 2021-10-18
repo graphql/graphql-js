@@ -3,24 +3,6 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-Object.defineProperty(exports, 'validate', {
-  enumerable: true,
-  get: function () {
-    return _validate.validate;
-  },
-});
-Object.defineProperty(exports, 'ValidationContext', {
-  enumerable: true,
-  get: function () {
-    return _ValidationContext.ValidationContext;
-  },
-});
-Object.defineProperty(exports, 'specifiedRules', {
-  enumerable: true,
-  get: function () {
-    return _specifiedRules.specifiedRules;
-  },
-});
 Object.defineProperty(exports, 'ExecutableDefinitionsRule', {
   enumerable: true,
   get: function () {
@@ -69,10 +51,28 @@ Object.defineProperty(exports, 'LoneAnonymousOperationRule', {
     return _LoneAnonymousOperationRule.LoneAnonymousOperationRule;
   },
 });
+Object.defineProperty(exports, 'LoneSchemaDefinitionRule', {
+  enumerable: true,
+  get: function () {
+    return _LoneSchemaDefinitionRule.LoneSchemaDefinitionRule;
+  },
+});
+Object.defineProperty(exports, 'NoDeprecatedCustomRule', {
+  enumerable: true,
+  get: function () {
+    return _NoDeprecatedCustomRule.NoDeprecatedCustomRule;
+  },
+});
 Object.defineProperty(exports, 'NoFragmentCyclesRule', {
   enumerable: true,
   get: function () {
     return _NoFragmentCyclesRule.NoFragmentCyclesRule;
+  },
+});
+Object.defineProperty(exports, 'NoSchemaIntrospectionCustomRule', {
+  enumerable: true,
+  get: function () {
+    return _NoSchemaIntrospectionCustomRule.NoSchemaIntrospectionCustomRule;
   },
 });
 Object.defineProperty(exports, 'NoUndefinedVariablesRule', {
@@ -105,6 +105,12 @@ Object.defineProperty(exports, 'PossibleFragmentSpreadsRule', {
     return _PossibleFragmentSpreadsRule.PossibleFragmentSpreadsRule;
   },
 });
+Object.defineProperty(exports, 'PossibleTypeExtensionsRule', {
+  enumerable: true,
+  get: function () {
+    return _PossibleTypeExtensionsRule.PossibleTypeExtensionsRule;
+  },
+});
 Object.defineProperty(exports, 'ProvidedRequiredArgumentsRule', {
   enumerable: true,
   get: function () {
@@ -123,16 +129,40 @@ Object.defineProperty(exports, 'SingleFieldSubscriptionsRule', {
     return _SingleFieldSubscriptionsRule.SingleFieldSubscriptionsRule;
   },
 });
+Object.defineProperty(exports, 'UniqueArgumentDefinitionNamesRule', {
+  enumerable: true,
+  get: function () {
+    return _UniqueArgumentDefinitionNamesRule.UniqueArgumentDefinitionNamesRule;
+  },
+});
 Object.defineProperty(exports, 'UniqueArgumentNamesRule', {
   enumerable: true,
   get: function () {
     return _UniqueArgumentNamesRule.UniqueArgumentNamesRule;
   },
 });
+Object.defineProperty(exports, 'UniqueDirectiveNamesRule', {
+  enumerable: true,
+  get: function () {
+    return _UniqueDirectiveNamesRule.UniqueDirectiveNamesRule;
+  },
+});
 Object.defineProperty(exports, 'UniqueDirectivesPerLocationRule', {
   enumerable: true,
   get: function () {
     return _UniqueDirectivesPerLocationRule.UniqueDirectivesPerLocationRule;
+  },
+});
+Object.defineProperty(exports, 'UniqueEnumValueNamesRule', {
+  enumerable: true,
+  get: function () {
+    return _UniqueEnumValueNamesRule.UniqueEnumValueNamesRule;
+  },
+});
+Object.defineProperty(exports, 'UniqueFieldDefinitionNamesRule', {
+  enumerable: true,
+  get: function () {
+    return _UniqueFieldDefinitionNamesRule.UniqueFieldDefinitionNamesRule;
   },
 });
 Object.defineProperty(exports, 'UniqueFragmentNamesRule', {
@@ -153,10 +183,28 @@ Object.defineProperty(exports, 'UniqueOperationNamesRule', {
     return _UniqueOperationNamesRule.UniqueOperationNamesRule;
   },
 });
+Object.defineProperty(exports, 'UniqueOperationTypesRule', {
+  enumerable: true,
+  get: function () {
+    return _UniqueOperationTypesRule.UniqueOperationTypesRule;
+  },
+});
+Object.defineProperty(exports, 'UniqueTypeNamesRule', {
+  enumerable: true,
+  get: function () {
+    return _UniqueTypeNamesRule.UniqueTypeNamesRule;
+  },
+});
 Object.defineProperty(exports, 'UniqueVariableNamesRule', {
   enumerable: true,
   get: function () {
     return _UniqueVariableNamesRule.UniqueVariableNamesRule;
+  },
+});
+Object.defineProperty(exports, 'ValidationContext', {
+  enumerable: true,
+  get: function () {
+    return _ValidationContext.ValidationContext;
   },
 });
 Object.defineProperty(exports, 'ValuesOfCorrectTypeRule', {
@@ -177,64 +225,16 @@ Object.defineProperty(exports, 'VariablesInAllowedPositionRule', {
     return _VariablesInAllowedPositionRule.VariablesInAllowedPositionRule;
   },
 });
-Object.defineProperty(exports, 'LoneSchemaDefinitionRule', {
+Object.defineProperty(exports, 'specifiedRules', {
   enumerable: true,
   get: function () {
-    return _LoneSchemaDefinitionRule.LoneSchemaDefinitionRule;
+    return _specifiedRules.specifiedRules;
   },
 });
-Object.defineProperty(exports, 'UniqueOperationTypesRule', {
+Object.defineProperty(exports, 'validate', {
   enumerable: true,
   get: function () {
-    return _UniqueOperationTypesRule.UniqueOperationTypesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueTypeNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueTypeNamesRule.UniqueTypeNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueEnumValueNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueEnumValueNamesRule.UniqueEnumValueNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueFieldDefinitionNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueFieldDefinitionNamesRule.UniqueFieldDefinitionNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueArgumentDefinitionNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueArgumentDefinitionNamesRule.UniqueArgumentDefinitionNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueDirectiveNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueDirectiveNamesRule.UniqueDirectiveNamesRule;
-  },
-});
-Object.defineProperty(exports, 'PossibleTypeExtensionsRule', {
-  enumerable: true,
-  get: function () {
-    return _PossibleTypeExtensionsRule.PossibleTypeExtensionsRule;
-  },
-});
-Object.defineProperty(exports, 'NoDeprecatedCustomRule', {
-  enumerable: true,
-  get: function () {
-    return _NoDeprecatedCustomRule.NoDeprecatedCustomRule;
-  },
-});
-Object.defineProperty(exports, 'NoSchemaIntrospectionCustomRule', {
-  enumerable: true,
-  get: function () {
-    return _NoSchemaIntrospectionCustomRule.NoSchemaIntrospectionCustomRule;
+    return _validate.validate;
   },
 });
 

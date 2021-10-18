@@ -237,16 +237,16 @@ export class GraphQLList {
     this.ofType = ofType;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLList';
+  }
+
   toString() {
     return '[' + String(this.ofType) + ']';
   }
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLList';
   }
 }
 /**
@@ -281,16 +281,16 @@ export class GraphQLNonNull {
     this.ofType = ofType;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLNonNull';
+  }
+
   toString() {
     return String(this.ofType) + '!';
   }
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLNonNull';
   }
 }
 /**
@@ -462,6 +462,10 @@ export class GraphQLScalarType {
     }
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLScalarType';
+  }
+
   toConfig() {
     return {
       name: this.name,
@@ -482,10 +486,6 @@ export class GraphQLScalarType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLScalarType';
   }
 }
 
@@ -557,6 +557,10 @@ export class GraphQLObjectType {
       );
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLObjectType';
+  }
+
   getFields() {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
@@ -592,10 +596,6 @@ export class GraphQLObjectType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLObjectType';
   }
 }
 
@@ -756,6 +756,10 @@ export class GraphQLInterfaceType {
       );
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLInterfaceType';
+  }
+
   getFields() {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
@@ -791,10 +795,6 @@ export class GraphQLInterfaceType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLInterfaceType';
   }
 }
 
@@ -846,6 +846,10 @@ export class GraphQLUnionType {
       );
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLUnionType';
+  }
+
   getTypes() {
     if (typeof this._types === 'function') {
       this._types = this._types();
@@ -872,10 +876,6 @@ export class GraphQLUnionType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLUnionType';
   }
 }
 
@@ -931,6 +931,10 @@ export class GraphQLEnumType {
       this._values.map((enumValue) => [enumValue.value, enumValue]),
     );
     this._nameLookup = keyMap(this._values, (value) => value.name);
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'GraphQLEnumType';
   }
 
   getValues() {
@@ -1030,10 +1034,6 @@ export class GraphQLEnumType {
   toJSON() {
     return this.toString();
   }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLEnumType';
-  }
 }
 
 function didYouMeanEnumValue(enumType, unknownValueStr) {
@@ -1103,6 +1103,10 @@ export class GraphQLInputObjectType {
     this._fields = defineInputFieldMap.bind(undefined, config);
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLInputObjectType';
+  }
+
   getFields() {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
@@ -1136,10 +1140,6 @@ export class GraphQLInputObjectType {
 
   toJSON() {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLInputObjectType';
   }
 }
 

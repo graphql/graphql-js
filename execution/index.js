@@ -3,22 +3,10 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-Object.defineProperty(exports, 'responsePathAsArray', {
+Object.defineProperty(exports, 'createSourceEventStream', {
   enumerable: true,
   get: function () {
-    return _Path.pathToArray;
-  },
-});
-Object.defineProperty(exports, 'execute', {
-  enumerable: true,
-  get: function () {
-    return _execute.execute;
-  },
-});
-Object.defineProperty(exports, 'executeSync', {
-  enumerable: true,
-  get: function () {
-    return _execute.executeSync;
+    return _subscribe.createSourceEventStream;
   },
 });
 Object.defineProperty(exports, 'defaultFieldResolver', {
@@ -33,22 +21,34 @@ Object.defineProperty(exports, 'defaultTypeResolver', {
     return _execute.defaultTypeResolver;
   },
 });
-Object.defineProperty(exports, 'subscribe', {
+Object.defineProperty(exports, 'execute', {
   enumerable: true,
   get: function () {
-    return _subscribe.subscribe;
+    return _execute.execute;
   },
 });
-Object.defineProperty(exports, 'createSourceEventStream', {
+Object.defineProperty(exports, 'executeSync', {
   enumerable: true,
   get: function () {
-    return _subscribe.createSourceEventStream;
+    return _execute.executeSync;
   },
 });
 Object.defineProperty(exports, 'getDirectiveValues', {
   enumerable: true,
   get: function () {
     return _values.getDirectiveValues;
+  },
+});
+Object.defineProperty(exports, 'responsePathAsArray', {
+  enumerable: true,
+  get: function () {
+    return _Path.pathToArray;
+  },
+});
+Object.defineProperty(exports, 'subscribe', {
+  enumerable: true,
+  get: function () {
+    return _subscribe.subscribe;
   },
 });
 

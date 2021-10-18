@@ -3,8 +3,8 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.printSchema = printSchema;
 exports.printIntrospectionSchema = printIntrospectionSchema;
+exports.printSchema = printSchema;
 exports.printType = printType;
 
 var _inspect = require('../jsutils/inspect.js');

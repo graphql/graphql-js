@@ -3,16 +3,16 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
+exports.isConstValueNode = isConstValueNode;
 exports.isDefinitionNode = isDefinitionNode;
 exports.isExecutableDefinitionNode = isExecutableDefinitionNode;
 exports.isSelectionNode = isSelectionNode;
-exports.isValueNode = isValueNode;
-exports.isConstValueNode = isConstValueNode;
+exports.isTypeDefinitionNode = isTypeDefinitionNode;
+exports.isTypeExtensionNode = isTypeExtensionNode;
 exports.isTypeNode = isTypeNode;
 exports.isTypeSystemDefinitionNode = isTypeSystemDefinitionNode;
-exports.isTypeDefinitionNode = isTypeDefinitionNode;
 exports.isTypeSystemExtensionNode = isTypeSystemExtensionNode;
-exports.isTypeExtensionNode = isTypeExtensionNode;
+exports.isValueNode = isValueNode;
 
 var _kinds = require('./kinds.js');
 

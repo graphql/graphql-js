@@ -3,12 +3,12 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.isNode = isNode;
-exports.OperationTypeNode =
+exports.Token =
   exports.QueryDocumentKeys =
-  exports.Token =
+  exports.OperationTypeNode =
   exports.Location =
     void 0;
+exports.isNode = isNode;
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
@@ -42,15 +42,15 @@ class Location {
     this.source = source;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'Location';
+  }
+
   toJSON() {
     return {
       start: this.start,
       end: this.end,
     };
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'Location';
   }
 }
 /**
@@ -105,6 +105,10 @@ class Token {
     this.next = null;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'Token';
+  }
+
   toJSON() {
     return {
       kind: this.kind,
@@ -112,10 +116,6 @@ class Token {
       line: this.line,
       column: this.column,
     };
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'Token';
   }
 }
 /**

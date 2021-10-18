@@ -3,9 +3,9 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.getVariableValues = getVariableValues;
 exports.getArgumentValues = getArgumentValues;
 exports.getDirectiveValues = getDirectiveValues;
+exports.getVariableValues = getVariableValues;
 
 var _keyMap = require('../jsutils/keyMap.js');
 
