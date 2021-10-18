@@ -47,6 +47,10 @@ export class Lexer {
     this.lineStart = 0;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'Lexer';
+  }
+
   /**
    * Advances the token stream to the next non-ignored token.
    */
@@ -78,10 +82,6 @@ export class Lexer {
       } while (token.kind === TokenKind.COMMENT);
     }
     return token;
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'Lexer';
   }
 }
 

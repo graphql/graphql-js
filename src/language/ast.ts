@@ -40,12 +40,12 @@ export class Location {
     this.source = source;
   }
 
-  toJSON(): { start: number; end: number } {
-    return { start: this.start, end: this.end };
-  }
-
   get [Symbol.toStringTag]() {
     return 'Location';
+  }
+
+  toJSON(): { start: number; end: number } {
+    return { start: this.start, end: this.end };
   }
 }
 
@@ -114,6 +114,10 @@ export class Token {
     this.next = null;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'Token';
+  }
+
   toJSON(): {
     kind: TokenKind;
     value?: string;
@@ -126,10 +130,6 @@ export class Token {
       line: this.line,
       column: this.column,
     };
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'Token';
   }
 }
 
