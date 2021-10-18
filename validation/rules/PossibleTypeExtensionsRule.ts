@@ -4,7 +4,6 @@ import { invariant } from '../../jsutils/invariant.ts';
 import { didYouMean } from '../../jsutils/didYouMean.ts';
 import { suggestionList } from '../../jsutils/suggestionList.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { KindEnum } from '../../language/kinds.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 import type { DefinitionNode, TypeExtensionNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
@@ -50,7 +49,7 @@ export function PossibleTypeExtensionsRule(
     const typeName = node.name.value;
     const defNode = definedTypes[typeName];
     const existingType = schema?.getType(typeName);
-    let expectedKind: KindEnum | undefined;
+    let expectedKind: Kind | undefined;
 
     if (defNode) {
       expectedKind = defKindToExtKind[defNode.kind];
@@ -84,7 +83,7 @@ export function PossibleTypeExtensionsRule(
     }
   }
 }
-const defKindToExtKind: ObjMap<KindEnum> = {
+const defKindToExtKind: ObjMap<Kind> = {
   [Kind.SCALAR_TYPE_DEFINITION]: Kind.SCALAR_TYPE_EXTENSION,
   [Kind.OBJECT_TYPE_DEFINITION]: Kind.OBJECT_TYPE_EXTENSION,
   [Kind.INTERFACE_TYPE_DEFINITION]: Kind.INTERFACE_TYPE_EXTENSION,
@@ -93,7 +92,7 @@ const defKindToExtKind: ObjMap<KindEnum> = {
   [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION,
 };
 
-function typeToExtKind(type: GraphQLNamedType): KindEnum {
+function typeToExtKind(type: GraphQLNamedType): Kind {
   if (isScalarType(type)) {
     return Kind.SCALAR_TYPE_EXTENSION;
   }
@@ -121,7 +120,7 @@ function typeToExtKind(type: GraphQLNamedType): KindEnum {
   false || invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
-function extensionKindToTypeName(kind: KindEnum): string {
+function extensionKindToTypeName(kind: Kind): string {
   switch (kind) {
     case Kind.SCALAR_TYPE_EXTENSION:
       return 'scalar';

@@ -445,16 +445,16 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
       },
     } as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>),
 });
-export const TypeKind = Object.freeze({
-  SCALAR: 'SCALAR',
-  OBJECT: 'OBJECT',
-  INTERFACE: 'INTERFACE',
-  UNION: 'UNION',
-  ENUM: 'ENUM',
-  INPUT_OBJECT: 'INPUT_OBJECT',
-  LIST: 'LIST',
-  NON_NULL: 'NON_NULL',
-} as const);
+export enum TypeKind {
+  SCALAR = 'SCALAR',
+  OBJECT = 'OBJECT',
+  INTERFACE = 'INTERFACE',
+  UNION = 'UNION',
+  ENUM = 'ENUM',
+  INPUT_OBJECT = 'INPUT_OBJECT',
+  LIST = 'LIST',
+  NON_NULL = 'NON_NULL',
+}
 export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   name: '__TypeKind',
   description: 'An enum describing what kind of type a given `__Type` is.',

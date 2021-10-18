@@ -1,4 +1,5 @@
 import type { DocumentNode, DefinitionNode } from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 /**
  * Provided a collection of ASTs, presumably each from different files,
  * concatenate the ASTs together into batched AST, useful for validating many
@@ -15,7 +16,7 @@ export function concatAST(
   }
 
   return {
-    kind: 'Document',
+    kind: Kind.DOCUMENT,
     definitions,
   };
 }

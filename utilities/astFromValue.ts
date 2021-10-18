@@ -3,7 +3,7 @@ import { invariant } from '../jsutils/invariant.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
-import type { ValueNode } from '../language/ast.ts';
+import type { ValueNode, ObjectFieldNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import type { GraphQLInputType } from '../type/definition.ts';
 import { GraphQLID } from '../type/scalars.ts';
@@ -90,7 +90,7 @@ export function astFromValue(
       return null;
     }
 
-    const fieldNodes = [];
+    const fieldNodes: Array<ObjectFieldNode> = [];
 
     for (const field of Object.values(type.getFields())) {
       const fieldValue = astFromValue(value[field.name], field.type);

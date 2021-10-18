@@ -1,6 +1,7 @@
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
+import { Kind } from '../language/kinds.ts';
 import { print } from '../language/printer.ts';
 import { printBlockString } from '../language/blockString.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
@@ -290,7 +291,7 @@ function printDeprecated(reason: Maybe<string>): string {
 
   if (reason !== DEFAULT_DEPRECATION_REASON) {
     const astValue = print({
-      kind: 'StringValue',
+      kind: Kind.STRING,
       value: reason,
     });
     return ` @deprecated(reason: ${astValue})`;
@@ -305,7 +306,7 @@ function printSpecifiedByURL(scalar: GraphQLScalarType): string {
   }
 
   const astValue = print({
-    kind: 'StringValue',
+    kind: Kind.STRING,
     value: scalar.specifiedByURL,
   });
   return ` @specifiedBy(url: ${astValue})`;
