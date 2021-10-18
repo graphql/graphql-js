@@ -168,6 +168,10 @@ export class GraphQLError extends Error {
     }
   }
 
+  get [Symbol.toStringTag](): string {
+    return 'GraphQLError';
+  }
+
   toString(): string {
     let output = this.message;
 
@@ -207,10 +211,6 @@ export class GraphQLError extends Error {
     }
 
     return formattedError;
-  }
-
-  get [Symbol.toStringTag](): string {
-    return 'GraphQLError';
   }
 }
 /**

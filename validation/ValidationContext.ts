@@ -53,6 +53,10 @@ export class ASTValidationContext {
     this._onError = onError;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'ASTValidationContext';
+  }
+
   reportError(error: GraphQLError): void {
     this._onError(error);
   }
@@ -139,10 +143,6 @@ export class ASTValidationContext {
 
     return fragments;
   }
-
-  get [Symbol.toStringTag]() {
-    return 'ASTValidationContext';
-  }
 }
 export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
 export class SDLValidationContext extends ASTValidationContext {
@@ -157,12 +157,12 @@ export class SDLValidationContext extends ASTValidationContext {
     this._schema = schema;
   }
 
-  getSchema(): Maybe<GraphQLSchema> {
-    return this._schema;
-  }
-
   get [Symbol.toStringTag]() {
     return 'SDLValidationContext';
+  }
+
+  getSchema(): Maybe<GraphQLSchema> {
+    return this._schema;
   }
 }
 export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
@@ -189,6 +189,10 @@ export class ValidationContext extends ASTValidationContext {
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'ValidationContext';
   }
 
   getSchema(): GraphQLSchema {
@@ -271,10 +275,6 @@ export class ValidationContext extends ASTValidationContext {
 
   getEnumValue(): Maybe<GraphQLEnumValue> {
     return this._typeInfo.getEnumValue();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'ValidationContext';
   }
 }
 export type ValidationRule = (context: ValidationContext) => ASTVisitor;

@@ -334,16 +334,16 @@ export class GraphQLList<T extends GraphQLType> {
     this.ofType = ofType;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLList';
+  }
+
   toString(): string {
     return '[' + String(this.ofType) + ']';
   }
 
   toJSON(): string {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLList';
   }
 }
 /**
@@ -380,16 +380,16 @@ export class GraphQLNonNull<T extends GraphQLNullableType> {
     this.ofType = ofType;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLNonNull';
+  }
+
   toString(): string {
     return String(this.ofType) + '!';
   }
 
   toJSON(): string {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLNonNull';
   }
 }
 /**
@@ -606,6 +606,10 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
     }
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLScalarType';
+  }
+
   toConfig(): GraphQLScalarTypeNormalizedConfig<TInternal, TExternal> {
     return {
       name: this.name,
@@ -626,10 +630,6 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
 
   toJSON(): string {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLScalarType';
   }
 }
 export type GraphQLScalarSerializer<TExternal> = (
@@ -755,6 +755,10 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
       );
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLObjectType';
+  }
+
   getFields(): GraphQLFieldMap<TSource, TContext> {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
@@ -790,10 +794,6 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
 
   toJSON(): string {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLObjectType';
   }
 }
 
@@ -1121,6 +1121,10 @@ export class GraphQLInterfaceType {
       );
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLInterfaceType';
+  }
+
   getFields(): GraphQLFieldMap<any, any> {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
@@ -1156,10 +1160,6 @@ export class GraphQLInterfaceType {
 
   toJSON(): string {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLInterfaceType';
   }
 }
 export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
@@ -1249,6 +1249,10 @@ export class GraphQLUnionType {
       );
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLUnionType';
+  }
+
   getTypes(): ReadonlyArray<GraphQLObjectType> {
     if (typeof this._types === 'function') {
       this._types = this._types();
@@ -1275,10 +1279,6 @@ export class GraphQLUnionType {
 
   toJSON(): string {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLUnionType';
   }
 }
 
@@ -1384,6 +1384,10 @@ export class GraphQLEnumType {
     this._nameLookup = keyMap(this._values, (value) => value.name);
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLEnumType';
+  }
+
   getValues(): ReadonlyArray<GraphQLEnumValue> {
   /* <T> */
     return this._values;
@@ -1487,10 +1491,6 @@ export class GraphQLEnumType {
 
   toJSON(): string {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLEnumType';
   }
 }
 
@@ -1631,6 +1631,10 @@ export class GraphQLInputObjectType {
     this._fields = defineInputFieldMap.bind(undefined, config);
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLInputObjectType';
+  }
+
   getFields(): GraphQLInputFieldMap {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
@@ -1664,10 +1668,6 @@ export class GraphQLInputObjectType {
 
   toJSON(): string {
     return this.toString();
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLInputObjectType';
   }
 }
 

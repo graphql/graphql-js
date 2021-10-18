@@ -268,6 +268,10 @@ export class GraphQLSchema {
     }
   }
 
+  get [Symbol.toStringTag]() {
+    return 'GraphQLSchema';
+  }
+
   getQueryType(): Maybe<GraphQLObjectType> {
     return this._queryType;
   }
@@ -374,10 +378,6 @@ export class GraphQLSchema {
       extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined,
     };
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLSchema';
   }
 }
 type TypeMap = ObjMap<GraphQLNamedType>;
