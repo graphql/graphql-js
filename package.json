@@ -5,7 +5,20 @@
   "license": "MIT",
   "main": "index",
   "module": "index.mjs",
-  "types": "index.d.ts",
+  "types": "NotSupportedTSVersion.d.ts",
+  "typesVersions": {
+    ">=4.1.0": {
+      "*": [
+        "index.d.ts"
+      ],
+      "*/*": [
+        "*/index.d.ts"
+      ],
+      "*/*/*": [
+        "*/*"
+      ]
+    }
+  },
   "sideEffects": false,
   "homepage": "https://github.com/graphql/graphql-js",
   "bugs": {
