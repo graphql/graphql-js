@@ -85,7 +85,7 @@ rules:
   node/prefer-promises/fs: off
 
   ##############################################################################
-  # `eslint-plugin-import` rule list based on `v2.24.x`
+  # `eslint-plugin-import` rule list based on `v2.25.x`
   ##############################################################################
 
   # Static analysis
@@ -461,7 +461,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v4.31.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.0.x`
       ##########################################################################
 
       # Supported Rules
@@ -501,6 +501,7 @@ overrides:
       '@typescript-eslint/no-misused-new': error
       '@typescript-eslint/no-misused-promises': error
       '@typescript-eslint/no-namespace': error
+      '@typescript-eslint/no-non-null-asserted-nullish-coalescing': error
       '@typescript-eslint/no-non-null-asserted-optional-chain': error
       '@typescript-eslint/no-non-null-assertion': error
       '@typescript-eslint/no-parameter-properties': error
@@ -601,6 +602,7 @@ overrides:
       # Disable for JS and TS
       '@typescript-eslint/init-declarations': off
       '@typescript-eslint/no-magic-numbers': off
+      '@typescript-eslint/no-restricted-imports': off
       '@typescript-eslint/no-use-before-define': off
       '@typescript-eslint/no-duplicate-imports': off # Superseded by `import/no-duplicates`
 
