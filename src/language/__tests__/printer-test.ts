@@ -4,14 +4,15 @@ import { describe, it } from 'mocha';
 import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
+import { Kind } from '../kinds';
 import { parse } from '../parser';
 import { print } from '../printer';
 
 describe('Printer: Query document', () => {
   it('prints minimal ast', () => {
     const ast = {
-      kind: 'Field',
-      name: { kind: 'Name', value: 'foo' },
+      kind: Kind.FIELD,
+      name: { kind: Kind.NAME, value: 'foo' },
     } as const;
     expect(print(ast)).to.equal('foo');
   });

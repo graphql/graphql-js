@@ -1,7 +1,6 @@
 import { syntaxError } from '../error/syntaxError';
 
 import type { Source } from './source';
-import type { TokenKindEnum } from './tokenKind';
 import { Token } from './ast';
 import { TokenKind } from './tokenKind';
 import { dedentBlockStringValue } from './blockString';
@@ -89,7 +88,7 @@ export class Lexer {
 /**
  * @internal
  */
-export function isPunctuatorTokenKind(kind: TokenKindEnum): boolean {
+export function isPunctuatorTokenKind(kind: TokenKind): boolean {
   return (
     kind === TokenKind.BANG ||
     kind === TokenKind.DOLLAR ||
@@ -187,7 +186,7 @@ function printCodePointAt(lexer: Lexer, location: number): string {
  */
 function createToken(
   lexer: Lexer,
-  kind: TokenKindEnum,
+  kind: TokenKind,
   start: number,
   end: number,
   value?: string,

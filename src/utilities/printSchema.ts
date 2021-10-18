@@ -2,6 +2,7 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import type { Maybe } from '../jsutils/Maybe';
 
+import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
 
@@ -286,7 +287,7 @@ function printDeprecated(reason: Maybe<string>): string {
     return '';
   }
   if (reason !== DEFAULT_DEPRECATION_REASON) {
-    const astValue = print({ kind: 'StringValue', value: reason });
+    const astValue = print({ kind: Kind.STRING, value: reason });
     return ` @deprecated(reason: ${astValue})`;
   }
   return ' @deprecated';
@@ -296,7 +297,10 @@ function printSpecifiedByURL(scalar: GraphQLScalarType): string {
   if (scalar.specifiedByURL == null) {
     return '';
   }
-  const astValue = print({ kind: 'StringValue', value: scalar.specifiedByURL });
+  const astValue = print({
+    kind: Kind.STRING,
+    value: scalar.specifiedByURL,
+  });
   return ` @specifiedBy(url: ${astValue})`;
 }
 

@@ -3,7 +3,6 @@ import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLError } from '../error/GraphQLError';
 import { syntaxError } from '../error/syntaxError';
 
-import type { TokenKindEnum } from './tokenKind';
 import type {
   Token,
   NameNode,
@@ -1400,7 +1399,7 @@ export class Parser {
   /**
    * Determines if the next token is of a given kind
    */
-  peek(kind: TokenKindEnum): boolean {
+  peek(kind: TokenKind): boolean {
     return this._lexer.token.kind === kind;
   }
 
@@ -1408,7 +1407,7 @@ export class Parser {
    * If the next token is of the given kind, return that token after advancing the lexer.
    * Otherwise, do not change the parser state and throw an error.
    */
-  expectToken(kind: TokenKindEnum): Token {
+  expectToken(kind: TokenKind): Token {
     const token = this._lexer.token;
     if (token.kind === kind) {
       this._lexer.advance();
@@ -1426,7 +1425,7 @@ export class Parser {
    * If the next token is of the given kind, return "true" after advancing the lexer.
    * Otherwise, do not change the parser state and return "false".
    */
-  expectOptionalToken(kind: TokenKindEnum): boolean {
+  expectOptionalToken(kind: TokenKind): boolean {
     const token = this._lexer.token;
     if (token.kind === kind) {
       this._lexer.advance();
@@ -1483,9 +1482,9 @@ export class Parser {
    * Advances the parser to the next lex token after the closing token.
    */
   any<T>(
-    openKind: TokenKindEnum,
+    openKind: TokenKind,
     parseFn: () => T,
-    closeKind: TokenKindEnum,
+    closeKind: TokenKind,
   ): Array<T> {
     this.expectToken(openKind);
     const nodes = [];
@@ -1502,9 +1501,9 @@ export class Parser {
    * Advances the parser to the next lex token after the closing token.
    */
   optionalMany<T>(
-    openKind: TokenKindEnum,
+    openKind: TokenKind,
     parseFn: () => T,
-    closeKind: TokenKindEnum,
+    closeKind: TokenKind,
   ): Array<T> {
     if (this.expectOptionalToken(openKind)) {
       const nodes = [];
@@ -1522,9 +1521,9 @@ export class Parser {
    * Advances the parser to the next lex token after the closing token.
    */
   many<T>(
-    openKind: TokenKindEnum,
+    openKind: TokenKind,
     parseFn: () => T,
-    closeKind: TokenKindEnum,
+    closeKind: TokenKind,
   ): Array<T> {
     this.expectToken(openKind);
     const nodes = [];
@@ -1539,7 +1538,7 @@ export class Parser {
    * This list may begin with a lex token of delimiterKind followed by items separated by lex tokens of tokenKind.
    * Advances the parser to the next lex token after last item in the list.
    */
-  delimitedMany<T>(delimiterKind: TokenKindEnum, parseFn: () => T): Array<T> {
+  delimitedMany<T>(delimiterKind: TokenKind, parseFn: () => T): Array<T> {
     this.expectOptionalToken(delimiterKind);
 
     const nodes = [];
@@ -1561,6 +1560,6 @@ function getTokenDesc(token: Token): string {
 /**
  * A helper function to describe a token kind as a string for debugging.
  */
-function getTokenKindDesc(kind: TokenKindEnum): string {
+function getTokenKindDesc(kind: TokenKind): string {
   return isPunctuatorTokenKind(kind) ? `"${kind}"` : kind;
 }

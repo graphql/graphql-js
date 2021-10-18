@@ -4,14 +4,15 @@ import { describe, it } from 'mocha';
 import { dedent } from '../../__testUtils__/dedent';
 import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
 
+import { Kind } from '../kinds';
 import { parse } from '../parser';
 import { print } from '../printer';
 
 describe('Printer: SDL document', () => {
   it('prints minimal ast', () => {
     const ast = {
-      kind: 'ScalarTypeDefinition',
-      name: { kind: 'Name', value: 'foo' },
+      kind: Kind.SCALAR_TYPE_DEFINITION,
+      name: { kind: Kind.NAME, value: 'foo' },
     } as const;
     expect(print(ast)).to.equal('scalar foo');
   });

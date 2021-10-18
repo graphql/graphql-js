@@ -4,7 +4,7 @@ import { isObjectLike } from '../jsutils/isObjectLike';
 import { isIterableObject } from '../jsutils/isIterableObject';
 import type { Maybe } from '../jsutils/Maybe';
 
-import type { ValueNode } from '../language/ast';
+import type { ValueNode, ObjectFieldNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 
 import type { GraphQLInputType } from '../type/definition';
@@ -83,7 +83,7 @@ export function astFromValue(
     if (!isObjectLike(value)) {
       return null;
     }
-    const fieldNodes = [];
+    const fieldNodes: Array<ObjectFieldNode> = [];
     for (const field of Object.values(type.getFields())) {
       const fieldValue = astFromValue(value[field.name], field.type);
       if (fieldValue) {

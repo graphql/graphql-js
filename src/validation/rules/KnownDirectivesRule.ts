@@ -5,7 +5,6 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ASTVisitor } from '../../language/visitor';
 import type { ASTNode } from '../../language/ast';
-import type { DirectiveLocationEnum } from '../../language/directiveLocation';
 import { Kind } from '../../language/kinds';
 import { OperationTypeNode } from '../../language/ast';
 import { DirectiveLocation } from '../../language/directiveLocation';
@@ -72,7 +71,7 @@ export function KnownDirectivesRule(
 
 function getDirectiveLocationForASTPath(
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
-): DirectiveLocationEnum | undefined {
+): DirectiveLocation | undefined {
   const appliedTo = ancestors[ancestors.length - 1];
   invariant('kind' in appliedTo);
 
@@ -126,7 +125,7 @@ function getDirectiveLocationForASTPath(
 
 function getDirectiveLocationForOperation(
   operation: OperationTypeNode,
-): DirectiveLocationEnum {
+): DirectiveLocation {
   switch (operation) {
     case OperationTypeNode.QUERY:
       return DirectiveLocation.QUERY;
