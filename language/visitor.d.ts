@@ -1,13 +1,14 @@
-import type { ASTNode, ASTKindToNode } from './ast';
+import type { ASTNode } from './ast';
+import { Kind } from './kinds';
 /**
  * A visitor is provided to visit, it contains the collection of
  * relevant functions to be called during the visitor's traversal.
  */
 export declare type ASTVisitor = EnterLeaveVisitor<ASTNode> | KindVisitor;
 declare type KindVisitor = {
-  readonly [K in keyof ASTKindToNode]?:
-    | ASTVisitFn<ASTKindToNode[K]>
-    | EnterLeaveVisitor<ASTKindToNode[K]>;
+  readonly [NodeT in ASTNode as NodeT['kind']]?:
+    | ASTVisitFn<NodeT>
+    | EnterLeaveVisitor<NodeT>;
 };
 interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
   readonly enter?: ASTVisitFn<TVisitedNode>;
@@ -38,9 +39,9 @@ export declare type ASTVisitFn<TVisitedNode extends ASTNode> = (
  * another form.
  */
 export declare type ASTReducer<R> = {
-  readonly [K in keyof ASTKindToNode]?: {
-    readonly enter?: ASTVisitFn<ASTKindToNode[K]>;
-    readonly leave: ASTReducerFn<ASTKindToNode[K], R>;
+  readonly [NodeT in ASTNode as NodeT['kind']]?: {
+    readonly enter?: ASTVisitFn<NodeT>;
+    readonly leave: ASTReducerFn<NodeT, R>;
   };
 };
 declare type ASTReducerFn<TReducedNode extends ASTNode, R> = (
@@ -68,9 +69,11 @@ declare type ReducedField<T, R> = T extends null | undefined
   : R;
 /**
  * A KeyMap describes each the traversable properties of each kind of node.
+ *
+ * @deprecated Please inline it. Will be removed in v17
  */
 export declare type ASTVisitorKeyMap = {
-  [P in keyof ASTKindToNode]?: ReadonlyArray<keyof ASTKindToNode[P]>;
+  [NodeT in ASTNode as NodeT['kind']]?: ReadonlyArray<keyof NodeT>;
 };
 export declare const BREAK: unknown;
 /**
@@ -175,7 +178,7 @@ export declare function visitInParallel(
  */
 export declare function getEnterLeaveForKind(
   visitor: ASTVisitor,
-  kind: keyof ASTKindToNode,
+  kind: Kind,
 ): EnterLeaveVisitor<ASTNode>;
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
@@ -185,7 +188,7 @@ export declare function getEnterLeaveForKind(
  */
 export declare function getVisitFn(
   visitor: ASTVisitor,
-  kind: keyof ASTKindToNode,
+  kind: Kind,
   isLeaving: boolean,
 ): ASTVisitFn<ASTNode> | undefined;
 export {};
