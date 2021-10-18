@@ -18,6 +18,8 @@ if (require.main === module) {
   fs.rmSync('./npmDist', { recursive: true, force: true });
   fs.mkdirSync('./npmDist');
 
+  const packageJSON = buildPackageJSON();
+
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
   for (const filepath of srcFiles) {
     const srcPath = path.join('./src', filepath);
@@ -48,11 +50,23 @@ if (require.main === module) {
     'Fail to generate `*.d.ts` files, please run `npm run check`',
   );
 
+  assert(packageJSON.types, 'Missing "types".');
+  const supportedTSVersions = Object.keys(packageJSON.typesVersions);
+  assert(
+    supportedTSVersions.length === 1,
+    'Property "typesVersions" should have exactly one key.',
+  );
+  // TODO: revisit once TS implements https://github.com/microsoft/TypeScript/issues/44795
+  fs.writeFileSync(
+    path.join('./npmDist', packageJSON.types),
+    // Provoke syntax error to show this message
+    `"Package 'graphql' support only TS versions that are ${supportedTSVersions[0]}".`,
+  );
+
   fs.copyFileSync('./LICENSE', './npmDist/LICENSE');
   fs.copyFileSync('./README.md', './npmDist/README.md');
 
   // Should be done as the last step so only valid packages can be published
-  const packageJSON = buildPackageJSON();
   writeGeneratedFile('./npmDist/package.json', JSON.stringify(packageJSON));
 
   showDirStats('./npmDist');
