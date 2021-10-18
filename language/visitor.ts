@@ -1,6 +1,6 @@
 import { inspect } from '../jsutils/inspect.ts';
 import { devAssert } from '../jsutils/devAssert.ts';
-import type { ASTNode, ASTKindToNode } from './ast.ts';
+import type { ASTNode } from './ast.ts';
 import { isNode, QueryDocumentKeys } from './ast.ts';
 import { Kind } from './kinds.ts';
 /**
@@ -10,9 +10,9 @@ import { Kind } from './kinds.ts';
 
 export type ASTVisitor = EnterLeaveVisitor<ASTNode> | KindVisitor;
 type KindVisitor = {
-  readonly [K in keyof ASTKindToNode]?:
-    | ASTVisitFn<ASTKindToNode[K]>
-    | EnterLeaveVisitor<ASTKindToNode[K]>;
+  readonly [NodeT in ASTNode as NodeT['kind']]?:
+    | ASTVisitFn<NodeT>
+    | EnterLeaveVisitor<NodeT>;
 };
 interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
   readonly enter?: ASTVisitFn<TVisitedNode>;
@@ -45,9 +45,9 @@ export type ASTVisitFn<TVisitedNode extends ASTNode> = (
  */
 
 export type ASTReducer<R> = {
-  readonly [K in keyof ASTKindToNode]?: {
-    readonly enter?: ASTVisitFn<ASTKindToNode[K]>;
-    readonly leave: ASTReducerFn<ASTKindToNode[K], R>;
+  readonly [NodeT in ASTNode as NodeT['kind']]?: {
+    readonly enter?: ASTVisitFn<NodeT>;
+    readonly leave: ASTReducerFn<NodeT, R>;
   };
 };
 type ASTReducerFn<TReducedNode extends ASTNode, R> = (
@@ -73,10 +73,12 @@ type ReducedField<T, R> = T extends null | undefined
   : R;
 /**
  * A KeyMap describes each the traversable properties of each kind of node.
+ *
+ * @deprecated Please inline it. Will be removed in v17
  */
 
 export type ASTVisitorKeyMap = {
-  [P in keyof ASTKindToNode]?: ReadonlyArray<keyof ASTKindToNode[P]>;
+  [NodeT in ASTNode as NodeT['kind']]?: ReadonlyArray<keyof NodeT>;
 };
 export const BREAK: unknown = Object.freeze({});
 /**
@@ -173,10 +175,7 @@ export function visit(
   visitor: ASTVisitor | ASTReducer<any>,
   visitorKeys: ASTVisitorKeyMap = QueryDocumentKeys,
 ): any {
-  const enterLeaveMap = new Map<
-    keyof ASTKindToNode,
-    EnterLeaveVisitor<ASTNode>
-  >();
+  const enterLeaveMap = new Map<Kind, EnterLeaveVisitor<ASTNode>>();
 
   for (const kind of Object.values(Kind)) {
     enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
@@ -393,7 +392,7 @@ export function visitInParallel(
 
 export function getEnterLeaveForKind(
   visitor: ASTVisitor,
-  kind: keyof ASTKindToNode,
+  kind: Kind,
 ): EnterLeaveVisitor<ASTNode> {
   const kindVisitor:
     | ASTVisitFn<ASTNode>
@@ -426,7 +425,7 @@ export function getEnterLeaveForKind(
 
 export function getVisitFn(
   visitor: ASTVisitor,
-  kind: keyof ASTKindToNode,
+  kind: Kind,
   isLeaving: boolean,
 ): ASTVisitFn<ASTNode> | undefined {
   const { enter, leave } = getEnterLeaveForKind(visitor, kind);
