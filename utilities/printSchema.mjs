@@ -1,5 +1,6 @@
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
+import { Kind } from '../language/kinds.mjs';
 import { print } from '../language/printer.mjs';
 import { printBlockString } from '../language/blockString.mjs';
 import { isIntrospectionType } from '../type/introspection.mjs';
@@ -267,7 +268,7 @@ function printDeprecated(reason) {
 
   if (reason !== DEFAULT_DEPRECATION_REASON) {
     const astValue = print({
-      kind: 'StringValue',
+      kind: Kind.STRING,
       value: reason,
     });
     return ` @deprecated(reason: ${astValue})`;
@@ -282,7 +283,7 @@ function printSpecifiedByURL(scalar) {
   }
 
   const astValue = print({
-    kind: 'StringValue',
+    kind: Kind.STRING,
     value: scalar.specifiedByURL,
   });
   return ` @specifiedBy(url: ${astValue})`;

@@ -1,6 +1,6 @@
 import type { Source } from './source';
-import type { TokenKindEnum } from './tokenKind';
 import { Token } from './ast';
+import { TokenKind } from './tokenKind';
 /**
  * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
@@ -42,4 +42,4 @@ export declare class Lexer {
 /**
  * @internal
  */
-export declare function isPunctuatorTokenKind(kind: TokenKindEnum): boolean;
+export declare function isPunctuatorTokenKind(kind: TokenKind): boolean;

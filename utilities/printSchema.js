@@ -11,6 +11,8 @@ var _inspect = require('../jsutils/inspect.js');
 
 var _invariant = require('../jsutils/invariant.js');
 
+var _kinds = require('../language/kinds.js');
+
 var _printer = require('../language/printer.js');
 
 var _blockString = require('../language/blockString.js');
@@ -290,7 +292,7 @@ function printDeprecated(reason) {
 
   if (reason !== _directives.DEFAULT_DEPRECATION_REASON) {
     const astValue = (0, _printer.print)({
-      kind: 'StringValue',
+      kind: _kinds.Kind.STRING,
       value: reason,
     });
     return ` @deprecated(reason: ${astValue})`;
@@ -305,7 +307,7 @@ function printSpecifiedByURL(scalar) {
   }
 
   const astValue = (0, _printer.print)({
-    kind: 'StringValue',
+    kind: _kinds.Kind.STRING,
     value: scalar.specifiedByURL,
   });
   return ` @specifiedBy(url: ${astValue})`;

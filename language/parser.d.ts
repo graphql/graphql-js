@@ -1,6 +1,5 @@
 import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLError } from '../error/GraphQLError';
-import type { TokenKindEnum } from './tokenKind';
 import type {
   Token,
   NameNode,
@@ -52,6 +51,7 @@ import type {
   InputObjectTypeExtensionNode,
 } from './ast';
 import { Location, OperationTypeNode } from './ast';
+import { TokenKind } from './tokenKind';
 import { Source } from './source';
 import { Lexer } from './lexer';
 /**
@@ -493,17 +493,17 @@ export declare class Parser {
   /**
    * Determines if the next token is of a given kind
    */
-  peek(kind: TokenKindEnum): boolean;
+  peek(kind: TokenKind): boolean;
   /**
    * If the next token is of the given kind, return that token after advancing the lexer.
    * Otherwise, do not change the parser state and throw an error.
    */
-  expectToken(kind: TokenKindEnum): Token;
+  expectToken(kind: TokenKind): Token;
   /**
    * If the next token is of the given kind, return "true" after advancing the lexer.
    * Otherwise, do not change the parser state and return "false".
    */
-  expectOptionalToken(kind: TokenKindEnum): boolean;
+  expectOptionalToken(kind: TokenKind): boolean;
   /**
    * If the next token is a given keyword, advance the lexer.
    * Otherwise, do not change the parser state and throw an error.
@@ -523,11 +523,7 @@ export declare class Parser {
    * This list begins with a lex token of openKind and ends with a lex token of closeKind.
    * Advances the parser to the next lex token after the closing token.
    */
-  any<T>(
-    openKind: TokenKindEnum,
-    parseFn: () => T,
-    closeKind: TokenKindEnum,
-  ): Array<T>;
+  any<T>(openKind: TokenKind, parseFn: () => T, closeKind: TokenKind): Array<T>;
   /**
    * Returns a list of parse nodes, determined by the parseFn.
    * It can be empty only if open token is missing otherwise it will always return non-empty list
@@ -535,9 +531,9 @@ export declare class Parser {
    * Advances the parser to the next lex token after the closing token.
    */
   optionalMany<T>(
-    openKind: TokenKindEnum,
+    openKind: TokenKind,
     parseFn: () => T,
-    closeKind: TokenKindEnum,
+    closeKind: TokenKind,
   ): Array<T>;
   /**
    * Returns a non-empty list of parse nodes, determined by the parseFn.
@@ -545,14 +541,14 @@ export declare class Parser {
    * Advances the parser to the next lex token after the closing token.
    */
   many<T>(
-    openKind: TokenKindEnum,
+    openKind: TokenKind,
     parseFn: () => T,
-    closeKind: TokenKindEnum,
+    closeKind: TokenKind,
   ): Array<T>;
   /**
    * Returns a non-empty list of parse nodes, determined by the parseFn.
    * This list may begin with a lex token of delimiterKind followed by items separated by lex tokens of tokenKind.
    * Advances the parser to the next lex token after last item in the list.
    */
-  delimitedMany<T>(delimiterKind: TokenKindEnum, parseFn: () => T): Array<T>;
+  delimitedMany<T>(delimiterKind: TokenKind, parseFn: () => T): Array<T>;
 }

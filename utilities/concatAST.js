@@ -5,6 +5,8 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.concatAST = concatAST;
 
+var _kinds = require('../language/kinds.js');
+
 /**
  * Provided a collection of ASTs, presumably each from different files,
  * concatenate the ASTs together into batched AST, useful for validating many
@@ -18,7 +20,7 @@ function concatAST(documents) {
   }
 
   return {
-    kind: 'Document',
+    kind: _kinds.Kind.DOCUMENT,
     definitions,
   };
 }

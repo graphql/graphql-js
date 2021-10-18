@@ -1,63 +1,65 @@
 /**
  * The set of allowed kind values for AST nodes.
  */
-export declare const Kind: Readonly<{
+export declare enum Kind {
   /** Name */
-  readonly NAME: 'Name';
+  NAME = 'Name',
   /** Document */
-  readonly DOCUMENT: 'Document';
-  readonly OPERATION_DEFINITION: 'OperationDefinition';
-  readonly VARIABLE_DEFINITION: 'VariableDefinition';
-  readonly SELECTION_SET: 'SelectionSet';
-  readonly FIELD: 'Field';
-  readonly ARGUMENT: 'Argument';
+  DOCUMENT = 'Document',
+  OPERATION_DEFINITION = 'OperationDefinition',
+  VARIABLE_DEFINITION = 'VariableDefinition',
+  SELECTION_SET = 'SelectionSet',
+  FIELD = 'Field',
+  ARGUMENT = 'Argument',
   /** Fragments */
-  readonly FRAGMENT_SPREAD: 'FragmentSpread';
-  readonly INLINE_FRAGMENT: 'InlineFragment';
-  readonly FRAGMENT_DEFINITION: 'FragmentDefinition';
+  FRAGMENT_SPREAD = 'FragmentSpread',
+  INLINE_FRAGMENT = 'InlineFragment',
+  FRAGMENT_DEFINITION = 'FragmentDefinition',
   /** Values */
-  readonly VARIABLE: 'Variable';
-  readonly INT: 'IntValue';
-  readonly FLOAT: 'FloatValue';
-  readonly STRING: 'StringValue';
-  readonly BOOLEAN: 'BooleanValue';
-  readonly NULL: 'NullValue';
-  readonly ENUM: 'EnumValue';
-  readonly LIST: 'ListValue';
-  readonly OBJECT: 'ObjectValue';
-  readonly OBJECT_FIELD: 'ObjectField';
+  VARIABLE = 'Variable',
+  INT = 'IntValue',
+  FLOAT = 'FloatValue',
+  STRING = 'StringValue',
+  BOOLEAN = 'BooleanValue',
+  NULL = 'NullValue',
+  ENUM = 'EnumValue',
+  LIST = 'ListValue',
+  OBJECT = 'ObjectValue',
+  OBJECT_FIELD = 'ObjectField',
   /** Directives */
-  readonly DIRECTIVE: 'Directive';
+  DIRECTIVE = 'Directive',
   /** Types */
-  readonly NAMED_TYPE: 'NamedType';
-  readonly LIST_TYPE: 'ListType';
-  readonly NON_NULL_TYPE: 'NonNullType';
+  NAMED_TYPE = 'NamedType',
+  LIST_TYPE = 'ListType',
+  NON_NULL_TYPE = 'NonNullType',
   /** Type System Definitions */
-  readonly SCHEMA_DEFINITION: 'SchemaDefinition';
-  readonly OPERATION_TYPE_DEFINITION: 'OperationTypeDefinition';
+  SCHEMA_DEFINITION = 'SchemaDefinition',
+  OPERATION_TYPE_DEFINITION = 'OperationTypeDefinition',
   /** Type Definitions */
-  readonly SCALAR_TYPE_DEFINITION: 'ScalarTypeDefinition';
-  readonly OBJECT_TYPE_DEFINITION: 'ObjectTypeDefinition';
-  readonly FIELD_DEFINITION: 'FieldDefinition';
-  readonly INPUT_VALUE_DEFINITION: 'InputValueDefinition';
-  readonly INTERFACE_TYPE_DEFINITION: 'InterfaceTypeDefinition';
-  readonly UNION_TYPE_DEFINITION: 'UnionTypeDefinition';
-  readonly ENUM_TYPE_DEFINITION: 'EnumTypeDefinition';
-  readonly ENUM_VALUE_DEFINITION: 'EnumValueDefinition';
-  readonly INPUT_OBJECT_TYPE_DEFINITION: 'InputObjectTypeDefinition';
+  SCALAR_TYPE_DEFINITION = 'ScalarTypeDefinition',
+  OBJECT_TYPE_DEFINITION = 'ObjectTypeDefinition',
+  FIELD_DEFINITION = 'FieldDefinition',
+  INPUT_VALUE_DEFINITION = 'InputValueDefinition',
+  INTERFACE_TYPE_DEFINITION = 'InterfaceTypeDefinition',
+  UNION_TYPE_DEFINITION = 'UnionTypeDefinition',
+  ENUM_TYPE_DEFINITION = 'EnumTypeDefinition',
+  ENUM_VALUE_DEFINITION = 'EnumValueDefinition',
+  INPUT_OBJECT_TYPE_DEFINITION = 'InputObjectTypeDefinition',
   /** Directive Definitions */
-  readonly DIRECTIVE_DEFINITION: 'DirectiveDefinition';
+  DIRECTIVE_DEFINITION = 'DirectiveDefinition',
   /** Type System Extensions */
-  readonly SCHEMA_EXTENSION: 'SchemaExtension';
+  SCHEMA_EXTENSION = 'SchemaExtension',
   /** Type Extensions */
-  readonly SCALAR_TYPE_EXTENSION: 'ScalarTypeExtension';
-  readonly OBJECT_TYPE_EXTENSION: 'ObjectTypeExtension';
-  readonly INTERFACE_TYPE_EXTENSION: 'InterfaceTypeExtension';
-  readonly UNION_TYPE_EXTENSION: 'UnionTypeExtension';
-  readonly ENUM_TYPE_EXTENSION: 'EnumTypeExtension';
-  readonly INPUT_OBJECT_TYPE_EXTENSION: 'InputObjectTypeExtension';
-}>;
+  SCALAR_TYPE_EXTENSION = 'ScalarTypeExtension',
+  OBJECT_TYPE_EXTENSION = 'ObjectTypeExtension',
+  INTERFACE_TYPE_EXTENSION = 'InterfaceTypeExtension',
+  UNION_TYPE_EXTENSION = 'UnionTypeExtension',
+  ENUM_TYPE_EXTENSION = 'EnumTypeExtension',
+  INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension',
+}
 /**
  * The enum type representing the possible kind values of AST nodes.
+ *
+ * @deprecated Please use `Kind`. Will be remove in v17.
  */
-export declare type KindEnum = typeof Kind[keyof typeof Kind];
+export declare type KindEnum = typeof Kind;
