@@ -1040,6 +1040,21 @@ describe('Lexer', () => {
       locations: [{ line: 1, column: 1 }],
     });
 
+    expectSyntaxError('\uD83D\uDE00').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+1F600.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\uD800\uDC00').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+10000.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\uDBFF\uDFFF').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+10FFFF.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
     expectSyntaxError('\uDEAD').to.deep.equal({
       message: 'Syntax Error: Invalid character: U+DEAD.',
       locations: [{ line: 1, column: 1 }],
