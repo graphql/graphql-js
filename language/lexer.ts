@@ -152,7 +152,7 @@ function encodeSurrogatePair(point: number): string {
 }
 
 function decodeSurrogatePair(leading: number, trailing: number): number {
-  return 0x10000 | ((leading & 0x03ff) << 10) | (trailing & 0x03ff);
+  return 0x10000 + (((leading & 0x03ff) << 10) | (trailing & 0x03ff));
 }
 /**
  * Prints the code point (or end of file reference) at a given location in a
