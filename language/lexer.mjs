@@ -135,17 +135,6 @@ function isLeadingSurrogate(code) {
 function isTrailingSurrogate(code) {
   return code >= 0xdc00 && code <= 0xdfff;
 }
-
-function encodeSurrogatePair(point) {
-  return String.fromCharCode(
-    0xd800 | ((point - 0x10000) >> 10), // Leading Surrogate
-    0xdc00 | ((point - 0x10000) & 0x3ff), // Trailing Surrogate
-  );
-}
-
-function decodeSurrogatePair(leading, trailing) {
-  return 0x10000 + (((leading & 0x03ff) << 10) | (trailing & 0x03ff));
-}
 /**
  * Prints the code point (or end of file reference) at a given location in a
  * source for use in error messages.
@@ -155,24 +144,17 @@ function decodeSurrogatePair(leading, trailing) {
  */
 
 function printCodePointAt(lexer, location) {
-  const body = lexer.source.body;
+  const code = lexer.source.body.codePointAt(location);
 
-  if (location >= body.length) {
+  if (code === undefined) {
     return TokenKind.EOF;
-  }
-
-  const code = body.charCodeAt(location); // Printable ASCII
-
-  if (code >= 0x0020 && code <= 0x007e) {
-    return code === 0x0022 ? "'\"'" : `"${body[location]}"`;
+  } else if (code >= 0x0020 && code <= 0x007e) {
+    // Printable ASCII
+    const char = String.fromCodePoint(code);
+    return char === '"' ? "'\"'" : `"${char}"`;
   } // Unicode code point
 
-  const point = isSupplementaryCodePoint(body, location)
-    ? decodeSurrogatePair(code, body.charCodeAt(location + 1))
-    : code;
-  const zeroPad =
-    point > 0xfff ? '' : point > 0xff ? '0' : point > 0xf ? '00' : '000';
-  return `U+${zeroPad}${point.toString(16).toUpperCase()}`;
+  return 'U+' + code.toString(16).toUpperCase().padStart(4, '0');
 }
 /**
  * Create a token with line and column location information.
@@ -603,14 +585,10 @@ function readEscapedUnicodeVariableWidth(lexer, position) {
       // Must be at least 5 chars (\u{0}) and encode a Unicode scalar value.
       if (size < 5 || !isUnicodeScalarValue(point)) {
         break;
-      } // JavaScript defines strings as a sequence of UTF-16 code units and
-      // encodes Unicode code points above U+FFFF using a surrogate pair.
+      }
 
       return {
-        value:
-          point <= 0xffff
-            ? String.fromCharCode(point)
-            : encodeSurrogatePair(point),
+        value: String.fromCodePoint(point),
         size,
       };
     } // Append this hex digit to the code point.
@@ -638,7 +616,7 @@ function readEscapedUnicodeFixedWidth(lexer, position) {
 
   if (isUnicodeScalarValue(code)) {
     return {
-      value: String.fromCharCode(code),
+      value: String.fromCodePoint(code),
       size: 6,
     };
   } // GraphQL allows JSON-style surrogate pair escape sequences, but only when
@@ -660,7 +638,7 @@ function readEscapedUnicodeFixedWidth(lexer, position) {
         // not been internally based on UTF-16, then this surrogate pair would
         // be decoded to retrieve the supplementary code point.
         return {
-          value: String.fromCharCode(code, trailingCode),
+          value: String.fromCodePoint(code, trailingCode),
           size: 12,
         };
       }
