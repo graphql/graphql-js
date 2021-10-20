@@ -72,8 +72,8 @@ describe('GraphQLError', () => {
 
   it('converts nodes to positions and locations', () => {
     const e = new GraphQLError('msg', [fieldNode]);
-    expect(e).to.have.property('source', source);
     expect(e).to.deep.include({
+      source,
       nodes: [fieldNode],
       positions: [4],
       locations: [{ line: 2, column: 3 }],
@@ -82,8 +82,8 @@ describe('GraphQLError', () => {
 
   it('converts single node to positions and locations', () => {
     const e = new GraphQLError('msg', fieldNode); // Non-array value.
-    expect(e).to.have.property('source', source);
     expect(e).to.deep.include({
+      source,
       nodes: [fieldNode],
       positions: [4],
       locations: [{ line: 2, column: 3 }],
@@ -92,8 +92,8 @@ describe('GraphQLError', () => {
 
   it('converts node with loc.start === 0 to positions and locations', () => {
     const e = new GraphQLError('msg', operationNode);
-    expect(e).to.have.property('source', source);
     expect(e).to.deep.include({
+      source,
       nodes: [operationNode],
       positions: [0],
       locations: [{ line: 1, column: 1 }],
@@ -102,8 +102,8 @@ describe('GraphQLError', () => {
 
   it('converts source and positions to locations', () => {
     const e = new GraphQLError('msg', null, source, [6]);
-    expect(e).to.have.property('source', source);
     expect(e).to.deep.include({
+      source,
       nodes: undefined,
       positions: [6],
       locations: [{ line: 2, column: 5 }],
