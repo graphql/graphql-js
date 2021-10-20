@@ -1,6 +1,6 @@
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
-import type { ASTNode } from '../language/ast.ts';
+import type { ASTNode, Location } from '../language/ast.ts';
 import type { Source } from '../language/source.ts';
 import type { SourceLocation } from '../language/location.ts';
 import { getLocation } from '../language/location.ts';
@@ -96,57 +96,26 @@ export class GraphQLError extends Error {
     this.path = path ?? undefined;
     this.originalError = originalError ?? undefined; // Compute list of blame nodes.
 
-    this.nodes = Array.isArray(nodes)
-      ? nodes.length !== 0
-        ? nodes
-        : undefined
-      : nodes
-      ? [nodes]
-      : undefined; // Compute locations in the source for the given nodes/positions.
+    this.nodes = undefinedIfEmpty(
+      Array.isArray(nodes) ? nodes : nodes ? [nodes] : undefined,
+    );
+    const nodeLocations = undefinedIfEmpty(
+      this.nodes
+        ?.map((node) => node.loc)
+        .filter((loc): loc is Location => loc != null),
+    ); // Compute locations in the source for the given nodes/positions.
 
-    this.source = source ?? undefined;
-
-    if (!this.source && this.nodes) {
-      this.source = this.nodes[0].loc?.source;
-    }
-
-    if (positions) {
-      this.positions = positions;
-    } else if (this.nodes) {
-      const positionsFromNodes = [];
-
-      for (const node of this.nodes) {
-        if (node.loc) {
-          positionsFromNodes.push(node.loc.start);
-        }
-      }
-
-      this.positions = positionsFromNodes;
-    }
-
-    if (this.positions && this.positions.length === 0) {
-      this.positions = undefined;
-    }
-
-    if (positions && source) {
-      this.locations = positions.map((pos) => getLocation(source, pos));
-    } else if (this.nodes) {
-      const locationsFromNodes = [];
-
-      for (const node of this.nodes) {
-        if (node.loc) {
-          locationsFromNodes.push(getLocation(node.loc.source, node.loc.start));
-        }
-      }
-
-      this.locations = locationsFromNodes;
-    }
-
+    this.source = source ?? nodeLocations?.[0]?.source;
+    this.positions = positions ?? nodeLocations?.map((loc) => loc.start);
+    this.locations =
+      positions && source
+        ? positions.map((pos) => getLocation(source, pos))
+        : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
     const originalExtensions = isObjectLike(originalError?.extensions)
       ? originalError?.extensions
-      : undefined; // TODO: merge `extensions` and `originalExtensions`
-
+      : undefined;
     this.extensions = extensions ?? originalExtensions ?? Object.create(null); // Include (non-enumerable) stack trace.
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
 
     if (originalError?.stack) {
       Object.defineProperty(this, 'stack', {
@@ -154,10 +123,7 @@ export class GraphQLError extends Error {
         writable: true,
         configurable: true,
       });
-      return;
-    } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
-
-    if (Error.captureStackTrace) {
+    } else if (Error.captureStackTrace) {
       Error.captureStackTrace(this, GraphQLError);
     } else {
       Object.defineProperty(this, 'stack', {
@@ -212,6 +178,12 @@ export class GraphQLError extends Error {
 
     return formattedError;
   }
+}
+
+function undefinedIfEmpty<T>(
+  array: Array<T> | undefined,
+): Array<T> | undefined {
+  return array === undefined || array.length === 0 ? undefined : array;
 }
 /**
  * See: https://spec.graphql.org/draft/#sec-Errors
