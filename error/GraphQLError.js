@@ -70,7 +70,7 @@ class GraphQLError extends Error {
     originalError,
     extensions,
   ) {
-    var _ref;
+    var _this$nodes, _nodeLocations$, _ref;
 
     super(message);
     this.name = 'GraphQLError';
@@ -80,62 +80,38 @@ class GraphQLError extends Error {
         ? originalError
         : undefined; // Compute list of blame nodes.
 
-    this.nodes = Array.isArray(nodes)
-      ? nodes.length !== 0
-        ? nodes
-        : undefined
-      : nodes
-      ? [nodes]
-      : undefined; // Compute locations in the source for the given nodes/positions.
+    this.nodes = undefinedIfEmpty(
+      Array.isArray(nodes) ? nodes : nodes ? [nodes] : undefined,
+    );
+    const nodeLocations = undefinedIfEmpty(
+      (_this$nodes = this.nodes) === null || _this$nodes === void 0
+        ? void 0
+        : _this$nodes.map((node) => node.loc).filter((loc) => loc != null),
+    ); // Compute locations in the source for the given nodes/positions.
 
-    this.source = source !== null && source !== void 0 ? source : undefined;
-
-    if (!this.source && this.nodes) {
-      var _this$nodes$0$loc;
-
-      this.source =
-        (_this$nodes$0$loc = this.nodes[0].loc) === null ||
-        _this$nodes$0$loc === void 0
-          ? void 0
-          : _this$nodes$0$loc.source;
-    }
-
-    if (positions) {
-      this.positions = positions;
-    } else if (this.nodes) {
-      const positionsFromNodes = [];
-
-      for (const node of this.nodes) {
-        if (node.loc) {
-          positionsFromNodes.push(node.loc.start);
-        }
-      }
-
-      this.positions = positionsFromNodes;
-    }
-
-    if (this.positions && this.positions.length === 0) {
-      this.positions = undefined;
-    }
-
-    if (positions && source) {
-      this.locations = positions.map((pos) =>
-        (0, _location.getLocation)(source, pos),
-      );
-    } else if (this.nodes) {
-      const locationsFromNodes = [];
-
-      for (const node of this.nodes) {
-        if (node.loc) {
-          locationsFromNodes.push(
-            (0, _location.getLocation)(node.loc.source, node.loc.start),
+    this.source =
+      source !== null && source !== void 0
+        ? source
+        : nodeLocations === null || nodeLocations === void 0
+        ? void 0
+        : (_nodeLocations$ = nodeLocations[0]) === null ||
+          _nodeLocations$ === void 0
+        ? void 0
+        : _nodeLocations$.source;
+    this.positions =
+      positions !== null && positions !== void 0
+        ? positions
+        : nodeLocations === null || nodeLocations === void 0
+        ? void 0
+        : nodeLocations.map((loc) => loc.start);
+    this.locations =
+      positions && source
+        ? positions.map((pos) => (0, _location.getLocation)(source, pos))
+        : nodeLocations === null || nodeLocations === void 0
+        ? void 0
+        : nodeLocations.map((loc) =>
+            (0, _location.getLocation)(loc.source, loc.start),
           );
-        }
-      }
-
-      this.locations = locationsFromNodes;
-    }
-
     const originalExtensions = (0, _isObjectLike.isObjectLike)(
       originalError === null || originalError === void 0
         ? void 0
@@ -144,8 +120,7 @@ class GraphQLError extends Error {
       ? originalError === null || originalError === void 0
         ? void 0
         : originalError.extensions
-      : undefined; // TODO: merge `extensions` and `originalExtensions`
-
+      : undefined;
     this.extensions =
       (_ref =
         extensions !== null && extensions !== void 0
@@ -153,6 +128,7 @@ class GraphQLError extends Error {
           : originalExtensions) !== null && _ref !== void 0
         ? _ref
         : Object.create(null); // Include (non-enumerable) stack trace.
+    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
 
     if (
       originalError !== null &&
@@ -164,10 +140,7 @@ class GraphQLError extends Error {
         writable: true,
         configurable: true,
       });
-      return;
-    } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
-
-    if (Error.captureStackTrace) {
+    } else if (Error.captureStackTrace) {
       Error.captureStackTrace(this, GraphQLError);
     } else {
       Object.defineProperty(this, 'stack', {
@@ -222,11 +195,15 @@ class GraphQLError extends Error {
     return formattedError;
   }
 }
+
+exports.GraphQLError = GraphQLError;
+
+function undefinedIfEmpty(array) {
+  return array === undefined || array.length === 0 ? undefined : array;
+}
 /**
  * See: https://spec.graphql.org/draft/#sec-Errors
  */
-
-exports.GraphQLError = GraphQLError;
 
 /**
  * Prints a GraphQLError to a string, representing useful location information
