@@ -126,7 +126,30 @@ export class GraphQLError extends Error {
           ? extensions
           : originalExtensions) !== null && _ref !== void 0
         ? _ref
-        : Object.create(null); // Include (non-enumerable) stack trace.
+        : Object.create(null); // Only properties prescribed by the spec should be enumerable.
+    // Keep the rest as non-enumerable.
+
+    Object.defineProperties(this, {
+      message: {
+        writable: true,
+        enumerable: true,
+      },
+      name: {
+        enumerable: false,
+      },
+      nodes: {
+        enumerable: false,
+      },
+      source: {
+        enumerable: false,
+      },
+      positions: {
+        enumerable: false,
+      },
+      originalError: {
+        enumerable: false,
+      },
+    }); // Include (non-enumerable) stack trace.
     // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
 
     if (
