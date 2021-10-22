@@ -39,6 +39,25 @@ describe('GraphQLError', () => {
     expect(e.stack).to.be.a('string');
   });
 
+  it('enumerate only properties prescribed by the spec', () => {
+    const e = new GraphQLError(
+      'msg' /* message */,
+      [fieldNode] /* nodes */,
+      source /* source */,
+      [1, 2, 3] /* positions */,
+      ['a', 'b', 'c'] /* path */,
+      new Error('test') /* originalError */,
+      { foo: 'bar' } /* extensions */,
+    );
+
+    expect(Object.keys(e)).to.deep.equal([
+      'message',
+      'path',
+      'locations',
+      'extensions',
+    ]);
+  });
+
   it('uses the stack of an original error', () => {
     const original = new Error('original');
     const e = new GraphQLError(
