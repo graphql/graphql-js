@@ -939,9 +939,7 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
 export type GraphQLFieldResolver<
   TSource,
   TContext,
-  TArgs = {
-    [argument: string]: any;
-  },
+  TArgs = any,
   TResult = unknown,
 > = (
   source: TSource,
@@ -976,22 +974,10 @@ export interface GraphQLResolveInfo {
  * you may find them useful.
  */
 
-export interface GraphQLFieldExtensions<
-  _TSource,
-  _TContext,
-  _TArgs = {
-    [argName: string]: any;
-  },
-> {
+export interface GraphQLFieldExtensions<_TSource, _TContext, _TArgs = any> {
   [attributeName: string]: unknown;
 }
-export interface GraphQLFieldConfig<
-  TSource,
-  TContext,
-  TArgs = {
-    [argument: string]: any;
-  },
-> {
+export interface GraphQLFieldConfig<TSource, TContext, TArgs = any> {
   description?: Maybe<string>;
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;
@@ -1028,13 +1014,7 @@ export interface GraphQLArgumentConfig {
 export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldConfig<TSource, TContext>
 >;
-export interface GraphQLField<
-  TSource,
-  TContext,
-  TArgs = {
-    [argument: string]: any;
-  },
-> {
+export interface GraphQLField<TSource, TContext, TArgs = any> {
   name: string;
   description: Maybe<string>;
   type: GraphQLOutputType;
