@@ -9,10 +9,13 @@ const queryType: GraphQLObjectType = new GraphQLObjectType({
     sayHi: {
       type: GraphQLString,
       args: {
-        who: { type: GraphQLString },
+        who: {
+          type: GraphQLString,
+          defaultValue: 'World',
+        },
       },
-      resolve(_root, args) {
-        return 'Hello ' + (args.who ?? 'World');
+      resolve(_root, args: { who: string }) {
+        return 'Hello ' + args.who;
       },
     },
   }),
