@@ -28,6 +28,12 @@ if [ -z "${GH_TOKEN}" ]; then
  exit 1;
 fi;
 
+if [ -z "${GH_ACTOR}" ]; then
+ GITHUB_CREDENTIALS="${GH_TOKEN}";
+else
+ GITHUB_CREDENTIALS="${GH_ACTOR}:${GH_TOKEN}";
+fi;
+
 if [ ! -d $DIST_DIR ]; then
  echo "Directory '${DIST_DIR}' does not  exist!"
  exit 1;
@@ -35,7 +41,7 @@ fi;
 
 # Create empty directory
 rm -rf $BRANCH
-git clone -b $BRANCH -- "https://${GITHUB_ACTOR}:${GH_TOKEN}@github.com/graphql/graphql-js.git" $BRANCH
+git clone -b $BRANCH -- "https://${GITHUB_CREDENTIALS}@github.com/graphql/graphql-js.git" $BRANCH
 
 # Remove existing files first
 rm -rf $BRANCH/**/*

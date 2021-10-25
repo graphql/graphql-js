@@ -281,6 +281,7 @@ jobs:
         run: npm run gitpublish:npm
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ env.GITHUB_ACTOR }}
 
   deploy-to-deno-branch:
     name: Deploy to `deno` branch
@@ -317,3 +318,4 @@ jobs:
         run: npm run gitpublish:deno
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ env.GITHUB_ACTOR }}
