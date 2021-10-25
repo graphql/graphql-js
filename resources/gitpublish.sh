@@ -35,7 +35,7 @@ fi;
 
 # Create empty directory
 rm -rf $BRANCH
-git clone -b $BRANCH -- "https://${GH_TOKEN}@github.com/graphql/graphql-js.git" $BRANCH
+git clone -b $BRANCH -- "https://${GITHUB_ACTOR}:${GH_TOKEN}@github.com/graphql/graphql-js.git" $BRANCH
 
 # Remove existing files first
 rm -rf $BRANCH/**/*
