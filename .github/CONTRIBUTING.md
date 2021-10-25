@@ -85,7 +85,8 @@ _Only core contributors may release to NPM._
 To release a new version on NPM, first ensure all tests pass with `npm test`,
 then use `npm version patch|minor|major` in order to increment the version in
 package.json and tag and commit a release. Then `git push && git push --tags`
-this change so Travis CI can deploy to NPM. _Do not run `npm publish` directly._
+to sync this change with source control. Then `npm publish npmDist` to actually
+publish the release to NPM.
 Once published, add [release notes](https://github.com/graphql/graphql-js/tags).
 Use [semver](https://semver.org/) to determine which version part to increment.
 
@@ -95,6 +96,7 @@ Example for a patch release:
 npm test
 npm version patch
 git push --follow-tags
+npm publish npmDist
 ```
 
 ## License
