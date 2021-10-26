@@ -1,6 +1,3 @@
-// FIXME:
-// flowlint uninitialized-instance-property:off
-
 import isObjectLike from '../jsutils/isObjectLike';
 import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 
@@ -17,15 +14,6 @@ import { printLocation, printSourceLocation } from '../language/printLocation';
  * GraphQL document and/or execution result that correspond to the Error.
  */
 export class GraphQLError extends Error {
-  /**
-   * A message describing the Error for debugging purposes.
-   *
-   * Enumerable, and appears in the result of JSON.stringify().
-   *
-   * Note: should be treated as readonly, despite invariant usage.
-   */
-  message: string;
-
   /**
    * An array of { line, column } locations within the source GraphQL document
    * which correspond to this error.
@@ -68,7 +56,7 @@ export class GraphQLError extends Error {
   /**
    * The original error thrown from a field resolver during execution.
    */
-  +originalError: ?Error;
+  +originalError: Error | void;
 
   /**
    * Extension fields to add to the formatted error.
@@ -86,13 +74,17 @@ export class GraphQLError extends Error {
   ) {
     super(message);
 
+    this.name = 'GraphQLError';
+    this.path = path ?? undefined;
+    this.originalError = originalError ?? undefined;
+
     // Compute list of blame nodes.
-    const _nodes = undefinedIfEmpty(
+    this.nodes = undefinedIfEmpty(
       Array.isArray(nodes) ? nodes : nodes ? [nodes] : undefined,
     );
 
     let nodeLocations = [];
-    for (const { loc } of _nodes ?? []) {
+    for (const { loc } of this.nodes ?? []) {
       if (loc != null) {
         nodeLocations.push(loc);
       }
@@ -100,71 +92,40 @@ export class GraphQLError extends Error {
     nodeLocations = undefinedIfEmpty(nodeLocations);
 
     // Compute locations in the source for the given nodes/positions.
-    const _source = source ?? nodeLocations?.[0].source;
+    this.source = source ?? nodeLocations?.[0].source;
 
-    const _positions = positions ?? nodeLocations?.map((loc) => loc.start);
+    this.positions = positions ?? nodeLocations?.map((loc) => loc.start);
 
-    const _locations =
+    this.locations =
       positions && source
         ? positions.map((pos) => getLocation(source, pos))
         : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
 
-    let _extensions = extensions ?? undefined;
+    this.extensions = extensions ?? undefined;
 
     const originalExtensions = originalError?.extensions;
     if (isObjectLike(originalExtensions)) {
-      _extensions = originalExtensions;
+      this.extensions = { ...originalExtensions };
     }
 
+    // By being enumerable, JSON.stringify will include bellow properties in the resulting output.
+    // This ensures that the simplest possible GraphQL service adheres to the spec.
     Object.defineProperties((this: any), {
-      name: { value: 'GraphQLError' },
-      message: {
-        value: message,
-        // By being enumerable, JSON.stringify will include `message` in the
-        // resulting output. This ensures that the simplest possible GraphQL
-        // service adheres to the spec.
-        enumerable: true,
-        writable: true,
-      },
+      message: { enumerable: true },
       locations: {
-        // Coercing falsy values to undefined ensures they will not be included
-        // in JSON.stringify() when not provided.
-        value: _locations ?? undefined,
-        // By being enumerable, JSON.stringify will include `locations` in the
-        // resulting output. This ensures that the simplest possible GraphQL
-        // service adheres to the spec.
-        enumerable: _locations != null,
+        enumerable: this.locations != null,
       },
       path: {
-        // Coercing falsy values to undefined ensures they will not be included
-        // in JSON.stringify() when not provided.
-        value: path ?? undefined,
-        // By being enumerable, JSON.stringify will include `path` in the
-        // resulting output. This ensures that the simplest possible GraphQL
-        // service adheres to the spec.
-        enumerable: path != null,
-      },
-      nodes: {
-        value: _nodes ?? undefined,
-      },
-      source: {
-        value: _source ?? undefined,
-      },
-      positions: {
-        value: _positions ?? undefined,
-      },
-      originalError: {
-        value: originalError,
+        enumerable: this.path != null,
       },
       extensions: {
-        // Coercing falsy values to undefined ensures they will not be included
-        // in JSON.stringify() when not provided.
-        value: _extensions ?? undefined,
-        // By being enumerable, JSON.stringify will include `path` in the
-        // resulting output. This ensures that the simplest possible GraphQL
-        // service adheres to the spec.
-        enumerable: _extensions != null,
+        enumerable: this.extensions != null,
       },
+      name: { enumerable: false },
+      nodes: { enumerable: false },
+      source: { enumerable: false },
+      positions: { enumerable: false },
+      originalError: { enumerable: false },
     });
 
     // Include (non-enumerable) stack trace.
