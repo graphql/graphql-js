@@ -122,29 +122,47 @@ describe('GraphQLError', () => {
     });
   });
 
-  it('serializes to include message', () => {
-    const e = new GraphQLError('msg');
-    expect(JSON.stringify(e)).to.equal('{"message":"msg"}');
-  });
+  it('serializes to include all standard fields', () => {
+    const eShort = new GraphQLError('msg');
+    expect(JSON.stringify(eShort, null, 2) + '\n').to.equal(dedent`
+      {
+        "message": "msg"
+      }
+    `);
 
-  it('serializes to include message and locations', () => {
-    const e = new GraphQLError('msg', fieldNode);
-    expect(JSON.stringify(e)).to.equal(
-      '{"message":"msg","locations":[{"line":2,"column":3}]}',
+    const path = ['path', 2, 'field'];
+    const extensions = { foo: 'bar' };
+    const eFull = new GraphQLError(
+      'msg',
+      fieldNode,
+      undefined,
+      undefined,
+      path,
+      undefined,
+      extensions,
     );
-  });
 
-  it('serializes to include path', () => {
-    const e = new GraphQLError('msg', null, null, null, [
-      'path',
-      3,
-      'to',
-      'field',
-    ]);
-    expect(e).to.have.deep.property('path', ['path', 3, 'to', 'field']);
-    expect(JSON.stringify(e)).to.equal(
-      '{"message":"msg","path":["path",3,"to","field"]}',
-    );
+    // We should try to keep order of fields stable
+    // Changing it wouldn't be breaking change but will fail some tests in other libraries.
+    expect(JSON.stringify(eFull, null, 2) + '\n').to.equal(dedent`
+      {
+        "message": "msg",
+        "locations": [
+          {
+            "line": 2,
+            "column": 3
+          }
+        ],
+        "path": [
+          "path",
+          2,
+          "field"
+        ],
+        "extensions": {
+          "foo": "bar"
+        }
+      }
+    `);
   });
 });
 

@@ -75,7 +75,6 @@ export class GraphQLError extends Error {
     super(message);
 
     this.name = 'GraphQLError';
-    this.path = path ?? undefined;
     this.originalError = originalError ?? undefined;
 
     // Compute list of blame nodes.
@@ -100,6 +99,8 @@ export class GraphQLError extends Error {
       positions && source
         ? positions.map((pos) => getLocation(source, pos))
         : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
+
+    this.path = path ?? undefined;
 
     this.extensions = extensions ?? {};
 
