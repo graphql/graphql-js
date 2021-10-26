@@ -28,10 +28,14 @@ describe('GraphQLError', () => {
     expect(new GraphQLError('str')).to.be.instanceof(GraphQLError);
   });
 
-  it('has a name, message, and stack trace', () => {
+  it('has a name, message, extensions, and stack trace', () => {
     const e = new GraphQLError('msg');
 
-    expect(e).to.include({ name: 'GraphQLError', message: 'msg' });
+    expect(e).to.deep.include({
+      name: 'GraphQLError',
+      message: 'msg',
+      extensions: {},
+    });
     expect(e.stack).to.be.a('string');
   });
 

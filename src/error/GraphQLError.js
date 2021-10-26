@@ -61,7 +61,7 @@ export class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  +extensions: { [key: string]: mixed, ... } | void;
+  +extensions: { [key: string]: mixed, ... };
 
   constructor(
     message: string,
@@ -101,7 +101,7 @@ export class GraphQLError extends Error {
         ? positions.map((pos) => getLocation(source, pos))
         : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
 
-    this.extensions = extensions ?? undefined;
+    this.extensions = extensions ?? {};
 
     const originalExtensions = originalError?.extensions;
     if (isObjectLike(originalExtensions)) {
@@ -119,7 +119,8 @@ export class GraphQLError extends Error {
         enumerable: this.path != null,
       },
       extensions: {
-        enumerable: this.extensions != null,
+        enumerable:
+          this.extensions != null && Object.keys(this.extensions).length > 0,
       },
       name: { enumerable: false },
       nodes: { enumerable: false },
