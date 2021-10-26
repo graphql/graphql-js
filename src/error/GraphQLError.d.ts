@@ -35,15 +35,6 @@ export class GraphQLError extends Error {
   );
 
   /**
-   * A message describing the Error for debugging purposes.
-   *
-   * Enumerable, and appears in the result of JSON.stringify().
-   *
-   * Note: should be treated as readonly, despite invariant usage.
-   */
-  message: string;
-
-  /**
    * An array of { line, column } locations within the source GraphQL document
    * which correspond to this error.
    *
@@ -85,7 +76,7 @@ export class GraphQLError extends Error {
   /**
    * The original error thrown from a field resolver during execution.
    */
-  readonly originalError: Maybe<Error>;
+  readonly originalError: Error | undefined;
 
   /**
    * Extension fields to add to the formatted error.
