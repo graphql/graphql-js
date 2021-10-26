@@ -96,6 +96,18 @@ describe('GraphQLError', () => {
     });
   });
 
+  it('converts node without location to undefined source, positions and locations', () => {
+    const documentNode = parse('{ foo }', { noLocation: true });
+
+    const e = new GraphQLError('msg', documentNode);
+    expect(e).to.deep.include({
+      nodes: [documentNode],
+      source: undefined,
+      positions: undefined,
+      locations: undefined,
+    });
+  });
+
   it('converts source and positions to locations', () => {
     const e = new GraphQLError('msg', null, source, [6]);
     expect(e).to.have.property('source', source);
