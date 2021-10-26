@@ -15,7 +15,7 @@ export function formatError(error: GraphQLError): GraphQLFormattedError {
   const path = error.path;
   const extensions = error.extensions;
 
-  return extensions
+  return extensions && Object.keys(extensions).length > 0
     ? { message, locations, path, extensions }
     : { message, locations, path };
 }
