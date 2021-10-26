@@ -87,51 +87,33 @@ export class GraphQLError extends Error {
     super(message);
 
     // Compute list of blame nodes.
-    const _nodes = Array.isArray(nodes)
-      ? nodes.length !== 0
-        ? nodes
-        : undefined
-      : nodes
-      ? [nodes]
-      : undefined;
+    const _nodes = undefinedIfEmpty(
+      Array.isArray(nodes) ? nodes : nodes ? [nodes] : undefined,
+    );
+
+    let nodeLocations = [];
+    for (const { loc } of _nodes ?? []) {
+      if (loc != null) {
+        nodeLocations.push(loc);
+      }
+    }
+    nodeLocations = undefinedIfEmpty(nodeLocations);
 
     // Compute locations in the source for the given nodes/positions.
-    let _source = source;
-    if (!_source && _nodes) {
-      _source = _nodes[0].loc?.source;
-    }
+    const _source = source ?? nodeLocations?.[0].source;
 
-    let _positions = positions;
-    if (!_positions && _nodes) {
-      _positions = _nodes.reduce((list, node) => {
-        if (node.loc) {
-          list.push(node.loc.start);
-        }
-        return list;
-      }, []);
-    }
-    if (_positions && _positions.length === 0) {
-      _positions = undefined;
-    }
+    const _positions = positions ?? nodeLocations?.map((loc) => loc.start);
 
-    let _locations;
-    if (positions && source) {
-      _locations = positions.map((pos) => getLocation(source, pos));
-    } else if (_nodes) {
-      _locations = _nodes.reduce((list, node) => {
-        if (node.loc) {
-          list.push(getLocation(node.loc.source, node.loc.start));
-        }
-        return list;
-      }, []);
-    }
+    const _locations =
+      positions && source
+        ? positions.map((pos) => getLocation(source, pos))
+        : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
 
-    let _extensions = extensions;
-    if (_extensions == null && originalError != null) {
-      const originalExtensions = originalError.extensions;
-      if (isObjectLike(originalExtensions)) {
-        _extensions = originalExtensions;
-      }
+    let _extensions = extensions ?? undefined;
+
+    const originalExtensions = originalError?.extensions;
+    if (isObjectLike(originalExtensions)) {
+      _extensions = originalExtensions;
     }
 
     Object.defineProperties((this: any), {
@@ -216,6 +198,12 @@ export class GraphQLError extends Error {
   get [SYMBOL_TO_STRING_TAG](): string {
     return 'Object';
   }
+}
+
+function undefinedIfEmpty<T>(
+  array: $ReadOnlyArray<T> | void,
+): $ReadOnlyArray<T> | void {
+  return array === undefined || array.length === 0 ? undefined : array;
 }
 
 /**
