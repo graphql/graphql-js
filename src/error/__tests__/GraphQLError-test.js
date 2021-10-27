@@ -233,3 +233,46 @@ describe('printError', () => {
     `);
   });
 });
+
+describe('Graphql error extensions', () => {
+  it('includes passed extension fields', () => {
+    const original = new GraphQLError('msgA', null, null, null, null, null, {
+      foo: 'bar',
+    });
+    const { message, extensions } = new GraphQLError(
+      'msgB',
+      null,
+      null,
+      null,
+      null,
+      original,
+      {
+        baz: 'qux',
+      },
+    );
+
+    expect({ message, extensions }).to.deep.equal({
+      message: 'msgB',
+      extensions: { baz: 'qux' },
+    });
+  });
+
+  it('defaults to original error extension if extensions argument is not passed', () => {
+    const original = new GraphQLError('msgA', null, null, null, null, null, {
+      foo: 'bar',
+    });
+    const { message, extensions } = new GraphQLError(
+      'msgB',
+      null,
+      null,
+      null,
+      null,
+      original,
+    );
+
+    expect({ message, extensions }).to.deep.equal({
+      message: 'msgB',
+      extensions: { foo: 'bar' },
+    });
+  });
+});

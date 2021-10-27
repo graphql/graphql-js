@@ -105,7 +105,10 @@ export class GraphQLError extends Error {
     this.extensions = extensions ?? {};
 
     const originalExtensions = originalError?.extensions;
-    if (isObjectLike(originalExtensions)) {
+    if (
+      Object.keys(this.extensions).length === 0 &&
+      isObjectLike(originalExtensions)
+    ) {
       this.extensions = { ...originalExtensions };
     }
 
