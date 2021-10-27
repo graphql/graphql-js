@@ -11,7 +11,9 @@ const tsVersions = Object.keys(dependencies)
 
 for (const version of tsVersions) {
   console.log(`Testing on ${version} ...`);
+  childProcess.execSync(tscPath(version), { stdio: 'inherit' });
+}
 
-  const tscPath = path.join(__dirname, 'node_modules', version, 'bin/tsc');
-  childProcess.execSync(tscPath, { stdio: 'inherit' });
+function tscPath(version) {
+  return path.join(__dirname, 'node_modules', version, 'bin/tsc');
 }
