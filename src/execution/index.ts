@@ -11,6 +11,9 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  ExecutionPatchResult,
+  FormattedExecutionPatchResult,
+  AsyncExecutionResult,
 } from './execute';
 
 export { subscribe, createSourceEventStream } from './subscribe';
