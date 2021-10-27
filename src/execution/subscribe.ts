@@ -1,7 +1,6 @@
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { addPath, pathToArray } from '../jsutils/Path';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -16,6 +15,7 @@ import type {
   ExecutionArgs,
   ExecutionResult,
   ExecutionContext,
+  AsyncExecutionResult,
 } from './execute';
 import { collectFields } from './collectFields';
 import { getArgumentValues } from './values';
@@ -27,6 +27,7 @@ import {
   getFieldDef,
 } from './execute';
 import { mapAsyncIterator } from './mapAsyncIterator';
+import { flattenAsyncIterator } from './flattenAsyncIterator';
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -51,7 +52,10 @@ import { mapAsyncIterator } from './mapAsyncIterator';
  */
 export async function subscribe(
   args: ExecutionArgs,
-): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+): Promise<
+  | AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void>
+  | ExecutionResult
+> {
   const {
     schema,
     document,
@@ -83,8 +87,8 @@ export async function subscribe(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = (payload: unknown) => {
-    const executionResult = execute({
+  const mapSourceToResponse = (payload: unknown) =>
+    execute({
       schema,
       document,
       rootValue: payload,
@@ -93,17 +97,11 @@ export async function subscribe(
       operationName,
       fieldResolver,
     });
-    /* istanbul ignore if - TODO: implement support for defer/stream in subscriptions */
-    if (isAsyncIterable(executionResult)) {
-      throw new Error(
-        'TODO: implement support for defer/stream in subscriptions',
-      );
-    }
-    return executionResult as PromiseOrValue<ExecutionResult>;
-  };
 
   // Map every source value to a ExecutionResult value as described above.
-  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
+  return flattenAsyncIterator<ExecutionResult, AsyncExecutionResult>(
+    mapAsyncIterator(resultOrStream, mapSourceToResponse),
+  );
 }
 
 /**
