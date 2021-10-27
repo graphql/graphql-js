@@ -23,9 +23,13 @@ if [ -z "${DIST_DIR}" ]; then
  exit 1;
 fi;
 
-if [ -z "${GH_TOKEN}" ]; then
- echo 'Must provide GH_TOKEN as environment variable!'
+if [ -z "${GITHUB_TOKEN}" ]; then
+ echo 'Must provide GITHUB_TOKEN as environment variable!'
  exit 1;
+fi;
+
+if [ -z "${GITHUB_ACTOR}" ]; then
+ echo 'Must provide GITHUB_ACTOR as environment variable!'
 fi;
 
 if [ ! -d $DIST_DIR ]; then
@@ -35,7 +39,7 @@ fi;
 
 # Create empty directory
 rm -rf $BRANCH
-git clone -b $BRANCH -- "https://${GITHUB_ACTOR}:${GH_TOKEN}@github.com/graphql/graphql-js.git" $BRANCH
+git clone -b $BRANCH -- "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/graphql/graphql-js.git" $BRANCH
 
 # Remove existing files first
 rm -rf $BRANCH/**/*
