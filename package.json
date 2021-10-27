@@ -5,17 +5,15 @@
   "license": "MIT",
   "main": "index",
   "module": "index.mjs",
-  "types": "NotSupportedTSVersion.d.ts",
   "typesVersions": {
     ">=4.1.0": {
       "*": [
-        "index.d.ts"
-      ],
-      "*/*": [
-        "*/index.d.ts"
-      ],
-      "*/*/*": [
-        "*/*"
+        "*"
+      ]
+    },
+    "*": {
+      "*": [
+        "NotSupportedTSVersion.d.ts"
       ]
     }
   },
