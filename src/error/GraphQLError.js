@@ -56,7 +56,7 @@ export class GraphQLError extends Error {
   /**
    * The original error thrown from a field resolver during execution.
    */
-  +originalError: Error | void;
+  +originalError: Error | void | null;
 
   /**
    * Extension fields to add to the formatted error.
