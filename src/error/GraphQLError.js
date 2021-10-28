@@ -102,11 +102,12 @@ export class GraphQLError extends Error {
 
     this.path = path ?? undefined;
 
-    this.extensions = extensions ?? {};
-
     const originalExtensions = originalError?.extensions;
-    if (isObjectLike(originalExtensions)) {
+
+    if (extensions == null && isObjectLike(originalExtensions)) {
       this.extensions = { ...originalExtensions };
+    } else {
+      this.extensions = extensions ?? {};
     }
 
     // By being enumerable, JSON.stringify will include bellow properties in the resulting output.
