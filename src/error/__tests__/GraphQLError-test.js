@@ -164,6 +164,66 @@ describe('GraphQLError', () => {
       }
     `);
   });
+
+  it('uses the provided extensions when original extensions are undefined', () => {
+    const original = new Error('original');
+    const graphqlError = new GraphQLError(
+      'msg',
+      null,
+      null,
+      null,
+      null,
+      original,
+      {
+        someKey: 'someValue',
+      },
+    );
+
+    const e = new GraphQLError(
+      graphqlError.message,
+      null,
+      null,
+      null,
+      null,
+      graphqlError,
+      { correlationId: '123-echo-tango-delta' },
+    );
+
+    expect(JSON.stringify(e.extensions, null, 2) + '\n').to.equal(dedent`
+      {
+        "correlationId": "123-echo-tango-delta"
+      }
+    `);
+  });
+
+  it('uses the provided extensions when original extensions are empty object', () => {
+    const original = new Error('original');
+    const graphqlError = new GraphQLError(
+      'msg',
+      null,
+      null,
+      null,
+      null,
+      original,
+      {},
+    );
+
+    const e = new GraphQLError(
+      graphqlError.message,
+      null,
+      null,
+      null,
+      null,
+      graphqlError,
+      { correlationId: '123-echo-tango-delta' },
+    );
+
+    expect(JSON.stringify(e.extensions, null, 2) + '\n').to.equal(dedent`
+      {
+        "correlationId": "123-echo-tango-delta"
+      }
+    `);
+  });
 });
 
 describe('printError', () => {
