@@ -1,6 +1,6 @@
 {
   "name": "graphql",
-  "version": "16.0.0-rc.7",
+  "version": "16.0.0",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "main": "index",
@@ -32,8 +32,5 @@
   ],
   "engines": {
     "node": "^12.22.0 || ^14.16.0 || >=16.0.0"
-  },
-  "publishConfig": {
-    "tag": "rc"
   }
 }
