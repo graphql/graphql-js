@@ -20,7 +20,7 @@ describe('Version', () => {
 
     // istanbul ignore next (Can't be verified on all versions)
     switch (preReleaseTag?.split('.').length) {
-      case null:
+      case undefined:
         break;
       case 2:
         expect(preReleaseTag).to.match(
