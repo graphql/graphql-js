@@ -35,16 +35,29 @@ if (require.main === module) {
     }
   }
 
-  const tsProgram = ts.createProgram(['src/index.ts'], {
-    ...ts.getDefaultCompilerOptions(),
+  // Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
+  const tsConfig = JSON.parse(
+    fs.readFileSync(require.resolve('../tsconfig.json'), 'utf-8'),
+  );
+  assert(
+    tsConfig.compilerOptions,
+    '"tsconfig.json" should have `compilerOptions`',
+  );
+  const tsOptions = {
+    ...tsConfig.compilerOptions,
+    noEmit: false,
     declaration: true,
     declarationDir: './npmDist',
     emitDeclarationOnly: true,
-  });
+  };
 
-  const tsResult = tsProgram.emit(undefined, (filepath, body) => {
+  const tsHost = ts.createCompilerHost(tsOptions);
+  tsHost.writeFile = (filepath, body) => {
     writeGeneratedFile(filepath, body);
-  });
+  };
+
+  const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
+  const tsResult = tsProgram.emit();
   assert(
     !tsResult.emitSkipped,
     'Fail to generate `*.d.ts` files, please run `npm run check`',
