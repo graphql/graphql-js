@@ -122,6 +122,66 @@ describe('GraphQLError', () => {
     });
   });
 
+  it('defaults to original error extension only if extensions argument is not passed', () => {
+    class ErrorWithExtensions extends Error {
+      extensions: mixed;
+
+      constructor(message: string) {
+        super(message);
+        this.extensions = { original: 'extensions' };
+      }
+    }
+
+    const original = new ErrorWithExtensions('original');
+    const inheritedExtensions = new GraphQLError(
+      'InheritedExtensions',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      original,
+      undefined,
+    );
+
+    expect(inheritedExtensions).to.deep.include({
+      message: 'InheritedExtensions',
+      originalError: original,
+      extensions: { original: 'extensions' },
+    });
+
+    const ownExtensions = new GraphQLError(
+      'OwnExtensions',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      original,
+      { own: 'extensions' },
+    );
+
+    expect(ownExtensions).to.deep.include({
+      message: 'OwnExtensions',
+      originalError: original,
+      extensions: { own: 'extensions' },
+    });
+
+    const ownEmptyExtensions = new GraphQLError(
+      'OwnEmptyExtensions',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      original,
+      {},
+    );
+
+    expect(ownEmptyExtensions).to.deep.include({
+      message: 'OwnEmptyExtensions',
+      originalError: original,
+      extensions: {},
+    });
+  });
+
   it('serializes to include all standard fields', () => {
     const eShort = new GraphQLError('msg');
     expect(JSON.stringify(eShort, null, 2) + '\n').to.equal(dedent`
@@ -161,66 +221,6 @@ describe('GraphQLError', () => {
         "extensions": {
           "foo": "bar"
         }
-      }
-    `);
-  });
-
-  it('uses the provided extensions when original extensions are undefined', () => {
-    const original = new Error('original');
-    const graphqlError = new GraphQLError(
-      'msg',
-      null,
-      null,
-      null,
-      null,
-      original,
-      {
-        someKey: 'someValue',
-      },
-    );
-
-    const e = new GraphQLError(
-      graphqlError.message,
-      null,
-      null,
-      null,
-      null,
-      graphqlError,
-      { correlationId: '123-echo-tango-delta' },
-    );
-
-    expect(JSON.stringify(e.extensions, null, 2) + '\n').to.equal(dedent`
-      {
-        "correlationId": "123-echo-tango-delta"
-      }
-    `);
-  });
-
-  it('uses the provided extensions when original extensions are empty object', () => {
-    const original = new Error('original');
-    const graphqlError = new GraphQLError(
-      'msg',
-      null,
-      null,
-      null,
-      null,
-      original,
-      {},
-    );
-
-    const e = new GraphQLError(
-      graphqlError.message,
-      null,
-      null,
-      null,
-      null,
-      graphqlError,
-      { correlationId: '123-echo-tango-delta' },
-    );
-
-    expect(JSON.stringify(e.extensions, null, 2) + '\n').to.equal(dedent`
-      {
-        "correlationId": "123-echo-tango-delta"
       }
     `);
   });
