@@ -18,16 +18,18 @@ const body = `
 /**
  * A string containing the version of the GraphQL.js library
  */
-export const version = '${version}';
+export const version = '${version}' as string;
 
 /**
  * An object containing the components of the GraphQL.js version string
  */
 export const versionInfo = Object.freeze({
-  major: ${major},
-  minor: ${minor},
-  patch: ${patch},
-  preReleaseTag: ${preReleaseTag ? `'${preReleaseTag}'` : 'null'},
+  major: ${major} as number,
+  minor: ${minor} as number,
+  patch: ${patch} as number,
+  preReleaseTag: ${
+    preReleaseTag ? `'${preReleaseTag}'` : 'null'
+  } as string | null,
 });
 `;
 
