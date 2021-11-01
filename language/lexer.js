@@ -893,6 +893,8 @@ function readEscapedCharacter(lexer, position) {
 function readBlockString(lexer, start) {
   const body = lexer.source.body;
   const bodyLength = body.length;
+  const startLine = lexer.line;
+  const startColumn = 1 + start - lexer.lineStart;
   let position = start + 3;
   let chunkStart = position;
   let rawValue = '';
@@ -906,11 +908,12 @@ function readBlockString(lexer, start) {
       body.charCodeAt(position + 2) === 0x0022
     ) {
       rawValue += body.slice(chunkStart, position);
-      return createToken(
-        lexer,
+      return new _ast.Token(
         _tokenKind.TokenKind.BLOCK_STRING,
         start,
         position + 3,
+        startLine,
+        startColumn,
         (0, _blockString.dedentBlockStringValue)(rawValue),
       );
     } // Escaped Triple-Quote (\""")
