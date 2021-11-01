@@ -11,6 +11,7 @@ import { Kind } from '../kinds';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseConstValue, parseType } from '../parser';
+import { Token, visit } from '..';
 
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));
@@ -637,6 +638,25 @@ describe('Parser', () => {
           },
         },
       });
+    });
+
+    it('parses comments with correct location', () => {
+      const sdl = /* GraphQL */ `
+        """
+        generic query placeholder
+        """
+        type Query
+      `;
+      const result = parse(sdl, {
+        noLocation: false,
+      });
+
+      let token: Token | null | undefined = result.loc?.startToken;
+
+      do {
+        expect(token?.column, 'token column is negative').to.greaterThan(-1);
+        token = token?.next;
+      } while (token?.kind !== TokenKind.EOF);
     });
   });
 });
