@@ -739,6 +739,9 @@ function readEscapedCharacter(lexer: Lexer, position: number): EscapeSequence {
 function readBlockString(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
   const bodyLength = body.length;
+  const startLine = lexer.line;
+  const startColumn = 1 + start - lexer.lineStart;
+
   let position = start + 3;
   let chunkStart = position;
   let rawValue = '';
@@ -753,11 +756,12 @@ function readBlockString(lexer: Lexer, start: number): Token {
       body.charCodeAt(position + 2) === 0x0022
     ) {
       rawValue += body.slice(chunkStart, position);
-      return createToken(
-        lexer,
+      return new Token(
         TokenKind.BLOCK_STRING,
         start,
         position + 3,
+        startLine,
+        startColumn,
         dedentBlockStringValue(rawValue),
       );
     }

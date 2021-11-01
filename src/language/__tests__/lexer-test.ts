@@ -537,6 +537,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 6,
+      line: 1,
+      column: 1,
       value: '',
     });
 
@@ -544,6 +546,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 12,
+      line: 1,
+      column: 1,
       value: 'simple',
     });
 
@@ -551,6 +555,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 19,
+      line: 1,
+      column: 1,
       value: ' white space ',
     });
 
@@ -558,6 +564,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 22,
+      line: 1,
+      column: 1,
       value: 'contains " quote',
     });
 
@@ -565,6 +573,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 32,
+      line: 1,
+      column: 1,
       value: 'contains """ triple quote',
     });
 
@@ -572,6 +582,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 16,
+      line: 1,
+      column: 1,
       value: 'multi\nline',
     });
 
@@ -579,6 +591,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 28,
+      line: 1,
+      column: 1,
       value: 'multi\nline\nnormalized',
     });
 
@@ -586,6 +600,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 32,
+      line: 1,
+      column: 1,
       value: 'unescaped \\n\\r\\b\\t\\f\\u1234',
     });
 
@@ -593,6 +609,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 38,
+      line: 1,
+      column: 1,
       value: 'unescaped unicode outside BMP \u{1f600}',
     });
 
@@ -600,6 +618,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 19,
+      line: 1,
+      column: 1,
       value: 'slashes \\\\ \\/',
     });
 
@@ -615,6 +635,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 68,
+      line: 1,
+      column: 1,
       value: 'spans\n  multiple\n    lines',
     });
   });
