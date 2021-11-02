@@ -431,7 +431,7 @@ function executeFieldsSerially(
 }
 
 /**
- * Implements the "Executing selection sets" section of the spec
+ * Implements the "Executing Selection Sets" section of the spec
  * for fields that may be executed in parallel.
  */
 function executeFields(
@@ -474,7 +474,7 @@ function executeFields(
 }
 
 /**
- * Implements the "Executing field" section of the spec
+ * Implements the "Executing Fields" section of the spec
  * In particular, this function figures out the value that the field returns by
  * calling its resolve function, then calls completeValue to complete promises,
  * serialize scalars, or execute the sub-selection-set for objects.
@@ -596,7 +596,7 @@ function handleFieldError(
 
 /**
  * Implements the instructions for completeValue as defined in the
- * "Field entries" section of the spec.
+ * "Value Completion" section of the spec.
  *
  * If the field type is Non-Null, then this recursively completes the value
  * for the inner type. It throws a field error if that completion returns null,
