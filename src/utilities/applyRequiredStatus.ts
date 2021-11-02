@@ -7,7 +7,7 @@ import {
 } from '../type/definition';
 
 /**
- * Implements the "Accounting For Client Controlled Nullability Designators" 
+ * Implements the "Accounting For Client Controlled Nullability Designators"
  * section of the spec. In particular, this function figures out the true return
  * type of a field by taking into account both the nullability listed in the
  * schema, and the nullability providing by an operation.
