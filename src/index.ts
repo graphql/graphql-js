@@ -61,6 +61,9 @@ export {
   TypeKind,
   /** Constant Deprecation Reason */
   DEFAULT_DEPRECATION_REASON,
+  /** Int boundaries constants */
+  GRAPHQL_MAX_INT,
+  GRAPHQL_MIN_INT,
   /** GraphQL Types for introspection. */
   introspectionTypes,
   __Schema,
