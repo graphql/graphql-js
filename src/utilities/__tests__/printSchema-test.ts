@@ -21,12 +21,19 @@ import {
 } from '../../type/definition';
 
 import { buildSchema } from '../buildASTSchema';
-import { printSchema, printIntrospectionSchema } from '../printSchema';
+import type { PrintSchemaOptions } from '../printSchema';
+import {
+  printSchema,
+  printIntrospectionSchema,
+} from '../printSchema';
 
-function expectPrintedSchema(schema: GraphQLSchema) {
-  const schemaText = printSchema(schema);
+function expectPrintedSchema(
+  schema: GraphQLSchema,
+  options?: PrintSchemaOptions,
+) {
+  const schemaText = printSchema(schema, options);
   // keep printSchema and buildSchema in sync
-  expect(printSchema(buildSchema(schemaText))).to.equal(schemaText);
+  expect(printSchema(buildSchema(schemaText), options)).to.equal(schemaText);
   return expect(schemaText);
 }
 
@@ -260,6 +267,16 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Omits schema of common names', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({ name: 'Query', fields: {} }),
+    });
+
+    expectPrintedSchema(schema).to.equal(dedent`
+      type Query
+    `);
+  });
+
   it('Prints schema with description', () => {
     const schema = new GraphQLSchema({
       description: 'Schema description.',
@@ -315,6 +332,79 @@ describe('Type System Printer', () => {
       }
 
       type CustomType
+    `);
+  });
+
+  it('Prints schema with directives', () => {
+    const schema = buildSchema(`
+      schema @foo {
+        query: Query
+      }
+
+      directive @foo on SCHEMA
+
+      type Query
+    `);
+
+    expectPrintedSchema(schema, { shouldPrintDirective: () => true }).to
+      .equal(dedent`
+      schema @foo {
+        query: Query
+      }
+
+      directive @foo on SCHEMA
+
+      type Query
+    `);
+  });
+
+  it('Includes directives conditionally', () => {
+    const schema = buildSchema(`
+      schema @foo @bar {
+        query: Query
+      }
+
+      directive @foo on SCHEMA
+
+      directive @bar on SCHEMA
+
+      type Query
+    `);
+
+    expectPrintedSchema(schema, {
+      shouldPrintDirective: (directive) => directive.name.value === 'foo',
+    }).to.equal(dedent`
+      schema @foo {
+        query: Query
+      }
+
+      directive @foo on SCHEMA
+
+      directive @bar on SCHEMA
+
+      type Query
+    `);
+
+    expectPrintedSchema(schema, { shouldPrintDirective: () => true }).to
+      .equal(dedent`
+      schema @foo @bar {
+        query: Query
+      }
+
+      directive @foo on SCHEMA
+
+      directive @bar on SCHEMA
+
+      type Query
+    `);
+
+    expectPrintedSchema(schema, { shouldPrintDirective: () => false }).to
+      .equal(dedent`
+      directive @foo on SCHEMA
+
+      directive @bar on SCHEMA
+
+      type Query
     `);
   });
 

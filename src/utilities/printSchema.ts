@@ -34,18 +34,39 @@ import {
   isInputObjectType,
 } from '../type/definition';
 
+import type { DirectiveNode } from '../language/ast';
+
 import { astFromValue } from './astFromValue';
 
-export function printSchema(schema: GraphQLSchema): string {
+export interface PrintSchemaOptions {
+  /**
+   * Should the given directive node be included in the print output?
+   */
+  shouldPrintDirective?: (directiveNode: DirectiveNode) => boolean;
+}
+
+export function printSchema(
+  schema: GraphQLSchema,
+  options?: PrintSchemaOptions,
+): string {
   return printFilteredSchema(
     schema,
     (n) => !isSpecifiedDirective(n),
     isDefinedType,
+    options,
   );
 }
 
-export function printIntrospectionSchema(schema: GraphQLSchema): string {
-  return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType);
+export function printIntrospectionSchema(
+  schema: GraphQLSchema,
+  options?: PrintSchemaOptions,
+): string {
+  return printFilteredSchema(
+    schema,
+    isSpecifiedDirective,
+    isIntrospectionType,
+    options,
+  );
 }
 
 function isDefinedType(type: GraphQLNamedType): boolean {
@@ -56,12 +77,13 @@ function printFilteredSchema(
   schema: GraphQLSchema,
   directiveFilter: (type: GraphQLDirective) => boolean,
   typeFilter: (type: GraphQLNamedType) => boolean,
+  options?: PrintSchemaOptions,
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
 
   return [
-    printSchemaDefinition(schema),
+    printSchemaDefinition(schema, options),
     ...directives.map((directive) => printDirective(directive)),
     ...types.map((type) => printType(type)),
   ]
@@ -69,8 +91,27 @@ function printFilteredSchema(
     .join('\n\n');
 }
 
-function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
-  if (schema.description == null && isSchemaOfCommonNames(schema)) {
+function printSchemaDefinition(
+  schema: GraphQLSchema,
+  options?: PrintSchemaOptions,
+): Maybe<string> {
+  const directives: Array<string> = [];
+  const printDirectives = options?.shouldPrintDirective;
+  if (printDirectives) {
+    [schema.astNode, ...schema.extensionASTNodes].forEach((node) => {
+      node?.directives?.forEach((directive) => {
+        if (printDirectives(directive)) {
+          directives.push(print(directive));
+        }
+      });
+    });
+  }
+
+  if (
+    schema.description == null &&
+    directives.length === 0 &&
+    isSchemaOfCommonNames(schema)
+  ) {
     return;
   }
 
@@ -91,7 +132,12 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
     operationTypes.push(`  subscription: ${subscriptionType.name}`);
   }
 
-  return printDescription(schema) + `schema {\n${operationTypes.join('\n')}\n}`;
+  return (
+    printDescription(schema) +
+    ['schema', directives.join(' '), `{\n${operationTypes.join('\n')}\n}`]
+      .filter(Boolean)
+      .join(' ')
+  );
 }
 
 /**
