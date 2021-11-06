@@ -12,7 +12,7 @@ export function didYouMean(
   firstArg: string | ReadonlyArray<string>,
   secondArg?: ReadonlyArray<string>,
 ) {
-  if (process.ENV.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production') {
     return ''
   };
 
