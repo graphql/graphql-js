@@ -12,6 +12,10 @@ export function didYouMean(
   firstArg: string | ReadonlyArray<string>,
   secondArg?: ReadonlyArray<string>,
 ) {
+  if (process.ENV.NODE_ENV === 'production') {
+    return ''
+  };
+
   const [subMessage, suggestionsArg] = secondArg
     ? [firstArg as string, secondArg]
     : [undefined, firstArg as ReadonlyArray<string>];
