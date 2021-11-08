@@ -165,6 +165,12 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  // Temporary for v15 to v16 migration. Remove in v17
+  devAssert(
+    arguments.length < 2,
+    'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
+  );
+
   const { schema, document, variableValues, rootValue } = args;
 
   // If arguments are missing or incorrect, throw an error.
