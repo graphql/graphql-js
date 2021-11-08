@@ -163,6 +163,12 @@ export interface ExecutionArgs {
  */
 
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  // Temporary for v15 to v16 migration. Remove in v17
+  arguments.length < 2 ||
+    devAssert(
+      false,
+      'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
+    );
   const { schema, document, variableValues, rootValue } = args; // If arguments are missing or incorrect, throw an error.
 
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
