@@ -7,42 +7,52 @@ import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
 
 import type { GraphQLSchema } from '../type/schema';
+import { isSchema } from '../type/schema';
 import type { GraphQLDirective } from '../type/directives';
-import type {
-  GraphQLNamedType,
-  GraphQLArgument,
-  GraphQLInputField,
-  GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLInputObjectType,
-} from '../type/definition';
-import { isIntrospectionType } from '../type/introspection';
-import { isSpecifiedScalarType } from '../type/scalars';
 import {
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
 } from '../type/directives';
+import type {
+  GraphQLArgument,
+  GraphQLEnumType,
+  GraphQLEnumValue,
+  GraphQLField,
+  GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLType,
+  GraphQLUnionType,
+} from '../type/definition';
 import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
 } from '../type/definition';
+import { isIntrospectionType } from '../type/introspection';
+import { isSpecifiedScalarType } from '../type/scalars';
 
-import type { DirectiveNode } from '../language/ast';
+import type { ConstDirectiveNode } from '../language/ast';
+import { isConstDirectiveNode } from '../language/ast';
 
 import { astFromValue } from './astFromValue';
 
 export interface PrintSchemaOptions {
-  /**
-   * Should the given directive node be included in the print output?
-   */
-  shouldPrintDirective?: (directiveNode: DirectiveNode) => boolean;
+  printDirectives?: (
+    definition:
+      | GraphQLSchema
+      | GraphQLType
+      | GraphQLField<unknown, unknown>
+      | GraphQLEnumValue
+      | GraphQLInputField
+      | GraphQLArgument,
+  ) => ReadonlyArray<ConstDirectiveNode>;
 }
 
 export function printSchema(
@@ -68,6 +78,25 @@ export function printIntrospectionSchema(
     options,
   );
 }
+
+/**
+ * Useful implementation of PrintSchemaOptions.printDirectives for users who
+ * define their schema through SDL and simply want to print all included directives.
+ */
+export const directivesFromAstNodes: PrintSchemaOptions['printDirectives'] = (
+  definition,
+) => {
+  if (isSchema(definition)) {
+    return [
+      ...(definition.astNode?.directives ?? []),
+      ...(definition?.extensionASTNodes
+        ?.map((node) => node.directives)
+        ?.flat() ?? []),
+    ].filter(isConstDirectiveNode);
+  }
+
+  return [];
+};
 
 function isDefinedType(type: GraphQLNamedType): boolean {
   return !isSpecifiedScalarType(type) && !isIntrospectionType(type);
@@ -96,14 +125,10 @@ function printSchemaDefinition(
   options?: PrintSchemaOptions,
 ): Maybe<string> {
   const directives: Array<string> = [];
-  const printDirectives = options?.shouldPrintDirective;
+  const printDirectives = options?.printDirectives;
   if (printDirectives) {
-    [schema.astNode, ...schema.extensionASTNodes].forEach((node) => {
-      node?.directives?.forEach((directive) => {
-        if (printDirectives(directive)) {
-          directives.push(print(directive));
-        }
-      });
+    printDirectives(schema).forEach((directive) => {
+      directives.push(print(directive));
     });
   }
 

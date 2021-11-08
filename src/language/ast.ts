@@ -1,4 +1,4 @@
-import type { Kind } from './kinds';
+import { Kind } from './kinds';
 import type { Source } from './source';
 import type { TokenKind } from './tokenKind';
 
@@ -286,6 +286,15 @@ const kindValues = new Set<string>(Object.keys(QueryDocumentKeys));
 export function isNode(maybeNode: any): maybeNode is ASTNode {
   const maybeKind = maybeNode?.kind;
   return typeof maybeKind === 'string' && kindValues.has(maybeKind);
+}
+
+/**
+ * @internal
+ */
+export function isConstDirectiveNode(
+  maybeConstDirectiveNode: any,
+): maybeConstDirectiveNode is ConstDirectiveNode {
+  return maybeConstDirectiveNode?.kind === Kind.DIRECTIVE;
 }
 
 /** Name */

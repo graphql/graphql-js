@@ -6,26 +6,28 @@ import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { DirectiveLocation } from '../../language/directiveLocation';
 
 import type { GraphQLFieldConfig } from '../../type/definition';
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLDirective } from '../../type/directives';
-import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
 } from '../../type/definition';
+import { GraphQLSchema, isSchema } from '../../type/schema';
+import { GraphQLDirective } from '../../type/directives';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 
 import { buildSchema } from '../buildASTSchema';
 import type { PrintSchemaOptions } from '../printSchema';
 import {
-  printSchema,
+  directivesFromAstNodes,
   printIntrospectionSchema,
+  printSchema,
 } from '../printSchema';
+import { parseConstDirective } from '../../language/parser';
 
 function expectPrintedSchema(
   schema: GraphQLSchema,
@@ -346,8 +348,9 @@ describe('Type System Printer', () => {
       type Query
     `);
 
-    expectPrintedSchema(schema, { shouldPrintDirective: () => true }).to
-      .equal(dedent`
+    expectPrintedSchema(schema, {
+      printDirectives: directivesFromAstNodes,
+    }).to.equal(dedent`
       schema @foo {
         query: Query
       }
@@ -360,20 +363,6 @@ describe('Type System Printer', () => {
 
   it('Includes directives conditionally', () => {
     const schema = buildSchema(`
-      schema @foo @bar {
-        query: Query
-      }
-
-      directive @foo on SCHEMA
-
-      directive @bar on SCHEMA
-
-      type Query
-    `);
-
-    expectPrintedSchema(schema, {
-      shouldPrintDirective: (directive) => directive.name.value === 'foo',
-    }).to.equal(dedent`
       schema @foo {
         query: Query
       }
@@ -385,9 +374,16 @@ describe('Type System Printer', () => {
       type Query
     `);
 
-    expectPrintedSchema(schema, { shouldPrintDirective: () => true }).to
-      .equal(dedent`
-      schema @foo @bar {
+    expectPrintedSchema(schema, {
+      printDirectives: (definition) => {
+        if (isSchema(definition)) {
+          return [parseConstDirective('@bar')];
+        }
+
+        return [];
+      },
+    }).to.equal(dedent`
+      schema @bar {
         query: Query
       }
 
@@ -398,8 +394,7 @@ describe('Type System Printer', () => {
       type Query
     `);
 
-    expectPrintedSchema(schema, { shouldPrintDirective: () => false }).to
-      .equal(dedent`
+    expectPrintedSchema(schema, { printDirectives: () => [] }).to.equal(dedent`
       directive @foo on SCHEMA
 
       directive @bar on SCHEMA
