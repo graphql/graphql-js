@@ -1,4 +1,5 @@
 import { inspect } from '../jsutils/inspect.mjs';
+import { devAssert } from '../jsutils/devAssert.mjs';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.mjs';
 import { addPath, pathToArray } from '../jsutils/Path.mjs';
 import { GraphQLError } from '../error/GraphQLError.mjs';
@@ -36,6 +37,12 @@ import { mapAsyncIterator } from './mapAsyncIterator.mjs';
  */
 
 export async function subscribe(args) {
+  // Temporary for v15 to v16 migration. Remove in v17
+  arguments.length < 2 ||
+    devAssert(
+      false,
+      'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
+    );
   const {
     schema,
     document,

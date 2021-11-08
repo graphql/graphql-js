@@ -8,6 +8,8 @@ exports.subscribe = subscribe;
 
 var _inspect = require('../jsutils/inspect.js');
 
+var _devAssert = require('../jsutils/devAssert.js');
+
 var _isAsyncIterable = require('../jsutils/isAsyncIterable.js');
 
 var _Path = require('../jsutils/Path.js');
@@ -46,6 +48,12 @@ var _mapAsyncIterator = require('./mapAsyncIterator.js');
  * Accepts either an object with named arguments, or individual arguments.
  */
 async function subscribe(args) {
+  // Temporary for v15 to v16 migration. Remove in v17
+  arguments.length < 2 ||
+    (0, _devAssert.devAssert)(
+      false,
+      'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
+    );
   const {
     schema,
     document,
