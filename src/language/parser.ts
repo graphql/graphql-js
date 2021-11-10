@@ -62,7 +62,10 @@ import type {
   RequiredStatus,
 } from './ast';
 import { Kind } from './kinds';
+
 import { Location, OperationTypeNode } from './ast';
+import { ComplexRequiredStatus } from './ast';
+
 import { TokenKind } from './tokenKind';
 import { Source, isSource } from './source';
 import { DirectiveLocation } from './directiveLocation';
@@ -428,14 +431,7 @@ export class Parser {
       name = nameOrAlias;
     }
 
-    let required: RequiredStatus;
-    if (this.expectOptionalToken(TokenKind.BANG)) {
-      required = 'required';
-    } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-      required = 'optional';
-    } else {
-      required = 'unset';
-    }
+    let required = this.parseRequiredStatus();
 
     return this.node<FieldNode>(start, {
       kind: Kind.FIELD,
@@ -448,6 +444,51 @@ export class Parser {
         : undefined,
       required,
     });
+  }
+
+  parseRequiredStatus(listDepth: number=0, lastRequiredStatus?: ComplexRequiredStatus): ComplexRequiredStatus {
+    // recursively check for square brackets, which indicate that
+    // we're changing the nullability of list elements.
+
+    var listDepthCount = listDepth;
+    if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
+      listDepthCount += 1;
+    } 
+
+    let required = this.parseSimpleRequiredStatus();
+
+    let foundClosingBrace = false;
+    if (this.expectOptionalToken(TokenKind.BRACKET_R)) {
+      listDepthCount -= 1
+      foundClosingBrace = true;
+    }
+
+    // we're still delving into the list [[[!]]]!
+    //                      you are here ^
+    if (listDepthCount > 0 && !foundClosingBrace) {
+      return this.parseRequiredStatus(listDepthCount);
+    // we're at the center through the end of the list [[[!]]]!
+    //                                        you are here ^ ^ or maybe here
+    } else if (listDepthCount >= 0 && foundClosingBrace) {
+      let complexRequiredStatus = new ComplexRequiredStatus(required, lastRequiredStatus);
+      return this.parseRequiredStatus(listDepthCount, complexRequiredStatus);
+    // we're past the end of the list [[[!]]]!
+    //                          you are here ^
+    } else if (listDepthCount == 0 && !foundClosingBrace) {
+      return new ComplexRequiredStatus(required, lastRequiredStatus);
+    }
+  }
+
+  parseSimpleRequiredStatus(): RequiredStatus {
+    let required: RequiredStatus;
+    if (this.expectOptionalToken(TokenKind.BANG)) {
+      required = 'required';
+    } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+      required = 'optional';
+    } else {
+      required = 'unset';
+    }
+    return required;
   }
 
   /**

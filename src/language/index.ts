@@ -91,6 +91,7 @@ export type {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
   RequiredStatus,
+  ComplexRequiredStatus,
 } from './ast';
 
 export {

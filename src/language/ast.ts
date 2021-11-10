@@ -1,4 +1,5 @@
 import type { Kind } from './kinds';
+import { stat } from 'fs';
 import type { Source } from './source';
 import type { TokenKind } from './tokenKind';
 
@@ -354,6 +355,21 @@ export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
 export type RequiredStatus = 'required' | 'optional' | 'unset';
 
+
+export class ComplexRequiredStatus {
+  readonly status: RequiredStatus;
+  // Exists if status is on a List<Element>.
+  //   This setup doesn't leave room for container types
+  //   that have multiple fields like a Dictionary<Key, Value>
+  //   so it will need to be fixed when that comes up, but probably prior.
+  readonly subStatus?: ComplexRequiredStatus;
+
+  constructor(status: RequiredStatus, subStatus?: ComplexRequiredStatus) {
+    this.status = status;
+    this.subStatus = subStatus;
+  }
+}
+
 export interface FieldNode {
   readonly kind: Kind.FIELD;
   readonly loc?: Location;
@@ -362,7 +378,7 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
-  readonly required: RequiredStatus;
+  readonly required: ComplexRequiredStatus;
 }
 
 export interface ArgumentNode {
