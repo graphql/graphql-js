@@ -14,6 +14,13 @@ query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
       requiredField4: field4!
       field5?
       optionalField6: field6?
+      unsetListItemsRequiredList: listField[]!
+      requiredListItemsUnsetList: listField[!]
+      requiredListItemsRequiredList: listField[!]!
+      unsetListItemsOptionalList: listField[]?
+      optionalListItemsUnsetList: listField[?]
+      optionalListItemsOptionalList: listField[?]?
+      multidimensionalList: listField[[[!]!]!]!
     }
     ... @skip(unless: $foo) {
       id
