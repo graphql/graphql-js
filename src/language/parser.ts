@@ -474,6 +474,8 @@ export class Parser {
       return this.parseRequiredStatus(listDepthCount, complexRequiredStatus);
     // we're past the end of the list [[[!]]]!
     //                          you are here ^
+    // we may also be on the singular or lack of designator !
+    //                               you could also be here ^
     } else if (listDepthCount == 0 && !foundClosingBrace) {
       return new ComplexRequiredStatus(required, lastRequiredStatus);
     }
