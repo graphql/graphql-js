@@ -244,6 +244,24 @@ describe('Parser', () => {
     ).to.not.throw();
   });
 
+  it('does not parse field with multiple designators', () => {
+    expect(() =>
+      parse(`
+      query {
+        optionalField?!
+      }
+    `),
+    ).to.throw();
+
+    expect(() =>
+      parse(`
+      query {
+        optionalField!?
+      }
+    `),
+    ).to.throw();
+  });
+
   it('parses required with alias', () => {
     expect(() =>
       parse(`
@@ -322,6 +340,54 @@ describe('Parser', () => {
       }
     `),
     ).to.not.throw();
+  });
+
+  it('parses field with required list elements', () => {
+    expect(() =>
+      parse(`
+      query {
+        field[!]
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('parses field with optional list elements', () => {
+    expect(() =>
+      parse(`
+      query {
+        field[?]
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('parses multidimensional field with mixed list elements', () => {
+    expect(() =>
+      parse(`
+      query {
+        field[[[?]!]]!
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('does not parse field with unbalanced brackets', () => {
+    expect(() =>
+      parse(`
+      query {
+        field[[]
+      }
+    `),
+    ).to.throw();
+
+    expect(() =>
+      parse(`
+      query {
+        field[]]
+      }
+    `),
+    ).to.throw();
   });
 
   it('creates ast', () => {

@@ -431,7 +431,6 @@ export class Parser {
       name = nameOrAlias;
     }
 
-    console.log(alias);
     let required = this.parseRequiredStatus();
 
     return this.node<FieldNode>(start, {
@@ -481,7 +480,7 @@ export class Parser {
       return new ComplexRequiredStatus(required, lastRequiredStatus);
     }
 
-    throw new Error("invalid designator should have been caught in validation");
+    throw new Error("Invalid designator");
   }
 
   parseSimpleRequiredStatus(): RequiredStatus {
