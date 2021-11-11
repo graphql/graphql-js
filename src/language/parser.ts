@@ -466,7 +466,10 @@ export class Parser {
       } else if (this.expectOptionalToken(TokenKind.BRACKET_R)) {
         listDepthCount -= 1;
         lastRequiredStatus = this.parseSimpleRequiredStatus();
-        outerComplexRequiredStatus = new ComplexRequiredStatus(lastRequiredStatus, outerComplexRequiredStatus);
+        outerComplexRequiredStatus = new ComplexRequiredStatus(
+          lastRequiredStatus, 
+          outerComplexRequiredStatus ?? new ComplexRequiredStatus('unset')
+        );
       } else {
         if (outerComplexRequiredStatus) {
           throw syntaxError(
