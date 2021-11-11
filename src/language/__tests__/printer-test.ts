@@ -13,7 +13,10 @@ describe('Printer: Query document', () => {
     const ast = {
       kind: Kind.FIELD,
       name: { kind: Kind.NAME, value: 'foo' },
-      required: 'unset',
+      required: {
+        status: 'unset',
+        subStatus: undefined
+      },
     } as const;
     expect(print(ast)).to.equal('foo');
   });
@@ -72,6 +75,17 @@ describe('Printer: Query document', () => {
     expect(print(queryASTWithVariableDirective)).to.equal(dedent`
       query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
         id
+      }
+    `);
+  });
+
+  it('prints required list', () => {
+    const queryASTWithVariableDirective = parse(
+      '{ id[[[!]!]!]! }',
+    );
+    expect(print(queryASTWithVariableDirective)).to.equal(dedent`
+      {
+        id[[[!]!]!]!
       }
     `);
   });

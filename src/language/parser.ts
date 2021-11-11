@@ -431,6 +431,7 @@ export class Parser {
       name = nameOrAlias;
     }
 
+    console.log(alias);
     let required = this.parseRequiredStatus();
 
     return this.node<FieldNode>(start, {
