@@ -19,6 +19,22 @@ function lexValue(str: string): string {
   return value;
 }
 
+function testPrintableBlockString(
+  testValue: string,
+  preferMultipleLines?: boolean,
+): void {
+  const blockString = printBlockString(testValue, preferMultipleLines);
+  const printedValue = lexValue(blockString);
+  invariant(
+    testValue === printedValue,
+    dedent`
+      Expected lexValue(${inspectStr(blockString)})
+         to equal ${inspectStr(testValue)}
+         but got  ${inspectStr(printedValue)}
+     `,
+  );
+}
+
 describe('printBlockString', () => {
   it('correctly print random strings', () => {
     // Testing with length >7 is taking exponentially more time. However it is
@@ -37,29 +53,9 @@ describe('printBlockString', () => {
       }
       invariant(typeof testValue === 'string');
 
-      const printedValue = lexValue(printBlockString(testValue));
-
-      invariant(
-        testValue === printedValue,
-        dedent`
-          Expected lexValue(printBlockString(${inspectStr(testValue)}))
-            to equal ${inspectStr(testValue)}
-            but got  ${inspectStr(printedValue)}
-        `,
-      );
-
-      const printedMultilineString = lexValue(
-        printBlockString(testValue, true),
-      );
-
-      invariant(
-        testValue === printedMultilineString,
-        dedent`
-          Expected lexValue(printBlockString(${inspectStr(testValue)}, true))
-            to equal ${inspectStr(testValue)}
-            but got  ${inspectStr(printedMultilineString)}
-        `,
-      );
+      testPrintableBlockString(testValue);
+      testPrintableBlockString(testValue, true);
+      testPrintableBlockString(testValue, false);
     }
   }).timeout(20000);
 });
