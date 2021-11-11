@@ -79,17 +79,6 @@ describe('Printer: Query document', () => {
     `);
   });
 
-  it('prints required list', () => {
-    const queryASTWithVariableDirective = parse(
-      '{ id[[[!]!]!]! }',
-    );
-    expect(print(queryASTWithVariableDirective)).to.equal(dedent`
-      {
-        id[[[!]!]!]!
-      }
-    `);
-  });
-
   it('keeps arguments on one line if line is short (<= 80 chars)', () => {
     const printed = print(
       parse('{trip(wheelchair:false arriveBy:false){dateTime}}'),
