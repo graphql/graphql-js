@@ -363,13 +363,58 @@ describe('Parser', () => {
   });
 
   it('parses multidimensional field with mixed list elements', () => {
-    expect(() =>
-      parse(`
-      query {
+    let result = parse(dedent`
+      {
         field[[[?]!]]!
       }
-    `),
-    ).to.not.throw();
+    `);
+
+    expectJSON(result).to.deep.equal({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 20 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 20 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 20 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 4, end: 18 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 4, end: 9 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  "status": 'required',
+                  "subStatus": {
+                    "status": 'unset',
+                    "subStatus": {
+                      "status": 'required',
+                      "subStatus": {
+                        "status": 'optional',
+                        "subStatus": undefined
+                      }
+                    }
+                  }
+                },
+                selectionSet: undefined
+              },
+            ],
+          },
+        },
+      ],
+    });
   });
 
   it('does not parse field with unbalanced brackets', () => {
@@ -379,7 +424,7 @@ describe('Parser', () => {
         field[[]
       }
     `),
-    ).to.throw();
+    ).to.throw('Unbalanced braces in nullability designator');
 
     expect(() =>
       parse(`
@@ -387,7 +432,7 @@ describe('Parser', () => {
         field[]]
       }
     `),
-    ).to.throw();
+    ).to.throw('Unbalanced braces in nullability designator');
   });
 
   it('creates ast', () => {

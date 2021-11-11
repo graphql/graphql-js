@@ -463,9 +463,19 @@ export class Parser {
       foundClosingBrace = true;
     }
 
+    const stillDefiningNullabilityDesignator = (): boolean => {
+      let allowedTokens = [TokenKind.BRACKET_L, TokenKind.BRACKET_R, TokenKind.QUESTION_MARK, TokenKind.BANG];
+      const reducer = (prv: boolean, current: TokenKindEnum): boolean => {
+        return prv || this.peek(current)
+      } 
+      return allowedTokens.reduce(reducer, false);
+    }
+
+    let finishedDesignator = !stillDefiningNullabilityDesignator();
+
     // we're still delving into the list [[[!]]]!
     //                      you are here ^
-    if (listDepthCount > 0 && !foundClosingBrace) {
+    if (listDepthCount > 0 && !foundClosingBrace && !finishedDesignator) {
       return this.parseRequiredStatus(listDepthCount);
     // we're at the center through the end of the list [[[!]]]!
     //                                        you are here ^ ^ or maybe here
@@ -478,9 +488,11 @@ export class Parser {
     //                               you could also be here ^
     } else if (listDepthCount == 0 && !foundClosingBrace) {
       return new ComplexRequiredStatus(required, lastRequiredStatus);
+    } else if ((listDepthCount < 0 || (listDepthCount > 0 && !foundClosingBrace)) && finishedDesignator) {
+      throw new Error('Unbalanced braces in nullability designator');
     }
 
-    throw new Error("Invalid designator");
+    throw new Error("Invalid nullability designator");
   }
 
   parseSimpleRequiredStatus(): RequiredStatus {
