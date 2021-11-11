@@ -479,6 +479,8 @@ export class Parser {
     } else if (listDepthCount == 0 && !foundClosingBrace) {
       return new ComplexRequiredStatus(required, lastRequiredStatus);
     }
+
+    throw new Error("invalid designator should have been caught in validation");
   }
 
   parseSimpleRequiredStatus(): RequiredStatus {

@@ -375,7 +375,10 @@ describe('Parser', () => {
                   },
                 ],
                 directives: [],
-                required: 'unset',
+                required: {
+                  "status": 'unset',
+                  "subStatus": undefined
+                },
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 16, end: 38 },
@@ -391,7 +394,10 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      required: 'unset',
+                      required: {
+                        "status": 'unset',
+                        "subStatus": undefined
+                      },
                       selectionSet: undefined,
                     },
                     {
@@ -405,7 +411,10 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      required: 'unset',
+                      required: {
+                        "status": 'unset',
+                        "subStatus": undefined
+                      },
                       selectionSet: undefined,
                     },
                   ],
@@ -453,7 +462,10 @@ describe('Parser', () => {
                 },
                 arguments: [],
                 directives: [],
-                required: 'unset',
+                required: {
+                  "status": 'unset',
+                  "subStatus": undefined
+                },
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 15, end: 27 },
@@ -469,7 +481,10 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      required: 'unset',
+                      required: {
+                        "status": 'unset',
+                        "subStatus": undefined
+                      },
                       selectionSet: undefined,
                     },
                   ],
