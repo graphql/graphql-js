@@ -343,23 +343,101 @@ describe('Parser', () => {
   });
 
   it('parses field with required list elements', () => {
-    expect(() =>
-      parse(`
-      query {
+    let result = parse(dedent`
+      {
         field[!]
       }
-    `),
-    ).to.not.throw();
+    `);
+    
+    expectJSON(result).to.deep.equal({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 14 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 14 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 14 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 4, end: 12 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 4, end: 9 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  "status": 'unset',
+                  "subStatus": {
+                    "status": 'required',
+                    "subStatus": undefined
+                  }
+                },
+                selectionSet: undefined
+              },
+            ],
+          },
+        },
+      ],
+    });
   });
 
   it('parses field with optional list elements', () => {
-    expect(() =>
-      parse(`
-      query {
+    let result = parse(dedent`
+      {
         field[?]
       }
-    `),
-    ).to.not.throw();
+    `);
+    
+    expectJSON(result).to.deep.equal({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 14 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 14 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 14 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 4, end: 12 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 4, end: 9 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  "status": 'unset',
+                  "subStatus": {
+                    "status": 'optional',
+                    "subStatus": undefined
+                  }
+                },
+                selectionSet: undefined
+              },
+            ],
+          },
+        },
+      ],
+    });
   });
 
   it('parses multidimensional field with mixed list elements', () => {

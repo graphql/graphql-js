@@ -446,23 +446,7 @@ export class Parser {
     });
   }
 
-  parseRequiredStatus(listDepth: number=0, lastRequiredStatus?: ComplexRequiredStatus): ComplexRequiredStatus {
-    // recursively check for square brackets, which indicate that
-    // we're changing the nullability of list elements.
-
-    var listDepthCount = listDepth;
-    if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
-      listDepthCount += 1;
-    } 
-
-    let required = this.parseSimpleRequiredStatus();
-
-    let foundClosingBrace = false;
-    if (this.expectOptionalToken(TokenKind.BRACKET_R)) {
-      listDepthCount -= 1
-      foundClosingBrace = true;
-    }
-
+  parseRequiredStatus(): ComplexRequiredStatus {
     const stillDefiningNullabilityDesignator = (): boolean => {
       let allowedTokens = [TokenKind.BRACKET_L, TokenKind.BRACKET_R, TokenKind.QUESTION_MARK, TokenKind.BANG];
       const reducer = (prv: boolean, current: TokenKindEnum): boolean => {
@@ -472,40 +456,39 @@ export class Parser {
     }
 
     // There are no more characters that could make up a nullability designator
-    let finishedDesignator = !stillDefiningNullabilityDesignator();
+    var listDepthCount = 0;
 
-    if (finishedDesignator) {
-      // we're past the end of the list [[[!]]]!
-      //                          you are here ^
-      // we may also be on the singular or lack of designator !
-      //                               you could also be here ^
-      if (listDepthCount == 0) {
-        return new ComplexRequiredStatus(required, lastRequiredStatus);
-      } else if (listDepthCount < 0 || (listDepthCount > 0)) {
-        throw syntaxError(
-          this._lexer.source,
-          this._lexer.token.start,
-          'Unbalanced braces in nullability designator',
-        );
-      }
-    } else {
-      // we're still delving into the list [[[!]]]!
-      //                      you are here ^
-      if (listDepthCount > 0 && !foundClosingBrace && !finishedDesignator) {
-        return this.parseRequiredStatus(listDepthCount);
-      // we're at the center through the end of the list [[[!]]]!
-      //                                        you are here ^ ^ or maybe here
-      } else if (listDepthCount >= 0 && foundClosingBrace) {
-        let complexRequiredStatus = new ComplexRequiredStatus(required, lastRequiredStatus);
-        return this.parseRequiredStatus(listDepthCount, complexRequiredStatus);
-      }
+    var lastRequiredStatus: RequiredStatus = 'unset';
+    var outerComplexRequiredStatus: ComplexRequiredStatus | undefined = undefined;
+    while (stillDefiningNullabilityDesignator()) {
+      if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
+        listDepthCount += 1;
+      } else if (this.expectOptionalToken(TokenKind.BRACKET_R)) {
+        listDepthCount -= 1;
+        lastRequiredStatus = this.parseSimpleRequiredStatus();
+        outerComplexRequiredStatus = new ComplexRequiredStatus(lastRequiredStatus, outerComplexRequiredStatus);
+      } else {
+        if (outerComplexRequiredStatus) {
+          throw syntaxError(
+            this._lexer.source,
+            this._lexer.token.start,
+            'Invalid nullability designator',
+          );
+        }
+        lastRequiredStatus = this.parseSimpleRequiredStatus();
+        outerComplexRequiredStatus = new ComplexRequiredStatus(lastRequiredStatus, outerComplexRequiredStatus);
+      } 
+    }
+
+    if (listDepthCount != 0) {
+      throw syntaxError(
+        this._lexer.source,
+        this._lexer.token.start,
+        'Unbalanced braces in nullability designator',
+      );
     }
     
-    throw syntaxError(
-      this._lexer.source,
-      this._lexer.token.start,
-      'Invalid nullability designator',
-    );
+    return outerComplexRequiredStatus ?? new ComplexRequiredStatus(lastRequiredStatus);
   }
 
   parseSimpleRequiredStatus(): RequiredStatus {
