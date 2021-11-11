@@ -468,9 +468,11 @@ export class Parser {
         lastRequiredStatus = this.parseSimpleRequiredStatus();
         outerComplexRequiredStatus = new ComplexRequiredStatus(
           lastRequiredStatus, 
+          // handles unset elements on the innermost list
           outerComplexRequiredStatus ?? new ComplexRequiredStatus('unset')
         );
       } else {
+        // throws on multiple designators in a row eg ?!!
         if (outerComplexRequiredStatus) {
           throw syntaxError(
             this._lexer.source,

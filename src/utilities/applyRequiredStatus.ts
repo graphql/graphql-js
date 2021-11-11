@@ -4,7 +4,6 @@ import {
   getNullableType,
   GraphQLNonNull,
   isNonNullType,
-  isListType,
   assertListType,
   GraphQLList
 } from '../type/definition';

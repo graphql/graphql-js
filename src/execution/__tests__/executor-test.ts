@@ -1290,6 +1290,66 @@ describe('Execute: Handles basic execution tasks', () => {
               };
             },
           },
+          lists: {
+            type: new GraphQLObjectType({
+              name: 'Lists',
+              fields: {
+                list: { type: new GraphQLList(GraphQLInt) },
+                twoDList: { 
+                  type: new GraphQLList(
+                    new GraphQLList(
+                      GraphQLInt
+                    )
+                  )
+                },
+                threeDList: {
+                  type: new GraphQLList(
+                    new GraphQLList(
+                      new GraphQLList(
+                        GraphQLInt
+                      )
+                    )
+                  )
+                },
+                nonNullThreeDList: {
+                  type: new GraphQLNonNull(new GraphQLList(
+                    new GraphQLNonNull(new GraphQLList(
+                      new GraphQLNonNull(new GraphQLList(
+                        GraphQLInt
+                      ))
+                    ))
+                  ))
+                }
+              }
+            }),
+            resolve() {
+              return {
+                list: [null, 1, 2, null],
+                twoDList: [
+                  [null, 1, 2, null],
+                  [1, 2, 3]
+                ],
+                threeDList: [
+                  [
+                    [null],
+                    [null]
+                  ], [
+                    [null],
+                    [null]
+                  ]
+                ],
+                nonNullThreeDList: [
+                  [
+                    [null],
+                    [null]
+                  ], [
+                    [null],
+                    [null]
+                  ]
+                ],
+              }
+            }
+          }
         },
       }),
     });
@@ -1310,7 +1370,7 @@ describe('Execute: Handles basic execution tasks', () => {
       });
     });
 
-    it('null bubbles up when field that returns null is required', () => {
+    it('null propagates when field that returns null is required', () => {
       const singleNonNullOnNullValueDocument = parse(`
         query {
           food {
@@ -1336,7 +1396,7 @@ describe('Execute: Handles basic execution tasks', () => {
       });
     });
 
-    it('null bubbles up when field that returns null and field that does not are both required', () => {
+    it('null propagates when field that returns null and field that does not are both required', () => {
       const bothNonNullOnNullValueDocument = parse(`
         query {
           food {
@@ -1380,7 +1440,7 @@ describe('Execute: Handles basic execution tasks', () => {
       });
     });
 
-    it('null bubbles up when field that returns null is aliased and required', () => {
+    it('null propagates when field that returns null is aliased and required', () => {
       const nonNullAliasOnNullValueDocument = parse(`
         query {
           food {
@@ -1405,7 +1465,7 @@ describe('Execute: Handles basic execution tasks', () => {
       });
     });
 
-    it('null bubbles up when field that returns null is required and inside an inline fragment', () => {
+    it('null propagates when field that returns null is required and inside an inline fragment', () => {
       const nonNullInFragmentDocument = parse(`
         query {
           food {
@@ -1432,7 +1492,7 @@ describe('Execute: Handles basic execution tasks', () => {
       });
     });
 
-    it('null bubbles up when field that returns null is required, but other aliased value is unaffected', () => {
+    it('null propagates when field that returns null is required, but other aliased value is unaffected', () => {
       const aliasedNullAndNonNull = parse(`
         query {
           nonNullable: food {
@@ -1458,6 +1518,31 @@ describe('Execute: Handles basic execution tasks', () => {
             locations: [{ column: 13, line: 4 }],
             message: 'Cannot return null for non-nullable field Food.name.',
             path: ['nonNullable', 'name'],
+          },
+        ],
+      });
+    });
+
+    it('lists with incorrect depth fail to execute', () => {
+      const aliasedNullAndNonNull = parse(`
+        query {
+          lists {
+            list[[!]]
+          }
+        }
+      `);
+      const aliasedNullAndNonNullResult = executeSync({
+        schema,
+        document: aliasedNullAndNonNull,
+      });
+
+      expectJSON(aliasedNullAndNonNullResult).to.deep.equal({
+        data: { lists: null },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
+            path: ['lists', 'list'],
           },
         ],
       });

@@ -59,6 +59,7 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
+import { syntaxError } from '../error/syntaxError';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
@@ -491,7 +492,19 @@ function executeField(
     return;
   }
 
-  const returnType = modifiedOutputType(fieldDef.type, fieldNodes[0].required);
+  let returnType: GraphQLOutputType;
+  try {
+    returnType = modifiedOutputType(fieldDef.type, fieldNodes[0].required);
+  } catch (error) {
+    throw new GraphQLError(
+      'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
+      undefined,
+      fieldNodes[0].loc!.source, 
+      [fieldNodes[0].loc!.start],
+      pathToArray(path),
+    );
+  }
+
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(
