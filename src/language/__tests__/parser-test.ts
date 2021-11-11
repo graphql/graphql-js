@@ -251,7 +251,7 @@ describe('Parser', () => {
         optionalField?!
       }
     `),
-    ).to.throw();
+    ).to.throw("Syntax Error: Invalid nullability designator");
 
     expect(() =>
       parse(`
@@ -259,7 +259,7 @@ describe('Parser', () => {
         optionalField!?
       }
     `),
-    ).to.throw();
+    ).to.throw("Syntax Error: Invalid nullability designator");
   });
 
   it('parses required with alias', () => {
@@ -424,7 +424,7 @@ describe('Parser', () => {
         field[[]
       }
     `),
-    ).to.throw('Unbalanced braces in nullability designator');
+    ).to.throw('Syntax Error: Unbalanced braces in nullability designator');
 
     expect(() =>
       parse(`
@@ -432,7 +432,7 @@ describe('Parser', () => {
         field[]]
       }
     `),
-    ).to.throw('Unbalanced braces in nullability designator');
+    ).to.throw('Syntax Error: Unbalanced braces in nullability designator');
   });
 
   it('creates ast', () => {

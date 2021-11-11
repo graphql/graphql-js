@@ -471,28 +471,41 @@ export class Parser {
       return allowedTokens.reduce(reducer, false);
     }
 
+    // There are no more characters that could make up a nullability designator
     let finishedDesignator = !stillDefiningNullabilityDesignator();
 
-    // we're still delving into the list [[[!]]]!
-    //                      you are here ^
-    if (listDepthCount > 0 && !foundClosingBrace && !finishedDesignator) {
-      return this.parseRequiredStatus(listDepthCount);
-    // we're at the center through the end of the list [[[!]]]!
-    //                                        you are here ^ ^ or maybe here
-    } else if (listDepthCount >= 0 && foundClosingBrace) {
-      let complexRequiredStatus = new ComplexRequiredStatus(required, lastRequiredStatus);
-      return this.parseRequiredStatus(listDepthCount, complexRequiredStatus);
-    // we're past the end of the list [[[!]]]!
-    //                          you are here ^
-    // we may also be on the singular or lack of designator !
-    //                               you could also be here ^
-    } else if (listDepthCount == 0 && !foundClosingBrace) {
-      return new ComplexRequiredStatus(required, lastRequiredStatus);
-    } else if ((listDepthCount < 0 || (listDepthCount > 0 && !foundClosingBrace)) && finishedDesignator) {
-      throw new Error('Unbalanced braces in nullability designator');
+    if (finishedDesignator) {
+      // we're past the end of the list [[[!]]]!
+      //                          you are here ^
+      // we may also be on the singular or lack of designator !
+      //                               you could also be here ^
+      if (listDepthCount == 0) {
+        return new ComplexRequiredStatus(required, lastRequiredStatus);
+      } else if (listDepthCount < 0 || (listDepthCount > 0)) {
+        throw syntaxError(
+          this._lexer.source,
+          this._lexer.token.start,
+          'Unbalanced braces in nullability designator',
+        );
+      }
+    } else {
+      // we're still delving into the list [[[!]]]!
+      //                      you are here ^
+      if (listDepthCount > 0 && !foundClosingBrace && !finishedDesignator) {
+        return this.parseRequiredStatus(listDepthCount);
+      // we're at the center through the end of the list [[[!]]]!
+      //                                        you are here ^ ^ or maybe here
+      } else if (listDepthCount >= 0 && foundClosingBrace) {
+        let complexRequiredStatus = new ComplexRequiredStatus(required, lastRequiredStatus);
+        return this.parseRequiredStatus(listDepthCount, complexRequiredStatus);
+      }
     }
-
-    throw new Error("Invalid nullability designator");
+    
+    throw syntaxError(
+      this._lexer.source,
+      this._lexer.token.start,
+      'Invalid nullability designator',
+    );
   }
 
   parseSimpleRequiredStatus(): RequiredStatus {
