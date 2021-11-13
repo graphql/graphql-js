@@ -10,7 +10,11 @@ module.exports = {
     'object-types',
     'mutations-and-input-types',
     'authentication-and-express-middleware',
-    'constructing-types',
+    {
+      type: 'category',
+      label: 'Advanced',
+      items: ['constructing-types'],
+    },
     'express-graphql',
   ],
 };

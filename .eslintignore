@@ -7,6 +7,3 @@
 
 # Ignore TS files inside integration test
 /integrationTests/ts/*.ts
-
-# Docs Site - temporary TODO: remove
-/www

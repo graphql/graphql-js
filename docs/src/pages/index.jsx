@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+
 import styles from './index.module.css';
 
 function HomepageHeader() {
@@ -22,13 +23,13 @@ function HomepageHeader() {
   );
 }
 
-export default function Home() {
-  return (
-    <Layout
-      title="Home"
-      description="A reference implementation of GraphQL for JavaScript"
-    >
-      <HomepageHeader />
-    </Layout>
-  );
-}
+const Home = () => (
+  <Layout
+    title="Home"
+    description="A reference implementation of GraphQL for JavaScript"
+  >
+    <HomepageHeader />
+  </Layout>
+);
+
+export default Home;
