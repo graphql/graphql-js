@@ -773,9 +773,9 @@ function readBlockString(lexer: Lexer, start: number): Token {
       body.charCodeAt(position + 2) === 0x0022 &&
       body.charCodeAt(position + 3) === 0x0022
     ) {
-      rawValue += body.slice(chunkStart, position) + '"""';
+      rawValue += body.slice(chunkStart, position);
+      chunkStart = position + 1; // skip only slash
       position += 4;
-      chunkStart = position;
       continue;
     }
 
