@@ -1,7 +1,6 @@
 ---
 title: GraphQL Clients
 category: GraphQL.js Tutorial
-sidebar_position: 2
 ---
 
 Since a GraphQL API has more underlying structure than a REST API, there are more powerful clients like [Relay](https://facebook.github.io/relay/) which can automatically handle batching, caching, and other features. But you don't need a complex client to call a GraphQL server. With `express-graphql`, you can just send an HTTP POST request to the endpoint you mounted your GraphQL server on, passing the GraphQL query as the `query` field in a JSON payload.

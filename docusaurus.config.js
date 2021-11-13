@@ -1,4 +1,6 @@
+'use strict';
 const path = require('path');
+
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
@@ -11,8 +13,8 @@ module.exports = {
   onBrokenLinks: 'warn', // temporary need to find a way for typedoc generated docs to work
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'graphql', // Usually your GitHub org/user name.
-  projectName: 'graphql-js', // Usually your repo name.
+  organizationName: 'graphql',
+  projectName: 'graphql-js',
   themeConfig: {
     navbar: {
       title: 'graphql-js',
@@ -34,7 +36,6 @@ module.exports = {
         },
         {
           to: 'api/graphql-js',
-          to: 'api',
           label: 'API',
           position: 'left',
         },
@@ -106,18 +107,17 @@ module.exports = {
     [
       '@docusaurus/preset-classic',
       {
+        pages: {
+          path: './docs/src/pages',
+        },
         docs: {
-          path: 'tutorials',
+          path: './docs/tutorials',
           routeBasePath: 'tutorials',
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/graphql/graphql-js/edit/main/www/',
-        },
-        blog: {
-          showReadingTime: true,
-          editUrl: 'https://github.com/graphql/graphql-js/edit/main/www/blog/',
+          editUrl: 'https://github.com/graphql/graphql-js/edit/main/docs/',
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: require.resolve('./docs/src/css/custom.css'),
         },
       },
     ],
@@ -126,7 +126,7 @@ module.exports = {
     [
       'docusaurus-plugin-typedoc-api',
       {
-        projectRoot: path.join(__dirname, '..'),
+        projectRoot: path.join(__dirname, '.'),
         packages: [{ path: '.', slug: 'graphql-js' }],
       },
     ],

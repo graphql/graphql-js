@@ -30,7 +30,6 @@
     "node": "^12.22.0 || ^14.16.0 || >=16.0.0"
   },
   "scripts": {
-    "postinstall": "cd www && npm install",
     "preversion": ". ./resources/checkgit.sh && npm ci",
     "version": "node resources/gen-version.js && npm test && git add src/version.ts",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
@@ -49,34 +48,57 @@
     "build:deno": "node resources/build-deno.js",
     "gitpublish:npm": "bash ./resources/gitpublish.sh npm npmDist",
     "gitpublish:deno": "bash ./resources/gitpublish.sh deno denoDist",
-    "build:docs": "cd www && npm run build",
-    "start:docs": "cd www && npm start"
+    "build:docs": "docusaurus build",
+    "start:docs": "docusaurus start"
   },
   "devDependencies": {
-    "@babel/core": "7.16.12",
-    "@babel/plugin-syntax-typescript": "7.16.7",
-    "@babel/plugin-transform-typescript": "7.16.8",
-    "@babel/preset-env": "7.16.11",
-    "@babel/register": "7.16.9",
-    "@types/chai": "4.3.0",
+    "@babel/core": "7.15.8",
+    "@babel/eslint-parser": "7.15.8",
+    "@babel/plugin-syntax-typescript": "7.14.5",
+    "@babel/plugin-transform-typescript": "7.15.8",
+    "@babel/preset-env": "7.15.8",
+    "@babel/register": "7.15.3",
+    "@docusaurus/core": "2.0.0-beta.9",
+    "@docusaurus/preset-classic": "2.0.0-beta.9",
+    "@mdx-js/react": "^1.6.22",
+    "@svgr/webpack": "^5.5.0",
+    "@types/chai": "4.2.22",
     "@types/mocha": "9.0.0",
     "@types/node": "17.0.4",
     "@typescript-eslint/eslint-plugin": "5.8.0",
     "@typescript-eslint/parser": "5.8.0",
     "c8": "7.10.0",
     "chai": "4.3.4",
-    "cspell": "5.16.0",
-    "eslint": "8.7.0",
-    "eslint-plugin-import": "2.25.4",
+    "clsx": "^1.1.1",
+    "cspell": "5.12.3",
+    "docusaurus-plugin-typedoc-api": "^1.6.1",
+    "eslint": "7.32.0",
+    "eslint-plugin-import": "2.25.2",
     "eslint-plugin-internal-rules": "file:./resources/eslint-internal-rules",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-simple-import-sort": "7.0.0",
     "eslint-plugin-tsdoc": "0.2.14",
-    "mocha": "9.2.0",
-    "prettier": "2.5.1",
-    "typescript": "4.5.5"
+    "file-loader": "^6.2.0",
+    "mocha": "9.1.3",
+    "nyc": "15.1.0",
+    "prettier": "2.4.1",
+    "prism-react-renderer": "^1.2.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "typedoc": "^0.22.8",
+    "typescript": "4.4.4",
+    "url-loader": "^4.1.1"
   },
-  "publishConfig": {
-    "tag": "latest"
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

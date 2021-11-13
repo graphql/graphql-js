@@ -1,6 +1,5 @@
 ---
 title: Basic Types
-sidebar_position: 3
 ---
 
 In most situations, all you need to do is to specify the types for your API using the GraphQL schema language, taken as an argument to the `buildSchema` function.

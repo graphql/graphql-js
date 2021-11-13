@@ -1,6 +1,5 @@
 ---
 title: Passing Arguments
-sidebar_position: 4
 ---
 
 Just like a REST API, it's common to pass arguments to an endpoint in a GraphQL API. By defining the arguments in the schema language, type checking happens automatically. Each argument must be named and have a type. For example, in the [Basic Types documentation](./basic-types.md) we had an endpoint called `rollThreeDice`:

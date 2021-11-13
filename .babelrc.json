@@ -4,6 +4,7 @@
     [
       "@babel/preset-env",
       { "bugfixes": true, "targets": { "node": "current" } }
-    ]
+    ],
+    "@docusaurus/core/lib/babel/preset"
   ]
 }

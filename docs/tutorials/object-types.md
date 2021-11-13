@@ -1,9 +1,6 @@
 ---
 title: Object Types
-sidebar_position: 5
 category: GraphQL.js Tutorial
-permalink: /graphql-js/object-types/
-next: /graphql-js/mutations-and-input-types/
 ---
 
 In many cases, you don't want to return a number or a string from an API. You want to return an object that has its own complex behavior. GraphQL is a perfect fit for this.

@@ -1,7 +1,6 @@
 ---
 title: Authentication and Express Middleware
 sidebar_label: Authentication & Middleware
-sidebar_position: 7
 ---
 
 It's simple to use any Express middleware in conjunction with `express-graphql`. In particular, this is a great pattern for handling authentication.
