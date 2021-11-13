@@ -9,9 +9,16 @@ ignorePaths:
   - tsconfig.json
   - benchmark/github-schema.graphql
   - benchmark/github-schema.json
+  - static/
+  - docusaurus.config.js
 overrides:
-  - filename: '**/docs/APIReference-*.md'
+  - filename: '**/docs-old/APIReference-*.md'
     ignoreRegExpList: ['/href="[^"]*"/']
+  - filename: 'docs/**'
+    words:
+      - 'clsx'
+      - 'infima'
+      - 'stylelint'
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
