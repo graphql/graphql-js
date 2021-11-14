@@ -12,6 +12,7 @@ import { promiseReduce } from '../jsutils/promiseReduce';
 import { promiseForObject } from '../jsutils/promiseForObject';
 import { addPath, pathToArray } from '../jsutils/Path';
 import { isIterableObject } from '../jsutils/isIterableObject';
+import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 
 import type { GraphQLFormattedError } from '../error/GraphQLError';
 import { GraphQLError } from '../error/GraphQLError';
@@ -704,6 +705,78 @@ function completeValue(
 }
 
 /**
+ * Complete a async iterator value by completing the result and calling
+ * recursively until all the results are completed.
+ */
+function completeAsyncIteratorValue(
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  path: Path,
+  iterator: AsyncIterator<unknown>,
+): Promise<ReadonlyArray<unknown>> {
+  let containsPromise = false;
+  return new Promise<ReadonlyArray<unknown>>((resolve, reject) => {
+    function next(index: number, completedResults: Array<unknown>) {
+      const fieldPath = addPath(path, index, undefined);
+      iterator
+        .next()
+        .then(
+          ({ value, done }) => {
+            if (done) {
+              resolve(completedResults);
+              return;
+            }
+            // TODO can the error checking logic be consolidated with completeListValue?
+            try {
+              const completedItem = completeValue(
+                exeContext,
+                itemType,
+                fieldNodes,
+                info,
+                fieldPath,
+                value,
+              );
+              if (isPromise(completedItem)) {
+                containsPromise = true;
+              }
+              completedResults.push(completedItem);
+            } catch (rawError) {
+              completedResults.push(null);
+              const error = locatedError(
+                rawError,
+                fieldNodes,
+                pathToArray(fieldPath),
+              );
+              handleFieldError(error, itemType, exeContext);
+              resolve(completedResults);
+            }
+
+            next(index + 1, completedResults);
+          },
+          (rawError) => {
+            completedResults.push(null);
+            const error = locatedError(
+              rawError,
+              fieldNodes,
+              pathToArray(fieldPath),
+            );
+            handleFieldError(error, itemType, exeContext);
+            resolve(completedResults);
+          },
+        )
+        .then(null, (e) => {
+          reject(e);
+        });
+    }
+    next(0, []);
+  }).then((completedResults) =>
+    containsPromise ? Promise.all(completedResults) : completedResults,
+  );
+}
+
+/**
  * Complete a list value by completing each item in the list with the
  * inner type
  */
@@ -715,6 +788,21 @@ function completeListValue(
   path: Path,
   result: unknown,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
+  const itemType = returnType.ofType;
+
+  if (isAsyncIterable(result)) {
+    const iterator = result[Symbol.asyncIterator]();
+
+    return completeAsyncIteratorValue(
+      exeContext,
+      itemType,
+      fieldNodes,
+      info,
+      path,
+      iterator,
+    );
+  }
+
   if (!isIterableObject(result)) {
     throw new GraphQLError(
       `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
@@ -723,7 +811,6 @@ function completeListValue(
 
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
-  const itemType = returnType.ofType;
   let containsPromise = false;
   const completedResults = Array.from(result, (item, index) => {
     // No need to modify the info object containing the path,
