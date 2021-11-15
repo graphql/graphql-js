@@ -1,59 +1,63 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedentBlockStringValue, printBlockString } from '../blockString';
+import { dedentBlockStringLines, printBlockString } from '../blockString';
 
 function joinLines(...args: ReadonlyArray<string>) {
   return args.join('\n');
 }
 
-describe('dedentBlockStringValue', () => {
-  function expectDedent(str: string) {
-    return expect(dedentBlockStringValue(str));
+describe('dedentBlockStringLines', () => {
+  function expectDedent(lines: ReadonlyArray<string>) {
+    return expect(dedentBlockStringLines(lines));
   }
 
   it('handles empty string', () => {
-    expectDedent('').to.equal('');
+    expectDedent(['']).to.deep.equal([]);
   });
 
   it('do not dedent first line', () => {
-    expectDedent('  a').to.equal('  a');
-    expectDedent(' a\n  b').to.equal(' a\nb');
+    expectDedent(['  a']).to.deep.equal(['  a']);
+    expectDedent([' a', '  b']).to.deep.equal([' a', 'b']);
   });
 
   it('removes minimal indentation length', () => {
-    expectDedent('\n a\n  b').to.equal('a\n b');
-    expectDedent('\n  a\n b').to.equal(' a\nb');
-    expectDedent('\n  a\n b\nc').to.equal('  a\n b\nc');
+    expectDedent(['', ' a', '  b']).to.deep.equal(['a', ' b']);
+    expectDedent(['', '  a', ' b']).to.deep.equal([' a', 'b']);
+    expectDedent(['', '  a', ' b', 'c']).to.deep.equal(['  a', ' b', 'c']);
   });
 
   it('dedent both tab and space as single character', () => {
-    expectDedent('\n\ta\n          b').to.equal('a\n         b');
-    expectDedent('\n\t a\n          b').to.equal('a\n        b');
-    expectDedent('\n \t a\n          b').to.equal('a\n       b');
+    expectDedent(['', '\ta', '          b']).to.deep.equal(['a', '         b']);
+    expectDedent(['', '\t a', '          b']).to.deep.equal(['a', '        b']);
+    expectDedent(['', ' \t a', '          b']).to.deep.equal(['a', '       b']);
   });
 
   it('dedent do not take empty lines into account', () => {
-    expectDedent('a\n\n b').to.equal('a\n\nb');
-    expectDedent('a\n \n  b').to.equal('a\n\nb');
+    expectDedent(['a', '', ' b']).to.deep.equal(['a', '', 'b']);
+    expectDedent(['a', ' ', '  b']).to.deep.equal(['a', '', 'b']);
   });
 
   it('removes uniform indentation from a string', () => {
-    const rawValue = joinLines(
+    const lines = [
       '',
       '    Hello,',
       '      World!',
       '',
       '    Yours,',
       '      GraphQL.',
-    );
-    expectDedent(rawValue).to.equal(
-      joinLines('Hello,', '  World!', '', 'Yours,', '  GraphQL.'),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      'Hello,',
+      '  World!',
+      '',
+      'Yours,',
+      '  GraphQL.',
+    ]);
   });
 
   it('removes empty leading and trailing lines', () => {
-    const rawValue = joinLines(
+    const lines = [
       '',
       '',
       '    Hello,',
@@ -63,14 +67,18 @@ describe('dedentBlockStringValue', () => {
       '      GraphQL.',
       '',
       '',
-    );
-    expectDedent(rawValue).to.equal(
-      joinLines('Hello,', '  World!', '', 'Yours,', '  GraphQL.'),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      'Hello,',
+      '  World!',
+      '',
+      'Yours,',
+      '  GraphQL.',
+    ]);
   });
 
   it('removes blank leading and trailing lines', () => {
-    const rawValue = joinLines(
+    const lines = [
       '  ',
       '        ',
       '    Hello,',
@@ -80,27 +88,35 @@ describe('dedentBlockStringValue', () => {
       '      GraphQL.',
       '        ',
       '  ',
-    );
-    expectDedent(rawValue).to.equal(
-      joinLines('Hello,', '  World!', '', 'Yours,', '  GraphQL.'),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      'Hello,',
+      '  World!',
+      '',
+      'Yours,',
+      '  GraphQL.',
+    ]);
   });
 
   it('retains indentation from first line', () => {
-    const rawValue = joinLines(
+    const lines = [
       '    Hello,',
       '      World!',
       '',
       '    Yours,',
       '      GraphQL.',
-    );
-    expectDedent(rawValue).to.equal(
-      joinLines('    Hello,', '  World!', '', 'Yours,', '  GraphQL.'),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      '    Hello,',
+      '  World!',
+      '',
+      'Yours,',
+      '  GraphQL.',
+    ]);
   });
 
   it('does not alter trailing spaces', () => {
-    const rawValue = joinLines(
+    const lines = [
       '               ',
       '    Hello,     ',
       '      World!   ',
@@ -108,16 +124,14 @@ describe('dedentBlockStringValue', () => {
       '    Yours,     ',
       '      GraphQL. ',
       '               ',
-    );
-    expectDedent(rawValue).to.equal(
-      joinLines(
-        'Hello,     ',
-        '  World!   ',
-        '           ',
-        'Yours,     ',
-        '  GraphQL. ',
-      ),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      'Hello,     ',
+      '  World!   ',
+      '           ',
+      'Yours,     ',
+      '  GraphQL. ',
+    ]);
   });
 });
 

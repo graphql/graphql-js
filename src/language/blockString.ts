@@ -8,79 +8,44 @@ import { isWhiteSpace } from './characterClasses';
  *
  * @internal
  */
-export function dedentBlockStringValue(rawString: string): string {
-  // Expand a block string's raw value into independent lines.
-  const lines = rawString.split(/\r\n|[\n\r]/g);
+export function dedentBlockStringLines(
+  lines: ReadonlyArray<string>,
+): Array<string> {
+  let commonIndent = Number.MAX_SAFE_INTEGER;
+  let firstNonEmptyLine = null;
+  let lastNonEmptyLine = -1;
 
-  // Remove common indentation from all lines but first.
-  const commonIndent = getBlockStringIndentation(rawString);
+  for (let i = 0; i < lines.length; ++i) {
+    const line = lines[i];
+    const indent = leadingWhitespace(line);
 
-  if (commonIndent !== 0) {
-    for (let i = 1; i < lines.length; i++) {
-      lines[i] = lines[i].slice(commonIndent);
+    if (indent === line.length) {
+      continue; // skip empty lines
+    }
+
+    firstNonEmptyLine = firstNonEmptyLine ?? i;
+    lastNonEmptyLine = i;
+
+    if (i !== 0 && indent < commonIndent) {
+      commonIndent = indent;
     }
   }
 
-  // Remove leading and trailing blank lines.
-  let startLine = 0;
-  while (startLine < lines.length && isBlank(lines[startLine])) {
-    ++startLine;
-  }
-
-  let endLine = lines.length;
-  while (endLine > startLine && isBlank(lines[endLine - 1])) {
-    --endLine;
-  }
-
-  // Return a string of the lines joined with U+000A.
-  return lines.slice(startLine, endLine).join('\n');
+  return (
+    lines
+      // Remove common indentation from all lines but first.
+      .map((line, i) => (i === 0 ? line : line.slice(commonIndent)))
+      // Remove leading and trailing blank lines.
+      .slice(firstNonEmptyLine ?? 0, lastNonEmptyLine + 1)
+  );
 }
 
-function isBlank(str: string): boolean {
-  for (const char of str) {
-    if (char !== ' ' && char !== '\t') {
-      return false;
-    }
+function leadingWhitespace(str: string): number {
+  let i = 0;
+  while (i < str.length && isWhiteSpace(str.charCodeAt(i))) {
+    ++i;
   }
-
-  return true;
-}
-
-function getBlockStringIndentation(value: string): number {
-  let isFirstLine = true;
-  let isEmptyLine = true;
-  let indent = 0;
-  let commonIndent = null;
-
-  for (let i = 0; i < value.length; ++i) {
-    switch (value.charCodeAt(i)) {
-      case 13: //  \r
-        if (value.charCodeAt(i + 1) === 10) {
-          ++i; // skip \r\n as one symbol
-        }
-      // falls through
-      case 10: //  \n
-        isFirstLine = false;
-        isEmptyLine = true;
-        indent = 0;
-        break;
-      case 9: //   \t
-      case 32: //  <space>
-        ++indent;
-        break;
-      default:
-        if (
-          isEmptyLine &&
-          !isFirstLine &&
-          (commonIndent === null || indent < commonIndent)
-        ) {
-          commonIndent = indent;
-        }
-        isEmptyLine = false;
-    }
-  }
-
-  return commonIndent ?? 0;
+  return i;
 }
 
 /**
@@ -101,10 +66,14 @@ export function printBlockString(
 ): string {
   const escapedValue = value.replace(/"""/g, '\\"""');
 
-  const isSingleLine = !value.includes('\n');
+  // Expand a block string's raw value into independent lines.
+  const lines = escapedValue.split(/\r\n|[\n\r]/g);
+  const isSingleLine = lines.length === 1;
 
   // If common identation is found we can fix some of those cases by adding leading new line
-  const forceLeadingNewLine = getBlockStringIndentation(value) > 0;
+  const forceLeadingNewLine =
+    lines.length > 1 &&
+    lines.slice(1).every((line) => line.length === 0 || isWhiteSpace(line.charCodeAt(0)));
 
   // Trailing triple quotes just looks confusing but doesn't force trailing new line
   const hasTrailingTripleQuotes = escapedValue.endsWith('\\"""');
