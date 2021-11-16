@@ -127,9 +127,9 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   ValuesOfCorrectTypeRule,
   ProvidedRequiredArgumentsRule,
   VariablesInAllowedPositionRule,
+  RequiredStatusOnFieldMatchesDefinitionRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
-  RequiredStatusOnFieldMatchesDefinitionRule
 ]);
 
 /**

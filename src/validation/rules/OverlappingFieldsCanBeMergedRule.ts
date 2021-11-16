@@ -604,7 +604,6 @@ function findConflict(
         undefined,
         node1.loc!.source, 
         [node1.loc!.start],
-        field1,
       );
     }
 
@@ -616,12 +615,8 @@ function findConflict(
         undefined,
         node2.loc!.source, 
         [node2.loc!.start],
-        pathToArray(path),
       );
     }
-
-    
-    
 
     if (doTypesConflict(modifiedType1, modifiedType2)) {
       return [

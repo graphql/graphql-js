@@ -1362,27 +1362,55 @@ describe('Validate: Overlapping fields can be merged', () => {
     });
 
     describe('Varying required statuses on lists', () => {
-      it('incorrect depth', () => {
+      it('matching fields merge', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              lists {
+                list[]
+                list[]
+              }
+            }
+          `,
+        );
+      });
+
+      it('conflicting fields do not merge', () => {
         expectErrorsWithSchema(
           schema,
           `
             {
               lists {
-                list[[]]
-                list[[]]
+                list[!]!
+                list[]
               }
             }
           `,
         ).to.deep.equal([
           {
             message:
-              'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+              'Fields "list" conflict because they return conflicting types "[Int!]!" and "[Int]". Use different aliases on the fields to fetch both if this was intentional.',
             locations: [
-              { line: 5, column: 19 },
-              { line: 8, column: 19 },
+              { column: 17, line: 4 },
+              { column: 17, line: 5 },
             ],
           },
         ]);
+      });
+
+      it('matching fields with different nullability indicators merge', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              lists {
+                list[]!
+                list!
+              }
+            }
+          `,
+        );
       });
     });
 
