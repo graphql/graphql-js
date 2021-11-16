@@ -51,6 +51,18 @@ Object.defineProperty(exports, 'FragmentsOnCompositeTypesRule', {
     return _index4.FragmentsOnCompositeTypesRule;
   },
 });
+Object.defineProperty(exports, 'GRAPHQL_MAX_INT', {
+  enumerable: true,
+  get: function () {
+    return _index.GRAPHQL_MAX_INT;
+  },
+});
+Object.defineProperty(exports, 'GRAPHQL_MIN_INT', {
+  enumerable: true,
+  get: function () {
+    return _index.GRAPHQL_MIN_INT;
+  },
+});
 Object.defineProperty(exports, 'GraphQLBoolean', {
   enumerable: true,
   get: function () {

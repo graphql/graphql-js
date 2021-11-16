@@ -48,6 +48,9 @@ export {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  /** Int boundaries constants */
+  GRAPHQL_MAX_INT,
+  GRAPHQL_MIN_INT,
   /** Built-in Directives defined by the Spec */
   specifiedDirectives,
   GraphQLIncludeDirective,

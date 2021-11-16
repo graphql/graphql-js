@@ -8,6 +8,8 @@ exports.GraphQLString =
   exports.GraphQLID =
   exports.GraphQLFloat =
   exports.GraphQLBoolean =
+  exports.GRAPHQL_MIN_INT =
+  exports.GRAPHQL_MAX_INT =
     void 0;
 exports.isSpecifiedScalarType = isSpecifiedScalarType;
 exports.specifiedScalarTypes = void 0;
@@ -24,13 +26,19 @@ var _GraphQLError = require('../error/GraphQLError.js');
 
 var _definition = require('./definition.js');
 
-// As per the GraphQL Spec, Integers are only treated as valid when a valid
-// 32-bit signed integer, providing the broadest support across platforms.
-//
-// n.b. JavaScript's integers are safe between -(2^53 - 1) and 2^53 - 1 because
-// they are internally represented as IEEE 754 doubles.
-const MAX_INT = 2147483647;
-const MIN_INT = -2147483648;
+/**
+ * Maximum possible Int value as per GraphQL Spec (32-bit signed integer).
+ * n.b. This differs from JavaScript's numbers that are IEEE 754 doubles safe up-to 2^53 - 1
+ * */
+const GRAPHQL_MAX_INT = 2147483647;
+/**
+ * Minimum possible Int value as per GraphQL Spec (32-bit signed integer).
+ * n.b. This differs from JavaScript's numbers that are IEEE 754 doubles safe starting at -(2^53 - 1)
+ * */
+
+exports.GRAPHQL_MAX_INT = GRAPHQL_MAX_INT;
+const GRAPHQL_MIN_INT = -2147483648;
+exports.GRAPHQL_MIN_INT = GRAPHQL_MIN_INT;
 const GraphQLInt = new _definition.GraphQLScalarType({
   name: 'Int',
   description:
@@ -57,7 +65,7 @@ const GraphQLInt = new _definition.GraphQLScalarType({
       );
     }
 
-    if (num > MAX_INT || num < MIN_INT) {
+    if (num > GRAPHQL_MAX_INT || num < GRAPHQL_MIN_INT) {
       throw new _GraphQLError.GraphQLError(
         'Int cannot represent non 32-bit signed integer value: ' +
           (0, _inspect.inspect)(coercedValue),
@@ -76,7 +84,7 @@ const GraphQLInt = new _definition.GraphQLScalarType({
       );
     }
 
-    if (inputValue > MAX_INT || inputValue < MIN_INT) {
+    if (inputValue > GRAPHQL_MAX_INT || inputValue < GRAPHQL_MIN_INT) {
       throw new _GraphQLError.GraphQLError(
         `Int cannot represent non 32-bit signed integer value: ${inputValue}`,
       );
@@ -97,7 +105,7 @@ const GraphQLInt = new _definition.GraphQLScalarType({
 
     const num = parseInt(valueNode.value, 10);
 
-    if (num > MAX_INT || num < MIN_INT) {
+    if (num > GRAPHQL_MAX_INT || num < GRAPHQL_MIN_INT) {
       throw new _GraphQLError.GraphQLError(
         `Int cannot represent non 32-bit signed integer value: ${valueNode.value}`,
         valueNode,

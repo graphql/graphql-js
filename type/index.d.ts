@@ -145,6 +145,9 @@ export {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  /** Int boundaries constants */
+  GRAPHQL_MAX_INT,
+  GRAPHQL_MIN_INT,
 } from './scalars';
 export {
   /** Predicate */

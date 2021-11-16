@@ -9,6 +9,18 @@ Object.defineProperty(exports, 'DEFAULT_DEPRECATION_REASON', {
     return _directives.DEFAULT_DEPRECATION_REASON;
   },
 });
+Object.defineProperty(exports, 'GRAPHQL_MAX_INT', {
+  enumerable: true,
+  get: function () {
+    return _scalars.GRAPHQL_MAX_INT;
+  },
+});
+Object.defineProperty(exports, 'GRAPHQL_MIN_INT', {
+  enumerable: true,
+  get: function () {
+    return _scalars.GRAPHQL_MIN_INT;
+  },
+});
 Object.defineProperty(exports, 'GraphQLBoolean', {
   enumerable: true,
   get: function () {
