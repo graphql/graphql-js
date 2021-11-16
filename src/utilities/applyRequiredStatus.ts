@@ -33,24 +33,11 @@ export function modifiedOutputType(
   type: GraphQLOutputType,
   required: ComplexRequiredStatus,
 ): GraphQLOutputType {
-  // this works
   if (!required.subStatus) {
     return simpleModifiedOutputType(type, required.status)
   }
 
-  /*
-  cast: [[[!]]]
-  original: [[[?]!]!]?
-  output: [[[!]!]!]?
-
-  modifiedOutputType([[[?]!]!]?, [[[!]]])
-  listType = [[[?]!]!]?
-  elementType = [[?]!]!
-  modifiedOutputType([!]!, [!])
-  */
-
-  // We expect this to only be used on lists. Everything that's not a list that the [!] operator
-  //   was applied to should have been caught by the validator
+  // If execution reaches this point, type is a list.
   let listType = assertListType(getNullableType(type));
   let elementType = listType.ofType as GraphQLOutputType;
   let prev = modifiedOutputType(elementType, required.subStatus);
@@ -60,6 +47,5 @@ export function modifiedOutputType(
     constructedType = new GraphQLNonNull(constructedType);
   }
 
-  let returnValue = simpleModifiedOutputType(constructedType, required.status);
-  return returnValue;
+  return simpleModifiedOutputType(constructedType, required.status);
 }
