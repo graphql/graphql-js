@@ -84,6 +84,8 @@ export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule';
 /** Spec Section: "All Variable Usages Are Allowed" */
 export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule';
 
+export { RequiredStatusOnFieldMatchesDefinitionRule } from './rules/RequiredStatusOnFieldMatchesDefinitionRule';
+
 /** SDL-specific validation rules */
 export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
 export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule';

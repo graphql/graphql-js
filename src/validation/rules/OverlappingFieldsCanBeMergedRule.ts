@@ -548,6 +548,7 @@ function findConflict(
   const [parentType1, node1, def1] = field1;
   const [parentType2, node2, def2] = field2;
 
+
   // If it is known that two fields could not possibly apply at the same
   // time, due to the parent types, then it is safe to permit them to diverge
   // in aliased field or arguments used as they will not present any ambiguity
@@ -593,8 +594,34 @@ function findConflict(
   const type2 = def2?.type;
 
   if (type1 && type2) {
-    const modifiedType1 = modifiedOutputType(type1, node1.required);
-    const modifiedType2 = modifiedOutputType(type2, node2.required);
+    var modifiedType1: GraphQLOutputType;
+    var modifiedType2: GraphQLOutputType;
+    try {
+      modifiedType1 = modifiedOutputType(type1, node1.required);
+    } catch (error) {
+      throw new GraphQLError(
+        'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
+        undefined,
+        node1.loc!.source, 
+        [node1.loc!.start],
+        field1,
+      );
+    }
+
+    try {
+      modifiedType2 = modifiedOutputType(type2, node2.required);
+    } catch (error) {
+      throw new GraphQLError(
+        'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
+        undefined,
+        node2.loc!.source, 
+        [node2.loc!.start],
+        pathToArray(path),
+      );
+    }
+
+    
+    
 
     if (doTypesConflict(modifiedType1, modifiedType2)) {
       return [

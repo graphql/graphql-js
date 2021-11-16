@@ -84,6 +84,8 @@ import { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBe
 // Spec Section: "Input Object Field Uniqueness"
 import { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule';
 
+import { RequiredStatusOnFieldMatchesDefinitionRule } from './rules/RequiredStatusOnFieldMatchesDefinitionRule';
+
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
 import { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule';
@@ -127,6 +129,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   VariablesInAllowedPositionRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
+  RequiredStatusOnFieldMatchesDefinitionRule
 ]);
 
 /**

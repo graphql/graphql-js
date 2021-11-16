@@ -682,9 +682,15 @@ describe('Validate: Overlapping fields can be merged', () => {
         name: String
       }
 
+      type Lists {
+        list: [Int]
+        mixedThreeDList: [[[Int]!]!]
+      }
+
       type Query {
         someBox: SomeBox
         connection: Connection
+        lists: Lists
       }
     `);
 
@@ -1354,6 +1360,32 @@ describe('Validate: Overlapping fields can be merged', () => {
         ]);
       });
     });
+
+    describe('Varying required statuses on lists', () => {
+      it('incorrect depth', () => {
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              lists {
+                list[[]]
+                list[[]]
+              }
+            }
+          `,
+        ).to.deep.equal([
+          {
+            message:
+              'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+            locations: [
+              { line: 5, column: 19 },
+              { line: 8, column: 19 },
+            ],
+          },
+        ]);
+      });
+    });
+
 
     it('compatible return shapes on different return types', () => {
       // In this case `deepBox` returns `SomeBox` in the first usage, and
