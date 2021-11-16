@@ -5,9 +5,11 @@ import {
   GraphQLNonNull,
   isNonNullType,
   assertListType,
-  GraphQLList
+  GraphQLList,
+  isListType
 } from '../type/definition';
 import { ComplexRequiredStatus } from '../language/ast';
+import { print } from '..';
 
 /**
  * Implements the "Accounting For Client Controlled Nullability Designators"
@@ -31,13 +33,38 @@ export function modifiedOutputType(
   type: GraphQLOutputType,
   required: ComplexRequiredStatus,
 ): GraphQLOutputType {
+  // this works
   if (!required.subStatus) {
     return simpleModifiedOutputType(type, required.status)
   }
 
+  /*
+  cast: [[[!]]]
+  original: [[[?]!]!]?
+  output: [[[!]!]!]?
+
+  modifiedOutputType([[[?]!]!]?, [[[!]]])
+  listType = [[[?]!]!]?
+  elementType = [[?]!]!
+  modifiedOutputType([!]!, [!])
+  */
+
   // We expect this to only be used on lists. Everything that's not a list that the [!] operator
   //   was applied to should have been caught by the validator
-  let listType = assertListType(type);
+  let listType = assertListType(getNullableType(type));
   let elementType = listType.ofType as GraphQLOutputType;
-  return simpleModifiedOutputType(new GraphQLList(modifiedOutputType(elementType, required.subStatus)), required.status);
+  let prev = modifiedOutputType(elementType, required.subStatus);
+  var constructedType = prev;
+
+  // build up new type
+  if (isListType(getNullableType(type))) {
+    constructedType = new GraphQLList(constructedType);
+  }
+
+  if (isNonNullType(type)) {
+    constructedType = new GraphQLNonNull(constructedType);
+  }
+
+  let returnValue = simpleModifiedOutputType(constructedType, required.status);
+  return returnValue;
 }

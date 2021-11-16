@@ -21,6 +21,8 @@ import {
 } from '../../type/definition';
 
 import { execute, executeSync } from '../execute';
+import { modifiedOutputType } from '../..';
+import { ComplexRequiredStatus } from '../../language/ast';
 
 describe('Execute: Handles basic execution tasks', () => {
   it('throws if no document is provided', () => {
@@ -1311,14 +1313,23 @@ describe('Execute: Handles basic execution tasks', () => {
                     )
                   )
                 },
-                nonNullThreeDList: {
+                nonNullThreeDList: { // [[[!]!]!]!
                   type: new GraphQLNonNull(new GraphQLList(
+                    new GraphQLNonNull(new GraphQLList(
+                      new GraphQLNonNull(new GraphQLList(
+                        new GraphQLNonNull(GraphQLInt)
+                      ))
+                    ))
+                  ))
+                },
+                mixedThreeDList: { //[[[?]!]!]?
+                  type: new GraphQLList(
                     new GraphQLNonNull(new GraphQLList(
                       new GraphQLNonNull(new GraphQLList(
                         GraphQLInt
                       ))
                     ))
-                  ))
+                  )
                 }
               }
             }),
@@ -1339,6 +1350,15 @@ describe('Execute: Handles basic execution tasks', () => {
                   ]
                 ],
                 nonNullThreeDList: [
+                  [
+                    [null],
+                    [null]
+                  ], [
+                    [null],
+                    [null]
+                  ]
+                ],
+                mixedThreeDList: [
                   [
                     [null],
                     [null]
@@ -1524,19 +1544,19 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     it('lists with incorrect depth fail to execute', () => {
-      const aliasedNullAndNonNull = parse(`
+      const listsQuery = parse(`
         query {
           lists {
             list[[!]]
           }
         }
       `);
-      const aliasedNullAndNonNullResult = executeSync({
+      const listsQueryResult = executeSync({
         schema,
-        document: aliasedNullAndNonNull,
+        document: listsQuery,
       });
 
-      expectJSON(aliasedNullAndNonNullResult).to.deep.equal({
+      expectJSON(listsQueryResult).to.deep.equal({
         data: { lists: null },
         errors: [
           {
@@ -1546,6 +1566,96 @@ describe('Execute: Handles basic execution tasks', () => {
           },
         ],
       });
+    });
+
+    it('lists with required element propagates null to top level list', () => {
+      const listsQuery = parse(`
+        query {
+          lists {
+            mixedThreeDList[[[!]]]
+          }
+        }
+      `);
+      const listsQueryResult = executeSync({
+        schema,
+        document: listsQuery,
+      });
+
+      expectJSON(listsQueryResult).to.deep.equal({
+        data: { lists: { mixedThreeDList: null } },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Lists.mixedThreeDList.',
+            path: ['lists', 'mixedThreeDList', 0, 0, 0],
+          },
+        ],
+      });
+    });
+
+    it('lists with required element propagates null to first error boundary', () => {
+      const listsQuery = parse(`
+        query {
+          lists {
+            mixedThreeDList[[[!]]?]
+          }
+        }
+      `);
+      const listsQueryResult = executeSync({
+        schema,
+        document: listsQuery,
+      });
+
+      expectJSON(listsQueryResult).to.deep.equal({
+        data: { lists: { mixedThreeDList: [null, null] } },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Lists.mixedThreeDList.',
+            path: ['lists', 'mixedThreeDList', 0, 0, 0],
+          },
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Lists.mixedThreeDList.',
+            path: ['lists', 'mixedThreeDList', 1, 0, 0],
+          },
+        ],
+      });
+    });
+
+    it('modifiedOutputType produces correct output types', () => {
+      let type = new GraphQLList(
+        new GraphQLNonNull(new GraphQLList(
+          new GraphQLNonNull(new GraphQLList(
+            GraphQLInt
+          ))
+        ))
+      )
+
+      let requiredStatus = new ComplexRequiredStatus(
+        'unset',
+        new ComplexRequiredStatus(
+          'optional',
+          new ComplexRequiredStatus(
+            'unset',
+            new ComplexRequiredStatus(
+              'required',
+              undefined
+            )
+          )
+        )
+      )
+
+      let outputType = modifiedOutputType(type, requiredStatus);
+      let expectedOutputType = new GraphQLList(
+        new GraphQLList(
+          new GraphQLNonNull(new GraphQLList(
+            new GraphQLNonNull(GraphQLInt)
+          ))
+        )
+      )
+
+      expect(outputType).to.deep.equal(expectedOutputType);
     });
   });
 });

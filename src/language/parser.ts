@@ -454,7 +454,7 @@ export class Parser {
       } 
       return allowedTokens.reduce(reducer, false);
     }
-
+    
     // There are no more characters that could make up a nullability designator
     var listDepthCount = 0;
 
