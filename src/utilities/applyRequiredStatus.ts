@@ -54,12 +54,7 @@ export function modifiedOutputType(
   let listType = assertListType(getNullableType(type));
   let elementType = listType.ofType as GraphQLOutputType;
   let prev = modifiedOutputType(elementType, required.subStatus);
-  var constructedType = prev;
-
-  // build up new type
-  if (isListType(getNullableType(type))) {
-    constructedType = new GraphQLList(constructedType);
-  }
+  var constructedType = new GraphQLList(prev);
 
   if (isNonNullType(type)) {
     constructedType = new GraphQLNonNull(constructedType);
