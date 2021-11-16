@@ -594,42 +594,27 @@ function findConflict(
   const type2 = def2?.type;
 
   if (type1 && type2) {
-    var modifiedType1: GraphQLOutputType;
-    var modifiedType2: GraphQLOutputType;
+    
+    // Errors will have already been handled by RequiredStatusOnFieldMatchesDefinitionRule
+    //  so there's no need to do anything here in the event that modifiedOutputType throws
+    //  an error.
     try {
-      modifiedType1 = modifiedOutputType(type1, node1.required);
-    } catch (error) {
-      throw new GraphQLError(
-        'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
-        undefined,
-        node1.loc!.source, 
-        [node1.loc!.start],
-      );
-    }
+      var modifiedType1 = modifiedOutputType(type1, node1.required);
+      var modifiedType2 = modifiedOutputType(type2, node2.required);
 
-    try {
-      modifiedType2 = modifiedOutputType(type2, node2.required);
-    } catch (error) {
-      throw new GraphQLError(
-        'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
-        undefined,
-        node2.loc!.source, 
-        [node2.loc!.start],
-      );
-    }
-
-    if (doTypesConflict(modifiedType1, modifiedType2)) {
-      return [
-        [
-          responseName,
-          `they return conflicting types "${inspect(
-            modifiedType1,
-          )}" and "${inspect(modifiedType2)}"`,
-        ],
-        [node1],
-        [node2],
-      ];
-    }
+      if (doTypesConflict(modifiedType1, modifiedType2)) {
+        return [
+          [
+            responseName,
+            `they return conflicting types "${inspect(
+              modifiedType1,
+            )}" and "${inspect(modifiedType2)}"`,
+          ],
+          [node1],
+          [node2],
+        ];
+      }
+    } catch { }
   }
 
   // Collect and compare sub-fields. Use the same "visited fragment names" list
