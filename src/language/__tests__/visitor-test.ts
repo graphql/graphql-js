@@ -702,7 +702,7 @@ describe('Visitor', () => {
       ['enter', 'Name', 'name', 'Field'],
       ['leave', 'Name', 'name', 'Field'],
       ['leave', 'Field', 0, undefined],
-      ['leave', 'SelectionSet', 'selectionSet', 'InlineFragment'],
+      x['leave', 'SelectionSet', 'selectionSet', 'InlineFragment'],
       ['leave', 'InlineFragment', 3, undefined],
       ['leave', 'SelectionSet', 'selectionSet', 'Field'],
       ['leave', 'Field', 0, undefined],
