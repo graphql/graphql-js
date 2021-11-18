@@ -96,7 +96,7 @@ module.exports = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} <a href="https://graphql.org/foundation/" target="_blank" rel="noopener noreferrer">The GraphQL Foundation</a>. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" target="_blank" rel="noopener noreferrer">Trademark Usage</a> page. Linux is a registered trademark of Linus Torvalds. <a href="https://www.linuxfoundation.org/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href="https://www.linuxfoundation.org/terms" target="_blank" rel="noopener noreferrer">Terms of Use</a>. Built with <a href="https://docusaurus.io/" target="_blank" rel="noopener noreferrer">Docusaurus</a>.`,
+      copyright: `Copyright © ${new Date().getFullYear()} <a href="https://graphql.org/foundation/" target="_blank" rel="noopener noreferrer">The GraphQL Foundation</a>. All rights reserved. <br/> For web site terms of use, trademark policy and general project policies please see&nbsp; <a href="https://lfprojects.org/" target="_blank" rel="noopener noreferrer">https://lfprojects.org</a>.`,
     },
     prism: {
       theme: lightCodeTheme,
