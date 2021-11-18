@@ -1,4 +1,3 @@
-import type { RequiredStatus } from '../language/ast';
 import type { GraphQLOutputType } from '../type/definition';
 import {
   getNullableType,
@@ -7,7 +6,8 @@ import {
   assertListType,
   GraphQLList,
 } from '../type/definition';
-import { ComplexRequiredStatus } from '../language/ast';
+import type { ComplexRequiredStatus } from '../language/ast';
+import { RequiredStatus } from '../language/ast';
 
 /**
  * Implements the "Accounting For Client Controlled Nullability Designators"
@@ -19,9 +19,9 @@ function simpleModifiedOutputType(
   type: GraphQLOutputType,
   required: RequiredStatus,
 ): GraphQLOutputType {
-  if (required === 'required' && !isNonNullType(type)) {
+  if (required === RequiredStatus.REQUIRED && !isNonNullType(type)) {
     return new GraphQLNonNull(type);
-  } else if (required === 'optional') {
+  } else if (required === RequiredStatus.OPTIONAL) {
     return getNullableType(type);
   }
   return type;
@@ -36,10 +36,10 @@ export function modifiedOutputType(
   }
 
   // If execution reaches this point, type is a list.
-  let listType = assertListType(getNullableType(type));
-  let elementType = listType.ofType as GraphQLOutputType;
-  let prev = modifiedOutputType(elementType, required.subStatus);
-  var constructedType = new GraphQLList(prev);
+  const listType = assertListType(getNullableType(type));
+  const elementType = listType.ofType as GraphQLOutputType;
+  const prev = modifiedOutputType(elementType, required.subStatus);
+  let constructedType = new GraphQLList(prev);
 
   if (isNonNullType(type)) {
     constructedType = new GraphQLNonNull(constructedType);

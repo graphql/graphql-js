@@ -11,6 +11,7 @@ import { Kind } from '../kinds';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseConstValue, parseType } from '../parser';
+import { RequiredStatus } from '../ast';
 
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));
@@ -343,13 +344,13 @@ describe('Parser', () => {
   });
 
   it('parses field with required list elements', () => {
-    let result = parse(dedent`
+    const result = parse(dedent`
       {
         field[!]
       }
     `);
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 14 },
       definitions: [
@@ -376,9 +377,9 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: 'unset',
+                  status: RequiredStatus.UNSET,
                   subStatus: {
-                    status: 'required',
+                    status: RequiredStatus.REQUIRED,
                     subStatus: undefined,
                   },
                 },
@@ -392,13 +393,13 @@ describe('Parser', () => {
   });
 
   it('parses field with optional list elements', () => {
-    let result = parse(dedent`
+    const result = parse(dedent`
       {
         field[?]
       }
     `);
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 14 },
       definitions: [
@@ -425,9 +426,9 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: 'unset',
+                  status: RequiredStatus.UNSET,
                   subStatus: {
-                    status: 'optional',
+                    status: RequiredStatus.OPTIONAL,
                     subStatus: undefined,
                   },
                 },
@@ -441,13 +442,13 @@ describe('Parser', () => {
   });
 
   it('parses field with required list', () => {
-    let result = parse(dedent`
+    const result = parse(dedent`
       {
         field[]!
       }
     `);
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 14 },
       definitions: [
@@ -474,9 +475,9 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: 'required',
+                  status: RequiredStatus.REQUIRED,
                   subStatus: {
-                    status: 'unset',
+                    status: RequiredStatus.UNSET,
                     subStatus: undefined,
                   },
                 },
@@ -490,14 +491,13 @@ describe('Parser', () => {
   });
 
   it('parses field with optional list', () => {
-    console.log();
-    let result = parse(dedent`
+    const result = parse(dedent`
       {
         field[]?
       }
     `);
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 14 },
       definitions: [
@@ -524,9 +524,9 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: 'optional',
+                  status: RequiredStatus.OPTIONAL,
                   subStatus: {
-                    status: 'unset',
+                    status: RequiredStatus.UNSET,
                     subStatus: undefined,
                   },
                 },
@@ -540,13 +540,13 @@ describe('Parser', () => {
   });
 
   it('parses multidimensional field with mixed list elements', () => {
-    let result = parse(dedent`
+    const result = parse(dedent`
       {
         field[[[?]!]]!
       }
     `);
 
-    expectJSON(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 20 },
       definitions: [
@@ -573,13 +573,13 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: 'required',
+                  status: RequiredStatus.REQUIRED,
                   subStatus: {
-                    status: 'unset',
+                    status: RequiredStatus.UNSET,
                     subStatus: {
-                      status: 'required',
+                      status: RequiredStatus.REQUIRED,
                       subStatus: {
-                        status: 'optional',
+                        status: RequiredStatus.OPTIONAL,
                         subStatus: undefined,
                       },
                     },
@@ -644,7 +644,7 @@ describe('Parser', () => {
       }
     `),
     ).to.throw('Syntax Error: Invalid nullability designator');
-   
+
     expect(() =>
       parse(`
       query {
@@ -706,7 +706,7 @@ describe('Parser', () => {
                 ],
                 directives: [],
                 required: {
-                  status: 'unset',
+                  status: RequiredStatus.UNSET,
                   subStatus: undefined,
                 },
                 selectionSet: {
@@ -725,7 +725,7 @@ describe('Parser', () => {
                       arguments: [],
                       directives: [],
                       required: {
-                        status: 'unset',
+                        status: RequiredStatus.UNSET,
                         subStatus: undefined,
                       },
                       selectionSet: undefined,
@@ -742,7 +742,7 @@ describe('Parser', () => {
                       arguments: [],
                       directives: [],
                       required: {
-                        status: 'unset',
+                        status: RequiredStatus.UNSET,
                         subStatus: undefined,
                       },
                       selectionSet: undefined,
@@ -793,7 +793,7 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: 'unset',
+                  status: RequiredStatus.UNSET,
                   subStatus: undefined,
                 },
                 selectionSet: {
@@ -812,7 +812,7 @@ describe('Parser', () => {
                       arguments: [],
                       directives: [],
                       required: {
-                        status: 'unset',
+                        status: RequiredStatus.UNSET,
                         subStatus: undefined,
                       },
                       selectionSet: undefined,

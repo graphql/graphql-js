@@ -3,7 +3,6 @@ import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLError } from '../error/GraphQLError';
 import { syntaxError } from '../error/syntaxError';
 
-import type { TokenKindEnum } from './tokenKind';
 import { TokenKind } from './tokenKind';
 
 import type {
@@ -62,10 +61,14 @@ import type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
-  RequiredStatus,
 } from './ast';
 
-import { Location, OperationTypeNode, ComplexRequiredStatus } from './ast';
+import {
+  Location,
+  OperationTypeNode,
+  ComplexRequiredStatus,
+  RequiredStatus,
+} from './ast';
 
 import { Kind } from './kinds';
 import { Source, isSource } from './source';
@@ -432,7 +435,7 @@ export class Parser {
       name = nameOrAlias;
     }
 
-    let required = this.parseRequiredStatus();
+    const required = this.parseRequiredStatus();
 
     return this.node<FieldNode>(start, {
       kind: Kind.FIELD,
@@ -451,34 +454,32 @@ export class Parser {
    * Nullability :
    * - !
    * - ?
-   * 
+   *
    * NOTES:
    * parseRequiredStatus assumes that if you have a designator like [[[!]!]!]! , the tokens can be
-   *   grouped like ([[[) (!) (]!) (]!) (]!) . The center designator is on its own, and the rest are 
+   *   grouped like ([[[) (!) (]!) (]!) (]!) . The center designator is on its own, and the rest are
    *   attached to a right bracket. This thinking simplifies parsing.
-   * 
+   *
    * A designator on its own like with `field!` is found using the same subroutine that's used to
    *   find the center designator mentioned above.
    */
   parseRequiredStatus(): ComplexRequiredStatus {
     const stillDefiningNullabilityDesignator = (): boolean => {
-      let allowedTokens = [
+      const allowedTokens = [
         TokenKind.BRACKET_L,
         TokenKind.BRACKET_R,
         TokenKind.QUESTION_MARK,
         TokenKind.BANG,
       ];
-      const reducer = (prv: boolean, current: TokenKindEnum): boolean => {
-        return prv || this.peek(current);
-      };
+      const reducer = (prv: boolean, current: TokenKind): boolean =>
+        prv || this.peek(current);
       return allowedTokens.reduce(reducer, false);
     };
 
-    var listDepthCount = 0;
+    let listDepthCount = 0;
 
-    var lastRequiredStatus: RequiredStatus = 'unset';
-    var outerComplexRequiredStatus: ComplexRequiredStatus | undefined =
-      undefined;
+    let lastRequiredStatus: RequiredStatus = RequiredStatus.UNSET;
+    let outerComplexRequiredStatus: ComplexRequiredStatus | undefined;
 
     // The spec expects !, ?, or [ until there's a ]
     while (stillDefiningNullabilityDesignator()) {
@@ -511,7 +512,8 @@ export class Parser {
         outerComplexRequiredStatus = new ComplexRequiredStatus(
           lastRequiredStatus,
           // handles unset elements on the innermost list
-          outerComplexRequiredStatus ?? new ComplexRequiredStatus('unset'),
+          outerComplexRequiredStatus ??
+            new ComplexRequiredStatus(RequiredStatus.UNSET),
         );
       } else {
         throw syntaxError(
@@ -524,7 +526,7 @@ export class Parser {
     // There are no more characters that could make up a nullability designator
 
     // Indicates unbalanced braces eg [[] or []]
-    if (listDepthCount != 0) {
+    if (listDepthCount !== 0) {
       throw syntaxError(
         this._lexer.source,
         this._lexer.token.start,
@@ -537,21 +539,21 @@ export class Parser {
       new ComplexRequiredStatus(lastRequiredStatus)
     );
   }
-  
+
   /**
    * Nullability :
    * - !
    * - ?
-   *  
+   *
    */
   parseSimpleRequiredStatus(): RequiredStatus {
     let required: RequiredStatus;
     if (this.expectOptionalToken(TokenKind.BANG)) {
-      required = 'required';
+      required = RequiredStatus.REQUIRED;
     } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-      required = 'optional';
+      required = RequiredStatus.OPTIONAL;
     } else {
-      required = 'unset';
+      required = RequiredStatus.UNSET;
     }
     return required;
   }

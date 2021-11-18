@@ -55,11 +55,11 @@ import {
 import { modifiedOutputType } from '../utilities/applyRequiredStatus';
 
 import { getVariableValues, getArgumentValues } from './values';
+
 import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
-import { syntaxError } from '../error/syntaxError';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
@@ -496,11 +496,18 @@ function executeField(
   try {
     returnType = modifiedOutputType(fieldDef.type, fieldNodes[0].required);
   } catch (error) {
+    const location = fieldNodes[0]?.loc;
+    let starts: ReadonlyArray<number> | undefined = [];
+
+    /* istanbul ignore next (branch where location is undefined is difficult to test) */
+    if (location !== undefined) {
+      starts = [location.start];
+    }
     throw new GraphQLError(
       'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
       undefined,
-      fieldNodes[0].loc!.source,
-      [fieldNodes[0].loc!.start],
+      fieldNodes[0].loc?.source,
+      starts,
       pathToArray(path),
     );
   }

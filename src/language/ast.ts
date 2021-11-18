@@ -1,6 +1,6 @@
 import type { Kind } from './kinds';
-import { stat } from 'fs';
 import type { Source } from './source';
+
 import type { TokenKind } from './tokenKind';
 
 /**
@@ -353,7 +353,11 @@ export interface SelectionSetNode {
 
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
-export type RequiredStatus = 'required' | 'optional' | 'unset';
+export enum RequiredStatus {
+  REQUIRED = 'required',
+  OPTIONAL = 'optional',
+  UNSET = 'unset',
+}
 
 export class ComplexRequiredStatus {
   readonly status: RequiredStatus;
@@ -366,6 +370,10 @@ export class ComplexRequiredStatus {
   constructor(status: RequiredStatus, subStatus?: ComplexRequiredStatus) {
     this.status = status;
     this.subStatus = subStatus;
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'ComplexRequiredStatus';
   }
 }
 

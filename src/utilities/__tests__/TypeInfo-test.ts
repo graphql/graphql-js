@@ -12,7 +12,7 @@ import { getNamedType, isCompositeType } from '../../type/definition';
 
 import { buildSchema } from '../buildASTSchema';
 import { TypeInfo, visitWithTypeInfo } from '../TypeInfo';
-import { ComplexRequiredStatus } from '../../language/ast';
+import { ComplexRequiredStatus, RequiredStatus } from '../../language/ast';
 
 const testSchema = buildSchema(`
   interface Pet {
@@ -269,7 +269,7 @@ describe('visitWithTypeInfo', () => {
                   {
                     kind: 'Field',
                     name: { kind: 'Name', value: '__typename' },
-                    required: new ComplexRequiredStatus('unset'),
+                    required: new ComplexRequiredStatus(RequiredStatus.UNSET),
                   },
                 ],
               },

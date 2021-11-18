@@ -236,8 +236,6 @@ export {
 export type {
   ParseOptions,
   SourceLocation,
-  TokenKindEnum,
-  KindEnum,
   DirectiveLocationEnum,
   /** Visitor utilities */
   ASTVisitor,
@@ -305,7 +303,6 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
-  RequiredStatus,
 } from './language/index';
 
 /** Execute GraphQL queries. */

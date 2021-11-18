@@ -1,11 +1,11 @@
 import type { Maybe } from '../jsutils/Maybe';
 
-import type { ASTNode } from './ast';
+import type { ASTNode, ComplexRequiredStatus } from './ast';
+import { RequiredStatus } from './ast';
 import type { ASTReducer } from './visitor';
 import { visit } from './visitor';
 import { printBlockString } from './blockString';
 import { printString } from './printString';
-import { ComplexRequiredStatus } from './ast';
 
 /**
  * Converts an AST into a string, using one set of reasonable
@@ -64,33 +64,36 @@ const printDocASTReducer: ASTReducer<string> = {
       selectionSet,
       required,
     }) {
-      let buildRequiredDesignator = (
-        required: ComplexRequiredStatus,
+      const buildRequiredDesignator = (
+        requiredStatus: ComplexRequiredStatus,
         accumulator: string = '',
         depth: number = 0,
       ): string => {
-        if (required.subStatus) {
-          accumulator = buildRequiredDesignator(
-            required.subStatus,
-            accumulator + '[',
+        let tempAccumulator = accumulator;
+        if (requiredStatus.subStatus) {
+          tempAccumulator = buildRequiredDesignator(
+            requiredStatus.subStatus,
+            tempAccumulator + '[',
             depth + 1,
           );
         }
 
-        if (required.status === 'required') {
-          accumulator += '!';
-        } else if (required.status === 'optional') {
-          accumulator += '?';
+        if (requiredStatus.status === RequiredStatus.REQUIRED) {
+          tempAccumulator += '!';
+        } else if (requiredStatus.status === RequiredStatus.OPTIONAL) {
+          tempAccumulator += '?';
         }
         if (depth > 0) {
-          accumulator += ']';
+          tempAccumulator += ']';
         }
 
-        return accumulator;
+        return tempAccumulator;
       };
 
-      let prefix = wrap('', alias, ': ') + name;
-      let requiredDesignator = buildRequiredDesignator(required);
+      const prefix = wrap('', alias, ': ') + name;
+      const requiredDesignator = buildRequiredDesignator(
+        required as unknown as ComplexRequiredStatus,
+      );
 
       let argsLine =
         prefix + requiredDesignator + wrap('(', join(args, ', '), ')');

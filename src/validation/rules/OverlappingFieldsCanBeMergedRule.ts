@@ -597,8 +597,8 @@ function findConflict(
     //  so there's no need to do anything here in the event that modifiedOutputType throws
     //  an error.
     try {
-      var modifiedType1 = modifiedOutputType(type1, node1.required);
-      var modifiedType2 = modifiedOutputType(type2, node2.required);
+      const modifiedType1 = modifiedOutputType(type1, node1.required);
+      const modifiedType2 = modifiedOutputType(type2, node2.required);
 
       if (doTypesConflict(modifiedType1, modifiedType2)) {
         return [
@@ -612,7 +612,9 @@ function findConflict(
           [node2],
         ];
       }
-    } catch {}
+    } catch {
+      /*  Do nothing. See above comment.  */
+    }
   }
 
   // Collect and compare sub-fields. Use the same "visited fragment names" list

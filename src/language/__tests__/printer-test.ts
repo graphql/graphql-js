@@ -8,15 +8,14 @@ import { Kind } from '../kinds';
 import { parse } from '../parser';
 import { print } from '../printer';
 
+import { ComplexRequiredStatus, RequiredStatus } from '../ast';
+
 describe('Printer: Query document', () => {
   it('prints minimal ast', () => {
     const ast = {
       kind: Kind.FIELD,
       name: { kind: Kind.NAME, value: 'foo' },
-      required: {
-        status: 'unset',
-        subStatus: undefined,
-      },
+      required: new ComplexRequiredStatus(RequiredStatus.UNSET),
     } as const;
     expect(print(ast)).to.equal('foo');
   });

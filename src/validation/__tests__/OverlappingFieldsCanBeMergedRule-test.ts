@@ -173,7 +173,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         doesKnowCommand
         doesKnowCommand!
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Fields "doesKnowCommand" conflict because they return conflicting types "Boolean" and "Boolean!". Use different aliases on the fields to fetch both if this was intentional.',
@@ -265,7 +265,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             name
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Fields "name" conflict because they return conflicting types "String!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
@@ -287,7 +287,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             name?
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Fields "name" conflict because they return conflicting types "String!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
@@ -813,7 +813,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "unrelatedField" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
@@ -840,7 +840,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "unrelatedField" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1049,7 +1049,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "scalar" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1076,7 +1076,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "scalar" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1213,7 +1213,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "scalar" conflict because they return conflicting types "Int!" and "String". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1240,7 +1240,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1267,7 +1267,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "scalar" conflict because they return conflicting types "Int!" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1294,7 +1294,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "scalar" conflict because they return conflicting types "Int" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1321,7 +1321,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1348,7 +1348,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1387,7 +1387,7 @@ describe('Validate: Overlapping fields can be merged', () => {
               }
             }
           `,
-        ).to.deep.equal([
+        ).toDeepEqual([
           {
             message:
               'Fields "list" conflict because they return conflicting types "[Int!]!" and "[Int]". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1462,7 +1462,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             }
           }
         `,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           message:
             'Fields "deepBox" conflict because subfields "unrelatedField" conflict because they return conflicting types "String" and "String!". Use different aliases on the fields to fetch both if this was intentional.',
@@ -1624,7 +1624,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             }
           }
         `,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           locations: [
             {

@@ -6,10 +6,8 @@ export type { SourceLocation } from './location';
 export { printLocation, printSourceLocation } from './printLocation';
 
 export { Kind } from './kinds';
-export type { KindEnum } from './kinds';
 
 export { TokenKind } from './tokenKind';
-export type { TokenKindEnum } from './tokenKind';
 
 export { Lexer } from './lexer';
 
@@ -90,8 +88,6 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
-  RequiredStatus,
-  ComplexRequiredStatus,
 } from './ast';
 
 export {

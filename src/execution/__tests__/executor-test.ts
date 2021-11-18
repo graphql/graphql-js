@@ -22,7 +22,7 @@ import {
 
 import { execute, executeSync } from '../execute';
 import { modifiedOutputType } from '../../utilities/applyRequiredStatus';
-import { ComplexRequiredStatus } from '../../language/ast';
+import { ComplexRequiredStatus, RequiredStatus } from '../../language/ast';
 
 describe('Execute: Handles basic execution tasks', () => {
   it('throws if no document is provided', () => {
@@ -1320,7 +1320,7 @@ describe('Execute: Handles basic execution tasks', () => {
                   ),
                 },
                 mixedThreeDList: {
-                  //[[[?]!]!]?
+                  // [[[?]!]!]?
                   type: new GraphQLList(
                     new GraphQLNonNull(
                       new GraphQLList(
@@ -1387,7 +1387,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: singleNonNullOnNullValueDocument,
       });
 
-      expectJSON(singleNonNullOnNullValueResult).to.deep.equal({
+      expectJSON(singleNonNullOnNullValueResult).toDeepEqual({
         data: { food: null },
         errors: [
           {
@@ -1413,7 +1413,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: bothNonNullOnNullValueDocument,
       });
 
-      expectJSON(bothNonNullOnNullValueResult).to.deep.equal({
+      expectJSON(bothNonNullOnNullValueResult).toDeepEqual({
         data: { food: null },
         errors: [
           {
@@ -1456,7 +1456,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: nonNullAliasOnNullValueDocument,
       });
 
-      expectJSON(nonNullAliasOnNullValueResult).to.deep.equal({
+      expectJSON(nonNullAliasOnNullValueResult).toDeepEqual({
         data: { food: null },
         errors: [
           {
@@ -1483,7 +1483,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: nonNullInFragmentDocument,
       });
 
-      expectJSON(nonNullInFragmentResult).to.deep.equal({
+      expectJSON(nonNullInFragmentResult).toDeepEqual({
         data: { food: null },
         errors: [
           {
@@ -1514,7 +1514,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: aliasedNullAndNonNull,
       });
 
-      expectJSON(aliasedNullAndNonNullResult).to.deep.equal({
+      expectJSON(aliasedNullAndNonNullResult).toDeepEqual({
         data: { nonNullable: null, nullable: { calories: 10, name: null } },
         errors: [
           {
@@ -1539,7 +1539,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: listsQuery,
       });
 
-      expectJSON(listsQueryResult).to.deep.equal({
+      expectJSON(listsQueryResult).toDeepEqual({
         data: { lists: null },
         errors: [
           {
@@ -1565,7 +1565,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: listsQuery,
       });
 
-      expectJSON(listsQueryResult).to.deep.equal({
+      expectJSON(listsQueryResult).toDeepEqual({
         data: { lists: { mixedThreeDList: null } },
         errors: [
           {
@@ -1591,7 +1591,7 @@ describe('Execute: Handles basic execution tasks', () => {
         document: listsQuery,
       });
 
-      expectJSON(listsQueryResult).to.deep.equal({
+      expectJSON(listsQueryResult).toDeepEqual({
         data: { lists: { mixedThreeDList: [null, null] } },
         errors: [
           {
@@ -1611,25 +1611,25 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     it('modifiedOutputType produces correct output types', () => {
-      let type = new GraphQLList(
+      const type = new GraphQLList(
         new GraphQLNonNull(
           new GraphQLList(new GraphQLNonNull(new GraphQLList(GraphQLInt))),
         ),
       );
 
-      let requiredStatus = new ComplexRequiredStatus(
-        'unset',
+      const requiredStatus = new ComplexRequiredStatus(
+        RequiredStatus.UNSET,
         new ComplexRequiredStatus(
-          'optional',
+          RequiredStatus.OPTIONAL,
           new ComplexRequiredStatus(
-            'unset',
-            new ComplexRequiredStatus('required', undefined),
+            RequiredStatus.UNSET,
+            new ComplexRequiredStatus(RequiredStatus.REQUIRED, undefined),
           ),
         ),
       );
 
-      let outputType = modifiedOutputType(type, requiredStatus);
-      let expectedOutputType = new GraphQLList(
+      const outputType = modifiedOutputType(type, requiredStatus);
+      const expectedOutputType = new GraphQLList(
         new GraphQLList(
           new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
         ),

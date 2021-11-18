@@ -2,8 +2,9 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { expectValidationErrorsWithSchema } from './harness';
 import { RequiredStatusOnFieldMatchesDefinitionRule } from '../rules/RequiredStatusOnFieldMatchesDefinitionRule';
+
+import { expectValidationErrorsWithSchema } from './harness';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrorsWithSchema(
@@ -14,7 +15,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 const testSchema = buildSchema(`
@@ -47,7 +48,7 @@ describe('Validate: Field uses correct list depth', () => {
         notAList: nonList[!]
         mixedThreeDList[[!]!]!
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Syntax Error: Something is wrong with the nullability designator on list. The type for that field in the schema is [Int] Is the correct list depth being used?',
