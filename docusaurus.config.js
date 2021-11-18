@@ -113,7 +113,7 @@ module.exports = {
         docs: {
           path: './docs/tutorials',
           routeBasePath: 'tutorials',
-          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarPath: require.resolve('./docs/sidebars.js'),
           editUrl: 'https://github.com/graphql/graphql-js/edit/main/docs/',
         },
         theme: {
