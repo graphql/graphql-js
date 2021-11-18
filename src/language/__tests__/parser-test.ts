@@ -610,6 +610,48 @@ describe('Parser', () => {
       }
     `),
     ).to.throw('Syntax Error: Unbalanced braces in nullability designator');
+
+    expect(() =>
+      parse(`
+      query {
+        field]
+      }
+    `),
+    ).to.throw('Syntax Error: Unbalanced braces in nullability designator');
+
+    expect(() =>
+      parse(`
+      query {
+        field[
+      }
+    `),
+    ).to.throw('Syntax Error: Unbalanced braces in nullability designator');
+  });
+
+  it('does not parse field with assorted invalid nullability designators', () => {
+    expect(() =>
+      parse(`
+      query {
+        field[][]
+      }
+    `),
+    ).to.throw('Syntax Error: Invalid nullability designator');
+
+    expect(() =>
+      parse(`
+      query {
+        field[!!]
+      }
+    `),
+    ).to.throw('Syntax Error: Invalid nullability designator');
+   
+    expect(() =>
+      parse(`
+      query {
+        field[]?!
+      }
+    `),
+    ).to.throw('Syntax Error: Invalid nullability designator');
   });
 
   it('creates ast', () => {

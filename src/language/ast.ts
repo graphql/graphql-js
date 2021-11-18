@@ -360,7 +360,7 @@ export class ComplexRequiredStatus {
   // Exists if status is on a List<Element>.
   //   This setup doesn't leave room for container types
   //   that have multiple fields like a Dictionary<Key, Value>
-  //   so it will need to be fixed when that comes up, but probably prior.
+  //   so it will need to be fixed when that comes up.
   readonly subStatus?: ComplexRequiredStatus;
 
   constructor(status: RequiredStatus, subStatus?: ComplexRequiredStatus) {

@@ -3,6 +3,9 @@ import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLError } from '../error/GraphQLError';
 import { syntaxError } from '../error/syntaxError';
 
+import type { TokenKindEnum } from './tokenKind';
+import { TokenKind } from './tokenKind';
+
 import type {
   Token,
   NameNode,
@@ -61,12 +64,10 @@ import type {
   InputObjectTypeExtensionNode,
   RequiredStatus,
 } from './ast';
+
+import { Location, OperationTypeNode, ComplexRequiredStatus } from './ast';
+
 import { Kind } from './kinds';
-
-import { Location, OperationTypeNode } from './ast';
-import { ComplexRequiredStatus } from './ast';
-
-import { TokenKind } from './tokenKind';
 import { Source, isSource } from './source';
 import { DirectiveLocation } from './directiveLocation';
 import { Lexer, isPunctuatorTokenKind } from './lexer';
@@ -460,23 +461,18 @@ export class Parser {
       return allowedTokens.reduce(reducer, false);
     };
 
-    // There are no more characters that could make up a nullability designator
     var listDepthCount = 0;
 
     var lastRequiredStatus: RequiredStatus = 'unset';
     var outerComplexRequiredStatus: ComplexRequiredStatus | undefined =
       undefined;
+
+    // The spec expects !, ?, or [ until there's a ]
     while (stillDefiningNullabilityDesignator()) {
       if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
         listDepthCount += 1;
-      } else if (this.expectOptionalToken(TokenKind.BRACKET_R)) {
-        listDepthCount -= 1;
-        lastRequiredStatus = this.parseSimpleRequiredStatus();
-        outerComplexRequiredStatus = new ComplexRequiredStatus(
-          lastRequiredStatus,
-          // handles unset elements on the innermost list
-          outerComplexRequiredStatus ?? new ComplexRequiredStatus('unset'),
-        );
+      } else if (this.peek(TokenKind.BRACKET_R)) {
+        break;
       } else {
         // throws on multiple designators in a row eg ?!!
         if (outerComplexRequiredStatus) {
@@ -494,6 +490,27 @@ export class Parser {
       }
     }
 
+    // once there's been a ], no more [ are allowed
+    while (stillDefiningNullabilityDesignator()) {
+      if (this.expectOptionalToken(TokenKind.BRACKET_R)) {
+        listDepthCount -= 1;
+        lastRequiredStatus = this.parseSimpleRequiredStatus();
+        outerComplexRequiredStatus = new ComplexRequiredStatus(
+          lastRequiredStatus,
+          // handles unset elements on the innermost list
+          outerComplexRequiredStatus ?? new ComplexRequiredStatus('unset'),
+        );
+      } else {
+        throw syntaxError(
+          this._lexer.source,
+          this._lexer.token.start,
+          'Invalid nullability designator',
+        );
+      }
+    }
+    // There are no more characters that could make up a nullability designator
+
+    // Indicates unbalanced braces eg [[] or []]
     if (listDepthCount != 0) {
       throw syntaxError(
         this._lexer.source,

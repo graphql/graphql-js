@@ -505,47 +505,6 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('for debugging', () => {
-    const query = String.raw`{
-      requiredListItemsRequiredList: listField[!]!
-      unsetListItemsOptionalList: listField[]?
-      optionalListItemsUnsetList: listField[?]
-      optionalListItemsOptionalList: listField[?]?
-      multidimensionalList: listField[[[!]!]!]!
-    }`;
-    const ast = parse(query);
-    const visited: Array<any> = [];
-    const argsStack: Array<any> = [];
-
-    visit(ast, {
-      enter(node, key, parent) {
-        visited.push([
-          'enter',
-          node.kind,
-          key,
-          isNode(parent) ? parent.kind : undefined,
-        ]);
-
-        checkVisitorFnArgs(ast, arguments);
-        argsStack.push([...arguments]);
-      },
-
-      leave(node, key, parent) {
-        visited.push([
-          'leave',
-          node.kind,
-          key,
-          isNode(parent) ? parent.kind : undefined,
-        ]);
-
-        expect(argsStack.pop()).to.deep.equal([...arguments]);
-      },
-    });
-
-    console.log(visited);
-    console.log();
-  });
-
   it('visits kitchen sink', () => {
     const ast = parse(kitchenSinkQuery);
     const visited: Array<any> = [];

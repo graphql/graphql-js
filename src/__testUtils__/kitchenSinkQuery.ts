@@ -77,8 +77,3 @@ query {
   __typename
 }
 `;
-// requiredListItemsRequiredList: listField[!]!
-// unsetListItemsOptionalList: listField[]?
-// optionalListItemsUnsetList: listField[?]
-// optionalListItemsOptionalList: listField[?]?
-// multidimensionalList: listField[[[!]!]!]!
