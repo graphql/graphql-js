@@ -43,6 +43,7 @@ export function validate(
 
   /** @deprecated will be removed in 17.0.0 */
   typeInfo: TypeInfo = new TypeInfo(schema),
+  contextValue?: unknown,
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
 
@@ -72,7 +73,9 @@ export function validate(
 
   // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
-  const visitor = visitInParallel(rules.map((rule) => rule(context)));
+  const visitor = visitInParallel(
+    rules.map((rule) => rule(context, contextValue)),
+  );
 
   // Visit the whole document with each instance of all provided rules.
   try {

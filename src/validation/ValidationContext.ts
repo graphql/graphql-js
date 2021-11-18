@@ -267,4 +267,7 @@ export class ValidationContext extends ASTValidationContext {
   }
 }
 
-export type ValidationRule = (context: ValidationContext) => ASTVisitor;
+export type ValidationRule = (
+  context: ValidationContext,
+  contextValue?: unknown,
+) => ASTVisitor;
