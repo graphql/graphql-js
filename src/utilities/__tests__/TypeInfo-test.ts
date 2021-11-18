@@ -269,7 +269,7 @@ describe('visitWithTypeInfo', () => {
                   {
                     kind: 'Field',
                     name: { kind: 'Name', value: '__typename' },
-                    required: new ComplexRequiredStatus('unset')
+                    required: new ComplexRequiredStatus('unset'),
                   },
                 ],
               },

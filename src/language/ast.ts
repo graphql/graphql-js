@@ -355,7 +355,6 @@ export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
 export type RequiredStatus = 'required' | 'optional' | 'unset';
 
-
 export class ComplexRequiredStatus {
   readonly status: RequiredStatus;
   // Exists if status is on a List<Element>.

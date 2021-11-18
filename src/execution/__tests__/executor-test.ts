@@ -1297,79 +1297,62 @@ describe('Execute: Handles basic execution tasks', () => {
               name: 'Lists',
               fields: {
                 list: { type: new GraphQLList(GraphQLInt) },
-                twoDList: { 
-                  type: new GraphQLList(
-                    new GraphQLList(
-                      GraphQLInt
-                    )
-                  )
+                twoDList: {
+                  type: new GraphQLList(new GraphQLList(GraphQLInt)),
                 },
                 threeDList: {
                   type: new GraphQLList(
+                    new GraphQLList(new GraphQLList(GraphQLInt)),
+                  ),
+                },
+                nonNullThreeDList: {
+                  // [[[!]!]!]!
+                  type: new GraphQLNonNull(
                     new GraphQLList(
-                      new GraphQLList(
-                        GraphQLInt
-                      )
-                    )
-                  )
+                      new GraphQLNonNull(
+                        new GraphQLList(
+                          new GraphQLNonNull(
+                            new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 },
-                nonNullThreeDList: { // [[[!]!]!]!
-                  type: new GraphQLNonNull(new GraphQLList(
-                    new GraphQLNonNull(new GraphQLList(
-                      new GraphQLNonNull(new GraphQLList(
-                        new GraphQLNonNull(GraphQLInt)
-                      ))
-                    ))
-                  ))
-                },
-                mixedThreeDList: { //[[[?]!]!]?
+                mixedThreeDList: {
+                  //[[[?]!]!]?
                   type: new GraphQLList(
-                    new GraphQLNonNull(new GraphQLList(
-                      new GraphQLNonNull(new GraphQLList(
-                        GraphQLInt
-                      ))
-                    ))
-                  )
-                }
-              }
+                    new GraphQLNonNull(
+                      new GraphQLList(
+                        new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+                      ),
+                    ),
+                  ),
+                },
+              },
             }),
             resolve() {
               return {
                 list: [null, 1, 2, null],
                 twoDList: [
                   [null, 1, 2, null],
-                  [1, 2, 3]
+                  [1, 2, 3],
                 ],
                 threeDList: [
-                  [
-                    [null],
-                    [null]
-                  ], [
-                    [null],
-                    [null]
-                  ]
+                  [[null], [null]],
+                  [[null], [null]],
                 ],
                 nonNullThreeDList: [
-                  [
-                    [null],
-                    [null]
-                  ], [
-                    [null],
-                    [null]
-                  ]
+                  [[null], [null]],
+                  [[null], [null]],
                 ],
                 mixedThreeDList: [
-                  [
-                    [null],
-                    [null]
-                  ], [
-                    [null],
-                    [null]
-                  ]
+                  [[null], [null]],
+                  [[null], [null]],
                 ],
-              }
-            }
-          }
+              };
+            },
+          },
         },
       }),
     });
@@ -1561,7 +1544,8 @@ describe('Execute: Handles basic execution tasks', () => {
         errors: [
           {
             locations: [{ column: 13, line: 4 }],
-            message: 'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
+            message:
+              'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
             path: ['lists', 'list'],
           },
         ],
@@ -1586,7 +1570,8 @@ describe('Execute: Handles basic execution tasks', () => {
         errors: [
           {
             locations: [{ column: 13, line: 4 }],
-            message: 'Cannot return null for non-nullable field Lists.mixedThreeDList.',
+            message:
+              'Cannot return null for non-nullable field Lists.mixedThreeDList.',
             path: ['lists', 'mixedThreeDList', 0, 0, 0],
           },
         ],
@@ -1611,12 +1596,14 @@ describe('Execute: Handles basic execution tasks', () => {
         errors: [
           {
             locations: [{ column: 13, line: 4 }],
-            message: 'Cannot return null for non-nullable field Lists.mixedThreeDList.',
+            message:
+              'Cannot return null for non-nullable field Lists.mixedThreeDList.',
             path: ['lists', 'mixedThreeDList', 0, 0, 0],
           },
           {
             locations: [{ column: 13, line: 4 }],
-            message: 'Cannot return null for non-nullable field Lists.mixedThreeDList.',
+            message:
+              'Cannot return null for non-nullable field Lists.mixedThreeDList.',
             path: ['lists', 'mixedThreeDList', 1, 0, 0],
           },
         ],
@@ -1625,12 +1612,10 @@ describe('Execute: Handles basic execution tasks', () => {
 
     it('modifiedOutputType produces correct output types', () => {
       let type = new GraphQLList(
-        new GraphQLNonNull(new GraphQLList(
-          new GraphQLNonNull(new GraphQLList(
-            GraphQLInt
-          ))
-        ))
-      )
+        new GraphQLNonNull(
+          new GraphQLList(new GraphQLNonNull(new GraphQLList(GraphQLInt))),
+        ),
+      );
 
       let requiredStatus = new ComplexRequiredStatus(
         'unset',
@@ -1638,22 +1623,17 @@ describe('Execute: Handles basic execution tasks', () => {
           'optional',
           new ComplexRequiredStatus(
             'unset',
-            new ComplexRequiredStatus(
-              'required',
-              undefined
-            )
-          )
-        )
-      )
+            new ComplexRequiredStatus('required', undefined),
+          ),
+        ),
+      );
 
       let outputType = modifiedOutputType(type, requiredStatus);
       let expectedOutputType = new GraphQLList(
         new GraphQLList(
-          new GraphQLNonNull(new GraphQLList(
-            new GraphQLNonNull(GraphQLInt)
-          ))
-        )
-      )
+          new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
+        ),
+      );
 
       expect(outputType).to.deep.equal(expectedOutputType);
     });

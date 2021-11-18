@@ -548,7 +548,6 @@ function findConflict(
   const [parentType1, node1, def1] = field1;
   const [parentType2, node2, def2] = field2;
 
-
   // If it is known that two fields could not possibly apply at the same
   // time, due to the parent types, then it is safe to permit them to diverge
   // in aliased field or arguments used as they will not present any ambiguity
@@ -594,7 +593,6 @@ function findConflict(
   const type2 = def2?.type;
 
   if (type1 && type2) {
-    
     // Errors will have already been handled by RequiredStatusOnFieldMatchesDefinitionRule
     //  so there's no need to do anything here in the event that modifiedOutputType throws
     //  an error.
@@ -614,7 +612,7 @@ function findConflict(
           [node2],
         ];
       }
-    } catch { }
+    } catch {}
   }
 
   // Collect and compare sub-fields. Use the same "visited fragment names" list

@@ -251,7 +251,7 @@ describe('Parser', () => {
         optionalField?!
       }
     `),
-    ).to.throw("Syntax Error: Invalid nullability designator");
+    ).to.throw('Syntax Error: Invalid nullability designator');
 
     expect(() =>
       parse(`
@@ -259,7 +259,7 @@ describe('Parser', () => {
         optionalField!?
       }
     `),
-    ).to.throw("Syntax Error: Invalid nullability designator");
+    ).to.throw('Syntax Error: Invalid nullability designator');
   });
 
   it('parses required with alias', () => {
@@ -348,7 +348,7 @@ describe('Parser', () => {
         field[!]
       }
     `);
-    
+
     expectJSON(result).to.deep.equal({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 14 },
@@ -376,13 +376,13 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  "status": 'unset',
-                  "subStatus": {
-                    "status": 'required',
-                    "subStatus": undefined
-                  }
+                  status: 'unset',
+                  subStatus: {
+                    status: 'required',
+                    subStatus: undefined,
+                  },
                 },
-                selectionSet: undefined
+                selectionSet: undefined,
               },
             ],
           },
@@ -397,7 +397,7 @@ describe('Parser', () => {
         field[?]
       }
     `);
-    
+
     expectJSON(result).to.deep.equal({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 14 },
@@ -425,13 +425,13 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  "status": 'unset',
-                  "subStatus": {
-                    "status": 'optional',
-                    "subStatus": undefined
-                  }
+                  status: 'unset',
+                  subStatus: {
+                    status: 'optional',
+                    subStatus: undefined,
+                  },
                 },
-                selectionSet: undefined
+                selectionSet: undefined,
               },
             ],
           },
@@ -446,7 +446,7 @@ describe('Parser', () => {
         field[]!
       }
     `);
-    
+
     expectJSON(result).to.deep.equal({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 14 },
@@ -474,13 +474,13 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  "status": 'required',
-                  "subStatus": {
-                    "status": 'unset',
-                    "subStatus": undefined
-                  }
+                  status: 'required',
+                  subStatus: {
+                    status: 'unset',
+                    subStatus: undefined,
+                  },
                 },
-                selectionSet: undefined
+                selectionSet: undefined,
               },
             ],
           },
@@ -496,7 +496,7 @@ describe('Parser', () => {
         field[]?
       }
     `);
-    
+
     expectJSON(result).to.deep.equal({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 14 },
@@ -524,13 +524,13 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  "status": 'optional',
-                  "subStatus": {
-                    "status": 'unset',
-                    "subStatus": undefined
-                  }
+                  status: 'optional',
+                  subStatus: {
+                    status: 'unset',
+                    subStatus: undefined,
+                  },
                 },
-                selectionSet: undefined
+                selectionSet: undefined,
               },
             ],
           },
@@ -573,19 +573,19 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  "status": 'required',
-                  "subStatus": {
-                    "status": 'unset',
-                    "subStatus": {
-                      "status": 'required',
-                      "subStatus": {
-                        "status": 'optional',
-                        "subStatus": undefined
-                      }
-                    }
-                  }
+                  status: 'required',
+                  subStatus: {
+                    status: 'unset',
+                    subStatus: {
+                      status: 'required',
+                      subStatus: {
+                        status: 'optional',
+                        subStatus: undefined,
+                      },
+                    },
+                  },
                 },
-                selectionSet: undefined
+                selectionSet: undefined,
               },
             ],
           },
@@ -664,8 +664,8 @@ describe('Parser', () => {
                 ],
                 directives: [],
                 required: {
-                  "status": 'unset',
-                  "subStatus": undefined
+                  status: 'unset',
+                  subStatus: undefined,
                 },
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
@@ -683,8 +683,8 @@ describe('Parser', () => {
                       arguments: [],
                       directives: [],
                       required: {
-                        "status": 'unset',
-                        "subStatus": undefined
+                        status: 'unset',
+                        subStatus: undefined,
                       },
                       selectionSet: undefined,
                     },
@@ -700,8 +700,8 @@ describe('Parser', () => {
                       arguments: [],
                       directives: [],
                       required: {
-                        "status": 'unset',
-                        "subStatus": undefined
+                        status: 'unset',
+                        subStatus: undefined,
                       },
                       selectionSet: undefined,
                     },
@@ -751,8 +751,8 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  "status": 'unset',
-                  "subStatus": undefined
+                  status: 'unset',
+                  subStatus: undefined,
                 },
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
@@ -770,8 +770,8 @@ describe('Parser', () => {
                       arguments: [],
                       directives: [],
                       required: {
-                        "status": 'unset',
-                        "subStatus": undefined
+                        status: 'unset',
+                        subStatus: undefined,
                       },
                       selectionSet: undefined,
                     },

@@ -505,6 +505,47 @@ describe('Visitor', () => {
     ]);
   });
 
+  it('for debugging', () => {
+    const query = String.raw`{
+      requiredListItemsRequiredList: listField[!]!
+      unsetListItemsOptionalList: listField[]?
+      optionalListItemsUnsetList: listField[?]
+      optionalListItemsOptionalList: listField[?]?
+      multidimensionalList: listField[[[!]!]!]!
+    }`;
+    const ast = parse(query);
+    const visited: Array<any> = [];
+    const argsStack: Array<any> = [];
+
+    visit(ast, {
+      enter(node, key, parent) {
+        visited.push([
+          'enter',
+          node.kind,
+          key,
+          isNode(parent) ? parent.kind : undefined,
+        ]);
+
+        checkVisitorFnArgs(ast, arguments);
+        argsStack.push([...arguments]);
+      },
+
+      leave(node, key, parent) {
+        visited.push([
+          'leave',
+          node.kind,
+          key,
+          isNode(parent) ? parent.kind : undefined,
+        ]);
+
+        expect(argsStack.pop()).to.deep.equal([...arguments]);
+      },
+    });
+
+    console.log(visited);
+    console.log();
+  });
+
   it('visits kitchen sink', () => {
     const ast = parse(kitchenSinkQuery);
     const visited: Array<any> = [];
@@ -674,6 +715,48 @@ describe('Visitor', () => {
       ['enter', 'Name', 'name', 'Field'],
       ['leave', 'Name', 'name', 'Field'],
       ['leave', 'Field', 4, undefined],
+      ['enter', 'Field', 5, undefined],
+      ['enter', 'Name', 'alias', 'Field'],
+      ['leave', 'Name', 'alias', 'Field'],
+      ['enter', 'Name', 'name', 'Field'],
+      ['leave', 'Name', 'name', 'Field'],
+      ['leave', 'Field', 5, undefined],
+      ['enter', 'Field', 6, undefined],
+      ['enter', 'Name', 'alias', 'Field'],
+      ['leave', 'Name', 'alias', 'Field'],
+      ['enter', 'Name', 'name', 'Field'],
+      ['leave', 'Name', 'name', 'Field'],
+      ['leave', 'Field', 6, undefined],
+      ['enter', 'Field', 7, undefined],
+      ['enter', 'Name', 'alias', 'Field'],
+      ['leave', 'Name', 'alias', 'Field'],
+      ['enter', 'Name', 'name', 'Field'],
+      ['leave', 'Name', 'name', 'Field'],
+      ['leave', 'Field', 7, undefined],
+      ['enter', 'Field', 8, undefined],
+      ['enter', 'Name', 'alias', 'Field'],
+      ['leave', 'Name', 'alias', 'Field'],
+      ['enter', 'Name', 'name', 'Field'],
+      ['leave', 'Name', 'name', 'Field'],
+      ['leave', 'Field', 8, undefined],
+      ['enter', 'Field', 9, undefined],
+      ['enter', 'Name', 'alias', 'Field'],
+      ['leave', 'Name', 'alias', 'Field'],
+      ['enter', 'Name', 'name', 'Field'],
+      ['leave', 'Name', 'name', 'Field'],
+      ['leave', 'Field', 9, undefined],
+      ['enter', 'Field', 10, undefined],
+      ['enter', 'Name', 'alias', 'Field'],
+      ['leave', 'Name', 'alias', 'Field'],
+      ['enter', 'Name', 'name', 'Field'],
+      ['leave', 'Name', 'name', 'Field'],
+      ['leave', 'Field', 10, undefined],
+      ['enter', 'Field', 11, undefined],
+      ['enter', 'Name', 'alias', 'Field'],
+      ['leave', 'Name', 'alias', 'Field'],
+      ['enter', 'Name', 'name', 'Field'],
+      ['leave', 'Name', 'name', 'Field'],
+      ['leave', 'Field', 11, undefined],
       ['leave', 'SelectionSet', 'selectionSet', 'InlineFragment'],
       ['leave', 'InlineFragment', 1, undefined],
       ['enter', 'InlineFragment', 2, undefined],
@@ -702,7 +785,7 @@ describe('Visitor', () => {
       ['enter', 'Name', 'name', 'Field'],
       ['leave', 'Name', 'name', 'Field'],
       ['leave', 'Field', 0, undefined],
-      x['leave', 'SelectionSet', 'selectionSet', 'InlineFragment'],
+      ['leave', 'SelectionSet', 'selectionSet', 'InlineFragment'],
       ['leave', 'InlineFragment', 3, undefined],
       ['leave', 'SelectionSet', 'selectionSet', 'Field'],
       ['leave', 'Field', 0, undefined],

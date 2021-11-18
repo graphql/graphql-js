@@ -499,7 +499,7 @@ function executeField(
     throw new GraphQLError(
       'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
       undefined,
-      fieldNodes[0].loc!.source, 
+      fieldNodes[0].loc!.source,
       [fieldNodes[0].loc!.start],
       pathToArray(path),
     );

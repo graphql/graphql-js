@@ -64,11 +64,19 @@ const printDocASTReducer: ASTReducer<string> = {
       selectionSet,
       required,
     }) {
-      let buildRequiredDesignator = (required: ComplexRequiredStatus, accumulator: string = '', depth: number = 0): string => {
+      let buildRequiredDesignator = (
+        required: ComplexRequiredStatus,
+        accumulator: string = '',
+        depth: number = 0,
+      ): string => {
         if (required.subStatus) {
-          accumulator = buildRequiredDesignator(required.subStatus, accumulator + '[', depth + 1);
+          accumulator = buildRequiredDesignator(
+            required.subStatus,
+            accumulator + '[',
+            depth + 1,
+          );
         }
-        
+
         if (required.status === 'required') {
           accumulator += '!';
         } else if (required.status === 'optional') {
@@ -78,13 +86,14 @@ const printDocASTReducer: ASTReducer<string> = {
           accumulator += ']';
         }
 
-        return accumulator
-      }
+        return accumulator;
+      };
 
       let prefix = wrap('', alias, ': ') + name;
       let requiredDesignator = buildRequiredDesignator(required);
 
-      let argsLine = prefix + requiredDesignator + wrap('(', join(args, ', '), ')');
+      let argsLine =
+        prefix + requiredDesignator + wrap('(', join(args, ', '), ')');
 
       if (argsLine.length > MAX_LINE_LENGTH) {
         argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');

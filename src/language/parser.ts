@@ -448,18 +448,24 @@ export class Parser {
 
   parseRequiredStatus(): ComplexRequiredStatus {
     const stillDefiningNullabilityDesignator = (): boolean => {
-      let allowedTokens = [TokenKind.BRACKET_L, TokenKind.BRACKET_R, TokenKind.QUESTION_MARK, TokenKind.BANG];
+      let allowedTokens = [
+        TokenKind.BRACKET_L,
+        TokenKind.BRACKET_R,
+        TokenKind.QUESTION_MARK,
+        TokenKind.BANG,
+      ];
       const reducer = (prv: boolean, current: TokenKindEnum): boolean => {
-        return prv || this.peek(current)
-      } 
+        return prv || this.peek(current);
+      };
       return allowedTokens.reduce(reducer, false);
-    }
-    
+    };
+
     // There are no more characters that could make up a nullability designator
     var listDepthCount = 0;
 
     var lastRequiredStatus: RequiredStatus = 'unset';
-    var outerComplexRequiredStatus: ComplexRequiredStatus | undefined = undefined;
+    var outerComplexRequiredStatus: ComplexRequiredStatus | undefined =
+      undefined;
     while (stillDefiningNullabilityDesignator()) {
       if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
         listDepthCount += 1;
@@ -467,9 +473,9 @@ export class Parser {
         listDepthCount -= 1;
         lastRequiredStatus = this.parseSimpleRequiredStatus();
         outerComplexRequiredStatus = new ComplexRequiredStatus(
-          lastRequiredStatus, 
+          lastRequiredStatus,
           // handles unset elements on the innermost list
-          outerComplexRequiredStatus ?? new ComplexRequiredStatus('unset')
+          outerComplexRequiredStatus ?? new ComplexRequiredStatus('unset'),
         );
       } else {
         // throws on multiple designators in a row eg ?!!
@@ -481,8 +487,11 @@ export class Parser {
           );
         }
         lastRequiredStatus = this.parseSimpleRequiredStatus();
-        outerComplexRequiredStatus = new ComplexRequiredStatus(lastRequiredStatus, outerComplexRequiredStatus);
-      } 
+        outerComplexRequiredStatus = new ComplexRequiredStatus(
+          lastRequiredStatus,
+          outerComplexRequiredStatus,
+        );
+      }
     }
 
     if (listDepthCount != 0) {
@@ -492,8 +501,11 @@ export class Parser {
         'Unbalanced braces in nullability designator',
       );
     }
-    
-    return outerComplexRequiredStatus ?? new ComplexRequiredStatus(lastRequiredStatus);
+
+    return (
+      outerComplexRequiredStatus ??
+      new ComplexRequiredStatus(lastRequiredStatus)
+    );
   }
 
   parseSimpleRequiredStatus(): RequiredStatus {

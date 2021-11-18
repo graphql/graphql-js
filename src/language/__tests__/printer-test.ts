@@ -15,7 +15,7 @@ describe('Printer: Query document', () => {
       name: { kind: Kind.NAME, value: 'foo' },
       required: {
         status: 'unset',
-        subStatus: undefined
+        subStatus: undefined,
       },
     } as const;
     expect(print(ast)).to.equal('foo');

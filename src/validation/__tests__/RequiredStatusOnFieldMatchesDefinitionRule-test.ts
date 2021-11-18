@@ -56,11 +56,13 @@ describe('Validate: Field uses correct list depth', () => {
       }
     `).to.deep.equal([
       {
-        message: 'Syntax Error: Something is wrong with the nullability designator on list. The type for that field in the schema is [Int] Is the correct list depth being used?',
+        message:
+          'Syntax Error: Something is wrong with the nullability designator on list. The type for that field in the schema is [Int] Is the correct list depth being used?',
         locations: [{ line: 3, column: 9 }],
       },
       {
-        message: 'Syntax Error: Something is wrong with the nullability designator on notAList. The type for that field in the schema is Int Is the correct list depth being used?',
+        message:
+          'Syntax Error: Something is wrong with the nullability designator on notAList. The type for that field in the schema is Int Is the correct list depth being used?',
         locations: [{ line: 4, column: 9 }],
       },
     ]);

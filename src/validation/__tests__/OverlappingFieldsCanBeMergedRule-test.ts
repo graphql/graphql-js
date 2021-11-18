@@ -1414,7 +1414,6 @@ describe('Validate: Overlapping fields can be merged', () => {
       });
     });
 
-
     it('compatible return shapes on different return types', () => {
       // In this case `deepBox` returns `SomeBox` in the first usage, and
       // `StringBox` in the second usage. These return types are not the same!

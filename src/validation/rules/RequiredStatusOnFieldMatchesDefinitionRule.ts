@@ -37,13 +37,20 @@ export function RequiredStatusOnFieldMatchesDefinitionRule(
   return {
     Field(node: FieldNode) {
       if (context.getFieldDef()) {
-        const fieldDef = context.getFieldDef() as GraphQLField<unknown, unknown>;
+        const fieldDef = context.getFieldDef() as GraphQLField<
+          unknown,
+          unknown
+        >;
         try {
-          modifiedOutputType(fieldDef.type, node.required)
+          modifiedOutputType(fieldDef.type, node.required);
         } catch {
           context.reportError(
             new GraphQLError(
-              `Syntax Error: Something is wrong with the nullability designator on ${node.alias?.value ?? node.name.value}. The type for that field in the schema is ${fieldDef.type} Is the correct list depth being used?`,
+              `Syntax Error: Something is wrong with the nullability designator on ${
+                node.alias?.value ?? node.name.value
+              }. The type for that field in the schema is ${
+                fieldDef.type
+              } Is the correct list depth being used?`,
               node,
             ),
           );

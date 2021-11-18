@@ -6,7 +6,7 @@ import {
   isNonNullType,
   assertListType,
   GraphQLList,
-  isListType
+  isListType,
 } from '../type/definition';
 import { ComplexRequiredStatus } from '../language/ast';
 import { print } from '..';
@@ -17,7 +17,7 @@ import { print } from '..';
  * type of a field by taking into account both the nullability listed in the
  * schema, and the nullability providing by an operation.
  */
- function simpleModifiedOutputType(
+function simpleModifiedOutputType(
   type: GraphQLOutputType,
   required: RequiredStatus,
 ): GraphQLOutputType {
@@ -34,7 +34,7 @@ export function modifiedOutputType(
   required: ComplexRequiredStatus,
 ): GraphQLOutputType {
   if (!required.subStatus) {
-    return simpleModifiedOutputType(type, required.status)
+    return simpleModifiedOutputType(type, required.status);
   }
 
   // If execution reaches this point, type is a list.
