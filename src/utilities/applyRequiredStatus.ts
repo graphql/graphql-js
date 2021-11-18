@@ -6,10 +6,8 @@ import {
   isNonNullType,
   assertListType,
   GraphQLList,
-  isListType,
 } from '../type/definition';
 import { ComplexRequiredStatus } from '../language/ast';
-import { print } from '..';
 
 /**
  * Implements the "Accounting For Client Controlled Nullability Designators"

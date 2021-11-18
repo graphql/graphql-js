@@ -21,7 +21,7 @@ import {
 } from '../../type/definition';
 
 import { execute, executeSync } from '../execute';
-import { modifiedOutputType } from '../..';
+import { modifiedOutputType } from '../../utilities/applyRequiredStatus';
 import { ComplexRequiredStatus } from '../../language/ast';
 
 describe('Execute: Handles basic execution tasks', () => {
@@ -1425,7 +1425,7 @@ describe('Execute: Handles basic execution tasks', () => {
       });
     });
 
-    it('null does not bubble up when field that returns does not return null is required', () => {
+    it('null does not propagate up when field that returns does not return null is required', () => {
       const singleNonNullOnNonNullValueDocument = parse(`
         query {
           food {

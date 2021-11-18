@@ -414,7 +414,7 @@ export class Parser {
   }
 
   /**
-   * Field : Alias? Name Arguments? Directives? SelectionSet?
+   * Field : Alias? Name Nullability? Arguments? Directives? SelectionSet?
    *
    * Alias : Name :
    */
@@ -447,6 +447,19 @@ export class Parser {
     });
   }
 
+  /**
+   * Nullability :
+   * - !
+   * - ?
+   * 
+   * NOTES:
+   * parseRequiredStatus assumes that if you have a designator like [[[!]!]!]! , the tokens can be
+   *   grouped like ([[[) (!) (]!) (]!) (]!) . The center designator is on its own, and the rest are 
+   *   attached to a right bracket. This thinking simplifies parsing.
+   * 
+   * A designator on its own like with `field!` is found using the same subroutine that's used to
+   *   find the center designator mentioned above.
+   */
   parseRequiredStatus(): ComplexRequiredStatus {
     const stillDefiningNullabilityDesignator = (): boolean => {
       let allowedTokens = [
@@ -490,7 +503,7 @@ export class Parser {
       }
     }
 
-    // once there's been a ], no more [ are allowed
+    // Once there's been a ], no more [ are allowed
     while (stillDefiningNullabilityDesignator()) {
       if (this.expectOptionalToken(TokenKind.BRACKET_R)) {
         listDepthCount -= 1;
@@ -524,7 +537,13 @@ export class Parser {
       new ComplexRequiredStatus(lastRequiredStatus)
     );
   }
-
+  
+  /**
+   * Nullability :
+   * - !
+   * - ?
+   *  
+   */
   parseSimpleRequiredStatus(): RequiredStatus {
     let required: RequiredStatus;
     if (this.expectOptionalToken(TokenKind.BANG)) {

@@ -5,7 +5,7 @@ import type { ASTReducer } from './visitor';
 import { visit } from './visitor';
 import { printBlockString } from './blockString';
 import { printString } from './printString';
-import { ComplexRequiredStatus } from '.';
+import { ComplexRequiredStatus } from './ast';
 
 /**
  * Converts an AST into a string, using one set of reasonable

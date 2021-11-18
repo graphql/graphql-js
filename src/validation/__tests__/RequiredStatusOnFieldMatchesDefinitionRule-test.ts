@@ -1,13 +1,6 @@
-import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
-
-import type { GraphQLSchema } from '../../type/schema';
-
 import { buildSchema } from '../../utilities/buildASTSchema';
-
-import { validate } from '../validate';
 
 import { expectValidationErrorsWithSchema } from './harness';
 import { RequiredStatusOnFieldMatchesDefinitionRule } from '../rules/RequiredStatusOnFieldMatchesDefinitionRule';
@@ -39,7 +32,7 @@ const testSchema = buildSchema(`
 describe('Validate: Field uses correct list depth', () => {
   it('Fields are valid', () => {
     expectValid(`
-      fragment typeKnownAgain on Lists {
+      fragment listFragment on Lists {
         list[!]
         nonList!
         mixedThreeDList[[[!]!]!]!
@@ -47,9 +40,9 @@ describe('Validate: Field uses correct list depth', () => {
     `);
   });
 
-  it('reports errors when type is known again', () => {
+  it('reports errors when list depth is too high', () => {
     expectErrors(`
-      fragment typeKnownAgain on Lists {
+      fragment listFragment on Lists {
         list[[]]
         notAList: nonList[!]
         mixedThreeDList[[!]!]!
