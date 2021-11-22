@@ -7,7 +7,19 @@ exports.isDigit = isDigit;
 exports.isLetter = isLetter;
 exports.isNameContinue = isNameContinue;
 exports.isNameStart = isNameStart;
+exports.isWhiteSpace = isWhiteSpace;
 
+/**
+ * ```
+ * WhiteSpace ::
+ *   - "Horizontal Tab (U+0009)"
+ *   - "Space (U+0020)"
+ * ```
+ * @internal
+ */
+function isWhiteSpace(code) {
+  return code === 0x0009 || code === 0x0020;
+}
 /**
  * ```
  * Digit :: one of
@@ -15,6 +27,7 @@ exports.isNameStart = isNameStart;
  * ```
  * @internal
  */
+
 function isDigit(code) {
   return code >= 0x0030 && code <= 0x0039;
 }

@@ -2,7 +2,7 @@ import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
 import { Kind } from '../language/kinds.mjs';
 import { print } from '../language/printer.mjs';
-import { printBlockString } from '../language/blockString.mjs';
+import { isPrintableAsBlockString } from '../language/blockString.mjs';
 import { isIntrospectionType } from '../type/introspection.mjs';
 import { isSpecifiedScalarType } from '../type/scalars.mjs';
 import {
@@ -296,8 +296,11 @@ function printDescription(def, indentation = '', firstInBlock = true) {
     return '';
   }
 
-  const preferMultipleLines = description.length > 70;
-  const blockString = printBlockString(description, preferMultipleLines);
+  const blockString = print({
+    kind: Kind.STRING,
+    value: description,
+    block: isPrintableAsBlockString(description),
+  });
   const prefix =
     indentation && !firstInBlock ? '\n' + indentation : indentation;
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';

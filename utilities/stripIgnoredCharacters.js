@@ -107,7 +107,9 @@ function stripIgnoredCharacters(source) {
     const tokenBody = body.slice(currentToken.start, currentToken.end);
 
     if (tokenKind === _tokenKind.TokenKind.BLOCK_STRING) {
-      strippedBody += dedentBlockString(tokenBody);
+      strippedBody += (0, _blockString.printBlockString)(currentToken.value, {
+        minimize: true,
+      });
     } else {
       strippedBody += tokenBody;
     }
@@ -116,22 +118,4 @@ function stripIgnoredCharacters(source) {
   }
 
   return strippedBody;
-}
-
-function dedentBlockString(blockStr) {
-  // skip leading and trailing triple quotations
-  const rawStr = blockStr.slice(3, -3);
-  let body = (0, _blockString.dedentBlockStringValue)(rawStr);
-
-  if ((0, _blockString.getBlockStringIndentation)(body) > 0) {
-    body = '\n' + body;
-  }
-
-  const hasTrailingQuote = body.endsWith('"') && !body.endsWith('\\"""');
-
-  if (hasTrailingQuote || body.endsWith('\\')) {
-    body += '\n';
-  }
-
-  return '"""' + body + '"""';
 }

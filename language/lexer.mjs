@@ -1,7 +1,7 @@
 import { syntaxError } from '../error/syntaxError.mjs';
 import { Token } from './ast.mjs';
 import { TokenKind } from './tokenKind.mjs';
-import { dedentBlockStringValue } from './blockString.mjs';
+import { dedentBlockStringLines } from './blockString.mjs';
 import { isDigit, isNameStart, isNameContinue } from './characterClasses.mjs';
 /**
  * Given a Source object, creates a Lexer for that source.
@@ -793,11 +793,11 @@ function readEscapedCharacter(lexer, position) {
 function readBlockString(lexer, start) {
   const body = lexer.source.body;
   const bodyLength = body.length;
-  const startLine = lexer.line;
-  const startColumn = 1 + start - lexer.lineStart;
+  let lineStart = lexer.lineStart;
   let position = start + 3;
   let chunkStart = position;
-  let rawValue = '';
+  let currentLine = '';
+  const blockLines = [];
 
   while (position < bodyLength) {
     const code = body.charCodeAt(position); // Closing Triple-Quote (""")
@@ -807,15 +807,18 @@ function readBlockString(lexer, start) {
       body.charCodeAt(position + 1) === 0x0022 &&
       body.charCodeAt(position + 2) === 0x0022
     ) {
-      rawValue += body.slice(chunkStart, position);
-      return new Token(
+      currentLine += body.slice(chunkStart, position);
+      blockLines.push(currentLine);
+      const token = createToken(
+        lexer,
         TokenKind.BLOCK_STRING,
         start,
-        position + 3,
-        startLine,
-        startColumn,
-        dedentBlockStringValue(rawValue),
+        position + 3, // Return a string of the lines joined with U+000A.
+        dedentBlockStringLines(blockLines).join('\n'),
       );
+      lexer.line += blockLines.length - 1;
+      lexer.lineStart = lineStart;
+      return token;
     } // Escaped Triple-Quote (\""")
 
     if (
@@ -824,21 +827,26 @@ function readBlockString(lexer, start) {
       body.charCodeAt(position + 2) === 0x0022 &&
       body.charCodeAt(position + 3) === 0x0022
     ) {
-      rawValue += body.slice(chunkStart, position) + '"""';
+      currentLine += body.slice(chunkStart, position);
+      chunkStart = position + 1; // skip only slash
+
       position += 4;
-      chunkStart = position;
       continue;
     } // LineTerminator
 
     if (code === 0x000a || code === 0x000d) {
+      currentLine += body.slice(chunkStart, position);
+      blockLines.push(currentLine);
+
       if (code === 0x000d && body.charCodeAt(position + 1) === 0x000a) {
         position += 2;
       } else {
         ++position;
       }
 
-      ++lexer.line;
-      lexer.lineStart = position;
+      currentLine = '';
+      chunkStart = position;
+      lineStart = position;
       continue;
     } // SourceCharacter
 

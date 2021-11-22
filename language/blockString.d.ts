@@ -6,11 +6,13 @@
  *
  * @internal
  */
-export declare function dedentBlockStringValue(rawString: string): string;
+export declare function dedentBlockStringLines(
+  lines: ReadonlyArray<string>,
+): Array<string>;
 /**
  * @internal
  */
-export declare function getBlockStringIndentation(value: string): number;
+export declare function isPrintableAsBlockString(value: string): boolean;
 /**
  * Print a block string in the indented block form by adding a leading and
  * trailing blank line. However, if a block string starts with whitespace and is
@@ -20,5 +22,7 @@ export declare function getBlockStringIndentation(value: string): number;
  */
 export declare function printBlockString(
   value: string,
-  preferMultipleLines?: boolean,
+  options?: {
+    minimize?: boolean;
+  },
 ): string;

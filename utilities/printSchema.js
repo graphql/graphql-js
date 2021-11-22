@@ -320,11 +320,11 @@ function printDescription(def, indentation = '', firstInBlock = true) {
     return '';
   }
 
-  const preferMultipleLines = description.length > 70;
-  const blockString = (0, _blockString.printBlockString)(
-    description,
-    preferMultipleLines,
-  );
+  const blockString = (0, _printer.print)({
+    kind: _kinds.Kind.STRING,
+    value: description,
+    block: (0, _blockString.isPrintableAsBlockString)(description),
+  });
   const prefix =
     indentation && !firstInBlock ? '\n' + indentation : indentation;
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';

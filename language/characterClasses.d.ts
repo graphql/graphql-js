@@ -1,5 +1,14 @@
 /**
  * ```
+ * WhiteSpace ::
+ *   - "Horizontal Tab (U+0009)"
+ *   - "Space (U+0020)"
+ * ```
+ * @internal
+ */
+export declare function isWhiteSpace(code: number): boolean;
+/**
+ * ```
  * Digit :: one of
  *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
  * ```
