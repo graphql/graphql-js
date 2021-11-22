@@ -4,7 +4,6 @@ import type { Maybe } from '../jsutils/Maybe';
 
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
-import { printBlockString } from '../language/blockString';
 
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLDirective } from '../type/directives';
@@ -314,8 +313,12 @@ function printDescription(
     return '';
   }
 
-  const preferMultipleLines = description.length > 70;
-  const blockString = printBlockString(description, preferMultipleLines);
+  const blockString = print({
+    kind: Kind.STRING,
+    value: description,
+    block: true,
+  });
+
   const prefix =
     indentation && !firstInBlock ? '\n' + indentation : indentation;
 

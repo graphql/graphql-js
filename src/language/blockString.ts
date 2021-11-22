@@ -53,16 +53,11 @@ function leadingWhitespace(str: string): number {
  * trailing blank line. However, if a block string starts with whitespace and is
  * a single-line, adding a leading blank line would strip that whitespace.
  *
- * `preferMultipleLines` has following semantics:
- *    * `true` - add leading and trailing new lines if possible
- *    * `false` - don't add leading and trailing new lines if possible
- *    * `undefined` - add leading and trailing new lines only if it improves readability
- *
  * @internal
  */
 export function printBlockString(
   value: string,
-  preferMultipleLines?: boolean,
+  options?: { minimize?: boolean },
 ): string {
   const escapedValue = value.replace(/"""/g, '\\"""');
 
@@ -70,10 +65,12 @@ export function printBlockString(
   const lines = escapedValue.split(/\r\n|[\n\r]/g);
   const isSingleLine = lines.length === 1;
 
-  // If common identation is found we can fix some of those cases by adding leading new line
+  // If common indentation is found we can fix some of those cases by adding leading new line
   const forceLeadingNewLine =
     lines.length > 1 &&
-    lines.slice(1).every((line) => line.length === 0 || isWhiteSpace(line.charCodeAt(0)));
+    lines
+      .slice(1)
+      .every((line) => line.length === 0 || isWhiteSpace(line.charCodeAt(0)));
 
   // Trailing triple quotes just looks confusing but doesn't force trailing new line
   const hasTrailingTripleQuotes = escapedValue.endsWith('\\"""');
@@ -84,9 +81,10 @@ export function printBlockString(
   const forceTrailingNewline = hasTrailingQuote || hasTrailingSlash;
 
   const printAsMultipleLines =
-    preferMultipleLines ??
+    !options?.minimize &&
     // add leading and trailing new lines only if it improves readability
     (!isSingleLine ||
+      value.length > 70 ||
       forceTrailingNewline ||
       forceLeadingNewLine ||
       hasTrailingTripleQuotes);

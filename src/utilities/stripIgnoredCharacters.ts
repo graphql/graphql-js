@@ -89,7 +89,7 @@ export function stripIgnoredCharacters(source: string | Source): string {
 
     const tokenBody = body.slice(currentToken.start, currentToken.end);
     if (tokenKind === TokenKind.BLOCK_STRING) {
-      strippedBody += printBlockString(currentToken.value, false);
+      strippedBody += printBlockString(currentToken.value, { minimize: true });
     } else {
       strippedBody += tokenBody;
     }

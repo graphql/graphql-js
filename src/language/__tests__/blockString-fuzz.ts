@@ -21,9 +21,9 @@ function lexValue(str: string): string {
 
 function testPrintableBlockString(
   testValue: string,
-  preferMultipleLines?: boolean,
+  options?: { minimize: boolean },
 ): void {
-  const blockString = printBlockString(testValue, preferMultipleLines);
+  const blockString = printBlockString(testValue, options);
   const printedValue = lexValue(blockString);
   invariant(
     testValue === printedValue,
@@ -54,8 +54,7 @@ describe('printBlockString', () => {
       invariant(typeof testValue === 'string');
 
       testPrintableBlockString(testValue);
-      testPrintableBlockString(testValue, true);
-      testPrintableBlockString(testValue, false);
+      testPrintableBlockString(testValue, { minimize: true });
     }
   }).timeout(20000);
 });
