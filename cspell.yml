@@ -1,6 +1,6 @@
 language: en
 dictionaries:
-  - 'fullstack'
+  - fullstack
 useGitignore: true
 # TODO enableGlobDot: true
 ignorePaths:
@@ -18,8 +18,8 @@ overrides:
     ignoreRegExpList: ['/href="[^"]*"/']
   - filename: 'docs/**'
     words:
-      - 'clsx'
-      - 'infima'
+      - clsx
+      - infima
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
