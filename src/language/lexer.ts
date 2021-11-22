@@ -91,6 +91,7 @@ export class Lexer {
 export function isPunctuatorTokenKind(kind: TokenKind): boolean {
   return (
     kind === TokenKind.BANG ||
+    kind === TokenKind.QUESTION_MARK ||
     kind === TokenKind.DOLLAR ||
     kind === TokenKind.AMP ||
     kind === TokenKind.PAREN_L ||
