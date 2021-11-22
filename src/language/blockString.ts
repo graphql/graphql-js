@@ -49,6 +49,69 @@ function leadingWhitespace(str: string): number {
 }
 
 /**
+ * @internal
+ */
+export function isPrintableAsBlockString(value: string): boolean {
+  if (value === '') {
+    return true; // empty string is printable
+  }
+
+  let isEmptyLine = true;
+  let hasIndent = false;
+  let hasCommonIndent = true;
+  let seenNonEmptyLine = false;
+
+  for (let i = 0; i < value.length; ++i) {
+    switch (value.codePointAt(i)) {
+      case 0x0000:
+      case 0x0001:
+      case 0x0002:
+      case 0x0003:
+      case 0x0004:
+      case 0x0005:
+      case 0x0006:
+      case 0x0007:
+      case 0x0008:
+      case 0x000b:
+      case 0x000c:
+      case 0x000e:
+      case 0x000f:
+        return false; // Has non-printable characters
+
+      case 0x000d: //  \r
+        return false; // Has \r or \r\n which will be replaced as \n
+
+      case 10: //  \n
+        if (isEmptyLine && !seenNonEmptyLine) {
+          return false; // Has leading new line
+        }
+        seenNonEmptyLine = true;
+
+        isEmptyLine = true;
+        hasIndent = false;
+        break;
+      case 9: //   \t
+      case 32: //  <space>
+        hasIndent ||= isEmptyLine;
+        break;
+      default:
+        hasCommonIndent &&= hasIndent;
+        isEmptyLine = false;
+    }
+  }
+
+  if (isEmptyLine) {
+    return false; // Has trailing empty lines
+  }
+
+  if (hasCommonIndent && seenNonEmptyLine) {
+    return false; // Has internal indent
+  }
+
+  return true;
+}
+
+/**
  * Print a block string in the indented block form by adding a leading and
  * trailing blank line. However, if a block string starts with whitespace and is
  * a single-line, adding a leading blank line would strip that whitespace.

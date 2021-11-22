@@ -4,6 +4,7 @@ import type { Maybe } from '../jsutils/Maybe';
 
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
+import { isPrintableAsBlockString } from '../language/blockString';
 
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLDirective } from '../type/directives';
@@ -316,7 +317,7 @@ function printDescription(
   const blockString = print({
     kind: Kind.STRING,
     value: description,
-    block: true,
+    block: isPrintableAsBlockString(description),
   });
 
   const prefix =

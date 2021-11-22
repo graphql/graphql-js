@@ -8,7 +8,7 @@ import { invariant } from '../../jsutils/invariant';
 
 import { Lexer } from '../lexer';
 import { Source } from '../source';
-import { printBlockString } from '../blockString';
+import { printBlockString, isPrintableAsBlockString } from '../blockString';
 
 function lexValue(str: string): string {
   const lexer = new Lexer(new Source(str));
@@ -35,6 +35,18 @@ function testPrintableBlockString(
   );
 }
 
+function testNonPrintableBlockString(testValue: string): void {
+  const blockString = printBlockString(testValue);
+  const printedValue = lexValue(blockString);
+  invariant(
+    testValue !== printedValue,
+    dedent`
+      Expected lexValue(${inspectStr(blockString)})
+        to not equal ${inspectStr(testValue)}
+    `,
+  );
+}
+
 describe('printBlockString', () => {
   it('correctly print random strings', () => {
     // Testing with length >7 is taking exponentially more time. However it is
@@ -43,18 +55,13 @@ describe('printBlockString', () => {
       allowedChars: ['\n', '\t', ' ', '"', 'a', '\\'],
       maxLength: 7,
     })) {
-      const testStr = '"""' + fuzzStr + '"""';
-
-      let testValue;
-      try {
-        testValue = lexValue(testStr);
-      } catch (e) {
-        continue; // skip invalid values
+      if (!isPrintableAsBlockString(fuzzStr)) {
+        testNonPrintableBlockString(fuzzStr);
+        continue;
       }
-      invariant(typeof testValue === 'string');
 
-      testPrintableBlockString(testValue);
-      testPrintableBlockString(testValue, { minimize: true });
+      testPrintableBlockString(fuzzStr);
+      testPrintableBlockString(fuzzStr, { minimize: true });
     }
   }).timeout(20000);
 });

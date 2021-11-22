@@ -1,7 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedentBlockStringLines, printBlockString } from '../blockString';
+import {
+  isPrintableAsBlockString,
+  dedentBlockStringLines,
+  printBlockString,
+} from '../blockString';
 
 function joinLines(...args: ReadonlyArray<string>) {
   return args.join('\n');
@@ -132,6 +136,69 @@ describe('dedentBlockStringLines', () => {
       'Yours,     ',
       '  GraphQL. ',
     ]);
+  });
+});
+
+describe('isPrintableAsBlockString', () => {
+  function expectPrintable(str: string) {
+    return expect(isPrintableAsBlockString(str)).to.equal(true);
+  }
+
+  function expectNonPrintable(str: string) {
+    return expect(isPrintableAsBlockString(str)).to.equal(false);
+  }
+
+  it('accepts valid strings', () => {
+    expectPrintable('');
+    expectPrintable(' a');
+    expectPrintable('\t"\n"');
+    expectNonPrintable('\t"\n \n\t"');
+  });
+
+  it('rejects strings with only whitespace', () => {
+    expectNonPrintable(' ');
+    expectNonPrintable('\t');
+    expectNonPrintable('\t ');
+    expectNonPrintable(' \t');
+  });
+
+  it('rejects strings with non-printable character', () => {
+    expectNonPrintable('\x00');
+    expectNonPrintable('a\x00b');
+  });
+
+  it('rejects strings with non-printable character', () => {
+    expectNonPrintable('\x00');
+    expectNonPrintable('a\x00b');
+  });
+
+  it('rejects strings with only empty lines', () => {
+    expectNonPrintable('\n');
+    expectNonPrintable('\n\n');
+    expectNonPrintable('\n\n\n');
+    expectNonPrintable(' \n  \n');
+    expectNonPrintable('\t\n\t\t\n');
+  });
+
+  it('rejects strings with carriage return', () => {
+    expectNonPrintable('\r');
+    expectNonPrintable('\n\r');
+    expectNonPrintable('\r\n');
+    expectNonPrintable('a\rb');
+  });
+
+  it('rejects strings with leading empty lines', () => {
+    expectNonPrintable('\na');
+    expectNonPrintable(' \na');
+    expectNonPrintable('\t\na');
+    expectNonPrintable('\n\na');
+  });
+
+  it('rejects strings with leading empty lines', () => {
+    expectNonPrintable('a\n');
+    expectNonPrintable('a\n ');
+    expectNonPrintable('a\n\t');
+    expectNonPrintable('a\n\n');
   });
 });
 
