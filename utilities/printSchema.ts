@@ -3,7 +3,7 @@ import { invariant } from '../jsutils/invariant.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import { Kind } from '../language/kinds.ts';
 import { print } from '../language/printer.ts';
-import { printBlockString } from '../language/blockString.ts';
+import { isPrintableAsBlockString } from '../language/blockString.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 import type { GraphQLDirective } from '../type/directives.ts';
 import type {
@@ -325,8 +325,11 @@ function printDescription(
     return '';
   }
 
-  const preferMultipleLines = description.length > 70;
-  const blockString = printBlockString(description, preferMultipleLines);
+  const blockString = print({
+    kind: Kind.STRING,
+    value: description,
+    block: isPrintableAsBlockString(description),
+  });
   const prefix =
     indentation && !firstInBlock ? '\n' + indentation : indentation;
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';

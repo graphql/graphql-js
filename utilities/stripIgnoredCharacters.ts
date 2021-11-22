@@ -1,10 +1,7 @@
 import { Source, isSource } from '../language/source.ts';
 import { TokenKind } from '../language/tokenKind.ts';
 import { Lexer, isPunctuatorTokenKind } from '../language/lexer.ts';
-import {
-  dedentBlockStringValue,
-  getBlockStringIndentation,
-} from '../language/blockString.ts';
+import { printBlockString } from '../language/blockString.ts';
 /**
  * Strips characters that are not significant to the validity or execution
  * of a GraphQL document:
@@ -93,7 +90,9 @@ export function stripIgnoredCharacters(source: string | Source): string {
     const tokenBody = body.slice(currentToken.start, currentToken.end);
 
     if (tokenKind === TokenKind.BLOCK_STRING) {
-      strippedBody += dedentBlockString(tokenBody);
+      strippedBody += printBlockString(currentToken.value, {
+        minimize: true,
+      });
     } else {
       strippedBody += tokenBody;
     }
@@ -102,22 +101,4 @@ export function stripIgnoredCharacters(source: string | Source): string {
   }
 
   return strippedBody;
-}
-
-function dedentBlockString(blockStr: string): string {
-  // skip leading and trailing triple quotations
-  const rawStr = blockStr.slice(3, -3);
-  let body = dedentBlockStringValue(rawStr);
-
-  if (getBlockStringIndentation(body) > 0) {
-    body = '\n' + body;
-  }
-
-  const hasTrailingQuote = body.endsWith('"') && !body.endsWith('\\"""');
-
-  if (hasTrailingQuote || body.endsWith('\\')) {
-    body += '\n';
-  }
-
-  return '"""' + body + '"""';
 }
