@@ -33,6 +33,8 @@ export function locatedError(
     (originalError as GraphQLError).positions,
     path,
     originalError,
+    null,
+    rawOriginalError
   );
 }
 

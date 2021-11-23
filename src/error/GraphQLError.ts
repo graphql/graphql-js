@@ -70,6 +70,10 @@ export class GraphQLError extends Error {
    * The original error thrown from a field resolver during execution.
    */
   readonly originalError: Error | undefined;
+  /**
+   * The raw original error thrown from a field resolver during execution.
+   */
+  readonly rawOriginalError: any | undefined;
 
   /**
    * Extension fields to add to the formatted error.
@@ -84,13 +88,14 @@ export class GraphQLError extends Error {
     path?: Maybe<ReadonlyArray<string | number>>,
     originalError?: Maybe<Error & { readonly extensions?: unknown }>,
     extensions?: Maybe<GraphQLErrorExtensions>,
+    rawOriginalError?: any,
   ) {
     super(message);
 
     this.name = 'GraphQLError';
     this.path = path ?? undefined;
     this.originalError = originalError ?? undefined;
-
+    this.rawOriginalError = rawOriginalError ?? undefined;
     // Compute list of blame nodes.
     this.nodes = undefinedIfEmpty(
       Array.isArray(nodes) ? nodes : nodes ? [nodes] : undefined,
