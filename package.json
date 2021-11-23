@@ -48,8 +48,8 @@
     "build:deno": "node resources/build-deno.js",
     "gitpublish:npm": "bash ./resources/gitpublish.sh npm npmDist",
     "gitpublish:deno": "bash ./resources/gitpublish.sh deno denoDist",
-    "build:docs": "docusaurus build",
-    "start:docs": "docusaurus start"
+    "build:docs": "docusaurus build ./docs",
+    "start:docs": "docusaurus start ./docs"
   },
   "devDependencies": {
     "@babel/core": "7.15.8",

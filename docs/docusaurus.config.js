@@ -108,16 +108,16 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         pages: {
-          path: './docs/src/pages',
+          path: './src/pages',
         },
         docs: {
-          path: './docs/tutorials',
+          path: './tutorials',
           routeBasePath: 'tutorials',
-          sidebarPath: require.resolve('./docs/sidebars.js'),
+          sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/graphql/graphql-js/edit/main/docs/',
         },
         theme: {
-          customCss: require.resolve('./docs/src/css/custom.css'),
+          customCss: require.resolve('./src/css/custom.css'),
         },
       },
     ],
@@ -126,7 +126,7 @@ module.exports = {
     [
       'docusaurus-plugin-typedoc-api',
       {
-        projectRoot: path.join(__dirname, '.'),
+        projectRoot: path.join(__dirname, '..'),
         packages: [{ path: '.', slug: 'graphql-js' }],
       },
     ],
