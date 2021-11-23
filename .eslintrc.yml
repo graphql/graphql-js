@@ -691,13 +691,6 @@ overrides:
       import/no-nodejs-modules: off
       import/no-commonjs: off
       no-console: off
-  - files: 'docusaurus.config.js'
-    rules:
-      import/no-commonjs: off
-      import/no-nodejs-modules: off
-      import/no-extraneous-dependencies: off
-      internal-rules/only-ascii: off
-      node/no-unpublished-require: off
   - files: 'docs/**'
     parser: 'babel-eslint'
     parserOptions:
@@ -708,6 +701,9 @@ overrides:
       - 'plugin:react/recommended'
     rules:
       import/no-commonjs: off
+      import/no-nodejs-modules: off
+      node/no-unpublished-require: off
+      internal-rules/only-ascii: off
       import/unambiguous: off
       import/no-extraneous-dependencies: off
       node/no-unpublished-import: off
