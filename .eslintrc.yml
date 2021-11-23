@@ -699,6 +699,7 @@ overrides:
       - 'react'
     extends:
       - 'plugin:react/recommended'
+      - 'plugin:react-hooks/recommended'
     rules:
       import/no-commonjs: off
       import/no-nodejs-modules: off
