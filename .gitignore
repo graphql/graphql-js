@@ -14,6 +14,6 @@
 /denoDist
 /npm
 /deno
-/build
+/docs/build
 .docusaurus
 .cache-loader

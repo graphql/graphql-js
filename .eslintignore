@@ -4,6 +4,9 @@
 /coverage
 /npmDist
 /denoDist
+/docs/build
+.docusaurus
+.cache-loader
 
 # Ignore TS files inside integration test
 /integrationTests/ts/*.ts
