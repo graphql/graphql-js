@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 module.exports = {
   title: 'graphql-js',
   tagline: 'A reference implementation of GraphQL for JavaScript',
-  url: 'https://js.graphql.org',
+  url: 'https://graphql-js.graphql.org',
   baseUrl: '/',
   onBrokenLinks: 'warn', // temporary need to find a way for typedoc generated docs to work
   onBrokenMarkdownLinks: 'warn',
