@@ -20,6 +20,7 @@ import {
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
   GraphQLDeferDirective,
+  GraphQLStreamDirective,
 } from '../../type/directives';
 import {
   GraphQLID,
@@ -156,8 +157,7 @@ describe('Schema Builder', () => {
   it('include standard type only if it is used', () => {
     const schema = buildSchema('type Query');
 
-    // String and Boolean are always included through introspection types
-    expect(schema.getType('Int')).to.equal(undefined);
+    // String, Boolean, and Int are always included through introspection types
     expect(schema.getType('Float')).to.equal(undefined);
     expect(schema.getType('ID')).to.equal(undefined);
   });
@@ -242,13 +242,14 @@ describe('Schema Builder', () => {
       directive @deprecated on FIELD_DEFINITION
       directive @specifiedBy on FIELD_DEFINITION
       directive @defer on FRAGMENT_SPREAD
+      directive @stream on FIELD
       `,
       {
         enableDeferStream: true,
       },
     );
 
-    expect(schema.getDirectives()).to.have.lengthOf(5);
+    expect(schema.getDirectives()).to.have.lengthOf(6);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.not.equal(
       GraphQLIncludeDirective,
@@ -260,6 +261,7 @@ describe('Schema Builder', () => {
       GraphQLSpecifiedByDirective,
     );
     expect(schema.getDirective('defer')).to.not.equal(GraphQLDeferDirective);
+    expect(schema.getDirective('stream')).to.not.equal(GraphQLStreamDirective);
   });
 
   it('Adding directives maintains @include, @skip & @specifiedBy', () => {
@@ -274,13 +276,14 @@ describe('Schema Builder', () => {
     expect(schema.getDirective('specifiedBy')).to.not.equal(undefined);
   });
 
-  it('Adds @defer when enableDeferStream flag is passed to schema', () => {
+  it('Adds @defer and stream when enableDeferStream flag is passed to schema', () => {
     const schema = buildSchema('type Query', {
       enableDeferStream: true,
     });
 
-    expect(schema.getDirectives()).to.have.lengthOf(5);
+    expect(schema.getDirectives()).to.have.lengthOf(6);
     expect(schema.getDirective('defer')).to.equal(GraphQLDeferDirective);
+    expect(schema.getDirective('stream')).to.equal(GraphQLStreamDirective);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
     expect(schema.getDirective('deprecated')).to.equal(

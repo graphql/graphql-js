@@ -13,7 +13,7 @@ import type {
   GraphQLFieldConfigArgumentMap,
 } from './definition';
 import { assertName } from './assertName';
-import { GraphQLString, GraphQLBoolean } from './scalars';
+import { GraphQLString, GraphQLBoolean, GraphQLInt } from './scalars';
 import {
   defineArguments,
   argsToArgsConfig,
@@ -184,6 +184,31 @@ export const GraphQLDeferDirective = new GraphQLDirective({
     label: {
       type: GraphQLString,
       description: 'Unique name',
+    },
+  },
+});
+
+/**
+ * Used to conditionally stream list fields.
+ */
+export const GraphQLStreamDirective = new GraphQLDirective({
+  name: 'stream',
+  description:
+    'Directs the executor to stream plural fields when the `if` argument is true or undefined.',
+  locations: [DirectiveLocation.FIELD],
+  args: {
+    if: {
+      type: GraphQLBoolean,
+      description: 'Stream when true or undefined.',
+    },
+    label: {
+      type: GraphQLString,
+      description: 'Unique name',
+    },
+    initialCount: {
+      defaultValue: 0,
+      type: GraphQLInt,
+      description: 'Number of items to return immediately',
     },
   },
 });

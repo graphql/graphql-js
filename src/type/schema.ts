@@ -25,6 +25,7 @@ import type { GraphQLDirective } from './directives';
 import { __Schema } from './introspection';
 import {
   GraphQLDeferDirective,
+  GraphQLStreamDirective,
   isDirective,
   specifiedDirectives,
 } from './directives';
@@ -186,6 +187,9 @@ export class GraphQLSchema {
     if (config.enableDeferStream === true) {
       if (!this._directives.some((directive) => directive.name === 'defer')) {
         this._directives = [...this._directives, GraphQLDeferDirective];
+      }
+      if (!this._directives.some((directive) => directive.name === 'stream')) {
+        this._directives = [...this._directives, GraphQLStreamDirective];
       }
     }
 
