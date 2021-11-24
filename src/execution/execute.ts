@@ -1652,7 +1652,19 @@ export class Dispatcher {
 
           resolved = true;
 
+          if (this._subsequentPayloads.length === 0) {
+            // a different call to next has exhausted all payloads
+            resolve({ value: undefined, done: true });
+            return;
+          }
+
           const index = this._subsequentPayloads.indexOf(promise);
+
+          if (index === -1) {
+            // a different call to next has consumed this payload
+            resolve(this._race());
+            return;
+          }
 
           this._subsequentPayloads.splice(index, 1);
 
