@@ -353,30 +353,6 @@ export interface SelectionSetNode {
 
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
-// export enum RequiredStatus {
-//   REQUIRED = 'required',
-//   OPTIONAL = 'optional',
-//   UNSET = 'unset',
-// }
-
-// export class ComplexRequiredStatus {
-//   readonly status: RequiredStatus;
-//   // Exists if status is on a List<Element>.
-//   //   This setup doesn't leave room for container types
-//   //   that have multiple fields like a Dictionary<Key, Value>
-//   //   so it will need to be fixed when that comes up.
-//   readonly subStatus?: ComplexRequiredStatus;
-
-//   constructor(status: RequiredStatus, subStatus?: ComplexRequiredStatus) {
-//     this.status = status;
-//     this.subStatus = subStatus;
-//   }
-
-//   get [Symbol.toStringTag]() {
-//     return 'ComplexRequiredStatus';
-//   }
-// }
-
 export interface FieldNode {
   readonly kind: Kind.FIELD;
   readonly loc?: Location;
@@ -385,7 +361,7 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
-  readonly required?: SupportArrayNode | NullabilityModifierNode;
+  readonly required?: SupportArrayNode;
 }
 
 export interface RequiredModifierNode {

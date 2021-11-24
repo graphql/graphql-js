@@ -457,13 +457,6 @@ export class Parser {
    * - !
    * - ?
    *
-   * NOTES:
-   * parseRequiredStatus assumes that if you have a designator like [[[!]!]!]! , the tokens can be
-   *   grouped like ([[[) (!) (]!) (]!) (]!) . The center designator is on its own, and the rest are
-   *   attached to a right bracket. This thinking simplifies parsing.
-   *
-   * A designator on its own like with `field!` is found using the same subroutine that's used to
-   *   find the center designator mentioned above.
    */
   parseRequiredStatus(): SupportArrayNode | undefined {
     let start = this._lexer.token;
