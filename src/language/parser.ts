@@ -61,6 +61,10 @@ import type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  SupportArrayNode,
+  NullabilityModifierNode,
+  OptionalModifierNode,
+  RequiredModifierNode,
 } from './ast';
 
 import {
@@ -435,8 +439,6 @@ export class Parser {
       name = nameOrAlias;
     }
 
-    const required = this.parseRequiredStatus();
-
     return this.node<FieldNode>(start, {
       kind: Kind.FIELD,
       alias,
@@ -446,7 +448,7 @@ export class Parser {
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
         : undefined,
-      required,
+      required: this.parseRequiredStatus(),
     });
   }
 
@@ -463,81 +465,24 @@ export class Parser {
    * A designator on its own like with `field!` is found using the same subroutine that's used to
    *   find the center designator mentioned above.
    */
-  parseRequiredStatus(): ComplexRequiredStatus {
-    const stillDefiningNullabilityDesignator = (): boolean => {
-      const allowedTokens = [
-        TokenKind.BRACKET_L,
-        TokenKind.BRACKET_R,
-        TokenKind.QUESTION_MARK,
-        TokenKind.BANG,
-      ];
-      const reducer = (prv: boolean, current: TokenKind): boolean =>
-        prv || this.peek(current);
-      return allowedTokens.reduce(reducer, false);
-    };
-
-    let listDepthCount = 0;
-
-    let lastRequiredStatus: RequiredStatus = RequiredStatus.UNSET;
-    let outerComplexRequiredStatus: ComplexRequiredStatus | undefined;
-
-    // The spec expects !, ?, or [ until there's a ]
-    while (stillDefiningNullabilityDesignator()) {
-      if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
-        listDepthCount += 1;
-      } else if (this.peek(TokenKind.BRACKET_R)) {
-        break;
-      } else {
-        // throws on multiple designators in a row eg ?!!
-        if (outerComplexRequiredStatus) {
-          throw syntaxError(
-            this._lexer.source,
-            this._lexer.token.start,
-            'Invalid nullability designator',
-          );
-        }
-        lastRequiredStatus = this.parseSimpleRequiredStatus();
-        outerComplexRequiredStatus = new ComplexRequiredStatus(
-          lastRequiredStatus,
-          outerComplexRequiredStatus,
-        );
-      }
+  parseRequiredStatus(): SupportArrayNode | undefined {
+    let start = this._lexer.token;
+    let child: SupportArrayNode | undefined;
+    
+    if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
+      child = this.parseRequiredStatus();
+      this.expectToken(TokenKind.BRACKET_R);
     }
 
-    // Once there's been a ], no more [ are allowed
-    while (stillDefiningNullabilityDesignator()) {
-      if (this.expectOptionalToken(TokenKind.BRACKET_R)) {
-        listDepthCount -= 1;
-        lastRequiredStatus = this.parseSimpleRequiredStatus();
-        outerComplexRequiredStatus = new ComplexRequiredStatus(
-          lastRequiredStatus,
-          // handles unset elements on the innermost list
-          outerComplexRequiredStatus ??
-            new ComplexRequiredStatus(RequiredStatus.UNSET),
-        );
-      } else {
-        throw syntaxError(
-          this._lexer.source,
-          this._lexer.token.start,
-          'Invalid nullability designator',
-        );
-      }
+    let nullabilityStatus = this.parseNullabilityModifierNode();
+    
+    if (nullabilityStatus || child) {
+      return this.node<SupportArrayNode>(start, {
+        kind: Kind.NULLABILITY,
+        elementStatus: nullabilityStatus,
+        child: child
+      });
     }
-    // There are no more characters that could make up a nullability designator
-
-    // Indicates unbalanced braces eg [[] or []]
-    if (listDepthCount !== 0) {
-      throw syntaxError(
-        this._lexer.source,
-        this._lexer.token.start,
-        'Unbalanced braces in nullability designator',
-      );
-    }
-
-    return (
-      outerComplexRequiredStatus ??
-      new ComplexRequiredStatus(lastRequiredStatus)
-    );
   }
 
   /**
@@ -546,16 +491,24 @@ export class Parser {
    * - ?
    *
    */
-  parseSimpleRequiredStatus(): RequiredStatus {
-    let required: RequiredStatus;
+  parseNullabilityModifierNode(): NullabilityModifierNode | undefined {
+    return this.parseRequiredModifierNode() ?? this.parseOptionalModifierNode()
+  }
+
+  parseRequiredModifierNode(): RequiredModifierNode | undefined {
     if (this.expectOptionalToken(TokenKind.BANG)) {
-      required = RequiredStatus.REQUIRED;
-    } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-      required = RequiredStatus.OPTIONAL;
-    } else {
-      required = RequiredStatus.UNSET;
+      return this.node<RequiredModifierNode>(this._lexer.token, {
+        kind: Kind.REQUIRED_DESIGNATOR
+      });
     }
-    return required;
+  }
+
+  parseOptionalModifierNode(): OptionalModifierNode | undefined {
+    if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+      return this.node<OptionalModifierNode>(this._lexer.token, {
+        kind: Kind.OPTIONAL_DESIGNATOR
+      });
+    }
   }
 
   /**

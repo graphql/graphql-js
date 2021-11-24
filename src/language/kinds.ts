@@ -12,6 +12,9 @@ export enum Kind {
   SELECTION_SET = 'SelectionSet',
   FIELD = 'Field',
   ARGUMENT = 'Argument',
+  NULLABILITY = 'Nullability',
+  REQUIRED_DESIGNATOR = 'RequiredDesignator',
+  OPTIONAL_DESIGNATOR = 'OptionalDesignator',
 
   /** Fragments */
   FRAGMENT_SPREAD = 'FragmentSpread',

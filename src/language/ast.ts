@@ -353,29 +353,29 @@ export interface SelectionSetNode {
 
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
-export enum RequiredStatus {
-  REQUIRED = 'required',
-  OPTIONAL = 'optional',
-  UNSET = 'unset',
-}
+// export enum RequiredStatus {
+//   REQUIRED = 'required',
+//   OPTIONAL = 'optional',
+//   UNSET = 'unset',
+// }
 
-export class ComplexRequiredStatus {
-  readonly status: RequiredStatus;
-  // Exists if status is on a List<Element>.
-  //   This setup doesn't leave room for container types
-  //   that have multiple fields like a Dictionary<Key, Value>
-  //   so it will need to be fixed when that comes up.
-  readonly subStatus?: ComplexRequiredStatus;
+// export class ComplexRequiredStatus {
+//   readonly status: RequiredStatus;
+//   // Exists if status is on a List<Element>.
+//   //   This setup doesn't leave room for container types
+//   //   that have multiple fields like a Dictionary<Key, Value>
+//   //   so it will need to be fixed when that comes up.
+//   readonly subStatus?: ComplexRequiredStatus;
 
-  constructor(status: RequiredStatus, subStatus?: ComplexRequiredStatus) {
-    this.status = status;
-    this.subStatus = subStatus;
-  }
+//   constructor(status: RequiredStatus, subStatus?: ComplexRequiredStatus) {
+//     this.status = status;
+//     this.subStatus = subStatus;
+//   }
 
-  get [Symbol.toStringTag]() {
-    return 'ComplexRequiredStatus';
-  }
-}
+//   get [Symbol.toStringTag]() {
+//     return 'ComplexRequiredStatus';
+//   }
+// }
 
 export interface FieldNode {
   readonly kind: Kind.FIELD;
@@ -385,7 +385,26 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
-  readonly required: ComplexRequiredStatus;
+  readonly required?: SupportArrayNode | NullabilityModifierNode;
+}
+
+export interface RequiredModifierNode {
+  readonly kind: Kind.REQUIRED_DESIGNATOR;
+  readonly loc?: Location;
+}
+
+export interface OptionalModifierNode {
+  readonly kind: Kind.OPTIONAL_DESIGNATOR;
+  readonly loc?: Location;
+}
+
+export type NullabilityModifierNode = RequiredModifierNode | OptionalModifierNode;
+
+export interface SupportArrayNode {
+  readonly kind: Kind.NULLABILITY;
+  readonly loc?: Location;
+  readonly elementStatus?: NullabilityModifierNode;
+  readonly child?: SupportArrayNode
 }
 
 export interface ArgumentNode {

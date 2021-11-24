@@ -252,7 +252,7 @@ describe('Parser', () => {
         optionalField?!
       }
     `),
-    ).to.throw('Syntax Error: Invalid nullability designator');
+    ).to.throw('Syntax Error: Expected Name, found \"!\".');
 
     expect(() =>
       parse(`
@@ -260,7 +260,7 @@ describe('Parser', () => {
         optionalField!?
       }
     `),
-    ).to.throw('Syntax Error: Invalid nullability designator');
+    ).to.throw('Syntax Error: Expected Name, found \"?\".');
   });
 
   it('parses required with alias', () => {
@@ -377,11 +377,18 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: RequiredStatus.UNSET,
-                  subStatus: {
-                    status: RequiredStatus.REQUIRED,
-                    subStatus: undefined,
-                  },
+                  kind: Kind.NULLABILITY,
+                  elementStatus: undefined,
+                  loc: { start: 9, end: 12 },
+                  child: {
+                    kind: Kind.NULLABILITY,
+                    child: undefined,
+                    loc: { start: 10, end: 11 },
+                    elementStatus: {
+                      kind: Kind.REQUIRED_DESIGNATOR,
+                      loc: { start: 11, end: 11 }
+                    }
+                  }
                 },
                 selectionSet: undefined,
               },
@@ -426,11 +433,18 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: RequiredStatus.UNSET,
-                  subStatus: {
-                    status: RequiredStatus.OPTIONAL,
-                    subStatus: undefined,
-                  },
+                  kind: Kind.NULLABILITY,
+                  elementStatus: undefined,
+                  loc: { start: 9, end: 12 },
+                  child: {
+                    kind: Kind.NULLABILITY,
+                    child: undefined,
+                    loc: { start: 10, end: 11 },
+                    elementStatus: {
+                      kind: Kind.OPTIONAL_DESIGNATOR,
+                      loc: { start: 11, end: 11 }
+                    }
+                  }
                 },
                 selectionSet: undefined,
               },
@@ -474,15 +488,17 @@ describe('Parser', () => {
                 },
                 arguments: [],
                 directives: [],
-                required: {
-                  status: RequiredStatus.REQUIRED,
-                  subStatus: {
-                    status: RequiredStatus.UNSET,
-                    subStatus: undefined,
-                  },
-                },
                 selectionSet: undefined,
-              },
+                required: {
+                  kind: Kind.NULLABILITY,
+                  elementStatus: {
+                    kind: Kind.REQUIRED_DESIGNATOR,
+                    loc: { start: 13, end: 12 }
+                  },
+                  loc: { start: 9, end: 12 },
+                  child: undefined
+                },
+              }
             ],
           },
         },
@@ -524,11 +540,13 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: RequiredStatus.OPTIONAL,
-                  subStatus: {
-                    status: RequiredStatus.UNSET,
-                    subStatus: undefined,
+                  kind: Kind.NULLABILITY,
+                  elementStatus: {
+                    kind: Kind.OPTIONAL_DESIGNATOR,
+                    loc: { start: 13, end: 12 }
                   },
+                  loc: { start: 9, end: 12 },
+                  child: undefined
                 },
                 selectionSet: undefined,
               },
@@ -573,14 +591,31 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  status: RequiredStatus.REQUIRED,
-                  subStatus: {
-                    status: RequiredStatus.UNSET,
-                    subStatus: {
-                      status: RequiredStatus.REQUIRED,
-                      subStatus: {
-                        status: RequiredStatus.OPTIONAL,
-                        subStatus: undefined,
+                  kind: Kind.NULLABILITY,
+                  elementStatus: {
+                    kind: Kind.REQUIRED_DESIGNATOR,
+                    loc: { start: 19, end: 18 }
+                  },
+                  loc: { start: 9, end: 18 },
+                  child: {
+                    kind: Kind.NULLABILITY,
+                    elementStatus: undefined,
+                    loc: { start: 10, end: 16 },
+                    child: {
+                      kind: Kind.NULLABILITY,
+                      elementStatus: {
+                        kind: Kind.REQUIRED_DESIGNATOR,
+                        loc: { start: 15, end: 15 }
+                      },
+                      loc: { start: 11, end: 15 },
+                      child: {
+                        kind: Kind.NULLABILITY,
+                        elementStatus: {
+                          kind: Kind.OPTIONAL_DESIGNATOR,
+                          loc: { start: 13, end: 13 }
+                        },
+                        loc: { start: 12, end: 13 },
+                        child: undefined
                       },
                     },
                   },
@@ -601,7 +636,7 @@ describe('Parser', () => {
         field[[]
       }
     `),
-    ).to.throw('Syntax Error: Unbalanced braces in nullability designator');
+    ).to.throw('Syntax Error: Expected \"]\", found \"}\".');
 
     expect(() =>
       parse(`
@@ -609,7 +644,7 @@ describe('Parser', () => {
         field[]]
       }
     `),
-    ).to.throw('Syntax Error: Unbalanced braces in nullability designator');
+    ).to.throw('Syntax Error: Expected Name, found \"]\".');
 
     expect(() =>
       parse(`
@@ -617,7 +652,7 @@ describe('Parser', () => {
         field]
       }
     `),
-    ).to.throw('Syntax Error: Unbalanced braces in nullability designator');
+    ).to.throw('Syntax Error: Expected Name, found \"]\".');
 
     expect(() =>
       parse(`
@@ -625,7 +660,7 @@ describe('Parser', () => {
         field[
       }
     `),
-    ).to.throw('Syntax Error: Unbalanced braces in nullability designator');
+    ).to.throw('Syntax Error: Expected \"]\", found \"}\".');
   });
 
   it('does not parse field with assorted invalid nullability designators', () => {
@@ -635,7 +670,7 @@ describe('Parser', () => {
         field[][]
       }
     `),
-    ).to.throw('Syntax Error: Invalid nullability designator');
+    ).to.throw('Syntax Error: Expected Name, found \"[\".');
 
     expect(() =>
       parse(`
@@ -643,7 +678,7 @@ describe('Parser', () => {
         field[!!]
       }
     `),
-    ).to.throw('Syntax Error: Invalid nullability designator');
+    ).to.throw('Syntax Error: Expected \"]\", found \"!\".');
 
     expect(() =>
       parse(`
@@ -651,7 +686,7 @@ describe('Parser', () => {
         field[]?!
       }
     `),
-    ).to.throw('Syntax Error: Invalid nullability designator');
+    ).to.throw('Syntax Error: Expected Name, found \"!\".');
   });
 
   it('creates ast', () => {
@@ -705,10 +740,7 @@ describe('Parser', () => {
                   },
                 ],
                 directives: [],
-                required: {
-                  status: RequiredStatus.UNSET,
-                  subStatus: undefined,
-                },
+                required: undefined,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 16, end: 38 },
@@ -724,10 +756,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      required: {
-                        status: RequiredStatus.UNSET,
-                        subStatus: undefined,
-                      },
+                      required: undefined,
                       selectionSet: undefined,
                     },
                     {
@@ -741,10 +770,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      required: {
-                        status: RequiredStatus.UNSET,
-                        subStatus: undefined,
-                      },
+                      required: undefined,
                       selectionSet: undefined,
                     },
                   ],
@@ -792,10 +818,7 @@ describe('Parser', () => {
                 },
                 arguments: [],
                 directives: [],
-                required: {
-                  status: RequiredStatus.UNSET,
-                  subStatus: undefined,
-                },
+                required: undefined,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 15, end: 27 },
@@ -811,10 +834,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      required: {
-                        status: RequiredStatus.UNSET,
-                        subStatus: undefined,
-                      },
+                      required: undefined,
                       selectionSet: undefined,
                     },
                   ],
