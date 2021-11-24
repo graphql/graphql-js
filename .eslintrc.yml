@@ -473,6 +473,10 @@ rules:
   yield-star-spacing: off
 
 overrides:
+  - files:
+      - 'integrationTests/node-esm/**/*.js'
+    parserOptions:
+      sourceType: module
   - files: '**/*.ts'
     parser: '@typescript-eslint/parser'
     parserOptions:
