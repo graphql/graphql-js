@@ -21,6 +21,13 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
    * Default: false
    */
   assumeValidSDL?: boolean;
+
+  /**
+   * Set to true to enable defer/stream directives.
+   *
+   * Default: false
+   */
+  enableDeferStream?: boolean;
 }
 
 /**
@@ -107,5 +114,6 @@ export function buildSchema(
   return buildASTSchema(document, {
     assumeValidSDL: options?.assumeValidSDL,
     assumeValid: options?.assumeValid,
+    enableDeferStream: options?.enableDeferStream,
   });
 }

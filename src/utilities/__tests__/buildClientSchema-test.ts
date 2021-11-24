@@ -485,6 +485,26 @@ describe('Type System: build schema from introspection', () => {
     expect(printSchema(clientSchema)).to.equal(sdl);
   });
 
+  it('builds a schema without directives', () => {
+    const sdl = dedent`
+      type Query {
+        string: String
+      }
+    `;
+
+    const schema = buildSchema(sdl);
+    const introspection = introspectionFromSchema(schema);
+
+    // @ts-expect-error
+    delete introspection.__schema.directives;
+
+    const clientSchema = buildClientSchema(introspection);
+
+    expect(schema.getDirectives()).to.have.lengthOf.above(0);
+    expect(clientSchema.getDirectives()).to.deep.equal([]);
+    expect(printSchema(clientSchema)).to.equal(sdl);
+  });
+
   it('builds a schema aware of deprecation', () => {
     const sdl = dedent`
       directive @someDirective(

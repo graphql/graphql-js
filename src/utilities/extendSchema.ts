@@ -89,6 +89,13 @@ interface Options extends GraphQLSchemaValidationOptions {
    * Default: false
    */
   assumeValidSDL?: boolean;
+
+  /**
+   * Set to true to enable defer/stream directives.
+   *
+   * Default: false
+   */
+  enableDeferStream?: boolean;
 }
 
 /**
@@ -210,6 +217,7 @@ export function extendSchemaImpl(
     astNode: schemaDef ?? schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
     assumeValid: options?.assumeValid ?? false,
+    enableDeferStream: options?.enableDeferStream ?? false,
   };
 
   // Below are functions used for producing this schema that have closed over

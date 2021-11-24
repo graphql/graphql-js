@@ -23,7 +23,11 @@ import type {
 } from './definition';
 import type { GraphQLDirective } from './directives';
 import { __Schema } from './introspection';
-import { isDirective, specifiedDirectives } from './directives';
+import {
+  GraphQLDeferDirective,
+  isDirective,
+  specifiedDirectives,
+} from './directives';
 import {
   isObjectType,
   isInterfaceType,
@@ -136,6 +140,9 @@ export class GraphQLSchema {
   // Used as a cache for validateSchema().
   __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
 
+  // Enable support for defer/stream directives
+  _enableDeferStream: boolean | undefined;
+
   private _queryType: Maybe<GraphQLObjectType>;
   private _mutationType: Maybe<GraphQLObjectType>;
   private _subscriptionType: Maybe<GraphQLObjectType>;
@@ -151,6 +158,7 @@ export class GraphQLSchema {
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
     this.__validationErrors = config.assumeValid === true ? [] : undefined;
+    this._enableDeferStream = config.enableDeferStream;
 
     // Check for common mistakes during construction to produce early errors.
     devAssert(isObjectLike(config), 'Must provide configuration object.');
@@ -174,6 +182,12 @@ export class GraphQLSchema {
     this._subscriptionType = config.subscription;
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives ?? specifiedDirectives;
+
+    if (config.enableDeferStream === true) {
+      if (!this._directives.some((directive) => directive.name === 'defer')) {
+        this._directives = [...this._directives, GraphQLDeferDirective];
+      }
+    }
 
     // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
@@ -389,6 +403,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
+  enableDeferStream?: boolean;
 }
 
 /**
