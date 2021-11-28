@@ -700,14 +700,14 @@ overrides:
       - 'plugin:react/recommended'
       - 'plugin:react-hooks/recommended'
     rules:
-      import/no-commonjs: off
-      import/no-nodejs-modules: off
-      node/no-unpublished-require: off
       internal-rules/only-ascii: off
-      import/unambiguous: off
-      import/no-extraneous-dependencies: off
+      node/no-unpublished-require: off
       node/no-unpublished-import: off
       node/no-missing-import: off
+      import/no-commonjs: off
+      import/no-nodejs-modules: off
+      import/unambiguous: off
+      import/no-extraneous-dependencies: off
       # Ignore docusarus related webpack aliases
       import/no-unresolved:
         ['error', { 'ignore': ['^@theme', '^@docusaurus', '^@generated'] }]
