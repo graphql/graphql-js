@@ -16,6 +16,17 @@ describe('locatedError', () => {
     expect(locatedError(e, [], [])).to.deep.equal(e);
   });
 
+  it('wraps non-errors', () => {
+    const testObject = Object.freeze({});
+    const error = locatedError(testObject, [], []);
+
+    expect(error).to.be.instanceOf(GraphQLError);
+    expect(error.originalError).to.include({
+      name: 'NonErrorThrown',
+      thrownValue: testObject,
+    });
+  });
+
   it('passes GraphQLError-ish through', () => {
     const e = new Error();
     // @ts-expect-error
