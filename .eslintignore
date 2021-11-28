@@ -4,7 +4,7 @@
 /coverage
 /npmDist
 /denoDist
-/docs/build
+/docsDist
 .docusaurus
 .cache-loader
 
