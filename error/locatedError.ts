@@ -1,5 +1,5 @@
-import { inspect } from '../jsutils/inspect.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
+import { toError } from '../jsutils/toError.ts';
 import type { ASTNode } from '../language/ast.ts';
 import { GraphQLError } from './GraphQLError.ts';
 /**
@@ -13,11 +13,7 @@ export function locatedError(
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
   path?: Maybe<ReadonlyArray<string | number>>,
 ): GraphQLError {
-  // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
-  const originalError: Error | GraphQLError =
-    rawOriginalError instanceof Error
-      ? rawOriginalError
-      : new Error('Unexpected error value: ' + inspect(rawOriginalError)); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
+  const originalError = toError(rawOriginalError); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
 
   if (isLocatedGraphQLError(originalError)) {
     return originalError;
