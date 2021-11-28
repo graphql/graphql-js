@@ -692,7 +692,6 @@ overrides:
       import/no-commonjs: off
       no-console: off
   - files: 'docs/**'
-    parser: 'babel-eslint'
     parserOptions:
       sourceType: module
     plugins:
