@@ -8,6 +8,7 @@
     "graphql": "file:../graphql.tgz",
     "node-12": "npm:node@12.x.x",
     "node-14": "npm:node@14.x.x",
-    "node-16": "npm:node@16.x.x"
+    "node-16": "npm:node@16.x.x",
+    "node-17": "npm:node@17.x.x"
   }
 }
