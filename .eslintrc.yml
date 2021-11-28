@@ -8,7 +8,6 @@ reportUnusedDisableDirectives: true
 plugins:
   - internal-rules
   - node
-  - istanbul
   - import
 settings:
   node:
@@ -23,14 +22,7 @@ rules:
   internal-rules/only-ascii: error
   internal-rules/no-dir-import: error
   internal-rules/require-to-string-tag: off
-
-  ##############################################################################
-  # `eslint-plugin-istanbul` rule list based on `v0.1.2`
-  # https://github.com/istanbuljs/eslint-plugin-istanbul#rules
-  ##############################################################################
-
-  istanbul/no-ignore-file: error
-  istanbul/prefer-ignore-reason: error
+  internal-rules/require-coverage-ignore-reason: error
 
   ##############################################################################
   # `eslint-plugin-node` rule list based on `v11.1.x`

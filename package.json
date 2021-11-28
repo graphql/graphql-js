@@ -66,7 +66,6 @@
     "eslint": "7.32.0",
     "eslint-plugin-import": "2.25.2",
     "eslint-plugin-internal-rules": "file:./resources/eslint-internal-rules",
-    "eslint-plugin-istanbul": "0.1.2",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-tsdoc": "0.2.14",
     "mocha": "9.1.3",
