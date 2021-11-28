@@ -191,18 +191,18 @@ const GraphQLDeprecatedDirective = new GraphQLDirective({
   },
 });
 /**
- * Used to provide a URL for specifying the behaviour of custom scalar definitions.
+ * Used to provide a URL for specifying the behavior of custom scalar definitions.
  */
 
 exports.GraphQLDeprecatedDirective = GraphQLDeprecatedDirective;
 const GraphQLSpecifiedByDirective = new GraphQLDirective({
   name: 'specifiedBy',
-  description: 'Exposes a URL that specifies the behaviour of this scalar.',
+  description: 'Exposes a URL that specifies the behavior of this scalar.',
   locations: [_directiveLocation.DirectiveLocation.SCALAR],
   args: {
     url: {
       type: new _definition.GraphQLNonNull(_scalars.GraphQLString),
-      description: 'The URL that specifies the behaviour of this scalar.',
+      description: 'The URL that specifies the behavior of this scalar.',
     },
   },
 });

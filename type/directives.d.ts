@@ -73,7 +73,7 @@ export declare const DEFAULT_DEPRECATION_REASON = 'No longer supported';
  */
 export declare const GraphQLDeprecatedDirective: GraphQLDirective;
 /**
- * Used to provide a URL for specifying the behaviour of custom scalar definitions.
+ * Used to provide a URL for specifying the behavior of custom scalar definitions.
  */
 export declare const GraphQLSpecifiedByDirective: GraphQLDirective;
 /**
