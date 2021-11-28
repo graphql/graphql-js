@@ -5,7 +5,7 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.locatedError = locatedError;
 
-var _inspect = require('../jsutils/inspect.js');
+var _toError = require('../jsutils/toError.js');
 
 var _GraphQLError = require('./GraphQLError.js');
 
@@ -17,13 +17,7 @@ var _GraphQLError = require('./GraphQLError.js');
 function locatedError(rawOriginalError, nodes, path) {
   var _nodes;
 
-  // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
-  const originalError =
-    rawOriginalError instanceof Error
-      ? rawOriginalError
-      : new Error(
-          'Unexpected error value: ' + (0, _inspect.inspect)(rawOriginalError),
-        ); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
+  const originalError = (0, _toError.toError)(rawOriginalError); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
 
   if (isLocatedGraphQLError(originalError)) {
     return originalError;
