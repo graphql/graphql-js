@@ -458,22 +458,28 @@ export class Parser {
    * - ?
    *
    */
-  parseRequiredStatus(): SupportArrayNode | undefined {
+  parseRequiredStatus(): NullabilityModifierNode | SupportArrayNode | undefined {
+    let list = this.parseListNullability();
+    let nullabilityStatus = this.parseNullabilityModifierNode(list);
+
+    return nullabilityStatus ?? list;
+  }
+
+  parseListNullability(): SupportArrayNode | undefined {
     let start = this._lexer.token;
-    let child: SupportArrayNode | undefined;
-    
+    let child: NullabilityModifierNode | SupportArrayNode | undefined;
+    let isList = false;
+
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
       child = this.parseRequiredStatus();
+      isList = true;
       this.expectToken(TokenKind.BRACKET_R);
     }
 
-    let nullabilityStatus = this.parseNullabilityModifierNode();
-    
-    if (nullabilityStatus || child) {
+    if (isList) {
       return this.node<SupportArrayNode>(start, {
-        kind: Kind.NULLABILITY,
-        elementStatus: nullabilityStatus,
-        child: child
+        kind: Kind.LIST_NULLABILITY,
+        elementStatus: child
       });
     }
   }
@@ -484,22 +490,24 @@ export class Parser {
    * - ?
    *
    */
-  parseNullabilityModifierNode(): NullabilityModifierNode | undefined {
-    return this.parseRequiredModifierNode() ?? this.parseOptionalModifierNode()
+  parseNullabilityModifierNode(childElement?: SupportArrayNode): NullabilityModifierNode | undefined {
+    return this.parseRequiredModifierNode(childElement) ?? this.parseOptionalModifierNode(childElement)
   }
 
-  parseRequiredModifierNode(): RequiredModifierNode | undefined {
+  parseRequiredModifierNode(childElement?: SupportArrayNode): RequiredModifierNode | undefined {
     if (this.expectOptionalToken(TokenKind.BANG)) {
       return this.node<RequiredModifierNode>(this._lexer.token, {
-        kind: Kind.REQUIRED_DESIGNATOR
+        kind: Kind.REQUIRED_DESIGNATOR,
+        element: childElement
       });
     }
   }
 
-  parseOptionalModifierNode(): OptionalModifierNode | undefined {
+  parseOptionalModifierNode(childElement?: SupportArrayNode): OptionalModifierNode | undefined {
     if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
       return this.node<OptionalModifierNode>(this._lexer.token, {
-        kind: Kind.OPTIONAL_DESIGNATOR
+        kind: Kind.OPTIONAL_DESIGNATOR,
+        element: childElement
       });
     }
   }

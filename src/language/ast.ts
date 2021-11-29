@@ -1,3 +1,4 @@
+import { ASTNode } from '.';
 import type { Kind } from './kinds';
 import type { Source } from './source';
 
@@ -180,7 +181,10 @@ export type ASTNode =
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
-  | InputObjectTypeExtensionNode;
+  | InputObjectTypeExtensionNode
+  | RequiredModifierNode
+  | OptionalModifierNode
+  | SupportArrayNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -207,7 +211,10 @@ export const QueryDocumentKeys: {
   VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
+  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet', 'required'],
+  Nullability: ['child', 'elementStatus'],
+  RequiredDesignator: [],
+  OptionalDesignator: [],
   Argument: ['name', 'value'],
 
   FragmentSpread: ['name', 'directives'],
@@ -367,20 +374,22 @@ export interface FieldNode {
 export interface RequiredModifierNode {
   readonly kind: Kind.REQUIRED_DESIGNATOR;
   readonly loc?: Location;
+  readonly element?: SupportArrayNode;
 }
 
 export interface OptionalModifierNode {
   readonly kind: Kind.OPTIONAL_DESIGNATOR;
   readonly loc?: Location;
+  readonly element?: SupportArrayNode
 }
 
+// modifiers can be !, ? or []
 export type NullabilityModifierNode = RequiredModifierNode | OptionalModifierNode;
 
 export interface SupportArrayNode {
-  readonly kind: Kind.NULLABILITY;
+  readonly kind: Kind.LIST_NULLABILITY;
   readonly loc?: Location;
-  readonly elementStatus?: NullabilityModifierNode;
-  readonly child?: SupportArrayNode
+  readonly elementStatus?: NullabilityModifierNode | SupportArrayNode;
 }
 
 export interface ArgumentNode {

@@ -12,7 +12,7 @@ export enum Kind {
   SELECTION_SET = 'SelectionSet',
   FIELD = 'Field',
   ARGUMENT = 'Argument',
-  NULLABILITY = 'Nullability',
+  LIST_NULLABILITY = 'ListNullabilityDesignator',
   REQUIRED_DESIGNATOR = 'RequiredDesignator',
   OPTIONAL_DESIGNATOR = 'OptionalDesignator',
 

@@ -1,7 +1,6 @@
 import type { Maybe } from '../jsutils/Maybe';
 
-import type { ASTNode, ComplexRequiredStatus } from './ast';
-import { RequiredStatus } from './ast';
+import type { ASTNode } from './ast';
 import type { ASTReducer } from './visitor';
 import { visit } from './visitor';
 import { printBlockString } from './blockString';
@@ -64,39 +63,10 @@ const printDocASTReducer: ASTReducer<string> = {
       selectionSet,
       required,
     }) {
-      const buildRequiredDesignator = (
-        requiredStatus: ComplexRequiredStatus,
-        accumulator: string = '',
-        depth: number = 0,
-      ): string => {
-        let tempAccumulator = accumulator;
-        if (requiredStatus.subStatus) {
-          tempAccumulator = buildRequiredDesignator(
-            requiredStatus.subStatus,
-            tempAccumulator + '[',
-            depth + 1,
-          );
-        }
-
-        if (requiredStatus.status === RequiredStatus.REQUIRED) {
-          tempAccumulator += '!';
-        } else if (requiredStatus.status === RequiredStatus.OPTIONAL) {
-          tempAccumulator += '?';
-        }
-        if (depth > 0) {
-          tempAccumulator += ']';
-        }
-
-        return tempAccumulator;
-      };
-
-      const prefix = wrap('', alias, ': ') + name;
-      const requiredDesignator = buildRequiredDesignator(
-        required as unknown as ComplexRequiredStatus,
-      );
+      const prefix = join([wrap('', alias, ': '), name, required], '');
 
       let argsLine =
-        prefix + requiredDesignator + wrap('(', join(args, ', '), ')');
+        prefix + wrap('(', join(args, ', '), ')');
 
       if (argsLine.length > MAX_LINE_LENGTH) {
         argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
@@ -105,6 +75,32 @@ const printDocASTReducer: ASTReducer<string> = {
       return join([argsLine, join(directives, ' '), selectionSet], ' ');
     },
   },
+
+  RequiredDesignator: {
+    leave({}) {
+      return '!';
+    }
+  },
+
+  OptionalDesignator: {
+    leave({}) {
+      return '?';
+    }
+  },
+
+  Nullability: {
+    leave({
+      elementStatus,
+      child
+    }) {
+      let required = elementStatus ?? '';
+      if (child) {
+        required = '[' + child + ']' + required;
+      }
+      return required;
+    }
+  },
+  
 
   Argument: { leave: ({ name, value }) => name + ': ' + value },
 

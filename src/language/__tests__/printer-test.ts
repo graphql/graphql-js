@@ -8,14 +8,12 @@ import { Kind } from '../kinds';
 import { parse } from '../parser';
 import { print } from '../printer';
 
-import { ComplexRequiredStatus, RequiredStatus } from '../ast';
-
 describe('Printer: Query document', () => {
   it('prints minimal ast', () => {
     const ast = {
       kind: Kind.FIELD,
       name: { kind: Kind.NAME, value: 'foo' },
-      required: new ComplexRequiredStatus(RequiredStatus.UNSET),
+      required: undefined
     } as const;
     expect(print(ast)).to.equal('foo');
   });
@@ -30,7 +28,7 @@ describe('Printer: Query document', () => {
   });
 
   it('correctly prints non-query operations without name', () => {
-    const queryASTShorthanded = parse('query { id, name }');
+    const queryASTShorthanded = parse('query { id[!], name[]! }');
     expect(print(queryASTShorthanded)).to.equal(dedent`
       {
         id

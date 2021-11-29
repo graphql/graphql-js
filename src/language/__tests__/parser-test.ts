@@ -11,7 +11,6 @@ import { Kind } from '../kinds';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseConstValue, parseType } from '../parser';
-import { RequiredStatus } from '../ast';
 
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));
@@ -226,13 +225,50 @@ describe('Parser', () => {
   });
 
   it('parses required field', () => {
-    expect(() =>
-      parse(`
+    const result = parse(dedent`
       query {
         requiredField!
       }
-    `),
-    ).to.not.throw();
+    `)
+
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 26 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 26 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 6, end: 26 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 10, end: 24 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 10, end: 23 },
+                  value: 'requiredField',
+                },
+                arguments: [],
+                directives: [],
+                selectionSet: undefined,
+                required: {
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  element: undefined,
+                  loc: { start: 25, end: 24 },
+                },
+              }
+            ],
+          },
+        },
+      ],
+    });
   });
 
   it('parses optional field', () => {
@@ -377,17 +413,12 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  kind: Kind.NULLABILITY,
-                  elementStatus: undefined,
+                  kind: Kind.LIST_NULLABILITY,
                   loc: { start: 9, end: 12 },
-                  child: {
-                    kind: Kind.NULLABILITY,
-                    child: undefined,
-                    loc: { start: 10, end: 11 },
-                    elementStatus: {
-                      kind: Kind.REQUIRED_DESIGNATOR,
-                      loc: { start: 11, end: 11 }
-                    }
+                  elementStatus: {
+                    kind: Kind.REQUIRED_DESIGNATOR,
+                    loc: { start: 11, end: 11 },
+                    element: undefined
                   }
                 },
                 selectionSet: undefined,
@@ -433,17 +464,12 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  kind: Kind.NULLABILITY,
-                  elementStatus: undefined,
+                  kind: Kind.LIST_NULLABILITY,
                   loc: { start: 9, end: 12 },
-                  child: {
-                    kind: Kind.NULLABILITY,
-                    child: undefined,
-                    loc: { start: 10, end: 11 },
-                    elementStatus: {
-                      kind: Kind.OPTIONAL_DESIGNATOR,
-                      loc: { start: 11, end: 11 }
-                    }
+                  elementStatus: {
+                    kind: Kind.OPTIONAL_DESIGNATOR,
+                    loc: { start: 11, end: 11 },
+                    element: undefined
                   }
                 },
                 selectionSet: undefined,
@@ -490,13 +516,13 @@ describe('Parser', () => {
                 directives: [],
                 selectionSet: undefined,
                 required: {
-                  kind: Kind.NULLABILITY,
-                  elementStatus: {
-                    kind: Kind.REQUIRED_DESIGNATOR,
-                    loc: { start: 13, end: 12 }
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  element: {
+                    kind: Kind.LIST_NULLABILITY,
+                    elementStatus: undefined,
+                    loc: { start: 9, end: 11 }
                   },
-                  loc: { start: 9, end: 12 },
-                  child: undefined
+                  loc: { start: 13, end: 12 },
                 },
               }
             ],
@@ -540,13 +566,13 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  kind: Kind.NULLABILITY,
-                  elementStatus: {
-                    kind: Kind.OPTIONAL_DESIGNATOR,
-                    loc: { start: 13, end: 12 }
+                  kind: Kind.OPTIONAL_DESIGNATOR,
+                  element: {
+                    kind: Kind.LIST_NULLABILITY,
+                    loc: { start: 9, end: 11 },
+                    elementStatus: undefined
                   },
-                  loc: { start: 9, end: 12 },
-                  child: undefined
+                  loc: { start: 13, end: 12 },
                 },
                 selectionSet: undefined,
               },
@@ -591,31 +617,26 @@ describe('Parser', () => {
                 arguments: [],
                 directives: [],
                 required: {
-                  kind: Kind.NULLABILITY,
-                  elementStatus: {
-                    kind: Kind.REQUIRED_DESIGNATOR,
-                    loc: { start: 19, end: 18 }
-                  },
-                  loc: { start: 9, end: 18 },
-                  child: {
-                    kind: Kind.NULLABILITY,
-                    elementStatus: undefined,
-                    loc: { start: 10, end: 16 },
-                    child: {
-                      kind: Kind.NULLABILITY,
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  loc: { start: 19, end: 18 },
+                  element: {
+                    kind: Kind.LIST_NULLABILITY,
+                    loc: { start: 9, end: 17 },
+                    elementStatus: {
+                      kind: Kind.LIST_NULLABILITY,
+                      loc: { start: 10, end: 16 },
                       elementStatus: {
                         kind: Kind.REQUIRED_DESIGNATOR,
-                        loc: { start: 15, end: 15 }
-                      },
-                      loc: { start: 11, end: 15 },
-                      child: {
-                        kind: Kind.NULLABILITY,
-                        elementStatus: {
-                          kind: Kind.OPTIONAL_DESIGNATOR,
-                          loc: { start: 13, end: 13 }
+                        loc: { start: 15, end: 15 },
+                        element: {
+                          kind: Kind.LIST_NULLABILITY,
+                          loc: { start: 11, end: 14 },
+                          elementStatus: {
+                            kind: Kind.OPTIONAL_DESIGNATOR,
+                            loc: { start: 13, end: 13 },
+                            element: undefined
+                          }
                         },
-                        loc: { start: 12, end: 13 },
-                        child: undefined
                       },
                     },
                   },
