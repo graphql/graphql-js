@@ -743,10 +743,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
           extensionASTNodes,
         });
       }
-    } // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
-
-    false ||
-      invariant(false, 'Unexpected type definition node: ' + inspect(astNode));
+    }
   }
 }
 const stdTypeMap = keyMap(

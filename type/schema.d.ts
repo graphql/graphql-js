@@ -2,10 +2,10 @@ import type { ObjMap } from '../jsutils/ObjMap';
 import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLError } from '../error/GraphQLError';
 import type {
-  OperationTypeNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../language/ast';
+import { OperationTypeNode } from '../language/ast';
 import type {
   GraphQLNamedType,
   GraphQLAbstractType,

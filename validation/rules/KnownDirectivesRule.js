@@ -136,6 +136,14 @@ function getDirectiveLocationForASTPath(ancestors) {
         ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION
         : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
     }
+    // istanbul ignore next (Not reachable. All possible types have been considered)
+
+    default:
+      false ||
+        (0, _invariant.invariant)(
+          false,
+          'Unexpected kind: ' + (0, _inspect.inspect)(appliedTo.kind),
+        );
   }
 }
 
@@ -149,11 +157,5 @@ function getDirectiveLocationForOperation(operation) {
 
     case _ast.OperationTypeNode.SUBSCRIPTION:
       return _directiveLocation.DirectiveLocation.SUBSCRIPTION;
-  } // istanbul ignore next (Not reachable. All possible types have been considered)
-
-  false ||
-    (0, _invariant.invariant)(
-      false,
-      'Unexpected operation: ' + (0, _inspect.inspect)(operation),
-    );
+  }
 }

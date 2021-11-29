@@ -30,6 +30,8 @@ function separateOperations(documentAST) {
           definitionNode.selectionSet,
         );
         break;
+
+      default: // ignore non-executable definitions
     }
   } // For each operation, produce a new synthesized AST which includes only what
   // is necessary for completing that operation.

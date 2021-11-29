@@ -135,7 +135,9 @@ function extensionKindToTypeName(kind) {
 
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
-  } // istanbul ignore next (Not reachable. All possible types have been considered)
+    // istanbul ignore next (Not reachable. All possible types have been considered)
 
-  false || invariant(false, 'Unexpected kind: ' + inspect(kind));
+    default:
+      false || invariant(false, 'Unexpected kind: ' + inspect(kind));
+  }
 }

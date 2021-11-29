@@ -745,13 +745,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
           extensionASTNodes,
         });
       }
-    } // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
-
-    false ||
-      (0, _invariant.invariant)(
-        false,
-        'Unexpected type definition node: ' + (0, _inspect.inspect)(astNode),
-      );
+    }
   }
 }
 

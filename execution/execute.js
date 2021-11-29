@@ -253,6 +253,8 @@ function buildExecutionContext(args) {
       case _kinds.Kind.FRAGMENT_DEFINITION:
         fragments[definition.name.value] = definition;
         break;
+
+      default: // ignore non-executable definitions
     }
   }
 

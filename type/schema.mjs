@@ -3,6 +3,7 @@ import { toObjMap } from '../jsutils/toObjMap.mjs';
 import { devAssert } from '../jsutils/devAssert.mjs';
 import { instanceOf } from '../jsutils/instanceOf.mjs';
 import { isObjectLike } from '../jsutils/isObjectLike.mjs';
+import { OperationTypeNode } from '../language/ast.mjs';
 import { __Schema } from './introspection.mjs';
 import { isDirective, specifiedDirectives } from './directives.mjs';
 import {
@@ -260,13 +261,13 @@ export class GraphQLSchema {
 
   getRootType(operation) {
     switch (operation) {
-      case 'query':
+      case OperationTypeNode.QUERY:
         return this.getQueryType();
 
-      case 'mutation':
+      case OperationTypeNode.MUTATION:
         return this.getMutationType();
 
-      case 'subscription':
+      case OperationTypeNode.SUBSCRIPTION:
         return this.getSubscriptionType();
     }
   }

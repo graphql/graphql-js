@@ -5,10 +5,6 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.valueFromASTUntyped = valueFromASTUntyped;
 
-var _inspect = require('../jsutils/inspect.js');
-
-var _invariant = require('../jsutils/invariant.js');
-
 var _keyValMap = require('../jsutils/keyValMap.js');
 
 var _kinds = require('../language/kinds.js');
@@ -61,11 +57,5 @@ function valueFromASTUntyped(valueNode, variables) {
       return variables === null || variables === void 0
         ? void 0
         : variables[valueNode.name.value];
-  } // istanbul ignore next (Not reachable. All possible value nodes have been considered)
-
-  false ||
-    (0, _invariant.invariant)(
-      false,
-      'Unexpected value node: ' + (0, _inspect.inspect)(valueNode),
-    );
+  }
 }

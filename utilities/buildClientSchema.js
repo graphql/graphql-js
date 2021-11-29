@@ -151,6 +151,8 @@ function buildClientSchema(introspection, options) {
   function buildType(type) {
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     if (type != null && type.name != null && type.kind != null) {
+      // FIXME: Properly type IntrospectionType, it's a breaking change so fix in v17
+      // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
       switch (type.kind) {
         case _introspection.TypeKind.SCALAR:
           return buildScalarDef(type);

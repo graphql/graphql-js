@@ -17,6 +17,8 @@ var _instanceOf = require('../jsutils/instanceOf.js');
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
 
+var _ast = require('../language/ast.js');
+
 var _introspection = require('./introspection.js');
 
 var _directives = require('./directives.js');
@@ -275,13 +277,13 @@ class GraphQLSchema {
 
   getRootType(operation) {
     switch (operation) {
-      case 'query':
+      case _ast.OperationTypeNode.QUERY:
         return this.getQueryType();
 
-      case 'mutation':
+      case _ast.OperationTypeNode.MUTATION:
         return this.getMutationType();
 
-      case 'subscription':
+      case _ast.OperationTypeNode.SUBSCRIPTION:
         return this.getSubscriptionType();
     }
   }

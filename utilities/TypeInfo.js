@@ -276,6 +276,8 @@ class TypeInfo {
         this._enumValue = enumValue;
         break;
       }
+
+      default: // Ignore other nodes
     }
   }
 
@@ -329,6 +331,8 @@ class TypeInfo {
       case _kinds.Kind.ENUM:
         this._enumValue = null;
         break;
+
+      default: // Ignore other nodes
     }
   }
 }

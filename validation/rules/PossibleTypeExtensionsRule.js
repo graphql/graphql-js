@@ -151,11 +151,13 @@ function extensionKindToTypeName(kind) {
 
     case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
-  } // istanbul ignore next (Not reachable. All possible types have been considered)
+    // istanbul ignore next (Not reachable. All possible types have been considered)
 
-  false ||
-    (0, _invariant.invariant)(
-      false,
-      'Unexpected kind: ' + (0, _inspect.inspect)(kind),
-    );
+    default:
+      false ||
+        (0, _invariant.invariant)(
+          false,
+          'Unexpected kind: ' + (0, _inspect.inspect)(kind),
+        );
+  }
 }

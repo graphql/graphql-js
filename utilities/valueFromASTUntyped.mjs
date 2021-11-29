@@ -1,5 +1,3 @@
-import { inspect } from '../jsutils/inspect.mjs';
-import { invariant } from '../jsutils/invariant.mjs';
 import { keyValMap } from '../jsutils/keyValMap.mjs';
 import { Kind } from '../language/kinds.mjs';
 
@@ -51,7 +49,5 @@ export function valueFromASTUntyped(valueNode, variables) {
       return variables === null || variables === void 0
         ? void 0
         : variables[valueNode.name.value];
-  } // istanbul ignore next (Not reachable. All possible value nodes have been considered)
-
-  false || invariant(false, 'Unexpected value node: ' + inspect(valueNode));
+  }
 }
