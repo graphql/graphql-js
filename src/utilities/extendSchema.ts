@@ -649,9 +649,6 @@ export function extendSchemaImpl(
         });
       }
     }
-
-    // istanbul ignore next (Not reachable. All possible type definition nodes have been considered)
-    invariant(false, 'Unexpected type definition node: ' + inspect(astNode));
   }
 }
 

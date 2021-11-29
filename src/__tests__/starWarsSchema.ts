@@ -1,5 +1,3 @@
-import { invariant } from '../jsutils/invariant';
-
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLString } from '../type/scalars';
 import {
@@ -137,9 +135,6 @@ const characterInterface: GraphQLInterfaceType = new GraphQLInterfaceType({
       case 'Droid':
         return droidType.name;
     }
-
-    // istanbul ignore next (Not reachable. All possible types have been considered)
-    invariant(false);
   },
 });
 

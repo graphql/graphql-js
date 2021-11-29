@@ -201,6 +201,34 @@ describe('separateOperations', () => {
     });
   });
 
+  it('ignores type definitions', () => {
+    const ast = parse(`
+      query Foo {
+        ...Bar
+      }
+
+      fragment Bar on T {
+        baz
+      }
+
+      scalar Foo
+      type Bar
+    `);
+
+    const separatedASTs = mapValue(separateOperations(ast), print);
+    expect(separatedASTs).to.deep.equal({
+      Foo: dedent`
+        query Foo {
+          ...Bar
+        }
+
+        fragment Bar on T {
+          baz
+        }
+      `,
+    });
+  });
+
   it('handles unknown fragments', () => {
     const ast = parse(`
       {
