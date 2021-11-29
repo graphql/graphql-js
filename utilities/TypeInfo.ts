@@ -283,6 +283,8 @@ export class TypeInfo {
         this._enumValue = enumValue;
         break;
       }
+
+      default: // Ignore other nodes
     }
   }
 
@@ -336,6 +338,8 @@ export class TypeInfo {
       case Kind.ENUM:
         this._enumValue = null;
         break;
+
+      default: // Ignore other nodes
     }
   }
 }

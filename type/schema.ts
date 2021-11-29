@@ -7,10 +7,10 @@ import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { GraphQLError } from '../error/GraphQLError.ts';
 import type {
-  OperationTypeNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../language/ast.ts';
+import { OperationTypeNode } from '../language/ast.ts';
 import type {
   GraphQLType,
   GraphQLNamedType,
@@ -286,13 +286,13 @@ export class GraphQLSchema {
 
   getRootType(operation: OperationTypeNode): Maybe<GraphQLObjectType> {
     switch (operation) {
-      case 'query':
+      case OperationTypeNode.QUERY:
         return this.getQueryType();
 
-      case 'mutation':
+      case OperationTypeNode.MUTATION:
         return this.getMutationType();
 
-      case 'subscription':
+      case OperationTypeNode.SUBSCRIPTION:
         return this.getSubscriptionType();
     }
   }

@@ -169,6 +169,8 @@ export function buildClientSchema(
   function buildType(type: IntrospectionType): GraphQLNamedType {
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     if (type != null && type.name != null && type.kind != null) {
+      // FIXME: Properly type IntrospectionType, it's a breaking change so fix in v17
+      // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
       switch (type.kind) {
         case TypeKind.SCALAR:
           return buildScalarDef(type);

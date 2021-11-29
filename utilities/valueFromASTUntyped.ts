@@ -1,6 +1,4 @@
 import type { ObjMap } from '../jsutils/ObjMap.ts';
-import { inspect } from '../jsutils/inspect.ts';
-import { invariant } from '../jsutils/invariant.ts';
 import { keyValMap } from '../jsutils/keyValMap.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import { Kind } from '../language/kinds.ts';
@@ -55,7 +53,5 @@ export function valueFromASTUntyped(
 
     case Kind.VARIABLE:
       return variables?.[valueNode.name.value];
-  } // istanbul ignore next (Not reachable. All possible value nodes have been considered)
-
-  false || invariant(false, 'Unexpected value node: ' + inspect(valueNode));
+  }
 }

@@ -649,9 +649,10 @@ export class Parser {
         }
 
         return this.parseVariable();
-    }
 
-    throw this.unexpected();
+      default:
+        throw this.unexpected();
+    }
   }
 
   parseConstValueLiteral(): ConstValueNode {
