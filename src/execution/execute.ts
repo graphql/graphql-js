@@ -309,6 +309,8 @@ export function buildExecutionContext(
       case Kind.FRAGMENT_DEFINITION:
         fragments[definition.name.value] = definition;
         break;
+      default:
+      // ignore non-executable definitions
     }
   }
 
