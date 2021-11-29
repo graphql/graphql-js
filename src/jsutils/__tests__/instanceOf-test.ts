@@ -6,7 +6,6 @@ import { instanceOf } from '../instanceOf';
 describe('instanceOf', () => {
   it('do not throw on values without prototype', () => {
     class Foo {
-      // $FlowFixMe[unsupported-syntax]
       get [Symbol.toStringTag]() {
         return 'Foo';
       }
@@ -25,7 +24,6 @@ describe('instanceOf', () => {
 
     function newVersion() {
       class Foo {
-        // $FlowFixMe[unsupported-syntax]
         get [Symbol.toStringTag]() {
           return 'Foo';
         }
