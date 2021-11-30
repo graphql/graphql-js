@@ -5,9 +5,14 @@ import {
   isNonNullType,
   assertListType,
   GraphQLList,
+  isListType
 } from '../type/definition';
-import type { ComplexRequiredStatus } from '../language/ast';
-import { RequiredStatus } from '../language/ast';
+import type { SupportArrayNode, OptionalModifierNode, RequiredModifierNode, NullabilityModifierNode } from '../language/ast';
+import { Kind } from '../language/kinds';
+import { ASTReducer, visit } from '../language/visitor';
+import { GraphQLBoolean } from '..';
+
+
 
 /**
  * Implements the "Accounting For Client Controlled Nullability Designators"
@@ -17,11 +22,11 @@ import { RequiredStatus } from '../language/ast';
  */
 function simpleModifiedOutputType(
   type: GraphQLOutputType,
-  required: RequiredStatus,
+  nullabilityNode: NullabilityModifierNode,
 ): GraphQLOutputType {
-  if (required === RequiredStatus.REQUIRED && !isNonNullType(type)) {
+  if (nullabilityNode.kind === Kind.REQUIRED_DESIGNATOR && !isNonNullType(type)) {
     return new GraphQLNonNull(type);
-  } else if (required === RequiredStatus.OPTIONAL) {
+  } else if (nullabilityNode.kind === Kind.OPTIONAL_DESIGNATOR) {
     return getNullableType(type);
   }
   return type;
@@ -29,21 +34,82 @@ function simpleModifiedOutputType(
 
 export function modifiedOutputType(
   type: GraphQLOutputType,
-  required: ComplexRequiredStatus,
+  nullabilityNode?: SupportArrayNode | NullabilityModifierNode,
 ): GraphQLOutputType {
-  if (!required.subStatus) {
-    return simpleModifiedOutputType(type, required.status);
+
+  let typeStack: [GraphQLOutputType] = [type];
+
+  const applyStatusReducer: ASTReducer<GraphQLOutputType> = {
+    RequiredDesignator: {
+      leave({
+        element
+      }) {
+        if (element){
+          return new GraphQLNonNull(element);
+        } else {
+          return new GraphQLNonNull(typeStack.pop()!);
+        }
+      },
+    },
+    OptionalDesignator: {
+      leave({
+        element
+      }) {
+        if (element) {
+          return getNullableType(element);
+        } else {
+          return typeStack.pop()!;
+        }
+      }
+    },
+    ListNullabilityDesignator: {
+      enter() {
+        let list = assertListType(getNullableType(typeStack.at(-1)));
+        let elementType = list.ofType as GraphQLOutputType;
+        typeStack.push(elementType);
+      },
+      leave({
+        element
+      }) {
+        let listType = typeStack.pop()!;
+        let isRequired = isNonNullType(listType);
+        if (element) {
+          return isRequired 
+            ? new GraphQLNonNull(new GraphQLList(element))
+            : new GraphQLList(element);
+        } else {
+          return isRequired 
+          ? new GraphQLNonNull(new GraphQLList(listType))
+          : new GraphQLList(listType);
+        }
+      }
+    }
   }
 
-  // If execution reaches this point, type is a list.
-  const listType = assertListType(getNullableType(type));
-  const elementType = listType.ofType as GraphQLOutputType;
-  const prev = modifiedOutputType(elementType, required.subStatus);
-  let constructedType = new GraphQLList(prev);
-
-  if (isNonNullType(type)) {
-    constructedType = new GraphQLNonNull(constructedType);
+  if (nullabilityNode) {
+    return visit(nullabilityNode, applyStatusReducer);
+  } else {
+    return type;
   }
+  
 
-  return simpleModifiedOutputType(constructedType, required.status);
+  // if (nullabilityNode.kind == Kind.LIST_NULLABILITY && isListType(type)) {
+  //   // If execution reaches this point, type is a list.
+  //   const listType = assertListType(getNullableType(type));
+  //   const elementType = listType.ofType as GraphQLOutputType;
+  //   const prev = modifiedOutputType(elementType, nullabilityNode.element!);
+  //   let constructedType = new GraphQLList(prev);
+
+  //   if (isNonNullType(type)) {
+  //     constructedType = new GraphQLNonNull(constructedType);
+  //   }
+  //   return constructedType;
+  // } else if (
+  //   nullabilityNode.kind == Kind.REQUIRED_DESIGNATOR 
+  //   || nullabilityNode.kind == Kind.OPTIONAL_DESIGNATOR
+  // ) {
+  //   return simpleModifiedOutputType(type, nullabilityNode as NullabilityModifierNode);
+  // } else {
+  //   return type;
+  // }
 }

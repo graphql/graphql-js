@@ -22,7 +22,7 @@ import {
 
 import { execute, executeSync } from '../execute';
 import { modifiedOutputType } from '../../utilities/applyRequiredStatus';
-import { ComplexRequiredStatus, RequiredStatus } from '../../language/ast';
+import type { NullabilityModifierNode, SupportArrayNode } from '../../language/ast';
 
 describe('Execute: Handles basic execution tasks', () => {
   it('throws if no document is provided', () => {
@@ -1612,26 +1612,36 @@ describe('Execute: Handles basic execution tasks', () => {
 
     it('modifiedOutputType produces correct output types', () => {
       const type = new GraphQLList(
-        new GraphQLNonNull(
-          new GraphQLList(new GraphQLNonNull(new GraphQLList(GraphQLInt))),
-        ),
+        new GraphQLNonNull(new GraphQLList(
+          new GraphQLNonNull(new GraphQLList(
+            GraphQLInt
+          ))
+        ))
       );
 
-      const requiredStatus = new ComplexRequiredStatus(
-        RequiredStatus.UNSET,
-        new ComplexRequiredStatus(
-          RequiredStatus.OPTIONAL,
-          new ComplexRequiredStatus(
-            RequiredStatus.UNSET,
-            new ComplexRequiredStatus(RequiredStatus.REQUIRED, undefined),
-          ),
-        ),
-      );
+      const nullabilityNode: NullabilityModifierNode | SupportArrayNode = {
+        kind: Kind.LIST_NULLABILITY,
+        element: {
+          kind: Kind.OPTIONAL_DESIGNATOR,
+          element: {
+            kind: Kind.LIST_NULLABILITY,
+            element: {
+              kind: Kind.LIST_NULLABILITY,
+              element: {
+                kind: Kind.REQUIRED_DESIGNATOR,
+                element: undefined
+              }
+            }
+          }
+        }
+      };
 
-      const outputType = modifiedOutputType(type, requiredStatus);
+      const outputType = modifiedOutputType(type, nullabilityNode);
       const expectedOutputType = new GraphQLList(
         new GraphQLList(
-          new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
+          new GraphQLNonNull(new GraphQLList(
+            new GraphQLNonNull(GraphQLInt)
+          )),
         ),
       );
 

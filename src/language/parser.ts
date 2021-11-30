@@ -475,7 +475,7 @@ export class Parser {
 
       return this.node<SupportArrayNode>(start, {
         kind: Kind.LIST_NULLABILITY,
-        elementStatus: child
+        element: child
       });
     }
   }

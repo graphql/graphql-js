@@ -415,7 +415,7 @@ describe('Parser', () => {
                 required: {
                   kind: Kind.LIST_NULLABILITY,
                   loc: { start: 9, end: 12 },
-                  elementStatus: {
+                  element: {
                     kind: Kind.REQUIRED_DESIGNATOR,
                     loc: { start: 11, end: 11 },
                     element: undefined
@@ -466,7 +466,7 @@ describe('Parser', () => {
                 required: {
                   kind: Kind.LIST_NULLABILITY,
                   loc: { start: 9, end: 12 },
-                  elementStatus: {
+                  element: {
                     kind: Kind.OPTIONAL_DESIGNATOR,
                     loc: { start: 11, end: 11 },
                     element: undefined
@@ -519,7 +519,7 @@ describe('Parser', () => {
                   kind: Kind.REQUIRED_DESIGNATOR,
                   element: {
                     kind: Kind.LIST_NULLABILITY,
-                    elementStatus: undefined,
+                    element: undefined,
                     loc: { start: 9, end: 11 }
                   },
                   loc: { start: 13, end: 12 },
@@ -570,7 +570,7 @@ describe('Parser', () => {
                   element: {
                     kind: Kind.LIST_NULLABILITY,
                     loc: { start: 9, end: 11 },
-                    elementStatus: undefined
+                    element: undefined
                   },
                   loc: { start: 13, end: 12 },
                 },
@@ -622,16 +622,16 @@ describe('Parser', () => {
                   element: {
                     kind: Kind.LIST_NULLABILITY,
                     loc: { start: 9, end: 17 },
-                    elementStatus: {
+                    element: {
                       kind: Kind.LIST_NULLABILITY,
                       loc: { start: 10, end: 16 },
-                      elementStatus: {
+                      element: {
                         kind: Kind.REQUIRED_DESIGNATOR,
                         loc: { start: 15, end: 15 },
                         element: {
                           kind: Kind.LIST_NULLABILITY,
                           loc: { start: 11, end: 14 },
-                          elementStatus: {
+                          element: {
                             kind: Kind.OPTIONAL_DESIGNATOR,
                             loc: { start: 13, end: 13 },
                             element: undefined

@@ -94,9 +94,9 @@ const printDocASTReducer: ASTReducer<string> = {
 
   ListNullabilityDesignator: {
     leave({
-      elementStatus,
+      element,
     }) {
-      return '[' + (elementStatus ?? '') + ']';
+      return '[' + (element ?? '') + ']';
     }
   },
   

@@ -212,7 +212,7 @@ export const QueryDocumentKeys: {
   Variable: ['name'],
   SelectionSet: ['selections'],
   Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet', 'required'],
-  ListNullabilityDesignator: ['elementStatus'],
+  ListNullabilityDesignator: ['element'],
   RequiredDesignator: ['element'],
   OptionalDesignator: ['element'],
   Argument: ['name', 'value'],
@@ -368,7 +368,7 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
-  readonly required?: SupportArrayNode;
+  readonly required?: SupportArrayNode | NullabilityModifierNode;
 }
 
 export interface RequiredModifierNode {
@@ -389,7 +389,7 @@ export type NullabilityModifierNode = RequiredModifierNode | OptionalModifierNod
 export interface SupportArrayNode {
   readonly kind: Kind.LIST_NULLABILITY;
   readonly loc?: Location;
-  readonly elementStatus?: NullabilityModifierNode | SupportArrayNode;
+  readonly element?: NullabilityModifierNode | SupportArrayNode;
 }
 
 export interface ArgumentNode {
