@@ -612,7 +612,8 @@ function findConflict(
           [node2],
         ];
       }
-    } catch {
+    } catch (error) {
+      console.log(error);
       /*  Do nothing. See above comment.  */
     }
   }

@@ -29,7 +29,7 @@ export function modifiedOutputType(
         if (element){
           return new GraphQLNonNull(element);
         } else {
-          return new GraphQLNonNull(typeStack.pop()!);
+          return new GraphQLNonNull(getNullableType(typeStack.pop()!));
         }
       },
     },
@@ -40,7 +40,7 @@ export function modifiedOutputType(
         if (element) {
           return getNullableType(element);
         } else {
-          return typeStack.pop()!;
+          return getNullableType(typeStack.pop()!);
         }
       }
     },
