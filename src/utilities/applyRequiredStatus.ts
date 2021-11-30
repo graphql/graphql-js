@@ -61,8 +61,8 @@ export function modifiedOutputType(
             : new GraphQLList(element);
         } else {
           return isRequired 
-          ? new GraphQLNonNull(new GraphQLList(listType))
-          : new GraphQLList(listType);
+            ? new GraphQLNonNull(new GraphQLList(listType))
+            : new GraphQLList(listType);
         }
       }
     }

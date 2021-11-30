@@ -684,6 +684,7 @@ describe('Validate: Overlapping fields can be merged', () => {
 
       type Lists {
         list: [Int]
+        requiredList: [Int!]
         mixedThreeDList: [[[Int]!]!]
       }
 
@@ -1407,6 +1408,20 @@ describe('Validate: Overlapping fields can be merged', () => {
               lists {
                 list[]!
                 list!
+              }
+            }
+          `,
+        );
+      });
+
+      it('matching matching required list fields merge', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              lists {
+                requiredList[]
+                requiredList[]
               }
             }
           `,
