@@ -28,7 +28,7 @@ export function RequiredStatusOnFieldMatchesDefinitionRule(
         >;
         try {
           modifiedOutputType(fieldDef.type, node.required);
-        } catch {
+        } catch (error) {
           context.reportError(
             new GraphQLError(
               `Syntax Error: Something is wrong with the nullability designator on ${

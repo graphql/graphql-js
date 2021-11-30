@@ -27,7 +27,7 @@ export function modifiedOutputType(
         element
       }) {
         if (element){
-          return new GraphQLNonNull(element);
+          return new GraphQLNonNull(getNullableType(element));
         } else {
           return new GraphQLNonNull(getNullableType(typeStack.pop()!));
         }
