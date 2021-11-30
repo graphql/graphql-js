@@ -69,9 +69,7 @@ import type {
 
 import {
   Location,
-  OperationTypeNode,
-  ComplexRequiredStatus,
-  RequiredStatus,
+  OperationTypeNode
 } from './ast';
 
 import { Kind } from './kinds';
