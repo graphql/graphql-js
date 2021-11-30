@@ -212,9 +212,9 @@ export const QueryDocumentKeys: {
   Variable: ['name'],
   SelectionSet: ['selections'],
   Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet', 'required'],
-  Nullability: ['child', 'elementStatus'],
-  RequiredDesignator: [],
-  OptionalDesignator: [],
+  ListNullabilityDesignator: ['elementStatus'],
+  RequiredDesignator: ['element'],
+  OptionalDesignator: ['element'],
   Argument: ['name', 'value'],
 
   FragmentSpread: ['name', 'directives'],

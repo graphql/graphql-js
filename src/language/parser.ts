@@ -468,15 +468,11 @@ export class Parser {
   parseListNullability(): SupportArrayNode | undefined {
     let start = this._lexer.token;
     let child: NullabilityModifierNode | SupportArrayNode | undefined;
-    let isList = false;
 
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
       child = this.parseRequiredStatus();
-      isList = true;
       this.expectToken(TokenKind.BRACKET_R);
-    }
 
-    if (isList) {
       return this.node<SupportArrayNode>(start, {
         kind: Kind.LIST_NULLABILITY,
         elementStatus: child

@@ -28,7 +28,7 @@ describe('Printer: Query document', () => {
   });
 
   it('correctly prints non-query operations without name', () => {
-    const queryASTShorthanded = parse('query { id[!], name[]! }');
+    const queryASTShorthanded = parse('query { id, name }');
     expect(print(queryASTShorthanded)).to.equal(dedent`
       {
         id

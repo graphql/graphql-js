@@ -77,27 +77,26 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   RequiredDesignator: {
-    leave({}) {
-      return '!';
+    leave({
+      element
+    }) {
+      return (element ?? '') + '!';
     }
   },
 
   OptionalDesignator: {
-    leave({}) {
-      return '?';
+    leave({
+      element
+    }) {
+      return (element ?? '') + '?';
     }
   },
 
-  Nullability: {
+  ListNullabilityDesignator: {
     leave({
       elementStatus,
-      child
     }) {
-      let required = elementStatus ?? '';
-      if (child) {
-        required = '[' + child + ']' + required;
-      }
-      return required;
+      return '[' + (elementStatus ?? '') + ']';
     }
   },
   
