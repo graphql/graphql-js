@@ -67,10 +67,7 @@ import type {
   RequiredModifierNode,
 } from './ast';
 
-import {
-  Location,
-  OperationTypeNode
-} from './ast';
+import { Location, OperationTypeNode } from './ast';
 
 import { Kind } from './kinds';
 import { Source, isSource } from './source';
@@ -456,24 +453,26 @@ export class Parser {
    * - ?
    *
    */
-  parseRequiredStatus(): NullabilityModifierNode | SupportArrayNode | undefined {
-    let list = this.parseListNullability();
-    let nullabilityStatus = this.parseNullabilityModifierNode(list);
+  parseRequiredStatus():
+    | NullabilityModifierNode
+    | SupportArrayNode
+    | undefined {
+    const list = this.parseListNullability();
+    const nullabilityStatus = this.parseNullabilityModifierNode(list);
 
     return nullabilityStatus ?? list;
   }
 
   parseListNullability(): SupportArrayNode | undefined {
-    let start = this._lexer.token;
-    let child: NullabilityModifierNode | SupportArrayNode | undefined;
+    const start = this._lexer.token;
 
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
-      child = this.parseRequiredStatus();
+      const child = this.parseRequiredStatus();
       this.expectToken(TokenKind.BRACKET_R);
 
       return this.node<SupportArrayNode>(start, {
         kind: Kind.LIST_NULLABILITY,
-        element: child
+        element: child,
       });
     }
   }
@@ -484,24 +483,33 @@ export class Parser {
    * - ?
    *
    */
-  parseNullabilityModifierNode(childElement?: SupportArrayNode): NullabilityModifierNode | undefined {
-    return this.parseRequiredModifierNode(childElement) ?? this.parseOptionalModifierNode(childElement)
+  parseNullabilityModifierNode(
+    childElement?: SupportArrayNode,
+  ): NullabilityModifierNode | undefined {
+    return (
+      this.parseRequiredModifierNode(childElement) ??
+      this.parseOptionalModifierNode(childElement)
+    );
   }
 
-  parseRequiredModifierNode(childElement?: SupportArrayNode): RequiredModifierNode | undefined {
+  parseRequiredModifierNode(
+    childElement?: SupportArrayNode,
+  ): RequiredModifierNode | undefined {
     if (this.expectOptionalToken(TokenKind.BANG)) {
       return this.node<RequiredModifierNode>(this._lexer.token, {
         kind: Kind.REQUIRED_DESIGNATOR,
-        element: childElement
+        element: childElement,
       });
     }
   }
 
-  parseOptionalModifierNode(childElement?: SupportArrayNode): OptionalModifierNode | undefined {
+  parseOptionalModifierNode(
+    childElement?: SupportArrayNode,
+  ): OptionalModifierNode | undefined {
     if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
       return this.node<OptionalModifierNode>(this._lexer.token, {
         kind: Kind.OPTIONAL_DESIGNATOR,
-        element: childElement
+        element: childElement,
       });
     }
   }

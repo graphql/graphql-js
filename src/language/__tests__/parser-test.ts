@@ -229,7 +229,7 @@ describe('Parser', () => {
       query {
         requiredField!
       }
-    `)
+    `);
 
     expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
@@ -263,7 +263,7 @@ describe('Parser', () => {
                   element: undefined,
                   loc: { start: 25, end: 24 },
                 },
-              }
+              },
             ],
           },
         },
@@ -288,7 +288,7 @@ describe('Parser', () => {
         optionalField?!
       }
     `),
-    ).to.throw('Syntax Error: Expected Name, found \"!\".');
+    ).to.throw('Syntax Error: Expected Name, found "!".');
 
     expect(() =>
       parse(`
@@ -296,7 +296,7 @@ describe('Parser', () => {
         optionalField!?
       }
     `),
-    ).to.throw('Syntax Error: Expected Name, found \"?\".');
+    ).to.throw('Syntax Error: Expected Name, found "?".');
   });
 
   it('parses required with alias', () => {
@@ -418,8 +418,8 @@ describe('Parser', () => {
                   element: {
                     kind: Kind.REQUIRED_DESIGNATOR,
                     loc: { start: 11, end: 11 },
-                    element: undefined
-                  }
+                    element: undefined,
+                  },
                 },
                 selectionSet: undefined,
               },
@@ -469,8 +469,8 @@ describe('Parser', () => {
                   element: {
                     kind: Kind.OPTIONAL_DESIGNATOR,
                     loc: { start: 11, end: 11 },
-                    element: undefined
-                  }
+                    element: undefined,
+                  },
                 },
                 selectionSet: undefined,
               },
@@ -520,11 +520,11 @@ describe('Parser', () => {
                   element: {
                     kind: Kind.LIST_NULLABILITY,
                     element: undefined,
-                    loc: { start: 9, end: 11 }
+                    loc: { start: 9, end: 11 },
                   },
                   loc: { start: 13, end: 12 },
                 },
-              }
+              },
             ],
           },
         },
@@ -570,7 +570,7 @@ describe('Parser', () => {
                   element: {
                     kind: Kind.LIST_NULLABILITY,
                     loc: { start: 9, end: 11 },
-                    element: undefined
+                    element: undefined,
                   },
                   loc: { start: 13, end: 12 },
                 },
@@ -634,8 +634,8 @@ describe('Parser', () => {
                           element: {
                             kind: Kind.OPTIONAL_DESIGNATOR,
                             loc: { start: 13, end: 13 },
-                            element: undefined
-                          }
+                            element: undefined,
+                          },
                         },
                       },
                     },
@@ -657,7 +657,7 @@ describe('Parser', () => {
         field[[]
       }
     `),
-    ).to.throw('Syntax Error: Expected \"]\", found \"}\".');
+    ).to.throw('Syntax Error: Expected "]", found "}".');
 
     expect(() =>
       parse(`
@@ -665,7 +665,7 @@ describe('Parser', () => {
         field[]]
       }
     `),
-    ).to.throw('Syntax Error: Expected Name, found \"]\".');
+    ).to.throw('Syntax Error: Expected Name, found "]".');
 
     expect(() =>
       parse(`
@@ -673,7 +673,7 @@ describe('Parser', () => {
         field]
       }
     `),
-    ).to.throw('Syntax Error: Expected Name, found \"]\".');
+    ).to.throw('Syntax Error: Expected Name, found "]".');
 
     expect(() =>
       parse(`
@@ -681,7 +681,7 @@ describe('Parser', () => {
         field[
       }
     `),
-    ).to.throw('Syntax Error: Expected \"]\", found \"}\".');
+    ).to.throw('Syntax Error: Expected "]", found "}".');
   });
 
   it('does not parse field with assorted invalid nullability designators', () => {
@@ -691,7 +691,7 @@ describe('Parser', () => {
         field[][]
       }
     `),
-    ).to.throw('Syntax Error: Expected Name, found \"[\".');
+    ).to.throw('Syntax Error: Expected Name, found "[".');
 
     expect(() =>
       parse(`
@@ -699,7 +699,7 @@ describe('Parser', () => {
         field[!!]
       }
     `),
-    ).to.throw('Syntax Error: Expected \"]\", found \"!\".');
+    ).to.throw('Syntax Error: Expected "]", found "!".');
 
     expect(() =>
       parse(`
@@ -707,7 +707,7 @@ describe('Parser', () => {
         field[]?!
       }
     `),
-    ).to.throw('Syntax Error: Expected Name, found \"!\".');
+    ).to.throw('Syntax Error: Expected Name, found "!".');
   });
 
   it('creates ast', () => {

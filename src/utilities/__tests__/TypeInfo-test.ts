@@ -268,7 +268,7 @@ describe('visitWithTypeInfo', () => {
                   {
                     kind: 'Field',
                     name: { kind: 'Name', value: '__typename' },
-                    required: undefined
+                    required: undefined,
                   },
                 ],
               },

@@ -65,8 +65,7 @@ const printDocASTReducer: ASTReducer<string> = {
     }) {
       const prefix = join([wrap('', alias, ': '), name, required], '');
 
-      let argsLine =
-        prefix + wrap('(', join(args, ', '), ')');
+      let argsLine = prefix + wrap('(', join(args, ', '), ')');
 
       if (argsLine.length > MAX_LINE_LENGTH) {
         argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
@@ -77,29 +76,22 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   RequiredDesignator: {
-    leave({
-      element
-    }) {
+    leave({ element }) {
       return (element ?? '') + '!';
-    }
+    },
   },
 
   OptionalDesignator: {
-    leave({
-      element
-    }) {
+    leave({ element }) {
       return (element ?? '') + '?';
-    }
+    },
   },
 
   ListNullabilityDesignator: {
-    leave({
-      element,
-    }) {
+    leave({ element }) {
       return '[' + (element ?? '') + ']';
-    }
+    },
   },
-  
 
   Argument: { leave: ({ name, value }) => name + ': ' + value },
 

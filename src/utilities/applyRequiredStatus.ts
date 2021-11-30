@@ -4,10 +4,15 @@ import {
   GraphQLNonNull,
   isNonNullType,
   assertListType,
-  GraphQLList
+  GraphQLList,
 } from '../type/definition';
-import type { SupportArrayNode, NullabilityModifierNode } from '../language/ast';
-import { ASTReducer, visit } from '../language/visitor';
+import type {
+  SupportArrayNode,
+  NullabilityModifierNode,
+} from '../language/ast';
+import type { ASTReducer } from '../language/visitor';
+import { visit } from '../language/visitor';
+import { GraphQLError } from '../error/GraphQLError';
 
 /**
  * Implements the "Accounting For Client Controlled Nullability Designators"
@@ -19,58 +24,72 @@ export function modifiedOutputType(
   type: GraphQLOutputType,
   nullabilityNode?: SupportArrayNode | NullabilityModifierNode,
 ): GraphQLOutputType {
-  let typeStack: [GraphQLOutputType] = [type];
+  const typeStack: [GraphQLOutputType] = [type];
 
   const applyStatusReducer: ASTReducer<GraphQLOutputType> = {
     RequiredDesignator: {
-      leave({
-        element
-      }) {
-        if (element){
+      leave({ element }) {
+        if (element) {
           return new GraphQLNonNull(getNullableType(element));
-        } else {
-          return new GraphQLNonNull(getNullableType(typeStack.pop()!));
         }
+        const nextType = typeStack.pop();
+
+        if (!nextType) {
+          throw new GraphQLError(
+            'List nullability designator is too deep.',
+            nullabilityNode,
+          );
+        }
+        return new GraphQLNonNull(getNullableType(nextType));
       },
     },
     OptionalDesignator: {
-      leave({
-        element
-      }) {
+      leave({ element }) {
         if (element) {
           return getNullableType(element);
-        } else {
-          return getNullableType(typeStack.pop()!);
         }
-      }
+        const nextType = typeStack.pop();
+        if (!nextType) {
+          throw new GraphQLError(
+            'List nullability designator is too deep.',
+            nullabilityNode,
+          );
+        }
+
+        return getNullableType(nextType);
+      },
     },
     ListNullabilityDesignator: {
       enter() {
-        let list = assertListType(getNullableType(typeStack.at(-1)));
-        let elementType = list.ofType as GraphQLOutputType;
+        const list = assertListType(getNullableType(typeStack.at(-1)));
+        const elementType = list.ofType as GraphQLOutputType;
         typeStack.push(elementType);
       },
-      leave({
-        element
-      }) {
-        let listType = typeStack.pop()!;
-        let isRequired = isNonNullType(listType);
+      leave({ element }) {
+        const listType = typeStack.pop();
+        if (!listType) {
+          throw new GraphQLError(
+            'List nullability designator is too deep.',
+            nullabilityNode,
+          );
+        }
+        const isRequired = isNonNullType(listType);
         if (element) {
-          return isRequired 
+          return isRequired
             ? new GraphQLNonNull(new GraphQLList(element))
             : new GraphQLList(element);
-        } else {
-          return isRequired 
-            ? new GraphQLNonNull(new GraphQLList(listType))
-            : new GraphQLList(listType);
         }
-      }
-    }
-  }
+
+        return isRequired
+          ? new GraphQLNonNull(new GraphQLList(listType))
+          : new GraphQLList(listType);
+      },
+    },
+  };
 
   if (nullabilityNode) {
     return visit(nullabilityNode, applyStatusReducer);
-  } else {
-    return type;
   }
+
+  return type;
 }

@@ -1,4 +1,3 @@
-import { ASTNode } from '.';
 import type { Kind } from './kinds';
 import type { Source } from './source';
 
@@ -211,7 +210,14 @@ export const QueryDocumentKeys: {
   VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet', 'required'],
+  Field: [
+    'alias',
+    'name',
+    'arguments',
+    'directives',
+    'selectionSet',
+    'required',
+  ],
   ListNullabilityDesignator: ['element'],
   RequiredDesignator: ['element'],
   OptionalDesignator: ['element'],
@@ -380,11 +386,13 @@ export interface RequiredModifierNode {
 export interface OptionalModifierNode {
   readonly kind: Kind.OPTIONAL_DESIGNATOR;
   readonly loc?: Location;
-  readonly element?: SupportArrayNode
+  readonly element?: SupportArrayNode;
 }
 
 // modifiers can be !, ? or []
-export type NullabilityModifierNode = RequiredModifierNode | OptionalModifierNode;
+export type NullabilityModifierNode =
+  | RequiredModifierNode
+  | OptionalModifierNode;
 
 export interface SupportArrayNode {
   readonly kind: Kind.LIST_NULLABILITY;

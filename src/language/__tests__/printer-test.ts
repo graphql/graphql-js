@@ -13,7 +13,7 @@ describe('Printer: Query document', () => {
     const ast = {
       kind: Kind.FIELD,
       name: { kind: Kind.NAME, value: 'foo' },
-      required: undefined
+      required: undefined,
     } as const;
     expect(print(ast)).to.equal('foo');
   });
