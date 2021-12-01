@@ -145,7 +145,9 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
 export function getArgumentValues(def, node, variableValues) {
   var _node$arguments;
 
-  const coercedValues = {}; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  const coercedValues = {}; // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+  /* c8 ignore next */
 
   const argumentNodes =
     (_node$arguments = node.arguments) !== null && _node$arguments !== void 0
@@ -238,7 +240,6 @@ export function getArgumentValues(def, node, variableValues) {
 export function getDirectiveValues(directiveDef, node, variableValues) {
   var _node$directives;
 
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   const directiveNode =
     (_node$directives = node.directives) === null || _node$directives === void 0
       ? void 0

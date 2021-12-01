@@ -74,7 +74,9 @@ function KnownArgumentNamesOnDirectivesRule(context) {
     if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
       var _def$arguments;
 
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+      /* c8 ignore next */
       const argsNodes =
         (_def$arguments = def.arguments) !== null && _def$arguments !== void 0
           ? _def$arguments

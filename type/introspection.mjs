@@ -222,11 +222,13 @@ export const __Type = new GraphQLObjectType({
 
         if (isListType(type)) {
           return TypeKind.LIST;
-        } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
+        }
 
         if (isNonNullType(type)) {
           return TypeKind.NON_NULL;
-        } // istanbul ignore next (Not reachable. All possible types have been considered)
+        }
+        /* c8 ignore next 3 */
+        // Not reachable, all possible types have been considered)
 
         false || invariant(false, `Unexpected type: "${inspect(type)}".`);
       },
@@ -238,8 +240,10 @@ export const __Type = new GraphQLObjectType({
     description: {
       type: GraphQLString,
       resolve: (
-        type, // istanbul ignore next (FIXME: add test case)
-      ) => ('description' in type ? type.description : undefined),
+        type, // FIXME: add test case
+      ) =>
+        /* c8 ignore next */
+        'description' in type ? type.description : undefined,
     },
     specifiedByURL: {
       type: GraphQLString,

@@ -12,7 +12,9 @@ export function UniqueArgumentDefinitionNamesRule(context) {
     DirectiveDefinition(directiveNode) {
       var _directiveNode$argume;
 
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+      /* c8 ignore next */
       const argumentNodes =
         (_directiveNode$argume = directiveNode.arguments) !== null &&
         _directiveNode$argume !== void 0
@@ -30,7 +32,9 @@ export function UniqueArgumentDefinitionNamesRule(context) {
   function checkArgUniquenessPerField(typeNode) {
     var _typeNode$fields;
 
-    const typeName = typeNode.name.value; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    const typeName = typeNode.name.value; // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+    /* c8 ignore next */
 
     const fieldNodes =
       (_typeNode$fields = typeNode.fields) !== null &&
@@ -41,7 +45,9 @@ export function UniqueArgumentDefinitionNamesRule(context) {
     for (const fieldDef of fieldNodes) {
       var _fieldDef$arguments;
 
-      const fieldName = fieldDef.name.value; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      const fieldName = fieldDef.name.value; // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+      /* c8 ignore next */
 
       const argumentNodes =
         (_fieldDef$arguments = fieldDef.arguments) !== null &&

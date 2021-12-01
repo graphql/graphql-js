@@ -23,7 +23,8 @@ function mapAsyncIterator(iterable, callback) {
         done: false,
       };
     } catch (error) {
-      // istanbul ignore else (FIXME: add test case)
+      /* c8 ignore start */
+      // FIXME: add test case
       if (typeof iterator.return === 'function') {
         try {
           await iterator.return();
@@ -33,6 +34,7 @@ function mapAsyncIterator(iterable, callback) {
       }
 
       throw error;
+      /* c8 ignore finish */
     }
   }
 

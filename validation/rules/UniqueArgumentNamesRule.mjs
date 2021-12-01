@@ -18,7 +18,9 @@ export function UniqueArgumentNamesRule(context) {
   function checkArgUniqueness(parentNode) {
     var _parentNode$arguments;
 
-    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+    /* c8 ignore next */
     const argumentNodes =
       (_parentNode$arguments = parentNode.arguments) !== null &&
       _parentNode$arguments !== void 0

@@ -12,11 +12,12 @@ var _GraphQLError = require('../error/GraphQLError.js');
 
 var _assertName = require('../type/assertName.js');
 
+/* c8 ignore start */
+
 /**
  * Upholds the spec rules about naming.
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
-// istanbul ignore next (Deprecated code)
 function assertValidName(name) {
   const error = isValidNameError(name);
 
@@ -30,7 +31,6 @@ function assertValidName(name) {
  * Returns an Error if a name is invalid.
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
-// istanbul ignore next (Deprecated code)
 
 function isValidNameError(name) {
   typeof name === 'string' ||
@@ -48,3 +48,4 @@ function isValidNameError(name) {
     return error;
   }
 }
+/* c8 ignore finish */

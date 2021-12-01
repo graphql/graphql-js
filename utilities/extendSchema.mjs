@@ -234,11 +234,13 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
 
     if (isEnumType(type)) {
       return extendEnumType(type);
-    } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
+    }
 
     if (isInputObjectType(type)) {
       return extendInputObjectType(type);
-    } // istanbul ignore next (Not reachable. All possible types have been considered)
+    }
+    /* c8 ignore next 3 */
+    // Not reachable, all possible type definition nodes have been considered.
 
     false || invariant(false, 'Unexpected type: ' + inspect(type));
   }
@@ -392,8 +394,9 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (const node of nodes) {
       var _node$operationTypes;
 
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const operationTypesNodes =
+        /* c8 ignore next */
         (_node$operationTypes = node.operationTypes) !== null &&
         _node$operationTypes !== void 0
           ? _node$operationTypes
@@ -464,8 +467,9 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (const node of nodes) {
       var _node$fields;
 
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const nodeFields =
+        /* c8 ignore next */
         (_node$fields = node.fields) !== null && _node$fields !== void 0
           ? _node$fields
           : [];
@@ -494,8 +498,10 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 
   function buildArgumentMap(args) {
-    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-    const argsNodes = args !== null && args !== void 0 ? args : [];
+    // FIXME: https://github.com/graphql/graphql-js/issues/2203
+    const argsNodes =
+      /* c8 ignore next */
+      args !== null && args !== void 0 ? args : [];
     const argConfigMap = Object.create(null);
 
     for (const arg of argsNodes) {
@@ -527,8 +533,9 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (const node of nodes) {
       var _node$fields2;
 
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const fieldsNodes =
+        /* c8 ignore next */
         (_node$fields2 = node.fields) !== null && _node$fields2 !== void 0
           ? _node$fields2
           : [];
@@ -563,8 +570,9 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     for (const node of nodes) {
       var _node$values;
 
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const valuesNodes =
+        /* c8 ignore next */
         (_node$values = node.values) !== null && _node$values !== void 0
           ? _node$values
           : [];
@@ -593,18 +601,21 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     // validation with validateSchema() will produce more actionable results.
     // @ts-expect-error
     return nodes.flatMap(
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
       (node) => {
         var _node$interfaces$map, _node$interfaces;
 
-        return (_node$interfaces$map =
-          (_node$interfaces = node.interfaces) === null ||
-          _node$interfaces === void 0
-            ? void 0
-            : _node$interfaces.map(getNamedType)) !== null &&
-          _node$interfaces$map !== void 0
-          ? _node$interfaces$map
-          : [];
+        return (
+          /* c8 ignore next */
+          (_node$interfaces$map =
+            (_node$interfaces = node.interfaces) === null ||
+            _node$interfaces === void 0
+              ? void 0
+              : _node$interfaces.map(getNamedType)) !== null &&
+            _node$interfaces$map !== void 0
+            ? _node$interfaces$map
+            : []
+        );
       },
     );
   }
@@ -615,17 +626,20 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     // validation with validateSchema() will produce more actionable results.
     // @ts-expect-error
     return nodes.flatMap(
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
       (node) => {
         var _node$types$map, _node$types;
 
-        return (_node$types$map =
-          (_node$types = node.types) === null || _node$types === void 0
-            ? void 0
-            : _node$types.map(getNamedType)) !== null &&
-          _node$types$map !== void 0
-          ? _node$types$map
-          : [];
+        return (
+          /* c8 ignore next */
+          (_node$types$map =
+            (_node$types = node.types) === null || _node$types === void 0
+              ? void 0
+              : _node$types.map(getNamedType)) !== null &&
+            _node$types$map !== void 0
+            ? _node$types$map
+            : []
+        );
       },
     );
   }

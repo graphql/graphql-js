@@ -14,7 +14,9 @@ var _inspect = require('./inspect.js');
  * See: https://webpack.js.org/guides/production/
  */
 const instanceOf =
-  process.env.NODE_ENV === 'production' // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
+  /* c8 ignore next 5 */
+  // FIXME: https://github.com/graphql/graphql-js/issues/2317
+  process.env.NODE_ENV === 'production'
     ? function instanceOf(value, constructor) {
         return value instanceof constructor;
       }

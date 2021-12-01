@@ -136,7 +136,9 @@ function getDirectiveLocationForASTPath(ancestors) {
         ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION
         : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
     }
-    // istanbul ignore next (Not reachable. All possible types have been considered)
+    // Not reachable, all possible types have been considered.
+
+    /* c8 ignore next */
 
     default:
       false ||

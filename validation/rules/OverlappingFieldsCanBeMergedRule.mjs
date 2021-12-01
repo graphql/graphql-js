@@ -518,15 +518,16 @@ function findConflict(
         [node1],
         [node2],
       ];
-    } // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    } // FIXME https://github.com/graphql/graphql-js/issues/2203
 
     const args1 =
+      /* c8 ignore next */
       (_node1$arguments = node1.arguments) !== null &&
       _node1$arguments !== void 0
         ? _node1$arguments
-        : []; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-
+        : [];
     const args2 =
+      /* c8 ignore next */
       (_node2$arguments = node2.arguments) !== null &&
       _node2$arguments !== void 0
         ? _node2$arguments

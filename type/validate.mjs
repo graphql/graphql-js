@@ -134,19 +134,24 @@ function validateRootTypes(context) {
 function getOperationTypeNode(schema, operation) {
   var _flatMap$find;
 
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return (_flatMap$find = [schema.astNode, ...schema.extensionASTNodes]
-    .flatMap((schemaNode) => {
-      var _schemaNode$operation;
+    .flatMap(
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      (schemaNode) => {
+        var _schemaNode$operation;
 
-      return (_schemaNode$operation =
-        schemaNode === null || schemaNode === void 0
-          ? void 0
-          : schemaNode.operationTypes) !== null &&
-        _schemaNode$operation !== void 0
-        ? _schemaNode$operation
-        : [];
-    })
+        return (
+          /* c8 ignore next */
+          (_schemaNode$operation =
+            schemaNode === null || schemaNode === void 0
+              ? void 0
+              : schemaNode.operationTypes) !== null &&
+            _schemaNode$operation !== void 0
+            ? _schemaNode$operation
+            : []
+        );
+      },
+    )
     .find((operationNode) => operationNode.operation === operation)) === null ||
     _flatMap$find === void 0
     ? void 0
@@ -404,11 +409,10 @@ function validateTypeImplementsInterface(context, type, iface) {
             `${type.name}.${fieldName}(${argName}:) is type ` +
             `${inspect(typeArg.type)}.`,
           [
-            // istanbul ignore next (TODO need to write coverage tests)
             (_ifaceArg$astNode = ifaceArg.astNode) === null ||
             _ifaceArg$astNode === void 0
               ? void 0
-              : _ifaceArg$astNode.type, // istanbul ignore next (TODO need to write coverage tests)
+              : _ifaceArg$astNode.type,
             (_typeArg$astNode = typeArg.astNode) === null ||
             _typeArg$astNode === void 0
               ? void 0
@@ -531,7 +535,7 @@ function validateInputFields(context, inputObj) {
       context.reportError(
         `Required input field ${inputObj.name}.${field.name} cannot be deprecated.`,
         [
-          getDeprecatedDirectiveNode(field.astNode), // istanbul ignore next (TODO need to write coverage tests)
+          getDeprecatedDirectiveNode(field.astNode),
           (_field$astNode3 = field.astNode) === null ||
           _field$astNode3 === void 0
             ? void 0
@@ -592,16 +596,19 @@ function createInputObjectCircularRefsValidator(context) {
 function getAllImplementsInterfaceNodes(type, iface) {
   const { astNode, extensionASTNodes } = type;
   const nodes =
-    astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes; // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
   return nodes
     .flatMap((typeNode) => {
       var _typeNode$interfaces;
 
-      return (_typeNode$interfaces = typeNode.interfaces) !== null &&
-        _typeNode$interfaces !== void 0
-        ? _typeNode$interfaces
-        : [];
+      return (
+        /* c8 ignore next */
+        (_typeNode$interfaces = typeNode.interfaces) !== null &&
+          _typeNode$interfaces !== void 0
+          ? _typeNode$interfaces
+          : []
+      );
     })
     .filter((ifaceNode) => ifaceNode.name.value === iface.name);
 }
@@ -609,16 +616,19 @@ function getAllImplementsInterfaceNodes(type, iface) {
 function getUnionMemberTypeNodes(union, typeName) {
   const { astNode, extensionASTNodes } = union;
   const nodes =
-    astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes; // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+    astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes; // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
   return nodes
     .flatMap((unionNode) => {
       var _unionNode$types;
 
-      return (_unionNode$types = unionNode.types) !== null &&
-        _unionNode$types !== void 0
-        ? _unionNode$types
-        : [];
+      return (
+        /* c8 ignore next */
+        (_unionNode$types = unionNode.types) !== null &&
+          _unionNode$types !== void 0
+          ? _unionNode$types
+          : []
+      );
     })
     .filter((typeNode) => typeNode.name.value === typeName);
 }
@@ -626,7 +636,6 @@ function getUnionMemberTypeNodes(union, typeName) {
 function getDeprecatedDirectiveNode(definitionNode) {
   var _definitionNode$direc;
 
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return definitionNode === null || definitionNode === void 0
     ? void 0
     : (_definitionNode$direc = definitionNode.directives) === null ||

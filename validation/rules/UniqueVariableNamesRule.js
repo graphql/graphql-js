@@ -19,7 +19,9 @@ function UniqueVariableNamesRule(context) {
     OperationDefinition(operationNode) {
       var _operationNode$variab;
 
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // See: https://github.com/graphql/graphql-js/issues/2203
+
+      /* c8 ignore next */
       const variableDefinitions =
         (_operationNode$variab = operationNode.variableDefinitions) !== null &&
         _operationNode$variab !== void 0

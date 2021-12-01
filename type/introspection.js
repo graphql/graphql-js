@@ -253,11 +253,13 @@ const __Type = new _definition.GraphQLObjectType({
 
         if ((0, _definition.isListType)(type)) {
           return TypeKind.LIST;
-        } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
+        }
 
         if ((0, _definition.isNonNullType)(type)) {
           return TypeKind.NON_NULL;
-        } // istanbul ignore next (Not reachable. All possible types have been considered)
+        }
+        /* c8 ignore next 3 */
+        // Not reachable, all possible types have been considered)
 
         false ||
           (0, _invariant.invariant)(
@@ -273,8 +275,10 @@ const __Type = new _definition.GraphQLObjectType({
     description: {
       type: _scalars.GraphQLString,
       resolve: (
-        type, // istanbul ignore next (FIXME: add test case)
-      ) => ('description' in type ? type.description : undefined),
+        type, // FIXME: add test case
+      ) =>
+        /* c8 ignore next */
+        'description' in type ? type.description : undefined,
     },
     specifiedByURL: {
       type: _scalars.GraphQLString,

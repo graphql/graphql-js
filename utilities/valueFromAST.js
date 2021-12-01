@@ -146,7 +146,7 @@ function valueFromAST(valueNode, type, variables) {
     }
 
     return coercedObj;
-  } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
+  }
 
   if ((0, _definition.isLeafType)(type)) {
     // Scalars and Enums fulfill parsing a literal value via parseLiteral().
@@ -165,7 +165,9 @@ function valueFromAST(valueNode, type, variables) {
     }
 
     return result;
-  } // istanbul ignore next (Not reachable. All possible input types have been considered)
+  }
+  /* c8 ignore next 3 */
+  // Not reachable, all possible input types have been considered.
 
   false ||
     (0, _invariant.invariant)(

@@ -326,7 +326,9 @@ function indent(str) {
 function hasMultilineItems(maybeArray) {
   var _maybeArray$some;
 
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+  /* c8 ignore next */
   return (_maybeArray$some =
     maybeArray === null || maybeArray === void 0
       ? void 0

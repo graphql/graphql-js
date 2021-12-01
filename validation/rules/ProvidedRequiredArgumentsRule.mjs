@@ -27,7 +27,8 @@ export function ProvidedRequiredArgumentsRule(context) {
           return false;
         }
 
-        const providedArgs = new Set( // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+        const providedArgs = new Set( // FIXME: https://github.com/graphql/graphql-js/issues/2203
+          /* c8 ignore next */
           (_fieldNode$arguments = fieldNode.arguments) === null ||
           _fieldNode$arguments === void 0
             ? void 0
@@ -79,7 +80,9 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(context) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       var _def$arguments;
 
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+      /* c8 ignore next */
       const argNodes =
         (_def$arguments = def.arguments) !== null && _def$arguments !== void 0
           ? _def$arguments
@@ -101,7 +104,9 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(context) {
         if (requiredArgs) {
           var _directiveNode$argume;
 
-          // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+          // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+          /* c8 ignore next */
           const argNodes =
             (_directiveNode$argume = directiveNode.arguments) !== null &&
             _directiveNode$argume !== void 0

@@ -140,7 +140,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     }
 
     return coercedValue;
-  } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
+  }
 
   if ((0, _definition.isLeafType)(type)) {
     let parseResult; // Scalars and Enums determine if a input value is valid via parseValue(),
@@ -179,7 +179,9 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     }
 
     return parseResult;
-  } // istanbul ignore next (Not reachable. All possible input types have been considered)
+  }
+  /* c8 ignore next 3 */
+  // Not reachable, all possible types have been considered.
 
   false ||
     (0, _invariant.invariant)(
