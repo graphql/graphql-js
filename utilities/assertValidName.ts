@@ -1,11 +1,12 @@
 import { devAssert } from '../jsutils/devAssert.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { assertName } from '../type/assertName.ts';
+/* c8 ignore start */
+
 /**
  * Upholds the spec rules about naming.
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
-// istanbul ignore next (Deprecated code)
 
 export function assertValidName(name: string): string {
   const error = isValidNameError(name);
@@ -20,7 +21,6 @@ export function assertValidName(name: string): string {
  * Returns an Error if a name is invalid.
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
-// istanbul ignore next (Deprecated code)
 
 export function isValidNameError(name: string): GraphQLError | undefined {
   typeof name === 'string' || devAssert(false, 'Expected name to be a string.');
@@ -37,3 +37,4 @@ export function isValidNameError(name: string): GraphQLError | undefined {
     return error;
   }
 }
+/* c8 ignore finish */

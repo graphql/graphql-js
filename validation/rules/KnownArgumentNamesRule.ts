@@ -64,7 +64,9 @@ export function KnownArgumentNamesOnDirectivesRule(
 
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+
+      /* c8 ignore next */
       const argsNodes = def.arguments ?? [];
       directiveArgs[def.name.value] = argsNodes.map((arg) => arg.name.value);
     }

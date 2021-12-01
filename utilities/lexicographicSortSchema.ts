@@ -146,7 +146,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
         ...config,
         values: sortObjMap(config.values, (value) => value),
       });
-    } // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
+    }
 
     if (isInputObjectType(type)) {
       const config = type.toConfig();
@@ -154,7 +154,9 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
         ...config,
         fields: () => sortInputFields(config.fields),
       });
-    } // istanbul ignore next (Not reachable. All possible types have been considered)
+    }
+    /* c8 ignore next 3 */
+    // Not reachable, all possible types have been considered.
 
     false || invariant(false, 'Unexpected type: ' + inspect(type));
   }
