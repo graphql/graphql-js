@@ -91,10 +91,9 @@ describe('mapAsyncIterator', () => {
     async function* source() {
       try {
         yield 1;
+        /* c8 ignore next 2 */
         yield 2;
-
-        // istanbul ignore next (Shouldn't be reached)
-        yield 3;
+        yield 3; // Shouldn't be reached.
       } finally {
         // eslint-disable-next-line no-unsafe-finally
         return 'The End';
@@ -156,10 +155,9 @@ describe('mapAsyncIterator', () => {
     async function* source() {
       try {
         yield 'a';
+        /* c8 ignore next 2 */
         yield 'b';
-
-        // istanbul ignore next (Shouldn't be reached)
-        yield 'c';
+        yield 'c'; // Shouldn't be reached.
       } finally {
         yield 'Done';
         yield 'Last';
@@ -213,6 +211,7 @@ describe('mapAsyncIterator', () => {
     // Throw error
     let caughtError;
     try {
+      /* c8 ignore next */
       await doubles.throw('ouch');
     } catch (e) {
       caughtError = e;
@@ -224,10 +223,9 @@ describe('mapAsyncIterator', () => {
     async function* source() {
       try {
         yield 1;
+        /* c8 ignore next 2 */
         yield 2;
-
-        // istanbul ignore next (Shouldn't be reached)
-        yield 3;
+        yield 3; // Shouldn't be reached.
       } catch (e) {
         yield e;
       }
@@ -269,6 +267,7 @@ describe('mapAsyncIterator', () => {
 
     let caughtError;
     try {
+      /* c8 ignore next */
       await doubles.next();
     } catch (e) {
       caughtError = e;
@@ -285,10 +284,9 @@ describe('mapAsyncIterator', () => {
     async function* source() {
       try {
         yield 1;
+        /* c8 ignore next 2 */
         yield 2;
-
-        // istanbul ignore next (Shouldn't be reached)
-        yield 3;
+        yield 3; // Shouldn't be reached.
       } finally {
         didVisitFinally = true;
         yield 1000;
@@ -301,6 +299,7 @@ describe('mapAsyncIterator', () => {
 
     let expectedError;
     try {
+      /* c8 ignore next */
       await throwOver1.next();
     } catch (error) {
       expectedError = error;

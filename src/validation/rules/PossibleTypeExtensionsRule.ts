@@ -114,12 +114,11 @@ function typeToExtKind(type: GraphQLNamedType): Kind {
   if (isEnumType(type)) {
     return Kind.ENUM_TYPE_EXTENSION;
   }
-  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isInputObjectType(type)) {
     return Kind.INPUT_OBJECT_TYPE_EXTENSION;
   }
-
-  // istanbul ignore next (Not reachable. All possible types have been considered)
+  /* c8 ignore next 3 */
+  // Not reachable. All possible types have been considered
   invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
@@ -137,7 +136,8 @@ function extensionKindToTypeName(kind: Kind): string {
       return 'enum';
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
-    // istanbul ignore next (Not reachable. All possible types have been considered)
+    // Not reachable. All possible types have been considered
+    /* c8 ignore next */
     default:
       invariant(false, 'Unexpected kind: ' + inspect(kind));
   }

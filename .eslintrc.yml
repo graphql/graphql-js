@@ -22,7 +22,6 @@ rules:
   internal-rules/only-ascii: error
   internal-rules/no-dir-import: error
   internal-rules/require-to-string-tag: off
-  internal-rules/require-coverage-ignore-reason: error
 
   ##############################################################################
   # `eslint-plugin-node` rule list based on `v11.1.x`

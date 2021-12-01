@@ -1063,7 +1063,7 @@ describe('Visitor', () => {
                 return BREAK;
               }
             },
-            // istanbul ignore next (Never called and used as a placeholder)
+            /* c8 ignore next 3 */
             leave() {
               expect.fail('Should not be called');
             },
