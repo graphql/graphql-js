@@ -321,7 +321,8 @@ export function buildExecutionContext(
     return [new GraphQLError('Must provide an operation.')];
   }
 
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  // FIXME: https://github.com/graphql/graphql-js/issues/2203
+  /* c8 ignore next */
   const variableDefinitions = operation.variableDefinitions ?? [];
 
   const coercedVariableValues = getVariableValues(
@@ -684,7 +685,6 @@ function completeValue(
   }
 
   // If field type is Object, execute and complete all sub-selections.
-  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isObjectType(returnType)) {
     return completeObjectValue(
       exeContext,
@@ -695,8 +695,8 @@ function completeValue(
       result,
     );
   }
-
-  // istanbul ignore next (Not reachable. All possible output types have been considered)
+  /* c8 ignore next 6 */
+  // Not reachable, all possible output types have been considered.
   invariant(
     false,
     'Cannot complete value of unexpected output type: ' + inspect(returnType),

@@ -20,7 +20,8 @@ export function mapAsyncIterator<T, U, R = undefined>(
     try {
       return { value: await callback(result.value), done: false };
     } catch (error) {
-      // istanbul ignore else (FIXME: add test case)
+      /* c8 ignore start */
+      // FIXME: add test case
       if (typeof iterator.return === 'function') {
         try {
           await iterator.return();
@@ -29,6 +30,7 @@ export function mapAsyncIterator<T, U, R = undefined>(
         }
       }
       throw error;
+      /* c8 ignore finish */
     }
   }
 

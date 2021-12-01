@@ -263,12 +263,11 @@ export function extendSchemaImpl(
     if (isEnumType(type)) {
       return extendEnumType(type);
     }
-    // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
     if (isInputObjectType(type)) {
       return extendInputObjectType(type);
     }
-
-    // istanbul ignore next (Not reachable. All possible types have been considered)
+    /* c8 ignore next 3 */
+    // Not reachable, all possible type definition nodes have been considered.
     invariant(false, 'Unexpected type: ' + inspect(type));
   }
 
@@ -399,8 +398,9 @@ export function extendSchemaImpl(
   } {
     const opTypes = {};
     for (const node of nodes) {
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      const operationTypesNodes = node.operationTypes ?? [];
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      const operationTypesNodes =
+        /* c8 ignore next */ node.operationTypes ?? [];
 
       for (const operationType of operationTypesNodes) {
         // Note: While this could make early assertions to get the correctly
@@ -456,8 +456,8 @@ export function extendSchemaImpl(
   ): GraphQLFieldConfigMap<unknown, unknown> {
     const fieldConfigMap = Object.create(null);
     for (const node of nodes) {
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      const nodeFields = node.fields ?? [];
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      const nodeFields = /* c8 ignore next */ node.fields ?? [];
 
       for (const field of nodeFields) {
         fieldConfigMap[field.name.value] = {
@@ -478,8 +478,8 @@ export function extendSchemaImpl(
   function buildArgumentMap(
     args: Maybe<ReadonlyArray<InputValueDefinitionNode>>,
   ): GraphQLFieldConfigArgumentMap {
-    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-    const argsNodes = args ?? [];
+    // FIXME: https://github.com/graphql/graphql-js/issues/2203
+    const argsNodes = /* c8 ignore next */ args ?? [];
 
     const argConfigMap = Object.create(null);
     for (const arg of argsNodes) {
@@ -506,8 +506,8 @@ export function extendSchemaImpl(
   ): GraphQLInputFieldConfigMap {
     const inputFieldMap = Object.create(null);
     for (const node of nodes) {
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      const fieldsNodes = node.fields ?? [];
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      const fieldsNodes = /* c8 ignore next */ node.fields ?? [];
 
       for (const field of fieldsNodes) {
         // Note: While this could make assertions to get the correctly typed
@@ -532,8 +532,8 @@ export function extendSchemaImpl(
   ): GraphQLEnumValueConfigMap {
     const enumValueMap = Object.create(null);
     for (const node of nodes) {
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      const valuesNodes = node.values ?? [];
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      const valuesNodes = /* c8 ignore next */ node.values ?? [];
 
       for (const value of valuesNodes) {
         enumValueMap[value.name.value] = {
@@ -559,8 +559,8 @@ export function extendSchemaImpl(
     // validation with validateSchema() will produce more actionable results.
     // @ts-expect-error
     return nodes.flatMap(
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      (node) => node.interfaces?.map(getNamedType) ?? [],
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      (node) => /* c8 ignore next */ node.interfaces?.map(getNamedType) ?? [],
     );
   }
 
@@ -572,8 +572,8 @@ export function extendSchemaImpl(
     // validation with validateSchema() will produce more actionable results.
     // @ts-expect-error
     return nodes.flatMap(
-      // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
-      (node) => node.types?.map(getNamedType) ?? [],
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      (node) => /* c8 ignore next */ node.types?.map(getNamedType) ?? [],
     );
   }
 

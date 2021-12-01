@@ -525,12 +525,11 @@ function typeKindName(type: GraphQLNamedType): string {
   if (isEnumType(type)) {
     return 'an Enum type';
   }
-  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isInputObjectType(type)) {
     return 'an Input type';
   }
-
-  // istanbul ignore next (Not reachable. All possible named types have been considered)
+  /* c8 ignore next 3 */
+  // Not reachable, all possible types have been considered.
   invariant(false, 'Unexpected type: ' + inspect(type));
 }
 

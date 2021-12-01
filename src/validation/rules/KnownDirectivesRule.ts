@@ -120,7 +120,8 @@ function getDirectiveLocationForASTPath(
         ? DirectiveLocation.INPUT_FIELD_DEFINITION
         : DirectiveLocation.ARGUMENT_DEFINITION;
     }
-    // istanbul ignore next (Not reachable. All possible types have been considered)
+    // Not reachable, all possible types have been considered.
+    /* c8 ignore next */
     default:
       invariant(false, 'Unexpected kind: ' + inspect(appliedTo.kind));
   }

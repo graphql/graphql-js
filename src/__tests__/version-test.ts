@@ -18,7 +18,8 @@ describe('Version', () => {
     expect(minor).to.be.a('number').at.least(0);
     expect(patch).to.be.a('number').at.least(0);
 
-    // istanbul ignore next (Can't be verified on all versions)
+    // Can't be verified on all versions
+    /* c8 ignore start */
     switch (preReleaseTag?.split('.').length) {
       case undefined:
         break;
@@ -35,6 +36,7 @@ describe('Version', () => {
       default:
         expect.fail('Invalid pre-release tag: ' + preReleaseTag);
     }
+    /* c8 ignore finish */
   });
 
   it('version', () => {
@@ -42,7 +44,8 @@ describe('Version', () => {
 
     const { major, minor, patch, preReleaseTag } = versionInfo;
     expect(version).to.equal(
-      // istanbul ignore next (Can't be verified on all versions)
+      // Can't be verified on all versions
+      /* c8 ignore next */
       preReleaseTag === null
         ? `${major}.${minor}.${patch}`
         : `${major}.${minor}.${patch}-${preReleaseTag}`,

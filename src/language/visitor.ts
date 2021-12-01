@@ -403,7 +403,7 @@ export function getEnterLeaveForKind(
  *
  * @deprecated Please use `getEnterLeaveForKind` instead. Will be removed in v17
  */
-// istanbul ignore next (Deprecated code)
+/* c8 ignore next 8 */
 export function getVisitFn(
   visitor: ASTVisitor,
   kind: Kind,
