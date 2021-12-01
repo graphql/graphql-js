@@ -71,9 +71,9 @@ or an array of promises. A more complex example is included in the top-level [te
 Then, serve the result of a query against that type schema.
 
 ```js
-var query = '{ hello }';
+var source = '{ hello }';
 
-graphql(schema, query).then((result) => {
+graphql({ schema, source }).then((result) => {
   // Prints
   // {
   //   data: { hello: "world" }
@@ -87,9 +87,9 @@ first ensure the query is syntactically and semantically valid before executing
 it, reporting errors otherwise.
 
 ```js
-var query = '{ BoyHowdy }';
+var source = '{ BoyHowdy }';
 
-graphql(schema, query).then((result) => {
+graphql({ schema, source }).then((result) => {
   // Prints
   // {
   //   errors: [
