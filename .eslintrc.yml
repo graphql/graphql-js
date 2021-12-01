@@ -453,7 +453,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.4.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.5.x`
       ##########################################################################
 
       # Supported Rules
