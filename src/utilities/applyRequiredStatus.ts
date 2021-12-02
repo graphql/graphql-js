@@ -1,12 +1,16 @@
-import { GraphQLOutputType, isListType } from '../type/definition';
+import type { GraphQLOutputType } from '../type/definition';
 import {
   getNullableType,
   GraphQLNonNull,
   isNonNullType,
   assertListType,
   GraphQLList,
+  isListType,
 } from '../type/definition';
-import type { SupportArrayNode, NullabilityModifierNode } from '../language/ast';
+import type {
+  SupportArrayNode,
+  NullabilityModifierNode,
+} from '../language/ast';
 import type { ASTReducer } from '../language/visitor';
 import { visit } from '../language/visitor';
 import { GraphQLError } from '../error/GraphQLError';
@@ -39,7 +43,7 @@ export function modifiedOutputType(
             nullabilityNode,
           );
         }
-        
+
         return new GraphQLNonNull(getNullableType(nextType));
       },
     },
@@ -51,7 +55,7 @@ export function modifiedOutputType(
 
         // We're working with the inner-most type
         const nextType = typeStack.pop();
-        
+
         if (!nextType) {
           throw new GraphQLError(
             'List nullability modifier is too deep.',
@@ -72,15 +76,17 @@ export function modifiedOutputType(
           // assertListType will throw an error if we try to dig into the type and it's not a list
           throw new GraphQLError(
             `${error} Was the list nullability modifier's depth more than the field types?`,
-            nullabilityNode
+            nullabilityNode,
           );
         }
       },
       leave({ element }) {
         let listType = typeStack.pop();
         // Skip to the inner-most list
-        if (!isListType(getNullableType(listType))) listType = typeStack.pop();
-        
+        if (!isListType(getNullableType(listType))) {
+          listType = typeStack.pop();
+        }
+
         if (!listType) {
           throw new GraphQLError(
             'List nullability modifier is too deep.',
@@ -95,14 +101,13 @@ export function modifiedOutputType(
         }
 
         // We're working with the inner-most list
-        return isRequired
-            ? new GraphQLNonNull(listType)
-            : listType;
+        return isRequired ? new GraphQLNonNull(listType) : listType;
       },
     },
   };
 
   if (nullabilityNode) {
+    const modified = visit(nullabilityNode, applyStatusReducer);
     // modifiers must be exactly the same depth as the field type
     if (typeStack.length > 0) {
       throw new GraphQLError(
@@ -110,7 +115,7 @@ export function modifiedOutputType(
         nullabilityNode,
       );
     }
-    return visit(nullabilityNode, applyStatusReducer);
+    return modified;
   }
 
   return type;

@@ -1,9 +1,5 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { FieldNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
-
-import type { GraphQLField } from '../../type/definition';
 
 import type { ValidationContext } from '../ValidationContext';
 import { modifiedOutputType } from '../../utilities/applyRequiredStatus';

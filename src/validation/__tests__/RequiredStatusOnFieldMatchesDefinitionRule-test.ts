@@ -40,8 +40,6 @@ describe('Validate: Field uses correct list depth', () => {
       }
     `);
   });
-  // notAList: nonList[!]
-  // mixedThreeDList[[!]!]!
 
   it('reports errors when list depth is too high', () => {
     expectErrors(`
@@ -62,7 +60,7 @@ describe('Validate: Field uses correct list depth', () => {
       },
     ]);
   });
-//mixedThreeDList[[[!]!]!]!
+
   it('reports errors when list depth is too low', () => {
     expectErrors(`
       fragment listFragment on Lists {
@@ -70,8 +68,7 @@ describe('Validate: Field uses correct list depth', () => {
       }
     `).toDeepEqual([
       {
-        message:
-          'List nullability modifier is too shallow.',
+        message: 'List nullability modifier is too shallow.',
         locations: [{ line: 4, column: 7 }],
       },
     ]);
