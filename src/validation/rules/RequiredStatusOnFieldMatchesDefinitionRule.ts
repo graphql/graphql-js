@@ -21,24 +21,12 @@ export function RequiredStatusOnFieldMatchesDefinitionRule(
 ): ASTVisitor {
   return {
     Field(node: FieldNode) {
-      if (context.getFieldDef()) {
-        const fieldDef = context.getFieldDef() as GraphQLField<
-          unknown,
-          unknown
-        >;
+      const fieldDef = context.getFieldDef();
+      if (fieldDef) {
         try {
           modifiedOutputType(fieldDef.type, node.required);
         } catch (error) {
-          context.reportError(
-            new GraphQLError(
-              `Syntax Error: Something is wrong with the nullability designator on ${
-                node.alias?.value ?? node.name.value
-              }. The type for that field in the schema is ${
-                fieldDef.type
-              } Is the correct list depth being used?`,
-              node,
-            ),
-          );
+          context.reportError(error);
         }
       }
     },
