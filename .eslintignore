@@ -1,5 +1,6 @@
 # Copied from '.gitignore', please keep it in sync.
 /.eslintcache
+/.docusaurus
 /node_modules
 /coverage
 /npmDist
