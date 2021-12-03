@@ -73,6 +73,9 @@ jobs:
       - name: Check that package-lock.json is in sync with package.json
         run: git diff --exit-code package-lock.json
 
+      - name: Check that package-lock.json doesn't have conflicts
+        run: npm ls --package-lock-only --depth 999
+
   integrationTests:
     name: Run integration tests
     runs-on: ubuntu-latest
