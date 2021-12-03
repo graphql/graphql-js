@@ -241,6 +241,7 @@ describe('Parser', () => {
         {
           kind: Kind.OPERATION_DEFINITION,
           loc: { start: 0, end: 40 },
+          description: undefined,
           operation: 'query',
           name: undefined,
           variableDefinitions: [],
@@ -317,6 +318,7 @@ describe('Parser', () => {
 
   it('creates ast from nameless query without variables', () => {
     const result = parse(dedent`
+      "Query description"
       query {
         node {
           id
@@ -326,41 +328,47 @@ describe('Parser', () => {
 
     expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 29 },
+      loc: { start: 0, end: 49 },
       definitions: [
         {
           kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 29 },
+          loc: { start: 0, end: 49 },
+          description: {
+            kind: Kind.STRING,
+            loc: { start: 0, end: 19 },
+            block: false,
+            value: 'Query description',
+          },
           operation: 'query',
           name: undefined,
           variableDefinitions: [],
           directives: [],
           selectionSet: {
             kind: Kind.SELECTION_SET,
-            loc: { start: 6, end: 29 },
+            loc: { start: 26, end: 49 },
             selections: [
               {
                 kind: Kind.FIELD,
-                loc: { start: 10, end: 27 },
+                loc: { start: 30, end: 47 },
                 alias: undefined,
                 name: {
                   kind: Kind.NAME,
-                  loc: { start: 10, end: 14 },
+                  loc: { start: 30, end: 34 },
                   value: 'node',
                 },
                 arguments: [],
                 directives: [],
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
-                  loc: { start: 15, end: 27 },
+                  loc: { start: 35, end: 47 },
                   selections: [
                     {
                       kind: Kind.FIELD,
-                      loc: { start: 21, end: 23 },
+                      loc: { start: 41, end: 43 },
                       alias: undefined,
                       name: {
                         kind: Kind.NAME,
-                        loc: { start: 21, end: 23 },
+                        loc: { start: 41, end: 43 },
                         value: 'id',
                       },
                       arguments: [],

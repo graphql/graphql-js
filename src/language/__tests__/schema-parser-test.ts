@@ -331,7 +331,7 @@ describe('Schema Parser', () => {
       }
     `).to.deep.equal({
       message:
-        'Syntax Error: Unexpected description, descriptions are supported only on type definitions.',
+        'Syntax Error: Unexpected description, descriptions are not supported on type extensions.',
       locations: [{ line: 2, column: 7 }],
     });
 
@@ -353,7 +353,7 @@ describe('Schema Parser', () => {
       }
     `).to.deep.equal({
       message:
-        'Syntax Error: Unexpected description, descriptions are supported only on type definitions.',
+        'Syntax Error: Unexpected description, descriptions are not supported on type extensions.',
       locations: [{ line: 2, column: 7 }],
     });
 
