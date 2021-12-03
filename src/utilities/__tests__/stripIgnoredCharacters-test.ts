@@ -396,10 +396,10 @@ describe('stripIgnoredCharacters', () => {
       invariant(
         originalValue === strippedValue,
         dedent`
-        Expected lexValue(stripIgnoredCharacters(${inspectStr(blockStr)}))
-          to equal ${inspectStr(originalValue)}
-          but got  ${inspectStr(strippedValue)}
-      `,
+          Expected lexValue(stripIgnoredCharacters(${inspectStr(blockStr)}))
+            to equal ${inspectStr(originalValue)}
+            but got  ${inspectStr(strippedValue)}
+        `,
       );
       return expectStripped(blockStr);
     }

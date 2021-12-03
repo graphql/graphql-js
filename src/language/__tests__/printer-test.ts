@@ -80,15 +80,13 @@ describe('Printer: Query document', () => {
       parse('{trip(wheelchair:false arriveBy:false){dateTime}}'),
     );
 
-    expect(printed).to.equal(
-      dedent`
+    expect(printed).to.equal(dedent`
       {
         trip(wheelchair: false, arriveBy: false) {
           dateTime
         }
       }
-    `,
-    );
+    `);
   });
 
   it('puts arguments on multiple lines if line is long (> 80 chars)', () => {
@@ -98,8 +96,7 @@ describe('Printer: Query document', () => {
       ),
     );
 
-    expect(printed).to.equal(
-      dedent`
+    expect(printed).to.equal(dedent`
       {
         trip(
           wheelchair: false
@@ -110,8 +107,7 @@ describe('Printer: Query document', () => {
           dateTime
         }
       }
-    `,
-    );
+    `);
   });
 
   it('Legacy: prints fragment with variable directives', () => {
