@@ -12,8 +12,8 @@ exports.mapValue = mapValue;
 function mapValue(map, fn) {
   const result = Object.create(null);
 
-  for (const [key, value] of Object.entries(map)) {
-    result[key] = fn(value, key);
+  for (const key of Object.keys(map)) {
+    result[key] = fn(map[key], key);
   }
 
   return result;

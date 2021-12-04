@@ -151,10 +151,9 @@ export function lexicographicSortSchema(schema) {
 
 function sortObjMap(map, sortValueFn) {
   const sortedMap = Object.create(null);
-  const sortedEntries = sortBy(Object.entries(map), ([key]) => key);
 
-  for (const [key, value] of sortedEntries) {
-    sortedMap[key] = sortValueFn(value);
+  for (const key of Object.keys(map).sort(naturalCompare)) {
+    sortedMap[key] = sortValueFn(map[key]);
   }
 
   return sortedMap;
