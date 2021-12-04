@@ -30,7 +30,7 @@
     "node": "^12.22.0 || ^14.16.0 || >=16.0.0"
   },
   "scripts": {
-    "preversion": ". ./resources/checkgit.sh && npm ci",
+    "preversion": ". ./resources/checkgit.sh && npm ci --ignore-scripts",
     "version": "node resources/gen-version.js && npm test && git add src/version.ts",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
     "changelog": "node resources/gen-changelog.js",

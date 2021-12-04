@@ -37,6 +37,7 @@ describe('Integration Tests', () => {
       exec(`cp -R ${projectPath} ${tmpDir}`);
 
       const cwd = path.join(tmpDir, projectName);
+      // TODO: figure out a way to run it with --ignore-scripts
       exec('npm --quiet install', { cwd, stdio: 'inherit' });
       exec('npm --quiet test', { cwd, stdio: 'inherit' });
     }).timeout(60000);
