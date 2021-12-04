@@ -13,15 +13,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
 
       - name: Install Dependencies
         run: npm ci
@@ -65,16 +58,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
       - name: Run npm install
-        run: npm install --package-lock-only --engine-strict --strict-peer-deps
+        run: npm install --engine-strict --strict-peer-deps
 
       - name: Check that package-lock.json is in sync with package.json
         run: git diff --exit-code package-lock.json
 
       - name: Check that package-lock.json doesn't have conflicts
-        run: npm ls --package-lock-only --depth 999
+        run: npm ls --depth 999
 
   integrationTests:
     name: Run integration tests
@@ -87,9 +81,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          # We install bunch of packages during integration tests without locking them
+          # so we skip cache action to not pollute cache for other jobs.
 
-      # We install bunch of packages during integration tests without locking them
-      # so we skip cache action to not pollute cache for other jobs.
       - name: Install Dependencies
         run: npm ci
 
@@ -106,15 +100,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
 
       - name: Install Dependencies
         run: npm ci
@@ -132,15 +119,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
 
       - name: Install Dependencies
         run: npm ci
@@ -168,15 +148,8 @@ jobs:
       - name: Setup Node.js v${{ matrix.node_version_to_setup }}
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ matrix.node_version_to_setup }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
 
       - name: Install Dependencies
         run: npm ci
@@ -196,15 +169,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
 
       - name: Install Dependencies
         run: npm ci
@@ -224,15 +190,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
 
       - name: Install Dependencies
         run: npm ci
@@ -264,15 +223,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
 
       - name: Install Dependencies
         run: npm ci
@@ -300,15 +252,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
 
       - name: Install Dependencies
         run: npm ci
