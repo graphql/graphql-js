@@ -1,4 +1,4 @@
-# TEST
+# TEST2
 
 The JavaScript reference implementation for GraphQL, a query language for APIs created by Facebook.
 
