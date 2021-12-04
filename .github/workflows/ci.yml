@@ -67,6 +67,12 @@ jobs:
       - name: Check that package-lock.json is in sync with package.json
         run: git diff --exit-code package-lock.json
 
+      - name: Run npm dedupe
+        run: npm dedupe
+
+      - name: Check that package-lock.json doesn't contain unnecessary duplicates
+        run: git diff --exit-code package-lock.json
+
       - name: Check that package-lock.json doesn't have conflicts
         run: npm ls --depth 999
 
