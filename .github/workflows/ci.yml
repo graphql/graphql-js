@@ -17,7 +17,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Lint ESLint
         run: npm run lint
@@ -62,7 +62,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
       - name: Run npm install
-        run: npm install --engine-strict --strict-peer-deps
+        run: npm install --ignore-scripts --engine-strict --strict-peer-deps
 
       - name: Check that package-lock.json is in sync with package.json
         run: git diff --exit-code package-lock.json
@@ -85,7 +85,7 @@ jobs:
           # so we skip cache action to not pollute cache for other jobs.
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run Integration Tests
         run: npm run check:integrations
@@ -104,7 +104,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run Tests
         run: npm run fuzzonly
@@ -123,7 +123,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run tests and measure code coverage
         run: npm run testonly:cover
@@ -152,7 +152,7 @@ jobs:
           node-version: ${{ matrix.node_version_to_setup }}
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run Tests
         run: npm run testonly
@@ -173,7 +173,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run Benchmark
         run: 'npm run benchmark -- --revs HEAD HEAD~1'
@@ -194,7 +194,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Generate report
         run: 'node resources/diff-npm-package.js $BASE_COMMIT HEAD'
@@ -227,7 +227,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Build NPM package
         run: npm run build:npm
@@ -256,7 +256,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Build Deno package
         run: npm run build:deno

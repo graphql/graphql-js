@@ -58,9 +58,10 @@ function prepareBenchmarkProjects(revisionList) {
       path.join(projectPath, 'package.json'),
       '{ "private": true }',
     );
-    exec('npm --quiet install ' + prepareNPMPackage(revision), {
-      cwd: projectPath,
-    });
+    exec(
+      'npm --quiet install --ignore-scripts ' + prepareNPMPackage(revision),
+      { cwd: projectPath },
+    );
     exec(`cp -R ${localDir('benchmark')} ${projectPath}`);
 
     return { revision, projectPath };
@@ -86,7 +87,7 @@ function prepareBenchmarkProjects(revisionList) {
     fs.rmSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
     exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
-    exec('npm --quiet ci', { cwd: repoDir });
+    exec('npm --quiet ci --ignore-scripts', { cwd: repoDir });
     fs.renameSync(buildNPMArchive(repoDir), archivePath);
     fs.rmSync(repoDir, { recursive: true });
     return archivePath;

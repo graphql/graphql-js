@@ -89,7 +89,7 @@ function prepareNPMPackage(revision) {
   fs.rmSync(repoDir, { recursive: true, force: true });
   fs.mkdirSync(repoDir);
   exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
-  exec('npm --quiet ci', { cwd: repoDir });
+  exec('npm --quiet ci --ignore-scripts', { cwd: repoDir });
   exec('npm --quiet run build:npm', { cwd: repoDir });
   return path.join(repoDir, 'npmDist');
 }
