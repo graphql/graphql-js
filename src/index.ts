@@ -324,6 +324,9 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  ExecutionPatchResult,
+  FormattedExecutionPatchResult,
+  AsyncExecutionResult,
 } from './execution/index';
 
 export type { SubscriptionArgs } from './subscription/index';
