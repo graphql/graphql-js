@@ -58,6 +58,10 @@ function buildPackageJSON() {
   packageJSON.engines = packageJSON.engines_on_npm;
   delete packageJSON.engines_on_npm;
 
+  // TODO: move to integration tests
+  const publishTag = packageJSON.publishConfig?.tag;
+  assert(publishTag != null, 'Should have packageJSON.publishConfig defined!');
+
   const { version } = packageJSON;
   const versionMatch = /^\d+\.\d+\.\d+-?(?<preReleaseTag>.*)?$/.exec(version);
   if (!versionMatch) {
@@ -72,9 +76,7 @@ function buildPackageJSON() {
       tag.startsWith('experimental-') || ['alpha', 'beta', 'rc'].includes(tag),
       `"${tag}" tag is supported.`,
     );
-
-    assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
-    packageJSON.publishConfig = { tag: tag || 'latest' };
+    assert.equal(tag, publishTag, 'Publish tag and version tag should match!');
   }
 
   return packageJSON;
