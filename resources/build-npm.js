@@ -113,6 +113,10 @@ function buildPackageJSON() {
   delete packageJSON.scripts;
   delete packageJSON.devDependencies;
 
+  // TODO: move to integration tests
+  const publishTag = packageJSON.publishConfig?.tag;
+  assert(publishTag != null, 'Should have packageJSON.publishConfig defined!');
+
   const { version } = packageJSON;
   const versionMatch = /^\d+\.\d+\.\d+-?(?<preReleaseTag>.*)?$/.exec(version);
   if (!versionMatch) {
@@ -124,15 +128,17 @@ function buildPackageJSON() {
   if (preReleaseTag != null) {
     const splittedTag = preReleaseTag.split('.');
     // Note: `experimental-*` take precedence over `alpha`, `beta` or `rc`.
-    const publishTag = splittedTag[2] ?? splittedTag[0];
+    const versionTag = splittedTag[2] ?? splittedTag[0];
     assert(
-      ['alpha', 'beta', 'rc'].includes(publishTag) ||
-        publishTag.startsWith('experimental-'),
-      `"${publishTag}" tag is not supported.`,
+      ['alpha', 'beta', 'rc'].includes(versionTag) ||
+        versionTag.startsWith('experimental-'),
+      `"${versionTag}" tag is not supported.`,
     );
-
-    assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
-    packageJSON.publishConfig = { tag: publishTag };
+    assert.equal(
+      versionTag,
+      publishTag,
+      'Publish tag and version tag should match!',
+    );
   }
 
   return packageJSON;

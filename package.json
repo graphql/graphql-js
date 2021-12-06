@@ -71,5 +71,8 @@
     "mocha": "9.1.3",
     "prettier": "2.5.0",
     "typescript": "4.5.2"
+  },
+  "publishConfig": {
+    "tag": "latest"
   }
 }
