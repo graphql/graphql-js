@@ -60,6 +60,9 @@ import { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLoca
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
 import { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule';
 
+// Spec Section: "Stream Directives Are Used On List Fields"
+import { StreamDirectiveOnListFieldRule } from './rules/StreamDirectiveOnListFieldRule';
+
 // Spec Section: "Argument Names"
 import {
   KnownArgumentNamesRule,
@@ -124,6 +127,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   KnownDirectivesRule,
   UniqueDirectivesPerLocationRule,
   DeferStreamDirectiveOnRootFieldRule,
+  StreamDirectiveOnListFieldRule,
   KnownArgumentNamesRule,
   UniqueArgumentNamesRule,
   ValuesOfCorrectTypeRule,

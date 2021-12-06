@@ -10,6 +10,7 @@ import type {
   FieldNode,
   ArgumentNode,
   FragmentDefinitionNode,
+  DirectiveNode,
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
@@ -584,6 +585,17 @@ function findConflict(
         [node2],
       ];
     }
+
+    // FIXME https://github.com/graphql/graphql-js/issues/2203
+    const directives1 = /* c8 ignore next */ node1.directives ?? [];
+    const directives2 = /* c8 ignore next */ node2.directives ?? [];
+    if (!sameStreams(directives1, directives2)) {
+      return [
+        [responseName, 'they have differing stream directives'],
+        [node1],
+        [node2],
+      ];
+    }
   }
 
   // The return type for each field.
@@ -639,6 +651,53 @@ function sameArguments(
     }
     return sameValue(argument1.value, argument2.value);
   });
+}
+
+function sameDirectiveArgument(
+  directive1: DirectiveNode,
+  directive2: DirectiveNode,
+  argumentName: string,
+): boolean {
+  // FIXME https://github.com/graphql/graphql-js/issues/2203
+  const args1 = /* c8 ignore next */ directive1.arguments ?? [];
+  const arg1 = args1.find((argument) => argument.name.value === argumentName);
+  if (!arg1) {
+    return false;
+  }
+
+  // FIXME https://github.com/graphql/graphql-js/issues/2203
+  const args2 = /* c8 ignore next */ directive2.arguments ?? [];
+  const arg2 = args2.find((argument) => argument.name.value === argumentName);
+  if (!arg2) {
+    return false;
+  }
+  return sameValue(arg1.value, arg2.value);
+}
+
+function getStreamDirective(
+  directives: ReadonlyArray<DirectiveNode>,
+): DirectiveNode | undefined {
+  return directives.find((directive) => directive.name.value === 'stream');
+}
+
+function sameStreams(
+  directives1: ReadonlyArray<DirectiveNode>,
+  directives2: ReadonlyArray<DirectiveNode>,
+): boolean {
+  const stream1 = getStreamDirective(directives1);
+  const stream2 = getStreamDirective(directives2);
+  if (!stream1 && !stream2) {
+    // both fields do not have streams
+    return true;
+  } else if (stream1 && stream2) {
+    // check if both fields have equivalent streams
+    return (
+      sameDirectiveArgument(stream1, stream2, 'initialCount') &&
+      sameDirectiveArgument(stream1, stream2, 'label')
+    );
+  }
+  // fields have a mix of stream and no stream
+  return false;
 }
 
 function sameValue(value1: ValueNode, value2: ValueNode): boolean {
