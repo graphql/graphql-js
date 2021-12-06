@@ -129,6 +129,8 @@ export type {
   GraphQLNullableType,
   GraphQLNamedType,
   Thunk,
+  GraphQLNamedInputType,
+  GraphQLNamedOutputType,
   GraphQLArgument,
   GraphQLArgumentConfig,
   GraphQLEnumTypeConfig,
