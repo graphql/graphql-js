@@ -224,6 +224,160 @@ describe('Parser', () => {
     ).to.not.throw();
   });
 
+  it('parses required field', () => {
+    const result = parse(dedent`
+      query {
+        requiredField!
+      }
+    `);
+
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 26 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 26 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 6, end: 26 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 10, end: 24 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 10, end: 23 },
+                  value: 'requiredField',
+                },
+                arguments: [],
+                directives: [],
+                selectionSet: undefined,
+                required: {
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  loc: { start: 25, end: 24 },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    });
+  });
+
+  it('parses optional field', () => {
+    expect(() =>
+      parse(`
+      query {
+        optionalField?
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('does not parse field with multiple designators', () => {
+    expect(() =>
+      parse(`
+      query {
+        optionalField?!
+      }
+    `),
+    ).to.throw('Syntax Error: Expected Name, found "!".');
+
+    expect(() =>
+      parse(`
+      query {
+        optionalField!?
+      }
+    `),
+    ).to.throw('Syntax Error: Expected Name, found "?".');
+  });
+
+  it('parses required with alias', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField: field!
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('parses optional with alias', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField: field?
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('does not parse aliased field with bang on left of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField!: field
+      }
+    `),
+    ).to.throw();
+  });
+
+  it('does not parse aliased field with question mark on left of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField?: field
+      }
+    `),
+    ).to.throw();
+  });
+
+  it('does not parse aliased field with bang on left and right of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField!: field!
+      }
+    `),
+    ).to.throw();
+  });
+
+  it('does not parse aliased field with question mark on left and right of colon', () => {
+    expect(() =>
+      parse(`
+      query {
+        requiredField?: field?
+      }
+    `),
+    ).to.throw();
+  });
+
+  it('parses required within fragment', () => {
+    expect(() =>
+      parse(`
+      fragment MyFragment on Query {
+        field!
+      }
+    `),
+    ).to.not.throw();
+  });
+
+  it('parses optional within fragment', () => {
+    expect(() =>
+      parse(`
+      fragment MyFragment on Query {
+        field?
+      }
+    `),
+    ).to.not.throw();
+  });
+
   it('creates ast', () => {
     const result = parse(dedent`
       {
@@ -258,6 +412,7 @@ describe('Parser', () => {
                   loc: { start: 4, end: 8 },
                   value: 'node',
                 },
+                required: undefined,
                 arguments: [
                   {
                     kind: Kind.ARGUMENT,
@@ -288,6 +443,7 @@ describe('Parser', () => {
                         loc: { start: 22, end: 24 },
                         value: 'id',
                       },
+                      required: undefined,
                       arguments: [],
                       directives: [],
                       selectionSet: undefined,
@@ -301,6 +457,7 @@ describe('Parser', () => {
                         loc: { start: 30, end: 34 },
                         value: 'name',
                       },
+                      required: undefined,
                       arguments: [],
                       directives: [],
                       selectionSet: undefined,
@@ -348,6 +505,7 @@ describe('Parser', () => {
                   loc: { start: 10, end: 14 },
                   value: 'node',
                 },
+                required: undefined,
                 arguments: [],
                 directives: [],
                 selectionSet: {
@@ -363,6 +521,7 @@ describe('Parser', () => {
                         loc: { start: 21, end: 23 },
                         value: 'id',
                       },
+                      required: undefined,
                       arguments: [],
                       directives: [],
                       selectionSet: undefined,

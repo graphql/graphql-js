@@ -179,7 +179,9 @@ export type ASTNode =
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
-  | InputObjectTypeExtensionNode;
+  | InputObjectTypeExtensionNode
+  | RequiredModifierNode
+  | OptionalModifierNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -206,7 +208,9 @@ export const QueryDocumentKeys: {
   VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
+  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet', 'required'],
+  RequiredDesignator: [],
+  OptionalDesignator: [],
   Argument: ['name', 'value'],
 
   FragmentSpread: ['name', 'directives'],
@@ -360,7 +364,23 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
+  readonly required?:  NullabilityModifierNode;
 }
+
+export interface RequiredModifierNode {
+  readonly kind: Kind.REQUIRED_DESIGNATOR;
+  readonly loc?: Location;
+}
+
+export interface OptionalModifierNode {
+  readonly kind: Kind.OPTIONAL_DESIGNATOR;
+  readonly loc?: Location;
+}
+
+// modifiers can be ! or ?
+export type NullabilityModifierNode =
+  | RequiredModifierNode
+  | OptionalModifierNode;
 
 export interface ArgumentNode {
   readonly kind: Kind.ARGUMENT;

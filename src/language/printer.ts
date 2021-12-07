@@ -55,8 +55,8 @@ const printDocASTReducer: ASTReducer<string> = {
   SelectionSet: { leave: ({ selections }) => block(selections) },
 
   Field: {
-    leave({ alias, name, arguments: args, directives, selectionSet }) {
-      const prefix = wrap('', alias, ': ') + name;
+    leave({ alias, name, arguments: args, directives, selectionSet, required }) {
+      const prefix = join([wrap('', alias, ': '), name, required], '');
       let argsLine = prefix + wrap('(', join(args, ', '), ')');
 
       if (argsLine.length > MAX_LINE_LENGTH) {
@@ -64,6 +64,18 @@ const printDocASTReducer: ASTReducer<string> = {
       }
 
       return join([argsLine, join(directives, ' '), selectionSet], ' ');
+    },
+  },
+
+  RequiredDesignator: {
+    leave() {
+      return '!';
+    },
+  },
+
+  OptionalDesignator: {
+    leave() {
+      return '?';
     },
   },
 

@@ -59,6 +59,11 @@ import type {
   ValueNode,
   VariableDefinitionNode,
   VariableNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
+  NullabilityModifierNode,
+  OptionalModifierNode,
+  RequiredModifierNode,
 } from './ast';
 import { Location, OperationTypeNode } from './ast';
 import { DirectiveLocation } from './directiveLocation';
@@ -409,7 +414,7 @@ export class Parser {
   }
 
   /**
-   * Field : Alias? Name Arguments? Directives? SelectionSet?
+   * Field : Alias? Name Nullability? Arguments? Directives? SelectionSet?
    *
    * Alias : Name :
    */
@@ -435,7 +440,34 @@ export class Parser {
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
         : undefined,
+      required: this.parseRequiredStatus(),
     });
+  }
+
+  /**
+   * Nullability :
+   * - !
+   * - ?
+   *
+   */
+  parseRequiredStatus(): NullabilityModifierNode | undefined {
+    return this.parseRequiredModifierNode() ?? this.parseOptionalModifierNode();
+  }
+
+  parseRequiredModifierNode(): RequiredModifierNode | undefined {
+    if (this.expectOptionalToken(TokenKind.BANG)) {
+      return this.node<RequiredModifierNode>(this._lexer.token, {
+        kind: Kind.REQUIRED_DESIGNATOR
+      });
+    }
+  }
+
+  parseOptionalModifierNode(): OptionalModifierNode | undefined {
+    if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+      return this.node<OptionalModifierNode>(this._lexer.token, {
+        kind: Kind.OPTIONAL_DESIGNATOR
+      });
+    }
   }
 
   /**
