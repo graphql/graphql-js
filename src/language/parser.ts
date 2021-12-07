@@ -457,7 +457,7 @@ export class Parser {
   parseRequiredModifierNode(): RequiredModifierNode | undefined {
     if (this.expectOptionalToken(TokenKind.BANG)) {
       return this.node<RequiredModifierNode>(this._lexer.token, {
-        kind: Kind.REQUIRED_DESIGNATOR
+        kind: Kind.REQUIRED_DESIGNATOR,
       });
     }
   }
@@ -465,7 +465,7 @@ export class Parser {
   parseOptionalModifierNode(): OptionalModifierNode | undefined {
     if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
       return this.node<OptionalModifierNode>(this._lexer.token, {
-        kind: Kind.OPTIONAL_DESIGNATOR
+        kind: Kind.OPTIONAL_DESIGNATOR,
       });
     }
   }

@@ -208,7 +208,14 @@ export const QueryDocumentKeys: {
   VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet', 'required'],
+  Field: [
+    'alias',
+    'name',
+    'arguments',
+    'directives',
+    'selectionSet',
+    'required',
+  ],
   RequiredDesignator: [],
   OptionalDesignator: [],
   Argument: ['name', 'value'],
@@ -364,7 +371,7 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
-  readonly required?:  NullabilityModifierNode;
+  readonly required?: NullabilityModifierNode;
 }
 
 export interface RequiredModifierNode {
