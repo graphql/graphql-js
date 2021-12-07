@@ -36,7 +36,7 @@ describe('Version', () => {
       default:
         expect.fail('Invalid pre-release tag: ' + preReleaseTag);
     }
-    /* c8 ignore finish */
+    /* c8 ignore stop */
   });
 
   it('version', () => {
@@ -45,7 +45,7 @@ describe('Version', () => {
     const { major, minor, patch, preReleaseTag } = versionInfo;
     expect(version).to.equal(
       // Can't be verified on all versions
-      /* c8 ignore next */
+      /* c8 ignore next 3 */
       preReleaseTag === null
         ? `${major}.${minor}.${patch}`
         : `${major}.${minor}.${patch}-${preReleaseTag}`,

@@ -1638,7 +1638,7 @@ describe('Introspection', () => {
     function typeResolver(_1: any, _2: any, info: GraphQLResolveInfo): never {
       expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
-    /* c8 ignore finish */
+    /* c8 ignore stop */
 
     const result = graphqlSync({
       schema,
