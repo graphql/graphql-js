@@ -69,7 +69,7 @@ export function modifiedOutputType(
     ListNullabilityDesignator: {
       enter() {
         try {
-          const list = assertListType(getNullableType(typeStack.at(-1)));
+          const list = assertListType(getNullableType(typeStack[typeStack.length - 1]));
           const elementType = list.ofType as GraphQLOutputType;
           typeStack.push(elementType);
         } catch (error) {
