@@ -36,4 +36,4 @@ export function isValidNameError(name: string): GraphQLError | undefined {
     return error;
   }
 }
-/* c8 ignore finish */
+/* c8 ignore stop */

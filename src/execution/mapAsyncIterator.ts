@@ -30,7 +30,7 @@ export function mapAsyncIterator<T, U, R = undefined>(
         }
       }
       throw error;
-      /* c8 ignore finish */
+      /* c8 ignore stop */
     }
   }
 
