@@ -48,4 +48,4 @@ function isValidNameError(name) {
     return error;
   }
 }
-/* c8 ignore finish */
+/* c8 ignore stop */

@@ -173,7 +173,7 @@ export class GraphQLError extends Error {
         configurable: true,
       });
     }
-    /* c8 ignore finish */
+    /* c8 ignore stop */
   }
 
   get [Symbol.toStringTag]() {

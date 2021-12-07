@@ -27,7 +27,7 @@ export function mapAsyncIterator(iterable, callback) {
       }
 
       throw error;
-      /* c8 ignore finish */
+      /* c8 ignore stop */
     }
   }
 
