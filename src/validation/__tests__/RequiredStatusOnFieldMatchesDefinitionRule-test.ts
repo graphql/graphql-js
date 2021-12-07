@@ -22,6 +22,7 @@ const testSchema = buildSchema(`
   type Lists {
     nonList: Int
     list: [Int]
+    requiredList: [Int]!
     mixedThreeDList: [[[Int]]]
   } 
 
@@ -37,6 +38,7 @@ describe('Validate: Field uses correct list depth', () => {
         list[!]
         nonList!
         mixedThreeDList[[[!]!]!]!
+        requiredList[]
       }
     `);
   });
@@ -49,13 +51,11 @@ describe('Validate: Field uses correct list depth', () => {
       }
     `).toDeepEqual([
       {
-        message:
-          "Error: Expected Int to be a GraphQL List type. Was the list nullability modifier's depth more than the field types?",
+        message: 'List nullability modifier is too deep.',
         locations: [{ line: 3, column: 26 }],
       },
       {
-        message:
-          "Error: Expected Int to be a GraphQL List type. Was the list nullability modifier's depth more than the field types?",
+        message: 'List nullability modifier is too deep.',
         locations: [{ line: 4, column: 13 }],
       },
     ]);
@@ -64,12 +64,17 @@ describe('Validate: Field uses correct list depth', () => {
   it('reports errors when list depth is too low', () => {
     expectErrors(`
       fragment listFragment on Lists {
+        list!
         mixedThreeDList[[]!]!
       }
     `).toDeepEqual([
       {
         message: 'List nullability modifier is too shallow.',
-        locations: [{ line: 4, column: 7 }],
+        locations: [{ line: 4, column: 9 }],
+      },
+      {
+        message: 'List nullability modifier is too shallow.',
+        locations: [{ line: 5, column: 7 }],
       },
     ]);
   });

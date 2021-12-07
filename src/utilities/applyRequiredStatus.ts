@@ -27,6 +27,14 @@ export function modifiedOutputType(
 ): GraphQLOutputType {
   const typeStack: [GraphQLOutputType] = [type];
 
+  while (isListType(getNullableType(typeStack[typeStack.length - 1]))) {
+    const list = assertListType(
+      getNullableType(typeStack[typeStack.length - 1]),
+    );
+    const elementType = list.ofType as GraphQLOutputType;
+    typeStack.push(elementType);
+  }
+
   const applyStatusReducer: ASTReducer<GraphQLOutputType> = {
     RequiredDesignator: {
       leave({ element }) {
@@ -37,14 +45,9 @@ export function modifiedOutputType(
         // We're working with the inner-most type
         const nextType = typeStack.pop();
 
-        if (!nextType) {
-          throw new GraphQLError(
-            'List nullability modifier is too deep.',
-            nullabilityNode,
-          );
-        }
-
-        return new GraphQLNonNull(getNullableType(nextType));
+        // There's no way for nextType to be null if both type and nullabilityNode are valid
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return new GraphQLNonNull(getNullableType(nextType!));
       },
     },
     OptionalDesignator: {
@@ -56,30 +59,12 @@ export function modifiedOutputType(
         // We're working with the inner-most type
         const nextType = typeStack.pop();
 
-        if (!nextType) {
-          throw new GraphQLError(
-            'List nullability modifier is too deep.',
-            nullabilityNode,
-          );
-        }
-
-        return getNullableType(nextType);
+        // There's no way for nextType to be null if both type and nullabilityNode are valid
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return getNullableType(nextType!);
       },
     },
     ListNullabilityDesignator: {
-      enter() {
-        try {
-          const list = assertListType(getNullableType(typeStack[typeStack.length - 1]));
-          const elementType = list.ofType as GraphQLOutputType;
-          typeStack.push(elementType);
-        } catch (error) {
-          // assertListType will throw an error if we try to dig into the type and it's not a list
-          throw new GraphQLError(
-            `${error} Was the list nullability modifier's depth more than the field types?`,
-            nullabilityNode,
-          );
-        }
-      },
       leave({ element }) {
         let listType = typeStack.pop();
         // Skip to the inner-most list
@@ -101,7 +86,7 @@ export function modifiedOutputType(
         }
 
         // We're working with the inner-most list
-        return isRequired ? new GraphQLNonNull(listType) : listType;
+        return listType;
       },
     },
   };
