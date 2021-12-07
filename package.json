@@ -74,6 +74,6 @@
     "typescript": "4.5.4"
   },
   "publishConfig": {
-    "tag": "latest"
+    "tag": "experimental-stream-defer"
   }
 }
