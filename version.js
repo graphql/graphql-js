@@ -10,7 +10,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-const version = '16.0.1';
+const version = '16.1.0';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -18,8 +18,8 @@ const version = '16.0.1';
 exports.version = version;
 const versionInfo = Object.freeze({
   major: 16,
-  minor: 0,
-  patch: 1,
+  minor: 1,
+  patch: 0,
   preReleaseTag: null,
 });
 exports.versionInfo = versionInfo;
