@@ -99,6 +99,24 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser will understand and parse variable definitions
+   * contained in a fragment definition. They'll be represented in the
+   * `variableDefinitions` field of the FragmentDefinitionNode.
+   *
+   * The syntax is identical to normal, query-defined variables. For example:
+   *
+   *   fragment A($var: Boolean = false) on T  {
+   *     ...
+   *   }
+   *
+   * Note: this feature is experimental and may change or be removed in the
+   * future.
+   */
+  experimentalClientControlledNullability?: boolean;
 }
 
 /**
@@ -414,7 +432,7 @@ export class Parser {
   }
 
   /**
-   * Field : Alias? Name Nullability? Arguments? Directives? SelectionSet?
+   * Field : Alias? Name Arguments? Directives? SelectionSet?
    *
    * Alias : Name :
    */
@@ -440,7 +458,13 @@ export class Parser {
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
         : undefined,
-      required: this.parseRequiredStatus(),
+
+      // Experimental support for Client Controlled Nullability changes
+      // the grammar of Field:
+      //   - Field : Alias? Name Nullability? Arguments? Directives? SelectionSet?
+      required: this._options?.experimentalClientControlledNullability
+        ? this.parseRequiredStatus()
+        : undefined,
     });
   }
 
