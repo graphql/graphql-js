@@ -506,7 +506,7 @@ describe('Visitor', () => {
   });
 
   it('visits kitchen sink', () => {
-    const ast = parse(kitchenSinkQuery);
+    const ast = parse(kitchenSinkQuery, { experimentalClientControlledNullability: true });
     const visited: Array<any> = [];
     const argsStack: Array<any> = [];
 

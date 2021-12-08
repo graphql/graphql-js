@@ -63,6 +63,8 @@ const printDocASTReducer: ASTReducer<string> = {
       selectionSet,
       required,
     }) {
+      // Note: Client Controlled Nullability is experimental and may be changed
+      // or removed in the future.
       const prefix = join([wrap('', alias, ': '), name, required], '');
       let argsLine = prefix + wrap('(', join(args, ', '), ')');
 

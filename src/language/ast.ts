@@ -214,8 +214,12 @@ export const QueryDocumentKeys: {
     'arguments',
     'directives',
     'selectionSet',
+    // Note: Client Controlled Nullability is experimental and may be changed
+    // or removed in the future.
     'required',
   ],
+  // Note: Client Controlled Nullability is experimental and may be changed
+  // or removed in the future.
   RequiredDesignator: [],
   OptionalDesignator: [],
   Argument: ['name', 'value'],
@@ -371,6 +375,8 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
+  // Note: Client Controlled Nullability is experimental
+  // and may be changed or removed in the future.
   readonly required?: NullabilityModifierNode;
 }
 

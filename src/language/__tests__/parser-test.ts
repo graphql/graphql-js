@@ -153,7 +153,11 @@ describe('Parser', () => {
   });
 
   it('parses kitchen sink', () => {
-    expect(() => parse(kitchenSinkQuery)).to.not.throw();
+    expect(() =>
+      parse(kitchenSinkQuery, {
+        experimentalClientControlledNullability: true,
+      }),
+    ).to.not.throw();
   });
 
   it('allows non-keywords anywhere a Name is allowed', () => {
@@ -225,11 +229,14 @@ describe('Parser', () => {
   });
 
   it('parses required field', () => {
-    const result = parse(dedent`
+    const result = parse(
+      dedent`
       query {
         requiredField!
       }
-    `);
+      `,
+      { experimentalClientControlledNullability: true },
+    );
 
     expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
@@ -272,109 +279,142 @@ describe('Parser', () => {
 
   it('parses optional field', () => {
     expect(() =>
-      parse(`
-      query {
-        optionalField?
-      }
-    `),
+      parse(
+        `
+        query {
+          optionalField?
+        }
+      `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.not.throw();
   });
 
   it('does not parse field with multiple designators', () => {
     expect(() =>
-      parse(`
-      query {
-        optionalField?!
-      }
-    `),
+      parse(
+        `
+        query {
+          optionalField?!
+        }
+        `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.throw('Syntax Error: Expected Name, found "!".');
 
     expect(() =>
-      parse(`
+      parse(
+        `
       query {
         optionalField!?
       }
-    `),
+    `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.throw('Syntax Error: Expected Name, found "?".');
   });
 
   it('parses required with alias', () => {
     expect(() =>
-      parse(`
+      parse(
+        `
       query {
         requiredField: field!
       }
-    `),
+    `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.not.throw();
   });
 
   it('parses optional with alias', () => {
     expect(() =>
-      parse(`
+      parse(
+        `
       query {
         requiredField: field?
       }
-    `),
+    `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.not.throw();
   });
 
   it('does not parse aliased field with bang on left of colon', () => {
     expect(() =>
-      parse(`
+      parse(
+        `
       query {
         requiredField!: field
       }
-    `),
+    `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.throw();
   });
 
   it('does not parse aliased field with question mark on left of colon', () => {
     expect(() =>
-      parse(`
+      parse(
+        `
       query {
         requiredField?: field
       }
-    `),
+    `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.throw();
   });
 
   it('does not parse aliased field with bang on left and right of colon', () => {
     expect(() =>
-      parse(`
+      parse(
+        `
       query {
         requiredField!: field!
       }
-    `),
+    `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.throw();
   });
 
   it('does not parse aliased field with question mark on left and right of colon', () => {
     expect(() =>
-      parse(`
+      parse(
+        `
       query {
         requiredField?: field?
       }
-    `),
+    `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.throw();
   });
 
   it('parses required within fragment', () => {
     expect(() =>
-      parse(`
+      parse(
+        `
       fragment MyFragment on Query {
         field!
       }
-    `),
+    `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.not.throw();
   });
 
   it('parses optional within fragment', () => {
     expect(() =>
-      parse(`
+      parse(
+        `
       fragment MyFragment on Query {
         field?
       }
-    `),
+    `,
+        { experimentalClientControlledNullability: true },
+      ),
     ).to.not.throw();
   });
 
