@@ -103,14 +103,18 @@ export interface ParseOptions {
   /**
    * EXPERIMENTAL:
    *
-   * If enabled, the parser will understand and parse variable definitions
-   * contained in a fragment definition. They'll be represented in the
-   * `variableDefinitions` field of the FragmentDefinitionNode.
+   * If enabled, the parser will understand and parse Client Controlled Nullability
+   * Designators contained in Fields. They'll be represented in the
+   * `required` field of the FieldNode.
    *
-   * The syntax is identical to normal, query-defined variables. For example:
+   * The syntax looks like the following:
    *
-   *   fragment A($var: Boolean = false) on T  {
-   *     ...
+   *   {
+   *     nullableField!
+   *     nonNullableField?
+   *     nonNullableSelectionSet? {
+   *       childField!
+   *     }
    *   }
    *
    * Note: this feature is experimental and may change or be removed in the
