@@ -109,6 +109,7 @@ export interface ParseOptions {
    *
    * The syntax looks like the following:
    *
+   * ```graphql
    *   {
    *     nullableField!
    *     nonNullableField?
@@ -116,7 +117,7 @@ export interface ParseOptions {
    *       childField!
    *     }
    *   }
-   *
+   * ```
    * Note: this feature is experimental and may change or be removed in the
    * future.
    */
