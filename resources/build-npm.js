@@ -6,13 +6,12 @@ const assert = require('assert');
 
 const ts = require('typescript');
 const babel = require('@babel/core');
-const prettier = require('prettier');
 
-const { readdirRecursive, showDirStats } = require('./utils.js');
-
-const prettierConfig = JSON.parse(
-  fs.readFileSync(require.resolve('../.prettierrc'), 'utf-8'),
-);
+const {
+  writeGeneratedFile,
+  readdirRecursive,
+  showDirStats,
+} = require('./utils.js');
 
 if (require.main === module) {
   fs.rmSync('./npmDist', { recursive: true, force: true });
@@ -88,11 +87,6 @@ if (require.main === module) {
   writeGeneratedFile('./npmDist/package.json', JSON.stringify(packageJSON));
 
   showDirStats('./npmDist');
-}
-
-function writeGeneratedFile(filepath, body) {
-  const formatted = prettier.format(body, { filepath, ...prettierConfig });
-  fs.writeFileSync(filepath, formatted);
 }
 
 function babelBuild(srcPath, options) {
