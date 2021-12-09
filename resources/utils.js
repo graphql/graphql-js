@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 
+const prettier = require('prettier');
+
 function exec(command, options) {
   const output = childProcess.execSync(command, {
     maxBuffer: 10 * 1024 * 1024, // 10MB
@@ -80,8 +82,18 @@ function showDirStats(dirPath) {
   );
 }
 
+const prettierConfig = JSON.parse(
+  fs.readFileSync(require.resolve('../.prettierrc'), 'utf-8'),
+);
+
+function writeGeneratedFile(filepath, body) {
+  const formatted = prettier.format(body, { filepath, ...prettierConfig });
+  fs.writeFileSync(filepath, formatted);
+}
+
 module.exports = {
   exec,
   readdirRecursive,
   showDirStats,
+  writeGeneratedFile,
 };

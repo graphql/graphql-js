@@ -1,8 +1,8 @@
 'use strict';
 
-const fs = require('fs');
-
 const { version } = require('../package.json');
+
+const { writeGeneratedFile } = require('./utils.js');
 
 const versionMatch = /^(\d+)\.(\d+)\.(\d+)-?(.*)?$/.exec(version);
 if (!versionMatch) {
@@ -34,5 +34,5 @@ export const versionInfo = Object.freeze({
 `;
 
 if (require.main === module) {
-  fs.writeFileSync('./src/version.ts', body.trim() + '\n');
+  writeGeneratedFile('./src/version.ts', body);
 }

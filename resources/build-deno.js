@@ -4,13 +4,12 @@ const fs = require('fs');
 const path = require('path');
 
 const babel = require('@babel/core');
-const prettier = require('prettier');
 
-const { readdirRecursive, showDirStats } = require('./utils.js');
-
-const prettierConfig = JSON.parse(
-  fs.readFileSync(require.resolve('../.prettierrc'), 'utf-8'),
-);
+const {
+  writeGeneratedFile,
+  readdirRecursive,
+  showDirStats,
+} = require('./utils.js');
 
 if (require.main === module) {
   fs.rmSync('./denoDist', { recursive: true, force: true });
@@ -33,9 +32,4 @@ if (require.main === module) {
   fs.copyFileSync('./README.md', './denoDist/README.md');
 
   showDirStats('./denoDist');
-}
-
-function writeGeneratedFile(filepath, body) {
-  const formatted = prettier.format(body, { filepath, ...prettierConfig });
-  fs.writeFileSync(filepath, formatted);
 }
