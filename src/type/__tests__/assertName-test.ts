@@ -2,10 +2,9 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { assertName, assertEnumValueName } from '../assertName';
-import { assertValidName } from '../../utilities/assertValidName';
 
-describe('assertValidName()', () => {
-  assertValidName('test');
+describe('assertName()', () => {
+  assertName('test');
   it('passthrough valid name', () => {
     expect(assertName('_ValidName123')).to.equal('_ValidName123');
   });

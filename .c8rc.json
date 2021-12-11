@@ -7,6 +7,7 @@
     "src/jsutils/Maybe.ts",
     "src/jsutils/ObjMap.ts",
     "src/jsutils/PromiseOrValue.ts",
+    "src/utilities/assertValidName.ts",
     "src/utilities/typedQueryDocumentNode.ts"
   ],
   "clean": true,
