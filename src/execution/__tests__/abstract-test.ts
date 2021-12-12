@@ -225,6 +225,60 @@ describe('Execute: Handles execution of abstract types', () => {
     });
   });
 
+  it('isTypeOf can return false', async () => {
+    const PetType = new GraphQLInterfaceType({
+      name: 'Pet',
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+
+    const DogType = new GraphQLObjectType({
+      name: 'Dog',
+      interfaces: [PetType],
+      isTypeOf(_source, context) {
+        return context.async ? Promise.resolve(false) : false;
+      },
+      fields: {
+        name: { type: GraphQLString },
+        woofs: { type: GraphQLBoolean },
+      },
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          pet: {
+            type: PetType,
+            resolve: () => ({}),
+          },
+        },
+      }),
+      types: [DogType],
+    });
+
+    const query = `
+      {
+        pet {
+          name
+        }
+      }
+    `;
+
+    expectJSON(await executeQuery({ schema, query })).toDeepEqual({
+      data: { pet: null },
+      errors: [
+        {
+          message:
+            'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
+          locations: [{ line: 3, column: 9 }],
+          path: ['pet'],
+        },
+      ],
+    });
+  });
+
   it('isTypeOf used to resolve runtime type for Union', async () => {
     const DogType = new GraphQLObjectType({
       name: 'Dog',

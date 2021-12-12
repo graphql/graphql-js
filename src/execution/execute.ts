@@ -165,6 +165,12 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  // Temporary for v15 to v16 migration. Remove in v17
+  devAssert(
+    arguments.length < 2,
+    'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
+  );
+
   const { schema, document, variableValues, rootValue } = args;
 
   // If arguments are missing or incorrect, throw an error.
@@ -303,6 +309,8 @@ export function buildExecutionContext(
       case Kind.FRAGMENT_DEFINITION:
         fragments[definition.name.value] = definition;
         break;
+      default:
+      // ignore non-executable definitions
     }
   }
 
@@ -313,7 +321,8 @@ export function buildExecutionContext(
     return [new GraphQLError('Must provide an operation.')];
   }
 
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  // FIXME: https://github.com/graphql/graphql-js/issues/2203
+  /* c8 ignore next */
   const variableDefinitions = operation.variableDefinitions ?? [];
 
   const coercedVariableValues = getVariableValues(
@@ -466,7 +475,7 @@ function executeFields(
 }
 
 /**
- * Implements the "Executing field" section of the spec
+ * Implements the "Executing fields" section of the spec
  * In particular, this function figures out the value that the field returns by
  * calling its resolve function, then calls completeValue to complete promises,
  * serialize scalars, or execute the sub-selection-set for objects.
@@ -588,7 +597,7 @@ function handleFieldError(
 
 /**
  * Implements the instructions for completeValue as defined in the
- * "Field entries" section of the spec.
+ * "Value Completion" section of the spec.
  *
  * If the field type is Non-Null, then this recursively completes the value
  * for the inner type. It throws a field error if that completion returns null,
@@ -676,7 +685,6 @@ function completeValue(
   }
 
   // If field type is Object, execute and complete all sub-selections.
-  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isObjectType(returnType)) {
     return completeObjectValue(
       exeContext,
@@ -687,8 +695,8 @@ function completeValue(
       result,
     );
   }
-
-  // istanbul ignore next (Not reachable. All possible output types have been considered)
+  /* c8 ignore next 6 */
+  // Not reachable, all possible output types have been considered.
   invariant(
     false,
     'Cannot complete value of unexpected output type: ' + inspect(returnType),

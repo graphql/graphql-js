@@ -120,6 +120,10 @@ function getDirectiveLocationForASTPath(
         ? DirectiveLocation.INPUT_FIELD_DEFINITION
         : DirectiveLocation.ARGUMENT_DEFINITION;
     }
+    // Not reachable, all possible types have been considered.
+    /* c8 ignore next */
+    default:
+      invariant(false, 'Unexpected kind: ' + inspect(appliedTo.kind));
   }
 }
 
@@ -134,7 +138,4 @@ function getDirectiveLocationForOperation(
     case OperationTypeNode.SUBSCRIPTION:
       return DirectiveLocation.SUBSCRIPTION;
   }
-
-  // istanbul ignore next (Not reachable. All possible types have been considered)
-  invariant(false, 'Unexpected operation: ' + inspect(operation));
 }

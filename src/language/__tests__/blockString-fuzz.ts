@@ -8,7 +8,7 @@ import { invariant } from '../../jsutils/invariant';
 
 import { Lexer } from '../lexer';
 import { Source } from '../source';
-import { printBlockString } from '../blockString';
+import { printBlockString, isPrintableAsBlockString } from '../blockString';
 
 function lexValue(str: string): string {
   const lexer = new Lexer(new Source(str));
@@ -19,6 +19,34 @@ function lexValue(str: string): string {
   return value;
 }
 
+function testPrintableBlockString(
+  testValue: string,
+  options?: { minimize: boolean },
+): void {
+  const blockString = printBlockString(testValue, options);
+  const printedValue = lexValue(blockString);
+  invariant(
+    testValue === printedValue,
+    dedent`
+      Expected lexValue(${inspectStr(blockString)})
+         to equal ${inspectStr(testValue)}
+         but got  ${inspectStr(printedValue)}
+     `,
+  );
+}
+
+function testNonPrintableBlockString(testValue: string): void {
+  const blockString = printBlockString(testValue);
+  const printedValue = lexValue(blockString);
+  invariant(
+    testValue !== printedValue,
+    dedent`
+      Expected lexValue(${inspectStr(blockString)})
+        to not equal ${inspectStr(testValue)}
+    `,
+  );
+}
+
 describe('printBlockString', () => {
   it('correctly print random strings', () => {
     // Testing with length >7 is taking exponentially more time. However it is
@@ -27,39 +55,13 @@ describe('printBlockString', () => {
       allowedChars: ['\n', '\t', ' ', '"', 'a', '\\'],
       maxLength: 7,
     })) {
-      const testStr = '"""' + fuzzStr + '"""';
-
-      let testValue;
-      try {
-        testValue = lexValue(testStr);
-      } catch (e) {
-        continue; // skip invalid values
+      if (!isPrintableAsBlockString(fuzzStr)) {
+        testNonPrintableBlockString(fuzzStr);
+        continue;
       }
-      invariant(typeof testValue === 'string');
 
-      const printedValue = lexValue(printBlockString(testValue));
-
-      invariant(
-        testValue === printedValue,
-        dedent`
-          Expected lexValue(printBlockString(${inspectStr(testValue)}))
-            to equal ${inspectStr(testValue)}
-            but got  ${inspectStr(printedValue)}
-        `,
-      );
-
-      const printedMultilineString = lexValue(
-        printBlockString(testValue, true),
-      );
-
-      invariant(
-        testValue === printedMultilineString,
-        dedent`
-          Expected lexValue(printBlockString(${inspectStr(testValue)}, true))
-            to equal ${inspectStr(testValue)}
-            but got  ${inspectStr(printedMultilineString)}
-        `,
-      );
+      testPrintableBlockString(fuzzStr);
+      testPrintableBlockString(fuzzStr, { minimize: true });
     }
   }).timeout(20000);
 });

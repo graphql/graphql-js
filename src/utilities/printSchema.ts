@@ -4,7 +4,7 @@ import type { Maybe } from '../jsutils/Maybe';
 
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
-import { printBlockString } from '../language/blockString';
+import { isPrintableAsBlockString } from '../language/blockString';
 
 import type { GraphQLSchema } from '../type/schema';
 import { isSchema } from '../type/schema';
@@ -215,12 +215,11 @@ export function printType(type: GraphQLNamedType): string {
   if (isEnumType(type)) {
     return printEnum(type);
   }
-  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isInputObjectType(type)) {
     return printInputObject(type);
   }
-
-  // istanbul ignore next (Not reachable. All possible types have been considered)
+  /* c8 ignore next 3 */
+  // Not reachable, all possible types have been considered.
   invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
@@ -385,8 +384,12 @@ function printDescription(
     return '';
   }
 
-  const preferMultipleLines = description.length > 70;
-  const blockString = printBlockString(description, preferMultipleLines);
+  const blockString = print({
+    kind: Kind.STRING,
+    value: description,
+    block: isPrintableAsBlockString(description),
+  });
+
   const prefix =
     indentation && !firstInBlock ? '\n' + indentation : indentation;
 

@@ -150,9 +150,11 @@ function getOperationTypeNode(
   schema: GraphQLSchema,
   operation: OperationTypeNode,
 ): Maybe<ASTNode> {
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return [schema.astNode, ...schema.extensionASTNodes]
-    .flatMap((schemaNode) => schemaNode?.operationTypes ?? [])
+    .flatMap(
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      (schemaNode) => /* c8 ignore next */ schemaNode?.operationTypes ?? [],
+    )
     .find((operationNode) => operationNode.operation === operation)?.type;
 }
 
@@ -402,12 +404,7 @@ function validateTypeImplementsInterface(
             `expects type ${inspect(ifaceArg.type)} but ` +
             `${type.name}.${fieldName}(${argName}:) is type ` +
             `${inspect(typeArg.type)}.`,
-          [
-            // istanbul ignore next (TODO need to write coverage tests)
-            ifaceArg.astNode?.type,
-            // istanbul ignore next (TODO need to write coverage tests)
-            typeArg.astNode?.type,
-          ],
+          [ifaceArg.astNode?.type, typeArg.astNode?.type],
         );
       }
 
@@ -531,11 +528,7 @@ function validateInputFields(
     if (isRequiredInputField(field) && field.deprecationReason != null) {
       context.reportError(
         `Required input field ${inputObj.name}.${field.name} cannot be deprecated.`,
-        [
-          getDeprecatedDirectiveNode(field.astNode),
-          // istanbul ignore next (TODO need to write coverage tests)
-          field.astNode?.type,
-        ],
+        [getDeprecatedDirectiveNode(field.astNode), field.astNode?.type],
       );
     }
   }
@@ -605,9 +598,9 @@ function getAllImplementsInterfaceNodes(
     | InterfaceTypeExtensionNode
   > = astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
 
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  // FIXME: https://github.com/graphql/graphql-js/issues/2203
   return nodes
-    .flatMap((typeNode) => typeNode.interfaces ?? [])
+    .flatMap((typeNode) => /* c8 ignore next */ typeNode.interfaces ?? [])
     .filter((ifaceNode) => ifaceNode.name.value === iface.name);
 }
 
@@ -619,16 +612,15 @@ function getUnionMemberTypeNodes(
   const nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode> =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
 
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
+  // FIXME: https://github.com/graphql/graphql-js/issues/2203
   return nodes
-    .flatMap((unionNode) => unionNode.types ?? [])
+    .flatMap((unionNode) => /* c8 ignore next */ unionNode.types ?? [])
     .filter((typeNode) => typeNode.name.value === typeName);
 }
 
 function getDeprecatedDirectiveNode(
   definitionNode: Maybe<{ readonly directives?: ReadonlyArray<DirectiveNode> }>,
 ): Maybe<DirectiveNode> {
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return definitionNode?.directives?.find(
     (node) => node.name.value === GraphQLDeprecatedDirective.name,
   );

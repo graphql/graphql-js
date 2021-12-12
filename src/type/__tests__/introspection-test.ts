@@ -1625,7 +1625,7 @@ describe('Introspection', () => {
       schemaDescription: true,
     });
 
-    // istanbul ignore next (Called only to fail test)
+    /* c8 ignore start */
     function fieldResolver(
       _1: any,
       _2: any,
@@ -1635,10 +1635,10 @@ describe('Introspection', () => {
       expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
-    // istanbul ignore next (Called only to fail test)
     function typeResolver(_1: any, _2: any, info: GraphQLResolveInfo): never {
       expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
     }
+    /* c8 ignore stop */
 
     const result = graphqlSync({
       schema,

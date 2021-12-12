@@ -6,13 +6,12 @@ const assert = require('assert');
 
 const ts = require('typescript');
 const babel = require('@babel/core');
-const prettier = require('prettier');
 
-const { readdirRecursive, showDirStats } = require('./utils.js');
-
-const prettierConfig = JSON.parse(
-  fs.readFileSync(require.resolve('../.prettierrc'), 'utf-8'),
-);
+const {
+  writeGeneratedFile,
+  readdirRecursive,
+  showDirStats,
+} = require('./utils.js');
 
 if (require.main === module) {
   fs.rmSync('./npmDist', { recursive: true, force: true });
@@ -90,11 +89,6 @@ if (require.main === module) {
   showDirStats('./npmDist');
 }
 
-function writeGeneratedFile(filepath, body) {
-  const formatted = prettier.format(body, { filepath, ...prettierConfig });
-  fs.writeFileSync(filepath, formatted);
-}
-
 function babelBuild(srcPath, options) {
   const { code } = babel.transformFileSync(srcPath, {
     babelrc: false,
@@ -113,6 +107,10 @@ function buildPackageJSON() {
   delete packageJSON.scripts;
   delete packageJSON.devDependencies;
 
+  // TODO: move to integration tests
+  const publishTag = packageJSON.publishConfig?.tag;
+  assert(publishTag != null, 'Should have packageJSON.publishConfig defined!');
+
   const { version } = packageJSON;
   const versionMatch = /^\d+\.\d+\.\d+-?(?<preReleaseTag>.*)?$/.exec(version);
   if (!versionMatch) {
@@ -124,15 +122,17 @@ function buildPackageJSON() {
   if (preReleaseTag != null) {
     const splittedTag = preReleaseTag.split('.');
     // Note: `experimental-*` take precedence over `alpha`, `beta` or `rc`.
-    const publishTag = splittedTag[2] ?? splittedTag[0];
+    const versionTag = splittedTag[2] ?? splittedTag[0];
     assert(
-      ['alpha', 'beta', 'rc'].includes(publishTag) ||
-        publishTag.startsWith('experimental-'),
-      `"${publishTag}" tag is not supported.`,
+      ['alpha', 'beta', 'rc'].includes(versionTag) ||
+        versionTag.startsWith('experimental-'),
+      `"${versionTag}" tag is not supported.`,
     );
-
-    assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
-    packageJSON.publishConfig = { tag: publishTag };
+    assert.equal(
+      versionTag,
+      publishTag,
+      'Publish tag and version tag should match!',
+    );
   }
 
   return packageJSON;

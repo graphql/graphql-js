@@ -31,6 +31,8 @@ export function separateOperations(
           definitionNode.selectionSet,
         );
         break;
+      default:
+      // ignore non-executable definitions
     }
   }
 

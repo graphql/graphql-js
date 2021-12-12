@@ -1036,7 +1036,7 @@ describe('Schema Builder', () => {
   });
 
   it('Do not override standard types', () => {
-    // NOTE: not sure it's desired behaviour to just silently ignore override
+    // NOTE: not sure it's desired behavior to just silently ignore override
     // attempts so just documenting it here.
 
     const schema = buildSchema(`

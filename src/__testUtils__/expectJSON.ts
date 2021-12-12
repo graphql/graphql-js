@@ -24,15 +24,16 @@ function toJSONDeep(value: unknown): unknown {
 }
 
 export function expectJSON(actual: unknown) {
+  const actualJSON = toJSONDeep(actual);
+
   return {
     toDeepEqual(expected: unknown) {
-      expect(toJSONDeep(actual)).to.deep.equal(toJSONDeep(expected));
+      const expectedJSON = toJSONDeep(expected);
+      expect(actualJSON).to.deep.equal(expectedJSON);
     },
     toDeepNestedProperty(path: string, expected: unknown) {
-      expect(toJSONDeep(actual)).to.deep.nested.property(
-        path,
-        toJSONDeep(expected),
-      );
+      const expectedJSON = toJSONDeep(expected);
+      expect(actualJSON).to.deep.nested.property(path, expectedJSON);
     },
   };
 }

@@ -4,11 +4,11 @@ import { GraphQLError } from '../error/GraphQLError';
 
 import { assertName } from '../type/assertName';
 
+/* c8 ignore start */
 /**
  * Upholds the spec rules about naming.
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
-// istanbul ignore next (Deprecated code)
 export function assertValidName(name: string): string {
   const error = isValidNameError(name);
   if (error) {
@@ -21,7 +21,6 @@ export function assertValidName(name: string): string {
  * Returns an Error if a name is invalid.
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
-// istanbul ignore next (Deprecated code)
 export function isValidNameError(name: string): GraphQLError | undefined {
   devAssert(typeof name === 'string', 'Expected name to be a string.');
 
@@ -37,3 +36,4 @@ export function isValidNameError(name: string): GraphQLError | undefined {
     return error;
   }
 }
+/* c8 ignore stop */

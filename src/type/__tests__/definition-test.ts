@@ -36,10 +36,8 @@ const NonNullScalarType = new GraphQLNonNull(ScalarType);
 const ListOfNonNullScalarsType = new GraphQLList(NonNullScalarType);
 const NonNullListOfScalars = new GraphQLNonNull(ListOfScalarsType);
 
-// istanbul ignore next (Never called and used as a placeholder)
-const dummyFunc = () => {
-  /* empty */
-};
+/* c8 ignore next */
+const dummyFunc = () => expect.fail('Never called and used as a placeholder');
 
 describe('Type System: Scalars', () => {
   it('accepts a Scalar type defining serialize', () => {

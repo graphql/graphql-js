@@ -132,7 +132,8 @@ export class GraphQLError extends Error {
     });
 
     // Include (non-enumerable) stack trace.
-    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
+    /* c8 ignore start */
+    // FIXME: https://github.com/graphql/graphql-js/issues/2317
     if (originalError?.stack) {
       Object.defineProperty(this, 'stack', {
         value: originalError.stack,
@@ -148,6 +149,7 @@ export class GraphQLError extends Error {
         configurable: true,
       });
     }
+    /* c8 ignore stop */
   }
 
   get [Symbol.toStringTag](): string {

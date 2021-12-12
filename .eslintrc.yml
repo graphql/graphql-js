@@ -8,7 +8,6 @@ reportUnusedDisableDirectives: true
 plugins:
   - internal-rules
   - node
-  - istanbul
   - import
 settings:
   node:
@@ -23,14 +22,6 @@ rules:
   internal-rules/only-ascii: error
   internal-rules/no-dir-import: error
   internal-rules/require-to-string-tag: off
-
-  ##############################################################################
-  # `eslint-plugin-istanbul` rule list based on `v0.1.2`
-  # https://github.com/istanbuljs/eslint-plugin-istanbul#rules
-  ##############################################################################
-
-  istanbul/no-ignore-file: error
-  istanbul/prefer-ignore-reason: error
 
   ##############################################################################
   # `eslint-plugin-node` rule list based on `v11.1.x`
@@ -150,7 +141,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v7.32.x`
+  # ESLint builtin rules list based on `v8.3.x`
   ##############################################################################
 
   # Possible Errors
@@ -193,6 +184,7 @@ rules:
   no-unsafe-finally: error
   no-unsafe-negation: error
   no-unsafe-optional-chaining: [error, { disallowArithmeticOperators: true }]
+  no-unused-private-class-members: error
   no-useless-backreference: error
   require-atomic-updates: error
   use-isnan: error
@@ -461,7 +453,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.0.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.5.x`
       ##########################################################################
 
       # Supported Rules
@@ -477,6 +469,7 @@ overrides:
         [error, index-signature]
       '@typescript-eslint/consistent-type-assertions': off # TODO temporarily disable
       '@typescript-eslint/consistent-type-definitions': error
+      '@typescript-eslint/consistent-type-exports': error
       '@typescript-eslint/consistent-type-imports': error
       '@typescript-eslint/explicit-function-return-type': off # TODO consider
       '@typescript-eslint/explicit-member-accessibility': off # TODO consider
@@ -544,7 +537,7 @@ overrides:
       '@typescript-eslint/restrict-template-expressions': off #TODO temporarily disabled
       '@typescript-eslint/sort-type-union-intersection-members': off # TODO consider
       '@typescript-eslint/strict-boolean-expressions': off # TODO consider
-      '@typescript-eslint/switch-exhaustiveness-check': off #TODO temporarily disabled
+      '@typescript-eslint/switch-exhaustiveness-check': error
       '@typescript-eslint/triple-slash-reference': error
       '@typescript-eslint/typedef': off
       '@typescript-eslint/unbound-method': off # TODO consider

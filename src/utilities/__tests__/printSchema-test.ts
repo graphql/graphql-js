@@ -678,6 +678,20 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints an description with only whitespace', () => {
+    const schema = buildSingleFieldSchema({
+      type: GraphQLString,
+      description: ' ',
+    });
+
+    expectPrintedSchema(schema).to.equal(dedent`
+      type Query {
+        " "
+        singleField: String
+      }
+    `);
+  });
+
   it('One-line prints a short description', () => {
     const schema = buildSingleFieldSchema({
       type: GraphQLString,
@@ -721,9 +735,9 @@ describe('Type System Printer', () => {
         reason: String = "No longer supported"
       ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
 
-      """Exposes a URL that specifies the behaviour of this scalar."""
+      """Exposes a URL that specifies the behavior of this scalar."""
       directive @specifiedBy(
-        """The URL that specifies the behaviour of this scalar."""
+        """The URL that specifies the behavior of this scalar."""
         url: String!
       ) on SCALAR
 

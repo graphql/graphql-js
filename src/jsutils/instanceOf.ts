@@ -7,9 +7,10 @@ import { inspect } from './inspect';
  * See: https://webpack.js.org/guides/production/
  */
 export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
+  /* c8 ignore next 5 */
+  // FIXME: https://github.com/graphql/graphql-js/issues/2317
   process.env.NODE_ENV === 'production'
-    ? // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2317')
-      function instanceOf(value: unknown, constructor: Constructor): boolean {
+    ? function instanceOf(value: unknown, constructor: Constructor): boolean {
         return value instanceof constructor;
       }
     : function instanceOf(value: unknown, constructor: Constructor): boolean {
