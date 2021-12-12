@@ -7,7 +7,6 @@ import { print } from '../language/printer';
 import { isPrintableAsBlockString } from '../language/blockString';
 
 import type { GraphQLSchema } from '../type/schema';
-import { isSchema } from '../type/schema';
 import type { GraphQLDirective } from '../type/directives';
 import {
   DEFAULT_DEPRECATION_REASON,
@@ -39,7 +38,6 @@ import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 
 import type { ConstDirectiveNode } from '../language/ast';
-import { isConstDirectiveNode } from '../language/ast';
 
 import { astFromValue } from './astFromValue';
 
@@ -79,25 +77,6 @@ export function printIntrospectionSchema(
   );
 }
 
-/**
- * Useful implementation of PrintSchemaOptions.printDirectives for users who
- * define their schema through SDL and simply want to print all included directives.
- */
-export const directivesFromAstNodes: PrintSchemaOptions['printDirectives'] = (
-  definition,
-) => {
-  if (isSchema(definition)) {
-    return [
-      ...(definition.astNode?.directives ?? []),
-      ...(definition?.extensionASTNodes
-        ?.map((node) => node.directives)
-        ?.flat() ?? []),
-    ].filter(isConstDirectiveNode);
-  }
-
-  return [];
-};
-
 function isDefinedType(type: GraphQLNamedType): boolean {
   return !isSpecifiedScalarType(type) && !isIntrospectionType(type);
 }
@@ -114,23 +93,34 @@ function printFilteredSchema(
   return [
     printSchemaDefinition(schema, options),
     ...directives.map((directive) => printDirective(directive)),
-    ...types.map((type) => printType(type)),
+    ...types.map((type) => printType(type, options)),
   ]
     .filter(Boolean)
     .join('\n\n');
+}
+
+function collectDirectives(
+  printDirectives: PrintSchemaOptions['printDirectives'] | undefined,
+  definition:
+    | GraphQLSchema
+    | GraphQLType
+    | GraphQLField<unknown, unknown>
+    | GraphQLEnumValue
+    | GraphQLInputField
+    | GraphQLArgument,
+) {
+  if (printDirectives == null) {
+    return [];
+  }
+
+  return printDirectives(definition).map(print);
 }
 
 function printSchemaDefinition(
   schema: GraphQLSchema,
   options?: PrintSchemaOptions,
 ): Maybe<string> {
-  const directives: Array<string> = [];
-  const printDirectives = options?.printDirectives;
-  if (printDirectives) {
-    printDirectives(schema).forEach((directive) => {
-      directives.push(print(directive));
-    });
-  }
+  const directives = collectDirectives(options?.printDirectives, schema);
 
   if (
     schema.description == null &&
@@ -199,12 +189,15 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   return true;
 }
 
-export function printType(type: GraphQLNamedType): string {
+export function printType(
+  type: GraphQLNamedType,
+  options?: PrintSchemaOptions,
+): string {
   if (isScalarType(type)) {
     return printScalar(type);
   }
   if (isObjectType(type)) {
-    return printObject(type);
+    return printObject(type, options);
   }
   if (isInterfaceType(type)) {
     return printInterface(type);
@@ -238,10 +231,15 @@ function printImplementedInterfaces(
     : '';
 }
 
-function printObject(type: GraphQLObjectType): string {
+function printObject(
+  type: GraphQLObjectType,
+  options?: PrintSchemaOptions,
+): string {
+  const directives = collectDirectives(options?.printDirectives, type);
   return (
     printDescription(type) +
     `type ${type.name}` +
+    (directives.length ? ' ' + directives.join(' ') : '') +
     printImplementedInterfaces(type) +
     printFields(type)
   );

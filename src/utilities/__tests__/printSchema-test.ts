@@ -23,7 +23,6 @@ import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { buildSchema } from '../buildASTSchema';
 import type { PrintSchemaOptions } from '../printSchema';
 import {
-  directivesFromAstNodes,
   printIntrospectionSchema,
   printSchema,
 } from '../printSchema';
@@ -339,25 +338,21 @@ describe('Type System Printer', () => {
 
   it('Prints schema with directives', () => {
     const schema = buildSchema(`
-      schema @foo {
-        query: Query
-      }
-
-      directive @foo on SCHEMA
+      directive @foo on SCHEMA | OBJECT
 
       type Query
     `);
 
     expectPrintedSchema(schema, {
-      printDirectives: directivesFromAstNodes,
+      printDirectives: () => [parseConstDirective('@foo')],
     }).to.equal(dedent`
       schema @foo {
         query: Query
       }
 
-      directive @foo on SCHEMA
+      directive @foo on SCHEMA | OBJECT
 
-      type Query
+      type Query @foo
     `);
   });
 
