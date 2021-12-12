@@ -1,4 +1,4 @@
-import { Kind } from './kinds';
+import type { Kind } from './kinds';
 import type { Source } from './source';
 import type { TokenKind } from './tokenKind';
 
