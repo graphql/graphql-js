@@ -22,10 +22,7 @@ import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 
 import { buildSchema } from '../buildASTSchema';
 import type { PrintSchemaOptions } from '../printSchema';
-import {
-  printIntrospectionSchema,
-  printSchema,
-} from '../printSchema';
+import { printIntrospectionSchema, printSchema } from '../printSchema';
 import { parseConstDirective } from '../../language/parser';
 
 function expectPrintedSchema(

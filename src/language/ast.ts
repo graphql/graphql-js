@@ -288,15 +288,6 @@ export function isNode(maybeNode: any): maybeNode is ASTNode {
   return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
 
-/**
- * @internal
- */
-export function isConstDirectiveNode(
-  maybeConstDirectiveNode: any,
-): maybeConstDirectiveNode is ConstDirectiveNode {
-  return maybeConstDirectiveNode?.kind === Kind.DIRECTIVE;
-}
-
 /** Name */
 
 export interface NameNode {
