@@ -4,7 +4,6 @@ import { describe, it } from 'mocha';
 import { assertName, assertEnumValueName } from '../assertName';
 
 describe('assertName()', () => {
-  assertName('test');
   it('passthrough valid name', () => {
     expect(assertName('_ValidName123')).to.equal('_ValidName123');
   });
