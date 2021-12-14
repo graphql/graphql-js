@@ -17,11 +17,11 @@ var _typeFromAST = require('../utilities/typeFromAST.js');
 var _values = require('./values.js');
 
 /**
- * Given a selectionSet, collect all of the fields and returns it at the end.
+ * Given a selectionSet, collects all of the fields and returns them.
  *
- * CollectFields requires the "runtime type" of an object. For a field which
+ * CollectFields requires the "runtime type" of an object. For a field that
  * returns an Interface or Union type, the "runtime type" will be the actual
- * Object type returned by that field.
+ * object type returned by that field.
  *
  * @internal
  */
@@ -46,11 +46,11 @@ function collectFields(
 }
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
- * in fields, and returns it at the end.
+ * in fields, and returns them at the end.
  *
- * CollectFields requires the "return type" of an object. For a field which
+ * CollectSubFields requires the "return type" of an object. For a field that
  * returns an Interface or Union type, the "return type" will be the actual
- * Object type returned by that field.
+ * object type returned by that field.
  *
  * @internal
  */
