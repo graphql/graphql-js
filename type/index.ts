@@ -9,6 +9,8 @@ export {
 } from './schema.ts';
 export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema.ts';
 export {
+  resolveObjMapThunk,
+  resolveReadonlyArrayThunk,
   /** Predicates */
   isType,
   isScalarType,
