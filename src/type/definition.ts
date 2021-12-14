@@ -532,13 +532,13 @@ export function getNamedType(
 export type ThunkReadonlyArray<T> = (() => ReadonlyArray<T>) | ReadonlyArray<T>;
 export type ThunkObjMap<T> = (() => ObjMap<T>) | ObjMap<T>;
 
-function resolveReadonlyArrayThunk<T>(
+export function resolveReadonlyArrayThunk<T>(
   thunk: ThunkReadonlyArray<T>,
 ): ReadonlyArray<T> {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
-function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T> {
+export function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T> {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 

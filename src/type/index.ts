@@ -11,6 +11,8 @@ export {
 export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema';
 
 export {
+  resolveObjMapThunk,
+  resolveReadonlyArrayThunk,
   /** Predicates */
   isType,
   isScalarType,
