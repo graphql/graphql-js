@@ -169,8 +169,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
+
+      - name: Deepen cloned repo
+        run: 'git fetch --deepen=${{ github.event.pull_request.commits || 1 }}'
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -182,7 +183,9 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run Benchmark
-        run: 'npm run benchmark -- --revs HEAD HEAD~1'
+        run: 'npm run benchmark -- --revs HEAD $BASE_COMMIT'
+        env:
+          BASE_COMMIT: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
 
   diff-npm-package:
     name: Diff content of NPM package
@@ -190,8 +193,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
+
+      - name: Deepen cloned repo
+        run: 'git fetch --deepen=${{ github.event.pull_request.commits || 1 }}'
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
