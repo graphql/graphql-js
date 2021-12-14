@@ -363,11 +363,10 @@ export function getNamedType(type) {
  * otherwise immutable type definitions.
  */
 
-function resolveReadonlyArrayThunk(thunk) {
+export function resolveReadonlyArrayThunk(thunk) {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
-
-function resolveObjMapThunk(thunk) {
+export function resolveObjMapThunk(thunk) {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 /**

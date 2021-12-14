@@ -7,6 +7,8 @@ export {
   GraphQLSchema,
 } from './schema.mjs';
 export {
+  resolveObjMapThunk,
+  resolveReadonlyArrayThunk,
   /** Predicates */
   isType,
   isScalarType,

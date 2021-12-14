@@ -32,6 +32,8 @@ export { graphql, graphqlSync } from './graphql.mjs';
 /** Create and operate on GraphQL type definitions and schema. */
 
 export {
+  resolveObjMapThunk,
+  resolveReadonlyArrayThunk,
   /** Definitions */
   GraphQLSchema,
   GraphQLDirective,

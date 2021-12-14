@@ -52,6 +52,8 @@ exports.isScalarType = isScalarType;
 exports.isType = isType;
 exports.isUnionType = isUnionType;
 exports.isWrappingType = isWrappingType;
+exports.resolveObjMapThunk = resolveObjMapThunk;
+exports.resolveReadonlyArrayThunk = resolveReadonlyArrayThunk;
 
 var _inspect = require('../jsutils/inspect.js');
 

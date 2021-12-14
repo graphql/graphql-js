@@ -279,6 +279,10 @@ export declare type ThunkReadonlyArray<T> =
   | (() => ReadonlyArray<T>)
   | ReadonlyArray<T>;
 export declare type ThunkObjMap<T> = (() => ObjMap<T>) | ObjMap<T>;
+export declare function resolveReadonlyArrayThunk<T>(
+  thunk: ThunkReadonlyArray<T>,
+): ReadonlyArray<T>;
+export declare function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T>;
 /**
  * Custom extensions
  *

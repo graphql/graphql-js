@@ -501,6 +501,18 @@ Object.defineProperty(exports, 'isWrappingType', {
     return _definition.isWrappingType;
   },
 });
+Object.defineProperty(exports, 'resolveObjMapThunk', {
+  enumerable: true,
+  get: function () {
+    return _definition.resolveObjMapThunk;
+  },
+});
+Object.defineProperty(exports, 'resolveReadonlyArrayThunk', {
+  enumerable: true,
+  get: function () {
+    return _definition.resolveReadonlyArrayThunk;
+  },
+});
 Object.defineProperty(exports, 'specifiedDirectives', {
   enumerable: true,
   get: function () {

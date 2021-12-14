@@ -1119,6 +1119,18 @@ Object.defineProperty(exports, 'printType', {
     return _index6.printType;
   },
 });
+Object.defineProperty(exports, 'resolveObjMapThunk', {
+  enumerable: true,
+  get: function () {
+    return _index.resolveObjMapThunk;
+  },
+});
+Object.defineProperty(exports, 'resolveReadonlyArrayThunk', {
+  enumerable: true,
+  get: function () {
+    return _index.resolveReadonlyArrayThunk;
+  },
+});
 Object.defineProperty(exports, 'responsePathAsArray', {
   enumerable: true,
   get: function () {
