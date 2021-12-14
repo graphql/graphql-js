@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import { assertName, assertEnumValueName } from '../assertName';
 
-describe('assertName()', () => {
+describe('assertName', () => {
   it('passthrough valid name', () => {
     expect(assertName('_ValidName123')).to.equal('_ValidName123');
   });
@@ -32,7 +32,7 @@ describe('assertName()', () => {
   });
 });
 
-describe('assertEnumValueName()', () => {
+describe('assertEnumValueName', () => {
   it('passthrough valid name', () => {
     expect(assertEnumValueName('_ValidName123')).to.equal('_ValidName123');
   });
