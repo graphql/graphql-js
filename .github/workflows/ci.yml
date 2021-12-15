@@ -166,12 +166,14 @@ jobs:
   benchmark:
     name: Run benchmark
     runs-on: ubuntu-latest
+    env:
+      COMMITS_TO_TEST: ${{ github.event.pull_request.commits || 1 }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
 
       - name: Deepen cloned repo
-        run: 'git fetch --deepen=${{ github.event.pull_request.commits || 1 }}'
+        run: 'git fetch --deepen=$COMMITS_TO_TEST'
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -183,19 +185,19 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run Benchmark
-        run: 'npm run benchmark -- --revs HEAD $BASE_COMMIT'
-        env:
-          BASE_COMMIT: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
+        run: 'npm run benchmark -- --revs HEAD "HEAD~$COMMITS_TO_TEST"'
 
   diff-npm-package:
     name: Diff content of NPM package
     runs-on: ubuntu-latest
+    env:
+      COMMITS_TO_TEST: ${{ github.event.pull_request.commits || 1 }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
 
       - name: Deepen cloned repo
-        run: 'git fetch --deepen=${{ github.event.pull_request.commits || 1 }}'
+        run: 'git fetch --deepen=$COMMITS_TO_TEST'
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -207,9 +209,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Generate report
-        run: 'node resources/diff-npm-package.js $BASE_COMMIT HEAD'
-        env:
-          BASE_COMMIT: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
+        run: 'node resources/diff-npm-package.js HEAD~$COMMITS_TO_TEST HEAD'
 
       - name: Upload generated report
         uses: actions/upload-artifact@v2
