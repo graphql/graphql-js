@@ -229,37 +229,31 @@ describe('Parser', () => {
   });
 
   it('parses required field', () => {
-    const result = parse(
-      dedent`
-      query {
-        requiredField!
-      }
-      `,
-      { experimentalClientControlledNullability: true },
-    );
+    const document = '{ requiredField! }';
+    const parsedDocument = parse(document, { experimentalClientControlledNullability: true });
 
-    expectJSON(result).toDeepEqual({
+    expectJSON(parsedDocument).toDeepEqual({
       kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 26 },
+      loc: { start: 0, end: 18 },
       definitions: [
         {
           kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 26 },
+          loc: { start: 0, end: 18 },
           operation: 'query',
           name: undefined,
           variableDefinitions: [],
           directives: [],
           selectionSet: {
             kind: Kind.SELECTION_SET,
-            loc: { start: 6, end: 26 },
+            loc: { start: 0, end: 18 },
             selections: [
               {
                 kind: Kind.FIELD,
-                loc: { start: 10, end: 24 },
+                loc: { start: 2, end: 16 },
                 alias: undefined,
                 name: {
                   kind: Kind.NAME,
-                  loc: { start: 10, end: 23 },
+                  loc: { start: 2, end: 15 },
                   value: 'requiredField',
                 },
                 arguments: [],
@@ -267,7 +261,7 @@ describe('Parser', () => {
                 selectionSet: undefined,
                 required: {
                   kind: Kind.REQUIRED_DESIGNATOR,
-                  loc: { start: 25, end: 24 },
+                  loc: { start: 17, end: 16 },
                 },
               },
             ],
@@ -278,143 +272,88 @@ describe('Parser', () => {
   });
 
   it('parses optional field', () => {
+    const document = ' { optionalField? }';
+    
     expect(() =>
-      parse(
-        `
-        query {
-          optionalField?
-        }
-      `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.not.throw();
   });
 
   it('does not parse field with multiple designators', () => {
+    const document = '{ optionalField?! }';
+    
     expect(() =>
-      parse(
-        `
-        query {
-          optionalField?!
-        }
-        `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.throw('Syntax Error: Expected Name, found "!".');
 
+    const inverseDocument = '{ optionalField!? }';
+    
     expect(() =>
-      parse(
-        `
-      query {
-        optionalField!?
-      }
-    `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(inverseDocument, { experimentalClientControlledNullability: true }),
     ).to.throw('Syntax Error: Expected Name, found "?".');
   });
 
   it('parses required with alias', () => {
+    const document = '{ requiredField: field! }';
+   
     expect(() =>
-      parse(
-        `
-      query {
-        requiredField: field!
-      }
-    `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.not.throw();
   });
 
   it('parses optional with alias', () => {
+    const document = '{ requiredField: field? }';
+
     expect(() =>
-      parse(
-        `
-      query {
-        requiredField: field?
-      }
-    `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.not.throw();
   });
 
   it('does not parse aliased field with bang on left of colon', () => {
+    const document = '{ requiredField!: field }';
+    
     expect(() =>
-      parse(
-        `
-      query {
-        requiredField!: field
-      }
-    `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.throw();
   });
 
   it('does not parse aliased field with question mark on left of colon', () => {
+    const document = '{ requiredField?: field }';
+    
     expect(() =>
-      parse(
-        `
-      query {
-        requiredField?: field
-      }
-    `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.throw();
   });
 
   it('does not parse aliased field with bang on left and right of colon', () => {
+    const document = '{ requiredField!: field! }';
+    
     expect(() =>
-      parse(
-        `
-      query {
-        requiredField!: field!
-      }
-    `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.throw();
   });
 
   it('does not parse aliased field with question mark on left and right of colon', () => {
+    const document = '{ requiredField?: field? }';
+    
     expect(() =>
-      parse(
-        `
-      query {
-        requiredField?: field?
-      }
-    `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.throw();
   });
 
   it('parses required within fragment', () => {
+    const document = 'fragment MyFragment on Query { field! }';
+    
     expect(() =>
-      parse(
-        `
-      fragment MyFragment on Query {
-        field!
-      }
-    `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.not.throw();
   });
 
   it('parses optional within fragment', () => {
+    const document = 'fragment MyFragment on Query { field? }';
+    
     expect(() =>
-      parse(
-        `
-      fragment MyFragment on Query {
-        field?
-      }
-    `,
-        { experimentalClientControlledNullability: true },
-      ),
+      parse(document, { experimentalClientControlledNullability: true }),
     ).to.not.throw();
   });
 
