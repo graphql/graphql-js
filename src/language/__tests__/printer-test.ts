@@ -173,6 +173,13 @@ describe('Printer: Query document', () => {
             requiredSelectionSet(first: 10)! @directive {
               field
             }
+            unsetListItemsRequiredList: listField[]!
+            requiredListItemsUnsetList: listField[!]
+            requiredListItemsRequiredList: listField[!]!
+            unsetListItemsOptionalList: listField[]?
+            optionalListItemsUnsetList: listField[?]
+            optionalListItemsOptionalList: listField[?]?
+            multidimensionalList: listField[[[!]!]!]!
           }
           ... @skip(unless: $foo) {
             id

@@ -17,6 +17,7 @@ export enum Kind {
   FRAGMENT_SPREAD = 'FragmentSpread',
   INLINE_FRAGMENT = 'InlineFragment',
   FRAGMENT_DEFINITION = 'FragmentDefinition',
+  LIST_NULLABILITY = 'ListNullability',
   REQUIRED_DESIGNATOR = 'RequiredDesignator',
   OPTIONAL_DESIGNATOR = 'OptionalDesignator',
 

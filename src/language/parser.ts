@@ -64,6 +64,7 @@ import type {
   NullabilityDesignatorNode,
   OptionalDesignatorNode,
   RequiredDesignatorNode,
+  ListNullabilityNode,
 } from './ast';
 import { Location, OperationTypeNode } from './ast';
 import { DirectiveLocation } from './directiveLocation';
@@ -478,22 +479,59 @@ export class Parser {
    * - ?
    *
    */
-  parseRequiredStatus(): NullabilityDesignatorNode | undefined {
-    return this.parseRequiredModifierNode() ?? this.parseOptionalModifierNode();
+  parseRequiredStatus():
+    | NullabilityDesignatorNode
+    | ListNullabilityNode
+    | undefined {
+    const list = this.parseListNullability();
+    const nullabilityStatus = this.parseNullabilityDesignatorNode(list);
+
+    return nullabilityStatus ?? list;
   }
 
-  parseRequiredModifierNode(): RequiredDesignatorNode | undefined {
-    if (this.expectOptionalToken(TokenKind.BANG)) {
-      return this.node<RequiredDesignatorNode>(this._lexer.token, {
-        kind: Kind.REQUIRED_DESIGNATOR,
+  parseListNullability(): ListNullabilityNode | undefined {
+    const start = this._lexer.token;
+
+    if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
+      const child = this.parseRequiredStatus();
+      this.expectToken(TokenKind.BRACKET_R);
+
+      return this.node<ListNullabilityNode>(start, {
+        kind: Kind.LIST_NULLABILITY,
+        element: child,
       });
     }
   }
 
-  parseOptionalModifierNode(): OptionalDesignatorNode | undefined {
+  parseNullabilityDesignatorNode(
+    childElement?: ListNullabilityNode,
+  ): NullabilityDesignatorNode | undefined {
+    return (
+      this.parseRequiredDesignatorNode(childElement) ??
+      this.parseOptionalDesignatorNode(childElement)
+    );
+  }
+
+  parseRequiredDesignatorNode(
+    childElement?: ListNullabilityNode,
+  ): RequiredDesignatorNode | undefined {
+    const start = this._lexer.token;
+    if (this.expectOptionalToken(TokenKind.BANG)) {
+      return this.node<RequiredDesignatorNode>(start, {
+        kind: Kind.REQUIRED_DESIGNATOR,
+        element: childElement,
+      });
+    }
+  }
+
+  parseOptionalDesignatorNode(
+    childElement?: ListNullabilityNode,
+  ): OptionalDesignatorNode | undefined {
+    const start = this._lexer.token;
     if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-      return this.node<OptionalDesignatorNode>(this._lexer.token, {
+      return this.node<OptionalDesignatorNode>(start, {
         kind: Kind.OPTIONAL_DESIGNATOR,
+        element: childElement,
       });
     }
   }
