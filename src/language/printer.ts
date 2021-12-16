@@ -72,21 +72,27 @@ const printDocASTReducer: ASTReducer<string> = {
 
       // Note: Client Controlled Nullability is experimental and may be changed
       // or removed in the future.
-      let requiredArgsLine = join([argsLine, required], '');
+      const requiredArgsLine = join([argsLine, required], '');
 
       return join([requiredArgsLine, join(directives, ' '), selectionSet], ' ');
     },
   },
 
   RequiredDesignator: {
-    leave() {
-      return '!';
+    leave({ element }) {
+      return (element ?? '') + '!';
     },
   },
 
   OptionalDesignator: {
-    leave() {
-      return '?';
+    leave({ element }) {
+      return (element ?? '') + '?';
+    },
+  },
+
+  ListNullability: {
+    leave({ element }) {
+      return '[' + (element ?? '') + ']';
     },
   },
 

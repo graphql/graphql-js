@@ -181,7 +181,8 @@ export type ASTNode =
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
   | RequiredDesignatorNode
-  | OptionalDesignatorNode;
+  | OptionalDesignatorNode
+  | ListNullabilityNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -220,8 +221,9 @@ export const QueryDocumentKeys: {
   ],
   // Note: Client Controlled Nullability is experimental and may be changed
   // or removed in the future.
-  RequiredDesignator: [],
-  OptionalDesignator: [],
+  ListNullability: ['element'],
+  RequiredDesignator: ['element'],
+  OptionalDesignator: ['element'],
   Argument: ['name', 'value'],
 
   FragmentSpread: ['name', 'directives'],
@@ -375,7 +377,7 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   // Note: Client Controlled Nullability is experimental
   // and may be changed or removed in the future.
-  readonly required?: NullabilityDesignatorNode;
+  readonly required?: ListNullabilityNode | NullabilityDesignatorNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
 }
@@ -383,11 +385,19 @@ export interface FieldNode {
 export interface RequiredDesignatorNode {
   readonly kind: Kind.REQUIRED_DESIGNATOR;
   readonly loc?: Location;
+  readonly element?: ListNullabilityNode;
 }
 
 export interface OptionalDesignatorNode {
   readonly kind: Kind.OPTIONAL_DESIGNATOR;
   readonly loc?: Location;
+  readonly element?: ListNullabilityNode;
+}
+
+export interface ListNullabilityNode {
+  readonly kind: Kind.LIST_NULLABILITY;
+  readonly loc?: Location;
+  readonly element?: NullabilityDesignatorNode | ListNullabilityNode;
 }
 
 // modifiers can be ! or ?

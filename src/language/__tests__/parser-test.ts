@@ -263,7 +263,8 @@ describe('Parser', () => {
                 selectionSet: undefined,
                 required: {
                   kind: Kind.REQUIRED_DESIGNATOR,
-                  loc: { start: 17, end: 16 },
+                  loc: { start: 15, end: 16 },
+                  element: undefined,
                 },
               },
             ],
@@ -357,6 +358,323 @@ describe('Parser', () => {
     expect(() =>
       parse(document, { experimentalClientControlledNullability: true }),
     ).to.not.throw();
+  });
+
+  it('parses field with required list elements', () => {
+    const document = '{ field[!] }';
+    const result = parse(document, {
+      experimentalClientControlledNullability: true,
+    });
+
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 12 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 12 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 12 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 10 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  kind: Kind.LIST_NULLABILITY,
+                  loc: { start: 7, end: 10 },
+                  element: {
+                    kind: Kind.REQUIRED_DESIGNATOR,
+                    loc: { start: 8, end: 9 },
+                    element: undefined,
+                  },
+                },
+                selectionSet: undefined,
+              },
+            ],
+          },
+        },
+      ],
+    });
+  });
+
+  it('parses field with optional list elements', () => {
+    const document = '{ field[?] }';
+    const result = parse(document, {
+      experimentalClientControlledNullability: true,
+    });
+
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 12 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 12 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 12 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 10 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  kind: Kind.LIST_NULLABILITY,
+                  loc: { start: 7, end: 10 },
+                  element: {
+                    kind: Kind.OPTIONAL_DESIGNATOR,
+                    loc: { start: 8, end: 9 },
+                    element: undefined,
+                  },
+                },
+                selectionSet: undefined,
+              },
+            ],
+          },
+        },
+      ],
+    });
+  });
+
+  it('parses field with required list', () => {
+    const document = '{ field[]! }';
+    const result = parse(document, {
+      experimentalClientControlledNullability: true,
+    });
+
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 12 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 12 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 12 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 10 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                selectionSet: undefined,
+                required: {
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  loc: { start: 9, end: 10 },
+                  element: {
+                    kind: Kind.LIST_NULLABILITY,
+                    element: undefined,
+                    loc: { start: 7, end: 9 },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    });
+  });
+
+  it('parses field with optional list', () => {
+    const document = '{ field[]? }';
+    const result = parse(document, {
+      experimentalClientControlledNullability: true,
+    });
+
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 12 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 12 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 12 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 10 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  kind: Kind.OPTIONAL_DESIGNATOR,
+                  loc: { start: 9, end: 10 },
+                  element: {
+                    kind: Kind.LIST_NULLABILITY,
+                    loc: { start: 7, end: 9 },
+                    element: undefined,
+                  },
+                },
+                selectionSet: undefined,
+              },
+            ],
+          },
+        },
+      ],
+    });
+  });
+
+  it('parses multidimensional field with mixed list elements', () => {
+    const document = '{ field[[[?]!]]! }';
+    const result = parse(document, {
+      experimentalClientControlledNullability: true,
+    });
+
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 18 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 18 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 18 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 16 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  loc: { start: 15, end: 16 },
+                  element: {
+                    kind: Kind.LIST_NULLABILITY,
+                    loc: { start: 7, end: 15 },
+                    element: {
+                      kind: Kind.LIST_NULLABILITY,
+                      loc: { start: 8, end: 14 },
+                      element: {
+                        kind: Kind.REQUIRED_DESIGNATOR,
+                        loc: { start: 12, end: 13 },
+                        element: {
+                          kind: Kind.LIST_NULLABILITY,
+                          loc: { start: 9, end: 12 },
+                          element: {
+                            kind: Kind.OPTIONAL_DESIGNATOR,
+                            loc: { start: 10, end: 11 },
+                            element: undefined,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                selectionSet: undefined,
+              },
+            ],
+          },
+        },
+      ],
+    });
+  });
+
+  it('does not parse field with unbalanced brackets', () => {
+    const leftHeavyDocument = '{ field[[] }';
+    expect(() =>
+      parse(leftHeavyDocument, {
+        experimentalClientControlledNullability: true,
+      }),
+    ).to.throw('Syntax Error: Expected "]", found "}".');
+
+    const rightHeavyDocument = '{ field[]] }';
+    expect(() =>
+      parse(rightHeavyDocument, {
+        experimentalClientControlledNullability: true,
+      }),
+    ).to.throw('Syntax Error: Expected Name, found "]".');
+
+    const leftMissingDocument = '{ field] }';
+    expect(() =>
+      parse(leftMissingDocument, {
+        experimentalClientControlledNullability: true,
+      }),
+    ).to.throw('Syntax Error: Expected Name, found "]".');
+
+    const rightMissingDocument = '{ field[ }';
+    expect(() =>
+      parse(rightMissingDocument, {
+        experimentalClientControlledNullability: true,
+      }),
+    ).to.throw('Syntax Error: Expected "]", found "}".');
+  });
+
+  it('does not parse field with assorted invalid nullability designators', () => {
+    const doubleDocument = '{ field[][] }';
+    expect(() =>
+      parse(doubleDocument, { experimentalClientControlledNullability: true }),
+    ).to.throw('Syntax Error: Expected Name, found "[".');
+
+    const doubleBangDocument = '{ field[!!] }';
+    expect(() =>
+      parse(doubleBangDocument, {
+        experimentalClientControlledNullability: true,
+      }),
+    ).to.throw('Syntax Error: Expected "]", found "!".');
+
+    const multipleNullabilityDocument = '{ field[]?! }';
+    expect(() =>
+      parse(multipleNullabilityDocument, {
+        experimentalClientControlledNullability: true,
+      }),
+    ).to.throw('Syntax Error: Expected Name, found "!".');
   });
 
   it('creates ast', () => {
