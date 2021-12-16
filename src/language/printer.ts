@@ -63,16 +63,18 @@ const printDocASTReducer: ASTReducer<string> = {
       selectionSet,
       required,
     }) {
-      // Note: Client Controlled Nullability is experimental and may be changed
-      // or removed in the future.
-      const prefix = join([wrap('', alias, ': '), name, required], '');
+      const prefix = join([wrap('', alias, ': '), name], '');
       let argsLine = prefix + wrap('(', join(args, ', '), ')');
 
       if (argsLine.length > MAX_LINE_LENGTH) {
         argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
       }
 
-      return join([argsLine, join(directives, ' '), selectionSet], ' ');
+      // Note: Client Controlled Nullability is experimental and may be changed
+      // or removed in the future.
+      let requiredArgsLine = join([argsLine, required], '');
+
+      return join([requiredArgsLine, join(directives, ' '), selectionSet], ' ');
     },
   },
 
