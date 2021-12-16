@@ -180,8 +180,8 @@ export type ASTNode =
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
-  | RequiredModifierNode
-  | OptionalModifierNode;
+  | RequiredDesignatorNode
+  | OptionalDesignatorNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -377,23 +377,23 @@ export interface FieldNode {
   readonly selectionSet?: SelectionSetNode;
   // Note: Client Controlled Nullability is experimental
   // and may be changed or removed in the future.
-  readonly required?: NullabilityModifierNode;
+  readonly required?: NullabilityDesignatorNode;
 }
 
-export interface RequiredModifierNode {
+export interface RequiredDesignatorNode {
   readonly kind: Kind.REQUIRED_DESIGNATOR;
   readonly loc?: Location;
 }
 
-export interface OptionalModifierNode {
+export interface OptionalDesignatorNode {
   readonly kind: Kind.OPTIONAL_DESIGNATOR;
   readonly loc?: Location;
 }
 
 // modifiers can be ! or ?
-export type NullabilityModifierNode =
-  | RequiredModifierNode
-  | OptionalModifierNode;
+export type NullabilityDesignatorNode =
+  | RequiredDesignatorNode
+  | OptionalDesignatorNode;
 
 export interface ArgumentNode {
   readonly kind: Kind.ARGUMENT;
