@@ -11,9 +11,11 @@ query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         }
       }
       field3!
-      requiredField4: field4!
-      field5?
-      optionalField6: field6?
+      field4?
+      requiredField5: field5!
+      requiredSelectionSet(first: 10)! @directive {
+        field
+      }
     }
     ... @skip(unless: $foo) {
       id

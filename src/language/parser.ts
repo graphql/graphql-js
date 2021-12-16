@@ -459,16 +459,15 @@ export class Parser {
       alias,
       name,
       arguments: this.parseArguments(false),
+      // Experimental support for Client Controlled Nullability changes
+      // the grammar of Field:
+      //   - Field : Alias? Name Arguments? Nullability? Directives? SelectionSet?
+      required: this._options?.experimentalClientControlledNullability
+        ? this.parseRequiredStatus()
+        : undefined,
       directives: this.parseDirectives(false),
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
-        : undefined,
-
-      // Experimental support for Client Controlled Nullability changes
-      // the grammar of Field:
-      //   - Field : Alias? Name Nullability? Arguments? Directives? SelectionSet?
-      required: this._options?.experimentalClientControlledNullability
-        ? this.parseRequiredStatus()
         : undefined,
     });
   }

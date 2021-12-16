@@ -373,11 +373,11 @@ export interface FieldNode {
   readonly alias?: NameNode;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<ArgumentNode>;
-  readonly directives?: ReadonlyArray<DirectiveNode>;
-  readonly selectionSet?: SelectionSetNode;
   // Note: Client Controlled Nullability is experimental
   // and may be changed or removed in the future.
   readonly required?: NullabilityDesignatorNode;
+  readonly directives?: ReadonlyArray<DirectiveNode>;
+  readonly selectionSet?: SelectionSetNode;
 }
 
 export interface RequiredDesignatorNode {
