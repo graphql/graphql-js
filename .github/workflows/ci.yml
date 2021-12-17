@@ -173,7 +173,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Deepen cloned repo
-        run: 'git fetch --deepen=$COMMITS_TO_TEST'
+        run: 'git fetch --single-branch --no-tags --deepen=$COMMITS_TO_TEST'
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -197,7 +197,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Deepen cloned repo
-        run: 'git fetch --deepen=$COMMITS_TO_TEST'
+        run: 'git fetch --single-branch --no-tags --deepen=$COMMITS_TO_TEST'
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
