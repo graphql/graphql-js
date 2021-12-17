@@ -201,7 +201,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run Benchmark
-        run: 'npm run benchmark -- --revs HEAD "HEAD~$COMMITS_TO_TEST"'
+        run: 'npm run benchmark -- --revs HEAD 779519253a68d7a906f366858aec75cee239452e'
 
   diff-npm-package:
     name: Diff content of NPM package
@@ -227,7 +227,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Generate report
-        run: 'node resources/diff-npm-package.js HEAD~$COMMITS_TO_TEST HEAD'
+        run: 'node resources/diff-npm-package.js 779519253a68d7a906f366858aec75cee239452e HEAD'
 
       - name: Upload generated report
         uses: actions/upload-artifact@v2
