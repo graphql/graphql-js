@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -37,6 +39,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Check if commit contains files that should be ignored
         run: |
@@ -54,6 +58,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -82,6 +88,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -102,6 +110,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -121,6 +131,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -150,6 +162,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js v${{ matrix.node_version_to_setup }}
         uses: actions/setup-node@v2
@@ -171,6 +185,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Deepen cloned repo
         run: 'git fetch --deepen=$COMMITS_TO_TEST'
@@ -195,6 +211,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Deepen cloned repo
         run: 'git fetch --deepen=$COMMITS_TO_TEST'
@@ -229,6 +247,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -258,6 +278,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
