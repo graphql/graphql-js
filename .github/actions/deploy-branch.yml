@@ -1,0 +1,36 @@
+name: 'Deploy specified directory as a branch'
+description: 'This action deploys directory as branch.'
+inputs:
+  branch:
+    required: true
+  dir:
+    required: true
+  commitMessage:
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout `${{ inputs.branch }}` branch
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ inputs.branch }}
+        path: clonedBranch
+
+    - name: Copy files `${{ inputs.branch }}` branch
+      run: |
+        cd clonedBranch
+
+        # Remove existing files first
+        git rm -r .
+
+        # Move necessary files
+        mv ${{ inputs.dir }}/* .
+        git add -A .
+
+        if git diff --staged --quiet; then
+          echo "Nothing to publish"
+        else
+          git commit -a -m "${{ inputs.commitMessage }}"
+          git push
+          echo "Pushed"
+        fi
