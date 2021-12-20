@@ -11,10 +11,6 @@ We use GitHub issues to track public bugs and requests. Please ensure your bug
 description is clear and has sufficient instructions to be able to reproduce the
 issue. The best way is to provide a reduced test case on jsFiddle or jsBin.
 
-Facebook has a [bounty program](https://www.facebook.com/whitehat/) for the safe
-disclosure of security bugs. In those cases, please go through the process
-outlined on that page and do not file a public issue.
-
 ## Pull Requests
 
 All active development of graphql-js happens on GitHub. We actively welcome
