@@ -4,8 +4,6 @@
 /coverage
 /npmDist
 /denoDist
-/npm
-/deno
 
 # Ignore TS files inside integration test
 /integrationTests/ts/*.ts

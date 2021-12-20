@@ -243,9 +243,10 @@ jobs:
         run: npm run build:npm
 
       - name: Deploy to `npm` branch
-        run: npm run gitpublish:npm
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ./.github/actions/deploy-dir-as-branch
+        with:
+          src_dir: npmDist
+          target_branch: npm
 
   deploy-to-deno-branch:
     name: Deploy to `deno` branch
@@ -272,6 +273,7 @@ jobs:
         run: npm run build:deno
 
       - name: Deploy to `deno` branch
-        run: npm run gitpublish:deno
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ./.github/actions/deploy-dir-as-branch
+        with:
+          src_dir: denoDist
+          target_branch: deno
