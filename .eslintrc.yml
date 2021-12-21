@@ -141,7 +141,7 @@ rules:
   import/dynamic-import-chunkname: off
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.3.x`
+  # ESLint builtin rules list based on `v8.5.x`
   ##############################################################################
 
   # Possible Errors
@@ -361,6 +361,7 @@ rules:
   prefer-const: error
   prefer-destructuring: off
   prefer-numeric-literals: error
+  prefer-object-has-own: off # TODO requires Node.js v16.9.0
   prefer-rest-params: off # TODO
   prefer-spread: error
   prefer-template: off
@@ -453,7 +454,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.5.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.8.x`
       ##########################################################################
 
       # Supported Rules
@@ -575,7 +576,7 @@ overrides:
       '@typescript-eslint/no-loop-func': error
       '@typescript-eslint/no-loss-of-precision': error
       '@typescript-eslint/no-redeclare': error
-      '@typescript-eslint/no-throw-literal': error
+      '@typescript-eslint/no-throw-literal': error # TODO [error, { allowThrowingAny: false, allowThrowingUnknown: false }]
       '@typescript-eslint/no-shadow': error
       '@typescript-eslint/no-unused-expressions': error
       '@typescript-eslint/no-unused-vars':
