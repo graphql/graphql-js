@@ -3,17 +3,19 @@ import type {
   NullabilityModifierNode,
   SupportArrayNode,
 } from '../../language/ast';
-import { ASTReducer, ASTVisitor, visit } from '../../language/visitor';
+
+import type { ASTReducer, ASTVisitor } from '../../language/visitor';
+import { visit } from '../../language/visitor';
 
 import type { ValidationContext } from '../ValidationContext';
-import { modifiedOutputType } from '../../utilities/applyRequiredStatus';
+import type { GraphQLOutputType } from '../../type/definition';
 import {
   assertListType,
   getNullableType,
-  GraphQLError,
-  GraphQLOutputType,
   isListType,
-} from '../..';
+} from '../../type/definition';
+
+import { GraphQLError } from '../../error/GraphQLError';
 
 /**
  * List element nullability designators need to use a depth that is the same as or less than the
@@ -29,9 +31,10 @@ export function RequiredStatusOnFieldMatchesDefinitionRule(
   return {
     Field(node: FieldNode) {
       const fieldDef = context.getFieldDef();
-      if (fieldDef) {
+      const requiredNode = node.required;
+      if (fieldDef && requiredNode) {
         const typeDepth = getTypeDepth(fieldDef.type);
-        const designatorDepth = getDesignatorDepth(node.required);
+        const designatorDepth = getDesignatorDepth(requiredNode);
 
         if (typeDepth > designatorDepth) {
           context.reportError(
@@ -65,7 +68,7 @@ export function RequiredStatusOnFieldMatchesDefinitionRule(
   }
 
   function getDesignatorDepth(
-    designator: SupportArrayNode | NullabilityModifierNode | undefined,
+    designator: SupportArrayNode | NullabilityModifierNode,
   ): number {
     const getDepth: ASTReducer<number> = {
       RequiredDesignator: {
@@ -87,6 +90,6 @@ export function RequiredStatusOnFieldMatchesDefinitionRule(
       },
     };
 
-    return designator !== undefined ? visit(designator, getDepth) : 0;
+    return visit(designator, getDepth);
   }
 }

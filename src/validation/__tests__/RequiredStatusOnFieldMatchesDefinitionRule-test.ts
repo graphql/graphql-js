@@ -37,8 +37,10 @@ describe('Validate: Field uses correct list depth', () => {
       fragment listFragment on Lists {
         list[!]
         nonList!
+        nonList?
         mixedThreeDList[[[!]!]!]!
         requiredList[]
+        unmodifiedList: list
       }
     `);
   });
