@@ -1021,6 +1021,17 @@ describe('Validate: Overlapping fields can be merged', () => {
     `);
   });
 
+  it('does not infinite loop on immediately recursive fragment mentionned in queries', () => {
+    expectValid(`
+      query myQuery {
+        todoRemove
+        ...fragA
+      }
+
+      fragment fragA on Query { ...fragA }
+    `);
+  });
+
   it('does not infinite loop on transitively recursive fragment', () => {
     expectValid(`
       fragment fragA on Human { name, ...fragB }
