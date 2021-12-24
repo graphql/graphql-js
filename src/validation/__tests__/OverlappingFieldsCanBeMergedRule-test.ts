@@ -1023,7 +1023,7 @@ describe('Validate: Overlapping fields can be merged', () => {
 
   it('does not infinite loop on immediately recursive fragment mentioned in queries', () => {
     expectValid(`
-      query myQuery {
+      {
         ...fragA
       }
 
@@ -1031,8 +1031,54 @@ describe('Validate: Overlapping fields can be merged', () => {
     `);
   });
 
+  it('does not infinite loop on recursive fragment with a field named after fragment', () => {
+    expectValid(`
+      {
+        ...fragA
+        fragA
+      }
+
+      fragment fragA on Query { ...fragA }
+    `);
+  });
+
+  it('finds invalid cases even with field named after fragment', () => {
+    expectErrors(`
+      {
+        fragA
+        ...fragA
+      }
+
+      fragment fragA on Type { 
+        fragA: b
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "fragA" conflict because "fragA" and "b" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 8, column: 9 },
+        ],
+      },
+    ]);
+  });
+
   it('does not infinite loop on transitively recursive fragment', () => {
     expectValid(`
+      fragment fragA on Human { name, ...fragB }
+      fragment fragB on Human { name, ...fragC }
+      fragment fragC on Human { name, ...fragA }
+    `);
+  });
+
+  it('does not infinite loop on transitively recursive fragment mentioned in queries', () => {
+    expectValid(`
+      {
+        ...fragA
+        fragB
+      }
+
       fragment fragA on Human { name, ...fragB }
       fragment fragB on Human { name, ...fragC }
       fragment fragC on Human { name, ...fragA }

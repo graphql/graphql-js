@@ -267,10 +267,21 @@ function collectConflictsBetweenFieldsAndFragment(
   // (E) Then collect any conflicts between the provided collection of fields
   // and any fragment names found in the given fragment.
   for (const referencedFragmentName of referencedFragmentNames) {
-    // Don't compare this fragment with itself
-    if (referencedFragmentName === fragmentName) {
+    // Memoize so two fragments are not compared for conflicts more than once.
+    if (
+      comparedFragmentPairs.has(
+        referencedFragmentName,
+        fragmentName,
+        areMutuallyExclusive,
+      )
+    ) {
       continue;
     }
+    comparedFragmentPairs.add(
+      referencedFragmentName,
+      fragmentName,
+      areMutuallyExclusive,
+    );
 
     collectConflictsBetweenFieldsAndFragment(
       context,
