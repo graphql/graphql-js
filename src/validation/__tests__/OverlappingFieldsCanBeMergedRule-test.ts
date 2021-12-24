@@ -1021,7 +1021,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     `);
   });
 
-  it('does not infinite loop on immediately recursive fragment mentionned in queries', () => {
+  it('does not infinite loop on immediately recursive fragment mentioned in queries', () => {
     expectValid(`
       query myQuery {
         ...fragA
