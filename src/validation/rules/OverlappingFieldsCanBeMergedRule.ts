@@ -267,6 +267,7 @@ function collectConflictsBetweenFieldsAndFragment(
   // (E) Then collect any conflicts between the provided collection of fields
   // and any fragment names found in the given fragment.
   for (const referencedFragmentName of referencedFragmentNames) {
+    // Don't compare this fragment with itself
     if (referencedFragmentName === fragmentName) {
       continue;
     }
