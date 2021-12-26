@@ -67,14 +67,17 @@ jobs:
           cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
-      - name: Run npm install
-        run: npm install --ignore-scripts --engine-strict --strict-peer-deps
-
-      - name: Check that package-lock.json is in sync with package.json
-        run: git diff --exit-code package-lock.json
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
 
       - name: Check that package-lock.json doesn't have conflicts
         run: npm ls --depth 999
+
+      - name: Run npm install
+        run: npm install --force --package-lock-only --ignore-scripts --engine-strict --strict-peer-deps
+
+      - name: Check that package-lock.json is in sync with package.json
+        run: git diff --exit-code package-lock.json
 
   integrationTests:
     name: Run integration tests
