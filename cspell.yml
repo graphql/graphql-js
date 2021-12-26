@@ -1,6 +1,4 @@
 language: en
-dictionaries:
-  - fullstack
 useGitignore: true
 # TODO enableGlobDot: true
 ignorePaths:
@@ -11,15 +9,18 @@ ignorePaths:
   - tsconfig.json
   - benchmark/github-schema.graphql
   - benchmark/github-schema.json
-  - static/
-  - docusaurus.config.js
 overrides:
   - filename: '**/docs-old/APIReference-*.md'
     ignoreRegExpList: ['/href="[^"]*"/']
   - filename: 'docs/**'
+    dictionaries:
+      - fullstack
     words:
       - clsx
       - infima
+      - noopener
+      - noreferrer
+      - xlink
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}

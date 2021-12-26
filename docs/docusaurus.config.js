@@ -1,3 +1,5 @@
+'use strict';
+
 const path = require('path');
 
 const lightCodeTheme = require('prism-react-renderer/themes/github');
@@ -95,7 +97,7 @@ module.exports = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} <a href="https://graphql.org/foundation/" target="_blank" rel="noopener noreferrer">The GraphQL Foundation</a>. All rights reserved. <br/> For web site terms of use, trademark policy and general project policies please see&nbsp; <a href="https://lfprojects.org/" target="_blank" rel="noopener noreferrer">https://lfprojects.org</a>.`,
+      copyright: `Copyright &copy; ${new Date().getFullYear()} <a href="https://graphql.org/foundation/" target="_blank" rel="noopener noreferrer">The GraphQL Foundation</a>. All rights reserved. <br/> For web site terms of use, trademark policy and general project policies please see&nbsp; <a href="https://lfprojects.org/" target="_blank" rel="noopener noreferrer">https://lfprojects.org</a>.`,
     },
     prism: {
       theme: lightCodeTheme,

@@ -6,8 +6,6 @@
 /npmDist
 /denoDist
 /docsDist
-.docusaurus
-.cache-loader
 
 # Ignore TS files inside integration test
 /integrationTests/ts/*.ts

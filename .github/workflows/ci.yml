@@ -294,9 +294,10 @@ jobs:
         run: npm run build:deno
 
       - name: Deploy to `deno` branch
-        run: npm run gitpublish:deno
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ./.github/actions/deploy-dir-as-branch
+        with:
+          src_dir: denoDist
+          target_branch: deno
 
   build-docs:
     name: Build docs site
@@ -304,22 +305,17 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
-
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Build Docs
         run: npm run build:docs
