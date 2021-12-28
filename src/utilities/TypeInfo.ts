@@ -31,6 +31,7 @@ import {
   getNamedType,
 } from '../type/definition';
 import {
+  FulfilledMetaFieldDef,
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
@@ -319,6 +320,9 @@ function getFieldDef(
   }
   if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
     return TypeNameMetaFieldDef;
+  }
+  if (name === FulfilledMetaFieldDef.name && isCompositeType(parentType)) {
+    return FulfilledMetaFieldDef;
   }
   if (isObjectType(parentType) || isInterfaceType(parentType)) {
     return parentType.getFields()[name];

@@ -65,4 +65,9 @@ fragment frag on Friend @onFragmentDefinition {
 query {
   __typename
 }
+
+query Fulfilled {
+  __fulfilled
+  a: __fulfilled(label: "a")
+}
 `;

@@ -457,4 +457,69 @@ describe('visitWithTypeInfo', () => {
       ['leave', 'SelectionSet', null, 'Human', 'Human'],
     ]);
   });
+
+  it('supports traversals of __fulfilled meta-field', () => {
+    const humanType = testSchema.getType('Human');
+    invariant(humanType != null);
+
+    const typeInfo = new TypeInfo(testSchema, humanType);
+
+    const ast = parse('{ __fulfilled, pets { __fulfilled(label: "pet") } }');
+    const operationNode = ast.definitions[0];
+    invariant(operationNode.kind === 'OperationDefinition');
+
+    const visited: Array<any> = [];
+    visit(
+      operationNode.selectionSet,
+      visitWithTypeInfo(typeInfo, {
+        enter(node) {
+          const parentType = typeInfo.getParentType();
+          const type = typeInfo.getType();
+          visited.push([
+            'enter',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(parentType),
+            String(type),
+          ]);
+        },
+        leave(node) {
+          const parentType = typeInfo.getParentType();
+          const type = typeInfo.getType();
+          visited.push([
+            'leave',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(parentType),
+            String(type),
+          ]);
+        },
+      }),
+    );
+
+    expect(visited).to.deep.equal([
+      ['enter', 'SelectionSet', null, 'Human', 'Human'],
+      ['enter', 'Field', null, 'Human', 'Boolean!'],
+      ['enter', 'Name', '__fulfilled', 'Human', 'Boolean!'],
+      ['leave', 'Name', '__fulfilled', 'Human', 'Boolean!'],
+      ['leave', 'Field', null, 'Human', 'Boolean!'],
+      ['enter', 'Field', null, 'Human', '[Pet]'],
+      ['enter', 'Name', 'pets', 'Human', '[Pet]'],
+      ['leave', 'Name', 'pets', 'Human', '[Pet]'],
+      ['enter', 'SelectionSet', null, 'Pet', '[Pet]'],
+      ['enter', 'Field', null, 'Pet', 'Boolean!'],
+      ['enter', 'Name', '__fulfilled', 'Pet', 'Boolean!'],
+      ['leave', 'Name', '__fulfilled', 'Pet', 'Boolean!'],
+      ['enter', 'Argument', null, 'Pet', 'Boolean!'],
+      ['enter', 'Name', 'label', 'Pet', 'Boolean!'],
+      ['leave', 'Name', 'label', 'Pet', 'Boolean!'],
+      ['enter', 'StringValue', null, 'Pet', 'Boolean!'],
+      ['leave', 'StringValue', null, 'Pet', 'Boolean!'],
+      ['leave', 'Argument', null, 'Pet', 'Boolean!'],
+      ['leave', 'Field', null, 'Pet', 'Boolean!'],
+      ['leave', 'SelectionSet', null, 'Pet', '[Pet]'],
+      ['leave', 'Field', null, 'Human', '[Pet]'],
+      ['leave', 'SelectionSet', null, 'Human', 'Human'],
+    ]);
+  });
 });

@@ -40,6 +40,7 @@ import type {
 } from '../type/definition';
 import { assertValidSchema } from '../type/validate';
 import {
+  FulfilledMetaFieldDef,
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
@@ -1022,12 +1023,12 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
 
 /**
  * This method looks up the field on the given type definition.
- * It has special casing for the three introspection fields,
- * __schema, __type and __typename. __typename is special because
- * it can always be queried as a field, even in situations where no
- * other fields are allowed, like on a Union. __schema and __type
- * could get automatically added to the query type, but that would
- * require mutating type definitions, which would cause issues.
+ * It has special casing for the four introspection fields,
+ * __schema, __type, __typename and __fulfilled. __typename and __fulfilled
+ * are special because they can always be queried as a field, even in
+ * situations where no other fields are allowed, like on a Union.
+ * __schema and __type could get automatically added to the query type,
+ * but that would require mutating type definitions, which would cause issues.
  *
  * @internal
  */
@@ -1050,6 +1051,8 @@ export function getFieldDef(
     return TypeMetaFieldDef;
   } else if (fieldName === TypeNameMetaFieldDef.name) {
     return TypeNameMetaFieldDef;
+  } else if (fieldName === FulfilledMetaFieldDef.name) {
+    return FulfilledMetaFieldDef;
   }
   return parentType.getFields()[fieldName];
 }

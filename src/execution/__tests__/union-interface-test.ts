@@ -264,7 +264,9 @@ describe('Execute: Union and intersection types', () => {
         name
         pets {
           __typename
+          __fulfilled
           ... on Dog {
+            isDog: __fulfilled(label: "Dog")
             name
             barks
           }
@@ -283,11 +285,14 @@ describe('Execute: Union and intersection types', () => {
         pets: [
           {
             __typename: 'Cat',
+            __fulfilled: true,
             name: 'Garfield',
             meows: false,
           },
           {
             __typename: 'Dog',
+            __fulfilled: true,
+            isDog: true,
             name: 'Odie',
             barks: true,
           },
@@ -340,6 +345,7 @@ describe('Execute: Union and intersection types', () => {
           }
 
           ... on Mammal {
+            isMammal: __fulfilled(label: "Mammal")
             mother {
               __typename
               ... on Dog {
@@ -363,11 +369,13 @@ describe('Execute: Union and intersection types', () => {
         friends: [
           {
             __typename: 'Person',
+            isMammal: true,
             name: 'Liz',
             mother: null,
           },
           {
             __typename: 'Dog',
+            isMammal: true,
             name: 'Odie',
             barks: true,
             mother: { __typename: 'Dog', name: "Odie's Mom", barks: true },
@@ -395,6 +403,7 @@ describe('Execute: Union and intersection types', () => {
       }
 
       fragment  CatMeows on Cat {
+        catMeowsFulfilled: __fulfilled(label: "CatMeows")
         meows
       }
     `);
