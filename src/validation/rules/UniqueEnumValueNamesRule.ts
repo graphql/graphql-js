@@ -1,10 +1,10 @@
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type {
   EnumTypeDefinitionNode,
   EnumTypeExtensionNode,
 } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 import { isEnumType } from '../../type/definition';
 

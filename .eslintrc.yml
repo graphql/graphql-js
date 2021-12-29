@@ -9,6 +9,7 @@ plugins:
   - internal-rules
   - node
   - import
+  - simple-import-sort
 settings:
   node:
     tryExtensions: ['.js', '.json', '.node', '.ts', '.d.ts']
@@ -139,6 +140,38 @@ rules:
   import/no-anonymous-default-export: error
   import/group-exports: off
   import/dynamic-import-chunkname: off
+
+  ##############################################################################
+  # `eslint-plugin-simple-import-sort` rule list based on `v2.25.x`
+  # https://github.com/lydell/eslint-plugin-simple-import-sort
+  ##############################################################################
+  simple-import-sort/imports:
+    - error
+    - groups:
+        # Packages.
+        # Things that start with a letter (or digit or underscore), or `@` followed by a letter.
+        - ["^@?\\w"]
+
+        # General utilities
+        - ["^(\\./|(\\.\\./)+)__testUtils__/"]
+        - ["^(\\./|(\\.\\./)+)jsutils/"]
+
+        # Top-level directories
+        - ["^(\\./|(\\.\\./)+)error/"]
+        - ["^(\\./|(\\.\\./)+)language/"]
+        - ["^(\\./|(\\.\\./)+)type/"]
+        - ["^(\\./|(\\.\\./)+)validation/"]
+        - ["^(\\./|(\\.\\./)+)execution/"]
+        - ["^(\\./|(\\.\\./)+)utilities/"]
+
+        # Relative imports.
+        # Anything that starts with a dot.
+        - ["^(\\.\\./){4,}"]
+        - ["^(\\.\\./){3}"]
+        - ["^(\\.\\./){2}"]
+        - ["^(\\.\\./){1}"]
+        - ["^\\./"]
+  simple-import-sort/exports: off # TODO
 
   ##############################################################################
   # ESLint builtin rules list based on `v8.5.x`

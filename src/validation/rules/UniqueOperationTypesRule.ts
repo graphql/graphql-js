@@ -1,10 +1,10 @@
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type {
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 import type { SDLValidationContext } from '../ValidationContext';
 

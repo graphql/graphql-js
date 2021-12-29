@@ -9,16 +9,16 @@ import { invariant } from '../../jsutils/invariant';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLInt, GraphQLBoolean, GraphQLString } from '../../type/scalars';
 import {
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLInterfaceType,
   GraphQLObjectType,
+  GraphQLScalarType,
   GraphQLUnionType,
 } from '../../type/definition';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { execute, executeSync } from '../execute';
 

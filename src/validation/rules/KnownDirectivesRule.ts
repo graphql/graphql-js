@@ -3,17 +3,17 @@ import { invariant } from '../../jsutils/invariant';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type { ASTNode } from '../../language/ast';
-import { Kind } from '../../language/kinds';
 import { OperationTypeNode } from '../../language/ast';
 import { DirectiveLocation } from '../../language/directiveLocation';
+import { Kind } from '../../language/kinds';
+import type { ASTVisitor } from '../../language/visitor';
 
 import { specifiedDirectives } from '../../type/directives';
 
 import type {
-  ValidationContext,
   SDLValidationContext,
+  ValidationContext,
 } from '../ValidationContext';
 
 /**

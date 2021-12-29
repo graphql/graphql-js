@@ -9,9 +9,9 @@ import { extendSchema } from '../../utilities/extendSchema';
 import { UniqueDirectivesPerLocationRule } from '../rules/UniqueDirectivesPerLocationRule';
 
 import {
-  testSchema,
-  expectValidationErrorsWithSchema,
   expectSDLValidationErrors,
+  expectValidationErrorsWithSchema,
+  testSchema,
 } from './harness';
 
 const extensionSDL = `

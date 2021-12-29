@@ -5,8 +5,8 @@ import { parse } from '../../language/parser';
 
 import { validate } from '../../validation/validate';
 
-import type { IntrospectionOptions } from '../getIntrospectionQuery';
 import { buildSchema } from '../buildASTSchema';
+import type { IntrospectionOptions } from '../getIntrospectionQuery';
 import { getIntrospectionQuery } from '../getIntrospectionQuery';
 
 const dummySchema = buildSchema(`

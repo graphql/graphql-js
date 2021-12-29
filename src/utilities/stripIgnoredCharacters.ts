@@ -1,7 +1,7 @@
-import { Source, isSource } from '../language/source';
-import { TokenKind } from '../language/tokenKind';
-import { Lexer, isPunctuatorTokenKind } from '../language/lexer';
 import { printBlockString } from '../language/blockString';
+import { isPunctuatorTokenKind, Lexer } from '../language/lexer';
+import { isSource, Source } from '../language/source';
+import { TokenKind } from '../language/tokenKind';
 
 /**
  * Strips characters that are not significant to the validity or execution

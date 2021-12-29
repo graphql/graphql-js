@@ -1,14 +1,14 @@
-import { GraphQLSchema } from '../type/schema';
-import { GraphQLString } from '../type/scalars';
 import {
-  GraphQLList,
-  GraphQLNonNull,
   GraphQLEnumType,
   GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLObjectType,
 } from '../type/definition';
+import { GraphQLString } from '../type/scalars';
+import { GraphQLSchema } from '../type/schema';
 
-import { getFriends, getHero, getHuman, getDroid } from './starWarsData';
+import { getDroid, getFriends, getHero, getHuman } from './starWarsData';
 
 /**
  * This is designed to be an end-to-end test, demonstrating

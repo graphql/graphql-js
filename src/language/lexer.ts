@@ -1,10 +1,10 @@
 import { syntaxError } from '../error/syntaxError';
 
-import type { Source } from './source';
 import { Token } from './ast';
-import { TokenKind } from './tokenKind';
 import { dedentBlockStringLines } from './blockString';
-import { isDigit, isNameStart, isNameContinue } from './characterClasses';
+import { isDigit, isNameContinue, isNameStart } from './characterClasses';
+import type { Source } from './source';
+import { TokenKind } from './tokenKind';
 
 /**
  * Given a Source object, creates a Lexer for that source.

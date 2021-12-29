@@ -1,21 +1,21 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { inspect } from '../../jsutils/inspect';
 import { identityFunc } from '../../jsutils/identityFunc';
+import { inspect } from '../../jsutils/inspect';
 
 import { parseValue } from '../../language/parser';
 
-import type { GraphQLType, GraphQLNullableType } from '../definition';
+import type { GraphQLNullableType, GraphQLType } from '../definition';
 import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
 } from '../definition';
 
 const ScalarType = new GraphQLScalarType({ name: 'Scalar' });

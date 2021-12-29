@@ -3,18 +3,18 @@ import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
 import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
 } from '../../type/definition';
 import {
+  GraphQLBoolean,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-  GraphQLBoolean,
 } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { executeSync } from '../execute';
 

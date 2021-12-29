@@ -5,19 +5,19 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
   assertInterfaceType,
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLObjectType,
-  GraphQLInterfaceType,
   GraphQLUnionType,
 } from '../../type/definition';
+import { GraphQLBoolean, GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { executeSync, execute } from '../execute';
+import { execute, executeSync } from '../execute';
 
 async function executeQuery(args: {
   schema: GraphQLSchema;

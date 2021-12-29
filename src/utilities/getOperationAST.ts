@@ -1,4 +1,5 @@
 import type { Maybe } from '../jsutils/Maybe';
+
 import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 

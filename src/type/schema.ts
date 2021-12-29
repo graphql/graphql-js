@@ -1,10 +1,10 @@
-import type { ObjMap } from '../jsutils/ObjMap';
-import { inspect } from '../jsutils/inspect';
-import { toObjMap } from '../jsutils/toObjMap';
 import { devAssert } from '../jsutils/devAssert';
+import { inspect } from '../jsutils/inspect';
 import { instanceOf } from '../jsutils/instanceOf';
 import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
+import { toObjMap } from '../jsutils/toObjMap';
 
 import type { GraphQLError } from '../error/GraphQLError';
 
@@ -15,22 +15,22 @@ import type {
 import { OperationTypeNode } from '../language/ast';
 
 import type {
-  GraphQLType,
-  GraphQLNamedType,
   GraphQLAbstractType,
-  GraphQLObjectType,
   GraphQLInterfaceType,
+  GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLType,
+} from './definition';
+import {
+  getNamedType,
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isUnionType,
 } from './definition';
 import type { GraphQLDirective } from './directives';
-import { __Schema } from './introspection';
 import { isDirective, specifiedDirectives } from './directives';
-import {
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
-  isInputObjectType,
-  getNamedType,
-} from './definition';
+import { __Schema } from './introspection';
 
 /**
  * Test if the given value is a GraphQL schema.

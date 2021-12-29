@@ -1,5 +1,5 @@
-import type { ObjMap } from '../../jsutils/ObjMap';
 import { invariant } from '../../jsutils/invariant';
+import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 

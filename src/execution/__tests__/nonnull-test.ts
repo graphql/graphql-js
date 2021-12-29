@@ -5,9 +5,9 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
 import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 

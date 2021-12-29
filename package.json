@@ -67,6 +67,7 @@
     "eslint-plugin-import": "2.25.3",
     "eslint-plugin-internal-rules": "file:./resources/eslint-internal-rules",
     "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-simple-import-sort": "7.0.0",
     "eslint-plugin-tsdoc": "0.2.14",
     "mocha": "9.1.3",
     "prettier": "2.5.1",

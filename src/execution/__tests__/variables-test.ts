@@ -10,19 +10,19 @@ import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
 import type {
-  GraphQLFieldConfig,
   GraphQLArgumentConfig,
+  GraphQLFieldConfig,
 } from '../../type/definition';
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
 import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLScalarType,
   GraphQLObjectType,
-  GraphQLInputObjectType,
-  GraphQLEnumType,
+  GraphQLScalarType,
 } from '../../type/definition';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { executeSync } from '../execute';
 import { getVariableValues } from '../values';

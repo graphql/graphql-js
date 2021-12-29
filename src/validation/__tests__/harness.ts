@@ -9,7 +9,7 @@ import type { GraphQLSchema } from '../../type/schema';
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { validate, validateSDL } from '../validate';
-import type { ValidationRule, SDLValidationRule } from '../ValidationContext';
+import type { SDLValidationRule, ValidationRule } from '../ValidationContext';
 
 export const testSchema: GraphQLSchema = buildSchema(`
   interface Mammal {

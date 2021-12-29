@@ -7,8 +7,8 @@ import type { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { validate } from '../validate';
 import { FieldsOnCorrectTypeRule } from '../rules/FieldsOnCorrectTypeRule';
+import { validate } from '../validate';
 
 import { expectValidationErrorsWithSchema } from './harness';
 

@@ -1,27 +1,27 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { ObjMap } from '../../jsutils/ObjMap';
-import { invariant } from '../../jsutils/invariant';
 import { identityFunc } from '../../jsutils/identityFunc';
+import { invariant } from '../../jsutils/invariant';
+import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { parseValue } from '../../language/parser';
 
 import type { GraphQLInputType } from '../../type/definition';
 import {
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
-  GraphQLBoolean,
-  GraphQLID,
-} from '../../type/scalars';
-import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
 } from '../../type/definition';
+import {
+  GraphQLBoolean,
+  GraphQLFloat,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars';
 
 import { valueFromAST } from '../valueFromAST';
 

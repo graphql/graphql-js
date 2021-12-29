@@ -5,11 +5,11 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { parse } from '../../language/parser';
 
-import { validate } from '../../validation/validate';
-
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
+
+import { validate } from '../../validation/validate';
 
 import { graphqlSync } from '../../graphql';
 

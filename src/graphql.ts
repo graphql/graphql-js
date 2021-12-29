@@ -1,12 +1,10 @@
-import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 import { devAssert } from './jsutils/devAssert';
 import { isPromise } from './jsutils/isPromise';
 import type { Maybe } from './jsutils/Maybe';
+import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 
-import type { Source } from './language/source';
 import { parse } from './language/parser';
-
-import { validate } from './validation/validate';
+import type { Source } from './language/source';
 
 import type {
   GraphQLFieldResolver,
@@ -14,6 +12,8 @@ import type {
 } from './type/definition';
 import type { GraphQLSchema } from './type/schema';
 import { validateSchema } from './type/validate';
+
+import { validate } from './validation/validate';
 
 import type { ExecutionResult } from './execution/execute';
 import { execute } from './execution/execute';

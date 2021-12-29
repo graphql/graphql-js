@@ -6,22 +6,22 @@ import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { DirectiveLocation } from '../../language/directiveLocation';
 
 import type { GraphQLFieldConfig } from '../../type/definition';
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLDirective } from '../../type/directives';
-import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
 } from '../../type/definition';
+import { GraphQLDirective } from '../../type/directives';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../buildASTSchema';
-import { printSchema, printIntrospectionSchema } from '../printSchema';
+import { printIntrospectionSchema, printSchema } from '../printSchema';
 
 function expectPrintedSchema(schema: GraphQLSchema) {
   const schemaText = printSchema(schema);

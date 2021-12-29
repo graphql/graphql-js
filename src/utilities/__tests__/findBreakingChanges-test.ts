@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { GraphQLSchema } from '../../type/schema';
 import {
-  GraphQLSkipDirective,
-  GraphQLIncludeDirective,
-  GraphQLSpecifiedByDirective,
   GraphQLDeprecatedDirective,
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
+  GraphQLSpecifiedByDirective,
 } from '../../type/directives';
+import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../buildASTSchema';
 import {

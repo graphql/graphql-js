@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
-import { mapValue } from '../jsutils/mapValue';
 import { isObjectLike } from '../jsutils/isObjectLike';
+import { mapValue } from '../jsutils/mapValue';
 
 /**
  * Deeply transforms an arbitrary value to a JSON-safe value by calling toJSON

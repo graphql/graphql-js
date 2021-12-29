@@ -8,8 +8,8 @@ import type { ASTVisitor } from '../../language/visitor';
 import type { GraphQLCompositeType } from '../../type/definition';
 import { isCompositeType } from '../../type/definition';
 
-import { typeFromAST } from '../../utilities/typeFromAST';
 import { doTypesOverlap } from '../../utilities/typeComparators';
+import { typeFromAST } from '../../utilities/typeFromAST';
 
 import type { ValidationContext } from '../ValidationContext';
 

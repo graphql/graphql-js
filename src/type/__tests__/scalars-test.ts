@@ -4,11 +4,11 @@ import { describe, it } from 'mocha';
 import { parseValue as parseValueToAST } from '../../language/parser';
 
 import {
+  GraphQLBoolean,
+  GraphQLFloat,
   GraphQLID,
   GraphQLInt,
-  GraphQLFloat,
   GraphQLString,
-  GraphQLBoolean,
 } from '../scalars';
 
 describe('Type System: Specified scalar types', () => {

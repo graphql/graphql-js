@@ -7,8 +7,8 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import { KnownDirectivesRule } from '../rules/KnownDirectivesRule';
 
 import {
-  expectValidationErrorsWithSchema,
   expectSDLValidationErrors,
+  expectValidationErrorsWithSchema,
 } from './harness';
 
 function expectErrors(queryStr: string) {

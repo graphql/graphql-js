@@ -4,43 +4,43 @@ import { describe, it } from 'mocha';
 import { dedent } from '../../__testUtils__/dedent';
 
 import { invariant } from '../../jsutils/invariant';
+import type { Maybe } from '../../jsutils/Maybe';
 
 import type { ASTNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
-import { GraphQLSchema } from '../../type/schema';
-import { validateSchema } from '../../type/validate';
-import { __Schema, __EnumValue } from '../../type/introspection';
+import {
+  assertEnumType,
+  assertInputObjectType,
+  assertInterfaceType,
+  assertObjectType,
+  assertScalarType,
+  assertUnionType,
+} from '../../type/definition';
 import {
   assertDirective,
-  GraphQLSkipDirective,
-  GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
   GraphQLSpecifiedByDirective,
 } from '../../type/directives';
+import { __EnumValue, __Schema } from '../../type/introspection';
 import {
+  GraphQLBoolean,
+  GraphQLFloat,
   GraphQLID,
   GraphQLInt,
-  GraphQLFloat,
   GraphQLString,
-  GraphQLBoolean,
 } from '../../type/scalars';
-import {
-  assertObjectType,
-  assertInputObjectType,
-  assertEnumType,
-  assertUnionType,
-  assertInterfaceType,
-  assertScalarType,
-} from '../../type/definition';
+import { GraphQLSchema } from '../../type/schema';
+import { validateSchema } from '../../type/validate';
 
 import { graphqlSync } from '../../graphql';
 
-import { printType, printSchema } from '../printSchema';
 import { buildASTSchema, buildSchema } from '../buildASTSchema';
-import type { Maybe } from '../../jsutils/Maybe';
+import { printSchema, printType } from '../printSchema';
 
 /**
  * This function does a full cycle of going from a string with the contents of

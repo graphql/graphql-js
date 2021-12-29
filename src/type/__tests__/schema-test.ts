@@ -7,16 +7,16 @@ import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { printSchema } from '../../utilities/printSchema';
 
-import { GraphQLSchema } from '../schema';
-import { GraphQLDirective } from '../directives';
-import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../scalars';
 import {
-  GraphQLList,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLScalarType,
 } from '../definition';
+import { GraphQLDirective } from '../directives';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars';
+import { GraphQLSchema } from '../schema';
 
 describe('Type System: Schema', () => {
   it('Define sample schema', () => {

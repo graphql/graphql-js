@@ -4,18 +4,18 @@ import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type { InputValueDefinitionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
+import type { ASTVisitor } from '../../language/visitor';
 
-import { specifiedDirectives } from '../../type/directives';
-import { isType, isRequiredArgument } from '../../type/definition';
 import type { GraphQLArgument } from '../../type/definition';
+import { isRequiredArgument, isType } from '../../type/definition';
+import { specifiedDirectives } from '../../type/directives';
 
 import type {
-  ValidationContext,
   SDLValidationContext,
+  ValidationContext,
 } from '../ValidationContext';
 
 /**

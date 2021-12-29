@@ -1,40 +1,40 @@
-import type { ASTVisitor } from '../language/visitor';
-import type { ASTNode, FieldNode } from '../language/ast';
-import { Kind } from '../language/kinds';
-import { isNode } from '../language/ast';
-import { getEnterLeaveForKind } from '../language/visitor';
-
 import type { Maybe } from '../jsutils/Maybe';
 
-import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLDirective } from '../type/directives';
+import type { ASTNode, FieldNode } from '../language/ast';
+import { isNode } from '../language/ast';
+import { Kind } from '../language/kinds';
+import type { ASTVisitor } from '../language/visitor';
+import { getEnterLeaveForKind } from '../language/visitor';
+
 import type {
-  GraphQLType,
+  GraphQLArgument,
+  GraphQLCompositeType,
+  GraphQLEnumValue,
+  GraphQLField,
+  GraphQLInputField,
   GraphQLInputType,
   GraphQLOutputType,
-  GraphQLCompositeType,
-  GraphQLField,
-  GraphQLArgument,
-  GraphQLInputField,
-  GraphQLEnumValue,
+  GraphQLType,
 } from '../type/definition';
 import {
-  isObjectType,
-  isInterfaceType,
+  getNamedType,
+  getNullableType,
+  isCompositeType,
   isEnumType,
   isInputObjectType,
-  isListType,
-  isCompositeType,
   isInputType,
+  isInterfaceType,
+  isListType,
+  isObjectType,
   isOutputType,
-  getNullableType,
-  getNamedType,
 } from '../type/definition';
+import type { GraphQLDirective } from '../type/directives';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection';
+import type { GraphQLSchema } from '../type/schema';
 
 import { typeFromAST } from './typeFromAST';
 

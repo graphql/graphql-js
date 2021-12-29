@@ -1,36 +1,35 @@
-import type { ObjMap } from '../../jsutils/ObjMap';
 import { inspect } from '../../jsutils/inspect';
+import type { Maybe } from '../../jsutils/Maybe';
+import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type {
+  ArgumentNode,
+  FieldNode,
+  FragmentDefinitionNode,
   SelectionSetNode,
   ValueNode,
-  FieldNode,
-  ArgumentNode,
-  FragmentDefinitionNode,
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
+import type { ASTVisitor } from '../../language/visitor';
 
 import type {
+  GraphQLField,
   GraphQLNamedType,
   GraphQLOutputType,
-  GraphQLField,
 } from '../../type/definition';
 import {
   getNamedType,
-  isNonNullType,
-  isLeafType,
-  isObjectType,
-  isListType,
   isInterfaceType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
 } from '../../type/definition';
 
 import { typeFromAST } from '../../utilities/typeFromAST';
-
-import type { Maybe } from '../../jsutils/Maybe';
 
 import type { ValidationContext } from '../ValidationContext';
 

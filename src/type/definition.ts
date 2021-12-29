@@ -1,49 +1,49 @@
+import { devAssert } from '../jsutils/devAssert';
+import { didYouMean } from '../jsutils/didYouMean';
+import { identityFunc } from '../jsutils/identityFunc';
+import { inspect } from '../jsutils/inspect';
+import { instanceOf } from '../jsutils/instanceOf';
+import { isObjectLike } from '../jsutils/isObjectLike';
+import { keyMap } from '../jsutils/keyMap';
+import { keyValMap } from '../jsutils/keyValMap';
+import { mapValue } from '../jsutils/mapValue';
+import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
 import type { Path } from '../jsutils/Path';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import type { ObjMap } from '../jsutils/ObjMap';
-import { inspect } from '../jsutils/inspect';
-import { keyMap } from '../jsutils/keyMap';
-import { mapValue } from '../jsutils/mapValue';
-import { toObjMap } from '../jsutils/toObjMap';
-import { devAssert } from '../jsutils/devAssert';
-import { keyValMap } from '../jsutils/keyValMap';
-import { instanceOf } from '../jsutils/instanceOf';
-import { didYouMean } from '../jsutils/didYouMean';
-import { isObjectLike } from '../jsutils/isObjectLike';
-import { identityFunc } from '../jsutils/identityFunc';
 import { suggestionList } from '../jsutils/suggestionList';
-import type { Maybe } from '../jsutils/Maybe';
+import { toObjMap } from '../jsutils/toObjMap';
 
 import { GraphQLError } from '../error/GraphQLError';
 
-import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
 import type {
-  FieldNode,
-  ValueNode,
-  OperationDefinitionNode,
-  FragmentDefinitionNode,
-  ScalarTypeDefinitionNode,
-  ScalarTypeExtensionNode,
-  ObjectTypeDefinitionNode,
-  ObjectTypeExtensionNode,
+  EnumTypeDefinitionNode,
+  EnumTypeExtensionNode,
+  EnumValueDefinitionNode,
   FieldDefinitionNode,
+  FieldNode,
+  FragmentDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  InputObjectTypeExtensionNode,
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
+  OperationDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ScalarTypeExtensionNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
-  EnumTypeDefinitionNode,
-  EnumValueDefinitionNode,
-  EnumTypeExtensionNode,
-  InputObjectTypeDefinitionNode,
-  InputObjectTypeExtensionNode,
+  ValueNode,
 } from '../language/ast';
+import { Kind } from '../language/kinds';
+import { print } from '../language/printer';
 
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 
+import { assertEnumValueName, assertName } from './assertName';
 import type { GraphQLSchema } from './schema';
-import { assertName, assertEnumValueName } from './assertName';
 
 // Predicates & Assertions
 

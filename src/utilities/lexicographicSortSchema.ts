@@ -1,37 +1,37 @@
-import type { ObjMap } from '../jsutils/ObjMap';
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { keyValMap } from '../jsutils/keyValMap';
-import { naturalCompare } from '../jsutils/naturalCompare';
 import type { Maybe } from '../jsutils/Maybe';
+import { naturalCompare } from '../jsutils/naturalCompare';
+import type { ObjMap } from '../jsutils/ObjMap';
 
 import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLFieldConfigMap,
   GraphQLFieldConfigArgumentMap,
+  GraphQLFieldConfigMap,
   GraphQLInputFieldConfigMap,
+  GraphQLNamedType,
+  GraphQLType,
 } from '../type/definition';
-import { GraphQLSchema } from '../type/schema';
-import { GraphQLDirective } from '../type/directives';
-import { isIntrospectionType } from '../type/introspection';
 import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLInterfaceType,
   GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  isListType,
-  isNonNullType,
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
 } from '../type/definition';
+import { GraphQLDirective } from '../type/directives';
+import { isIntrospectionType } from '../type/introspection';
+import { GraphQLSchema } from '../type/schema';
 
 /**
  * Sort GraphQLSchema.

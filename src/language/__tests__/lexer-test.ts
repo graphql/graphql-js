@@ -9,9 +9,9 @@ import { inspect } from '../../jsutils/inspect';
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { Token } from '../ast';
+import { isPunctuatorTokenKind, Lexer } from '../lexer';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
-import { Lexer, isPunctuatorTokenKind } from '../lexer';
 
 function lexOne(str: string) {
   const lexer = new Lexer(new Source(str));

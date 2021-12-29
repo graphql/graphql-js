@@ -1,8 +1,8 @@
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import { Kind } from '../../language/kinds';
 import { isExecutableDefinitionNode } from '../../language/predicates';
+import type { ASTVisitor } from '../../language/visitor';
 
 import type { ASTValidationContext } from '../ValidationContext';
 

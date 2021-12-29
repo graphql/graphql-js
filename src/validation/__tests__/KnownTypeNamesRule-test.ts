@@ -7,9 +7,9 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import { KnownTypeNamesRule } from '../rules/KnownTypeNamesRule';
 
 import {
+  expectSDLValidationErrors,
   expectValidationErrors,
   expectValidationErrorsWithSchema,
-  expectSDLValidationErrors,
 } from './harness';
 
 function expectErrors(queryStr: string) {

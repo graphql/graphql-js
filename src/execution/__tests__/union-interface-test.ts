@@ -3,14 +3,14 @@ import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
-  GraphQLList,
-  GraphQLUnionType,
-  GraphQLObjectType,
   GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLUnionType,
 } from '../../type/definition';
+import { GraphQLBoolean, GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { executeSync } from '../execute';
 

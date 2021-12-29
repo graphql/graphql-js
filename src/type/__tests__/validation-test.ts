@@ -6,39 +6,39 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { inspect } from '../../jsutils/inspect';
 
-import { parse } from '../../language/parser';
 import { DirectiveLocation } from '../../language/directiveLocation';
+import { parse } from '../../language/parser';
 
-import { extendSchema } from '../../utilities/extendSchema';
 import { buildSchema } from '../../utilities/buildASTSchema';
+import { extendSchema } from '../../utilities/extendSchema';
 
 import type {
-  GraphQLNamedType,
-  GraphQLInputType,
-  GraphQLOutputType,
-  GraphQLFieldConfig,
   GraphQLArgumentConfig,
+  GraphQLFieldConfig,
   GraphQLInputFieldConfig,
+  GraphQLInputType,
+  GraphQLNamedType,
+  GraphQLOutputType,
 } from '../definition';
-import { GraphQLSchema } from '../schema';
-import { GraphQLString } from '../scalars';
-import { validateSchema, assertValidSchema } from '../validate';
-import { GraphQLDirective, assertDirective } from '../directives';
 import {
+  assertEnumType,
+  assertInputObjectType,
+  assertInterfaceType,
+  assertObjectType,
+  assertScalarType,
+  assertUnionType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLInterfaceType,
   GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  assertScalarType,
-  assertInterfaceType,
-  assertObjectType,
-  assertUnionType,
-  assertEnumType,
-  assertInputObjectType,
 } from '../definition';
+import { assertDirective, GraphQLDirective } from '../directives';
+import { GraphQLString } from '../scalars';
+import { GraphQLSchema } from '../schema';
+import { assertValidSchema, validateSchema } from '../validate';
 
 const SomeSchema = buildSchema(`
   scalar SomeScalar

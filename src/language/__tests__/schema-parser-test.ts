@@ -2,8 +2,8 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
-import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
 import { expectJSON, expectToThrowJSON } from '../../__testUtils__/expectJSON';
+import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
 
 import { parse } from '../parser';
 

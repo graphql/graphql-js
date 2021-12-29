@@ -3,16 +3,16 @@ import type { Maybe } from '../../jsutils/Maybe';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import { Kind } from '../../language/kinds';
 import type { ValueNode } from '../../language/ast';
+import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
-import type { GraphQLSchema } from '../../type/schema';
 import type { GraphQLType } from '../../type/definition';
 import { isNonNullType } from '../../type/definition';
+import type { GraphQLSchema } from '../../type/schema';
 
-import { typeFromAST } from '../../utilities/typeFromAST';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
+import { typeFromAST } from '../../utilities/typeFromAST';
 
 import type { ValidationContext } from '../ValidationContext';
 

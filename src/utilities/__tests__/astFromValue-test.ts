@@ -2,19 +2,19 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import {
-  GraphQLID,
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
-  GraphQLBoolean,
-} from '../../type/scalars';
-import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
 } from '../../type/definition';
+import {
+  GraphQLBoolean,
+  GraphQLFloat,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars';
 
 import { astFromValue } from '../astFromValue';
 
