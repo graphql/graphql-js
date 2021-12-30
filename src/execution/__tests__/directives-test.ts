@@ -174,6 +174,7 @@ describe('Execute: handles directives', () => {
         data: { a: 'a', b: 'b' },
       });
     });
+
     it('unless false includes inline fragment', () => {
       const result = executeTestQuery(`
         query {
@@ -188,6 +189,7 @@ describe('Execute: handles directives', () => {
         data: { a: 'a', b: 'b' },
       });
     });
+
     it('unless true includes inline fragment', () => {
       const result = executeTestQuery(`
         query {
@@ -234,6 +236,7 @@ describe('Execute: handles directives', () => {
         data: { a: 'a', b: 'b' },
       });
     });
+
     it('unless false includes anonymous inline fragment', () => {
       const result = executeTestQuery(`
         query Q {
@@ -248,6 +251,7 @@ describe('Execute: handles directives', () => {
         data: { a: 'a', b: 'b' },
       });
     });
+
     it('unless true includes anonymous inline fragment', () => {
       const result = executeTestQuery(`
         query {

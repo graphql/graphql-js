@@ -8,44 +8,73 @@ import { isPrintableAsBlockString } from '../language/blockString';
 
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLDirective } from '../type/directives';
-import type {
-  GraphQLNamedType,
-  GraphQLArgument,
-  GraphQLInputField,
-  GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLInputObjectType,
-} from '../type/definition';
-import { isIntrospectionType } from '../type/introspection';
-import { isSpecifiedScalarType } from '../type/scalars';
 import {
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
 } from '../type/directives';
+import type {
+  GraphQLArgument,
+  GraphQLEnumType,
+  GraphQLEnumValue,
+  GraphQLField,
+  GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLType,
+  GraphQLUnionType,
+} from '../type/definition';
 import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
 } from '../type/definition';
+import { isIntrospectionType } from '../type/introspection';
+import { isSpecifiedScalarType } from '../type/scalars';
+
+import type { ConstDirectiveNode } from '../language/ast';
 
 import { astFromValue } from './astFromValue';
 
-export function printSchema(schema: GraphQLSchema): string {
+export interface PrintSchemaOptions {
+  printDirectives?: (
+    definition:
+      | GraphQLSchema
+      | GraphQLType
+      | GraphQLField<unknown, unknown>
+      | GraphQLEnumValue
+      | GraphQLInputField
+      | GraphQLArgument,
+  ) => ReadonlyArray<ConstDirectiveNode>;
+}
+
+export function printSchema(
+  schema: GraphQLSchema,
+  options?: PrintSchemaOptions,
+): string {
   return printFilteredSchema(
     schema,
     (n) => !isSpecifiedDirective(n),
     isDefinedType,
+    options,
   );
 }
 
-export function printIntrospectionSchema(schema: GraphQLSchema): string {
-  return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType);
+export function printIntrospectionSchema(
+  schema: GraphQLSchema,
+  options?: PrintSchemaOptions,
+): string {
+  return printFilteredSchema(
+    schema,
+    isSpecifiedDirective,
+    isIntrospectionType,
+    options,
+  );
 }
 
 function isDefinedType(type: GraphQLNamedType): boolean {
@@ -56,21 +85,48 @@ function printFilteredSchema(
   schema: GraphQLSchema,
   directiveFilter: (type: GraphQLDirective) => boolean,
   typeFilter: (type: GraphQLNamedType) => boolean,
+  options?: PrintSchemaOptions,
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
 
   return [
-    printSchemaDefinition(schema),
+    printSchemaDefinition(schema, options),
     ...directives.map((directive) => printDirective(directive)),
-    ...types.map((type) => printType(type)),
+    ...types.map((type) => printType(type, options)),
   ]
     .filter(Boolean)
     .join('\n\n');
 }
 
-function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
-  if (schema.description == null && isSchemaOfCommonNames(schema)) {
+function collectDirectives(
+  printDirectives: PrintSchemaOptions['printDirectives'] | undefined,
+  definition:
+    | GraphQLSchema
+    | GraphQLType
+    | GraphQLField<unknown, unknown>
+    | GraphQLEnumValue
+    | GraphQLInputField
+    | GraphQLArgument,
+) {
+  if (printDirectives == null) {
+    return [];
+  }
+
+  return printDirectives(definition).map(print);
+}
+
+function printSchemaDefinition(
+  schema: GraphQLSchema,
+  options?: PrintSchemaOptions,
+): Maybe<string> {
+  const directives = collectDirectives(options?.printDirectives, schema);
+
+  if (
+    schema.description == null &&
+    directives.length === 0 &&
+    isSchemaOfCommonNames(schema)
+  ) {
     return;
   }
 
@@ -91,7 +147,12 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
     operationTypes.push(`  subscription: ${subscriptionType.name}`);
   }
 
-  return printDescription(schema) + `schema {\n${operationTypes.join('\n')}\n}`;
+  return (
+    printDescription(schema) +
+    ['schema', directives.join(' '), `{\n${operationTypes.join('\n')}\n}`]
+      .filter(Boolean)
+      .join(' ')
+  );
 }
 
 /**
@@ -128,12 +189,15 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   return true;
 }
 
-export function printType(type: GraphQLNamedType): string {
+export function printType(
+  type: GraphQLNamedType,
+  options?: PrintSchemaOptions,
+): string {
   if (isScalarType(type)) {
     return printScalar(type);
   }
   if (isObjectType(type)) {
-    return printObject(type);
+    return printObject(type, options);
   }
   if (isInterfaceType(type)) {
     return printInterface(type);
@@ -167,10 +231,15 @@ function printImplementedInterfaces(
     : '';
 }
 
-function printObject(type: GraphQLObjectType): string {
+function printObject(
+  type: GraphQLObjectType,
+  options?: PrintSchemaOptions,
+): string {
+  const directives = collectDirectives(options?.printDirectives, type);
   return (
     printDescription(type) +
     `type ${type.name}` +
+    (directives.length ? ' ' + directives.join(' ') : '') +
     printImplementedInterfaces(type) +
     printFields(type)
   );

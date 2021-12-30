@@ -6,27 +6,32 @@ import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { DirectiveLocation } from '../../language/directiveLocation';
 
 import type { GraphQLFieldConfig } from '../../type/definition';
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLDirective } from '../../type/directives';
-import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
 } from '../../type/definition';
+import { GraphQLSchema, isSchema } from '../../type/schema';
+import { GraphQLDirective } from '../../type/directives';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 
 import { buildSchema } from '../buildASTSchema';
-import { printSchema, printIntrospectionSchema } from '../printSchema';
+import type { PrintSchemaOptions } from '../printSchema';
+import { printIntrospectionSchema, printSchema } from '../printSchema';
+import { parseConstDirective } from '../../language/parser';
 
-function expectPrintedSchema(schema: GraphQLSchema) {
-  const schemaText = printSchema(schema);
+function expectPrintedSchema(
+  schema: GraphQLSchema,
+  options?: PrintSchemaOptions,
+) {
+  const schemaText = printSchema(schema, options);
   // keep printSchema and buildSchema in sync
-  expect(printSchema(buildSchema(schemaText))).to.equal(schemaText);
+  expect(printSchema(buildSchema(schemaText), options)).to.equal(schemaText);
   return expect(schemaText);
 }
 
@@ -260,6 +265,16 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Omits schema of common names', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({ name: 'Query', fields: {} }),
+    });
+
+    expectPrintedSchema(schema).to.equal(dedent`
+      type Query
+    `);
+  });
+
   it('Prints schema with description', () => {
     const schema = new GraphQLSchema({
       description: 'Schema description.',
@@ -315,6 +330,68 @@ describe('Type System Printer', () => {
       }
 
       type CustomType
+    `);
+  });
+
+  it('Prints schema with directives', () => {
+    const schema = buildSchema(`
+      directive @foo on SCHEMA | OBJECT
+
+      type Query
+    `);
+
+    expectPrintedSchema(schema, {
+      printDirectives: () => [parseConstDirective('@foo')],
+    }).to.equal(dedent`
+      schema @foo {
+        query: Query
+      }
+
+      directive @foo on SCHEMA | OBJECT
+
+      type Query @foo
+    `);
+  });
+
+  it('Includes directives conditionally', () => {
+    const schema = buildSchema(`
+      schema @foo {
+        query: Query
+      }
+
+      directive @foo on SCHEMA
+
+      directive @bar on SCHEMA
+
+      type Query
+    `);
+
+    expectPrintedSchema(schema, {
+      printDirectives: (definition) => {
+        if (isSchema(definition)) {
+          return [parseConstDirective('@bar')];
+        }
+
+        return [];
+      },
+    }).to.equal(dedent`
+      schema @bar {
+        query: Query
+      }
+
+      directive @foo on SCHEMA
+
+      directive @bar on SCHEMA
+
+      type Query
+    `);
+
+    expectPrintedSchema(schema, { printDirectives: () => [] }).to.equal(dedent`
+      directive @foo on SCHEMA
+
+      directive @bar on SCHEMA
+
+      type Query
     `);
   });
 
