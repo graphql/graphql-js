@@ -1,0 +1,52 @@
+name: 'Deploy specified directory as a branch'
+description: 'This action deploys directory as branch.'
+inputs:
+  src_dir:
+    required: true
+  target_branch:
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Creating temporary directory to clone the branch
+      shell: bash
+      run: |
+        BRANCH_DIR=$(mktemp -d "`pwd`/cloned_${{ inputs.target_branch }}_XXXXXX")
+        echo "BRANCH_DIR=$BRANCH_DIR" >> $GITHUB_ENV
+
+    - name: Checkout `${{ inputs.target_branch }}` branch
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ inputs.target_branch }}
+        path: ${{ env.BRANCH_DIR }}
+
+    - name: Publish `${{ inputs.target_branch }}` branch
+      working-directory: ${{ env.BRANCH_DIR }}
+      shell: bash
+      run: |
+        echo '::echo::on'
+
+        echo '::group::Remove existing files first'
+        git rm -r .
+        echo '::endgroup::'
+
+        echo '::group::Move necessary files'
+        cp -vnR '${{ github.workspace }}/${{ inputs.src_dir }}/.' .
+        echo '::endgroup::'
+
+        git add -A
+        if git diff --staged --quiet; then
+          echo 'Nothing to publish'
+        else
+          git config user.name 'GitHub Action Script'
+          git config user.email 'please@open.issue'
+
+          git commit -a -m 'Deploy ${{ github.sha }} to '${{ inputs.target_branch }}' branch'
+          git push
+          echo 'Pushed'
+        fi
+
+    - name: Remove cloned branch
+      if: ${{ always() }}
+      shell: bash
+      run: 'rm -rf $BRANCH_DIR'

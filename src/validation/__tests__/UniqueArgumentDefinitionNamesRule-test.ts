@@ -41,6 +41,14 @@ describe('Validate: Unique argument definition names', () => {
         someField(foo: String): String
       }
 
+      extend type SomeObject {
+        anotherField(foo: String): String
+      }
+
+      extend interface SomeInterface {
+        anotherField(foo: String): String
+      }
+
       directive @someDirective(foo: String) on QUERY
     `);
   });
@@ -56,6 +64,20 @@ describe('Validate: Unique argument definition names', () => {
 
       interface SomeInterface {
         someField(
+          foo: String
+          bar: String
+        ): String
+      }
+
+      extend type SomeObject {
+        anotherField(
+          foo: String
+          bar: String
+        ): String
+      }
+
+      extend interface SomeInterface {
+        anotherField(
           foo: String
           bar: String
         ): String
@@ -86,6 +108,22 @@ describe('Validate: Unique argument definition names', () => {
         ): String
       }
 
+      extend type SomeObject {
+        anotherField(
+          foo: String
+          bar: String
+          bar: String
+        ): String
+      }
+
+      extend interface SomeInterface {
+        anotherField(
+          bar: String
+          foo: String
+          foo: String
+        ): String
+      }
+
       directive @someDirective(
         foo: String
         bar: String
@@ -109,10 +147,26 @@ describe('Validate: Unique argument definition names', () => {
         ],
       },
       {
+        message:
+          'Argument "SomeObject.anotherField(bar:)" can only be defined once.',
+        locations: [
+          { line: 21, column: 11 },
+          { line: 22, column: 11 },
+        ],
+      },
+      {
+        message:
+          'Argument "SomeInterface.anotherField(foo:)" can only be defined once.',
+        locations: [
+          { line: 29, column: 11 },
+          { line: 30, column: 11 },
+        ],
+      },
+      {
         message: 'Argument "@someDirective(foo:)" can only be defined once.',
         locations: [
-          { line: 19, column: 9 },
-          { line: 21, column: 9 },
+          { line: 35, column: 9 },
+          { line: 37, column: 9 },
         ],
       },
     ]);
