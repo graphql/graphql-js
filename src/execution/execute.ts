@@ -1588,8 +1588,20 @@ function yieldSubsequentPayloads(
 
           resolved = true;
 
+          if (exeContext.subsequentPayloads.length === 0) {
+            // a different call to next has exhausted all payloads
+            resolve({ value: undefined, done: true });
+            return;
+          }
           const index =
             exeContext.subsequentPayloads.indexOf(asyncPayloadRecord);
+
+          if (index === -1) {
+            // a different call to next has consumed this payload
+            resolve(race());
+            return;
+          }
+
           exeContext.subsequentPayloads.splice(index, 1);
 
           if (asyncPayloadRecord.isCompletedIterator) {
