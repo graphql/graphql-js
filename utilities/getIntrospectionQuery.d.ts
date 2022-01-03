@@ -27,6 +27,10 @@ export interface IntrospectionOptions {
    */
   inputValueDeprecation?: boolean;
 }
+/**
+ * Produce the GraphQL query recommended for a full schema introspection.
+ * Accepts optional IntrospectionOptions.
+ */
 export declare function getIntrospectionQuery(
   options?: IntrospectionOptions,
 ): string;

@@ -1,3 +1,7 @@
+/**
+ * Produce the GraphQL query recommended for a full schema introspection.
+ * Accepts optional IntrospectionOptions.
+ */
 export function getIntrospectionQuery(options) {
   const optionsWithDefault = {
     descriptions: true,

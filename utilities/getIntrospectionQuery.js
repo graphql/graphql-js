@@ -5,6 +5,10 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.getIntrospectionQuery = getIntrospectionQuery;
 
+/**
+ * Produce the GraphQL query recommended for a full schema introspection.
+ * Accepts optional IntrospectionOptions.
+ */
 function getIntrospectionQuery(options) {
   const optionsWithDefault = {
     descriptions: true,
