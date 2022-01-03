@@ -1,11 +1,11 @@
 export type { Path as ResponsePath } from '../jsutils/Path';
 
 export {
-  /** Predicate */
+  // Predicate
   isSchema,
-  /** Assertion */
+  // Assertion
   assertSchema,
-  /** GraphQL Schema definition */
+  // GraphQL Schema definition
   GraphQLSchema,
 } from './schema';
 export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema';
@@ -13,7 +13,7 @@ export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema';
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
-  /** Predicates */
+  // Predicates
   isType,
   isScalarType,
   isObjectType,
@@ -33,7 +33,7 @@ export {
   isNamedType,
   isRequiredArgument,
   isRequiredInputField,
-  /** Assertions */
+  // Assertions
   assertType,
   assertScalarType,
   assertObjectType,
@@ -51,17 +51,17 @@ export {
   assertWrappingType,
   assertNullableType,
   assertNamedType,
-  /** Un-modifiers */
+  // Un-modifiers
   getNullableType,
   getNamedType,
-  /** Definitions */
+  // Definitions
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  /** Type Wrappers */
+  // Type Wrappers
   GraphQLList,
   GraphQLNonNull,
 } from './definition';
@@ -120,20 +120,20 @@ export type {
 } from './definition';
 
 export {
-  /** Predicate */
+  // Predicate
   isDirective,
-  /** Assertion */
+  // Assertion
   assertDirective,
-  /** Directives Definition */
+  // Directives Definition
   GraphQLDirective,
-  /** Built-in Directives defined by the Spec */
+  // Built-in Directives defined by the Spec
   isSpecifiedDirective,
   specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
-  /** Constant Deprecation Reason */
+  // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
 } from './directives';
 
@@ -142,26 +142,26 @@ export type {
   GraphQLDirectiveExtensions,
 } from './directives';
 
-/** Common built-in scalar instances. */
+// Common built-in scalar instances.
 export {
-  /** Predicate */
+  // Predicate
   isSpecifiedScalarType,
-  /** Standard GraphQL Scalars */
+  // Standard GraphQL Scalars
   specifiedScalarTypes,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
-  /** Int boundaries constants */
+  // Int boundaries constants
   GRAPHQL_MAX_INT,
   GRAPHQL_MIN_INT,
 } from './scalars';
 
 export {
-  /** Predicate */
+  // Predicate
   isIntrospectionType,
-  /** GraphQL Types for introspection. */
+  // GraphQL Types for introspection.
   introspectionTypes,
   __Schema,
   __Directive,
@@ -171,16 +171,16 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
-  /** "Enum" of Type Kinds */
+  // "Enum" of Type Kinds
   TypeKind,
-  /** Meta-field definitions. */
+  // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from './introspection';
 
-/** Validate GraphQL schema. */
+// Validate GraphQL schema.
 export { validateSchema, assertValidSchema } from './validate';
 
-/** Upholds the spec rules about naming. */
+// Upholds the spec rules about naming.
 export { assertName, assertEnumValueName } from './assertName';
