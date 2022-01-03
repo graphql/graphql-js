@@ -1,86 +1,86 @@
-import { keyMap } from '../jsutils/keyMap.ts';
-import { inspect } from '../jsutils/inspect.ts';
-import { mapValue } from '../jsutils/mapValue.ts';
-import { invariant } from '../jsutils/invariant.ts';
 import { devAssert } from '../jsutils/devAssert.ts';
+import { inspect } from '../jsutils/inspect.ts';
+import { invariant } from '../jsutils/invariant.ts';
+import { keyMap } from '../jsutils/keyMap.ts';
+import { mapValue } from '../jsutils/mapValue.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type {
+  DirectiveDefinitionNode,
   DocumentNode,
-  TypeNode,
-  NamedTypeNode,
-  SchemaDefinitionNode,
-  SchemaExtensionNode,
-  TypeDefinitionNode,
-  InterfaceTypeDefinitionNode,
-  InterfaceTypeExtensionNode,
-  ObjectTypeDefinitionNode,
-  ObjectTypeExtensionNode,
-  UnionTypeDefinitionNode,
-  UnionTypeExtensionNode,
+  EnumTypeDefinitionNode,
+  EnumTypeExtensionNode,
+  EnumValueDefinitionNode,
   FieldDefinitionNode,
   InputObjectTypeDefinitionNode,
   InputObjectTypeExtensionNode,
   InputValueDefinitionNode,
-  EnumTypeDefinitionNode,
-  EnumTypeExtensionNode,
-  EnumValueDefinitionNode,
-  DirectiveDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  InterfaceTypeExtensionNode,
+  NamedTypeNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
   ScalarTypeDefinitionNode,
   ScalarTypeExtensionNode,
+  SchemaDefinitionNode,
+  SchemaExtensionNode,
+  TypeDefinitionNode,
+  TypeNode,
+  UnionTypeDefinitionNode,
+  UnionTypeExtensionNode,
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import {
   isTypeDefinitionNode,
   isTypeExtensionNode,
 } from '../language/predicates.ts';
-import { assertValidSDLExtension } from '../validation/validate.ts';
-import { getDirectiveValues } from '../execution/values.ts';
 import type {
-  GraphQLSchemaValidationOptions,
-  GraphQLSchemaNormalizedConfig,
-} from '../type/schema.ts';
-import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLFieldConfig,
-  GraphQLFieldConfigMap,
   GraphQLArgumentConfig,
-  GraphQLFieldConfigArgumentMap,
   GraphQLEnumValueConfigMap,
+  GraphQLFieldConfig,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLFieldConfigMap,
   GraphQLInputFieldConfigMap,
+  GraphQLNamedType,
+  GraphQLType,
 } from '../type/definition.ts';
-import { assertSchema, GraphQLSchema } from '../type/schema.ts';
 import {
-  specifiedScalarTypes,
-  isSpecifiedScalarType,
-} from '../type/scalars.ts';
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../type/definition.ts';
+import {
+  GraphQLDeprecatedDirective,
+  GraphQLDirective,
+  GraphQLSpecifiedByDirective,
+} from '../type/directives.ts';
 import {
   introspectionTypes,
   isIntrospectionType,
 } from '../type/introspection.ts';
 import {
-  GraphQLDirective,
-  GraphQLDeprecatedDirective,
-  GraphQLSpecifiedByDirective,
-} from '../type/directives.ts';
-import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
-  isListType,
-  isNonNullType,
-  isEnumType,
-  isInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-} from '../type/definition.ts';
+  isSpecifiedScalarType,
+  specifiedScalarTypes,
+} from '../type/scalars.ts';
+import type {
+  GraphQLSchemaNormalizedConfig,
+  GraphQLSchemaValidationOptions,
+} from '../type/schema.ts';
+import { assertSchema, GraphQLSchema } from '../type/schema.ts';
+import { assertValidSDLExtension } from '../validation/validate.ts';
+import { getDirectiveValues } from '../execution/values.ts';
 import { valueFromAST } from './valueFromAST.ts';
 interface Options extends GraphQLSchemaValidationOptions {
   /**

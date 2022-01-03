@@ -1,5 +1,5 @@
-import { inspect } from '../jsutils/inspect.ts';
 import { devAssert } from '../jsutils/devAssert.ts';
+import { inspect } from '../jsutils/inspect.ts';
 import type { ASTNode } from './ast.ts';
 import { isNode, QueryDocumentKeys } from './ast.ts';
 import { Kind } from './kinds.ts';

@@ -1,36 +1,36 @@
-import type { ObjMap } from '../jsutils/ObjMap.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import { keyValMap } from '../jsutils/keyValMap.ts';
-import { naturalCompare } from '../jsutils/naturalCompare.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
+import { naturalCompare } from '../jsutils/naturalCompare.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLFieldConfigMap,
   GraphQLFieldConfigArgumentMap,
+  GraphQLFieldConfigMap,
   GraphQLInputFieldConfigMap,
+  GraphQLNamedType,
+  GraphQLType,
 } from '../type/definition.ts';
-import { GraphQLSchema } from '../type/schema.ts';
-import { GraphQLDirective } from '../type/directives.ts';
-import { isIntrospectionType } from '../type/introspection.ts';
 import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLInterfaceType,
   GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  isListType,
-  isNonNullType,
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
 } from '../type/definition.ts';
+import { GraphQLDirective } from '../type/directives.ts';
+import { isIntrospectionType } from '../type/introspection.ts';
+import { GraphQLSchema } from '../type/schema.ts';
 /**
  * Sort GraphQLSchema.
  *

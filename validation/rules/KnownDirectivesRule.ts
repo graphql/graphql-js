@@ -1,15 +1,15 @@
 import { inspect } from '../../jsutils/inspect.ts';
 import { invariant } from '../../jsutils/invariant.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import type { ASTNode } from '../../language/ast.ts';
-import { Kind } from '../../language/kinds.ts';
 import { OperationTypeNode } from '../../language/ast.ts';
 import { DirectiveLocation } from '../../language/directiveLocation.ts';
+import { Kind } from '../../language/kinds.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import { specifiedDirectives } from '../../type/directives.ts';
 import type {
-  ValidationContext,
   SDLValidationContext,
+  ValidationContext,
 } from '../ValidationContext.ts';
 /**
  * Known directives

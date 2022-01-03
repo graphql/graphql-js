@@ -1,17 +1,17 @@
-import type { Path } from '../jsutils/Path.ts';
+import { didYouMean } from '../jsutils/didYouMean.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
-import { didYouMean } from '../jsutils/didYouMean.ts';
-import { isObjectLike } from '../jsutils/isObjectLike.ts';
-import { suggestionList } from '../jsutils/suggestionList.ts';
-import { printPathArray } from '../jsutils/printPathArray.ts';
-import { addPath, pathToArray } from '../jsutils/Path.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import type { Path } from '../jsutils/Path.ts';
+import { addPath, pathToArray } from '../jsutils/Path.ts';
+import { printPathArray } from '../jsutils/printPathArray.ts';
+import { suggestionList } from '../jsutils/suggestionList.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import type { GraphQLInputType } from '../type/definition.ts';
 import {
-  isLeafType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
 } from '../type/definition.ts';

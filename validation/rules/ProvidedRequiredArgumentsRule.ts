@@ -2,16 +2,16 @@ import { inspect } from '../../jsutils/inspect.ts';
 import { keyMap } from '../../jsutils/keyMap.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import type { InputValueDefinitionNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { print } from '../../language/printer.ts';
-import { specifiedDirectives } from '../../type/directives.ts';
-import { isType, isRequiredArgument } from '../../type/definition.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import type { GraphQLArgument } from '../../type/definition.ts';
+import { isRequiredArgument, isType } from '../../type/definition.ts';
+import { specifiedDirectives } from '../../type/directives.ts';
 import type {
-  ValidationContext,
   SDLValidationContext,
+  ValidationContext,
 } from '../ValidationContext.ts';
 /**
  * Provided required arguments

@@ -1,12 +1,12 @@
 import { didYouMean } from '../../jsutils/didYouMean.ts';
 import { suggestionList } from '../../jsutils/suggestionList.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import { Kind } from '../../language/kinds.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import { specifiedDirectives } from '../../type/directives.ts';
 import type {
-  ValidationContext,
   SDLValidationContext,
+  ValidationContext,
 } from '../ValidationContext.ts';
 /**
  * Known argument names

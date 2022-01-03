@@ -4,8 +4,8 @@ import { GraphQLError } from '../../error/GraphQLError.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 import type { GraphQLCompositeType } from '../../type/definition.ts';
 import { isCompositeType } from '../../type/definition.ts';
-import { typeFromAST } from '../../utilities/typeFromAST.ts';
 import { doTypesOverlap } from '../../utilities/typeComparators.ts';
+import { typeFromAST } from '../../utilities/typeFromAST.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**
  * Possible fragment spread

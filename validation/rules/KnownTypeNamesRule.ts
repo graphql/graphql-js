@@ -2,17 +2,17 @@ import { didYouMean } from '../../jsutils/didYouMean.ts';
 import { suggestionList } from '../../jsutils/suggestionList.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type { ASTNode } from '../../language/ast.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import {
   isTypeDefinitionNode,
   isTypeSystemDefinitionNode,
   isTypeSystemExtensionNode,
 } from '../../language/predicates.ts';
-import { specifiedScalarTypes } from '../../type/scalars.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import { introspectionTypes } from '../../type/introspection.ts';
+import { specifiedScalarTypes } from '../../type/scalars.ts';
 import type {
-  ValidationContext,
   SDLValidationContext,
+  ValidationContext,
 } from '../ValidationContext.ts';
 /**
  * Known type names

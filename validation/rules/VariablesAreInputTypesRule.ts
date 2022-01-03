@@ -1,7 +1,7 @@
 import { GraphQLError } from '../../error/GraphQLError.ts';
+import type { VariableDefinitionNode } from '../../language/ast.ts';
 import { print } from '../../language/printer.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
-import type { VariableDefinitionNode } from '../../language/ast.ts';
 import { isInputType } from '../../type/definition.ts';
 import { typeFromAST } from '../../utilities/typeFromAST.ts';
 import type { ValidationContext } from '../ValidationContext.ts';

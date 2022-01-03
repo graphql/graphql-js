@@ -1,19 +1,19 @@
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type {
-  SelectionSetNode,
   FieldNode,
+  FragmentDefinitionNode,
   FragmentSpreadNode,
   InlineFragmentNode,
-  FragmentDefinitionNode,
+  SelectionSetNode,
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
 import type { GraphQLObjectType } from '../type/definition.ts';
+import { isAbstractType } from '../type/definition.ts';
 import {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
 } from '../type/directives.ts';
-import { isAbstractType } from '../type/definition.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 import { typeFromAST } from '../utilities/typeFromAST.ts';
 import { getDirectiveValues } from './values.ts';
 /**

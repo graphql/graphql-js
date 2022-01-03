@@ -1,11 +1,11 @@
 import { groupBy } from '../../jsutils/groupBy.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import type {
-  NameNode,
   FieldDefinitionNode,
   InputValueDefinitionNode,
+  NameNode,
 } from '../../language/ast.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import type { SDLValidationContext } from '../ValidationContext.ts';
 /**
  * Unique argument definition names

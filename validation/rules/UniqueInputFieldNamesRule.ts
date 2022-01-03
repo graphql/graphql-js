@@ -1,5 +1,5 @@
-import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { invariant } from '../../jsutils/invariant.ts';
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type { NameNode } from '../../language/ast.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';

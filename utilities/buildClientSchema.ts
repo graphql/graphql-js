@@ -1,48 +1,48 @@
-import { inspect } from '../jsutils/inspect.ts';
 import { devAssert } from '../jsutils/devAssert.ts';
-import { keyValMap } from '../jsutils/keyValMap.ts';
+import { inspect } from '../jsutils/inspect.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import { keyValMap } from '../jsutils/keyValMap.ts';
 import { parseValue } from '../language/parser.ts';
-import type { GraphQLSchemaValidationOptions } from '../type/schema.ts';
 import type {
-  GraphQLType,
-  GraphQLNamedType,
   GraphQLFieldConfig,
   GraphQLFieldConfigMap,
+  GraphQLNamedType,
+  GraphQLType,
 } from '../type/definition.ts';
-import { GraphQLSchema } from '../type/schema.ts';
-import { GraphQLDirective } from '../type/directives.ts';
-import { specifiedScalarTypes } from '../type/scalars.ts';
-import { introspectionTypes, TypeKind } from '../type/introspection.ts';
 import {
-  isInputType,
-  isOutputType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
+  assertInterfaceType,
   assertNullableType,
   assertObjectType,
-  assertInterfaceType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
+  isInputType,
+  isOutputType,
 } from '../type/definition.ts';
+import { GraphQLDirective } from '../type/directives.ts';
+import { introspectionTypes, TypeKind } from '../type/introspection.ts';
+import { specifiedScalarTypes } from '../type/scalars.ts';
+import type { GraphQLSchemaValidationOptions } from '../type/schema.ts';
+import { GraphQLSchema } from '../type/schema.ts';
 import type {
-  IntrospectionQuery,
   IntrospectionDirective,
-  IntrospectionField,
-  IntrospectionInputValue,
-  IntrospectionType,
-  IntrospectionScalarType,
-  IntrospectionObjectType,
-  IntrospectionInterfaceType,
-  IntrospectionUnionType,
   IntrospectionEnumType,
+  IntrospectionField,
   IntrospectionInputObjectType,
-  IntrospectionTypeRef,
+  IntrospectionInputValue,
+  IntrospectionInterfaceType,
   IntrospectionNamedTypeRef,
+  IntrospectionObjectType,
+  IntrospectionQuery,
+  IntrospectionScalarType,
+  IntrospectionType,
+  IntrospectionTypeRef,
+  IntrospectionUnionType,
 } from './getIntrospectionQuery.ts';
 import { valueFromAST } from './valueFromAST.ts';
 /**

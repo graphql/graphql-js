@@ -6,8 +6,8 @@ import { visit, visitInParallel } from '../language/visitor.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 import { assertValidSchema } from '../type/validate.ts';
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.ts';
-import type { SDLValidationRule, ValidationRule } from './ValidationContext.ts';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules.ts';
+import type { SDLValidationRule, ValidationRule } from './ValidationContext.ts';
 import {
   SDLValidationContext,
   ValidationContext,

@@ -1,4 +1,4 @@
-import type { DocumentNode, DefinitionNode } from '../language/ast.ts';
+import type { DefinitionNode, DocumentNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 /**
  * Provided a collection of ASTs, presumably each from different files,

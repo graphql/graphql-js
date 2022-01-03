@@ -3,42 +3,42 @@ import type { Maybe } from '../jsutils/Maybe.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import type {
   ASTNode,
-  NamedTypeNode,
   DirectiveNode,
-  ObjectTypeDefinitionNode,
-  ObjectTypeExtensionNode,
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
+  NamedTypeNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
 } from '../language/ast.ts';
 import { OperationTypeNode } from '../language/ast.ts';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.ts';
-import type { GraphQLSchema } from './schema.ts';
 import type {
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLEnumType,
-  GraphQLInputObjectType,
   GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLUnionType,
 } from './definition.ts';
-import { assertSchema } from './schema.ts';
-import { isIntrospectionType } from './introspection.ts';
-import { isDirective, GraphQLDeprecatedDirective } from './directives.ts';
 import {
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInputType,
+  isInterfaceType,
   isNamedType,
   isNonNullType,
-  isInputType,
+  isObjectType,
   isOutputType,
   isRequiredArgument,
   isRequiredInputField,
+  isUnionType,
 } from './definition.ts';
+import { GraphQLDeprecatedDirective, isDirective } from './directives.ts';
+import { isIntrospectionType } from './introspection.ts';
+import type { GraphQLSchema } from './schema.ts';
+import { assertSchema } from './schema.ts';
 /**
  * Implements the "Type Validation" sub-sections of the specification's
  * "Type System" section.

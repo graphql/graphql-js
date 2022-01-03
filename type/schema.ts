@@ -1,10 +1,10 @@
-import type { ObjMap } from '../jsutils/ObjMap.ts';
-import { inspect } from '../jsutils/inspect.ts';
-import { toObjMap } from '../jsutils/toObjMap.ts';
 import { devAssert } from '../jsutils/devAssert.ts';
+import { inspect } from '../jsutils/inspect.ts';
 import { instanceOf } from '../jsutils/instanceOf.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import { toObjMap } from '../jsutils/toObjMap.ts';
 import type { GraphQLError } from '../error/GraphQLError.ts';
 import type {
   SchemaDefinitionNode,
@@ -12,22 +12,22 @@ import type {
 } from '../language/ast.ts';
 import { OperationTypeNode } from '../language/ast.ts';
 import type {
-  GraphQLType,
-  GraphQLNamedType,
   GraphQLAbstractType,
-  GraphQLObjectType,
   GraphQLInterfaceType,
+  GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLType,
+} from './definition.ts';
+import {
+  getNamedType,
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isUnionType,
 } from './definition.ts';
 import type { GraphQLDirective } from './directives.ts';
-import { __Schema } from './introspection.ts';
 import { isDirective, specifiedDirectives } from './directives.ts';
-import {
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
-  isInputObjectType,
-  getNamedType,
-} from './definition.ts';
+import { __Schema } from './introspection.ts';
 /**
  * Test if the given value is a GraphQL schema.
  */

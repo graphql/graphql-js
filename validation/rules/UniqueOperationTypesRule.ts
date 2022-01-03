@@ -1,9 +1,9 @@
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import type {
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../../language/ast.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import type { SDLValidationContext } from '../ValidationContext.ts';
 /**
  * Unique operation types

@@ -1,5 +1,5 @@
-import { inspect } from '../jsutils/inspect.ts';
 import { devAssert } from '../jsutils/devAssert.ts';
+import { inspect } from '../jsutils/inspect.ts';
 import { instanceOf } from '../jsutils/instanceOf.ts';
 interface Location {
   line: number;

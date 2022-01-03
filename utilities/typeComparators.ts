@@ -1,12 +1,12 @@
-import type { GraphQLSchema } from '../type/schema.ts';
-import type { GraphQLType, GraphQLCompositeType } from '../type/definition.ts';
+import type { GraphQLCompositeType, GraphQLType } from '../type/definition.ts';
 import {
+  isAbstractType,
   isInterfaceType,
-  isObjectType,
   isListType,
   isNonNullType,
-  isAbstractType,
+  isObjectType,
 } from '../type/definition.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 /**
  * Provided two types, return true if the types are equal (invariant).
  */

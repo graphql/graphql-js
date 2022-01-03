@@ -1,11 +1,11 @@
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import type {
-  OperationDefinitionNode,
   FragmentDefinitionNode,
+  OperationDefinitionNode,
 } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import { collectFields } from '../../execution/collectFields.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**

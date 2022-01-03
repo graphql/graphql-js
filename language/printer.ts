@@ -1,9 +1,9 @@
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { ASTNode } from './ast.ts';
-import type { ASTReducer } from './visitor.ts';
-import { visit } from './visitor.ts';
 import { printBlockString } from './blockString.ts';
 import { printString } from './printString.ts';
+import type { ASTReducer } from './visitor.ts';
+import { visit } from './visitor.ts';
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.

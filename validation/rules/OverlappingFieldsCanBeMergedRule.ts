@@ -1,31 +1,31 @@
-import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { inspect } from '../../jsutils/inspect.ts';
+import type { Maybe } from '../../jsutils/Maybe.ts';
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import type {
+  ArgumentNode,
+  FieldNode,
+  FragmentDefinitionNode,
   SelectionSetNode,
   ValueNode,
-  FieldNode,
-  ArgumentNode,
-  FragmentDefinitionNode,
 } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { print } from '../../language/printer.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import type {
+  GraphQLField,
   GraphQLNamedType,
   GraphQLOutputType,
-  GraphQLField,
 } from '../../type/definition.ts';
 import {
   getNamedType,
-  isNonNullType,
-  isLeafType,
-  isObjectType,
-  isListType,
   isInterfaceType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
 } from '../../type/definition.ts';
 import { typeFromAST } from '../../utilities/typeFromAST.ts';
-import type { Maybe } from '../../jsutils/Maybe.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 
 function reasonMessage(reason: ConflictReasonMessage): string {

@@ -3,8 +3,8 @@ import type {
   OperationDefinitionNode,
   OperationTypeDefinitionNode,
 } from '../language/ast.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
 import type { GraphQLObjectType } from '../type/definition.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 /**
  * Extracts the root type of the operation from the schema.
  *

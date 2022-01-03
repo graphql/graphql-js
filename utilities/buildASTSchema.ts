@@ -1,13 +1,13 @@
 import { devAssert } from '../jsutils/devAssert.ts';
-import type { Source } from '../language/source.ts';
 import type { DocumentNode } from '../language/ast.ts';
-import type { ParseOptions } from '../language/parser.ts';
 import { Kind } from '../language/kinds.ts';
+import type { ParseOptions } from '../language/parser.ts';
 import { parse } from '../language/parser.ts';
-import { assertValidSDL } from '../validation/validate.ts';
+import type { Source } from '../language/source.ts';
+import { specifiedDirectives } from '../type/directives.ts';
 import type { GraphQLSchemaValidationOptions } from '../type/schema.ts';
 import { GraphQLSchema } from '../type/schema.ts';
-import { specifiedDirectives } from '../type/directives.ts';
+import { assertValidSDL } from '../validation/validate.ts';
 import { extendSchemaImpl } from './extendSchema.ts';
 export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**

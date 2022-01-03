@@ -1,23 +1,23 @@
-import type { ObjMap } from '../jsutils/ObjMap.ts';
-import type { Maybe } from '../jsutils/Maybe.ts';
-import { keyMap } from '../jsutils/keyMap.ts';
 import { inspect } from '../jsutils/inspect.ts';
+import { keyMap } from '../jsutils/keyMap.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
 import { printPathArray } from '../jsutils/printPathArray.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import type {
-  FieldNode,
   DirectiveNode,
+  FieldNode,
   VariableDefinitionNode,
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import { print } from '../language/printer.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
 import type { GraphQLField } from '../type/definition.ts';
-import type { GraphQLDirective } from '../type/directives.ts';
 import { isInputType, isNonNullType } from '../type/definition.ts';
+import type { GraphQLDirective } from '../type/directives.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
+import { coerceInputValue } from '../utilities/coerceInputValue.ts';
 import { typeFromAST } from '../utilities/typeFromAST.ts';
 import { valueFromAST } from '../utilities/valueFromAST.ts';
-import { coerceInputValue } from '../utilities/coerceInputValue.ts';
 type CoercedVariableValues =
   | {
       errors: ReadonlyArray<GraphQLError>;

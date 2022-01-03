@@ -1,14 +1,14 @@
 import { inspect } from '../../jsutils/inspect.ts';
 import type { Maybe } from '../../jsutils/Maybe.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import { Kind } from '../../language/kinds.ts';
 import type { ValueNode } from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
-import type { GraphQLSchema } from '../../type/schema.ts';
 import type { GraphQLType } from '../../type/definition.ts';
 import { isNonNullType } from '../../type/definition.ts';
-import { typeFromAST } from '../../utilities/typeFromAST.ts';
+import type { GraphQLSchema } from '../../type/schema.ts';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators.ts';
+import { typeFromAST } from '../../utilities/typeFromAST.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**
  * Variables in allowed position

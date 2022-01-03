@@ -1,19 +1,19 @@
-import { keyMap } from '../../jsutils/keyMap.ts';
-import { inspect } from '../../jsutils/inspect.ts';
 import { didYouMean } from '../../jsutils/didYouMean.ts';
+import { inspect } from '../../jsutils/inspect.ts';
+import { keyMap } from '../../jsutils/keyMap.ts';
 import { suggestionList } from '../../jsutils/suggestionList.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type { ValueNode } from '../../language/ast.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import { print } from '../../language/printer.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import {
-  isLeafType,
+  getNamedType,
+  getNullableType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
   isRequiredInputField,
-  getNullableType,
-  getNamedType,
 } from '../../type/definition.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**

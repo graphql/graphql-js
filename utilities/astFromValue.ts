@@ -1,19 +1,19 @@
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
-import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
-import type { ValueNode, ObjectFieldNode } from '../language/ast.ts';
+import type { ObjectFieldNode, ValueNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import type { GraphQLInputType } from '../type/definition.ts';
-import { GraphQLID } from '../type/scalars.ts';
 import {
-  isLeafType,
   isEnumType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
 } from '../type/definition.ts';
+import { GraphQLID } from '../type/scalars.ts';
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format

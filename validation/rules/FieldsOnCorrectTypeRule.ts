@@ -1,20 +1,20 @@
 import { didYouMean } from '../../jsutils/didYouMean.ts';
-import { suggestionList } from '../../jsutils/suggestionList.ts';
 import { naturalCompare } from '../../jsutils/naturalCompare.ts';
+import { suggestionList } from '../../jsutils/suggestionList.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type { FieldNode } from '../../language/ast.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
-import type { GraphQLSchema } from '../../type/schema.ts';
 import type {
-  GraphQLOutputType,
-  GraphQLObjectType,
   GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLOutputType,
 } from '../../type/definition.ts';
 import {
-  isObjectType,
-  isInterfaceType,
   isAbstractType,
+  isInterfaceType,
+  isObjectType,
 } from '../../type/definition.ts';
+import type { GraphQLSchema } from '../../type/schema.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**
  * Fields on correct type

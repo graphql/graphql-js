@@ -1,36 +1,36 @@
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
+import { isPrintableAsBlockString } from '../language/blockString.ts';
 import { Kind } from '../language/kinds.ts';
 import { print } from '../language/printer.ts';
-import { isPrintableAsBlockString } from '../language/blockString.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
-import type { GraphQLDirective } from '../type/directives.ts';
 import type {
-  GraphQLNamedType,
   GraphQLArgument,
-  GraphQLInputField,
-  GraphQLScalarType,
   GraphQLEnumType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
+  GraphQLInputField,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
 } from '../type/definition.ts';
-import { isIntrospectionType } from '../type/introspection.ts';
-import { isSpecifiedScalarType } from '../type/scalars.ts';
+import {
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../type/definition.ts';
+import type { GraphQLDirective } from '../type/directives.ts';
 import {
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
 } from '../type/directives.ts';
-import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
-  isEnumType,
-  isInputObjectType,
-} from '../type/definition.ts';
+import { isIntrospectionType } from '../type/introspection.ts';
+import { isSpecifiedScalarType } from '../type/scalars.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 import { astFromValue } from './astFromValue.ts';
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(

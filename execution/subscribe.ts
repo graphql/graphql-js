@@ -1,20 +1,19 @@
-import { inspect } from '../jsutils/inspect.ts';
 import { devAssert } from '../jsutils/devAssert.ts';
+import { inspect } from '../jsutils/inspect.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
-import { addPath, pathToArray } from '../jsutils/Path.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
+import { addPath, pathToArray } from '../jsutils/Path.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { locatedError } from '../error/locatedError.ts';
 import type { DocumentNode } from '../language/ast.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
 import type { GraphQLFieldResolver } from '../type/definition.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
+import { collectFields } from './collectFields.ts';
 import type {
   ExecutionArgs,
-  ExecutionResult,
   ExecutionContext,
+  ExecutionResult,
 } from './execute.ts';
-import { collectFields } from './collectFields.ts';
-import { getArgumentValues } from './values.ts';
 import {
   assertValidExecutionArguments,
   buildExecutionContext,
@@ -23,6 +22,7 @@ import {
   getFieldDef,
 } from './execute.ts';
 import { mapAsyncIterator } from './mapAsyncIterator.ts';
+import { getArgumentValues } from './values.ts';
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *

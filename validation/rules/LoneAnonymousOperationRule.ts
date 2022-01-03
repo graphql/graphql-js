@@ -1,6 +1,6 @@
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import { Kind } from '../../language/kinds.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import type { ASTValidationContext } from '../ValidationContext.ts';
 /**
  * Lone anonymous operation

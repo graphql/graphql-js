@@ -1,10 +1,10 @@
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import { Kind } from '../../language/kinds.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import {
   isTypeDefinitionNode,
   isTypeExtensionNode,
 } from '../../language/predicates.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import { specifiedDirectives } from '../../type/directives.ts';
 import type {
   SDLValidationContext,

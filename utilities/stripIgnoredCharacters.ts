@@ -1,7 +1,7 @@
-import { Source, isSource } from '../language/source.ts';
-import { TokenKind } from '../language/tokenKind.ts';
-import { Lexer, isPunctuatorTokenKind } from '../language/lexer.ts';
 import { printBlockString } from '../language/blockString.ts';
+import { isPunctuatorTokenKind, Lexer } from '../language/lexer.ts';
+import { isSource, Source } from '../language/source.ts';
+import { TokenKind } from '../language/tokenKind.ts';
 /**
  * Strips characters that are not significant to the validity or execution
  * of a GraphQL document:

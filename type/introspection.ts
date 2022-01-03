@@ -1,34 +1,34 @@
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
-import { print } from '../language/printer.ts';
 import { DirectiveLocation } from '../language/directiveLocation.ts';
+import { print } from '../language/printer.ts';
 import { astFromValue } from '../utilities/astFromValue.ts';
-import type { GraphQLSchema } from './schema.ts';
-import type { GraphQLDirective } from './directives.ts';
 import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLInputField,
   GraphQLEnumValue,
   GraphQLField,
   GraphQLFieldConfigMap,
+  GraphQLInputField,
+  GraphQLNamedType,
+  GraphQLType,
 } from './definition.ts';
-import { GraphQLString, GraphQLBoolean } from './scalars.ts';
 import {
+  GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLEnumType,
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
+  isAbstractType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
   isListType,
   isNonNullType,
-  isAbstractType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
 } from './definition.ts';
+import type { GraphQLDirective } from './directives.ts';
+import { GraphQLBoolean, GraphQLString } from './scalars.ts';
+import type { GraphQLSchema } from './schema.ts';
 export const __Schema: GraphQLObjectType = new GraphQLObjectType({
   name: '__Schema',
   description:

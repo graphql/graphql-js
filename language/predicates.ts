@@ -1,15 +1,15 @@
 import type {
   ASTNode,
+  ConstValueNode,
   DefinitionNode,
   ExecutableDefinitionNode,
   SelectionNode,
-  ValueNode,
-  ConstValueNode,
+  TypeDefinitionNode,
+  TypeExtensionNode,
   TypeNode,
   TypeSystemDefinitionNode,
-  TypeDefinitionNode,
   TypeSystemExtensionNode,
-  TypeExtensionNode,
+  ValueNode,
 } from './ast.ts';
 import { Kind } from './kinds.ts';
 export function isDefinitionNode(node: ASTNode): node is DefinitionNode {

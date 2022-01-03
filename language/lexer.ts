@@ -1,9 +1,9 @@
 import { syntaxError } from '../error/syntaxError.ts';
-import type { Source } from './source.ts';
 import { Token } from './ast.ts';
-import { TokenKind } from './tokenKind.ts';
 import { dedentBlockStringLines } from './blockString.ts';
-import { isDigit, isNameStart, isNameContinue } from './characterClasses.ts';
+import { isDigit, isNameContinue, isNameStart } from './characterClasses.ts';
+import type { Source } from './source.ts';
+import { TokenKind } from './tokenKind.ts';
 /**
  * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time

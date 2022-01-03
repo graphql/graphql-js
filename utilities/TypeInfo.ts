@@ -1,38 +1,38 @@
-import type { ASTVisitor } from '../language/visitor.ts';
-import type { ASTNode, FieldNode } from '../language/ast.ts';
-import { Kind } from '../language/kinds.ts';
-import { isNode } from '../language/ast.ts';
-import { getEnterLeaveForKind } from '../language/visitor.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
-import type { GraphQLDirective } from '../type/directives.ts';
+import type { ASTNode, FieldNode } from '../language/ast.ts';
+import { isNode } from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
+import type { ASTVisitor } from '../language/visitor.ts';
+import { getEnterLeaveForKind } from '../language/visitor.ts';
 import type {
-  GraphQLType,
+  GraphQLArgument,
+  GraphQLCompositeType,
+  GraphQLEnumValue,
+  GraphQLField,
+  GraphQLInputField,
   GraphQLInputType,
   GraphQLOutputType,
-  GraphQLCompositeType,
-  GraphQLField,
-  GraphQLArgument,
-  GraphQLInputField,
-  GraphQLEnumValue,
+  GraphQLType,
 } from '../type/definition.ts';
 import {
-  isObjectType,
-  isInterfaceType,
+  getNamedType,
+  getNullableType,
+  isCompositeType,
   isEnumType,
   isInputObjectType,
-  isListType,
-  isCompositeType,
   isInputType,
+  isInterfaceType,
+  isListType,
+  isObjectType,
   isOutputType,
-  getNullableType,
-  getNamedType,
 } from '../type/definition.ts';
+import type { GraphQLDirective } from '../type/directives.ts';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 import { typeFromAST } from './typeFromAST.ts';
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track

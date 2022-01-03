@@ -1,58 +1,58 @@
-import type { Path } from '../jsutils/Path.ts';
-import type { ObjMap } from '../jsutils/ObjMap.ts';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
-import type { Maybe } from '../jsutils/Maybe.ts';
-import { inspect } from '../jsutils/inspect.ts';
-import { memoize3 } from '../jsutils/memoize3.ts';
-import { invariant } from '../jsutils/invariant.ts';
 import { devAssert } from '../jsutils/devAssert.ts';
-import { isPromise } from '../jsutils/isPromise.ts';
-import { isObjectLike } from '../jsutils/isObjectLike.ts';
-import { promiseReduce } from '../jsutils/promiseReduce.ts';
-import { promiseForObject } from '../jsutils/promiseForObject.ts';
-import { addPath, pathToArray } from '../jsutils/Path.ts';
+import { inspect } from '../jsutils/inspect.ts';
+import { invariant } from '../jsutils/invariant.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import { isPromise } from '../jsutils/isPromise.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import { memoize3 } from '../jsutils/memoize3.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import type { Path } from '../jsutils/Path.ts';
+import { addPath, pathToArray } from '../jsutils/Path.ts';
+import { promiseForObject } from '../jsutils/promiseForObject.ts';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
+import { promiseReduce } from '../jsutils/promiseReduce.ts';
 import type { GraphQLFormattedError } from '../error/GraphQLError.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { locatedError } from '../error/locatedError.ts';
 import type {
   DocumentNode,
-  OperationDefinitionNode,
   FieldNode,
   FragmentDefinitionNode,
+  OperationDefinitionNode,
 } from '../language/ast.ts';
 import { OperationTypeNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
 import type {
-  GraphQLObjectType,
-  GraphQLOutputType,
-  GraphQLLeafType,
   GraphQLAbstractType,
   GraphQLField,
   GraphQLFieldResolver,
+  GraphQLLeafType,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLOutputType,
   GraphQLResolveInfo,
   GraphQLTypeResolver,
-  GraphQLList,
 } from '../type/definition.ts';
-import { assertValidSchema } from '../type/validate.ts';
+import {
+  isAbstractType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+} from '../type/definition.ts';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection.ts';
-import {
-  isObjectType,
-  isAbstractType,
-  isLeafType,
-  isListType,
-  isNonNullType,
-} from '../type/definition.ts';
-import { getVariableValues, getArgumentValues } from './values.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
+import { assertValidSchema } from '../type/validate.ts';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.ts';
+import { getArgumentValues, getVariableValues } from './values.ts';
 /**
  * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which

@@ -1,35 +1,35 @@
-import { keyMap } from '../jsutils/keyMap.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
+import { keyMap } from '../jsutils/keyMap.ts';
 import { naturalCompare } from '../jsutils/naturalCompare.ts';
 import { print } from '../language/printer.ts';
 import { visit } from '../language/visitor.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
 import type {
-  GraphQLField,
-  GraphQLType,
-  GraphQLInputType,
-  GraphQLNamedType,
   GraphQLEnumType,
-  GraphQLUnionType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
+  GraphQLField,
   GraphQLInputObjectType,
+  GraphQLInputType,
+  GraphQLInterfaceType,
+  GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLType,
+  GraphQLUnionType,
 } from '../type/definition.ts';
-import { isSpecifiedScalarType } from '../type/scalars.ts';
 import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
-  isNonNullType,
+  isInterfaceType,
   isListType,
   isNamedType,
+  isNonNullType,
+  isObjectType,
   isRequiredArgument,
   isRequiredInputField,
+  isScalarType,
+  isUnionType,
 } from '../type/definition.ts';
+import { isSpecifiedScalarType } from '../type/scalars.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 import { astFromValue } from './astFromValue.ts';
 export enum BreakingChangeType {
   TYPE_REMOVED = 'TYPE_REMOVED',

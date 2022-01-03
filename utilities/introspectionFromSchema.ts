@@ -3,8 +3,8 @@ import { parse } from '../language/parser.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 import { executeSync } from '../execution/execute.ts';
 import type {
-  IntrospectionQuery,
   IntrospectionOptions,
+  IntrospectionQuery,
 } from './getIntrospectionQuery.ts';
 import { getIntrospectionQuery } from './getIntrospectionQuery.ts';
 /**

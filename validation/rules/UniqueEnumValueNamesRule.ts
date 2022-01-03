@@ -1,9 +1,9 @@
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ASTVisitor } from '../../language/visitor.ts';
 import type {
   EnumTypeDefinitionNode,
   EnumTypeExtensionNode,
 } from '../../language/ast.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 import { isEnumType } from '../../type/definition.ts';
 import type { SDLValidationContext } from '../ValidationContext.ts';
 /**

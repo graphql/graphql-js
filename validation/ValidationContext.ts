@@ -1,27 +1,27 @@
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type { GraphQLError } from '../error/GraphQLError.ts';
-import type { ASTVisitor } from '../language/visitor.ts';
 import type {
   DocumentNode,
-  OperationDefinitionNode,
-  VariableNode,
-  SelectionSetNode,
-  FragmentSpreadNode,
   FragmentDefinitionNode,
+  FragmentSpreadNode,
+  OperationDefinitionNode,
+  SelectionSetNode,
+  VariableNode,
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
+import type { ASTVisitor } from '../language/visitor.ts';
 import { visit } from '../language/visitor.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
-import type { GraphQLDirective } from '../type/directives.ts';
 import type {
+  GraphQLArgument,
+  GraphQLCompositeType,
+  GraphQLEnumValue,
+  GraphQLField,
   GraphQLInputType,
   GraphQLOutputType,
-  GraphQLCompositeType,
-  GraphQLField,
-  GraphQLArgument,
-  GraphQLEnumValue,
 } from '../type/definition.ts';
+import type { GraphQLDirective } from '../type/directives.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.ts';
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
