@@ -22,20 +22,18 @@
  * import { parse } from 'graphql';
  * import { parse } from 'graphql/language';
  * ```
+ *
+ * @packageDocumentation
  */
-
-/** The GraphQL.js version info. */
-export { version, versionInfo } from './version.ts';
-/** The primary entry point into fulfilling a GraphQL request. */
+// The GraphQL.js version info.
+export { version, versionInfo } from './version.ts'; // The primary entry point into fulfilling a GraphQL request.
 
 export type { GraphQLArgs } from './graphql.ts';
-export { graphql, graphqlSync } from './graphql.ts';
-/** Create and operate on GraphQL type definitions and schema. */
+export { graphql, graphqlSync } from './graphql.ts'; // Create and operate on GraphQL type definitions and schema.
 
 export {
   resolveObjMapThunk,
-  resolveReadonlyArrayThunk,
-  /** Definitions */
+  resolveReadonlyArrayThunk, // Definitions
   GraphQLSchema,
   GraphQLDirective,
   GraphQLScalarType,
@@ -45,28 +43,22 @@ export {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
-  GraphQLNonNull,
-  /** Standard GraphQL Scalars */
+  GraphQLNonNull, // Standard GraphQL Scalars
   specifiedScalarTypes,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
-  GraphQLID,
-  /** Int boundaries constants */
+  GraphQLID, // Int boundaries constants
   GRAPHQL_MAX_INT,
-  GRAPHQL_MIN_INT,
-  /** Built-in Directives defined by the Spec */
+  GRAPHQL_MIN_INT, // Built-in Directives defined by the Spec
   specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
-  GraphQLSpecifiedByDirective,
-  /** "Enum" of Type Kinds */
-  TypeKind,
-  /** Constant Deprecation Reason */
-  DEFAULT_DEPRECATION_REASON,
-  /** GraphQL Types for introspection. */
+  GraphQLSpecifiedByDirective, // "Enum" of Type Kinds
+  TypeKind, // Constant Deprecation Reason
+  DEFAULT_DEPRECATION_REASON, // GraphQL Types for introspection.
   introspectionTypes,
   __Schema,
   __Directive,
@@ -75,12 +67,10 @@ export {
   __Field,
   __InputValue,
   __EnumValue,
-  __TypeKind,
-  /** Meta-field definitions. */
+  __TypeKind, // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
-  TypeNameMetaFieldDef,
-  /** Predicates */
+  TypeNameMetaFieldDef, // Predicates
   isSchema,
   isDirective,
   isType,
@@ -104,8 +94,7 @@ export {
   isRequiredInputField,
   isSpecifiedScalarType,
   isIntrospectionType,
-  isSpecifiedDirective,
-  /** Assertions */
+  isSpecifiedDirective, // Assertions
   assertSchema,
   assertDirective,
   assertType,
@@ -124,14 +113,11 @@ export {
   assertAbstractType,
   assertWrappingType,
   assertNullableType,
-  assertNamedType,
-  /** Un-modifiers */
+  assertNamedType, // Un-modifiers
   getNullableType,
-  getNamedType,
-  /** Validate GraphQL schema. */
+  getNamedType, // Validate GraphQL schema.
   validateSchema,
-  assertValidSchema,
-  /** Upholds the spec rules about naming. */
+  assertValidSchema, // Upholds the spec rules about naming.
   assertName,
   assertEnumValueName,
 } from './type/index.ts';
@@ -191,37 +177,30 @@ export type {
   GraphQLScalarSerializer,
   GraphQLScalarValueParser,
   GraphQLScalarLiteralParser,
-} from './type/index.ts';
-/** Parse and operate on GraphQL language source files. */
+} from './type/index.ts'; // Parse and operate on GraphQL language source files.
 
 export {
   Token,
   Source,
   Location,
   OperationTypeNode,
-  getLocation,
-  /** Print source location */
+  getLocation, // Print source location.
   printLocation,
-  printSourceLocation,
-  /** Lex */
+  printSourceLocation, // Lex
   Lexer,
-  TokenKind,
-  /** Parse */
+  TokenKind, // Parse
   parse,
   parseValue,
   parseConstValue,
-  parseType,
-  /** Print */
-  print,
-  /** Visit */
+  parseType, // Print
+  print, // Visit
   visit,
   visitInParallel,
   getVisitFn,
   getEnterLeaveForKind,
   BREAK,
   Kind,
-  DirectiveLocation,
-  /** Predicates */
+  DirectiveLocation, // Predicates
   isDefinitionNode,
   isExecutableDefinitionNode,
   isSelectionNode,
@@ -238,15 +217,12 @@ export type {
   SourceLocation,
   TokenKindEnum,
   KindEnum,
-  DirectiveLocationEnum,
-  /** Visitor utilities */
+  DirectiveLocationEnum, // Visitor utilities
   ASTVisitor,
   ASTVisitFn,
-  ASTVisitorKeyMap,
-  /** AST nodes */
+  ASTVisitorKeyMap, // AST nodes
   ASTNode,
-  ASTKindToNode,
-  /** Each kind of AST node */
+  ASTKindToNode, // Each kind of AST node
   NameNode,
   DocumentNode,
   DefinitionNode,
@@ -305,8 +281,7 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
-} from './language/index.ts';
-/** Execute GraphQL queries. */
+} from './language/index.ts'; // Execute GraphQL queries.
 
 export {
   execute,
@@ -323,15 +298,12 @@ export type {
   ExecutionResult,
   FormattedExecutionResult,
 } from './execution/index.ts';
-export type { SubscriptionArgs } from './subscription/index.ts';
-/** Validate GraphQL documents. */
+export type { SubscriptionArgs } from './subscription/index.ts'; // Validate GraphQL documents.
 
 export {
   validate,
-  ValidationContext,
-  /** All validation rules in the GraphQL Specification. */
-  specifiedRules,
-  /** Individual validation rules. */
+  ValidationContext, // All validation rules in the GraphQL Specification.
+  specifiedRules, // Individual validation rules.
   ExecutableDefinitionsRule,
   FieldsOnCorrectTypeRule,
   FragmentsOnCompositeTypesRule,
@@ -357,8 +329,7 @@ export {
   UniqueVariableNamesRule,
   ValuesOfCorrectTypeRule,
   VariablesAreInputTypesRule,
-  VariablesInAllowedPositionRule,
-  /** SDL-specific validation rules */
+  VariablesInAllowedPositionRule, // SDL-specific validation rules
   LoneSchemaDefinitionRule,
   UniqueOperationTypesRule,
   UniqueTypeNamesRule,
@@ -366,13 +337,11 @@ export {
   UniqueFieldDefinitionNamesRule,
   UniqueArgumentDefinitionNamesRule,
   UniqueDirectiveNamesRule,
-  PossibleTypeExtensionsRule,
-  /** Custom validation rules */
+  PossibleTypeExtensionsRule, // Custom validation rules
   NoDeprecatedCustomRule,
   NoSchemaIntrospectionCustomRule,
 } from './validation/index.ts';
-export type { ValidationRule } from './validation/index.ts';
-/** Create, format, and print GraphQL errors. */
+export type { ValidationRule } from './validation/index.ts'; // Create, format, and print GraphQL errors.
 
 export {
   GraphQLError,
@@ -384,65 +353,38 @@ export {
 export type {
   GraphQLFormattedError,
   GraphQLErrorExtensions,
-} from './error/index.ts';
-/** Utilities for operating on GraphQL type schema and parsed sources. */
+} from './error/index.ts'; // Utilities for operating on GraphQL type schema and parsed sources.
 
 export {
-  /**
-   * Produce the GraphQL query recommended for a full schema introspection.
-   * Accepts optional IntrospectionOptions.
-   */
-  getIntrospectionQuery,
-  /** Gets the target Operation from a Document. */
-  getOperationAST,
-  /** Gets the Type for the target Operation AST. */
-  getOperationRootType,
-  /** Convert a GraphQLSchema to an IntrospectionQuery. */
-  introspectionFromSchema,
-  /** Build a GraphQLSchema from an introspection result. */
-  buildClientSchema,
-  /** Build a GraphQLSchema from a parsed GraphQL Schema language AST. */
-  buildASTSchema,
-  /** Build a GraphQLSchema from a GraphQL schema language document. */
-  buildSchema,
-  /** Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST. */
-  extendSchema,
-  /** Sort a GraphQLSchema. */
-  lexicographicSortSchema,
-  /** Print a GraphQLSchema to GraphQL Schema language. */
-  printSchema,
-  /** Print a GraphQLType to GraphQL Schema language. */
-  printType,
-  /** Prints the built-in introspection schema in the Schema Language format. */
-  printIntrospectionSchema,
-  /** Create a GraphQLType from a GraphQL language AST. */
-  typeFromAST,
-  /** Create a JavaScript value from a GraphQL language AST with a Type. */
-  valueFromAST,
-  /** Create a JavaScript value from a GraphQL language AST without a Type. */
-  valueFromASTUntyped,
-  /** Create a GraphQL language AST from a JavaScript value. */
-  astFromValue,
-  /** A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system. */
+  // Produce the GraphQL query recommended for a full schema introspection.
+  // Accepts optional IntrospectionOptions.
+  getIntrospectionQuery, // Gets the target Operation from a Document.
+  getOperationAST, // Gets the Type for the target Operation AST.
+  getOperationRootType, // Convert a GraphQLSchema to an IntrospectionQuery.
+  introspectionFromSchema, // Build a GraphQLSchema from an introspection result.
+  buildClientSchema, // Build a GraphQLSchema from a parsed GraphQL Schema language AST.
+  buildASTSchema, // Build a GraphQLSchema from a GraphQL schema language document.
+  buildSchema, // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
+  extendSchema, // Sort a GraphQLSchema.
+  lexicographicSortSchema, // Print a GraphQLSchema to GraphQL Schema language.
+  printSchema, // Print a GraphQLType to GraphQL Schema language.
+  printType, // Prints the built-in introspection schema in the Schema Language format.
+  printIntrospectionSchema, // Create a GraphQLType from a GraphQL language AST.
+  typeFromAST, // Create a JavaScript value from a GraphQL language AST with a Type.
+  valueFromAST, // Create a JavaScript value from a GraphQL language AST without a Type.
+  valueFromASTUntyped, // Create a GraphQL language AST from a JavaScript value.
+  astFromValue, // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
   TypeInfo,
-  visitWithTypeInfo,
-  /** Coerces a JavaScript value to a GraphQL type, or produces errors. */
-  coerceInputValue,
-  /** Concatenates multiple AST together. */
-  concatAST,
-  /** Separates an AST into an AST per Operation. */
-  separateOperations,
-  /** Strips characters that are not significant to the validity or execution of a GraphQL document. */
-  stripIgnoredCharacters,
-  /** Comparators for types */
+  visitWithTypeInfo, // Coerces a JavaScript value to a GraphQL type, or produces errors.
+  coerceInputValue, // Concatenates multiple AST together.
+  concatAST, // Separates an AST into an AST per Operation.
+  separateOperations, // Strips characters that are not significant to the validity or execution of a GraphQL document.
+  stripIgnoredCharacters, // Comparators for types
   isEqualType,
   isTypeSubTypeOf,
-  doTypesOverlap,
-  /** Asserts a string is a valid GraphQL name. */
-  assertValidName,
-  /** Determine if a string is a valid GraphQL name. */
-  isValidNameError,
-  /** Compares two GraphQLSchemas and detects breaking changes. */
+  doTypesOverlap, // Asserts a string is a valid GraphQL name.
+  assertValidName, // Determine if a string is a valid GraphQL name.
+  isValidNameError, // Compares two GraphQLSchemas and detects breaking changes.
   BreakingChangeType,
   DangerousChangeType,
   findBreakingChanges,
