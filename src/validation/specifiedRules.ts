@@ -43,6 +43,8 @@ import {
 import { ScalarLeafsRule } from './rules/ScalarLeafsRule';
 // Spec Section: "Subscriptions with Single Root Field"
 import { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule';
+// Spec Section: "Stream Directives Are Used On List Fields"
+import { StreamDirectiveOnListFieldRule } from './rules/StreamDirectiveOnListFieldRule';
 import { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule';
 // Spec Section: "Argument Uniqueness"
 import { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule';
@@ -96,6 +98,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   KnownDirectivesRule,
   UniqueDirectivesPerLocationRule,
   DeferStreamDirectiveOnRootFieldRule,
+  StreamDirectiveOnListFieldRule,
   KnownArgumentNamesRule,
   UniqueArgumentNamesRule,
   ValuesOfCorrectTypeRule,

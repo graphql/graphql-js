@@ -45,6 +45,7 @@ import {
   isNonNullType,
   isObjectType,
 } from '../type/definition';
+import { GraphQLStreamDirective } from '../type/directives';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
@@ -57,7 +58,11 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
-import { getArgumentValues, getVariableValues } from './values';
+import {
+  getArgumentValues,
+  getDirectiveValues,
+  getVariableValues,
+} from './values';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
@@ -158,7 +163,7 @@ export interface FormattedExecutionResult<
  *   - `extensions` is reserved for adding non-standard properties.
  */
 export interface ExecutionPatchResult<
-  TData = ObjMap<unknown>,
+  TData = ObjMap<unknown> | unknown,
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLError>;
@@ -170,7 +175,7 @@ export interface ExecutionPatchResult<
 }
 
 export interface FormattedExecutionPatchResult<
-  TData = ObjMap<unknown>,
+  TData = ObjMap<unknown> | unknown,
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
@@ -794,6 +799,55 @@ function completeValue(
 }
 
 /**
+ * Returns an object containing the `@stream` arguments if a field should be
+ * streamed based on the experimental flag, stream directive present and
+ * not disabled by the "if" argument.
+ */
+function getStreamValues(
+  exeContext: ExecutionContext,
+  fieldNodes: ReadonlyArray<FieldNode>,
+):
+  | undefined
+  | {
+      initialCount?: number;
+      label?: string;
+    } {
+  if (exeContext.schema._enableDeferStream !== true) {
+    return;
+  }
+  // validation only allows equivalent streams on multiple fields, so it is
+  // safe to only check the first fieldNode for the stream directive
+  const stream = getDirectiveValues(
+    GraphQLStreamDirective,
+    fieldNodes[0],
+    exeContext.variableValues,
+  );
+
+  if (!stream) {
+    return;
+  }
+
+  if (stream.if === false) {
+    return;
+  }
+
+  invariant(
+    typeof stream.initialCount === 'number',
+    'initialCount must be a number',
+  );
+
+  invariant(
+    stream.initialCount >= 0,
+    'initialCount must be a positive integer',
+  );
+
+  return {
+    initialCount: stream.initialCount,
+    label: typeof stream.label === 'string' ? stream.label : undefined,
+  };
+}
+
+/**
  * Complete a async iterator value by completing the result and calling
  * recursively until all the results are completed.
  */
@@ -807,9 +861,30 @@ function completeAsyncIteratorValue(
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): Promise<ReadonlyArray<unknown>> {
   let containsPromise = false;
-  const errors = exeContext.errors;
+  const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
+  const stream = getStreamValues(exeContext, fieldNodes);
   return new Promise<ReadonlyArray<unknown>>((resolve, reject) => {
     function next(index: number, completedResults: Array<unknown>) {
+      if (
+        stream &&
+        typeof stream.initialCount === 'number' &&
+        index >= stream.initialCount
+      ) {
+        executeStreamIterator(
+          index,
+          iterator,
+          exeContext,
+          fieldNodes,
+          info,
+          itemType,
+          path,
+          stream.label,
+          asyncPayloadRecord,
+        );
+        resolve(completedResults);
+        return;
+      }
+
       const fieldPath = addPath(path, index, undefined);
       iterator
         .next()
@@ -904,15 +979,39 @@ function completeListValue(
     );
   }
 
+  const stream = getStreamValues(exeContext, fieldNodes);
+
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
-  const completedResults = Array.from(result, (item, index) => {
+  let previousAsyncPayloadRecord = asyncPayloadRecord;
+  const completedResults = [];
+  let index = 0;
+  for (const item of result) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = addPath(path, index, undefined);
     try {
       let completedItem;
+
+      if (
+        stream &&
+        typeof stream.initialCount === 'number' &&
+        index >= stream.initialCount
+      ) {
+        previousAsyncPayloadRecord = executeStreamField(
+          itemPath,
+          item,
+          exeContext,
+          fieldNodes,
+          info,
+          itemType,
+          stream.label,
+          previousAsyncPayloadRecord,
+        );
+        index++;
+        continue;
+      }
       if (isPromise(item)) {
         completedItem = item.then((resolved) =>
           completeValue(
@@ -941,21 +1040,25 @@ function completeListValue(
         containsPromise = true;
         // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
-        return completedItem.then(undefined, (rawError) => {
-          const error = locatedError(
-            rawError,
-            fieldNodes,
-            pathToArray(itemPath),
-          );
-          return handleFieldError(error, itemType, errors);
-        });
+        completedResults.push(
+          completedItem.then(undefined, (rawError) => {
+            const error = locatedError(
+              rawError,
+              fieldNodes,
+              pathToArray(itemPath),
+            );
+            return handleFieldError(error, itemType, errors);
+          }),
+        );
+      } else {
+        completedResults.push(completedItem);
       }
-      return completedItem;
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      return handleFieldError(error, itemType, errors);
+      completedResults.push(handleFieldError(error, itemType, errors));
     }
-  });
+    index++;
+  }
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }
@@ -1320,12 +1423,140 @@ function executeDeferredFragment(
       }
       return data;
     })
-    .then(null, (e) => {
+    .catch((e) => {
       asyncPayloadRecord.errors.push(e);
       return null;
     });
   asyncPayloadRecord.addDataPromise(dataPromise);
   exeContext.subsequentPayloads.push(asyncPayloadRecord);
+}
+
+function executeStreamField(
+  path: Path,
+  promiseOrData: PromiseOrValue<unknown>,
+  exeContext: ExecutionContext,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  itemType: GraphQLOutputType,
+  label?: string,
+  parentContext?: AsyncPayloadRecord,
+): AsyncPayloadRecord {
+  const asyncPayloadRecord = new AsyncPayloadRecord({ label, path });
+  const dataPromise: Promise<unknown> = Promise.resolve(promiseOrData)
+    .then((resolved) =>
+      completeValue(
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        path,
+        resolved,
+        asyncPayloadRecord,
+      ),
+    )
+    // Note: we don't rely on a `catch` method, but we do expect "thenable"
+    // to take a second callback for the error case.
+    .then(undefined, (rawError) => {
+      const error = locatedError(rawError, fieldNodes, pathToArray(path));
+      return handleFieldError(error, itemType, asyncPayloadRecord.errors);
+    })
+    .then((data) => {
+      if (parentContext?.dataPromise) {
+        return parentContext.dataPromise.then(() => data);
+      }
+      return data;
+    })
+    .catch((error) => {
+      asyncPayloadRecord.errors.push(error);
+      return null;
+    });
+  asyncPayloadRecord.addDataPromise(dataPromise);
+  exeContext.subsequentPayloads.push(asyncPayloadRecord);
+  return asyncPayloadRecord;
+}
+
+function executeStreamIterator(
+  initialIndex: number,
+  iterator: AsyncIterator<unknown>,
+  exeContext: ExecutionContext,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  itemType: GraphQLOutputType,
+  path?: Path,
+  label?: string,
+  parentContext?: AsyncPayloadRecord,
+): void {
+  const subsequentPayloads = exeContext.subsequentPayloads;
+  function next(index: number) {
+    const fieldPath = addPath(path, index, undefined);
+    const asyncPayloadRecord = new AsyncPayloadRecord({
+      label,
+      path: fieldPath,
+    });
+    const dataPromise: Promise<unknown> = iterator
+      .next()
+      .then(
+        ({ value: data, done }) => {
+          if (done) {
+            asyncPayloadRecord.setIsCompletedIterator();
+            return null;
+          }
+
+          try {
+            const completedItem = completeValue(
+              exeContext,
+              itemType,
+              fieldNodes,
+              info,
+              fieldPath,
+              data,
+              asyncPayloadRecord,
+            );
+
+            if (isPromise(completedItem)) {
+              return completedItem.then((resolveItem) => {
+                next(index + 1);
+                return resolveItem;
+              });
+            }
+
+            next(index + 1);
+            return completedItem;
+          } catch (rawError) {
+            const error = locatedError(
+              rawError,
+              fieldNodes,
+              pathToArray(fieldPath),
+            );
+            handleFieldError(error, itemType, asyncPayloadRecord.errors);
+            next(index + 1);
+            return null;
+          }
+        },
+        (rawError) => {
+          const error = locatedError(
+            rawError,
+            fieldNodes,
+            pathToArray(fieldPath),
+          );
+          handleFieldError(error, itemType, asyncPayloadRecord.errors);
+          return null;
+        },
+      )
+      .then((data) => {
+        if (parentContext?.dataPromise) {
+          return parentContext.dataPromise.then(() => data);
+        }
+        return data;
+      })
+      .catch((error) => {
+        asyncPayloadRecord.errors.push(error);
+        return null;
+      });
+    asyncPayloadRecord.addDataPromise(dataPromise);
+    subsequentPayloads.push(asyncPayloadRecord);
+  }
+  next(initialIndex);
 }
 
 function yieldSubsequentPayloads(
@@ -1335,6 +1566,15 @@ function yieldSubsequentPayloads(
   let _hasReturnedInitialResult = false;
 
   function race(): Promise<IteratorResult<AsyncExecutionResult>> {
+    if (exeContext.subsequentPayloads.length === 0) {
+      // async iterable resolver just finished and no more pending payloads
+      return Promise.resolve({
+        value: {
+          hasNext: false,
+        },
+        done: false,
+      });
+    }
     return new Promise((resolve) => {
       let resolved = false;
       exeContext.subsequentPayloads.forEach((asyncPayloadRecord) => {
@@ -1350,6 +1590,12 @@ function yieldSubsequentPayloads(
             exeContext.subsequentPayloads.indexOf(asyncPayloadRecord);
           exeContext.subsequentPayloads.splice(index, 1);
 
+          if (asyncPayloadRecord.isCompletedIterator) {
+            // async iterable resolver just finished but there may be pending payloads
+            // return the next one
+            resolve(race());
+            return;
+          }
           const returnValue: ExecutionPatchResult = {
             data,
             path: asyncPayloadRecord.path
@@ -1394,7 +1640,6 @@ function yieldSubsequentPayloads(
     // TODO: implement return & throw
     return: /* istanbul ignore next: will be covered in follow up */ () =>
       Promise.resolve({ value: undefined, done: true }),
-
     throw: /* istanbul ignore next: will be covered in follow up */ (
       error?: unknown,
     ) => Promise.reject(error),
@@ -1405,14 +1650,19 @@ class AsyncPayloadRecord {
   errors: Array<GraphQLError>;
   label?: string;
   path?: Path;
-  dataPromise?: Promise<ObjMap<unknown> | null | undefined>;
+  dataPromise?: Promise<unknown | null | undefined>;
+  isCompletedIterator?: boolean;
   constructor(opts: { label?: string; path?: Path }) {
     this.label = opts.label;
     this.path = opts.path;
     this.errors = [];
   }
 
-  addDataPromise(promise: Promise<ObjMap<unknown> | null | undefined>) {
+  addDataPromise(promise: Promise<unknown | null | undefined>) {
     this.dataPromise = promise;
+  }
+
+  setIsCompletedIterator() {
+    this.isCompletedIterator = true;
   }
 }
