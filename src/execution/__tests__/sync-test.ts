@@ -45,6 +45,7 @@ describe('Execute: synchronously when possible', () => {
         },
       },
     }),
+    enableDeferStream: true,
   });
 
   it('does not return a Promise for initial errors', () => {
@@ -105,6 +106,24 @@ describe('Execute: synchronously when possible', () => {
 
     it('throws if encountering async execution', () => {
       const doc = 'query Example { syncField, asyncField }';
+      expect(() => {
+        executeSync({
+          schema,
+          document: parse(doc),
+          rootValue: 'rootValue',
+        });
+      }).to.throw('GraphQL execution failed to complete synchronously.');
+    });
+
+    it('throws if encountering async iterable execution', () => {
+      const doc = `
+        query Example {
+          ...deferFrag @defer(label: "deferLabel")
+        }
+        fragment deferFrag on Query {
+          syncField
+        }
+      `;
       expect(() => {
         executeSync({
           schema,
