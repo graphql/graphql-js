@@ -5,11 +5,11 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.valueFromAST = valueFromAST;
 
-var _keyMap = require('../jsutils/keyMap.js');
-
 var _inspect = require('../jsutils/inspect.js');
 
 var _invariant = require('../jsutils/invariant.js');
+
+var _keyMap = require('../jsutils/keyMap.js');
 
 var _kinds = require('../language/kinds.js');
 

@@ -11,11 +11,11 @@ var _invariant = require('../../jsutils/invariant.js');
 
 var _GraphQLError = require('../../error/GraphQLError.js');
 
-var _kinds = require('../../language/kinds.js');
-
 var _ast = require('../../language/ast.js');
 
 var _directiveLocation = require('../../language/directiveLocation.js');
+
+var _kinds = require('../../language/kinds.js');
 
 var _directives = require('../../type/directives.js');
 

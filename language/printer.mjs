@@ -1,6 +1,6 @@
-import { visit } from './visitor.mjs';
 import { printBlockString } from './blockString.mjs';
 import { printString } from './printString.mjs';
+import { visit } from './visitor.mjs';
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.

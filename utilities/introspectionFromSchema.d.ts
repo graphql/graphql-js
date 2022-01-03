@@ -1,7 +1,7 @@
 import type { GraphQLSchema } from '../type/schema';
 import type {
-  IntrospectionQuery,
   IntrospectionOptions,
+  IntrospectionQuery,
 } from './getIntrospectionQuery';
 /**
  * Build an IntrospectionQuery from a GraphQLSchema

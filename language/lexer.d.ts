@@ -1,5 +1,5 @@
-import type { Source } from './source';
 import { Token } from './ast';
+import type { Source } from './source';
 import { TokenKind } from './tokenKind';
 /**
  * Given a Source object, creates a Lexer for that source.

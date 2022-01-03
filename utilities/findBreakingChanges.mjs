@@ -1,23 +1,23 @@
-import { keyMap } from '../jsutils/keyMap.mjs';
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
+import { keyMap } from '../jsutils/keyMap.mjs';
 import { naturalCompare } from '../jsutils/naturalCompare.mjs';
 import { print } from '../language/printer.mjs';
 import { visit } from '../language/visitor.mjs';
-import { isSpecifiedScalarType } from '../type/scalars.mjs';
 import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
-  isNonNullType,
+  isInterfaceType,
   isListType,
   isNamedType,
+  isNonNullType,
+  isObjectType,
   isRequiredArgument,
   isRequiredInputField,
+  isScalarType,
+  isUnionType,
 } from '../type/definition.mjs';
+import { isSpecifiedScalarType } from '../type/scalars.mjs';
 import { astFromValue } from './astFromValue.mjs';
 export let BreakingChangeType;
 

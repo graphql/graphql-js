@@ -1,14 +1,13 @@
-import { keyMap } from '../jsutils/keyMap.mjs';
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
+import { keyMap } from '../jsutils/keyMap.mjs';
 import { Kind } from '../language/kinds.mjs';
 import {
-  isLeafType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
 } from '../type/definition.mjs';
-
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -29,6 +28,7 @@ import {
  * | NullValue            | null          |
  *
  */
+
 export function valueFromAST(valueNode, type, variables) {
   if (!valueNode) {
     // When there is no node, then there is also no value.

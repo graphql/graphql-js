@@ -11,9 +11,9 @@ var _GraphQLError = require('../../error/GraphQLError.js');
 
 var _definition = require('../../type/definition.js');
 
-var _typeFromAST = require('../../utilities/typeFromAST.js');
-
 var _typeComparators = require('../../utilities/typeComparators.js');
+
+var _typeFromAST = require('../../utilities/typeFromAST.js');
 
 /**
  * Possible fragment spread

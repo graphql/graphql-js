@@ -1,15 +1,15 @@
+import { didYouMean } from '../jsutils/didYouMean.mjs';
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
-import { didYouMean } from '../jsutils/didYouMean.mjs';
-import { isObjectLike } from '../jsutils/isObjectLike.mjs';
-import { suggestionList } from '../jsutils/suggestionList.mjs';
-import { printPathArray } from '../jsutils/printPathArray.mjs';
-import { addPath, pathToArray } from '../jsutils/Path.mjs';
 import { isIterableObject } from '../jsutils/isIterableObject.mjs';
+import { isObjectLike } from '../jsutils/isObjectLike.mjs';
+import { addPath, pathToArray } from '../jsutils/Path.mjs';
+import { printPathArray } from '../jsutils/printPathArray.mjs';
+import { suggestionList } from '../jsutils/suggestionList.mjs';
 import { GraphQLError } from '../error/GraphQLError.mjs';
 import {
-  isLeafType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
 } from '../type/definition.mjs';

@@ -7,11 +7,11 @@ exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 exports.findBreakingChanges = findBreakingChanges;
 exports.findDangerousChanges = findDangerousChanges;
 
-var _keyMap = require('../jsutils/keyMap.js');
-
 var _inspect = require('../jsutils/inspect.js');
 
 var _invariant = require('../jsutils/invariant.js');
+
+var _keyMap = require('../jsutils/keyMap.js');
 
 var _naturalCompare = require('../jsutils/naturalCompare.js');
 
@@ -19,9 +19,9 @@ var _printer = require('../language/printer.js');
 
 var _visitor = require('../language/visitor.js');
 
-var _scalars = require('../type/scalars.js');
-
 var _definition = require('../type/definition.js');
+
+var _scalars = require('../type/scalars.js');
 
 var _astFromValue = require('./astFromValue.js');
 

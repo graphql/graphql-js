@@ -1,9 +1,9 @@
 import { inspect } from '../../jsutils/inspect.mjs';
 import { invariant } from '../../jsutils/invariant.mjs';
 import { GraphQLError } from '../../error/GraphQLError.mjs';
-import { Kind } from '../../language/kinds.mjs';
 import { OperationTypeNode } from '../../language/ast.mjs';
 import { DirectiveLocation } from '../../language/directiveLocation.mjs';
+import { Kind } from '../../language/kinds.mjs';
 import { specifiedDirectives } from '../../type/directives.mjs';
 
 /**

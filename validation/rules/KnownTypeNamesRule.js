@@ -13,9 +13,9 @@ var _GraphQLError = require('../../error/GraphQLError.js');
 
 var _predicates = require('../../language/predicates.js');
 
-var _scalars = require('../../type/scalars.js');
-
 var _introspection = require('../../type/introspection.js');
+
+var _scalars = require('../../type/scalars.js');
 
 /**
  * Known type names

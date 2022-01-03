@@ -1,16 +1,16 @@
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
-import { isObjectLike } from '../jsutils/isObjectLike.mjs';
 import { isIterableObject } from '../jsutils/isIterableObject.mjs';
+import { isObjectLike } from '../jsutils/isObjectLike.mjs';
 import { Kind } from '../language/kinds.mjs';
-import { GraphQLID } from '../type/scalars.mjs';
 import {
-  isLeafType,
   isEnumType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
 } from '../type/definition.mjs';
+import { GraphQLID } from '../type/scalars.mjs';
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format

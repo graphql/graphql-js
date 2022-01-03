@@ -12,11 +12,11 @@ var _kinds = require('../language/kinds.js');
 
 var _parser = require('../language/parser.js');
 
-var _validate = require('../validation/validate.js');
+var _directives = require('../type/directives.js');
 
 var _schema = require('../type/schema.js');
 
-var _directives = require('../type/directives.js');
+var _validate = require('../validation/validate.js');
 
 var _extendSchema = require('./extendSchema.js');
 

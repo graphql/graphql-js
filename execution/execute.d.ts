@@ -1,23 +1,23 @@
-import type { Path } from '../jsutils/Path';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
+import type { Path } from '../jsutils/Path';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type { GraphQLFormattedError } from '../error/GraphQLError';
 import { GraphQLError } from '../error/GraphQLError';
 import type {
   DocumentNode,
-  OperationDefinitionNode,
   FieldNode,
   FragmentDefinitionNode,
+  OperationDefinitionNode,
 } from '../language/ast';
-import type { GraphQLSchema } from '../type/schema';
 import type {
-  GraphQLObjectType,
   GraphQLField,
   GraphQLFieldResolver,
+  GraphQLObjectType,
   GraphQLResolveInfo,
   GraphQLTypeResolver,
 } from '../type/definition';
+import type { GraphQLSchema } from '../type/schema';
 /**
  * Terminology
  *

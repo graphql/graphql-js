@@ -1,22 +1,22 @@
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
+import { isPrintableAsBlockString } from '../language/blockString.mjs';
 import { Kind } from '../language/kinds.mjs';
 import { print } from '../language/printer.mjs';
-import { isPrintableAsBlockString } from '../language/blockString.mjs';
-import { isIntrospectionType } from '../type/introspection.mjs';
-import { isSpecifiedScalarType } from '../type/scalars.mjs';
+import {
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../type/definition.mjs';
 import {
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
 } from '../type/directives.mjs';
-import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
-  isEnumType,
-  isInputObjectType,
-} from '../type/definition.mjs';
+import { isIntrospectionType } from '../type/introspection.mjs';
+import { isSpecifiedScalarType } from '../type/scalars.mjs';
 import { astFromValue } from './astFromValue.mjs';
 export function printSchema(schema) {
   return printFilteredSchema(

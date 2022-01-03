@@ -1,6 +1,5 @@
 import { keyValMap } from '../jsutils/keyValMap.mjs';
 import { Kind } from '../language/kinds.mjs';
-
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -17,6 +16,7 @@ import { Kind } from '../language/kinds.mjs';
  * | Null                 | null             |
  *
  */
+
 export function valueFromASTUntyped(valueNode, variables) {
   switch (valueNode.kind) {
     case Kind.NULL:

@@ -1,17 +1,17 @@
-import { keyMap } from '../../jsutils/keyMap.mjs';
-import { inspect } from '../../jsutils/inspect.mjs';
 import { didYouMean } from '../../jsutils/didYouMean.mjs';
+import { inspect } from '../../jsutils/inspect.mjs';
+import { keyMap } from '../../jsutils/keyMap.mjs';
 import { suggestionList } from '../../jsutils/suggestionList.mjs';
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import { print } from '../../language/printer.mjs';
 import {
-  isLeafType,
+  getNamedType,
+  getNullableType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
   isRequiredInputField,
-  getNullableType,
-  getNamedType,
 } from '../../type/definition.mjs';
 
 /**

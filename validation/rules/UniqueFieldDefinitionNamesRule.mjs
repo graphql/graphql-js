@@ -1,8 +1,8 @@
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import {
-  isObjectType,
-  isInterfaceType,
   isInputObjectType,
+  isInterfaceType,
+  isObjectType,
 } from '../../type/definition.mjs';
 
 /**

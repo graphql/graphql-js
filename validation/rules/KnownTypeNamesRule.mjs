@@ -6,8 +6,8 @@ import {
   isTypeSystemDefinitionNode,
   isTypeSystemExtensionNode,
 } from '../../language/predicates.mjs';
-import { specifiedScalarTypes } from '../../type/scalars.mjs';
 import { introspectionTypes } from '../../type/introspection.mjs';
+import { specifiedScalarTypes } from '../../type/scalars.mjs';
 
 /**
  * Known type names

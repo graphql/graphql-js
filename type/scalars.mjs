@@ -1,8 +1,8 @@
 import { inspect } from '../jsutils/inspect.mjs';
 import { isObjectLike } from '../jsutils/isObjectLike.mjs';
+import { GraphQLError } from '../error/GraphQLError.mjs';
 import { Kind } from '../language/kinds.mjs';
 import { print } from '../language/printer.mjs';
-import { GraphQLError } from '../error/GraphQLError.mjs';
 import { GraphQLScalarType } from './definition.mjs';
 /**
  * Maximum possible Int value as per GraphQL Spec (32-bit signed integer).

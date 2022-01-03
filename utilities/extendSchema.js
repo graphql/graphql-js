@@ -6,33 +6,33 @@ Object.defineProperty(exports, '__esModule', {
 exports.extendSchema = extendSchema;
 exports.extendSchemaImpl = extendSchemaImpl;
 
-var _keyMap = require('../jsutils/keyMap.js');
+var _devAssert = require('../jsutils/devAssert.js');
 
 var _inspect = require('../jsutils/inspect.js');
 
-var _mapValue = require('../jsutils/mapValue.js');
-
 var _invariant = require('../jsutils/invariant.js');
 
-var _devAssert = require('../jsutils/devAssert.js');
+var _keyMap = require('../jsutils/keyMap.js');
+
+var _mapValue = require('../jsutils/mapValue.js');
 
 var _kinds = require('../language/kinds.js');
 
 var _predicates = require('../language/predicates.js');
 
-var _validate = require('../validation/validate.js');
-
-var _values = require('../execution/values.js');
-
-var _schema = require('../type/schema.js');
-
-var _scalars = require('../type/scalars.js');
-
-var _introspection = require('../type/introspection.js');
+var _definition = require('../type/definition.js');
 
 var _directives = require('../type/directives.js');
 
-var _definition = require('../type/definition.js');
+var _introspection = require('../type/introspection.js');
+
+var _scalars = require('../type/scalars.js');
+
+var _schema = require('../type/schema.js');
+
+var _validate = require('../validation/validate.js');
+
+var _values = require('../execution/values.js');
 
 var _valueFromAST = require('./valueFromAST.js');
 

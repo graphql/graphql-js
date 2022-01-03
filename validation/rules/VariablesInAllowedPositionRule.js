@@ -13,9 +13,9 @@ var _kinds = require('../../language/kinds.js');
 
 var _definition = require('../../type/definition.js');
 
-var _typeFromAST = require('../../utilities/typeFromAST.js');
-
 var _typeComparators = require('../../utilities/typeComparators.js');
+
+var _typeFromAST = require('../../utilities/typeFromAST.js');
 
 /**
  * Variables in allowed position

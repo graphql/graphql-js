@@ -1,27 +1,27 @@
-import { inspect } from '../jsutils/inspect.mjs';
 import { devAssert } from '../jsutils/devAssert.mjs';
-import { keyValMap } from '../jsutils/keyValMap.mjs';
+import { inspect } from '../jsutils/inspect.mjs';
 import { isObjectLike } from '../jsutils/isObjectLike.mjs';
+import { keyValMap } from '../jsutils/keyValMap.mjs';
 import { parseValue } from '../language/parser.mjs';
-import { GraphQLSchema } from '../type/schema.mjs';
-import { GraphQLDirective } from '../type/directives.mjs';
-import { specifiedScalarTypes } from '../type/scalars.mjs';
-import { introspectionTypes, TypeKind } from '../type/introspection.mjs';
 import {
-  isInputType,
-  isOutputType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
+  assertInterfaceType,
   assertNullableType,
   assertObjectType,
-  assertInterfaceType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
+  isInputType,
+  isOutputType,
 } from '../type/definition.mjs';
+import { GraphQLDirective } from '../type/directives.mjs';
+import { introspectionTypes, TypeKind } from '../type/introspection.mjs';
+import { specifiedScalarTypes } from '../type/scalars.mjs';
+import { GraphQLSchema } from '../type/schema.mjs';
 import { valueFromAST } from './valueFromAST.mjs';
 /**
  * Build a GraphQLSchema for use by client tools.

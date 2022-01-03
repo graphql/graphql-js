@@ -1,35 +1,35 @@
-import { inspect } from '../jsutils/inspect.mjs';
-import { memoize3 } from '../jsutils/memoize3.mjs';
-import { invariant } from '../jsutils/invariant.mjs';
 import { devAssert } from '../jsutils/devAssert.mjs';
-import { isPromise } from '../jsutils/isPromise.mjs';
-import { isObjectLike } from '../jsutils/isObjectLike.mjs';
-import { promiseReduce } from '../jsutils/promiseReduce.mjs';
-import { promiseForObject } from '../jsutils/promiseForObject.mjs';
-import { addPath, pathToArray } from '../jsutils/Path.mjs';
+import { inspect } from '../jsutils/inspect.mjs';
+import { invariant } from '../jsutils/invariant.mjs';
 import { isIterableObject } from '../jsutils/isIterableObject.mjs';
+import { isObjectLike } from '../jsutils/isObjectLike.mjs';
+import { isPromise } from '../jsutils/isPromise.mjs';
+import { memoize3 } from '../jsutils/memoize3.mjs';
+import { addPath, pathToArray } from '../jsutils/Path.mjs';
+import { promiseForObject } from '../jsutils/promiseForObject.mjs';
+import { promiseReduce } from '../jsutils/promiseReduce.mjs';
 import { GraphQLError } from '../error/GraphQLError.mjs';
 import { locatedError } from '../error/locatedError.mjs';
 import { OperationTypeNode } from '../language/ast.mjs';
 import { Kind } from '../language/kinds.mjs';
-import { assertValidSchema } from '../type/validate.mjs';
+import {
+  isAbstractType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+} from '../type/definition.mjs';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection.mjs';
-import {
-  isObjectType,
-  isAbstractType,
-  isLeafType,
-  isListType,
-  isNonNullType,
-} from '../type/definition.mjs';
-import { getVariableValues, getArgumentValues } from './values.mjs';
+import { assertValidSchema } from '../type/validate.mjs';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.mjs';
+import { getArgumentValues, getVariableValues } from './values.mjs';
 /**
  * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which

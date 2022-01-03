@@ -1,24 +1,19 @@
-import { inspect } from '../jsutils/inspect.mjs';
-import { keyMap } from '../jsutils/keyMap.mjs';
-import { mapValue } from '../jsutils/mapValue.mjs';
-import { toObjMap } from '../jsutils/toObjMap.mjs';
 import { devAssert } from '../jsutils/devAssert.mjs';
-import { keyValMap } from '../jsutils/keyValMap.mjs';
-import { instanceOf } from '../jsutils/instanceOf.mjs';
 import { didYouMean } from '../jsutils/didYouMean.mjs';
-import { isObjectLike } from '../jsutils/isObjectLike.mjs';
 import { identityFunc } from '../jsutils/identityFunc.mjs';
+import { inspect } from '../jsutils/inspect.mjs';
+import { instanceOf } from '../jsutils/instanceOf.mjs';
+import { isObjectLike } from '../jsutils/isObjectLike.mjs';
+import { keyMap } from '../jsutils/keyMap.mjs';
+import { keyValMap } from '../jsutils/keyValMap.mjs';
+import { mapValue } from '../jsutils/mapValue.mjs';
 import { suggestionList } from '../jsutils/suggestionList.mjs';
+import { toObjMap } from '../jsutils/toObjMap.mjs';
 import { GraphQLError } from '../error/GraphQLError.mjs';
 import { Kind } from '../language/kinds.mjs';
 import { print } from '../language/printer.mjs';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.mjs';
-import { assertName, assertEnumValueName } from './assertName.mjs'; // Predicates & Assertions
-
-/**
- * These are all of the possible kinds of types.
- */
-
+import { assertEnumValueName, assertName } from './assertName.mjs';
 export function isType(type) {
   return (
     isScalarType(type) ||

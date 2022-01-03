@@ -7,9 +7,9 @@ exports.getArgumentValues = getArgumentValues;
 exports.getDirectiveValues = getDirectiveValues;
 exports.getVariableValues = getVariableValues;
 
-var _keyMap = require('../jsutils/keyMap.js');
-
 var _inspect = require('../jsutils/inspect.js');
+
+var _keyMap = require('../jsutils/keyMap.js');
 
 var _printPathArray = require('../jsutils/printPathArray.js');
 
@@ -21,11 +21,11 @@ var _printer = require('../language/printer.js');
 
 var _definition = require('../type/definition.js');
 
+var _coerceInputValue = require('../utilities/coerceInputValue.js');
+
 var _typeFromAST = require('../utilities/typeFromAST.js');
 
 var _valueFromAST = require('../utilities/valueFromAST.js');
-
-var _coerceInputValue = require('../utilities/coerceInputValue.js');
 
 /**
  * Prepares an object map of variableValues of the correct type based on the

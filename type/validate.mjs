@@ -2,22 +2,22 @@ import { inspect } from '../jsutils/inspect.mjs';
 import { GraphQLError } from '../error/GraphQLError.mjs';
 import { OperationTypeNode } from '../language/ast.mjs';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.mjs';
-import { assertSchema } from './schema.mjs';
-import { isIntrospectionType } from './introspection.mjs';
-import { isDirective, GraphQLDeprecatedDirective } from './directives.mjs';
 import {
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInputType,
+  isInterfaceType,
   isNamedType,
   isNonNullType,
-  isInputType,
+  isObjectType,
   isOutputType,
   isRequiredArgument,
   isRequiredInputField,
+  isUnionType,
 } from './definition.mjs';
+import { GraphQLDeprecatedDirective, isDirective } from './directives.mjs';
+import { isIntrospectionType } from './introspection.mjs';
+import { assertSchema } from './schema.mjs';
 /**
  * Implements the "Type Validation" sub-sections of the specification's
  * "Type System" section.

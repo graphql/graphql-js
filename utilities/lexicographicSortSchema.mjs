@@ -2,26 +2,26 @@ import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
 import { keyValMap } from '../jsutils/keyValMap.mjs';
 import { naturalCompare } from '../jsutils/naturalCompare.mjs';
-import { GraphQLSchema } from '../type/schema.mjs';
-import { GraphQLDirective } from '../type/directives.mjs';
-import { isIntrospectionType } from '../type/introspection.mjs';
 import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLInterfaceType,
   GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  isListType,
-  isNonNullType,
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
 } from '../type/definition.mjs';
+import { GraphQLDirective } from '../type/directives.mjs';
+import { isIntrospectionType } from '../type/introspection.mjs';
+import { GraphQLSchema } from '../type/schema.mjs';
 /**
  * Sort GraphQLSchema.
  *

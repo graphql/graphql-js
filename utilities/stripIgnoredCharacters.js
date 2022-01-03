@@ -5,13 +5,13 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.stripIgnoredCharacters = stripIgnoredCharacters;
 
-var _source = require('../language/source.js');
-
-var _tokenKind = require('../language/tokenKind.js');
+var _blockString = require('../language/blockString.js');
 
 var _lexer = require('../language/lexer.js');
 
-var _blockString = require('../language/blockString.js');
+var _source = require('../language/source.js');
+
+var _tokenKind = require('../language/tokenKind.js');
 
 /**
  * Strips characters that are not significant to the validity or execution

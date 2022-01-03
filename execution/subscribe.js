@@ -6,9 +6,9 @@ Object.defineProperty(exports, '__esModule', {
 exports.createSourceEventStream = createSourceEventStream;
 exports.subscribe = subscribe;
 
-var _inspect = require('../jsutils/inspect.js');
-
 var _devAssert = require('../jsutils/devAssert.js');
+
+var _inspect = require('../jsutils/inspect.js');
 
 var _isAsyncIterable = require('../jsutils/isAsyncIterable.js');
 
@@ -20,11 +20,11 @@ var _locatedError = require('../error/locatedError.js');
 
 var _collectFields = require('./collectFields.js');
 
-var _values = require('./values.js');
-
 var _execute = require('./execute.js');
 
 var _mapAsyncIterator = require('./mapAsyncIterator.js');
+
+var _values = require('./values.js');
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.

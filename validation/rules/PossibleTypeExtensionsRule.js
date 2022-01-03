@@ -5,11 +5,11 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.PossibleTypeExtensionsRule = PossibleTypeExtensionsRule;
 
+var _didYouMean = require('../../jsutils/didYouMean.js');
+
 var _inspect = require('../../jsutils/inspect.js');
 
 var _invariant = require('../../jsutils/invariant.js');
-
-var _didYouMean = require('../../jsutils/didYouMean.js');
 
 var _suggestionList = require('../../jsutils/suggestionList.js');
 

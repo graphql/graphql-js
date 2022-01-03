@@ -1,8 +1,8 @@
 import { devAssert } from './jsutils/devAssert.mjs';
 import { isPromise } from './jsutils/isPromise.mjs';
 import { parse } from './language/parser.mjs';
-import { validate } from './validation/validate.mjs';
 import { validateSchema } from './type/validate.mjs';
+import { validate } from './validation/validate.mjs';
 import { execute } from './execution/execute.mjs';
 /**
  * This is the primary entry point function for fulfilling GraphQL operations

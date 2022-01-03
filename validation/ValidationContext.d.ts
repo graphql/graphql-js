@@ -1,24 +1,24 @@
 import type { Maybe } from '../jsutils/Maybe';
 import type { GraphQLError } from '../error/GraphQLError';
-import type { ASTVisitor } from '../language/visitor';
 import type {
   DocumentNode,
-  OperationDefinitionNode,
-  VariableNode,
-  SelectionSetNode,
-  FragmentSpreadNode,
   FragmentDefinitionNode,
+  FragmentSpreadNode,
+  OperationDefinitionNode,
+  SelectionSetNode,
+  VariableNode,
 } from '../language/ast';
-import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLDirective } from '../type/directives';
+import type { ASTVisitor } from '../language/visitor';
 import type {
+  GraphQLArgument,
+  GraphQLCompositeType,
+  GraphQLEnumValue,
+  GraphQLField,
   GraphQLInputType,
   GraphQLOutputType,
-  GraphQLCompositeType,
-  GraphQLField,
-  GraphQLArgument,
-  GraphQLEnumValue,
 } from '../type/definition';
+import type { GraphQLDirective } from '../type/directives';
+import type { GraphQLSchema } from '../type/schema';
 import { TypeInfo } from '../utilities/TypeInfo';
 declare type NodeWithSelectionSet =
   | OperationDefinitionNode

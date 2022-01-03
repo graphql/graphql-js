@@ -5,25 +5,25 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.buildClientSchema = buildClientSchema;
 
-var _inspect = require('../jsutils/inspect.js');
-
 var _devAssert = require('../jsutils/devAssert.js');
 
-var _keyValMap = require('../jsutils/keyValMap.js');
+var _inspect = require('../jsutils/inspect.js');
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
 
+var _keyValMap = require('../jsutils/keyValMap.js');
+
 var _parser = require('../language/parser.js');
 
-var _schema = require('../type/schema.js');
+var _definition = require('../type/definition.js');
 
 var _directives = require('../type/directives.js');
 
-var _scalars = require('../type/scalars.js');
-
 var _introspection = require('../type/introspection.js');
 
-var _definition = require('../type/definition.js');
+var _scalars = require('../type/scalars.js');
+
+var _schema = require('../type/schema.js');
 
 var _valueFromAST = require('./valueFromAST.js');
 

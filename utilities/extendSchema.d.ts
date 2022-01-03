@@ -1,7 +1,7 @@
 import type { DocumentNode } from '../language/ast';
 import type {
-  GraphQLSchemaValidationOptions,
   GraphQLSchemaNormalizedConfig,
+  GraphQLSchemaValidationOptions,
 } from '../type/schema';
 import { GraphQLSchema } from '../type/schema';
 interface Options extends GraphQLSchemaValidationOptions {

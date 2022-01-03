@@ -9,15 +9,15 @@ var _inspect = require('../jsutils/inspect.js');
 
 var _invariant = require('../jsutils/invariant.js');
 
-var _isObjectLike = require('../jsutils/isObjectLike.js');
-
 var _isIterableObject = require('../jsutils/isIterableObject.js');
+
+var _isObjectLike = require('../jsutils/isObjectLike.js');
 
 var _kinds = require('../language/kinds.js');
 
-var _scalars = require('../type/scalars.js');
-
 var _definition = require('../type/definition.js');
+
+var _scalars = require('../type/scalars.js');
 
 /**
  * Produces a GraphQL Value AST given a JavaScript object.

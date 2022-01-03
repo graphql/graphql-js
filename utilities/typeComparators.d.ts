@@ -1,5 +1,5 @@
+import type { GraphQLCompositeType, GraphQLType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLType, GraphQLCompositeType } from '../type/definition';
 /**
  * Provided two types, return true if the types are equal (invariant).
  */

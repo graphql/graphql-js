@@ -6,9 +6,9 @@ Object.defineProperty(exports, '__esModule', {
 exports.TypeInfo = void 0;
 exports.visitWithTypeInfo = visitWithTypeInfo;
 
-var _kinds = require('../language/kinds.js');
-
 var _ast = require('../language/ast.js');
+
+var _kinds = require('../language/kinds.js');
 
 var _visitor = require('../language/visitor.js');
 

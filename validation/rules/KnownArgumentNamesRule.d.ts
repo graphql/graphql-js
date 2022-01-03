@@ -1,7 +1,7 @@
 import type { ASTVisitor } from '../../language/visitor';
 import type {
-  ValidationContext,
   SDLValidationContext,
+  ValidationContext,
 } from '../ValidationContext';
 /**
  * Known argument names

@@ -1,9 +1,9 @@
 import { devAssert } from '../jsutils/devAssert.mjs';
 import { Kind } from '../language/kinds.mjs';
 import { parse } from '../language/parser.mjs';
-import { assertValidSDL } from '../validation/validate.mjs';
-import { GraphQLSchema } from '../type/schema.mjs';
 import { specifiedDirectives } from '../type/directives.mjs';
+import { GraphQLSchema } from '../type/schema.mjs';
+import { assertValidSDL } from '../validation/validate.mjs';
 import { extendSchemaImpl } from './extendSchema.mjs';
 
 /**

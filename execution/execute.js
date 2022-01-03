@@ -11,25 +11,25 @@ exports.execute = execute;
 exports.executeSync = executeSync;
 exports.getFieldDef = getFieldDef;
 
-var _inspect = require('../jsutils/inspect.js');
+var _devAssert = require('../jsutils/devAssert.js');
 
-var _memoize = require('../jsutils/memoize3.js');
+var _inspect = require('../jsutils/inspect.js');
 
 var _invariant = require('../jsutils/invariant.js');
 
-var _devAssert = require('../jsutils/devAssert.js');
-
-var _isPromise = require('../jsutils/isPromise.js');
+var _isIterableObject = require('../jsutils/isIterableObject.js');
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
 
-var _promiseReduce = require('../jsutils/promiseReduce.js');
+var _isPromise = require('../jsutils/isPromise.js');
 
-var _promiseForObject = require('../jsutils/promiseForObject.js');
+var _memoize = require('../jsutils/memoize3.js');
 
 var _Path = require('../jsutils/Path.js');
 
-var _isIterableObject = require('../jsutils/isIterableObject.js');
+var _promiseForObject = require('../jsutils/promiseForObject.js');
+
+var _promiseReduce = require('../jsutils/promiseReduce.js');
 
 var _GraphQLError = require('../error/GraphQLError.js');
 
@@ -39,15 +39,15 @@ var _ast = require('../language/ast.js');
 
 var _kinds = require('../language/kinds.js');
 
-var _validate = require('../type/validate.js');
+var _definition = require('../type/definition.js');
 
 var _introspection = require('../type/introspection.js');
 
-var _definition = require('../type/definition.js');
-
-var _values = require('./values.js');
+var _validate = require('../type/validate.js');
 
 var _collectFields = require('./collectFields.js');
+
+var _values = require('./values.js');
 
 /**
  * A memoized collection of relevant subfields with regard to the return

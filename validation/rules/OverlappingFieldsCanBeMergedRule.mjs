@@ -4,11 +4,11 @@ import { Kind } from '../../language/kinds.mjs';
 import { print } from '../../language/printer.mjs';
 import {
   getNamedType,
-  isNonNullType,
-  isLeafType,
-  isObjectType,
-  isListType,
   isInterfaceType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
 } from '../../type/definition.mjs';
 import { typeFromAST } from '../../utilities/typeFromAST.mjs';
 

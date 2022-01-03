@@ -11,19 +11,19 @@ var _inspect = require('../jsutils/inspect.js');
 
 var _invariant = require('../jsutils/invariant.js');
 
+var _blockString = require('../language/blockString.js');
+
 var _kinds = require('../language/kinds.js');
 
 var _printer = require('../language/printer.js');
 
-var _blockString = require('../language/blockString.js');
+var _definition = require('../type/definition.js');
+
+var _directives = require('../type/directives.js');
 
 var _introspection = require('../type/introspection.js');
 
 var _scalars = require('../type/scalars.js');
-
-var _directives = require('../type/directives.js');
-
-var _definition = require('../type/definition.js');
 
 var _astFromValue = require('./astFromValue.js');
 

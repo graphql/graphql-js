@@ -1,8 +1,8 @@
 import { getLocation } from './location.mjs';
+
 /**
  * Render a helpful description of the location in the GraphQL Source document.
  */
-
 export function printLocation(location) {
   return printSourceLocation(
     location.source,

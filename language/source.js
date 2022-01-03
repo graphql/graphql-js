@@ -6,9 +6,9 @@ Object.defineProperty(exports, '__esModule', {
 exports.Source = void 0;
 exports.isSource = isSource;
 
-var _inspect = require('../jsutils/inspect.js');
-
 var _devAssert = require('../jsutils/devAssert.js');
+
+var _inspect = require('../jsutils/inspect.js');
 
 var _instanceOf = require('../jsutils/instanceOf.js');
 

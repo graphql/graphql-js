@@ -13,13 +13,13 @@ var _keyValMap = require('../jsutils/keyValMap.js');
 
 var _naturalCompare = require('../jsutils/naturalCompare.js');
 
-var _schema = require('../type/schema.js');
+var _definition = require('../type/definition.js');
 
 var _directives = require('../type/directives.js');
 
 var _introspection = require('../type/introspection.js');
 
-var _definition = require('../type/definition.js');
+var _schema = require('../type/schema.js');
 
 /**
  * Sort GraphQLSchema.

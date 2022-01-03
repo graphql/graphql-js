@@ -1,9 +1,9 @@
 import { Kind } from '../language/kinds.mjs';
+import { isAbstractType } from '../type/definition.mjs';
 import {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
 } from '../type/directives.mjs';
-import { isAbstractType } from '../type/definition.mjs';
 import { typeFromAST } from '../utilities/typeFromAST.mjs';
 import { getDirectiveValues } from './values.mjs';
 /**

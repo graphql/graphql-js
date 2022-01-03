@@ -1,17 +1,17 @@
+import { didYouMean } from '../../jsutils/didYouMean.mjs';
 import { inspect } from '../../jsutils/inspect.mjs';
 import { invariant } from '../../jsutils/invariant.mjs';
-import { didYouMean } from '../../jsutils/didYouMean.mjs';
 import { suggestionList } from '../../jsutils/suggestionList.mjs';
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import { Kind } from '../../language/kinds.mjs';
 import { isTypeDefinitionNode } from '../../language/predicates.mjs';
 import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
 } from '../../type/definition.mjs';
 
 /**

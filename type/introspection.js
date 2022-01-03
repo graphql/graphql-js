@@ -23,15 +23,15 @@ var _inspect = require('../jsutils/inspect.js');
 
 var _invariant = require('../jsutils/invariant.js');
 
-var _printer = require('../language/printer.js');
-
 var _directiveLocation = require('../language/directiveLocation.js');
+
+var _printer = require('../language/printer.js');
 
 var _astFromValue = require('../utilities/astFromValue.js');
 
-var _scalars = require('./scalars.js');
-
 var _definition = require('./definition.js');
+
+var _scalars = require('./scalars.js');
 
 const __Schema = new _definition.GraphQLObjectType({
   name: '__Schema',

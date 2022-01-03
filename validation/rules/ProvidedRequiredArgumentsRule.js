@@ -17,9 +17,9 @@ var _kinds = require('../../language/kinds.js');
 
 var _printer = require('../../language/printer.js');
 
-var _directives = require('../../type/directives.js');
-
 var _definition = require('../../type/definition.js');
+
+var _directives = require('../../type/directives.js');
 
 /**
  * Provided required arguments

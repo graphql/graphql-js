@@ -18,11 +18,11 @@ var _inspect = require('../jsutils/inspect.js');
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
 
+var _GraphQLError = require('../error/GraphQLError.js');
+
 var _kinds = require('../language/kinds.js');
 
 var _printer = require('../language/printer.js');
-
-var _GraphQLError = require('../error/GraphQLError.js');
 
 var _definition = require('./definition.js');
 

@@ -15,23 +15,23 @@ exports.isDirective = isDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
 exports.specifiedDirectives = void 0;
 
-var _inspect = require('../jsutils/inspect.js');
-
-var _toObjMap = require('../jsutils/toObjMap.js');
-
 var _devAssert = require('../jsutils/devAssert.js');
+
+var _inspect = require('../jsutils/inspect.js');
 
 var _instanceOf = require('../jsutils/instanceOf.js');
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
 
+var _toObjMap = require('../jsutils/toObjMap.js');
+
 var _directiveLocation = require('../language/directiveLocation.js');
 
 var _assertName = require('./assertName.js');
 
-var _scalars = require('./scalars.js');
-
 var _definition = require('./definition.js');
+
+var _scalars = require('./scalars.js');
 
 /**
  * Test if the given value is a GraphQL directive.

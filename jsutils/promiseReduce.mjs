@@ -1,4 +1,5 @@
 import { isPromise } from './isPromise.mjs';
+
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
  * a Promise, in which case reduction will continue after each promise resolves.
@@ -6,7 +7,6 @@ import { isPromise } from './isPromise.mjs';
  * If the callback does not return a Promise, then this function will also not
  * return a Promise.
  */
-
 export function promiseReduce(values, callbackFn, initialValue) {
   let accumulator = initialValue;
 

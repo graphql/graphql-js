@@ -12,9 +12,9 @@ var _isPromise = require('./jsutils/isPromise.js');
 
 var _parser = require('./language/parser.js');
 
-var _validate = require('./validation/validate.js');
+var _validate = require('./type/validate.js');
 
-var _validate2 = require('./type/validate.js');
+var _validate2 = require('./validation/validate.js');
 
 var _execute = require('./execution/execute.js');
 
@@ -57,7 +57,7 @@ function graphqlImpl(args) {
     typeResolver,
   } = args; // Validate Schema
 
-  const schemaValidationErrors = (0, _validate2.validateSchema)(schema);
+  const schemaValidationErrors = (0, _validate.validateSchema)(schema);
 
   if (schemaValidationErrors.length > 0) {
     return {
@@ -75,7 +75,7 @@ function graphqlImpl(args) {
     };
   } // Validate
 
-  const validationErrors = (0, _validate.validate)(schema, document);
+  const validationErrors = (0, _validate2.validate)(schema, document);
 
   if (validationErrors.length > 0) {
     return {

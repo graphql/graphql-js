@@ -1,17 +1,17 @@
-import { Kind } from '../language/kinds.mjs';
 import { isNode } from '../language/ast.mjs';
+import { Kind } from '../language/kinds.mjs';
 import { getEnterLeaveForKind } from '../language/visitor.mjs';
 import {
-  isObjectType,
-  isInterfaceType,
+  getNamedType,
+  getNullableType,
+  isCompositeType,
   isEnumType,
   isInputObjectType,
-  isListType,
-  isCompositeType,
   isInputType,
+  isInterfaceType,
+  isListType,
+  isObjectType,
   isOutputType,
-  getNullableType,
-  getNamedType,
 } from '../type/definition.mjs';
 import {
   SchemaMetaFieldDef,

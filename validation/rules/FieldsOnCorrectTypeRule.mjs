@@ -1,11 +1,11 @@
 import { didYouMean } from '../../jsutils/didYouMean.mjs';
-import { suggestionList } from '../../jsutils/suggestionList.mjs';
 import { naturalCompare } from '../../jsutils/naturalCompare.mjs';
+import { suggestionList } from '../../jsutils/suggestionList.mjs';
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import {
-  isObjectType,
-  isInterfaceType,
   isAbstractType,
+  isInterfaceType,
+  isObjectType,
 } from '../../type/definition.mjs';
 
 /**

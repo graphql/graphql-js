@@ -55,27 +55,27 @@ exports.isWrappingType = isWrappingType;
 exports.resolveObjMapThunk = resolveObjMapThunk;
 exports.resolveReadonlyArrayThunk = resolveReadonlyArrayThunk;
 
-var _inspect = require('../jsutils/inspect.js');
-
-var _keyMap = require('../jsutils/keyMap.js');
-
-var _mapValue = require('../jsutils/mapValue.js');
-
-var _toObjMap = require('../jsutils/toObjMap.js');
-
 var _devAssert = require('../jsutils/devAssert.js');
-
-var _keyValMap = require('../jsutils/keyValMap.js');
-
-var _instanceOf = require('../jsutils/instanceOf.js');
 
 var _didYouMean = require('../jsutils/didYouMean.js');
 
-var _isObjectLike = require('../jsutils/isObjectLike.js');
-
 var _identityFunc = require('../jsutils/identityFunc.js');
 
+var _inspect = require('../jsutils/inspect.js');
+
+var _instanceOf = require('../jsutils/instanceOf.js');
+
+var _isObjectLike = require('../jsutils/isObjectLike.js');
+
+var _keyMap = require('../jsutils/keyMap.js');
+
+var _keyValMap = require('../jsutils/keyValMap.js');
+
+var _mapValue = require('../jsutils/mapValue.js');
+
 var _suggestionList = require('../jsutils/suggestionList.js');
+
+var _toObjMap = require('../jsutils/toObjMap.js');
 
 var _GraphQLError = require('../error/GraphQLError.js');
 

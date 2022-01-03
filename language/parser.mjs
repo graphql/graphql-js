@@ -1,10 +1,10 @@
 import { syntaxError } from '../error/syntaxError.mjs';
-import { Kind } from './kinds.mjs';
 import { Location, OperationTypeNode } from './ast.mjs';
-import { TokenKind } from './tokenKind.mjs';
-import { Source, isSource } from './source.mjs';
 import { DirectiveLocation } from './directiveLocation.mjs';
-import { Lexer, isPunctuatorTokenKind } from './lexer.mjs';
+import { Kind } from './kinds.mjs';
+import { isPunctuatorTokenKind, Lexer } from './lexer.mjs';
+import { isSource, Source } from './source.mjs';
+import { TokenKind } from './tokenKind.mjs';
 /**
  * Configuration options to control parser behavior
  */

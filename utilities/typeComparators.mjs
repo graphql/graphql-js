@@ -1,14 +1,14 @@
 import {
+  isAbstractType,
   isInterfaceType,
-  isObjectType,
   isListType,
   isNonNullType,
-  isAbstractType,
+  isObjectType,
 } from '../type/definition.mjs';
+
 /**
  * Provided two types, return true if the types are equal (invariant).
  */
-
 export function isEqualType(typeA, typeB) {
   // Equivalent types are equal.
   if (typeA === typeB) {

@@ -5,11 +5,11 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.print = print;
 
-var _visitor = require('./visitor.js');
-
 var _blockString = require('./blockString.js');
 
 var _printString = require('./printString.js');
+
+var _visitor = require('./visitor.js');
 
 /**
  * Converts an AST into a string, using one set of reasonable

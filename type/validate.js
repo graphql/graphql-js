@@ -14,13 +14,13 @@ var _ast = require('../language/ast.js');
 
 var _typeComparators = require('../utilities/typeComparators.js');
 
-var _schema = require('./schema.js');
-
-var _introspection = require('./introspection.js');
+var _definition = require('./definition.js');
 
 var _directives = require('./directives.js');
 
-var _definition = require('./definition.js');
+var _introspection = require('./introspection.js');
+
+var _schema = require('./schema.js');
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's

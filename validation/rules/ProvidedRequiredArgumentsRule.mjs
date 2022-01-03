@@ -3,8 +3,8 @@ import { keyMap } from '../../jsutils/keyMap.mjs';
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import { Kind } from '../../language/kinds.mjs';
 import { print } from '../../language/printer.mjs';
+import { isRequiredArgument, isType } from '../../type/definition.mjs';
 import { specifiedDirectives } from '../../type/directives.mjs';
-import { isType, isRequiredArgument } from '../../type/definition.mjs';
 
 /**
  * Provided required arguments

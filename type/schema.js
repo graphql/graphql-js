@@ -7,23 +7,23 @@ exports.GraphQLSchema = void 0;
 exports.assertSchema = assertSchema;
 exports.isSchema = isSchema;
 
-var _inspect = require('../jsutils/inspect.js');
-
-var _toObjMap = require('../jsutils/toObjMap.js');
-
 var _devAssert = require('../jsutils/devAssert.js');
+
+var _inspect = require('../jsutils/inspect.js');
 
 var _instanceOf = require('../jsutils/instanceOf.js');
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
 
+var _toObjMap = require('../jsutils/toObjMap.js');
+
 var _ast = require('../language/ast.js');
 
-var _introspection = require('./introspection.js');
+var _definition = require('./definition.js');
 
 var _directives = require('./directives.js');
 
-var _definition = require('./definition.js');
+var _introspection = require('./introspection.js');
 
 /**
  * Test if the given value is a GraphQL schema.

@@ -1,5 +1,5 @@
-import { inspect } from '../jsutils/inspect.mjs';
 import { devAssert } from '../jsutils/devAssert.mjs';
+import { inspect } from '../jsutils/inspect.mjs';
 import { isNode, QueryDocumentKeys } from './ast.mjs';
 import { Kind } from './kinds.mjs';
 /**

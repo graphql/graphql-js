@@ -5,21 +5,21 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.coerceInputValue = coerceInputValue;
 
+var _didYouMean = require('../jsutils/didYouMean.js');
+
 var _inspect = require('../jsutils/inspect.js');
 
 var _invariant = require('../jsutils/invariant.js');
 
-var _didYouMean = require('../jsutils/didYouMean.js');
+var _isIterableObject = require('../jsutils/isIterableObject.js');
 
 var _isObjectLike = require('../jsutils/isObjectLike.js');
 
-var _suggestionList = require('../jsutils/suggestionList.js');
+var _Path = require('../jsutils/Path.js');
 
 var _printPathArray = require('../jsutils/printPathArray.js');
 
-var _Path = require('../jsutils/Path.js');
-
-var _isIterableObject = require('../jsutils/isIterableObject.js');
+var _suggestionList = require('../jsutils/suggestionList.js');
 
 var _GraphQLError = require('../error/GraphQLError.js');
 

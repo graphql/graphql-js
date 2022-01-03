@@ -9,9 +9,9 @@ exports.getVisitFn = getVisitFn;
 exports.visit = visit;
 exports.visitInParallel = visitInParallel;
 
-var _inspect = require('../jsutils/inspect.js');
-
 var _devAssert = require('../jsutils/devAssert.js');
+
+var _inspect = require('../jsutils/inspect.js');
 
 var _ast = require('./ast.js');
 

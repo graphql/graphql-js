@@ -5,11 +5,11 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.ValuesOfCorrectTypeRule = ValuesOfCorrectTypeRule;
 
-var _keyMap = require('../../jsutils/keyMap.js');
+var _didYouMean = require('../../jsutils/didYouMean.js');
 
 var _inspect = require('../../jsutils/inspect.js');
 
-var _didYouMean = require('../../jsutils/didYouMean.js');
+var _keyMap = require('../../jsutils/keyMap.js');
 
 var _suggestionList = require('../../jsutils/suggestionList.js');
 

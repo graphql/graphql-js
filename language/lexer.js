@@ -10,11 +10,11 @@ var _syntaxError = require('../error/syntaxError.js');
 
 var _ast = require('./ast.js');
 
-var _tokenKind = require('./tokenKind.js');
-
 var _blockString = require('./blockString.js');
 
 var _characterClasses = require('./characterClasses.js');
+
+var _tokenKind = require('./tokenKind.js');
 
 /**
  * Given a Source object, creates a Lexer for that source.

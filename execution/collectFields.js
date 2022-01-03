@@ -8,9 +8,9 @@ exports.collectSubfields = collectSubfields;
 
 var _kinds = require('../language/kinds.js');
 
-var _directives = require('../type/directives.js');
-
 var _definition = require('../type/definition.js');
+
+var _directives = require('../type/directives.js');
 
 var _typeFromAST = require('../utilities/typeFromAST.js');
 

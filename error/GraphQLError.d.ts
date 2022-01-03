@@ -1,7 +1,7 @@
 import type { Maybe } from '../jsutils/Maybe';
 import type { ASTNode } from '../language/ast';
-import type { Source } from '../language/source';
 import type { SourceLocation } from '../language/location';
+import type { Source } from '../language/source';
 /**
  * Custom extensions
  *

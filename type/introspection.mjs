@@ -1,24 +1,24 @@
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
-import { print } from '../language/printer.mjs';
 import { DirectiveLocation } from '../language/directiveLocation.mjs';
+import { print } from '../language/printer.mjs';
 import { astFromValue } from '../utilities/astFromValue.mjs';
-import { GraphQLString, GraphQLBoolean } from './scalars.mjs';
 import {
+  GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLEnumType,
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
+  isAbstractType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
   isListType,
   isNonNullType,
-  isAbstractType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
 } from './definition.mjs';
+import { GraphQLBoolean, GraphQLString } from './scalars.mjs';
 export const __Schema = new GraphQLObjectType({
   name: '__Schema',
   description:

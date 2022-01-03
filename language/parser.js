@@ -11,17 +11,17 @@ exports.parseValue = parseValue;
 
 var _syntaxError = require('../error/syntaxError.js');
 
-var _kinds = require('./kinds.js');
-
 var _ast = require('./ast.js');
-
-var _tokenKind = require('./tokenKind.js');
-
-var _source = require('./source.js');
 
 var _directiveLocation = require('./directiveLocation.js');
 
+var _kinds = require('./kinds.js');
+
 var _lexer = require('./lexer.js');
+
+var _source = require('./source.js');
+
+var _tokenKind = require('./tokenKind.js');
 
 /**
  * Given a GraphQL source, parses it into a Document.

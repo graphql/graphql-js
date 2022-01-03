@@ -1,16 +1,16 @@
-import { inspect } from '../jsutils/inspect.mjs';
-import { toObjMap } from '../jsutils/toObjMap.mjs';
 import { devAssert } from '../jsutils/devAssert.mjs';
+import { inspect } from '../jsutils/inspect.mjs';
 import { instanceOf } from '../jsutils/instanceOf.mjs';
 import { isObjectLike } from '../jsutils/isObjectLike.mjs';
+import { toObjMap } from '../jsutils/toObjMap.mjs';
 import { DirectiveLocation } from '../language/directiveLocation.mjs';
 import { assertName } from './assertName.mjs';
-import { GraphQLString, GraphQLBoolean } from './scalars.mjs';
 import {
-  defineArguments,
   argsToArgsConfig,
+  defineArguments,
   GraphQLNonNull,
 } from './definition.mjs';
+import { GraphQLBoolean, GraphQLString } from './scalars.mjs';
 /**
  * Test if the given value is a GraphQL directive.
  */

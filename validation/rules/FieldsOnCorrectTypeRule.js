@@ -7,9 +7,9 @@ exports.FieldsOnCorrectTypeRule = FieldsOnCorrectTypeRule;
 
 var _didYouMean = require('../../jsutils/didYouMean.js');
 
-var _suggestionList = require('../../jsutils/suggestionList.js');
-
 var _naturalCompare = require('../../jsutils/naturalCompare.js');
+
+var _suggestionList = require('../../jsutils/suggestionList.js');
 
 var _GraphQLError = require('../../error/GraphQLError.js');
 

@@ -1,27 +1,27 @@
+import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
 import type { Path } from '../jsutils/Path';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { Maybe } from '../jsutils/Maybe';
 import type {
-  FieldNode,
-  ValueNode,
-  OperationDefinitionNode,
-  FragmentDefinitionNode,
-  ScalarTypeDefinitionNode,
-  ScalarTypeExtensionNode,
-  ObjectTypeDefinitionNode,
-  ObjectTypeExtensionNode,
+  EnumTypeDefinitionNode,
+  EnumTypeExtensionNode,
+  EnumValueDefinitionNode,
   FieldDefinitionNode,
+  FieldNode,
+  FragmentDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  InputObjectTypeExtensionNode,
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
+  OperationDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ScalarTypeExtensionNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
-  EnumTypeDefinitionNode,
-  EnumValueDefinitionNode,
-  EnumTypeExtensionNode,
-  InputObjectTypeDefinitionNode,
-  InputObjectTypeExtensionNode,
+  ValueNode,
 } from '../language/ast';
 import type { GraphQLSchema } from './schema';
 /**

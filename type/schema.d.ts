@@ -1,5 +1,5 @@
-import type { ObjMap } from '../jsutils/ObjMap';
 import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
 import type { GraphQLError } from '../error/GraphQLError';
 import type {
   SchemaDefinitionNode,
@@ -7,10 +7,10 @@ import type {
 } from '../language/ast';
 import { OperationTypeNode } from '../language/ast';
 import type {
-  GraphQLNamedType,
   GraphQLAbstractType,
-  GraphQLObjectType,
   GraphQLInterfaceType,
+  GraphQLNamedType,
+  GraphQLObjectType,
 } from './definition';
 import type { GraphQLDirective } from './directives';
 /**
