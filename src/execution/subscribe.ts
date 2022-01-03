@@ -3,7 +3,6 @@ import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import type { Maybe } from '../jsutils/Maybe';
 import { addPath, pathToArray } from '../jsutils/Path';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
@@ -15,6 +14,7 @@ import type { GraphQLSchema } from '../type/schema';
 
 import { collectFields } from './collectFields';
 import type {
+  AsyncExecutionResult,
   ExecutionArgs,
   ExecutionContext,
   ExecutionResult,
@@ -26,6 +26,7 @@ import {
   execute,
   getFieldDef,
 } from './execute';
+import { flattenAsyncIterator } from './flattenAsyncIterator';
 import { mapAsyncIterator } from './mapAsyncIterator';
 import { getArgumentValues } from './values';
 
@@ -52,7 +53,10 @@ import { getArgumentValues } from './values';
  */
 export async function subscribe(
   args: ExecutionArgs,
-): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+): Promise<
+  | AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void>
+  | ExecutionResult
+> {
   // Temporary for v15 to v16 migration. Remove in v17
   devAssert(
     arguments.length < 2,
@@ -90,8 +94,8 @@ export async function subscribe(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = (payload: unknown) => {
-    const executionResult = execute({
+  const mapSourceToResponse = (payload: unknown) =>
+    execute({
       schema,
       document,
       rootValue: payload,
@@ -100,18 +104,11 @@ export async function subscribe(
       operationName,
       fieldResolver,
     });
-    /* c8 ignore next 6 */
-    // TODO: implement support for defer/stream in subscriptions
-    if (isAsyncIterable(executionResult)) {
-      throw new Error(
-        'TODO: implement support for defer/stream in subscriptions',
-      );
-    }
-    return executionResult as PromiseOrValue<ExecutionResult>;
-  };
 
   // Map every source value to a ExecutionResult value as described above.
-  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
+  return flattenAsyncIterator<ExecutionResult, AsyncExecutionResult>(
+    mapAsyncIterator(resultOrStream, mapSourceToResponse),
+  );
 }
 
 /**
