@@ -1,24 +1,24 @@
-import { inspect } from '../jsutils/inspect';
-import { toObjMap } from '../jsutils/toObjMap';
 import { devAssert } from '../jsutils/devAssert';
+import { inspect } from '../jsutils/inspect';
 import { instanceOf } from '../jsutils/instanceOf';
 import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
+import { toObjMap } from '../jsutils/toObjMap';
 
 import type { DirectiveDefinitionNode } from '../language/ast';
 import { DirectiveLocation } from '../language/directiveLocation';
 
+import { assertName } from './assertName';
 import type {
   GraphQLArgument,
   GraphQLFieldConfigArgumentMap,
 } from './definition';
-import { assertName } from './assertName';
-import { GraphQLString, GraphQLBoolean } from './scalars';
 import {
-  defineArguments,
   argsToArgsConfig,
+  defineArguments,
   GraphQLNonNull,
 } from './definition';
+import { GraphQLBoolean, GraphQLString } from './scalars';
 
 /**
  * Test if the given value is a GraphQL directive.

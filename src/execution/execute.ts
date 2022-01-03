@@ -1,17 +1,17 @@
-import type { Path } from '../jsutils/Path';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import type { Maybe } from '../jsutils/Maybe';
-import { inspect } from '../jsutils/inspect';
-import { memoize3 } from '../jsutils/memoize3';
-import { invariant } from '../jsutils/invariant';
 import { devAssert } from '../jsutils/devAssert';
-import { isPromise } from '../jsutils/isPromise';
-import { isObjectLike } from '../jsutils/isObjectLike';
-import { promiseReduce } from '../jsutils/promiseReduce';
-import { promiseForObject } from '../jsutils/promiseForObject';
-import { addPath, pathToArray } from '../jsutils/Path';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
 import { isIterableObject } from '../jsutils/isIterableObject';
+import { isObjectLike } from '../jsutils/isObjectLike';
+import { isPromise } from '../jsutils/isPromise';
+import type { Maybe } from '../jsutils/Maybe';
+import { memoize3 } from '../jsutils/memoize3';
+import type { ObjMap } from '../jsutils/ObjMap';
+import type { Path } from '../jsutils/Path';
+import { addPath, pathToArray } from '../jsutils/Path';
+import { promiseForObject } from '../jsutils/promiseForObject';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import { promiseReduce } from '../jsutils/promiseReduce';
 
 import type { GraphQLFormattedError } from '../error/GraphQLError';
 import { GraphQLError } from '../error/GraphQLError';
@@ -19,44 +19,44 @@ import { locatedError } from '../error/locatedError';
 
 import type {
   DocumentNode,
-  OperationDefinitionNode,
   FieldNode,
   FragmentDefinitionNode,
+  OperationDefinitionNode,
 } from '../language/ast';
 import { OperationTypeNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 
-import type { GraphQLSchema } from '../type/schema';
 import type {
-  GraphQLObjectType,
-  GraphQLOutputType,
-  GraphQLLeafType,
   GraphQLAbstractType,
   GraphQLField,
   GraphQLFieldResolver,
+  GraphQLLeafType,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLOutputType,
   GraphQLResolveInfo,
   GraphQLTypeResolver,
-  GraphQLList,
 } from '../type/definition';
-import { assertValidSchema } from '../type/validate';
+import {
+  isAbstractType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+} from '../type/definition';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection';
-import {
-  isObjectType,
-  isAbstractType,
-  isLeafType,
-  isListType,
-  isNonNullType,
-} from '../type/definition';
+import type { GraphQLSchema } from '../type/schema';
+import { assertValidSchema } from '../type/validate';
 
-import { getVariableValues, getArgumentValues } from './values';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
+import { getArgumentValues, getVariableValues } from './values';
 
 /**
  * A memoized collection of relevant subfields with regard to the return

@@ -3,9 +3,9 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
-import { printSchema } from '../printSchema';
 import { buildSchema } from '../buildASTSchema';
 import { lexicographicSortSchema } from '../lexicographicSortSchema';
+import { printSchema } from '../printSchema';
 
 function sortSDL(sdl: string): string {
   const schema = buildSchema(sdl);

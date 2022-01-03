@@ -9,7 +9,7 @@ import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
 
-import { GraphQLError, printError, formatError } from '../GraphQLError';
+import { formatError, GraphQLError, printError } from '../GraphQLError';
 
 const source = new Source(dedent`
   {

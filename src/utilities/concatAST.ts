@@ -1,4 +1,4 @@
-import type { DocumentNode, DefinitionNode } from '../language/ast';
+import type { DefinitionNode, DocumentNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 
 /**

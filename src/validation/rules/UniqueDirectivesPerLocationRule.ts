@@ -1,11 +1,11 @@
 import { GraphQLError } from '../../error/GraphQLError';
 
 import { Kind } from '../../language/kinds';
-import type { ASTVisitor } from '../../language/visitor';
 import {
   isTypeDefinitionNode,
   isTypeExtensionNode,
 } from '../../language/predicates';
+import type { ASTVisitor } from '../../language/visitor';
 
 import { specifiedDirectives } from '../../type/directives';
 

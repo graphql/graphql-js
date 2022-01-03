@@ -1,24 +1,24 @@
-import type { ObjMap } from '../../jsutils/ObjMap';
+import { didYouMean } from '../../jsutils/didYouMean';
 import { inspect } from '../../jsutils/inspect';
 import { invariant } from '../../jsutils/invariant';
-import { didYouMean } from '../../jsutils/didYouMean';
+import type { ObjMap } from '../../jsutils/ObjMap';
 import { suggestionList } from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type { DefinitionNode, TypeExtensionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { isTypeDefinitionNode } from '../../language/predicates';
+import type { ASTVisitor } from '../../language/visitor';
 
 import type { GraphQLNamedType } from '../../type/definition';
 import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
 } from '../../type/definition';
 
 import type { SDLValidationContext } from '../ValidationContext';

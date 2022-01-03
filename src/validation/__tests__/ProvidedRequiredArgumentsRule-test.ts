@@ -5,11 +5,11 @@ import type { GraphQLSchema } from '../../type/schema';
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import {
-  ProvidedRequiredArgumentsRule,
   ProvidedRequiredArgumentsOnDirectivesRule,
+  ProvidedRequiredArgumentsRule,
 } from '../rules/ProvidedRequiredArgumentsRule';
 
-import { expectValidationErrors, expectSDLValidationErrors } from './harness';
+import { expectSDLValidationErrors, expectValidationErrors } from './harness';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(ProvidedRequiredArgumentsRule, queryStr);

@@ -2,15 +2,15 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 import { expectJSON, expectToThrowJSON } from '../../__testUtils__/expectJSON';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import { inspect } from '../../jsutils/inspect';
 
 import { Kind } from '../kinds';
+import { parse, parseConstValue, parseType, parseValue } from '../parser';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
-import { parse, parseValue, parseConstValue, parseType } from '../parser';
 
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));

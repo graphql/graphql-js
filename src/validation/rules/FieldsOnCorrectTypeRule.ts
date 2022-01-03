@@ -1,23 +1,23 @@
 import { didYouMean } from '../../jsutils/didYouMean';
-import { suggestionList } from '../../jsutils/suggestionList';
 import { naturalCompare } from '../../jsutils/naturalCompare';
+import { suggestionList } from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { FieldNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
-import type { GraphQLSchema } from '../../type/schema';
 import type {
-  GraphQLOutputType,
-  GraphQLObjectType,
   GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLOutputType,
 } from '../../type/definition';
 import {
-  isObjectType,
-  isInterfaceType,
   isAbstractType,
+  isInterfaceType,
+  isObjectType,
 } from '../../type/definition';
+import type { GraphQLSchema } from '../../type/schema';
 
 import type { ValidationContext } from '../ValidationContext';
 

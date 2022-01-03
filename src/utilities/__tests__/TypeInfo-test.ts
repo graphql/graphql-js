@@ -7,8 +7,8 @@ import { parse, parseValue } from '../../language/parser';
 import { print } from '../../language/printer';
 import { visit } from '../../language/visitor';
 
-import { GraphQLSchema } from '../../type/schema';
 import { getNamedType, isCompositeType } from '../../type/definition';
+import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../buildASTSchema';
 import { TypeInfo, visitWithTypeInfo } from '../TypeInfo';

@@ -4,11 +4,11 @@ import { describe, it } from 'mocha';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import type { ASTNode, SelectionSetNode } from '../ast';
-import type { ASTVisitorKeyMap, ASTVisitor } from '../visitor';
 import { isNode } from '../ast';
 import { Kind } from '../kinds';
 import { parse } from '../parser';
-import { visit, visitInParallel, BREAK } from '../visitor';
+import type { ASTVisitor, ASTVisitorKeyMap } from '../visitor';
+import { BREAK, visit, visitInParallel } from '../visitor';
 
 function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
   const [node, key, parent, path, ancestors] = args;

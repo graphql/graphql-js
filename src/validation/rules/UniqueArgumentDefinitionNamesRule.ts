@@ -2,12 +2,12 @@ import { groupBy } from '../../jsutils/groupBy';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type {
-  NameNode,
   FieldDefinitionNode,
   InputValueDefinitionNode,
+  NameNode,
 } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 import type { SDLValidationContext } from '../ValidationContext';
 

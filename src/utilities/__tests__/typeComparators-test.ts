@@ -2,15 +2,15 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import type { GraphQLFieldConfigMap } from '../../type/definition';
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString, GraphQLInt, GraphQLFloat } from '../../type/scalars';
 import {
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLInterfaceType,
   GraphQLUnionType,
 } from '../../type/definition';
+import { GraphQLFloat, GraphQLInt, GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { isEqualType, isTypeSubTypeOf } from '../typeComparators';
 

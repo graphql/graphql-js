@@ -1,15 +1,14 @@
 import type {
-  TypeNode,
-  NamedTypeNode,
   ListTypeNode,
+  NamedTypeNode,
   NonNullTypeNode,
+  TypeNode,
 } from '../language/ast';
-
 import { Kind } from '../language/kinds';
 
-import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLType, GraphQLNamedType } from '../type/definition';
+import type { GraphQLNamedType, GraphQLType } from '../type/definition';
 import { GraphQLList, GraphQLNonNull } from '../type/definition';
+import type { GraphQLSchema } from '../type/schema';
 
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType

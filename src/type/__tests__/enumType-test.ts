@@ -3,12 +3,13 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
-import { graphqlSync } from '../../graphql';
 import { introspectionFromSchema } from '../../utilities/introspectionFromSchema';
 
-import { GraphQLSchema } from '../schema';
+import { graphqlSync } from '../../graphql';
+
 import { GraphQLEnumType, GraphQLObjectType } from '../definition';
-import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../scalars';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars';
+import { GraphQLSchema } from '../schema';
 
 const ColorType = new GraphQLEnumType({
   name: 'Color',

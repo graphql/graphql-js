@@ -10,31 +10,31 @@ import type { ASTNode } from '../../language/ast';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 
-import { graphqlSync } from '../../graphql';
-
-import { GraphQLSchema } from '../../type/schema';
-import { validateSchema } from '../../type/validate';
+import {
+  assertEnumType,
+  assertInputObjectType,
+  assertInterfaceType,
+  assertObjectType,
+  assertScalarType,
+  assertUnionType,
+} from '../../type/definition';
 import { assertDirective } from '../../type/directives';
 import {
+  GraphQLBoolean,
+  GraphQLFloat,
   GraphQLID,
   GraphQLInt,
-  GraphQLFloat,
   GraphQLString,
-  GraphQLBoolean,
 } from '../../type/scalars';
-import {
-  assertObjectType,
-  assertInputObjectType,
-  assertEnumType,
-  assertUnionType,
-  assertInterfaceType,
-  assertScalarType,
-} from '../../type/definition';
+import { GraphQLSchema } from '../../type/schema';
+import { validateSchema } from '../../type/validate';
 
-import { concatAST } from '../concatAST';
-import { printSchema } from '../printSchema';
-import { extendSchema } from '../extendSchema';
+import { graphqlSync } from '../../graphql';
+
 import { buildSchema } from '../buildASTSchema';
+import { concatAST } from '../concatAST';
+import { extendSchema } from '../extendSchema';
+import { printSchema } from '../printSchema';
 
 function expectExtensionASTNodes(obj: {
   readonly extensionASTNodes: ReadonlyArray<ASTNode>;

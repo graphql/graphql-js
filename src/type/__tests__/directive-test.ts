@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { GraphQLDirective } from '../directives';
-import { GraphQLString, GraphQLInt } from '../scalars';
+import { GraphQLInt, GraphQLString } from '../scalars';
 
 describe('Type System: Directive', () => {
   it('defines a directive with no args', () => {

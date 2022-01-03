@@ -2,37 +2,37 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import type { Maybe } from '../jsutils/Maybe';
 
+import { isPrintableAsBlockString } from '../language/blockString';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
-import { isPrintableAsBlockString } from '../language/blockString';
 
-import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLDirective } from '../type/directives';
 import type {
-  GraphQLNamedType,
   GraphQLArgument,
-  GraphQLInputField,
-  GraphQLScalarType,
   GraphQLEnumType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
+  GraphQLInputField,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
 } from '../type/definition';
-import { isIntrospectionType } from '../type/introspection';
-import { isSpecifiedScalarType } from '../type/scalars';
+import {
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../type/definition';
+import type { GraphQLDirective } from '../type/directives';
 import {
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
 } from '../type/directives';
-import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
-  isEnumType,
-  isInputObjectType,
-} from '../type/definition';
+import { isIntrospectionType } from '../type/introspection';
+import { isSpecifiedScalarType } from '../type/scalars';
+import type { GraphQLSchema } from '../type/schema';
 
 import { astFromValue } from './astFromValue';
 

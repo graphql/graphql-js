@@ -9,9 +9,9 @@ import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
 import { GraphQLList, GraphQLObjectType } from '../../type/definition';
-import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { createSourceEventStream, subscribe } from '../subscribe';
 

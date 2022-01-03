@@ -7,8 +7,8 @@ import type { GraphQLSchema } from '../type/schema';
 import { executeSync } from '../execution/execute';
 
 import type {
-  IntrospectionQuery,
   IntrospectionOptions,
+  IntrospectionQuery,
 } from './getIntrospectionQuery';
 import { getIntrospectionQuery } from './getIntrospectionQuery';
 

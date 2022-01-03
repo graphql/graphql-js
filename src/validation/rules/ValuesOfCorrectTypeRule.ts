@@ -1,22 +1,22 @@
-import { keyMap } from '../../jsutils/keyMap';
-import { inspect } from '../../jsutils/inspect';
 import { didYouMean } from '../../jsutils/didYouMean';
+import { inspect } from '../../jsutils/inspect';
+import { keyMap } from '../../jsutils/keyMap';
 import { suggestionList } from '../../jsutils/suggestionList';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ValueNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
 import { print } from '../../language/printer';
+import type { ASTVisitor } from '../../language/visitor';
 
 import {
-  isLeafType,
+  getNamedType,
+  getNullableType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
   isRequiredInputField,
-  getNullableType,
-  getNamedType,
 } from '../../type/definition';
 
 import type { ValidationContext } from '../ValidationContext';

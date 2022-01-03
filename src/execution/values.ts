@@ -1,27 +1,27 @@
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { Maybe } from '../jsutils/Maybe';
-import { keyMap } from '../jsutils/keyMap';
 import { inspect } from '../jsutils/inspect';
+import { keyMap } from '../jsutils/keyMap';
+import type { Maybe } from '../jsutils/Maybe';
+import type { ObjMap } from '../jsutils/ObjMap';
 import { printPathArray } from '../jsutils/printPathArray';
 
 import { GraphQLError } from '../error/GraphQLError';
 
 import type {
-  FieldNode,
   DirectiveNode,
+  FieldNode,
   VariableDefinitionNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 
-import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLField } from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
 import { isInputType, isNonNullType } from '../type/definition';
+import type { GraphQLDirective } from '../type/directives';
+import type { GraphQLSchema } from '../type/schema';
 
+import { coerceInputValue } from '../utilities/coerceInputValue';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
-import { coerceInputValue } from '../utilities/coerceInputValue';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }

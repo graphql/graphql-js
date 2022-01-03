@@ -1,5 +1,5 @@
-import { inspect } from '../jsutils/inspect';
 import { devAssert } from '../jsutils/devAssert';
+import { inspect } from '../jsutils/inspect';
 import { instanceOf } from '../jsutils/instanceOf';
 
 interface Location {

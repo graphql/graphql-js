@@ -1,10 +1,10 @@
 import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode } from './ast';
-import type { ASTReducer } from './visitor';
-import { visit } from './visitor';
 import { printBlockString } from './blockString';
 import { printString } from './printString';
+import type { ASTReducer } from './visitor';
+import { visit } from './visitor';
 
 /**
  * Converts an AST into a string, using one set of reasonable

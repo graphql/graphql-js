@@ -1,12 +1,13 @@
 import type { ObjMap } from '../../jsutils/ObjMap';
+
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type {
-  OperationDefinitionNode,
   FragmentDefinitionNode,
+  OperationDefinitionNode,
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
+import type { ASTVisitor } from '../../language/visitor';
 
 import { collectFields } from '../../execution/collectFields';
 

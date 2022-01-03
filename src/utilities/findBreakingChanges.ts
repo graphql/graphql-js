@@ -1,37 +1,37 @@
-import { keyMap } from '../jsutils/keyMap';
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
+import { keyMap } from '../jsutils/keyMap';
 import { naturalCompare } from '../jsutils/naturalCompare';
 
 import { print } from '../language/printer';
 import { visit } from '../language/visitor';
 
-import type { GraphQLSchema } from '../type/schema';
 import type {
-  GraphQLField,
-  GraphQLType,
-  GraphQLInputType,
-  GraphQLNamedType,
   GraphQLEnumType,
-  GraphQLUnionType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
+  GraphQLField,
   GraphQLInputObjectType,
+  GraphQLInputType,
+  GraphQLInterfaceType,
+  GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLType,
+  GraphQLUnionType,
 } from '../type/definition';
-import { isSpecifiedScalarType } from '../type/scalars';
 import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
-  isNonNullType,
+  isInterfaceType,
   isListType,
   isNamedType,
+  isNonNullType,
+  isObjectType,
   isRequiredArgument,
   isRequiredInputField,
+  isScalarType,
+  isUnionType,
 } from '../type/definition';
+import { isSpecifiedScalarType } from '../type/scalars';
+import type { GraphQLSchema } from '../type/schema';
 
 import { astFromValue } from './astFromValue';
 

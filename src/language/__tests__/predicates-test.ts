@@ -5,16 +5,16 @@ import type { ASTNode } from '../ast';
 import { Kind } from '../kinds';
 import { parseValue } from '../parser';
 import {
+  isConstValueNode,
   isDefinitionNode,
   isExecutableDefinitionNode,
   isSelectionNode,
-  isValueNode,
-  isConstValueNode,
+  isTypeDefinitionNode,
+  isTypeExtensionNode,
   isTypeNode,
   isTypeSystemDefinitionNode,
-  isTypeDefinitionNode,
   isTypeSystemExtensionNode,
-  isTypeExtensionNode,
+  isValueNode,
 } from '../predicates';
 
 function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {

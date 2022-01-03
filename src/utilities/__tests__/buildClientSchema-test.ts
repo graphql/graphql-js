@@ -5,26 +5,26 @@ import { dedent } from '../../__testUtils__/dedent';
 
 import { invariant } from '../../jsutils/invariant';
 
-import { graphqlSync } from '../../graphql';
-
-import { GraphQLSchema } from '../../type/schema';
 import {
   assertEnumType,
-  GraphQLObjectType,
   GraphQLEnumType,
+  GraphQLObjectType,
 } from '../../type/definition';
 import {
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
   GraphQLBoolean,
+  GraphQLFloat,
   GraphQLID,
+  GraphQLInt,
+  GraphQLString,
 } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
-import { printSchema } from '../printSchema';
+import { graphqlSync } from '../../graphql';
+
 import { buildSchema } from '../buildASTSchema';
 import { buildClientSchema } from '../buildClientSchema';
 import { introspectionFromSchema } from '../introspectionFromSchema';
+import { printSchema } from '../printSchema';
 
 /**
  * This function does a full cycle of going from a string with the contents of

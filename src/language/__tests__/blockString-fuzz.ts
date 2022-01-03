@@ -1,14 +1,14 @@
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
-import { inspectStr } from '../../__testUtils__/inspectStr';
 import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings';
+import { inspectStr } from '../../__testUtils__/inspectStr';
 
 import { invariant } from '../../jsutils/invariant';
 
+import { isPrintableAsBlockString, printBlockString } from '../blockString';
 import { Lexer } from '../lexer';
 import { Source } from '../source';
-import { printBlockString, isPrintableAsBlockString } from '../blockString';
 
 function lexValue(str: string): string {
   const lexer = new Lexer(new Source(str));

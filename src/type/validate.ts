@@ -5,12 +5,12 @@ import { GraphQLError } from '../error/GraphQLError';
 
 import type {
   ASTNode,
-  NamedTypeNode,
   DirectiveNode,
-  ObjectTypeDefinitionNode,
-  ObjectTypeExtensionNode,
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
+  NamedTypeNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
 } from '../language/ast';
@@ -18,31 +18,31 @@ import { OperationTypeNode } from '../language/ast';
 
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
-import type { GraphQLSchema } from './schema';
 import type {
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLEnumType,
-  GraphQLInputObjectType,
   GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLUnionType,
 } from './definition';
-import { assertSchema } from './schema';
-import { isIntrospectionType } from './introspection';
-import { isDirective, GraphQLDeprecatedDirective } from './directives';
 import {
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
+  isInputType,
+  isInterfaceType,
   isNamedType,
   isNonNullType,
-  isInputType,
+  isObjectType,
   isOutputType,
   isRequiredArgument,
   isRequiredInputField,
+  isUnionType,
 } from './definition';
+import { GraphQLDeprecatedDirective, isDirective } from './directives';
+import { isIntrospectionType } from './introspection';
+import type { GraphQLSchema } from './schema';
+import { assertSchema } from './schema';
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's

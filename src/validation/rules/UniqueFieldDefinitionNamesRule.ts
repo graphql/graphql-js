@@ -1,17 +1,17 @@
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type {
-  NameNode,
   FieldDefinitionNode,
   InputValueDefinitionNode,
+  NameNode,
 } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 import type { GraphQLNamedType } from '../../type/definition';
 import {
-  isObjectType,
-  isInterfaceType,
   isInputObjectType,
+  isInterfaceType,
+  isObjectType,
 } from '../../type/definition';
 
 import type { SDLValidationContext } from '../ValidationContext';

@@ -3,9 +3,9 @@ import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
 import { executeSync } from '../execute';
 

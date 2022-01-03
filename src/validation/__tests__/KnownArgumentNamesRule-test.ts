@@ -5,11 +5,11 @@ import type { GraphQLSchema } from '../../type/schema';
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import {
-  KnownArgumentNamesRule,
   KnownArgumentNamesOnDirectivesRule,
+  KnownArgumentNamesRule,
 } from '../rules/KnownArgumentNamesRule';
 
-import { expectValidationErrors, expectSDLValidationErrors } from './harness';
+import { expectSDLValidationErrors, expectValidationErrors } from './harness';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(KnownArgumentNamesRule, queryStr);

@@ -3,8 +3,8 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
-import { Source } from '../source';
 import { printSourceLocation } from '../printLocation';
+import { Source } from '../source';
 
 describe('printSourceLocation', () => {
   it('prints minified documents', () => {

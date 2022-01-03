@@ -11,8 +11,8 @@ import { assertValidSchema } from '../type/validate';
 
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
-import type { SDLValidationRule, ValidationRule } from './ValidationContext';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
+import type { SDLValidationRule, ValidationRule } from './ValidationContext';
 import { SDLValidationContext, ValidationContext } from './ValidationContext';
 
 /**

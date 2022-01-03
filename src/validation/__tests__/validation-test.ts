@@ -8,11 +8,11 @@ import { GraphQLError } from '../../error/GraphQLError';
 import type { DirectiveNode } from '../../language/ast';
 import { parse } from '../../language/parser';
 
-import { TypeInfo } from '../../utilities/TypeInfo';
 import { buildSchema } from '../../utilities/buildASTSchema';
+import { TypeInfo } from '../../utilities/TypeInfo';
 
-import type { ValidationContext } from '../ValidationContext';
 import { validate } from '../validate';
+import type { ValidationContext } from '../ValidationContext';
 
 import { testSchema } from './harness';
 

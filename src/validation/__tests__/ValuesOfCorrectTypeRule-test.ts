@@ -7,12 +7,12 @@ import { inspect } from '../../jsutils/inspect';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLObjectType, GraphQLScalarType } from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
-import { GraphQLScalarType, GraphQLObjectType } from '../../type/definition';
+import { GraphQLSchema } from '../../type/schema';
 
-import { validate } from '../validate';
 import { ValuesOfCorrectTypeRule } from '../rules/ValuesOfCorrectTypeRule';
+import { validate } from '../validate';
 
 import {
   expectValidationErrors,

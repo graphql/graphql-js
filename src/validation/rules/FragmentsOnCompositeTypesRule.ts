@@ -1,7 +1,7 @@
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import { print } from '../../language/printer';
+import type { ASTVisitor } from '../../language/visitor';
 
 import { isCompositeType } from '../../type/definition';
 

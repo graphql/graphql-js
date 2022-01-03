@@ -1,33 +1,33 @@
-import { keyMap } from '../jsutils/keyMap';
-import { inspect } from '../jsutils/inspect';
-import { mapValue } from '../jsutils/mapValue';
-import { invariant } from '../jsutils/invariant';
 import { devAssert } from '../jsutils/devAssert';
+import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
+import { keyMap } from '../jsutils/keyMap';
+import { mapValue } from '../jsutils/mapValue';
 import type { Maybe } from '../jsutils/Maybe';
 
 import type {
+  DirectiveDefinitionNode,
   DocumentNode,
-  TypeNode,
-  NamedTypeNode,
-  SchemaDefinitionNode,
-  SchemaExtensionNode,
-  TypeDefinitionNode,
-  InterfaceTypeDefinitionNode,
-  InterfaceTypeExtensionNode,
-  ObjectTypeDefinitionNode,
-  ObjectTypeExtensionNode,
-  UnionTypeDefinitionNode,
-  UnionTypeExtensionNode,
+  EnumTypeDefinitionNode,
+  EnumTypeExtensionNode,
+  EnumValueDefinitionNode,
   FieldDefinitionNode,
   InputObjectTypeDefinitionNode,
   InputObjectTypeExtensionNode,
   InputValueDefinitionNode,
-  EnumTypeDefinitionNode,
-  EnumTypeExtensionNode,
-  EnumValueDefinitionNode,
-  DirectiveDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  InterfaceTypeExtensionNode,
+  NamedTypeNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
   ScalarTypeDefinitionNode,
   ScalarTypeExtensionNode,
+  SchemaDefinitionNode,
+  SchemaExtensionNode,
+  TypeDefinitionNode,
+  TypeNode,
+  UnionTypeDefinitionNode,
+  UnionTypeExtensionNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
 import {
@@ -35,50 +35,50 @@ import {
   isTypeExtensionNode,
 } from '../language/predicates';
 
+import type {
+  GraphQLArgumentConfig,
+  GraphQLEnumValueConfigMap,
+  GraphQLFieldConfig,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLFieldConfigMap,
+  GraphQLInputFieldConfigMap,
+  GraphQLNamedType,
+  GraphQLType,
+} from '../type/definition';
+import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../type/definition';
+import {
+  GraphQLDeprecatedDirective,
+  GraphQLDirective,
+  GraphQLSpecifiedByDirective,
+} from '../type/directives';
+import { introspectionTypes, isIntrospectionType } from '../type/introspection';
+import { isSpecifiedScalarType, specifiedScalarTypes } from '../type/scalars';
+import type {
+  GraphQLSchemaNormalizedConfig,
+  GraphQLSchemaValidationOptions,
+} from '../type/schema';
+import { assertSchema, GraphQLSchema } from '../type/schema';
+
 import { assertValidSDLExtension } from '../validation/validate';
 
 import { getDirectiveValues } from '../execution/values';
-
-import type {
-  GraphQLSchemaValidationOptions,
-  GraphQLSchemaNormalizedConfig,
-} from '../type/schema';
-import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLFieldConfig,
-  GraphQLFieldConfigMap,
-  GraphQLArgumentConfig,
-  GraphQLFieldConfigArgumentMap,
-  GraphQLEnumValueConfigMap,
-  GraphQLInputFieldConfigMap,
-} from '../type/definition';
-import { assertSchema, GraphQLSchema } from '../type/schema';
-import { specifiedScalarTypes, isSpecifiedScalarType } from '../type/scalars';
-import { introspectionTypes, isIntrospectionType } from '../type/introspection';
-import {
-  GraphQLDirective,
-  GraphQLDeprecatedDirective,
-  GraphQLSpecifiedByDirective,
-} from '../type/directives';
-import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
-  isListType,
-  isNonNullType,
-  isEnumType,
-  isInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-} from '../type/definition';
 
 import { valueFromAST } from './valueFromAST';
 

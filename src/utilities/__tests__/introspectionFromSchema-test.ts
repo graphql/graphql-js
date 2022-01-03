@@ -3,14 +3,14 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
 import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
 
-import type { IntrospectionQuery } from '../getIntrospectionQuery';
-import { printSchema } from '../printSchema';
 import { buildClientSchema } from '../buildClientSchema';
+import type { IntrospectionQuery } from '../getIntrospectionQuery';
 import { introspectionFromSchema } from '../introspectionFromSchema';
+import { printSchema } from '../printSchema';
 
 function introspectionToSDL(introspection: IntrospectionQuery): string {
   return printSchema(buildClientSchema(introspection));

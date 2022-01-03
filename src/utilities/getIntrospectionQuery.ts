@@ -1,4 +1,5 @@
 import type { Maybe } from '../jsutils/Maybe';
+
 import type { DirectiveLocation } from '../language/directiveLocation';
 
 export interface IntrospectionOptions {

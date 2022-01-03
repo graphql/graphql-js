@@ -3,16 +3,16 @@ import { describe, it } from 'mocha';
 
 import { invariant } from '../../jsutils/invariant';
 
-import { GraphQLSchema } from '../schema';
-import { GraphQLDirective } from '../directives';
 import {
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
 } from '../definition';
+import { GraphQLDirective } from '../directives';
+import { GraphQLSchema } from '../schema';
 
 const dummyType = new GraphQLScalarType({ name: 'DummyScalar' });
 

@@ -2,14 +2,14 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import type { GraphQLInputType } from '../../type/definition';
-import { GraphQLInt } from '../../type/scalars';
 import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLEnumType,
   GraphQLScalarType,
-  GraphQLInputObjectType,
 } from '../../type/definition';
+import { GraphQLInt } from '../../type/scalars';
 
 import { coerceInputValue } from '../coerceInputValue';
 

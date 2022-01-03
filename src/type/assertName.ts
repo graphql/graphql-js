@@ -1,7 +1,8 @@
 import { devAssert } from '../jsutils/devAssert';
 
 import { GraphQLError } from '../error/GraphQLError';
-import { isNameStart, isNameContinue } from '../language/characterClasses';
+
+import { isNameContinue, isNameStart } from '../language/characterClasses';
 
 /**
  * Upholds the spec rules about naming.
