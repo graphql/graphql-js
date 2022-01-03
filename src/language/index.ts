@@ -31,7 +31,7 @@ export { Location, Token, OperationTypeNode } from './ast';
 export type {
   ASTNode,
   ASTKindToNode,
-  /** Each kind of AST node */
+  // Each kind of AST node
   NameNode,
   DocumentNode,
   DefinitionNode,
