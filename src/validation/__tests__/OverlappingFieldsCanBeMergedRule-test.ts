@@ -1011,23 +1011,21 @@ describe('Validate: Overlapping fields can be merged', () => {
 
   it('does not infinite loop on recursive fragment', () => {
     expectValid(`
+      {
+        ...fragA
+      }
+
       fragment fragA on Human { name, relatives { name, ...fragA } }
     `);
   });
 
   it('does not infinite loop on immediately recursive fragment', () => {
     expectValid(`
-      fragment fragA on Human { name, ...fragA }
-    `);
-  });
-
-  it('does not infinite loop on immediately recursive fragment mentioned in queries', () => {
-    expectValid(`
       {
         ...fragA
       }
 
-      fragment fragA on Query { ...fragA }
+      fragment fragA on Human { name, ...fragA }
     `);
   });
 
@@ -1049,7 +1047,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         ...fragA
       }
 
-      fragment fragA on Type { 
+      fragment fragA on Type {
         fragA: b
       }
     `).toDeepEqual([
@@ -1065,14 +1063,6 @@ describe('Validate: Overlapping fields can be merged', () => {
   });
 
   it('does not infinite loop on transitively recursive fragment', () => {
-    expectValid(`
-      fragment fragA on Human { name, ...fragB }
-      fragment fragB on Human { name, ...fragC }
-      fragment fragC on Human { name, ...fragA }
-    `);
-  });
-
-  it('does not infinite loop on transitively recursive fragment mentioned in queries', () => {
     expectValid(`
       {
         ...fragA
