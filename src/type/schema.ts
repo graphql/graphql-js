@@ -379,6 +379,7 @@ export class GraphQLSchema {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
+      enableDeferStream: this._enableDeferStream,
       assumeValid: this.__validationErrors !== undefined,
     };
   }
