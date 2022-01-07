@@ -142,10 +142,12 @@ export class GraphQLSchema {
   private _directives: ReadonlyArray<GraphQLDirective>;
   private _typeMap: TypeMap;
   private _subTypeMap: ObjMap<ObjMap<boolean>>;
-  private _implementationsMap: ObjMap<{
-    objects: Array<GraphQLObjectType>;
-    interfaces: Array<GraphQLInterfaceType>;
-  }>;
+  private _implementationsMap: Maybe<
+    ObjMap<{
+      objects: Array<GraphQLObjectType>;
+      interfaces: Array<GraphQLInterfaceType>;
+    }>
+  >;
 
   constructor(config: Readonly<GraphQLSchemaConfig>) {
     // If this schema was built from a source known to be valid, then it may be
@@ -210,8 +212,6 @@ export class GraphQLSchema {
     // Storing the resulting map for reference by the schema.
     this._typeMap = Object.create(null);
     this._subTypeMap = Object.create(null);
-    // Keep track of all implementations by interface name.
-    this._implementationsMap = Object.create(null);
 
     for (const namedType of allReferencedTypes) {
       if (namedType == null) {
@@ -229,38 +229,6 @@ export class GraphQLSchema {
         );
       }
       this._typeMap[typeName] = namedType;
-
-      if (isInterfaceType(namedType)) {
-        // Store implementations by interface.
-        for (const iface of namedType.getInterfaces()) {
-          if (isInterfaceType(iface)) {
-            let implementations = this._implementationsMap[iface.name];
-            if (implementations === undefined) {
-              implementations = this._implementationsMap[iface.name] = {
-                objects: [],
-                interfaces: [],
-              };
-            }
-
-            implementations.interfaces.push(namedType);
-          }
-        }
-      } else if (isObjectType(namedType)) {
-        // Store implementations by objects.
-        for (const iface of namedType.getInterfaces()) {
-          if (isInterfaceType(iface)) {
-            let implementations = this._implementationsMap[iface.name];
-            if (implementations === undefined) {
-              implementations = this._implementationsMap[iface.name] = {
-                objects: [],
-                interfaces: [],
-              };
-            }
-
-            implementations.objects.push(namedType);
-          }
-        }
-      }
     }
   }
 
@@ -311,7 +279,8 @@ export class GraphQLSchema {
     objects: ReadonlyArray<GraphQLObjectType>;
     interfaces: ReadonlyArray<GraphQLInterfaceType>;
   } {
-    const implementations = this._implementationsMap[interfaceType.name];
+    const implementationsMap = this._getImplementationsMap();
+    const implementations = implementationsMap[interfaceType.name];
     return implementations ?? { objects: [], interfaces: [] };
   }
 
@@ -363,6 +332,55 @@ export class GraphQLSchema {
       extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined,
     };
+  }
+
+  private _getImplementationsMap(): ObjMap<{
+    objects: Array<GraphQLObjectType>;
+    interfaces: Array<GraphQLInterfaceType>;
+  }> {
+    if (this._implementationsMap) {
+      return this._implementationsMap;
+    }
+
+    // Keep track of all implementations by interface name.
+    const implementationsMap = Object.create(null);
+
+    for (const namedType of Object.values(this.getTypeMap())) {
+      if (isInterfaceType(namedType)) {
+        // Store implementations by interface.
+        for (const iface of namedType.getInterfaces()) {
+          if (isInterfaceType(iface)) {
+            let implementations = implementationsMap[iface.name];
+            if (implementations === undefined) {
+              implementations = implementationsMap[iface.name] = {
+                objects: [],
+                interfaces: [],
+              };
+            }
+
+            implementations.interfaces.push(namedType);
+          }
+        }
+      } else if (isObjectType(namedType)) {
+        // Store implementations by objects.
+        for (const iface of namedType.getInterfaces()) {
+          if (isInterfaceType(iface)) {
+            let implementations = implementationsMap[iface.name];
+            if (implementations === undefined) {
+              implementations = implementationsMap[iface.name] = {
+                objects: [],
+                interfaces: [],
+              };
+            }
+
+            implementations.objects.push(namedType);
+          }
+        }
+      }
+    }
+
+    this._implementationsMap = implementationsMap;
+    return implementationsMap;
   }
 }
 
