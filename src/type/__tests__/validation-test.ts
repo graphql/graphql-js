@@ -2619,7 +2619,7 @@ describe('assertValidSchema', () => {
     expect(() => assertValidSchema(schema)).to.not.throw();
   });
 
-  it('includes multiple errors into a description', () => {
+  it('combines multiple error', () => {
     const schema = buildSchema('type SomeType');
     expect(() => assertValidSchema(schema)).to.throw(dedent`
       Query root type must be provided.
