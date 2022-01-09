@@ -1065,7 +1065,7 @@ describe('Type System: Object fields must have output types', () => {
 });
 
 describe('Type System: Objects can only implement unique interfaces', () => {
-  it('rejects an Object implementing a non-type values', () => {
+  it('rejects an Object implementing a non-type value', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'BadObject',
