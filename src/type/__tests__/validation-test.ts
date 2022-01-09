@@ -2610,7 +2610,7 @@ describe('Interfaces must adhere to Interface they implement', () => {
 });
 
 describe('assertValidSchema', () => {
-  it('do not throw on valid schemas', () => {
+  it('does not throw on valid schemas', () => {
     const schema = buildSchema(`
       type Query {
         foo: String
@@ -2619,7 +2619,7 @@ describe('assertValidSchema', () => {
     expect(() => assertValidSchema(schema)).to.not.throw();
   });
 
-  it('include multiple errors into a description', () => {
+  it('includes multiple errors into a description', () => {
     const schema = buildSchema('type SomeType');
     expect(() => assertValidSchema(schema)).to.throw(dedent`
       Query root type must be provided.
