@@ -1512,7 +1512,7 @@ describe('Type System: Arguments must have input types', () => {
     ]);
   });
 
-  it('rejects an required argument that is deprecated', () => {
+  it('rejects a required argument that is deprecated', () => {
     const schema = buildSchema(`
       directive @BadDirective(
         badArg: String! @deprecated
