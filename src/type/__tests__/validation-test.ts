@@ -435,7 +435,19 @@ describe('Type System: A Schema must have Object root types', () => {
 
 describe('Type System: Root types must all be different if provided', () => {
   it('rejects a Schema where the same type is used for the "query" and "mutation" root types', () => {
-    const schema = buildSchema(`
+    const schema = new GraphQLSchema({
+      query: SomeObjectType,
+      mutation: SomeObjectType,
+    });
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, SomeObject is already used for "query" and cannot also be used for "mutation".',
+        locations: [{ line: 6, column: 3 }],
+      },
+    ]);
+
+    const schemaFromSDL = buildSchema(`
       type SomeObject {
         f: SomeObject
       }
@@ -445,7 +457,7 @@ describe('Type System: Root types must all be different if provided', () => {
         mutation: SomeObject
       }
     `);
-    expectJSON(validateSchema(schema)).toDeepEqual([
+    expectJSON(validateSchema(schemaFromSDL)).toDeepEqual([
       {
         message:
           'All root types must be different, SomeObject is already used for "query" and cannot also be used for "mutation".',
@@ -455,7 +467,19 @@ describe('Type System: Root types must all be different if provided', () => {
   });
 
   it('rejects a Schema where the same type is used for the "query" and "subscription" root types', () => {
-    const schema = buildSchema(`
+    const schema = new GraphQLSchema({
+      query: SomeObjectType,
+      subscription: SomeObjectType,
+    });
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, SomeObject is already used for "query" and cannot also be used for "subscription".',
+        locations: [{ line: 6, column: 3 }],
+      },
+    ]);
+
+    const schemaFromSDL = buildSchema(`
       type SomeObject {
         f: SomeObject
       }
@@ -465,7 +489,7 @@ describe('Type System: Root types must all be different if provided', () => {
         subscription: SomeObject
       }
     `);
-    expectJSON(validateSchema(schema)).toDeepEqual([
+    expectJSON(validateSchema(schemaFromSDL)).toDeepEqual([
       {
         message:
           'All root types must be different, SomeObject is already used for "query" and cannot also be used for "subscription".',
@@ -475,7 +499,23 @@ describe('Type System: Root types must all be different if provided', () => {
   });
 
   it('rejects a Schema where the same type is used for the "mutation" and "subscription" root types', () => {
-    const schema = buildSchema(`
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: { hello: { type: GraphQLString } },
+      }),
+      mutation: SomeObjectType,
+      subscription: SomeObjectType,
+    });
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, SomeObject is already used for "mutation" and cannot also be used for "subscription".',
+        locations: [{ line: 6, column: 3 }],
+      },
+    ]);
+
+    const schemaFromSDL = buildSchema(`
       type SomeObject {
         f: SomeObject
       }
@@ -490,7 +530,7 @@ describe('Type System: Root types must all be different if provided', () => {
         subscription: SomeObject
       }
     `);
-    expectJSON(validateSchema(schema)).toDeepEqual([
+    expectJSON(validateSchema(schemaFromSDL)).toDeepEqual([
       {
         message:
           'All root types must be different, SomeObject is already used for "mutation" and cannot also be used for "subscription".',
