@@ -433,6 +433,73 @@ describe('Type System: A Schema must have Object root types', () => {
   });
 });
 
+describe('Type System: Root types must all be different if provided', () => {
+  it('rejects a Schema where the same type is used for the "query" and "mutation" root types', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        f: SomeObject
+      }
+
+      schema {
+        query: SomeObject
+        mutation: SomeObject
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, SomeObject is already used for "query" and cannot also be used for "mutation".',
+        locations: [{ line: 8, column: 19 }],
+      },
+    ]);
+  });
+
+  it('rejects a Schema where the same type is used for the "query" and "subscription" root types', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        f: SomeObject
+      }
+
+      schema {
+        query: SomeObject
+        subscription: SomeObject
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, SomeObject is already used for "query" and cannot also be used for "subscription".',
+        locations: [{ line: 8, column: 23 }],
+      },
+    ]);
+  });
+
+  it('rejects a Schema where the same type is used for the "mutation" and "subscription" root types', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        f: SomeObject
+      }
+
+      type Query {
+        f: SomeObject
+      }
+
+      schema {
+        query: Query
+        mutation: SomeObject
+        subscription: SomeObject
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, SomeObject is already used for "mutation" and cannot also be used for "subscription".',
+        locations: [{ line: 13, column: 23 }],
+      },
+    ]);
+  });
+});
+
 describe('Type System: Objects must have fields', () => {
   it('accepts an Object type with fields object', () => {
     const schema = buildSchema(`

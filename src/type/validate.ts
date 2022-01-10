@@ -133,6 +133,44 @@ function validateRootTypes(context: SchemaValidationContext): void {
       );
     }
   }
+
+  if (queryType && mutationType && queryType.name === mutationType.name) {
+    context.reportError(
+      'All root types must be different, ' +
+        queryType.name +
+        ' is already used for "query" and cannot also be used for "mutation".',
+      getOperationTypeNode(schema, OperationTypeNode.MUTATION) ??
+        mutationType.astNode,
+    );
+  }
+
+  if (
+    queryType &&
+    subscriptionType &&
+    queryType.name === subscriptionType.name
+  ) {
+    context.reportError(
+      'All root types must be different, ' +
+        queryType.name +
+        ' is already used for "query" and cannot also be used for "subscription".',
+      getOperationTypeNode(schema, OperationTypeNode.SUBSCRIPTION) ??
+        subscriptionType.astNode,
+    );
+  }
+
+  if (
+    mutationType &&
+    subscriptionType &&
+    mutationType.name === subscriptionType.name
+  ) {
+    context.reportError(
+      'All root types must be different, ' +
+        mutationType.name +
+        ' is already used for "mutation" and cannot also be used for "subscription".',
+      getOperationTypeNode(schema, OperationTypeNode.SUBSCRIPTION) ??
+        subscriptionType.astNode,
+    );
+  }
 }
 
 function getOperationTypeNode(
