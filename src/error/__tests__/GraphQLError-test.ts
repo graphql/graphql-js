@@ -361,13 +361,13 @@ describe('toJSON', () => {
       source,
       positions: [6],
       path: ['path', 2, 'a'],
-      originalError: new Error('Hee-HOOOO'),
-      extensions: { hee: 'hoooo' },
+      originalError: new Error('I like turtles'),
+      extensions: { hee: 'I like turtles' },
     });
 
     expect(error.toJSON()).to.deep.equal({
       extensions: {
-        hee: 'hoooo',
+        hee: 'I like turtles',
       },
       locations: [
         {
