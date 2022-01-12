@@ -25,6 +25,7 @@ import {
   isNonNullType,
   isObjectType,
 } from '../../type/definition.ts';
+import { sortValueNode } from '../../utilities/sortValueNode.ts';
 import { typeFromAST } from '../../utilities/typeFromAST.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 
@@ -636,12 +637,12 @@ function sameArguments(
       return false;
     }
 
-    return sameValue(argument1.value, argument2.value);
+    return stringifyValue(argument1.value) === stringifyValue(argument2.value);
   });
 }
 
-function sameValue(value1: ValueNode, value2: ValueNode): boolean {
-  return print(value1) === print(value2);
+function stringifyValue(value: ValueNode): string {
+  return print(sortValueNode(value));
 } // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.

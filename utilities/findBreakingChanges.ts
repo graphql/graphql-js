@@ -1,9 +1,7 @@
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import { keyMap } from '../jsutils/keyMap.ts';
-import { naturalCompare } from '../jsutils/naturalCompare.ts';
 import { print } from '../language/printer.ts';
-import { visit } from '../language/visitor.ts';
 import type {
   GraphQLEnumType,
   GraphQLField,
@@ -31,6 +29,7 @@ import {
 import { isSpecifiedScalarType } from '../type/scalars.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 import { astFromValue } from './astFromValue.ts';
+import { sortValueNode } from './sortValueNode.ts';
 export enum BreakingChangeType {
   TYPE_REMOVED = 'TYPE_REMOVED',
   TYPE_CHANGED_KIND = 'TYPE_CHANGED_KIND',
@@ -531,17 +530,7 @@ function typeKindName(type: GraphQLNamedType): string {
 function stringifyValue(value: unknown, type: GraphQLInputType): string {
   const ast = astFromValue(value, type);
   ast != null || invariant(false);
-  const sortedAST = visit(ast, {
-    ObjectValue(objectNode) {
-      // Make a copy since sort mutates array
-      const fields = [...objectNode.fields];
-      fields.sort((fieldA, fieldB) =>
-        naturalCompare(fieldA.name.value, fieldB.name.value),
-      );
-      return { ...objectNode, fields };
-    },
-  });
-  return print(sortedAST);
+  return print(sortValueNode(ast));
 }
 
 function diff<
