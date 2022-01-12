@@ -13,17 +13,15 @@ var _invariant = require('../jsutils/invariant.js');
 
 var _keyMap = require('../jsutils/keyMap.js');
 
-var _naturalCompare = require('../jsutils/naturalCompare.js');
-
 var _printer = require('../language/printer.js');
-
-var _visitor = require('../language/visitor.js');
 
 var _definition = require('../type/definition.js');
 
 var _scalars = require('../type/scalars.js');
 
 var _astFromValue = require('./astFromValue.js');
+
+var _sortValueNode = require('./sortValueNode.js');
 
 let BreakingChangeType;
 exports.BreakingChangeType = BreakingChangeType;
@@ -515,20 +513,7 @@ function typeKindName(type) {
 function stringifyValue(value, type) {
   const ast = (0, _astFromValue.astFromValue)(value, type);
   ast != null || (0, _invariant.invariant)(false);
-  const sortedAST = (0, _visitor.visit)(ast, {
-    ObjectValue(objectNode) {
-      // Make a copy since sort mutates array
-      const fields = [...objectNode.fields];
-      fields.sort((fieldA, fieldB) =>
-        (0, _naturalCompare.naturalCompare)(
-          fieldA.name.value,
-          fieldB.name.value,
-        ),
-      );
-      return { ...objectNode, fields };
-    },
-  });
-  return (0, _printer.print)(sortedAST);
+  return (0, _printer.print)((0, _sortValueNode.sortValueNode)(ast));
 }
 
 function diff(oldArray, newArray) {

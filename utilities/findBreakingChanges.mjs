@@ -1,9 +1,7 @@
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
 import { keyMap } from '../jsutils/keyMap.mjs';
-import { naturalCompare } from '../jsutils/naturalCompare.mjs';
 import { print } from '../language/printer.mjs';
-import { visit } from '../language/visitor.mjs';
 import {
   isEnumType,
   isInputObjectType,
@@ -19,6 +17,7 @@ import {
 } from '../type/definition.mjs';
 import { isSpecifiedScalarType } from '../type/scalars.mjs';
 import { astFromValue } from './astFromValue.mjs';
+import { sortValueNode } from './sortValueNode.mjs';
 export let BreakingChangeType;
 
 (function (BreakingChangeType) {
@@ -483,17 +482,7 @@ function typeKindName(type) {
 function stringifyValue(value, type) {
   const ast = astFromValue(value, type);
   ast != null || invariant(false);
-  const sortedAST = visit(ast, {
-    ObjectValue(objectNode) {
-      // Make a copy since sort mutates array
-      const fields = [...objectNode.fields];
-      fields.sort((fieldA, fieldB) =>
-        naturalCompare(fieldA.name.value, fieldB.name.value),
-      );
-      return { ...objectNode, fields };
-    },
-  });
-  return print(sortedAST);
+  return print(sortValueNode(ast));
 }
 
 function diff(oldArray, newArray) {

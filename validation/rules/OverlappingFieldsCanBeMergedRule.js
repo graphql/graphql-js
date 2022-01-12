@@ -15,6 +15,8 @@ var _printer = require('../../language/printer.js');
 
 var _definition = require('../../type/definition.js');
 
+var _sortValueNode = require('../../utilities/sortValueNode.js');
+
 var _typeFromAST = require('../../utilities/typeFromAST.js');
 
 function reasonMessage(reason) {
@@ -613,12 +615,12 @@ function sameArguments(arguments1, arguments2) {
       return false;
     }
 
-    return sameValue(argument1.value, argument2.value);
+    return stringifyValue(argument1.value) === stringifyValue(argument2.value);
   });
 }
 
-function sameValue(value1, value2) {
-  return (0, _printer.print)(value1) === (0, _printer.print)(value2);
+function stringifyValue(value) {
+  return (0, _printer.print)((0, _sortValueNode.sortValueNode)(value));
 } // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.

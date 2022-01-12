@@ -10,6 +10,7 @@ import {
   isNonNullType,
   isObjectType,
 } from '../../type/definition.mjs';
+import { sortValueNode } from '../../utilities/sortValueNode.mjs';
 import { typeFromAST } from '../../utilities/typeFromAST.mjs';
 
 function reasonMessage(reason) {
@@ -608,12 +609,12 @@ function sameArguments(arguments1, arguments2) {
       return false;
     }
 
-    return sameValue(argument1.value, argument2.value);
+    return stringifyValue(argument1.value) === stringifyValue(argument2.value);
   });
 }
 
-function sameValue(value1, value2) {
-  return print(value1) === print(value2);
+function stringifyValue(value) {
+  return print(sortValueNode(value));
 } // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.
