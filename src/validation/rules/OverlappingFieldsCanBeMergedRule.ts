@@ -29,6 +29,7 @@ import {
   isObjectType,
 } from '../../type/definition';
 
+import { sortValueNode } from '../../utilities/sortValueNode';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 import type { ValidationContext } from '../ValidationContext';
@@ -652,12 +653,12 @@ function sameArguments(
     if (!argument2) {
       return false;
     }
-    return sameValue(argument1.value, argument2.value);
+    return stringifyValue(argument1.value) === stringifyValue(argument2.value);
   });
 }
 
-function sameValue(value1: ValueNode, value2: ValueNode): boolean {
-  return print(value1) === print(value2);
+function stringifyValue(value: ValueNode): string {
+  return print(sortValueNode(value));
 }
 
 // Two types conflict if both types could not apply to a value simultaneously.
