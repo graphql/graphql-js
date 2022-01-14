@@ -657,6 +657,11 @@ describe('Type System Printer', () => {
       ) on SCALAR
 
       """
+      Indicates an Object is a OneOf Object or an Input Object is a OneOf Input Object.
+      """
+      directive @oneOf on OBJECT | INPUT_OBJECT
+
+      """
       A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
       """
       type __Schema {

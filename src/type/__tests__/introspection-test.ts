@@ -989,6 +989,12 @@ describe('Introspection', () => {
                 },
               ],
             },
+            {
+              name: 'oneOf',
+              isRepeatable: false,
+              locations: ['OBJECT', 'INPUT_OBJECT'],
+              args: [],
+            },
           ],
         },
       },
