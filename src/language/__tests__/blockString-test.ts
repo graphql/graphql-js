@@ -20,7 +20,7 @@ describe('dedentBlockStringLines', () => {
     expectDedent(['']).to.deep.equal([]);
   });
 
-  it('do not dedent first line', () => {
+  it('does not dedent first line', () => {
     expectDedent(['  a']).to.deep.equal(['  a']);
     expectDedent([' a', '  b']).to.deep.equal([' a', 'b']);
   });
@@ -162,12 +162,7 @@ describe('isPrintableAsBlockString', () => {
     expectNonPrintable(' \t');
   });
 
-  it('rejects strings with non-printable character', () => {
-    expectNonPrintable('\x00');
-    expectNonPrintable('a\x00b');
-  });
-
-  it('rejects strings with non-printable character', () => {
+  it('rejects strings with non-printable characters', () => {
     expectNonPrintable('\x00');
     expectNonPrintable('a\x00b');
   });
@@ -194,7 +189,7 @@ describe('isPrintableAsBlockString', () => {
     expectNonPrintable('\n\na');
   });
 
-  it('rejects strings with leading empty lines', () => {
+  it('rejects strings with trailing empty lines', () => {
     expectNonPrintable('a\n');
     expectNonPrintable('a\n ');
     expectNonPrintable('a\n\t');
@@ -217,7 +212,7 @@ describe('printBlockString', () => {
     };
   }
 
-  it('do not escape characters', () => {
+  it('does not escape characters', () => {
     const str = '" \\ / \b \f \n \r \t';
     expectBlockString(str).toEqual({
       readable: '"""\n' + str + '\n"""',
