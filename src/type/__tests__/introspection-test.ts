@@ -372,6 +372,17 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  name: 'oneOf',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'Boolean',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
               ],
               inputFields: null,
               interfaces: [],
@@ -1520,6 +1531,84 @@ describe('Introspection', () => {
           trueFields: [{ name: 'nonDeprecated' }, { name: 'deprecated' }],
           falseFields: [{ name: 'nonDeprecated' }],
           omittedFields: [{ name: 'nonDeprecated' }],
+        },
+      },
+    });
+  });
+
+  it('identifies oneOf for objects', () => {
+    const schema = buildSchema(`
+      type SomeObject @oneOf {
+        a: String
+      }
+
+      type AnotherObject {
+        a: String
+        b: String
+      }
+
+      type Query {
+        someField: String
+      }
+    `);
+
+    const source = `
+      {
+        a: __type(name: "SomeObject") {
+          oneOf
+        }
+        b: __type(name: "AnotherObject") {
+          oneOf
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        a: {
+          oneOf: true,
+        },
+        b: {
+          oneOf: false,
+        },
+      },
+    });
+  });
+
+  it('identifies oneOf for input objects', () => {
+    const schema = buildSchema(`
+      input SomeInputObject @oneOf {
+        a: String
+      }
+
+      input AnotherInputObject {
+        a: String
+        b: String
+      }
+
+      type Query {
+        someField(someArg: SomeInputObject): String
+      }
+    `);
+
+    const source = `
+      {
+        a: __type(name: "SomeInputObject") {
+          oneOf
+        }
+        b: __type(name: "AnotherInputObject") {
+          oneOf
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        a: {
+          oneOf: true,
+        },
+        b: {
+          oneOf: false,
         },
       },
     });

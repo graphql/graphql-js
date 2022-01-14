@@ -66,6 +66,7 @@ import {
 import {
   GraphQLDeprecatedDirective,
   GraphQLDirective,
+  GraphQLOneOfDirective,
   GraphQLSpecifiedByDirective,
 } from '../type/directives';
 import { introspectionTypes, isIntrospectionType } from '../type/introspection';
@@ -592,6 +593,7 @@ export function extendSchemaImpl(
           fields: () => buildFieldMap(allNodes),
           astNode,
           extensionASTNodes,
+          isOneOf: isOneOf(astNode),
         });
       }
       case Kind.INTERFACE_TYPE_DEFINITION: {
@@ -646,6 +648,7 @@ export function extendSchemaImpl(
           fields: () => buildInputFieldMap(allNodes),
           astNode,
           extensionASTNodes,
+          isOneOf: isOneOf(astNode),
         });
       }
     }
@@ -681,4 +684,13 @@ function getSpecifiedByURL(
   const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
   // @ts-expect-error validated by `getDirectiveValues`
   return specifiedBy?.url;
+}
+
+/**
+ * Given an input object node, returns if the node should be OneOf.
+ */
+function isOneOf(
+  node: InputObjectTypeDefinitionNode | ObjectTypeDefinitionNode,
+): boolean {
+  return Boolean(getDirectiveValues(GraphQLOneOfDirective, node));
 }
