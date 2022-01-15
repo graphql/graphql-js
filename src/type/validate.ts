@@ -20,6 +20,7 @@ import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 import type {
   GraphQLEnumType,
+  GraphQLField,
   GraphQLInputField,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -308,6 +309,23 @@ function validateFields(
         );
       }
     }
+
+    if (isObjectType(type) && type.isOneOf) {
+      validateOneOfObjectField(type, field, context);
+    }
+  }
+}
+
+function validateOneOfObjectField(
+  type: GraphQLObjectType,
+  field: GraphQLField<unknown, unknown, unknown>,
+  context: SchemaValidationContext,
+): void {
+  if (isNonNullType(field.type)) {
+    context.reportError(
+      `Field ${type.name}.${field.name} must be nullable as it is part of a OneOf Type.`,
+      field.astNode?.type,
+    );
   }
 }
 
@@ -531,6 +549,30 @@ function validateInputFields(
         [getDeprecatedDirectiveNode(field.astNode), field.astNode?.type],
       );
     }
+
+    if (inputObj.isOneOf) {
+      validateOneOfInputObjectField(inputObj, field, context);
+    }
+  }
+}
+
+function validateOneOfInputObjectField(
+  type: GraphQLInputObjectType,
+  field: GraphQLInputField,
+  context: SchemaValidationContext,
+): void {
+  if (isNonNullType(field.type)) {
+    context.reportError(
+      `OneOf input field ${type.name}.${field.name} must be nullable.`,
+      field.astNode?.type,
+    );
+  }
+
+  if (field.defaultValue) {
+    context.reportError(
+      `OneOf input field ${type.name}.${field.name} cannot have a default value.`,
+      field.astNode,
+    );
   }
 }
 
