@@ -3,11 +3,10 @@ import type { Maybe } from '../../jsutils/Maybe.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type {
-  ArgumentNode,
   FieldNode,
   FragmentDefinitionNode,
+  ObjectValueNode,
   SelectionSetNode,
-  ValueNode,
 } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { print } from '../../language/printer.ts';
@@ -566,16 +565,9 @@ function findConflict(
         [node1],
         [node2],
       ];
-    } // FIXME https://github.com/graphql/graphql-js/issues/2203
+    } // Two field calls must have the same arguments.
 
-    const args1 =
-      /* c8 ignore next */
-      node1.arguments ?? [];
-    const args2 =
-      /* c8 ignore next */
-      node2.arguments ?? []; // Two field calls must have the same arguments.
-
-    if (!sameArguments(args1, args2)) {
+    if (stringifyArguments(node1) !== stringifyArguments(node2)) {
       return [
         [responseName, 'they have differing arguments'],
         [node1],
@@ -620,29 +612,20 @@ function findConflict(
   }
 }
 
-function sameArguments(
-  arguments1: ReadonlyArray<ArgumentNode>,
-  arguments2: ReadonlyArray<ArgumentNode>,
-): boolean {
-  if (arguments1.length !== arguments2.length) {
-    return false;
-  }
-
-  return arguments1.every((argument1) => {
-    const argument2 = arguments2.find(
-      (argument) => argument.name.value === argument1.name.value,
-    );
-
-    if (!argument2) {
-      return false;
-    }
-
-    return stringifyValue(argument1.value) === stringifyValue(argument2.value);
-  });
-}
-
-function stringifyValue(value: ValueNode): string {
-  return print(sortValueNode(value));
+function stringifyArguments(fieldNode: FieldNode): string {
+  // FIXME https://github.com/graphql/graphql-js/issues/2203
+  const args =
+    /* c8 ignore next */
+    fieldNode.arguments ?? [];
+  const inputObjectWithArgs: ObjectValueNode = {
+    kind: Kind.OBJECT,
+    fields: args.map((argNode) => ({
+      kind: Kind.OBJECT_FIELD,
+      name: argNode.name,
+      value: argNode.value,
+    })),
+  };
+  return print(sortValueNode(inputObjectWithArgs));
 } // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.
