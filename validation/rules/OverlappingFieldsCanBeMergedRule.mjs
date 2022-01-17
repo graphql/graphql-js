@@ -523,8 +523,6 @@ function findConflict(
       isObjectType(parentType2));
 
   if (!areMutuallyExclusive) {
-    var _node1$arguments, _node2$arguments;
-
     // Two aliases must refer to the same field.
     const name1 = node1.name.value;
     const name2 = node2.name.value;
@@ -535,22 +533,9 @@ function findConflict(
         [node1],
         [node2],
       ];
-    } // FIXME https://github.com/graphql/graphql-js/issues/2203
+    } // Two field calls must have the same arguments.
 
-    const args1 =
-      /* c8 ignore next */
-      (_node1$arguments = node1.arguments) !== null &&
-      _node1$arguments !== void 0
-        ? _node1$arguments
-        : [];
-    const args2 =
-      /* c8 ignore next */
-      (_node2$arguments = node2.arguments) !== null &&
-      _node2$arguments !== void 0
-        ? _node2$arguments
-        : []; // Two field calls must have the same arguments.
-
-    if (!sameArguments(args1, args2)) {
+    if (stringifyArguments(node1) !== stringifyArguments(node2)) {
       return [
         [responseName, 'they have differing arguments'],
         [node1],
@@ -595,26 +580,25 @@ function findConflict(
   }
 }
 
-function sameArguments(arguments1, arguments2) {
-  if (arguments1.length !== arguments2.length) {
-    return false;
-  }
+function stringifyArguments(fieldNode) {
+  var _fieldNode$arguments;
 
-  return arguments1.every((argument1) => {
-    const argument2 = arguments2.find(
-      (argument) => argument.name.value === argument1.name.value,
-    );
-
-    if (!argument2) {
-      return false;
-    }
-
-    return stringifyValue(argument1.value) === stringifyValue(argument2.value);
-  });
-}
-
-function stringifyValue(value) {
-  return print(sortValueNode(value));
+  // FIXME https://github.com/graphql/graphql-js/issues/2203
+  const args =
+    /* c8 ignore next */
+    (_fieldNode$arguments = fieldNode.arguments) !== null &&
+    _fieldNode$arguments !== void 0
+      ? _fieldNode$arguments
+      : [];
+  const inputObjectWithArgs = {
+    kind: Kind.OBJECT,
+    fields: args.map((argNode) => ({
+      kind: Kind.OBJECT_FIELD,
+      name: argNode.name,
+      value: argNode.value,
+    })),
+  };
+  return print(sortValueNode(inputObjectWithArgs));
 } // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.
