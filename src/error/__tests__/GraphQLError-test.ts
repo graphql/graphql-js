@@ -365,17 +365,10 @@ describe('toJSON', () => {
     });
 
     expect(error.toJSON()).to.deep.equal({
-      extensions: {
-        hee: 'I like turtles',
-      },
-      locations: [
-        {
-          column: 5,
-          line: 2,
-        },
-      ],
       message: 'msg',
+      locations: [{ column: 5, line: 2 }],
       path: ['path', 2, 'a'],
+      extensions: { hee: 'I like turtles' },
     });
   });
 });
