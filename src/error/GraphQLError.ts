@@ -20,7 +20,7 @@ export interface GraphQLErrorExtensions {
   [attributeName: string]: unknown;
 }
 
-interface GraphQLErrorArgs {
+export interface GraphQLErrorArgs {
   nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
   source?: Maybe<Source>;
   positions?: Maybe<ReadonlyArray<number>>;
@@ -111,14 +111,17 @@ export class GraphQLError extends Error {
    */
   readonly extensions: GraphQLErrorExtensions;
 
+  /**
+   * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
+   */
   constructor(
     message: string,
-    nodes?: GraphQLErrorArgs['nodes'],
-    source?: GraphQLErrorArgs['source'],
-    positions?: GraphQLErrorArgs['positions'],
-    path?: GraphQLErrorArgs['path'],
-    originalError?: GraphQLErrorArgs['originalError'],
-    extensions?: GraphQLErrorArgs['extensions'],
+    nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
+    source?: Maybe<Source>,
+    positions?: Maybe<ReadonlyArray<number>>,
+    path?: Maybe<ReadonlyArray<string | number>>,
+    originalError?: Maybe<Error & { readonly extensions?: unknown }>,
+    extensions?: Maybe<GraphQLErrorExtensions>,
   );
   constructor(message: string, args?: GraphQLErrorArgs);
   constructor(message: string, ...rawArgs: BackwardsCompatibleArgs) {
