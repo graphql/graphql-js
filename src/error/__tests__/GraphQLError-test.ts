@@ -355,8 +355,7 @@ describe('toJSON', () => {
   });
 
   it('can be created with the alternative object argument', () => {
-    const error = new GraphQLError({
-      message: 'msg',
+    const error = new GraphQLError('msg', {
       nodes: [operationNode],
       source,
       positions: [6],

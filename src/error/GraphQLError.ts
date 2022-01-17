@@ -21,7 +21,6 @@ export interface GraphQLErrorExtensions {
 }
 
 interface GraphQLErrorArgs {
-  message: string;
   nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
   source?: Maybe<Source>;
   positions?: Maybe<ReadonlyArray<number>>;
@@ -31,9 +30,8 @@ interface GraphQLErrorArgs {
 }
 
 type BackwardsCompatibleArgs =
-  | [GraphQLErrorArgs]
+  | [args?: GraphQLErrorArgs]
   | [
-      message: GraphQLErrorArgs['message'],
       nodes?: GraphQLErrorArgs['nodes'],
       source?: GraphQLErrorArgs['source'],
       positions?: GraphQLErrorArgs['positions'],
@@ -43,18 +41,18 @@ type BackwardsCompatibleArgs =
     ];
 
 function toNormalizedArgs(args: BackwardsCompatibleArgs): GraphQLErrorArgs {
-  if (typeof args[0] === 'string') {
+  const firstArg = args[0];
+  if (firstArg == null || 'kind' in firstArg || 'length' in firstArg) {
     return {
-      message: args[0],
-      nodes: args[1],
-      source: args[2],
-      positions: args[3],
-      path: args[4],
-      originalError: args[5],
-      extensions: args[6],
+      nodes: firstArg,
+      source: args[1],
+      positions: args[2],
+      path: args[3],
+      originalError: args[4],
+      extensions: args[5],
     };
   }
-  return args[0];
+  return firstArg;
 }
 
 /**
@@ -113,16 +111,19 @@ export class GraphQLError extends Error {
    */
   readonly extensions: GraphQLErrorExtensions;
 
-  constructor(...rawArgs: BackwardsCompatibleArgs) {
-    const {
-      message,
-      nodes,
-      source,
-      positions,
-      path,
-      originalError,
-      extensions,
-    } = toNormalizedArgs(rawArgs);
+  constructor(
+    message: string,
+    nodes?: GraphQLErrorArgs['nodes'],
+    source?: GraphQLErrorArgs['source'],
+    positions?: GraphQLErrorArgs['positions'],
+    path?: GraphQLErrorArgs['path'],
+    originalError?: GraphQLErrorArgs['originalError'],
+    extensions?: GraphQLErrorArgs['extensions'],
+  );
+  constructor(message: string, args?: GraphQLErrorArgs);
+  constructor(message: string, ...rawArgs: BackwardsCompatibleArgs) {
+    const { nodes, source, positions, path, originalError, extensions } =
+      toNormalizedArgs(rawArgs);
     super(message);
 
     this.name = 'GraphQLError';
