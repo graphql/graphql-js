@@ -353,4 +353,22 @@ describe('toJSON', () => {
       extensions: { foo: 'bar' },
     });
   });
+
+  it('can be created with the alternative object argument', () => {
+    const error = new GraphQLError('msg', {
+      nodes: [operationNode],
+      source,
+      positions: [6],
+      path: ['path', 2, 'a'],
+      originalError: new Error('I like turtles'),
+      extensions: { hee: 'I like turtles' },
+    });
+
+    expect(error.toJSON()).to.deep.equal({
+      message: 'msg',
+      locations: [{ column: 5, line: 2 }],
+      path: ['path', 2, 'a'],
+      extensions: { hee: 'I like turtles' },
+    });
+  });
 });

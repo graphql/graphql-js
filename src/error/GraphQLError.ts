@@ -20,6 +20,41 @@ export interface GraphQLErrorExtensions {
   [attributeName: string]: unknown;
 }
 
+export interface GraphQLErrorArgs {
+  nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
+  source?: Maybe<Source>;
+  positions?: Maybe<ReadonlyArray<number>>;
+  path?: Maybe<ReadonlyArray<string | number>>;
+  originalError?: Maybe<Error & { readonly extensions?: unknown }>;
+  extensions?: Maybe<GraphQLErrorExtensions>;
+}
+
+type BackwardsCompatibleArgs =
+  | [args?: GraphQLErrorArgs]
+  | [
+      nodes?: GraphQLErrorArgs['nodes'],
+      source?: GraphQLErrorArgs['source'],
+      positions?: GraphQLErrorArgs['positions'],
+      path?: GraphQLErrorArgs['path'],
+      originalError?: GraphQLErrorArgs['originalError'],
+      extensions?: GraphQLErrorArgs['extensions'],
+    ];
+
+function toNormalizedArgs(args: BackwardsCompatibleArgs): GraphQLErrorArgs {
+  const firstArg = args[0];
+  if (firstArg == null || 'kind' in firstArg || 'length' in firstArg) {
+    return {
+      nodes: firstArg,
+      source: args[1],
+      positions: args[2],
+      path: args[3],
+      originalError: args[4],
+      extensions: args[5],
+    };
+  }
+  return firstArg;
+}
+
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
@@ -76,6 +111,9 @@ export class GraphQLError extends Error {
    */
   readonly extensions: GraphQLErrorExtensions;
 
+  /**
+   * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
+   */
   constructor(
     message: string,
     nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
@@ -84,7 +122,11 @@ export class GraphQLError extends Error {
     path?: Maybe<ReadonlyArray<string | number>>,
     originalError?: Maybe<Error & { readonly extensions?: unknown }>,
     extensions?: Maybe<GraphQLErrorExtensions>,
-  ) {
+  );
+  constructor(message: string, args?: GraphQLErrorArgs);
+  constructor(message: string, ...rawArgs: BackwardsCompatibleArgs) {
+    const { nodes, source, positions, path, originalError, extensions } =
+      toNormalizedArgs(rawArgs);
     super(message);
 
     this.name = 'GraphQLError';
