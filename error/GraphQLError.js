@@ -13,12 +13,29 @@ var _location = require('../language/location.js');
 
 var _printLocation = require('../language/printLocation.js');
 
+function toNormalizedArgs(args) {
+  const firstArg = args[0];
+
+  if (firstArg == null || 'kind' in firstArg || 'length' in firstArg) {
+    return {
+      nodes: firstArg,
+      source: args[1],
+      positions: args[2],
+      path: args[3],
+      originalError: args[4],
+      extensions: args[5],
+    };
+  }
+
+  return firstArg;
+}
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
  * and stack trace, it also includes information about the locations in a
  * GraphQL document and/or execution result that correspond to the Error.
  */
+
 class GraphQLError extends Error {
   /**
    * An array of `{ line, column }` locations within the source GraphQL document
@@ -61,17 +78,15 @@ class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  constructor(
-    message,
-    nodes,
-    source,
-    positions,
-    path,
-    originalError,
-    extensions,
-  ) {
+
+  /**
+   * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
+   */
+  constructor(message, ...rawArgs) {
     var _this$nodes, _nodeLocations$, _ref;
 
+    const { nodes, source, positions, path, originalError, extensions } =
+      toNormalizedArgs(rawArgs);
     super(message);
     this.name = 'GraphQLError';
     this.path = path !== null && path !== void 0 ? path : undefined;

@@ -14,6 +14,18 @@ import type { Source } from '../language/source';
 export interface GraphQLErrorExtensions {
   [attributeName: string]: unknown;
 }
+export interface GraphQLErrorArgs {
+  nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
+  source?: Maybe<Source>;
+  positions?: Maybe<ReadonlyArray<number>>;
+  path?: Maybe<ReadonlyArray<string | number>>;
+  originalError?: Maybe<
+    Error & {
+      readonly extensions?: unknown;
+    }
+  >;
+  extensions?: Maybe<GraphQLErrorExtensions>;
+}
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
@@ -63,6 +75,9 @@ export declare class GraphQLError extends Error {
    * Extension fields to add to the formatted error.
    */
   readonly extensions: GraphQLErrorExtensions;
+  /**
+   * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
+   */
   constructor(
     message: string,
     nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
@@ -76,6 +91,7 @@ export declare class GraphQLError extends Error {
     >,
     extensions?: Maybe<GraphQLErrorExtensions>,
   );
+  constructor(message: string, args?: GraphQLErrorArgs);
   get [Symbol.toStringTag](): string;
   toString(): string;
   toJSON(): GraphQLFormattedError;
