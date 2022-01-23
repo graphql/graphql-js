@@ -112,12 +112,11 @@ function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
   let keys = [root];
   let index = -1;
   let edits = [];
-  let node = undefined;
+  let node = root;
   let key = undefined;
   let parent = undefined;
   const path = [];
   const ancestors = [];
-  let newRoot = root;
   /* eslint-enable no-undef-init */
 
   do {
@@ -162,17 +161,15 @@ function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
       edits = stack.edits;
       inArray = stack.inArray;
       stack = stack.prev;
-    } else {
-      key = parent ? (inArray ? index : keys[index]) : undefined;
-      node = parent ? parent[key] : newRoot;
+    } else if (parent) {
+      key = inArray ? index : keys[index];
+      node = parent[key];
 
       if (node === null || node === undefined) {
         continue;
       }
 
-      if (parent) {
-        path.push(key);
-      }
+      path.push(key);
     }
 
     let result;
@@ -257,10 +254,11 @@ function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
   } while (stack !== undefined);
 
   if (edits.length !== 0) {
-    newRoot = edits[edits.length - 1][1];
+    // New root
+    return edits[edits.length - 1][1];
   }
 
-  return newRoot;
+  return root;
 }
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
