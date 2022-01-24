@@ -299,8 +299,8 @@ jobs:
           src_dir: denoDist
           target_branch: deno
 
-  build-docs:
-    name: Build docs site
+  build-website:
+    name: Build website
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -318,4 +318,4 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Build Docs
-        run: npm run build:docs
+        run: npm run build:website

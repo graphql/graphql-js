@@ -699,7 +699,7 @@ overrides:
     rules:
       node/no-unpublished-import: off
       import/no-default-export: off
-  - files: 'docs/**'
+  - files: 'website/**'
     plugins:
       - 'react'
     extends:

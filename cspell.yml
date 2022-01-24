@@ -12,7 +12,7 @@ ignorePaths:
 overrides:
   - filename: '**/docs-old/APIReference-*.md'
     ignoreRegExpList: ['/href="[^"]*"/']
-  - filename: 'docs/**'
+  - filename: 'website/**'
     dictionaries:
       - fullstack
     words:
