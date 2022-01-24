@@ -2,19 +2,19 @@
 
 module.exports = {
   tutorialSidebar: [
-    'index',
-    'running-an-express-graphql-server',
-    'graphql-clients',
-    'basic-types',
-    'passing-arguments',
-    'object-types',
-    'mutations-and-input-types',
-    'authentication-and-express-middleware',
+    'tutorials/index',
+    'tutorials/running-an-express-graphql-server',
+    'tutorials/graphql-clients',
+    'tutorials/basic-types',
+    'tutorials/passing-arguments',
+    'tutorials/object-types',
+    'tutorials/mutations-and-input-types',
+    'tutorials/authentication-and-express-middleware',
     {
       type: 'category',
       label: 'Advanced',
-      items: ['constructing-types'],
+      items: ['tutorials/constructing-types'],
     },
-    'express-graphql',
+    'tutorials/express-graphql',
   ],
 };

@@ -1,6 +1,5 @@
 ---
 title: Getting Started With GraphQL.js
-slug: /
 ---
 
 ## Prerequisites
