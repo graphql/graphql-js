@@ -83,8 +83,8 @@
     "mocha": "9.1.4",
     "prettier": "2.5.1",
     "prism-react-renderer": "1.2.1",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
     "typedoc": "0.22.11",
     "typescript": "4.5.5",
     "url-loader": "4.1.1"
