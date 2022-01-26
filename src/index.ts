@@ -318,6 +318,7 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,
+  getVariableValues,
   getDirectiveValues,
   subscribe,
   createSourceEventStream,
