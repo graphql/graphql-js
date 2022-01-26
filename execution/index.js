@@ -39,6 +39,12 @@ Object.defineProperty(exports, 'getDirectiveValues', {
     return _values.getDirectiveValues;
   },
 });
+Object.defineProperty(exports, 'getVariableValues', {
+  enumerable: true,
+  get: function () {
+    return _values.getVariableValues;
+  },
+});
 Object.defineProperty(exports, 'responsePathAsArray', {
   enumerable: true,
   get: function () {

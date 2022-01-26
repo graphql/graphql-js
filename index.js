@@ -789,6 +789,12 @@ Object.defineProperty(exports, 'getOperationRootType', {
     return _index6.getOperationRootType;
   },
 });
+Object.defineProperty(exports, 'getVariableValues', {
+  enumerable: true,
+  get: function () {
+    return _index3.getVariableValues;
+  },
+});
 Object.defineProperty(exports, 'getVisitFn', {
   enumerable: true,
   get: function () {
