@@ -23,7 +23,9 @@ export function UniqueFragmentNamesRule(
         context.reportError(
           new GraphQLError(
             `There can be only one fragment named "${fragmentName}".`,
-            [knownFragmentNames[fragmentName], node.name],
+            {
+              nodes: [knownFragmentNames[fragmentName], node.name],
+            },
           ),
         );
       } else {

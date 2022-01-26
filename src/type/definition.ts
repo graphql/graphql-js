@@ -1441,7 +1441,7 @@ export class GraphQLEnumType /* <T> */ {
       throw new GraphQLError(
         `Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
           didYouMeanEnumValue(this, valueStr),
-        valueNode,
+        { nodes: valueNode },
       );
     }
 
@@ -1451,7 +1451,7 @@ export class GraphQLEnumType /* <T> */ {
       throw new GraphQLError(
         `Value "${valueStr}" does not exist in "${this.name}" enum.` +
           didYouMeanEnumValue(this, valueStr),
-        valueNode,
+        { nodes: valueNode },
       );
     }
     return enumValue.value;

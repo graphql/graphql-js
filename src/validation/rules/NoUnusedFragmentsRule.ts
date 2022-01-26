@@ -46,10 +46,9 @@ export function NoUnusedFragmentsRule(
           const fragName = fragmentDef.name.value;
           if (fragmentNameUsed[fragName] !== true) {
             context.reportError(
-              new GraphQLError(
-                `Fragment "${fragName}" is never used.`,
-                fragmentDef,
-              ),
+              new GraphQLError(`Fragment "${fragName}" is never used.`, {
+                nodes: fragmentDef,
+              }),
             );
           }
         }
