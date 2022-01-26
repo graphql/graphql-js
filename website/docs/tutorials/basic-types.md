@@ -1,9 +1,5 @@
 ---
 title: Basic Types
-layout: ../_core/GraphQLJSLayout
-category: GraphQL.js Tutorial
-permalink: /graphql-js/basic-types/
-next: /graphql-js/passing-arguments/
 ---
 
 In most situations, all you need to do is to specify the types for your API using the GraphQL schema language, taken as an argument to the `buildSchema` function.
@@ -59,4 +55,4 @@ app.listen(4000, () => {
 
 If you run this code with `node server.js` and browse to http://localhost:4000/graphql you can try out these APIs.
 
-These examples show you how to call APIs that return different types. To send different types of data into an API, you will also need to learn about [passing arguments to a GraphQL API](/graphql-js/passing-arguments/).
+These examples show you how to call APIs that return different types. To send different types of data into an API, you will also need to learn about [passing arguments to a GraphQL API](./passing-arguments.md).

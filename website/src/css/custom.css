@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+/* stylelint-disable docusaurus/copyright-header */
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #e434aa;
+  --ifm-color-primary-dark: #de1e9f;
+  --ifm-color-primary-darker: #d21c96;
+  --ifm-color-primary-darkest: #ad177c;
+  --ifm-color-primary-light: #e74db4;
+  --ifm-color-primary-lighter: #e959ba;
+  --ifm-color-primary-lightest: #ee7ec9;
+  --ifm-code-font-size: 95%;
+  --ifm-font-family-base: 'Rubik', sans-serif;
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+html[data-theme='dark'] .docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.3);
+}

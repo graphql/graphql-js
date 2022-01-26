@@ -70,8 +70,9 @@ jobs:
       - name: Install Dependencies
         run: npm ci --ignore-scripts
 
-      - name: Check that package-lock.json doesn't have conflicts
-        run: npm ls --depth 999
+      # Disabled due to https://github.com/milesj/docusaurus-plugin-typedoc-api/pull/19
+      # - name: Check that package-lock.json doesn't have conflicts
+      #  run: npm ls --depth 999
 
       - name: Run npm install
         run: npm install --force --package-lock-only --ignore-scripts --engine-strict --strict-peer-deps
@@ -298,3 +299,24 @@ jobs:
         with:
           src_dir: denoDist
           target_branch: deno
+
+  build-website:
+    name: Build website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: npm
+          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build Docs
+        run: npm run build:website

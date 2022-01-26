@@ -1,10 +1,6 @@
 ---
 title: Authentication and Express Middleware
-sidebarTitle: Authentication & Middleware
-layout: ../_core/GraphQLJSLayout
-category: GraphQL.js Tutorial
-permalink: /graphql-js/authentication-and-express-middleware/
-next: /graphql-js/constructing-types/
+sidebar_label: Authentication & Middleware
 ---
 
 It's simple to use any Express middleware in conjunction with `express-graphql`. In particular, this is a great pattern for handling authentication.

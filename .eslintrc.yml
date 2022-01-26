@@ -12,7 +12,7 @@ plugins:
   - simple-import-sort
 settings:
   node:
-    tryExtensions: ['.js', '.json', '.node', '.ts', '.d.ts']
+    tryExtensions: ['.js', '.jsx', '.json', '.node', '.ts', '.d.ts']
 
 rules:
   ##############################################################################
@@ -691,3 +691,30 @@ overrides:
       import/no-nodejs-modules: off
       import/no-commonjs: off
       no-console: off
+  - files: '**/*.jsx'
+    parserOptions:
+      sourceType: module
+      ecmaFeatures:
+        jsx: true
+    rules:
+      node/no-unpublished-import: off
+      import/no-default-export: off
+  - files: 'website/**'
+    plugins:
+      - 'react'
+    extends:
+      - 'plugin:react/recommended'
+      - 'plugin:react-hooks/recommended'
+    settings:
+      react:
+        version: detect
+    rules:
+      node/no-unpublished-require: off
+      node/no-missing-import: off
+      import/no-default-export: off
+      import/no-commonjs: off
+      import/no-nodejs-modules: off
+      import/no-extraneous-dependencies: off
+      # Ignore docusarus related webpack aliases
+      import/no-unresolved:
+        ['error', { 'ignore': ['^@theme', '^@docusaurus', '^@generated'] }]

@@ -1,10 +1,5 @@
 ---
 title: Getting Started With GraphQL.js
-sidebarTitle: Getting Started
-layout: ../_core/GraphQLJSLayout
-category: GraphQL.js Tutorial
-permalink: /graphql-js/
-next: /graphql-js/running-an-express-graphql-server/
 ---
 
 ## Prerequisites
@@ -63,4 +58,4 @@ You should see the GraphQL response printed out:
 
 Congratulations - you just executed a GraphQL query!
 
-For practical applications, you'll probably want to run GraphQL queries from an API server, rather than executing GraphQL with a command line tool. To use GraphQL for an API server over HTTP, check out [Running an Express GraphQL Server](/graphql-js/running-an-express-graphql-server/).
+For practical applications, you'll probably want to run GraphQL queries from an API server, rather than executing GraphQL with a command line tool. To use GraphQL for an API server over HTTP, check out [Running an Express GraphQL Server](./running-an-express-graphql-server.md).
