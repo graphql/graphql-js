@@ -49,7 +49,8 @@
     "build:npm": "node resources/build-npm.js",
     "build:deno": "node resources/build-deno.js",
     "gitpublish:npm": "bash ./resources/gitpublish.sh npm npmDist",
-    "gitpublish:deno": "bash ./resources/gitpublish.sh deno denoDist"
+    "gitpublish:deno": "bash ./resources/gitpublish.sh deno denoDist",
+    "release:canary": "(node resources/canary-release.js && npm run build:npm && npx changeset publish --tag canary) || echo Skipping Canary..."
   },
   "devDependencies": {
     "@babel/core": "7.16.12",
@@ -57,6 +58,7 @@
     "@babel/plugin-transform-typescript": "7.16.8",
     "@babel/preset-env": "7.16.11",
     "@babel/register": "7.16.9",
+    "@changesets/cli": "^2.20.0",
     "@docusaurus/core": "2.0.0-beta.14",
     "@docusaurus/preset-classic": "2.0.0-beta.14",
     "@mdx-js/react": "1.6.22",
