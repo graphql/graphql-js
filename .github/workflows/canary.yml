@@ -39,7 +39,7 @@ jobs:
           npm-token: ${{ secrets.NODE_AUTH_TOKEN }}
           npm-script: 'npm run release:canary'
           changesets: true
-  
+
       - name: Publish a message
         if: steps.canary.outputs.released
         uses: 'kamilkisiela/pr-comment@master'
