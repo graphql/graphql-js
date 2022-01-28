@@ -59,11 +59,18 @@ export function KnownTypeNamesRule(
           typeName,
           isSDL ? standardTypeNames.concat(typeNames) : typeNames,
         );
+        let suggestion = '';
+
+        if (
+          (context as ValidationContext).didYouMean == null ||
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
+          (context as ValidationContext).didYouMean === true
+        ) {
+          suggestion = didYouMean(suggestedTypes);
+        }
+
         context.reportError(
-          new GraphQLError(
-            `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
-            node,
-          ),
+          new GraphQLError(`Unknown type "${typeName}".` + suggestion, node),
         );
       }
     },

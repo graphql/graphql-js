@@ -42,15 +42,19 @@ export function FieldsOnCorrectTypeRule(
           const schema = context.getSchema();
           const fieldName = node.name.value;
 
-          // First determine if there are any suggested types to condition on.
-          let suggestion = didYouMean(
-            'to use an inline fragment on',
-            getSuggestedTypeNames(schema, type, fieldName),
-          );
+          let suggestion = '';
 
-          // If there are no suggested types, then perhaps this was a typo?
-          if (suggestion === '') {
-            suggestion = didYouMean(getSuggestedFieldNames(type, fieldName));
+          if (context.didYouMean) {
+            // First determine if there are any suggested types to condition on.
+            suggestion = didYouMean(
+              'to use an inline fragment on',
+              getSuggestedTypeNames(schema, type, fieldName),
+            );
+
+            // If there are no suggested types, then perhaps this was a typo?
+            if (suggestion === '') {
+              suggestion = didYouMean(getSuggestedFieldNames(type, fieldName));
+            }
           }
 
           // Report an error, including helpful suggestions.

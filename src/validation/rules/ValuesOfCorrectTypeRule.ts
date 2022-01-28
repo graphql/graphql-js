@@ -67,14 +67,19 @@ export function ValuesOfCorrectTypeRule(
       const parentType = getNamedType(context.getParentInputType());
       const fieldType = context.getInputType();
       if (!fieldType && isInputObjectType(parentType)) {
-        const suggestions = suggestionList(
-          node.name.value,
-          Object.keys(parentType.getFields()),
-        );
+        let suggestion = '';
+        if (context.didYouMean) {
+          const suggestions = suggestionList(
+            node.name.value,
+            Object.keys(parentType.getFields()),
+          );
+          suggestion = didYouMean(suggestions);
+        }
+
         context.reportError(
           new GraphQLError(
             `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
-              didYouMean(suggestions),
+              suggestion,
             node,
           ),
         );

@@ -162,6 +162,8 @@ export class SDLValidationContext extends ASTValidationContext {
 export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 
 export class ValidationContext extends ASTValidationContext {
+  public readonly didYouMean: boolean;
+
   private _schema: GraphQLSchema;
   private _typeInfo: TypeInfo;
   private _variableUsages: Map<
@@ -179,12 +181,15 @@ export class ValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
+    /** Whether the "did you mean x" suggestions should be enabled. */
+    didYouMean?: boolean,
   ) {
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+    this.didYouMean = didYouMean == null ? true : didYouMean;
   }
 
   get [Symbol.toStringTag]() {
