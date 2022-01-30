@@ -61,18 +61,14 @@ export function UniqueFieldDefinitionNamesRule(
         context.reportError(
           new GraphQLError(
             `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
-            {
-              nodes: fieldDef.name,
-            },
+            { nodes: fieldDef.name },
           ),
         );
       } else if (fieldNames[fieldName]) {
         context.reportError(
           new GraphQLError(
             `Field "${typeName}.${fieldName}" can only be defined once.`,
-            {
-              nodes: [fieldNames[fieldName], fieldDef.name],
-            },
+            { nodes: [fieldNames[fieldName], fieldDef.name] },
           ),
         );
       } else {

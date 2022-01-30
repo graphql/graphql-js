@@ -313,9 +313,7 @@ describe('toJSON', () => {
 
   it('includes extension fields', () => {
     const error = new GraphQLError('msg', {
-      extensions: {
-        foo: 'bar',
-      },
+      extensions: { foo: 'bar' },
     });
 
     expect(error.toJSON()).to.deep.equal({

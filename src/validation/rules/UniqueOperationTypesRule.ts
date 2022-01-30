@@ -53,9 +53,7 @@ export function UniqueOperationTypesRule(
         context.reportError(
           new GraphQLError(
             `There can be only one ${operation} type in schema.`,
-            {
-              nodes: [alreadyDefinedOperationType, operationType],
-            },
+            { nodes: [alreadyDefinedOperationType, operationType] },
           ),
         );
       } else {

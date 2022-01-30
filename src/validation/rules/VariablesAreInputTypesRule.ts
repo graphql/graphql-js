@@ -32,9 +32,7 @@ export function VariablesAreInputTypesRule(
         context.reportError(
           new GraphQLError(
             `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
-            {
-              nodes: node.type,
-            },
+            { nodes: node.type },
           ),
         );
       }

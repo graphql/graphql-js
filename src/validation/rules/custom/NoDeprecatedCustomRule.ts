@@ -29,9 +29,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
         context.reportError(
           new GraphQLError(
             `The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`,
-            {
-              nodes: node,
-            },
+            { nodes: node },
           ),
         );
       }
@@ -45,9 +43,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
           context.reportError(
             new GraphQLError(
               `Directive "@${directiveDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
-              {
-                nodes: node,
-              },
+              { nodes: node },
             ),
           );
         } else {
@@ -57,9 +53,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
           context.reportError(
             new GraphQLError(
               `Field "${parentType.name}.${fieldDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
-              {
-                nodes: node,
-              },
+              { nodes: node },
             ),
           );
         }
@@ -74,9 +68,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
           context.reportError(
             new GraphQLError(
               `The input field ${inputObjectDef.name}.${inputFieldDef.name} is deprecated. ${deprecationReason}`,
-              {
-                nodes: node,
-              },
+              { nodes: node },
             ),
           );
         }
@@ -91,9 +83,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
         context.reportError(
           new GraphQLError(
             `The enum value "${enumTypeDef.name}.${enumValueDef.name}" is deprecated. ${deprecationReason}`,
-            {
-              nodes: node,
-            },
+            { nodes: node },
           ),
         );
       }

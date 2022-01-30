@@ -33,9 +33,7 @@ export function UniqueDirectiveNamesRule(
         context.reportError(
           new GraphQLError(
             `There can be only one directive named "@${directiveName}".`,
-            {
-              nodes: [knownDirectiveNames[directiveName], node.name],
-            },
+            { nodes: [knownDirectiveNames[directiveName], node.name] },
           ),
         );
       } else {

@@ -86,9 +86,7 @@ export function ValuesOfCorrectTypeRule(
         context.reportError(
           new GraphQLError(
             `Expected value of type "${inspect(type)}", found ${print(node)}.`,
-            {
-              nodes: node,
-            },
+            { nodes: node },
           ),
         );
       }
@@ -119,9 +117,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     context.reportError(
       new GraphQLError(
         `Expected value of type "${typeStr}", found ${print(node)}.`,
-        {
-          nodes: node,
-        },
+        { nodes: node },
       ),
     );
     return;
@@ -136,9 +132,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
       context.reportError(
         new GraphQLError(
           `Expected value of type "${typeStr}", found ${print(node)}.`,
-          {
-            nodes: node,
-          },
+          { nodes: node },
         ),
       );
     }
@@ -151,10 +145,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
         new GraphQLError(
           `Expected value of type "${typeStr}", found ${print(node)}; ` +
             error.message,
-          {
-            nodes: node,
-            originalError: error, // Ensure a reference to the original error is maintained.
-          },
+          { nodes: node, originalError: error },
         ),
       );
     }
