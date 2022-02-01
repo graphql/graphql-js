@@ -1,0 +1,93 @@
+name: Canary Release
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION_USED_FOR_DEVELOPMENT: 17
+jobs:
+  publish-canary:
+    name: Publish Canary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Main
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: npm
+          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          # 'registry-url' is required for 'npm publish'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build NPM package
+        run: npm run build:npm
+
+      - name: Modify NPM package to be canary release
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const assert = require('assert');
+            const { readFileSync, writeFileSync } = require('fs');
+
+            const prNumber = context.issue.number;
+            const prSHA = context.sha;
+
+            const packageJSONPath = './npmDist/package.json';
+            const packageJSON = JSON.parse(readFileSync(packageJSONPath, 'utf-8'));
+
+            assert(packageJSON.scripts == null, 'No scripts allowed for security reasons!');
+
+            let { version } = packageJSON;
+            assert(!version.includes('+'), 'Can not append after metadata');
+            version += packageJSON.version.includes('-') ? '.' : '-';
+            version += `canary.pr.${prNumber}.${prSHA}`;
+
+            const tag = `canary-pr-${prNumber}`;
+
+            packageJSON.version = version;
+            packageJSON.publishConfig.tag = `canary-pr-${prNumber}`;
+            writeFileSync(packageJSONPath, JSON.stringify(packageJSON, null, 2), 'utf-8');
+
+            core.exportVariable('NPM_VERSION', version);
+            core.exportVariable('NPM_TAG', tag);
+
+      - name: Publish NPM package
+        run: npm publish ./npmDist
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Add deprecate message on NPM package
+        run: |
+          npm deprecate "graphql@$NPM_VERSION" \
+            "You are using canary version build from $PR_URL, no gurantees provided so please use your own discretion."
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PR_URL: ${{github.event.pull_request.url}}
+
+      - name: Add comment on PR
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const npmTag = process.env.NPM_TAG;
+            const npmVersion = process.env.NPM_VERSION;
+            const npmURL = 'https://www.npmjs.com/package/graphql/v/' + npmVersion;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body:
+                `The latest changes of this PR are available as ['graphql@${npmVersion}'](${npmURL}) on NPM.\n` +
+                '**Note: no gurantees provided so please use your own discretion.**\n\n' +
+                `Also you can depend on latest version built from this PR: \`npm install --save graphql@${npmTag}\`.`,
+            })
