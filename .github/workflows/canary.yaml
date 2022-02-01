@@ -1,0 +1,19 @@
+name: Canary Release
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+env:
+  NODE_VERSION_USED_FOR_DEVELOPMENT: 17
+jobs:
+  publish-canary:
+    runs-on: ubuntu-latest
+    name: Publish Canary
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    steps:
+      - name: Dump GitHub context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
