@@ -1,23 +1,22 @@
 name: Canary Release
-
 on:
-  pull_request:
-    branches:
-      - main
-
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
 env:
   NODE_VERSION_USED_FOR_DEVELOPMENT: 17
 jobs:
   publish-canary:
-    name: Publish Canary
     runs-on: ubuntu-latest
+    name: Publish Canary
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
     steps:
-      - name: Checkout Main
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
+      - name: Dump GitHub context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
@@ -26,11 +25,10 @@ jobs:
           # 'registry-url' is required for 'npm publish'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install Dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Build NPM package
-        run: npm run build:npm
+      - name: Download NPM package artifact
+        run: gh run download "$CI_WORKFLOW_ID" -n npmDist -D npmDist
+        env:
+          CI_WORKFLOW_ID: ${{github.event.workflow_run.id}}
 
       - name: Modify NPM package to be canary release
         uses: actions/github-script@v5
@@ -39,7 +37,7 @@ jobs:
             const assert = require('assert');
             const { readFileSync, writeFileSync } = require('fs');
 
-            const prNumber = context.issue.number;
+            const prNumber = payload.workflow_run.number;
             const prSHA = context.sha;
 
             const packageJSONPath = './npmDist/package.json';
