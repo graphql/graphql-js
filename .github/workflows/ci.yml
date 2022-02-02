@@ -236,6 +236,34 @@ jobs:
           path: ./npm-dist-diff.html
           if-no-files-found: ignore
 
+  build-npm-package:
+    name: Build artifact with NPM package
+    runs-on: ubuntu-latest
+    needs: [test, fuzz, lint, integrationTests]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: npm
+          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build NPM package
+        run: npm run build:npm
+
+      - name: Upload NPM package
+        uses: actions/upload-artifact@v2
+        with:
+          name: npmDist
+          path: ./npmDist
+
   deploy-to-npm-branch:
     name: Deploy to `npm` branch
     runs-on: ubuntu-latest
