@@ -17,7 +17,6 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
           # 'registry-url' is required for 'npm publish'
           registry-url: 'https://registry.npmjs.org'
