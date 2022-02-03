@@ -14,12 +14,21 @@ jobs:
     name: Publish Canary
     if: ${{ github.event.workflow_run.event == 'pull_request' }}
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
+          cache: npm
           node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
           # 'registry-url' is required for 'npm publish'
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
 
       - name: Download event.json
         run: gh run download "$CI_WORKFLOW_ID" -n event.json
