@@ -33,6 +33,7 @@ export { version, versionInfo } from './version';
 export type { GraphQLArgs } from './graphql';
 export { graphql, graphqlSync } from './graphql';
 
+// TEST
 // Create and operate on GraphQL type definitions and schema.
 export {
   resolveObjMapThunk,
