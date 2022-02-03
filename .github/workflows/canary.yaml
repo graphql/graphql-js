@@ -23,9 +23,13 @@ jobs:
 
       - name: Download event.json
         run: gh run download "$CI_WORKFLOW_ID" -n event.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download NPM package artifact
         run: gh run download "$CI_WORKFLOW_ID" -n npmDist -D npmDist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Modify NPM package to be canary release
         uses: actions/github-script@v5
