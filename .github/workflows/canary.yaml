@@ -45,40 +45,32 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const assert = require('assert');
 
-            const eventJSON = JSON.parse(
-              fs.readFileSync('./event.json', 'utf-8')
-            );
-
-            core.exportVariable('PR_URL', eventJSON.pull_request.url);
-
-            const prSHA = event.sha;
-            const prNumber = event.pull_request.number;
             const packageJSONPath = './npmDist/package.json';
-            const packageJSON = JSON.parse(
-              fs.readFileSync(packageJSONPath, 'utf-8')
+            const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf-8'));
+            const { sha, pull_request } = JSON.parse(fs.readFileSync('./event.json', 'utf-8'));
+
+            // Override entire 'publishConfig' since it can contain untrusted data.
+            packageJSON.publishConfig = { tag: `canary-pr-${pull_request.number}` };
+
+            assert(!packageJSON.version.includes('+'), 'Can not append after metadata');
+            packageJSON.version += packageJSON.version.includes('-') ? '.' : '-';
+            packageJSON.version += `canary.pr.${pull_request.number}.${sha}`;
+
+            assert(
+              packageJSON.scripts == null,
+              'No scripts allowed for security reasons!',
             );
 
-            const tag = `canary-pr-${prNumber}`;
-            // Override entire 'publishConfig' since it can contain untrusted data.
-            packageJSON.publishConfig = { tag };
-            core.exportVariable('NPM_TAG', `canary-pr-${prNumber}`);
-
-            let { version } = packageJSON;
-            assert(!version.includes('+'), 'Can not append after metadata');
-            version += packageJSON.version.includes('-') ? '.' : '-';
-            version += `canary.pr.${prNumber}.${prSHA}`;
-
-            packageJSON.version = version;
-            core.exportVariable('NPM_VERSION', version);
-
-            assert(packageJSON.scripts == null, 'No scripts allowed for security reasons!');
             fs.writeFileSync(
               packageJSONPath,
               JSON.stringify(packageJSON, null, 2),
               'utf-8',
             );
+
+            core.exportVariable('PR_URL', pull_request.url);
+            core.exportVariable('NPM_TAG', packageJSON.publishConfig.tag);
+            core.exportVariable('NPM_VERSION', packageJSON.version);
 
       - name: Publish NPM package
         run: npm publish ./npmDist
