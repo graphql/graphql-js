@@ -45,6 +45,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+            const assert = require('assert');
 
             const packageJSONPath = './npmDist/package.json';
             const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf-8'));
