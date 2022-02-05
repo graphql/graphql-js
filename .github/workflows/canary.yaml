@@ -49,14 +49,14 @@ jobs:
 
             const packageJSONPath = './npmDist/package.json';
             const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf-8'));
-            const { sha, pull_request } = JSON.parse(fs.readFileSync('./event.json', 'utf-8'));
+            const { pull_request } = JSON.parse(fs.readFileSync('./event.json', 'utf-8'));
 
             // Override entire 'publishConfig' since it can contain untrusted data.
             packageJSON.publishConfig = { tag: `canary-pr-${pull_request.number}` };
 
             assert(!packageJSON.version.includes('+'), 'Can not append after metadata');
             packageJSON.version += packageJSON.version.includes('-') ? '.' : '-';
-            packageJSON.version += `canary.pr.${pull_request.number}.${sha}`;
+            packageJSON.version += `canary.pr.${pull_request.number}.${pull_request.head.sha}`;
 
             assert(
               packageJSON.scripts == null,
