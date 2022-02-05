@@ -11,8 +11,10 @@ runs:
     - name: Creating temporary directory to clone the branch
       shell: bash
       run: |
-        BRANCH_DIR=$(mktemp -d "`pwd`/cloned_${{ inputs.target_branch }}_XXXXXX")
+        BRANCH_DIR=$(mktemp -d "`pwd`/$BRANCH_DIR_TEMPLATE")
         echo "BRANCH_DIR=$BRANCH_DIR" >> $GITHUB_ENV
+      env:
+        BRANCH_DIR_TEMPLATE: 'cloned_${{ inputs.target_branch }}_XXXXXX'
 
     - name: Checkout `${{ inputs.target_branch }}` branch
       uses: actions/checkout@v2
@@ -31,7 +33,7 @@ runs:
         echo '::endgroup::'
 
         echo '::group::Move necessary files'
-        cp -vnR '${{ github.workspace }}/${{ inputs.src_dir }}/.' .
+        cp -vnR "$SRC_DIR/." .
         echo '::endgroup::'
 
         git add -A
@@ -41,12 +43,16 @@ runs:
           git config user.name 'GitHub Action Script'
           git config user.email 'please@open.issue'
 
-          git commit -a -m 'Deploy ${{ github.sha }} to '${{ inputs.target_branch }}' branch'
+          git commit -a -m "Deploy $SHA to '$TARGET_BRANCH' branch"
           git push
           echo 'Pushed'
         fi
+      env:
+        SRC_DIR: '${{ github.workspace }}/${{ inputs.src_dir }}'
+        SHA: ${{ github.sha }}
+        TARGET_BRANCH: ${{ inputs.target_branch }}
 
     - name: Remove cloned branch
       if: ${{ always() }}
       shell: bash
-      run: 'rm -rf $BRANCH_DIR'
+      run: 'rm -rf "$BRANCH_DIR"'
