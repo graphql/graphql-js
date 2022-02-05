@@ -34,6 +34,7 @@ export type { GraphQLArgs } from './graphql';
 export { graphql, graphqlSync } from './graphql';
 
 // Create and operate on GraphQL type definitions and schema.
+// test
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
