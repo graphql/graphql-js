@@ -70,6 +70,7 @@ jobs:
             );
 
             core.exportVariable('PR_URL', pull_request.url);
+            core.exportVariable('PR_NUMBER', pull_request.number);
             core.exportVariable('NPM_TAG', packageJSON.publishConfig.tag);
             core.exportVariable('NPM_VERSION', packageJSON.version);
 
@@ -94,7 +95,7 @@ jobs:
             const npmVersion = process.env.NPM_VERSION;
             const npmURL = 'https://www.npmjs.com/package/graphql/v/' + npmVersion;
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
+              issue_number: process.env.PR_NUMBER,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body:
