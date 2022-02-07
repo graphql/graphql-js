@@ -174,7 +174,7 @@ rules:
   simple-import-sort/exports: off # TODO
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.7.x`
+  # ESLint builtin rules list based on `v8.8.x`
   ##############################################################################
 
   # Possible Errors
