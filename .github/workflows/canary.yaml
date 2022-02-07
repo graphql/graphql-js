@@ -91,15 +91,17 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const npmTag = process.env.NPM_TAG;
-            const npmVersion = process.env.NPM_VERSION;
-            const npmURL = 'https://www.npmjs.com/package/graphql/v/' + npmVersion;
             github.rest.issues.createComment({
               issue_number: process.env.PR_NUMBER,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body:
-                `The latest changes of this PR are available as ['graphql@${npmVersion}'](${npmURL}) on NPM.\n` +
-                '**Note: no gurantees provided so please use your own discretion.**\n\n' +
-                `Also you can depend on latest version built from this PR: \`npm install --save graphql@${npmTag}\`.`,
+              body: process.env.COMMENT_BODY,
             })
+        env:
+          COMMENT_BODY: |
+            The latest changes of this PR are available on NPM as
+            [graphql@${{env.NPM_VERSION}}](https://www.npmjs.com/package/graphql/v/${{env.NPM_VERSION}})
+            **Note: no gurantees provided so please use your own discretion.**
+
+            Also you can depend on latest version built from this PR:
+            `npm install --save graphql@${{env.NPM_TAG}}`
