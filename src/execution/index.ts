@@ -15,4 +15,8 @@ export type {
 
 export { subscribe, createSourceEventStream } from './subscribe';
 
-export { getVariableValues, getDirectiveValues } from './values';
+export {
+  getVariableValues,
+  getArgumentValues,
+  getDirectiveValues,
+} from './values';
