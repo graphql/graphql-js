@@ -246,8 +246,8 @@ jobs:
           path: ./npm-dist-diff.html
           if-no-files-found: ignore
 
-  build-npm-package:
-    name: Build artifact with NPM package
+  build-npm-dist:
+    name: Build 'npmDist' artifact
     runs-on: ubuntu-latest
     needs: [test, fuzz, lint, integrationTests]
     steps:
@@ -268,52 +268,16 @@ jobs:
       - name: Build NPM package
         run: npm run build:npm
 
-      - name: Upload NPM package
+      - name: Upload npmDist package
         uses: actions/upload-artifact@v2
         with:
           name: npmDist
           path: ./npmDist
 
-  deploy-to-npm-branch:
-    name: Deploy to `npm` branch
+  build-deno-dist:
+    name: Build 'denoDist' artifact
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' &&
-      github.repository == 'graphql/graphql-js' &&
-      github.ref == 'refs/heads/main'
-    needs: [test, fuzz, lint, checkForCommonlyIgnoredFiles, integrationTests]
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Install Dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Build NPM package
-        run: npm run build:npm
-
-      - name: Deploy to `npm` branch
-        uses: ./.github/actions/deploy-dir-as-branch
-        with:
-          src_dir: npmDist
-          target_branch: npm
-
-  deploy-to-deno-branch:
-    name: Deploy to `deno` branch
-    runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' &&
-      github.repository == 'graphql/graphql-js' &&
-      github.ref == 'refs/heads/main'
-    needs: [test, fuzz, lint, checkForCommonlyIgnoredFiles, integrationTests]
+    needs: [test, fuzz, lint, integrationTests]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -332,13 +296,13 @@ jobs:
       - name: Build Deno package
         run: npm run build:deno
 
-      - name: Deploy to `deno` branch
-        uses: ./.github/actions/deploy-dir-as-branch
+      - name: Upload denoDist package
+        uses: actions/upload-artifact@v2
         with:
-          src_dir: denoDist
-          target_branch: deno
+          name: denoDist
+          path: ./denoDist
 
-  build-website:
+  build-website-dist:
     name: Build website
     runs-on: ubuntu-latest
     steps:
@@ -358,3 +322,9 @@ jobs:
 
       - name: Build Docs
         run: npm run build:website
+
+      - name: Upload denoDist package
+        uses: actions/upload-artifact@v2
+        with:
+          name: websiteDist
+          path: ./websiteDist
