@@ -11,4 +11,8 @@ export type {
   FormattedExecutionResult,
 } from './execute.ts';
 export { subscribe, createSourceEventStream } from './subscribe.ts';
-export { getVariableValues, getDirectiveValues } from './values.ts';
+export {
+  getArgumentValues,
+  getVariableValues,
+  getDirectiveValues,
+} from './values.ts';
