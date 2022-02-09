@@ -7,12 +7,11 @@ on:
       - completed
 env:
   NODE_VERSION_USED_FOR_DEVELOPMENT: 17
-  CI_WORKFLOW_ID: ${{github.event.workflow_run.id}}
 jobs:
   publish-canary:
     runs-on: ubuntu-latest
     name: Publish Canary
-    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    if: github.event.workflow_run.event == 'pull_request'
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -27,18 +26,17 @@ jobs:
           # 'registry-url' is required for 'npm publish'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install Dependencies
-        run: npm ci --ignore-scripts
-
       - name: Download event.json
-        run: gh run download "$CI_WORKFLOW_ID" -n event.json
+        run: gh run download "$WORKFLOW_ID" -n event.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_ID: ${{github.event.workflow_run.id}}
 
       - name: Download NPM package artifact
-        run: gh run download "$CI_WORKFLOW_ID" -n npmDist -D npmDist
+        run: gh run download "$WORKFLOW_ID" -n npmDist -D npmDist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_ID: ${{github.event.workflow_run.id}}
 
       - name: Modify NPM package to be canary release
         uses: actions/github-script@v5

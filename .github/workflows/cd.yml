@@ -1,0 +1,29 @@
+name: CD
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+    branches:
+      - main
+jobs:
+  deploy-to-npm-branch:
+    name: Deploy to `npm` branch
+    if: github.event.workflow_run.event == 'push'
+    uses: ./.github/workflows/deploy-artifact-as-branch.yml
+    with:
+      workflow_id: ${{github.event.workflow_run.id}}
+      artifact_name: npmDist
+      target_branch: npm
+      commit_message: "Deploy ${{github.event.workflow_run.head_sha}} to 'npm' branch"
+
+  deploy-to-deno-branch:
+    name: Deploy to `deno` branch
+    if: github.event.workflow_run.event == 'push'
+    uses: ./.github/workflows/deploy-artifact-as-branch.yml
+    with:
+      workflow_id: ${{github.event.workflow_run.id}}
+      artifact_name: denoDist
+      target_branch: deno
+      commit_message: "Deploy ${{github.event.workflow_run.head_sha}} to 'deno' branch"

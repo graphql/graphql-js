@@ -1,0 +1,51 @@
+name: Deploy specified artifact as a branch
+on:
+  workflow_call:
+    inputs:
+      workflow_id:
+        required: true
+        type: string
+      artifact_name:
+        required: true
+        type: string
+      target_branch:
+        required: true
+        type: string
+      commit_message:
+        required: true
+        type: string
+jobs:
+  deploy-artifact-as-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout `${{ inputs.target_branch }}` branch
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.target_branch }}
+
+      - name: Remove existing files first
+        run: git rm -r .
+
+      - name: Download artifact into cloned branch
+        run: gh run download "$WORKFLOW_ID" -n "$ARTIFACT_NAME"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_ID: ${{ inputs.workflow_id }}
+          ARTIFACT_NAME: ${{ inputs.artifact_name }}
+
+      - name: Publish target branch
+        run: |
+          git add -A
+          if git diff --staged --quiet; then
+            echo 'Nothing to publish'
+          else
+            git config user.name 'GitHub Action Script'
+            git config user.email 'please@open.issue'
+
+            git commit -a -m "$COMMIT_MESSAGE"
+            git push
+            echo 'Pushed'
+          fi
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          COMMIT_MESSAGE: ${{ inputs.commit_message }}
