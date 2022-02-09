@@ -5,8 +5,6 @@ on:
       - CI
     types:
       - completed
-env:
-  NODE_VERSION_USED_FOR_DEVELOPMENT: 17
 jobs:
   publish-canary:
     runs-on: ubuntu-latest
@@ -22,7 +20,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
           # 'registry-url' is required for 'npm publish'
           registry-url: 'https://registry.npmjs.org'
 

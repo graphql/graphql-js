@@ -1,7 +1,5 @@
 name: CI
 on: [push, pull_request]
-env:
-  NODE_VERSION_USED_FOR_DEVELOPMENT: 17
 jobs:
   save-github-event:
     name: "Save `github.event` as an artifact to use in subsequent 'workflow_run' actions"
@@ -26,7 +24,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
@@ -75,7 +73,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
@@ -102,7 +100,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
           # We install bunch of packages during integration tests without locking them
           # so we skip cache action to not pollute cache for other jobs.
 
@@ -125,7 +123,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
@@ -146,7 +144,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
@@ -204,7 +202,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
@@ -231,7 +229,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
@@ -260,7 +258,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
@@ -288,7 +286,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
@@ -315,7 +313,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
