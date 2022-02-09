@@ -33,6 +33,12 @@ Object.defineProperty(exports, 'executeSync', {
     return _execute.executeSync;
   },
 });
+Object.defineProperty(exports, 'getArgumentValues', {
+  enumerable: true,
+  get: function () {
+    return _values.getArgumentValues;
+  },
+});
 Object.defineProperty(exports, 'getDirectiveValues', {
   enumerable: true,
   get: function () {

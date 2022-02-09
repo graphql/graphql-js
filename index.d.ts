@@ -284,6 +284,7 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,
+  getArgumentValues,
   getVariableValues,
   getDirectiveValues,
   subscribe,

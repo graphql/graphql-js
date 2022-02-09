@@ -46,8 +46,6 @@ export declare function getVariableValues(
  * Note: The returned value is a plain Object with a prototype, since it is
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
- *
- * @internal
  */
 export declare function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,

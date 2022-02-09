@@ -6,4 +6,8 @@ export {
   defaultTypeResolver,
 } from './execute.mjs';
 export { subscribe, createSourceEventStream } from './subscribe.mjs';
-export { getVariableValues, getDirectiveValues } from './values.mjs';
+export {
+  getArgumentValues,
+  getVariableValues,
+  getDirectiveValues,
+} from './values.mjs';
