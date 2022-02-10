@@ -26,12 +26,9 @@ jobs:
       - name: Remove existing files first
         run: git rm -r .
 
-      - name: Download artifact into cloned branch
-        run: gh run download "$WORKFLOW_ID" -n "$ARTIFACT_NAME"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WORKFLOW_ID: ${{ inputs.workflow_id }}
-          ARTIFACT_NAME: ${{ inputs.artifact_name }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: ${{ inputs.artifact_name }}
 
       - name: Publish target branch
         run: |

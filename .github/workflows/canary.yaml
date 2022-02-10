@@ -2,7 +2,7 @@ name: Canary Release
 on:
   workflow_run:
     workflows:
-      - CI
+      - PullRequest
     types:
       - completed
 jobs:
