@@ -2,9 +2,6 @@ name: Deploy specified artifact as a branch
 on:
   workflow_call:
     inputs:
-      workflow_id:
-        required: true
-        type: string
       artifact_name:
         required: true
         type: string
