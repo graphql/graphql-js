@@ -83,7 +83,7 @@ jobs:
       #  run: npm ls --depth 999
 
       - name: Run npm install
-        run: npm install --force --package-lock-only --ignore-scripts --engine-strict --strict-peer-deps
+        run: npm install --ignore-scripts --force --package-lock-only --engine-strict --strict-peer-deps
 
       - name: Check that package-lock.json is in sync with package.json
         run: git diff --exit-code package-lock.json

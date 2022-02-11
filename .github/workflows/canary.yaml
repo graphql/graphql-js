@@ -54,6 +54,9 @@ jobs:
             packageJSON.version += packageJSON.version.includes('-') ? '.' : '-';
             packageJSON.version += `canary.pr.${pull_request.number}.${pull_request.head.sha}`;
 
+            packageJSON.deprecated =
+              `You are using canary version build from ${pull_request.url}, no gurantees provided so please use your own discretion.`;
+
             assert(
               packageJSON.scripts == null,
               'No scripts allowed for security reasons!',
@@ -65,20 +68,12 @@ jobs:
               'utf-8',
             );
 
-            core.exportVariable('PR_URL', pull_request.url);
             core.exportVariable('PR_NUMBER', pull_request.number);
             core.exportVariable('NPM_TAG', packageJSON.publishConfig.tag);
             core.exportVariable('NPM_VERSION', packageJSON.version);
 
       - name: Publish NPM package
-        run: npm publish ./npmDist
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Add deprecate message on NPM package
-        run: |
-          npm deprecate "graphql@$NPM_VERSION" \
-            "You are using canary version build from $PR_URL, no gurantees provided so please use your own discretion."
+        run: npm publish --ignore-scripts ./npmDist
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
