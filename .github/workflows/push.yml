@@ -7,6 +7,9 @@ jobs:
     name: Deploy to `npm` branch
     needs: ci
     if: github.ref == 'refs/heads/main'
+    environment:
+      name: npm-branch
+      url: https://github.com/graphql/graphql-js/tree/npm
     uses: ./.github/workflows/deploy-artifact-as-branch.yml
     with:
       artifact_name: npmDist
@@ -17,6 +20,9 @@ jobs:
     name: Deploy to `deno` branch
     needs: ci
     if: github.ref == 'refs/heads/main'
+    environment:
+      name: deno-branch
+      url: https://github.com/graphql/graphql-js/tree/deno
     uses: ./.github/workflows/deploy-artifact-as-branch.yml
     with:
       artifact_name: denoDist
