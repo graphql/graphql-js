@@ -7,11 +7,9 @@ jobs:
     name: Deploy to `npm` branch
     needs: ci
     if: github.ref == 'refs/heads/main'
-    environment:
-      name: npm-branch
-      url: https://github.com/graphql/graphql-js/tree/npm
     uses: ./.github/workflows/deploy-artifact-as-branch.yml
     with:
+      environment: npm-branch
       artifact_name: npmDist
       target_branch: npm
       commit_message: "Deploy ${{github.event.workflow_run.head_sha}} to 'npm' branch"
@@ -20,11 +18,9 @@ jobs:
     name: Deploy to `deno` branch
     needs: ci
     if: github.ref == 'refs/heads/main'
-    environment:
-      name: deno-branch
-      url: https://github.com/graphql/graphql-js/tree/deno
     uses: ./.github/workflows/deploy-artifact-as-branch.yml
     with:
+      environment: deno-branch
       artifact_name: denoDist
       target_branch: deno
       commit_message: "Deploy ${{github.event.workflow_run.head_sha}} to 'deno' branch"

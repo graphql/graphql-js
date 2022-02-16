@@ -2,6 +2,9 @@ name: Deploy specified artifact as a branch
 on:
   workflow_call:
     inputs:
+      environment:
+        required: true
+        type: string
       artifact_name:
         required: true
         type: string
@@ -13,6 +16,9 @@ on:
         type: string
 jobs:
   deploy-artifact-as-branch:
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ github.server_url }}/${{ github.repository }}/tree/${{ inputs.target_branch }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout `${{ inputs.target_branch }}` branch
