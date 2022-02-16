@@ -1,0 +1,14 @@
+name: PullRequestOpened
+on:
+  pull_request:
+    types: [opened]
+jobs:
+  save-github-event:
+    name: "Save `github.event` as an artifact to use in subsequent 'workflow_run' actions"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload event.json
+        uses: actions/upload-artifact@v2
+        with:
+          name: event.json
+          path: ${{ github.event_path }}

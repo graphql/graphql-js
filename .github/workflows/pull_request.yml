@@ -4,32 +4,6 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
-  benchmark:
-    name: Run benchmark
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          persist-credentials: false
-
-      - name: Deepen cloned repo
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: 'git fetch --depth=1 origin $BASE_SHA:refs/tags/BASE'
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          cache: npm
-          node-version-file: '.node-version'
-
-      - name: Install Dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Run Benchmark
-        run: 'npm run benchmark -- --revs HEAD BASE'
-
   diff-npm-package:
     name: Diff content of NPM package
     runs-on: ubuntu-latest

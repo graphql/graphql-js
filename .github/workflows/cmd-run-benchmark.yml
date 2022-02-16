@@ -1,0 +1,57 @@
+name: run-benchmark
+on:
+  workflow_call:
+    inputs:
+      pullRequestJSON:
+        required: true
+        type: string
+    outputs:
+      replyMessage:
+        value: ${{ jobs.benchmark.outputs.replyMessage }}
+jobs:
+  benchmark:
+    name: Run benchmark
+    outputs:
+      replyMessage: ${{ steps.set_replyMessage.outputs.replyMessage }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          ref: ${{ fromJSON(inputs.pullRequestJSON).merge_commit_sha }}
+
+      - name: Deepen cloned repo
+        env:
+          BASE_SHA: ${{ fromJSON(inputs.pullRequestJSON).base.sha }}
+        run: 'git fetch --depth=1 origin $BASE_SHA:refs/tags/BASE'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run Benchmark
+        run: |
+          npm run benchmark -- --revs HEAD BASE | tee benchmark.log
+
+      - name: Set 'replyMessage' output variable
+        id: set_replyMessage
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+
+            const replyMessage = `
+            <details>
+            <summary> Benchmark output </summary>
+
+            ${ fs.readFileSync('./benchmark.log', 'utf-8') }
+            </details>
+            `;
+            core.setOutput('replyMessage', replyMessage);
