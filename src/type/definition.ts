@@ -973,7 +973,7 @@ export type GraphQLFieldResolver<
 
 export interface GraphQLResolveInfo {
   readonly fieldName: string;
-  readonly fieldNodes: ReadonlyArray<FieldNode>;
+  readonly fieldNodes: readonly [FieldNode, ...FieldNode[]];
   readonly returnType: GraphQLOutputType;
   readonly parentType: GraphQLObjectType;
   readonly path: Path;
