@@ -36,7 +36,7 @@ export function collectFields(
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-): Map<string, ReadonlyArray<FieldNode>> {
+): Map<string, readonly [FieldNode, ...Array<FieldNode>]> {
   const fields = new Map();
   collectFieldsImpl(
     schema,
@@ -65,8 +65,8 @@ export function collectSubfields(
   fragments: ObjMap<FragmentDefinitionNode>,
   variableValues: { [variable: string]: unknown },
   returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-): Map<string, ReadonlyArray<FieldNode>> {
+  fieldNodes: readonly [FieldNode, ...Array<FieldNode>],
+): Map<string, readonly [FieldNode, ...Array<FieldNode>]> {
   const subFieldNodes = new Map();
   const visitedFragmentNames = new Set<string>();
   for (const node of fieldNodes) {
