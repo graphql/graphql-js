@@ -562,10 +562,9 @@ export interface GraphQLScalarTypeExtensions {
  * Scalars (or Enums) and are defined with a name and a series of functions
  * used to parse input from ast or variables and to ensure validity.
  *
- * If a type's serialize function does not return a value (i.e. it returns
+ * If a type's serialize function returns `null` or does not return a value (i.e. it returns
  * `undefined`) then an error will be raised and a `null` value will be returned
- * in the response. If the serialize function returns `null`, then no error will
- * be included in the response.
+ * in the response.
  *
  * Example:
  *
