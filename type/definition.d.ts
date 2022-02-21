@@ -302,10 +302,9 @@ export interface GraphQLScalarTypeExtensions {
  * Scalars (or Enums) and are defined with a name and a series of functions
  * used to parse input from ast or variables and to ensure validity.
  *
- * If a type's serialize function does not return a value (i.e. it returns
- * `undefined`) then an error will be raised and a `null` value will be returned
- * in the response. If the serialize function returns `null`, then no error will
- * be included in the response.
+ * If a type's serialize function returns `null` or does not return a value
+ * (i.e. it returns `undefined`) then an error will be raised and a `null`
+ * value will be returned in the response. It is always better to validate
  *
  * Example:
  *
@@ -313,9 +312,16 @@ export interface GraphQLScalarTypeExtensions {
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
  *   serialize(value) {
- *     if (value % 2 === 1) {
- *       return value;
+ *     if (!Number.isFinite(value)) {
+ *       throw new Error(
+ *         `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *       );
  *     }
+ *
+ *     if (value % 2 === 0) {
+ *       throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
+ *     }
+ *     return value;
  *   }
  * });
  * ```
