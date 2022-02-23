@@ -25,7 +25,12 @@ export {
   getEnterLeaveForKind,
   BREAK,
 } from './visitor';
-export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap, ASTReducer } from './visitor';
+export type {
+  ASTVisitor,
+  ASTVisitFn,
+  ASTVisitorKeyMap,
+  ASTReducer,
+} from './visitor';
 
 export { Location, Token, OperationTypeNode } from './ast';
 export type {
