@@ -242,6 +242,7 @@ export type {
   ParseOptions,
   SourceLocation,
   // Visitor utilities
+  ASTReducer,
   ASTVisitor,
   ASTVisitFn,
   ASTVisitorKeyMap,
@@ -260,6 +261,10 @@ export type {
   SelectionNode,
   FieldNode,
   ArgumentNode,
+  NullabilityDesignatorNode,
+  RequiredDesignatorNode,
+  OptionalDesignatorNode,
+  ListNullabilityNode,
   ConstArgumentNode,
   FragmentSpreadNode,
   InlineFragmentNode,

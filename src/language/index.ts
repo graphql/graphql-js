@@ -16,8 +16,14 @@ export type { ParseOptions } from './parser';
 
 export { print } from './printer';
 
-export { visit, visitInParallel, getEnterLeaveForKind, BREAK } from './visitor';
-export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap } from './visitor';
+export {
+  visit,
+  visitInParallel,
+  getVisitFn,
+  getEnterLeaveForKind,
+  BREAK,
+} from './visitor';
+export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap, ASTReducer } from './visitor';
 
 export { Location, Token, OperationTypeNode } from './ast';
 export type {
@@ -34,6 +40,10 @@ export type {
   SelectionSetNode,
   SelectionNode,
   FieldNode,
+  NullabilityDesignatorNode,
+  RequiredDesignatorNode,
+  OptionalDesignatorNode,
+  ListNullabilityNode,
   ArgumentNode,
   ConstArgumentNode,
   FragmentSpreadNode,
