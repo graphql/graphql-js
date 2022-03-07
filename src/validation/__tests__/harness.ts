@@ -121,7 +121,7 @@ export function expectValidationErrorsWithSchema(
   schema: GraphQLSchema,
   rule: ValidationRule,
   queryStr: string,
-  parseOptions?: ParseOptions
+  parseOptions?: ParseOptions,
 ): any {
   const doc = parse(queryStr, parseOptions);
   const errors = validate(schema, doc, [rule]);
@@ -131,9 +131,14 @@ export function expectValidationErrorsWithSchema(
 export function expectValidationErrors(
   rule: ValidationRule,
   queryStr: string,
-  parseOptions?: ParseOptions
+  parseOptions?: ParseOptions,
 ): any {
-  return expectValidationErrorsWithSchema(testSchema, rule, queryStr, parseOptions);
+  return expectValidationErrorsWithSchema(
+    testSchema,
+    rule,
+    queryStr,
+    parseOptions,
+  );
 }
 
 export function expectSDLValidationErrors(

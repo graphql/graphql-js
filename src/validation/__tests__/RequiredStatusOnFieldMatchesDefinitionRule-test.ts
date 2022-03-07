@@ -11,7 +11,7 @@ function expectErrors(queryStr: string) {
     testSchema,
     RequiredStatusOnFieldMatchesDefinitionRule,
     queryStr,
-    { experimentalClientControlledNullability: true }
+    { experimentalClientControlledNullability: true },
   );
 }
 
