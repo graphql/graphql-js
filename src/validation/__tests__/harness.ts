@@ -11,6 +11,8 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 import { validate, validateSDL } from '../validate';
 import type { SDLValidationRule, ValidationRule } from '../ValidationContext';
 
+import type { ParseOptions } from '../../language';
+
 export const testSchema: GraphQLSchema = buildSchema(`
   interface Mammal {
     mother: Mammal
@@ -119,8 +121,9 @@ export function expectValidationErrorsWithSchema(
   schema: GraphQLSchema,
   rule: ValidationRule,
   queryStr: string,
+  parseOptions?: ParseOptions
 ): any {
-  const doc = parse(queryStr);
+  const doc = parse(queryStr, parseOptions);
   const errors = validate(schema, doc, [rule]);
   return expectJSON(errors);
 }
@@ -128,8 +131,9 @@ export function expectValidationErrorsWithSchema(
 export function expectValidationErrors(
   rule: ValidationRule,
   queryStr: string,
+  parseOptions?: ParseOptions
 ): any {
-  return expectValidationErrorsWithSchema(testSchema, rule, queryStr);
+  return expectValidationErrorsWithSchema(testSchema, rule, queryStr, parseOptions);
 }
 
 export function expectSDLValidationErrors(

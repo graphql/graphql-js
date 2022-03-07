@@ -52,6 +52,8 @@ import {
 import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 
+import { modifiedOutputType } from '../utilities/applyRequiredStatus';
+
 import {
   collectFields,
   collectSubfields as _collectSubfields,
@@ -492,7 +494,26 @@ function executeField(
     return;
   }
 
-  const returnType = fieldDef.type;
+  let returnType: GraphQLOutputType;
+  try {
+    returnType = modifiedOutputType(fieldDef.type, fieldNodes[0].required);
+  } catch (error) {
+    const location = fieldNodes[0]?.loc;
+    let starts: ReadonlyArray<number> | undefined = [];
+
+    /* istanbul ignore next (branch where location is undefined is difficult to test) */
+    if (location !== undefined) {
+      starts = [location.start];
+    }
+    throw new GraphQLError(
+      'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
+      undefined,
+      fieldNodes[0].loc?.source,
+      starts,
+      pathToArray(path),
+    );
+  }
+
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(
