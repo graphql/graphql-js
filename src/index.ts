@@ -383,6 +383,7 @@ export {
   // Custom validation rules
   NoDeprecatedCustomRule,
   NoSchemaIntrospectionCustomRule,
+  RequiredStatusOnFieldMatchesDefinitionRule,
 } from './validation/index';
 
 export type { ValidationRule } from './validation/index';
@@ -460,6 +461,7 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
+  modifiedOutputType,
 } from './utilities/index';
 
 export type {

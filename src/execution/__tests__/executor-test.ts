@@ -22,6 +22,12 @@ import { GraphQLSchema } from '../../type/schema';
 
 import { execute, executeSync } from '../execute';
 
+import { modifiedOutputType } from '../../utilities/applyRequiredStatus';
+import type {
+  NullabilityDesignatorNode,
+  ListNullabilityNode,
+} from '../../language/ast';
+
 describe('Execute: Handles basic execution tasks', () => {
   it('throws if no document is provided', () => {
     const schema = new GraphQLSchema({
@@ -1268,5 +1274,459 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(result).to.deep.equal({ data: { foo: { bar: 'bar' } } });
     expect(possibleTypes).to.deep.equal([fooObject]);
+  });
+
+  describe('deals with ! and ?', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          food: {
+            type: new GraphQLObjectType({
+              name: 'Food',
+              fields: {
+                name: { type: GraphQLString },
+                calories: { type: GraphQLInt },
+              },
+            }),
+            resolve() {
+              return {
+                name: null,
+                calories: 10,
+              };
+            },
+          },
+          lists: {
+            type: new GraphQLObjectType({
+              name: 'Lists',
+              fields: {
+                list: { type: new GraphQLList(GraphQLInt) },
+                twoDList: {
+                  type: new GraphQLList(new GraphQLList(GraphQLInt)),
+                },
+                threeDList: {
+                  type: new GraphQLList(
+                    new GraphQLList(new GraphQLList(GraphQLInt)),
+                  ),
+                },
+                nonNullThreeDList: {
+                  // [[[!]!]!]!
+                  type: new GraphQLNonNull(
+                    new GraphQLList(
+                      new GraphQLNonNull(
+                        new GraphQLList(
+                          new GraphQLNonNull(
+                            new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                },
+                mixedThreeDList: {
+                  // [[[?]!]!]?
+                  type: new GraphQLList(
+                    new GraphQLNonNull(
+                      new GraphQLList(
+                        new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+                      ),
+                    ),
+                  ),
+                },
+              },
+            }),
+            resolve() {
+              return {
+                list: [null, 1, 2, null],
+                twoDList: [
+                  [null, 1, 2, null],
+                  [1, 2, 3],
+                ],
+                threeDList: [
+                  [[null], [null]],
+                  [[null], [null]],
+                ],
+                nonNullThreeDList: [
+                  [[null], [null]],
+                  [[null], [null]],
+                ],
+                mixedThreeDList: [
+                  [[null], [null]],
+                  [[null], [null]],
+                ],
+              };
+            },
+          },
+        },
+      }),
+    });
+
+    it('smoke test', () => {
+      const plainDocument = parse(`
+        query {
+          food {
+            name
+            calories
+          }
+        }
+      `);
+      const plainResult = executeSync({ schema, document: plainDocument });
+
+      expect(plainResult).to.deep.equal({
+        data: { food: { name: null, calories: 10 } },
+      });
+    });
+
+    it('null propagates when field that returns null is required', () => {
+      const document = `
+      query {
+        food {
+          name!
+          calories
+        }
+      }
+    `;
+      const singleNonNullOnNullValueDocument = parse(
+        document, 
+        { experimentalClientControlledNullability: true }
+      );
+      const singleNonNullOnNullValueResult = executeSync({
+        schema,
+        document: singleNonNullOnNullValueDocument,
+      });
+
+      expectJSON(singleNonNullOnNullValueResult).toDeepEqual({
+        data: { food: null },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['food', 'name'],
+          },
+        ],
+      });
+    });
+
+    it('null propagates when field that returns null and field that does not are both required', () => {
+      const document = `
+      query {
+        food {
+          name!
+          calories!
+        }
+      }
+    `;
+      const bothNonNullOnNullValueDocument = parse(
+        document, 
+        { experimentalClientControlledNullability: true }
+      );
+      const bothNonNullOnNullValueResult = executeSync({
+        schema,
+        document: bothNonNullOnNullValueDocument,
+      });
+
+      expectJSON(bothNonNullOnNullValueResult).toDeepEqual({
+        data: { food: null },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['food', 'name'],
+          },
+        ],
+      });
+    });
+
+    it('null does not propagate up when field that returns does not return null is required', () => {
+      const document = `
+      query {
+        food {
+          calories!
+        }
+      }
+    `;
+      const singleNonNullOnNonNullValueDocument = parse(
+        document,
+        { experimentalClientControlledNullability: true }
+      );
+      const singleNonNullOnNonNullValueResult = executeSync({
+        schema,
+        document: singleNonNullOnNonNullValueDocument,
+      });
+
+      expect(singleNonNullOnNonNullValueResult).to.deep.equal({
+        data: { food: { calories: 10 } },
+      });
+    });
+
+    it('null propagates when field that returns null is aliased and required', () => {
+      const document = `
+      query {
+        food {
+          theNameOfTheFood: name!
+        }
+      }
+    `;
+      const nonNullAliasOnNullValueDocument = parse(
+        document,
+        { experimentalClientControlledNullability: true }
+      );
+      const nonNullAliasOnNullValueResult = executeSync({
+        schema,
+        document: nonNullAliasOnNullValueDocument,
+      });
+
+      expectJSON(nonNullAliasOnNullValueResult).toDeepEqual({
+        data: { food: null },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['food', 'theNameOfTheFood'],
+          },
+        ],
+      });
+    });
+
+    it('null propagates when field that returns null is required and inside an inline fragment', () => {
+      const document = `
+      query {
+        food {
+          ... on Food {
+            name!
+          }
+        }
+      }
+    `;
+      const nonNullInFragmentDocument = parse(
+        document,
+        { experimentalClientControlledNullability: true }
+      );
+      const nonNullInFragmentResult = executeSync({
+        schema,
+        document: nonNullInFragmentDocument,
+      });
+
+      expectJSON(nonNullInFragmentResult).toDeepEqual({
+        data: { food: null },
+        errors: [
+          {
+            locations: [{ column: 15, line: 5 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['food', 'name'],
+          },
+        ],
+      });
+    });
+
+    it('null propagates when field that returns null is required, but other aliased value is unaffected', () => {
+      const document = `
+      query {
+        nonNullable: food {
+          name!
+          calories!
+        }
+        nullable: food {
+          name
+          calories!
+        }
+      }
+    `;
+      const aliasedNullAndNonNull = parse(
+        document,
+        { experimentalClientControlledNullability: true }
+      );
+      const aliasedNullAndNonNullResult = executeSync({
+        schema,
+        document: aliasedNullAndNonNull,
+      });
+
+      expectJSON(aliasedNullAndNonNullResult).toDeepEqual({
+        data: { nonNullable: null, nullable: { calories: 10, name: null } },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message: 'Cannot return null for non-nullable field Food.name.',
+            path: ['nonNullable', 'name'],
+          },
+        ],
+      });
+    });
+
+    it('lists with incorrect depth fail to execute', () => {
+      const document = `
+      query {
+        lists {
+          list[[!]]
+        }
+      }
+    `;
+
+      const listsQuery = parse(
+        document,
+        { experimentalClientControlledNullability: true }
+      );
+      const listsQueryResult = executeSync({
+        schema,
+        document: listsQuery,
+      });
+
+      expectJSON(listsQueryResult).toDeepEqual({
+        data: { lists: null },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message:
+              'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
+            path: ['lists', 'list'],
+          },
+        ],
+      });
+    });
+
+    it('lists with required element propagates null to top level list', () => {
+      const document = `
+      query {
+        lists {
+          mixedThreeDList[[[!]]]
+        }
+      }
+    `;
+      const listsQuery = parse(
+        document,
+        { experimentalClientControlledNullability: true }
+      );
+      const listsQueryResult = executeSync({
+        schema,
+        document: listsQuery,
+      });
+
+      expectJSON(listsQueryResult).toDeepEqual({
+        data: { lists: { mixedThreeDList: null } },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message:
+              'Cannot return null for non-nullable field Lists.mixedThreeDList.',
+            path: ['lists', 'mixedThreeDList', 0, 0, 0],
+          },
+        ],
+      });
+    });
+
+    it('lists with required element propagates null to first error boundary', () => {
+      const document = `
+      query {
+        lists {
+          mixedThreeDList[[[!]]?]
+        }
+      }
+    `;
+      const listsQuery = parse(
+        document,
+        { experimentalClientControlledNullability: true }
+      );
+      const listsQueryResult = executeSync({
+        schema,
+        document: listsQuery,
+      });
+
+      expectJSON(listsQueryResult).toDeepEqual({
+        data: { lists: { mixedThreeDList: [null, null] } },
+        errors: [
+          {
+            locations: [{ column: 13, line: 4 }],
+            message:
+              'Cannot return null for non-nullable field Lists.mixedThreeDList.',
+            path: ['lists', 'mixedThreeDList', 0, 0, 0],
+          },
+          {
+            locations: [{ column: 13, line: 4 }],
+            message:
+              'Cannot return null for non-nullable field Lists.mixedThreeDList.',
+            path: ['lists', 'mixedThreeDList', 1, 0, 0],
+          },
+        ],
+      });
+    });
+
+    it('modifiedOutputType produces correct output types with no overrides', () => {
+      // [[[!]]!]!
+      const type = new GraphQLNonNull(
+        new GraphQLList(
+          new GraphQLNonNull(
+            new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
+          ),
+        ),
+      );
+
+      // [[[]]]
+      const nullabilityNode: NullabilityDesignatorNode | ListNullabilityNode = {
+        kind: Kind.LIST_NULLABILITY,
+        element: {
+          kind: Kind.LIST_NULLABILITY,
+          element: {
+            kind: Kind.LIST_NULLABILITY,
+            element: undefined,
+          },
+        },
+      };
+
+      const outputType = modifiedOutputType(type, nullabilityNode);
+      // [[[!]]!]!
+      const expectedOutputType = new GraphQLNonNull(
+        new GraphQLList(
+          new GraphQLNonNull(
+            new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
+          ),
+        ),
+      );
+
+      expect(outputType).to.deep.equal(expectedOutputType);
+    });
+
+    it('modifiedOutputType produces correct output types with overrides', () => {
+      // [[[!]]!]!
+      const type = new GraphQLNonNull(
+        new GraphQLList(
+          new GraphQLNonNull(
+            new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
+          ),
+        ),
+      );
+
+      // [[[]]]
+      const nullabilityNode: NullabilityDesignatorNode | ListNullabilityNode = {
+        // kind: Kind.REQUIRED_DESIGNATOR,
+        // element: {
+        kind: Kind.LIST_NULLABILITY,
+        element: {
+          // kind: Kind.REQUIRED_DESIGNATOR,
+          // element: {
+          kind: Kind.LIST_NULLABILITY,
+          element: {
+            // kind: Kind.REQUIRED_DESIGNATOR,
+            // element:  {
+            kind: Kind.LIST_NULLABILITY,
+            element: undefined,
+            // }
+          },
+          // },
+        },
+        // },
+      };
+
+      const outputType = modifiedOutputType(type, nullabilityNode);
+      // [[[!]]!]!
+      const expectedOutputType = new GraphQLNonNull(
+        new GraphQLList(
+          new GraphQLNonNull(
+            new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
+          ),
+        ),
+      );
+
+      expect(outputType).to.deep.equal(expectedOutputType);
+    });
   });
 });

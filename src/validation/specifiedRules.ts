@@ -67,6 +67,8 @@ import { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule';
 import { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule';
 import type { SDLValidationRule, ValidationRule } from './ValidationContext';
 
+import { RequiredStatusOnFieldMatchesDefinitionRule } from './rules/RequiredStatusOnFieldMatchesDefinitionRule';
+
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  *
@@ -98,6 +100,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   ValuesOfCorrectTypeRule,
   ProvidedRequiredArgumentsRule,
   VariablesInAllowedPositionRule,
+  RequiredStatusOnFieldMatchesDefinitionRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
 ]);
