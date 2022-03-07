@@ -1287,12 +1287,25 @@ describe('Execute: Handles basic execution tasks', () => {
               fields: {
                 name: { type: GraphQLString },
                 calories: { type: GraphQLInt },
+                location: {
+                  type: new GraphQLObjectType({
+                    name: 'Location',
+                    fields: {
+                      longitude: { type: GraphQLInt },
+                      latitude: { type: GraphQLInt },
+                    },
+                  }),
+                },
               },
             }),
             resolve() {
               return {
                 name: null,
                 calories: 10,
+                location: {
+                  longitude: 20,
+                  latitude: null
+                }
               };
             },
           },
@@ -1484,6 +1497,36 @@ describe('Execute: Handles basic execution tasks', () => {
       });
     });
 
+    it('high depth query', () => {
+      const document = `
+      query {
+        food {
+          location {
+            latitude!
+          }
+        }
+      }
+    `;
+      const nonNullInFragmentDocument = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
+      const nonNullInFragmentResult = executeSync({
+        schema,
+        document: nonNullInFragmentDocument,
+      });
+
+      expectJSON(nonNullInFragmentResult).toDeepEqual({
+        data: null,
+        errors: [
+          {
+            locations: [{ column: 13, line: 5 }],
+            message: 'Cannot return null for non-nullable field Location.latitude.',
+            path: ['food', 'location', 'latitude'],
+          },
+        ],
+      });
+    });
+
     it('null propagates when field that returns null is required and inside an inline fragment', () => {
       const document = `
       query {
@@ -1503,7 +1546,7 @@ describe('Execute: Handles basic execution tasks', () => {
       });
 
       expectJSON(nonNullInFragmentResult).toDeepEqual({
-        data: { food: null },
+        data: null,
         errors: [
           {
             locations: [{ column: 13, line: 5 }],
