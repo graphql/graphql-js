@@ -604,6 +604,12 @@ function handleFieldError(
   returnType: GraphQLOutputType,
   exeContext: ExecutionContext,
 ): null {
+  /*
+    options:
+    - pass in field nodes, so we can see which are required
+    - create a new GraphQL output type to represent required and optional fields
+  */
+ 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
   if (isNonNullType(returnType)) {
