@@ -72,11 +72,11 @@ describe('Validate: Field uses correct list depth', () => {
     `).toDeepEqual([
       {
         message: 'List nullability modifier is too shallow.',
-        locations: [{ line: 4, column: 9 }],
+        locations: [{ line: 3, column: 13 }],
       },
       {
         message: 'List nullability modifier is too shallow.',
-        locations: [{ line: 5, column: 7 }],
+        locations: [{ line: 4, column: 29 }],
       },
     ]);
   });
