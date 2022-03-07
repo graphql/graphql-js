@@ -1386,10 +1386,9 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }
     `;
-      const singleNonNullOnNullValueDocument = parse(
-        document, 
-        { experimentalClientControlledNullability: true }
-      );
+      const singleNonNullOnNullValueDocument = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
       const singleNonNullOnNullValueResult = executeSync({
         schema,
         document: singleNonNullOnNullValueDocument,
@@ -1399,7 +1398,7 @@ describe('Execute: Handles basic execution tasks', () => {
         data: { food: null },
         errors: [
           {
-            locations: [{ column: 13, line: 4 }],
+            locations: [{ column: 11, line: 4 }],
             message: 'Cannot return null for non-nullable field Food.name.',
             path: ['food', 'name'],
           },
@@ -1416,10 +1415,9 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }
     `;
-      const bothNonNullOnNullValueDocument = parse(
-        document, 
-        { experimentalClientControlledNullability: true }
-      );
+      const bothNonNullOnNullValueDocument = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
       const bothNonNullOnNullValueResult = executeSync({
         schema,
         document: bothNonNullOnNullValueDocument,
@@ -1429,7 +1427,7 @@ describe('Execute: Handles basic execution tasks', () => {
         data: { food: null },
         errors: [
           {
-            locations: [{ column: 13, line: 4 }],
+            locations: [{ column: 11, line: 4 }],
             message: 'Cannot return null for non-nullable field Food.name.',
             path: ['food', 'name'],
           },
@@ -1445,10 +1443,9 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }
     `;
-      const singleNonNullOnNonNullValueDocument = parse(
-        document,
-        { experimentalClientControlledNullability: true }
-      );
+      const singleNonNullOnNonNullValueDocument = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
       const singleNonNullOnNonNullValueResult = executeSync({
         schema,
         document: singleNonNullOnNonNullValueDocument,
@@ -1467,10 +1464,9 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }
     `;
-      const nonNullAliasOnNullValueDocument = parse(
-        document,
-        { experimentalClientControlledNullability: true }
-      );
+      const nonNullAliasOnNullValueDocument = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
       const nonNullAliasOnNullValueResult = executeSync({
         schema,
         document: nonNullAliasOnNullValueDocument,
@@ -1480,7 +1476,7 @@ describe('Execute: Handles basic execution tasks', () => {
         data: { food: null },
         errors: [
           {
-            locations: [{ column: 13, line: 4 }],
+            locations: [{ column: 11, line: 4 }],
             message: 'Cannot return null for non-nullable field Food.name.',
             path: ['food', 'theNameOfTheFood'],
           },
@@ -1498,10 +1494,9 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }
     `;
-      const nonNullInFragmentDocument = parse(
-        document,
-        { experimentalClientControlledNullability: true }
-      );
+      const nonNullInFragmentDocument = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
       const nonNullInFragmentResult = executeSync({
         schema,
         document: nonNullInFragmentDocument,
@@ -1511,7 +1506,7 @@ describe('Execute: Handles basic execution tasks', () => {
         data: { food: null },
         errors: [
           {
-            locations: [{ column: 15, line: 5 }],
+            locations: [{ column: 13, line: 5 }],
             message: 'Cannot return null for non-nullable field Food.name.',
             path: ['food', 'name'],
           },
@@ -1532,10 +1527,9 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }
     `;
-      const aliasedNullAndNonNull = parse(
-        document,
-        { experimentalClientControlledNullability: true }
-      );
+      const aliasedNullAndNonNull = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
       const aliasedNullAndNonNullResult = executeSync({
         schema,
         document: aliasedNullAndNonNull,
@@ -1545,7 +1539,7 @@ describe('Execute: Handles basic execution tasks', () => {
         data: { nonNullable: null, nullable: { calories: 10, name: null } },
         errors: [
           {
-            locations: [{ column: 13, line: 4 }],
+            locations: [{ column: 11, line: 4 }],
             message: 'Cannot return null for non-nullable field Food.name.',
             path: ['nonNullable', 'name'],
           },
@@ -1562,10 +1556,9 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     `;
 
-      const listsQuery = parse(
-        document,
-        { experimentalClientControlledNullability: true }
-      );
+      const listsQuery = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
       const listsQueryResult = executeSync({
         schema,
         document: listsQuery,
@@ -1575,7 +1568,7 @@ describe('Execute: Handles basic execution tasks', () => {
         data: { lists: null },
         errors: [
           {
-            locations: [{ column: 13, line: 4 }],
+            locations: [{ column: 11, line: 4 }],
             message:
               'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
             path: ['lists', 'list'],
@@ -1592,10 +1585,9 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }
     `;
-      const listsQuery = parse(
-        document,
-        { experimentalClientControlledNullability: true }
-      );
+      const listsQuery = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
       const listsQueryResult = executeSync({
         schema,
         document: listsQuery,
@@ -1605,7 +1597,7 @@ describe('Execute: Handles basic execution tasks', () => {
         data: { lists: { mixedThreeDList: null } },
         errors: [
           {
-            locations: [{ column: 13, line: 4 }],
+            locations: [{ column: 11, line: 4 }],
             message:
               'Cannot return null for non-nullable field Lists.mixedThreeDList.',
             path: ['lists', 'mixedThreeDList', 0, 0, 0],
@@ -1622,10 +1614,9 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }
     `;
-      const listsQuery = parse(
-        document,
-        { experimentalClientControlledNullability: true }
-      );
+      const listsQuery = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
       const listsQueryResult = executeSync({
         schema,
         document: listsQuery,
@@ -1635,13 +1626,13 @@ describe('Execute: Handles basic execution tasks', () => {
         data: { lists: { mixedThreeDList: [null, null] } },
         errors: [
           {
-            locations: [{ column: 13, line: 4 }],
+            locations: [{ column: 11, line: 4 }],
             message:
               'Cannot return null for non-nullable field Lists.mixedThreeDList.',
             path: ['lists', 'mixedThreeDList', 0, 0, 0],
           },
           {
-            locations: [{ column: 13, line: 4 }],
+            locations: [{ column: 11, line: 4 }],
             message:
               'Cannot return null for non-nullable field Lists.mixedThreeDList.',
             path: ['lists', 'mixedThreeDList', 1, 0, 0],
