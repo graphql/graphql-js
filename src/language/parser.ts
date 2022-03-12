@@ -452,22 +452,57 @@ export class Parser {
     } else {
       name = nameOrAlias;
     }
+    const args = this.parseArguments(false);
+
+    const required = this._options?.experimentalClientControlledNullability
+      ? this.parseRequiredStatus()
+      : undefined;
+
+    const directives = this.parseDirectives(false);
+
+    const selectionSet = this.peek(TokenKind.BRACE_L)
+      ? this.parseSelectionSet()
+      : undefined;
+
+    // const isRequiredChain: Boolean = ((selectionSet?.selections) ?? [])
+    //   .reduce((accumulator: Boolean, element: SelectionNode) => {
+    //   if (accumulator) {
+    //     return true
+    //   } else if ()
+    // })
+    const isRequiredField = required?.kind == Kind.REQUIRED_DESIGNATOR;
+    const isOptionalField = required?.kind == Kind.OPTIONAL_DESIGNATOR;
+
+    var isRequiredChain = false;
+
+    if (isRequiredField) {
+      isRequiredChain = true;
+    } else if (isOptionalField) {
+      isRequiredChain = false;
+    } else {
+      for (const selection of selectionSet?.selections ?? []) {
+        const field = selection as FieldNode;
+        if (selection.kind == Kind.FIELD) {
+          if (field.isInRequiredChain) {
+            isRequiredChain = true;
+            break;
+          }
+        }
+      }
+    }
 
     return this.node<FieldNode>(start, {
       kind: Kind.FIELD,
       alias,
       name,
-      arguments: this.parseArguments(false),
+      arguments: args,
       // Experimental support for Client Controlled Nullability changes
       // the grammar of Field:
       //   - Field : Alias? Name Arguments? Nullability? Directives? SelectionSet?
-      required: this._options?.experimentalClientControlledNullability
-        ? this.parseRequiredStatus()
-        : undefined,
-      directives: this.parseDirectives(false),
-      selectionSet: this.peek(TokenKind.BRACE_L)
-        ? this.parseSelectionSet()
-        : undefined,
+      required: required,
+      isInRequiredChain: isRequiredChain,
+      directives: directives,
+      selectionSet: selectionSet,
     });
   }
 

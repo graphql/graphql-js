@@ -59,6 +59,7 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields';
 import { getArgumentValues, getVariableValues } from './values';
+import { RequiredDesignatorNode } from '../language';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
@@ -490,13 +491,15 @@ function executeField(
   path: Path,
 ): PromiseOrValue<unknown> {
   const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
+  const requiredStatus = fieldNodes[0].required;
+
   if (!fieldDef) {
     return;
   }
 
   let returnType: GraphQLOutputType;
   try {
-    returnType = modifiedOutputType(fieldDef.type, fieldNodes[0].required);
+    returnType = modifiedOutputType(fieldDef.type, requiredStatus);
   } catch (error) {
     const location = fieldNodes[0]?.loc;
     let starts: ReadonlyArray<number> | undefined = [];
@@ -523,6 +526,9 @@ function executeField(
     parentType,
     path,
   );
+
+  // determine if we're still in a required chain and need to nullify
+  const isInRequiredChain = fieldNodes[0].isInRequiredChain;
 
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
   try {
@@ -563,13 +569,18 @@ function executeField(
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(path));
-        return handleFieldError(error, returnType, exeContext);
+        return handleFieldError(
+          error,
+          returnType,
+          exeContext,
+          isInRequiredChain,
+        );
       });
     }
     return completed;
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToArray(path));
-    return handleFieldError(error, returnType, exeContext);
+    return handleFieldError(error, returnType, exeContext, isInRequiredChain);
   }
 }
 
@@ -603,16 +614,25 @@ function handleFieldError(
   error: GraphQLError,
   returnType: GraphQLOutputType,
   exeContext: ExecutionContext,
+  isInRequiredChain: Boolean,
 ): null {
   /*
     options:
     - pass in field nodes, so we can see which are required
     - create a new GraphQL output type to represent required and optional fields
+
+    ? on its own marks a field nullable
+    All ! are caught by the next ?, no matter the level
+    ! + ! = !
+    ! + ? = 0
+    ! + ! + ? = 0
+
+    These are executed top down which means we can't follow a 
   */
- 
+
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
-  if (isNonNullType(returnType)) {
+  if (isNonNullType(returnType) || isInRequiredChain) {
     throw error;
   }
 
@@ -689,6 +709,7 @@ function completeValue(
       info,
       path,
       result,
+      false,
     );
   }
 
@@ -741,6 +762,7 @@ function completeListValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
+  isRequiredChain: Boolean,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   if (!isIterableObject(result)) {
     throw new GraphQLError(
@@ -790,13 +812,23 @@ function completeListValue(
             fieldNodes,
             pathToArray(itemPath),
           );
-          return handleFieldError(error, itemType, exeContext);
+          return handleFieldError(
+            error,
+            itemType,
+            exeContext,
+            fieldNodes[0].isInRequiredChain,
+          );
         });
       }
       return completedItem;
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      return handleFieldError(error, itemType, exeContext);
+      return handleFieldError(
+        error,
+        itemType,
+        exeContext,
+        fieldNodes[0].isInRequiredChain,
+      );
     }
   });
 

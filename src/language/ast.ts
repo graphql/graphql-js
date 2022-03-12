@@ -378,6 +378,7 @@ export interface FieldNode {
   // Note: Client Controlled Nullability is experimental
   // and may be changed or removed in the future.
   readonly required?: ListNullabilityNode | NullabilityDesignatorNode;
+  readonly isInRequiredChain: Boolean;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
 }

@@ -1304,8 +1304,8 @@ describe('Execute: Handles basic execution tasks', () => {
                 calories: 10,
                 location: {
                   longitude: 20,
-                  latitude: null
-                }
+                  latitude: null,
+                },
               };
             },
           },
@@ -1500,7 +1500,7 @@ describe('Execute: Handles basic execution tasks', () => {
     it('high depth query', () => {
       const document = `
       query {
-        food {
+        food? {
           location {
             latitude!
           }
@@ -1516,11 +1516,14 @@ describe('Execute: Handles basic execution tasks', () => {
       });
 
       expectJSON(nonNullInFragmentResult).toDeepEqual({
-        data: null,
+        data: {
+          food: null,
+        },
         errors: [
           {
             locations: [{ column: 13, line: 5 }],
-            message: 'Cannot return null for non-nullable field Location.latitude.',
+            message:
+              'Cannot return null for non-nullable field Location.latitude.',
             path: ['food', 'location', 'latitude'],
           },
         ],
