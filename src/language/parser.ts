@@ -464,12 +464,10 @@ export class Parser {
       ? this.parseSelectionSet()
       : undefined;
 
-    // const isRequiredChain: Boolean = ((selectionSet?.selections) ?? [])
-    //   .reduce((accumulator: Boolean, element: SelectionNode) => {
-    //   if (accumulator) {
-    //     return true
-    //   } else if ()
-    // })
+    /*
+    We create a 
+    */
+    
     const isRequiredField = required?.kind == Kind.REQUIRED_DESIGNATOR;
     const isOptionalField = required?.kind == Kind.OPTIONAL_DESIGNATOR;
 

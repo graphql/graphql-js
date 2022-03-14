@@ -1563,7 +1563,7 @@ describe('Execute: Handles basic execution tasks', () => {
     it('null propagates when field that returns null is required, but other aliased value is unaffected', () => {
       const document = `
       query {
-        nonNullable: food {
+        nonNullable: food? {
           name!
           calories!
         }
