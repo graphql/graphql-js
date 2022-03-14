@@ -118,6 +118,9 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
+  // Key: Required path
+  // Value: Optional path
+  nullPropagationPairs: Map<String, Path>;
 }
 
 /**
@@ -350,6 +353,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
+    nullPropagationPairs: new Map(),
   };
 }
 
@@ -377,22 +381,26 @@ function executeOperation(
     operation.selectionSet,
   );
   const path = undefined;
+  // This is a fake path. It can't exist, so if there is null propagation, then it will go all
+  // the way to data.
+  const currentPropagationPath = addPath(undefined, "", undefined);
 
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
-      return executeFields(exeContext, rootType, rootValue, path, rootFields);
+      return executeFields(exeContext, rootType, rootValue, path, currentPropagationPath, rootFields);
     case OperationTypeNode.MUTATION:
       return executeFieldsSerially(
         exeContext,
         rootType,
         rootValue,
         path,
+        currentPropagationPath,
         rootFields,
       );
     case OperationTypeNode.SUBSCRIPTION:
       // TODO: deprecate `subscribe` and move all logic here
       // Temporary solution until we finish merging execute and subscribe together
-      return executeFields(exeContext, rootType, rootValue, path, rootFields);
+      return executeFields(exeContext, rootType, rootValue, path, currentPropagationPath, rootFields);
   }
 }
 
@@ -405,18 +413,21 @@ function executeFieldsSerially(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
+  currentPropagationPath: Path,
   fields: Map<string, ReadonlyArray<FieldNode>>,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
     fields.entries(),
     (results, [responseName, fieldNodes]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
+
       const result = executeField(
         exeContext,
         parentType,
         sourceValue,
         fieldNodes,
         fieldPath,
+        currentPropagationPath,
       );
       if (result === undefined) {
         return results;
@@ -443,6 +454,7 @@ function executeFields(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
+  currentPropagationPath: Path,
   fields: Map<string, ReadonlyArray<FieldNode>>,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
@@ -450,12 +462,14 @@ function executeFields(
 
   for (const [responseName, fieldNodes] of fields.entries()) {
     const fieldPath = addPath(path, responseName, parentType.name);
+    
     const result = executeField(
       exeContext,
       parentType,
       sourceValue,
       fieldNodes,
       fieldPath,
+      currentPropagationPath,
     );
 
     if (result !== undefined) {
@@ -489,9 +503,24 @@ function executeField(
   source: unknown,
   fieldNodes: ReadonlyArray<FieldNode>,
   path: Path,
+  currentPropagationPath: Path,
 ): PromiseOrValue<unknown> {
   const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
   const requiredStatus = fieldNodes[0].required;
+
+  /*
+  When we see an optional field, hold it and pass it to all children.
+  Replace it every time we see a new optional field
+  If we ever null propagate from a required field, we propagate to that point
+  */
+
+  if (requiredStatus?.kind === Kind.OPTIONAL_DESIGNATOR) {
+    currentPropagationPath = path;
+  } else if (requiredStatus?.kind === Kind.REQUIRED_DESIGNATOR && currentPropagationPath !== undefined) {
+    const pathString = JSON.stringify(pathToArray(path));
+    exeContext.nullPropagationPairs.set(pathString, currentPropagationPath);
+  }
+
 
   if (!fieldDef) {
     return;
@@ -551,7 +580,7 @@ function executeField(
     let completed;
     if (isPromise(result)) {
       completed = result.then((resolved) =>
-        completeValue(exeContext, returnType, fieldNodes, info, path, resolved),
+        completeValue(exeContext, returnType, fieldNodes, info, path, currentPropagationPath, resolved),
       );
     } else {
       completed = completeValue(
@@ -560,6 +589,7 @@ function executeField(
         fieldNodes,
         info,
         path,
+        currentPropagationPath,
         result,
       );
     }
@@ -573,14 +603,14 @@ function executeField(
           error,
           returnType,
           exeContext,
-          isInRequiredChain,
+          path
         );
       });
     }
     return completed;
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToArray(path));
-    return handleFieldError(error, returnType, exeContext, isInRequiredChain);
+    return handleFieldError(error, returnType, exeContext, path);
   }
 }
 
@@ -614,7 +644,7 @@ function handleFieldError(
   error: GraphQLError,
   returnType: GraphQLOutputType,
   exeContext: ExecutionContext,
-  isInRequiredChain: Boolean,
+  path: Path
 ): null {
   /*
     options:
@@ -627,12 +657,17 @@ function handleFieldError(
     ! + ? = 0
     ! + ! + ? = 0
 
-    These are executed top down which means we can't follow a 
+    if propagation path is undefined, that could mean that there are no required fields
+    or that could mean that there are no optional fields. Path can't represent an empty path
   */
+  const errorPath = error.path!;
+  const pathString = JSON.stringify(errorPath);
+  var propagationPath = exeContext.nullPropagationPairs.get(pathString);
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
-  if (isNonNullType(returnType) || isInRequiredChain) {
+  // Also check if we're in the middle of a null propagation chain.
+  if (isNonNullType(returnType) || (propagationPath !== undefined && propagationPath !== path)) {
     throw error;
   }
 
@@ -669,6 +704,7 @@ function completeValue(
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: Path,
+  currentPropagationPath: Path,
   result: unknown,
 ): PromiseOrValue<unknown> {
   // If result is an Error, throw a located error.
@@ -685,6 +721,7 @@ function completeValue(
       fieldNodes,
       info,
       path,
+      currentPropagationPath,
       result,
     );
     if (completed === null) {
@@ -708,8 +745,8 @@ function completeValue(
       fieldNodes,
       info,
       path,
+      currentPropagationPath,
       result,
-      false,
     );
   }
 
@@ -728,6 +765,7 @@ function completeValue(
       fieldNodes,
       info,
       path,
+      currentPropagationPath,
       result,
     );
   }
@@ -740,6 +778,7 @@ function completeValue(
       fieldNodes,
       info,
       path,
+      currentPropagationPath,
       result,
     );
   }
@@ -761,8 +800,8 @@ function completeListValue(
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: Path,
+  currentPropagationPath: Path,
   result: unknown,
-  isRequiredChain: Boolean,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   if (!isIterableObject(result)) {
     throw new GraphQLError(
@@ -788,6 +827,7 @@ function completeListValue(
             fieldNodes,
             info,
             itemPath,
+            currentPropagationPath,
             resolved,
           ),
         );
@@ -798,6 +838,7 @@ function completeListValue(
           fieldNodes,
           info,
           itemPath,
+          currentPropagationPath,
           item,
         );
       }
@@ -816,7 +857,7 @@ function completeListValue(
             error,
             itemType,
             exeContext,
-            fieldNodes[0].isInRequiredChain,
+            path
           );
         });
       }
@@ -827,7 +868,7 @@ function completeListValue(
         error,
         itemType,
         exeContext,
-        fieldNodes[0].isInRequiredChain,
+        path
       );
     }
   });
@@ -863,6 +904,7 @@ function completeAbstractValue(
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: Path,
+  currentPropagationPath: Path,
   result: unknown,
 ): PromiseOrValue<ObjMap<unknown>> {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
@@ -884,6 +926,7 @@ function completeAbstractValue(
         fieldNodes,
         info,
         path,
+        currentPropagationPath,
         result,
       ),
     );
@@ -902,6 +945,7 @@ function completeAbstractValue(
     fieldNodes,
     info,
     path,
+    currentPropagationPath,
     result,
   );
 }
@@ -970,6 +1014,7 @@ function completeObjectValue(
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: Path,
+  currentPropagationPath: Path,
   result: unknown,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
@@ -991,6 +1036,7 @@ function completeObjectValue(
           returnType,
           result,
           path,
+          currentPropagationPath,
           subFieldNodes,
         );
       });
@@ -1001,7 +1047,7 @@ function completeObjectValue(
     }
   }
 
-  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+  return executeFields(exeContext, returnType, result, path, currentPropagationPath, subFieldNodes);
 }
 
 function invalidReturnTypeError(
