@@ -2,6 +2,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import type { Maybe } from '../../jsutils/Maybe';
 
+import type { ParseOptions } from '../../language/parser';
 import { parse } from '../../language/parser';
 
 import type { GraphQLSchema } from '../../type/schema';
@@ -10,8 +11,6 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { validate, validateSDL } from '../validate';
 import type { SDLValidationRule, ValidationRule } from '../ValidationContext';
-
-import type { ParseOptions } from '../../language';
 
 export const testSchema: GraphQLSchema = buildSchema(`
   interface Mammal {

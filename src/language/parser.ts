@@ -472,9 +472,9 @@ export class Parser {
       // Experimental support for Client Controlled Nullability changes
       // the grammar of Field:
       //   - Field : Alias? Name Arguments? Nullability? Directives? SelectionSet?
-      required: required,
-      directives: directives,
-      selectionSet: selectionSet,
+      required,
+      directives,
+      selectionSet,
     });
   }
 

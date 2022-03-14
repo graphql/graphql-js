@@ -37,6 +37,7 @@ import {
   ProvidedRequiredArgumentsOnDirectivesRule,
   ProvidedRequiredArgumentsRule,
 } from './rules/ProvidedRequiredArgumentsRule';
+import { RequiredStatusOnFieldMatchesDefinitionRule } from './rules/RequiredStatusOnFieldMatchesDefinitionRule';
 // Spec Section: "Leaf Field Selections"
 import { ScalarLeafsRule } from './rules/ScalarLeafsRule';
 // Spec Section: "Subscriptions with Single Root Field"
@@ -66,8 +67,6 @@ import { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule';
 // Spec Section: "All Variable Usages Are Allowed"
 import { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule';
 import type { SDLValidationRule, ValidationRule } from './ValidationContext';
-
-import { RequiredStatusOnFieldMatchesDefinitionRule } from './rules/RequiredStatusOnFieldMatchesDefinitionRule';
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.

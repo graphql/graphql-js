@@ -1,19 +1,21 @@
-import type { GraphQLOutputType } from '../type/definition';
-import {
-  getNullableType,
-  GraphQLNonNull,
-  isNonNullType,
-  assertListType,
-  GraphQLList,
-  isListType,
-} from '../type/definition';
+import { GraphQLError } from '../error/GraphQLError';
+
 import type {
   ListNullabilityNode,
   NullabilityDesignatorNode,
 } from '../language/ast';
 import type { ASTReducer } from '../language/visitor';
 import { visit } from '../language/visitor';
-import { GraphQLError } from '../error/GraphQLError';
+
+import type { GraphQLOutputType } from '../type/definition';
+import {
+  assertListType,
+  getNullableType,
+  GraphQLList,
+  GraphQLNonNull,
+  isListType,
+  isNonNullType,
+} from '../type/definition';
 
 /**
  * Implements the "Accounting For Client Controlled Nullability Designators"
@@ -21,7 +23,7 @@ import { GraphQLError } from '../error/GraphQLError';
  * type of a field by taking into account both the nullability listed in the
  * schema, and the nullability providing by an operation.
  */
-export function modifiedOutputType(
+export function applyRequiredStatus(
   type: GraphQLOutputType,
   nullabilityNode?: ListNullabilityNode | NullabilityDesignatorNode,
 ): GraphQLOutputType {
