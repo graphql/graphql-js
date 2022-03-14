@@ -1,13 +1,13 @@
+import { GraphQLError } from '../../error/GraphQLError';
+
 import type {
   FieldNode,
-  NullabilityDesignatorNode,
   ListNullabilityNode,
+  NullabilityDesignatorNode,
 } from '../../language/ast';
-
 import type { ASTReducer, ASTVisitor } from '../../language/visitor';
 import { visit } from '../../language/visitor';
 
-import type { ValidationContext } from '../ValidationContext';
 import type { GraphQLOutputType } from '../../type/definition';
 import {
   assertListType,
@@ -15,7 +15,7 @@ import {
   isListType,
 } from '../../type/definition';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import type { ValidationContext } from '../ValidationContext';
 
 /**
  * List element nullability designators need to use a depth that is the same as or less than the

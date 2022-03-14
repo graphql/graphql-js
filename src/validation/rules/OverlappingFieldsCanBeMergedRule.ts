@@ -28,12 +28,11 @@ import {
   isObjectType,
 } from '../../type/definition';
 
+import { applyRequiredStatus } from '../../utilities/applyRequiredStatus';
 import { sortValueNode } from '../../utilities/sortValueNode';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 import type { ValidationContext } from '../ValidationContext';
-
-import { modifiedOutputType } from '../../utilities/applyRequiredStatus';
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
@@ -604,27 +603,20 @@ function findConflict(
   const type2 = def2?.type;
 
   if (type1 && type2) {
-    // Errors will have already been handled by RequiredStatusOnFieldMatchesDefinitionRule
-    //  so there's no need to do anything here in the event that modifiedOutputType throws
-    //  an error.
-    try {
-      const modifiedType1 = modifiedOutputType(type1, node1.required);
-      const modifiedType2 = modifiedOutputType(type2, node2.required);
+    const modifiedType1 = applyRequiredStatus(type1, node1.required);
+    const modifiedType2 = applyRequiredStatus(type2, node2.required);
 
-      if (doTypesConflict(modifiedType1, modifiedType2)) {
-        return [
-          [
-            responseName,
-            `they return conflicting types "${inspect(
-              modifiedType1,
-            )}" and "${inspect(modifiedType2)}"`,
-          ],
-          [node1],
-          [node2],
-        ];
-      }
-    } catch {
-      /*  Do nothing. See above comment.  */
+    if (doTypesConflict(modifiedType1, modifiedType2)) {
+      return [
+        [
+          responseName,
+          `they return conflicting types "${inspect(
+            modifiedType1,
+          )}" and "${inspect(modifiedType2)}"`,
+        ],
+        [node1],
+        [node2],
+      ];
     }
   }
 

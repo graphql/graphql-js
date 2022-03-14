@@ -52,14 +52,13 @@ import {
 import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 
-import { modifiedOutputType } from '../utilities/applyRequiredStatus';
+import { applyRequiredStatus } from '../utilities/applyRequiredStatus';
 
 import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
 import { getArgumentValues, getVariableValues } from './values';
-import { RequiredDesignatorNode } from '../language';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
@@ -521,6 +520,7 @@ function executeField(
 ): PromiseOrValue<unknown> {
   const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
   const requiredStatus = fieldNodes[0].required;
+  let newPropagationPath: Path = currentPropagationPath;
 
   /*
   When we see an optional field, hold it and pass it to all children.
@@ -529,13 +529,10 @@ function executeField(
   */
 
   if (requiredStatus?.kind === Kind.OPTIONAL_DESIGNATOR) {
-    currentPropagationPath = path;
-  } else if (
-    requiredStatus?.kind === Kind.REQUIRED_DESIGNATOR &&
-    currentPropagationPath !== undefined
-  ) {
+    newPropagationPath = path;
+  } else if (requiredStatus?.kind === Kind.REQUIRED_DESIGNATOR) {
     const pathString = JSON.stringify(pathToArray(path));
-    exeContext.nullPropagationPairs.set(pathString, currentPropagationPath);
+    exeContext.nullPropagationPairs.set(pathString, newPropagationPath);
   }
 
   if (!fieldDef) {
@@ -544,7 +541,7 @@ function executeField(
 
   let returnType: GraphQLOutputType;
   try {
-    returnType = modifiedOutputType(fieldDef.type, requiredStatus);
+    returnType = applyRequiredStatus(fieldDef.type, requiredStatus);
   } catch (error) {
     const location = fieldNodes[0]?.loc;
     let starts: ReadonlyArray<number> | undefined = [];
@@ -599,7 +596,7 @@ function executeField(
           fieldNodes,
           info,
           path,
-          currentPropagationPath,
+          newPropagationPath,
           resolved,
         ),
       );
@@ -610,7 +607,7 @@ function executeField(
         fieldNodes,
         info,
         path,
-        currentPropagationPath,
+        newPropagationPath,
         result,
       );
     }
@@ -676,9 +673,9 @@ function handleFieldError(
     if propagation path is undefined, that could mean that there are no required fields
     or that could mean that there are no optional fields. Path can't represent an empty path
   */
-  const errorPath = error.path!;
+  const errorPath = error.path;
   const pathString = JSON.stringify(errorPath);
-  var propagationPath = exeContext.nullPropagationPairs.get(pathString);
+  const propagationPath = exeContext.nullPropagationPairs.get(pathString);
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.

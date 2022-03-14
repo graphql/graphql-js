@@ -22,12 +22,6 @@ import { GraphQLSchema } from '../../type/schema';
 
 import { execute, executeSync } from '../execute';
 
-import { modifiedOutputType } from '../../utilities/applyRequiredStatus';
-import type {
-  NullabilityDesignatorNode,
-  ListNullabilityNode,
-} from '../../language/ast';
-
 describe('Execute: Handles basic execution tasks', () => {
   it('throws if no document is provided', () => {
     const schema = new GraphQLSchema({
@@ -1685,85 +1679,6 @@ describe('Execute: Handles basic execution tasks', () => {
           },
         ],
       });
-    });
-
-    it('modifiedOutputType produces correct output types with no overrides', () => {
-      // [[[!]]!]!
-      const type = new GraphQLNonNull(
-        new GraphQLList(
-          new GraphQLNonNull(
-            new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
-          ),
-        ),
-      );
-
-      // [[[]]]
-      const nullabilityNode: NullabilityDesignatorNode | ListNullabilityNode = {
-        kind: Kind.LIST_NULLABILITY,
-        element: {
-          kind: Kind.LIST_NULLABILITY,
-          element: {
-            kind: Kind.LIST_NULLABILITY,
-            element: undefined,
-          },
-        },
-      };
-
-      const outputType = modifiedOutputType(type, nullabilityNode);
-      // [[[!]]!]!
-      const expectedOutputType = new GraphQLNonNull(
-        new GraphQLList(
-          new GraphQLNonNull(
-            new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
-          ),
-        ),
-      );
-
-      expect(outputType).to.deep.equal(expectedOutputType);
-    });
-
-    it('modifiedOutputType produces correct output types with overrides', () => {
-      // [[[!]]!]!
-      const type = new GraphQLNonNull(
-        new GraphQLList(
-          new GraphQLNonNull(
-            new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
-          ),
-        ),
-      );
-
-      // [[[]]]
-      const nullabilityNode: NullabilityDesignatorNode | ListNullabilityNode = {
-        // kind: Kind.REQUIRED_DESIGNATOR,
-        // element: {
-        kind: Kind.LIST_NULLABILITY,
-        element: {
-          // kind: Kind.REQUIRED_DESIGNATOR,
-          // element: {
-          kind: Kind.LIST_NULLABILITY,
-          element: {
-            // kind: Kind.REQUIRED_DESIGNATOR,
-            // element:  {
-            kind: Kind.LIST_NULLABILITY,
-            element: undefined,
-            // }
-          },
-          // },
-        },
-        // },
-      };
-
-      const outputType = modifiedOutputType(type, nullabilityNode);
-      // [[[!]]!]!
-      const expectedOutputType = new GraphQLNonNull(
-        new GraphQLList(
-          new GraphQLNonNull(
-            new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
-          ),
-        ),
-      );
-
-      expect(outputType).to.deep.equal(expectedOutputType);
     });
   });
 });
