@@ -30,8 +30,19 @@ export function applyRequiredStatus(
     return type;
   }
 
-  const typeStack: Array<GraphQLOutputType> = [type];
+  // If the field is marked with a single nullability designator
+  //  short-circuit
+  if (nullabilityNode?.element === undefined) {
+    if (nullabilityNode?.kind === Kind.REQUIRED_DESIGNATOR) {
+      return new GraphQLNonNull(getNullableType(type));
+    } else if (nullabilityNode?.kind === Kind.OPTIONAL_DESIGNATOR) {
+      return getNullableType(type);
+    }
+  }
 
+  const typeStack: [GraphQLOutputType] = [type];
+
+  // Load the nullable version each type in the type definition to typeStack
   while (isListType(getNullableType(typeStack[typeStack.length - 1]))) {
     const list = assertListType(
       getNullableType(typeStack[typeStack.length - 1]),
@@ -40,6 +51,7 @@ export function applyRequiredStatus(
     typeStack.push(elementType);
   }
 
+  // Re-apply nullability to each level of the list from the outside in
   const applyStatusReducer: ASTReducer<GraphQLOutputType> = {
     RequiredNullabilityModifier: {
       leave({ nullabilityModifier }) {
