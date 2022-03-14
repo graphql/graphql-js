@@ -231,6 +231,7 @@ describe('Parser', () => {
   it('parses required field', () => {
     const result = parseCCN('{ requiredField! }');
 
+<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -239,6 +240,46 @@ describe('Parser', () => {
         nullabilityModifier: undefined,
       },
     );
+=======
+    expectJSON(parsedDocument).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 18 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 18 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 18 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 16 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 15 },
+                  value: 'requiredField',
+                },
+                arguments: [],
+                directives: [],
+                selectionSet: undefined,
+                required: {
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  loc: { start: 15, end: 16 },
+                  element: undefined,
+                },
+              },
+            ],
+          },
+        },
+      ],
+    });
+>>>>>>> 45c65268 (remove parse step required chain logic)
   });
 
   it('parses optional field', () => {
@@ -298,6 +339,7 @@ describe('Parser', () => {
   it('parses field with required list elements', () => {
     const result = parseCCN('{ field[!] }');
 
+<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -307,6 +349,47 @@ describe('Parser', () => {
           kind: Kind.REQUIRED_NULLABILITY_MODIFIER,
           loc: { start: 8, end: 9 },
           nullabilityModifier: undefined,
+=======
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 12 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 12 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 12 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 10 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  kind: Kind.LIST_NULLABILITY,
+                  loc: { start: 7, end: 10 },
+                  element: {
+                    kind: Kind.REQUIRED_DESIGNATOR,
+                    loc: { start: 8, end: 9 },
+                    element: undefined,
+                  },
+                },
+                selectionSet: undefined,
+              },
+            ],
+          },
+>>>>>>> 45c65268 (remove parse step required chain logic)
         },
       },
     );
@@ -315,6 +398,7 @@ describe('Parser', () => {
   it('parses field with optional list elements', () => {
     const result = parseCCN('{ field[?] }');
 
+<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -324,6 +408,47 @@ describe('Parser', () => {
           kind: Kind.OPTIONAL_NULLABILITY_MODIFIER,
           loc: { start: 8, end: 9 },
           nullabilityModifier: undefined,
+=======
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 12 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 12 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 12 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 10 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  kind: Kind.LIST_NULLABILITY,
+                  loc: { start: 7, end: 10 },
+                  element: {
+                    kind: Kind.OPTIONAL_DESIGNATOR,
+                    loc: { start: 8, end: 9 },
+                    element: undefined,
+                  },
+                },
+                selectionSet: undefined,
+              },
+            ],
+          },
+>>>>>>> 45c65268 (remove parse step required chain logic)
         },
       },
     );
@@ -332,6 +457,7 @@ describe('Parser', () => {
   it('parses field with required list', () => {
     const result = parseCCN('{ field[]! }');
 
+<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -341,6 +467,47 @@ describe('Parser', () => {
           kind: Kind.LIST_NULLABILITY_MODIFIER,
           loc: { start: 7, end: 9 },
           nullabilityModifier: undefined,
+=======
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 12 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 12 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 12 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 10 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                selectionSet: undefined,
+                required: {
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  loc: { start: 9, end: 10 },
+                  element: {
+                    kind: Kind.LIST_NULLABILITY,
+                    element: undefined,
+                    loc: { start: 7, end: 9 },
+                  },
+                },
+              },
+            ],
+          },
+>>>>>>> 45c65268 (remove parse step required chain logic)
         },
       },
     );
@@ -349,6 +516,7 @@ describe('Parser', () => {
   it('parses field with optional list', () => {
     const result = parseCCN('{ field[]? }');
 
+<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -358,6 +526,47 @@ describe('Parser', () => {
           kind: Kind.LIST_NULLABILITY_MODIFIER,
           loc: { start: 7, end: 9 },
           nullabilityModifier: undefined,
+=======
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 12 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 12 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 12 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 10 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  kind: Kind.OPTIONAL_DESIGNATOR,
+                  loc: { start: 9, end: 10 },
+                  element: {
+                    kind: Kind.LIST_NULLABILITY,
+                    loc: { start: 7, end: 9 },
+                    element: undefined,
+                  },
+                },
+                selectionSet: undefined,
+              },
+            ],
+          },
+>>>>>>> 45c65268 (remove parse step required chain logic)
         },
       },
     );
@@ -366,6 +575,7 @@ describe('Parser', () => {
   it('parses multidimensional field with mixed list elements', () => {
     const result = parseCCN('{ field[[[?]!]]! }');
 
+<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -387,6 +597,58 @@ describe('Parser', () => {
                   kind: Kind.OPTIONAL_NULLABILITY_MODIFIER,
                   loc: { start: 10, end: 11 },
                   nullabilityModifier: undefined,
+=======
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 18 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 18 },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 18 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 2, end: 16 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 2, end: 7 },
+                  value: 'field',
+                },
+                arguments: [],
+                directives: [],
+                required: {
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  loc: { start: 15, end: 16 },
+                  element: {
+                    kind: Kind.LIST_NULLABILITY,
+                    loc: { start: 7, end: 15 },
+                    element: {
+                      kind: Kind.LIST_NULLABILITY,
+                      loc: { start: 8, end: 14 },
+                      element: {
+                        kind: Kind.REQUIRED_DESIGNATOR,
+                        loc: { start: 12, end: 13 },
+                        element: {
+                          kind: Kind.LIST_NULLABILITY,
+                          loc: { start: 9, end: 12 },
+                          element: {
+                            kind: Kind.OPTIONAL_DESIGNATOR,
+                            loc: { start: 10, end: 11 },
+                            element: undefined,
+                          },
+                        },
+                      },
+                    },
+                  },
+>>>>>>> 45c65268 (remove parse step required chain logic)
                 },
               },
             },
@@ -428,454 +690,6 @@ describe('Parser', () => {
     );
   });
 
-  it('everything between ! and ? marked isRequiredChain true', () => {
-    const document = dedent`
-    {
-      node(id: 4) {
-        id
-        business {
-          name
-          address!
-        }
-      }
-    }
-  `;
-    const result = parse(document, {
-      experimentalClientControlledNullability: true,
-    });
-
-    expectJSON(result).toDeepEqual({
-      kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 77 },
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 77 },
-          operation: 'query',
-          name: undefined,
-          variableDefinitions: [],
-          directives: [],
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            loc: { start: 0, end: 77 },
-            selections: [
-              {
-                kind: Kind.FIELD,
-                loc: { start: 4, end: 75 },
-                alias: undefined,
-                name: {
-                  kind: Kind.NAME,
-                  loc: { start: 4, end: 8 },
-                  value: 'node',
-                },
-                required: undefined,
-                isInRequiredChain: true,
-                arguments: [
-                  {
-                    kind: Kind.ARGUMENT,
-                    name: {
-                      kind: Kind.NAME,
-                      loc: { start: 9, end: 11 },
-                      value: 'id',
-                    },
-                    value: {
-                      kind: Kind.INT,
-                      loc: { start: 13, end: 14 },
-                      value: '4',
-                    },
-                    loc: { start: 9, end: 14 },
-                  },
-                ],
-                directives: [],
-                selectionSet: {
-                  kind: Kind.SELECTION_SET,
-                  loc: { start: 16, end: 75 },
-                  selections: [
-                    {
-                      kind: Kind.FIELD,
-                      loc: { start: 22, end: 24 },
-                      alias: undefined,
-                      name: {
-                        kind: Kind.NAME,
-                        loc: { start: 22, end: 24 },
-                        value: 'id',
-                      },
-                      required: undefined,
-                      arguments: [],
-                      directives: [],
-                      isInRequiredChain: false,
-                      selectionSet: undefined,
-                    },
-                    {
-                      kind: Kind.FIELD,
-                      loc: { start: 29, end: 71 },
-                      alias: undefined,
-                      name: {
-                        kind: Kind.NAME,
-                        loc: { start: 29, end: 37 },
-                        value: 'business',
-                      },
-                      required: undefined,
-                      arguments: [],
-                      directives: [],
-                      isInRequiredChain: true,
-                      selectionSet: {
-                        kind: Kind.SELECTION_SET,
-                        loc: { start: 38, end: 71 },
-                        selections: [
-                          {
-                            kind: Kind.FIELD,
-                            loc: { start: 46, end: 50 },
-                            alias: undefined,
-                            name: {
-                              kind: Kind.NAME,
-                              loc: { start: 46, end: 50 },
-                              value: 'name',
-                            },
-                            required: undefined,
-                            arguments: [],
-                            directives: [],
-                            isInRequiredChain: false,
-                            selectionSet: undefined,
-                          },
-                          {
-                            kind: Kind.FIELD,
-                            loc: { start: 57, end: 65 },
-                            alias: undefined,
-                            name: {
-                              kind: Kind.NAME,
-                              loc: { start: 57, end: 64 },
-                              value: 'address',
-                            },
-                            required: {
-                              kind: Kind.REQUIRED_DESIGNATOR,
-                              loc: { start: 64, end: 65 },
-                              element: undefined,
-                            },
-                            arguments: [],
-                            directives: [],
-                            isInRequiredChain: true,
-                            selectionSet: undefined,
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      ],
-    });
-  });
-
-  it('everything between ! and ? marked isRequiredChain true with inline fragment', () => {
-    const document = dedent`
-    {
-      node(id: 4) {
-        id
-        business {
-          ... on Business {
-            name
-            address!
-          } 
-        }
-      }
-    }
-  `;
-    const result = parse(document, {
-      experimentalClientControlledNullability: true,
-    });
-
-    expectJSON(result).toDeepEqual({
-      kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 114 },
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 114 },
-          operation: 'query',
-          name: undefined,
-          variableDefinitions: [],
-          directives: [],
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            loc: { start: 0, end: 77 },
-            selections: [
-              {
-                kind: Kind.FIELD,
-                loc: { start: 4, end: 112 },
-                alias: undefined,
-                name: {
-                  kind: Kind.NAME,
-                  loc: { start: 4, end: 8 },
-                  value: 'node',
-                },
-                required: undefined,
-                isInRequiredChain: true,
-                arguments: [
-                  {
-                    kind: Kind.ARGUMENT,
-                    name: {
-                      kind: Kind.NAME,
-                      loc: { start: 9, end: 11 },
-                      value: 'id',
-                    },
-                    value: {
-                      kind: Kind.INT,
-                      loc: { start: 13, end: 14 },
-                      value: '4',
-                    },
-                    loc: { start: 9, end: 14 },
-                  },
-                ],
-                directives: [],
-                selectionSet: {
-                  kind: Kind.SELECTION_SET,
-                  loc: { start: 16, end: 112 },
-                  selections: [
-                    {
-                      kind: Kind.FIELD,
-                      loc: { start: 22, end: 24 },
-                      alias: undefined,
-                      name: {
-                        kind: Kind.NAME,
-                        loc: { start: 22, end: 24 },
-                        value: 'id',
-                      },
-                      required: undefined,
-                      arguments: [],
-                      directives: [],
-                      isInRequiredChain: false,
-                      selectionSet: undefined,
-                    },
-                    {
-                      kind: Kind.FIELD,
-                      loc: { start: 29, end: 108 },
-                      alias: undefined,
-                      name: {
-                        kind: Kind.NAME,
-                        loc: { start: 29, end: 37 },
-                        value: 'business',
-                      },
-                      required: undefined,
-                      arguments: [],
-                      directives: [],
-                      isInRequiredChain: true,
-                      selectionSet: {
-                        kind: Kind.SELECTION_SET,
-                        loc: { start: 38, end: 108 },
-                        selections: [
-                          {
-                            kind: Kind.INLINE_FRAGMENT,
-                            loc: { start: 46, end: 50 },
-                            alias: undefined,
-                            name: {
-                              kind: Kind.NAME,
-                              loc: { start: 46, end: 50 },
-                              value: 'name',
-                            },
-                            required: undefined,
-                            arguments: [],
-                            directives: [],
-                            isInRequiredChain: false,
-                            selectionSet: [
-                              {
-                                kind: Kind.FIELD,
-                                loc: { start: 46, end: 50 },
-                                alias: undefined,
-                                name: {
-                                  kind: Kind.NAME,
-                                  loc: { start: 46, end: 50 },
-                                  value: 'name',
-                                },
-                                required: undefined,
-                                arguments: [],
-                                directives: [],
-                                isInRequiredChain: false,
-                                selectionSet: undefined,
-                              },
-                              {
-                                kind: Kind.FIELD,
-                                loc: { start: 57, end: 65 },
-                                alias: undefined,
-                                name: {
-                                  kind: Kind.NAME,
-                                  loc: { start: 57, end: 64 },
-                                  value: 'address',
-                                },
-                                required: {
-                                  kind: Kind.REQUIRED_DESIGNATOR,
-                                  loc: { start: 64, end: 65 },
-                                  element: undefined,
-                                },
-                                arguments: [],
-                                directives: [],
-                                isInRequiredChain: true,
-                                selectionSet: undefined,
-                              },
-                            ],
-                          }
-                        ],
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      ],
-    });
-  });
-
-  it('everything between ! and ? marked isRequiredChain true with standalone fragment', () => {
-    const document = dedent`
-    {
-      node(id: 4) {
-        id
-        business {
-          ...requiredNameBusiness
-        }
-      }
-    }
-
-    fragment requiredNameBusiness on Business {
-      name
-      address!
-    }
-  `;
-    const result = parse(document, {
-      experimentalClientControlledNullability: true,
-    });
-
-    expectJSON(result).toDeepEqual({
-      kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 77 },
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 77 },
-          operation: 'query',
-          name: undefined,
-          variableDefinitions: [],
-          directives: [],
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            loc: { start: 0, end: 77 },
-            selections: [
-              {
-                kind: Kind.FIELD,
-                loc: { start: 4, end: 75 },
-                alias: undefined,
-                name: {
-                  kind: Kind.NAME,
-                  loc: { start: 4, end: 8 },
-                  value: 'node',
-                },
-                required: undefined,
-                isInRequiredChain: true,
-                arguments: [
-                  {
-                    kind: Kind.ARGUMENT,
-                    name: {
-                      kind: Kind.NAME,
-                      loc: { start: 9, end: 11 },
-                      value: 'id',
-                    },
-                    value: {
-                      kind: Kind.INT,
-                      loc: { start: 13, end: 14 },
-                      value: '4',
-                    },
-                    loc: { start: 9, end: 14 },
-                  },
-                ],
-                directives: [],
-                selectionSet: {
-                  kind: Kind.SELECTION_SET,
-                  loc: { start: 16, end: 75 },
-                  selections: [
-                    {
-                      kind: Kind.FIELD,
-                      loc: { start: 22, end: 24 },
-                      alias: undefined,
-                      name: {
-                        kind: Kind.NAME,
-                        loc: { start: 22, end: 24 },
-                        value: 'id',
-                      },
-                      required: undefined,
-                      arguments: [],
-                      directives: [],
-                      isInRequiredChain: false,
-                      selectionSet: undefined,
-                    },
-                    {
-                      kind: Kind.FIELD,
-                      loc: { start: 29, end: 71 },
-                      alias: undefined,
-                      name: {
-                        kind: Kind.NAME,
-                        loc: { start: 29, end: 37 },
-                        value: 'business',
-                      },
-                      required: undefined,
-                      arguments: [],
-                      directives: [],
-                      isInRequiredChain: true,
-                      selectionSet: {
-                        kind: Kind.SELECTION_SET,
-                        loc: { start: 38, end: 71 },
-                        selections: [
-                          {
-                            kind: Kind.FIELD,
-                            loc: { start: 46, end: 50 },
-                            alias: undefined,
-                            name: {
-                              kind: Kind.NAME,
-                              loc: { start: 46, end: 50 },
-                              value: 'name',
-                            },
-                            required: undefined,
-                            arguments: [],
-                            directives: [],
-                            isInRequiredChain: false,
-                            selectionSet: undefined,
-                          },
-                          {
-                            kind: Kind.FIELD,
-                            loc: { start: 57, end: 65 },
-                            alias: undefined,
-                            name: {
-                              kind: Kind.NAME,
-                              loc: { start: 57, end: 64 },
-                              value: 'address',
-                            },
-                            required: {
-                              kind: Kind.REQUIRED_DESIGNATOR,
-                              loc: { start: 64, end: 65 },
-                              element: undefined,
-                            },
-                            arguments: [],
-                            directives: [],
-                            isInRequiredChain: true,
-                            selectionSet: undefined,
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      ],
-    });
-  });
-
   it('creates ast', () => {
     const result = parse(dedent`
       {
@@ -910,6 +724,10 @@ describe('Parser', () => {
                   loc: { start: 4, end: 8 },
                   value: 'node',
                 },
+<<<<<<< HEAD
+=======
+                required: undefined,
+>>>>>>> 45c65268 (remove parse step required chain logic)
                 arguments: [
                   {
                     kind: Kind.ARGUMENT,
@@ -944,7 +762,6 @@ describe('Parser', () => {
                       arguments: [],
                       nullabilityModifier: undefined,
                       directives: [],
-                      isInRequiredChain: false,
                       selectionSet: undefined,
                     },
                     {
@@ -959,7 +776,6 @@ describe('Parser', () => {
                       arguments: [],
                       nullabilityModifier: undefined,
                       directives: [],
-                      isInRequiredChain: false,
                       selectionSet: undefined,
                     },
                   ],
@@ -1008,7 +824,6 @@ describe('Parser', () => {
                 arguments: [],
                 nullabilityModifier: undefined,
                 directives: [],
-                isInRequiredChain: false,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 15, end: 27 },
@@ -1025,7 +840,6 @@ describe('Parser', () => {
                       arguments: [],
                       nullabilityModifier: undefined,
                       directives: [],
-                      isInRequiredChain: false,
                       selectionSet: undefined,
                     },
                   ],

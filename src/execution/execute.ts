@@ -383,11 +383,18 @@ function executeOperation(
   const path = undefined;
   // This is a fake path. It can't exist, so if there is null propagation, then it will go all
   // the way to data.
-  const currentPropagationPath = addPath(undefined, "", undefined);
+  const currentPropagationPath = addPath(undefined, '', undefined);
 
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
-      return executeFields(exeContext, rootType, rootValue, path, currentPropagationPath, rootFields);
+      return executeFields(
+        exeContext,
+        rootType,
+        rootValue,
+        path,
+        currentPropagationPath,
+        rootFields,
+      );
     case OperationTypeNode.MUTATION:
       return executeFieldsSerially(
         exeContext,
@@ -400,7 +407,14 @@ function executeOperation(
     case OperationTypeNode.SUBSCRIPTION:
       // TODO: deprecate `subscribe` and move all logic here
       // Temporary solution until we finish merging execute and subscribe together
-      return executeFields(exeContext, rootType, rootValue, path, currentPropagationPath, rootFields);
+      return executeFields(
+        exeContext,
+        rootType,
+        rootValue,
+        path,
+        currentPropagationPath,
+        rootFields,
+      );
   }
 }
 
@@ -462,7 +476,7 @@ function executeFields(
 
   for (const [responseName, fieldNodes] of fields.entries()) {
     const fieldPath = addPath(path, responseName, parentType.name);
-    
+
     const result = executeField(
       exeContext,
       parentType,
@@ -516,11 +530,13 @@ function executeField(
 
   if (requiredStatus?.kind === Kind.OPTIONAL_DESIGNATOR) {
     currentPropagationPath = path;
-  } else if (requiredStatus?.kind === Kind.REQUIRED_DESIGNATOR && currentPropagationPath !== undefined) {
+  } else if (
+    requiredStatus?.kind === Kind.REQUIRED_DESIGNATOR &&
+    currentPropagationPath !== undefined
+  ) {
     const pathString = JSON.stringify(pathToArray(path));
     exeContext.nullPropagationPairs.set(pathString, currentPropagationPath);
   }
-
 
   if (!fieldDef) {
     return;
@@ -556,9 +572,6 @@ function executeField(
     path,
   );
 
-  // determine if we're still in a required chain and need to nullify
-  const isInRequiredChain = fieldNodes[0].isInRequiredChain;
-
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
   try {
     // Build a JS object of arguments from the field.arguments AST, using the
@@ -580,7 +593,15 @@ function executeField(
     let completed;
     if (isPromise(result)) {
       completed = result.then((resolved) =>
-        completeValue(exeContext, returnType, fieldNodes, info, path, currentPropagationPath, resolved),
+        completeValue(
+          exeContext,
+          returnType,
+          fieldNodes,
+          info,
+          path,
+          currentPropagationPath,
+          resolved,
+        ),
       );
     } else {
       completed = completeValue(
@@ -599,12 +620,7 @@ function executeField(
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(path));
-        return handleFieldError(
-          error,
-          returnType,
-          exeContext,
-          path
-        );
+        return handleFieldError(error, returnType, exeContext, path);
       });
     }
     return completed;
@@ -644,7 +660,7 @@ function handleFieldError(
   error: GraphQLError,
   returnType: GraphQLOutputType,
   exeContext: ExecutionContext,
-  path: Path
+  path: Path,
 ): null {
   /*
     options:
@@ -667,7 +683,10 @@ function handleFieldError(
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
   // Also check if we're in the middle of a null propagation chain.
-  if (isNonNullType(returnType) || (propagationPath !== undefined && propagationPath !== path)) {
+  if (
+    isNonNullType(returnType) ||
+    (propagationPath !== undefined && propagationPath !== path)
+  ) {
     throw error;
   }
 
@@ -853,23 +872,13 @@ function completeListValue(
             fieldNodes,
             pathToArray(itemPath),
           );
-          return handleFieldError(
-            error,
-            itemType,
-            exeContext,
-            path
-          );
+          return handleFieldError(error, itemType, exeContext, path);
         });
       }
       return completedItem;
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      return handleFieldError(
-        error,
-        itemType,
-        exeContext,
-        path
-      );
+      return handleFieldError(error, itemType, exeContext, path);
     }
   });
 
@@ -1047,7 +1056,14 @@ function completeObjectValue(
     }
   }
 
-  return executeFields(exeContext, returnType, result, path, currentPropagationPath, subFieldNodes);
+  return executeFields(
+    exeContext,
+    returnType,
+    result,
+    path,
+    currentPropagationPath,
+    subFieldNodes,
+  );
 }
 
 function invalidReturnTypeError(
