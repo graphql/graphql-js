@@ -324,6 +324,14 @@ describe('Parser', () => {
     expect(() => parseCCN('query? { field }')).to.throw();
   });
 
+  it('does not parse designator on query', () => {
+    const document = 'query? { field }';
+
+    expect(() =>
+      parse(document, { experimentalClientControlledNullability: true }),
+    ).to.throw();
+  });
+
   it('parses required within fragment', () => {
     expect(() =>
       parseCCN('fragment MyFragment on Query { field! }'),
