@@ -464,31 +464,6 @@ export class Parser {
       ? this.parseSelectionSet()
       : undefined;
 
-    /*
-    We create a 
-    */
-    
-    const isRequiredField = required?.kind == Kind.REQUIRED_DESIGNATOR;
-    const isOptionalField = required?.kind == Kind.OPTIONAL_DESIGNATOR;
-
-    var isRequiredChain = false;
-
-    if (isRequiredField) {
-      isRequiredChain = true;
-    } else if (isOptionalField) {
-      isRequiredChain = false;
-    } else {
-      for (const selection of selectionSet?.selections ?? []) {
-        const field = selection as FieldNode;
-        if (selection.kind == Kind.FIELD) {
-          if (field.isInRequiredChain) {
-            isRequiredChain = true;
-            break;
-          }
-        }
-      }
-    }
-
     return this.node<FieldNode>(start, {
       kind: Kind.FIELD,
       alias,
@@ -498,7 +473,6 @@ export class Parser {
       // the grammar of Field:
       //   - Field : Alias? Name Arguments? Nullability? Directives? SelectionSet?
       required: required,
-      isInRequiredChain: isRequiredChain,
       directives: directives,
       selectionSet: selectionSet,
     });
