@@ -1393,7 +1393,7 @@ describe('Execute: Handles basic execution tasks', () => {
     it('null propagates when field that returns null is required', () => {
       const document = `
       query {
-        food {
+        food? {
           name!
           calories
         }
@@ -1422,7 +1422,7 @@ describe('Execute: Handles basic execution tasks', () => {
     it('null propagates when field that returns null and field that does not are both required', () => {
       const document = `
       query {
-        food {
+        food? {
           name!
           calories!
         }
@@ -1472,7 +1472,7 @@ describe('Execute: Handles basic execution tasks', () => {
     it('null propagates when field that returns null is aliased and required', () => {
       const document = `
       query {
-        food {
+        food? {
           theNameOfTheFood: name!
         }
       }
