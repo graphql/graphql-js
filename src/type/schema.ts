@@ -54,9 +54,10 @@ export function assertSchema(schema: unknown): GraphQLSchema {
  * your library or project. Do not use a shortened identifier as this increases
  * the risk of conflicts. We recommend you add at most one extension field,
  * an object which can contain all the values you need.
+ * Conflicts can be avoided by using a symbol instead of a string key.
  */
 export interface GraphQLSchemaExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**

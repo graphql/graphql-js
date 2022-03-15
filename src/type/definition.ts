@@ -552,7 +552,7 @@ export function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T> {
  * an object which can contain all the values you need.
  */
 export interface GraphQLScalarTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1031,7 +1031,7 @@ export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
  * an object which can contain all the values you need.
  */
 export interface GraphQLArgumentExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLArgumentConfig {
@@ -1087,7 +1087,7 @@ export type GraphQLFieldMap<TSource, TContext> = ObjMap<
  * an object which can contain all the values you need.
  */
 export interface GraphQLInterfaceTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1211,7 +1211,7 @@ export interface GraphQLInterfaceTypeNormalizedConfig
  * an object which can contain all the values you need.
  */
 export interface GraphQLUnionTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1339,7 +1339,7 @@ interface GraphQLUnionTypeNormalizedConfig
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1551,7 +1551,7 @@ export type GraphQLEnumValueConfigMap /* <T> */ =
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumValueExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLEnumValueConfig {
@@ -1581,7 +1581,7 @@ export interface GraphQLEnumValue {
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputObjectTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1716,7 +1716,7 @@ interface GraphQLInputObjectTypeNormalizedConfig
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputFieldExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLInputFieldConfig {

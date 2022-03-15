@@ -46,7 +46,7 @@ export function assertDirective(directive: unknown): GraphQLDirective {
  * an object which can contain all the values you need.
  */
 export interface GraphQLDirectiveExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
