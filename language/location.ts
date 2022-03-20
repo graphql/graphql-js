@@ -21,11 +21,11 @@ export function getLocation(source: Source, position: number): SourceLocation {
   for (const match of source.body.matchAll(LineRegExp)) {
     typeof match.index === 'number' || invariant(false);
 
-    if (match.index >= position) {
+    if ((match.index as number) >= position) {
       break;
     }
 
-    lastLineStart = match.index + match[0].length;
+    lastLineStart = (match.index as number) + match[0].length;
     line += 1;
   }
 

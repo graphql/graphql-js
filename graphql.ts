@@ -62,8 +62,8 @@ export interface GraphQLArgs {
     readonly [variable: string]: unknown;
   }>;
   operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<unknown, unknown>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<unknown, unknown>>;
 }
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
   // Always return a Promise for a consistent API.

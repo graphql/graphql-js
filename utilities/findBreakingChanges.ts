@@ -1,7 +1,7 @@
-import { inspect } from '../jsutils/inspect.ts';
-import { invariant } from '../jsutils/invariant.ts';
-import { keyMap } from '../jsutils/keyMap.ts';
-import { print } from '../language/printer.ts';
+import { inspect } from "../jsutils/inspect.ts";
+import { invariant } from "../jsutils/invariant.ts";
+import { keyMap } from "../jsutils/keyMap.ts";
+import { print } from "../language/printer.ts";
 import type {
   GraphQLEnumType,
   GraphQLField,
@@ -12,7 +12,7 @@ import type {
   GraphQLObjectType,
   GraphQLType,
   GraphQLUnionType,
-} from '../type/definition.ts';
+} from "../type/definition.ts";
 import {
   isEnumType,
   isInputObjectType,
@@ -25,36 +25,37 @@ import {
   isRequiredInputField,
   isScalarType,
   isUnionType,
-} from '../type/definition.ts';
-import { isSpecifiedScalarType } from '../type/scalars.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
-import { astFromValue } from './astFromValue.ts';
-import { sortValueNode } from './sortValueNode.ts';
+} from "../type/definition.ts";
+import { isSpecifiedScalarType } from "../type/scalars.ts";
+import type { GraphQLSchema } from "../type/schema.ts";
+import { astFromValue } from "./astFromValue.ts";
+import { sortValueNode } from "./sortValueNode.ts";
+import { ValueNode } from "../language/ast.ts";
 export enum BreakingChangeType {
-  TYPE_REMOVED = 'TYPE_REMOVED',
-  TYPE_CHANGED_KIND = 'TYPE_CHANGED_KIND',
-  TYPE_REMOVED_FROM_UNION = 'TYPE_REMOVED_FROM_UNION',
-  VALUE_REMOVED_FROM_ENUM = 'VALUE_REMOVED_FROM_ENUM',
-  REQUIRED_INPUT_FIELD_ADDED = 'REQUIRED_INPUT_FIELD_ADDED',
-  IMPLEMENTED_INTERFACE_REMOVED = 'IMPLEMENTED_INTERFACE_REMOVED',
-  FIELD_REMOVED = 'FIELD_REMOVED',
-  FIELD_CHANGED_KIND = 'FIELD_CHANGED_KIND',
-  REQUIRED_ARG_ADDED = 'REQUIRED_ARG_ADDED',
-  ARG_REMOVED = 'ARG_REMOVED',
-  ARG_CHANGED_KIND = 'ARG_CHANGED_KIND',
-  DIRECTIVE_REMOVED = 'DIRECTIVE_REMOVED',
-  DIRECTIVE_ARG_REMOVED = 'DIRECTIVE_ARG_REMOVED',
-  REQUIRED_DIRECTIVE_ARG_ADDED = 'REQUIRED_DIRECTIVE_ARG_ADDED',
-  DIRECTIVE_REPEATABLE_REMOVED = 'DIRECTIVE_REPEATABLE_REMOVED',
-  DIRECTIVE_LOCATION_REMOVED = 'DIRECTIVE_LOCATION_REMOVED',
+  TYPE_REMOVED = "TYPE_REMOVED",
+  TYPE_CHANGED_KIND = "TYPE_CHANGED_KIND",
+  TYPE_REMOVED_FROM_UNION = "TYPE_REMOVED_FROM_UNION",
+  VALUE_REMOVED_FROM_ENUM = "VALUE_REMOVED_FROM_ENUM",
+  REQUIRED_INPUT_FIELD_ADDED = "REQUIRED_INPUT_FIELD_ADDED",
+  IMPLEMENTED_INTERFACE_REMOVED = "IMPLEMENTED_INTERFACE_REMOVED",
+  FIELD_REMOVED = "FIELD_REMOVED",
+  FIELD_CHANGED_KIND = "FIELD_CHANGED_KIND",
+  REQUIRED_ARG_ADDED = "REQUIRED_ARG_ADDED",
+  ARG_REMOVED = "ARG_REMOVED",
+  ARG_CHANGED_KIND = "ARG_CHANGED_KIND",
+  DIRECTIVE_REMOVED = "DIRECTIVE_REMOVED",
+  DIRECTIVE_ARG_REMOVED = "DIRECTIVE_ARG_REMOVED",
+  REQUIRED_DIRECTIVE_ARG_ADDED = "REQUIRED_DIRECTIVE_ARG_ADDED",
+  DIRECTIVE_REPEATABLE_REMOVED = "DIRECTIVE_REPEATABLE_REMOVED",
+  DIRECTIVE_LOCATION_REMOVED = "DIRECTIVE_LOCATION_REMOVED",
 }
 export enum DangerousChangeType {
-  VALUE_ADDED_TO_ENUM = 'VALUE_ADDED_TO_ENUM',
-  TYPE_ADDED_TO_UNION = 'TYPE_ADDED_TO_UNION',
-  OPTIONAL_INPUT_FIELD_ADDED = 'OPTIONAL_INPUT_FIELD_ADDED',
-  OPTIONAL_ARG_ADDED = 'OPTIONAL_ARG_ADDED',
-  IMPLEMENTED_INTERFACE_ADDED = 'IMPLEMENTED_INTERFACE_ADDED',
-  ARG_DEFAULT_VALUE_CHANGE = 'ARG_DEFAULT_VALUE_CHANGE',
+  VALUE_ADDED_TO_ENUM = "VALUE_ADDED_TO_ENUM",
+  TYPE_ADDED_TO_UNION = "TYPE_ADDED_TO_UNION",
+  OPTIONAL_INPUT_FIELD_ADDED = "OPTIONAL_INPUT_FIELD_ADDED",
+  OPTIONAL_ARG_ADDED = "OPTIONAL_ARG_ADDED",
+  IMPLEMENTED_INTERFACE_ADDED = "IMPLEMENTED_INTERFACE_ADDED",
+  ARG_DEFAULT_VALUE_CHANGE = "ARG_DEFAULT_VALUE_CHANGE",
 }
 export interface BreakingChange {
   type: BreakingChangeType;
@@ -71,11 +72,11 @@ export interface DangerousChange {
 
 export function findBreakingChanges(
   oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
 ): Array<BreakingChange> {
   // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
-    (change) => change.type in BreakingChangeType,
+    (change) => change.type in BreakingChangeType
   );
 }
 /**
@@ -85,17 +86,17 @@ export function findBreakingChanges(
 
 export function findDangerousChanges(
   oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
 ): Array<DangerousChange> {
   // @ts-expect-error
   return findSchemaChanges(oldSchema, newSchema).filter(
-    (change) => change.type in DangerousChangeType,
+    (change) => change.type in DangerousChangeType
   );
 }
 
 function findSchemaChanges(
   oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
 ): Array<BreakingChange | DangerousChange> {
   return [
     ...findTypeChanges(oldSchema, newSchema),
@@ -105,12 +106,12 @@ function findSchemaChanges(
 
 function findDirectiveChanges(
   oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const directivesDiff = diff(
     oldSchema.getDirectives(),
-    newSchema.getDirectives(),
+    newSchema.getDirectives()
   );
 
   for (const oldDirective of directivesDiff.removed) {
@@ -161,12 +162,12 @@ function findDirectiveChanges(
 
 function findTypeChanges(
   oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const typesDiff = diff(
     Object.values(oldSchema.getTypeMap()),
-    Object.values(newSchema.getTypeMap()),
+    Object.values(newSchema.getTypeMap())
   );
 
   for (const oldType of typesDiff.removed) {
@@ -188,12 +189,12 @@ function findTypeChanges(
     } else if (isObjectType(oldType) && isObjectType(newType)) {
       schemaChanges.push(
         ...findFieldChanges(oldType, newType),
-        ...findImplementedInterfacesChanges(oldType, newType),
+        ...findImplementedInterfacesChanges(oldType, newType)
       );
     } else if (isInterfaceType(oldType) && isInterfaceType(newType)) {
       schemaChanges.push(
         ...findFieldChanges(oldType, newType),
-        ...findImplementedInterfacesChanges(oldType, newType),
+        ...findImplementedInterfacesChanges(oldType, newType)
       );
     } else if (oldType.constructor !== newType.constructor) {
       schemaChanges.push({
@@ -210,12 +211,12 @@ function findTypeChanges(
 
 function findInputObjectTypeChanges(
   oldType: GraphQLInputObjectType,
-  newType: GraphQLInputObjectType,
+  newType: GraphQLInputObjectType
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const fieldsDiff = diff(
     Object.values(oldType.getFields()),
-    Object.values(newType.getFields()),
+    Object.values(newType.getFields())
   );
 
   for (const newField of fieldsDiff.added) {
@@ -242,7 +243,7 @@ function findInputObjectTypeChanges(
   for (const [oldField, newField] of fieldsDiff.persisted) {
     const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(
       oldField.type,
-      newField.type,
+      newField.type
     );
 
     if (!isSafe) {
@@ -260,7 +261,7 @@ function findInputObjectTypeChanges(
 
 function findUnionTypeChanges(
   oldType: GraphQLUnionType,
-  newType: GraphQLUnionType,
+  newType: GraphQLUnionType
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const possibleTypesDiff = diff(oldType.getTypes(), newType.getTypes());
@@ -284,7 +285,7 @@ function findUnionTypeChanges(
 
 function findEnumTypeChanges(
   oldType: GraphQLEnumType,
-  newType: GraphQLEnumType,
+  newType: GraphQLEnumType
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const valuesDiff = diff(oldType.getValues(), newType.getValues());
@@ -308,7 +309,7 @@ function findEnumTypeChanges(
 
 function findImplementedInterfacesChanges(
   oldType: GraphQLObjectType | GraphQLInterfaceType,
-  newType: GraphQLObjectType | GraphQLInterfaceType,
+  newType: GraphQLObjectType | GraphQLInterfaceType
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const interfacesDiff = diff(oldType.getInterfaces(), newType.getInterfaces());
@@ -332,12 +333,12 @@ function findImplementedInterfacesChanges(
 
 function findFieldChanges(
   oldType: GraphQLObjectType | GraphQLInterfaceType,
-  newType: GraphQLObjectType | GraphQLInterfaceType,
+  newType: GraphQLObjectType | GraphQLInterfaceType
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const fieldsDiff = diff(
     Object.values(oldType.getFields()),
-    Object.values(newType.getFields()),
+    Object.values(newType.getFields())
   );
 
   for (const oldField of fieldsDiff.removed) {
@@ -351,7 +352,7 @@ function findFieldChanges(
     schemaChanges.push(...findArgChanges(oldType, oldField, newField));
     const isSafe = isChangeSafeForObjectOrInterfaceField(
       oldField.type,
-      newField.type,
+      newField.type
     );
 
     if (!isSafe) {
@@ -370,7 +371,7 @@ function findFieldChanges(
 function findArgChanges(
   oldType: GraphQLObjectType | GraphQLInterfaceType,
   oldField: GraphQLField<unknown, unknown>,
-  newField: GraphQLField<unknown, unknown>,
+  newField: GraphQLField<unknown, unknown>
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const argsDiff = diff(oldField.args, newField.args);
@@ -385,7 +386,7 @@ function findArgChanges(
   for (const [oldArg, newArg] of argsDiff.persisted) {
     const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(
       oldArg.type,
-      newArg.type,
+      newArg.type
     );
 
     if (!isSafe) {
@@ -437,7 +438,7 @@ function findArgChanges(
 
 function isChangeSafeForObjectOrInterfaceField(
   oldType: GraphQLType,
-  newType: GraphQLType,
+  newType: GraphQLType
 ): boolean {
   if (isListType(oldType)) {
     return (
@@ -445,7 +446,7 @@ function isChangeSafeForObjectOrInterfaceField(
       (isListType(newType) &&
         isChangeSafeForObjectOrInterfaceField(
           oldType.ofType,
-          newType.ofType,
+          newType.ofType
         )) || // moving from nullable to non-null of the same underlying type is safe
       (isNonNullType(newType) &&
         isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
@@ -470,7 +471,7 @@ function isChangeSafeForObjectOrInterfaceField(
 
 function isChangeSafeForInputObjectFieldOrFieldArg(
   oldType: GraphQLType,
-  newType: GraphQLType,
+  newType: GraphQLType
 ): boolean {
   if (isListType(oldType)) {
     // if they're both lists, make sure the underlying types are compatible
@@ -487,7 +488,7 @@ function isChangeSafeForInputObjectFieldOrFieldArg(
       (isNonNullType(newType) &&
         isChangeSafeForInputObjectFieldOrFieldArg(
           oldType.ofType,
-          newType.ofType,
+          newType.ofType
         )) || // moving from non-null to nullable of the same underlying type is safe
       (!isNonNullType(newType) &&
         isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType))
@@ -497,49 +498,49 @@ function isChangeSafeForInputObjectFieldOrFieldArg(
   return isNamedType(newType) && oldType.name === newType.name;
 }
 
-function typeKindName(type: GraphQLNamedType): string {
+function typeKindName(type: GraphQLNamedType): string | undefined {
   if (isScalarType(type)) {
-    return 'a Scalar type';
+    return "a Scalar type";
   }
 
   if (isObjectType(type)) {
-    return 'an Object type';
+    return "an Object type";
   }
 
   if (isInterfaceType(type)) {
-    return 'an Interface type';
+    return "an Interface type";
   }
 
   if (isUnionType(type)) {
-    return 'a Union type';
+    return "a Union type";
   }
 
   if (isEnumType(type)) {
-    return 'an Enum type';
+    return "an Enum type";
   }
 
   if (isInputObjectType(type)) {
-    return 'an Input type';
+    return "an Input type";
   }
   /* c8 ignore next 3 */
   // Not reachable, all possible types have been considered.
 
-  false || invariant(false, 'Unexpected type: ' + inspect(type));
+  false || invariant(false, "Unexpected type: " + inspect(type));
 }
 
 function stringifyValue(value: unknown, type: GraphQLInputType): string {
   const ast = astFromValue(value, type);
   ast != null || invariant(false);
-  return print(sortValueNode(ast));
+  return print(sortValueNode(ast as ValueNode));
 }
 
 function diff<
   T extends {
     name: string;
-  },
+  }
 >(
   oldArray: ReadonlyArray<T>,
-  newArray: ReadonlyArray<T>,
+  newArray: ReadonlyArray<T>
 ): {
   added: ReadonlyArray<T>;
   removed: ReadonlyArray<T>;

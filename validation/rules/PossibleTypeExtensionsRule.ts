@@ -92,7 +92,7 @@ const defKindToExtKind: ObjMap<Kind> = {
   [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION,
 };
 
-function typeToExtKind(type: GraphQLNamedType): Kind {
+function typeToExtKind(type: GraphQLNamedType): Kind | undefined {
   if (isScalarType(type)) {
     return Kind.SCALAR_TYPE_EXTENSION;
   }
@@ -122,7 +122,7 @@ function typeToExtKind(type: GraphQLNamedType): Kind {
   false || invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
-function extensionKindToTypeName(kind: Kind): string {
+function extensionKindToTypeName(kind: Kind): string | undefined {
   switch (kind) {
     case Kind.SCALAR_TYPE_EXTENSION:
       return 'scalar';
@@ -144,7 +144,6 @@ function extensionKindToTypeName(kind: Kind): string {
     // Not reachable. All possible types have been considered
 
     /* c8 ignore next */
-
     default:
       false || invariant(false, 'Unexpected kind: ' + inspect(kind));
   }
