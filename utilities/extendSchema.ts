@@ -185,8 +185,8 @@ export function extendSchemaImpl(
     // Get the extended root operation types.
     query: schemaConfig.query && replaceNamedType(schemaConfig.query),
     mutation: schemaConfig.mutation && replaceNamedType(schemaConfig.mutation),
-    subscription:
-      schemaConfig.subscription && replaceNamedType(schemaConfig.subscription),
+    subscription: schemaConfig.subscription &&
+      replaceNamedType(schemaConfig.subscription),
     // Then, incorporate schema definition and all schema extensions.
     ...(schemaDef && getOperationTypes([schemaDef])),
     ...getOperationTypes(schemaExtensions),
@@ -236,7 +236,9 @@ export function extendSchemaImpl(
     });
   }
 
-  function extendNamedType(type: GraphQLNamedType): GraphQLNamedType {
+  function extendNamedType(
+    type: GraphQLNamedType,
+  ): GraphQLNamedType | undefined {
     if (isIntrospectionType(type) || isSpecifiedScalarType(type)) {
       // Builtin types are not extended.
       return type;

@@ -53,7 +53,9 @@ export function KnownDirectivesRule(
         return;
       }
 
-      const candidateLocation = getDirectiveLocationForASTPath(ancestors);
+      const candidateLocation = getDirectiveLocationForASTPath(
+        ancestors as ASTNode[],
+      );
 
       if (candidateLocation && !locations.includes(candidateLocation)) {
         context.reportError(
@@ -68,7 +70,7 @@ export function KnownDirectivesRule(
 }
 
 function getDirectiveLocationForASTPath(
-  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+  ancestors: ReadonlyArray<ASTNode>,
 ): DirectiveLocation | undefined {
   const appliedTo = ancestors[ancestors.length - 1];
   'kind' in appliedTo || invariant(false);
@@ -136,7 +138,6 @@ function getDirectiveLocationForASTPath(
     // Not reachable, all possible types have been considered.
 
     /* c8 ignore next */
-
     default:
       false || invariant(false, 'Unexpected kind: ' + inspect(appliedTo.kind));
   }

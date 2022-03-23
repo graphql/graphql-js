@@ -46,7 +46,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   );
   return new GraphQLSchema({
     ...schemaConfig,
-    types: Object.values(typeMap),
+    types: Object.values(typeMap) as GraphQLNamedType[],
     directives: sortByName(schemaConfig.directives).map(sortDirective),
     query: replaceMaybeType(schemaConfig.query),
     mutation: replaceMaybeType(schemaConfig.mutation),
@@ -109,7 +109,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return sortByName(array).map(replaceNamedType);
   }
 
-  function sortNamedType(type: GraphQLNamedType): GraphQLNamedType {
+  function sortNamedType(type: GraphQLNamedType): GraphQLNamedType | undefined {
     if (isScalarType(type) || isIntrospectionType(type)) {
       return type;
     }

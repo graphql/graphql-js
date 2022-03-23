@@ -25,7 +25,8 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
         parentType != null || invariant(false);
         context.reportError(
           new GraphQLError(
-            `The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`,
+            `The field ${parentType?.name}.${fieldDef
+              ?.name} is deprecated. ${deprecationReason}`,
             node,
           ),
         );
@@ -52,7 +53,8 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
           (parentType != null && fieldDef != null) || invariant(false);
           context.reportError(
             new GraphQLError(
-              `Field "${parentType.name}.${fieldDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
+              `Field "${parentType?.name}.${fieldDef
+                ?.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
               node,
             ),
           );
@@ -87,7 +89,8 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
         enumTypeDef != null || invariant(false);
         context.reportError(
           new GraphQLError(
-            `The enum value "${enumTypeDef.name}.${enumValueDef.name}" is deprecated. ${deprecationReason}`,
+            `The enum value "${enumTypeDef?.name}.${enumValueDef
+              ?.name}" is deprecated. ${deprecationReason}`,
             node,
           ),
         );

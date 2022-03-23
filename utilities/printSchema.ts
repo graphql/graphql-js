@@ -127,7 +127,7 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   return true;
 }
 
-export function printType(type: GraphQLNamedType): string {
+export function printType(type: GraphQLNamedType): string | undefined {
   if (isScalarType(type)) {
     return printScalar(type);
   }
@@ -332,7 +332,8 @@ function printDescription(
     value: description,
     block: isPrintableAsBlockString(description),
   });
-  const prefix =
-    indentation && !firstInBlock ? '\n' + indentation : indentation;
+  const prefix = indentation && !firstInBlock
+    ? '\n' + indentation
+    : indentation;
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
 }
