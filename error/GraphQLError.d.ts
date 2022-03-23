@@ -75,6 +75,7 @@ export declare class GraphQLError extends Error {
    * Extension fields to add to the formatted error.
    */
   readonly extensions: GraphQLErrorExtensions;
+  constructor(message: string, args?: GraphQLErrorArgs);
   /**
    * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
    */
@@ -91,7 +92,6 @@ export declare class GraphQLError extends Error {
     >,
     extensions?: Maybe<GraphQLErrorExtensions>,
   );
-  constructor(message: string, args?: GraphQLErrorArgs);
   get [Symbol.toStringTag](): string;
   toString(): string;
   toJSON(): GraphQLFormattedError;
