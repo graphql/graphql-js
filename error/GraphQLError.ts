@@ -116,6 +116,7 @@ export class GraphQLError extends Error {
    */
 
   readonly extensions: GraphQLErrorExtensions;
+  constructor(message: string, args?: GraphQLErrorArgs);
   /**
    * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
    */
@@ -133,7 +134,6 @@ export class GraphQLError extends Error {
     >,
     extensions?: Maybe<GraphQLErrorExtensions>,
   );
-  constructor(message: string, args?: GraphQLErrorArgs);
 
   constructor(message: string, ...rawArgs: BackwardsCompatibleArgs) {
     const { nodes, source, positions, path, originalError, extensions } =
