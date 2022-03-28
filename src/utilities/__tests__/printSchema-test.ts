@@ -276,6 +276,22 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Omits schema of common names', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({ name: 'Query', fields: {} }),
+      mutation: new GraphQLObjectType({ name: 'Mutation', fields: {} }),
+      subscription: new GraphQLObjectType({ name: 'Subscription', fields: {} }),
+    });
+
+    expectPrintedSchema(schema).to.equal(dedent`
+      type Query
+
+      type Mutation
+
+      type Subscription
+    `);
+  });
+
   it('Prints custom query root types', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({ name: 'CustomType', fields: {} }),
