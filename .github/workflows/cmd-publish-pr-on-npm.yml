@@ -1,16 +1,48 @@
-name: Canary Release
+name: publish-pr-on-npm
 on:
-  workflow_run:
-    workflows:
-      - PullRequest
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      pullRequestJSON:
+        required: true
+        type: string
+    outputs:
+      replyMessage:
+        value: ${{ jobs.publish-canary.outputs.replyMessage }}
 jobs:
+  build-npm-dist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          ref: ${{ fromJSON(inputs.pullRequestJSON).merge_commit_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build NPM package
+        run: npm run build:npm
+
+      - name: Upload npmDist package
+        uses: actions/upload-artifact@v2
+        with:
+          name: npmDist
+          path: ./npmDist
+
   publish-canary:
     runs-on: ubuntu-latest
     name: Publish Canary
-    if: github.event.workflow_run.event == 'pull_request'
     environment: canary-pr-npm
+    outputs:
+      replyMessage: ${{ steps.set_replyMessage.outputs.replyMessage }}
+    needs: [build-npm-dist]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -25,38 +57,33 @@ jobs:
           # 'registry-url' is required for 'npm publish'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Download event.json
-        run: gh run download "$WORKFLOW_ID" -n event.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WORKFLOW_ID: ${{github.event.workflow_run.id}}
-
-      - name: Download NPM package artifact
-        run: gh run download "$WORKFLOW_ID" -n npmDist -D npmDist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WORKFLOW_ID: ${{github.event.workflow_run.id}}
+      - uses: actions/download-artifact@v2
+        with:
+          name: npmDist
+          path: npmDist
 
       - name: Modify NPM package to be canary release
+        env:
+          PULL_REQUEST_JSON: ${{ inputs.pullRequestJSON }}
         uses: actions/github-script@v5
         with:
           script: |
             const fs = require('fs');
             const assert = require('assert');
 
+            const pull_request = JSON.parse(process.env.PULL_REQUEST_JSON);
             const packageJSONPath = './npmDist/package.json';
             const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf-8'));
-            const { pull_request } = JSON.parse(fs.readFileSync('./event.json', 'utf-8'));
 
             // Override entire 'publishConfig' since it can contain untrusted data.
             packageJSON.publishConfig = { tag: `canary-pr-${pull_request.number}` };
 
             assert(!packageJSON.version.includes('+'), 'Can not append after metadata');
             packageJSON.version += packageJSON.version.includes('-') ? '.' : '-';
-            packageJSON.version += `canary.pr.${pull_request.number}.${pull_request.head.sha}`;
+            packageJSON.version += `canary.pr.${pull_request.number}.${pull_request.merge_commit_sha}`;
 
             packageJSON.deprecated =
-              `You are using canary version build from ${pull_request.url}, no gurantees provided so please use your own discretion.`;
+              `You are using canary version build from ${pull_request.html_url}, no gurantees provided so please use your own discretion.`;
 
             assert(
               packageJSON.scripts == null,
@@ -69,7 +96,6 @@ jobs:
               'utf-8',
             );
 
-            core.exportVariable('PR_NUMBER', pull_request.number);
             core.exportVariable('NPM_TAG', packageJSON.publishConfig.tag);
             core.exportVariable('NPM_VERSION', packageJSON.version);
 
@@ -78,19 +104,11 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_CANARY_PR_PUBLISH_TOKEN }}
 
-      - name: Add comment on PR
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: process.env.PR_NUMBER,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: process.env.COMMENT_BODY,
-            })
+      - name: Set 'replyMessage' output variable
+        id: set_replyMessage
+        run: echo "::set-output replyMessage=$REPLY_MESSAGE"
         env:
-          COMMENT_BODY: |
+          REPLY_MESSAGE: |
             The latest changes of this PR are available on NPM as
             [graphql@${{env.NPM_VERSION}}](https://www.npmjs.com/package/graphql/v/${{env.NPM_VERSION}})
             **Note: no gurantees provided so please use your own discretion.**
