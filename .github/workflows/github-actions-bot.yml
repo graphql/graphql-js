@@ -57,7 +57,7 @@ jobs:
     outputs:
       cmd: ${{ steps.parse-cmd.outputs.cmd }}
       replyMessage: ${{ steps.parse-cmd.outputs.replyMessage }}
-      pullRequestJSON: ${{ steps.get-pull_request-json.outputs.data }}
+      pullRequestJSON: ${{ steps.parse-cmd.outputs.pullRequestJSON }}
     steps:
       - uses: actions/github-script@v5
         with:
@@ -72,15 +72,11 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const cmd = context.payload.comment.body.replace('@github-actions', '').trim();
-            core.setOutput('cmd', cmd);
+            const comment = context.payload.comment.body;
+            core.setOutput('cmd', comment.replace('@github-actions ', '').trim());
 
-      - id: get-pull_request-json
-        uses: octokit/request-action@v2.x
-        with:
-          route: GET ${{ github.event.issue.pull_request.url }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            const { url } = context.payload.issue.pull_request;
+            core.setOutput('pullRequestJSON', await github.request(url));
 
   cmd-publish-pr-on-npm:
     needs: [accept-cmd]
