@@ -1003,7 +1003,7 @@ describe('Introspection', () => {
             {
               name: 'oneOf',
               isRepeatable: false,
-              locations: ['OBJECT', 'INPUT_OBJECT'],
+              locations: ['INPUT_OBJECT'],
               args: [],
             },
           ],
@@ -1531,45 +1531,6 @@ describe('Introspection', () => {
           trueFields: [{ name: 'nonDeprecated' }, { name: 'deprecated' }],
           falseFields: [{ name: 'nonDeprecated' }],
           omittedFields: [{ name: 'nonDeprecated' }],
-        },
-      },
-    });
-  });
-
-  it('identifies oneOf for objects', () => {
-    const schema = buildSchema(`
-      type SomeObject @oneOf {
-        a: String
-      }
-
-      type AnotherObject {
-        a: String
-        b: String
-      }
-
-      type Query {
-        someField: String
-      }
-    `);
-
-    const source = `
-      {
-        a: __type(name: "SomeObject") {
-          oneOf
-        }
-        b: __type(name: "AnotherObject") {
-          oneOf
-        }
-      }
-    `;
-
-    expect(graphqlSync({ schema, source })).to.deep.equal({
-      data: {
-        a: {
-          oneOf: true,
-        },
-        b: {
-          oneOf: false,
         },
       },
     });

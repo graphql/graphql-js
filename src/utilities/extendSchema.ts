@@ -593,7 +593,6 @@ export function extendSchemaImpl(
           fields: () => buildFieldMap(allNodes),
           astNode,
           extensionASTNodes,
-          isOneOf: isOneOf(astNode),
         });
       }
       case Kind.INTERFACE_TYPE_DEFINITION: {
@@ -689,8 +688,6 @@ function getSpecifiedByURL(
 /**
  * Given an input object node, returns if the node should be OneOf.
  */
-function isOneOf(
-  node: InputObjectTypeDefinitionNode | ObjectTypeDefinitionNode,
-): boolean {
+function isOneOf(node: InputObjectTypeDefinitionNode): boolean {
   return Boolean(getDirectiveValues(GraphQLOneOfDirective, node));
 }

@@ -1663,28 +1663,6 @@ describe('Type System: Input Object fields must have input types', () => {
   });
 });
 
-describe('Type System: OneOf Object fields must be nullable', () => {
-  it('rejects non-nullable fields', () => {
-    const schema = buildSchema(`
-      type Query {
-        test: SomeObject
-      }
-
-      type SomeObject @oneOf {
-        a: String
-        b: String!
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([
-      {
-        message:
-          'Field SomeObject.b must be nullable as it is part of a OneOf Type.',
-        locations: [{ line: 8, column: 12 }],
-      },
-    ]);
-  });
-});
-
 describe('Type System: OneOf Input Object fields must be nullable', () => {
   it('rejects non-nullable fields', () => {
     const schema = buildSchema(`

@@ -20,7 +20,6 @@ import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 import type {
   GraphQLEnumType,
-  GraphQLField,
   GraphQLInputField,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -309,23 +308,6 @@ function validateFields(
         );
       }
     }
-
-    if (isObjectType(type) && type.isOneOf) {
-      validateOneOfObjectField(type, field, context);
-    }
-  }
-}
-
-function validateOneOfObjectField(
-  type: GraphQLObjectType,
-  field: GraphQLField<unknown, unknown, unknown>,
-  context: SchemaValidationContext,
-): void {
-  if (isNonNullType(field.type)) {
-    context.reportError(
-      `Field ${type.name}.${field.name} must be nullable as it is part of a OneOf Type.`,
-      field.astNode?.type,
-    );
   }
 }
 

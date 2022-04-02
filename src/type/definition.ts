@@ -763,7 +763,6 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
-  isOneOf: boolean;
 
   private _fields: ThunkObjMap<GraphQLField<TSource, TContext>>;
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
@@ -775,7 +774,6 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this.isOneOf = config.isOneOf ?? false;
 
     this._fields = () => defineFieldMap(config);
     this._interfaces = () => defineInterfaces(config);
@@ -944,7 +942,6 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
   extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
-  isOneOf?: boolean;
 }
 
 interface GraphQLObjectTypeNormalizedConfig<TSource, TContext>

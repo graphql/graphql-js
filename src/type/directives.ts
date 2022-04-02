@@ -210,13 +210,12 @@ export const GraphQLSpecifiedByDirective: GraphQLDirective =
   });
 
 /**
- * Used to declare an Input Object as a OneOf Input Objects and an Object as a OneOf Object.
+ * Used to declare an Input Object as a OneOf Input Objects.
  */
 export const GraphQLOneOfDirective: GraphQLDirective = new GraphQLDirective({
   name: 'oneOf',
-  description:
-    'Indicates an Object is a OneOf Object or an Input Object is a OneOf Input Object.',
-  locations: [DirectiveLocation.OBJECT, DirectiveLocation.INPUT_OBJECT],
+  description: 'Indicates an Input Object is a OneOf Input Object.',
+  locations: [DirectiveLocation.INPUT_OBJECT],
   args: {},
 });
 

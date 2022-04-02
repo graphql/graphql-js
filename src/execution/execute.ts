@@ -927,13 +927,12 @@ function completeObjectValue(
         if (!resolvedIsTypeOf) {
           throw invalidReturnTypeError(returnType, result, fieldNodes);
         }
-        return executeFieldsWithOneOfValidation(
+        return executeFields(
           exeContext,
           returnType,
           result,
           path,
           subFieldNodes,
-          fieldNodes,
         );
       });
     }
@@ -943,65 +942,7 @@ function completeObjectValue(
     }
   }
 
-  return executeFieldsWithOneOfValidation(
-    exeContext,
-    returnType,
-    result,
-    path,
-    subFieldNodes,
-    fieldNodes,
-  );
-}
-
-function executeFieldsWithOneOfValidation(
-  exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
-  sourceValue: unknown,
-  path: Path | undefined,
-  fields: Map<string, ReadonlyArray<FieldNode>>,
-  fieldNodes: ReadonlyArray<FieldNode>,
-): PromiseOrValue<ObjMap<unknown>> {
-  const value = executeFields(
-    exeContext,
-    parentType,
-    sourceValue,
-    path,
-    fields,
-  );
-  if (!parentType.isOneOf) {
-    return value;
-  }
-
-  if (isPromise(value)) {
-    return value.then((resolvedValue) => {
-      validateOneOfValue(resolvedValue, parentType, fieldNodes);
-      return resolvedValue;
-    });
-  }
-
-  validateOneOfValue(value, parentType, fieldNodes);
-  return value;
-}
-
-function validateOneOfValue(
-  value: ObjMap<unknown>,
-  returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-): void {
-  let nonNullCount = 0;
-
-  for (const field in value) {
-    if (value[field] !== null) {
-      nonNullCount += 1;
-    }
-  }
-
-  if (nonNullCount !== 1) {
-    throw new GraphQLError(
-      `OneOf Object "${returnType.name}" must have exactly one non-null field but got ${nonNullCount}.`,
-      fieldNodes,
-    );
-  }
+  return executeFields(exeContext, returnType, result, path, subFieldNodes);
 }
 
 function invalidReturnTypeError(
