@@ -12,6 +12,15 @@ on:
       - PullRequestOpened
     types:
       - completed
+env:
+  SUPPORTED_COMMANDS: |
+    <details>
+    <summary> Supported commands </summary>
+
+    Please post this commands in separate comments and only one per comment:
+    * `@github-actions run-benchmark` - Run benchmark comparing base and merge commits for this PR
+    * `@github-actions publish-pr-on-npm` - Build package from this PR and publish it on NPM
+    </details>
 jobs:
   hello-message:
     if: github.event_name == 'workflow_run'
@@ -38,15 +47,6 @@ jobs:
                 `Hi @${event.sender.login}, I'm @github-actions bot happy to help you with this PR 👋\n\n` +
                 process.env.SUPPORTED_COMMANDS,
             })
-        env:
-          SUPPORTED_COMMANDS: |
-            <details>
-            <summary> Supported commands </summary>
-
-            Please post this commands in separate comments and only one per comment:
-            * `@github-actions run-benchmark` - Run benchmark comparing base and merge commits for this PR
-            * `@github-actions publish-pr-on-npm` - Build package from this PR and publish it on NPM
-            </details>
 
   accept-cmd:
     if: |
@@ -94,9 +94,10 @@ jobs:
 
   respond-to-cmd:
     needs:
+      - accept-cmd
       - cmd-publish-pr-on-npm
       - cmd-run-benchmark
-    if: github.event_name == 'issue_comment' && always()
+    if: needs.accept-cmd.result != 'skipped' && always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v5
@@ -107,15 +108,17 @@ jobs:
 
             let replyMessage;
             let allSkipped = true;
-            for (const { result, outputs } of Object.values(needs)) {
-              allSkipped = allSkipped && result === 'skipped';
-              replyMessage = replyMessage || outputs.replyMessage;
+            for (const [ name, job ] of Object.entries(needs)) {
+              if (name.startsWith('cmd-')) {
+                allSkipped = allSkipped && job.result === 'skipped';
+              }
+              replyMessage = replyMessage || job.outputs.replyMessage;
             }
 
             if (!replyMessage) {
               replyMessage = allSkipped
-                ? 'Unknown command, please check help message at the top of PR.'
-                : `Something went wrong, please check logs here:\n${process.env.RUN_URL}`;
+                ? 'Unknown command 😕\n\n' + process.env.SUPPORTED_COMMANDS
+                : `Something went wrong, [please check log](${process.env.RUN_URL}).`;
             }
 
             const quoteRequest = comment.body
