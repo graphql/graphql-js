@@ -77,9 +77,15 @@ describe('lexicographicSortSchema', () => {
         dummy: String
       }
 
-      type Query implements FooB & FooA & FooC {
+      type Query {
+        field: Type
+      }
+
+      type Type implements FooB & FooA & FooC {
         dummy: String
       }
+
+      union Union implements FooB & FooA & FooC = Type
     `);
 
     expect(sorted).to.equal(dedent`
@@ -95,9 +101,15 @@ describe('lexicographicSortSchema', () => {
         dummy: String
       }
 
-      type Query implements FooA & FooB & FooC {
+      type Query {
+        field: Type
+      }
+
+      type Type implements FooA & FooB & FooC {
         dummy: String
       }
+
+      union Union implements FooA & FooB & FooC = Type
     `);
   });
 

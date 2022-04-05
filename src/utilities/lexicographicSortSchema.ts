@@ -138,6 +138,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       const config = type.toConfig();
       return new GraphQLUnionType({
         ...config,
+        interfaces: () => sortTypes(config.interfaces),
         types: () => sortTypes(config.types),
       });
     }

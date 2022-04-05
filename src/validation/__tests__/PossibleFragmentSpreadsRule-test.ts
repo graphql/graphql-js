@@ -37,7 +37,7 @@ const testSchema = buildSchema(`
     meowVolume: Int
   }
 
-  union CatOrDog = Cat | Dog
+  union CatOrDog implements Being & Pet = Cat | Dog
 
   interface Intelligent {
     iq: Int
@@ -117,6 +117,13 @@ describe('Validate: Possible fragment spreads', () => {
   it('interface into implemented object', () => {
     expectValid(`
       fragment interfaceWithinObject on Dog { ...petFragment }
+      fragment petFragment on Pet { name }
+    `);
+  });
+
+  it('interface into implemented union', () => {
+    expectValid(`
+      fragment interfaceWithinUnion on DogOrCat { ...petFragment }
       fragment petFragment on Pet { name }
     `);
   });

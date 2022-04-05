@@ -364,6 +364,10 @@ export function extendSchemaImpl(
 
     return new GraphQLUnionType({
       ...config,
+      interfaces: () => [
+        ...type.getInterfaces().map(replaceNamedType),
+        ...buildInterfaces(extensions),
+      ],
       types: () => [
         ...type.getTypes().map(replaceNamedType),
         ...buildUnionTypes(extensions),
@@ -552,6 +556,8 @@ export function extendSchemaImpl(
       | InterfaceTypeExtensionNode
       | ObjectTypeDefinitionNode
       | ObjectTypeExtensionNode
+      | UnionTypeDefinitionNode
+      | UnionTypeExtensionNode
     >,
   ): Array<GraphQLInterfaceType> {
     // Note: While this could make assertions to get the correctly typed
@@ -623,6 +629,7 @@ export function extendSchemaImpl(
         return new GraphQLUnionType({
           name,
           description: astNode.description?.value,
+          interfaces: () => buildInterfaces(allNodes),
           types: () => buildUnionTypes(allNodes),
           astNode,
           extensionASTNodes,

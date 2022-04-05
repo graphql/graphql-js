@@ -8,6 +8,7 @@ import { print } from '../language/printer';
 
 import type {
   GraphQLArgument,
+  GraphQLCompositeType,
   GraphQLEnumType,
   GraphQLInputField,
   GraphQLInputObjectType,
@@ -158,9 +159,7 @@ function printScalar(type: GraphQLScalarType): string {
   );
 }
 
-function printImplementedInterfaces(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-): string {
+function printImplementedInterfaces(type: GraphQLCompositeType): string {
   const interfaces = type.getInterfaces();
   return interfaces.length
     ? ' implements ' + interfaces.map((i) => i.name).join(' & ')
@@ -188,7 +187,13 @@ function printInterface(type: GraphQLInterfaceType): string {
 function printUnion(type: GraphQLUnionType): string {
   const types = type.getTypes();
   const possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
-  return printDescription(type) + 'union ' + type.name + possibleTypes;
+  return (
+    printDescription(type) +
+    'union ' +
+    type.name +
+    printImplementedInterfaces(type) +
+    possibleTypes
+  );
 }
 
 function printEnum(type: GraphQLEnumType): string {

@@ -223,6 +223,46 @@ describe('extendSchema', () => {
     `);
   });
 
+  it('extends unions by adding new interfaces', () => {
+    const schema = buildSchema(`
+      type Query {
+        someUnion: SomeUnion
+      }
+
+      union SomeUnion implements SomeInterface = Foo | Biz | Bar
+
+      interface SomeInterface { someField: String }
+      interface AnotherInterface { anotherField: String }
+
+      type Foo implements SomeInterface & AnotherInterface {
+        someField: String
+        anotherField: String
+        foo: String
+      }
+
+      type Biz implements SomeInterface & AnotherInterface {
+        someField: String
+        anotherField: String
+        biz: String
+      }
+
+      type Bar implements SomeInterface & AnotherInterface {
+        someField: String
+        anotherField: String
+        bar: String
+      }
+    `);
+    const extendAST = parse(`
+      extend union SomeUnion implements AnotherInterface
+    `);
+    const extendedSchema = extendSchema(schema, extendAST);
+
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
+      union SomeUnion implements SomeInterface & AnotherInterface = Foo | Biz | Bar
+    `);
+  });
+
   it('allows extension of union by adding itself', () => {
     const schema = buildSchema(`
       union SomeUnion

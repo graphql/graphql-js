@@ -234,6 +234,9 @@ export interface IntrospectionUnionType {
   readonly kind: 'UNION';
   readonly name: string;
   readonly description?: Maybe<string>;
+  readonly interfaces: ReadonlyArray<
+    IntrospectionNamedTypeRef<IntrospectionInterfaceType>
+  >;
   readonly possibleTypes: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>
   >;

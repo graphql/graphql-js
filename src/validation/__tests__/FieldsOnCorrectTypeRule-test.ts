@@ -43,10 +43,20 @@ const testSchema = buildSchema(`
 
   union CatOrDog = Cat | Dog
 
-  type Human {
+  interface Named {
+    name: String
+  }
+
+  type Human implements Named {
     name: String
     pets: [Pet]
   }
+
+  type Alien implements Named {
+    name: String
+  }
+
+  union NamedHumanOrAlien implements Named = Human | Alien
 
   type Query {
     human: Human
@@ -75,6 +85,15 @@ describe('Validate: Fields on correct type', () => {
   it('Interface field selection', () => {
     expectValid(`
       fragment interfaceFieldSelection on Pet {
+        __typename
+        name
+      }
+    `);
+  });
+
+  it('Union implementing interface field selection', () => {
+    expectValid(`
+      fragment unionImplementingInterfaceFieldSelection on HumanOrAlien {
         __typename
         name
       }

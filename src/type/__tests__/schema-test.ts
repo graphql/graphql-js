@@ -13,6 +13,7 @@ import {
   GraphQLList,
   GraphQLObjectType,
   GraphQLScalarType,
+  GraphQLUnionType,
 } from '../definition';
 import { GraphQLDirective } from '../directives';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars';
@@ -209,6 +210,30 @@ describe('Type System: Schema', () => {
 
       expect(schema.getType('SomeInterface')).to.equal(SomeInterface);
       expect(schema.getType('AnotherInterface')).to.equal(AnotherInterface);
+      expect(schema.getType('SomeSubtype')).to.equal(SomeSubtype);
+    });
+
+    it("includes unions's thunk subtypes in the type map", () => {
+      const SomeUnion = new GraphQLUnionType({
+        name: 'SomeUnion',
+        types: () => [SomeSubtype],
+        interfaces: () => [SomeInterface],
+      });
+
+      const SomeInterface = new GraphQLInterfaceType({
+        name: 'SomeInterface',
+        fields: {},
+      });
+
+      const SomeSubtype = new GraphQLObjectType({
+        name: 'SomeSubtype',
+        fields: {},
+      });
+
+      const schema = new GraphQLSchema({ types: [SomeUnion] });
+
+      expect(schema.getType('SomeUnion')).to.equal(SomeUnion);
+      expect(schema.getType('SomeInterface')).to.equal(SomeInterface);
       expect(schema.getType('SomeSubtype')).to.equal(SomeSubtype);
     });
 

@@ -230,6 +230,24 @@ describe('Schema Parser', () => {
     });
   });
 
+  it('Union extension without types', () => {
+    const doc = parse('extend union HelloOrGoodbye implements Greeting');
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'UnionTypeExtension',
+          name: nameNode('HelloOrGoodbye', { start: 13, end: 27 }),
+          interfaces: [typeNode('Greeting', { start: 39, end: 47 })],
+          directives: [],
+          types: [],
+          loc: { start: 0, end: 47 },
+        },
+      ],
+      loc: { start: 0, end: 47 },
+    });
+  });
+
   it('Object extension without fields followed by extension', () => {
     const doc = parse(`
       extend type Hello implements Greeting
@@ -320,6 +338,36 @@ describe('Schema Parser', () => {
         },
       ],
       loc: { start: 0, end: 110 },
+    });
+  });
+
+  it('Union extension without types followed by extension', () => {
+    const doc = parse(`
+      extend union HelloOrGoodbye implements Greeting
+
+      extend union HelloOrGoodbye implements SecondGreeting
+    `);
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'UnionTypeExtension',
+          name: nameNode('HelloOrGoodbye', { start: 20, end: 34 }),
+          interfaces: [typeNode('Greeting', { start: 46, end: 54 })],
+          directives: [],
+          types: [],
+          loc: { start: 7, end: 54 },
+        },
+        {
+          kind: 'UnionTypeExtension',
+          name: nameNode('HelloOrGoodbye', { start: 75, end: 89 }),
+          interfaces: [typeNode('SecondGreeting', { start: 101, end: 115 })],
+          directives: [],
+          types: [],
+          loc: { start: 62, end: 115 },
+        },
+      ],
+      loc: { start: 0, end: 120 },
     });
   });
 
@@ -517,6 +565,26 @@ describe('Schema Parser', () => {
     });
   });
 
+  it('Simple union inheriting interface', () => {
+    const doc = parse('union Hello implements World = Subtype');
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'UnionTypeDefinition',
+          name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
+          interfaces: [typeNode('World', { start: 23, end: 28 })],
+          directives: [],
+          types: [typeNode('Subtype', { start: 31, end: 38 })],
+          loc: { start: 0, end: 38 },
+        },
+      ],
+      loc: { start: 0, end: 38 },
+    });
+  });
+
   it('Simple type inheriting multiple interfaces', () => {
     const doc = parse('type Hello implements Wo & rld { field: String }');
 
@@ -571,6 +639,29 @@ describe('Schema Parser', () => {
         },
       ],
       loc: { start: 0, end: 53 },
+    });
+  });
+
+  it('Simple union inheriting multiple interfaces', () => {
+    const doc = parse('union Hello implements Wo & rld = Subtype');
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'UnionTypeDefinition',
+          name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
+          interfaces: [
+            typeNode('Wo', { start: 23, end: 25 }),
+            typeNode('rld', { start: 28, end: 31 }),
+          ],
+          directives: [],
+          types: [typeNode('Subtype', { start: 34, end: 41 })],
+          loc: { start: 0, end: 41 },
+        },
+      ],
+      loc: { start: 0, end: 41 },
     });
   });
 
@@ -630,6 +721,29 @@ describe('Schema Parser', () => {
         },
       ],
       loc: { start: 0, end: 55 },
+    });
+  });
+
+  it('Simple union inheriting multiple interfaces with leading ampersand', () => {
+    const doc = parse('union Hello implements & Wo & rld = Subtype');
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'UnionTypeDefinition',
+          name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
+          interfaces: [
+            typeNode('Wo', { start: 25, end: 27 }),
+            typeNode('rld', { start: 30, end: 33 }),
+          ],
+          directives: [],
+          types: [typeNode('Subtype', { start: 36, end: 43 })],
+          loc: { start: 0, end: 43 },
+        },
+      ],
+      loc: { start: 0, end: 43 },
     });
   });
 
@@ -880,6 +994,7 @@ describe('Schema Parser', () => {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
           description: undefined,
+          interfaces: [],
           directives: [],
           types: [typeNode('World', { start: 14, end: 19 })],
           loc: { start: 0, end: 19 },
@@ -899,6 +1014,7 @@ describe('Schema Parser', () => {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
           description: undefined,
+          interfaces: [],
           directives: [],
           types: [
             typeNode('Wo', { start: 14, end: 16 }),
@@ -921,6 +1037,7 @@ describe('Schema Parser', () => {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
           description: undefined,
+          interfaces: [],
           directives: [],
           types: [
             typeNode('Wo', { start: 16, end: 18 }),

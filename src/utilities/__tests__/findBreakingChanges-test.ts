@@ -618,6 +618,31 @@ describe('findBreakingChanges', () => {
     ]);
   });
 
+  it('should detect interfaces removed from unions', () => {
+    const oldSchema = buildSchema(`
+      interface Interface
+
+      type Type implements Interface
+
+      union Union implements Interface = Type
+    `);
+
+    const newSchema = buildSchema(`
+      interface Interface
+
+      type Type implements Interface
+
+      union Union = Type
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
+        description: 'Union no longer implements interface Interface.',
+      },
+    ]);
+  });
+
   it('should ignore changes in order of interfaces', () => {
     const oldSchema = buildSchema(`
       interface FirstInterface
@@ -1097,6 +1122,61 @@ describe('findDangerousChanges', () => {
         type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
         description:
           'NewInterface added to interfaces implemented by Interface1.',
+      },
+    ]);
+  });
+
+  it('should detect interfaces added to unions', () => {
+    const oldSchema = buildSchema(`
+      interface OldInterface
+      interface NewInterface
+
+      type Type implements OldInterface & NewInterface
+
+      union Union implements OldInterface = Type
+    `);
+
+    const newSchema = buildSchema(`
+      interface OldInterface
+      interface NewInterface
+
+      type Type implements OldInterface & NewInterface
+
+      union Union implements OldInterface & NewInterface = Type
+    `);
+
+    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
+        description: 'NewInterface added to interfaces implemented by Union.',
+      },
+    ]);
+  });
+
+  it('should detect interfaces added to unions', () => {
+    const oldSchema = buildSchema(`
+      type Type
+
+      interface OldInterface
+      interface NewInterface
+
+      union UnionType implements OldInterface = Type
+    `);
+
+    const newSchema = buildSchema(`
+    type Type
+
+    interface OldInterface
+    interface NewInterface
+
+    union UnionType implements OldInterface & NewInterface = Type
+  `);
+
+    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
+        description:
+          'NewInterface added to interfaces implemented by UnionType.',
       },
     ]);
   });

@@ -22,6 +22,7 @@ import { OperationTypeNode } from '../language/ast';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 import type {
+  GraphQLCompositeType,
   GraphQLEnumType,
   GraphQLInputField,
   GraphQLInputObjectType,
@@ -470,6 +471,7 @@ function validateUnionMembers(
     );
   }
 
+  const unionInterfaces = union.getInterfaces();
   const includedTypeNames = Object.create(null);
   for (const memberType of memberTypes) {
     if (includedTypeNames[memberType.name]) {
@@ -480,12 +482,28 @@ function validateUnionMembers(
       continue;
     }
     includedTypeNames[memberType.name] = true;
+
     if (!isObjectType(memberType)) {
       context.reportError(
         `Union type ${union.name} can only include Object types, ` +
           `it cannot include ${inspect(memberType)}.`,
         getUnionMemberTypeNodes(union, String(memberType)),
       );
+    }
+
+    for (const unionInterface of unionInterfaces) {
+      const unionInterfaceName = unionInterface.name;
+      if (
+        !memberType
+          .getInterfaces()
+          .some((iface) => iface.name === unionInterfaceName)
+      ) {
+        context.reportError(
+          `Union type ${union.name} cannot implement interface ${unionInterfaceName}, ` +
+            `member type ${memberType.name} does not implement ${unionInterfaceName}.`,
+          getAllImplementsInterfaceNodes(union, unionInterface),
+        );
+      }
     }
   }
 }
@@ -598,7 +616,7 @@ function createInputObjectCircularRefsValidator(
 }
 
 function getAllImplementsInterfaceNodes(
-  type: GraphQLObjectType | GraphQLInterfaceType,
+  type: GraphQLCompositeType,
   iface: GraphQLInterfaceType,
 ): ReadonlyArray<NamedTypeNode> {
   const { astNode, extensionASTNodes } = type;
@@ -607,6 +625,8 @@ function getAllImplementsInterfaceNodes(
     | ObjectTypeExtensionNode
     | InterfaceTypeDefinitionNode
     | InterfaceTypeExtensionNode
+    | UnionTypeDefinitionNode
+    | UnionTypeExtensionNode
   > = astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
 
   // FIXME: https://github.com/graphql/graphql-js/issues/2203

@@ -242,6 +242,41 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
+  it('builds a schema with unions implementing interfaces', () => {
+    const sdl = dedent`
+      union HousePet implements Pet & Named = Dog | Cat
+
+      type Dog implements Pet & Named {
+        name: String
+        owner: Human
+      }
+
+      type Cat implements Pet & Named {
+        name: String
+        owner: Human
+      }
+
+      interface Pet implements Named {
+        name: String
+        owner: Human
+      }
+
+      type Human implements Named {
+        name: String
+      }
+
+      interface Named {
+        name: String
+      }
+
+      type Query {
+        housePet: HousePet
+      }
+    `;
+
+    expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
   it('builds a schema with an implicit interface', () => {
     const sdl = dedent`
       type Dog implements Friendly {

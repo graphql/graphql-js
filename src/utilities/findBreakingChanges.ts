@@ -5,6 +5,7 @@ import { keyMap } from '../jsutils/keyMap';
 import { print } from '../language/printer';
 
 import type {
+  GraphQLCompositeType,
   GraphQLEnumType,
   GraphQLField,
   GraphQLInputObjectType,
@@ -191,7 +192,10 @@ function findTypeChanges(
     if (isEnumType(oldType) && isEnumType(newType)) {
       schemaChanges.push(...findEnumTypeChanges(oldType, newType));
     } else if (isUnionType(oldType) && isUnionType(newType)) {
-      schemaChanges.push(...findUnionTypeChanges(oldType, newType));
+      schemaChanges.push(
+        ...findUnionTypeChanges(oldType, newType),
+        ...findImplementedInterfacesChanges(oldType, newType),
+      );
     } else if (isInputObjectType(oldType) && isInputObjectType(newType)) {
       schemaChanges.push(...findInputObjectTypeChanges(oldType, newType));
     } else if (isObjectType(oldType) && isObjectType(newType)) {
@@ -315,8 +319,8 @@ function findEnumTypeChanges(
 }
 
 function findImplementedInterfacesChanges(
-  oldType: GraphQLObjectType | GraphQLInterfaceType,
-  newType: GraphQLObjectType | GraphQLInterfaceType,
+  oldType: GraphQLCompositeType,
+  newType: GraphQLCompositeType,
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const interfacesDiff = diff(oldType.getInterfaces(), newType.getInterfaces());
