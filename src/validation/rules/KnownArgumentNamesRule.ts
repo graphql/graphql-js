@@ -35,10 +35,16 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
         const argName = argNode.name.value;
         const knownArgsNames = fieldDef.args.map((arg) => arg.name);
         const suggestions = suggestionList(argName, knownArgsNames);
+        let suggestion = '';
+
+        if (context.didYouMean) {
+          suggestion = didYouMean(suggestions);
+        }
+
         context.reportError(
           new GraphQLError(
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
-              didYouMean(suggestions),
+              suggestion,
             argNode,
           ),
         );

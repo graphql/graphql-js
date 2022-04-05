@@ -39,7 +39,10 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
-  options?: { maxErrors?: number },
+  options: { maxErrors?: number; didYouMean?: boolean } = {
+    maxErrors: undefined,
+    didYouMean: true,
+  },
 
   /** @deprecated will be removed in 17.0.0 */
   typeInfo: TypeInfo = new TypeInfo(schema),
@@ -68,6 +71,7 @@ export function validate(
       }
       errors.push(error);
     },
+    options?.didYouMean,
   );
 
   // This uses a specialized visitor which runs multiple visitors in parallel,
