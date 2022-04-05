@@ -444,34 +444,53 @@ function executeFields(
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
   let containsPromise = false;
+  let error: Error | undefined;
 
   for (const [responseName, fieldNodes] of fields.entries()) {
     const fieldPath = addPath(path, responseName, parentType.name);
-    const result = executeField(
-      exeContext,
-      parentType,
-      sourceValue,
-      fieldNodes,
-      fieldPath,
-    );
+    try {
+      const result = executeField(
+        exeContext,
+        parentType,
+        sourceValue,
+        fieldNodes,
+        fieldPath,
+      );
 
-    if (result !== undefined) {
-      results[responseName] = result;
-      if (isPromise(result)) {
-        containsPromise = true;
+      if (result !== undefined) {
+        results[responseName] = result;
+        if (isPromise(result)) {
+          containsPromise = true;
+        }
       }
+    } catch (err) {
+      error = err;
+    }
+
+    if (error) {
+      break;
     }
   }
 
   // If there are no promises, we can just return the object
   if (!containsPromise) {
-    return results;
+    if (error) {
+      throw error;
+    } else {
+      return results;
+    }
   }
 
   // Otherwise, results is a map from field name to the result of resolving that
   // field, which is possibly a promise. Return a promise that will return this
   // same map, but with any promises replaced with the values they resolved to.
-  return promiseForObject(results);
+  const promise = promiseForObject(results);
+  if (error) {
+    // Ensure that any promises returned by other fields are handled, as they may also reject.
+    return promise.then(() => Promise.reject(error));
+  }
+
+  return promise;
 }
 
 /**

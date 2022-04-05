@@ -625,6 +625,60 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('handles sync errors combined with rejections', async () => {
+    const catchUnhandledRejections = (reason: any) => {
+      throw new Error('Unhandled rejection: ' + reason.message);
+    };
+
+    process.on('unhandledRejection', catchUnhandledRejections);
+
+    try {
+      const schema = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'Type',
+          fields: {
+            syncNullError: {
+              type: new GraphQLNonNull(GraphQLString),
+              resolve: () => null,
+            },
+            asyncNullError: {
+              type: new GraphQLNonNull(GraphQLString),
+              resolve: () => Promise.resolve(null),
+            },
+          },
+        }),
+      });
+
+      // Order is important here, as the promise has to be created before the synchronous error is thrown
+      const document = parse(`
+        {
+          asyncNullError
+          syncNullError
+        }
+      `);
+
+      const rootValue = {};
+
+      const result = await execute({ schema, document, rootValue });
+      expectJSON(result).toDeepEqual({
+        data: null,
+        errors: [
+          {
+            message:
+              'Cannot return null for non-nullable field Type.asyncNullError.',
+            locations: [{ line: 3, column: 11 }],
+            path: ['asyncNullError'],
+          },
+        ],
+      });
+
+      // Allow time for the asyncReject field to be rejected
+      await new Promise((resolve) => process.nextTick(resolve));
+    } finally {
+      process.off('unhandledRejection', catchUnhandledRejections);
+    }
+  });
+
   it('Full response path is included for non-nullable fields', () => {
     const A: GraphQLObjectType = new GraphQLObjectType({
       name: 'A',
