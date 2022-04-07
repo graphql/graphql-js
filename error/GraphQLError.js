@@ -259,7 +259,7 @@ function printError(error) {
  * Given a GraphQLError, format it according to the rules described by the
  * Response Format, Errors section of the GraphQL Specification.
  *
- * @deprecated Please use `error.toString` instead. Will be removed in v17
+ * @deprecated Please use `error.toJSON` instead. Will be removed in v17
  */
 
 function formatError(error) {
