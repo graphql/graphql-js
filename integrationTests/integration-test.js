@@ -40,7 +40,7 @@ describe('Integration Tests', () => {
       // TODO: figure out a way to run it with --ignore-scripts
       exec('npm --quiet install', { cwd, stdio: 'inherit' });
       exec('npm --quiet test', { cwd, stdio: 'inherit' });
-    }).timeout(60000);
+    }).timeout(120000);
   }
 
   testOnNodeProject('ts');
