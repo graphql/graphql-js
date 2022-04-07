@@ -70,14 +70,14 @@ export const GraphQLInt = new GraphQLScalarType<number>({
     if (valueNode.kind !== Kind.INT) {
       throw new GraphQLError(
         `Int cannot represent non-integer value: ${print(valueNode)}`,
-        valueNode,
+        { nodes: valueNode },
       );
     }
     const num = parseInt(valueNode.value, 10);
     if (num > GRAPHQL_MAX_INT || num < GRAPHQL_MIN_INT) {
       throw new GraphQLError(
         `Int cannot represent non 32-bit signed integer value: ${valueNode.value}`,
-        valueNode,
+        { nodes: valueNode },
       );
     }
     return num;
@@ -166,7 +166,7 @@ export const GraphQLString = new GraphQLScalarType<string>({
     if (valueNode.kind !== Kind.STRING) {
       throw new GraphQLError(
         `String cannot represent a non string value: ${print(valueNode)}`,
-        valueNode,
+        { nodes: valueNode },
       );
     }
     return valueNode.value;
@@ -204,7 +204,7 @@ export const GraphQLBoolean = new GraphQLScalarType<boolean>({
     if (valueNode.kind !== Kind.BOOLEAN) {
       throw new GraphQLError(
         `Boolean cannot represent a non boolean value: ${print(valueNode)}`,
-        valueNode,
+        { nodes: valueNode },
       );
     }
     return valueNode.value;
@@ -245,7 +245,7 @@ export const GraphQLID = new GraphQLScalarType<string>({
       throw new GraphQLError(
         'ID cannot represent a non-string and non-integer value: ' +
           print(valueNode),
-        valueNode,
+        { nodes: valueNode },
       );
     }
     return valueNode.value;

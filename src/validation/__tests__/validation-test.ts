@@ -108,7 +108,7 @@ describe('Validate: Supports full validation', () => {
           const directiveDef = context.getDirective();
           const error = new GraphQLError(
             'Reporting directive: ' + String(directiveDef),
-            node,
+            { nodes: node },
           );
           context.reportError(error);
         },

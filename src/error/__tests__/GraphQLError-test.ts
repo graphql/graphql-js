@@ -40,15 +40,14 @@ describe('GraphQLError', () => {
   });
 
   it('enumerate only properties prescribed by the spec', () => {
-    const e = new GraphQLError(
-      'msg' /* message */,
-      [fieldNode] /* nodes */,
-      source /* source */,
-      [1, 2, 3] /* positions */,
-      ['a', 'b', 'c'] /* path */,
-      new Error('test') /* originalError */,
-      { foo: 'bar' } /* extensions */,
-    );
+    const e = new GraphQLError('msg' /* message */, {
+      nodes: [fieldNode],
+      source,
+      positions: [1, 2, 3],
+      path: ['a', 'b', 'c'],
+      originalError: new Error('test'),
+      extensions: { foo: 'bar' },
+    });
 
     expect(Object.keys(e)).to.deep.equal([
       'message',
@@ -60,14 +59,9 @@ describe('GraphQLError', () => {
 
   it('uses the stack of an original error', () => {
     const original = new Error('original');
-    const e = new GraphQLError(
-      'msg',
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      original,
-    );
+    const e = new GraphQLError('msg', {
+      originalError: original,
+    });
 
     expect(e).to.include({
       name: 'GraphQLError',
@@ -79,7 +73,7 @@ describe('GraphQLError', () => {
 
   it('creates new stack if original error has no stack', () => {
     const original = new Error('original');
-    const e = new GraphQLError('msg', null, null, null, null, original);
+    const e = new GraphQLError('msg', { originalError: original });
 
     expect(e).to.include({
       name: 'GraphQLError',
@@ -90,7 +84,7 @@ describe('GraphQLError', () => {
   });
 
   it('converts nodes to positions and locations', () => {
-    const e = new GraphQLError('msg', [fieldNode]);
+    const e = new GraphQLError('msg', { nodes: [fieldNode] });
     expect(e).to.deep.include({
       source,
       nodes: [fieldNode],
@@ -100,7 +94,7 @@ describe('GraphQLError', () => {
   });
 
   it('converts single node to positions and locations', () => {
-    const e = new GraphQLError('msg', fieldNode); // Non-array value.
+    const e = new GraphQLError('msg', { nodes: fieldNode }); // Non-array value.
     expect(e).to.deep.include({
       source,
       nodes: [fieldNode],
@@ -110,7 +104,7 @@ describe('GraphQLError', () => {
   });
 
   it('converts node with loc.start === 0 to positions and locations', () => {
-    const e = new GraphQLError('msg', operationNode);
+    const e = new GraphQLError('msg', { nodes: operationNode });
     expect(e).to.deep.include({
       source,
       nodes: [operationNode],
@@ -125,7 +119,7 @@ describe('GraphQLError', () => {
       loc: undefined,
     };
 
-    const e = new GraphQLError('msg', fieldNodeNoLocation);
+    const e = new GraphQLError('msg', { nodes: fieldNodeNoLocation });
     expect(e).to.deep.include({
       nodes: [fieldNodeNoLocation],
       source: undefined,
@@ -135,7 +129,7 @@ describe('GraphQLError', () => {
   });
 
   it('converts source and positions to locations', () => {
-    const e = new GraphQLError('msg', null, source, [6]);
+    const e = new GraphQLError('msg', { source, positions: [6] });
     expect(e).to.deep.include({
       source,
       nodes: undefined,
@@ -155,15 +149,9 @@ describe('GraphQLError', () => {
     }
 
     const original = new ErrorWithExtensions('original');
-    const inheritedExtensions = new GraphQLError(
-      'InheritedExtensions',
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      original,
-      undefined,
-    );
+    const inheritedExtensions = new GraphQLError('InheritedExtensions', {
+      originalError: original,
+    });
 
     expect(inheritedExtensions).to.deep.include({
       message: 'InheritedExtensions',
@@ -171,15 +159,10 @@ describe('GraphQLError', () => {
       extensions: { original: 'extensions' },
     });
 
-    const ownExtensions = new GraphQLError(
-      'OwnExtensions',
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      original,
-      { own: 'extensions' },
-    );
+    const ownExtensions = new GraphQLError('OwnExtensions', {
+      originalError: original,
+      extensions: { own: 'extensions' },
+    });
 
     expect(ownExtensions).to.deep.include({
       message: 'OwnExtensions',
@@ -187,15 +170,10 @@ describe('GraphQLError', () => {
       extensions: { own: 'extensions' },
     });
 
-    const ownEmptyExtensions = new GraphQLError(
-      'OwnEmptyExtensions',
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      original,
-      {},
-    );
+    const ownEmptyExtensions = new GraphQLError('OwnEmptyExtensions', {
+      originalError: original,
+      extensions: {},
+    });
 
     expect(ownEmptyExtensions).to.deep.include({
       message: 'OwnEmptyExtensions',
@@ -214,15 +192,11 @@ describe('GraphQLError', () => {
 
     const path = ['path', 2, 'field'];
     const extensions = { foo: 'bar' };
-    const eFull = new GraphQLError(
-      'msg',
-      fieldNode,
-      undefined,
-      undefined,
+    const eFull = new GraphQLError('msg', {
+      nodes: fieldNode,
       path,
-      undefined,
       extensions,
-    );
+    });
 
     // We should try to keep order of fields stable
     // Changing it wouldn't be breaking change but will fail some tests in other libraries.
@@ -260,10 +234,9 @@ describe('toString', () => {
   });
 
   it('prints an error using node without location', () => {
-    const error = new GraphQLError(
-      'Error attached to node without location',
-      parse('{ foo }', { noLocation: true }),
-    );
+    const error = new GraphQLError('Error attached to node without location', {
+      nodes: parse('{ foo }', { noLocation: true }),
+    });
     expect(error.toString()).to.equal(
       'Error attached to node without location',
     );
@@ -330,12 +303,7 @@ describe('toJSON', () => {
   });
 
   it('includes path', () => {
-    const error = new GraphQLError('msg', null, null, null, [
-      'path',
-      3,
-      'to',
-      'field',
-    ]);
+    const error = new GraphQLError('msg', { path: ['path', 3, 'to', 'field'] });
 
     expect(error.toJSON()).to.deep.equal({
       message: 'msg',
@@ -344,8 +312,8 @@ describe('toJSON', () => {
   });
 
   it('includes extension fields', () => {
-    const error = new GraphQLError('msg', null, null, null, null, null, {
-      foo: 'bar',
+    const error = new GraphQLError('msg', {
+      extensions: { foo: 'bar' },
     });
 
     expect(error.toJSON()).to.deep.equal({
@@ -354,15 +322,16 @@ describe('toJSON', () => {
     });
   });
 
-  it('can be created with the alternative object argument', () => {
-    const error = new GraphQLError('msg', {
-      nodes: [operationNode],
+  it('can be created with the legacy argument list', () => {
+    const error = new GraphQLError(
+      'msg',
+      [operationNode],
       source,
-      positions: [6],
-      path: ['path', 2, 'a'],
-      originalError: new Error('I like turtles'),
-      extensions: { hee: 'I like turtles' },
-    });
+      [6],
+      ['path', 2, 'a'],
+      new Error('I like turtles'),
+      { hee: 'I like turtles' },
+    );
 
     expect(error.toJSON()).to.deep.equal({
       message: 'msg',

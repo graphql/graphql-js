@@ -39,7 +39,7 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
           new GraphQLError(
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
               didYouMean(suggestions),
-            argNode,
+            { nodes: argNode },
           ),
         );
       }
@@ -88,7 +88,7 @@ export function KnownArgumentNamesOnDirectivesRule(
               new GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
                   didYouMean(suggestions),
-                argNode,
+                { nodes: argNode },
               ),
             );
           }

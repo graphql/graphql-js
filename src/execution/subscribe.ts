@@ -194,7 +194,7 @@ async function executeSubscription(
   if (rootType == null) {
     throw new GraphQLError(
       'Schema is not configured to execute subscription operation.',
-      operation,
+      { nodes: operation },
     );
   }
 
@@ -212,7 +212,7 @@ async function executeSubscription(
     const fieldName = fieldNodes[0].name.value;
     throw new GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
-      fieldNodes,
+      { nodes: fieldNodes },
     );
   }
 
