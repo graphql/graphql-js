@@ -40,14 +40,18 @@ export function UniqueOperationTypesRule(context) {
         context.reportError(
           new GraphQLError(
             `Type for ${operation} already defined in the schema. It cannot be redefined.`,
-            operationType,
+            {
+              nodes: operationType,
+            },
           ),
         );
       } else if (alreadyDefinedOperationType) {
         context.reportError(
           new GraphQLError(
             `There can be only one ${operation} type in schema.`,
-            [alreadyDefinedOperationType, operationType],
+            {
+              nodes: [alreadyDefinedOperationType, operationType],
+            },
           ),
         );
       } else {

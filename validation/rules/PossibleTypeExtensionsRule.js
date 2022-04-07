@@ -64,7 +64,9 @@ function PossibleTypeExtensionsRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Cannot extend non-${kindStr} type "${typeName}".`,
-            defNode ? [defNode, node] : node,
+            {
+              nodes: defNode ? [defNode, node] : node,
+            },
           ),
         );
       }
@@ -83,7 +85,9 @@ function PossibleTypeExtensionsRule(context) {
         new _GraphQLError.GraphQLError(
           `Cannot extend type "${typeName}" because it is not defined.` +
             (0, _didYouMean.didYouMean)(suggestedTypes),
-          node.name,
+          {
+            nodes: node.name,
+          },
         ),
       );
     }

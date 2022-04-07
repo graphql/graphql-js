@@ -25,7 +25,9 @@ function KnownFragmentNamesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Unknown fragment "${fragmentName}".`,
-            node.name,
+            {
+              nodes: node.name,
+            },
           ),
         );
       }

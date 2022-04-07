@@ -41,7 +41,9 @@ export function ProvidedRequiredArgumentsRule(context) {
             context.reportError(
               new GraphQLError(
                 `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
-                fieldNode,
+                {
+                  nodes: fieldNode,
+                },
               ),
             );
           }
@@ -122,7 +124,9 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(context) {
               context.reportError(
                 new GraphQLError(
                   `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
-                  directiveNode,
+                  {
+                    nodes: directiveNode,
+                  },
                 ),
               );
             }

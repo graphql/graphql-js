@@ -31,7 +31,9 @@ function LoneAnonymousOperationRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             'This anonymous operation must be the only defined operation.',
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }

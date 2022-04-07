@@ -80,7 +80,9 @@ function UniqueDirectivesPerLocationRule(context) {
             context.reportError(
               new _GraphQLError.GraphQLError(
                 `The directive "@${directiveName}" can only be used once at this location.`,
-                [seenDirectives[directiveName], directive],
+                {
+                  nodes: [seenDirectives[directiveName], directive],
+                },
               ),
             );
           } else {

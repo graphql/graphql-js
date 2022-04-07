@@ -46,7 +46,9 @@ function KnownArgumentNamesRule(context) {
           new _GraphQLError.GraphQLError(
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
               (0, _didYouMean.didYouMean)(suggestions),
-            argNode,
+            {
+              nodes: argNode,
+            },
           ),
         );
       }
@@ -103,7 +105,9 @@ function KnownArgumentNamesOnDirectivesRule(context) {
               new _GraphQLError.GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
                   (0, _didYouMean.didYouMean)(suggestions),
-                argNode,
+                {
+                  nodes: argNode,
+                },
               ),
             );
           }

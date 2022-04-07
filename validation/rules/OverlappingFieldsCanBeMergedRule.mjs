@@ -60,7 +60,9 @@ export function OverlappingFieldsCanBeMergedRule(context) {
         context.reportError(
           new GraphQLError(
             `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
-            fields1.concat(fields2),
+            {
+              nodes: fields1.concat(fields2),
+            },
           ),
         );
       }

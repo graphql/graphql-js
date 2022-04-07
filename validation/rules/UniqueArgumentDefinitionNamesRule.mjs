@@ -68,7 +68,9 @@ export function UniqueArgumentDefinitionNamesRule(context) {
         context.reportError(
           new GraphQLError(
             `Argument "${parentName}(${argName}:)" can only be defined once.`,
-            argNodes.map((node) => node.name),
+            {
+              nodes: argNodes.map((node) => node.name),
+            },
           ),
         );
       }

@@ -19,7 +19,9 @@ function getOperationRootType(schema, operation) {
     if (!queryType) {
       throw new _GraphQLError.GraphQLError(
         'Schema does not define the required query root type.',
-        operation,
+        {
+          nodes: operation,
+        },
       );
     }
 
@@ -32,7 +34,9 @@ function getOperationRootType(schema, operation) {
     if (!mutationType) {
       throw new _GraphQLError.GraphQLError(
         'Schema is not configured for mutations.',
-        operation,
+        {
+          nodes: operation,
+        },
       );
     }
 
@@ -45,7 +49,9 @@ function getOperationRootType(schema, operation) {
     if (!subscriptionType) {
       throw new _GraphQLError.GraphQLError(
         'Schema is not configured for subscriptions.',
-        operation,
+        {
+          nodes: operation,
+        },
       );
     }
 
@@ -54,6 +60,8 @@ function getOperationRootType(schema, operation) {
 
   throw new _GraphQLError.GraphQLError(
     'Can only have query, mutation and subscription operations.',
-    operation,
+    {
+      nodes: operation,
+    },
   );
 }

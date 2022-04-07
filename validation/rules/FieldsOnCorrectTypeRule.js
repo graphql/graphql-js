@@ -51,7 +51,9 @@ function FieldsOnCorrectTypeRule(context) {
             new _GraphQLError.GraphQLError(
               `Cannot query field "${fieldName}" on type "${type.name}".` +
                 suggestion,
-              node,
+              {
+                nodes: node,
+              },
             ),
           );
         }

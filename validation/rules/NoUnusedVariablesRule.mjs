@@ -33,7 +33,9 @@ export function NoUnusedVariablesRule(context) {
                 operation.name
                   ? `Variable "$${variableName}" is never used in operation "${operation.name.value}".`
                   : `Variable "$${variableName}" is never used.`,
-                variableDef,
+                {
+                  nodes: variableDef,
+                },
               ),
             );
           }

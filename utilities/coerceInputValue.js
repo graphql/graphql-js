@@ -158,11 +158,9 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           inputValue,
           new _GraphQLError.GraphQLError(
             `Expected type "${type.name}". ` + error.message,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            error,
+            {
+              originalError: error,
+            },
           ),
         );
       }

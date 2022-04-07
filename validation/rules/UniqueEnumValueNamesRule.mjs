@@ -40,14 +40,18 @@ export function UniqueEnumValueNamesRule(context) {
         context.reportError(
           new GraphQLError(
             `Enum value "${typeName}.${valueName}" already exists in the schema. It cannot also be defined in this type extension.`,
-            valueDef.name,
+            {
+              nodes: valueDef.name,
+            },
           ),
         );
       } else if (valueNames[valueName]) {
         context.reportError(
           new GraphQLError(
             `Enum value "${typeName}.${valueName}" can only be defined once.`,
-            [valueNames[valueName], valueDef.name],
+            {
+              nodes: [valueNames[valueName], valueDef.name],
+            },
           ),
         );
       } else {

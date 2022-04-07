@@ -33,7 +33,9 @@ export function UniqueInputFieldNamesRule(context) {
         context.reportError(
           new GraphQLError(
             `There can be only one input field named "${fieldName}".`,
-            [knownNames[fieldName], node.name],
+            {
+              nodes: [knownNames[fieldName], node.name],
+            },
           ),
         );
       } else {

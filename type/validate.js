@@ -69,7 +69,11 @@ class SchemaValidationContext {
   reportError(message, nodes) {
     const _nodes = Array.isArray(nodes) ? nodes.filter(Boolean) : nodes;
 
-    this._errors.push(new _GraphQLError.GraphQLError(message, _nodes));
+    this._errors.push(
+      new _GraphQLError.GraphQLError(message, {
+        nodes: _nodes,
+      }),
+    );
   }
 
   getErrors() {

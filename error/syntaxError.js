@@ -12,10 +12,8 @@ var _GraphQLError = require('./GraphQLError.js');
  * descriptive information about the syntax error's position in the source.
  */
 function syntaxError(source, position, description) {
-  return new _GraphQLError.GraphQLError(
-    `Syntax Error: ${description}`,
-    undefined,
+  return new _GraphQLError.GraphQLError(`Syntax Error: ${description}`, {
     source,
-    [position],
-  );
+    positions: [position],
+  });
 }

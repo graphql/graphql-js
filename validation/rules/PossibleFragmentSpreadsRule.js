@@ -42,7 +42,9 @@ function PossibleFragmentSpreadsRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -67,7 +69,9 @@ function PossibleFragmentSpreadsRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }

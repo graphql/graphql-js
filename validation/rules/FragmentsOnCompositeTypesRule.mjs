@@ -25,7 +25,9 @@ export function FragmentsOnCompositeTypesRule(context) {
           context.reportError(
             new GraphQLError(
               `Fragment cannot condition on non composite type "${typeStr}".`,
-              typeCondition,
+              {
+                nodes: typeCondition,
+              },
             ),
           );
         }
@@ -40,7 +42,9 @@ export function FragmentsOnCompositeTypesRule(context) {
         context.reportError(
           new GraphQLError(
             `Fragment "${node.name.value}" cannot condition on non composite type "${typeStr}".`,
-            node.typeCondition,
+            {
+              nodes: node.typeCondition,
+            },
           ),
         );
       }

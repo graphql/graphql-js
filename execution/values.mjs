@@ -67,7 +67,9 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
       onError(
         new GraphQLError(
           `Variable "$${varName}" expected value of type "${varTypeStr}" which cannot be used as an input type.`,
-          varDefNode.type,
+          {
+            nodes: varDefNode.type,
+          },
         ),
       );
       continue;
@@ -81,7 +83,9 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
         onError(
           new GraphQLError(
             `Variable "$${varName}" of required type "${varTypeStr}" was not provided.`,
-            varDefNode,
+            {
+              nodes: varDefNode,
+            },
           ),
         );
       }
@@ -96,7 +100,9 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
       onError(
         new GraphQLError(
           `Variable "$${varName}" of non-null type "${varTypeStr}" must not be null.`,
-          varDefNode,
+          {
+            nodes: varDefNode,
+          },
         ),
       );
       continue;
@@ -114,14 +120,10 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
         }
 
         onError(
-          new GraphQLError(
-            prefix + '; ' + error.message,
-            varDefNode,
-            undefined,
-            undefined,
-            undefined,
-            error.originalError,
-          ),
+          new GraphQLError(prefix + '; ' + error.message, {
+            nodes: varDefNode,
+            originalError: error.originalError,
+          }),
         );
       },
     );
@@ -163,7 +165,9 @@ export function getArgumentValues(def, node, variableValues) {
         throw new GraphQLError(
           `Argument "${name}" of required type "${inspect(argType)}" ` +
             'was not provided.',
-          node,
+          {
+            nodes: node,
+          },
         );
       }
 
@@ -186,7 +190,9 @@ export function getArgumentValues(def, node, variableValues) {
           throw new GraphQLError(
             `Argument "${name}" of required type "${inspect(argType)}" ` +
               `was provided the variable "$${variableName}" which was not provided a runtime value.`,
-            valueNode,
+            {
+              nodes: valueNode,
+            },
           );
         }
 
@@ -200,7 +206,9 @@ export function getArgumentValues(def, node, variableValues) {
       throw new GraphQLError(
         `Argument "${name}" of non-null type "${inspect(argType)}" ` +
           'must not be null.',
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -212,7 +220,9 @@ export function getArgumentValues(def, node, variableValues) {
       // continue with an invalid argument value.
       throw new GraphQLError(
         `Argument "${name}" has invalid value ${print(valueNode)}.`,
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 

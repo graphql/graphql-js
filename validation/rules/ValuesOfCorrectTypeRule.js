@@ -63,7 +63,9 @@ function ValuesOfCorrectTypeRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `Field "${type.name}.${fieldDef.name}" of required type "${typeStr}" was not provided.`,
-              node,
+              {
+                nodes: node,
+              },
             ),
           );
         }
@@ -85,7 +87,9 @@ function ValuesOfCorrectTypeRule(context) {
           new _GraphQLError.GraphQLError(
             `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
               (0, _didYouMean.didYouMean)(suggestions),
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -100,7 +104,9 @@ function ValuesOfCorrectTypeRule(context) {
             `Expected value of type "${(0, _inspect.inspect)(
               type,
             )}", found ${(0, _printer.print)(node)}.`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }
@@ -135,7 +141,9 @@ function isValidValueNode(context, node) {
         `Expected value of type "${typeStr}", found ${(0, _printer.print)(
           node,
         )}.`,
-        node,
+        {
+          nodes: node,
+        },
       ),
     );
     return;
@@ -156,7 +164,9 @@ function isValidValueNode(context, node) {
           `Expected value of type "${typeStr}", found ${(0, _printer.print)(
             node,
           )}.`,
-          node,
+          {
+            nodes: node,
+          },
         ),
       );
     }
@@ -171,11 +181,10 @@ function isValidValueNode(context, node) {
           `Expected value of type "${typeStr}", found ${(0, _printer.print)(
             node,
           )}; ` + error.message,
-          node,
-          undefined,
-          undefined,
-          undefined,
-          error,
+          {
+            nodes: node,
+            originalError: error,
+          },
         ),
       );
     }

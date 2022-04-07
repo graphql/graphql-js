@@ -16,7 +16,9 @@ export function KnownFragmentNamesRule(context) {
 
       if (!fragment) {
         context.reportError(
-          new GraphQLError(`Unknown fragment "${fragmentName}".`, node.name),
+          new GraphQLError(`Unknown fragment "${fragmentName}".`, {
+            nodes: node.name,
+          }),
         );
       }
     },

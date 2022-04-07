@@ -48,7 +48,9 @@ function NoUnusedFragmentsRule(context) {
             context.reportError(
               new _GraphQLError.GraphQLError(
                 `Fragment "${fragName}" is never used.`,
-                fragmentDef,
+                {
+                  nodes: fragmentDef,
+                },
               ),
             );
           }

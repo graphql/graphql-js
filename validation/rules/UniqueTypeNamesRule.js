@@ -31,7 +31,9 @@ function UniqueTypeNamesRule(context) {
       context.reportError(
         new _GraphQLError.GraphQLError(
           `Type "${typeName}" already exists in the schema. It cannot also be defined in this type definition.`,
-          node.name,
+          {
+            nodes: node.name,
+          },
         ),
       );
       return;
@@ -41,7 +43,9 @@ function UniqueTypeNamesRule(context) {
       context.reportError(
         new _GraphQLError.GraphQLError(
           `There can be only one type named "${typeName}".`,
-          [knownTypeNames[typeName], node.name],
+          {
+            nodes: [knownTypeNames[typeName], node.name],
+          },
         ),
       );
     } else {

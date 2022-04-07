@@ -37,7 +37,9 @@ function UniqueVariableNamesRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `There can be only one variable named "$${variableName}".`,
-              variableNodes.map((node) => node.variable.name),
+              {
+                nodes: variableNodes.map((node) => node.variable.name),
+              },
             ),
           );
         }

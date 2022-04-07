@@ -32,7 +32,9 @@ function ExecutableDefinitionsRule(context) {
           context.reportError(
             new _GraphQLError.GraphQLError(
               `The ${defName} definition is not executable.`,
-              definition,
+              {
+                nodes: definition,
+              },
             ),
           );
         }

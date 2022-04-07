@@ -23,16 +23,16 @@ function locatedError(rawOriginalError, nodes, path) {
     return originalError;
   }
 
-  return new _GraphQLError.GraphQLError(
-    originalError.message,
-    (_nodes = originalError.nodes) !== null && _nodes !== void 0
-      ? _nodes
-      : nodes,
-    originalError.source,
-    originalError.positions,
+  return new _GraphQLError.GraphQLError(originalError.message, {
+    nodes:
+      (_nodes = originalError.nodes) !== null && _nodes !== void 0
+        ? _nodes
+        : nodes,
+    source: originalError.source,
+    positions: originalError.positions,
     path,
     originalError,
-  );
+  });
 }
 
 function isLocatedGraphQLError(error) {

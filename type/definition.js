@@ -1140,7 +1140,9 @@ class GraphQLEnumType {
       throw new _GraphQLError.GraphQLError(
         `Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
           didYouMeanEnumValue(this, valueStr),
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 
@@ -1151,7 +1153,9 @@ class GraphQLEnumType {
       throw new _GraphQLError.GraphQLError(
         `Value "${valueStr}" does not exist in "${this.name}" enum.` +
           didYouMeanEnumValue(this, valueStr),
-        valueNode,
+        {
+          nodes: valueNode,
+        },
       );
     }
 

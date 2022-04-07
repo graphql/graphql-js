@@ -28,7 +28,9 @@ export function NoUndefinedVariablesRule(context) {
                 operation.name
                   ? `Variable "$${varName}" is not defined by operation "${operation.name.value}".`
                   : `Variable "$${varName}" is not defined.`,
-                [node, operation],
+                {
+                  nodes: [node, operation],
+                },
               ),
             );
           }

@@ -53,7 +53,9 @@ function KnownDirectivesRule(context) {
 
       if (!locations) {
         context.reportError(
-          new _GraphQLError.GraphQLError(`Unknown directive "@${name}".`, node),
+          new _GraphQLError.GraphQLError(`Unknown directive "@${name}".`, {
+            nodes: node,
+          }),
         );
         return;
       }
@@ -64,7 +66,9 @@ function KnownDirectivesRule(context) {
         context.reportError(
           new _GraphQLError.GraphQLError(
             `Directive "@${name}" may not be used on ${candidateLocation}.`,
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }

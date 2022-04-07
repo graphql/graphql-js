@@ -324,7 +324,9 @@ function executeOperation(exeContext, operation, rootValue) {
   if (rootType == null) {
     throw new _GraphQLError.GraphQLError(
       `Schema is not configured to execute ${operation.operation} operation.`,
-      operation,
+      {
+        nodes: operation,
+      },
     );
   }
 
@@ -842,21 +844,27 @@ function ensureValidRuntimeType(
   if (runtimeType == null) {
     throw new _GraphQLError.GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
-      fieldNodes,
+      {
+        nodes: fieldNodes,
+      },
     );
   }
 
   if (!(0, _definition.isObjectType)(runtimeType)) {
     throw new _GraphQLError.GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
-      fieldNodes,
+      {
+        nodes: fieldNodes,
+      },
     );
   }
 
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
     throw new _GraphQLError.GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
-      fieldNodes,
+      {
+        nodes: fieldNodes,
+      },
     );
   }
 
@@ -910,7 +918,9 @@ function invalidReturnTypeError(returnType, result, fieldNodes) {
   return new _GraphQLError.GraphQLError(
     `Expected value of type "${returnType.name}" but got: ${(0,
     _inspect.inspect)(result)}.`,
-    fieldNodes,
+    {
+      nodes: fieldNodes,
+    },
   );
 }
 /**

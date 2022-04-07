@@ -65,7 +65,9 @@ function KnownTypeNamesRule(context) {
           new _GraphQLError.GraphQLError(
             `Unknown type "${typeName}".` +
               (0, _didYouMean.didYouMean)(suggestedTypes),
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
       }

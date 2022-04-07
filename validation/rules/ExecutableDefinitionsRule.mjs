@@ -21,10 +21,9 @@ export function ExecutableDefinitionsRule(context) {
               ? 'schema'
               : '"' + definition.name.value + '"';
           context.reportError(
-            new GraphQLError(
-              `The ${defName} definition is not executable.`,
-              definition,
-            ),
+            new GraphQLError(`The ${defName} definition is not executable.`, {
+              nodes: definition,
+            }),
           );
         }
       }

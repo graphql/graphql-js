@@ -33,7 +33,9 @@ export function UniqueArgumentNamesRule(context) {
         context.reportError(
           new GraphQLError(
             `There can be only one argument named "${argName}".`,
-            argNodes.map((node) => node.name),
+            {
+              nodes: argNodes.map((node) => node.name),
+            },
           ),
         );
       }
