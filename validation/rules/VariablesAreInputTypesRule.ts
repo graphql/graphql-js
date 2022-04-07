@@ -27,7 +27,9 @@ export function VariablesAreInputTypesRule(
         context.reportError(
           new GraphQLError(
             `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
-            node.type,
+            {
+              nodes: node.type,
+            },
           ),
         );
       }

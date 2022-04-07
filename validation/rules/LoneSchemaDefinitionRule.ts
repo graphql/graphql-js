@@ -23,7 +23,9 @@ export function LoneSchemaDefinitionRule(
         context.reportError(
           new GraphQLError(
             'Cannot define a new schema within a schema extension.',
-            node,
+            {
+              nodes: node,
+            },
           ),
         );
         return;
@@ -31,7 +33,9 @@ export function LoneSchemaDefinitionRule(
 
       if (schemaDefinitionsCount > 0) {
         context.reportError(
-          new GraphQLError('Must provide only one schema definition.', node),
+          new GraphQLError('Must provide only one schema definition.', {
+            nodes: node,
+          }),
         );
       }
 

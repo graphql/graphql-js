@@ -19,14 +19,13 @@ export function locatedError(
     return originalError;
   }
 
-  return new GraphQLError(
-    originalError.message,
-    (originalError as GraphQLError).nodes ?? nodes,
-    (originalError as GraphQLError).source,
-    (originalError as GraphQLError).positions,
+  return new GraphQLError(originalError.message, {
+    nodes: (originalError as GraphQLError).nodes ?? nodes,
+    source: (originalError as GraphQLError).source,
+    positions: (originalError as GraphQLError).positions,
     path,
     originalError,
-  );
+  });
 }
 
 function isLocatedGraphQLError(error: any): error is GraphQLError {

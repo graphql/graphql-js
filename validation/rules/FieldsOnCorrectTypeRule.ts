@@ -53,7 +53,9 @@ export function FieldsOnCorrectTypeRule(
             new GraphQLError(
               `Cannot query field "${fieldName}" on type "${type.name}".` +
                 suggestion,
-              node,
+              {
+                nodes: node,
+              },
             ),
           );
         }

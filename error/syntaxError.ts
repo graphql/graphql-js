@@ -10,7 +10,8 @@ export function syntaxError(
   position: number,
   description: string,
 ): GraphQLError {
-  return new GraphQLError(`Syntax Error: ${description}`, undefined, source, [
-    position,
-  ]);
+  return new GraphQLError(`Syntax Error: ${description}`, {
+    source,
+    positions: [position],
+  });
 }

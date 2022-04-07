@@ -57,7 +57,9 @@ export function SingleFieldSubscriptionsRule(
                 operationName != null
                   ? `Subscription "${operationName}" must select only one top level field.`
                   : 'Anonymous Subscription must select only one top level field.',
-                extraFieldSelections,
+                {
+                  nodes: extraFieldSelections,
+                },
               ),
             );
           }
@@ -72,7 +74,9 @@ export function SingleFieldSubscriptionsRule(
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',
-                  fieldNodes,
+                  {
+                    nodes: fieldNodes,
+                  },
                 ),
               );
             }

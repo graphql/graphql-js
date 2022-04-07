@@ -97,7 +97,11 @@ class SchemaValidationContext {
       ? (nodes.filter(Boolean) as ReadonlyArray<ASTNode>)
       : (nodes as Maybe<ASTNode>);
 
-    this._errors.push(new GraphQLError(message, _nodes));
+    this._errors.push(
+      new GraphQLError(message, {
+        nodes: _nodes,
+      }),
+    );
   }
 
   getErrors(): ReadonlyArray<GraphQLError> {

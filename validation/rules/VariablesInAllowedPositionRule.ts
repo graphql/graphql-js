@@ -59,7 +59,9 @@ export function VariablesInAllowedPositionRule(
               context.reportError(
                 new GraphQLError(
                   `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
-                  [varDef, node],
+                  {
+                    nodes: [varDef, node],
+                  },
                 ),
               );
             }
