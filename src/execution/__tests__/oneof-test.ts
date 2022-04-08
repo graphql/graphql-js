@@ -113,7 +113,30 @@ describe('Execute: Handles OneOf Input Objects', () => {
       });
     });
 
-    it('rejects a bad variable', () => {
+    it('accepts a good variable with an undefined key', () => {
+      const query = `
+        query ($input: TestInputObject!) {
+          test(input: $input) {
+            a
+            b
+          }
+        }
+      `;
+      const result = executeQuery(query, rootValue, {
+        input: { a: 'abc', b: undefined },
+      });
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          test: {
+            a: 'abc',
+            b: null,
+          },
+        },
+      });
+    });
+
+    it('rejects a variable with multiple non-null keys', () => {
       const query = `
         query ($input: TestInputObject!) {
           test(input: $input) {
@@ -132,6 +155,30 @@ describe('Execute: Handles OneOf Input Objects', () => {
             locations: [{ column: 16, line: 2 }],
             message:
               'Variable "$input" got invalid value { a: "abc", b: 123 }; Exactly one key must be specified.',
+          },
+        ],
+      });
+    });
+
+    it('rejects a variable with multiple nullable keys', () => {
+      const query = `
+        query ($input: TestInputObject!) {
+          test(input: $input) {
+            a
+            b
+          }
+        }
+      `;
+      const result = executeQuery(query, rootValue, {
+        input: { a: 'abc', b: null },
+      });
+
+      expectJSON(result).toDeepEqual({
+        errors: [
+          {
+            locations: [{ column: 16, line: 2 }],
+            message:
+              'Variable "$input" got invalid value { a: "abc", b: null }; Exactly one key must be specified.',
           },
         ],
       });

@@ -1549,6 +1549,7 @@ describe('Introspection', () => {
 
       type Query {
         someField(someArg: SomeInputObject): String
+        anotherField(anotherArg: AnotherInputObject): String
       }
     `);
 

@@ -232,6 +232,12 @@ describe('valueFromAST', () => {
     expectValueFrom('{ a: "abc" }', testOneOfInputObj).to.deep.equal({
       a: 'abc',
     });
+    expectValueFrom('{ b: "def" }', testOneOfInputObj).to.deep.equal({
+      b: 'def',
+    });
+    expectValueFrom('{ a: "abc", b: null }', testOneOfInputObj).to.deep.equal(
+      undefined,
+    );
     expectValueFrom('{ a: null }', testOneOfInputObj).to.equal(undefined);
     expectValueFrom('{ a: 1 }', testOneOfInputObj).to.equal(undefined);
     expectValueFrom('{ a: "abc", b: "def" }', testOneOfInputObj).to.equal(
