@@ -743,3 +743,11 @@ overrides:
       # Ignore docusarus related webpack aliases
       import/no-unresolved:
         ['error', { 'ignore': ['^@theme', '^@docusaurus', '^@generated'] }]
+  - files:
+      - website/docusaurus.config.js
+      - website/sidebars.js
+      - integrationTests/**/*
+      - benchmark/**/*
+      - resources/**/*
+    env:
+      node: true
