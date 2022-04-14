@@ -27,6 +27,10 @@ export function applyRequiredStatus(
   type: GraphQLOutputType,
   nullabilityNode?: ListNullabilityNode | NullabilityDesignatorNode,
 ): GraphQLOutputType {
+  if (nullabilityNode == null) {
+    return type;
+  }
+
   const typeStack: [GraphQLOutputType] = [type];
 
   while (isListType(getNullableType(typeStack[typeStack.length - 1]))) {
@@ -93,17 +97,13 @@ export function applyRequiredStatus(
     },
   };
 
-  if (nullabilityNode) {
-    const modified = visit(nullabilityNode, applyStatusReducer);
-    // modifiers must be exactly the same depth as the field type
-    if (typeStack.length > 0) {
-      throw new GraphQLError(
-        'List nullability modifier is too shallow.',
-        nullabilityNode,
-      );
-    }
-    return modified;
+  const modified = visit(nullabilityNode, applyStatusReducer);
+  // modifiers must be exactly the same depth as the field type
+  if (typeStack.length > 0) {
+    throw new GraphQLError(
+      'List nullability modifier is too shallow.',
+      nullabilityNode,
+    );
   }
-
-  return type;
+  return modified;
 }
