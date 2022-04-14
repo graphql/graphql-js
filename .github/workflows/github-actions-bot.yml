@@ -76,7 +76,8 @@ jobs:
             core.setOutput('cmd', comment.replace('@github-actions ', '').trim());
 
             const { url } = context.payload.issue.pull_request;
-            core.setOutput('pullRequestJSON', await github.request(url));
+            const { data } = await github.request(url);
+            core.setOutput('pullRequestJSON', JSON.stringify(data, null, 2));
 
   cmd-publish-pr-on-npm:
     needs: [accept-cmd]
