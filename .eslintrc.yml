@@ -1,9 +1,8 @@
 parserOptions:
   sourceType: script
-  ecmaVersion: 2020
 env:
-  es6: true
   node: true
+  es2022: true
 reportUnusedDisableDirectives: true
 plugins:
   - internal-rules
@@ -77,7 +76,7 @@ rules:
   node/prefer-promises/fs: off
 
   ##############################################################################
-  # `eslint-plugin-import` rule list based on `v2.25.x`
+  # `eslint-plugin-import` rule list based on `v2.26.x`
   ##############################################################################
 
   # Static analysis
@@ -174,7 +173,7 @@ rules:
   simple-import-sort/exports: off # TODO
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.8.x`
+  # ESLint builtin rules list based on `v8.13.x`
   ##############################################################################
 
   # Possible Errors
@@ -487,7 +486,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.10.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.19.x`
       ##########################################################################
 
       # Supported Rules
@@ -532,6 +531,7 @@ overrides:
       '@typescript-eslint/no-non-null-asserted-optional-chain': error
       '@typescript-eslint/no-non-null-assertion': error
       '@typescript-eslint/no-parameter-properties': error
+      '@typescript-eslint/no-redundant-type-constituents': error
       '@typescript-eslint/no-invalid-void-type': error
       '@typescript-eslint/no-require-imports': error
       '@typescript-eslint/no-this-alias': error
@@ -547,6 +547,7 @@ overrides:
       '@typescript-eslint/no-unsafe-call': off # TODO consider
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
       '@typescript-eslint/no-unsafe-return': off # TODO consider
+      '@typescript-eslint/no-useless-empty-export': error
       '@typescript-eslint/no-var-requires': error
       '@typescript-eslint/non-nullable-type-assertion-style': off #TODO temporarily disabled
       '@typescript-eslint/prefer-as-const': error
@@ -647,6 +648,7 @@ overrides:
       '@typescript-eslint/no-extra-parens': off
       '@typescript-eslint/no-extra-semi': off
       '@typescript-eslint/semi': off
+      '@typescript-eslint/space-before-blocks': off
       '@typescript-eslint/space-before-function-paren': off
       '@typescript-eslint/space-infix-ops': off
       '@typescript-eslint/type-annotation-spacing': off
