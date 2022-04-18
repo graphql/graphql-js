@@ -85,6 +85,8 @@ jobs:
     uses: ./.github/workflows/cmd-publish-pr-on-npm.yml
     with:
       pullRequestJSON: ${{ needs.accept-cmd.outputs.pullRequestJSON }}
+    secrets:
+      NPM_CANARY_PR_PUBLISH_TOKEN: ${{ secrets.NPM_CANARY_PR_PUBLISH_TOKEN }}
 
   cmd-run-benchmark:
     needs: [accept-cmd]

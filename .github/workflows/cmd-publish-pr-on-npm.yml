@@ -5,6 +5,9 @@ on:
       pullRequestJSON:
         required: true
         type: string
+    secrets:
+      NPM_CANARY_PR_PUBLISH_TOKEN:
+        required: true
     outputs:
       replyMessage:
         value: ${{ jobs.publish-canary.outputs.replyMessage }}
