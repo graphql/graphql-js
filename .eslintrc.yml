@@ -1,7 +1,6 @@
 parserOptions:
   sourceType: script
 env:
-  node: true
   es2022: true
 reportUnusedDisableDirectives: true
 plugins:
@@ -663,12 +662,16 @@ overrides:
       import/no-restricted-paths: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
   - files: 'integrationTests/*'
+    env:
+      node: true
     rules:
       node/no-sync: off
       node/no-unpublished-require: [error, { allowModules: ['mocha'] }]
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
   - files: 'integrationTests/*/**'
+    env:
+      node: true
     rules:
       node/no-sync: off
       node/no-missing-require: [error, { allowModules: ['graphql'] }]
@@ -676,6 +679,8 @@ overrides:
       import/no-nodejs-modules: off
       no-console: off
   - files: 'benchmark/**'
+    env:
+      node: true
     rules:
       internal-rules/only-ascii: [error, { allowEmoji: true }]
       node/no-sync: off
@@ -685,6 +690,8 @@ overrides:
       no-console: off
       no-await-in-loop: off
   - files: 'resources/**'
+    env:
+      node: true
     rules:
       internal-rules/only-ascii: [error, { allowEmoji: true }]
       node/no-unpublished-require: off
@@ -702,6 +709,8 @@ overrides:
       node/no-unpublished-import: off
       import/no-default-export: off
   - files: 'website/**'
+    env:
+      node: true
     plugins:
       - 'react'
     extends:
