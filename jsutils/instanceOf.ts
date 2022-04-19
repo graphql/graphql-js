@@ -7,8 +7,9 @@ import { inspect } from './inspect.ts';
  */
 
 export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
-  /* c8 ignore next 5 */
+  /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
+  // eslint-disable-next-line no-undef
   process.env.NODE_ENV === 'production'
     ? function instanceOf(value: unknown, constructor: Constructor): boolean {
         return value instanceof constructor;
