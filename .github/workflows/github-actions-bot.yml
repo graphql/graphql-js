@@ -56,7 +56,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       cmd: ${{ steps.parse-cmd.outputs.cmd }}
-      replyMessage: ${{ steps.parse-cmd.outputs.replyMessage }}
       pullRequestJSON: ${{ steps.parse-cmd.outputs.pullRequestJSON }}
     steps:
       - uses: actions/github-script@v5
@@ -103,26 +102,42 @@ jobs:
     if: needs.accept-cmd.result != 'skipped' && always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v5
+      - uses: actions/download-artifact@v2
+        with:
+          name: replyMessage
+
+      - if: failure()
+        uses: actions/github-script@v5
         with:
           script: |
-            const { issue, comment, sender } = context.payload;
+            const fs = require('fs');
+
             const needs = JSON.parse(process.env.NEEDS);
 
-            let replyMessage;
             let allSkipped = true;
             for (const [ name, job ] of Object.entries(needs)) {
               if (name.startsWith('cmd-')) {
                 allSkipped = allSkipped && job.result === 'skipped';
               }
-              replyMessage = replyMessage || job.outputs.replyMessage;
             }
 
-            if (!replyMessage) {
-              replyMessage = allSkipped
-                ? 'Unknown command 😕\n\n' + process.env.SUPPORTED_COMMANDS
-                : `Something went wrong, [please check log](${process.env.RUN_URL}).`;
-            }
+            const replyMessage = allSkipped
+              ? 'Unknown command 😕\n\n' + process.env.SUPPORTED_COMMANDS
+              : `Something went wrong, [please check log](${process.env.RUN_URL}).`;
+
+            fs.writeFileSync('./replyMessage.txt', replyMessage, 'utf-8');
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          RUN_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
+
+      - if: always()
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const fs = require('fs');
+
+            const replyMessage = fs.readFileSync('./replyMessage.txt', 'utf-8');
+            const { issue, comment, sender } = context.payload;
 
             const quoteRequest = comment.body
               .split('\n')
@@ -142,6 +157,3 @@ jobs:
                   { __typename }
               }
             `, { subjectId: comment.node_id });
-        env:
-          RUN_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
-          NEEDS: ${{ toJSON(needs) }}
