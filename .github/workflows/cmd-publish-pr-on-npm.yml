@@ -8,9 +8,6 @@ on:
     secrets:
       NPM_CANARY_PR_PUBLISH_TOKEN:
         required: true
-    outputs:
-      replyMessage:
-        value: ${{ jobs.publish-canary.outputs.replyMessage }}
 jobs:
   build-npm-dist:
     runs-on: ubuntu-latest
@@ -43,8 +40,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Publish Canary
     environment: canary-pr-npm
-    outputs:
-      replyMessage: ${{ steps.set_replyMessage.outputs.replyMessage }}
     needs: [build-npm-dist]
     steps:
       - name: Checkout repo
@@ -99,22 +94,23 @@ jobs:
               'utf-8',
             );
 
-            core.exportVariable('NPM_TAG', packageJSON.publishConfig.tag);
-            core.exportVariable('NPM_VERSION', packageJSON.version);
+            const replyMessage = `
+            The latest changes of this PR are available on NPM as
+            [graphql@${packageJSON.version}](https://www.npmjs.com/package/graphql/v/${packageJSON.version})
+            **Note: no gurantees provided so please use your own discretion.**
+
+            Also you can depend on latest version built from this PR:
+            \`npm install --save graphql@${packageJSON.publishConfig.tag}\`
+            `;
+            fs.writeFileSync('./replyMessage.txt', replyMessage.trim(), 'utf-8');
 
       - name: Publish NPM package
         run: npm publish --ignore-scripts ./npmDist
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_CANARY_PR_PUBLISH_TOKEN }}
 
-      - name: Set 'replyMessage' output variable
-        id: set_replyMessage
-        run: echo "::set-output replyMessage=$REPLY_MESSAGE"
-        env:
-          REPLY_MESSAGE: |
-            The latest changes of this PR are available on NPM as
-            [graphql@${{env.NPM_VERSION}}](https://www.npmjs.com/package/graphql/v/${{env.NPM_VERSION}})
-            **Note: no gurantees provided so please use your own discretion.**
-
-            Also you can depend on latest version built from this PR:
-            `npm install --save graphql@${{env.NPM_TAG}}`
+      - name: Upload replyMessage
+        uses: actions/upload-artifact@v2
+        with:
+          name: replyMessage
+          path: ./replyMessage.txt

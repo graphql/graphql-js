@@ -5,14 +5,9 @@ on:
       pullRequestJSON:
         required: true
         type: string
-    outputs:
-      replyMessage:
-        value: ${{ jobs.benchmark.outputs.replyMessage }}
 jobs:
   benchmark:
     name: Run benchmark
-    outputs:
-      replyMessage: ${{ steps.set_replyMessage.outputs.replyMessage }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -37,21 +32,17 @@ jobs:
 
       - name: Run Benchmark
         run: |
-          npm run benchmark -- --revs HEAD BASE | tee benchmark.log
+          cat <<EOF >> replyMessage.txt
+          <details>
+          <summary> Benchmark output </summary>
+          EOF
+          npm run benchmark -- --revs HEAD BASE | tee -a replyMessage.txt
+          cat <<EOF >> replyMessage.txt
+          </details>
+          EOF
 
-      - name: Set 'replyMessage' output variable
-        id: set_replyMessage
-        uses: actions/github-script@v5
+      - name: Upload replyMessage
+        uses: actions/upload-artifact@v2
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const fs = require('fs');
-
-            const replyMessage = `
-            <details>
-            <summary> Benchmark output </summary>
-
-            ${ fs.readFileSync('./benchmark.log', 'utf-8') }
-            </details>
-            `;
-            core.setOutput('replyMessage', replyMessage);
+          name: replyMessage
+          path: ./replyMessage.txt
