@@ -6,7 +6,7 @@ parsers:
   javascript:
     enable_partials: yes
 
-comment: no
+comment: false
 coverage:
   status:
     project:
