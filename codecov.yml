@@ -1,12 +1,12 @@
 codecov:
   notify:
-    require_ci_to_pass: yes
+    require_ci_to_pass: true
 
 parsers:
   javascript:
-    enable_partials: yes
+    enable_partials: true
 
-comment: no
+comment: false
 coverage:
   status:
     project:
