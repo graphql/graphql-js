@@ -75,17 +75,11 @@ function ProvidedRequiredArgumentsRule(context) {
  */
 
 function ProvidedRequiredArgumentsOnDirectivesRule(context) {
-  var _schema$getDirectives;
-
   const requiredArgsMap = Object.create(null);
   const schema = context.getSchema();
   const definedDirectives =
-    (_schema$getDirectives =
-      schema === null || schema === void 0
-        ? void 0
-        : schema.getDirectives()) !== null && _schema$getDirectives !== void 0
-      ? _schema$getDirectives
-      : _directives.specifiedDirectives;
+    (schema === null || schema === void 0 ? void 0 : schema.getDirectives()) ??
+    _directives.specifiedDirectives;
 
   for (const directive of definedDirectives) {
     requiredArgsMap[directive.name] = (0, _keyMap.keyMap)(
@@ -98,15 +92,10 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
 
   for (const def of astDefinitions) {
     if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
-      var _def$arguments;
-
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
       /* c8 ignore next */
-      const argNodes =
-        (_def$arguments = def.arguments) !== null && _def$arguments !== void 0
-          ? _def$arguments
-          : [];
+      const argNodes = def.arguments ?? [];
       requiredArgsMap[def.name.value] = (0, _keyMap.keyMap)(
         argNodes.filter(isRequiredArgumentNode),
         (arg) => arg.name.value,
@@ -122,16 +111,10 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
         const requiredArgs = requiredArgsMap[directiveName];
 
         if (requiredArgs) {
-          var _directiveNode$argume;
-
           // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
           /* c8 ignore next */
-          const argNodes =
-            (_directiveNode$argume = directiveNode.arguments) !== null &&
-            _directiveNode$argume !== void 0
-              ? _directiveNode$argume
-              : [];
+          const argNodes = directiveNode.arguments ?? [];
           const argNodeMap = new Set(argNodes.map((arg) => arg.name.value));
 
           for (const [argName, argDef] of Object.entries(requiredArgs)) {

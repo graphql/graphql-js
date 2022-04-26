@@ -65,16 +65,10 @@ function assertDirective(directive) {
  */
 class GraphQLDirective {
   constructor(config) {
-    var _config$isRepeatable, _config$args;
-
     this.name = (0, _assertName.assertName)(config.name);
     this.description = config.description;
     this.locations = config.locations;
-    this.isRepeatable =
-      (_config$isRepeatable = config.isRepeatable) !== null &&
-      _config$isRepeatable !== void 0
-        ? _config$isRepeatable
-        : false;
+    this.isRepeatable = config.isRepeatable ?? false;
     this.extensions = (0, _toObjMap.toObjMap)(config.extensions);
     this.astNode = config.astNode;
     Array.isArray(config.locations) ||
@@ -82,10 +76,7 @@ class GraphQLDirective {
         false,
         `@${config.name} locations must be an Array.`,
       );
-    const args =
-      (_config$args = config.args) !== null && _config$args !== void 0
-        ? _config$args
-        : {};
+    const args = config.args ?? {};
     ((0, _isObjectLike.isObjectLike)(args) && !Array.isArray(args)) ||
       (0, _devAssert.devAssert)(
         false,

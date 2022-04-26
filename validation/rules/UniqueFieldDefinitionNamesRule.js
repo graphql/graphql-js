@@ -28,8 +28,6 @@ function UniqueFieldDefinitionNamesRule(context) {
   };
 
   function checkFieldUniqueness(node) {
-    var _node$fields;
-
     const typeName = node.name.value;
 
     if (!knownFieldNames[typeName]) {
@@ -38,10 +36,7 @@ function UniqueFieldDefinitionNamesRule(context) {
 
     /* c8 ignore next */
 
-    const fieldNodes =
-      (_node$fields = node.fields) !== null && _node$fields !== void 0
-        ? _node$fields
-        : [];
+    const fieldNodes = node.fields ?? [];
     const fieldNames = knownFieldNames[typeName];
 
     for (const fieldDef of fieldNodes) {

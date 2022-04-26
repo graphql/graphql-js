@@ -50,14 +50,9 @@ function validate(
   /** @deprecated will be removed in 17.0.0 */
   typeInfo = new _TypeInfo.TypeInfo(schema),
 ) {
-  var _options$maxErrors;
-
   const maxErrors =
-    (_options$maxErrors =
-      options === null || options === void 0 ? void 0 : options.maxErrors) !==
-      null && _options$maxErrors !== void 0
-      ? _options$maxErrors
-      : 100;
+    (options === null || options === void 0 ? void 0 : options.maxErrors) ??
+    100;
   documentAST || (0, _devAssert.devAssert)(false, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);

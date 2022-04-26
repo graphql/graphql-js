@@ -226,8 +226,6 @@ async function executeSubscription(exeContext) {
   );
 
   try {
-    var _fieldDef$subscribe;
-
     // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.
     // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
     // Build a JS object of arguments from the field.arguments AST, using the
@@ -243,11 +241,7 @@ async function executeSubscription(exeContext) {
     const contextValue = exeContext.contextValue; // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
 
-    const resolveFn =
-      (_fieldDef$subscribe = fieldDef.subscribe) !== null &&
-      _fieldDef$subscribe !== void 0
-        ? _fieldDef$subscribe
-        : exeContext.subscribeFieldResolver;
+    const resolveFn = fieldDef.subscribe ?? exeContext.subscribeFieldResolver;
     const eventStream = await resolveFn(rootValue, args, contextValue, info);
 
     if (eventStream instanceof Error) {

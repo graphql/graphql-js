@@ -43,24 +43,15 @@ export function assertDirective(directive) {
  */
 export class GraphQLDirective {
   constructor(config) {
-    var _config$isRepeatable, _config$args;
-
     this.name = assertName(config.name);
     this.description = config.description;
     this.locations = config.locations;
-    this.isRepeatable =
-      (_config$isRepeatable = config.isRepeatable) !== null &&
-      _config$isRepeatable !== void 0
-        ? _config$isRepeatable
-        : false;
+    this.isRepeatable = config.isRepeatable ?? false;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     Array.isArray(config.locations) ||
       devAssert(false, `@${config.name} locations must be an Array.`);
-    const args =
-      (_config$args = config.args) !== null && _config$args !== void 0
-        ? _config$args
-        : {};
+    const args = config.args ?? {};
     (isObjectLike(args) && !Array.isArray(args)) ||
       devAssert(
         false,

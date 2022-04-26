@@ -18,16 +18,10 @@ var _GraphQLError = require('../../error/GraphQLError.js');
 function UniqueArgumentDefinitionNamesRule(context) {
   return {
     DirectiveDefinition(directiveNode) {
-      var _directiveNode$argume;
-
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
       /* c8 ignore next */
-      const argumentNodes =
-        (_directiveNode$argume = directiveNode.arguments) !== null &&
-        _directiveNode$argume !== void 0
-          ? _directiveNode$argume
-          : [];
+      const argumentNodes = directiveNode.arguments ?? [];
       return checkArgUniqueness(`@${directiveNode.name.value}`, argumentNodes);
     },
 
@@ -38,30 +32,18 @@ function UniqueArgumentDefinitionNamesRule(context) {
   };
 
   function checkArgUniquenessPerField(typeNode) {
-    var _typeNode$fields;
-
     const typeName = typeNode.name.value; // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
     /* c8 ignore next */
 
-    const fieldNodes =
-      (_typeNode$fields = typeNode.fields) !== null &&
-      _typeNode$fields !== void 0
-        ? _typeNode$fields
-        : [];
+    const fieldNodes = typeNode.fields ?? [];
 
     for (const fieldDef of fieldNodes) {
-      var _fieldDef$arguments;
-
       const fieldName = fieldDef.name.value; // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
       /* c8 ignore next */
 
-      const argumentNodes =
-        (_fieldDef$arguments = fieldDef.arguments) !== null &&
-        _fieldDef$arguments !== void 0
-          ? _fieldDef$arguments
-          : [];
+      const argumentNodes = fieldDef.arguments ?? [];
       checkArgUniqueness(`${typeName}.${fieldName}`, argumentNodes);
     }
 

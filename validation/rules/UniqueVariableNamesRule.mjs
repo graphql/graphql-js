@@ -9,16 +9,10 @@ import { GraphQLError } from '../../error/GraphQLError.mjs';
 export function UniqueVariableNamesRule(context) {
   return {
     OperationDefinition(operationNode) {
-      var _operationNode$variab;
-
       // See: https://github.com/graphql/graphql-js/issues/2203
 
       /* c8 ignore next */
-      const variableDefinitions =
-        (_operationNode$variab = operationNode.variableDefinitions) !== null &&
-        _operationNode$variab !== void 0
-          ? _operationNode$variab
-          : [];
+      const variableDefinitions = operationNode.variableDefinitions ?? [];
       const seenVariableDefinitions = groupBy(
         variableDefinitions,
         (node) => node.variable.name.value,

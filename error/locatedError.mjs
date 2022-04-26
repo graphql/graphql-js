@@ -7,8 +7,6 @@ import { GraphQLError } from './GraphQLError.mjs';
  */
 
 export function locatedError(rawOriginalError, nodes, path) {
-  var _nodes;
-
   const originalError = toError(rawOriginalError); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
 
   if (isLocatedGraphQLError(originalError)) {
@@ -16,10 +14,7 @@ export function locatedError(rawOriginalError, nodes, path) {
   }
 
   return new GraphQLError(originalError.message, {
-    nodes:
-      (_nodes = originalError.nodes) !== null && _nodes !== void 0
-        ? _nodes
-        : nodes,
+    nodes: originalError.nodes ?? nodes,
     source: originalError.source,
     positions: originalError.positions,
     path,

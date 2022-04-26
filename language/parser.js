@@ -1471,8 +1471,7 @@ class Parser {
    */
 
   unexpected(atToken) {
-    const token =
-      atToken !== null && atToken !== void 0 ? atToken : this._lexer.token;
+    const token = atToken ?? this._lexer.token;
     return (0, _syntaxError.syntaxError)(
       this._lexer.source,
       token.start,

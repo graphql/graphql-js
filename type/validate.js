@@ -88,51 +88,33 @@ function validateRootTypes(context) {
   if (!queryType) {
     context.reportError('Query root type must be provided.', schema.astNode);
   } else if (!(0, _definition.isObjectType)(queryType)) {
-    var _getOperationTypeNode;
-
     context.reportError(
       `Query root type must be Object type, it cannot be ${(0,
       _inspect.inspect)(queryType)}.`,
-      (_getOperationTypeNode = getOperationTypeNode(
-        schema,
-        _ast.OperationTypeNode.QUERY,
-      )) !== null && _getOperationTypeNode !== void 0
-        ? _getOperationTypeNode
-        : queryType.astNode,
+      getOperationTypeNode(schema, _ast.OperationTypeNode.QUERY) ??
+        queryType.astNode,
     );
   }
 
   const mutationType = schema.getMutationType();
 
   if (mutationType && !(0, _definition.isObjectType)(mutationType)) {
-    var _getOperationTypeNode2;
-
     context.reportError(
       'Mutation root type must be Object type if provided, it cannot be ' +
         `${(0, _inspect.inspect)(mutationType)}.`,
-      (_getOperationTypeNode2 = getOperationTypeNode(
-        schema,
-        _ast.OperationTypeNode.MUTATION,
-      )) !== null && _getOperationTypeNode2 !== void 0
-        ? _getOperationTypeNode2
-        : mutationType.astNode,
+      getOperationTypeNode(schema, _ast.OperationTypeNode.MUTATION) ??
+        mutationType.astNode,
     );
   }
 
   const subscriptionType = schema.getSubscriptionType();
 
   if (subscriptionType && !(0, _definition.isObjectType)(subscriptionType)) {
-    var _getOperationTypeNode3;
-
     context.reportError(
       'Subscription root type must be Object type if provided, it cannot be ' +
         `${(0, _inspect.inspect)(subscriptionType)}.`,
-      (_getOperationTypeNode3 = getOperationTypeNode(
-        schema,
-        _ast.OperationTypeNode.SUBSCRIPTION,
-      )) !== null && _getOperationTypeNode3 !== void 0
-        ? _getOperationTypeNode3
-        : subscriptionType.astNode,
+      getOperationTypeNode(schema, _ast.OperationTypeNode.SUBSCRIPTION) ??
+        subscriptionType.astNode,
     );
   }
 }
@@ -143,20 +125,11 @@ function getOperationTypeNode(schema, operation) {
   return (_flatMap$find = [schema.astNode, ...schema.extensionASTNodes]
     .flatMap(
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      (schemaNode) => {
-        var _schemaNode$operation;
-
-        return (
-          /* c8 ignore next */
-          (_schemaNode$operation =
-            schemaNode === null || schemaNode === void 0
-              ? void 0
-              : schemaNode.operationTypes) !== null &&
-            _schemaNode$operation !== void 0
-            ? _schemaNode$operation
-            : []
-        );
-      },
+      (schemaNode) =>
+        /* c8 ignore next */
+        (schemaNode === null || schemaNode === void 0
+          ? void 0
+          : schemaNode.operationTypes) ?? [],
     )
     .find((operationNode) => operationNode.operation === operation)) === null ||
     _flatMap$find === void 0
@@ -627,17 +600,11 @@ function getAllImplementsInterfaceNodes(type, iface) {
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes; // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
   return nodes
-    .flatMap((typeNode) => {
-      var _typeNode$interfaces;
-
-      return (
+    .flatMap(
+      (typeNode) =>
         /* c8 ignore next */
-        (_typeNode$interfaces = typeNode.interfaces) !== null &&
-          _typeNode$interfaces !== void 0
-          ? _typeNode$interfaces
-          : []
-      );
-    })
+        typeNode.interfaces ?? [],
+    )
     .filter((ifaceNode) => ifaceNode.name.value === iface.name);
 }
 
@@ -647,17 +614,11 @@ function getUnionMemberTypeNodes(union, typeName) {
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes; // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
   return nodes
-    .flatMap((unionNode) => {
-      var _unionNode$types;
-
-      return (
+    .flatMap(
+      (unionNode) =>
         /* c8 ignore next */
-        (_unionNode$types = unionNode.types) !== null &&
-          _unionNode$types !== void 0
-          ? _unionNode$types
-          : []
-      );
-    })
+        unionNode.types ?? [],
+    )
     .filter((typeNode) => typeNode.name.value === typeName);
 }
 

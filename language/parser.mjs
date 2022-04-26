@@ -1430,8 +1430,7 @@ export class Parser {
    */
 
   unexpected(atToken) {
-    const token =
-      atToken !== null && atToken !== void 0 ? atToken : this._lexer.token;
+    const token = atToken ?? this._lexer.token;
     return syntaxError(
       this._lexer.source,
       token.start,

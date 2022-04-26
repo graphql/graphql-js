@@ -83,17 +83,14 @@ class GraphQLError extends Error {
    * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
    */
   constructor(message, ...rawArgs) {
-    var _this$nodes, _nodeLocations$, _ref;
+    var _this$nodes, _nodeLocations$;
 
     const { nodes, source, positions, path, originalError, extensions } =
       toNormalizedArgs(rawArgs);
     super(message);
     this.name = 'GraphQLError';
-    this.path = path !== null && path !== void 0 ? path : undefined;
-    this.originalError =
-      originalError !== null && originalError !== void 0
-        ? originalError
-        : undefined; // Compute list of blame nodes.
+    this.path = path ?? undefined;
+    this.originalError = originalError ?? undefined; // Compute list of blame nodes.
 
     this.nodes = undefinedIfEmpty(
       Array.isArray(nodes) ? nodes : nodes ? [nodes] : undefined,
@@ -105,20 +102,18 @@ class GraphQLError extends Error {
     ); // Compute locations in the source for the given nodes/positions.
 
     this.source =
-      source !== null && source !== void 0
-        ? source
-        : nodeLocations === null || nodeLocations === void 0
+      source ??
+      (nodeLocations === null || nodeLocations === void 0
         ? void 0
         : (_nodeLocations$ = nodeLocations[0]) === null ||
           _nodeLocations$ === void 0
         ? void 0
-        : _nodeLocations$.source;
+        : _nodeLocations$.source);
     this.positions =
-      positions !== null && positions !== void 0
-        ? positions
-        : nodeLocations === null || nodeLocations === void 0
+      positions ??
+      (nodeLocations === null || nodeLocations === void 0
         ? void 0
-        : nodeLocations.map((loc) => loc.start);
+        : nodeLocations.map((loc) => loc.start));
     this.locations =
       positions && source
         ? positions.map((pos) => (0, _location.getLocation)(source, pos))
@@ -136,13 +131,7 @@ class GraphQLError extends Error {
         ? void 0
         : originalError.extensions
       : undefined;
-    this.extensions =
-      (_ref =
-        extensions !== null && extensions !== void 0
-          ? extensions
-          : originalExtensions) !== null && _ref !== void 0
-        ? _ref
-        : Object.create(null); // Only properties prescribed by the spec should be enumerable.
+    this.extensions = extensions ?? originalExtensions ?? Object.create(null); // Only properties prescribed by the spec should be enumerable.
     // Keep the rest as non-enumerable.
 
     Object.defineProperties(this, {

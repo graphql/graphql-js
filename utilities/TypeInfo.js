@@ -43,10 +43,7 @@ class TypeInfo {
     this._directive = null;
     this._argument = null;
     this._enumValue = null;
-    this._getFieldDef =
-      getFieldDefFn !== null && getFieldDefFn !== void 0
-        ? getFieldDefFn
-        : getFieldDef;
+    this._getFieldDef = getFieldDefFn ?? getFieldDef;
 
     if (initialType) {
       if ((0, _definition.isInputType)(initialType)) {
@@ -193,15 +190,9 @@ class TypeInfo {
       }
 
       case _kinds.Kind.ARGUMENT: {
-        var _this$getDirective;
-
         let argDef;
         let argType;
-        const fieldOrDirective =
-          (_this$getDirective = this.getDirective()) !== null &&
-          _this$getDirective !== void 0
-            ? _this$getDirective
-            : this.getFieldDef();
+        const fieldOrDirective = this.getDirective() ?? this.getFieldDef();
 
         if (fieldOrDirective) {
           argDef = fieldOrDirective.args.find(

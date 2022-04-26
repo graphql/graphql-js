@@ -37,12 +37,7 @@ export function KnownTypeNamesRule(context) {
       const typeName = node.name.value;
 
       if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
-        var _ancestors$;
-
-        const definitionNode =
-          (_ancestors$ = ancestors[2]) !== null && _ancestors$ !== void 0
-            ? _ancestors$
-            : parent;
+        const definitionNode = ancestors[2] ?? parent;
         const isSDL = definitionNode != null && isSDLNode(definitionNode);
 
         if (isSDL && standardTypeNames.includes(typeName)) {

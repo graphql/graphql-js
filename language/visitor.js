@@ -226,8 +226,6 @@ function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
     if (isLeaving) {
       path.pop();
     } else {
-      var _node$kind;
-
       stack = {
         inArray,
         index,
@@ -236,12 +234,7 @@ function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
         prev: stack,
       };
       inArray = Array.isArray(node);
-      keys = inArray
-        ? node
-        : (_node$kind = visitorKeys[node.kind]) !== null &&
-          _node$kind !== void 0
-        ? _node$kind
-        : [];
+      keys = inArray ? node : visitorKeys[node.kind] ?? [];
       index = -1;
       edits = [];
 

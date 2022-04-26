@@ -9,15 +9,11 @@ import { isWhiteSpace } from './characterClasses.mjs';
  */
 
 export function dedentBlockStringLines(lines) {
-  var _firstNonEmptyLine2;
-
   let commonIndent = Number.MAX_SAFE_INTEGER;
   let firstNonEmptyLine = null;
   let lastNonEmptyLine = -1;
 
   for (let i = 0; i < lines.length; ++i) {
-    var _firstNonEmptyLine;
-
     const line = lines[i];
     const indent = leadingWhitespace(line);
 
@@ -25,11 +21,7 @@ export function dedentBlockStringLines(lines) {
       continue; // skip empty lines
     }
 
-    firstNonEmptyLine =
-      (_firstNonEmptyLine = firstNonEmptyLine) !== null &&
-      _firstNonEmptyLine !== void 0
-        ? _firstNonEmptyLine
-        : i;
+    firstNonEmptyLine = firstNonEmptyLine ?? i;
     lastNonEmptyLine = i;
 
     if (i !== 0 && indent < commonIndent) {
@@ -39,13 +31,7 @@ export function dedentBlockStringLines(lines) {
 
   return lines // Remove common indentation from all lines but first.
     .map((line, i) => (i === 0 ? line : line.slice(commonIndent))) // Remove leading and trailing blank lines.
-    .slice(
-      (_firstNonEmptyLine2 = firstNonEmptyLine) !== null &&
-        _firstNonEmptyLine2 !== void 0
-        ? _firstNonEmptyLine2
-        : 0,
-      lastNonEmptyLine + 1,
-    );
+    .slice(firstNonEmptyLine ?? 0, lastNonEmptyLine + 1);
 }
 
 function leadingWhitespace(str) {

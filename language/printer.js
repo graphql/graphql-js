@@ -304,15 +304,11 @@ const printDocASTReducer = {
  */
 
 function join(maybeArray, separator = '') {
-  var _maybeArray$filter$jo;
-
-  return (_maybeArray$filter$jo =
-    maybeArray === null || maybeArray === void 0
+  return (
+    (maybeArray === null || maybeArray === void 0
       ? void 0
-      : maybeArray.filter((x) => x).join(separator)) !== null &&
-    _maybeArray$filter$jo !== void 0
-    ? _maybeArray$filter$jo
-    : '';
+      : maybeArray.filter((x) => x).join(separator)) ?? ''
+  );
 }
 /**
  * Given array, print each item on its own line, wrapped in an indented `{ }` block.
@@ -336,16 +332,12 @@ function indent(str) {
 }
 
 function hasMultilineItems(maybeArray) {
-  var _maybeArray$some;
-
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
   /* c8 ignore next */
-  return (_maybeArray$some =
-    maybeArray === null || maybeArray === void 0
+  return (
+    (maybeArray === null || maybeArray === void 0
       ? void 0
-      : maybeArray.some((str) => str.includes('\n'))) !== null &&
-    _maybeArray$some !== void 0
-    ? _maybeArray$some
-    : false;
+      : maybeArray.some((str) => str.includes('\n'))) ?? false
+  );
 }
