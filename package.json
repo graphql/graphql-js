@@ -7,7 +7,7 @@
   "main": "index",
   "module": "index.mjs",
   "typesVersions": {
-    ">=4.1.0": {
+    ">=4.4.0": {
       "*": [
         "*"
       ]
