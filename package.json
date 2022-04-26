@@ -90,6 +90,6 @@
     "url-loader": "4.1.1"
   },
   "publishConfig": {
-    "tag": "latest"
+    "tag": "alpha"
   }
 }
