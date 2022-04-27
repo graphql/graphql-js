@@ -13,7 +13,16 @@ import { GraphQLInt } from '../../type/scalars';
 import { applyRequiredStatus } from '../applyRequiredStatus';
 
 describe('astFromValue', () => {
-  it('modifiedOutputType produces correct output types with no overrides', () => {
+  it('applyRequiredStatus smoke test', () => {
+    const type = GraphQLInt;
+    const nullabilityNode = undefined;
+    const outputType = applyRequiredStatus(type, nullabilityNode);
+    const expectedOutputType = GraphQLInt;
+
+    expect(outputType).to.deep.equal(expectedOutputType);
+  });
+
+  it('applyRequiredStatus produces correct output types with no overrides', () => {
     // [[[!]]!]!
     const type = new GraphQLNonNull(
       new GraphQLList(
@@ -48,7 +57,7 @@ describe('astFromValue', () => {
     expect(outputType).to.deep.equal(expectedOutputType);
   });
 
-  it('modifiedOutputType produces correct output types with overrides', () => {
+  it('applyRequiredStatus produces correct output types with required overrides', () => {
     // [[[!]]!]!
     const type = new GraphQLNonNull(
       new GraphQLList(
@@ -58,7 +67,7 @@ describe('astFromValue', () => {
       ),
     );
 
-    // [[[]!]!]!
+    // [[[!]!]!]!
     const nullabilityNode: NullabilityDesignatorNode | ListNullabilityNode = {
       kind: Kind.REQUIRED_DESIGNATOR,
       element: {
@@ -71,7 +80,10 @@ describe('astFromValue', () => {
               kind: Kind.REQUIRED_DESIGNATOR,
               element: {
                 kind: Kind.LIST_NULLABILITY,
-                element: undefined,
+                element: {
+                  kind: Kind.REQUIRED_DESIGNATOR,
+                  element: undefined,
+                },
               },
             },
           },
@@ -94,7 +106,50 @@ describe('astFromValue', () => {
     expect(outputType).to.deep.equal(expectedOutputType);
   });
 
-  it('modifiedOutputType throws error when modifier is too deep', () => {
+  it('applyRequiredStatus produces correct output types with optional overrides', () => {
+    // [[[!]]!]!
+    const type = new GraphQLNonNull(
+      new GraphQLList(
+        new GraphQLNonNull(
+          new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
+        ),
+      ),
+    );
+
+    // [[[?]?]?]?
+    const nullabilityNode: NullabilityDesignatorNode | ListNullabilityNode = {
+      kind: Kind.OPTIONAL_DESIGNATOR,
+      element: {
+        kind: Kind.LIST_NULLABILITY,
+        element: {
+          kind: Kind.OPTIONAL_DESIGNATOR,
+          element: {
+            kind: Kind.LIST_NULLABILITY,
+            element: {
+              kind: Kind.OPTIONAL_DESIGNATOR,
+              element: {
+                kind: Kind.LIST_NULLABILITY,
+                element: {
+                  kind: Kind.OPTIONAL_DESIGNATOR,
+                  element: undefined,
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const outputType = applyRequiredStatus(type, nullabilityNode);
+    // [[[]]]
+    const expectedOutputType = new GraphQLList(
+      new GraphQLList(new GraphQLList(GraphQLInt)),
+    );
+
+    expect(outputType).to.deep.equal(expectedOutputType);
+  });
+
+  it('applyRequiredStatus throws error when modifier is too deep', () => {
     // [[[!]]!]!
     const type = new GraphQLNonNull(
       new GraphQLList(
@@ -124,7 +179,7 @@ describe('astFromValue', () => {
     }).to.throw('List nullability modifier is too deep.');
   });
 
-  it('modifiedOutputType throws error when modifier is too shallow', () => {
+  it('applyRequiredStatus throws error when modifier is too shallow', () => {
     // [[[!]]!]!
     const type = new GraphQLNonNull(
       new GraphQLList(
