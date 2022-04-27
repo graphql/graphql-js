@@ -1,6 +1,15 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import type {
+  DirectiveDefinitionNode,
+  EnumTypeDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+} from '../../language/ast';
+import { parse } from '../../language/parser';
+
 import {
   GraphQLDeprecatedDirective,
   GraphQLIncludeDirective,
@@ -17,38 +26,48 @@ import {
   findDangerousChanges,
 } from '../findBreakingChanges';
 
+function expectBreakingChanges(oldSDL: string, newSDL: string) {
+  return expect(findBreakingChanges(buildSchema(oldSDL), buildSchema(newSDL)));
+}
+
+function expectDangerousChanges(oldSDL: string, newSDL: string) {
+  return expect(findDangerousChanges(buildSchema(oldSDL), buildSchema(newSDL)));
+}
+
 describe('findBreakingChanges', () => {
   it('should detect if a type was removed or not', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       type Type1
       type Type2
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       type Type2
-    `);
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    `;
+
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'Type1 was removed.',
       },
     ]);
-    expect(findBreakingChanges(oldSchema, oldSchema)).to.deep.equal([]);
+    expectBreakingChanges(oldSDL, oldSDL).to.deep.equal([]);
   });
 
   it('should detect if a standard scalar was removed', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       type Query {
         foo: Float
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       type Query {
         foo: String
       }
-    `);
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    `;
+
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description:
@@ -57,44 +76,58 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Query.foo changed type from Float to String.',
+        oldAstNode: (parse(oldSDL).definitions[0] as ObjectTypeDefinitionNode)
+          .fields?.[0],
+        newAstNode: (parse(newSDL).definitions[0] as ObjectTypeDefinitionNode)
+          .fields?.[0],
       },
     ]);
-    expect(findBreakingChanges(oldSchema, oldSchema)).to.deep.equal([]);
+    expectBreakingChanges(oldSDL, oldSDL).to.deep.equal([]);
   });
 
   it('should detect if a type changed its type', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       scalar TypeWasScalarBecomesEnum
       interface TypeWasInterfaceBecomesUnion
       type TypeWasObjectBecomesInputObject
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       enum TypeWasScalarBecomesEnum
       union TypeWasInterfaceBecomesUnion
       input TypeWasObjectBecomesInputObject
-    `);
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    `;
+
+    const oldAst = parse(oldSDL);
+    const newAst = parse(newSDL);
+
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeWasScalarBecomesEnum changed from a Scalar type to an Enum type.',
+        oldAstNode: oldAst.definitions[0],
+        newAstNode: newAst.definitions[0],
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeWasInterfaceBecomesUnion changed from an Interface type to a Union type.',
+        oldAstNode: oldAst.definitions[1],
+        newAstNode: newAst.definitions[1],
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeWasObjectBecomesInputObject changed from an Object type to an Input type.',
+        oldAstNode: oldAst.definitions[2],
+        newAstNode: newAst.definitions[2],
       },
     ]);
   });
 
   it('should detect if a field on a type was deleted or changed type', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       type TypeA
       type TypeB
 
@@ -117,9 +150,9 @@ describe('findBreakingChanges', () => {
         field17: [Int]
         field18: [[Int!]!]
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       type TypeA
       type TypeB
 
@@ -142,67 +175,119 @@ describe('findBreakingChanges', () => {
         field17: [Int]!
         field18: [[Int!]]
       }
-    `);
+    `;
 
-    const changes = findBreakingChanges(oldSchema, newSchema);
-    expect(changes).to.deep.equal([
+    const oldAst = parse(oldSDL);
+    const newAst = parse(newSDL);
+
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.FIELD_REMOVED,
         description: 'Type1.field2 was removed.',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[1],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field3 changed type from String to Boolean.',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[2],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[1],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field4 changed type from TypeA to TypeB.',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[3],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[2],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field6 changed type from String to [String].',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[4],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[4],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field7 changed type from [String] to String.',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[5],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[5],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field9 changed type from Int! to Int.',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[7],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[7],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field10 changed type from [Int]! to [Int].',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[8],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[8],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field11 changed type from Int to [Int]!.',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[9],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[9],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field13 changed type from [Int!] to [Int].',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[11],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[11],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field14 changed type from [Int] to [[Int]].',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[12],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[12],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field15 changed type from [[Int]] to [Int].',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[13],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[13],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field16 changed type from Int! to [Int]!.',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[14],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[14],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field18 changed type from [[Int!]!] to [[Int!]].',
+        oldAstNode: (oldAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[16],
+        newAstNode: (newAst.definitions[2] as InterfaceTypeDefinitionNode)
+          .fields?.[16],
       },
     ]);
   });
 
   it('should detect if fields on input types changed kind or were removed', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       input InputType1 {
         field1: String
         field2: Boolean
@@ -220,9 +305,9 @@ describe('findBreakingChanges', () => {
         field14: [[Int]!]
         field15: [[Int]!]
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       input InputType1 {
         field1: Int
         field3: String
@@ -239,133 +324,184 @@ describe('findBreakingChanges', () => {
         field14: [[Int]]
         field15: [[Int!]!]
       }
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    const oldAst = parse(oldSDL);
+    const newAst = parse(newSDL);
+
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.FIELD_REMOVED,
         description: 'InputType1.field2 was removed.',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[1],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field1 changed type from String to Int.',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[0],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[0],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field3 changed type from [String] to String.',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[2],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[1],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field5 changed type from String to String!.',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[4],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[3],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field6 changed type from [Int] to [Int]!.',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[5],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[4],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field8 changed type from Int to [Int]!.',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[7],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[6],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field9 changed type from [Int] to [Int!].',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[8],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[7],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field11 changed type from [Int] to [[Int]].',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[10],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[9],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field12 changed type from [[Int]] to [Int].',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[11],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[10],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field13 changed type from Int! to [Int]!.',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[12],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[11],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
           'InputType1.field15 changed type from [[Int]!] to [[Int!]!].',
+        oldAstNode: (oldAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[14],
+        newAstNode: (newAst.definitions[0] as InputObjectTypeDefinitionNode)
+          .fields?.[13],
       },
     ]);
   });
 
   it('should detect if a required field is added to an input type', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       input InputType1 {
         field1: String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       input InputType1 {
         field1: String
         requiredField: Int!
         optionalField1: Boolean
         optionalField2: Boolean! = false
       }
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
         description:
           'A required field requiredField on input type InputType1 was added.',
+        newAstNode: (
+          parse(newSDL).definitions[0] as InputObjectTypeDefinitionNode
+        ).fields?.[1],
       },
     ]);
   });
 
   it('should detect if a type was removed from a union type', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       type Type1
       type Type2
       type Type3
 
       union UnionType1 = Type1 | Type2
-    `);
-    const newSchema = buildSchema(`
+    `;
+    const newSDL = `
       type Type1
       type Type2
       type Type3
 
       union UnionType1 = Type1 | Type3
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
         description: 'Type2 was removed from union type UnionType1.',
+        oldAstNode: parse(oldSDL).definitions[1],
       },
     ]);
   });
 
   it('should detect if a value was removed from an enum type', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       enum EnumType1 {
         VALUE0
         VALUE1
         VALUE2
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `    
       enum EnumType1 {
         VALUE0
         VALUE2
         VALUE3
       }
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
         description: 'VALUE1 was removed from enum type EnumType1.',
+        oldAstNode: parse(oldSDL).definitions[0],
+        newAstNode: parse(newSDL).definitions[0],
       },
     ]);
   });
 
   it('should detect if a field argument was removed', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       interface Interface1 {
         field1(arg1: Boolean, objectArg: String): String
       }
@@ -373,9 +509,9 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1(name: String): String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       interface Interface1 {
         field1: String
       }
@@ -383,26 +519,34 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1: String
       }
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    const oldAst = parse(oldSDL);
+
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.ARG_REMOVED,
         description: 'Interface1.field1 arg arg1 was removed.',
+        oldAstNode: (oldAst.definitions[0] as InterfaceTypeDefinitionNode)
+          .fields?.[0].arguments?.[0],
       },
       {
         type: BreakingChangeType.ARG_REMOVED,
         description: 'Interface1.field1 arg objectArg was removed.',
+        oldAstNode: (oldAst.definitions[0] as InterfaceTypeDefinitionNode)
+          .fields?.[0].arguments?.[1],
       },
       {
         type: BreakingChangeType.ARG_REMOVED,
         description: 'Type1.field1 arg name was removed.',
+        oldAstNode: (oldAst.definitions[1] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[0],
       },
     ]);
   });
 
   it('should detect if a field argument has changed type', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       type Type1 {
         field1(
           arg1: String
@@ -422,9 +566,9 @@ describe('findBreakingChanges', () => {
           arg15: [[Int]!]
         ): String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       type Type1 {
         field1(
           arg1: Int
@@ -444,80 +588,111 @@ describe('findBreakingChanges', () => {
           arg15: [[Int!]!]
          ): String
       }
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    const expectedOldAstNode = (
+      parse(oldSDL).definitions[0] as ObjectTypeDefinitionNode
+    ).fields?.[0];
+    const expectedNewAstNode = (
+      parse(newSDL).definitions[0] as ObjectTypeDefinitionNode
+    ).fields?.[0];
+
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg1 has changed type from String to Int.',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg2 has changed type from String to [String].',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg3 has changed type from [String] to String.',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg4 has changed type from String to String!.',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg5 has changed type from String! to Int.',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg6 has changed type from String! to Int!.',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg8 has changed type from Int to [Int]!.',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg9 has changed type from [Int] to [Int!].',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg11 has changed type from [Int] to [[Int]].',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg12 has changed type from [[Int]] to [Int].',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg13 has changed type from Int! to [Int]!.',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg15 has changed type from [[Int]!] to [[Int!]!].',
+        oldAstNode: expectedOldAstNode,
+        newAstNode: expectedNewAstNode,
       },
     ]);
   });
 
   it('should detect if a required field argument was added', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       type Type1 {
         field1(arg1: String): String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       type Type1 {
         field1(
           arg1: String,
@@ -526,18 +701,20 @@ describe('findBreakingChanges', () => {
           newOptionalArg2: Int! = 0
         ): String
       }
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.REQUIRED_ARG_ADDED,
         description: 'A required arg newRequiredArg on Type1.field1 was added.',
+        newAstNode: (parse(newSDL).definitions[0] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[1],
       },
     ]);
   });
 
   it('should not flag args with the same type signature as breaking', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       input InputType1 {
         field1: String
       }
@@ -545,9 +722,9 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1(arg1: Int!, arg2: InputType1): Int
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       input InputType1 {
         field1: String
       }
@@ -555,89 +732,93 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1(arg1: Int!, arg2: InputType1): Int
       }
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([]);
   });
 
   it('should consider args that move away from NonNull as non-breaking', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       type Type1 {
         field1(name: String!): String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       type Type1 {
         field1(name: String): String
       }
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([]);
   });
 
   it('should detect interfaces removed from types', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       interface Interface1
 
       type Type1 implements Interface1
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       interface Interface1
 
       type Type1
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
         description: 'Type1 no longer implements interface Interface1.',
+        oldAstNode: parse(oldSDL).definitions[1],
+        newAstNode: parse(newSDL).definitions[1],
       },
     ]);
   });
 
   it('should detect interfaces removed from interfaces', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       interface Interface1
 
       interface Interface2 implements Interface1
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       interface Interface1
 
       interface Interface2
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
         description: 'Interface2 no longer implements interface Interface1.',
+        oldAstNode: parse(oldSDL).definitions[1],
+        newAstNode: parse(newSDL).definitions[1],
       },
     ]);
   });
 
   it('should ignore changes in order of interfaces', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       interface FirstInterface
       interface SecondInterface
 
       type Type1 implements FirstInterface & SecondInterface
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       interface FirstInterface
       interface SecondInterface
 
       type Type1 implements SecondInterface & FirstInterface
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([]);
   });
 
   it('should detect all breaking changes', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       directive @DirectiveThatIsRemoved on FIELD_DEFINITION
 
       directive @DirectiveThatRemovesArg(arg1: String) on FIELD_DEFINITION
@@ -673,9 +854,9 @@ describe('findBreakingChanges', () => {
         field1: String
         field2: String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       directive @DirectiveThatRemovesArg on FIELD_DEFINITION
 
       directive @NonNullDirectiveAdded(arg1: Boolean!) on FIELD_DEFINITION
@@ -705,9 +886,12 @@ describe('findBreakingChanges', () => {
       interface TypeThatHasBreakingFieldChanges {
         field2: Boolean
       }
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    const oldAst = parse(oldSDL);
+    const newAst = parse(newSDL);
+
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description:
@@ -721,83 +905,110 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'ArgThatChanges.field1 arg id has changed type from Float to String.',
+        oldAstNode: (oldAst.definitions[5] as ObjectTypeDefinitionNode)
+          .fields?.[0],
+        newAstNode: (newAst.definitions[4] as ObjectTypeDefinitionNode)
+          .fields?.[0],
       },
       {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
         description:
           'VALUE0 was removed from enum type EnumTypeThatLosesAValue.',
+        oldAstNode: oldAst.definitions[6] as EnumTypeDefinitionNode,
+        newAstNode: newAst.definitions[5] as EnumTypeDefinitionNode,
       },
       {
         type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
         description:
           'TypeThatLooseInterface1 no longer implements interface Interface1.',
+        oldAstNode: oldAst.definitions[8],
+        newAstNode: newAst.definitions[7],
       },
       {
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
         description:
           'TypeInUnion2 was removed from union type UnionTypeThatLosesAType.',
+        oldAstNode: oldAst.definitions[10],
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeThatChangesType changed from an Object type to an Interface type.',
+        oldAstNode: oldAst.definitions[12],
+        newAstNode: newAst.definitions[11],
       },
       {
         type: BreakingChangeType.FIELD_REMOVED,
         description: 'TypeThatHasBreakingFieldChanges.field1 was removed.',
+        oldAstNode: (oldAst.definitions[14] as InterfaceTypeDefinitionNode)
+          .fields?.[0],
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
           'TypeThatHasBreakingFieldChanges.field2 changed type from String to Boolean.',
+        oldAstNode: (oldAst.definitions[14] as InterfaceTypeDefinitionNode)
+          .fields?.[1],
+        newAstNode: (newAst.definitions[12] as InterfaceTypeDefinitionNode)
+          .fields?.[0],
       },
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
         description: 'DirectiveThatIsRemoved was removed.',
+        oldAstNode: oldAst.definitions[0],
       },
       {
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
         description: 'arg1 was removed from DirectiveThatRemovesArg.',
+        oldAstNode: (oldAst.definitions[1] as DirectiveDefinitionNode)
+          .arguments?.[0],
       },
       {
         type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
         description:
           'A required arg arg1 on directive NonNullDirectiveAdded was added.',
+        newAstNode: (newAst.definitions[1] as DirectiveDefinitionNode)
+          .arguments?.[0],
       },
       {
         type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
         description:
           'Repeatable flag was removed from DirectiveThatWasRepeatable.',
+        oldAstNode: oldAst.definitions[3],
+        newAstNode: newAst.definitions[2],
       },
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
         description: 'QUERY was removed from DirectiveName.',
+        oldAstNode: oldAst.definitions[4],
+        newAstNode: newAst.definitions[3],
       },
     ]);
   });
 
   it('should detect if a directive was explicitly removed', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       directive @DirectiveThatIsRemoved on FIELD_DEFINITION
       directive @DirectiveThatStays on FIELD_DEFINITION
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       directive @DirectiveThatStays on FIELD_DEFINITION
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
         description: 'DirectiveThatIsRemoved was removed.',
+        oldAstNode: parse(oldSDL).definitions[0],
       },
     ]);
   });
 
   it('should detect if a directive was implicitly removed', () => {
-    const oldSchema = new GraphQLSchema({});
+    const oldSDL = new GraphQLSchema({});
 
-    const newSchema = new GraphQLSchema({
+    const newSDL = new GraphQLSchema({
       directives: [
         GraphQLSkipDirective,
         GraphQLIncludeDirective,
@@ -805,83 +1016,92 @@ describe('findBreakingChanges', () => {
       ],
     });
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expect(findBreakingChanges(oldSDL, newSDL)).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
         description: `${GraphQLDeprecatedDirective.name} was removed.`,
+        oldAstNode: undefined,
       },
     ]);
   });
 
   it('should detect if a directive argument was removed', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       directive @DirectiveWithArg(arg1: String) on FIELD_DEFINITION
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       directive @DirectiveWithArg on FIELD_DEFINITION
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
         description: 'arg1 was removed from DirectiveWithArg.',
+        oldAstNode: (parse(oldSDL).definitions[0] as DirectiveDefinitionNode)
+          .arguments?.[0],
       },
     ]);
   });
 
   it('should detect if an optional directive argument was added', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       directive @DirectiveName on FIELD_DEFINITION
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       directive @DirectiveName(
         newRequiredArg: String!
         newOptionalArg1: Int
         newOptionalArg2: Int! = 0
       ) on FIELD_DEFINITION
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
         description:
           'A required arg newRequiredArg on directive DirectiveName was added.',
+        newAstNode: (parse(newSDL).definitions[0] as DirectiveDefinitionNode)
+          .arguments?.[0],
       },
     ]);
   });
 
   it('should detect removal of repeatable flag', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       directive @DirectiveName repeatable on OBJECT
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       directive @DirectiveName on OBJECT
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
         description: 'Repeatable flag was removed from DirectiveName.',
+        oldAstNode: parse(oldSDL).definitions[0],
+        newAstNode: parse(newSDL).definitions[0],
       },
     ]);
   });
 
   it('should detect locations removed from a directive', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       directive @DirectiveName on FIELD_DEFINITION | QUERY
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       directive @DirectiveName on FIELD_DEFINITION
-    `);
+    `;
 
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+    expectBreakingChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
         description: 'QUERY was removed from DirectiveName.',
+        oldAstNode: parse(oldSDL).definitions[0],
+        newAstNode: parse(newSDL).definitions[0],
       },
     ]);
   });
@@ -911,11 +1131,9 @@ describe('findDangerousChanges', () => {
       }
     `;
 
-    const oldSchema = buildSchema(oldSDL);
-    const copyOfOldSchema = buildSchema(oldSDL);
-    expect(findDangerousChanges(oldSchema, copyOfOldSchema)).to.deep.equal([]);
+    expectDangerousChanges(oldSDL, oldSDL).to.deep.equal([]);
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       input Input1 {
         innerInputArray: [Input2]
       }
@@ -935,39 +1153,62 @@ describe('findDangerousChanges', () => {
           }
         ): String
       }
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+    const oldAst = parse(oldSDL);
+    const newAst = parse(newSDL);
+
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg withDefaultValue defaultValue was removed.',
+        oldAstNode: (oldAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[0],
+        newAstNode: (newAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[0],
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg stringArg has changed defaultValue from "test" to "Test".',
+        oldAstNode: (oldAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[1],
+        newAstNode: (newAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[1],
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg emptyArray has changed defaultValue from [] to [7].',
+        oldAstNode: (oldAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[2],
+        newAstNode: (newAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[2],
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg valueArray has changed defaultValue from [["a", "b"], ["c"]] to [["b", "a"], ["d"]].',
+        oldAstNode: (oldAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[3],
+        newAstNode: (newAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[3],
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg complexObject has changed defaultValue from {innerInputArray: [{arrayField: [1, 2, 3]}]} to {innerInputArray: [{arrayField: [3, 2, 1]}]}.',
+        oldAstNode: (oldAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[4],
+        newAstNode: (newAst.definitions[2] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[4],
       },
     ]);
   });
 
   it('should ignore changes in field order of defaultValue', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       input Input1 {
         a: String
         b: String
@@ -979,9 +1220,9 @@ describe('findDangerousChanges', () => {
           arg1: Input1 = { a: "a", b: "b", c: "c" }
         ): String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       input Input1 {
         a: String
         b: String
@@ -993,13 +1234,13 @@ describe('findDangerousChanges', () => {
           arg1: Input1 = { c: "c", b: "b", a: "a" }
         ): String
       }
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([]);
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([]);
   });
 
   it('should ignore changes in field definitions order', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       input Input1 {
         a: String
         b: String
@@ -1011,9 +1252,9 @@ describe('findDangerousChanges', () => {
           arg1: Input1 = { a: "a", b: "b", c: "c" }
         ): String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       input Input1 {
         c: String
         b: String
@@ -1025,130 +1266,140 @@ describe('findDangerousChanges', () => {
           arg1: Input1 = { a: "a", b: "b", c: "c" }
         ): String
       }
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([]);
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([]);
   });
 
   it('should detect if a value was added to an enum type', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       enum EnumType1 {
         VALUE0
         VALUE1
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       enum EnumType1 {
         VALUE0
         VALUE1
         VALUE2
       }
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
         description: 'VALUE2 was added to enum type EnumType1.',
+        oldAstNode: parse(oldSDL).definitions[0],
+        newAstNode: parse(newSDL).definitions[0],
       },
     ]);
   });
 
   it('should detect interfaces added to types', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       interface OldInterface
       interface NewInterface
 
       type Type1 implements OldInterface
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       interface OldInterface
       interface NewInterface
 
       type Type1 implements OldInterface & NewInterface
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
         description: 'NewInterface added to interfaces implemented by Type1.',
+        oldAstNode: parse(oldSDL).definitions[2],
+        newAstNode: parse(newSDL).definitions[2],
       },
     ]);
   });
 
   it('should detect interfaces added to interfaces', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       interface OldInterface
       interface NewInterface
 
       interface Interface1 implements OldInterface
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       interface OldInterface
       interface NewInterface
 
       interface Interface1 implements OldInterface & NewInterface
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
         description:
           'NewInterface added to interfaces implemented by Interface1.',
+        oldAstNode: parse(oldSDL).definitions[2],
+        newAstNode: parse(newSDL).definitions[2],
       },
     ]);
   });
 
   it('should detect if a type was added to a union type', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       type Type1
       type Type2
 
       union UnionType1 = Type1
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       type Type1
       type Type2
 
       union UnionType1 = Type1 | Type2
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: DangerousChangeType.TYPE_ADDED_TO_UNION,
         description: 'Type2 was added to union type UnionType1.',
+        newAstNode: parse(newSDL).definitions[1],
       },
     ]);
   });
 
   it('should detect if an optional field was added to an input', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       input InputType1 {
         field1: String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       input InputType1 {
         field1: String
         field2: Int
       }
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
         description:
           'An optional field field2 on input type InputType1 was added.',
+        newAstNode: (
+          parse(newSDL).definitions[0] as InputObjectTypeDefinitionNode
+        ).fields?.[1],
       },
     ]);
   });
 
   it('should find all dangerous changes', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       enum EnumType1 {
         VALUE0
         VALUE1
@@ -1163,9 +1414,9 @@ describe('findDangerousChanges', () => {
 
       type TypeInUnion1
       union UnionTypeThatGainsAType = TypeInUnion1
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       enum EnumType1 {
         VALUE0
         VALUE1
@@ -1182,48 +1433,62 @@ describe('findDangerousChanges', () => {
       type TypeInUnion1
       type TypeInUnion2
       union UnionTypeThatGainsAType = TypeInUnion1 | TypeInUnion2
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+    const oldAst = parse(oldSDL);
+    const newAst = parse(newSDL);
+
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
         description: 'VALUE2 was added to enum type EnumType1.',
+        oldAstNode: oldAst.definitions[0],
+        newAstNode: newAst.definitions[0],
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue from "test" to "Test".',
+        oldAstNode: (oldAst.definitions[1] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[0],
+        newAstNode: (newAst.definitions[1] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[0],
       },
       {
         type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
         description:
           'Interface1 added to interfaces implemented by TypeThatGainsInterface1.',
+        oldAstNode: oldAst.definitions[3],
+        newAstNode: newAst.definitions[3],
       },
       {
         type: DangerousChangeType.TYPE_ADDED_TO_UNION,
         description:
           'TypeInUnion2 was added to union type UnionTypeThatGainsAType.',
+        newAstNode: newAst.definitions[5],
       },
     ]);
   });
 
   it('should detect if an optional field argument was added', () => {
-    const oldSchema = buildSchema(`
+    const oldSDL = `
       type Type1 {
         field1(arg1: String): String
       }
-    `);
+    `;
 
-    const newSchema = buildSchema(`
+    const newSDL = `
       type Type1 {
         field1(arg1: String, arg2: String): String
       }
-    `);
+    `;
 
-    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+    expectDangerousChanges(oldSDL, newSDL).to.deep.equal([
       {
         type: DangerousChangeType.OPTIONAL_ARG_ADDED,
         description: 'An optional arg arg2 on Type1.field1 was added.',
+        newAstNode: (parse(newSDL).definitions[0] as ObjectTypeDefinitionNode)
+          .fields?.[0].arguments?.[1],
       },
     ]);
   });
