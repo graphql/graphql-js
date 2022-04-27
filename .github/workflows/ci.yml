@@ -121,40 +121,12 @@ jobs:
       - name: Run Tests
         run: npm run fuzzonly
 
-  coverage:
-    name: Measure test coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          cache: npm
-          node-version-file: '.node-version'
-
-      - name: Install Dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Run tests and measure code coverage
-        run: npm run testonly:cover
-
-      - name: Upload coverage to Codecov
-        if: ${{ always() }}
-        uses: codecov/codecov-action@v1
-        with:
-          file: ./coverage/coverage-final.json
-          fail_ci_if_error: true
-
   test:
     name: Run tests on Node v${{ matrix.node_version_to_setup }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version_to_setup: [12, 14, 16, 17]
+        node_version_to_setup: [14, 16, 18]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
