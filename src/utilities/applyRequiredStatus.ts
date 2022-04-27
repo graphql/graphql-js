@@ -27,7 +27,7 @@ export function applyRequiredStatus(
   type: GraphQLOutputType,
   nullabilityNode?: ListNullabilityNode | NullabilityDesignatorNode,
 ): GraphQLOutputType {
-  if (nullabilityNode == null) {
+  if (nullabilityNode === undefined) {
     return type;
   }
 
