@@ -443,7 +443,7 @@ describe('Type System: build schema from introspection', () => {
       type Query {
         defaultInt(intArg: Int = 30): String
         defaultList(listArg: [Int] = [1, 2, 3]): String
-        defaultObject(objArg: Geo = {lat: 37.485, lon: -122.148}): String
+        defaultObject(objArg: Geo = { lat: 37.485, lon: -122.148 }): String
         defaultNull(intArg: Int = null): String
         noDefault(intArg: Int): String
       }

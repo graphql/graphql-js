@@ -116,7 +116,7 @@ const printDocASTReducer: ASTReducer<string> = {
   NullValue: { leave: () => 'null' },
   EnumValue: { leave: ({ value }) => value },
   ListValue: { leave: ({ values }) => '[' + join(values, ', ') + ']' },
-  ObjectValue: { leave: ({ fields }) => '{' + join(fields, ', ') + '}' },
+  ObjectValue: { leave: ({ fields }) => '{ ' + join(fields, ', ') + ' }' },
   ObjectField: { leave: ({ name, value }) => name + ': ' + value },
 
   // Directive

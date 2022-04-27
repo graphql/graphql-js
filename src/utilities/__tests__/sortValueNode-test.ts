@@ -28,13 +28,15 @@ describe('sortValueNode', () => {
   });
 
   it('sort input object fields', () => {
-    expectSortedValue('{ b: 2, a: 1 }').to.equal('{a: 1, b: 2}');
-    expectSortedValue('{ a: { c: 3, b: 2 } }').to.equal('{a: {b: 2, c: 3}}');
-    expectSortedValue('[{ b: 2, a: 1 }, { d: 4, c: 3}]').to.equal(
-      '[{a: 1, b: 2}, {c: 3, d: 4}]',
+    expectSortedValue('{ b: 2, a: 1 }').to.equal('{ a: 1, b: 2 }');
+    expectSortedValue('{ a: { c: 3, b: 2 } }').to.equal(
+      '{ a: { b: 2, c: 3 } }',
+    );
+    expectSortedValue('[{ b: 2, a: 1 }, { d: 4, c: 3 }]').to.equal(
+      '[{ a: 1, b: 2 }, { c: 3, d: 4 }]',
     );
     expectSortedValue(
       '{ b: { g: 7, f: 6 }, c: 3 , a: { d: 4, e: 5 } }',
-    ).to.equal('{a: {d: 4, e: 5}, b: {f: 6, g: 7}, c: 3}');
+    ).to.equal('{ a: { d: 4, e: 5 }, b: { f: 6, g: 7 }, c: 3 }');
   });
 });

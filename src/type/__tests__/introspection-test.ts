@@ -1086,7 +1086,7 @@ describe('Introspection', () => {
     const schema = buildSchema(`
       input InputObjectWithDefaultValues {
         a: String = "Emoji: \\u{1F600}"
-        b: Complex = {x: ["abc"], y: 123}
+        b: Complex = { x: ["abc"], y: 123 }
       }
 
       input Complex {
@@ -1120,7 +1120,7 @@ describe('Introspection', () => {
             },
             {
               name: 'b',
-              defaultValue: '{x: ["abc"], y: 123}',
+              defaultValue: '{ x: ["abc"], y: 123 }',
             },
           ],
         },

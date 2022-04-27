@@ -99,7 +99,7 @@ describe('Type System: Specified scalar types', () => {
         'Int cannot represent non-integer value: [1]',
       );
       expect(() => parseLiteral('{ value: 1 }')).to.throw(
-        'Int cannot represent non-integer value: {value: 1}',
+        'Int cannot represent non-integer value: { value: 1 }',
       );
       expect(() => parseLiteral('ENUM_VALUE')).to.throw(
         'Int cannot represent non-integer value: ENUM_VALUE',
@@ -259,7 +259,7 @@ describe('Type System: Specified scalar types', () => {
         'Float cannot represent non numeric value: [0.1]',
       );
       expect(() => parseLiteral('{ value: 0.1 }')).to.throw(
-        'Float cannot represent non numeric value: {value: 0.1}',
+        'Float cannot represent non numeric value: { value: 0.1 }',
       );
       expect(() => parseLiteral('ENUM_VALUE')).to.throw(
         'Float cannot represent non numeric value: ENUM_VALUE',
@@ -366,7 +366,7 @@ describe('Type System: Specified scalar types', () => {
         'String cannot represent a non string value: ["foo"]',
       );
       expect(() => parseLiteral('{ value: "foo" }')).to.throw(
-        'String cannot represent a non string value: {value: "foo"}',
+        'String cannot represent a non string value: { value: "foo" }',
       );
       expect(() => parseLiteral('ENUM_VALUE')).to.throw(
         'String cannot represent a non string value: ENUM_VALUE',
@@ -484,7 +484,7 @@ describe('Type System: Specified scalar types', () => {
         'Boolean cannot represent a non boolean value: [false]',
       );
       expect(() => parseLiteral('{ value: false }')).to.throw(
-        'Boolean cannot represent a non boolean value: {value: false}',
+        'Boolean cannot represent a non boolean value: { value: false }',
       );
       expect(() => parseLiteral('ENUM_VALUE')).to.throw(
         'Boolean cannot represent a non boolean value: ENUM_VALUE',
@@ -599,7 +599,7 @@ describe('Type System: Specified scalar types', () => {
         'ID cannot represent a non-string and non-integer value: ["1"]',
       );
       expect(() => parseLiteral('{ value: "1" }')).to.throw(
-        'ID cannot represent a non-string and non-integer value: {value: "1"}',
+        'ID cannot represent a non-string and non-integer value: { value: "1" }',
       );
       expect(() => parseLiteral('ENUM_VALUE')).to.throw(
         'ID cannot represent a non-string and non-integer value: ENUM_VALUE',
