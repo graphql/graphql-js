@@ -116,7 +116,7 @@ const printDocASTReducer: ASTReducer<string> = {
     leave: ({ values }) => '[' + join(values, ', ') + ']',
   },
   ObjectValue: {
-    leave: ({ fields }) => '{' + join(fields, ', ') + '}',
+    leave: ({ fields }) => '{ ' + join(fields, ', ') + ' }',
   },
   ObjectField: {
     leave: ({ name, value }) => name + ': ' + value,
