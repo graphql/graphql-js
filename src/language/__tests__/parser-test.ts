@@ -344,6 +344,14 @@ describe('Parser', () => {
     ).to.throw();
   });
 
+  it('does not parse designator on query', () => {
+    const document = 'query? { field }';
+
+    expect(() =>
+      parse(document, { experimentalClientControlledNullability: true }),
+    ).to.throw();
+  });
+
   it('parses required within fragment', () => {
     const document = 'fragment MyFragment on Query { field! }';
 
