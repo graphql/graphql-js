@@ -2,6 +2,7 @@ parserOptions:
   sourceType: script
 env:
   es2022: true
+  shared-node-browser: true
 reportUnusedDisableDirectives: true
 plugins:
   - internal-rules
