@@ -250,6 +250,12 @@ export class Parser {
 
     if (keywordToken.kind === TokenKind.NAME) {
       switch (keywordToken.value) {
+        case 'query':
+        case 'mutation':
+        case 'subscription':
+          return this.parseOperationDefinition();
+        case 'fragment':
+          return this.parseFragmentDefinition();
         case 'schema':
           return this.parseSchemaDefinition();
         case 'scalar':
@@ -266,24 +272,14 @@ export class Parser {
           return this.parseInputObjectTypeDefinition();
         case 'directive':
           return this.parseDirectiveDefinition();
-      }
-
-      if (hasDescription) {
-        throw syntaxError(
-          this._lexer.source,
-          this._lexer.token.start,
-          'Unexpected description, descriptions are supported only on type definitions.',
-        );
-      }
-
-      switch (keywordToken.value) {
-        case 'query':
-        case 'mutation':
-        case 'subscription':
-          return this.parseOperationDefinition();
-        case 'fragment':
-          return this.parseFragmentDefinition();
         case 'extend':
+          if (hasDescription) {
+            throw syntaxError(
+              this._lexer.source,
+              this._lexer.token.start,
+              'Unexpected description, descriptions are not supported on type extensions.',
+            );
+          }
           return this.parseTypeSystemExtension();
       }
     }
@@ -300,9 +296,11 @@ export class Parser {
    */
   parseOperationDefinition(): OperationDefinitionNode {
     const start = this._lexer.token;
+
     if (this.peek(TokenKind.BRACE_L)) {
       return this.node<OperationDefinitionNode>(start, {
         kind: Kind.OPERATION_DEFINITION,
+        description: undefined,
         operation: OperationTypeNode.QUERY,
         name: undefined,
         variableDefinitions: [],
@@ -310,6 +308,8 @@ export class Parser {
         selectionSet: this.parseSelectionSet(),
       });
     }
+
+    const description = this.parseDescription();
     const operation = this.parseOperationType();
     let name;
     if (this.peek(TokenKind.NAME)) {
@@ -317,6 +317,7 @@ export class Parser {
     }
     return this.node<OperationDefinitionNode>(start, {
       kind: Kind.OPERATION_DEFINITION,
+      description,
       operation,
       name,
       variableDefinitions: this.parseVariableDefinitions(),
@@ -359,6 +360,7 @@ export class Parser {
   parseVariableDefinition(): VariableDefinitionNode {
     return this.node<VariableDefinitionNode>(this._lexer.token, {
       kind: Kind.VARIABLE_DEFINITION,
+      description: this.parseDescription(),
       variable: this.parseVariable(),
       type: (this.expectToken(TokenKind.COLON), this.parseTypeReference()),
       defaultValue: this.expectOptionalToken(TokenKind.EQUALS)
@@ -506,6 +508,7 @@ export class Parser {
    */
   parseFragmentDefinition(): FragmentDefinitionNode {
     const start = this._lexer.token;
+    const description = this.parseDescription();
     this.expectKeyword('fragment');
     // Legacy support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
@@ -513,6 +516,7 @@ export class Parser {
     if (this._options?.allowLegacyFragmentVariables === true) {
       return this.node<FragmentDefinitionNode>(start, {
         kind: Kind.FRAGMENT_DEFINITION,
+        description,
         name: this.parseFragmentName(),
         variableDefinitions: this.parseVariableDefinitions(),
         typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
@@ -522,6 +526,7 @@ export class Parser {
     }
     return this.node<FragmentDefinitionNode>(start, {
       kind: Kind.FRAGMENT_DEFINITION,
+      description,
       name: this.parseFragmentName(),
       typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
       directives: this.parseDirectives(false),

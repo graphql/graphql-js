@@ -44,9 +44,10 @@ describe('Printer: Query document', () => {
     `);
 
     const queryASTWithArtifacts = parse(
-      'query ($foo: TestType) @testDirective { id, name }',
+      '"Query description" query ($foo: TestType) @testDirective { id, name }',
     );
     expect(print(queryASTWithArtifacts)).to.equal(dedent`
+      "Query description"
       query ($foo: TestType) @testDirective {
         id
         name
@@ -54,9 +55,10 @@ describe('Printer: Query document', () => {
     `);
 
     const mutationASTWithArtifacts = parse(
-      'mutation ($foo: TestType) @testDirective { id, name }',
+      '"Mutation description" mutation ($foo: TestType) @testDirective { id, name }',
     );
     expect(print(mutationASTWithArtifacts)).to.equal(dedent`
+      "Mutation description"
       mutation ($foo: TestType) @testDirective {
         id
         name
@@ -66,10 +68,13 @@ describe('Printer: Query document', () => {
 
   it('prints query with variable directives', () => {
     const queryASTWithVariableDirective = parse(
-      'query ($foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
+      'query ("Variable description" $foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
     );
     expect(print(queryASTWithVariableDirective)).to.equal(dedent`
-      query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
+      query (
+        "Variable description"
+        $foo: TestType = {a: 123} @testDirective(if: true) @test
+      ) {
         id
       }
     `);
@@ -106,6 +111,19 @@ describe('Printer: Query document', () => {
         ) {
           dateTime
         }
+      }
+    `);
+  });
+
+  it('prints fragment', () => {
+    const printed = print(
+      parse('"Fragment description" fragment Foo on Bar { baz }'),
+    );
+
+    expect(printed).to.equal(dedent`
+      "Fragment description"
+      fragment Foo on Bar {
+        baz
       }
     `);
   });
@@ -150,7 +168,12 @@ describe('Printer: Query document', () => {
 
     expect(printed).to.equal(
       dedentString(String.raw`
-      query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
+      "Query description"
+      query queryName(
+        "Very complex variable"
+        $foo: ComplexType
+        $site: Site = MOBILE
+      ) @onQuery {
         whoever123is: node(id: [123, 456]) {
           id
           ... on User @onInlineFragment {
@@ -192,6 +215,7 @@ describe('Printer: Query document', () => {
         }
       }
 
+      """Fragment description"""
       fragment frag on Friend @onFragmentDefinition {
         foo(
           size: $size

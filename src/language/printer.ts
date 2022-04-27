@@ -28,15 +28,20 @@ const printDocASTReducer: ASTReducer<string> = {
 
   OperationDefinition: {
     leave(node) {
-      const varDefs = wrap('(', join(node.variableDefinitions, ', '), ')');
-      const prefix = join(
-        [
-          node.operation,
-          join([node.name, varDefs]),
-          join(node.directives, ' '),
-        ],
-        ' ',
-      );
+      const varDefs = hasMultilineItems(node.variableDefinitions)
+        ? wrap('(\n', indent(join(node.variableDefinitions, '\n')), '\n)')
+        : wrap('(', join(node.variableDefinitions, ', '), ')');
+
+      const prefix =
+        wrap('', node.description, '\n') +
+        join(
+          [
+            node.operation,
+            join([node.name, varDefs]),
+            join(node.directives, ' '),
+          ],
+          ' ',
+        );
 
       // Anonymous queries with no directives or variable definitions can use
       // the query short form.
@@ -45,7 +50,8 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   VariableDefinition: {
-    leave: ({ variable, type, defaultValue, directives }) =>
+    leave: ({ description, variable, type, defaultValue, directives }) =>
+      wrap('', description, '\n') +
       variable +
       ': ' +
       type +
@@ -91,14 +97,15 @@ const printDocASTReducer: ASTReducer<string> = {
 
   FragmentDefinition: {
     leave: ({
+      description,
       name,
       typeCondition,
       variableDefinitions,
       directives,
       selectionSet,
     }) =>
-      // Note: fragment variable definitions are experimental and may be changed
-      // or removed in the future.
+      wrap('', description, '\n') +
+      // Note: fragment variable definitions are experimental and may be changed or removed in the future.
       `fragment ${name}${wrap('(', join(variableDefinitions, ', '), ')')} ` +
       `on ${typeCondition} ${wrap('', join(directives, ' '), ' ')}` +
       selectionSet,
