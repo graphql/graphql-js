@@ -46,7 +46,6 @@ words:
 
   # TODO: contribute upstream
   - deno
-  - codecov
 
   # TODO: remove bellow words
   - QLID # GraphQLID
