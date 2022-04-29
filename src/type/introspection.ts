@@ -23,6 +23,7 @@ import {
   isEnumType,
   isInputObjectType,
   isInterfaceType,
+  isIntersectionType,
   isListType,
   isNonNullType,
   isObjectType,
@@ -185,6 +186,10 @@ export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
       value: DirectiveLocation.UNION,
       description: 'Location adjacent to a union definition.',
     },
+    INTERSECTION: {
+      value: DirectiveLocation.INTERSECTION,
+      description: 'Location adjacent to an intersection definition.',
+    },
     ENUM: {
       value: DirectiveLocation.ENUM,
       description: 'Location adjacent to an enum definition.',
@@ -207,7 +212,7 @@ export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
 export const __Type: GraphQLObjectType = new GraphQLObjectType({
   name: '__Type',
   description:
-    'The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.',
+    'The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union, Intersection and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.',
   fields: () =>
     ({
       kind: {
@@ -224,6 +229,9 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           }
           if (isUnionType(type)) {
             return TypeKind.UNION;
+          }
+          if (isIntersectionType(type)) {
+            return TypeKind.INTERSECTION;
           }
           if (isEnumType(type)) {
             return TypeKind.ENUM;
@@ -277,6 +285,14 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         resolve(type) {
           if (isObjectType(type) || isInterfaceType(type)) {
             return type.getInterfaces();
+          }
+        },
+      },
+      memberTypes: {
+        type: new GraphQLList(new GraphQLNonNull(__Type)),
+        resolve(type, _args, _context) {
+          if (isUnionType(type) || isIntersectionType(type)) {
+            return type.getTypes();
           }
         },
       },
@@ -440,6 +456,7 @@ export enum TypeKind {
   OBJECT = 'OBJECT',
   INTERFACE = 'INTERFACE',
   UNION = 'UNION',
+  INTERSECTION = 'INTERSECTION',
   ENUM = 'ENUM',
   INPUT_OBJECT = 'INPUT_OBJECT',
   LIST = 'LIST',
@@ -467,7 +484,12 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
     UNION: {
       value: TypeKind.UNION,
       description:
-        'Indicates this type is a union. `possibleTypes` is a valid field.',
+        'Indicates this type is a union. `memberTypes` and `possibleTypes` are valid fields.',
+    },
+    INTERSECTION: {
+      value: TypeKind.INTERSECTION,
+      description:
+        'Indicates this type is an intersection. `memberTypes` and `possibleTypes` are valid fields.',
     },
     ENUM: {
       value: TypeKind.ENUM,

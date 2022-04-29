@@ -79,6 +79,18 @@ extend union Feed = Photo | Video
 
 extend union Feed @onUnion
 
+intersection Resource = Feed & Node
+
+intersection AnnotatedIntersection @onIntersection = Feed & Node
+
+intersection AnnotatedIntersectionTwo @onIntersection = Feed & Node
+
+intersection UndefinedIntersection
+
+extend intersection Resource = Media & Accessible
+
+extend intersection Resource @onIntersection
+
 scalar CustomScalar
 
 scalar AnnotatedScalar @onScalar

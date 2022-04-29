@@ -28,6 +28,8 @@ import type {
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
+  IntersectionTypeDefinitionNode,
+  IntersectionTypeExtensionNode,
   ObjectTypeDefinitionNode,
   ObjectTypeExtensionNode,
   OperationDefinitionNode,
@@ -55,6 +57,7 @@ export type GraphQLType =
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
+  | GraphQLIntersectionType
   | GraphQLEnumType
   | GraphQLInputObjectType
   | GraphQLList<GraphQLType>
@@ -63,6 +66,7 @@ export type GraphQLType =
       | GraphQLObjectType
       | GraphQLInterfaceType
       | GraphQLUnionType
+      | GraphQLIntersectionType
       | GraphQLEnumType
       | GraphQLInputObjectType
       | GraphQLList<GraphQLType>
@@ -74,6 +78,7 @@ export function isType(type: unknown): type is GraphQLType {
     isObjectType(type) ||
     isInterfaceType(type) ||
     isUnionType(type) ||
+    isIntersectionType(type) ||
     isEnumType(type) ||
     isInputObjectType(type) ||
     isListType(type) ||
@@ -133,6 +138,21 @@ export function isUnionType(type: unknown): type is GraphQLUnionType {
 export function assertUnionType(type: unknown): GraphQLUnionType {
   if (!isUnionType(type)) {
     throw new Error(`Expected ${inspect(type)} to be a GraphQL Union type.`);
+  }
+  return type;
+}
+
+export function isIntersectionType(
+  type: unknown,
+): type is GraphQLIntersectionType {
+  return instanceOf(type, GraphQLIntersectionType);
+}
+
+export function assertIntersectionType(type: unknown): GraphQLIntersectionType {
+  if (!isIntersectionType(type)) {
+    throw new Error(
+      `Expected ${inspect(type)} to be a GraphQL Intersection type.`,
+    );
   }
   return type;
 }
@@ -242,6 +262,7 @@ export type GraphQLOutputType =
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
+  | GraphQLIntersectionType
   | GraphQLEnumType
   | GraphQLList<GraphQLOutputType>
   | GraphQLNonNull<
@@ -249,6 +270,7 @@ export type GraphQLOutputType =
       | GraphQLObjectType
       | GraphQLInterfaceType
       | GraphQLUnionType
+      | GraphQLIntersectionType
       | GraphQLEnumType
       | GraphQLList<GraphQLOutputType>
     >;
@@ -259,6 +281,7 @@ export function isOutputType(type: unknown): type is GraphQLOutputType {
     isObjectType(type) ||
     isInterfaceType(type) ||
     isUnionType(type) ||
+    isIntersectionType(type) ||
     isEnumType(type) ||
     (isWrappingType(type) && isOutputType(type.ofType))
   );
@@ -293,10 +316,16 @@ export function assertLeafType(type: unknown): GraphQLLeafType {
 export type GraphQLCompositeType =
   | GraphQLObjectType
   | GraphQLInterfaceType
-  | GraphQLUnionType;
+  | GraphQLUnionType
+  | GraphQLIntersectionType;
 
 export function isCompositeType(type: unknown): type is GraphQLCompositeType {
-  return isObjectType(type) || isInterfaceType(type) || isUnionType(type);
+  return (
+    isObjectType(type) ||
+    isInterfaceType(type) ||
+    isUnionType(type) ||
+    isIntersectionType(type)
+  );
 }
 
 export function assertCompositeType(type: unknown): GraphQLCompositeType {
@@ -311,10 +340,13 @@ export function assertCompositeType(type: unknown): GraphQLCompositeType {
 /**
  * These types may describe the parent context of a selection set.
  */
-export type GraphQLAbstractType = GraphQLInterfaceType | GraphQLUnionType;
+export type GraphQLAbstractType =
+  | GraphQLInterfaceType
+  | GraphQLUnionType
+  | GraphQLIntersectionType;
 
 export function isAbstractType(type: unknown): type is GraphQLAbstractType {
-  return isInterfaceType(type) || isUnionType(type);
+  return isInterfaceType(type) || isUnionType(type) || isIntersectionType(type);
 }
 
 export function assertAbstractType(type: unknown): GraphQLAbstractType {
@@ -441,6 +473,7 @@ export type GraphQLNullableType =
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
+  | GraphQLIntersectionType
   | GraphQLEnumType
   | GraphQLInputObjectType
   | GraphQLList<GraphQLType>;
@@ -486,6 +519,7 @@ export type GraphQLNamedOutputType =
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
+  | GraphQLIntersectionType
   | GraphQLEnumType;
 
 export function isNamedType(type: unknown): type is GraphQLNamedType {
@@ -494,6 +528,7 @@ export function isNamedType(type: unknown): type is GraphQLNamedType {
     isObjectType(type) ||
     isInterfaceType(type) ||
     isUnionType(type) ||
+    isIntersectionType(type) ||
     isEnumType(type) ||
     isInputObjectType(type)
   );
@@ -1256,7 +1291,7 @@ export class GraphQLUnionType {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
-    this._types = defineTypes.bind(undefined, config);
+    this._types = defineUnionMemberTypes.bind(undefined, config);
     devAssert(
       config.resolveType == null || typeof config.resolveType === 'function',
       `${this.name} must provide "resolveType" as a function, ` +
@@ -1296,7 +1331,7 @@ export class GraphQLUnionType {
   }
 }
 
-function defineTypes(
+function defineUnionMemberTypes(
   config: Readonly<GraphQLUnionTypeConfig<unknown, unknown>>,
 ): ReadonlyArray<GraphQLObjectType> {
   const types = resolveReadonlyArrayThunk(config.types);
@@ -1327,6 +1362,135 @@ interface GraphQLUnionTypeNormalizedConfig
   types: ReadonlyArray<GraphQLObjectType>;
   extensions: Readonly<GraphQLUnionTypeExtensions>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
+}
+
+/**
+ * Custom extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLIntersectionTypeExtensions {
+  [attributeName: string]: unknown;
+}
+
+/**
+ * Intersection Type Definition
+ *
+ * When a field can return one of a set of types constrained by multiple
+ * abstract types, an Intersection type is used to describe the constraints
+ * as well as providing a function to determine which type is actually used
+ * when the field is resolved.
+ *
+ * Example:
+ *
+ * ```ts
+ * const PetNodeType = new GraphQLIntersectionType({
+ *   name: 'Pet',
+ *   types: [ PetType, NodeType ],
+ *   resolveType(value) {
+ *     if (value instanceof Dog) {
+ *       return DogType;
+ *     }
+ *     if (value instanceof Cat) {
+ *       return CatType;
+ *     }
+ *   }
+ * });
+ * ```
+ */
+export class GraphQLIntersectionType {
+  name: string;
+  description: Maybe<string>;
+  resolveType: Maybe<GraphQLTypeResolver<any, any>>;
+  extensions: Readonly<GraphQLIntersectionTypeExtensions>;
+  astNode: Maybe<IntersectionTypeDefinitionNode>;
+  extensionASTNodes: ReadonlyArray<IntersectionTypeExtensionNode>;
+
+  private _types: ThunkReadonlyArray<GraphQLInterfaceType | GraphQLUnionType>;
+
+  constructor(config: Readonly<GraphQLIntersectionTypeConfig<any, any>>) {
+    this.name = assertName(config.name);
+    this.description = config.description;
+    this.resolveType = config.resolveType;
+    this.extensions = toObjMap(config.extensions);
+    this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes ?? [];
+
+    this._types = defineIntersectionMemberTypes.bind(undefined, config);
+    devAssert(
+      config.resolveType == null || typeof config.resolveType === 'function',
+      `${this.name} must provide "resolveType" as a function, ` +
+        `but got: ${inspect(config.resolveType)}.`,
+    );
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'GraphQLIntersectionType';
+  }
+
+  getTypes(): ReadonlyArray<GraphQLInterfaceType | GraphQLUnionType> {
+    if (typeof this._types === 'function') {
+      this._types = this._types();
+    }
+    return this._types;
+  }
+
+  toConfig(): GraphQLIntersectionTypeNormalizedConfig {
+    return {
+      name: this.name,
+      description: this.description,
+      types: this.getTypes(),
+      resolveType: this.resolveType,
+      extensions: this.extensions,
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes,
+    };
+  }
+
+  toString(): string {
+    return this.name;
+  }
+
+  toJSON(): string {
+    return this.toString();
+  }
+}
+
+function defineIntersectionMemberTypes(
+  config: Readonly<GraphQLIntersectionTypeConfig<unknown, unknown>>,
+): ReadonlyArray<GraphQLInterfaceType | GraphQLUnionType> {
+  const types = resolveReadonlyArrayThunk(config.types);
+  devAssert(
+    Array.isArray(types),
+    `Must provide Array of types or a function which returns such an array for Intersection ${config.name}.`,
+  );
+  return types;
+}
+
+export interface GraphQLIntersectionTypeConfig<TSource, TContext> {
+  name: string;
+  description?: Maybe<string>;
+  types: ThunkReadonlyArray<GraphQLInterfaceType | GraphQLUnionType>;
+  /**
+   * Optionally provide a custom type resolver function. If one is not provided,
+   * the default implementation will call `isTypeOf` on each implementing
+   * Object type.
+   */
+  resolveType?: Maybe<GraphQLTypeResolver<TSource, TContext>>;
+  extensions?: Maybe<Readonly<GraphQLIntersectionTypeExtensions>>;
+  astNode?: Maybe<IntersectionTypeDefinitionNode>;
+  extensionASTNodes?: Maybe<ReadonlyArray<IntersectionTypeExtensionNode>>;
+}
+
+interface GraphQLIntersectionTypeNormalizedConfig
+  extends GraphQLIntersectionTypeConfig<any, any> {
+  types: ReadonlyArray<GraphQLInterfaceType | GraphQLUnionType>;
+  extensions: Readonly<GraphQLIntersectionTypeExtensions>;
+  extensionASTNodes: ReadonlyArray<IntersectionTypeExtensionNode>;
 }
 
 /**

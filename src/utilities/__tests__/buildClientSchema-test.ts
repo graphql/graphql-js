@@ -283,6 +283,34 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
+  it('builds a schema with an intersection', () => {
+    const sdl = dedent`
+      interface Named {
+        name: String
+      }
+
+      union Friendly = Dog | Human
+
+      intersection NamedFriendly = Friendly & Named
+
+      type Dog implements Named {
+        name: String
+        bestFriend: Friendly
+      }
+
+      type Human implements Named {
+        name: String
+        bestFriend: Friendly
+      }
+
+      type Query {
+        namedFriendly: NamedFriendly
+      }
+    `;
+
+    expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
   it('builds a schema with complex field values', () => {
     const sdl = dedent`
       type Query {
@@ -619,6 +647,8 @@ describe('Type System: build schema from introspection', () => {
 
       union SomeUnion = Query
 
+      intersection SomeIntersection = SomeUnion
+
       enum SomeEnum { FOO }
 
       input SomeInputObject {
@@ -798,7 +828,7 @@ describe('Type System: build schema from introspection', () => {
       );
     });
 
-    it('throws when missing possibleTypes', () => {
+    it('throws when union missing memberTypes', () => {
       const introspection = introspectionFromSchema(dummySchema);
       const someUnionIntrospection = introspection.__schema.types.find(
         ({ name }) => name === 'SomeUnion',
@@ -806,10 +836,42 @@ describe('Type System: build schema from introspection', () => {
 
       invariant(someUnionIntrospection?.kind === 'UNION');
       // @ts-expect-error
-      delete someUnionIntrospection.possibleTypes;
+      delete someUnionIntrospection.memberTypes;
 
       expect(() => buildClientSchema(introspection)).to.throw(
-        /Introspection result missing possibleTypes: { kind: "UNION", name: "SomeUnion",.* }\./,
+        /Introspection result missing memberTypes: { kind: "UNION", name: "SomeUnion",.* }\./,
+      );
+    });
+
+    it('throws when intersection missing memberTypes', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const someIntersectionIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'SomeIntersection',
+      );
+
+      invariant(someIntersectionIntrospection?.kind === 'INTERSECTION');
+      // @ts-expect-error
+      delete someIntersectionIntrospection.memberTypes;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        /Introspection result missing memberTypes: { kind: "INTERSECTION", name: "SomeIntersection",.* }\./,
+      );
+    });
+
+    it('throws when intersection has incorrect member types', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const someIntersectionIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'SomeIntersection',
+      );
+
+      invariant(someIntersectionIntrospection?.kind === 'INTERSECTION');
+      // @ts-expect-error
+      someIntersectionIntrospection.memberTypes.push(
+        someIntersectionIntrospection,
+      );
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Expected SomeIntersection to be a GraphQL interface type or a GraphQLUnion type.',
       );
     });
 

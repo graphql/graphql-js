@@ -210,6 +210,20 @@ const printDocASTReducer: ASTReducer<string> = {
       ),
   },
 
+  IntersectionTypeDefinition: {
+    leave: ({ description, name, directives, types }) =>
+      wrap('', description, '\n') +
+      join(
+        [
+          'intersection',
+          name,
+          join(directives, ' '),
+          wrap('= ', join(types, ' & ')),
+        ],
+        ' ',
+      ),
+  },
+
   EnumTypeDefinition: {
     leave: ({ description, name, directives, values }) =>
       wrap('', description, '\n') +
@@ -289,6 +303,19 @@ const printDocASTReducer: ASTReducer<string> = {
           name,
           join(directives, ' '),
           wrap('= ', join(types, ' | ')),
+        ],
+        ' ',
+      ),
+  },
+
+  IntersectionTypeExtension: {
+    leave: ({ name, directives, types }) =>
+      join(
+        [
+          'extend intersection',
+          name,
+          join(directives, ' '),
+          wrap('= ', join(types, ' & ')),
         ],
         ' ',
       ),

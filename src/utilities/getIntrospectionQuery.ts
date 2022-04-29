@@ -114,6 +114,9 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         isDeprecated
         deprecationReason
       }
+      memberTypes {
+        ...TypeRef
+      }
       possibleTypes {
         ...TypeRef
       }
@@ -185,6 +188,7 @@ export type IntrospectionType =
   | IntrospectionObjectType
   | IntrospectionInterfaceType
   | IntrospectionUnionType
+  | IntrospectionIntersectionType
   | IntrospectionEnumType
   | IntrospectionInputObjectType;
 
@@ -193,6 +197,7 @@ export type IntrospectionOutputType =
   | IntrospectionObjectType
   | IntrospectionInterfaceType
   | IntrospectionUnionType
+  | IntrospectionIntersectionType
   | IntrospectionEnumType;
 
 export type IntrospectionInputType =
@@ -234,6 +239,23 @@ export interface IntrospectionUnionType {
   readonly kind: 'UNION';
   readonly name: string;
   readonly description?: Maybe<string>;
+  readonly memberTypes: ReadonlyArray<
+    IntrospectionNamedTypeRef<IntrospectionObjectType>
+  >;
+  readonly possibleTypes: ReadonlyArray<
+    IntrospectionNamedTypeRef<IntrospectionObjectType>
+  >;
+}
+
+export interface IntrospectionIntersectionType {
+  readonly kind: 'INTERSECTION';
+  readonly name: string;
+  readonly description?: Maybe<string>;
+  readonly memberTypes: ReadonlyArray<
+    IntrospectionNamedTypeRef<
+      IntrospectionInterfaceType | IntrospectionUnionType
+    >
+  >;
   readonly possibleTypes: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>
   >;

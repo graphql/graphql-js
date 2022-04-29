@@ -31,6 +31,8 @@ import type {
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
+  IntersectionTypeDefinitionNode,
+  IntersectionTypeExtensionNode,
   IntValueNode,
   ListTypeNode,
   ListValueNode,
@@ -234,6 +236,7 @@ export class Parser {
    *   - ObjectTypeDefinition
    *   - InterfaceTypeDefinition
    *   - UnionTypeDefinition
+   *   - IntersectionTypeDefinition
    *   - EnumTypeDefinition
    *   - InputObjectTypeDefinition
    */
@@ -260,6 +263,8 @@ export class Parser {
           return this.parseInterfaceTypeDefinition();
         case 'union':
           return this.parseUnionTypeDefinition();
+        case 'intersection':
+          return this.parseIntersectionTypeDefinition();
         case 'enum':
           return this.parseEnumTypeDefinition();
         case 'input':
@@ -993,6 +998,37 @@ export class Parser {
   }
 
   /**
+   * IntersectionTypeDefinition :
+   *   - Description? intersection Name Directives[Const]? IntersectionMemberTypes?
+   */
+  parseIntersectionTypeDefinition(): IntersectionTypeDefinitionNode {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
+    this.expectKeyword('intersection');
+    const name = this.parseName();
+    const directives = this.parseConstDirectives();
+    const types = this.parseIntersectionMemberTypes();
+    return this.node<IntersectionTypeDefinitionNode>(start, {
+      kind: Kind.INTERSECTION_TYPE_DEFINITION,
+      description,
+      name,
+      directives,
+      types,
+    });
+  }
+
+  /**
+   * IntersectionMemberTypes :
+   *   - = `|`? NamedType
+   *   - IntersectionMemberTypes | NamedType
+   */
+  parseIntersectionMemberTypes(): Array<NamedTypeNode> {
+    return this.expectOptionalToken(TokenKind.EQUALS)
+      ? this.delimitedMany(TokenKind.AMP, this.parseNamedType)
+      : [];
+  }
+
+  /**
    * EnumTypeDefinition :
    *   - Description? enum Name Directives[Const]? EnumValuesDefinition?
    */
@@ -1104,6 +1140,7 @@ export class Parser {
    *   - ObjectTypeExtension
    *   - InterfaceTypeExtension
    *   - UnionTypeExtension
+   *   - IntersectionTypeExtension
    *   - EnumTypeExtension
    *   - InputObjectTypeDefinition
    */
@@ -1122,6 +1159,8 @@ export class Parser {
           return this.parseInterfaceTypeExtension();
         case 'union':
           return this.parseUnionTypeExtension();
+        case 'intersection':
+          return this.parseIntersectionTypeExtension();
         case 'enum':
           return this.parseEnumTypeExtension();
         case 'input':
@@ -1256,6 +1295,29 @@ export class Parser {
     }
     return this.node<UnionTypeExtensionNode>(start, {
       kind: Kind.UNION_TYPE_EXTENSION,
+      name,
+      directives,
+      types,
+    });
+  }
+
+  /**
+   * IntersectionTypeExtension :
+   *   - extend intersection Name Directives[Const]? IntersectionMemberTypes
+   *   - extend intersection Name Directives[Const]
+   */
+  parseIntersectionTypeExtension(): IntersectionTypeExtensionNode {
+    const start = this._lexer.token;
+    this.expectKeyword('extend');
+    this.expectKeyword('intersection');
+    const name = this.parseName();
+    const directives = this.parseConstDirectives();
+    const types = this.parseIntersectionMemberTypes();
+    if (directives.length === 0 && types.length === 0) {
+      throw this.unexpected();
+    }
+    return this.node<IntersectionTypeExtensionNode>(start, {
+      kind: Kind.INTERSECTION_TYPE_EXTENSION,
       name,
       directives,
       types,

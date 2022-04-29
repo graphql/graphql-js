@@ -10,6 +10,7 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -487,6 +488,63 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Print Intersections', () => {
+    const FooType = new GraphQLObjectType({
+      name: 'Foo',
+      fields: {
+        bool: { type: GraphQLBoolean },
+      },
+    });
+
+    const FooUnion = new GraphQLUnionType({
+      name: 'FooUnion',
+      types: [FooType],
+    });
+
+    const BarType = new GraphQLObjectType({
+      name: 'Bar',
+      fields: {
+        str: { type: GraphQLString },
+      },
+    });
+
+    const BarUnion = new GraphQLUnionType({
+      name: 'BarUnion',
+      types: [BarType],
+    });
+
+    const SingleIntersection = new GraphQLIntersectionType({
+      name: 'SingleIntersection',
+      types: [FooUnion],
+    });
+
+    const MultipleIntersection = new GraphQLIntersectionType({
+      name: 'MultipleIntersection',
+      types: [FooUnion, BarUnion],
+    });
+
+    const schema = new GraphQLSchema({
+      types: [SingleIntersection, MultipleIntersection],
+    });
+    expectPrintedSchema(schema).to.equal(dedent`
+      intersection SingleIntersection = FooUnion
+
+      union FooUnion = Foo
+
+      type Foo {
+        bool: Boolean
+      }
+
+      intersection MultipleIntersection = FooUnion & BarUnion
+
+      union BarUnion = Bar
+
+      type Bar {
+        str: String
+      }
+    `);
+  });
+
   it('Print Input Type', () => {
     const InputType = new GraphQLInputObjectType({
       name: 'InputType',
@@ -701,7 +759,7 @@ describe('Type System Printer', () => {
       """
       The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the \`__TypeKind\` enum.
 
-      Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional \`specifiedByURL\`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
+      Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional \`specifiedByURL\`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union, Intersection and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
       """
       type __Type {
         kind: __TypeKind!
@@ -710,6 +768,7 @@ describe('Type System Printer', () => {
         specifiedByURL: String
         fields(includeDeprecated: Boolean = false): [__Field!]
         interfaces: [__Type!]
+        memberTypes: [__Type!]
         possibleTypes: [__Type!]
         enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
         inputFields(includeDeprecated: Boolean = false): [__InputValue!]
@@ -731,8 +790,15 @@ describe('Type System Printer', () => {
         """
         INTERFACE
 
-        """Indicates this type is a union. \`possibleTypes\` is a valid field."""
+        """
+        Indicates this type is a union. \`memberTypes\` and \`possibleTypes\` are valid fields.
+        """
         UNION
+
+        """
+        Indicates this type is an intersection. \`memberTypes\` and \`possibleTypes\` are valid fields.
+        """
+        INTERSECTION
 
         """Indicates this type is an enum. \`enumValues\` is a valid field."""
         ENUM
@@ -848,6 +914,9 @@ describe('Type System Printer', () => {
 
         """Location adjacent to a union definition."""
         UNION
+
+        """Location adjacent to an intersection definition."""
+        INTERSECTION
 
         """Location adjacent to an enum definition."""
         ENUM

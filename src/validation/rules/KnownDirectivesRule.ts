@@ -105,6 +105,9 @@ function getDirectiveLocationForASTPath(
     case Kind.UNION_TYPE_DEFINITION:
     case Kind.UNION_TYPE_EXTENSION:
       return DirectiveLocation.UNION;
+    case Kind.INTERSECTION_TYPE_DEFINITION:
+    case Kind.INTERSECTION_TYPE_EXTENSION:
+      return DirectiveLocation.INTERSECTION;
     case Kind.ENUM_TYPE_DEFINITION:
     case Kind.ENUM_TYPE_EXTENSION:
       return DirectiveLocation.ENUM;

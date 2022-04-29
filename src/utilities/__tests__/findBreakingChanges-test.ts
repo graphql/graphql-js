@@ -67,12 +67,14 @@ describe('findBreakingChanges', () => {
       scalar TypeWasScalarBecomesEnum
       interface TypeWasInterfaceBecomesUnion
       type TypeWasObjectBecomesInputObject
+      intersection TypeWasIntersectionBecomesScalar
     `);
 
     const newSchema = buildSchema(`
       enum TypeWasScalarBecomesEnum
       union TypeWasInterfaceBecomesUnion
       input TypeWasObjectBecomesInputObject
+      scalar TypeWasIntersectionBecomesScalar
     `);
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
@@ -89,6 +91,11 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeWasObjectBecomesInputObject changed from an Object type to an Input type.',
+      },
+      {
+        type: BreakingChangeType.TYPE_CHANGED_KIND,
+        description:
+          'TypeWasIntersectionBecomesScalar changed from an Intersection type to a Scalar type.',
       },
     ]);
   });
@@ -335,6 +342,69 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
         description: 'Type2 was removed from union type UnionType1.',
+      },
+    ]);
+  });
+
+  it('should detect if a type was added to an intersection type', () => {
+    const oldSchema = buildSchema(`
+      type Type1
+      type Type2
+
+      union UnionType1 = Type1
+      union UnionType2 = Type2
+
+      intersection IntersectionType1 = UnionType1
+    `);
+    const newSchema = buildSchema(`
+      type Type1
+      type Type2
+
+      union UnionType1 = Type1
+      union UnionType2 = Type2
+
+      intersection IntersectionType1 = UnionType1 & UnionType2
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: BreakingChangeType.TYPE_ADDED_TO_INTERSECTION,
+        description:
+          'UnionType2 was added to intersection type IntersectionType1.',
+      },
+    ]);
+  });
+
+  it('should detect if type was removed for an intersection type', () => {
+    const oldSchema = buildSchema(`
+      type Type1
+      type Type2
+      type Type3
+
+      union UnionType1 = Type1
+      union UnionType2 = Type2
+      union UnionType3 = Type3
+
+      intersection IntersectionType1 = UnionType1 & UnionType2
+    `);
+
+    const newSchema = buildSchema(`
+      type Type1
+      type Type2
+      type Type3
+
+      union UnionType1 = Type1
+      union UnionType2 = Type2
+      union UnionType3 = Type3
+
+      intersection IntersectionType1 = UnionType1
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: BreakingChangeType.TYPE_REMOVED_FROM_INTERSECTION,
+        description:
+          'UnionType2 was removed from intersection type IntersectionType1.',
       },
     ]);
   });
@@ -665,6 +735,13 @@ describe('findBreakingChanges', () => {
       type TypeInUnion2
       union UnionTypeThatLosesAType = TypeInUnion1 | TypeInUnion2
 
+      union UnionInIntersection1 = TypeInUnion1
+      union UnionInIntersection2 = TypeInUnion2
+      intersection IntersectionTypeThatGainsAUnion = UnionInIntersection1
+
+      interface InterfaceInIntersection1
+      intersection IntersectionTypeThatLosesAnInterface = UnionInIntersection1 & InterfaceInIntersection1
+
       type TypeThatChangesType
 
       type TypeThatGetsRemoved
@@ -699,6 +776,13 @@ describe('findBreakingChanges', () => {
       type TypeInUnion1
       type TypeInUnion2
       union UnionTypeThatLosesAType = TypeInUnion1
+
+      union UnionInIntersection1 = TypeInUnion1
+      union UnionInIntersection2 = TypeInUnion2
+      intersection IntersectionTypeThatGainsAUnion = UnionInIntersection1 & UnionInIntersection2      
+
+      interface InterfaceInIntersection1
+      intersection IntersectionTypeThatLosesAnInterface = UnionInIntersection1
 
       interface TypeThatChangesType
 
@@ -736,6 +820,16 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
         description:
           'TypeInUnion2 was removed from union type UnionTypeThatLosesAType.',
+      },
+      {
+        type: BreakingChangeType.TYPE_ADDED_TO_INTERSECTION,
+        description:
+          'UnionInIntersection2 was added to intersection type IntersectionTypeThatGainsAUnion.',
+      },
+      {
+        type: BreakingChangeType.TYPE_REMOVED_FROM_INTERSECTION,
+        description:
+          'InterfaceInIntersection1 was removed from intersection type IntersectionTypeThatLosesAnInterface.',
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
@@ -1162,6 +1256,7 @@ describe('findDangerousChanges', () => {
       type TypeThatGainsInterface1
 
       type TypeInUnion1
+      type TypeInUnion2
       union UnionTypeThatGainsAType = TypeInUnion1
     `);
 

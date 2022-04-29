@@ -10,6 +10,7 @@ import type {
   GraphQLInputObjectType,
   GraphQLInputType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLNamedType,
   GraphQLObjectType,
   GraphQLType,
@@ -19,6 +20,7 @@ import {
   isEnumType,
   isInputObjectType,
   isInterfaceType,
+  isIntersectionType,
   isListType,
   isNamedType,
   isNonNullType,
@@ -38,6 +40,8 @@ export enum BreakingChangeType {
   TYPE_REMOVED = 'TYPE_REMOVED',
   TYPE_CHANGED_KIND = 'TYPE_CHANGED_KIND',
   TYPE_REMOVED_FROM_UNION = 'TYPE_REMOVED_FROM_UNION',
+  TYPE_ADDED_TO_INTERSECTION = 'TYPE_ADDED_TO_INTERSECTION',
+  TYPE_REMOVED_FROM_INTERSECTION = 'TYPE_REMOVED_FROM_INTERSECTION',
   VALUE_REMOVED_FROM_ENUM = 'VALUE_REMOVED_FROM_ENUM',
   REQUIRED_INPUT_FIELD_ADDED = 'REQUIRED_INPUT_FIELD_ADDED',
   IMPLEMENTED_INTERFACE_REMOVED = 'IMPLEMENTED_INTERFACE_REMOVED',
@@ -192,6 +196,8 @@ function findTypeChanges(
       schemaChanges.push(...findEnumTypeChanges(oldType, newType));
     } else if (isUnionType(oldType) && isUnionType(newType)) {
       schemaChanges.push(...findUnionTypeChanges(oldType, newType));
+    } else if (isIntersectionType(oldType) && isIntersectionType(newType)) {
+      schemaChanges.push(...findIntersectionTypeChanges(oldType, newType));
     } else if (isInputObjectType(oldType) && isInputObjectType(newType)) {
       schemaChanges.push(...findInputObjectTypeChanges(oldType, newType));
     } else if (isObjectType(oldType) && isObjectType(newType)) {
@@ -284,6 +290,30 @@ function findUnionTypeChanges(
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
       description: `${oldPossibleType.name} was removed from union type ${oldType.name}.`,
+    });
+  }
+
+  return schemaChanges;
+}
+
+function findIntersectionTypeChanges(
+  oldType: GraphQLIntersectionType,
+  newType: GraphQLIntersectionType,
+): Array<BreakingChange | DangerousChange> {
+  const schemaChanges = [];
+  const possibleTypesDiff = diff(oldType.getTypes(), newType.getTypes());
+
+  for (const newPossibleType of possibleTypesDiff.added) {
+    schemaChanges.push({
+      type: BreakingChangeType.TYPE_ADDED_TO_INTERSECTION,
+      description: `${newPossibleType.name} was added to intersection type ${oldType.name}.`,
+    });
+  }
+
+  for (const oldPossibleType of possibleTypesDiff.removed) {
+    schemaChanges.push({
+      type: BreakingChangeType.TYPE_REMOVED_FROM_INTERSECTION,
+      description: `${oldPossibleType.name} was removed from intersection type ${oldType.name}.`,
     });
   }
 
@@ -520,6 +550,9 @@ function typeKindName(type: GraphQLNamedType): string {
   }
   if (isUnionType(type)) {
     return 'a Union type';
+  }
+  if (isIntersectionType(type)) {
+    return 'an Intersection type';
   }
   if (isEnumType(type)) {
     return 'an Enum type';

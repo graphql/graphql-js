@@ -14,6 +14,7 @@ import {
   assertEnumType,
   assertInputObjectType,
   assertInterfaceType,
+  assertIntersectionType,
   assertObjectType,
   assertScalarType,
   assertUnionType,
@@ -239,6 +240,48 @@ describe('extendSchema', () => {
     `);
   });
 
+  it('extends intersections by adding new types', () => {
+    const schema = buildSchema(`
+      type Query {
+        someIntersection: SomeIntersection
+      }
+
+      intersection SomeIntersection = FooUnion & BizUnion
+
+      union FooUnion = Foo
+      union BizUnion = Biz
+      union BarUnion = Bar
+
+      type Foo { foo: String }
+      type Biz { biz: String }
+      type Bar { bar: String }
+    `);
+    const extendAST = parse(`
+      extend intersection SomeIntersection = BarUnion
+    `);
+    const extendedSchema = extendSchema(schema, extendAST);
+
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
+      intersection SomeIntersection = FooUnion & BizUnion & BarUnion
+    `);
+  });
+
+  it('allows extension of union by adding itself', () => {
+    const schema = buildSchema(`
+      intersection SomeIntersection
+    `);
+    const extendAST = parse(`
+      extend intersection SomeIntersection = SomeIntersection
+    `);
+    const extendedSchema = extendSchema(schema, extendAST);
+
+    expect(validateSchema(extendedSchema)).to.have.lengthOf.above(0);
+    expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
+      intersection SomeIntersection = SomeIntersection
+    `);
+  });
+
   it('extends inputs by adding new fields', () => {
     const schema = buildSchema(`
       type Query {
@@ -327,6 +370,7 @@ describe('extendSchema', () => {
       scalar SomeScalar
       enum SomeEnum
       union SomeUnion
+      intersection SomeIntersection
       input SomeInput
       type SomeObject
       interface SomeInterface
@@ -345,6 +389,8 @@ describe('extendSchema', () => {
       }
 
       extend union SomeUnion = SomeObject
+
+      extend intersection SomeIntersection = SomeUnion
 
       extend input SomeInput {
         newField: String
@@ -377,6 +423,8 @@ describe('extendSchema', () => {
 
       extend union SomeUnion = TestType
 
+      extend intersection SomeIntersection = TestUnion
+
       extend input SomeInput {
         oneMoreNewField: String
       }
@@ -386,6 +434,8 @@ describe('extendSchema', () => {
       }
 
       union TestUnion = TestType
+
+      intersection TestIntersection = TestUnion
 
       interface TestInterface {
         interfaceField: String
@@ -413,6 +463,9 @@ describe('extendSchema', () => {
     const query = assertObjectType(extendedTwiceSchema.getType('Query'));
     const someEnum = assertEnumType(extendedTwiceSchema.getType('SomeEnum'));
     const someUnion = assertUnionType(extendedTwiceSchema.getType('SomeUnion'));
+    const someIntersection = assertIntersectionType(
+      extendedTwiceSchema.getType('SomeIntersection'),
+    );
     const someScalar = assertScalarType(
       extendedTwiceSchema.getType('SomeScalar'),
     );
@@ -428,6 +481,9 @@ describe('extendSchema', () => {
     );
     const testEnum = assertEnumType(extendedTwiceSchema.getType('TestEnum'));
     const testUnion = assertUnionType(extendedTwiceSchema.getType('TestUnion'));
+    const testIntersection = assertIntersectionType(
+      extendedTwiceSchema.getType('TestIntersection'),
+    );
     const testType = assertObjectType(extendedTwiceSchema.getType('TestType'));
     const testInterface = assertInterfaceType(
       extendedTwiceSchema.getType('TestInterface'),
@@ -439,6 +495,7 @@ describe('extendSchema', () => {
     expect(testType.extensionASTNodes).to.deep.equal([]);
     expect(testEnum.extensionASTNodes).to.deep.equal([]);
     expect(testUnion.extensionASTNodes).to.deep.equal([]);
+    expect(testIntersection.extensionASTNodes).to.deep.equal([]);
     expect(testInput.extensionASTNodes).to.deep.equal([]);
     expect(testInterface.extensionASTNodes).to.deep.equal([]);
 
@@ -446,6 +503,7 @@ describe('extendSchema', () => {
       testInput.astNode,
       testEnum.astNode,
       testUnion.astNode,
+      testIntersection.astNode,
       testInterface.astNode,
       testType.astNode,
       testDirective.astNode,
@@ -453,6 +511,7 @@ describe('extendSchema', () => {
       ...someScalar.extensionASTNodes,
       ...someEnum.extensionASTNodes,
       ...someUnion.extensionASTNodes,
+      ...someIntersection.extensionASTNodes,
       ...someInput.extensionASTNodes,
       ...someInterface.extensionASTNodes,
     ]).to.have.members([
@@ -563,6 +622,8 @@ describe('extendSchema', () => {
         someField: String
       }
 
+      union DummyIntersectionMember = DummyUnionMember
+
       enum UnusedEnum {
         SOME_VALUE
       }
@@ -580,6 +641,8 @@ describe('extendSchema', () => {
       }
 
       union UnusedUnion = DummyUnionMember
+
+      intersection UnusedIntersection = DummyIntersectionMember
     `;
     const extendedSchema = extendSchema(schema, parse(extensionSDL));
 
@@ -698,13 +761,16 @@ describe('extendSchema', () => {
 
       scalar NewScalar
 
-      union NewUnion = NewObject`;
+      union NewUnion = NewObject
+
+      intersection NewIntersection = NewUnion`;
     const extendAST = parse(`
       ${newTypesSDL}
       extend type SomeObject {
         newObject: NewObject
         newInterface: NewInterface
         newUnion: NewUnion
+        newIntersection: NewIntersection
         newScalar: NewScalar
         newEnum: NewEnum
         newTree: [SomeObject]!
@@ -719,6 +785,7 @@ describe('extendSchema', () => {
         newObject: NewObject
         newInterface: NewInterface
         newUnion: NewUnion
+        newIntersection: NewIntersection
         newScalar: NewScalar
         newEnum: NewEnum
         newTree: [SomeObject]!
@@ -774,6 +841,7 @@ describe('extendSchema', () => {
         someInterface: SomeInterface
         someEnum: SomeEnum
         someUnion: SomeUnion
+        someIntersection: SomeIntersection
       }
 
       scalar SomeScalar
@@ -792,6 +860,8 @@ describe('extendSchema', () => {
 
       union SomeUnion = SomeObject
 
+      intersection SomeIntersection = SomeUnion
+
       input SomeInput {
         oldField: String
       }
@@ -808,6 +878,10 @@ describe('extendSchema', () => {
       type AnotherNewObject {
         foo: String
       }
+
+      union NewUnion = NewObject
+      
+      union AnotherNewUnion = AnotherNewObject
 
       interface NewInterface {
         newField: String
@@ -843,6 +917,10 @@ describe('extendSchema', () => {
 
       extend union SomeUnion = AnotherNewObject
 
+      extend intersection SomeIntersection = NewUnion
+
+      extend intersection SomeIntersection = AnotherNewUnion
+
       extend input SomeInput {
         newField: String
       }
@@ -871,6 +949,8 @@ describe('extendSchema', () => {
 
       union SomeUnion = SomeObject | NewObject | AnotherNewObject
 
+      intersection SomeIntersection = SomeUnion & NewUnion & AnotherNewUnion
+      
       input SomeInput {
         oldField: String
         newField: String

@@ -15,6 +15,7 @@ import {
   assertEnumType,
   assertInputObjectType,
   assertInterfaceType,
+  assertIntersectionType,
   assertObjectType,
   assertScalarType,
   assertUnionType,
@@ -200,6 +201,9 @@ describe('Schema Builder', () => {
 
       """There is nothing inside!"""
       union BlackHole
+
+      """There is nothing intersecting!"""
+      intersection Ether
 
       """With an enum"""
       enum Color {
@@ -464,6 +468,67 @@ describe('Schema Builder', () => {
   it('Can build recursive Union', () => {
     const schema = buildSchema(`
       union Hello = Hello
+
+      type Query {
+        hello: Hello
+      }
+    `);
+    const errors = validateSchema(schema);
+    expect(errors).to.have.lengthOf.above(0);
+  });
+
+  it('Empty intersection', () => {
+    const sdl = dedent`
+      intersection EmptyIntersection
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
+  it('Simple Intersection', () => {
+    const sdl = dedent`
+      intersection Hello = World
+
+      type Query {
+        hello: Hello
+      }
+
+      union World = SomeType
+
+      type SomeType {
+        str: String
+      }
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
+  it('Multiple Intersection', () => {
+    const sdl = dedent`
+      intersection Hello = WorldOne & WorldTwo
+
+      type Query {
+        hello: Hello
+      }
+
+      type SomeType {
+        str: String
+      }
+
+      union WorldOne = SomeType
+
+      type AnotherType implements WorldTwo {
+        str: String
+      }
+
+      interface WorldTwo {
+        str: String
+      }
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
+  it('Can build recursive Intersection', () => {
+    const schema = buildSchema(`
+      intersection Hello = Hello
 
       type Query {
         hello: Hello
@@ -838,6 +903,38 @@ describe('Schema Builder', () => {
       extend union SomeUnion = SecondType
 
       extend union SomeUnion = ThirdType
+    `);
+  });
+
+  it('Correctly extend intersection type', () => {
+    const schema = buildSchema(`
+      intersection SomeIntersection = FirstUnion
+      extend intersection SomeIntersection = SecondUnion
+      extend intersection SomeIntersection = ThirdUnion
+
+      union FirstUnion = FirstType
+      union SecondUnion = SecondType
+      union ThirdUnion = ThirdType
+
+      type FirstType
+      type SecondType
+      type ThirdType
+    `);
+
+    const someUnion = assertIntersectionType(
+      schema.getType('SomeIntersection'),
+    );
+    expect(printType(someUnion)).to.equal(dedent`
+      intersection SomeIntersection = FirstUnion & SecondUnion & ThirdUnion
+    `);
+
+    expectASTNode(someUnion).to.equal(
+      'intersection SomeIntersection = FirstUnion',
+    );
+    expectExtensionASTNodes(someUnion).to.equal(dedent`
+      extend intersection SomeIntersection = SecondUnion
+
+      extend intersection SomeIntersection = ThirdUnion
     `);
   });
 

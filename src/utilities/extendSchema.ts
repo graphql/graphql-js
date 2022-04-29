@@ -17,6 +17,8 @@ import type {
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
+  IntersectionTypeDefinitionNode,
+  IntersectionTypeExtensionNode,
   NamedTypeNode,
   ObjectTypeDefinitionNode,
   ObjectTypeExtensionNode,
@@ -49,6 +51,7 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -57,6 +60,7 @@ import {
   isEnumType,
   isInputObjectType,
   isInterfaceType,
+  isIntersectionType,
   isListType,
   isNonNullType,
   isObjectType,
@@ -260,6 +264,9 @@ export function extendSchemaImpl(
     if (isUnionType(type)) {
       return extendUnionType(type);
     }
+    if (isIntersectionType(type)) {
+      return extendIntersectionType(type);
+    }
     if (isEnumType(type)) {
       return extendEnumType(type);
     }
@@ -367,6 +374,22 @@ export function extendSchemaImpl(
       types: () => [
         ...type.getTypes().map(replaceNamedType),
         ...buildUnionTypes(extensions),
+      ],
+      extensionASTNodes: config.extensionASTNodes.concat(extensions),
+    });
+  }
+
+  function extendIntersectionType(
+    type: GraphQLIntersectionType,
+  ): GraphQLIntersectionType {
+    const config = type.toConfig();
+    const extensions = typeExtensionsMap[config.name] ?? [];
+
+    return new GraphQLIntersectionType({
+      ...config,
+      types: () => [
+        ...type.getTypes().map(replaceNamedType),
+        ...buildIntersectionTypes(extensions),
       ],
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
@@ -577,6 +600,21 @@ export function extendSchemaImpl(
     );
   }
 
+  function buildIntersectionTypes(
+    nodes: ReadonlyArray<
+      IntersectionTypeDefinitionNode | IntersectionTypeExtensionNode
+    >,
+  ): Array<GraphQLInterfaceType | GraphQLUnionType> {
+    // Note: While this could make assertions to get the correctly typed
+    // values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+    // @ts-expect-error
+    return nodes.flatMap(
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      (node) => /* c8 ignore next */ node.types?.map(getNamedType) ?? [],
+    );
+  }
+
   function buildType(astNode: TypeDefinitionNode): GraphQLNamedType {
     const name = astNode.name.value;
     const extensionASTNodes = typeExtensionsMap[name] ?? [];
@@ -624,6 +662,17 @@ export function extendSchemaImpl(
           name,
           description: astNode.description?.value,
           types: () => buildUnionTypes(allNodes),
+          astNode,
+          extensionASTNodes,
+        });
+      }
+      case Kind.INTERSECTION_TYPE_DEFINITION: {
+        const allNodes = [astNode, ...extensionASTNodes];
+
+        return new GraphQLIntersectionType({
+          name,
+          description: astNode.description?.value,
+          types: () => buildIntersectionTypes(allNodes),
           astNode,
           extensionASTNodes,
         });

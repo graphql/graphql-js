@@ -8,6 +8,8 @@ import type {
   DirectiveNode,
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
+  IntersectionTypeDefinitionNode,
+  IntersectionTypeExtensionNode,
   NamedTypeNode,
   ObjectTypeDefinitionNode,
   ObjectTypeExtensionNode,
@@ -23,6 +25,7 @@ import type {
   GraphQLInputField,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLObjectType,
   GraphQLUnionType,
 } from './definition';
@@ -31,6 +34,7 @@ import {
   isInputObjectType,
   isInputType,
   isInterfaceType,
+  isIntersectionType,
   isNamedType,
   isNonNullType,
   isObjectType,
@@ -245,6 +249,9 @@ function validateTypes(context: SchemaValidationContext): void {
     } else if (isUnionType(type)) {
       // Ensure Unions include valid member types.
       validateUnionMembers(context, type);
+    } else if (isIntersectionType(type)) {
+      // Ensure Intersections include valid member types.
+      validateIntersectionMembers(context, type);
     } else if (isEnumType(type)) {
       // Ensure Enums have valid values.
       validateEnumValues(context, type);
@@ -479,6 +486,79 @@ function validateUnionMembers(
   }
 }
 
+function validateIntersectionMembers(
+  context: SchemaValidationContext,
+  intersection: GraphQLIntersectionType,
+): void {
+  const memberTypes = intersection.getTypes();
+
+  if (memberTypes.length === 0) {
+    context.reportError(
+      `Intersection type ${intersection.name} must define one or more member types.`,
+      [intersection.astNode, ...intersection.extensionASTNodes],
+    );
+  }
+
+  const includedTypeNames = Object.create(null);
+  for (const memberType of memberTypes) {
+    if (includedTypeNames[memberType.name]) {
+      context.reportError(
+        `Intersection type ${intersection.name} can only include type ${memberType.name} once.`,
+        getIntersectionMemberTypeNodes(intersection, memberType.name),
+      );
+      continue;
+    }
+    includedTypeNames[memberType.name] = true;
+    if (!isInterfaceType(memberType) && !isUnionType(memberType)) {
+      context.reportError(
+        `Intersection type ${intersection.name} can only include Interface or Union types, ` +
+          `it cannot include ${inspect(memberType)}.`,
+        getIntersectionMemberTypeNodes(intersection, String(memberType)),
+      );
+    }
+
+    if (isInterfaceType(memberType)) {
+      validateIntersectionIncludesAncestors(context, intersection, memberType);
+    }
+  }
+}
+
+function validateIntersectionIncludesAncestors(
+  context: SchemaValidationContext,
+  intersection: GraphQLIntersectionType,
+  iface: GraphQLInterfaceType,
+): void {
+  const intersectionInterfaces = intersection
+    .getTypes()
+    .filter((type) => isInterfaceType(type));
+  for (const transitive of iface.getInterfaces()) {
+    if (!intersectionInterfaces.includes(transitive)) {
+      context.reportError(
+        `Type ${intersection.name} must include ${transitive.name} because it is implemented by ${iface.name}.`,
+        [
+          ...getAllImplementsInterfaceNodes(iface, transitive),
+          ...getIntersectionInterfaceMember(intersection, iface),
+        ],
+      );
+    }
+  }
+}
+
+function getIntersectionInterfaceMember(
+  intersection: GraphQLIntersectionType,
+  iface: GraphQLInterfaceType,
+): ReadonlyArray<NamedTypeNode> {
+  const { astNode, extensionASTNodes } = intersection;
+  const nodes: ReadonlyArray<
+    IntersectionTypeDefinitionNode | IntersectionTypeExtensionNode
+  > = astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
+
+  // FIXME: https://github.com/graphql/graphql-js/issues/2203
+  return nodes
+    .flatMap((typeNode) => /* c8 ignore next */ typeNode.types ?? [])
+    .filter((ifaceNode) => ifaceNode.name.value === iface.name);
+}
+
 function validateEnumValues(
   context: SchemaValidationContext,
   enumType: GraphQLEnumType,
@@ -615,6 +695,23 @@ function getUnionMemberTypeNodes(
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   return nodes
     .flatMap((unionNode) => /* c8 ignore next */ unionNode.types ?? [])
+    .filter((typeNode) => typeNode.name.value === typeName);
+}
+
+function getIntersectionMemberTypeNodes(
+  intersection: GraphQLIntersectionType,
+  typeName: string,
+): Maybe<ReadonlyArray<NamedTypeNode>> {
+  const { astNode, extensionASTNodes } = intersection;
+  const nodes: ReadonlyArray<
+    IntersectionTypeDefinitionNode | IntersectionTypeExtensionNode
+  > = astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
+
+  // FIXME: https://github.com/graphql/graphql-js/issues/2203
+  return nodes
+    .flatMap(
+      (intersectionNode) => /* c8 ignore next */ intersectionNode.types ?? [],
+    )
     .filter((typeNode) => typeNode.name.value === typeName);
 }
 

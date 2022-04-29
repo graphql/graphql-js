@@ -11,6 +11,7 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -25,6 +26,10 @@ const InterfaceType = new GraphQLInterfaceType({
   fields: {},
 });
 const UnionType = new GraphQLUnionType({ name: 'Union', types: [ObjectType] });
+const IntersectionType = new GraphQLIntersectionType({
+  name: 'Intersection',
+  types: [UnionType],
+});
 const EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
 const InputObjectType = new GraphQLInputObjectType({
   name: 'InputObject',
@@ -621,6 +626,74 @@ describe('Type System: Unions', () => {
   });
 });
 
+describe('Type System: Intersections', () => {
+  it('accepts an Intersection type', () => {
+    expect(
+      () =>
+        new GraphQLIntersectionType({
+          name: 'SomeIntersection',
+          types: [UnionType],
+        }),
+    ).to.not.throw();
+  });
+
+  it('accepts an Intersection type with array types', () => {
+    const intersectionType = new GraphQLIntersectionType({
+      name: 'SomeIntersection',
+      types: [UnionType],
+    });
+    expect(intersectionType.getTypes()).to.deep.equal([UnionType]);
+  });
+
+  it('accepts an Intersection type with function returning an array of types', () => {
+    const intersectionType = new GraphQLIntersectionType({
+      name: 'SomeIntersection',
+      types: () => [UnionType],
+    });
+    expect(intersectionType.getTypes()).to.deep.equal([UnionType]);
+  });
+
+  it('accepts an Intersection type without types', () => {
+    const intersectionType = new GraphQLIntersectionType({
+      name: 'SomeIntersection',
+      types: [],
+    });
+    expect(intersectionType.getTypes()).to.deep.equal([]);
+  });
+
+  it('rejects an Intersection type with invalid name', () => {
+    expect(
+      () => new GraphQLIntersectionType({ name: 'bad-name', types: [] }),
+    ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
+  });
+
+  it('rejects an Intersection type with an incorrect type for resolveType', () => {
+    expect(
+      () =>
+        new GraphQLIntersectionType({
+          name: 'SomeIntersection',
+          types: [],
+          // @ts-expect-error
+          resolveType: {},
+        }),
+    ).to.throw(
+      'SomeIntersection must provide "resolveType" as a function, but got: {}.',
+    );
+  });
+
+  it('rejects an Intersection type with incorrectly typed types', () => {
+    const intersectionType = new GraphQLIntersectionType({
+      name: 'SomeIntersection',
+      // @ts-expect-error
+      types: { UnionType },
+    });
+
+    expect(() => intersectionType.getTypes()).to.throw(
+      'Must provide Array of types or a function which returns such an array for Intersection SomeIntersection.',
+    );
+  });
+});
+
 describe('Type System: Enums', () => {
   it('defines an enum type with deprecated value', () => {
     const EnumTypeWithDeprecatedValue = new GraphQLEnumType({
@@ -899,6 +972,7 @@ describe('Type System: List', () => {
     expectList(ScalarType).to.not.throw();
     expectList(ObjectType).to.not.throw();
     expectList(UnionType).to.not.throw();
+    expectList(IntersectionType).to.not.throw();
     expectList(InterfaceType).to.not.throw();
     expectList(EnumType).to.not.throw();
     expectList(InputObjectType).to.not.throw();
@@ -929,6 +1003,7 @@ describe('Type System: Non-Null', () => {
     expectNonNull(ScalarType).to.not.throw();
     expectNonNull(ObjectType).to.not.throw();
     expectNonNull(UnionType).to.not.throw();
+    expectNonNull(IntersectionType).to.not.throw();
     expectNonNull(InterfaceType).to.not.throw();
     expectNonNull(EnumType).to.not.throw();
     expectNonNull(InputObjectType).to.not.throw();
@@ -963,6 +1038,7 @@ describe('Type System: test utility methods', () => {
     expect(String(ObjectType)).to.equal('Object');
     expect(String(InterfaceType)).to.equal('Interface');
     expect(String(UnionType)).to.equal('Union');
+    expect(String(IntersectionType)).to.equal('Intersection');
     expect(String(EnumType)).to.equal('Enum');
     expect(String(InputObjectType)).to.equal('InputObject');
 
@@ -978,6 +1054,7 @@ describe('Type System: test utility methods', () => {
     expect(JSON.stringify(ObjectType)).to.equal('"Object"');
     expect(JSON.stringify(InterfaceType)).to.equal('"Interface"');
     expect(JSON.stringify(UnionType)).to.equal('"Union"');
+    expect(JSON.stringify(IntersectionType)).to.equal('"Intersection"');
     expect(JSON.stringify(EnumType)).to.equal('"Enum"');
     expect(JSON.stringify(InputObjectType)).to.equal('"InputObject"');
 
@@ -999,6 +1076,9 @@ describe('Type System: test utility methods', () => {
     expect(toString(ObjectType)).to.equal('[object GraphQLObjectType]');
     expect(toString(InterfaceType)).to.equal('[object GraphQLInterfaceType]');
     expect(toString(UnionType)).to.equal('[object GraphQLUnionType]');
+    expect(toString(IntersectionType)).to.equal(
+      '[object GraphQLIntersectionType]',
+    );
     expect(toString(EnumType)).to.equal('[object GraphQLEnumType]');
     expect(toString(InputObjectType)).to.equal(
       '[object GraphQLInputObjectType]',

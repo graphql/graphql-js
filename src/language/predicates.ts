@@ -89,6 +89,7 @@ export function isTypeDefinitionNode(
     node.kind === Kind.OBJECT_TYPE_DEFINITION ||
     node.kind === Kind.INTERFACE_TYPE_DEFINITION ||
     node.kind === Kind.UNION_TYPE_DEFINITION ||
+    node.kind === Kind.INTERSECTION_TYPE_DEFINITION ||
     node.kind === Kind.ENUM_TYPE_DEFINITION ||
     node.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION
   );
@@ -106,6 +107,7 @@ export function isTypeExtensionNode(node: ASTNode): node is TypeExtensionNode {
     node.kind === Kind.OBJECT_TYPE_EXTENSION ||
     node.kind === Kind.INTERFACE_TYPE_EXTENSION ||
     node.kind === Kind.UNION_TYPE_EXTENSION ||
+    node.kind === Kind.INTERSECTION_TYPE_EXTENSION ||
     node.kind === Kind.ENUM_TYPE_EXTENSION ||
     node.kind === Kind.INPUT_OBJECT_TYPE_EXTENSION
   );

@@ -18,13 +18,16 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
   isInputType,
+  isInterfaceType,
   isOutputType,
+  isUnionType,
 } from '../type/definition';
 import { GraphQLDirective } from '../type/directives';
 import { introspectionTypes, TypeKind } from '../type/introspection';
@@ -39,6 +42,7 @@ import type {
   IntrospectionInputObjectType,
   IntrospectionInputValue,
   IntrospectionInterfaceType,
+  IntrospectionIntersectionType,
   IntrospectionNamedTypeRef,
   IntrospectionObjectType,
   IntrospectionQuery,
@@ -168,6 +172,27 @@ export function buildClientSchema(
     return assertInterfaceType(getNamedType(typeRef));
   }
 
+  function getIntersectionMemberType(
+    typeRef: IntrospectionNamedTypeRef<
+      IntrospectionInterfaceType | IntrospectionUnionType
+    >,
+  ): GraphQLInterfaceType | GraphQLUnionType {
+    return assertValidIntersectionMemberType(getNamedType(typeRef));
+  }
+
+  function assertValidIntersectionMemberType(
+    type: unknown,
+  ): GraphQLInterfaceType | GraphQLUnionType {
+    if (!isInterfaceType(type) && !isUnionType(type)) {
+      throw new Error(
+        `Expected ${inspect(
+          type,
+        )} to be a GraphQL interface type or a GraphQLUnion type.`,
+      );
+    }
+    return type;
+  }
+
   // Given a type's introspection result, construct the correct
   // GraphQLType instance.
   function buildType(type: IntrospectionType): GraphQLNamedType {
@@ -184,6 +209,8 @@ export function buildClientSchema(
           return buildInterfaceDef(type);
         case TypeKind.UNION:
           return buildUnionDef(type);
+        case TypeKind.INTERSECTION:
+          return buildIntersectionDef(type);
         case TypeKind.ENUM:
           return buildEnumDef(type);
         case TypeKind.INPUT_OBJECT:
@@ -255,16 +282,33 @@ export function buildClientSchema(
   function buildUnionDef(
     unionIntrospection: IntrospectionUnionType,
   ): GraphQLUnionType {
-    if (!unionIntrospection.possibleTypes) {
+    if (!unionIntrospection.memberTypes) {
       const unionIntrospectionStr = inspect(unionIntrospection);
       throw new Error(
-        `Introspection result missing possibleTypes: ${unionIntrospectionStr}.`,
+        `Introspection result missing memberTypes: ${unionIntrospectionStr}.`,
       );
     }
     return new GraphQLUnionType({
       name: unionIntrospection.name,
       description: unionIntrospection.description,
-      types: () => unionIntrospection.possibleTypes.map(getObjectType),
+      types: () => unionIntrospection.memberTypes.map(getObjectType),
+    });
+  }
+
+  function buildIntersectionDef(
+    intersectionIntrospection: IntrospectionIntersectionType,
+  ): GraphQLIntersectionType {
+    if (!intersectionIntrospection.memberTypes) {
+      const intersectionIntrospectionStr = inspect(intersectionIntrospection);
+      throw new Error(
+        `Introspection result missing memberTypes: ${intersectionIntrospectionStr}.`,
+      );
+    }
+    return new GraphQLIntersectionType({
+      name: intersectionIntrospection.name,
+      description: intersectionIntrospection.description,
+      types: () =>
+        intersectionIntrospection.memberTypes.map(getIntersectionMemberType),
     });
   }
 

@@ -143,6 +143,60 @@ describe('lexicographicSortSchema', () => {
     `);
   });
 
+  it('sort types in intersection', () => {
+    const sorted = sortSDL(`
+      type FooA {
+        dummy: String
+      }
+
+      union FooAUnion = FooA
+
+      type FooB {
+        dummy: String
+      }
+
+      union FooBUnion = FooB
+
+      type FooC {
+        dummy: String
+      }
+
+      union FooCUnion = FooC
+
+      intersection FooIntersection = FooBUnion & FooAUnion & FooCUnion
+
+      type Query {
+        dummy: FooIntersection
+      }
+    `);
+
+    expect(sorted).to.equal(dedent`
+      type FooA {
+        dummy: String
+      }
+
+      union FooAUnion = FooA
+
+      type FooB {
+        dummy: String
+      }
+
+      union FooBUnion = FooB
+
+      type FooC {
+        dummy: String
+      }
+
+      union FooCUnion = FooC
+
+      intersection FooIntersection = FooAUnion & FooBUnion & FooCUnion
+
+      type Query {
+        dummy: FooIntersection
+      }
+    `);
+  });
+
   it('sort enum values', () => {
     const sorted = sortSDL(`
       enum Foo {

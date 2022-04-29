@@ -55,6 +55,8 @@ export const testSchema: GraphQLSchema = buildSchema(`
 
   union CatOrDog = Cat | Dog
 
+  intersection CatOrDogPet = CatOrDog & Pet
+
   type Human {
     name(surname: Boolean): String
     pets: [Pet]

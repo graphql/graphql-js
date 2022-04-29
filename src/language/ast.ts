@@ -169,6 +169,7 @@ export type ASTNode =
   | InputValueDefinitionNode
   | InterfaceTypeDefinitionNode
   | UnionTypeDefinitionNode
+  | IntersectionTypeDefinitionNode
   | EnumTypeDefinitionNode
   | EnumValueDefinitionNode
   | InputObjectTypeDefinitionNode
@@ -178,6 +179,7 @@ export type ASTNode =
   | ObjectTypeExtensionNode
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
+  | IntersectionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode;
 
@@ -263,6 +265,7 @@ export const QueryDocumentKeys: {
     'fields',
   ],
   UnionTypeDefinition: ['description', 'name', 'directives', 'types'],
+  IntersectionTypeDefinition: ['description', 'name', 'directives', 'types'],
   EnumTypeDefinition: ['description', 'name', 'directives', 'values'],
   EnumValueDefinition: ['description', 'name', 'directives'],
   InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
@@ -275,6 +278,7 @@ export const QueryDocumentKeys: {
   ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
   InterfaceTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
   UnionTypeExtension: ['name', 'directives', 'types'],
+  IntersectionTypeExtension: ['name', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
@@ -568,6 +572,7 @@ export type TypeDefinitionNode =
   | ObjectTypeDefinitionNode
   | InterfaceTypeDefinitionNode
   | UnionTypeDefinitionNode
+  | IntersectionTypeDefinitionNode
   | EnumTypeDefinitionNode
   | InputObjectTypeDefinitionNode;
 
@@ -621,6 +626,15 @@ export interface InterfaceTypeDefinitionNode {
 
 export interface UnionTypeDefinitionNode {
   readonly kind: Kind.UNION_TYPE_DEFINITION;
+  readonly loc?: Location;
+  readonly description?: StringValueNode;
+  readonly name: NameNode;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
+  readonly types?: ReadonlyArray<NamedTypeNode>;
+}
+
+export interface IntersectionTypeDefinitionNode {
+  readonly kind: Kind.INTERSECTION_TYPE_DEFINITION;
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly name: NameNode;
@@ -684,6 +698,7 @@ export type TypeExtensionNode =
   | ObjectTypeExtensionNode
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
+  | IntersectionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode;
 
@@ -714,6 +729,14 @@ export interface InterfaceTypeExtensionNode {
 
 export interface UnionTypeExtensionNode {
   readonly kind: Kind.UNION_TYPE_EXTENSION;
+  readonly loc?: Location;
+  readonly name: NameNode;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
+  readonly types?: ReadonlyArray<NamedTypeNode>;
+}
+
+export interface IntersectionTypeExtensionNode {
+  readonly kind: Kind.INTERSECTION_TYPE_EXTENSION;
   readonly loc?: Location;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;

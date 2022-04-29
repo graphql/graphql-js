@@ -8,6 +8,7 @@ import { parse } from '../../language/parser';
 import {
   assertInterfaceType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLList,
   GraphQLObjectType,
   GraphQLUnionType,
@@ -352,6 +353,94 @@ describe('Execute: Handles execution of abstract types', () => {
     });
   });
 
+  it('isTypeOf used to resolve runtime type for Intersection', async () => {
+    const DogType = new GraphQLObjectType({
+      name: 'Dog',
+      isTypeOf(obj, context) {
+        const isDog = obj instanceof Dog;
+        return context.async ? Promise.resolve(isDog) : isDog;
+      },
+      interfaces: () => [PetType],
+      fields: {
+        name: { type: GraphQLString },
+        woofs: { type: GraphQLBoolean },
+      },
+    });
+
+    const CatType = new GraphQLObjectType({
+      name: 'Cat',
+      isTypeOf(obj, context) {
+        const isCat = obj instanceof Cat;
+        return context.async ? Promise.resolve(isCat) : isCat;
+      },
+      interfaces: () => [PetType],
+      fields: {
+        name: { type: GraphQLString },
+        meows: { type: GraphQLBoolean },
+      },
+    });
+
+    const PetType = new GraphQLInterfaceType({
+      name: 'Pet',
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+
+    const CatOrDogType = new GraphQLUnionType({
+      name: 'CatOrDog',
+      types: [DogType, CatType],
+    });
+
+    const CatOrDogPetType = new GraphQLIntersectionType({
+      name: 'CatOrDogPet',
+      types: [CatOrDogType, PetType],
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          catOrDogPets: {
+            type: new GraphQLList(CatOrDogPetType),
+            resolve() {
+              return [new Dog('Odie', true), new Cat('Garfield', false)];
+            },
+          },
+        },
+      }),
+    });
+
+    const query = `{
+      catOrDogPets {
+        ... on Pet {
+          name
+        }
+        ... on Dog {
+          woofs
+        }
+        ... on Cat {
+          meows
+        }
+      }
+    }`;
+
+    expect(await executeQuery({ schema, query })).to.deep.equal({
+      data: {
+        catOrDogPets: [
+          {
+            name: 'Odie',
+            woofs: true,
+          },
+          {
+            name: 'Garfield',
+            meows: false,
+          },
+        ],
+      },
+    });
+  });
+
   it('resolveType can throw', async () => {
     const PetType = new GraphQLInterfaceType({
       name: 'Pet',
@@ -484,6 +573,78 @@ describe('Execute: Handles execution of abstract types', () => {
     expect(await executeQuery({ schema, query, rootValue })).to.deep.equal({
       data: {
         pets: [
+          {
+            name: 'Odie',
+            woofs: true,
+          },
+          {
+            name: 'Garfield',
+            meows: false,
+          },
+        ],
+      },
+    });
+  });
+
+  it('resolve Intersection type using __typename on source object', async () => {
+    const schema = buildSchema(`
+      type Query {
+        catOrDogPets: [CatOrDogPet]
+      }
+
+      union CatOrDog = Cat | Dog
+
+      interface Pet {
+        name: String
+      }
+
+      intersection CatOrDogPet = CatOrDog & Pet
+
+      type Cat implements Pet {
+        name: String
+        meows: Boolean
+      }
+
+      type Dog implements Pet {
+        name: String
+        woofs: Boolean
+      }
+    `);
+
+    const query = `
+      {
+        catOrDogPets {
+          ... on Pet {
+            name
+          }
+          ... on Dog {
+            woofs
+          }
+          ... on Cat {
+            meows
+          }
+        }
+      }
+    `;
+
+    const rootValue = {
+      catOrDogPets: [
+        {
+          __typename: 'Dog',
+          name: 'Odie',
+          woofs: true,
+        },
+        {
+          __typename: 'Cat',
+          name: 'Garfield',
+          meows: false,
+        },
+      ],
+    };
+
+    expect(await executeQuery({ schema, query, rootValue })).to.deep.equal({
+      data: {
+        catOrDogPets: [
           {
             name: 'Odie',
             woofs: true,

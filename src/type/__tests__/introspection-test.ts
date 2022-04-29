@@ -56,6 +56,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -66,6 +67,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: null,
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -76,6 +78,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: null,
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -181,6 +184,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -267,6 +271,25 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'interfaces',
+                  args: [],
+                  type: {
+                    kind: 'LIST',
+                    name: null,
+                    ofType: {
+                      kind: 'NON_NULL',
+                      name: null,
+                      ofType: {
+                        kind: 'OBJECT',
+                        name: '__Type',
+                        ofType: null,
+                      },
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'memberTypes',
                   args: [],
                   type: {
                     kind: 'LIST',
@@ -376,6 +399,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -407,6 +431,11 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
+                  name: 'INTERSECTION',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
                   name: 'ENUM',
                   isDeprecated: false,
                   deprecationReason: null,
@@ -427,6 +456,7 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
               ],
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -538,6 +568,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -627,6 +658,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -690,6 +722,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -798,6 +831,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -884,6 +918,11 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
+                  name: 'INTERSECTION',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
                   name: 'ENUM',
                   isDeprecated: false,
                   deprecationReason: null,
@@ -904,6 +943,7 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
               ],
+              memberTypes: null,
               possibleTypes: null,
             },
           ],

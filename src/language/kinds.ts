@@ -49,6 +49,7 @@ export enum Kind {
   INPUT_VALUE_DEFINITION = 'InputValueDefinition',
   INTERFACE_TYPE_DEFINITION = 'InterfaceTypeDefinition',
   UNION_TYPE_DEFINITION = 'UnionTypeDefinition',
+  INTERSECTION_TYPE_DEFINITION = 'IntersectionTypeDefinition',
   ENUM_TYPE_DEFINITION = 'EnumTypeDefinition',
   ENUM_VALUE_DEFINITION = 'EnumValueDefinition',
   INPUT_OBJECT_TYPE_DEFINITION = 'InputObjectTypeDefinition',
@@ -64,6 +65,7 @@ export enum Kind {
   OBJECT_TYPE_EXTENSION = 'ObjectTypeExtension',
   INTERFACE_TYPE_EXTENSION = 'InterfaceTypeExtension',
   UNION_TYPE_EXTENSION = 'UnionTypeExtension',
+  INTERSECTION_TYPE_EXTENSION = 'IntersectionTypeExtension',
   ENUM_TYPE_EXTENSION = 'EnumTypeExtension',
   INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension',
 }

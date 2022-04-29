@@ -15,6 +15,7 @@ import {
   assertInputObjectType,
   assertInputType,
   assertInterfaceType,
+  assertIntersectionType,
   assertLeafType,
   assertListType,
   assertNamedType,
@@ -31,6 +32,7 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -42,6 +44,7 @@ import {
   isInputObjectType,
   isInputType,
   isInterfaceType,
+  isIntersectionType,
   isLeafType,
   isListType,
   isNamedType,
@@ -80,6 +83,10 @@ const InterfaceType = new GraphQLInterfaceType({
   fields: {},
 });
 const UnionType = new GraphQLUnionType({ name: 'Union', types: [ObjectType] });
+const IntersectionType = new GraphQLIntersectionType({
+  name: 'Intersection',
+  types: [UnionType],
+});
 const EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
 const InputObjectType = new GraphQLInputObjectType({
   name: 'InputObject',
@@ -216,6 +223,27 @@ describe('Type predicates', () => {
     it('returns false for non-union type', () => {
       expect(isUnionType(ObjectType)).to.equal(false);
       expect(() => assertUnionType(ObjectType)).to.throw();
+    });
+  });
+
+  describe('isIntersectionType', () => {
+    it('returns true for intersection type', () => {
+      expect(isIntersectionType(IntersectionType)).to.equal(true);
+      expect(() => assertIntersectionType(IntersectionType)).to.not.throw();
+    });
+
+    it('returns false for wrapped union type', () => {
+      expect(isIntersectionType(new GraphQLList(IntersectionType))).to.equal(
+        false,
+      );
+      expect(() =>
+        assertIntersectionType(new GraphQLList(IntersectionType)),
+      ).to.throw();
+    });
+
+    it('returns false for non-intersection type', () => {
+      expect(isIntersectionType(UnionType)).to.equal(false);
+      expect(() => assertIntersectionType(UnionType)).to.throw();
     });
   });
 
@@ -441,11 +469,13 @@ describe('Type predicates', () => {
   });
 
   describe('isAbstractType', () => {
-    it('returns true for interface and union types', () => {
+    it('returns true for interface, union and intersection types', () => {
       expect(isAbstractType(InterfaceType)).to.equal(true);
       expect(() => assertAbstractType(InterfaceType)).to.not.throw();
       expect(isAbstractType(UnionType)).to.equal(true);
       expect(() => assertAbstractType(UnionType)).to.not.throw();
+      expect(isAbstractType(IntersectionType)).to.equal(true);
+      expect(() => assertAbstractType(IntersectionType)).to.not.throw();
     });
 
     it('returns false for wrapped abstract type', () => {

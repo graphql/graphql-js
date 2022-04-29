@@ -54,6 +54,7 @@ const schemaWithSDLDirectives = buildSchema(`
   directive @onArgumentDefinition on ARGUMENT_DEFINITION
   directive @onInterface on INTERFACE
   directive @onUnion on UNION
+  directive @onIntersection on INTERSECTION
   directive @onEnum on ENUM
   directive @onEnumValue on ENUM_VALUE
   directive @onInputObject on INPUT_OBJECT
@@ -332,6 +333,10 @@ describe('Validate: Known directives', () => {
 
           extend union MyUnion @onUnion
 
+          intersection MyIntersection @onIntersection = MyUnion
+
+          extend intersection MyIntersection @onIntersection
+
           enum MyEnum @onEnum {
             MY_VALUE @onEnumValue
           }
@@ -369,11 +374,13 @@ describe('Validate: Known directives', () => {
 
           union MyUnion @onEnumValue = MyObj | Other
 
+          intersection MyIntersection @onUnion = MyUnion
+
           enum MyEnum @onScalar {
             MY_VALUE @onUnion
           }
 
-          input MyInput @onEnum {
+          input MyInput @onIntersection {
             myField: Int @onArgumentDefinition
           }
 
@@ -422,29 +429,34 @@ describe('Validate: Known directives', () => {
           locations: [{ line: 12, column: 25 }],
         },
         {
+          message: 'Directive "@onUnion" may not be used on INTERSECTION.',
+          locations: [{ line: 14, column: 39 }],
+        },
+        {
           message: 'Directive "@onScalar" may not be used on ENUM.',
-          locations: [{ line: 14, column: 23 }],
+          locations: [{ line: 16, column: 23 }],
         },
         {
           message: 'Directive "@onUnion" may not be used on ENUM_VALUE.',
-          locations: [{ line: 15, column: 22 }],
+          locations: [{ line: 17, column: 22 }],
         },
         {
-          message: 'Directive "@onEnum" may not be used on INPUT_OBJECT.',
-          locations: [{ line: 18, column: 25 }],
+          message:
+            'Directive "@onIntersection" may not be used on INPUT_OBJECT.',
+          locations: [{ line: 20, column: 25 }],
         },
         {
           message:
             'Directive "@onArgumentDefinition" may not be used on INPUT_FIELD_DEFINITION.',
-          locations: [{ line: 19, column: 26 }],
+          locations: [{ line: 21, column: 26 }],
         },
         {
           message: 'Directive "@onObject" may not be used on SCHEMA.',
-          locations: [{ line: 22, column: 18 }],
+          locations: [{ line: 24, column: 18 }],
         },
         {
           message: 'Directive "@onObject" may not be used on SCHEMA.',
-          locations: [{ line: 26, column: 25 }],
+          locations: [{ line: 28, column: 25 }],
         },
       ]);
     });

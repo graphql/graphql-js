@@ -12,6 +12,7 @@ import type {
   GraphQLInputField,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLNamedType,
   GraphQLObjectType,
   GraphQLScalarType,
@@ -21,6 +22,7 @@ import {
   isEnumType,
   isInputObjectType,
   isInterfaceType,
+  isIntersectionType,
   isObjectType,
   isScalarType,
   isUnionType,
@@ -141,6 +143,9 @@ export function printType(type: GraphQLNamedType): string {
   if (isUnionType(type)) {
     return printUnion(type);
   }
+  if (isIntersectionType(type)) {
+    return printIntersection(type);
+  }
   if (isEnumType(type)) {
     return printEnum(type);
   }
@@ -189,6 +194,12 @@ function printUnion(type: GraphQLUnionType): string {
   const types = type.getTypes();
   const possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
   return printDescription(type) + 'union ' + type.name + possibleTypes;
+}
+
+function printIntersection(type: GraphQLIntersectionType): string {
+  const types = type.getTypes();
+  const possibleTypes = types.length ? ' = ' + types.join(' & ') : '';
+  return printDescription(type) + 'intersection ' + type.name + possibleTypes;
 }
 
 function printEnum(type: GraphQLEnumType): string {

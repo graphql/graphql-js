@@ -23,6 +23,7 @@ describe('Validate: Possible type extensions', () => {
       type FooObject
       interface FooInterface
       union FooUnion
+      intersection FooIntersection
       enum FooEnum
       input FooInputObject
     `);
@@ -34,6 +35,7 @@ describe('Validate: Possible type extensions', () => {
       type FooObject
       interface FooInterface
       union FooUnion
+      intersection FooIntersection
       enum FooEnum
       input FooInputObject
 
@@ -41,6 +43,7 @@ describe('Validate: Possible type extensions', () => {
       extend type FooObject @dummy
       extend interface FooInterface @dummy
       extend union FooUnion @dummy
+      extend intersection FooIntersection @dummy
       extend enum FooEnum @dummy
       extend input FooInputObject @dummy
     `);
@@ -52,6 +55,7 @@ describe('Validate: Possible type extensions', () => {
       type FooObject
       interface FooInterface
       union FooUnion
+      intersection FooIntersection
       enum FooEnum
       input FooInputObject
 
@@ -59,6 +63,7 @@ describe('Validate: Possible type extensions', () => {
       extend type FooObject @dummy
       extend interface FooInterface @dummy
       extend union FooUnion @dummy
+      extend intersection FooIntersection @dummy
       extend enum FooEnum @dummy
       extend input FooInputObject @dummy
 
@@ -66,6 +71,7 @@ describe('Validate: Possible type extensions', () => {
       extend type FooObject @dummy
       extend interface FooInterface @dummy
       extend union FooUnion @dummy
+      extend intersection FooIntersection @dummy
       extend enum FooEnum @dummy
       extend input FooInputObject @dummy
     `);
@@ -82,6 +88,7 @@ describe('Validate: Possible type extensions', () => {
       extend type Unknown @dummy
       extend interface Unknown @dummy
       extend union Unknown @dummy
+      extend intersection Unknown @dummy
       extend enum Unknown @dummy
       extend input Unknown @dummy
     `).toDeepEqual([
@@ -89,8 +96,9 @@ describe('Validate: Possible type extensions', () => {
       { message, locations: [{ line: 5, column: 19 }] },
       { message, locations: [{ line: 6, column: 24 }] },
       { message, locations: [{ line: 7, column: 20 }] },
-      { message, locations: [{ line: 8, column: 19 }] },
-      { message, locations: [{ line: 9, column: 20 }] },
+      { message, locations: [{ line: 8, column: 27 }] },
+      { message, locations: [{ line: 9, column: 19 }] },
+      { message, locations: [{ line: 10, column: 20 }] },
     ]);
   });
 
@@ -106,6 +114,7 @@ describe('Validate: Possible type extensions', () => {
       extend type Foo @dummy
       extend interface Foo @dummy
       extend union Foo @dummy
+      extend intersection Foo @dummy
       extend enum Foo @dummy
       extend input Foo @dummy
     `).toDeepEqual([
@@ -113,8 +122,9 @@ describe('Validate: Possible type extensions', () => {
       { message, locations: [{ line: 7, column: 19 }] },
       { message, locations: [{ line: 8, column: 24 }] },
       { message, locations: [{ line: 9, column: 20 }] },
-      { message, locations: [{ line: 10, column: 19 }] },
-      { message, locations: [{ line: 11, column: 20 }] },
+      { message, locations: [{ line: 10, column: 27 }] },
+      { message, locations: [{ line: 11, column: 19 }] },
+      { message, locations: [{ line: 12, column: 20 }] },
     ]);
   });
 
@@ -124,13 +134,15 @@ describe('Validate: Possible type extensions', () => {
       type FooObject
       interface FooInterface
       union FooUnion
+      intersection FooIntersection
       enum FooEnum
       input FooInputObject
 
       extend type FooScalar @dummy
       extend interface FooObject @dummy
       extend union FooInterface @dummy
-      extend enum FooUnion @dummy
+      extend intersection FooUnion @dummy
+      extend enum FooIntersection @dummy
       extend input FooEnum @dummy
       extend scalar FooInputObject @dummy
     `).toDeepEqual([
@@ -138,42 +150,49 @@ describe('Validate: Possible type extensions', () => {
         message: 'Cannot extend non-object type "FooScalar".',
         locations: [
           { line: 2, column: 7 },
-          { line: 9, column: 7 },
+          { line: 10, column: 7 },
         ],
       },
       {
         message: 'Cannot extend non-interface type "FooObject".',
         locations: [
           { line: 3, column: 7 },
-          { line: 10, column: 7 },
+          { line: 11, column: 7 },
         ],
       },
       {
         message: 'Cannot extend non-union type "FooInterface".',
         locations: [
           { line: 4, column: 7 },
-          { line: 11, column: 7 },
+          { line: 12, column: 7 },
         ],
       },
       {
-        message: 'Cannot extend non-enum type "FooUnion".',
+        message: 'Cannot extend non-intersection type "FooUnion".',
         locations: [
           { line: 5, column: 7 },
-          { line: 12, column: 7 },
+          { line: 13, column: 7 },
+        ],
+      },
+      {
+        message: 'Cannot extend non-enum type "FooIntersection".',
+        locations: [
+          { line: 6, column: 7 },
+          { line: 14, column: 7 },
         ],
       },
       {
         message: 'Cannot extend non-input object type "FooEnum".',
         locations: [
-          { line: 6, column: 7 },
-          { line: 13, column: 7 },
+          { line: 7, column: 7 },
+          { line: 15, column: 7 },
         ],
       },
       {
         message: 'Cannot extend non-scalar type "FooInputObject".',
         locations: [
-          { line: 7, column: 7 },
-          { line: 14, column: 7 },
+          { line: 8, column: 7 },
+          { line: 16, column: 7 },
         ],
       },
     ]);
@@ -185,6 +204,7 @@ describe('Validate: Possible type extensions', () => {
       type FooObject
       interface FooInterface
       union FooUnion
+      intersection FooIntersection
       enum FooEnum
       input FooInputObject
     `);
@@ -193,6 +213,7 @@ describe('Validate: Possible type extensions', () => {
       extend type FooObject @dummy
       extend interface FooInterface @dummy
       extend union FooUnion @dummy
+      extend intersection FooIntersection @dummy
       extend enum FooEnum @dummy
       extend input FooInputObject @dummy
     `;
@@ -207,6 +228,7 @@ describe('Validate: Possible type extensions', () => {
       extend type Unknown @dummy
       extend interface Unknown @dummy
       extend union Unknown @dummy
+      extend intersection Unknown @dummy
       extend enum Unknown @dummy
       extend input Unknown @dummy
     `;
@@ -218,8 +240,9 @@ describe('Validate: Possible type extensions', () => {
       { message, locations: [{ line: 3, column: 19 }] },
       { message, locations: [{ line: 4, column: 24 }] },
       { message, locations: [{ line: 5, column: 20 }] },
-      { message, locations: [{ line: 6, column: 19 }] },
-      { message, locations: [{ line: 7, column: 20 }] },
+      { message, locations: [{ line: 6, column: 27 }] },
+      { message, locations: [{ line: 7, column: 19 }] },
+      { message, locations: [{ line: 8, column: 20 }] },
     ]);
   });
 
@@ -229,6 +252,7 @@ describe('Validate: Possible type extensions', () => {
       type FooObject
       interface FooInterface
       union FooUnion
+      intersection FooIntersection
       enum FooEnum
       input FooInputObject
     `);
@@ -236,7 +260,8 @@ describe('Validate: Possible type extensions', () => {
       extend type FooScalar @dummy
       extend interface FooObject @dummy
       extend union FooInterface @dummy
-      extend enum FooUnion @dummy
+      extend intersection FooUnion @dummy
+      extend enum FooIntersection @dummy
       extend input FooEnum @dummy
       extend scalar FooInputObject @dummy
     `;
@@ -255,16 +280,20 @@ describe('Validate: Possible type extensions', () => {
         locations: [{ line: 4, column: 7 }],
       },
       {
-        message: 'Cannot extend non-enum type "FooUnion".',
+        message: 'Cannot extend non-intersection type "FooUnion".',
         locations: [{ line: 5, column: 7 }],
       },
       {
-        message: 'Cannot extend non-input object type "FooEnum".',
+        message: 'Cannot extend non-enum type "FooIntersection".',
         locations: [{ line: 6, column: 7 }],
       },
       {
-        message: 'Cannot extend non-scalar type "FooInputObject".',
+        message: 'Cannot extend non-input object type "FooEnum".',
         locations: [{ line: 7, column: 7 }],
+      },
+      {
+        message: 'Cannot extend non-scalar type "FooInputObject".',
+        locations: [{ line: 8, column: 7 }],
       },
     ]);
   });

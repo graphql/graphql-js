@@ -16,6 +16,7 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -23,6 +24,7 @@ import {
   isEnumType,
   isInputObjectType,
   isInterfaceType,
+  isIntersectionType,
   isListType,
   isNonNullType,
   isObjectType,
@@ -137,6 +139,13 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     if (isUnionType(type)) {
       const config = type.toConfig();
       return new GraphQLUnionType({
+        ...config,
+        types: () => sortTypes(config.types),
+      });
+    }
+    if (isIntersectionType(type)) {
+      const config = type.toConfig();
+      return new GraphQLIntersectionType({
         ...config,
         types: () => sortTypes(config.types),
       });

@@ -17,14 +17,17 @@ import { OperationTypeNode } from '../language/ast';
 import type {
   GraphQLAbstractType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLNamedType,
   GraphQLObjectType,
   GraphQLType,
+  GraphQLUnionType,
 } from './definition';
 import {
   getNamedType,
   isInputObjectType,
   isInterfaceType,
+  isIntersectionType,
   isObjectType,
   isUnionType,
 } from './definition';
@@ -142,9 +145,16 @@ export class GraphQLSchema {
   private _directives: ReadonlyArray<GraphQLDirective>;
   private _typeMap: TypeMap;
   private _subTypeMap: ObjMap<ObjMap<boolean>>;
+  private _intersectingTypesMap: ObjMap<ReadonlyArray<GraphQLObjectType>>;
+  private _constrainingTypesMap: ObjMap<{
+    interfaces: Array<GraphQLInterfaceType>;
+    unions: Array<GraphQLUnionType>;
+  }>;
+
   private _implementationsMap: ObjMap<{
     objects: Array<GraphQLObjectType>;
     interfaces: Array<GraphQLInterfaceType>;
+    intersections: Array<GraphQLIntersectionType>;
   }>;
 
   constructor(config: Readonly<GraphQLSchemaConfig>) {
@@ -210,6 +220,10 @@ export class GraphQLSchema {
     // Storing the resulting map for reference by the schema.
     this._typeMap = Object.create(null);
     this._subTypeMap = Object.create(null);
+    // Keep track of possible types by intersection name.
+    this._intersectingTypesMap = Object.create(null);
+    // Keep track of constraining types by intersection name.
+    this._constrainingTypesMap = Object.create(null);
     // Keep track of all implementations by interface name.
     this._implementationsMap = Object.create(null);
 
@@ -239,6 +253,7 @@ export class GraphQLSchema {
               implementations = this._implementationsMap[iface.name] = {
                 objects: [],
                 interfaces: [],
+                intersections: [],
               };
             }
 
@@ -254,11 +269,41 @@ export class GraphQLSchema {
               implementations = this._implementationsMap[iface.name] = {
                 objects: [],
                 interfaces: [],
+                intersections: [],
               };
             }
 
             implementations.objects.push(namedType);
           }
+        }
+      } else if (isIntersectionType(namedType)) {
+        // Store implementations by intersections.
+        const constrainingTypes = this.getConstrainingTypes(namedType);
+
+        for (const iface of constrainingTypes.interfaces) {
+          let implementations = this._implementationsMap[iface.name];
+          if (implementations === undefined) {
+            implementations = this._implementationsMap[iface.name] = {
+              objects: [],
+              interfaces: [],
+              intersections: [],
+            };
+          }
+
+          implementations.intersections.push(namedType);
+        }
+
+        for (const union of constrainingTypes.unions) {
+          let implementations = this._implementationsMap[union.name];
+          if (implementations === undefined) {
+            implementations = this._implementationsMap[union.name] = {
+              objects: [],
+              interfaces: [],
+              intersections: [],
+            };
+          }
+
+          implementations.intersections.push(namedType);
         }
       }
     }
@@ -302,37 +347,108 @@ export class GraphQLSchema {
   getPossibleTypes(
     abstractType: GraphQLAbstractType,
   ): ReadonlyArray<GraphQLObjectType> {
-    return isUnionType(abstractType)
-      ? abstractType.getTypes()
-      : this.getImplementations(abstractType).objects;
+    if (isUnionType(abstractType)) {
+      return abstractType.getTypes();
+    }
+    if (isInterfaceType(abstractType)) {
+      return this.getImplementations(abstractType).objects;
+    }
+
+    return this.getIntersectingTypes(abstractType);
   }
 
-  getImplementations(interfaceType: GraphQLInterfaceType): {
+  getIntersectingTypes(
+    intersectionType: GraphQLIntersectionType,
+  ): ReadonlyArray<GraphQLObjectType> {
+    let intersectingTypes = this._intersectingTypesMap[intersectionType.name];
+    if (intersectingTypes) {
+      return intersectingTypes;
+    }
+
+    const intersectingTypeSet: Set<GraphQLObjectType> = new Set();
+    filterPossibleTypes(
+      intersectingTypeSet,
+      this.getConstrainingTypes(intersectionType),
+      this,
+    );
+
+    intersectingTypes = Array.from(intersectingTypeSet);
+    this._intersectingTypesMap[intersectionType.name] = intersectingTypes;
+    return intersectingTypes;
+  }
+
+  getConstrainingTypes(intersectionType: GraphQLIntersectionType): {
+    interfaces: ReadonlyArray<GraphQLInterfaceType>;
+    unions: ReadonlyArray<GraphQLUnionType>;
+  } {
+    let constrainingTypes = this._constrainingTypesMap[intersectionType.name];
+    if (constrainingTypes) {
+      return this._constrainingTypesMap[intersectionType.name];
+    }
+
+    constrainingTypes = this._constrainingTypesMap[intersectionType.name] = {
+      interfaces: [],
+      unions: [],
+    };
+
+    for (const abstractType of intersectionType.getTypes()) {
+      if (isInterfaceType(abstractType)) {
+        constrainingTypes.interfaces.push(abstractType);
+      } else if (isUnionType(abstractType)) {
+        constrainingTypes.unions.push(abstractType);
+      }
+    }
+
+    return constrainingTypes;
+  }
+
+  getImplementations(abstractType: GraphQLAbstractType): {
     objects: ReadonlyArray<GraphQLObjectType>;
     interfaces: ReadonlyArray<GraphQLInterfaceType>;
+    intersections: ReadonlyArray<GraphQLIntersectionType>;
   } {
-    const implementations = this._implementationsMap[interfaceType.name];
-    return implementations ?? { objects: [], interfaces: [] };
+    const implementations = this._implementationsMap[abstractType.name];
+    return (
+      implementations ?? {
+        objects: [],
+        interfaces: [],
+        intersections: [],
+      }
+    );
   }
 
   isSubType(
     abstractType: GraphQLAbstractType,
-    maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
+    maybeSubType:
+      | GraphQLObjectType
+      | GraphQLInterfaceType
+      | GraphQLIntersectionType,
   ): boolean {
     let map = this._subTypeMap[abstractType.name];
     if (map === undefined) {
       map = Object.create(null);
 
-      if (isUnionType(abstractType)) {
-        for (const type of abstractType.getTypes()) {
-          map[type.name] = true;
-        }
-      } else {
+      if (isInterfaceType(abstractType)) {
         const implementations = this.getImplementations(abstractType);
         for (const type of implementations.objects) {
           map[type.name] = true;
         }
         for (const type of implementations.interfaces) {
+          map[type.name] = true;
+        }
+        for (const type of implementations.intersections) {
+          map[type.name] = true;
+        }
+      } else if (isUnionType(abstractType)) {
+        const implementations = this.getImplementations(abstractType);
+        for (const type of implementations.intersections) {
+          map[type.name] = true;
+        }
+        for (const type of abstractType.getTypes()) {
+          map[type.name] = true;
+        }
+      } else if (isIntersectionType(abstractType)) {
+        for (const type of this.getIntersectingTypes(abstractType)) {
           map[type.name] = true;
         }
       }
@@ -363,6 +479,83 @@ export class GraphQLSchema {
       extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.__validationErrors !== undefined,
     };
+  }
+}
+
+function isNonEmpty(
+  types: ReadonlyArray<GraphQLInterfaceType | GraphQLUnionType>,
+): types is Readonly<
+  [
+    GraphQLInterfaceType | GraphQLUnionType,
+    ...Array<GraphQLInterfaceType | GraphQLUnionType>,
+  ]
+> {
+  return types.length > 0;
+}
+
+function filterPossibleTypes(
+  possibleTypeSet: Set<GraphQLObjectType>,
+  constrainingTypes: {
+    interfaces: ReadonlyArray<GraphQLInterfaceType>;
+    unions: ReadonlyArray<GraphQLUnionType>;
+  },
+  schema: GraphQLSchema,
+): void {
+  if (isNonEmpty(constrainingTypes.interfaces)) {
+    for (const possibleType of schema.getPossibleTypes(
+      constrainingTypes.interfaces[0],
+    )) {
+      possibleTypeSet.add(possibleType);
+    }
+
+    _filterPossibleTypes(
+      constrainingTypes.interfaces,
+      constrainingTypes.unions,
+      possibleTypeSet,
+      schema,
+    );
+  } else if (isNonEmpty(constrainingTypes.unions)) {
+    for (const possibleType of schema.getPossibleTypes(
+      constrainingTypes.unions[0],
+    )) {
+      possibleTypeSet.add(possibleType);
+    }
+
+    _filterPossibleTypes(constrainingTypes.unions, [], possibleTypeSet, schema);
+  }
+}
+
+function _filterPossibleTypes(
+  nonEmptyGroup: Readonly<
+    [
+      GraphQLInterfaceType | GraphQLUnionType,
+      ...Array<GraphQLInterfaceType | GraphQLUnionType>,
+    ]
+  >,
+  secondaryGroup: ReadonlyArray<GraphQLInterfaceType | GraphQLUnionType>,
+  possibleTypeSet: Set<GraphQLObjectType>,
+  schema: GraphQLSchema,
+): void {
+  for (let i = 1; i < nonEmptyGroup.length; i++) {
+    for (const possibleType of possibleTypeSet) {
+      if (!schema.isSubType(nonEmptyGroup[i], possibleType)) {
+        possibleTypeSet.delete(possibleType);
+        if (!possibleTypeSet.size) {
+          return;
+        }
+      }
+    }
+  }
+
+  for (const abstractType of secondaryGroup) {
+    for (const possibleType of possibleTypeSet) {
+      if (!schema.isSubType(abstractType, possibleType)) {
+        possibleTypeSet.delete(possibleType);
+        if (!possibleTypeSet.size) {
+          return;
+        }
+      }
+    }
   }
 }
 
@@ -412,6 +605,10 @@ function collectReferencedTypes(
   if (!typeSet.has(namedType)) {
     typeSet.add(namedType);
     if (isUnionType(namedType)) {
+      for (const memberType of namedType.getTypes()) {
+        collectReferencedTypes(memberType, typeSet);
+      }
+    } else if (isIntersectionType(namedType)) {
       for (const memberType of namedType.getTypes()) {
         collectReferencedTypes(memberType, typeSet);
       }

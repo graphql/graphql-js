@@ -24,12 +24,14 @@ import {
   assertEnumType,
   assertInputObjectType,
   assertInterfaceType,
+  assertIntersectionType,
   assertObjectType,
   assertScalarType,
   assertUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -44,10 +46,12 @@ const SomeSchema = buildSchema(`
   scalar SomeScalar
 
   interface SomeInterface { f: SomeObject }
-
+  
   type SomeObject implements SomeInterface { f: SomeObject }
 
   union SomeUnion = SomeObject
+
+  intersection SomeIntersection = SomeInterface & SomeUnion
 
   enum SomeEnum { ONLY }
 
@@ -62,6 +66,9 @@ const SomeInterfaceType = assertInterfaceType(
 );
 const SomeObjectType = assertObjectType(SomeSchema.getType('SomeObject'));
 const SomeUnionType = assertUnionType(SomeSchema.getType('SomeUnion'));
+const SomeIntersectionType = assertIntersectionType(
+  SomeSchema.getType('SomeIntersection'),
+);
 const SomeEnumType = assertEnumType(SomeSchema.getType('SomeEnum'));
 const SomeInputObjectType = assertInputObjectType(
   SomeSchema.getType('SomeInputObject'),
@@ -86,6 +93,7 @@ const outputTypes: ReadonlyArray<GraphQLOutputType> = [
   ...withModifiers(SomeEnumType),
   ...withModifiers(SomeObjectType),
   ...withModifiers(SomeUnionType),
+  ...withModifiers(SomeIntersectionType),
   ...withModifiers(SomeInterfaceType),
 ];
 
@@ -103,6 +111,7 @@ const inputTypes: ReadonlyArray<GraphQLInputType> = [
 const notInputTypes: ReadonlyArray<GraphQLOutputType> = [
   ...withModifiers(SomeObjectType),
   ...withModifiers(SomeUnionType),
+  ...withModifiers(SomeIntersectionType),
   ...withModifiers(SomeInterfaceType),
 ];
 
@@ -401,7 +410,7 @@ describe('Type System: A Schema must have Object root types', () => {
       },
       {
         message: 'Expected GraphQL named type but got: @SomeDirective.',
-        locations: [{ line: 14, column: 3 }],
+        locations: [{ line: 16, column: 3 }],
       },
     ]);
   });
@@ -703,6 +712,619 @@ describe('Type System: Union types must be valid', () => {
         },
       ]);
     }
+  });
+});
+
+describe('Type System: Intersection types must be valid', () => {
+  function schemaWithIntersectionTypes(
+    types: Array<GraphQLInterfaceType | GraphQLUnionType>,
+  ): GraphQLSchema {
+    const BadIntersectionType = new GraphQLIntersectionType({
+      name: 'BadIntersection',
+      types,
+    });
+
+    return new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          f: { type: BadIntersectionType },
+        },
+      }),
+    });
+  }
+
+  for (const type of [SomeInterfaceType, SomeUnionType]) {
+    const typeName = inspect(type);
+    it(`accepts valid type member values within an Intersection: ${typeName}`, () => {
+      const schema = schemaWithIntersectionTypes([type]);
+      expectJSON(validateSchema(schema)).toDeepEqual([]);
+    });
+  }
+
+  it('rejects a non-type value as an Intersection member type', () => {
+    // @ts-expect-error
+    const schema = schemaWithIntersectionTypes([Number]);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Intersection type BadIntersection can only include Interface or Union types, it cannot include [function Number].',
+      },
+      {
+        message: 'Expected GraphQL named type but got: [function Number].',
+      },
+    ]);
+  });
+
+  it('rejects an interface implementing an interface as an Intersection member type without explicit inclusion of transitive interface', () => {
+    const ParentInterfaceType = new GraphQLInterfaceType({
+      name: 'ParentInterface',
+      fields: {
+        dummy: { type: GraphQLString },
+      },
+    });
+    const ChildInterfaceType = new GraphQLInterfaceType({
+      name: 'ChildInterface',
+      fields: {
+        dummy: { type: GraphQLString },
+      },
+      interfaces: () => [ParentInterfaceType],
+    });
+    const schema = schemaWithIntersectionTypes([ChildInterfaceType]);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Type BadIntersection must include ParentInterface because it is implemented by ChildInterface.',
+      },
+    ]);
+  });
+
+  it('accepts an Intersection type with member types with locations', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: GoodIntersection
+      }
+
+      type TypeA implements SomeInterface {
+        someField: String
+      }
+
+      type TypeB {
+        anotherField: String
+      }
+
+      interface SomeInterface {
+        someField: String
+      }
+
+      union SomeUnion =
+        | TypeA
+        | TypeB
+
+      intersection GoodIntersection =
+        & SomeInterface
+        & SomeUnion
+    `);
+
+    const GoodIntersection = assertIntersectionType(
+      schema.getType('GoodIntersection'),
+    );
+    const SomeInterface = assertInterfaceType(schema.getType('SomeInterface'));
+    const SomeUnion = assertUnionType(schema.getType('SomeUnion'));
+    const TypeA = assertObjectType(schema.getType('TypeA'));
+    expect(schema.getPossibleTypes(GoodIntersection)).to.deep.equal([TypeA]);
+    expect(schema.isSubType(SomeInterface, GoodIntersection)).to.equal(true);
+    expect(schema.isSubType(SomeUnion, GoodIntersection)).to.equal(true);
+  });
+
+  it('accepts an Intersection type with conflicting unions', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: GoodIntersection
+      }
+
+      type TypeA {
+        someField: String
+      }
+
+      type TypeB {
+        someField: String
+      }
+
+      union SomeUnion =
+        | TypeA
+        | TypeB
+
+      type TypeC {
+        someField: String
+      }
+
+      type TypeD {
+        someField: String
+      }
+
+      union AnotherUnion =
+        | TypeC
+        | TypeD
+
+      intersection GoodIntersection =
+        & SomeUnion
+        & AnotherUnion
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+
+    const GoodIntersection = assertIntersectionType(
+      schema.getType('GoodIntersection'),
+    );
+    expect(schema.getPossibleTypes(GoodIntersection)).to.deep.equal([]);
+  });
+
+  it('accepts an Intersection type with multiple conflicting unions', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: GoodIntersection
+      }
+
+      type TypeA {
+        someField: String
+      }
+
+      type TypeB {
+        someField: String
+      }
+
+      union SomeUnion =
+        | TypeA
+        | TypeB
+
+      type TypeC {
+        someField: String
+      }
+
+      type TypeD {
+        someField: String
+      }
+
+      union AnotherUnion =
+        | TypeC
+        | TypeD
+
+      type TypeE {
+        someField: String
+      }
+
+      type TypeF {
+        someField: String
+      }
+
+      union FinalUnion =
+        | TypeE
+        | TypeF
+
+      intersection GoodIntersection =
+        & SomeUnion
+        & AnotherUnion
+        & FinalUnion
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+
+    const GoodIntersection = assertIntersectionType(
+      schema.getType('GoodIntersection'),
+    );
+    expect(schema.getPossibleTypes(GoodIntersection)).to.deep.equal([]);
+  });
+
+  it('accepts an Intersection type with conflicting interfaces', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: GoodIntersection
+      }
+
+      type TypeA implements SomeInterface {
+        someField: String
+      }
+
+      type TypeB implements SomeInterface {
+        someField: String
+      }
+
+      interface SomeInterface {
+        someField: String
+      }
+
+      type TypeC implements AnotherInterface {
+        anotherField: String
+      }
+
+      type TypeD implements AnotherInterface {
+        anotherField: String
+      }
+
+      interface AnotherInterface {
+        anotherField: String
+      }
+
+      intersection GoodIntersection =
+        & SomeInterface
+        & AnotherInterface
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+
+    const GoodIntersection = assertIntersectionType(
+      schema.getType('GoodIntersection'),
+    );
+    expect(schema.getPossibleTypes(GoodIntersection)).to.deep.equal([]);
+  });
+
+  it('accepts an Intersection type with multiple conflicting interfaces', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: GoodIntersection
+      }
+
+      type TypeA implements SomeInterface {
+        someField: String
+      }
+
+      type TypeB implements SomeInterface {
+        someField: String
+      }
+
+      interface SomeInterface {
+        someField: String
+      }
+
+      type TypeC implements AnotherInterface {
+        anotherField: String
+      }
+
+      type TypeD implements AnotherInterface {
+        anotherField: String
+      }
+
+      interface AnotherInterface {
+        anotherField: String
+      }
+
+      type TypeE implements FinalInterface {
+        finalField: String
+      }
+
+      type TypeF implements FinalInterface {
+        finalField: String
+      }
+
+      interface FinalInterface {
+        finalField: String
+      }
+
+      intersection GoodIntersection =
+        & SomeInterface
+        & AnotherInterface
+        & FinalInterface
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+
+    const GoodIntersection = assertIntersectionType(
+      schema.getType('GoodIntersection'),
+    );
+    expect(schema.getPossibleTypes(GoodIntersection)).to.deep.equal([]);
+  });
+
+  it('accepts an Intersection type with conflicting union and interface types', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: GoodIntersection
+      }
+
+      type TypeA {
+        someField: String
+      }
+
+      type TypeB {
+        anotherField: String
+      }
+
+      type TypeC implements SomeInterface {
+        someField: String
+      }
+
+      interface SomeInterface {
+        someField: String
+      }
+
+      union SomeUnion =
+        | TypeA
+        | TypeB
+
+      intersection GoodIntersection =
+        & SomeInterface
+        & SomeUnion
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+
+    const GoodIntersection = assertIntersectionType(
+      schema.getType('GoodIntersection'),
+    );
+    expect(schema.getPossibleTypes(GoodIntersection)).to.deep.equal([]);
+  });
+
+  it('accepts an Intersection type with a non-implemented interface', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: GoodIntersection
+      }
+
+      type TypeA {
+        someField: String
+      }
+
+      type TypeB {
+        anotherField: String
+      }
+
+      interface SomeInterface {
+        someField: String
+      }
+
+      union SomeUnion =
+        | TypeA
+        | TypeB
+
+      intersection GoodIntersection =
+        & SomeInterface
+        & SomeUnion
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+
+    const GoodIntersection = assertIntersectionType(
+      schema.getType('GoodIntersection'),
+    );
+    expect(schema.getPossibleTypes(GoodIntersection)).to.deep.equal([]);
+  });
+
+  it('accepts an Intersection type with an empty union', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: GoodIntersection
+      }
+
+      type TypeA implements SomeInterface {
+        someField: String
+      }
+
+      interface SomeInterface {
+        someField: String
+      }
+
+      union SomeUnion
+
+      intersection GoodIntersection =
+        & SomeInterface
+        & SomeUnion
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message: 'Union type SomeUnion must define one or more member types.',
+        locations: [{ line: 14, column: 7 }],
+      },
+    ]);
+
+    const GoodIntersection = assertIntersectionType(
+      schema.getType('GoodIntersection'),
+    );
+    expect(schema.getPossibleTypes(GoodIntersection)).to.deep.equal([]);
+  });
+
+  it('rejects an Intersection type with empty types', () => {
+    let schema = buildSchema(`
+      type Query {
+        test: BadIntersection
+      }
+
+      intersection BadIntersection
+    `);
+
+    schema = extendSchema(
+      schema,
+      parse(`
+        directive @test on INTERSECTION
+
+        extend intersection BadIntersection @test
+      `),
+    );
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Intersection type BadIntersection must define one or more member types.',
+        locations: [
+          { line: 6, column: 7 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('rejects an Intersection type with duplicated member type', () => {
+    let schema = buildSchema(`
+      type Query {
+        test: BadIntersection
+      }
+
+      type TypeA implements SomeInterface {
+        someField: String
+      }
+
+      type TypeB {
+        anotherField: String
+      }
+
+      interface SomeInterface {
+        someField: String
+      }
+
+      union SomeUnion =
+        | TypeA
+        | TypeB
+
+      intersection BadIntersection =
+        & SomeInterface
+        & SomeUnion
+        & SomeInterface
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Intersection type BadIntersection can only include type SomeInterface once.',
+        locations: [
+          { line: 23, column: 11 },
+          { line: 25, column: 11 },
+        ],
+      },
+    ]);
+
+    schema = extendSchema(
+      schema,
+      parse('extend intersection BadIntersection = SomeUnion'),
+    );
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Intersection type BadIntersection can only include type SomeInterface once.',
+        locations: [
+          { line: 23, column: 11 },
+          { line: 25, column: 11 },
+        ],
+      },
+      {
+        message:
+          'Intersection type BadIntersection can only include type SomeUnion once.',
+        locations: [
+          { line: 24, column: 11 },
+          { line: 1, column: 39 },
+        ],
+      },
+    ]);
+  });
+
+  it('rejects an Intersection type with non-abstract member types', () => {
+    let schema = buildSchema(`
+      type Query {
+        test: BadIntersection
+      }
+
+      type TypeA implements SomeInterface {
+        someField: String
+      }
+
+      type TypeB {
+        anotherField: String
+      }
+
+      interface SomeInterface {
+        someField: String
+      }
+
+      union SomeUnion =
+        | TypeA
+        | TypeB
+
+      intersection BadIntersection =
+        & SomeInterface
+        & String
+        & SomeUnion
+    `);
+
+    schema = extendSchema(
+      schema,
+      parse('extend intersection BadIntersection = Int'),
+    );
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Intersection type BadIntersection can only include Interface or Union types, it cannot include String.',
+        locations: [{ line: 24, column: 11 }],
+      },
+      {
+        message:
+          'Intersection type BadIntersection can only include Interface or Union types, it cannot include Int.',
+        locations: [{ line: 1, column: 39 }],
+      },
+    ]);
+
+    const badIntersectionMemberTypes = [
+      GraphQLString,
+      SomeObjectType,
+      new GraphQLNonNull(SomeObjectType),
+      new GraphQLList(SomeObjectType),
+      SomeEnumType,
+      SomeInputObjectType,
+    ];
+    for (const memberType of badIntersectionMemberTypes) {
+      const badIntersection = new GraphQLIntersectionType({
+        name: 'BadIntersection',
+        // @ts-expect-error
+        types: [memberType],
+      });
+      const badSchema = schemaWithFieldType(badIntersection);
+      expectJSON(validateSchema(badSchema)).toDeepEqual([
+        {
+          message:
+            'Intersection type BadIntersection can only include Interface or Union types, ' +
+            `it cannot include ${inspect(memberType)}.`,
+        },
+      ]);
+    }
+  });
+
+  it('rejects an Intersection type that does not include parent interfaces', () => {
+    let schema = buildSchema(`
+      type Query {
+        test: BadIntersection
+      }
+
+      type TypeA implements ChildInterface & ParentInterface {
+        someField: String
+      }
+
+      type TypeB implements ChildInterface & ParentInterface {
+        someField: String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        someField: String
+      }
+
+      interface ParentInterface {
+        someField: String
+      }
+
+      union SomeUnion =
+        | TypeA
+        | TypeB
+
+      intersection BadIntersection = SomeUnion
+    `);
+
+    schema = extendSchema(
+      schema,
+      parse('extend intersection BadIntersection = ChildInterface'),
+    );
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Type BadIntersection must include ParentInterface because it is implemented by ChildInterface.',
+        locations: [
+          { line: 14, column: 43 },
+          { line: 1, column: 39 },
+        ],
+      },
+    ]);
   });
 });
 
@@ -1837,6 +2459,89 @@ describe('Objects must adhere to Interface they implement', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
+  it('accepts an Object with a subtyped Interface field (object subtyped from intersection)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      type SomeObject {
+        field: String
+      }
+
+      union SomeUnionType = SomeObject
+
+      intersection SomeIntersectionType = SomeUnionType
+
+      interface AnotherInterface {
+        field: SomeIntersectionType
+      }
+
+      type AnotherObject implements AnotherInterface {
+        field: SomeObject
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Object with a subtyped Interface field (intersection subtyped from interface)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      type SomeObject implements SomeInterface {
+        field: String
+      }
+
+      interface SomeInterface {
+        field: String
+      }
+
+      union SomeUnionType = SomeObject
+
+      intersection SomeIntersectionType = SomeUnionType & SomeInterface
+
+      interface AnotherInterface {
+        field: SomeInterface
+      }
+
+      type AnotherObject implements AnotherInterface {
+        field: SomeIntersectionType
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Object with a subtyped Interface field (intersection subtyped from union)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      type SomeObject implements SomeInterface {
+        field: String
+      }
+
+      interface SomeInterface {
+        field: String
+      }
+
+      union SomeUnionType = SomeObject
+
+      intersection SomeIntersectionType = SomeUnionType & SomeInterface
+
+      interface AnotherInterface {
+        field: SomeUnionType
+      }
+
+      type AnotherObject implements AnotherInterface {
+        field: SomeIntersectionType
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
   it('rejects an Object missing an Interface argument', () => {
     const schema = buildSchema(`
       type Query {
@@ -2266,6 +2971,89 @@ describe('Interfaces must adhere to Interface they implement', () => {
 
       interface ChildInterface implements ParentInterface {
         field: SomeObject
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Interface with a subtyped Interface field (object subtyped from intersection)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      type SomeObject {
+        field: String
+      }
+
+      union SomeUnionType = SomeObject
+
+      intersection SomeIntersectionType = SomeUnionType
+
+      interface ParentInterface {
+        field: SomeIntersectionType
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: SomeObject
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Interface with a subtyped Interface field (intersection subtyped from interface)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      type SomeObject implements SomeInterface {
+        field: String
+      }
+
+      union SomeUnionType = SomeObject
+
+      interface SomeInterface {
+        field: String
+      }
+
+      intersection SomeIntersectionType = SomeUnionType & SomeInterface
+
+      interface ParentInterface {
+        field: SomeInterface
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: SomeIntersectionType
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Interface with a subtyped Interface field (intersection subtyped from union)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      type SomeObject implements SomeInterface {
+        field: String
+      }
+
+      union SomeUnionType = SomeObject
+
+      interface SomeInterface {
+        field: String
+      }
+
+      intersection SomeIntersectionType = SomeUnionType & SomeInterface
+
+      interface ParentInterface {
+        field: SomeUnionType
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: SomeIntersectionType
       }
     `);
     expectJSON(validateSchema(schema)).toDeepEqual([]);

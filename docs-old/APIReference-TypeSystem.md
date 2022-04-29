@@ -55,6 +55,12 @@ _Definitions_
     </a>
   </li>
   <li>
+    <a href="#graphqlintersectiontype">
+      <pre>class GraphQLIntersectionType</pre>
+      An intersection type within GraphQL that defines a list of constraining types.
+    </a>
+  </li>
+  <li>
     <a href="#graphqlenumtype">
       <pre>class GraphQLEnumType</pre>
       An enum type within GraphQL that defines a list of valid values.

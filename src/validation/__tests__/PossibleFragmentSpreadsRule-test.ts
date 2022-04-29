@@ -37,7 +37,18 @@ const testSchema = buildSchema(`
     meowVolume: Int
   }
 
+  type Bird implements Being & Pet {
+    name: String
+    chirpVolume: Int
+  }
+
   union CatOrDog = Cat | Dog
+
+  union CatOrBird = Cat | Bird
+
+  intersection CatOrDogPet = CatOrDog & Being & Pet
+
+  intersection CatOrBirdPet = CatOrBird & Being & Pet
 
   interface Intelligent {
     iq: Int
@@ -57,6 +68,8 @@ const testSchema = buildSchema(`
   union DogOrHuman = Dog | Human
 
   union HumanOrAlien = Human | Alien
+
+  intersection HumanOrAlienIntelligent = HumanOrAlien & Intelligent
 
   type Query {
     catOrDog: CatOrDog
@@ -93,6 +106,13 @@ describe('Validate: Possible fragment spreads', () => {
     `);
   });
 
+  it('object into containing intersection', () => {
+    expectValid(`
+      fragment objectWithinIntersection on CatOrDogPet { ...dogFragment }
+      fragment dogFragment on Dog { barkVolume }
+    `);
+  });
+
   it('union into contained object', () => {
     expectValid(`
       fragment unionWithinObject on Dog { ...catOrDogFragment }
@@ -111,6 +131,34 @@ describe('Validate: Possible fragment spreads', () => {
     expectValid(`
       fragment unionWithinUnion on DogOrHuman { ...catOrDogFragment }
       fragment catOrDogFragment on CatOrDog { __typename }
+    `);
+  });
+
+  it('intersection into contained object', () => {
+    expectValid(`
+      fragment intersectionWithinObject on Dog { ...catOrDogPetFragment }
+      fragment catOrDogPetFragment on CatOrDogPet { __typename }
+    `);
+  });
+
+  it('intersection into overlapping interface', () => {
+    expectValid(`
+      fragment intersectionWithinInterface on Pet { ...catOrDogPetFragment }
+      fragment catOrDogPetFragment on CatOrDogPet { __typename }
+    `);
+  });
+
+  it('intersection into overlapping union', () => {
+    expectValid(`
+      fragment intersectionWithinUnion on DogOrHuman { ...catOrDogPetFragment }
+      fragment catOrDogPetFragment on CatOrDogPet { __typename }
+    `);
+  });
+
+  it('intersection into overlapping intersection', () => {
+    expectValid(`
+      fragment intersectionWithinIntersection on CatOrBirdPet { ...catOrDogPetFragment }
+      fragment catOrDogPetFragment on CatOrDogPet { __typename }
     `);
   });
 
@@ -137,6 +185,13 @@ describe('Validate: Possible fragment spreads', () => {
   it('interface into overlapping union', () => {
     expectValid(`
       fragment interfaceWithinUnion on CatOrDog { ...petFragment }
+      fragment petFragment on Pet { name }
+    `);
+  });
+
+  it('interface into overlapping intersection', () => {
+    expectValid(`
+      fragment interfaceWithinIntersection on CatOrDogPet { ...petFragment }
       fragment petFragment on Pet { name }
     `);
   });
@@ -207,6 +262,19 @@ describe('Validate: Possible fragment spreads', () => {
     ]);
   });
 
+  it('object into not containing intersection', () => {
+    expectErrors(`
+      fragment invalidObjectWithinIntersection on CatOrDogPet { ...humanFragment }
+      fragment humanFragment on Human { pets { name } }
+    `).toDeepEqual([
+      {
+        message:
+          'Fragment "humanFragment" cannot be spread here as objects of type "CatOrDogPet" can never be of type "Human".',
+        locations: [{ line: 2, column: 65 }],
+      },
+    ]);
+  });
+
   it('union into not contained object', () => {
     expectErrors(`
       fragment invalidUnionWithinObject on Human { ...catOrDogFragment }
@@ -242,6 +310,58 @@ describe('Validate: Possible fragment spreads', () => {
         message:
           'Fragment "humanOrAlienFragment" cannot be spread here as objects of type "CatOrDog" can never be of type "HumanOrAlien".',
         locations: [{ line: 2, column: 54 }],
+      },
+    ]);
+  });
+
+  it('intersection into not contained object', () => {
+    expectErrors(`
+      fragment invalidIntersectionWithinObject on Human { ...catOrDogPetFragment }
+      fragment catOrDogPetFragment on CatOrDogPet { __typename }
+    `).toDeepEqual([
+      {
+        message:
+          'Fragment "catOrDogPetFragment" cannot be spread here as objects of type "Human" can never be of type "CatOrDogPet".',
+        locations: [{ line: 2, column: 59 }],
+      },
+    ]);
+  });
+
+  it('intersection into non overlapping interface', () => {
+    expectErrors(`
+      fragment invalidIntersectionWithinInterface on Intelligent { ...catOrDogPetFragment }
+      fragment catOrDogPetFragment on CatOrDogPet { __typename }
+    `).toDeepEqual([
+      {
+        message:
+          'Fragment "catOrDogPetFragment" cannot be spread here as objects of type "Intelligent" can never be of type "CatOrDogPet".',
+        locations: [{ line: 2, column: 68 }],
+      },
+    ]);
+  });
+
+  it('intersection into non overlapping union', () => {
+    expectErrors(`
+      fragment invalidIntersectionWithinUnion on HumanOrAlien { ...catOrDogPetFragment }
+      fragment catOrDogPetFragment on CatOrDogPet { __typename }
+    `).toDeepEqual([
+      {
+        message:
+          'Fragment "catOrDogPetFragment" cannot be spread here as objects of type "HumanOrAlien" can never be of type "CatOrDogPet".',
+        locations: [{ line: 2, column: 65 }],
+      },
+    ]);
+  });
+
+  it('intersection into non overlapping intersection', () => {
+    expectErrors(`
+      fragment invalidIntersectionWithinIntersection on HumanOrAlienIntelligent { ...catOrDogPetFragment }
+      fragment catOrDogPetFragment on CatOrDogPet { __typename }
+    `).toDeepEqual([
+      {
+        message:
+          'Fragment "catOrDogPetFragment" cannot be spread here as objects of type "HumanOrAlienIntelligent" can never be of type "CatOrDogPet".',
+        locations: [{ line: 2, column: 83 }],
       },
     ]);
   });
@@ -297,6 +417,19 @@ describe('Validate: Possible fragment spreads', () => {
         message:
           'Fragment "petFragment" cannot be spread here as objects of type "HumanOrAlien" can never be of type "Pet".',
         locations: [{ line: 2, column: 62 }],
+      },
+    ]);
+  });
+
+  it('interface into non overlapping intersection', () => {
+    expectErrors(`
+      fragment invalidInterfaceWithinIntersection on HumanOrAlien { ...catOrDogPetFragment }
+      fragment catOrDogPetFragment on CatOrDogPet { name }
+    `).toDeepEqual([
+      {
+        message:
+          'Fragment "catOrDogPetFragment" cannot be spread here as objects of type "HumanOrAlien" can never be of type "CatOrDogPet".',
+        locations: [{ line: 2, column: 69 }],
       },
     ]);
   });

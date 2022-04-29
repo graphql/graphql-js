@@ -2,6 +2,7 @@ import type { GraphQLCompositeType, GraphQLType } from '../type/definition';
 import {
   isAbstractType,
   isInterfaceType,
+  isIntersectionType,
   isListType,
   isNonNullType,
   isObjectType,
@@ -73,7 +74,9 @@ export function isTypeSubTypeOf(
   // Otherwise, the child type is not a valid subtype of the parent type.
   return (
     isAbstractType(superType) &&
-    (isInterfaceType(maybeSubType) || isObjectType(maybeSubType)) &&
+    (isInterfaceType(maybeSubType) ||
+      isObjectType(maybeSubType) ||
+      isIntersectionType(maybeSubType)) &&
     schema.isSubType(superType, maybeSubType)
   );
 }

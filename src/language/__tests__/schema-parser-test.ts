@@ -282,6 +282,11 @@ describe('Schema Parser', () => {
       locations: [{ line: 1, column: 19 }],
     });
 
+    expectSyntaxError('extend intersection Hello').to.deep.equal({
+      message: 'Syntax Error: Unexpected <EOF>.',
+      locations: [{ line: 1, column: 26 }],
+    });
+
     expectSyntaxError('extend enum Hello').to.deep.equal({
       message: 'Syntax Error: Unexpected <EOF>.',
       locations: [{ line: 1, column: 18 }],
@@ -958,6 +963,97 @@ describe('Schema Parser', () => {
     expectSyntaxError('union Hello = | Wo | Rld |').to.deep.equal({
       message: 'Syntax Error: Expected Name, found <EOF>.',
       locations: [{ line: 1, column: 27 }],
+    });
+  });
+
+  it('Simple union', () => {
+    const doc = parse('intersection Hello = World');
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'IntersectionTypeDefinition',
+          name: nameNode('Hello', { start: 13, end: 18 }),
+          description: undefined,
+          directives: [],
+          types: [typeNode('World', { start: 21, end: 26 })],
+          loc: { start: 0, end: 26 },
+        },
+      ],
+      loc: { start: 0, end: 26 },
+    });
+  });
+
+  it('Intersection with two types', () => {
+    const doc = parse('intersection Hello = Wo & Rld');
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'IntersectionTypeDefinition',
+          name: nameNode('Hello', { start: 13, end: 18 }),
+          description: undefined,
+          directives: [],
+          types: [
+            typeNode('Wo', { start: 21, end: 23 }),
+            typeNode('Rld', { start: 26, end: 29 }),
+          ],
+          loc: { start: 0, end: 29 },
+        },
+      ],
+      loc: { start: 0, end: 29 },
+    });
+  });
+
+  it('Intersection with two types and leading ampersand', () => {
+    const doc = parse('intersection Hello = & Wo & Rld');
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'IntersectionTypeDefinition',
+          name: nameNode('Hello', { start: 13, end: 18 }),
+          description: undefined,
+          directives: [],
+          types: [
+            typeNode('Wo', { start: 23, end: 25 }),
+            typeNode('Rld', { start: 28, end: 31 }),
+          ],
+          loc: { start: 0, end: 31 },
+        },
+      ],
+      loc: { start: 0, end: 31 },
+    });
+  });
+
+  it('Intersection fails with no types', () => {
+    expectSyntaxError('intersection Hello = &').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found <EOF>.',
+      locations: [{ line: 1, column: 23 }],
+    });
+  });
+
+  it('Intersection fails with leading double ampersand', () => {
+    expectSyntaxError('intersection Hello = && Wo & Rld').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found "&".',
+      locations: [{ line: 1, column: 23 }],
+    });
+  });
+
+  it('Intersection fails with double ampersand', () => {
+    expectSyntaxError('intersection Hello = Wo && Rld').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found "&".',
+      locations: [{ line: 1, column: 26 }],
+    });
+  });
+
+  it('Intersection fails with trailing ampersand', () => {
+    expectSyntaxError('intersection Hello = & Wo & Rld &').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found <EOF>.',
+      locations: [{ line: 1, column: 34 }],
     });
   });
 

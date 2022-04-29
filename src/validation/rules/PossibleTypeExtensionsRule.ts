@@ -16,6 +16,7 @@ import {
   isEnumType,
   isInputObjectType,
   isInterfaceType,
+  isIntersectionType,
   isObjectType,
   isScalarType,
   isUnionType,
@@ -45,6 +46,7 @@ export function PossibleTypeExtensionsRule(
     ObjectTypeExtension: checkExtension,
     InterfaceTypeExtension: checkExtension,
     UnionTypeExtension: checkExtension,
+    IntersectionTypeExtension: checkExtension,
     EnumTypeExtension: checkExtension,
     InputObjectTypeExtension: checkExtension,
   };
@@ -93,6 +95,7 @@ const defKindToExtKind: ObjMap<Kind> = {
   [Kind.OBJECT_TYPE_DEFINITION]: Kind.OBJECT_TYPE_EXTENSION,
   [Kind.INTERFACE_TYPE_DEFINITION]: Kind.INTERFACE_TYPE_EXTENSION,
   [Kind.UNION_TYPE_DEFINITION]: Kind.UNION_TYPE_EXTENSION,
+  [Kind.INTERSECTION_TYPE_DEFINITION]: Kind.INTERSECTION_TYPE_EXTENSION,
   [Kind.ENUM_TYPE_DEFINITION]: Kind.ENUM_TYPE_EXTENSION,
   [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION,
 };
@@ -109,6 +112,9 @@ function typeToExtKind(type: GraphQLNamedType): Kind {
   }
   if (isUnionType(type)) {
     return Kind.UNION_TYPE_EXTENSION;
+  }
+  if (isIntersectionType(type)) {
+    return Kind.INTERSECTION_TYPE_EXTENSION;
   }
   if (isEnumType(type)) {
     return Kind.ENUM_TYPE_EXTENSION;
@@ -131,6 +137,8 @@ function extensionKindToTypeName(kind: Kind): string {
       return 'interface';
     case Kind.UNION_TYPE_EXTENSION:
       return 'union';
+    case Kind.INTERSECTION_TYPE_EXTENSION:
+      return 'intersection';
     case Kind.ENUM_TYPE_EXTENSION:
       return 'enum';
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:

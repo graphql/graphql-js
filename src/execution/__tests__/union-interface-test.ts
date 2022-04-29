@@ -5,6 +5,7 @@ import { parse } from '../../language/parser';
 
 import {
   GraphQLInterfaceType,
+  GraphQLIntersectionType,
   GraphQLList,
   GraphQLObjectType,
   GraphQLUnionType,
@@ -45,15 +46,18 @@ class Cat {
 class Person {
   name: string;
   pets?: ReadonlyArray<Dog | Cat>;
-  friends?: ReadonlyArray<Dog | Cat | Person>;
+  namedMammalPets?: ReadonlyArray<Dog | Cat>;
+  friends?: ReadonlyArray<Dog | Person>;
 
   constructor(
     name: string,
     pets?: ReadonlyArray<Dog | Cat>,
+    namedMammalPets?: ReadonlyArray<Dog | Cat>,
     friends?: ReadonlyArray<Dog | Cat | Person>,
   ) {
     this.name = name;
     this.pets = pets;
+    this.namedMammalPets = namedMammalPets;
     this.friends = friends;
   }
 }
@@ -130,12 +134,29 @@ const PersonType: GraphQLObjectType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     pets: { type: new GraphQLList(PetType) },
+    namedMammalPets: { type: new GraphQLList(NamedMammalPetType) },
     friends: { type: new GraphQLList(NamedType) },
     progeny: { type: new GraphQLList(PersonType) },
     mother: { type: PersonType },
     father: { type: PersonType },
   }),
   isTypeOf: (value) => value instanceof Person,
+});
+
+const NamedMammalPetType = new GraphQLIntersectionType({
+  name: 'NamedMammalPet',
+  types: [NamedType, LifeType, MammalType, PetType],
+  resolveType(value) {
+    if (value instanceof Dog) {
+      return DogType.name;
+    }
+    if (value instanceof Cat) {
+      return CatType.name;
+    }
+    /* c8 ignore next 3 */
+    // Not reachable, all possible types have been considered.
+    expect.fail('Not reachable');
+  },
 });
 
 const schema = new GraphQLSchema({
@@ -152,10 +173,15 @@ odie.mother = new Dog("Odie's Mom", true);
 odie.mother.progeny = [odie];
 
 const liz = new Person('Liz');
-const john = new Person('John', [garfield, odie], [liz, odie]);
+const john = new Person(
+  'John',
+  [garfield, odie],
+  [garfield, odie],
+  [liz, odie],
+);
 
-describe('Execute: Union and intersection types', () => {
-  it('can introspect on union and intersection types', () => {
+describe('Execute: Union, interface and intersection types', () => {
+  it('can introspect on union, interface and intersection types', () => {
     const document = parse(`
       {
         Named: __type(name: "Named") {
@@ -163,6 +189,7 @@ describe('Execute: Union and intersection types', () => {
           name
           fields { name }
           interfaces { name }
+          memberTypes { name }
           possibleTypes { name }
           enumValues { name }
           inputFields { name }
@@ -172,6 +199,7 @@ describe('Execute: Union and intersection types', () => {
           name
           fields { name }
           interfaces { name }
+          memberTypes { name }
           possibleTypes { name }
           enumValues { name }
           inputFields { name }
@@ -181,6 +209,17 @@ describe('Execute: Union and intersection types', () => {
           name
           fields { name }
           interfaces { name }
+          memberTypes { name }
+          possibleTypes { name }
+          enumValues { name }
+          inputFields { name }
+        }
+        NamedMammalPet: __type(name: "NamedMammalPet") {
+          kind
+          name
+          fields { name }
+          interfaces { name }
+          memberTypes { name }
           possibleTypes { name }
           enumValues { name }
           inputFields { name }
@@ -195,6 +234,7 @@ describe('Execute: Union and intersection types', () => {
           name: 'Named',
           fields: [{ name: 'name' }],
           interfaces: [],
+          memberTypes: null,
           possibleTypes: [{ name: 'Dog' }, { name: 'Cat' }, { name: 'Person' }],
           enumValues: null,
           inputFields: null,
@@ -204,6 +244,7 @@ describe('Execute: Union and intersection types', () => {
           name: 'Mammal',
           fields: [{ name: 'progeny' }, { name: 'mother' }, { name: 'father' }],
           interfaces: [{ name: 'Life' }],
+          memberTypes: null,
           possibleTypes: [{ name: 'Dog' }, { name: 'Cat' }, { name: 'Person' }],
           enumValues: null,
           inputFields: null,
@@ -213,6 +254,22 @@ describe('Execute: Union and intersection types', () => {
           name: 'Pet',
           fields: null,
           interfaces: null,
+          memberTypes: [{ name: 'Dog' }, { name: 'Cat' }],
+          possibleTypes: [{ name: 'Dog' }, { name: 'Cat' }],
+          enumValues: null,
+          inputFields: null,
+        },
+        NamedMammalPet: {
+          kind: 'INTERSECTION',
+          name: 'NamedMammalPet',
+          fields: null,
+          interfaces: null,
+          memberTypes: [
+            { name: 'Named' },
+            { name: 'Life' },
+            { name: 'Mammal' },
+            { name: 'Pet' },
+          ],
           possibleTypes: [{ name: 'Dog' }, { name: 'Cat' }],
           enumValues: null,
           inputFields: null,
@@ -418,12 +475,158 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
+  it('executes using intersection types', () => {
+    // NOTE: This is an *invalid* query, but it should be an *executable* query.
+    const document = parse(`
+      {
+        __typename
+        name
+        namedMammalPets {
+          __typename
+          name
+          barks
+          meows
+        }
+      }
+    `);
+
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
+      data: {
+        __typename: 'Person',
+        name: 'John',
+        namedMammalPets: [
+          { __typename: 'Cat', name: 'Garfield', meows: false },
+          { __typename: 'Dog', name: 'Odie', barks: true },
+        ],
+      },
+    });
+  });
+
+  it('executes intersection types with inline fragments', () => {
+    // This is the valid version of the query in the above test.
+    const document = parse(`
+      {
+        __typename
+        name
+        namedMammalPets {
+          __typename
+          ... on Named {
+            name
+          }
+          ... on Dog {
+            barks
+          }
+          ... on Cat {
+            meows
+          }
+
+          ... on Mammal {
+            mother {
+              __typename
+              ... on Dog {
+                name
+                barks
+              }
+              ... on Cat {
+                name
+                meows
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
+      data: {
+        __typename: 'Person',
+        name: 'John',
+        namedMammalPets: [
+          {
+            __typename: 'Cat',
+            name: 'Garfield',
+            meows: false,
+            mother: {
+              __typename: 'Cat',
+              name: "Garfield's Mom",
+              meows: false,
+            },
+          },
+          {
+            __typename: 'Dog',
+            name: 'Odie',
+            barks: true,
+            mother: {
+              __typename: 'Dog',
+              name: "Odie's Mom",
+              barks: true,
+            },
+          },
+        ],
+      },
+    });
+  });
+
+  it('executes intersection types with named fragments', () => {
+    const document = parse(`
+      {
+        __typename
+        name
+        namedMammalPets {
+          __typename
+          ...Name
+          ...DogBarks
+          ...CatMeows
+        }
+      }
+
+      fragment  Name on Named {
+        name
+      }
+
+      fragment  DogBarks on Dog {
+        barks
+      }
+
+      fragment  CatMeows on Cat {
+        meows
+      }
+    `);
+
+    expect(executeSync({ schema, document, rootValue: john })).to.deep.equal({
+      data: {
+        __typename: 'Person',
+        name: 'John',
+        namedMammalPets: [
+          {
+            __typename: 'Cat',
+            name: 'Garfield',
+            meows: false,
+          },
+          {
+            __typename: 'Dog',
+            name: 'Odie',
+            barks: true,
+          },
+        ],
+      },
+    });
+  });
+
   it('allows fragment conditions to be abstract types', () => {
     const document = parse(`
       {
         __typename
         name
         pets {
+          ...NamedMammalPetFields,
+          ...on Mammal {
+            mother {
+              ...ProgenyFields
+            }
+          }
+        }
+        namedMammalPets {
           ...PetFields,
           ...on Mammal {
             mother {
@@ -432,6 +635,19 @@ describe('Execute: Union and intersection types', () => {
           }
         }
         friends { ...FriendFields }
+      }
+
+      fragment NamedMammalPetFields on NamedMammalPet {
+        __typename
+        ... on Named {
+          name
+        }
+        ... on Dog {
+          barks
+        }
+        ... on Cat {
+          meows
+        }
       }
 
       fragment PetFields on Pet {
@@ -469,6 +685,20 @@ describe('Execute: Union and intersection types', () => {
         __typename: 'Person',
         name: 'John',
         pets: [
+          {
+            __typename: 'Cat',
+            name: 'Garfield',
+            meows: false,
+            mother: { progeny: [{ __typename: 'Cat' }] },
+          },
+          {
+            __typename: 'Dog',
+            name: 'Odie',
+            barks: true,
+            mother: { progeny: [{ __typename: 'Dog' }] },
+          },
+        ],
+        namedMammalPets: [
           {
             __typename: 'Cat',
             name: 'Garfield',
@@ -525,7 +755,7 @@ describe('Execute: Union and intersection types', () => {
     });
     const schema2 = new GraphQLSchema({ query: PersonType2 });
     const document = parse('{ name, friends { name } }');
-    const rootValue = new Person('John', [], [liz]);
+    const rootValue = new Person('John', [], [], [liz]);
     const contextValue = { authToken: '123abc' };
 
     const result = executeSync({
