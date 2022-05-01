@@ -1,27 +1,10 @@
 {
-  "plugins": [
-    "@babel/plugin-transform-typescript",
-    "./resources/inline-invariant"
+  "presets": [
+    ["@babel/preset-env", { "modules": false, "targets": { "node": "14" } }]
   ],
-  "env": {
-    "cjs": {
-      "presets": [
-        [
-          "@babel/preset-env",
-          { "modules": "commonjs", "targets": { "node": "14" } }
-        ]
-      ],
-      "plugins": [
-        ["./resources/add-extension-to-import-paths", { "extension": "js" }]
-      ]
-    },
-    "mjs": {
-      "presets": [
-        ["@babel/preset-env", { "modules": false, "targets": { "node": "14" } }]
-      ],
-      "plugins": [
-        ["./resources/add-extension-to-import-paths", { "extension": "mjs" }]
-      ]
-    }
-  }
+  "plugins": [
+    ["./resources/add-extension-to-import-paths.js", { "extension": "js" }],
+    "@babel/plugin-transform-typescript",
+    "./resources/inline-invariant.js"
+  ]
 }

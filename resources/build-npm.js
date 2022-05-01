@@ -20,17 +20,25 @@ if (require.main === module) {
   const packageJSON = buildPackageJSON();
 
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
-  for (const filepath of srcFiles) {
-    const srcPath = path.join('./src', filepath);
-    const destPath = path.join('./npmDist', filepath);
+  for (const srcFilePath of srcFiles) {
+    if (srcFilePath.endsWith('.ts')) {
+      const destFilePath = srcFilePath.replace(/\.ts$/, '.js');
 
-    fs.mkdirSync(path.dirname(destPath), { recursive: true });
-    if (filepath.endsWith('.ts')) {
-      const cjs = babelBuild(srcPath, { envName: 'cjs' });
-      writeGeneratedFile(destPath.replace(/\.ts$/, '.js'), cjs);
+      const srcPath = path.join('./src', srcFilePath);
+      const destPath = path.join('./npmDist', destFilePath);
 
-      const mjs = babelBuild(srcPath, { envName: 'mjs' });
-      writeGeneratedFile(destPath.replace(/\.ts$/, '.mjs'), mjs);
+      fs.mkdirSync(path.dirname(destPath), { recursive: true });
+
+      const { code } = babel.transformFileSync(srcPath, {
+        babelrc: false,
+        configFile: './.babelrc-npm.json',
+      });
+      writeGeneratedFile(destPath, code + '\n');
+
+      if (path.basename(destFilePath) === 'index.js') {
+        const key = destFilePath.replace(/\/index.js$/, '');
+        packageJSON.exports[key] = destFilePath;
+      }
     }
   }
 
@@ -89,15 +97,6 @@ if (require.main === module) {
   showDirStats('./npmDist');
 }
 
-function babelBuild(srcPath, options) {
-  const { code } = babel.transformFileSync(srcPath, {
-    babelrc: false,
-    configFile: './.babelrc-npm.json',
-    ...options,
-  });
-  return code + '\n';
-}
-
 function buildPackageJSON() {
   const packageJSON = JSON.parse(
     fs.readFileSync(require.resolve('../package.json'), 'utf-8'),
@@ -106,6 +105,13 @@ function buildPackageJSON() {
   delete packageJSON.private;
   delete packageJSON.scripts;
   delete packageJSON.devDependencies;
+
+  packageJSON.type = 'module';
+  // Temporary workaround to allow "internal" imports, no grantees provided
+  packageJSON.exports = {
+    './*.js': './*.js',
+    './*': './*.js',
+  };
 
   // TODO: move to integration tests
   const publishTag = packageJSON.publishConfig?.tag;

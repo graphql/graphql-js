@@ -58,11 +58,20 @@ function prepareBenchmarkProjects(revisionList) {
       path.join(projectPath, 'package.json'),
       '{ "private": true }',
     );
-    exec(
-      'npm --quiet install --ignore-scripts ' + prepareNPMPackage(revision),
-      { cwd: projectPath },
-    );
     exec(`cp -R ${localDir('benchmark')} ${projectPath}`);
+
+    const packageJSON = {
+      private: true,
+      type: 'module',
+      dependencies: {
+        graphql: prepareNPMPackage(revision),
+      },
+    };
+    fs.writeFileSync(
+      path.join(projectPath, 'package.json'),
+      JSON.stringify(packageJSON, null, 2),
+    );
+    exec('npm --quiet install --ignore-scripts ', { cwd: projectPath });
 
     return { revision, projectPath };
   });
@@ -334,21 +343,21 @@ function grey(str) {
 
 function sampleModule(modulePath) {
   const sampleCode = `
-    const assert = require('assert');
-
+    import assert from 'assert';
     assert(global.gc);
     assert(process.send);
-    const module = require('${modulePath}');
 
-    clock(7, module.measure); // warm up
+    import { benchmark } from '${modulePath}';
+
+    clock(7, benchmark.measure); // warm up
     global.gc();
     process.nextTick(() => {
       const memBaseline = process.memoryUsage().heapUsed;
-      const clocked = clock(module.count, module.measure);
+      const clocked = clock(benchmark.count, benchmark.measure);
       process.send({
-        name: module.name,
-        clocked: clocked / module.count,
-        memUsed: (process.memoryUsage().heapUsed - memBaseline) / module.count,
+        name: benchmark.name,
+        clocked: clocked / benchmark.count,
+        memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
       });
     });
 
@@ -369,6 +378,7 @@ function sampleModule(modulePath) {
         '--no-concurrent-sweeping',
         '--predictable',
         '--expose-gc',
+        '--input-type=module',
         '--eval',
         sampleCode,
       ],

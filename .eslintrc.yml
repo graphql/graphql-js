@@ -35,7 +35,7 @@ rules:
   node/no-exports-assign: error
   node/no-extraneous-import: error
   node/no-extraneous-require: error
-  node/no-missing-import: error
+  node/no-missing-import: [error, { allowModules: ['graphql'] }]
   node/no-missing-require: error
   node/no-new-require: error
   node/no-path-concat: error
@@ -81,7 +81,7 @@ rules:
 
   # Static analysis
   # https://github.com/benmosher/eslint-plugin-import#static-analysis
-  import/no-unresolved: error
+  import/no-unresolved: [error, { ignore: ['graphql'] }]
   import/named: error
   import/default: error
   import/namespace: error
@@ -671,23 +671,24 @@ overrides:
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
   - files: 'integrationTests/*/**'
+    parserOptions:
+      sourceType: module
     env:
       node: true
     rules:
       node/no-sync: off
-      node/no-missing-require: [error, { allowModules: ['graphql'] }]
-      import/no-commonjs: off
       import/no-nodejs-modules: off
       no-console: off
   - files: 'benchmark/**'
+    parserOptions:
+      sourceType: module
     env:
       node: true
     rules:
       internal-rules/only-ascii: [error, { allowEmoji: true }]
       node/no-sync: off
-      node/no-missing-require: off
+      import/no-unresolved: off
       import/no-nodejs-modules: off
-      import/no-commonjs: off
       no-console: off
       no-await-in-loop: off
   - files: 'resources/**'
@@ -730,3 +731,6 @@ overrides:
       # Ignore docusarus related webpack aliases
       import/no-unresolved:
         ['error', { 'ignore': ['^@theme', '^@docusaurus', '^@generated'] }]
+  - files: 'benchmark/benchmark.js'
+    parserOptions:
+      sourceType: script

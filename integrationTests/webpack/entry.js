@@ -1,13 +1,9 @@
-'use strict';
-
-const { buildSchema, graphqlSync } = require('graphql');
+import { buildSchema, graphqlSync } from 'graphql';
 
 const schema = buildSchema('type Query { hello: String }');
 
-const result = graphqlSync({
+export const result = graphqlSync({
   schema,
   source: '{ hello }',
   rootValue: { hello: 'world' },
 });
-
-module.exports = { result };

@@ -1,9 +1,8 @@
-'use strict';
+import childProcess from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
-const path = require('path');
-const childProcess = require('child_process');
-
-const { dependencies } = require('./package.json');
+const { dependencies } = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
 
 const tsVersions = Object.keys(dependencies)
   .filter((pkg) => pkg.startsWith('typescript-'))
@@ -15,5 +14,5 @@ for (const version of tsVersions) {
 }
 
 function tscPath(version) {
-  return path.join(__dirname, 'node_modules', version, 'bin/tsc');
+  return path.join('node_modules', version, 'bin', 'tsc');
 }
