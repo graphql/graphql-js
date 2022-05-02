@@ -1,53 +1,36 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.printIntrospectionSchema = printIntrospectionSchema;
-exports.printSchema = printSchema;
-exports.printType = printType;
-
-var _inspect = require('../jsutils/inspect.js');
-
-var _invariant = require('../jsutils/invariant.js');
-
-var _blockString = require('../language/blockString.js');
-
-var _kinds = require('../language/kinds.js');
-
-var _printer = require('../language/printer.js');
-
-var _definition = require('../type/definition.js');
-
-var _directives = require('../type/directives.js');
-
-var _introspection = require('../type/introspection.js');
-
-var _scalars = require('../type/scalars.js');
-
-var _astFromValue = require('./astFromValue.js');
-
-function printSchema(schema) {
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { isPrintableAsBlockString } from '../language/blockString.js';
+import { Kind } from '../language/kinds.js';
+import { print } from '../language/printer.js';
+import {
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../type/definition.js';
+import {
+  DEFAULT_DEPRECATION_REASON,
+  isSpecifiedDirective,
+} from '../type/directives.js';
+import { isIntrospectionType } from '../type/introspection.js';
+import { isSpecifiedScalarType } from '../type/scalars.js';
+import { astFromValue } from './astFromValue.js';
+export function printSchema(schema) {
   return printFilteredSchema(
     schema,
-    (n) => !(0, _directives.isSpecifiedDirective)(n),
+    (n) => !isSpecifiedDirective(n),
     isDefinedType,
   );
 }
-
-function printIntrospectionSchema(schema) {
-  return printFilteredSchema(
-    schema,
-    _directives.isSpecifiedDirective,
-    _introspection.isIntrospectionType,
-  );
+export function printIntrospectionSchema(schema) {
+  return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType);
 }
 
 function isDefinedType(type) {
-  return (
-    !(0, _scalars.isSpecifiedScalarType)(type) &&
-    !(0, _introspection.isIntrospectionType)(type)
-  );
+  return !isSpecifiedScalarType(type) && !isIntrospectionType(type);
 }
 
 function printFilteredSchema(schema, directiveFilter, typeFilter) {
@@ -126,38 +109,34 @@ function isSchemaOfCommonNames(schema) {
   return true;
 }
 
-function printType(type) {
-  if ((0, _definition.isScalarType)(type)) {
+export function printType(type) {
+  if (isScalarType(type)) {
     return printScalar(type);
   }
 
-  if ((0, _definition.isObjectType)(type)) {
+  if (isObjectType(type)) {
     return printObject(type);
   }
 
-  if ((0, _definition.isInterfaceType)(type)) {
+  if (isInterfaceType(type)) {
     return printInterface(type);
   }
 
-  if ((0, _definition.isUnionType)(type)) {
+  if (isUnionType(type)) {
     return printUnion(type);
   }
 
-  if ((0, _definition.isEnumType)(type)) {
+  if (isEnumType(type)) {
     return printEnum(type);
   }
 
-  if ((0, _definition.isInputObjectType)(type)) {
+  if (isInputObjectType(type)) {
     return printInputObject(type);
   }
   /* c8 ignore next 3 */
   // Not reachable, all possible types have been considered.
 
-  false ||
-    (0, _invariant.invariant)(
-      false,
-      'Unexpected type: ' + (0, _inspect.inspect)(type),
-    );
+  false || invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
 function printScalar(type) {
@@ -262,14 +241,11 @@ function printArgs(args, indentation = '') {
 }
 
 function printInputValue(arg) {
-  const defaultAST = (0, _astFromValue.astFromValue)(
-    arg.defaultValue,
-    arg.type,
-  );
+  const defaultAST = astFromValue(arg.defaultValue, arg.type);
   let argDecl = arg.name + ': ' + String(arg.type);
 
   if (defaultAST) {
-    argDecl += ` = ${(0, _printer.print)(defaultAST)}`;
+    argDecl += ` = ${print(defaultAST)}`;
   }
 
   return argDecl + printDeprecated(arg.deprecationReason);
@@ -292,9 +268,9 @@ function printDeprecated(reason) {
     return '';
   }
 
-  if (reason !== _directives.DEFAULT_DEPRECATION_REASON) {
-    const astValue = (0, _printer.print)({
-      kind: _kinds.Kind.STRING,
+  if (reason !== DEFAULT_DEPRECATION_REASON) {
+    const astValue = print({
+      kind: Kind.STRING,
       value: reason,
     });
     return ` @deprecated(reason: ${astValue})`;
@@ -308,8 +284,8 @@ function printSpecifiedByURL(scalar) {
     return '';
   }
 
-  const astValue = (0, _printer.print)({
-    kind: _kinds.Kind.STRING,
+  const astValue = print({
+    kind: Kind.STRING,
     value: scalar.specifiedByURL,
   });
   return ` @specifiedBy(url: ${astValue})`;
@@ -322,10 +298,10 @@ function printDescription(def, indentation = '', firstInBlock = true) {
     return '';
   }
 
-  const blockString = (0, _printer.print)({
-    kind: _kinds.Kind.STRING,
+  const blockString = print({
+    kind: Kind.STRING,
     value: description,
-    block: (0, _blockString.isPrintableAsBlockString)(description),
+    block: isPrintableAsBlockString(description),
   });
   const prefix =
     indentation && !firstInBlock ? '\n' + indentation : indentation;

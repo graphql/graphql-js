@@ -1,14 +1,4 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.dedentBlockStringLines = dedentBlockStringLines;
-exports.isPrintableAsBlockString = isPrintableAsBlockString;
-exports.printBlockString = printBlockString;
-
-var _characterClasses = require('./characterClasses.js');
-
+import { isWhiteSpace } from './characterClasses.js';
 /**
  * Produces the value of a block string from its parsed raw value, similar to
  * CoffeeScript's block string, Python's docstring trim or Ruby's strip_heredoc.
@@ -17,7 +7,8 @@ var _characterClasses = require('./characterClasses.js');
  *
  * @internal
  */
-function dedentBlockStringLines(lines) {
+
+export function dedentBlockStringLines(lines) {
   let commonIndent = Number.MAX_SAFE_INTEGER;
   let firstNonEmptyLine = null;
   let lastNonEmptyLine = -1;
@@ -46,10 +37,7 @@ function dedentBlockStringLines(lines) {
 function leadingWhitespace(str) {
   let i = 0;
 
-  while (
-    i < str.length &&
-    (0, _characterClasses.isWhiteSpace)(str.charCodeAt(i))
-  ) {
+  while (i < str.length && isWhiteSpace(str.charCodeAt(i))) {
     ++i;
   }
 
@@ -59,7 +47,7 @@ function leadingWhitespace(str) {
  * @internal
  */
 
-function isPrintableAsBlockString(value) {
+export function isPrintableAsBlockString(value) {
   if (value === '') {
     return true; // empty string is printable
   }
@@ -134,7 +122,7 @@ function isPrintableAsBlockString(value) {
  * @internal
  */
 
-function printBlockString(value, options) {
+export function printBlockString(value, options) {
   const escapedValue = value.replace(/"""/g, '\\"""'); // Expand a block string's raw value into independent lines.
 
   const lines = escapedValue.split(/\r\n|[\n\r]/g);
@@ -144,11 +132,7 @@ function printBlockString(value, options) {
     lines.length > 1 &&
     lines
       .slice(1)
-      .every(
-        (line) =>
-          line.length === 0 ||
-          (0, _characterClasses.isWhiteSpace)(line.charCodeAt(0)),
-      ); // Trailing triple quotes just looks confusing but doesn't force trailing new line
+      .every((line) => line.length === 0 || isWhiteSpace(line.charCodeAt(0))); // Trailing triple quotes just looks confusing but doesn't force trailing new line
 
   const hasTrailingTripleQuotes = escapedValue.endsWith('\\"""'); // Trailing quote (single or double) or slash forces trailing new line
 
@@ -164,8 +148,7 @@ function printBlockString(value, options) {
       hasTrailingTripleQuotes);
   let result = ''; // Format a multi-line block quote to account for leading space.
 
-  const skipLeadingNewLine =
-    isSingleLine && (0, _characterClasses.isWhiteSpace)(value.charCodeAt(0));
+  const skipLeadingNewLine = isSingleLine && isWhiteSpace(value.charCodeAt(0));
 
   if ((printAsMultipleLines && !skipLeadingNewLine) || forceLeadingNewLine) {
     result += '\n';

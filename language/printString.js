@@ -1,15 +1,8 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.printString = printString;
-
 /**
  * Prints a string as a GraphQL StringValue literal. Replaces control characters
  * and excluded characters (" U+0022 and \\ U+005C) with escape sequences.
  */
-function printString(str) {
+export function printString(str) {
   return `"${str.replace(escapedRegExp, escapedReplacer)}"`;
 } // eslint-disable-next-line no-control-regex
 

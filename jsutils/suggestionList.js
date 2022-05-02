@@ -1,17 +1,10 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.suggestionList = suggestionList;
-
-var _naturalCompare = require('./naturalCompare.js');
-
+import { naturalCompare } from './naturalCompare.js';
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
  * list of valid options sorted based on their similarity with the input.
  */
-function suggestionList(input, options) {
+
+export function suggestionList(input, options) {
   const optionsByDistance = Object.create(null);
   const lexicalDistance = new LexicalDistance(input);
   const threshold = Math.floor(input.length * 0.4) + 1;
@@ -26,9 +19,7 @@ function suggestionList(input, options) {
 
   return Object.keys(optionsByDistance).sort((a, b) => {
     const distanceDiff = optionsByDistance[a] - optionsByDistance[b];
-    return distanceDiff !== 0
-      ? distanceDiff
-      : (0, _naturalCompare.naturalCompare)(a, b);
+    return distanceDiff !== 0 ? distanceDiff : naturalCompare(a, b);
   });
 }
 /**

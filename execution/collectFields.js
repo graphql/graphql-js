@@ -1,21 +1,11 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.collectFields = collectFields;
-exports.collectSubfields = collectSubfields;
-
-var _kinds = require('../language/kinds.js');
-
-var _definition = require('../type/definition.js');
-
-var _directives = require('../type/directives.js');
-
-var _typeFromAST = require('../utilities/typeFromAST.js');
-
-var _values = require('./values.js');
-
+import { Kind } from '../language/kinds.js';
+import { isAbstractType } from '../type/definition.js';
+import {
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
+} from '../type/directives.js';
+import { typeFromAST } from '../utilities/typeFromAST.js';
+import { getDirectiveValues } from './values.js';
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -25,7 +15,8 @@ var _values = require('./values.js');
  *
  * @internal
  */
-function collectFields(
+
+export function collectFields(
   schema,
   fragments,
   variableValues,
@@ -55,7 +46,7 @@ function collectFields(
  * @internal
  */
 
-function collectSubfields(
+export function collectSubfields(
   schema,
   fragments,
   variableValues,
@@ -93,7 +84,7 @@ function collectFieldsImpl(
 ) {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
-      case _kinds.Kind.FIELD: {
+      case Kind.FIELD: {
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
@@ -110,7 +101,7 @@ function collectFieldsImpl(
         break;
       }
 
-      case _kinds.Kind.INLINE_FRAGMENT: {
+      case Kind.INLINE_FRAGMENT: {
         if (
           !shouldIncludeNode(variableValues, selection) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
@@ -130,7 +121,7 @@ function collectFieldsImpl(
         break;
       }
 
-      case _kinds.Kind.FRAGMENT_SPREAD: {
+      case Kind.FRAGMENT_SPREAD: {
         const fragName = selection.name.value;
 
         if (
@@ -170,18 +161,14 @@ function collectFieldsImpl(
  */
 
 function shouldIncludeNode(variableValues, node) {
-  const skip = (0, _values.getDirectiveValues)(
-    _directives.GraphQLSkipDirective,
-    node,
-    variableValues,
-  );
+  const skip = getDirectiveValues(GraphQLSkipDirective, node, variableValues);
 
   if ((skip === null || skip === void 0 ? void 0 : skip.if) === true) {
     return false;
   }
 
-  const include = (0, _values.getDirectiveValues)(
-    _directives.GraphQLIncludeDirective,
+  const include = getDirectiveValues(
+    GraphQLIncludeDirective,
     node,
     variableValues,
   );
@@ -205,16 +192,13 @@ function doesFragmentConditionMatch(schema, fragment, type) {
     return true;
   }
 
-  const conditionalType = (0, _typeFromAST.typeFromAST)(
-    schema,
-    typeConditionNode,
-  );
+  const conditionalType = typeFromAST(schema, typeConditionNode);
 
   if (conditionalType === type) {
     return true;
   }
 
-  if ((0, _definition.isAbstractType)(conditionalType)) {
+  if (isAbstractType(conditionalType)) {
     return schema.isSubType(conditionalType, type);
   }
 

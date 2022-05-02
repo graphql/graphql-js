@@ -1,11 +1,4 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.NoFragmentCyclesRule = NoFragmentCyclesRule;
-
-var _GraphQLError = require('../../error/GraphQLError.js');
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 /**
  * No fragment cycles
@@ -15,7 +8,7 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-spreads-must-not-form-cycles
  */
-function NoFragmentCyclesRule(context) {
+export function NoFragmentCyclesRule(context) {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
   const visitedFrags = Object.create(null); // Array of AST nodes used to produce meaningful errors
@@ -67,7 +60,7 @@ function NoFragmentCyclesRule(context) {
           .map((s) => '"' + s.name.value + '"')
           .join(', ');
         context.reportError(
-          new _GraphQLError.GraphQLError(
+          new GraphQLError(
             `Cannot spread fragment "${spreadName}" within itself` +
               (viaPath !== '' ? ` via ${viaPath}.` : '.'),
             {

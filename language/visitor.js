@@ -1,23 +1,13 @@
-'use strict';
+import { devAssert } from '../jsutils/devAssert.js';
+import { inspect } from '../jsutils/inspect.js';
+import { isNode, QueryDocumentKeys } from './ast.js';
+import { Kind } from './kinds.js';
+/**
+ * A visitor is provided to visit, it contains the collection of
+ * relevant functions to be called during the visitor's traversal.
+ */
 
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.BREAK = void 0;
-exports.getEnterLeaveForKind = getEnterLeaveForKind;
-exports.getVisitFn = getVisitFn;
-exports.visit = visit;
-exports.visitInParallel = visitInParallel;
-
-var _devAssert = require('../jsutils/devAssert.js');
-
-var _inspect = require('../jsutils/inspect.js');
-
-var _ast = require('./ast.js');
-
-var _kinds = require('./kinds.js');
-
-const BREAK = Object.freeze({});
+export const BREAK = Object.freeze({});
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the
@@ -97,12 +87,10 @@ const BREAK = Object.freeze({});
  * ```
  */
 
-exports.BREAK = BREAK;
-
-function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
+export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
   const enterLeaveMap = new Map();
 
-  for (const kind of Object.values(_kinds.Kind)) {
+  for (const kind of Object.values(Kind)) {
     enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
   }
   /* eslint-disable no-undef-init */
@@ -177,11 +165,7 @@ function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
     if (!Array.isArray(node)) {
       var _enterLeaveMap$get, _enterLeaveMap$get2;
 
-      (0, _ast.isNode)(node) ||
-        (0, _devAssert.devAssert)(
-          false,
-          `Invalid AST Node: ${(0, _inspect.inspect)(node)}.`,
-        );
+      isNode(node) || devAssert(false, `Invalid AST Node: ${inspect(node)}.`);
       const visitFn = isLeaving
         ? (_enterLeaveMap$get = enterLeaveMap.get(node.kind)) === null ||
           _enterLeaveMap$get === void 0
@@ -209,7 +193,7 @@ function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
         edits.push([key, result]);
 
         if (!isLeaving) {
-          if ((0, _ast.isNode)(result)) {
+          if (isNode(result)) {
             node = result;
           } else {
             path.pop();
@@ -260,11 +244,11 @@ function visit(root, visitor, visitorKeys = _ast.QueryDocumentKeys) {
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 
-function visitInParallel(visitors) {
+export function visitInParallel(visitors) {
   const skipping = new Array(visitors.length).fill(null);
   const mergedVisitor = Object.create(null);
 
-  for (const kind of Object.values(_kinds.Kind)) {
+  for (const kind of Object.values(Kind)) {
     let hasVisitor = false;
     const enterList = new Array(visitors.length).fill(undefined);
     const leaveList = new Array(visitors.length).fill(undefined);
@@ -336,7 +320,7 @@ function visitInParallel(visitors) {
  * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
  */
 
-function getEnterLeaveForKind(visitor, kind) {
+export function getEnterLeaveForKind(visitor, kind) {
   const kindVisitor = visitor[kind];
 
   if (typeof kindVisitor === 'object') {
@@ -364,7 +348,7 @@ function getEnterLeaveForKind(visitor, kind) {
 
 /* c8 ignore next 8 */
 
-function getVisitFn(visitor, kind, isLeaving) {
+export function getVisitFn(visitor, kind, isLeaving) {
   const { enter, leave } = getEnterLeaveForKind(visitor, kind);
   return isLeaving ? leave : enter;
 }

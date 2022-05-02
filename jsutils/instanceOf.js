@@ -1,19 +1,12 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.instanceOf = void 0;
-
-var _inspect = require('./inspect.js');
-
+import { inspect } from './inspect.js';
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
  */
-const instanceOf =
+
+export const instanceOf =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
   // eslint-disable-next-line no-undef
@@ -40,7 +33,7 @@ const instanceOf =
               : _value$constructor.name;
 
           if (className === valueClassName) {
-            const stringifiedValue = (0, _inspect.inspect)(value);
+            const stringifiedValue = inspect(value);
             throw new Error(`Cannot use ${className} "${stringifiedValue}" from another module or realm.
 
 Ensure that there is only one instance of "graphql" in the node_modules
@@ -58,4 +51,3 @@ spurious results.`);
 
         return false;
       };
-exports.instanceOf = instanceOf;

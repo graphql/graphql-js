@@ -1,24 +1,16 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.astFromValue = astFromValue;
-
-var _inspect = require('../jsutils/inspect.js');
-
-var _invariant = require('../jsutils/invariant.js');
-
-var _isIterableObject = require('../jsutils/isIterableObject.js');
-
-var _isObjectLike = require('../jsutils/isObjectLike.js');
-
-var _kinds = require('../language/kinds.js');
-
-var _definition = require('../type/definition.js');
-
-var _scalars = require('../type/scalars.js');
-
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { isIterableObject } from '../jsutils/isIterableObject.js';
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { Kind } from '../language/kinds.js';
+import {
+  isEnumType,
+  isInputObjectType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+} from '../type/definition.js';
+import { GraphQLID } from '../type/scalars.js';
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format
@@ -40,13 +32,14 @@ var _scalars = require('../type/scalars.js');
  * | null          | NullValue            |
  *
  */
-function astFromValue(value, type) {
-  if ((0, _definition.isNonNullType)(type)) {
+
+export function astFromValue(value, type) {
+  if (isNonNullType(type)) {
     const astValue = astFromValue(value, type.ofType);
 
     if (
       (astValue === null || astValue === void 0 ? void 0 : astValue.kind) ===
-      _kinds.Kind.NULL
+      Kind.NULL
     ) {
       return null;
     }
@@ -56,7 +49,7 @@ function astFromValue(value, type) {
 
   if (value === null) {
     return {
-      kind: _kinds.Kind.NULL,
+      kind: Kind.NULL,
     };
   } // undefined
 
@@ -65,10 +58,10 @@ function astFromValue(value, type) {
   } // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
   // the value is not an array, convert the value using the list's item type.
 
-  if ((0, _definition.isListType)(type)) {
+  if (isListType(type)) {
     const itemType = type.ofType;
 
-    if ((0, _isIterableObject.isIterableObject)(value)) {
+    if (isIterableObject(value)) {
       const valuesNodes = [];
 
       for (const item of value) {
@@ -80,7 +73,7 @@ function astFromValue(value, type) {
       }
 
       return {
-        kind: _kinds.Kind.LIST,
+        kind: Kind.LIST,
         values: valuesNodes,
       };
     }
@@ -89,8 +82,8 @@ function astFromValue(value, type) {
   } // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object according to the fields in the input type.
 
-  if ((0, _definition.isInputObjectType)(type)) {
-    if (!(0, _isObjectLike.isObjectLike)(value)) {
+  if (isInputObjectType(type)) {
+    if (!isObjectLike(value)) {
       return null;
     }
 
@@ -101,9 +94,9 @@ function astFromValue(value, type) {
 
       if (fieldValue) {
         fieldNodes.push({
-          kind: _kinds.Kind.OBJECT_FIELD,
+          kind: Kind.OBJECT_FIELD,
           name: {
-            kind: _kinds.Kind.NAME,
+            kind: Kind.NAME,
             value: field.name,
           },
           value: fieldValue,
@@ -112,12 +105,12 @@ function astFromValue(value, type) {
     }
 
     return {
-      kind: _kinds.Kind.OBJECT,
+      kind: Kind.OBJECT,
       fields: fieldNodes,
     };
   }
 
-  if ((0, _definition.isLeafType)(type)) {
+  if (isLeafType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
     const serialized = type.serialize(value);
@@ -128,7 +121,7 @@ function astFromValue(value, type) {
 
     if (typeof serialized === 'boolean') {
       return {
-        kind: _kinds.Kind.BOOLEAN,
+        kind: Kind.BOOLEAN,
         value: serialized,
       };
     } // JavaScript numbers can be Int or Float values.
@@ -137,49 +130,43 @@ function astFromValue(value, type) {
       const stringNum = String(serialized);
       return integerStringRegExp.test(stringNum)
         ? {
-            kind: _kinds.Kind.INT,
+            kind: Kind.INT,
             value: stringNum,
           }
         : {
-            kind: _kinds.Kind.FLOAT,
+            kind: Kind.FLOAT,
             value: stringNum,
           };
     }
 
     if (typeof serialized === 'string') {
       // Enum types use Enum literals.
-      if ((0, _definition.isEnumType)(type)) {
+      if (isEnumType(type)) {
         return {
-          kind: _kinds.Kind.ENUM,
+          kind: Kind.ENUM,
           value: serialized,
         };
       } // ID types can use Int literals.
 
-      if (type === _scalars.GraphQLID && integerStringRegExp.test(serialized)) {
+      if (type === GraphQLID && integerStringRegExp.test(serialized)) {
         return {
-          kind: _kinds.Kind.INT,
+          kind: Kind.INT,
           value: serialized,
         };
       }
 
       return {
-        kind: _kinds.Kind.STRING,
+        kind: Kind.STRING,
         value: serialized,
       };
     }
 
-    throw new TypeError(
-      `Cannot convert value to AST: ${(0, _inspect.inspect)(serialized)}.`,
-    );
+    throw new TypeError(`Cannot convert value to AST: ${inspect(serialized)}.`);
   }
   /* c8 ignore next 3 */
   // Not reachable, all possible types have been considered.
 
-  false ||
-    (0, _invariant.invariant)(
-      false,
-      'Unexpected input type: ' + (0, _inspect.inspect)(type),
-    );
+  false || invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 /**
  * IntValue:

@@ -1,15 +1,9 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.didYouMean = didYouMean;
 const MAX_SUGGESTIONS = 5;
 /**
  * Given [ A, B, C ] return ' Did you mean A, B, or C?'.
  */
 
-function didYouMean(firstArg, secondArg) {
+export function didYouMean(firstArg, secondArg) {
   const [subMessage, suggestionsArg] = secondArg
     ? [firstArg, secondArg]
     : [undefined, firstArg];

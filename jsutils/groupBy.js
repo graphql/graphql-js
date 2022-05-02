@@ -1,14 +1,7 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.groupBy = groupBy;
-
 /**
  * Groups array items into a Map, given a function to produce grouping key.
  */
-function groupBy(list, keyFn) {
+export function groupBy(list, keyFn) {
   const result = new Map();
 
   for (const item of list) {

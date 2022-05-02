@@ -1,11 +1,4 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.UniqueFragmentNamesRule = UniqueFragmentNamesRule;
-
-var _GraphQLError = require('../../error/GraphQLError.js');
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 /**
  * Unique fragment names
@@ -14,7 +7,7 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-Name-Uniqueness
  */
-function UniqueFragmentNamesRule(context) {
+export function UniqueFragmentNamesRule(context) {
   const knownFragmentNames = Object.create(null);
   return {
     OperationDefinition: () => false,
@@ -24,7 +17,7 @@ function UniqueFragmentNamesRule(context) {
 
       if (knownFragmentNames[fragmentName]) {
         context.reportError(
-          new _GraphQLError.GraphQLError(
+          new GraphQLError(
             `There can be only one fragment named "${fragmentName}".`,
             {
               nodes: [knownFragmentNames[fragmentName], node.name],

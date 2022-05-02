@@ -1,20 +1,13 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.valueFromAST = valueFromAST;
-
-var _inspect = require('../jsutils/inspect.js');
-
-var _invariant = require('../jsutils/invariant.js');
-
-var _keyMap = require('../jsutils/keyMap.js');
-
-var _kinds = require('../language/kinds.js');
-
-var _definition = require('../type/definition.js');
-
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { keyMap } from '../jsutils/keyMap.js';
+import { Kind } from '../language/kinds.js';
+import {
+  isInputObjectType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+} from '../type/definition.js';
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -35,14 +28,15 @@ var _definition = require('../type/definition.js');
  * | NullValue            | null          |
  *
  */
-function valueFromAST(valueNode, type, variables) {
+
+export function valueFromAST(valueNode, type, variables) {
   if (!valueNode) {
     // When there is no node, then there is also no value.
     // Importantly, this is different from returning the value null.
     return;
   }
 
-  if (valueNode.kind === _kinds.Kind.VARIABLE) {
+  if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
 
     if (variables == null || variables[variableName] === undefined) {
@@ -52,7 +46,7 @@ function valueFromAST(valueNode, type, variables) {
 
     const variableValue = variables[variableName];
 
-    if (variableValue === null && (0, _definition.isNonNullType)(type)) {
+    if (variableValue === null && isNonNullType(type)) {
       return; // Invalid: intentionally return no value.
     } // Note: This does no further checking that this variable is correct.
     // This assumes that this query has been validated and the variable
@@ -61,30 +55,30 @@ function valueFromAST(valueNode, type, variables) {
     return variableValue;
   }
 
-  if ((0, _definition.isNonNullType)(type)) {
-    if (valueNode.kind === _kinds.Kind.NULL) {
+  if (isNonNullType(type)) {
+    if (valueNode.kind === Kind.NULL) {
       return; // Invalid: intentionally return no value.
     }
 
     return valueFromAST(valueNode, type.ofType, variables);
   }
 
-  if (valueNode.kind === _kinds.Kind.NULL) {
+  if (valueNode.kind === Kind.NULL) {
     // This is explicitly returning the value null.
     return null;
   }
 
-  if ((0, _definition.isListType)(type)) {
+  if (isListType(type)) {
     const itemType = type.ofType;
 
-    if (valueNode.kind === _kinds.Kind.LIST) {
+    if (valueNode.kind === Kind.LIST) {
       const coercedValues = [];
 
       for (const itemNode of valueNode.values) {
         if (isMissingVariable(itemNode, variables)) {
           // If an array contains a missing variable, it is either coerced to
           // null or if the item type is non-null, it considered invalid.
-          if ((0, _definition.isNonNullType)(itemType)) {
+          if (isNonNullType(itemType)) {
             return; // Invalid: intentionally return no value.
           }
 
@@ -112,16 +106,13 @@ function valueFromAST(valueNode, type, variables) {
     return [coercedValue];
   }
 
-  if ((0, _definition.isInputObjectType)(type)) {
-    if (valueNode.kind !== _kinds.Kind.OBJECT) {
+  if (isInputObjectType(type)) {
+    if (valueNode.kind !== Kind.OBJECT) {
       return; // Invalid: intentionally return no value.
     }
 
     const coercedObj = Object.create(null);
-    const fieldNodes = (0, _keyMap.keyMap)(
-      valueNode.fields,
-      (field) => field.name.value,
-    );
+    const fieldNodes = keyMap(valueNode.fields, (field) => field.name.value);
 
     for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes[field.name];
@@ -129,7 +120,7 @@ function valueFromAST(valueNode, type, variables) {
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
-        } else if ((0, _definition.isNonNullType)(field.type)) {
+        } else if (isNonNullType(field.type)) {
           return; // Invalid: intentionally return no value.
         }
 
@@ -148,7 +139,7 @@ function valueFromAST(valueNode, type, variables) {
     return coercedObj;
   }
 
-  if ((0, _definition.isLeafType)(type)) {
+  if (isLeafType(type)) {
     // Scalars and Enums fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
     // no value is returned.
@@ -169,17 +160,13 @@ function valueFromAST(valueNode, type, variables) {
   /* c8 ignore next 3 */
   // Not reachable, all possible input types have been considered.
 
-  false ||
-    (0, _invariant.invariant)(
-      false,
-      'Unexpected input type: ' + (0, _inspect.inspect)(type),
-    );
+  false || invariant(false, 'Unexpected input type: ' + inspect(type));
 } // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 
 function isMissingVariable(valueNode, variables) {
   return (
-    valueNode.kind === _kinds.Kind.VARIABLE &&
+    valueNode.kind === Kind.VARIABLE &&
     (variables == null || variables[valueNode.name.value] === undefined)
   );
 }

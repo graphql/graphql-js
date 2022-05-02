@@ -1,21 +1,12 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.Kind = void 0;
-
 /**
  * The set of allowed kind values for AST nodes.
  */
-let Kind;
+export let Kind;
 /**
  * The enum type representing the possible kind values of AST nodes.
  *
  * @deprecated Please use `Kind`. Will be remove in v17.
  */
-
-exports.Kind = Kind;
 
 (function (Kind) {
   Kind['NAME'] = 'Name';
@@ -61,4 +52,4 @@ exports.Kind = Kind;
   Kind['UNION_TYPE_EXTENSION'] = 'UnionTypeExtension';
   Kind['ENUM_TYPE_EXTENSION'] = 'EnumTypeExtension';
   Kind['INPUT_OBJECT_TYPE_EXTENSION'] = 'InputObjectTypeExtension';
-})(Kind || (exports.Kind = Kind = {}));
+})(Kind || (Kind = {}));

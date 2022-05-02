@@ -1,21 +1,8 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.Lexer = void 0;
-exports.isPunctuatorTokenKind = isPunctuatorTokenKind;
-
-var _syntaxError = require('../error/syntaxError.js');
-
-var _ast = require('./ast.js');
-
-var _blockString = require('./blockString.js');
-
-var _characterClasses = require('./characterClasses.js');
-
-var _tokenKind = require('./tokenKind.js');
-
+import { syntaxError } from '../error/syntaxError.js';
+import { Token } from './ast.js';
+import { dedentBlockStringLines } from './blockString.js';
+import { isDigit, isNameContinue, isNameStart } from './characterClasses.js';
+import { TokenKind } from './tokenKind.js';
 /**
  * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
@@ -24,7 +11,8 @@ var _tokenKind = require('./tokenKind.js');
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-class Lexer {
+
+export class Lexer {
   /**
    * The previously focused non-ignored token.
    */
@@ -41,13 +29,7 @@ class Lexer {
    * The character offset at which the current line begins.
    */
   constructor(source) {
-    const startOfFileToken = new _ast.Token(
-      _tokenKind.TokenKind.SOF,
-      0,
-      0,
-      0,
-      0,
-    );
+    const startOfFileToken = new Token(TokenKind.SOF, 0, 0, 0, 0);
     this.source = source;
     this.lastToken = startOfFileToken;
     this.token = startOfFileToken;
@@ -75,7 +57,7 @@ class Lexer {
   lookahead() {
     let token = this.token;
 
-    if (token.kind !== _tokenKind.TokenKind.EOF) {
+    if (token.kind !== TokenKind.EOF) {
       do {
         if (token.next) {
           token = token.next;
@@ -88,7 +70,7 @@ class Lexer {
           nextToken.prev = token;
           token = nextToken;
         }
-      } while (token.kind === _tokenKind.TokenKind.COMMENT);
+      } while (token.kind === TokenKind.COMMENT);
     }
 
     return token;
@@ -98,24 +80,22 @@ class Lexer {
  * @internal
  */
 
-exports.Lexer = Lexer;
-
-function isPunctuatorTokenKind(kind) {
+export function isPunctuatorTokenKind(kind) {
   return (
-    kind === _tokenKind.TokenKind.BANG ||
-    kind === _tokenKind.TokenKind.DOLLAR ||
-    kind === _tokenKind.TokenKind.AMP ||
-    kind === _tokenKind.TokenKind.PAREN_L ||
-    kind === _tokenKind.TokenKind.PAREN_R ||
-    kind === _tokenKind.TokenKind.SPREAD ||
-    kind === _tokenKind.TokenKind.COLON ||
-    kind === _tokenKind.TokenKind.EQUALS ||
-    kind === _tokenKind.TokenKind.AT ||
-    kind === _tokenKind.TokenKind.BRACKET_L ||
-    kind === _tokenKind.TokenKind.BRACKET_R ||
-    kind === _tokenKind.TokenKind.BRACE_L ||
-    kind === _tokenKind.TokenKind.PIPE ||
-    kind === _tokenKind.TokenKind.BRACE_R
+    kind === TokenKind.BANG ||
+    kind === TokenKind.DOLLAR ||
+    kind === TokenKind.AMP ||
+    kind === TokenKind.PAREN_L ||
+    kind === TokenKind.PAREN_R ||
+    kind === TokenKind.SPREAD ||
+    kind === TokenKind.COLON ||
+    kind === TokenKind.EQUALS ||
+    kind === TokenKind.AT ||
+    kind === TokenKind.BRACKET_L ||
+    kind === TokenKind.BRACKET_R ||
+    kind === TokenKind.BRACE_L ||
+    kind === TokenKind.PIPE ||
+    kind === TokenKind.BRACE_R
   );
 }
 /**
@@ -167,7 +147,7 @@ function printCodePointAt(lexer, location) {
   const code = lexer.source.body.codePointAt(location);
 
   if (code === undefined) {
-    return _tokenKind.TokenKind.EOF;
+    return TokenKind.EOF;
   } else if (code >= 0x0020 && code <= 0x007e) {
     // Printable ASCII
     const char = String.fromCodePoint(code);
@@ -183,7 +163,7 @@ function printCodePointAt(lexer, location) {
 function createToken(lexer, kind, start, end, value) {
   const line = lexer.line;
   const col = 1 + start - lexer.lineStart;
-  return new _ast.Token(kind, start, end, line, col, value);
+  return new Token(kind, start, end, line, col, value);
 }
 /**
  * Gets the next token from the source starting at the given position.
@@ -265,48 +245,23 @@ function readNextToken(lexer, start) {
 
       case 0x0021:
         // !
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.BANG,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.BANG, position, position + 1);
 
       case 0x0024:
         // $
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.DOLLAR,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.DOLLAR, position, position + 1);
 
       case 0x0026:
         // &
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.AMP,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.AMP, position, position + 1);
 
       case 0x0028:
         // (
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.PAREN_L,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.PAREN_L, position, position + 1);
 
       case 0x0029:
         // )
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.PAREN_R,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.PAREN_R, position, position + 1);
 
       case 0x002e:
         // .
@@ -314,87 +269,42 @@ function readNextToken(lexer, start) {
           body.charCodeAt(position + 1) === 0x002e &&
           body.charCodeAt(position + 2) === 0x002e
         ) {
-          return createToken(
-            lexer,
-            _tokenKind.TokenKind.SPREAD,
-            position,
-            position + 3,
-          );
+          return createToken(lexer, TokenKind.SPREAD, position, position + 3);
         }
 
         break;
 
       case 0x003a:
         // :
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.COLON,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.COLON, position, position + 1);
 
       case 0x003d:
         // =
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.EQUALS,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.EQUALS, position, position + 1);
 
       case 0x0040:
         // @
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.AT,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.AT, position, position + 1);
 
       case 0x005b:
         // [
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.BRACKET_L,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.BRACKET_L, position, position + 1);
 
       case 0x005d:
         // ]
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.BRACKET_R,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.BRACKET_R, position, position + 1);
 
       case 0x007b:
         // {
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.BRACE_L,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.BRACE_L, position, position + 1);
 
       case 0x007c:
         // |
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.PIPE,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.PIPE, position, position + 1);
 
       case 0x007d:
         // }
-        return createToken(
-          lexer,
-          _tokenKind.TokenKind.BRACE_R,
-          position,
-          position + 1,
-        );
+        return createToken(lexer, TokenKind.BRACE_R, position, position + 1);
       // StringValue
 
       case 0x0022:
@@ -409,15 +319,15 @@ function readNextToken(lexer, start) {
         return readString(lexer, position);
     } // IntValue | FloatValue (Digit | -)
 
-    if ((0, _characterClasses.isDigit)(code) || code === 0x002d) {
+    if (isDigit(code) || code === 0x002d) {
       return readNumber(lexer, position, code);
     } // Name
 
-    if ((0, _characterClasses.isNameStart)(code)) {
+    if (isNameStart(code)) {
       return readName(lexer, position);
     }
 
-    throw (0, _syntaxError.syntaxError)(
+    throw syntaxError(
       lexer.source,
       position,
       code === 0x0027
@@ -428,7 +338,7 @@ function readNextToken(lexer, start) {
     );
   }
 
-  return createToken(lexer, _tokenKind.TokenKind.EOF, bodyLength, bodyLength);
+  return createToken(lexer, TokenKind.EOF, bodyLength, bodyLength);
 }
 /**
  * Reads a comment token from the source file.
@@ -463,7 +373,7 @@ function readComment(lexer, start) {
 
   return createToken(
     lexer,
-    _tokenKind.TokenKind.COMMENT,
+    TokenKind.COMMENT,
     start,
     position,
     body.slice(start + 1, position),
@@ -512,8 +422,8 @@ function readNumber(lexer, start, firstCode) {
   if (code === 0x0030) {
     code = body.charCodeAt(++position);
 
-    if ((0, _characterClasses.isDigit)(code)) {
-      throw (0, _syntaxError.syntaxError)(
+    if (isDigit(code)) {
+      throw syntaxError(
         lexer.source,
         position,
         `Invalid number, unexpected digit after 0: ${printCodePointAt(
@@ -546,8 +456,8 @@ function readNumber(lexer, start, firstCode) {
     code = body.charCodeAt(position);
   } // Numbers cannot be followed by . or NameStart
 
-  if (code === 0x002e || (0, _characterClasses.isNameStart)(code)) {
-    throw (0, _syntaxError.syntaxError)(
+  if (code === 0x002e || isNameStart(code)) {
+    throw syntaxError(
       lexer.source,
       position,
       `Invalid number, expected digit but got: ${printCodePointAt(
@@ -559,7 +469,7 @@ function readNumber(lexer, start, firstCode) {
 
   return createToken(
     lexer,
-    isFloat ? _tokenKind.TokenKind.FLOAT : _tokenKind.TokenKind.INT,
+    isFloat ? TokenKind.FLOAT : TokenKind.INT,
     start,
     position,
     body.slice(start, position),
@@ -570,8 +480,8 @@ function readNumber(lexer, start, firstCode) {
  */
 
 function readDigits(lexer, start, firstCode) {
-  if (!(0, _characterClasses.isDigit)(firstCode)) {
-    throw (0, _syntaxError.syntaxError)(
+  if (!isDigit(firstCode)) {
+    throw syntaxError(
       lexer.source,
       start,
       `Invalid number, expected digit but got: ${printCodePointAt(
@@ -584,7 +494,7 @@ function readDigits(lexer, start, firstCode) {
   const body = lexer.source.body;
   let position = start + 1; // +1 to skip first firstCode
 
-  while ((0, _characterClasses.isDigit)(body.charCodeAt(position))) {
+  while (isDigit(body.charCodeAt(position))) {
     ++position;
   }
 
@@ -623,13 +533,7 @@ function readString(lexer, start) {
 
     if (code === 0x0022) {
       value += body.slice(chunkStart, position);
-      return createToken(
-        lexer,
-        _tokenKind.TokenKind.STRING,
-        start,
-        position + 1,
-        value,
-      );
+      return createToken(lexer, TokenKind.STRING, start, position + 1, value);
     } // Escape Sequence (\)
 
     if (code === 0x005c) {
@@ -655,7 +559,7 @@ function readString(lexer, start) {
     } else if (isSupplementaryCodePoint(body, position)) {
       position += 2;
     } else {
-      throw (0, _syntaxError.syntaxError)(
+      throw syntaxError(
         lexer.source,
         position,
         `Invalid character within String: ${printCodePointAt(
@@ -666,11 +570,7 @@ function readString(lexer, start) {
     }
   }
 
-  throw (0, _syntaxError.syntaxError)(
-    lexer.source,
-    position,
-    'Unterminated string.',
-  );
+  throw syntaxError(lexer.source, position, 'Unterminated string.');
 } // The string value and lexed size of an escape sequence.
 
 function readEscapedUnicodeVariableWidth(lexer, position) {
@@ -700,7 +600,7 @@ function readEscapedUnicodeVariableWidth(lexer, position) {
     }
   }
 
-  throw (0, _syntaxError.syntaxError)(
+  throw syntaxError(
     lexer.source,
     position,
     `Invalid Unicode escape sequence: "${body.slice(
@@ -745,7 +645,7 @@ function readEscapedUnicodeFixedWidth(lexer, position) {
     }
   }
 
-  throw (0, _syntaxError.syntaxError)(
+  throw syntaxError(
     lexer.source,
     position,
     `Invalid Unicode escape sequence: "${body.slice(position, position + 6)}".`,
@@ -868,7 +768,7 @@ function readEscapedCharacter(lexer, position) {
       };
   }
 
-  throw (0, _syntaxError.syntaxError)(
+  throw syntaxError(
     lexer.source,
     position,
     `Invalid character escape sequence: "${body.slice(
@@ -911,10 +811,10 @@ function readBlockString(lexer, start) {
       blockLines.push(currentLine);
       const token = createToken(
         lexer,
-        _tokenKind.TokenKind.BLOCK_STRING,
+        TokenKind.BLOCK_STRING,
         start,
         position + 3, // Return a string of the lines joined with U+000A.
-        (0, _blockString.dedentBlockStringLines)(blockLines).join('\n'),
+        dedentBlockStringLines(blockLines).join('\n'),
       );
       lexer.line += blockLines.length - 1;
       lexer.lineStart = lineStart;
@@ -955,7 +855,7 @@ function readBlockString(lexer, start) {
     } else if (isSupplementaryCodePoint(body, position)) {
       position += 2;
     } else {
-      throw (0, _syntaxError.syntaxError)(
+      throw syntaxError(
         lexer.source,
         position,
         `Invalid character within String: ${printCodePointAt(
@@ -966,11 +866,7 @@ function readBlockString(lexer, start) {
     }
   }
 
-  throw (0, _syntaxError.syntaxError)(
-    lexer.source,
-    position,
-    'Unterminated string.',
-  );
+  throw syntaxError(lexer.source, position, 'Unterminated string.');
 }
 /**
  * Reads an alphanumeric + underscore name from the source.
@@ -989,7 +885,7 @@ function readName(lexer, start) {
   while (position < bodyLength) {
     const code = body.charCodeAt(position);
 
-    if ((0, _characterClasses.isNameContinue)(code)) {
+    if (isNameContinue(code)) {
       ++position;
     } else {
       break;
@@ -998,7 +894,7 @@ function readName(lexer, start) {
 
   return createToken(
     lexer,
-    _tokenKind.TokenKind.NAME,
+    TokenKind.NAME,
     start,
     position,
     body.slice(start, position),

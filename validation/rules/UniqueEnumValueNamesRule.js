@@ -1,20 +1,12 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.UniqueEnumValueNamesRule = UniqueEnumValueNamesRule;
-
-var _GraphQLError = require('../../error/GraphQLError.js');
-
-var _definition = require('../../type/definition.js');
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { isEnumType } from '../../type/definition.js';
 
 /**
  * Unique enum value names
  *
  * A GraphQL enum type is only valid if all its values are uniquely named.
  */
-function UniqueEnumValueNamesRule(context) {
+export function UniqueEnumValueNamesRule(context) {
   const schema = context.getSchema();
   const existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
   const knownValueNames = Object.create(null);
@@ -39,12 +31,9 @@ function UniqueEnumValueNamesRule(context) {
       const valueName = valueDef.name.value;
       const existingType = existingTypeMap[typeName];
 
-      if (
-        (0, _definition.isEnumType)(existingType) &&
-        existingType.getValue(valueName)
-      ) {
+      if (isEnumType(existingType) && existingType.getValue(valueName)) {
         context.reportError(
-          new _GraphQLError.GraphQLError(
+          new GraphQLError(
             `Enum value "${typeName}.${valueName}" already exists in the schema. It cannot also be defined in this type extension.`,
             {
               nodes: valueDef.name,
@@ -53,7 +42,7 @@ function UniqueEnumValueNamesRule(context) {
         );
       } else if (valueNames[valueName]) {
         context.reportError(
-          new _GraphQLError.GraphQLError(
+          new GraphQLError(
             `Enum value "${typeName}.${valueName}" can only be defined once.`,
             {
               nodes: [valueNames[valueName], valueDef.name],

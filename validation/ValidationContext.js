@@ -1,25 +1,13 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.ValidationContext =
-  exports.SDLValidationContext =
-  exports.ASTValidationContext =
-    void 0;
-
-var _kinds = require('../language/kinds.js');
-
-var _visitor = require('../language/visitor.js');
-
-var _TypeInfo = require('../utilities/TypeInfo.js');
+import { Kind } from '../language/kinds.js';
+import { visit } from '../language/visitor.js';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
  * allowing access to commonly useful contextual information from within a
  * validation rule.
  */
-class ASTValidationContext {
+export class ASTValidationContext {
   constructor(ast, onError) {
     this._ast = ast;
     this._fragments = undefined;
@@ -49,7 +37,7 @@ class ASTValidationContext {
       fragments = Object.create(null);
 
       for (const defNode of this.getDocument().definitions) {
-        if (defNode.kind === _kinds.Kind.FRAGMENT_DEFINITION) {
+        if (defNode.kind === Kind.FRAGMENT_DEFINITION) {
           fragments[defNode.name.value] = defNode;
         }
       }
@@ -70,7 +58,7 @@ class ASTValidationContext {
 
       while ((set = setsToVisit.pop())) {
         for (const selection of set.selections) {
-          if (selection.kind === _kinds.Kind.FRAGMENT_SPREAD) {
+          if (selection.kind === Kind.FRAGMENT_SPREAD) {
             spreads.push(selection);
           } else if (selection.selectionSet) {
             setsToVisit.push(selection.selectionSet);
@@ -115,10 +103,7 @@ class ASTValidationContext {
     return fragments;
   }
 }
-
-exports.ASTValidationContext = ASTValidationContext;
-
-class SDLValidationContext extends ASTValidationContext {
+export class SDLValidationContext extends ASTValidationContext {
   constructor(ast, schema, onError) {
     super(ast, onError);
     this._schema = schema;
@@ -132,10 +117,7 @@ class SDLValidationContext extends ASTValidationContext {
     return this._schema;
   }
 }
-
-exports.SDLValidationContext = SDLValidationContext;
-
-class ValidationContext extends ASTValidationContext {
+export class ValidationContext extends ASTValidationContext {
   constructor(schema, ast, typeInfo, onError) {
     super(ast, onError);
     this._schema = schema;
@@ -157,10 +139,10 @@ class ValidationContext extends ASTValidationContext {
 
     if (!usages) {
       const newUsages = [];
-      const typeInfo = new _TypeInfo.TypeInfo(this._schema);
-      (0, _visitor.visit)(
+      const typeInfo = new TypeInfo(this._schema);
+      visit(
         node,
-        (0, _TypeInfo.visitWithTypeInfo)(typeInfo, {
+        visitWithTypeInfo(typeInfo, {
           VariableDefinition: () => false,
 
           Variable(variable) {
@@ -228,5 +210,3 @@ class ValidationContext extends ASTValidationContext {
     return this._typeInfo.getEnumValue();
   }
 }
-
-exports.ValidationContext = ValidationContext;

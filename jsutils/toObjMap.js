@@ -1,11 +1,4 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.toObjMap = toObjMap;
-
-function toObjMap(obj) {
+export function toObjMap(obj) {
   if (obj == null) {
     return Object.create(null);
   }

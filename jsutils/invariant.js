@@ -1,11 +1,4 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.invariant = invariant;
-
-function invariant(condition, message) {
+export function invariant(condition, message) {
   const booleanCondition = Boolean(condition);
 
   if (!booleanCondition) {

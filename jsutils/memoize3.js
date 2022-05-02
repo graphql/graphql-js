@@ -1,14 +1,7 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.memoize3 = memoize3;
-
 /**
  * Memoizes the provided three-argument function.
  */
-function memoize3(fn) {
+export function memoize3(fn) {
   let cache0;
   return function memoized(a1, a2, a3) {
     if (cache0 === undefined) {

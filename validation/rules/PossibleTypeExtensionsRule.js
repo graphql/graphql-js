@@ -1,37 +1,30 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.PossibleTypeExtensionsRule = PossibleTypeExtensionsRule;
-
-var _didYouMean = require('../../jsutils/didYouMean.js');
-
-var _inspect = require('../../jsutils/inspect.js');
-
-var _invariant = require('../../jsutils/invariant.js');
-
-var _suggestionList = require('../../jsutils/suggestionList.js');
-
-var _GraphQLError = require('../../error/GraphQLError.js');
-
-var _kinds = require('../../language/kinds.js');
-
-var _predicates = require('../../language/predicates.js');
-
-var _definition = require('../../type/definition.js');
+import { didYouMean } from '../../jsutils/didYouMean.js';
+import { inspect } from '../../jsutils/inspect.js';
+import { invariant } from '../../jsutils/invariant.js';
+import { suggestionList } from '../../jsutils/suggestionList.js';
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { Kind } from '../../language/kinds.js';
+import { isTypeDefinitionNode } from '../../language/predicates.js';
+import {
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../../type/definition.js';
 
 /**
  * Possible type extension
  *
  * A type extension is only valid if the type is defined and has the same kind.
  */
-function PossibleTypeExtensionsRule(context) {
+export function PossibleTypeExtensionsRule(context) {
   const schema = context.getSchema();
   const definedTypes = Object.create(null);
 
   for (const def of context.getDocument().definitions) {
-    if ((0, _predicates.isTypeDefinitionNode)(def)) {
+    if (isTypeDefinitionNode(def)) {
       definedTypes[def.name.value] = def;
     }
   }
@@ -62,12 +55,9 @@ function PossibleTypeExtensionsRule(context) {
       if (expectedKind !== node.kind) {
         const kindStr = extensionKindToTypeName(node.kind);
         context.reportError(
-          new _GraphQLError.GraphQLError(
-            `Cannot extend non-${kindStr} type "${typeName}".`,
-            {
-              nodes: defNode ? [defNode, node] : node,
-            },
-          ),
+          new GraphQLError(`Cannot extend non-${kindStr} type "${typeName}".`, {
+            nodes: defNode ? [defNode, node] : node,
+          }),
         );
       }
     } else {
@@ -77,14 +67,11 @@ function PossibleTypeExtensionsRule(context) {
           ? void 0
           : schema.getTypeMap()),
       });
-      const suggestedTypes = (0, _suggestionList.suggestionList)(
-        typeName,
-        allTypeNames,
-      );
+      const suggestedTypes = suggestionList(typeName, allTypeNames);
       context.reportError(
-        new _GraphQLError.GraphQLError(
+        new GraphQLError(
           `Cannot extend type "${typeName}" because it is not defined.` +
-            (0, _didYouMean.didYouMean)(suggestedTypes),
+            didYouMean(suggestedTypes),
           {
             nodes: node.name,
           },
@@ -93,79 +80,69 @@ function PossibleTypeExtensionsRule(context) {
     }
   }
 }
-
 const defKindToExtKind = {
-  [_kinds.Kind.SCALAR_TYPE_DEFINITION]: _kinds.Kind.SCALAR_TYPE_EXTENSION,
-  [_kinds.Kind.OBJECT_TYPE_DEFINITION]: _kinds.Kind.OBJECT_TYPE_EXTENSION,
-  [_kinds.Kind.INTERFACE_TYPE_DEFINITION]: _kinds.Kind.INTERFACE_TYPE_EXTENSION,
-  [_kinds.Kind.UNION_TYPE_DEFINITION]: _kinds.Kind.UNION_TYPE_EXTENSION,
-  [_kinds.Kind.ENUM_TYPE_DEFINITION]: _kinds.Kind.ENUM_TYPE_EXTENSION,
-  [_kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION]:
-    _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION,
+  [Kind.SCALAR_TYPE_DEFINITION]: Kind.SCALAR_TYPE_EXTENSION,
+  [Kind.OBJECT_TYPE_DEFINITION]: Kind.OBJECT_TYPE_EXTENSION,
+  [Kind.INTERFACE_TYPE_DEFINITION]: Kind.INTERFACE_TYPE_EXTENSION,
+  [Kind.UNION_TYPE_DEFINITION]: Kind.UNION_TYPE_EXTENSION,
+  [Kind.ENUM_TYPE_DEFINITION]: Kind.ENUM_TYPE_EXTENSION,
+  [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION,
 };
 
 function typeToExtKind(type) {
-  if ((0, _definition.isScalarType)(type)) {
-    return _kinds.Kind.SCALAR_TYPE_EXTENSION;
+  if (isScalarType(type)) {
+    return Kind.SCALAR_TYPE_EXTENSION;
   }
 
-  if ((0, _definition.isObjectType)(type)) {
-    return _kinds.Kind.OBJECT_TYPE_EXTENSION;
+  if (isObjectType(type)) {
+    return Kind.OBJECT_TYPE_EXTENSION;
   }
 
-  if ((0, _definition.isInterfaceType)(type)) {
-    return _kinds.Kind.INTERFACE_TYPE_EXTENSION;
+  if (isInterfaceType(type)) {
+    return Kind.INTERFACE_TYPE_EXTENSION;
   }
 
-  if ((0, _definition.isUnionType)(type)) {
-    return _kinds.Kind.UNION_TYPE_EXTENSION;
+  if (isUnionType(type)) {
+    return Kind.UNION_TYPE_EXTENSION;
   }
 
-  if ((0, _definition.isEnumType)(type)) {
-    return _kinds.Kind.ENUM_TYPE_EXTENSION;
+  if (isEnumType(type)) {
+    return Kind.ENUM_TYPE_EXTENSION;
   }
 
-  if ((0, _definition.isInputObjectType)(type)) {
-    return _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION;
+  if (isInputObjectType(type)) {
+    return Kind.INPUT_OBJECT_TYPE_EXTENSION;
   }
   /* c8 ignore next 3 */
   // Not reachable. All possible types have been considered
 
-  false ||
-    (0, _invariant.invariant)(
-      false,
-      'Unexpected type: ' + (0, _inspect.inspect)(type),
-    );
+  false || invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
 function extensionKindToTypeName(kind) {
   switch (kind) {
-    case _kinds.Kind.SCALAR_TYPE_EXTENSION:
+    case Kind.SCALAR_TYPE_EXTENSION:
       return 'scalar';
 
-    case _kinds.Kind.OBJECT_TYPE_EXTENSION:
+    case Kind.OBJECT_TYPE_EXTENSION:
       return 'object';
 
-    case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
+    case Kind.INTERFACE_TYPE_EXTENSION:
       return 'interface';
 
-    case _kinds.Kind.UNION_TYPE_EXTENSION:
+    case Kind.UNION_TYPE_EXTENSION:
       return 'union';
 
-    case _kinds.Kind.ENUM_TYPE_EXTENSION:
+    case Kind.ENUM_TYPE_EXTENSION:
       return 'enum';
 
-    case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
+    case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
     // Not reachable. All possible types have been considered
 
     /* c8 ignore next */
 
     default:
-      false ||
-        (0, _invariant.invariant)(
-          false,
-          'Unexpected kind: ' + (0, _inspect.inspect)(kind),
-        );
+      false || invariant(false, 'Unexpected kind: ' + inspect(kind));
   }
 }

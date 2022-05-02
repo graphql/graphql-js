@@ -1,17 +1,9 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.GraphQLError = void 0;
-exports.formatError = formatError;
-exports.printError = printError;
-
-var _isObjectLike = require('../jsutils/isObjectLike.js');
-
-var _location = require('../language/location.js');
-
-var _printLocation = require('../language/printLocation.js');
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { getLocation } from '../language/location.js';
+import {
+  printLocation,
+  printSourceLocation,
+} from '../language/printLocation.js';
 
 function toNormalizedArgs(args) {
   const firstArg = args[0];
@@ -36,7 +28,7 @@ function toNormalizedArgs(args) {
  * GraphQL document and/or execution result that correspond to the Error.
  */
 
-class GraphQLError extends Error {
+export class GraphQLError extends Error {
   /**
    * An array of `{ line, column }` locations within the source GraphQL document
    * which correspond to this error.
@@ -116,13 +108,11 @@ class GraphQLError extends Error {
         : nodeLocations.map((loc) => loc.start));
     this.locations =
       positions && source
-        ? positions.map((pos) => (0, _location.getLocation)(source, pos))
+        ? positions.map((pos) => getLocation(source, pos))
         : nodeLocations === null || nodeLocations === void 0
         ? void 0
-        : nodeLocations.map((loc) =>
-            (0, _location.getLocation)(loc.source, loc.start),
-          );
-    const originalExtensions = (0, _isObjectLike.isObjectLike)(
+        : nodeLocations.map((loc) => getLocation(loc.source, loc.start));
+    const originalExtensions = isObjectLike(
       originalError === null || originalError === void 0
         ? void 0
         : originalError.extensions,
@@ -191,14 +181,12 @@ class GraphQLError extends Error {
     if (this.nodes) {
       for (const node of this.nodes) {
         if (node.loc) {
-          output += '\n\n' + (0, _printLocation.printLocation)(node.loc);
+          output += '\n\n' + printLocation(node.loc);
         }
       }
     } else if (this.source && this.locations) {
       for (const location of this.locations) {
-        output +=
-          '\n\n' +
-          (0, _printLocation.printSourceLocation)(this.source, location);
+        output += '\n\n' + printSourceLocation(this.source, location);
       }
     }
 
@@ -226,8 +214,6 @@ class GraphQLError extends Error {
   }
 }
 
-exports.GraphQLError = GraphQLError;
-
 function undefinedIfEmpty(array) {
   return array === undefined || array.length === 0 ? undefined : array;
 }
@@ -241,7 +227,7 @@ function undefinedIfEmpty(array) {
  *
  * @deprecated Please use `error.toString` instead. Will be removed in v17
  */
-function printError(error) {
+export function printError(error) {
   return error.toString();
 }
 /**
@@ -251,6 +237,6 @@ function printError(error) {
  * @deprecated Please use `error.toJSON` instead. Will be removed in v17
  */
 
-function formatError(error) {
+export function formatError(error) {
   return error.toJSON();
 }

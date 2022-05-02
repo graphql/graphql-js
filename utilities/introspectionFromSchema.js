@@ -1,18 +1,7 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.introspectionFromSchema = introspectionFromSchema;
-
-var _invariant = require('../jsutils/invariant.js');
-
-var _parser = require('../language/parser.js');
-
-var _execute = require('../execution/execute.js');
-
-var _getIntrospectionQuery = require('./getIntrospectionQuery.js');
-
+import { invariant } from '../jsutils/invariant.js';
+import { parse } from '../language/parser.js';
+import { executeSync } from '../execution/execute.js';
+import { getIntrospectionQuery } from './getIntrospectionQuery.js';
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
  *
@@ -22,7 +11,8 @@ var _getIntrospectionQuery = require('./getIntrospectionQuery.js');
  * This is the inverse of buildClientSchema. The primary use case is outside
  * of the server context, for instance when doing schema comparisons.
  */
-function introspectionFromSchema(schema, options) {
+
+export function introspectionFromSchema(schema, options) {
   const optionsWithDefaults = {
     specifiedByUrl: true,
     directiveIsRepeatable: true,
@@ -30,13 +20,11 @@ function introspectionFromSchema(schema, options) {
     inputValueDeprecation: true,
     ...options,
   };
-  const document = (0, _parser.parse)(
-    (0, _getIntrospectionQuery.getIntrospectionQuery)(optionsWithDefaults),
-  );
-  const result = (0, _execute.executeSync)({
+  const document = parse(getIntrospectionQuery(optionsWithDefaults));
+  const result = executeSync({
     schema,
     document,
   });
-  (!result.errors && result.data) || (0, _invariant.invariant)(false);
+  (!result.errors && result.data) || invariant(false);
   return result.data;
 }

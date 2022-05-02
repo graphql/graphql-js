@@ -1,18 +1,7 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.stripIgnoredCharacters = stripIgnoredCharacters;
-
-var _blockString = require('../language/blockString.js');
-
-var _lexer = require('../language/lexer.js');
-
-var _source = require('../language/source.js');
-
-var _tokenKind = require('../language/tokenKind.js');
-
+import { printBlockString } from '../language/blockString.js';
+import { isPunctuatorTokenKind, Lexer } from '../language/lexer.js';
+import { isSource, Source } from '../language/source.js';
+import { TokenKind } from '../language/tokenKind.js';
 /**
  * Strips characters that are not significant to the validity or execution
  * of a GraphQL document:
@@ -73,16 +62,15 @@ var _tokenKind = require('../language/tokenKind.js');
  * """Type description""" type Foo{"""Field description""" bar:String}
  * ```
  */
-function stripIgnoredCharacters(source) {
-  const sourceObj = (0, _source.isSource)(source)
-    ? source
-    : new _source.Source(source);
+
+export function stripIgnoredCharacters(source) {
+  const sourceObj = isSource(source) ? source : new Source(source);
   const body = sourceObj.body;
-  const lexer = new _lexer.Lexer(sourceObj);
+  const lexer = new Lexer(sourceObj);
   let strippedBody = '';
   let wasLastAddedTokenNonPunctuator = false;
 
-  while (lexer.advance().kind !== _tokenKind.TokenKind.EOF) {
+  while (lexer.advance().kind !== TokenKind.EOF) {
     const currentToken = lexer.token;
     const tokenKind = currentToken.kind;
     /**
@@ -91,23 +79,18 @@ function stripIgnoredCharacters(source) {
      * in invalid token (e.g. `1...` is invalid Float token).
      */
 
-    const isNonPunctuator = !(0, _lexer.isPunctuatorTokenKind)(
-      currentToken.kind,
-    );
+    const isNonPunctuator = !isPunctuatorTokenKind(currentToken.kind);
 
     if (wasLastAddedTokenNonPunctuator) {
-      if (
-        isNonPunctuator ||
-        currentToken.kind === _tokenKind.TokenKind.SPREAD
-      ) {
+      if (isNonPunctuator || currentToken.kind === TokenKind.SPREAD) {
         strippedBody += ' ';
       }
     }
 
     const tokenBody = body.slice(currentToken.start, currentToken.end);
 
-    if (tokenKind === _tokenKind.TokenKind.BLOCK_STRING) {
-      strippedBody += (0, _blockString.printBlockString)(currentToken.value, {
+    if (tokenKind === TokenKind.BLOCK_STRING) {
+      strippedBody += printBlockString(currentToken.value, {
         minimize: true,
       });
     } else {

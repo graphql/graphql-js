@@ -1,22 +1,15 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.getOperationAST = getOperationAST;
-
-var _kinds = require('../language/kinds.js');
-
+import { Kind } from '../language/kinds.js';
 /**
  * Returns an operation AST given a document AST and optionally an operation
  * name. If a name is not provided, an operation is only returned if only one is
  * provided in the document.
  */
-function getOperationAST(documentAST, operationName) {
+
+export function getOperationAST(documentAST, operationName) {
   let operation = null;
 
   for (const definition of documentAST.definitions) {
-    if (definition.kind === _kinds.Kind.OPERATION_DEFINITION) {
+    if (definition.kind === Kind.OPERATION_DEFINITION) {
       var _definition$name;
 
       if (operationName == null) {

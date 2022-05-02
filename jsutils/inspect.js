@@ -1,16 +1,10 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.inspect = inspect;
 const MAX_ARRAY_LENGTH = 10;
 const MAX_RECURSIVE_DEPTH = 2;
 /**
  * Used to print values in error messages.
  */
 
-function inspect(value) {
+export function inspect(value) {
   return formatValue(value, []);
 }
 

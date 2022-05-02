@@ -1,15 +1,6 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.SingleFieldSubscriptionsRule = SingleFieldSubscriptionsRule;
-
-var _GraphQLError = require('../../error/GraphQLError.js');
-
-var _kinds = require('../../language/kinds.js');
-
-var _collectFields = require('../../execution/collectFields.js');
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { Kind } from '../../language/kinds.js';
+import { collectFields } from '../../execution/collectFields.js';
 
 /**
  * Subscriptions must only include a non-introspection field.
@@ -19,7 +10,7 @@ var _collectFields = require('../../execution/collectFields.js');
  *
  * See https://spec.graphql.org/draft/#sec-Single-root-field
  */
-function SingleFieldSubscriptionsRule(context) {
+export function SingleFieldSubscriptionsRule(context) {
   return {
     OperationDefinition(node) {
       if (node.operation === 'subscription') {
@@ -33,12 +24,12 @@ function SingleFieldSubscriptionsRule(context) {
           const fragments = Object.create(null);
 
           for (const definition of document.definitions) {
-            if (definition.kind === _kinds.Kind.FRAGMENT_DEFINITION) {
+            if (definition.kind === Kind.FRAGMENT_DEFINITION) {
               fragments[definition.name.value] = definition;
             }
           }
 
-          const fields = (0, _collectFields.collectFields)(
+          const fields = collectFields(
             schema,
             fragments,
             variableValues,
@@ -51,7 +42,7 @@ function SingleFieldSubscriptionsRule(context) {
             const extraFieldSelectionLists = fieldSelectionLists.slice(1);
             const extraFieldSelections = extraFieldSelectionLists.flat();
             context.reportError(
-              new _GraphQLError.GraphQLError(
+              new GraphQLError(
                 operationName != null
                   ? `Subscription "${operationName}" must select only one top level field.`
                   : 'Anonymous Subscription must select only one top level field.',
@@ -68,7 +59,7 @@ function SingleFieldSubscriptionsRule(context) {
 
             if (fieldName.startsWith('__')) {
               context.reportError(
-                new _GraphQLError.GraphQLError(
+                new GraphQLError(
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',

@@ -1,23 +1,17 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
-
-var _inspect = require('../../jsutils/inspect.js');
-
-var _GraphQLError = require('../../error/GraphQLError.js');
-
-var _kinds = require('../../language/kinds.js');
-
-var _printer = require('../../language/printer.js');
-
-var _definition = require('../../type/definition.js');
-
-var _sortValueNode = require('../../utilities/sortValueNode.js');
-
-var _typeFromAST = require('../../utilities/typeFromAST.js');
+import { inspect } from '../../jsutils/inspect.js';
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { Kind } from '../../language/kinds.js';
+import { print } from '../../language/printer.js';
+import {
+  getNamedType,
+  isInterfaceType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+} from '../../type/definition.js';
+import { sortValueNode } from '../../utilities/sortValueNode.js';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
 
 function reasonMessage(reason) {
   if (Array.isArray(reason)) {
@@ -42,7 +36,7 @@ function reasonMessage(reason) {
  * See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
  */
 
-function OverlappingFieldsCanBeMergedRule(context) {
+export function OverlappingFieldsCanBeMergedRule(context) {
   // A memoization for when two fragments are compared "between" each other for
   // conflicts. Two fragments may be compared many times, so memoizing this can
   // dramatically improve the performance of this validator.
@@ -64,7 +58,7 @@ function OverlappingFieldsCanBeMergedRule(context) {
       for (const [[responseName, reason], fields1, fields2] of conflicts) {
         const reasonMsg = reasonMessage(reason);
         context.reportError(
-          new _GraphQLError.GraphQLError(
+          new GraphQLError(
             `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
             {
               nodes: fields1.concat(fields2),
@@ -527,8 +521,8 @@ function findConflict(
   const areMutuallyExclusive =
     parentFieldsAreMutuallyExclusive ||
     (parentType1 !== parentType2 &&
-      (0, _definition.isObjectType)(parentType1) &&
-      (0, _definition.isObjectType)(parentType2));
+      isObjectType(parentType1) &&
+      isObjectType(parentType2));
 
   if (!areMutuallyExclusive) {
     // Two aliases must refer to the same field.
@@ -559,9 +553,9 @@ function findConflict(
     return [
       [
         responseName,
-        `they return conflicting types "${(0, _inspect.inspect)(
-          type1,
-        )}" and "${(0, _inspect.inspect)(type2)}"`,
+        `they return conflicting types "${inspect(type1)}" and "${inspect(
+          type2,
+        )}"`,
       ],
       [node1],
       [node2],
@@ -579,9 +573,9 @@ function findConflict(
       cachedFieldsAndFragmentNames,
       comparedFragmentPairs,
       areMutuallyExclusive,
-      (0, _definition.getNamedType)(type1),
+      getNamedType(type1),
       selectionSet1,
-      (0, _definition.getNamedType)(type2),
+      getNamedType(type2),
       selectionSet2,
     );
     return subfieldConflicts(conflicts, responseName, node1, node2);
@@ -594,45 +588,40 @@ function stringifyArguments(fieldNode) {
     /* c8 ignore next */
     fieldNode.arguments ?? [];
   const inputObjectWithArgs = {
-    kind: _kinds.Kind.OBJECT,
+    kind: Kind.OBJECT,
     fields: args.map((argNode) => ({
-      kind: _kinds.Kind.OBJECT_FIELD,
+      kind: Kind.OBJECT_FIELD,
       name: argNode.name,
       value: argNode.value,
     })),
   };
-  return (0, _printer.print)(
-    (0, _sortValueNode.sortValueNode)(inputObjectWithArgs),
-  );
+  return print(sortValueNode(inputObjectWithArgs));
 } // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.
 
 function doTypesConflict(type1, type2) {
-  if ((0, _definition.isListType)(type1)) {
-    return (0, _definition.isListType)(type2)
+  if (isListType(type1)) {
+    return isListType(type2)
       ? doTypesConflict(type1.ofType, type2.ofType)
       : true;
   }
 
-  if ((0, _definition.isListType)(type2)) {
+  if (isListType(type2)) {
     return true;
   }
 
-  if ((0, _definition.isNonNullType)(type1)) {
-    return (0, _definition.isNonNullType)(type2)
+  if (isNonNullType(type1)) {
+    return isNonNullType(type2)
       ? doTypesConflict(type1.ofType, type2.ofType)
       : true;
   }
 
-  if ((0, _definition.isNonNullType)(type2)) {
+  if (isNonNullType(type2)) {
     return true;
   }
 
-  if (
-    (0, _definition.isLeafType)(type1) ||
-    (0, _definition.isLeafType)(type2)
-  ) {
+  if (isLeafType(type1) || isLeafType(type2)) {
     return type1 !== type2;
   }
 
@@ -682,10 +671,7 @@ function getReferencedFieldsAndFragmentNames(
     return cached;
   }
 
-  const fragmentType = (0, _typeFromAST.typeFromAST)(
-    context.getSchema(),
-    fragment.typeCondition,
-  );
+  const fragmentType = typeFromAST(context.getSchema(), fragment.typeCondition);
   return getFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
@@ -703,14 +689,11 @@ function _collectFieldsAndFragmentNames(
 ) {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
-      case _kinds.Kind.FIELD: {
+      case Kind.FIELD: {
         const fieldName = selection.name.value;
         let fieldDef;
 
-        if (
-          (0, _definition.isObjectType)(parentType) ||
-          (0, _definition.isInterfaceType)(parentType)
-        ) {
+        if (isObjectType(parentType) || isInterfaceType(parentType)) {
           fieldDef = parentType.getFields()[fieldName];
         }
 
@@ -726,14 +709,14 @@ function _collectFieldsAndFragmentNames(
         break;
       }
 
-      case _kinds.Kind.FRAGMENT_SPREAD:
+      case Kind.FRAGMENT_SPREAD:
         fragmentNames[selection.name.value] = true;
         break;
 
-      case _kinds.Kind.INLINE_FRAGMENT: {
+      case Kind.INLINE_FRAGMENT: {
         const typeCondition = selection.typeCondition;
         const inlineFragmentType = typeCondition
-          ? (0, _typeFromAST.typeFromAST)(context.getSchema(), typeCondition)
+          ? typeFromAST(context.getSchema(), typeCondition)
           : parentType;
 
         _collectFieldsAndFragmentNames(

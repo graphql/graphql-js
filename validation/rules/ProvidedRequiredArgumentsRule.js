@@ -1,25 +1,10 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.ProvidedRequiredArgumentsOnDirectivesRule =
-  ProvidedRequiredArgumentsOnDirectivesRule;
-exports.ProvidedRequiredArgumentsRule = ProvidedRequiredArgumentsRule;
-
-var _inspect = require('../../jsutils/inspect.js');
-
-var _keyMap = require('../../jsutils/keyMap.js');
-
-var _GraphQLError = require('../../error/GraphQLError.js');
-
-var _kinds = require('../../language/kinds.js');
-
-var _printer = require('../../language/printer.js');
-
-var _definition = require('../../type/definition.js');
-
-var _directives = require('../../type/directives.js');
+import { inspect } from '../../jsutils/inspect.js';
+import { keyMap } from '../../jsutils/keyMap.js';
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { Kind } from '../../language/kinds.js';
+import { print } from '../../language/printer.js';
+import { isRequiredArgument, isType } from '../../type/definition.js';
+import { specifiedDirectives } from '../../type/directives.js';
 
 /**
  * Provided required arguments
@@ -27,7 +12,7 @@ var _directives = require('../../type/directives.js');
  * A field or directive is only valid if all required (non-null without a
  * default value) field arguments have been provided.
  */
-function ProvidedRequiredArgumentsRule(context) {
+export function ProvidedRequiredArgumentsRule(context) {
   return {
     // eslint-disable-next-line new-cap
     ...ProvidedRequiredArgumentsOnDirectivesRule(context),
@@ -51,13 +36,10 @@ function ProvidedRequiredArgumentsRule(context) {
         );
 
         for (const argDef of fieldDef.args) {
-          if (
-            !providedArgs.has(argDef.name) &&
-            (0, _definition.isRequiredArgument)(argDef)
-          ) {
-            const argTypeStr = (0, _inspect.inspect)(argDef.type);
+          if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
+            const argTypeStr = inspect(argDef.type);
             context.reportError(
-              new _GraphQLError.GraphQLError(
+              new GraphQLError(
                 `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
                 {
                   nodes: fieldNode,
@@ -74,16 +56,16 @@ function ProvidedRequiredArgumentsRule(context) {
  * @internal
  */
 
-function ProvidedRequiredArgumentsOnDirectivesRule(context) {
+export function ProvidedRequiredArgumentsOnDirectivesRule(context) {
   const requiredArgsMap = Object.create(null);
   const schema = context.getSchema();
   const definedDirectives =
     (schema === null || schema === void 0 ? void 0 : schema.getDirectives()) ??
-    _directives.specifiedDirectives;
+    specifiedDirectives;
 
   for (const directive of definedDirectives) {
-    requiredArgsMap[directive.name] = (0, _keyMap.keyMap)(
-      directive.args.filter(_definition.isRequiredArgument),
+    requiredArgsMap[directive.name] = keyMap(
+      directive.args.filter(isRequiredArgument),
       (arg) => arg.name,
     );
   }
@@ -91,12 +73,12 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
   const astDefinitions = context.getDocument().definitions;
 
   for (const def of astDefinitions) {
-    if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
+    if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
 
       /* c8 ignore next */
       const argNodes = def.arguments ?? [];
-      requiredArgsMap[def.name.value] = (0, _keyMap.keyMap)(
+      requiredArgsMap[def.name.value] = keyMap(
         argNodes.filter(isRequiredArgumentNode),
         (arg) => arg.name.value,
       );
@@ -119,11 +101,11 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
 
           for (const [argName, argDef] of Object.entries(requiredArgs)) {
             if (!argNodeMap.has(argName)) {
-              const argType = (0, _definition.isType)(argDef.type)
-                ? (0, _inspect.inspect)(argDef.type)
-                : (0, _printer.print)(argDef.type);
+              const argType = isType(argDef.type)
+                ? inspect(argDef.type)
+                : print(argDef.type);
               context.reportError(
-                new _GraphQLError.GraphQLError(
+                new GraphQLError(
                   `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
                   {
                     nodes: directiveNode,
@@ -139,7 +121,5 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
 }
 
 function isRequiredArgumentNode(arg) {
-  return (
-    arg.type.kind === _kinds.Kind.NON_NULL_TYPE && arg.defaultValue == null
-  );
+  return arg.type.kind === Kind.NON_NULL_TYPE && arg.defaultValue == null;
 }

@@ -1,14 +1,5 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.sortValueNode = sortValueNode;
-
-var _naturalCompare = require('../jsutils/naturalCompare.js');
-
-var _kinds = require('../language/kinds.js');
-
+import { naturalCompare } from '../jsutils/naturalCompare.js';
+import { Kind } from '../language/kinds.js';
 /**
  * Sort ValueNode.
  *
@@ -16,21 +7,22 @@ var _kinds = require('../language/kinds.js');
  *
  * @internal
  */
-function sortValueNode(valueNode) {
+
+export function sortValueNode(valueNode) {
   switch (valueNode.kind) {
-    case _kinds.Kind.OBJECT:
+    case Kind.OBJECT:
       return { ...valueNode, fields: sortFields(valueNode.fields) };
 
-    case _kinds.Kind.LIST:
+    case Kind.LIST:
       return { ...valueNode, values: valueNode.values.map(sortValueNode) };
 
-    case _kinds.Kind.INT:
-    case _kinds.Kind.FLOAT:
-    case _kinds.Kind.STRING:
-    case _kinds.Kind.BOOLEAN:
-    case _kinds.Kind.NULL:
-    case _kinds.Kind.ENUM:
-    case _kinds.Kind.VARIABLE:
+    case Kind.INT:
+    case Kind.FLOAT:
+    case Kind.STRING:
+    case Kind.BOOLEAN:
+    case Kind.NULL:
+    case Kind.ENUM:
+    case Kind.VARIABLE:
       return valueNode;
   }
 }
@@ -42,6 +34,6 @@ function sortFields(fields) {
       value: sortValueNode(fieldNode.value),
     }))
     .sort((fieldA, fieldB) =>
-      (0, _naturalCompare.naturalCompare)(fieldA.name.value, fieldB.name.value),
+      naturalCompare(fieldA.name.value, fieldB.name.value),
     );
 }

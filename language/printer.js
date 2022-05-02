@@ -1,24 +1,14 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.print = print;
-
-var _blockString = require('./blockString.js');
-
-var _printString = require('./printString.js');
-
-var _visitor = require('./visitor.js');
-
+import { printBlockString } from './blockString.js';
+import { printString } from './printString.js';
+import { visit } from './visitor.js';
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
  */
-function print(ast) {
-  return (0, _visitor.visit)(ast, printDocASTReducer);
-}
 
+export function print(ast) {
+  return visit(ast, printDocASTReducer);
+}
 const MAX_LINE_LENGTH = 80;
 const printDocASTReducer = {
   Name: {
@@ -108,9 +98,7 @@ const printDocASTReducer = {
   },
   StringValue: {
     leave: ({ value, block: isBlockString }) =>
-      isBlockString
-        ? (0, _blockString.printBlockString)(value)
-        : (0, _printString.printString)(value),
+      isBlockString ? printBlockString(value) : printString(value),
   },
   BooleanValue: {
     leave: ({ value }) => (value ? 'true' : 'false'),

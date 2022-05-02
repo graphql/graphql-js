@@ -1,18 +1,11 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.UniqueDirectiveNamesRule = UniqueDirectiveNamesRule;
-
-var _GraphQLError = require('../../error/GraphQLError.js');
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 /**
  * Unique directive names
  *
  * A GraphQL document is only valid if all defined directives have unique names.
  */
-function UniqueDirectiveNamesRule(context) {
+export function UniqueDirectiveNamesRule(context) {
   const knownDirectiveNames = Object.create(null);
   const schema = context.getSchema();
   return {
@@ -25,7 +18,7 @@ function UniqueDirectiveNamesRule(context) {
         schema.getDirective(directiveName)
       ) {
         context.reportError(
-          new _GraphQLError.GraphQLError(
+          new GraphQLError(
             `Directive "@${directiveName}" already exists in the schema. It cannot be redefined.`,
             {
               nodes: node.name,
@@ -37,7 +30,7 @@ function UniqueDirectiveNamesRule(context) {
 
       if (knownDirectiveNames[directiveName]) {
         context.reportError(
-          new _GraphQLError.GraphQLError(
+          new GraphQLError(
             `There can be only one directive named "@${directiveName}".`,
             {
               nodes: [knownDirectiveNames[directiveName], node.name],

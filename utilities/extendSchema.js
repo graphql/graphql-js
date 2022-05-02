@@ -1,40 +1,48 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.extendSchema = extendSchema;
-exports.extendSchemaImpl = extendSchemaImpl;
-
-var _devAssert = require('../jsutils/devAssert.js');
-
-var _inspect = require('../jsutils/inspect.js');
-
-var _invariant = require('../jsutils/invariant.js');
-
-var _keyMap = require('../jsutils/keyMap.js');
-
-var _mapValue = require('../jsutils/mapValue.js');
-
-var _kinds = require('../language/kinds.js');
-
-var _predicates = require('../language/predicates.js');
-
-var _definition = require('../type/definition.js');
-
-var _directives = require('../type/directives.js');
-
-var _introspection = require('../type/introspection.js');
-
-var _scalars = require('../type/scalars.js');
-
-var _schema = require('../type/schema.js');
-
-var _validate = require('../validation/validate.js');
-
-var _values = require('../execution/values.js');
-
-var _valueFromAST = require('./valueFromAST.js');
+import { devAssert } from '../jsutils/devAssert.js';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { keyMap } from '../jsutils/keyMap.js';
+import { mapValue } from '../jsutils/mapValue.js';
+import { Kind } from '../language/kinds.js';
+import {
+  isTypeDefinitionNode,
+  isTypeExtensionNode,
+} from '../language/predicates.js';
+import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../type/definition.js';
+import {
+  GraphQLDeprecatedDirective,
+  GraphQLDirective,
+  GraphQLSpecifiedByDirective,
+} from '../type/directives.js';
+import {
+  introspectionTypes,
+  isIntrospectionType,
+} from '../type/introspection.js';
+import {
+  isSpecifiedScalarType,
+  specifiedScalarTypes,
+} from '../type/scalars.js';
+import { assertSchema, GraphQLSchema } from '../type/schema.js';
+import { assertValidSDLExtension } from '../validation/validate.js';
+import { getDirectiveValues } from '../execution/values.js';
+import { valueFromAST } from './valueFromAST.js';
 
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -48,10 +56,10 @@ var _valueFromAST = require('./valueFromAST.js');
  * This algorithm copies the provided schema, applying extensions while
  * producing the copy. The original schema remains unaltered.
  */
-function extendSchema(schema, documentAST, options) {
-  (0, _schema.assertSchema)(schema);
-  (documentAST != null && documentAST.kind === _kinds.Kind.DOCUMENT) ||
-    (0, _devAssert.devAssert)(false, 'Must provide valid Document AST.');
+export function extendSchema(schema, documentAST, options) {
+  assertSchema(schema);
+  (documentAST != null && documentAST.kind === Kind.DOCUMENT) ||
+    devAssert(false, 'Must provide valid Document AST.');
 
   if (
     (options === null || options === void 0 ? void 0 : options.assumeValid) !==
@@ -60,20 +68,20 @@ function extendSchema(schema, documentAST, options) {
       ? void 0
       : options.assumeValidSDL) !== true
   ) {
-    (0, _validate.assertValidSDLExtension)(documentAST, schema);
+    assertValidSDLExtension(documentAST, schema);
   }
 
   const schemaConfig = schema.toConfig();
   const extendedConfig = extendSchemaImpl(schemaConfig, documentAST, options);
   return schemaConfig === extendedConfig
     ? schema
-    : new _schema.GraphQLSchema(extendedConfig);
+    : new GraphQLSchema(extendedConfig);
 }
 /**
  * @internal
  */
 
-function extendSchemaImpl(schemaConfig, documentAST, options) {
+export function extendSchemaImpl(schemaConfig, documentAST, options) {
   var _schemaDef, _schemaDef$descriptio;
 
   // Collect the type definitions and extensions found in the document.
@@ -87,19 +95,19 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   const schemaExtensions = [];
 
   for (const def of documentAST.definitions) {
-    if (def.kind === _kinds.Kind.SCHEMA_DEFINITION) {
+    if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
-    } else if (def.kind === _kinds.Kind.SCHEMA_EXTENSION) {
+    } else if (def.kind === Kind.SCHEMA_EXTENSION) {
       schemaExtensions.push(def);
-    } else if ((0, _predicates.isTypeDefinitionNode)(def)) {
+    } else if (isTypeDefinitionNode(def)) {
       typeDefs.push(def);
-    } else if ((0, _predicates.isTypeExtensionNode)(def)) {
+    } else if (isTypeExtensionNode(def)) {
       const extendedTypeName = def.name.value;
       const existingTypeExtensions = typeExtensionsMap[extendedTypeName];
       typeExtensionsMap[extendedTypeName] = existingTypeExtensions
         ? existingTypeExtensions.concat([def])
         : [def];
-    } else if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
+    } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       directiveDefs.push(def);
     }
   } // If this document contains no new types, extensions, or directives then
@@ -161,14 +169,14 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   // this scope and have access to the schema, cache, and newly defined types.
 
   function replaceType(type) {
-    if ((0, _definition.isListType)(type)) {
+    if (isListType(type)) {
       // @ts-expect-error
-      return new _definition.GraphQLList(replaceType(type.ofType));
+      return new GraphQLList(replaceType(type.ofType));
     }
 
-    if ((0, _definition.isNonNullType)(type)) {
+    if (isNonNullType(type)) {
       // @ts-expect-error
-      return new _definition.GraphQLNonNull(replaceType(type.ofType));
+      return new GraphQLNonNull(replaceType(type.ofType));
     } // @ts-expect-error FIXME
 
     return replaceNamedType(type);
@@ -183,61 +191,54 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
 
   function replaceDirective(directive) {
     const config = directive.toConfig();
-    return new _directives.GraphQLDirective({
+    return new GraphQLDirective({
       ...config,
-      args: (0, _mapValue.mapValue)(config.args, extendArg),
+      args: mapValue(config.args, extendArg),
     });
   }
 
   function extendNamedType(type) {
-    if (
-      (0, _introspection.isIntrospectionType)(type) ||
-      (0, _scalars.isSpecifiedScalarType)(type)
-    ) {
+    if (isIntrospectionType(type) || isSpecifiedScalarType(type)) {
       // Builtin types are not extended.
       return type;
     }
 
-    if ((0, _definition.isScalarType)(type)) {
+    if (isScalarType(type)) {
       return extendScalarType(type);
     }
 
-    if ((0, _definition.isObjectType)(type)) {
+    if (isObjectType(type)) {
       return extendObjectType(type);
     }
 
-    if ((0, _definition.isInterfaceType)(type)) {
+    if (isInterfaceType(type)) {
       return extendInterfaceType(type);
     }
 
-    if ((0, _definition.isUnionType)(type)) {
+    if (isUnionType(type)) {
       return extendUnionType(type);
     }
 
-    if ((0, _definition.isEnumType)(type)) {
+    if (isEnumType(type)) {
       return extendEnumType(type);
     }
 
-    if ((0, _definition.isInputObjectType)(type)) {
+    if (isInputObjectType(type)) {
       return extendInputObjectType(type);
     }
     /* c8 ignore next 3 */
     // Not reachable, all possible type definition nodes have been considered.
 
-    false ||
-      (0, _invariant.invariant)(
-        false,
-        'Unexpected type: ' + (0, _inspect.inspect)(type),
-      );
+    false || invariant(false, 'Unexpected type: ' + inspect(type));
   }
 
   function extendInputObjectType(type) {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
-    return new _definition.GraphQLInputObjectType({
+    return new GraphQLInputObjectType({
       ...config,
       fields: () => ({
-        ...(0, _mapValue.mapValue)(config.fields, (field) => ({
+        ...mapValue(config.fields, (field) => ({
           ...field,
           type: replaceType(field.type),
         })),
@@ -250,7 +251,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function extendEnumType(type) {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[type.name] ?? [];
-    return new _definition.GraphQLEnumType({
+    return new GraphQLEnumType({
       ...config,
       values: { ...config.values, ...buildEnumValueMap(extensions) },
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
@@ -266,7 +267,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
       specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
     }
 
-    return new _definition.GraphQLScalarType({
+    return new GraphQLScalarType({
       ...config,
       specifiedByURL,
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
@@ -276,14 +277,14 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function extendObjectType(type) {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
-    return new _definition.GraphQLObjectType({
+    return new GraphQLObjectType({
       ...config,
       interfaces: () => [
         ...type.getInterfaces().map(replaceNamedType),
         ...buildInterfaces(extensions),
       ],
       fields: () => ({
-        ...(0, _mapValue.mapValue)(config.fields, extendField),
+        ...mapValue(config.fields, extendField),
         ...buildFieldMap(extensions),
       }),
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
@@ -293,14 +294,14 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function extendInterfaceType(type) {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
-    return new _definition.GraphQLInterfaceType({
+    return new GraphQLInterfaceType({
       ...config,
       interfaces: () => [
         ...type.getInterfaces().map(replaceNamedType),
         ...buildInterfaces(extensions),
       ],
       fields: () => ({
-        ...(0, _mapValue.mapValue)(config.fields, extendField),
+        ...mapValue(config.fields, extendField),
         ...buildFieldMap(extensions),
       }),
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
@@ -310,7 +311,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function extendUnionType(type) {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
-    return new _definition.GraphQLUnionType({
+    return new GraphQLUnionType({
       ...config,
       types: () => [
         ...type.getTypes().map(replaceNamedType),
@@ -324,7 +325,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     return {
       ...field,
       type: replaceType(field.type),
-      args: field.args && (0, _mapValue.mapValue)(field.args, extendArg),
+      args: field.args && mapValue(field.args, extendArg),
     };
   }
 
@@ -365,12 +366,12 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 
   function getWrappedType(node) {
-    if (node.kind === _kinds.Kind.LIST_TYPE) {
-      return new _definition.GraphQLList(getWrappedType(node.type));
+    if (node.kind === Kind.LIST_TYPE) {
+      return new GraphQLList(getWrappedType(node.type));
     }
 
-    if (node.kind === _kinds.Kind.NON_NULL_TYPE) {
-      return new _definition.GraphQLNonNull(getWrappedType(node.type));
+    if (node.kind === Kind.NON_NULL_TYPE) {
+      return new GraphQLNonNull(getWrappedType(node.type));
     }
 
     return getNamedType(node);
@@ -379,7 +380,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   function buildDirective(node) {
     var _node$description;
 
-    return new _directives.GraphQLDirective({
+    return new GraphQLDirective({
       name: node.name.value,
       description:
         (_node$description = node.description) === null ||
@@ -447,7 +448,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
           _arg$description === void 0
             ? void 0
             : _arg$description.value,
-        defaultValue: (0, _valueFromAST.valueFromAST)(arg.defaultValue, type),
+        defaultValue: valueFromAST(arg.defaultValue, type),
         deprecationReason: getDeprecationReason(arg),
         astNode: arg,
       };
@@ -479,10 +480,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
             _field$description2 === void 0
               ? void 0
               : _field$description2.value,
-          defaultValue: (0, _valueFromAST.valueFromAST)(
-            field.defaultValue,
-            type,
-          ),
+          defaultValue: valueFromAST(field.defaultValue, type),
           deprecationReason: getDeprecationReason(field),
           astNode: field,
         };
@@ -565,11 +563,11 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     const extensionASTNodes = typeExtensionsMap[name] ?? [];
 
     switch (astNode.kind) {
-      case _kinds.Kind.OBJECT_TYPE_DEFINITION: {
+      case Kind.OBJECT_TYPE_DEFINITION: {
         var _astNode$description;
 
         const allNodes = [astNode, ...extensionASTNodes];
-        return new _definition.GraphQLObjectType({
+        return new GraphQLObjectType({
           name,
           description:
             (_astNode$description = astNode.description) === null ||
@@ -583,11 +581,11 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         });
       }
 
-      case _kinds.Kind.INTERFACE_TYPE_DEFINITION: {
+      case Kind.INTERFACE_TYPE_DEFINITION: {
         var _astNode$description2;
 
         const allNodes = [astNode, ...extensionASTNodes];
-        return new _definition.GraphQLInterfaceType({
+        return new GraphQLInterfaceType({
           name,
           description:
             (_astNode$description2 = astNode.description) === null ||
@@ -601,11 +599,11 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         });
       }
 
-      case _kinds.Kind.ENUM_TYPE_DEFINITION: {
+      case Kind.ENUM_TYPE_DEFINITION: {
         var _astNode$description3;
 
         const allNodes = [astNode, ...extensionASTNodes];
-        return new _definition.GraphQLEnumType({
+        return new GraphQLEnumType({
           name,
           description:
             (_astNode$description3 = astNode.description) === null ||
@@ -618,11 +616,11 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         });
       }
 
-      case _kinds.Kind.UNION_TYPE_DEFINITION: {
+      case Kind.UNION_TYPE_DEFINITION: {
         var _astNode$description4;
 
         const allNodes = [astNode, ...extensionASTNodes];
-        return new _definition.GraphQLUnionType({
+        return new GraphQLUnionType({
           name,
           description:
             (_astNode$description4 = astNode.description) === null ||
@@ -635,10 +633,10 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         });
       }
 
-      case _kinds.Kind.SCALAR_TYPE_DEFINITION: {
+      case Kind.SCALAR_TYPE_DEFINITION: {
         var _astNode$description5;
 
-        return new _definition.GraphQLScalarType({
+        return new GraphQLScalarType({
           name,
           description:
             (_astNode$description5 = astNode.description) === null ||
@@ -651,11 +649,11 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         });
       }
 
-      case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION: {
+      case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
         var _astNode$description6;
 
         const allNodes = [astNode, ...extensionASTNodes];
-        return new _definition.GraphQLInputObjectType({
+        return new GraphQLInputObjectType({
           name,
           description:
             (_astNode$description6 = astNode.description) === null ||
@@ -670,9 +668,8 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     }
   }
 }
-
-const stdTypeMap = (0, _keyMap.keyMap)(
-  [..._scalars.specifiedScalarTypes, ..._introspection.introspectionTypes],
+const stdTypeMap = keyMap(
+  [...specifiedScalarTypes, ...introspectionTypes],
   (type) => type.name,
 );
 /**
@@ -681,10 +678,7 @@ const stdTypeMap = (0, _keyMap.keyMap)(
  */
 
 function getDeprecationReason(node) {
-  const deprecated = (0, _values.getDirectiveValues)(
-    _directives.GraphQLDeprecatedDirective,
-    node,
-  ); // @ts-expect-error validated by `getDirectiveValues`
+  const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node); // @ts-expect-error validated by `getDirectiveValues`
 
   return deprecated === null || deprecated === void 0
     ? void 0
@@ -695,10 +689,7 @@ function getDeprecationReason(node) {
  */
 
 function getSpecifiedByURL(node) {
-  const specifiedBy = (0, _values.getDirectiveValues)(
-    _directives.GraphQLSpecifiedByDirective,
-    node,
-  ); // @ts-expect-error validated by `getDirectiveValues`
+  const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node); // @ts-expect-error validated by `getDirectiveValues`
 
   return specifiedBy === null || specifiedBy === void 0
     ? void 0

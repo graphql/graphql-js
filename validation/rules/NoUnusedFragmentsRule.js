@@ -1,11 +1,4 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.NoUnusedFragmentsRule = NoUnusedFragmentsRule;
-
-var _GraphQLError = require('../../error/GraphQLError.js');
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 /**
  * No unused fragments
@@ -15,7 +8,7 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  *
  * See https://spec.graphql.org/draft/#sec-Fragments-Must-Be-Used
  */
-function NoUnusedFragmentsRule(context) {
+export function NoUnusedFragmentsRule(context) {
   const operationDefs = [];
   const fragmentDefs = [];
   return {
@@ -46,12 +39,9 @@ function NoUnusedFragmentsRule(context) {
 
           if (fragmentNameUsed[fragName] !== true) {
             context.reportError(
-              new _GraphQLError.GraphQLError(
-                `Fragment "${fragName}" is never used.`,
-                {
-                  nodes: fragmentDef,
-                },
-              ),
+              new GraphQLError(`Fragment "${fragName}" is never used.`, {
+                nodes: fragmentDef,
+              }),
             );
           }
         }

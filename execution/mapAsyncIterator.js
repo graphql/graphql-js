@@ -1,15 +1,8 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.mapAsyncIterator = mapAsyncIterator;
-
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
-function mapAsyncIterator(iterable, callback) {
+export function mapAsyncIterator(iterable, callback) {
   const iterator = iterable[Symbol.asyncIterator]();
 
   async function mapResult(result) {

@@ -1,20 +1,8 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.Token =
-  exports.QueryDocumentKeys =
-  exports.OperationTypeNode =
-  exports.Location =
-    void 0;
-exports.isNode = isNode;
-
 /**
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
  */
-class Location {
+export class Location {
   /**
    * The character offset at which this Node begins.
    */
@@ -58,9 +46,7 @@ class Location {
  * within a Source.
  */
 
-exports.Location = Location;
-
-class Token {
+export class Token {
   /**
    * The kind of Token.
    */
@@ -122,12 +108,10 @@ class Token {
  * The list of all possible AST node types.
  */
 
-exports.Token = Token;
-
 /**
  * @internal
  */
-const QueryDocumentKeys = {
+export const QueryDocumentKeys = {
   Name: [],
   Document: ['definitions'],
   OperationDefinition: [
@@ -201,24 +185,22 @@ const QueryDocumentKeys = {
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
-exports.QueryDocumentKeys = QueryDocumentKeys;
 const kindValues = new Set(Object.keys(QueryDocumentKeys));
 /**
  * @internal
  */
 
-function isNode(maybeNode) {
+export function isNode(maybeNode) {
   const maybeKind =
     maybeNode === null || maybeNode === void 0 ? void 0 : maybeNode.kind;
   return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
 /** Name */
 
-let OperationTypeNode;
-exports.OperationTypeNode = OperationTypeNode;
+export let OperationTypeNode;
 
 (function (OperationTypeNode) {
   OperationTypeNode['QUERY'] = 'query';
   OperationTypeNode['MUTATION'] = 'mutation';
   OperationTypeNode['SUBSCRIPTION'] = 'subscription';
-})(OperationTypeNode || (exports.OperationTypeNode = OperationTypeNode = {}));
+})(OperationTypeNode || (OperationTypeNode = {}));

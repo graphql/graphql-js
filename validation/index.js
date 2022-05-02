@@ -1,317 +1,68 @@
-'use strict';
+export { validate } from './validate.js';
+export { ValidationContext } from './ValidationContext.js';
+// All validation rules in the GraphQL Specification.
+export { specifiedRules } from './specifiedRules.js'; // Spec Section: "Executable Definitions"
 
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-Object.defineProperty(exports, 'ExecutableDefinitionsRule', {
-  enumerable: true,
-  get: function () {
-    return _ExecutableDefinitionsRule.ExecutableDefinitionsRule;
-  },
-});
-Object.defineProperty(exports, 'FieldsOnCorrectTypeRule', {
-  enumerable: true,
-  get: function () {
-    return _FieldsOnCorrectTypeRule.FieldsOnCorrectTypeRule;
-  },
-});
-Object.defineProperty(exports, 'FragmentsOnCompositeTypesRule', {
-  enumerable: true,
-  get: function () {
-    return _FragmentsOnCompositeTypesRule.FragmentsOnCompositeTypesRule;
-  },
-});
-Object.defineProperty(exports, 'KnownArgumentNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _KnownArgumentNamesRule.KnownArgumentNamesRule;
-  },
-});
-Object.defineProperty(exports, 'KnownDirectivesRule', {
-  enumerable: true,
-  get: function () {
-    return _KnownDirectivesRule.KnownDirectivesRule;
-  },
-});
-Object.defineProperty(exports, 'KnownFragmentNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _KnownFragmentNamesRule.KnownFragmentNamesRule;
-  },
-});
-Object.defineProperty(exports, 'KnownTypeNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _KnownTypeNamesRule.KnownTypeNamesRule;
-  },
-});
-Object.defineProperty(exports, 'LoneAnonymousOperationRule', {
-  enumerable: true,
-  get: function () {
-    return _LoneAnonymousOperationRule.LoneAnonymousOperationRule;
-  },
-});
-Object.defineProperty(exports, 'LoneSchemaDefinitionRule', {
-  enumerable: true,
-  get: function () {
-    return _LoneSchemaDefinitionRule.LoneSchemaDefinitionRule;
-  },
-});
-Object.defineProperty(exports, 'NoDeprecatedCustomRule', {
-  enumerable: true,
-  get: function () {
-    return _NoDeprecatedCustomRule.NoDeprecatedCustomRule;
-  },
-});
-Object.defineProperty(exports, 'NoFragmentCyclesRule', {
-  enumerable: true,
-  get: function () {
-    return _NoFragmentCyclesRule.NoFragmentCyclesRule;
-  },
-});
-Object.defineProperty(exports, 'NoSchemaIntrospectionCustomRule', {
-  enumerable: true,
-  get: function () {
-    return _NoSchemaIntrospectionCustomRule.NoSchemaIntrospectionCustomRule;
-  },
-});
-Object.defineProperty(exports, 'NoUndefinedVariablesRule', {
-  enumerable: true,
-  get: function () {
-    return _NoUndefinedVariablesRule.NoUndefinedVariablesRule;
-  },
-});
-Object.defineProperty(exports, 'NoUnusedFragmentsRule', {
-  enumerable: true,
-  get: function () {
-    return _NoUnusedFragmentsRule.NoUnusedFragmentsRule;
-  },
-});
-Object.defineProperty(exports, 'NoUnusedVariablesRule', {
-  enumerable: true,
-  get: function () {
-    return _NoUnusedVariablesRule.NoUnusedVariablesRule;
-  },
-});
-Object.defineProperty(exports, 'OverlappingFieldsCanBeMergedRule', {
-  enumerable: true,
-  get: function () {
-    return _OverlappingFieldsCanBeMergedRule.OverlappingFieldsCanBeMergedRule;
-  },
-});
-Object.defineProperty(exports, 'PossibleFragmentSpreadsRule', {
-  enumerable: true,
-  get: function () {
-    return _PossibleFragmentSpreadsRule.PossibleFragmentSpreadsRule;
-  },
-});
-Object.defineProperty(exports, 'PossibleTypeExtensionsRule', {
-  enumerable: true,
-  get: function () {
-    return _PossibleTypeExtensionsRule.PossibleTypeExtensionsRule;
-  },
-});
-Object.defineProperty(exports, 'ProvidedRequiredArgumentsRule', {
-  enumerable: true,
-  get: function () {
-    return _ProvidedRequiredArgumentsRule.ProvidedRequiredArgumentsRule;
-  },
-});
-Object.defineProperty(exports, 'ScalarLeafsRule', {
-  enumerable: true,
-  get: function () {
-    return _ScalarLeafsRule.ScalarLeafsRule;
-  },
-});
-Object.defineProperty(exports, 'SingleFieldSubscriptionsRule', {
-  enumerable: true,
-  get: function () {
-    return _SingleFieldSubscriptionsRule.SingleFieldSubscriptionsRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueArgumentDefinitionNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueArgumentDefinitionNamesRule.UniqueArgumentDefinitionNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueArgumentNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueArgumentNamesRule.UniqueArgumentNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueDirectiveNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueDirectiveNamesRule.UniqueDirectiveNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueDirectivesPerLocationRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueDirectivesPerLocationRule.UniqueDirectivesPerLocationRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueEnumValueNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueEnumValueNamesRule.UniqueEnumValueNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueFieldDefinitionNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueFieldDefinitionNamesRule.UniqueFieldDefinitionNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueFragmentNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueFragmentNamesRule.UniqueFragmentNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueInputFieldNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueInputFieldNamesRule.UniqueInputFieldNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueOperationNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueOperationNamesRule.UniqueOperationNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueOperationTypesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueOperationTypesRule.UniqueOperationTypesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueTypeNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueTypeNamesRule.UniqueTypeNamesRule;
-  },
-});
-Object.defineProperty(exports, 'UniqueVariableNamesRule', {
-  enumerable: true,
-  get: function () {
-    return _UniqueVariableNamesRule.UniqueVariableNamesRule;
-  },
-});
-Object.defineProperty(exports, 'ValidationContext', {
-  enumerable: true,
-  get: function () {
-    return _ValidationContext.ValidationContext;
-  },
-});
-Object.defineProperty(exports, 'ValuesOfCorrectTypeRule', {
-  enumerable: true,
-  get: function () {
-    return _ValuesOfCorrectTypeRule.ValuesOfCorrectTypeRule;
-  },
-});
-Object.defineProperty(exports, 'VariablesAreInputTypesRule', {
-  enumerable: true,
-  get: function () {
-    return _VariablesAreInputTypesRule.VariablesAreInputTypesRule;
-  },
-});
-Object.defineProperty(exports, 'VariablesInAllowedPositionRule', {
-  enumerable: true,
-  get: function () {
-    return _VariablesInAllowedPositionRule.VariablesInAllowedPositionRule;
-  },
-});
-Object.defineProperty(exports, 'specifiedRules', {
-  enumerable: true,
-  get: function () {
-    return _specifiedRules.specifiedRules;
-  },
-});
-Object.defineProperty(exports, 'validate', {
-  enumerable: true,
-  get: function () {
-    return _validate.validate;
-  },
-});
+export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.js'; // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 
-var _validate = require('./validate.js');
+export { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule.js'; // Spec Section: "Fragments on Composite Types"
 
-var _ValidationContext = require('./ValidationContext.js');
+export { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypesRule.js'; // Spec Section: "Argument Names"
 
-var _specifiedRules = require('./specifiedRules.js');
+export { KnownArgumentNamesRule } from './rules/KnownArgumentNamesRule.js'; // Spec Section: "Directives Are Defined"
 
-var _ExecutableDefinitionsRule = require('./rules/ExecutableDefinitionsRule.js');
+export { KnownDirectivesRule } from './rules/KnownDirectivesRule.js'; // Spec Section: "Fragment spread target defined"
 
-var _FieldsOnCorrectTypeRule = require('./rules/FieldsOnCorrectTypeRule.js');
+export { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.js'; // Spec Section: "Fragment Spread Type Existence"
 
-var _FragmentsOnCompositeTypesRule = require('./rules/FragmentsOnCompositeTypesRule.js');
+export { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.js'; // Spec Section: "Lone Anonymous Operation"
 
-var _KnownArgumentNamesRule = require('./rules/KnownArgumentNamesRule.js');
+export { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.js'; // Spec Section: "Fragments must not form cycles"
 
-var _KnownDirectivesRule = require('./rules/KnownDirectivesRule.js');
+export { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.js'; // Spec Section: "All Variable Used Defined"
 
-var _KnownFragmentNamesRule = require('./rules/KnownFragmentNamesRule.js');
+export { NoUndefinedVariablesRule } from './rules/NoUndefinedVariablesRule.js'; // Spec Section: "Fragments must be used"
 
-var _KnownTypeNamesRule = require('./rules/KnownTypeNamesRule.js');
+export { NoUnusedFragmentsRule } from './rules/NoUnusedFragmentsRule.js'; // Spec Section: "All Variables Used"
 
-var _LoneAnonymousOperationRule = require('./rules/LoneAnonymousOperationRule.js');
+export { NoUnusedVariablesRule } from './rules/NoUnusedVariablesRule.js'; // Spec Section: "Field Selection Merging"
 
-var _NoFragmentCyclesRule = require('./rules/NoFragmentCyclesRule.js');
+export { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBeMergedRule.js'; // Spec Section: "Fragment spread is possible"
 
-var _NoUndefinedVariablesRule = require('./rules/NoUndefinedVariablesRule.js');
+export { PossibleFragmentSpreadsRule } from './rules/PossibleFragmentSpreadsRule.js'; // Spec Section: "Argument Optionality"
 
-var _NoUnusedFragmentsRule = require('./rules/NoUnusedFragmentsRule.js');
+export { ProvidedRequiredArgumentsRule } from './rules/ProvidedRequiredArgumentsRule.js'; // Spec Section: "Leaf Field Selections"
 
-var _NoUnusedVariablesRule = require('./rules/NoUnusedVariablesRule.js');
+export { ScalarLeafsRule } from './rules/ScalarLeafsRule.js'; // Spec Section: "Subscriptions with Single Root Field"
 
-var _OverlappingFieldsCanBeMergedRule = require('./rules/OverlappingFieldsCanBeMergedRule.js');
+export { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule.js'; // Spec Section: "Argument Uniqueness"
 
-var _PossibleFragmentSpreadsRule = require('./rules/PossibleFragmentSpreadsRule.js');
+export { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule.js'; // Spec Section: "Directives Are Unique Per Location"
 
-var _ProvidedRequiredArgumentsRule = require('./rules/ProvidedRequiredArgumentsRule.js');
+export { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLocationRule.js'; // Spec Section: "Fragment Name Uniqueness"
 
-var _ScalarLeafsRule = require('./rules/ScalarLeafsRule.js');
+export { UniqueFragmentNamesRule } from './rules/UniqueFragmentNamesRule.js'; // Spec Section: "Input Object Field Uniqueness"
 
-var _SingleFieldSubscriptionsRule = require('./rules/SingleFieldSubscriptionsRule.js');
+export { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule.js'; // Spec Section: "Operation Name Uniqueness"
 
-var _UniqueArgumentNamesRule = require('./rules/UniqueArgumentNamesRule.js');
+export { UniqueOperationNamesRule } from './rules/UniqueOperationNamesRule.js'; // Spec Section: "Variable Uniqueness"
 
-var _UniqueDirectivesPerLocationRule = require('./rules/UniqueDirectivesPerLocationRule.js');
+export { UniqueVariableNamesRule } from './rules/UniqueVariableNamesRule.js'; // Spec Section: "Values Type Correctness"
 
-var _UniqueFragmentNamesRule = require('./rules/UniqueFragmentNamesRule.js');
+export { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule.js'; // Spec Section: "Variables are Input Types"
 
-var _UniqueInputFieldNamesRule = require('./rules/UniqueInputFieldNamesRule.js');
+export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.js'; // Spec Section: "All Variable Usages Are Allowed"
 
-var _UniqueOperationNamesRule = require('./rules/UniqueOperationNamesRule.js');
+export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule.js'; // SDL-specific validation rules
 
-var _UniqueVariableNamesRule = require('./rules/UniqueVariableNamesRule.js');
+export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.js';
+export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule.js';
+export { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule.js';
+export { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule.js';
+export { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule.js';
+export { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule.js';
+export { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule.js';
+export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule.js'; // Optional rules not defined by the GraphQL Specification
 
-var _ValuesOfCorrectTypeRule = require('./rules/ValuesOfCorrectTypeRule.js');
-
-var _VariablesAreInputTypesRule = require('./rules/VariablesAreInputTypesRule.js');
-
-var _VariablesInAllowedPositionRule = require('./rules/VariablesInAllowedPositionRule.js');
-
-var _LoneSchemaDefinitionRule = require('./rules/LoneSchemaDefinitionRule.js');
-
-var _UniqueOperationTypesRule = require('./rules/UniqueOperationTypesRule.js');
-
-var _UniqueTypeNamesRule = require('./rules/UniqueTypeNamesRule.js');
-
-var _UniqueEnumValueNamesRule = require('./rules/UniqueEnumValueNamesRule.js');
-
-var _UniqueFieldDefinitionNamesRule = require('./rules/UniqueFieldDefinitionNamesRule.js');
-
-var _UniqueArgumentDefinitionNamesRule = require('./rules/UniqueArgumentDefinitionNamesRule.js');
-
-var _UniqueDirectiveNamesRule = require('./rules/UniqueDirectiveNamesRule.js');
-
-var _PossibleTypeExtensionsRule = require('./rules/PossibleTypeExtensionsRule.js');
-
-var _NoDeprecatedCustomRule = require('./rules/custom/NoDeprecatedCustomRule.js');
-
-var _NoSchemaIntrospectionCustomRule = require('./rules/custom/NoSchemaIntrospectionCustomRule.js');
+export { NoDeprecatedCustomRule } from './rules/custom/NoDeprecatedCustomRule.js';
+export { NoSchemaIntrospectionCustomRule } from './rules/custom/NoSchemaIntrospectionCustomRule.js';

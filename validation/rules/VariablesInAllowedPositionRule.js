@@ -1,21 +1,9 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.VariablesInAllowedPositionRule = VariablesInAllowedPositionRule;
-
-var _inspect = require('../../jsutils/inspect.js');
-
-var _GraphQLError = require('../../error/GraphQLError.js');
-
-var _kinds = require('../../language/kinds.js');
-
-var _definition = require('../../type/definition.js');
-
-var _typeComparators = require('../../utilities/typeComparators.js');
-
-var _typeFromAST = require('../../utilities/typeFromAST.js');
+import { inspect } from '../../jsutils/inspect.js';
+import { GraphQLError } from '../../error/GraphQLError.js';
+import { Kind } from '../../language/kinds.js';
+import { isNonNullType } from '../../type/definition.js';
+import { isTypeSubTypeOf } from '../../utilities/typeComparators.js';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
 
 /**
  * Variables in allowed position
@@ -24,7 +12,7 @@ var _typeFromAST = require('../../utilities/typeFromAST.js');
  *
  * See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
  */
-function VariablesInAllowedPositionRule(context) {
+export function VariablesInAllowedPositionRule(context) {
   let varDefMap = Object.create(null);
   return {
     OperationDefinition: {
@@ -46,7 +34,7 @@ function VariablesInAllowedPositionRule(context) {
             // If both are list types, the variable item type can be more strict
             // than the expected item type (contravariant).
             const schema = context.getSchema();
-            const varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
+            const varType = typeFromAST(schema, varDef.type);
 
             if (
               varType &&
@@ -58,10 +46,10 @@ function VariablesInAllowedPositionRule(context) {
                 defaultValue,
               )
             ) {
-              const varTypeStr = (0, _inspect.inspect)(varType);
-              const typeStr = (0, _inspect.inspect)(type);
+              const varTypeStr = inspect(varType);
+              const typeStr = inspect(type);
               context.reportError(
-                new _GraphQLError.GraphQLError(
+                new GraphQLError(
                   `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
                   {
                     nodes: [varDef, node],
@@ -92,12 +80,9 @@ function allowedVariableUsage(
   locationType,
   locationDefaultValue,
 ) {
-  if (
-    (0, _definition.isNonNullType)(locationType) &&
-    !(0, _definition.isNonNullType)(varType)
-  ) {
+  if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =
-      varDefaultValue != null && varDefaultValue.kind !== _kinds.Kind.NULL;
+      varDefaultValue != null && varDefaultValue.kind !== Kind.NULL;
     const hasLocationDefaultValue = locationDefaultValue !== undefined;
 
     if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {
@@ -105,12 +90,8 @@ function allowedVariableUsage(
     }
 
     const nullableLocationType = locationType.ofType;
-    return (0, _typeComparators.isTypeSubTypeOf)(
-      schema,
-      varType,
-      nullableLocationType,
-    );
+    return isTypeSubTypeOf(schema, varType, nullableLocationType);
   }
 
-  return (0, _typeComparators.isTypeSubTypeOf)(schema, varType, locationType);
+  return isTypeSubTypeOf(schema, varType, locationType);
 }

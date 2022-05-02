@@ -1,22 +1,13 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.TokenKind = void 0;
-
 /**
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-let TokenKind;
+export let TokenKind;
 /**
  * The enum type representing the token kinds values.
  *
  * @deprecated Please use `TokenKind`. Will be remove in v17.
  */
-
-exports.TokenKind = TokenKind;
 
 (function (TokenKind) {
   TokenKind['SOF'] = '<SOF>';
@@ -41,4 +32,4 @@ exports.TokenKind = TokenKind;
   TokenKind['STRING'] = 'String';
   TokenKind['BLOCK_STRING'] = 'BlockString';
   TokenKind['COMMENT'] = 'Comment';
-})(TokenKind || (exports.TokenKind = TokenKind = {}));
+})(TokenKind || (TokenKind = {}));

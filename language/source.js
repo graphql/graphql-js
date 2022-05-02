@@ -1,16 +1,6 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.Source = void 0;
-exports.isSource = isSource;
-
-var _devAssert = require('../jsutils/devAssert.js');
-
-var _inspect = require('../jsutils/inspect.js');
-
-var _instanceOf = require('../jsutils/instanceOf.js');
+import { devAssert } from '../jsutils/devAssert.js';
+import { inspect } from '../jsutils/inspect.js';
+import { instanceOf } from '../jsutils/instanceOf.js';
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -19,7 +9,7 @@ var _instanceOf = require('../jsutils/instanceOf.js');
  * be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
-class Source {
+export class Source {
   constructor(
     body,
     name = 'GraphQL request',
@@ -29,20 +19,17 @@ class Source {
     },
   ) {
     typeof body === 'string' ||
-      (0, _devAssert.devAssert)(
-        false,
-        `Body must be a string. Received: ${(0, _inspect.inspect)(body)}.`,
-      );
+      devAssert(false, `Body must be a string. Received: ${inspect(body)}.`);
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
     this.locationOffset.line > 0 ||
-      (0, _devAssert.devAssert)(
+      devAssert(
         false,
         'line in locationOffset is 1-indexed and must be positive.',
       );
     this.locationOffset.column > 0 ||
-      (0, _devAssert.devAssert)(
+      devAssert(
         false,
         'column in locationOffset is 1-indexed and must be positive.',
       );
@@ -58,8 +45,6 @@ class Source {
  * @internal
  */
 
-exports.Source = Source;
-
-function isSource(source) {
-  return (0, _instanceOf.instanceOf)(source, Source);
+export function isSource(source) {
+  return instanceOf(source, Source);
 }

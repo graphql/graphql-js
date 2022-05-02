@@ -1,27 +1,19 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.printLocation = printLocation;
-exports.printSourceLocation = printSourceLocation;
-
-var _location = require('./location.js');
+import { getLocation } from './location.js';
 
 /**
  * Render a helpful description of the location in the GraphQL Source document.
  */
-function printLocation(location) {
+export function printLocation(location) {
   return printSourceLocation(
     location.source,
-    (0, _location.getLocation)(location.source, location.start),
+    getLocation(location.source, location.start),
   );
 }
 /**
  * Render a helpful description of the location in the GraphQL Source document.
  */
 
-function printSourceLocation(source, sourceLocation) {
+export function printSourceLocation(source, sourceLocation) {
   const firstLineColumnOffset = source.locationOffset.column - 1;
   const body = ''.padStart(firstLineColumnOffset) + source.body;
   const lineIndex = sourceLocation.line - 1;

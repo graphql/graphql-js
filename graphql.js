@@ -1,24 +1,50 @@
-'use strict';
+import { devAssert } from './jsutils/devAssert.js';
+import { isPromise } from './jsutils/isPromise.js';
+import { parse } from './language/parser.js';
+import { validateSchema } from './type/validate.js';
+import { validate } from './validation/validate.js';
+import { execute } from './execution/execute.js';
+/**
+ * This is the primary entry point function for fulfilling GraphQL operations
+ * by parsing, validating, and executing a GraphQL document along side a
+ * GraphQL schema.
+ *
+ * More sophisticated GraphQL servers, such as those which persist queries,
+ * may wish to separate the validation and execution phases to a static time
+ * tooling step, and a server runtime step.
+ *
+ * Accepts either an object with named arguments, or individual arguments:
+ *
+ * schema:
+ *    The GraphQL type system to use when validating and executing a query.
+ * source:
+ *    A GraphQL language formatted string representing the requested operation.
+ * rootValue:
+ *    The value provided as the first argument to resolver functions on the top
+ *    level type (e.g. the query object type).
+ * contextValue:
+ *    The context value is provided as an argument to resolver functions after
+ *    field arguments. It is used to pass shared information useful at any point
+ *    during executing this query, for example the currently logged in user and
+ *    connections to databases or other services.
+ * variableValues:
+ *    A mapping of variable name to runtime value to use for all variables
+ *    defined in the requestString.
+ * operationName:
+ *    The name of the operation to use if requestString contains multiple
+ *    possible operations. Can be omitted if requestString contains only
+ *    one operation.
+ * fieldResolver:
+ *    A resolver function to use when one is not provided by the schema.
+ *    If not provided, the default field resolver is used (which looks for a
+ *    value or method on the source value with the field's name).
+ * typeResolver:
+ *    A type resolver function to use when none is provided by the schema.
+ *    If not provided, the default type resolver is used (which looks for a
+ *    `__typename` field or alternatively calls the `isTypeOf` method).
+ */
 
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.graphql = graphql;
-exports.graphqlSync = graphqlSync;
-
-var _devAssert = require('./jsutils/devAssert.js');
-
-var _isPromise = require('./jsutils/isPromise.js');
-
-var _parser = require('./language/parser.js');
-
-var _validate = require('./type/validate.js');
-
-var _validate2 = require('./validation/validate.js');
-
-var _execute = require('./execution/execute.js');
-
-function graphql(args) {
+export function graphql(args) {
   // Always return a Promise for a consistent API.
   return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
@@ -29,10 +55,10 @@ function graphql(args) {
  * that all field resolvers are also synchronous.
  */
 
-function graphqlSync(args) {
+export function graphqlSync(args) {
   const result = graphqlImpl(args); // Assert that the execution was synchronous.
 
-  if ((0, _isPromise.isPromise)(result)) {
+  if (isPromise(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
@@ -42,7 +68,7 @@ function graphqlSync(args) {
 function graphqlImpl(args) {
   // Temporary for v15 to v16 migration. Remove in v17
   arguments.length < 2 ||
-    (0, _devAssert.devAssert)(
+    devAssert(
       false,
       'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
     );
@@ -57,7 +83,7 @@ function graphqlImpl(args) {
     typeResolver,
   } = args; // Validate Schema
 
-  const schemaValidationErrors = (0, _validate.validateSchema)(schema);
+  const schemaValidationErrors = validateSchema(schema);
 
   if (schemaValidationErrors.length > 0) {
     return {
@@ -68,14 +94,14 @@ function graphqlImpl(args) {
   let document;
 
   try {
-    document = (0, _parser.parse)(source);
+    document = parse(source);
   } catch (syntaxError) {
     return {
       errors: [syntaxError],
     };
   } // Validate
 
-  const validationErrors = (0, _validate2.validate)(schema, document);
+  const validationErrors = validate(schema, document);
 
   if (validationErrors.length > 0) {
     return {
@@ -83,7 +109,7 @@ function graphqlImpl(args) {
     };
   } // Execute
 
-  return (0, _execute.execute)({
+  return execute({
     schema,
     document,
     rootValue,

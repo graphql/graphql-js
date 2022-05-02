@@ -1,11 +1,4 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.KnownFragmentNamesRule = KnownFragmentNamesRule;
-
-var _GraphQLError = require('../../error/GraphQLError.js');
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 /**
  * Known fragment names
@@ -15,7 +8,7 @@ var _GraphQLError = require('../../error/GraphQLError.js');
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-spread-target-defined
  */
-function KnownFragmentNamesRule(context) {
+export function KnownFragmentNamesRule(context) {
   return {
     FragmentSpread(node) {
       const fragmentName = node.name.value;
@@ -23,12 +16,9 @@ function KnownFragmentNamesRule(context) {
 
       if (!fragment) {
         context.reportError(
-          new _GraphQLError.GraphQLError(
-            `Unknown fragment "${fragmentName}".`,
-            {
-              nodes: node.name,
-            },
-          ),
+          new GraphQLError(`Unknown fragment "${fragmentName}".`, {
+            nodes: node.name,
+          }),
         );
       }
     },

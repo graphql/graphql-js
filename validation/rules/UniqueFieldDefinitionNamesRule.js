@@ -1,20 +1,16 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.UniqueFieldDefinitionNamesRule = UniqueFieldDefinitionNamesRule;
-
-var _GraphQLError = require('../../error/GraphQLError.js');
-
-var _definition = require('../../type/definition.js');
+import { GraphQLError } from '../../error/GraphQLError.js';
+import {
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+} from '../../type/definition.js';
 
 /**
  * Unique field definition names
  *
  * A GraphQL complex type is only valid if all its fields are uniquely named.
  */
-function UniqueFieldDefinitionNamesRule(context) {
+export function UniqueFieldDefinitionNamesRule(context) {
   const schema = context.getSchema();
   const existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
   const knownFieldNames = Object.create(null);
@@ -44,7 +40,7 @@ function UniqueFieldDefinitionNamesRule(context) {
 
       if (hasField(existingTypeMap[typeName], fieldName)) {
         context.reportError(
-          new _GraphQLError.GraphQLError(
+          new GraphQLError(
             `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
             {
               nodes: fieldDef.name,
@@ -53,7 +49,7 @@ function UniqueFieldDefinitionNamesRule(context) {
         );
       } else if (fieldNames[fieldName]) {
         context.reportError(
-          new _GraphQLError.GraphQLError(
+          new GraphQLError(
             `Field "${typeName}.${fieldName}" can only be defined once.`,
             {
               nodes: [fieldNames[fieldName], fieldDef.name],
@@ -70,11 +66,7 @@ function UniqueFieldDefinitionNamesRule(context) {
 }
 
 function hasField(type, fieldName) {
-  if (
-    (0, _definition.isObjectType)(type) ||
-    (0, _definition.isInterfaceType)(type) ||
-    (0, _definition.isInputObjectType)(type)
-  ) {
+  if (isObjectType(type) || isInterfaceType(type) || isInputObjectType(type)) {
     return type.getFields()[fieldName] != null;
   }
 

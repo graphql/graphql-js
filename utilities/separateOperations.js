@@ -1,31 +1,23 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.separateOperations = separateOperations;
-
-var _kinds = require('../language/kinds.js');
-
-var _visitor = require('../language/visitor.js');
-
+import { Kind } from '../language/kinds.js';
+import { visit } from '../language/visitor.js';
 /**
  * separateOperations accepts a single AST document which may contain many
  * operations and fragments and returns a collection of AST documents each of
  * which contains a single operation as well the fragment definitions it
  * refers to.
  */
-function separateOperations(documentAST) {
+
+export function separateOperations(documentAST) {
   const operations = [];
   const depGraph = Object.create(null); // Populate metadata and build a dependency graph.
 
   for (const definitionNode of documentAST.definitions) {
     switch (definitionNode.kind) {
-      case _kinds.Kind.OPERATION_DEFINITION:
+      case Kind.OPERATION_DEFINITION:
         operations.push(definitionNode);
         break;
 
-      case _kinds.Kind.FRAGMENT_DEFINITION:
+      case Kind.FRAGMENT_DEFINITION:
         depGraph[definitionNode.name.value] = collectDependencies(
           definitionNode.selectionSet,
         );
@@ -49,11 +41,11 @@ function separateOperations(documentAST) {
     // to retain the same order as the original document.
 
     separatedDocumentASTs[operationName] = {
-      kind: _kinds.Kind.DOCUMENT,
+      kind: Kind.DOCUMENT,
       definitions: documentAST.definitions.filter(
         (node) =>
           node === operation ||
-          (node.kind === _kinds.Kind.FRAGMENT_DEFINITION &&
+          (node.kind === Kind.FRAGMENT_DEFINITION &&
             dependencies.has(node.name.value)),
       ),
     };
@@ -79,7 +71,7 @@ function collectTransitiveDependencies(collected, depGraph, fromName) {
 
 function collectDependencies(selectionSet) {
   const dependencies = [];
-  (0, _visitor.visit)(selectionSet, {
+  visit(selectionSet, {
     FragmentSpread(node) {
       dependencies.push(node.name.value);
     },

@@ -1,39 +1,41 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true,
-});
-exports.lexicographicSortSchema = lexicographicSortSchema;
-
-var _inspect = require('../jsutils/inspect.js');
-
-var _invariant = require('../jsutils/invariant.js');
-
-var _keyValMap = require('../jsutils/keyValMap.js');
-
-var _naturalCompare = require('../jsutils/naturalCompare.js');
-
-var _definition = require('../type/definition.js');
-
-var _directives = require('../type/directives.js');
-
-var _introspection = require('../type/introspection.js');
-
-var _schema = require('../type/schema.js');
-
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { keyValMap } from '../jsutils/keyValMap.js';
+import { naturalCompare } from '../jsutils/naturalCompare.js';
+import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLUnionType,
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../type/definition.js';
+import { GraphQLDirective } from '../type/directives.js';
+import { isIntrospectionType } from '../type/introspection.js';
+import { GraphQLSchema } from '../type/schema.js';
 /**
  * Sort GraphQLSchema.
  *
  * This function returns a sorted copy of the given GraphQLSchema.
  */
-function lexicographicSortSchema(schema) {
+
+export function lexicographicSortSchema(schema) {
   const schemaConfig = schema.toConfig();
-  const typeMap = (0, _keyValMap.keyValMap)(
+  const typeMap = keyValMap(
     sortByName(schemaConfig.types),
     (type) => type.name,
     sortNamedType,
   );
-  return new _schema.GraphQLSchema({
+  return new GraphQLSchema({
     ...schemaConfig,
     types: Object.values(typeMap),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
@@ -43,12 +45,12 @@ function lexicographicSortSchema(schema) {
   });
 
   function replaceType(type) {
-    if ((0, _definition.isListType)(type)) {
+    if (isListType(type)) {
       // @ts-expect-error
-      return new _definition.GraphQLList(replaceType(type.ofType));
-    } else if ((0, _definition.isNonNullType)(type)) {
+      return new GraphQLList(replaceType(type.ofType));
+    } else if (isNonNullType(type)) {
       // @ts-expect-error
-      return new _definition.GraphQLNonNull(replaceType(type.ofType));
+      return new GraphQLNonNull(replaceType(type.ofType));
     } // @ts-expect-error FIXME: TS Conversion
 
     return replaceNamedType(type);
@@ -64,7 +66,7 @@ function lexicographicSortSchema(schema) {
 
   function sortDirective(directive) {
     const config = directive.toConfig();
-    return new _directives.GraphQLDirective({
+    return new GraphQLDirective({
       ...config,
       locations: sortBy(config.locations, (x) => x),
       args: sortArgs(config.args),
@@ -95,50 +97,47 @@ function lexicographicSortSchema(schema) {
   }
 
   function sortNamedType(type) {
-    if (
-      (0, _definition.isScalarType)(type) ||
-      (0, _introspection.isIntrospectionType)(type)
-    ) {
+    if (isScalarType(type) || isIntrospectionType(type)) {
       return type;
     }
 
-    if ((0, _definition.isObjectType)(type)) {
+    if (isObjectType(type)) {
       const config = type.toConfig();
-      return new _definition.GraphQLObjectType({
+      return new GraphQLObjectType({
         ...config,
         interfaces: () => sortTypes(config.interfaces),
         fields: () => sortFields(config.fields),
       });
     }
 
-    if ((0, _definition.isInterfaceType)(type)) {
+    if (isInterfaceType(type)) {
       const config = type.toConfig();
-      return new _definition.GraphQLInterfaceType({
+      return new GraphQLInterfaceType({
         ...config,
         interfaces: () => sortTypes(config.interfaces),
         fields: () => sortFields(config.fields),
       });
     }
 
-    if ((0, _definition.isUnionType)(type)) {
+    if (isUnionType(type)) {
       const config = type.toConfig();
-      return new _definition.GraphQLUnionType({
+      return new GraphQLUnionType({
         ...config,
         types: () => sortTypes(config.types),
       });
     }
 
-    if ((0, _definition.isEnumType)(type)) {
+    if (isEnumType(type)) {
       const config = type.toConfig();
-      return new _definition.GraphQLEnumType({
+      return new GraphQLEnumType({
         ...config,
         values: sortObjMap(config.values, (value) => value),
       });
     }
 
-    if ((0, _definition.isInputObjectType)(type)) {
+    if (isInputObjectType(type)) {
       const config = type.toConfig();
-      return new _definition.GraphQLInputObjectType({
+      return new GraphQLInputObjectType({
         ...config,
         fields: () => sortInputFields(config.fields),
       });
@@ -146,18 +145,14 @@ function lexicographicSortSchema(schema) {
     /* c8 ignore next 3 */
     // Not reachable, all possible types have been considered.
 
-    false ||
-      (0, _invariant.invariant)(
-        false,
-        'Unexpected type: ' + (0, _inspect.inspect)(type),
-      );
+    false || invariant(false, 'Unexpected type: ' + inspect(type));
   }
 }
 
 function sortObjMap(map, sortValueFn) {
   const sortedMap = Object.create(null);
 
-  for (const key of Object.keys(map).sort(_naturalCompare.naturalCompare)) {
+  for (const key of Object.keys(map).sort(naturalCompare)) {
     sortedMap[key] = sortValueFn(map[key]);
   }
 
@@ -172,6 +167,6 @@ function sortBy(array, mapToKey) {
   return array.slice().sort((obj1, obj2) => {
     const key1 = mapToKey(obj1);
     const key2 = mapToKey(obj2);
-    return (0, _naturalCompare.naturalCompare)(key1, key2);
+    return naturalCompare(key1, key2);
   });
 }
