@@ -173,7 +173,7 @@ rules:
   simple-import-sort/exports: off # TODO
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.13.x`
+  # ESLint builtin rules list based on `v8.14.x`
   ##############################################################################
 
   # Possible Errors
@@ -185,6 +185,7 @@ rules:
   no-await-in-loop: error
   no-compare-neg-zero: error
   no-cond-assign: error
+  no-constant-binary-expression: error
   no-console: warn
   no-constant-condition: error
   no-control-regex: error
@@ -486,7 +487,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.19.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.21.x`
       ##########################################################################
 
       # Supported Rules
@@ -530,7 +531,6 @@ overrides:
       '@typescript-eslint/no-non-null-asserted-nullish-coalescing': error
       '@typescript-eslint/no-non-null-asserted-optional-chain': error
       '@typescript-eslint/no-non-null-assertion': error
-      '@typescript-eslint/no-parameter-properties': error
       '@typescript-eslint/no-redundant-type-constituents': error
       '@typescript-eslint/no-invalid-void-type': error
       '@typescript-eslint/no-require-imports': error
@@ -550,6 +550,7 @@ overrides:
       '@typescript-eslint/no-useless-empty-export': error
       '@typescript-eslint/no-var-requires': error
       '@typescript-eslint/non-nullable-type-assertion-style': off #TODO temporarily disabled
+      '@typescript-eslint/parameter-properties': error
       '@typescript-eslint/prefer-as-const': error
       '@typescript-eslint/prefer-enum-initializers': error
       '@typescript-eslint/prefer-for-of': error
