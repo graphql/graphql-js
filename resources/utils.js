@@ -33,7 +33,7 @@ function readdirRecursive(dirPath, opts = {}) {
     );
     result.push(...list);
   }
-  return result;
+  return result.map((filepath) => './' + filepath);
 }
 
 function showDirStats(dirPath) {

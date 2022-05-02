@@ -1,11 +1,9 @@
-'use strict';
+import assert from 'assert';
 
-const assert = require('assert');
+// eslint-disable-next-line import/no-unresolved, node/no-missing-import
+import mainCJS from './dist/main.cjs';
 
-// eslint-disable-next-line node/no-missing-require
-const { result } = require('./dist/main.js');
-
-assert.deepStrictEqual(result, {
+assert.deepStrictEqual(mainCJS.result, {
   data: {
     __proto__: null,
     hello: 'world',

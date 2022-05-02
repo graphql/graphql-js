@@ -1,9 +1,7 @@
-'use strict';
+import { parse } from 'graphql/language/parser.js';
+import { visit, visitInParallel } from 'graphql/language/visitor.js';
 
-const { parse } = require('graphql/language/parser.js');
-const { visit, visitInParallel } = require('graphql/language/visitor.js');
-
-const { bigSchemaSDL } = require('./fixtures.js');
+import { bigSchemaSDL } from './fixtures.js';
 
 const documentAST = parse(bigSchemaSDL);
 
@@ -16,7 +14,7 @@ const visitors = new Array(50).fill({
   },
 });
 
-module.exports = {
+export const benchmark = {
   name: 'Visit all AST nodes in parallel',
   count: 10,
   measure() {

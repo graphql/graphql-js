@@ -1,8 +1,9 @@
-'use strict';
+import childProcess from 'child_process';
+import fs from 'fs';
 
-const childProcess = require('child_process');
-
-const graphqlPackageJSON = require('graphql/package.json');
+const graphqlPackageJSON = JSON.parse(
+  fs.readFileSync('./node_modules/graphql/package.json', 'utf-8'),
+);
 
 const nodeVersions = graphqlPackageJSON.engines.node
   .split(' || ')

@@ -1,13 +1,11 @@
-'use strict';
+import { parse } from 'graphql/language/parser.js';
+import { buildASTSchema } from 'graphql/utilities/buildASTSchema.js';
 
-const { parse } = require('graphql/language/parser.js');
-const { buildASTSchema } = require('graphql/utilities/buildASTSchema.js');
-
-const { bigSchemaSDL } = require('./fixtures.js');
+import { bigSchemaSDL } from './fixtures.js';
 
 const schemaAST = parse(bigSchemaSDL);
 
-module.exports = {
+export const benchmark = {
   name: 'Build Schema from AST',
   count: 10,
   measure() {

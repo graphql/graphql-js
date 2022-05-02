@@ -1,6 +1,7 @@
 {
   "private": true,
   "description": "graphql-js should compile with all supported TS versions",
+  "type": "module",
   "scripts": {
     "test": "node test.js"
   },

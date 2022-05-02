@@ -1,10 +1,10 @@
-'use strict';
+/* eslint-disable simple-import-sort/imports */
+import assert from 'assert';
+import { readFileSync } from 'fs';
 
-const assert = require('assert');
-const { readFileSync } = require('fs');
-
-const { version, graphqlSync } = require('graphql');
-const { buildSchema } = require('graphql/utilities');
+import { graphqlSync } from 'graphql';
+import { buildSchema } from 'graphql/utilities';
+import { version } from 'graphql/version';
 
 assert.deepStrictEqual(
   version,

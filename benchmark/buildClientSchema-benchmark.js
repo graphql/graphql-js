@@ -1,10 +1,8 @@
-'use strict';
+import { buildClientSchema } from 'graphql/utilities/buildClientSchema.js';
 
-const { buildClientSchema } = require('graphql/utilities/buildClientSchema.js');
+import { bigSchemaIntrospectionResult } from './fixtures.js';
 
-const { bigSchemaIntrospectionResult } = require('./fixtures.js');
-
-module.exports = {
+export const benchmark = {
   name: 'Build Schema from Introspection',
   count: 10,
   measure() {

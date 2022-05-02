@@ -2,6 +2,9 @@
   "mode": "production",
   "entry": "./entry.js",
   "output": {
-    "libraryTarget": "commonjs2"
+    "filename": "main.cjs",
+    "library": {
+      "type": "commonjs2"
+    }
   }
 }
