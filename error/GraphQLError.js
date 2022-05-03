@@ -5,7 +5,7 @@ import {
   printSourceLocation,
 } from '../language/printLocation.js';
 
-function toNormalizedArgs(args) {
+function toNormalizedOptions(args) {
   const firstArg = args[0];
 
   if (firstArg == null || 'kind' in firstArg || 'length' in firstArg) {
@@ -72,13 +72,13 @@ export class GraphQLError extends Error {
    */
 
   /**
-   * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
+   * @deprecated Please use the `GraphQLErrorOptions` constructor overload instead.
    */
   constructor(message, ...rawArgs) {
     var _this$nodes, _nodeLocations$;
 
     const { nodes, source, positions, path, originalError, extensions } =
-      toNormalizedArgs(rawArgs);
+      toNormalizedOptions(rawArgs);
     super(message);
     this.name = 'GraphQLError';
     this.path = path ?? undefined;

@@ -346,6 +346,7 @@ export {
   formatError,
 } from './error/index';
 export type {
+  GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
 } from './error/index';

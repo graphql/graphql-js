@@ -14,7 +14,7 @@ import type { Source } from '../language/source';
 export interface GraphQLErrorExtensions {
   [attributeName: string]: unknown;
 }
-export interface GraphQLErrorArgs {
+export interface GraphQLErrorOptions {
   nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
   source?: Maybe<Source>;
   positions?: Maybe<ReadonlyArray<number>>;
@@ -75,9 +75,9 @@ export declare class GraphQLError extends Error {
    * Extension fields to add to the formatted error.
    */
   readonly extensions: GraphQLErrorExtensions;
-  constructor(message: string, args?: GraphQLErrorArgs);
+  constructor(message: string, options?: GraphQLErrorOptions);
   /**
-   * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
+   * @deprecated Please use the `GraphQLErrorOptions` constructor overload instead.
    */
   constructor(
     message: string,
