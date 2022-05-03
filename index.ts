@@ -353,6 +353,7 @@ export {
   formatError,
 } from './error/index.ts';
 export type {
+  GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
 } from './error/index.ts'; // Utilities for operating on GraphQL type schema and parsed sources.
