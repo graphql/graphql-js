@@ -1,5 +1,9 @@
 'use strict';
 
+const assert = require('assert');
+
+const ts = require('typescript');
+
 /**
  * Adds extension to all paths imported inside MJS files
  *
@@ -14,26 +18,37 @@
  *  export { foo } from './bar.mjs';
  *
  */
-module.exports = function addExtensionToImportPaths(context, { extension }) {
-  const { types } = context;
+module.exports = function addExtensionToImportPaths({ extension }) {
+  return (context) => {
+    const { factory } = context;
 
-  return {
-    visitor: {
-      ImportDeclaration: replaceImportPath,
-      ExportNamedDeclaration: replaceImportPath,
-    },
+    return function visit(node) {
+      const source = node.moduleSpecifier?.text;
+      if (source?.startsWith('./') || source?.startsWith('../')) {
+        if (ts.isImportDeclaration(node)) {
+          return factory.updateImportDeclaration(
+            node,
+            node.decorators,
+            node.modifiers,
+            node.importClause,
+            ts.createStringLiteral(source + extension),
+            node.assertClause,
+          );
+        }
+        if (ts.isExportDeclaration(node)) {
+          return factory.updateExportDeclaration(
+            node,
+            node.decorators,
+            node.modifiers,
+            node.isTypeOnly,
+            node.exportClause,
+            ts.createStringLiteral(source + extension),
+            node.assertClause,
+          );
+        }
+        assert(false, 'Unexpected node with moduleSpecifier: ' + node);
+      }
+      return ts.visitEachChild(node, visit, context);
+    };
   };
-
-  function replaceImportPath(path) {
-    // bail if the declaration doesn't have a source, e.g. "export { foo };"
-    if (!path.node.source) {
-      return;
-    }
-
-    const source = path.node.source.value;
-    if (source.startsWith('./') || source.startsWith('../')) {
-      const newSourceNode = types.stringLiteral(source + '.' + extension);
-      path.get('source').replaceWith(newSourceNode);
-    }
-  }
 };

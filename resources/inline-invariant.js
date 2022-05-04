@@ -1,5 +1,7 @@
 'use strict';
 
+const ts = require('typescript');
+
 /**
  * Eliminates function call to `invariant` if the condition is met.
  *
@@ -12,37 +14,29 @@
  *  (<cond>) || invariant(false ...)
  */
 module.exports = function inlineInvariant(context) {
-  const invariantTemplate = context.template(`
-    (%%cond%%) || invariant(false, %%args%%)
-  `);
-  const assertTemplate = context.template(`
-    (%%cond%%) || devAssert(false, %%args%%)
-  `);
+  const { factory } = context;
 
-  return {
-    visitor: {
-      CallExpression(path) {
-        const node = path.node;
-        const parent = path.parent;
+  return function visit(node) {
+    if (ts.isCallExpression(node)) {
+      const { expression, arguments: args } = node;
 
-        if (
-          parent.type !== 'ExpressionStatement' ||
-          node.callee.type !== 'Identifier' ||
-          node.arguments.length === 0
-        ) {
-          return;
+      if (ts.isIdentifier(expression) && args.length > 0) {
+        const funcName = expression.escapedText;
+        if (funcName === 'invariant' || funcName === 'devAssert') {
+          const [condition, ...otherArgs] = args;
+
+          return factory.createBinaryExpression(
+            factory.createParenthesizedExpression(condition),
+            ts.SyntaxKind.BarBarToken,
+            factory.createCallExpression(
+              factory.createIdentifier(funcName),
+              undefined,
+              [factory.createFalse(), ...otherArgs],
+            ),
+          );
         }
-
-        const calleeName = node.callee.name;
-        if (calleeName === 'invariant') {
-          const [cond, args] = node.arguments;
-
-          path.replaceWith(invariantTemplate({ cond, args }));
-        } else if (calleeName === 'devAssert') {
-          const [cond, args] = node.arguments;
-          path.replaceWith(assertTemplate({ cond, args }));
-        }
-      },
-    },
+      }
+    }
+    return ts.visitEachChild(node, visit, context);
   };
 };

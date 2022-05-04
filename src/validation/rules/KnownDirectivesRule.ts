@@ -121,7 +121,7 @@ function getDirectiveLocationForASTPath(
         : DirectiveLocation.ARGUMENT_DEFINITION;
     }
     // Not reachable, all possible types have been considered.
-    /* c8 ignore next */
+    /* c8 ignore next 2 */
     default:
       invariant(false, 'Unexpected kind: ' + inspect(appliedTo.kind));
   }

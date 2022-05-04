@@ -3,8 +3,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const babel = require('@babel/core');
+const ts = require('typescript');
 
+const inlineInvariant = require('./inline-invariant.js');
+const addExtensionToImportPaths = require('./add-extension-to-import-paths.js');
 const {
   writeGeneratedFile,
   readdirRecursive,
@@ -17,14 +19,29 @@ if (require.main === module) {
 
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
   for (const filepath of srcFiles) {
-    const srcPath = path.join('./src', filepath);
-    const destPath = path.join('./denoDist', filepath);
-
-    fs.mkdirSync(path.dirname(destPath), { recursive: true });
     if (filepath.endsWith('.ts')) {
-      const options = { babelrc: false, configFile: './.babelrc-deno.json' };
-      const output = babel.transformFileSync(srcPath, options).code + '\n';
-      writeGeneratedFile(destPath, output);
+      const srcPath = path.join('./src', filepath);
+
+      const sourceFile = ts.createSourceFile(
+        srcPath,
+        fs.readFileSync(srcPath, 'utf-8'),
+        ts.ScriptTarget.Latest,
+      );
+
+      const transformed = ts.transform(sourceFile, [
+        addExtensionToImportPaths({ extension: '.ts' }),
+        inlineInvariant,
+      ]);
+      const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+      const newContent = printer.printBundle(
+        ts.createBundle(transformed.transformed),
+      );
+
+      transformed.dispose();
+
+      const destPath = path.join('./denoDist', filepath);
+      fs.mkdirSync(path.dirname(destPath), { recursive: true });
+      writeGeneratedFile(destPath, newContent);
     }
   }
 
