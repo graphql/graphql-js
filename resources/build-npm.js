@@ -5,42 +5,16 @@ const path = require('path');
 const assert = require('assert');
 
 const ts = require('typescript');
-const babel = require('@babel/core');
 
-const {
-  writeGeneratedFile,
-  readdirRecursive,
-  showDirStats,
-} = require('./utils.js');
+const inlineInvariant = require('./inline-invariant.js');
+const addExtensionToImportPaths = require('./add-extension-to-import-paths.js');
+const { writeGeneratedFile, showDirStats } = require('./utils.js');
 
 if (require.main === module) {
   fs.rmSync('./npmDist', { recursive: true, force: true });
   fs.mkdirSync('./npmDist');
 
   const packageJSON = buildPackageJSON();
-
-  const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
-  for (const srcFilePath of srcFiles) {
-    if (srcFilePath.endsWith('.ts')) {
-      const destFilePath = srcFilePath.replace(/\.ts$/, '.js');
-
-      const srcPath = path.join('./src', srcFilePath);
-      const destPath = path.join('./npmDist', destFilePath);
-
-      fs.mkdirSync(path.dirname(destPath), { recursive: true });
-
-      const { code } = babel.transformFileSync(srcPath, {
-        babelrc: false,
-        configFile: './.babelrc-npm.json',
-      });
-      writeGeneratedFile(destPath, code + '\n');
-
-      if (path.basename(destFilePath) === 'index.js') {
-        const key = destFilePath.replace(/\/index.js$/, '');
-        packageJSON.exports[key] = destFilePath;
-      }
-    }
-  }
 
   // Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
   const tsConfig = JSON.parse(
@@ -50,21 +24,41 @@ if (require.main === module) {
     tsConfig.compilerOptions,
     '"tsconfig.json" should have `compilerOptions`',
   );
-  const tsOptions = {
-    ...tsConfig.compilerOptions,
-    noEmit: false,
-    declaration: true,
-    declarationDir: './npmDist',
-    emitDeclarationOnly: true,
-  };
+
+  const { options: tsOptions, errors: tsOptionsErrors } =
+    ts.convertCompilerOptionsFromJson(
+      {
+        ...tsConfig.compilerOptions,
+        module: 'es2020',
+        noEmit: false,
+        declaration: true,
+        declarationDir: './npmDist',
+        outDir: './npmDist',
+      },
+      process.cwd(),
+    );
+
+  assert(
+    tsOptionsErrors.length === 0,
+    'Fail to parse options: ' + tsOptionsErrors,
+  );
 
   const tsHost = ts.createCompilerHost(tsOptions);
   tsHost.writeFile = (filepath, body) => {
+    if (path.basename(filepath) === 'index.js') {
+      const relative = './' + path.relative('./npmDist', filepath);
+      const key = relative.replace(/\/?index.js$/, '');
+      packageJSON.exports[key] = relative;
+    }
+
+    fs.mkdirSync(path.dirname(filepath), { recursive: true });
     writeGeneratedFile(filepath, body);
   };
 
   const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
-  const tsResult = tsProgram.emit();
+  const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
+    after: [addExtensionToImportPaths({ extension: '.js' }), inlineInvariant],
+  });
   assert(
     !tsResult.emitSkipped,
     'Fail to generate `*.d.ts` files, please run `npm run check`',

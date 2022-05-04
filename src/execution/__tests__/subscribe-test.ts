@@ -835,7 +835,7 @@ describe('Subscription Publish Phase', () => {
     // Throw error
     let caughtError;
     try {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       await subscription.throw('ouch');
     } catch (e) {
       caughtError = e;
