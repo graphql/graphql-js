@@ -34,7 +34,9 @@ describe('Integration Tests', () => {
     const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf-8'));
 
     it(packageJSON.description, () => {
-      exec(`cp -R ${projectPath} ${tmpDir}`);
+      fs.cpSync(projectPath, path.join(tmpDir, projectName), {
+        recursive: true,
+      });
 
       const cwd = path.join(tmpDir, projectName);
       // TODO: figure out a way to run it with --ignore-scripts

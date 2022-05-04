@@ -54,11 +54,9 @@ function prepareBenchmarkProjects(revisionList) {
     fs.rmSync(projectPath, { recursive: true, force: true });
     fs.mkdirSync(projectPath);
 
-    fs.writeFileSync(
-      path.join(projectPath, 'package.json'),
-      '{ "private": true }',
-    );
-    exec(`cp -R ${localDir('benchmark')} ${projectPath}`);
+    fs.cpSync(localDir('benchmark'), path.join(projectPath, 'benchmark'), {
+      recursive: true,
+    });
 
     const packageJSON = {
       private: true,
