@@ -38,13 +38,13 @@
   "exports": {
     "./*.js": "./*.js",
     "./*": "./*.js",
-    "./error": "./error/index.js",
-    "./execution": "./execution/index.js",
-    ".": "./index.js",
-    "./language": "./language/index.js",
-    "./subscription": "./subscription/index.js",
     "./type": "./type/index.js",
+    "./language": "./language/index.js",
+    "./execution": "./execution/index.js",
+    "./subscription": "./subscription/index.js",
+    "./validation": "./validation/index.js",
+    "./error": "./error/index.js",
     "./utilities": "./utilities/index.js",
-    "./validation": "./validation/index.js"
+    ".": "./index.js"
   }
 }

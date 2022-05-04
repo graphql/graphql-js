@@ -1,24 +1,22 @@
 /**
  * The set of allowed kind values for AST nodes.
  */
-export let Kind;
-/**
- * The enum type representing the possible kind values of AST nodes.
- *
- * @deprecated Please use `Kind`. Will be remove in v17.
- */
-
+export var Kind;
 (function (Kind) {
+  /** Name */
   Kind['NAME'] = 'Name';
+  /** Document */
   Kind['DOCUMENT'] = 'Document';
   Kind['OPERATION_DEFINITION'] = 'OperationDefinition';
   Kind['VARIABLE_DEFINITION'] = 'VariableDefinition';
   Kind['SELECTION_SET'] = 'SelectionSet';
   Kind['FIELD'] = 'Field';
   Kind['ARGUMENT'] = 'Argument';
+  /** Fragments */
   Kind['FRAGMENT_SPREAD'] = 'FragmentSpread';
   Kind['INLINE_FRAGMENT'] = 'InlineFragment';
   Kind['FRAGMENT_DEFINITION'] = 'FragmentDefinition';
+  /** Values */
   Kind['VARIABLE'] = 'Variable';
   Kind['INT'] = 'IntValue';
   Kind['FLOAT'] = 'FloatValue';
@@ -29,12 +27,16 @@ export let Kind;
   Kind['LIST'] = 'ListValue';
   Kind['OBJECT'] = 'ObjectValue';
   Kind['OBJECT_FIELD'] = 'ObjectField';
+  /** Directives */
   Kind['DIRECTIVE'] = 'Directive';
+  /** Types */
   Kind['NAMED_TYPE'] = 'NamedType';
   Kind['LIST_TYPE'] = 'ListType';
   Kind['NON_NULL_TYPE'] = 'NonNullType';
+  /** Type System Definitions */
   Kind['SCHEMA_DEFINITION'] = 'SchemaDefinition';
   Kind['OPERATION_TYPE_DEFINITION'] = 'OperationTypeDefinition';
+  /** Type Definitions */
   Kind['SCALAR_TYPE_DEFINITION'] = 'ScalarTypeDefinition';
   Kind['OBJECT_TYPE_DEFINITION'] = 'ObjectTypeDefinition';
   Kind['FIELD_DEFINITION'] = 'FieldDefinition';
@@ -44,8 +46,11 @@ export let Kind;
   Kind['ENUM_TYPE_DEFINITION'] = 'EnumTypeDefinition';
   Kind['ENUM_VALUE_DEFINITION'] = 'EnumValueDefinition';
   Kind['INPUT_OBJECT_TYPE_DEFINITION'] = 'InputObjectTypeDefinition';
+  /** Directive Definitions */
   Kind['DIRECTIVE_DEFINITION'] = 'DirectiveDefinition';
+  /** Type System Extensions */
   Kind['SCHEMA_EXTENSION'] = 'SchemaExtension';
+  /** Type Extensions */
   Kind['SCALAR_TYPE_EXTENSION'] = 'ScalarTypeExtension';
   Kind['OBJECT_TYPE_EXTENSION'] = 'ObjectTypeExtension';
   Kind['INTERFACE_TYPE_EXTENSION'] = 'InterfaceTypeExtension';

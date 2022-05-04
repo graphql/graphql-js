@@ -1,5 +1,4 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
-
 /**
  * Unique operation names
  *
@@ -12,7 +11,6 @@ export function UniqueOperationNamesRule(context) {
   return {
     OperationDefinition(node) {
       const operationName = node.name;
-
       if (operationName) {
         if (knownOperationNames[operationName.value]) {
           context.reportError(
@@ -30,10 +28,8 @@ export function UniqueOperationNamesRule(context) {
           knownOperationNames[operationName.value] = operationName;
         }
       }
-
       return false;
     },
-
     FragmentDefinition: () => false,
   };
 }

@@ -14,7 +14,6 @@ import { GraphQLBoolean, GraphQLString } from './scalars.js';
 /**
  * Test if the given value is a GraphQL directive.
  */
-
 export function isDirective(directive) {
   return instanceOf(directive, GraphQLDirective);
 }
@@ -24,19 +23,8 @@ export function assertDirective(directive) {
       `Expected ${inspect(directive)} to be a GraphQL directive.`,
     );
   }
-
   return directive;
 }
-/**
- * Custom extensions
- *
- * @remarks
- * Use a unique identifier name for your extension, for example the name of
- * your library or project. Do not use a shortened identifier as this increases
- * the risk of conflicts. We recommend you add at most one extension field,
- * an object which can contain all the values you need.
- */
-
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
@@ -59,11 +47,9 @@ export class GraphQLDirective {
       );
     this.args = defineArguments(args);
   }
-
   get [Symbol.toStringTag]() {
     return 'GraphQLDirective';
   }
-
   toConfig() {
     return {
       name: this.name,
@@ -75,16 +61,13 @@ export class GraphQLDirective {
       astNode: this.astNode,
     };
   }
-
   toString() {
     return '@' + this.name;
   }
-
   toJSON() {
     return this.toString();
   }
 }
-
 /**
  * Used to conditionally include fields or fragments.
  */
@@ -107,7 +90,6 @@ export const GraphQLIncludeDirective = new GraphQLDirective({
 /**
  * Used to conditionally skip (exclude) fields or fragments.
  */
-
 export const GraphQLSkipDirective = new GraphQLDirective({
   name: 'skip',
   description:
@@ -127,12 +109,10 @@ export const GraphQLSkipDirective = new GraphQLDirective({
 /**
  * Constant string used for default reason for a deprecation.
  */
-
 export const DEFAULT_DEPRECATION_REASON = 'No longer supported';
 /**
  * Used to declare element of a GraphQL schema as deprecated.
  */
-
 export const GraphQLDeprecatedDirective = new GraphQLDirective({
   name: 'deprecated',
   description: 'Marks an element of a GraphQL schema as no longer supported.',
@@ -154,7 +134,6 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
 /**
  * Used to provide a URL for specifying the behavior of custom scalar definitions.
  */
-
 export const GraphQLSpecifiedByDirective = new GraphQLDirective({
   name: 'specifiedBy',
   description: 'Exposes a URL that specifies the behavior of this scalar.',
@@ -169,7 +148,6 @@ export const GraphQLSpecifiedByDirective = new GraphQLDirective({
 /**
  * The full list of specified directives.
  */
-
 export const specifiedDirectives = Object.freeze([
   GraphQLIncludeDirective,
   GraphQLSkipDirective,

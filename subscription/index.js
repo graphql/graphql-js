@@ -8,12 +8,4 @@
  * module. In the next major release, the `graphql/subscription` module
  * will be dropped entirely.
  */
-
-/**
- * @deprecated use ExecutionArgs instead. Will be removed in v17
- *
- * ExecutionArgs has been broadened to include all properties within SubscriptionArgs.
- * The SubscriptionArgs type is retained for backwards compatibility.
- */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export { subscribe, createSourceEventStream } from '../execution/subscribe.js';

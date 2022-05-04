@@ -5,7 +5,6 @@ import {
   isTypeExtensionNode,
 } from '../../language/predicates.js';
 import { specifiedDirectives } from '../../type/directives.js';
-
 /**
  * Unique directive names per location
  *
@@ -20,19 +19,15 @@ export function UniqueDirectivesPerLocationRule(context) {
   const definedDirectives = schema
     ? schema.getDirectives()
     : specifiedDirectives;
-
   for (const directive of definedDirectives) {
     uniqueDirectiveMap[directive.name] = !directive.isRepeatable;
   }
-
   const astDefinitions = context.getDocument().definitions;
-
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       uniqueDirectiveMap[def.name.value] = !def.repeatable;
     }
   }
-
   const schemaDirectives = Object.create(null);
   const typeDirectivesMap = Object.create(null);
   return {
@@ -43,9 +38,7 @@ export function UniqueDirectivesPerLocationRule(context) {
       if (!('directives' in node) || !node.directives) {
         return;
       }
-
       let seenDirectives;
-
       if (
         node.kind === Kind.SCHEMA_DEFINITION ||
         node.kind === Kind.SCHEMA_EXTENSION
@@ -54,25 +47,20 @@ export function UniqueDirectivesPerLocationRule(context) {
       } else if (isTypeDefinitionNode(node) || isTypeExtensionNode(node)) {
         const typeName = node.name.value;
         seenDirectives = typeDirectivesMap[typeName];
-
         if (seenDirectives === undefined) {
           typeDirectivesMap[typeName] = seenDirectives = Object.create(null);
         }
       } else {
         seenDirectives = Object.create(null);
       }
-
       for (const directive of node.directives) {
         const directiveName = directive.name.value;
-
         if (uniqueDirectiveMap[directiveName]) {
           if (seenDirectives[directiveName]) {
             context.reportError(
               new GraphQLError(
                 `The directive "@${directiveName}" can only be used once at this location.`,
-                {
-                  nodes: [seenDirectives[directiveName], directive],
-                },
+                { nodes: [seenDirectives[directiveName], directive] },
               ),
             );
           } else {

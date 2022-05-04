@@ -3,7 +3,6 @@ import { suggestionList } from '../../jsutils/suggestionList.js';
 import { GraphQLError } from '../../error/GraphQLError.js';
 import { Kind } from '../../language/kinds.js';
 import { specifiedDirectives } from '../../type/directives.js';
-
 /**
  * Known argument names
  *
@@ -17,12 +16,10 @@ export function KnownArgumentNamesRule(context) {
   return {
     // eslint-disable-next-line new-cap
     ...KnownArgumentNamesOnDirectivesRule(context),
-
     Argument(argNode) {
       const argDef = context.getArgument();
       const fieldDef = context.getFieldDef();
       const parentType = context.getParentType();
-
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
         const knownArgsNames = fieldDef.args.map((arg) => arg.name);
@@ -31,9 +28,7 @@ export function KnownArgumentNamesRule(context) {
           new GraphQLError(
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
               didYouMean(suggestions),
-            {
-              nodes: argNode,
-            },
+            { nodes: argNode },
           ),
         );
       }
@@ -43,54 +38,43 @@ export function KnownArgumentNamesRule(context) {
 /**
  * @internal
  */
-
 export function KnownArgumentNamesOnDirectivesRule(context) {
   const directiveArgs = Object.create(null);
   const schema = context.getSchema();
   const definedDirectives = schema
     ? schema.getDirectives()
     : specifiedDirectives;
-
   for (const directive of definedDirectives) {
     directiveArgs[directive.name] = directive.args.map((arg) => arg.name);
   }
-
   const astDefinitions = context.getDocument().definitions;
-
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
-
       /* c8 ignore next */
       const argsNodes = def.arguments ?? [];
       directiveArgs[def.name.value] = argsNodes.map((arg) => arg.name.value);
     }
   }
-
   return {
     Directive(directiveNode) {
       const directiveName = directiveNode.name.value;
       const knownArgs = directiveArgs[directiveName];
-
       if (directiveNode.arguments && knownArgs) {
         for (const argNode of directiveNode.arguments) {
           const argName = argNode.name.value;
-
           if (!knownArgs.includes(argName)) {
             const suggestions = suggestionList(argName, knownArgs);
             context.reportError(
               new GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
                   didYouMean(suggestions),
-                {
-                  nodes: argNode,
-                },
+                { nodes: argNode },
               ),
             );
           }
         }
       }
-
       return false;
     },
   };

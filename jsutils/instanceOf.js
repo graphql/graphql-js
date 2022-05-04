@@ -5,7 +5,6 @@ import { inspect } from './inspect.js';
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
  */
-
 export const instanceOf =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
@@ -18,20 +17,15 @@ export const instanceOf =
         if (value instanceof constructor) {
           return true;
         }
-
         if (typeof value === 'object' && value !== null) {
-          var _value$constructor;
-
           // Prefer Symbol.toStringTag since it is immune to minification.
           const className = constructor.prototype[Symbol.toStringTag];
-          const valueClassName = // We still need to support constructor's name to detect conflicts with older versions of this library.
-            Symbol.toStringTag in value // @ts-expect-error TS bug see, https://github.com/microsoft/TypeScript/issues/38009
-              ? value[Symbol.toStringTag]
-              : (_value$constructor = value.constructor) === null ||
-                _value$constructor === void 0
-              ? void 0
-              : _value$constructor.name;
-
+          const valueClassName =
+            // We still need to support constructor's name to detect conflicts with older versions of this library.
+            Symbol.toStringTag in value
+              ? // @ts-expect-error TS bug see, https://github.com/microsoft/TypeScript/issues/38009
+                value[Symbol.toStringTag]
+              : value.constructor?.name;
           if (className === valueClassName) {
             const stringifiedValue = inspect(value);
             throw new Error(`Cannot use ${className} "${stringifiedValue}" from another module or realm.
@@ -48,6 +42,5 @@ version used in the function from another could produce confusing and
 spurious results.`);
           }
         }
-
         return false;
       };

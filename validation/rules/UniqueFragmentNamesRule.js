@@ -1,5 +1,4 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
-
 /**
  * Unique fragment names
  *
@@ -11,23 +10,18 @@ export function UniqueFragmentNamesRule(context) {
   const knownFragmentNames = Object.create(null);
   return {
     OperationDefinition: () => false,
-
     FragmentDefinition(node) {
       const fragmentName = node.name.value;
-
       if (knownFragmentNames[fragmentName]) {
         context.reportError(
           new GraphQLError(
             `There can be only one fragment named "${fragmentName}".`,
-            {
-              nodes: [knownFragmentNames[fragmentName], node.name],
-            },
+            { nodes: [knownFragmentNames[fragmentName], node.name] },
           ),
         );
       } else {
         knownFragmentNames[fragmentName] = node.name;
       }
-
       return false;
     },
   };

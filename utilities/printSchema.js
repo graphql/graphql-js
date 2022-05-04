@@ -28,11 +28,9 @@ export function printSchema(schema) {
 export function printIntrospectionSchema(schema) {
   return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType);
 }
-
 function isDefinedType(type) {
   return !isSpecifiedScalarType(type) && !isIntrospectionType(type);
 }
-
 function printFilteredSchema(schema, directiveFilter, typeFilter) {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
@@ -44,31 +42,23 @@ function printFilteredSchema(schema, directiveFilter, typeFilter) {
     .filter(Boolean)
     .join('\n\n');
 }
-
 function printSchemaDefinition(schema) {
   if (schema.description == null && isSchemaOfCommonNames(schema)) {
     return;
   }
-
   const operationTypes = [];
   const queryType = schema.getQueryType();
-
   if (queryType) {
     operationTypes.push(`  query: ${queryType.name}`);
   }
-
   const mutationType = schema.getMutationType();
-
   if (mutationType) {
     operationTypes.push(`  mutation: ${mutationType.name}`);
   }
-
   const subscriptionType = schema.getSubscriptionType();
-
   if (subscriptionType) {
     operationTypes.push(`  subscription: ${subscriptionType.name}`);
   }
-
   return printDescription(schema) + `schema {\n${operationTypes.join('\n')}\n}`;
 }
 /**
@@ -86,72 +76,55 @@ function printSchemaDefinition(schema) {
  *
  * When using this naming convention, the schema description can be omitted.
  */
-
 function isSchemaOfCommonNames(schema) {
   const queryType = schema.getQueryType();
-
   if (queryType && queryType.name !== 'Query') {
     return false;
   }
-
   const mutationType = schema.getMutationType();
-
   if (mutationType && mutationType.name !== 'Mutation') {
     return false;
   }
-
   const subscriptionType = schema.getSubscriptionType();
-
   if (subscriptionType && subscriptionType.name !== 'Subscription') {
     return false;
   }
-
   return true;
 }
-
 export function printType(type) {
   if (isScalarType(type)) {
     return printScalar(type);
   }
-
   if (isObjectType(type)) {
     return printObject(type);
   }
-
   if (isInterfaceType(type)) {
     return printInterface(type);
   }
-
   if (isUnionType(type)) {
     return printUnion(type);
   }
-
   if (isEnumType(type)) {
     return printEnum(type);
   }
-
   if (isInputObjectType(type)) {
     return printInputObject(type);
   }
   /* c8 ignore next 3 */
   // Not reachable, all possible types have been considered.
-
   false || invariant(false, 'Unexpected type: ' + inspect(type));
 }
-
 function printScalar(type) {
   return (
     printDescription(type) + `scalar ${type.name}` + printSpecifiedByURL(type)
   );
 }
-
 function printImplementedInterfaces(type) {
   const interfaces = type.getInterfaces();
   return interfaces.length
     ? ' implements ' + interfaces.map((i) => i.name).join(' & ')
     : '';
 }
-
 function printObject(type) {
   return (
     printDescription(type) +
@@ -160,7 +133,6 @@ function printObject(type) {
     printFields(type)
   );
 }
-
 function printInterface(type) {
   return (
     printDescription(type) +
@@ -169,13 +141,11 @@ function printInterface(type) {
     printFields(type)
   );
 }
-
 function printUnion(type) {
   const types = type.getTypes();
   const possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
   return printDescription(type) + 'union ' + type.name + possibleTypes;
 }
-
 function printEnum(type) {
   const values = type
     .getValues()
@@ -188,14 +158,12 @@ function printEnum(type) {
     );
   return printDescription(type) + `enum ${type.name}` + printBlock(values);
 }
-
 function printInputObject(type) {
   const fields = Object.values(type.getFields()).map(
     (f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f),
   );
   return printDescription(type) + `input ${type.name}` + printBlock(fields);
 }
-
 function printFields(type) {
   const fields = Object.values(type.getFields()).map(
     (f, i) =>
@@ -209,20 +177,17 @@ function printFields(type) {
   );
   return printBlock(fields);
 }
-
 function printBlock(items) {
   return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
 }
-
 function printArgs(args, indentation = '') {
   if (args.length === 0) {
     return '';
-  } // If every arg does not have a description, print them on one line.
-
+  }
+  // If every arg does not have a description, print them on one line.
   if (args.every((arg) => !arg.description)) {
     return '(' + args.map(printInputValue).join(', ') + ')';
   }
-
   return (
     '(\n' +
     args
@@ -239,18 +204,14 @@ function printArgs(args, indentation = '') {
     ')'
   );
 }
-
 function printInputValue(arg) {
   const defaultAST = astFromValue(arg.defaultValue, arg.type);
   let argDecl = arg.name + ': ' + String(arg.type);
-
   if (defaultAST) {
     argDecl += ` = ${print(defaultAST)}`;
   }
-
   return argDecl + printDeprecated(arg.deprecationReason);
 }
-
 function printDirective(directive) {
   return (
     printDescription(directive) +
@@ -262,42 +223,31 @@ function printDirective(directive) {
     directive.locations.join(' | ')
   );
 }
-
 function printDeprecated(reason) {
   if (reason == null) {
     return '';
   }
-
   if (reason !== DEFAULT_DEPRECATION_REASON) {
-    const astValue = print({
-      kind: Kind.STRING,
-      value: reason,
-    });
+    const astValue = print({ kind: Kind.STRING, value: reason });
     return ` @deprecated(reason: ${astValue})`;
   }
-
   return ' @deprecated';
 }
-
 function printSpecifiedByURL(scalar) {
   if (scalar.specifiedByURL == null) {
     return '';
   }
-
   const astValue = print({
     kind: Kind.STRING,
     value: scalar.specifiedByURL,
   });
   return ` @specifiedBy(url: ${astValue})`;
 }
-
 function printDescription(def, indentation = '', firstInBlock = true) {
   const { description } = def;
-
   if (description == null) {
     return '';
   }
-
   const blockString = print({
     kind: Kind.STRING,
     value: description,

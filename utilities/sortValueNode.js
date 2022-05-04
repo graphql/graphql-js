@@ -7,15 +7,18 @@ import { Kind } from '../language/kinds.js';
  *
  * @internal
  */
-
 export function sortValueNode(valueNode) {
   switch (valueNode.kind) {
     case Kind.OBJECT:
-      return { ...valueNode, fields: sortFields(valueNode.fields) };
-
+      return {
+        ...valueNode,
+        fields: sortFields(valueNode.fields),
+      };
     case Kind.LIST:
-      return { ...valueNode, values: valueNode.values.map(sortValueNode) };
-
+      return {
+        ...valueNode,
+        values: valueNode.values.map(sortValueNode),
+      };
     case Kind.INT:
     case Kind.FLOAT:
     case Kind.STRING:
@@ -26,7 +29,6 @@ export function sortValueNode(valueNode) {
       return valueNode;
   }
 }
-
 function sortFields(fields) {
   return fields
     .map((fieldNode) => ({

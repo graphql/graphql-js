@@ -1,7 +1,6 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
 import { Kind } from '../../language/kinds.js';
 import { isExecutableDefinitionNode } from '../../language/predicates.js';
-
 /**
  * Executable definitions
  *
@@ -27,7 +26,6 @@ export function ExecutableDefinitionsRule(context) {
           );
         }
       }
-
       return false;
     },
   };

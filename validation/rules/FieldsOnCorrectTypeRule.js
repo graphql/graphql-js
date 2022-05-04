@@ -7,7 +7,6 @@ import {
   isInterfaceType,
   isObjectType,
 } from '../../type/definition.js';
-
 /**
  * Fields on correct type
  *
@@ -20,31 +19,27 @@ export function FieldsOnCorrectTypeRule(context) {
   return {
     Field(node) {
       const type = context.getParentType();
-
       if (type) {
         const fieldDef = context.getFieldDef();
-
         if (!fieldDef) {
           // This field doesn't exist, lets look for suggestions.
           const schema = context.getSchema();
-          const fieldName = node.name.value; // First determine if there are any suggested types to condition on.
-
+          const fieldName = node.name.value;
+          // First determine if there are any suggested types to condition on.
           let suggestion = didYouMean(
             'to use an inline fragment on',
             getSuggestedTypeNames(schema, type, fieldName),
-          ); // If there are no suggested types, then perhaps this was a typo?
-
+          );
+          // If there are no suggested types, then perhaps this was a typo?
           if (suggestion === '') {
             suggestion = didYouMean(getSuggestedFieldNames(type, fieldName));
-          } // Report an error, including helpful suggestions.
-
+          }
+          // Report an error, including helpful suggestions.
           context.reportError(
             new GraphQLError(
               `Cannot query field "${fieldName}" on type "${type.name}".` +
                 suggestion,
-              {
-                nodes: node,
-              },
+              { nodes: node },
             ),
           );
         }
@@ -57,52 +52,44 @@ export function FieldsOnCorrectTypeRule(context) {
  * they implement. If any of those types include the provided field, suggest them,
  * sorted by how often the type is referenced.
  */
-
 function getSuggestedTypeNames(schema, type, fieldName) {
   if (!isAbstractType(type)) {
     // Must be an Object type, which does not have possible fields.
     return [];
   }
-
   const suggestedTypes = new Set();
   const usageCount = Object.create(null);
-
   for (const possibleType of schema.getPossibleTypes(type)) {
     if (!possibleType.getFields()[fieldName]) {
       continue;
-    } // This object type defines this field.
-
+    }
+    // This object type defines this field.
     suggestedTypes.add(possibleType);
     usageCount[possibleType.name] = 1;
-
     for (const possibleInterface of possibleType.getInterfaces()) {
       if (!possibleInterface.getFields()[fieldName]) {
         continue;
-      } // This interface type defines this field.
-
+      }
+      // This interface type defines this field.
       suggestedTypes.add(possibleInterface);
       usageCount[possibleInterface.name] =
         (usageCount[possibleInterface.name] ?? 0) + 1;
     }
   }
-
   return [...suggestedTypes]
     .sort((typeA, typeB) => {
       // Suggest both interface and object types based on how common they are.
       const usageCountDiff = usageCount[typeB.name] - usageCount[typeA.name];
-
       if (usageCountDiff !== 0) {
         return usageCountDiff;
-      } // Suggest super types first followed by subtypes
-
+      }
+      // Suggest super types first followed by subtypes
       if (isInterfaceType(typeA) && schema.isSubType(typeA, typeB)) {
         return -1;
       }
-
       if (isInterfaceType(typeB) && schema.isSubType(typeB, typeA)) {
         return 1;
       }
-
       return naturalCompare(typeA.name, typeB.name);
     })
     .map((x) => x.name);
@@ -111,12 +98,11 @@ function getSuggestedTypeNames(schema, type, fieldName) {
  * For the field name provided, determine if there are any similar field names
  * that may be the result of a typo.
  */
-
 function getSuggestedFieldNames(type, fieldName) {
   if (isObjectType(type) || isInterfaceType(type)) {
     const possibleFieldNames = Object.keys(type.getFields());
     return suggestionList(fieldName, possibleFieldNames);
-  } // Otherwise, must be a Union type, which does not define fields.
-
+  }
+  // Otherwise, must be a Union type, which does not define fields.
   return [];
 }

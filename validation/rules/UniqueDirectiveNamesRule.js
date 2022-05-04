@@ -1,5 +1,4 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
-
 /**
  * Unique directive names
  *
@@ -11,36 +10,25 @@ export function UniqueDirectiveNamesRule(context) {
   return {
     DirectiveDefinition(node) {
       const directiveName = node.name.value;
-
-      if (
-        schema !== null &&
-        schema !== void 0 &&
-        schema.getDirective(directiveName)
-      ) {
+      if (schema?.getDirective(directiveName)) {
         context.reportError(
           new GraphQLError(
             `Directive "@${directiveName}" already exists in the schema. It cannot be redefined.`,
-            {
-              nodes: node.name,
-            },
+            { nodes: node.name },
           ),
         );
         return;
       }
-
       if (knownDirectiveNames[directiveName]) {
         context.reportError(
           new GraphQLError(
             `There can be only one directive named "@${directiveName}".`,
-            {
-              nodes: [knownDirectiveNames[directiveName], node.name],
-            },
+            { nodes: [knownDirectiveNames[directiveName], node.name] },
           ),
         );
       } else {
         knownDirectiveNames[directiveName] = node.name;
       }
-
       return false;
     },
   };

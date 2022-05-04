@@ -1,71 +1,70 @@
 // Spec Section: "Executable Definitions"
-import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.js'; // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
-
-import { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule.js'; // Spec Section: "Fragments on Composite Types"
-
-import { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypesRule.js'; // Spec Section: "Argument Names"
-
+import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.js';
+// Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
+import { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule.js';
+// Spec Section: "Fragments on Composite Types"
+import { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypesRule.js';
+// Spec Section: "Argument Names"
 import {
   KnownArgumentNamesOnDirectivesRule,
   KnownArgumentNamesRule,
-} from './rules/KnownArgumentNamesRule.js'; // Spec Section: "Directives Are Defined"
-
-import { KnownDirectivesRule } from './rules/KnownDirectivesRule.js'; // Spec Section: "Fragment spread target defined"
-
-import { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.js'; // Spec Section: "Fragment Spread Type Existence"
-
-import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.js'; // Spec Section: "Lone Anonymous Operation"
-
-import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.js'; // SDL-specific validation rules
-
-import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.js'; // Spec Section: "Fragments must not form cycles"
-
-import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.js'; // Spec Section: "All Variable Used Defined"
-
-import { NoUndefinedVariablesRule } from './rules/NoUndefinedVariablesRule.js'; // Spec Section: "Fragments must be used"
-
-import { NoUnusedFragmentsRule } from './rules/NoUnusedFragmentsRule.js'; // Spec Section: "All Variables Used"
-
-import { NoUnusedVariablesRule } from './rules/NoUnusedVariablesRule.js'; // Spec Section: "Field Selection Merging"
-
-import { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBeMergedRule.js'; // Spec Section: "Fragment spread is possible"
-
+} from './rules/KnownArgumentNamesRule.js';
+// Spec Section: "Directives Are Defined"
+import { KnownDirectivesRule } from './rules/KnownDirectivesRule.js';
+// Spec Section: "Fragment spread target defined"
+import { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.js';
+// Spec Section: "Fragment Spread Type Existence"
+import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.js';
+// Spec Section: "Lone Anonymous Operation"
+import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.js';
+// SDL-specific validation rules
+import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.js';
+// Spec Section: "Fragments must not form cycles"
+import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.js';
+// Spec Section: "All Variable Used Defined"
+import { NoUndefinedVariablesRule } from './rules/NoUndefinedVariablesRule.js';
+// Spec Section: "Fragments must be used"
+import { NoUnusedFragmentsRule } from './rules/NoUnusedFragmentsRule.js';
+// Spec Section: "All Variables Used"
+import { NoUnusedVariablesRule } from './rules/NoUnusedVariablesRule.js';
+// Spec Section: "Field Selection Merging"
+import { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBeMergedRule.js';
+// Spec Section: "Fragment spread is possible"
 import { PossibleFragmentSpreadsRule } from './rules/PossibleFragmentSpreadsRule.js';
-import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule.js'; // Spec Section: "Argument Optionality"
-
+import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule.js';
+// Spec Section: "Argument Optionality"
 import {
   ProvidedRequiredArgumentsOnDirectivesRule,
   ProvidedRequiredArgumentsRule,
-} from './rules/ProvidedRequiredArgumentsRule.js'; // Spec Section: "Leaf Field Selections"
-
-import { ScalarLeafsRule } from './rules/ScalarLeafsRule.js'; // Spec Section: "Subscriptions with Single Root Field"
-
+} from './rules/ProvidedRequiredArgumentsRule.js';
+// Spec Section: "Leaf Field Selections"
+import { ScalarLeafsRule } from './rules/ScalarLeafsRule.js';
+// Spec Section: "Subscriptions with Single Root Field"
 import { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule.js';
-import { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule.js'; // Spec Section: "Argument Uniqueness"
-
+import { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule.js';
+// Spec Section: "Argument Uniqueness"
 import { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule.js';
-import { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule.js'; // Spec Section: "Directives Are Unique Per Location"
-
+import { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule.js';
+// Spec Section: "Directives Are Unique Per Location"
 import { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLocationRule.js';
 import { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule.js';
-import { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule.js'; // Spec Section: "Fragment Name Uniqueness"
-
-import { UniqueFragmentNamesRule } from './rules/UniqueFragmentNamesRule.js'; // Spec Section: "Input Object Field Uniqueness"
-
-import { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule.js'; // Spec Section: "Operation Name Uniqueness"
-
+import { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule.js';
+// Spec Section: "Fragment Name Uniqueness"
+import { UniqueFragmentNamesRule } from './rules/UniqueFragmentNamesRule.js';
+// Spec Section: "Input Object Field Uniqueness"
+import { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule.js';
+// Spec Section: "Operation Name Uniqueness"
 import { UniqueOperationNamesRule } from './rules/UniqueOperationNamesRule.js';
 import { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule.js';
-import { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule.js'; // Spec Section: "Variable Uniqueness"
-
-import { UniqueVariableNamesRule } from './rules/UniqueVariableNamesRule.js'; // Spec Section: "Value Type Correctness"
-
-import { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule.js'; // Spec Section: "Variables are Input Types"
-
-import { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.js'; // Spec Section: "All Variable Usages Are Allowed"
-
+import { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule.js';
+// Spec Section: "Variable Uniqueness"
+import { UniqueVariableNamesRule } from './rules/UniqueVariableNamesRule.js';
+// Spec Section: "Value Type Correctness"
+import { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule.js';
+// Spec Section: "Variables are Input Types"
+import { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.js';
+// Spec Section: "All Variable Usages Are Allowed"
 import { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule.js';
-
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  *
@@ -103,7 +102,6 @@ export const specifiedRules = Object.freeze([
 /**
  * @internal
  */
-
 export const specifiedSDLRules = Object.freeze([
   LoneSchemaDefinitionRule,
   UniqueOperationTypesRule,

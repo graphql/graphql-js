@@ -8,7 +8,6 @@ import {
 } from '../../language/predicates.js';
 import { introspectionTypes } from '../../type/introspection.js';
 import { specifiedScalarTypes } from '../../type/scalars.js';
-
 /**
  * Known type names
  *
@@ -21,13 +20,11 @@ export function KnownTypeNamesRule(context) {
   const schema = context.getSchema();
   const existingTypesMap = schema ? schema.getTypeMap() : Object.create(null);
   const definedTypes = Object.create(null);
-
   for (const def of context.getDocument().definitions) {
     if (isTypeDefinitionNode(def)) {
       definedTypes[def.name.value] = true;
     }
   }
-
   const typeNames = [
     ...Object.keys(existingTypesMap),
     ...Object.keys(definedTypes),
@@ -35,15 +32,12 @@ export function KnownTypeNamesRule(context) {
   return {
     NamedType(node, _1, parent, _2, ancestors) {
       const typeName = node.name.value;
-
       if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
         const definitionNode = ancestors[2] ?? parent;
         const isSDL = definitionNode != null && isSDLNode(definitionNode);
-
         if (isSDL && standardTypeNames.includes(typeName)) {
           return;
         }
-
         const suggestedTypes = suggestionList(
           typeName,
           isSDL ? standardTypeNames.concat(typeNames) : typeNames,
@@ -51,9 +45,7 @@ export function KnownTypeNamesRule(context) {
         context.reportError(
           new GraphQLError(
             `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
-            {
-              nodes: node,
-            },
+            { nodes: node },
           ),
         );
       }
@@ -63,7 +55,6 @@ export function KnownTypeNamesRule(context) {
 const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(
   (type) => type.name,
 );
-
 function isSDLNode(value) {
   return (
     'kind' in value &&

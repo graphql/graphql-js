@@ -1,5 +1,4 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
-
 /**
  * Unique type names
  *
@@ -16,22 +15,17 @@ export function UniqueTypeNamesRule(context) {
     EnumTypeDefinition: checkTypeName,
     InputObjectTypeDefinition: checkTypeName,
   };
-
   function checkTypeName(node) {
     const typeName = node.name.value;
-
-    if (schema !== null && schema !== void 0 && schema.getType(typeName)) {
+    if (schema?.getType(typeName)) {
       context.reportError(
         new GraphQLError(
           `Type "${typeName}" already exists in the schema. It cannot also be defined in this type definition.`,
-          {
-            nodes: node.name,
-          },
+          { nodes: node.name },
         ),
       );
       return;
     }
-
     if (knownTypeNames[typeName]) {
       context.reportError(
         new GraphQLError(`There can be only one type named "${typeName}".`, {
@@ -41,7 +35,6 @@ export function UniqueTypeNamesRule(context) {
     } else {
       knownTypeNames[typeName] = node.name;
     }
-
     return false;
   }
 }

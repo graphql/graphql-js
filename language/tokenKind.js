@@ -2,13 +2,7 @@
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-export let TokenKind;
-/**
- * The enum type representing the token kinds values.
- *
- * @deprecated Please use `TokenKind`. Will be remove in v17.
- */
-
+export var TokenKind;
 (function (TokenKind) {
   TokenKind['SOF'] = '<SOF>';
   TokenKind['EOF'] = '<EOF>';
