@@ -13,23 +13,19 @@ import type { ValidationContext } from '../ValidationContext.ts';
  *
  * See https://spec.graphql.org/draft/#sec-Variables-Are-Input-Types
  */
-
 export function VariablesAreInputTypesRule(
   context: ValidationContext,
 ): ASTVisitor {
   return {
     VariableDefinition(node: VariableDefinitionNode) {
       const type = typeFromAST(context.getSchema(), node.type);
-
       if (type !== undefined && !isInputType(type)) {
         const variableName = node.variable.name.value;
         const typeName = print(node.type);
         context.reportError(
           new GraphQLError(
             `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
-            {
-              nodes: node.type,
-            },
+            { nodes: node.type },
           ),
         );
       }

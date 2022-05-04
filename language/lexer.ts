@@ -12,30 +12,24 @@ import { TokenKind } from './tokenKind.ts';
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
  */
-
 export class Lexer {
   source: Source;
   /**
    * The previously focused non-ignored token.
    */
-
   lastToken: Token;
   /**
    * The currently focused non-ignored token.
    */
-
   token: Token;
   /**
    * The (1-indexed) line containing the current token.
    */
-
   line: number;
   /**
    * The character offset at which the current line begins.
    */
-
   lineStart: number;
-
   constructor(source: Source) {
     const startOfFileToken = new Token(TokenKind.SOF, 0, 0, 0, 0);
     this.source = source;
@@ -44,14 +38,12 @@ export class Lexer {
     this.line = 1;
     this.lineStart = 0;
   }
-
   get [Symbol.toStringTag]() {
     return 'Lexer';
   }
   /**
    * Advances the token stream to the next non-ignored token.
    */
-
   advance(): Token {
     this.lastToken = this.token;
     const token = (this.token = this.lookahead());
@@ -61,33 +53,29 @@ export class Lexer {
    * Looks ahead and returns the next non-ignored token, but does not change
    * the state of Lexer.
    */
-
   lookahead(): Token {
     let token = this.token;
-
     if (token.kind !== TokenKind.EOF) {
       do {
         if (token.next) {
           token = token.next;
         } else {
           // Read the next token and form a link in the token linked-list.
-          const nextToken = readNextToken(this, token.end); // @ts-expect-error next is only mutable during parsing.
-
-          token.next = nextToken; // @ts-expect-error prev is only mutable during parsing.
-
+          const nextToken = readNextToken(this, token.end);
+          // @ts-expect-error next is only mutable during parsing.
+          token.next = nextToken;
+          // @ts-expect-error prev is only mutable during parsing.
           nextToken.prev = token;
           token = nextToken;
         }
       } while (token.kind === TokenKind.COMMENT);
     }
-
     return token;
   }
 }
 /**
  * @internal
  */
-
 export function isPunctuatorTokenKind(kind: TokenKind): boolean {
   return (
     kind === TokenKind.BANG ||
@@ -114,11 +102,8 @@ export function isPunctuatorTokenKind(kind: TokenKind): boolean {
  * SourceCharacter ::
  *   - "Any Unicode scalar value"
  */
-
 function isUnicodeScalarValue(code: number): boolean {
-  return (
-    (code >= 0x0000 && code <= 0xd7ff) || (code >= 0xe000 && code <= 0x10ffff)
-  );
+  return (code >= 0 && code <= 55295) || (code >= 57344 && code <= 1114111);
 }
 /**
  * The GraphQL specification defines source text as a sequence of unicode scalar
@@ -128,20 +113,17 @@ function isUnicodeScalarValue(code: number): boolean {
  * encodes a supplementary code point (above U+FFFF), but unpaired surrogate
  * code points are not valid source characters.
  */
-
 function isSupplementaryCodePoint(body: string, location: number): boolean {
   return (
     isLeadingSurrogate(body.charCodeAt(location)) &&
     isTrailingSurrogate(body.charCodeAt(location + 1))
   );
 }
-
 function isLeadingSurrogate(code: number): boolean {
-  return code >= 0xd800 && code <= 0xdbff;
+  return code >= 55296 && code <= 56319;
 }
-
 function isTrailingSurrogate(code: number): boolean {
-  return code >= 0xdc00 && code <= 0xdfff;
+  return code >= 56320 && code <= 57343;
 }
 /**
  * Prints the code point (or end of file reference) at a given location in a
@@ -150,24 +132,21 @@ function isTrailingSurrogate(code: number): boolean {
  * Printable ASCII is printed quoted, while other points are printed in Unicode
  * code point form (ie. U+1234).
  */
-
 function printCodePointAt(lexer: Lexer, location: number): string {
   const code = lexer.source.body.codePointAt(location);
-
   if (code === undefined) {
     return TokenKind.EOF;
-  } else if (code >= 0x0020 && code <= 0x007e) {
+  } else if (code >= 32 && code <= 126) {
     // Printable ASCII
     const char = String.fromCodePoint(code);
     return char === '"' ? "'\"'" : `"${char}"`;
-  } // Unicode code point
-
+  }
+  // Unicode code point
   return 'U+' + code.toString(16).toUpperCase().padStart(4, '0');
 }
 /**
  * Create a token with line and column location information.
  */
-
 function createToken(
   lexer: Lexer,
   kind: TokenKind,
@@ -186,15 +165,13 @@ function createToken(
  * punctuators immediately or calls the appropriate helper function for more
  * complicated tokens.
  */
-
 function readNextToken(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
   const bodyLength = body.length;
   let position = start;
-
   while (position < bodyLength) {
-    const code = body.charCodeAt(position); // SourceCharacter
-
+    const code = body.charCodeAt(position);
+    // SourceCharacter
     switch (code) {
       // Ignored ::
       //   - UnicodeBOM
@@ -210,43 +187,32 @@ function readNextToken(lexer: Lexer, start: number): Token {
       //   - "Space (U+0020)"
       //
       // Comma :: ,
-      case 0xfeff: // <BOM>
-
-      case 0x0009: // \t
-
-      case 0x0020: // <space>
-
-      case 0x002c:
-        // ,
+      case 65279: // <BOM>
+      case 9: // \t
+      case 32: // <space>
+      case 44: // ,
         ++position;
         continue;
       // LineTerminator ::
       //   - "New Line (U+000A)"
       //   - "Carriage Return (U+000D)" [lookahead != "New Line (U+000A)"]
       //   - "Carriage Return (U+000D)" "New Line (U+000A)"
-
-      case 0x000a:
-        // \n
+      case 10: // \n
         ++position;
         ++lexer.line;
         lexer.lineStart = position;
         continue;
-
-      case 0x000d:
-        // \r
-        if (body.charCodeAt(position + 1) === 0x000a) {
+      case 13: // \r
+        if (body.charCodeAt(position + 1) === 10) {
           position += 2;
         } else {
           ++position;
         }
-
         ++lexer.line;
         lexer.lineStart = position;
         continue;
       // Comment
-
-      case 0x0023:
-        // #
+      case 35: // #
         return readComment(lexer, position);
       // Token ::
       //   - Punctuator
@@ -256,102 +222,68 @@ function readNextToken(lexer: Lexer, start: number): Token {
       //   - StringValue
       //
       // Punctuator :: one of ! $ & ( ) ... : = @ [ ] { | }
-
-      case 0x0021:
-        // !
+      case 33: // !
         return createToken(lexer, TokenKind.BANG, position, position + 1);
-
-      case 0x0024:
-        // $
+      case 36: // $
         return createToken(lexer, TokenKind.DOLLAR, position, position + 1);
-
-      case 0x0026:
-        // &
+      case 38: // &
         return createToken(lexer, TokenKind.AMP, position, position + 1);
-
-      case 0x0028:
-        // (
+      case 40: // (
         return createToken(lexer, TokenKind.PAREN_L, position, position + 1);
-
-      case 0x0029:
-        // )
+      case 41: // )
         return createToken(lexer, TokenKind.PAREN_R, position, position + 1);
-
-      case 0x002e:
-        // .
+      case 46: // .
         if (
-          body.charCodeAt(position + 1) === 0x002e &&
-          body.charCodeAt(position + 2) === 0x002e
+          body.charCodeAt(position + 1) === 46 &&
+          body.charCodeAt(position + 2) === 46
         ) {
           return createToken(lexer, TokenKind.SPREAD, position, position + 3);
         }
-
         break;
-
-      case 0x003a:
-        // :
+      case 58: // :
         return createToken(lexer, TokenKind.COLON, position, position + 1);
-
-      case 0x003d:
-        // =
+      case 61: // =
         return createToken(lexer, TokenKind.EQUALS, position, position + 1);
-
-      case 0x0040:
-        // @
+      case 64: // @
         return createToken(lexer, TokenKind.AT, position, position + 1);
-
-      case 0x005b:
-        // [
+      case 91: // [
         return createToken(lexer, TokenKind.BRACKET_L, position, position + 1);
-
-      case 0x005d:
-        // ]
+      case 93: // ]
         return createToken(lexer, TokenKind.BRACKET_R, position, position + 1);
-
-      case 0x007b:
-        // {
+      case 123: // {
         return createToken(lexer, TokenKind.BRACE_L, position, position + 1);
-
-      case 0x007c:
-        // |
+      case 124: // |
         return createToken(lexer, TokenKind.PIPE, position, position + 1);
-
-      case 0x007d:
-        // }
+      case 125: // }
         return createToken(lexer, TokenKind.BRACE_R, position, position + 1);
       // StringValue
-
-      case 0x0022:
-        // "
+      case 34: // "
         if (
-          body.charCodeAt(position + 1) === 0x0022 &&
-          body.charCodeAt(position + 2) === 0x0022
+          body.charCodeAt(position + 1) === 34 &&
+          body.charCodeAt(position + 2) === 34
         ) {
           return readBlockString(lexer, position);
         }
-
         return readString(lexer, position);
-    } // IntValue | FloatValue (Digit | -)
-
-    if (isDigit(code) || code === 0x002d) {
+    }
+    // IntValue | FloatValue (Digit | -)
+    if (isDigit(code) || code === 45) {
       return readNumber(lexer, position, code);
-    } // Name
-
+    }
+    // Name
     if (isNameStart(code)) {
       return readName(lexer, position);
     }
-
     throw syntaxError(
       lexer.source,
       position,
-      code === 0x0027
+      code === 39
         ? 'Unexpected single quote character (\'), did you mean to use a double quote (")?'
         : isUnicodeScalarValue(code) || isSupplementaryCodePoint(body, position)
         ? `Unexpected character: ${printCodePointAt(lexer, position)}.`
         : `Invalid character: ${printCodePointAt(lexer, position)}.`,
     );
   }
-
   return createToken(lexer, TokenKind.EOF, bodyLength, bodyLength);
 }
 /**
@@ -363,19 +295,17 @@ function readNextToken(lexer: Lexer, start: number): Token {
  * CommentChar :: SourceCharacter but not LineTerminator
  * ```
  */
-
 function readComment(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
   const bodyLength = body.length;
   let position = start + 1;
-
   while (position < bodyLength) {
-    const code = body.charCodeAt(position); // LineTerminator (\n | \r)
-
-    if (code === 0x000a || code === 0x000d) {
+    const code = body.charCodeAt(position);
+    // LineTerminator (\n | \r)
+    if (code === 10 || code === 13) {
       break;
-    } // SourceCharacter
-
+    }
+    // SourceCharacter
     if (isUnicodeScalarValue(code)) {
       ++position;
     } else if (isSupplementaryCodePoint(body, position)) {
@@ -384,7 +314,6 @@ function readComment(lexer: Lexer, start: number): Token {
       break;
     }
   }
-
   return createToken(
     lexer,
     TokenKind.COMMENT,
@@ -422,20 +351,18 @@ function readComment(lexer: Lexer, start: number): Token {
  * Sign :: one of + -
  * ```
  */
-
 function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
   const body = lexer.source.body;
   let position = start;
   let code = firstCode;
-  let isFloat = false; // NegativeSign (-)
-
-  if (code === 0x002d) {
+  let isFloat = false;
+  // NegativeSign (-)
+  if (code === 45) {
     code = body.charCodeAt(++position);
-  } // Zero (0)
-
-  if (code === 0x0030) {
+  }
+  // Zero (0)
+  if (code === 48) {
     code = body.charCodeAt(++position);
-
     if (isDigit(code)) {
       throw syntaxError(
         lexer.source,
@@ -449,28 +376,27 @@ function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
   } else {
     position = readDigits(lexer, position, code);
     code = body.charCodeAt(position);
-  } // Full stop (.)
-
-  if (code === 0x002e) {
+  }
+  // Full stop (.)
+  if (code === 46) {
     isFloat = true;
     code = body.charCodeAt(++position);
     position = readDigits(lexer, position, code);
     code = body.charCodeAt(position);
-  } // E e
-
-  if (code === 0x0045 || code === 0x0065) {
+  }
+  // E e
+  if (code === 69 || code === 101) {
     isFloat = true;
-    code = body.charCodeAt(++position); // + -
-
-    if (code === 0x002b || code === 0x002d) {
+    code = body.charCodeAt(++position);
+    // + -
+    if (code === 43 || code === 45) {
       code = body.charCodeAt(++position);
     }
-
     position = readDigits(lexer, position, code);
     code = body.charCodeAt(position);
-  } // Numbers cannot be followed by . or NameStart
-
-  if (code === 0x002e || isNameStart(code)) {
+  }
+  // Numbers cannot be followed by . or NameStart
+  if (code === 46 || isNameStart(code)) {
     throw syntaxError(
       lexer.source,
       position,
@@ -480,7 +406,6 @@ function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
       )}.`,
     );
   }
-
   return createToken(
     lexer,
     isFloat ? TokenKind.FLOAT : TokenKind.INT,
@@ -492,7 +417,6 @@ function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
 /**
  * Returns the new position in the source after reading one or more digits.
  */
-
 function readDigits(lexer: Lexer, start: number, firstCode: number): number {
   if (!isDigit(firstCode)) {
     throw syntaxError(
@@ -504,14 +428,11 @@ function readDigits(lexer: Lexer, start: number, firstCode: number): number {
       )}.`,
     );
   }
-
   const body = lexer.source.body;
   let position = start + 1; // +1 to skip first firstCode
-
   while (isDigit(body.charCodeAt(position))) {
     ++position;
   }
-
   return position;
 }
 /**
@@ -534,27 +455,25 @@ function readDigits(lexer: Lexer, start: number, firstCode: number): number {
  * EscapedCharacter :: one of `"` `\` `/` `b` `f` `n` `r` `t`
  * ```
  */
-
 function readString(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
   const bodyLength = body.length;
   let position = start + 1;
   let chunkStart = position;
   let value = '';
-
   while (position < bodyLength) {
-    const code = body.charCodeAt(position); // Closing Quote (")
-
-    if (code === 0x0022) {
+    const code = body.charCodeAt(position);
+    // Closing Quote (")
+    if (code === 34) {
       value += body.slice(chunkStart, position);
       return createToken(lexer, TokenKind.STRING, start, position + 1, value);
-    } // Escape Sequence (\)
-
-    if (code === 0x005c) {
+    }
+    // Escape Sequence (\)
+    if (code === 92) {
       value += body.slice(chunkStart, position);
       const escape =
-        body.charCodeAt(position + 1) === 0x0075 // u
-          ? body.charCodeAt(position + 2) === 0x007b // {
+        body.charCodeAt(position + 1) === 117 // u
+          ? body.charCodeAt(position + 2) === 123 // {
             ? readEscapedUnicodeVariableWidth(lexer, position)
             : readEscapedUnicodeFixedWidth(lexer, position)
           : readEscapedCharacter(lexer, position);
@@ -562,12 +481,12 @@ function readString(lexer: Lexer, start: number): Token {
       position += escape.size;
       chunkStart = position;
       continue;
-    } // LineTerminator (\n | \r)
-
-    if (code === 0x000a || code === 0x000d) {
+    }
+    // LineTerminator (\n | \r)
+    if (code === 10 || code === 13) {
       break;
-    } // SourceCharacter
-
+    }
+    // SourceCharacter
     if (isUnicodeScalarValue(code)) {
       ++position;
     } else if (isSupplementaryCodePoint(body, position)) {
@@ -583,45 +502,37 @@ function readString(lexer: Lexer, start: number): Token {
       );
     }
   }
-
   throw syntaxError(lexer.source, position, 'Unterminated string.');
-} // The string value and lexed size of an escape sequence.
-
+}
+// The string value and lexed size of an escape sequence.
 interface EscapeSequence {
   value: string;
   size: number;
 }
-
 function readEscapedUnicodeVariableWidth(
   lexer: Lexer,
   position: number,
 ): EscapeSequence {
   const body = lexer.source.body;
   let point = 0;
-  let size = 3; // Cannot be larger than 12 chars (\u{00000000}).
-
+  let size = 3;
+  // Cannot be larger than 12 chars (\u{00000000}).
   while (size < 12) {
-    const code = body.charCodeAt(position + size++); // Closing Brace (})
-
-    if (code === 0x007d) {
+    const code = body.charCodeAt(position + size++);
+    // Closing Brace (})
+    if (code === 125) {
       // Must be at least 5 chars (\u{0}) and encode a Unicode scalar value.
       if (size < 5 || !isUnicodeScalarValue(point)) {
         break;
       }
-
-      return {
-        value: String.fromCodePoint(point),
-        size,
-      };
-    } // Append this hex digit to the code point.
-
+      return { value: String.fromCodePoint(point), size };
+    }
+    // Append this hex digit to the code point.
     point = (point << 4) | readHexDigit(code);
-
     if (point < 0) {
       break;
     }
   }
-
   throw syntaxError(
     lexer.source,
     position,
@@ -631,30 +542,24 @@ function readEscapedUnicodeVariableWidth(
     )}".`,
   );
 }
-
 function readEscapedUnicodeFixedWidth(
   lexer: Lexer,
   position: number,
 ): EscapeSequence {
   const body = lexer.source.body;
   const code = read16BitHexCode(body, position + 2);
-
   if (isUnicodeScalarValue(code)) {
-    return {
-      value: String.fromCodePoint(code),
-      size: 6,
-    };
-  } // GraphQL allows JSON-style surrogate pair escape sequences, but only when
+    return { value: String.fromCodePoint(code), size: 6 };
+  }
+  // GraphQL allows JSON-style surrogate pair escape sequences, but only when
   // a valid pair is formed.
-
   if (isLeadingSurrogate(code)) {
     // \u
     if (
-      body.charCodeAt(position + 6) === 0x005c &&
-      body.charCodeAt(position + 7) === 0x0075
+      body.charCodeAt(position + 6) === 92 &&
+      body.charCodeAt(position + 7) === 117
     ) {
       const trailingCode = read16BitHexCode(body, position + 8);
-
       if (isTrailingSurrogate(trailingCode)) {
         // JavaScript defines strings as a sequence of UTF-16 code units and
         // encodes Unicode code points above U+FFFF using a surrogate pair of
@@ -662,14 +567,10 @@ function readEscapedUnicodeFixedWidth(
         // include both codes into the JavaScript string value. Had JavaScript
         // not been internally based on UTF-16, then this surrogate pair would
         // be decoded to retrieve the supplementary code point.
-        return {
-          value: String.fromCodePoint(code, trailingCode),
-          size: 12,
-        };
+        return { value: String.fromCodePoint(code, trailingCode), size: 12 };
       }
     }
   }
-
   throw syntaxError(
     lexer.source,
     position,
@@ -683,7 +584,6 @@ function readEscapedUnicodeFixedWidth(
  *
  * Returns a negative number if any char was not a valid hexadecimal digit.
  */
-
 function read16BitHexCode(body: string, position: number): number {
   // readHexDigit() returns -1 on error. ORing a negative value with any other
   // value always produces a negative value.
@@ -708,14 +608,13 @@ function read16BitHexCode(body: string, position: number): number {
  *   - `A` `B` `C` `D` `E` `F`
  *   - `a` `b` `c` `d` `e` `f`
  */
-
 function readHexDigit(code: number): number {
-  return code >= 0x0030 && code <= 0x0039 // 0-9
-    ? code - 0x0030
-    : code >= 0x0041 && code <= 0x0046 // A-F
-    ? code - 0x0037
-    : code >= 0x0061 && code <= 0x0066 // a-f
-    ? code - 0x0057
+  return code >= 48 && code <= 57 // 0-9
+    ? code - 48
+    : code >= 65 && code <= 70 // A-F
+    ? code - 55
+    : code >= 97 && code <= 102 // a-f
+    ? code - 87
     : -1;
 }
 /**
@@ -730,69 +629,27 @@ function readHexDigit(code: number): number {
  * | `r`               | U+000D     | carriage return              |
  * | `t`               | U+0009     | horizontal tab               |
  */
-
 function readEscapedCharacter(lexer: Lexer, position: number): EscapeSequence {
   const body = lexer.source.body;
   const code = body.charCodeAt(position + 1);
-
   switch (code) {
-    case 0x0022:
-      // "
-      return {
-        value: '\u0022',
-        size: 2,
-      };
-
-    case 0x005c:
-      // \
-      return {
-        value: '\u005c',
-        size: 2,
-      };
-
-    case 0x002f:
-      // /
-      return {
-        value: '\u002f',
-        size: 2,
-      };
-
-    case 0x0062:
-      // b
-      return {
-        value: '\u0008',
-        size: 2,
-      };
-
-    case 0x0066:
-      // f
-      return {
-        value: '\u000c',
-        size: 2,
-      };
-
-    case 0x006e:
-      // n
-      return {
-        value: '\u000a',
-        size: 2,
-      };
-
-    case 0x0072:
-      // r
-      return {
-        value: '\u000d',
-        size: 2,
-      };
-
-    case 0x0074:
-      // t
-      return {
-        value: '\u0009',
-        size: 2,
-      };
+    case 34: // "
+      return { value: '"', size: 2 };
+    case 92: // \
+      return { value: '\\', size: 2 };
+    case 47: // /
+      return { value: '/', size: 2 };
+    case 98: // b
+      return { value: '\b', size: 2 };
+    case 102: // f
+      return { value: '\f', size: 2 };
+    case 110: // n
+      return { value: '\n', size: 2 };
+    case 114: // r
+      return { value: '\r', size: 2 };
+    case 116: // t
+      return { value: '\t', size: 2 };
   }
-
   throw syntaxError(
     lexer.source,
     position,
@@ -814,7 +671,6 @@ function readEscapedCharacter(lexer: Lexer, position: number): EscapeSequence {
  *   - `\"""`
  * ```
  */
-
 function readBlockString(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
   const bodyLength = body.length;
@@ -823,14 +679,13 @@ function readBlockString(lexer: Lexer, start: number): Token {
   let chunkStart = position;
   let currentLine = '';
   const blockLines = [];
-
   while (position < bodyLength) {
-    const code = body.charCodeAt(position); // Closing Triple-Quote (""")
-
+    const code = body.charCodeAt(position);
+    // Closing Triple-Quote (""")
     if (
-      code === 0x0022 &&
-      body.charCodeAt(position + 1) === 0x0022 &&
-      body.charCodeAt(position + 2) === 0x0022
+      code === 34 &&
+      body.charCodeAt(position + 1) === 34 &&
+      body.charCodeAt(position + 2) === 34
     ) {
       currentLine += body.slice(chunkStart, position);
       blockLines.push(currentLine);
@@ -838,43 +693,41 @@ function readBlockString(lexer: Lexer, start: number): Token {
         lexer,
         TokenKind.BLOCK_STRING,
         start,
-        position + 3, // Return a string of the lines joined with U+000A.
+        position + 3,
+        // Return a string of the lines joined with U+000A.
         dedentBlockStringLines(blockLines).join('\n'),
       );
       lexer.line += blockLines.length - 1;
       lexer.lineStart = lineStart;
       return token;
-    } // Escaped Triple-Quote (\""")
-
+    }
+    // Escaped Triple-Quote (\""")
     if (
-      code === 0x005c &&
-      body.charCodeAt(position + 1) === 0x0022 &&
-      body.charCodeAt(position + 2) === 0x0022 &&
-      body.charCodeAt(position + 3) === 0x0022
+      code === 92 &&
+      body.charCodeAt(position + 1) === 34 &&
+      body.charCodeAt(position + 2) === 34 &&
+      body.charCodeAt(position + 3) === 34
     ) {
       currentLine += body.slice(chunkStart, position);
       chunkStart = position + 1; // skip only slash
-
       position += 4;
       continue;
-    } // LineTerminator
-
-    if (code === 0x000a || code === 0x000d) {
+    }
+    // LineTerminator
+    if (code === 10 || code === 13) {
       currentLine += body.slice(chunkStart, position);
       blockLines.push(currentLine);
-
-      if (code === 0x000d && body.charCodeAt(position + 1) === 0x000a) {
+      if (code === 13 && body.charCodeAt(position + 1) === 10) {
         position += 2;
       } else {
         ++position;
       }
-
       currentLine = '';
       chunkStart = position;
       lineStart = position;
       continue;
-    } // SourceCharacter
-
+    }
+    // SourceCharacter
     if (isUnicodeScalarValue(code)) {
       ++position;
     } else if (isSupplementaryCodePoint(body, position)) {
@@ -890,7 +743,6 @@ function readBlockString(lexer: Lexer, start: number): Token {
       );
     }
   }
-
   throw syntaxError(lexer.source, position, 'Unterminated string.');
 }
 /**
@@ -901,22 +753,18 @@ function readBlockString(lexer: Lexer, start: number): Token {
  *   - NameStart NameContinue* [lookahead != NameContinue]
  * ```
  */
-
 function readName(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
   const bodyLength = body.length;
   let position = start + 1;
-
   while (position < bodyLength) {
     const code = body.charCodeAt(position);
-
     if (isNameContinue(code)) {
       ++position;
     } else {
       break;
     }
   }
-
   return createToken(
     lexer,
     TokenKind.NAME,

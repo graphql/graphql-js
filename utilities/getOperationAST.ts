@@ -6,13 +6,11 @@ import { Kind } from '../language/kinds.ts';
  * name. If a name is not provided, an operation is only returned if only one is
  * provided in the document.
  */
-
 export function getOperationAST(
   documentAST: DocumentNode,
   operationName?: Maybe<string>,
 ): Maybe<OperationDefinitionNode> {
   let operation = null;
-
   for (const definition of documentAST.definitions) {
     if (definition.kind === Kind.OPERATION_DEFINITION) {
       if (operationName == null) {
@@ -22,13 +20,11 @@ export function getOperationAST(
         if (operation) {
           return null;
         }
-
         operation = definition;
       } else if (definition.name?.value === operationName) {
         return definition;
       }
     }
   }
-
   return operation;
 }

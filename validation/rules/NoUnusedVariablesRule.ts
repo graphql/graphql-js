@@ -10,7 +10,6 @@ import type { ValidationContext } from '../ValidationContext.ts';
  *
  * See https://spec.graphql.org/draft/#sec-All-Variables-Used
  */
-
 export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
   let variableDefs: Array<VariableDefinitionNode> = [];
   return {
@@ -18,34 +17,27 @@ export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
       enter() {
         variableDefs = [];
       },
-
       leave(operation) {
         const variableNameUsed = Object.create(null);
         const usages = context.getRecursiveVariableUsages(operation);
-
         for (const { node } of usages) {
           variableNameUsed[node.name.value] = true;
         }
-
         for (const variableDef of variableDefs) {
           const variableName = variableDef.variable.name.value;
-
           if (variableNameUsed[variableName] !== true) {
             context.reportError(
               new GraphQLError(
                 operation.name
                   ? `Variable "$${variableName}" is never used in operation "${operation.name.value}".`
                   : `Variable "$${variableName}" is never used.`,
-                {
-                  nodes: variableDef,
-                },
+                { nodes: variableDef },
               ),
             );
           }
         }
       },
     },
-
     VariableDefinition(def) {
       variableDefs.push(def);
     },

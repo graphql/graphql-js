@@ -20,7 +20,6 @@ import { GraphQLBoolean, GraphQLString } from './scalars.ts';
 /**
  * Test if the given value is a GraphQL directive.
  */
-
 export function isDirective(directive: unknown): directive is GraphQLDirective {
   return instanceOf(directive, GraphQLDirective);
 }
@@ -30,7 +29,6 @@ export function assertDirective(directive: unknown): GraphQLDirective {
       `Expected ${inspect(directive)} to be a GraphQL directive.`,
     );
   }
-
   return directive;
 }
 /**
@@ -42,7 +40,6 @@ export function assertDirective(directive: unknown): GraphQLDirective {
  * the risk of conflicts. We recommend you add at most one extension field,
  * an object which can contain all the values you need.
  */
-
 export interface GraphQLDirectiveExtensions {
   [attributeName: string]: unknown;
 }
@@ -50,7 +47,6 @@ export interface GraphQLDirectiveExtensions {
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
-
 export class GraphQLDirective {
   name: string;
   description: Maybe<string>;
@@ -59,7 +55,6 @@ export class GraphQLDirective {
   isRepeatable: boolean;
   extensions: Readonly<GraphQLDirectiveExtensions>;
   astNode: Maybe<DirectiveDefinitionNode>;
-
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
     this.name = assertName(config.name);
     this.description = config.description;
@@ -77,11 +72,9 @@ export class GraphQLDirective {
       );
     this.args = defineArguments(args);
   }
-
   get [Symbol.toStringTag]() {
     return 'GraphQLDirective';
   }
-
   toConfig(): GraphQLDirectiveNormalizedConfig {
     return {
       name: this.name,
@@ -93,11 +86,9 @@ export class GraphQLDirective {
       astNode: this.astNode,
     };
   }
-
   toString(): string {
     return '@' + this.name;
   }
-
   toJSON(): string {
     return this.toString();
   }
@@ -119,7 +110,6 @@ interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
 /**
  * Used to conditionally include fields or fragments.
  */
-
 export const GraphQLIncludeDirective: GraphQLDirective = new GraphQLDirective({
   name: 'include',
   description:
@@ -139,7 +129,6 @@ export const GraphQLIncludeDirective: GraphQLDirective = new GraphQLDirective({
 /**
  * Used to conditionally skip (exclude) fields or fragments.
  */
-
 export const GraphQLSkipDirective: GraphQLDirective = new GraphQLDirective({
   name: 'skip',
   description:
@@ -159,12 +148,10 @@ export const GraphQLSkipDirective: GraphQLDirective = new GraphQLDirective({
 /**
  * Constant string used for default reason for a deprecation.
  */
-
 export const DEFAULT_DEPRECATION_REASON = 'No longer supported';
 /**
  * Used to declare element of a GraphQL schema as deprecated.
  */
-
 export const GraphQLDeprecatedDirective: GraphQLDirective =
   new GraphQLDirective({
     name: 'deprecated',
@@ -187,7 +174,6 @@ export const GraphQLDeprecatedDirective: GraphQLDirective =
 /**
  * Used to provide a URL for specifying the behavior of custom scalar definitions.
  */
-
 export const GraphQLSpecifiedByDirective: GraphQLDirective =
   new GraphQLDirective({
     name: 'specifiedBy',
@@ -203,7 +189,6 @@ export const GraphQLSpecifiedByDirective: GraphQLDirective =
 /**
  * The full list of specified directives.
  */
-
 export const specifiedDirectives: ReadonlyArray<GraphQLDirective> =
   Object.freeze([
     GraphQLIncludeDirective,

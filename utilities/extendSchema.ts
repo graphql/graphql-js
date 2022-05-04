@@ -102,7 +102,6 @@ interface Options extends GraphQLSchemaValidationOptions {
  * This algorithm copies the provided schema, applying extensions while
  * producing the copy. The original schema remains unaltered.
  */
-
 export function extendSchema(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
@@ -111,11 +110,9 @@ export function extendSchema(
   assertSchema(schema);
   (documentAST != null && documentAST.kind === Kind.DOCUMENT) ||
     devAssert(false, 'Must provide valid Document AST.');
-
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDLExtension(documentAST, schema);
   }
-
   const schemaConfig = schema.toConfig();
   const extendedConfig = extendSchemaImpl(schemaConfig, documentAST, options);
   return schemaConfig === extendedConfig
@@ -125,7 +122,6 @@ export function extendSchema(
 /**
  * @internal
  */
-
 export function extendSchemaImpl(
   schemaConfig: GraphQLSchemaNormalizedConfig,
   documentAST: DocumentNode,
@@ -133,14 +129,13 @@ export function extendSchemaImpl(
 ): GraphQLSchemaNormalizedConfig {
   // Collect the type definitions and extensions found in the document.
   const typeDefs: Array<TypeDefinitionNode> = [];
-  const typeExtensionsMap = Object.create(null); // New directives and types are separate because a directives and types can
+  const typeExtensionsMap = Object.create(null);
+  // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
-
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
-  let schemaDef: Maybe<SchemaDefinitionNode>; // Schema extensions are collected which may add additional operation types.
-
+  let schemaDef: Maybe<SchemaDefinitionNode>;
+  // Schema extensions are collected which may add additional operation types.
   const schemaExtensions: Array<SchemaExtensionNode> = [];
-
   for (const def of documentAST.definitions) {
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
@@ -157,9 +152,9 @@ export function extendSchemaImpl(
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       directiveDefs.push(def);
     }
-  } // If this document contains no new types, extensions, or directives then
+  }
+  // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
-
   if (
     Object.keys(typeExtensionsMap).length === 0 &&
     typeDefs.length === 0 &&
@@ -169,18 +164,14 @@ export function extendSchemaImpl(
   ) {
     return schemaConfig;
   }
-
   const typeMap = Object.create(null);
-
   for (const existingType of schemaConfig.types) {
     typeMap[existingType.name] = extendNamedType(existingType);
   }
-
   for (const typeNode of typeDefs) {
     const name = typeNode.name.value;
     typeMap[name] = stdTypeMap[name] ?? buildType(typeNode);
   }
-
   const operationTypes = {
     // Get the extended root operation types.
     query: schemaConfig.query && replaceNamedType(schemaConfig.query),
@@ -190,8 +181,8 @@ export function extendSchemaImpl(
     // Then, incorporate schema definition and all schema extensions.
     ...(schemaDef && getOperationTypes([schemaDef])),
     ...getOperationTypes(schemaExtensions),
-  }; // Then produce and return a Schema config with these types.
-
+  };
+  // Then produce and return a Schema config with these types.
   return {
     description: schemaDef?.description?.value,
     ...operationTypes,
@@ -204,30 +195,27 @@ export function extendSchemaImpl(
     astNode: schemaDef ?? schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
     assumeValid: options?.assumeValid ?? false,
-  }; // Below are functions used for producing this schema that have closed over
+  };
+  // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
-
   function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
       // @ts-expect-error
       return new GraphQLList(replaceType(type.ofType));
     }
-
     if (isNonNullType(type)) {
       // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
-    } // @ts-expect-error FIXME
-
+    }
+    // @ts-expect-error FIXME
     return replaceNamedType(type);
   }
-
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
     // Note: While this could make early assertions to get the correctly
     // typed values, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
     return typeMap[type.name];
   }
-
   function replaceDirective(directive: GraphQLDirective): GraphQLDirective {
     const config = directive.toConfig();
     return new GraphQLDirective({
@@ -235,42 +223,33 @@ export function extendSchemaImpl(
       args: mapValue(config.args, extendArg),
     });
   }
-
   function extendNamedType(type: GraphQLNamedType): GraphQLNamedType {
     if (isIntrospectionType(type) || isSpecifiedScalarType(type)) {
       // Builtin types are not extended.
       return type;
     }
-
     if (isScalarType(type)) {
       return extendScalarType(type);
     }
-
     if (isObjectType(type)) {
       return extendObjectType(type);
     }
-
     if (isInterfaceType(type)) {
       return extendInterfaceType(type);
     }
-
     if (isUnionType(type)) {
       return extendUnionType(type);
     }
-
     if (isEnumType(type)) {
       return extendEnumType(type);
     }
-
     if (isInputObjectType(type)) {
       return extendInputObjectType(type);
     }
     /* c8 ignore next 3 */
     // Not reachable, all possible type definition nodes have been considered.
-
     false || invariant(false, 'Unexpected type: ' + inspect(type));
   }
-
   function extendInputObjectType(
     type: GraphQLInputObjectType,
   ): GraphQLInputObjectType {
@@ -288,33 +267,31 @@ export function extendSchemaImpl(
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
-
   function extendEnumType(type: GraphQLEnumType): GraphQLEnumType {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[type.name] ?? [];
     return new GraphQLEnumType({
       ...config,
-      values: { ...config.values, ...buildEnumValueMap(extensions) },
+      values: {
+        ...config.values,
+        ...buildEnumValueMap(extensions),
+      },
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
-
   function extendScalarType(type: GraphQLScalarType): GraphQLScalarType {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
     let specifiedByURL = config.specifiedByURL;
-
     for (const extensionNode of extensions) {
       specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
     }
-
     return new GraphQLScalarType({
       ...config,
       specifiedByURL,
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
-
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
@@ -331,7 +308,6 @@ export function extendSchemaImpl(
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
-
   function extendInterfaceType(
     type: GraphQLInterfaceType,
   ): GraphQLInterfaceType {
@@ -350,7 +326,6 @@ export function extendSchemaImpl(
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
-
   function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
@@ -363,7 +338,6 @@ export function extendSchemaImpl(
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
-
   function extendField(
     field: GraphQLFieldConfig<unknown, unknown>,
   ): GraphQLFieldConfig<unknown, unknown> {
@@ -373,11 +347,12 @@ export function extendSchemaImpl(
       args: field.args && mapValue(field.args, extendArg),
     };
   }
-
   function extendArg(arg: GraphQLArgumentConfig) {
-    return { ...arg, type: replaceType(arg.type) };
+    return {
+      ...arg,
+      type: replaceType(arg.type),
+    };
   }
-
   function getOperationTypes(
     nodes: ReadonlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
   ): {
@@ -386,13 +361,10 @@ export function extendSchemaImpl(
     subscription?: Maybe<GraphQLObjectType>;
   } {
     const opTypes = {};
-
     for (const node of nodes) {
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const operationTypesNodes =
-        /* c8 ignore next */
-        node.operationTypes ?? [];
-
+        /* c8 ignore next */ node.operationTypes ?? [];
       for (const operationType of operationTypesNodes) {
         // Note: While this could make early assertions to get the correctly
         // typed values below, that would throw immediately while type system
@@ -401,33 +373,25 @@ export function extendSchemaImpl(
         opTypes[operationType.operation] = getNamedType(operationType.type);
       }
     }
-
     return opTypes;
   }
-
   function getNamedType(node: NamedTypeNode): GraphQLNamedType {
     const name = node.name.value;
     const type = stdTypeMap[name] ?? typeMap[name];
-
     if (type === undefined) {
       throw new Error(`Unknown type: "${name}".`);
     }
-
     return type;
   }
-
   function getWrappedType(node: TypeNode): GraphQLType {
     if (node.kind === Kind.LIST_TYPE) {
       return new GraphQLList(getWrappedType(node.type));
     }
-
     if (node.kind === Kind.NON_NULL_TYPE) {
       return new GraphQLNonNull(getWrappedType(node.type));
     }
-
     return getNamedType(node);
   }
-
   function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
     return new GraphQLDirective({
       name: node.name.value,
@@ -439,7 +403,6 @@ export function extendSchemaImpl(
       astNode: node,
     });
   }
-
   function buildFieldMap(
     nodes: ReadonlyArray<
       | InterfaceTypeDefinitionNode
@@ -449,13 +412,9 @@ export function extendSchemaImpl(
     >,
   ): GraphQLFieldConfigMap<unknown, unknown> {
     const fieldConfigMap = Object.create(null);
-
     for (const node of nodes) {
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      const nodeFields =
-        /* c8 ignore next */
-        node.fields ?? [];
-
+      const nodeFields = /* c8 ignore next */ node.fields ?? [];
       for (const field of nodeFields) {
         fieldConfigMap[field.name.value] = {
           // Note: While this could make assertions to get the correctly typed
@@ -469,19 +428,14 @@ export function extendSchemaImpl(
         };
       }
     }
-
     return fieldConfigMap;
   }
-
   function buildArgumentMap(
     args: Maybe<ReadonlyArray<InputValueDefinitionNode>>,
   ): GraphQLFieldConfigArgumentMap {
     // FIXME: https://github.com/graphql/graphql-js/issues/2203
-    const argsNodes =
-      /* c8 ignore next */
-      args ?? [];
+    const argsNodes = /* c8 ignore next */ args ?? [];
     const argConfigMap = Object.create(null);
-
     for (const arg of argsNodes) {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
@@ -495,23 +449,17 @@ export function extendSchemaImpl(
         astNode: arg,
       };
     }
-
     return argConfigMap;
   }
-
   function buildInputFieldMap(
     nodes: ReadonlyArray<
       InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode
     >,
   ): GraphQLInputFieldConfigMap {
     const inputFieldMap = Object.create(null);
-
     for (const node of nodes) {
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      const fieldsNodes =
-        /* c8 ignore next */
-        node.fields ?? [];
-
+      const fieldsNodes = /* c8 ignore next */ node.fields ?? [];
       for (const field of fieldsNodes) {
         // Note: While this could make assertions to get the correctly typed
         // value, that would throw immediately while type system validation
@@ -526,21 +474,15 @@ export function extendSchemaImpl(
         };
       }
     }
-
     return inputFieldMap;
   }
-
   function buildEnumValueMap(
     nodes: ReadonlyArray<EnumTypeDefinitionNode | EnumTypeExtensionNode>,
   ): GraphQLEnumValueConfigMap {
     const enumValueMap = Object.create(null);
-
     for (const node of nodes) {
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      const valuesNodes =
-        /* c8 ignore next */
-        node.values ?? [];
-
+      const valuesNodes = /* c8 ignore next */ node.values ?? [];
       for (const value of valuesNodes) {
         enumValueMap[value.name.value] = {
           description: value.description?.value,
@@ -549,10 +491,8 @@ export function extendSchemaImpl(
         };
       }
     }
-
     return enumValueMap;
   }
-
   function buildInterfaces(
     nodes: ReadonlyArray<
       | InterfaceTypeDefinitionNode
@@ -567,12 +507,9 @@ export function extendSchemaImpl(
     // @ts-expect-error
     return nodes.flatMap(
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      (node) =>
-        /* c8 ignore next */
-        node.interfaces?.map(getNamedType) ?? [],
+      (node) => /* c8 ignore next */ node.interfaces?.map(getNamedType) ?? [],
     );
   }
-
   function buildUnionTypes(
     nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode>,
   ): Array<GraphQLObjectType> {
@@ -582,16 +519,12 @@ export function extendSchemaImpl(
     // @ts-expect-error
     return nodes.flatMap(
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      (node) =>
-        /* c8 ignore next */
-        node.types?.map(getNamedType) ?? [],
+      (node) => /* c8 ignore next */ node.types?.map(getNamedType) ?? [],
     );
   }
-
   function buildType(astNode: TypeDefinitionNode): GraphQLNamedType {
     const name = astNode.name.value;
     const extensionASTNodes = typeExtensionsMap[name] ?? [];
-
     switch (astNode.kind) {
       case Kind.OBJECT_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
@@ -604,7 +537,6 @@ export function extendSchemaImpl(
           extensionASTNodes,
         });
       }
-
       case Kind.INTERFACE_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
         return new GraphQLInterfaceType({
@@ -616,7 +548,6 @@ export function extendSchemaImpl(
           extensionASTNodes,
         });
       }
-
       case Kind.ENUM_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
         return new GraphQLEnumType({
@@ -627,7 +558,6 @@ export function extendSchemaImpl(
           extensionASTNodes,
         });
       }
-
       case Kind.UNION_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
         return new GraphQLUnionType({
@@ -638,7 +568,6 @@ export function extendSchemaImpl(
           extensionASTNodes,
         });
       }
-
       case Kind.SCALAR_TYPE_DEFINITION: {
         return new GraphQLScalarType({
           name,
@@ -648,7 +577,6 @@ export function extendSchemaImpl(
           extensionASTNodes,
         });
       }
-
       case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
         return new GraphQLInputObjectType({
@@ -670,25 +598,23 @@ const stdTypeMap = keyMap(
  * Given a field or enum value node, returns the string value for the
  * deprecation reason.
  */
-
 function getDeprecationReason(
   node:
     | EnumValueDefinitionNode
     | FieldDefinitionNode
     | InputValueDefinitionNode,
 ): Maybe<string> {
-  const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node); // @ts-expect-error validated by `getDirectiveValues`
-
+  const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
+  // @ts-expect-error validated by `getDirectiveValues`
   return deprecated?.reason;
 }
 /**
  * Given a scalar node, returns the string value for the specifiedByURL.
  */
-
 function getSpecifiedByURL(
   node: ScalarTypeDefinitionNode | ScalarTypeExtensionNode,
 ): Maybe<string> {
-  const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node); // @ts-expect-error validated by `getDirectiveValues`
-
+  const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
+  // @ts-expect-error validated by `getDirectiveValues`
   return specifiedBy?.url;
 }

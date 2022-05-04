@@ -5,7 +5,6 @@ import type { TokenKind } from './tokenKind.ts';
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
  */
-
 export class Location {
   /**
    * The character offset at which this Node begins.
@@ -14,24 +13,19 @@ export class Location {
   /**
    * The character offset at which this Node ends.
    */
-
   readonly end: number;
   /**
    * The Token at which this Node begins.
    */
-
   readonly startToken: Token;
   /**
    * The Token at which this Node ends.
    */
-
   readonly endToken: Token;
   /**
    * The Source document the AST represents.
    */
-
   readonly source: Source;
-
   constructor(startToken: Token, endToken: Token, source: Source) {
     this.start = startToken.start;
     this.end = endToken.end;
@@ -39,26 +33,20 @@ export class Location {
     this.endToken = endToken;
     this.source = source;
   }
-
   get [Symbol.toStringTag]() {
     return 'Location';
   }
-
   toJSON(): {
     start: number;
     end: number;
   } {
-    return {
-      start: this.start,
-      end: this.end,
-    };
+    return { start: this.start, end: this.end };
   }
 }
 /**
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
-
 export class Token {
   /**
    * The kind of Token.
@@ -67,22 +55,18 @@ export class Token {
   /**
    * The character offset at which this Node begins.
    */
-
   readonly start: number;
   /**
    * The character offset at which this Node ends.
    */
-
   readonly end: number;
   /**
    * The 1-indexed line number on which this Token appears.
    */
-
   readonly line: number;
   /**
    * The 1-indexed column number at which this Token begins.
    */
-
   readonly column: number;
   /**
    * For non-punctuation tokens, represents the interpreted value of the token.
@@ -90,17 +74,14 @@ export class Token {
    * Note: is undefined for punctuation tokens, but typed as string for
    * convenience in the parser.
    */
-
   readonly value: string;
   /**
    * Tokens exist as nodes in a double-linked-list amongst all tokens
    * including ignored tokens. <SOF> is always the first node and <EOF>
    * the last.
    */
-
   readonly prev: Token | null;
   readonly next: Token | null;
-
   constructor(
     kind: TokenKind,
     start: number,
@@ -113,17 +94,15 @@ export class Token {
     this.start = start;
     this.end = end;
     this.line = line;
-    this.column = column; // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-
+    this.column = column;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.value = value!;
     this.prev = null;
     this.next = null;
   }
-
   get [Symbol.toStringTag]() {
     return 'Token';
   }
-
   toJSON(): {
     kind: TokenKind;
     value?: string;
@@ -141,7 +120,6 @@ export class Token {
 /**
  * The list of all possible AST node types.
  */
-
 export type ASTNode =
   | NameNode
   | DocumentNode
@@ -189,12 +167,12 @@ export type ASTNode =
 /**
  * Utility type listing all nodes indexed by their kind.
  */
-
-export type ASTKindToNode = { [NodeT in ASTNode as NodeT['kind']]: NodeT };
+export type ASTKindToNode = {
+  [NodeT in ASTNode as NodeT['kind']]: NodeT;
+};
 /**
  * @internal
  */
-
 export const QueryDocumentKeys: {
   [NodeT in ASTNode as NodeT['kind']]: ReadonlyArray<keyof NodeT>;
 } = {
@@ -214,7 +192,8 @@ export const QueryDocumentKeys: {
   FragmentSpread: ['name', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [
-    'name', // Note: fragment variable definitions are deprecated and will removed in v17.0.0
+    'name',
+    // Note: fragment variable definitions are deprecated and will removed in v17.0.0
     'variableDefinitions',
     'typeCondition',
     'directives',
@@ -275,20 +254,17 @@ const kindValues = new Set<string>(Object.keys(QueryDocumentKeys));
 /**
  * @internal
  */
-
 export function isNode(maybeNode: any): maybeNode is ASTNode {
   const maybeKind = maybeNode?.kind;
   return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
 /** Name */
-
 export interface NameNode {
   readonly kind: Kind.NAME;
   readonly loc?: Location;
   readonly value: string;
 }
 /** Document */
-
 export interface DocumentNode {
   readonly kind: Kind.DOCUMENT;
   readonly loc?: Location;
@@ -356,7 +332,6 @@ export interface ConstArgumentNode {
   readonly value: ConstValueNode;
 }
 /** Fragments */
-
 export interface FragmentSpreadNode {
   readonly kind: Kind.FRAGMENT_SPREAD;
   readonly loc?: Location;
@@ -375,14 +350,12 @@ export interface FragmentDefinitionNode {
   readonly loc?: Location;
   readonly name: NameNode;
   /** @deprecated variableDefinitions will be removed in v17.0.0 */
-
   readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
   readonly typeCondition: NamedTypeNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
 }
 /** Values */
-
 export type ValueNode =
   | VariableNode
   | IntValueNode
@@ -465,7 +438,6 @@ export interface ConstObjectFieldNode {
   readonly value: ConstValueNode;
 }
 /** Directives */
-
 export interface DirectiveNode {
   readonly kind: Kind.DIRECTIVE;
   readonly loc?: Location;
@@ -479,7 +451,6 @@ export interface ConstDirectiveNode {
   readonly arguments?: ReadonlyArray<ConstArgumentNode>;
 }
 /** Type Reference */
-
 export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
 export interface NamedTypeNode {
   readonly kind: Kind.NAMED_TYPE;
@@ -497,7 +468,6 @@ export interface NonNullTypeNode {
   readonly type: NamedTypeNode | ListTypeNode;
 }
 /** Type System Definition */
-
 export type TypeSystemDefinitionNode =
   | SchemaDefinitionNode
   | TypeDefinitionNode
@@ -516,7 +486,6 @@ export interface OperationTypeDefinitionNode {
   readonly type: NamedTypeNode;
 }
 /** Type Definition */
-
 export type TypeDefinitionNode =
   | ScalarTypeDefinitionNode
   | ObjectTypeDefinitionNode
@@ -599,7 +568,6 @@ export interface InputObjectTypeDefinitionNode {
   readonly fields?: ReadonlyArray<InputValueDefinitionNode>;
 }
 /** Directive Definitions */
-
 export interface DirectiveDefinitionNode {
   readonly kind: Kind.DIRECTIVE_DEFINITION;
   readonly loc?: Location;
@@ -610,7 +578,6 @@ export interface DirectiveDefinitionNode {
   readonly locations: ReadonlyArray<NameNode>;
 }
 /** Type System Extensions */
-
 export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 export interface SchemaExtensionNode {
   readonly kind: Kind.SCHEMA_EXTENSION;
@@ -619,7 +586,6 @@ export interface SchemaExtensionNode {
   readonly operationTypes?: ReadonlyArray<OperationTypeDefinitionNode>;
 }
 /** Type Extensions */
-
 export type TypeExtensionNode =
   | ScalarTypeExtensionNode
   | ObjectTypeExtensionNode

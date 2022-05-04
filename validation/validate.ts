@@ -32,7 +32,6 @@ import {
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-
 export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
@@ -44,8 +43,8 @@ export function validate(
   typeInfo: TypeInfo = new TypeInfo(schema),
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
-  documentAST || devAssert(false, 'Must provide document.'); // If the schema used for validation is invalid, throw an error.
-
+  documentAST || devAssert(false, 'Must provide document.');
+  // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
   const abortObj = Object.freeze({});
   const errors: Array<GraphQLError> = [];
@@ -59,18 +58,17 @@ export function validate(
           new GraphQLError(
             'Too many validation errors, error limit reached. Validation aborted.',
           ),
-        ); // eslint-disable-next-line @typescript-eslint/no-throw-literal
-
+        );
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw abortObj;
       }
-
       errors.push(error);
     },
-  ); // This uses a specialized visitor which runs multiple visitors in parallel,
+  );
+  // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
-
-  const visitor = visitInParallel(rules.map((rule) => rule(context))); // Visit the whole document with each instance of all provided rules.
-
+  const visitor = visitInParallel(rules.map((rule) => rule(context)));
+  // Visit the whole document with each instance of all provided rules.
   try {
     visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
   } catch (e) {
@@ -78,13 +76,11 @@ export function validate(
       throw e;
     }
   }
-
   return errors;
 }
 /**
  * @internal
  */
-
 export function validateSDL(
   documentAST: DocumentNode,
   schemaToExtend?: Maybe<GraphQLSchema>,
@@ -108,10 +104,8 @@ export function validateSDL(
  *
  * @internal
  */
-
 export function assertValidSDL(documentAST: DocumentNode): void {
   const errors = validateSDL(documentAST);
-
   if (errors.length !== 0) {
     throw new Error(errors.map((error) => error.message).join('\n\n'));
   }
@@ -122,13 +116,11 @@ export function assertValidSDL(documentAST: DocumentNode): void {
  *
  * @internal
  */
-
 export function assertValidSDLExtension(
   documentAST: DocumentNode,
   schema: GraphQLSchema,
 ): void {
   const errors = validateSDL(documentAST, schema);
-
   if (errors.length !== 0) {
     throw new Error(errors.map((error) => error.message).join('\n\n'));
   }

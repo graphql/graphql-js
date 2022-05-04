@@ -5,7 +5,6 @@ import type { Source } from './source.ts';
 /**
  * Render a helpful description of the location in the GraphQL Source document.
  */
-
 export function printLocation(location: Location): string {
   return printSourceLocation(
     location.source,
@@ -15,7 +14,6 @@ export function printLocation(location: Location): string {
 /**
  * Render a helpful description of the location in the GraphQL Source document.
  */
-
 export function printSourceLocation(
   source: Source,
   sourceLocation: SourceLocation,
@@ -29,17 +27,15 @@ export function printSourceLocation(
   const columnNum = sourceLocation.column + columnOffset;
   const locationStr = `${source.name}:${lineNum}:${columnNum}\n`;
   const lines = body.split(/\r\n|[\n\r]/g);
-  const locationLine = lines[lineIndex]; // Special case for minified documents
-
+  const locationLine = lines[lineIndex];
+  // Special case for minified documents
   if (locationLine.length > 120) {
     const subLineIndex = Math.floor(columnNum / 80);
     const subLineColumnNum = columnNum % 80;
     const subLines: Array<string> = [];
-
     for (let i = 0; i < locationLine.length; i += 80) {
       subLines.push(locationLine.slice(i, i + 80));
     }
-
     return (
       locationStr +
       printPrefixedLines([
@@ -52,7 +48,6 @@ export function printSourceLocation(
       ])
     );
   }
-
   return (
     locationStr +
     printPrefixedLines([
@@ -64,7 +59,6 @@ export function printSourceLocation(
     ])
   );
 }
-
 function printPrefixedLines(
   lines: ReadonlyArray<readonly [string, string]>,
 ): string {

@@ -21,7 +21,8 @@ export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap } from './visitor.ts';
 export { Location, Token, OperationTypeNode } from './ast.ts';
 export type {
   ASTNode,
-  ASTKindToNode, // Each kind of AST node
+  ASTKindToNode,
+  // Each kind of AST node
   NameNode,
   DocumentNode,
   DefinitionNode,

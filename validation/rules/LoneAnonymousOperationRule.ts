@@ -10,7 +10,6 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  *
  * See https://spec.graphql.org/draft/#sec-Lone-Anonymous-Operation
  */
-
 export function LoneAnonymousOperationRule(
   context: ASTValidationContext,
 ): ASTVisitor {
@@ -21,15 +20,12 @@ export function LoneAnonymousOperationRule(
         (definition) => definition.kind === Kind.OPERATION_DEFINITION,
       ).length;
     },
-
     OperationDefinition(node) {
       if (!node.name && operationCount > 1) {
         context.reportError(
           new GraphQLError(
             'This anonymous operation must be the only defined operation.',
-            {
-              nodes: node,
-            },
+            { nodes: node },
           ),
         );
       }

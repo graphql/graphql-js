@@ -31,5 +31,4 @@ export enum TokenKind {
  *
  * @deprecated Please use `TokenKind`. Will be remove in v17.
  */
-
 export type TokenKindEnum = typeof TokenKind;

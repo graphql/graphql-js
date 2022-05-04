@@ -11,7 +11,6 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  *
  * See https://spec.graphql.org/draft/#sec-Executable-Definitions
  */
-
 export function ExecutableDefinitionsRule(
   context: ASTValidationContext,
 ): ASTVisitor {
@@ -31,7 +30,6 @@ export function ExecutableDefinitionsRule(
           );
         }
       }
-
       return false;
     },
   };

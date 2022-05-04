@@ -11,7 +11,6 @@ export enum DirectiveLocation {
   FRAGMENT_SPREAD = 'FRAGMENT_SPREAD',
   INLINE_FRAGMENT = 'INLINE_FRAGMENT',
   VARIABLE_DEFINITION = 'VARIABLE_DEFINITION',
-
   /** Type System Definitions */
   SCHEMA = 'SCHEMA',
   SCALAR = 'SCALAR',
@@ -30,5 +29,4 @@ export enum DirectiveLocation {
  *
  * @deprecated Please use `DirectiveLocation`. Will be remove in v17.
  */
-
 export type DirectiveLocationEnum = typeof DirectiveLocation;

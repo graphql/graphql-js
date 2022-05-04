@@ -16,17 +16,14 @@ import type { ObjMap } from './ObjMap.ts';
  * )
  * ```
  */
-
 export function keyValMap<T, V>(
   list: ReadonlyArray<T>,
   keyFn: (item: T) => string,
   valFn: (item: T) => V,
 ): ObjMap<V> {
   const result = Object.create(null);
-
   for (const item of list) {
     result[keyFn(item)] = valFn(item);
   }
-
   return result;
 }

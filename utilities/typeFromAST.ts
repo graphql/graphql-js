@@ -15,7 +15,6 @@ import type { GraphQLSchema } from '../type/schema.ts';
  * the type called "User" found in the schema. If a type called "User" is not
  * found in the schema, then undefined will be returned.
  */
-
 export function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NamedTypeNode,
@@ -41,12 +40,10 @@ export function typeFromAST(
       const innerType = typeFromAST(schema, typeNode.type);
       return innerType && new GraphQLList(innerType);
     }
-
     case Kind.NON_NULL_TYPE: {
       const innerType = typeFromAST(schema, typeNode.type);
       return innerType && new GraphQLNonNull(innerType);
     }
-
     case Kind.NAMED_TYPE:
       return schema.getType(typeNode.name.value);
   }

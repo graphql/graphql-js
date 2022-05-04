@@ -8,15 +8,18 @@ import { Kind } from '../language/kinds.ts';
  *
  * @internal
  */
-
 export function sortValueNode(valueNode: ValueNode): ValueNode {
   switch (valueNode.kind) {
     case Kind.OBJECT:
-      return { ...valueNode, fields: sortFields(valueNode.fields) };
-
+      return {
+        ...valueNode,
+        fields: sortFields(valueNode.fields),
+      };
     case Kind.LIST:
-      return { ...valueNode, values: valueNode.values.map(sortValueNode) };
-
+      return {
+        ...valueNode,
+        values: valueNode.values.map(sortValueNode),
+      };
     case Kind.INT:
     case Kind.FLOAT:
     case Kind.STRING:
@@ -27,7 +30,6 @@ export function sortValueNode(valueNode: ValueNode): ValueNode {
       return valueNode;
   }
 }
-
 function sortFields(
   fields: ReadonlyArray<ObjectFieldNode>,
 ): Array<ObjectFieldNode> {

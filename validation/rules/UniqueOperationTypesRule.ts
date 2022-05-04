@@ -10,7 +10,6 @@ import type { SDLValidationContext } from '../ValidationContext.ts';
  *
  * A GraphQL document is only valid if it has only one type per operation.
  */
-
 export function UniqueOperationTypesRule(
   context: SDLValidationContext,
 ): ASTVisitor {
@@ -27,42 +26,33 @@ export function UniqueOperationTypesRule(
     SchemaDefinition: checkOperationTypes,
     SchemaExtension: checkOperationTypes,
   };
-
   function checkOperationTypes(
     node: SchemaDefinitionNode | SchemaExtensionNode,
   ) {
     // See: https://github.com/graphql/graphql-js/issues/2203
-
     /* c8 ignore next */
     const operationTypesNodes = node.operationTypes ?? [];
-
     for (const operationType of operationTypesNodes) {
       const operation = operationType.operation;
       const alreadyDefinedOperationType = definedOperationTypes[operation];
-
       if (existingOperationTypes[operation]) {
         context.reportError(
           new GraphQLError(
             `Type for ${operation} already defined in the schema. It cannot be redefined.`,
-            {
-              nodes: operationType,
-            },
+            { nodes: operationType },
           ),
         );
       } else if (alreadyDefinedOperationType) {
         context.reportError(
           new GraphQLError(
             `There can be only one ${operation} type in schema.`,
-            {
-              nodes: [alreadyDefinedOperationType, operationType],
-            },
+            { nodes: [alreadyDefinedOperationType, operationType] },
           ),
         );
       } else {
         definedOperationTypes[operation] = operationType;
       }
     }
-
     return false;
   }
 }

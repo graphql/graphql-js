@@ -14,7 +14,6 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * be true: if there is a non-empty intersection of the possible parent types,
  * and possible types which pass the type condition.
  */
-
 export function PossibleFragmentSpreadsRule(
   context: ValidationContext,
 ): ASTVisitor {
@@ -22,7 +21,6 @@ export function PossibleFragmentSpreadsRule(
     InlineFragment(node) {
       const fragType = context.getType();
       const parentType = context.getParentType();
-
       if (
         isCompositeType(fragType) &&
         isCompositeType(parentType) &&
@@ -33,19 +31,15 @@ export function PossibleFragmentSpreadsRule(
         context.reportError(
           new GraphQLError(
             `Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            {
-              nodes: node,
-            },
+            { nodes: node },
           ),
         );
       }
     },
-
     FragmentSpread(node) {
       const fragName = node.name.value;
       const fragType = getFragmentType(context, fragName);
       const parentType = context.getParentType();
-
       if (
         fragType &&
         parentType &&
@@ -56,25 +50,20 @@ export function PossibleFragmentSpreadsRule(
         context.reportError(
           new GraphQLError(
             `Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            {
-              nodes: node,
-            },
+            { nodes: node },
           ),
         );
       }
     },
   };
 }
-
 function getFragmentType(
   context: ValidationContext,
   name: string,
 ): Maybe<GraphQLCompositeType> {
   const frag = context.getFragment(name);
-
   if (frag) {
     const type = typeFromAST(context.getSchema(), frag.typeCondition);
-
     if (isCompositeType(type)) {
       return type;
     }

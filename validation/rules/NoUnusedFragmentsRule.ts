@@ -13,7 +13,6 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  *
  * See https://spec.graphql.org/draft/#sec-Fragments-Must-Be-Used
  */
-
 export function NoUnusedFragmentsRule(
   context: ASTValidationContext,
 ): ASTVisitor {
@@ -24,16 +23,13 @@ export function NoUnusedFragmentsRule(
       operationDefs.push(node);
       return false;
     },
-
     FragmentDefinition(node) {
       fragmentDefs.push(node);
       return false;
     },
-
     Document: {
       leave() {
         const fragmentNameUsed = Object.create(null);
-
         for (const operation of operationDefs) {
           for (const fragment of context.getRecursivelyReferencedFragments(
             operation,
@@ -41,10 +37,8 @@ export function NoUnusedFragmentsRule(
             fragmentNameUsed[fragment.name.value] = true;
           }
         }
-
         for (const fragmentDef of fragmentDefs) {
           const fragName = fragmentDef.name.value;
-
           if (fragmentNameUsed[fragName] !== true) {
             context.reportError(
               new GraphQLError(`Fragment "${fragName}" is never used.`, {

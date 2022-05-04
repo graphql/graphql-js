@@ -7,19 +7,16 @@ import type { PromiseOrValue } from './PromiseOrValue.ts';
  * If the callback does not return a Promise, then this function will also not
  * return a Promise.
  */
-
 export function promiseReduce<T, U>(
   values: Iterable<T>,
   callbackFn: (accumulator: U, currentValue: T) => PromiseOrValue<U>,
   initialValue: PromiseOrValue<U>,
 ): PromiseOrValue<U> {
   let accumulator = initialValue;
-
   for (const value of values) {
     accumulator = isPromise(accumulator)
       ? accumulator.then((resolved) => callbackFn(resolved, value))
       : callbackFn(accumulator, value);
   }
-
   return accumulator;
 }

@@ -16,7 +16,6 @@ import { getIntrospectionQuery } from './getIntrospectionQuery.ts';
  * This is the inverse of buildClientSchema. The primary use case is outside
  * of the server context, for instance when doing schema comparisons.
  */
-
 export function introspectionFromSchema(
   schema: GraphQLSchema,
   options?: IntrospectionOptions,
@@ -29,10 +28,7 @@ export function introspectionFromSchema(
     ...options,
   };
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
-  const result = executeSync({
-    schema,
-    document,
-  });
+  const result = executeSync({ schema, document });
   (!result.errors && result.data) || invariant(false);
   return result.data as any;
 }

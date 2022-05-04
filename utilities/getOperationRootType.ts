@@ -10,54 +10,40 @@ import type { GraphQLSchema } from '../type/schema.ts';
  *
  * @deprecated Please use `GraphQLSchema.getRootType` instead. Will be removed in v17
  */
-
 export function getOperationRootType(
   schema: GraphQLSchema,
   operation: OperationDefinitionNode | OperationTypeDefinitionNode,
 ): GraphQLObjectType {
   if (operation.operation === 'query') {
     const queryType = schema.getQueryType();
-
     if (!queryType) {
       throw new GraphQLError(
         'Schema does not define the required query root type.',
-        {
-          nodes: operation,
-        },
+        { nodes: operation },
       );
     }
-
     return queryType;
   }
-
   if (operation.operation === 'mutation') {
     const mutationType = schema.getMutationType();
-
     if (!mutationType) {
       throw new GraphQLError('Schema is not configured for mutations.', {
         nodes: operation,
       });
     }
-
     return mutationType;
   }
-
   if (operation.operation === 'subscription') {
     const subscriptionType = schema.getSubscriptionType();
-
     if (!subscriptionType) {
       throw new GraphQLError('Schema is not configured for subscriptions.', {
         nodes: operation,
       });
     }
-
     return subscriptionType;
   }
-
   throw new GraphQLError(
     'Can only have query, mutation and subscription operations.',
-    {
-      nodes: operation,
-    },
+    { nodes: operation },
   );
 }

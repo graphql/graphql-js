@@ -13,42 +13,33 @@ import type { ValidationContext } from '../ValidationContext.ts';
  *
  * See https://spec.graphql.org/draft/#sec-Fragments-On-Composite-Types
  */
-
 export function FragmentsOnCompositeTypesRule(
   context: ValidationContext,
 ): ASTVisitor {
   return {
     InlineFragment(node) {
       const typeCondition = node.typeCondition;
-
       if (typeCondition) {
         const type = typeFromAST(context.getSchema(), typeCondition);
-
         if (type && !isCompositeType(type)) {
           const typeStr = print(typeCondition);
           context.reportError(
             new GraphQLError(
               `Fragment cannot condition on non composite type "${typeStr}".`,
-              {
-                nodes: typeCondition,
-              },
+              { nodes: typeCondition },
             ),
           );
         }
       }
     },
-
     FragmentDefinition(node) {
       const type = typeFromAST(context.getSchema(), node.typeCondition);
-
       if (type && !isCompositeType(type)) {
         const typeStr = print(node.typeCondition);
         context.reportError(
           new GraphQLError(
             `Fragment "${node.name.value}" cannot condition on non composite type "${typeStr}".`,
-            {
-              nodes: node.typeCondition,
-            },
+            { nodes: node.typeCondition },
           ),
         );
       }

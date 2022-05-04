@@ -16,6 +16,5 @@ import type { ExecutionArgs } from '../execution/execute.ts';
  * The SubscriptionArgs type is retained for backwards compatibility.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-
 export interface SubscriptionArgs extends ExecutionArgs {}
 export { subscribe, createSourceEventStream } from '../execution/subscribe.ts';

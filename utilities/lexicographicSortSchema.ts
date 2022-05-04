@@ -36,7 +36,6 @@ import { GraphQLSchema } from '../type/schema.ts';
  *
  * This function returns a sorted copy of the given GraphQLSchema.
  */
-
 export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   const schemaConfig = schema.toConfig();
   const typeMap = keyValMap(
@@ -52,7 +51,6 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     mutation: replaceMaybeType(schemaConfig.mutation),
     subscription: replaceMaybeType(schemaConfig.subscription),
   });
-
   function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
       // @ts-expect-error
@@ -60,21 +58,18 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     } else if (isNonNullType(type)) {
       // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
-    } // @ts-expect-error FIXME: TS Conversion
-
+    }
+    // @ts-expect-error FIXME: TS Conversion
     return replaceNamedType<GraphQLNamedType>(type);
   }
-
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
     return typeMap[type.name] as T;
   }
-
   function replaceMaybeType<T extends GraphQLNamedType>(
     maybeType: Maybe<T>,
   ): Maybe<T> {
     return maybeType && replaceNamedType(maybeType);
   }
-
   function sortDirective(directive: GraphQLDirective) {
     const config = directive.toConfig();
     return new GraphQLDirective({
@@ -83,11 +78,12 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       args: sortArgs(config.args),
     });
   }
-
   function sortArgs(args: GraphQLFieldConfigArgumentMap) {
-    return sortObjMap(args, (arg) => ({ ...arg, type: replaceType(arg.type) }));
+    return sortObjMap(args, (arg) => ({
+      ...arg,
+      type: replaceType(arg.type),
+    }));
   }
-
   function sortFields(fieldsMap: GraphQLFieldConfigMap<unknown, unknown>) {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
@@ -95,25 +91,21 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       args: field.args && sortArgs(field.args),
     }));
   }
-
   function sortInputFields(fieldsMap: GraphQLInputFieldConfigMap) {
     return sortObjMap(fieldsMap, (field) => ({
       ...field,
       type: replaceType(field.type),
     }));
   }
-
   function sortTypes<T extends GraphQLNamedType>(
     array: ReadonlyArray<T>,
   ): Array<T> {
     return sortByName(array).map(replaceNamedType);
   }
-
   function sortNamedType(type: GraphQLNamedType): GraphQLNamedType {
     if (isScalarType(type) || isIntrospectionType(type)) {
       return type;
     }
-
     if (isObjectType(type)) {
       const config = type.toConfig();
       return new GraphQLObjectType({
@@ -122,7 +114,6 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
         fields: () => sortFields(config.fields),
       });
     }
-
     if (isInterfaceType(type)) {
       const config = type.toConfig();
       return new GraphQLInterfaceType({
@@ -131,7 +122,6 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
         fields: () => sortFields(config.fields),
       });
     }
-
     if (isUnionType(type)) {
       const config = type.toConfig();
       return new GraphQLUnionType({
@@ -139,7 +129,6 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
         types: () => sortTypes(config.types),
       });
     }
-
     if (isEnumType(type)) {
       const config = type.toConfig();
       return new GraphQLEnumType({
@@ -147,7 +136,6 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
         values: sortObjMap(config.values, (value) => value),
       });
     }
-
     if (isInputObjectType(type)) {
       const config = type.toConfig();
       return new GraphQLInputObjectType({
@@ -157,24 +145,19 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }
     /* c8 ignore next 3 */
     // Not reachable, all possible types have been considered.
-
     false || invariant(false, 'Unexpected type: ' + inspect(type));
   }
 }
-
 function sortObjMap<T, R>(
   map: ObjMap<T>,
   sortValueFn: (value: T) => R,
 ): ObjMap<R> {
   const sortedMap = Object.create(null);
-
   for (const key of Object.keys(map).sort(naturalCompare)) {
     sortedMap[key] = sortValueFn(map[key]);
   }
-
   return sortedMap;
 }
-
 function sortByName<
   T extends {
     readonly name: string;
@@ -182,7 +165,6 @@ function sortByName<
 >(array: ReadonlyArray<T>): Array<T> {
   return sortBy(array, (obj) => obj.name);
 }
-
 function sortBy<T>(
   array: ReadonlyArray<T>,
   mapToKey: (item: T) => string,

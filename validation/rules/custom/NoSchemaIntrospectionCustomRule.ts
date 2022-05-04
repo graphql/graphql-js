@@ -14,21 +14,17 @@ import type { ValidationContext } from '../../ValidationContext.ts';
  * GraphQL Specification. This rule effectively disables introspection, which
  * does not reflect best practices and should only be done if absolutely necessary.
  */
-
 export function NoSchemaIntrospectionCustomRule(
   context: ValidationContext,
 ): ASTVisitor {
   return {
     Field(node: FieldNode) {
       const type = getNamedType(context.getType());
-
       if (type && isIntrospectionType(type)) {
         context.reportError(
           new GraphQLError(
             `GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`,
-            {
-              nodes: node,
-            },
+            { nodes: node },
           ),
         );
       }

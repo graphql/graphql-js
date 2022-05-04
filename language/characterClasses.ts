@@ -7,7 +7,7 @@
  * @internal
  */
 export function isWhiteSpace(code: number): boolean {
-  return code === 0x0009 || code === 0x0020;
+  return code === 9 || code === 32;
 }
 /**
  * ```
@@ -16,9 +16,8 @@ export function isWhiteSpace(code: number): boolean {
  * ```
  * @internal
  */
-
 export function isDigit(code: number): boolean {
-  return code >= 0x0030 && code <= 0x0039;
+  return code >= 48 && code <= 57;
 }
 /**
  * ```
@@ -30,11 +29,10 @@ export function isDigit(code: number): boolean {
  * ```
  * @internal
  */
-
 export function isLetter(code: number): boolean {
   return (
-    (code >= 0x0061 && code <= 0x007a) || // A-Z
-    (code >= 0x0041 && code <= 0x005a) // a-z
+    (code >= 97 && code <= 122) || // A-Z
+    (code >= 65 && code <= 90) // a-z
   );
 }
 /**
@@ -45,9 +43,8 @@ export function isLetter(code: number): boolean {
  * ```
  * @internal
  */
-
 export function isNameStart(code: number): boolean {
-  return isLetter(code) || code === 0x005f;
+  return isLetter(code) || code === 95;
 }
 /**
  * ```
@@ -58,7 +55,6 @@ export function isNameStart(code: number): boolean {
  * ```
  * @internal
  */
-
 export function isNameContinue(code: number): boolean {
-  return isLetter(code) || isDigit(code) || code === 0x005f;
+  return isLetter(code) || isDigit(code) || code === 95;
 }

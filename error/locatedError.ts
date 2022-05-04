@@ -7,18 +7,16 @@ import { GraphQLError } from './GraphQLError.ts';
  * GraphQL operation, produce a new GraphQLError aware of the location in the
  * document responsible for the original Error.
  */
-
 export function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
   path?: Maybe<ReadonlyArray<string | number>>,
 ): GraphQLError {
-  const originalError = toError(rawOriginalError); // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
-
+  const originalError = toError(rawOriginalError);
+  // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
   if (isLocatedGraphQLError(originalError)) {
     return originalError;
   }
-
   return new GraphQLError(originalError.message, {
     nodes: (originalError as GraphQLError).nodes ?? nodes,
     source: (originalError as GraphQLError).source,
@@ -27,7 +25,6 @@ export function locatedError(
     originalError,
   });
 }
-
 function isLocatedGraphQLError(error: any): error is GraphQLError {
   return Array.isArray(error.path);
 }

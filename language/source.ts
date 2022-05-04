@@ -12,19 +12,14 @@ interface Location {
  * be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
-
 export class Source {
   body: string;
   name: string;
   locationOffset: Location;
-
   constructor(
     body: string,
     name: string = 'GraphQL request',
-    locationOffset: Location = {
-      line: 1,
-      column: 1,
-    },
+    locationOffset: Location = { line: 1, column: 1 },
   ) {
     typeof body === 'string' ||
       devAssert(false, `Body must be a string. Received: ${inspect(body)}.`);
@@ -42,7 +37,6 @@ export class Source {
         'column in locationOffset is 1-indexed and must be positive.',
       );
   }
-
   get [Symbol.toStringTag]() {
     return 'Source';
   }
@@ -52,7 +46,6 @@ export class Source {
  *
  * @internal
  */
-
 export function isSource(source: unknown): source is Source {
   return instanceOf(source, Source);
 }

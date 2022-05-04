@@ -8,7 +8,6 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  *
  * See https://spec.graphql.org/draft/#sec-Operation-Name-Uniqueness
  */
-
 export function UniqueOperationNamesRule(
   context: ASTValidationContext,
 ): ASTVisitor {
@@ -16,7 +15,6 @@ export function UniqueOperationNamesRule(
   return {
     OperationDefinition(node) {
       const operationName = node.name;
-
       if (operationName) {
         if (knownOperationNames[operationName.value]) {
           context.reportError(
@@ -34,10 +32,8 @@ export function UniqueOperationNamesRule(
           knownOperationNames[operationName.value] = operationName;
         }
       }
-
       return false;
     },
-
     FragmentDefinition: () => false,
   };
 }

@@ -6,7 +6,6 @@ import type { SDLValidationContext } from '../ValidationContext.ts';
  *
  * A GraphQL document is only valid if all defined directives have unique names.
  */
-
 export function UniqueDirectiveNamesRule(
   context: SDLValidationContext,
 ): ASTVisitor {
@@ -15,32 +14,25 @@ export function UniqueDirectiveNamesRule(
   return {
     DirectiveDefinition(node) {
       const directiveName = node.name.value;
-
       if (schema?.getDirective(directiveName)) {
         context.reportError(
           new GraphQLError(
             `Directive "@${directiveName}" already exists in the schema. It cannot be redefined.`,
-            {
-              nodes: node.name,
-            },
+            { nodes: node.name },
           ),
         );
         return;
       }
-
       if (knownDirectiveNames[directiveName]) {
         context.reportError(
           new GraphQLError(
             `There can be only one directive named "@${directiveName}".`,
-            {
-              nodes: [knownDirectiveNames[directiveName], node.name],
-            },
+            { nodes: [knownDirectiveNames[directiveName], node.name] },
           ),
         );
       } else {
         knownDirectiveNames[directiveName] = node.name;
       }
-
       return false;
     },
   };

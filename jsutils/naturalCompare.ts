@@ -8,32 +8,25 @@
 export function naturalCompare(aStr: string, bStr: string): number {
   let aIndex = 0;
   let bIndex = 0;
-
   while (aIndex < aStr.length && bIndex < bStr.length) {
     let aChar = aStr.charCodeAt(aIndex);
     let bChar = bStr.charCodeAt(bIndex);
-
     if (isDigit(aChar) && isDigit(bChar)) {
       let aNum = 0;
-
       do {
         ++aIndex;
         aNum = aNum * 10 + aChar - DIGIT_0;
         aChar = aStr.charCodeAt(aIndex);
       } while (isDigit(aChar) && aNum > 0);
-
       let bNum = 0;
-
       do {
         ++bIndex;
         bNum = bNum * 10 + bChar - DIGIT_0;
         bChar = bStr.charCodeAt(bIndex);
       } while (isDigit(bChar) && bNum > 0);
-
       if (aNum < bNum) {
         return -1;
       }
-
       if (aNum > bNum) {
         return 1;
       }
@@ -41,21 +34,17 @@ export function naturalCompare(aStr: string, bStr: string): number {
       if (aChar < bChar) {
         return -1;
       }
-
       if (aChar > bChar) {
         return 1;
       }
-
       ++aIndex;
       ++bIndex;
     }
   }
-
   return aStr.length - bStr.length;
 }
 const DIGIT_0 = 48;
 const DIGIT_9 = 57;
-
 function isDigit(code: number): boolean {
   return !isNaN(code) && DIGIT_0 <= code && code <= DIGIT_9;
 }

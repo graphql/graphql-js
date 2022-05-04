@@ -26,16 +26,13 @@ import type { ObjMap } from './ObjMap.ts';
  * // { name: 'Jenny', num: '857-6309' }
  * ```
  */
-
 export function keyMap<T>(
   list: ReadonlyArray<T>,
   keyFn: (item: T) => string,
 ): ObjMap<T> {
   const result = Object.create(null);
-
   for (const item of list) {
     result[keyFn(item)] = item;
   }
-
   return result;
 }

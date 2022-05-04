@@ -62,14 +62,12 @@ import { TokenKind } from '../language/tokenKind.ts';
  * """Type description""" type Foo{"""Field description""" bar:String}
  * ```
  */
-
 export function stripIgnoredCharacters(source: string | Source): string {
   const sourceObj = isSource(source) ? source : new Source(source);
   const body = sourceObj.body;
   const lexer = new Lexer(sourceObj);
   let strippedBody = '';
   let wasLastAddedTokenNonPunctuator = false;
-
   while (lexer.advance().kind !== TokenKind.EOF) {
     const currentToken = lexer.token;
     const tokenKind = currentToken.kind;
@@ -78,27 +76,19 @@ export function stripIgnoredCharacters(source: string | Source): string {
      * Also prevent case of non-punctuator token following by spread resulting
      * in invalid token (e.g. `1...` is invalid Float token).
      */
-
     const isNonPunctuator = !isPunctuatorTokenKind(currentToken.kind);
-
     if (wasLastAddedTokenNonPunctuator) {
       if (isNonPunctuator || currentToken.kind === TokenKind.SPREAD) {
         strippedBody += ' ';
       }
     }
-
     const tokenBody = body.slice(currentToken.start, currentToken.end);
-
     if (tokenKind === TokenKind.BLOCK_STRING) {
-      strippedBody += printBlockString(currentToken.value, {
-        minimize: true,
-      });
+      strippedBody += printBlockString(currentToken.value, { minimize: true });
     } else {
       strippedBody += tokenBody;
     }
-
     wasLastAddedTokenNonPunctuator = isNonPunctuator;
   }
-
   return strippedBody;
 }
