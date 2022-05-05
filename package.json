@@ -42,7 +42,7 @@
     "prettier": "prettier --write --list-different .",
     "prettier:check": "prettier --check .",
     "check:spelling": "cspell --cache --no-progress '**/*'",
-    "check:integrations": "npm run build:npm && npm run build:deno && mocha --full-trace integrationTests/*-test.js",
+    "check:integrations": "npm run build:npm && npm run build:deno && mocha --full-trace integrationTests/*-test.ts",
     "start": "DOCUSAURUS_GENERATED_FILES_DIR_NAME=\"$(pwd)/.docusaurus\" docusaurus start ./website",
     "build:website": "DOCUSAURUS_GENERATED_FILES_DIR_NAME=\"$(pwd)/.docusaurus\" docusaurus build --out-dir=\"$(pwd)/websiteDist\" ./website",
     "build:npm": "node resources/build-npm.js",

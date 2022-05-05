@@ -1,18 +1,16 @@
-'use strict';
+import * as childProcess from 'node:child_process';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const childProcess = require('child_process');
+import { describe, it } from 'mocha';
 
-const { describe, it } = require('mocha');
-
-function exec(command, options = {}) {
+function exec(command: string, options = {}) {
   const output = childProcess.execSync(command, {
     encoding: 'utf-8',
     ...options,
   });
-  return output && output.trimEnd();
+  return output?.trimEnd();
 }
 
 describe('Integration Tests', () => {
@@ -27,7 +25,7 @@ describe('Integration Tests', () => {
     path.join(tmpDir, 'graphql.tgz'),
   );
 
-  function testOnNodeProject(projectName) {
+  function testOnNodeProject(projectName: string) {
     const projectPath = path.join(__dirname, projectName);
 
     const packageJSONPath = path.join(projectPath, 'package.json');

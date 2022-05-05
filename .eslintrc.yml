@@ -147,6 +147,9 @@ rules:
   simple-import-sort/imports:
     - error
     - groups:
+        # Node.js builtin modules
+        - ["^node:\\w"]
+
         # Packages.
         # Things that start with a letter (or digit or underscore), or `@` followed by a letter.
         - ["^@?\\w"]
@@ -668,8 +671,9 @@ overrides:
       node: true
     rules:
       node/no-sync: off
-      node/no-unpublished-require: [error, { allowModules: ['mocha'] }]
+      node/no-unpublished-import: [error, { allowModules: ['mocha'] }]
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
+      import/no-namespace: off
       import/no-nodejs-modules: off
   - files: 'integrationTests/*/**'
     parserOptions:
