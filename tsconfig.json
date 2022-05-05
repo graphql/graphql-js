@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "integrationTests/*"],
   "compilerOptions": {
     "lib": ["es2020"],
     "target": "es2020",
