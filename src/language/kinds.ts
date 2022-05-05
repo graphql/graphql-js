@@ -13,13 +13,15 @@ export enum Kind {
   FIELD = 'Field',
   ARGUMENT = 'Argument',
 
+  /** Nullability Modifiers */
+  LIST_NULLABILITY_MODIFIER = 'ListNullabilityModifier',
+  REQUIRED_NULLABILITY_MODIFIER = 'RequiredNullabilityModifier',
+  OPTIONAL_NULLABILITY_MODIFIER = 'OptionalNullabilityModifier',
+
   /** Fragments */
   FRAGMENT_SPREAD = 'FragmentSpread',
   INLINE_FRAGMENT = 'InlineFragment',
   FRAGMENT_DEFINITION = 'FragmentDefinition',
-  LIST_NULLABILITY = 'ListNullability',
-  REQUIRED_DESIGNATOR = 'RequiredDesignator',
-  OPTIONAL_DESIGNATOR = 'OptionalDesignator',
 
   /** Values */
   VARIABLE = 'Variable',

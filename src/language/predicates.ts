@@ -3,6 +3,7 @@ import type {
   ConstValueNode,
   DefinitionNode,
   ExecutableDefinitionNode,
+  NullabilityModifierNode,
   SelectionNode,
   TypeDefinitionNode,
   TypeExtensionNode,
@@ -35,6 +36,16 @@ export function isSelectionNode(node: ASTNode): node is SelectionNode {
     node.kind === Kind.FIELD ||
     node.kind === Kind.FRAGMENT_SPREAD ||
     node.kind === Kind.INLINE_FRAGMENT
+  );
+}
+
+export function isNullabilityModifierNode(
+  node: ASTNode,
+): node is NullabilityModifierNode {
+  return (
+    node.kind === Kind.LIST_NULLABILITY_MODIFIER ||
+    node.kind === Kind.REQUIRED_NULLABILITY_MODIFIER ||
+    node.kind === Kind.OPTIONAL_NULLABILITY_MODIFIER
   );
 }
 
