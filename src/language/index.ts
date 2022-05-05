@@ -25,12 +25,7 @@ export {
   getEnterLeaveForKind,
   BREAK,
 } from './visitor';
-export type {
-  ASTVisitor,
-  ASTVisitFn,
-  ASTVisitorKeyMap,
-  ASTReducer,
-} from './visitor';
+export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap } from './visitor';
 
 export { Location, Token, OperationTypeNode } from './ast';
 export type {
@@ -47,10 +42,10 @@ export type {
   SelectionSetNode,
   SelectionNode,
   FieldNode,
-  NullabilityDesignatorNode,
-  RequiredDesignatorNode,
-  OptionalDesignatorNode,
-  ListNullabilityNode,
+  NullabilityModifierNode,
+  RequiredNullabilityModifierNode,
+  OptionalNullabilityModifierNode,
+  ListNullabilityModifierNode,
   ArgumentNode,
   ConstArgumentNode,
   FragmentSpreadNode,
@@ -105,6 +100,7 @@ export {
   isDefinitionNode,
   isExecutableDefinitionNode,
   isSelectionNode,
+  isNullabilityModifierNode,
   isValueNode,
   isConstValueNode,
   isTypeNode,

@@ -59,9 +59,9 @@ const printDocASTReducer: ASTReducer<string> = {
       alias,
       name,
       arguments: args,
+      nullabilityModifier,
       directives,
       selectionSet,
-      required,
     }) {
       const prefix = join([wrap('', alias, ': '), name], '');
       let argsLine = prefix + wrap('(', join(args, ', '), ')');
@@ -70,33 +70,37 @@ const printDocASTReducer: ASTReducer<string> = {
         argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
       }
 
-      // Note: Client Controlled Nullability is experimental and may be changed
-      // or removed in the future.
-      const requiredArgsLine = join([argsLine, required], '');
-
-      return join([requiredArgsLine, join(directives, ' '), selectionSet], ' ');
+      return join([
+        argsLine,
+        // Note: Client Controlled Nullability is experimental and may be
+        // changed or removed in the future.
+        nullabilityModifier,
+        wrap(' ', join(directives, ' ')),
+        wrap(' ', selectionSet),
+      ]);
     },
   },
-
-  RequiredDesignator: {
-    leave({ element }) {
-      return (element ?? '') + '!';
-    },
-  },
-
-  OptionalDesignator: {
-    leave({ element }) {
-      return (element ?? '') + '?';
-    },
-  },
-
-  ListNullability: {
-    leave({ element }) {
-      return '[' + (element ?? '') + ']';
-    },
-  },
-
   Argument: { leave: ({ name, value }) => name + ': ' + value },
+
+  // Nullability Modifiers
+
+  ListNullabilityModifier: {
+    leave({ nullabilityModifier }) {
+      return join(['[', nullabilityModifier, ']']);
+    },
+  },
+
+  RequiredNullabilityModifier: {
+    leave({ nullabilityModifier }) {
+      return join([nullabilityModifier, '!']);
+    },
+  },
+
+  OptionalNullabilityModifier: {
+    leave({ nullabilityModifier }) {
+      return join([nullabilityModifier, '?']);
+    },
+  },
 
   // Fragments
 

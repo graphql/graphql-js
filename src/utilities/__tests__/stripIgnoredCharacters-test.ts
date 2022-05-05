@@ -37,6 +37,7 @@ const ignoredTokens = [
 
 const punctuatorTokens = [
   '!',
+  '?',
   '$',
   '(',
   ')',

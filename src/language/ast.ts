@@ -180,9 +180,9 @@ export type ASTNode =
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
-  | RequiredDesignatorNode
-  | OptionalDesignatorNode
-  | ListNullabilityNode;
+  | RequiredNullabilityModifierNode
+  | OptionalNullabilityModifierNode
+  | ListNullabilityModifierNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -217,14 +217,14 @@ export const QueryDocumentKeys: {
     'selectionSet',
     // Note: Client Controlled Nullability is experimental and may be changed
     // or removed in the future.
-    'required',
+    'nullabilityModifier',
   ],
+  Argument: ['name', 'value'],
   // Note: Client Controlled Nullability is experimental and may be changed
   // or removed in the future.
-  ListNullability: ['element'],
-  RequiredDesignator: ['element'],
-  OptionalDesignator: ['element'],
-  Argument: ['name', 'value'],
+  ListNullabilityModifier: ['nullabilityModifier'],
+  RequiredNullabilityModifier: ['nullabilityModifier'],
+  OptionalNullabilityModifier: ['nullabilityModifier'],
 
   FragmentSpread: ['name', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
@@ -377,33 +377,33 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   // Note: Client Controlled Nullability is experimental
   // and may be changed or removed in the future.
-  readonly required?: ListNullabilityNode | NullabilityDesignatorNode;
+  readonly nullabilityModifier?: NullabilityModifierNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
 }
 
-export interface RequiredDesignatorNode {
-  readonly kind: Kind.REQUIRED_DESIGNATOR;
+export type NullabilityModifierNode =
+  | RequiredNullabilityModifierNode
+  | OptionalNullabilityModifierNode
+  | ListNullabilityModifierNode;
+
+export interface ListNullabilityModifierNode {
+  readonly kind: Kind.LIST_NULLABILITY_MODIFIER;
   readonly loc?: Location;
-  readonly element?: ListNullabilityNode;
+  readonly nullabilityModifier?: NullabilityModifierNode;
 }
 
-export interface OptionalDesignatorNode {
-  readonly kind: Kind.OPTIONAL_DESIGNATOR;
+export interface RequiredNullabilityModifierNode {
+  readonly kind: Kind.REQUIRED_NULLABILITY_MODIFIER;
   readonly loc?: Location;
-  readonly element?: ListNullabilityNode;
+  readonly nullabilityModifier?: ListNullabilityModifierNode;
 }
 
-export interface ListNullabilityNode {
-  readonly kind: Kind.LIST_NULLABILITY;
+export interface OptionalNullabilityModifierNode {
+  readonly kind: Kind.OPTIONAL_NULLABILITY_MODIFIER;
   readonly loc?: Location;
-  readonly element?: NullabilityDesignatorNode | ListNullabilityNode;
+  readonly nullabilityModifier?: ListNullabilityModifierNode;
 }
-
-// modifiers can be ! or ?
-export type NullabilityDesignatorNode =
-  | RequiredDesignatorNode
-  | OptionalDesignatorNode;
 
 export interface ArgumentNode {
   readonly kind: Kind.ARGUMENT;

@@ -32,13 +32,13 @@ import type {
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
   IntValueNode,
-  ListNullabilityNode,
+  ListNullabilityModifierNode,
   ListTypeNode,
   ListValueNode,
   NamedTypeNode,
   NameNode,
   NonNullTypeNode,
-  NullabilityDesignatorNode,
+  NullabilityModifierNode,
   NullValueNode,
   ObjectFieldNode,
   ObjectTypeDefinitionNode,
@@ -46,8 +46,8 @@ import type {
   ObjectValueNode,
   OperationDefinitionNode,
   OperationTypeDefinitionNode,
-  OptionalDesignatorNode,
-  RequiredDesignatorNode,
+  OptionalNullabilityModifierNode,
+  RequiredNullabilityModifierNode,
   ScalarTypeDefinitionNode,
   ScalarTypeExtensionNode,
   SchemaDefinitionNode,
@@ -104,7 +104,7 @@ export interface ParseOptions {
    *
    * If enabled, the parser will understand and parse Client Controlled Nullability
    * Designators contained in Fields. They'll be represented in the
-   * `required` field of the FieldNode.
+   * `nullabilityModifier` field of the FieldNode.
    *
    * The syntax looks like the following:
    *
@@ -460,10 +460,7 @@ export class Parser {
       arguments: this.parseArguments(false),
       // Experimental support for Client Controlled Nullability changes
       // the grammar of Field:
-      //   - Field : Alias? Name Arguments? Nullability? Directives? SelectionSet?
-      required: this._options?.experimentalClientControlledNullability
-        ? this.parseRequiredStatus()
-        : undefined,
+      nullabilityModifier: this.parseNullabilityModifier(),
       directives: this.parseDirectives(false),
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
@@ -471,67 +468,39 @@ export class Parser {
     });
   }
 
-  /**
-   * Nullability :
-   * - !
-   * - ?
-   *
-   */
-  parseRequiredStatus():
-    | NullabilityDesignatorNode
-    | ListNullabilityNode
-    | undefined {
-    const list = this.parseListNullability();
-    const nullabilityStatus = this.parseNullabilityDesignatorNode(list);
+  // TODO: add grammar comment after it finalizes
+  parseNullabilityModifier(): NullabilityModifierNode | undefined {
+    // Note: Client Controlled Nullability is experimental and may be changed or
+    // removed in the future.
+    if (this._options?.experimentalClientControlledNullability !== true) {
+      return undefined;
+    }
 
-    return nullabilityStatus ?? list;
-  }
-
-  parseListNullability(): ListNullabilityNode | undefined {
     const start = this._lexer.token;
+    let nullabilityModifier;
 
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
-      const child = this.parseRequiredStatus();
+      const innerModifier = this.parseNullabilityModifier();
       this.expectToken(TokenKind.BRACKET_R);
-
-      return this.node<ListNullabilityNode>(start, {
-        kind: Kind.LIST_NULLABILITY,
-        element: child,
+      nullabilityModifier = this.node<ListNullabilityModifierNode>(start, {
+        kind: Kind.LIST_NULLABILITY_MODIFIER,
+        nullabilityModifier: innerModifier,
       });
     }
-  }
 
-  parseNullabilityDesignatorNode(
-    childElement?: ListNullabilityNode,
-  ): NullabilityDesignatorNode | undefined {
-    return (
-      this.parseRequiredDesignatorNode(childElement) ??
-      this.parseOptionalDesignatorNode(childElement)
-    );
-  }
-
-  parseRequiredDesignatorNode(
-    childElement?: ListNullabilityNode,
-  ): RequiredDesignatorNode | undefined {
-    const start = this._lexer.token;
     if (this.expectOptionalToken(TokenKind.BANG)) {
-      return this.node<RequiredDesignatorNode>(start, {
-        kind: Kind.REQUIRED_DESIGNATOR,
-        element: childElement,
+      nullabilityModifier = this.node<RequiredNullabilityModifierNode>(start, {
+        kind: Kind.REQUIRED_NULLABILITY_MODIFIER,
+        nullabilityModifier,
+      });
+    } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+      nullabilityModifier = this.node<OptionalNullabilityModifierNode>(start, {
+        kind: Kind.OPTIONAL_NULLABILITY_MODIFIER,
+        nullabilityModifier,
       });
     }
-  }
 
-  parseOptionalDesignatorNode(
-    childElement?: ListNullabilityNode,
-  ): OptionalDesignatorNode | undefined {
-    const start = this._lexer.token;
-    if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-      return this.node<OptionalDesignatorNode>(start, {
-        kind: Kind.OPTIONAL_DESIGNATOR,
-        element: childElement,
-      });
-    }
+    return nullabilityModifier;
   }
 
   /**

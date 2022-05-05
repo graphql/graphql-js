@@ -1,9 +1,6 @@
 import { GraphQLError } from '../error/GraphQLError';
 
-import type {
-  ListNullabilityNode,
-  NullabilityDesignatorNode,
-} from '../language/ast';
+import type { NullabilityModifierNode } from '../language/ast';
 import type { ASTReducer } from '../language/visitor';
 import { visit } from '../language/visitor';
 
@@ -22,16 +19,18 @@ import {
  * section of the spec. In particular, this function figures out the true return
  * type of a field by taking into account both the nullability listed in the
  * schema, and the nullability providing by an operation.
+ *
+ * @internal
  */
 export function applyRequiredStatus(
   type: GraphQLOutputType,
-  nullabilityNode?: ListNullabilityNode | NullabilityDesignatorNode,
+  nullabilityNode: NullabilityModifierNode | undefined,
 ): GraphQLOutputType {
   if (nullabilityNode === undefined) {
     return type;
   }
 
-  const typeStack: [GraphQLOutputType] = [type];
+  const typeStack: Array<GraphQLOutputType> = [type];
 
   while (isListType(getNullableType(typeStack[typeStack.length - 1]))) {
     const list = assertListType(
@@ -42,10 +41,10 @@ export function applyRequiredStatus(
   }
 
   const applyStatusReducer: ASTReducer<GraphQLOutputType> = {
-    RequiredDesignator: {
-      leave({ element }) {
-        if (element) {
-          return new GraphQLNonNull(getNullableType(element));
+    RequiredNullabilityModifier: {
+      leave({ nullabilityModifier }) {
+        if (nullabilityModifier) {
+          return new GraphQLNonNull(getNullableType(nullabilityModifier));
         }
 
         // We're working with the inner-most type
@@ -56,10 +55,10 @@ export function applyRequiredStatus(
         return new GraphQLNonNull(getNullableType(nextType!));
       },
     },
-    OptionalDesignator: {
-      leave({ element }) {
-        if (element) {
-          return getNullableType(element);
+    OptionalNullabilityModifier: {
+      leave({ nullabilityModifier }) {
+        if (nullabilityModifier) {
+          return getNullableType(nullabilityModifier);
         }
 
         // We're working with the inner-most type
@@ -70,8 +69,8 @@ export function applyRequiredStatus(
         return getNullableType(nextType!);
       },
     },
-    ListNullability: {
-      leave({ element }) {
+    ListNullabilityModifier: {
+      leave({ nullabilityModifier }) {
         let listType = typeStack.pop();
         // Skip to the inner-most list
         if (!isListType(getNullableType(listType))) {
@@ -85,10 +84,10 @@ export function applyRequiredStatus(
           );
         }
         const isRequired = isNonNullType(listType);
-        if (element) {
+        if (nullabilityModifier) {
           return isRequired
-            ? new GraphQLNonNull(new GraphQLList(element))
-            : new GraphQLList(element);
+            ? new GraphQLNonNull(new GraphQLList(nullabilityModifier))
+            : new GraphQLList(nullabilityModifier);
         }
 
         // We're working with the inner-most list
