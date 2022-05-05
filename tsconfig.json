@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "integrationTests/*"],
+  "include": ["src/**/*", "integrationTests/*", "benchmark/benchmark.ts"],
   "compilerOptions": {
     "lib": ["es2020"],
     "target": "es2020",
