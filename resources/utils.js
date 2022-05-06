@@ -9,10 +9,11 @@ const prettier = require('prettier');
 function exec(command, options) {
   const output = childProcess.execSync(command, {
     maxBuffer: 10 * 1024 * 1024, // 10MB
+    stdio: ['inherit', 'pipe', 'inherit'],
     encoding: 'utf-8',
     ...options,
   });
-  return output && output.trimEnd();
+  return output?.trimEnd();
 }
 
 function readdirRecursive(dirPath, opts = {}) {
