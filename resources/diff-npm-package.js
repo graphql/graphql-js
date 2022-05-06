@@ -3,7 +3,8 @@
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
-const cp = require('child_process');
+
+const { exec } = require('./utils.js');
 
 const LOCAL = 'local';
 const localRepoDir = path.join(__dirname, '..');
@@ -92,13 +93,4 @@ function prepareNPMPackage(revision) {
   exec('npm --quiet ci --ignore-scripts', { cwd: repoDir });
   exec('npm --quiet run build:npm', { cwd: repoDir });
   return path.join(repoDir, 'npmDist');
-}
-
-function exec(command, options = {}) {
-  const result = cp.execSync(command, {
-    encoding: 'utf-8',
-    stdio: ['inherit', 'pipe', 'inherit'],
-    ...options,
-  });
-  return result?.trimEnd();
 }
