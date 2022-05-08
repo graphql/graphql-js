@@ -176,7 +176,7 @@ rules:
   simple-import-sort/exports: off # TODO
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.14.x`
+  # ESLint builtin rules list based on `v8.15.x`
   ##############################################################################
 
   # Possible Errors
@@ -490,7 +490,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.21.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.22.x`
       ##########################################################################
 
       # Supported Rules
@@ -517,6 +517,7 @@ overrides:
       '@typescript-eslint/no-base-to-string': error
       '@typescript-eslint/no-confusing-non-null-assertion': error
       '@typescript-eslint/no-confusing-void-expression': off # TODO enable with ignoreArrowShorthand
+      '@typescript-eslint/no-duplicate-enum-values': error
       '@typescript-eslint/no-dynamic-delete': off
       '@typescript-eslint/no-empty-interface': error
       '@typescript-eslint/no-explicit-any': off # TODO error
