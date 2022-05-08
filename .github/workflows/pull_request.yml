@@ -28,7 +28,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Generate report
-        run: 'node resources/diff-npm-package.js BASE HEAD'
+        run: 'npm run diff:npm BASE HEAD'
 
       - name: Upload generated report
         uses: actions/upload-artifact@v2

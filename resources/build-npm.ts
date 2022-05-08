@@ -1,14 +1,12 @@
-'use strict';
+import * as assert from 'node:assert';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
-const fs = require('fs');
-const path = require('path');
-const assert = require('assert');
+import * as ts from 'typescript';
 
-const ts = require('typescript');
-
-const inlineInvariant = require('./inline-invariant.js');
-const addExtensionToImportPaths = require('./add-extension-to-import-paths.js');
-const { writeGeneratedFile, showDirStats } = require('./utils.js');
+import { addExtensionToImportPaths } from './add-extension-to-import-paths';
+import { inlineInvariant } from './inline-invariant';
+import { readPackageJSON, showDirStats, writeGeneratedFile } from './utils';
 
 if (require.main === module) {
   fs.rmSync('./npmDist', { recursive: true, force: true });
@@ -92,9 +90,7 @@ if (require.main === module) {
 }
 
 function buildPackageJSON() {
-  const packageJSON = JSON.parse(
-    fs.readFileSync(require.resolve('../package.json'), 'utf-8'),
-  );
+  const packageJSON = readPackageJSON();
 
   delete packageJSON.private;
   delete packageJSON.scripts;
@@ -113,7 +109,7 @@ function buildPackageJSON() {
 
   const { version } = packageJSON;
   const versionMatch = /^\d+\.\d+\.\d+-?(?<preReleaseTag>.*)?$/.exec(version);
-  if (!versionMatch) {
+  if (versionMatch?.groups == null) {
     throw new Error('Version does not match semver spec: ' + version);
   }
 

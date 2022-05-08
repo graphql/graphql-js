@@ -1,17 +1,11 @@
-'use strict';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
-const fs = require('fs');
-const path = require('path');
+import * as ts from 'typescript';
 
-const ts = require('typescript');
-
-const inlineInvariant = require('./inline-invariant.js');
-const addExtensionToImportPaths = require('./add-extension-to-import-paths.js');
-const {
-  writeGeneratedFile,
-  readdirRecursive,
-  showDirStats,
-} = require('./utils.js');
+import { addExtensionToImportPaths } from './add-extension-to-import-paths';
+import { inlineInvariant } from './inline-invariant';
+import { readdirRecursive, showDirStats, writeGeneratedFile } from './utils';
 
 if (require.main === module) {
   fs.rmSync('./denoDist', { recursive: true, force: true });

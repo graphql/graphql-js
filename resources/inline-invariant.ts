@@ -1,6 +1,4 @@
-'use strict';
-
-const ts = require('typescript');
+import * as ts from 'typescript';
 
 /**
  * Eliminates function call to `invariant` if the condition is met.
@@ -13,10 +11,16 @@ const ts = require('typescript');
  *
  *  (<cond>) || invariant(false ...)
  */
-module.exports = function inlineInvariant(context) {
+export function inlineInvariant(context: ts.TransformationContext) {
   const { factory } = context;
 
-  return function visit(node) {
+  return visitSourceFile;
+
+  function visitSourceFile(sourceFile: ts.SourceFile) {
+    return ts.visitNode(sourceFile, visitNode);
+  }
+
+  function visitNode(node: ts.Node): ts.Node {
     if (ts.isCallExpression(node)) {
       const { expression, arguments: args } = node;
 
@@ -37,6 +41,6 @@ module.exports = function inlineInvariant(context) {
         }
       }
     }
-    return ts.visitEachChild(node, visit, context);
-  };
-};
+    return ts.visitEachChild(node, visitNode, context);
+  }
+}
