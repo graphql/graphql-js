@@ -702,12 +702,17 @@ overrides:
       node: true
     rules:
       internal-rules/only-ascii: [error, { allowEmoji: true }]
-      node/no-unpublished-require: off
+      node/no-unpublished-import: off
       node/no-sync: off
+      import/no-namespace: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
-      import/no-commonjs: off
       no-console: off
+  - files: 'resources/eslint-internal-rules/**'
+    env:
+      node: true
+    rules:
+      import/no-commonjs: off
   - files: '**/*.jsx'
     parserOptions:
       sourceType: module
