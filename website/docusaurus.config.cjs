@@ -23,7 +23,7 @@ module.exports = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarPath: require.resolve('./sidebars.cjs'),
           editUrl:
             'https://github.com/graphql/graphql-js/edit/main/website/docs/',
         },

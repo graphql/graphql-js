@@ -4,6 +4,7 @@
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "private": true,
+  "type": "module",
   "typesVersions": {
     ">=4.4.0": {
       "*": [

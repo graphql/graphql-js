@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { graphqlSync } from '../graphql';
+import { graphqlSync } from '../graphql.js';
 
-import { StarWarsSchema } from './starWarsSchema';
+import { StarWarsSchema } from './starWarsSchema.js';
 
 function queryStarWars(source: string) {
   const result = graphqlSync({ schema: StarWarsSchema, source });

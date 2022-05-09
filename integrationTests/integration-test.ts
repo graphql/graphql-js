@@ -1,7 +1,7 @@
-import * as childProcess from 'node:child_process';
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 import { describe, it } from 'mocha';
 
@@ -28,7 +28,7 @@ describe('Integration Tests', () => {
   );
 
   function testOnNodeProject(projectName: string) {
-    const projectPath = path.join(__dirname, projectName);
+    const projectPath = new URL(projectName, import.meta.url).pathname;
 
     const packageJSONPath = path.join(projectPath, 'package.json');
     const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf-8'));

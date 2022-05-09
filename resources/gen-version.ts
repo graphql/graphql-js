@@ -1,4 +1,4 @@
-import { readPackageJSON, writeGeneratedFile } from './utils';
+import { readPackageJSON, writeGeneratedFile } from './utils.js';
 
 const { version } = readPackageJSON();
 const versionMatch = /^(\d+)\.(\d+)\.(\d+)-?(.*)?$/.exec(version);

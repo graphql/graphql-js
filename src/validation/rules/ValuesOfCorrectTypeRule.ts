@@ -1,13 +1,13 @@
-import { didYouMean } from '../../jsutils/didYouMean';
-import { inspect } from '../../jsutils/inspect';
-import { keyMap } from '../../jsutils/keyMap';
-import { suggestionList } from '../../jsutils/suggestionList';
+import { didYouMean } from '../../jsutils/didYouMean.js';
+import { inspect } from '../../jsutils/inspect.js';
+import { keyMap } from '../../jsutils/keyMap.js';
+import { suggestionList } from '../../jsutils/suggestionList.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ValueNode } from '../../language/ast';
-import { print } from '../../language/printer';
-import type { ASTVisitor } from '../../language/visitor';
+import type { ValueNode } from '../../language/ast.js';
+import { print } from '../../language/printer.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
 import {
   getNamedType,
@@ -17,9 +17,9 @@ import {
   isListType,
   isNonNullType,
   isRequiredInputField,
-} from '../../type/definition';
+} from '../../type/definition.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Value literals of correct type

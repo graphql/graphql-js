@@ -1,29 +1,33 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues';
-import { expectJSON } from '../../__testUtils__/expectJSON';
-import { expectPromise } from '../../__testUtils__/expectPromise';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
+import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
-import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
-import { isPromise } from '../../jsutils/isPromise';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue';
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
+import { isPromise } from '../../jsutils/isPromise.js';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import { GraphQLList, GraphQLObjectType } from '../../type/definition';
-import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLList, GraphQLObjectType } from '../../type/definition.js';
+import {
+  GraphQLBoolean,
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import type { ExecutionArgs, ExecutionResult } from '../execute';
+import type { ExecutionArgs, ExecutionResult } from '../execute.js';
 import {
   createSourceEventStream,
   experimentalSubscribeIncrementally,
   subscribe,
-} from '../execute';
+} from '../execute.js';
 
-import { SimplePubSub } from './simplePubSub';
+import { SimplePubSub } from './simplePubSub.js';
 
 interface Email {
   from: string;

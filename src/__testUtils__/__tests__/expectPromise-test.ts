@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../expectPromise';
+import { expectPromise } from '../expectPromise.js';
 
 describe('expectPromise', () => {
   it('throws if passed a value', () => {

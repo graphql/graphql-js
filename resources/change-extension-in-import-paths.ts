@@ -1,7 +1,7 @@
-import * as assert from 'node:assert';
-import * as util from 'node:util';
+import assert from 'node:assert';
+import util from 'node:util';
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 /**
  * Adds extension to all paths imported inside MJS files
@@ -9,19 +9,19 @@ import * as ts from 'typescript';
  * Transforms:
  *
  * ```
- * import { foo } from './bar';
- * export { foo } from './bar';
+ * import { foo } from './bar.js';
+ * export { foo } from './bar.js';
  * ```
  *
  * to:
  *
  * ```
- * import { foo } from './bar.mjs';
- * export { foo } from './bar.mjs';
+ * import { foo } from './bar.ts';
+ * export { foo } from './bar.ts';
  * ```
  *
  */
-export function addExtensionToImportPaths(config: { extension: string }) {
+export function changeExtensionInImportPaths(config: { extension: string }) {
   const { extension } = config;
   return (context: ts.TransformationContext) => {
     const { factory } = context;
@@ -35,13 +35,15 @@ export function addExtensionToImportPaths(config: { extension: string }) {
     function visitNode(node: ts.Node): ts.Node {
       const source: string | undefined = (node as any).moduleSpecifier?.text;
       if (source?.startsWith('./') || source?.startsWith('../')) {
+        const newSource = source.replace(/\.js$/, extension);
+
         if (ts.isImportDeclaration(node)) {
           return factory.updateImportDeclaration(
             node,
             node.decorators,
             node.modifiers,
             node.importClause,
-            ts.createStringLiteral(source + extension),
+            factory.createStringLiteral(newSource),
             node.assertClause,
           );
         }
@@ -52,7 +54,7 @@ export function addExtensionToImportPaths(config: { extension: string }) {
             node.modifiers,
             node.isTypeOnly,
             node.exportClause,
-            ts.createStringLiteral(source + extension),
+            factory.createStringLiteral(newSource),
             node.assertClause,
           );
         }

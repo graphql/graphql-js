@@ -1,10 +1,10 @@
-import { AccumulatorMap } from '../jsutils/AccumulatorMap';
-import { capitalize } from '../jsutils/capitalize';
-import { andList } from '../jsutils/formatList';
-import { inspect } from '../jsutils/inspect';
-import type { Maybe } from '../jsutils/Maybe';
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
+import { capitalize } from '../jsutils/capitalize.js';
+import { andList } from '../jsutils/formatList.js';
+import { inspect } from '../jsutils/inspect.js';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import { GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
   ASTNode,
@@ -16,10 +16,10 @@ import type {
   ObjectTypeExtensionNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
-} from '../language/ast';
-import { OperationTypeNode } from '../language/ast';
+} from '../language/ast.js';
+import { OperationTypeNode } from '../language/ast.js';
 
-import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
+import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.js';
 
 import type {
   GraphQLEnumType,
@@ -28,7 +28,7 @@ import type {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
-} from './definition';
+} from './definition.js';
 import {
   isEnumType,
   isInputObjectType,
@@ -41,11 +41,11 @@ import {
   isRequiredArgument,
   isRequiredInputField,
   isUnionType,
-} from './definition';
-import { GraphQLDeprecatedDirective, isDirective } from './directives';
-import { isIntrospectionType } from './introspection';
-import type { GraphQLSchema } from './schema';
-import { assertSchema } from './schema';
+} from './definition.js';
+import { GraphQLDeprecatedDirective, isDirective } from './directives.js';
+import { isIntrospectionType } from './introspection.js';
+import type { GraphQLSchema } from './schema.js';
+import { assertSchema } from './schema.js';
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's

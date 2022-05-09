@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { capitalize } from '../capitalize';
+import { capitalize } from '../capitalize.js';
 
 describe('capitalize', () => {
   it('Converts the first character of string to upper case and the remaining to lower case', () => {

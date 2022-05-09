@@ -1,26 +1,26 @@
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 
-import type { DocumentNode } from '../../language/ast';
-import { parse } from '../../language/parser';
+import type { DocumentNode } from '../../language/ast.js';
+import { parse } from '../../language/parser.js';
 
 import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../../type/definition';
-import { GraphQLID, GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+} from '../../type/definition.js';
+import { GraphQLID, GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
-} from '../execute';
-import { experimentalExecuteIncrementally } from '../execute';
+} from '../execute.js';
+import { experimentalExecuteIncrementally } from '../execute.js';
 
 const friendType = new GraphQLObjectType({
   fields: {

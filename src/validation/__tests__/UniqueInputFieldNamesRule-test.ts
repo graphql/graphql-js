@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { UniqueInputFieldNamesRule } from '../rules/UniqueInputFieldNamesRule';
+import { UniqueInputFieldNamesRule } from '../rules/UniqueInputFieldNamesRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(UniqueInputFieldNamesRule, queryStr);

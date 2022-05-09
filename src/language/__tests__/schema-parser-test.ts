@@ -1,11 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
-import { expectJSON, expectToThrowJSON } from '../../__testUtils__/expectJSON';
-import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
+import { dedent } from '../../__testUtils__/dedent.js';
+import {
+  expectJSON,
+  expectToThrowJSON,
+} from '../../__testUtils__/expectJSON.js';
+import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.js';
 
-import { parse } from '../parser';
+import { parse } from '../parser.js';
 
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));

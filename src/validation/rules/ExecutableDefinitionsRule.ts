@@ -1,10 +1,10 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import { Kind } from '../../language/kinds';
-import { isExecutableDefinitionNode } from '../../language/predicates';
-import type { ASTVisitor } from '../../language/visitor';
+import { Kind } from '../../language/kinds.js';
+import { isExecutableDefinitionNode } from '../../language/predicates.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * Executable definitions

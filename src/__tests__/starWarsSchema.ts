@@ -4,11 +4,11 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../type/definition';
-import { GraphQLString } from '../type/scalars';
-import { GraphQLSchema } from '../type/schema';
+} from '../type/definition.js';
+import { GraphQLString } from '../type/scalars.js';
+import { GraphQLSchema } from '../type/schema.js';
 
-import { getDroid, getFriends, getHero, getHuman } from './starWarsData';
+import { getDroid, getFriends, getHero, getHuman } from './starWarsData.js';
 
 /**
  * This is designed to be an end-to-end test, demonstrating

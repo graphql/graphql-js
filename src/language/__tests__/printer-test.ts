@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent, dedentString } from '../../__testUtils__/dedent';
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
+import { dedent, dedentString } from '../../__testUtils__/dedent.js';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 
-import { Kind } from '../kinds';
-import { parse } from '../parser';
-import { print } from '../printer';
+import { Kind } from '../kinds.js';
+import { parse } from '../parser.js';
+import { print } from '../printer.js';
 
 describe('Printer: Query document', () => {
   it('prints minimal ast', () => {

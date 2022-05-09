@@ -1,10 +1,10 @@
-import * as assert from 'node:assert';
-import * as childProcess from 'node:child_process';
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
+import assert from 'node:assert';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-import { git, localRepoPath, npm, writeGeneratedFile } from './utils';
+import { git, localRepoPath, npm, writeGeneratedFile } from './utils.js';
 
 const LOCAL = 'local';
 const tmpDir = path.join(os.tmpdir(), 'graphql-js-npm-diff');

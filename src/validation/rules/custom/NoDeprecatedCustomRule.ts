@@ -1,12 +1,12 @@
-import { invariant } from '../../../jsutils/invariant';
+import { invariant } from '../../../jsutils/invariant.js';
 
-import { GraphQLError } from '../../../error/GraphQLError';
+import { GraphQLError } from '../../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../../language/visitor';
+import type { ASTVisitor } from '../../../language/visitor.js';
 
-import { getNamedType, isInputObjectType } from '../../../type/definition';
+import { getNamedType, isInputObjectType } from '../../../type/definition.js';
 
-import type { ValidationContext } from '../../ValidationContext';
+import type { ValidationContext } from '../../ValidationContext.js';
 
 /**
  * No deprecated

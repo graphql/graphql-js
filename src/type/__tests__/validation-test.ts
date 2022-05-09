@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { dedent } from '../../__testUtils__/dedent.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { DirectiveLocation } from '../../language/directiveLocation';
-import { parse } from '../../language/parser';
+import { DirectiveLocation } from '../../language/directiveLocation.js';
+import { parse } from '../../language/parser.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
-import { extendSchema } from '../../utilities/extendSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { extendSchema } from '../../utilities/extendSchema.js';
 
 import type {
   GraphQLArgumentConfig,
@@ -19,7 +19,7 @@ import type {
   GraphQLInputType,
   GraphQLNamedType,
   GraphQLOutputType,
-} from '../definition';
+} from '../definition.js';
 import {
   assertEnumType,
   assertInputObjectType,
@@ -34,11 +34,11 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLUnionType,
-} from '../definition';
-import { assertDirective, GraphQLDirective } from '../directives';
-import { GraphQLString } from '../scalars';
-import { GraphQLSchema } from '../schema';
-import { assertValidSchema, validateSchema } from '../validate';
+} from '../definition.js';
+import { assertDirective, GraphQLDirective } from '../directives.js';
+import { GraphQLString } from '../scalars.js';
+import { GraphQLSchema } from '../schema.js';
+import { assertValidSchema, validateSchema } from '../validate.js';
 
 const SomeSchema = buildSchema(`
   scalar SomeScalar

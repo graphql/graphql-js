@@ -1,17 +1,17 @@
-import type { ObjMap } from '../../jsutils/ObjMap';
+import type { ObjMap } from '../../jsutils/ObjMap.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
   FragmentDefinitionNode,
   OperationDefinitionNode,
-} from '../../language/ast';
-import { Kind } from '../../language/kinds';
-import type { ASTVisitor } from '../../language/visitor';
+} from '../../language/ast.js';
+import { Kind } from '../../language/kinds.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { collectFields } from '../../execution/collectFields';
+import { collectFields } from '../../execution/collectFields.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Subscriptions must only include a non-introspection field.

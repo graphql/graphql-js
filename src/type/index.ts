@@ -1,4 +1,4 @@
-export type { Path as ResponsePath } from '../jsutils/Path';
+export type { Path as ResponsePath } from '../jsutils/Path.js';
 
 export {
   // Predicate
@@ -7,8 +7,8 @@ export {
   assertSchema,
   // GraphQL Schema definition
   GraphQLSchema,
-} from './schema';
-export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema';
+} from './schema.js';
+export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema.js';
 
 export {
   resolveObjMapThunk,
@@ -64,7 +64,7 @@ export {
   // Type Wrappers
   GraphQLList,
   GraphQLNonNull,
-} from './definition';
+} from './definition.js';
 
 export type {
   GraphQLType,
@@ -119,7 +119,7 @@ export type {
   GraphQLScalarSerializer,
   GraphQLScalarValueParser,
   GraphQLScalarLiteralParser,
-} from './definition';
+} from './definition.js';
 
 export {
   // Predicate
@@ -139,12 +139,12 @@ export {
   GraphQLSpecifiedByDirective,
   // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
-} from './directives';
+} from './directives.js';
 
 export type {
   GraphQLDirectiveConfig,
   GraphQLDirectiveExtensions,
-} from './directives';
+} from './directives.js';
 
 // Common built-in scalar instances.
 export {
@@ -160,7 +160,7 @@ export {
   // Int boundaries constants
   GRAPHQL_MAX_INT,
   GRAPHQL_MIN_INT,
-} from './scalars';
+} from './scalars.js';
 
 export {
   // Predicate
@@ -181,10 +181,10 @@ export {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
-} from './introspection';
+} from './introspection.js';
 
 // Validate GraphQL schema.
-export { validateSchema, assertValidSchema } from './validate';
+export { validateSchema, assertValidSchema } from './validate.js';
 
 // Upholds the spec rules about naming.
-export { assertName, assertEnumValueName } from './assertName';
+export { assertName, assertEnumValueName } from './assertName.js';

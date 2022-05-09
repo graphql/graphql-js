@@ -1,12 +1,13 @@
-import * as assert from 'node:assert';
-import * as childProcess from 'node:child_process';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import assert from 'node:assert';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
-import * as prettier from 'prettier';
+import prettier from 'prettier';
 
 export function localRepoPath(...paths: ReadonlyArray<string>): string {
-  return path.join(__dirname, '..', ...paths);
+  const repoDir = new URL('..', import.meta.url).pathname;
+  return path.join(repoDir, ...paths);
 }
 
 export function npm(
@@ -25,6 +26,7 @@ export function git(
 
 interface SpawnOptions {
   cwd?: string;
+  env?: typeof process.env;
 }
 
 function spawn(
@@ -62,6 +64,8 @@ export function readdirRecursive(
     );
     result.push(...list);
   }
+
+  result.sort((a, b) => a.localeCompare(b));
   return result.map((filepath) => './' + filepath);
 }
 

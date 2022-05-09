@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { SimplePubSub } from './simplePubSub';
+import { SimplePubSub } from './simplePubSub.js';
 
 describe('SimplePubSub', () => {
   it('subscribe async-iterator mock', async () => {

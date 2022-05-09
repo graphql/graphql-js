@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { ObjMapLike } from '../ObjMap';
-import { toObjMap } from '../toObjMap';
+import type { ObjMapLike } from '../ObjMap.js';
+import { toObjMap } from '../toObjMap.js';
 
 // Workaround to make both ESLint happy
 const __proto__ = '__proto__';

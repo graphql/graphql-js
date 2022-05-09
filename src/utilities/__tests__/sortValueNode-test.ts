@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parseValue } from '../../language/parser';
-import { print } from '../../language/printer';
+import { parseValue } from '../../language/parser.js';
+import { print } from '../../language/printer.js';
 
-import { sortValueNode } from '../sortValueNode';
+import { sortValueNode } from '../sortValueNode.js';
 
 describe('sortValueNode', () => {
   function expectSortedValue(source: string) {

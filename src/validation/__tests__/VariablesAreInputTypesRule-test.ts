@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { VariablesAreInputTypesRule } from '../rules/VariablesAreInputTypesRule';
+import { VariablesAreInputTypesRule } from '../rules/VariablesAreInputTypesRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(VariablesAreInputTypesRule, queryStr);

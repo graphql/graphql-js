@@ -1,30 +1,30 @@
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
-import { isAsyncIterable } from '../jsutils/isAsyncIterable';
-import { isIterableObject } from '../jsutils/isIterableObject';
-import { isObjectLike } from '../jsutils/isObjectLike';
-import { isPromise } from '../jsutils/isPromise';
-import type { Maybe } from '../jsutils/Maybe';
-import { memoize3 } from '../jsutils/memoize3';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { Path } from '../jsutils/Path';
-import { addPath, pathToArray } from '../jsutils/Path';
-import { promiseForObject } from '../jsutils/promiseForObject';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import { promiseReduce } from '../jsutils/promiseReduce';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
+import { isIterableObject } from '../jsutils/isIterableObject.js';
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { isPromise } from '../jsutils/isPromise.js';
+import type { Maybe } from '../jsutils/Maybe.js';
+import { memoize3 } from '../jsutils/memoize3.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { Path } from '../jsutils/Path.js';
+import { addPath, pathToArray } from '../jsutils/Path.js';
+import { promiseForObject } from '../jsutils/promiseForObject.js';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+import { promiseReduce } from '../jsutils/promiseReduce.js';
 
-import type { GraphQLFormattedError } from '../error/GraphQLError';
-import { GraphQLError } from '../error/GraphQLError';
-import { locatedError } from '../error/locatedError';
+import type { GraphQLFormattedError } from '../error/GraphQLError.js';
+import { GraphQLError } from '../error/GraphQLError.js';
+import { locatedError } from '../error/locatedError.js';
 
 import type {
   DocumentNode,
   FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
-} from '../language/ast';
-import { OperationTypeNode } from '../language/ast';
-import { Kind } from '../language/kinds';
+} from '../language/ast.js';
+import { OperationTypeNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
 import type {
   GraphQLAbstractType,
@@ -36,29 +36,29 @@ import type {
   GraphQLOutputType,
   GraphQLResolveInfo,
   GraphQLTypeResolver,
-} from '../type/definition';
+} from '../type/definition.js';
 import {
   isAbstractType,
   isLeafType,
   isListType,
   isNonNullType,
   isObjectType,
-} from '../type/definition';
-import { GraphQLStreamDirective } from '../type/directives';
-import type { GraphQLSchema } from '../type/schema';
-import { assertValidSchema } from '../type/validate';
+} from '../type/definition.js';
+import { GraphQLStreamDirective } from '../type/directives.js';
+import type { GraphQLSchema } from '../type/schema.js';
+import { assertValidSchema } from '../type/validate.js';
 
 import {
   collectFields,
   collectSubfields as _collectSubfields,
-} from './collectFields';
-import { flattenAsyncIterable } from './flattenAsyncIterable';
-import { mapAsyncIterable } from './mapAsyncIterable';
+} from './collectFields.js';
+import { flattenAsyncIterable } from './flattenAsyncIterable.js';
+import { mapAsyncIterable } from './mapAsyncIterable.js';
 import {
   getArgumentValues,
   getDirectiveValues,
   getVariableValues,
-} from './values';
+} from './values.js';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway

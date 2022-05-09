@@ -1,7 +1,7 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { ObjMap } from '../jsutils/ObjMap';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
 
-import type { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
   DocumentNode,
@@ -10,10 +10,10 @@ import type {
   OperationDefinitionNode,
   SelectionSetNode,
   VariableNode,
-} from '../language/ast';
-import { Kind } from '../language/kinds';
-import type { ASTVisitor } from '../language/visitor';
-import { visit } from '../language/visitor';
+} from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
+import type { ASTVisitor } from '../language/visitor.js';
+import { visit } from '../language/visitor.js';
 
 import type {
   GraphQLArgument,
@@ -22,11 +22,11 @@ import type {
   GraphQLField,
   GraphQLInputType,
   GraphQLOutputType,
-} from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
-import type { GraphQLSchema } from '../type/schema';
+} from '../type/definition.js';
+import type { GraphQLDirective } from '../type/directives.js';
+import type { GraphQLSchema } from '../type/schema.js';
 
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {

@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
 
-import { DirectiveLocation } from '../../language/directiveLocation';
+import { DirectiveLocation } from '../../language/directiveLocation.js';
 
-import { printSchema } from '../../utilities/printSchema';
+import { printSchema } from '../../utilities/printSchema.js';
 
-import type { GraphQLCompositeType } from '../definition';
+import type { GraphQLCompositeType } from '../definition.js';
 import {
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -15,15 +15,15 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
-} from '../definition';
-import { GraphQLDirective } from '../directives';
+} from '../definition.js';
+import { GraphQLDirective } from '../directives.js';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
-} from '../introspection';
-import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars';
-import { GraphQLSchema } from '../schema';
+} from '../introspection.js';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars.js';
+import { GraphQLSchema } from '../schema.js';
 
 describe('Type System: Schema', () => {
   it('Define sample schema', () => {

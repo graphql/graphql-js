@@ -1,5 +1,5 @@
-import { AccumulatorMap } from '../jsutils/AccumulatorMap';
-import type { ObjMap } from '../jsutils/ObjMap';
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
 
 import type {
   FieldNode,
@@ -7,21 +7,21 @@ import type {
   FragmentSpreadNode,
   InlineFragmentNode,
   SelectionSetNode,
-} from '../language/ast';
-import { Kind } from '../language/kinds';
+} from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
-import type { GraphQLObjectType } from '../type/definition';
-import { isAbstractType } from '../type/definition';
+import type { GraphQLObjectType } from '../type/definition.js';
+import { isAbstractType } from '../type/definition.js';
 import {
   GraphQLDeferDirective,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
-} from '../type/directives';
-import type { GraphQLSchema } from '../type/schema';
+} from '../type/directives.js';
+import type { GraphQLSchema } from '../type/schema.js';
 
-import { typeFromAST } from '../utilities/typeFromAST';
+import { typeFromAST } from '../utilities/typeFromAST.js';
 
-import { getDirectiveValues } from './values';
+import { getDirectiveValues } from './values.js';
 
 export interface PatchFields {
   label: string | undefined;

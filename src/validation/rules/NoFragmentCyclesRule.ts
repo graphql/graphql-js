@@ -1,14 +1,14 @@
-import type { ObjMap } from '../../jsutils/ObjMap';
+import type { ObjMap } from '../../jsutils/ObjMap.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
   FragmentDefinitionNode,
   FragmentSpreadNode,
-} from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+} from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * No fragment cycles

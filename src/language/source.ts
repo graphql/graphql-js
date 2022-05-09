@@ -1,5 +1,5 @@
-import { devAssert } from '../jsutils/devAssert';
-import { instanceOf } from '../jsutils/instanceOf';
+import { devAssert } from '../jsutils/devAssert.js';
+import { instanceOf } from '../jsutils/instanceOf.js';
 
 interface Location {
   line: number;

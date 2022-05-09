@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
-import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery.js';
 
-import { graphqlSync } from '../../graphql';
+import { graphqlSync } from '../../graphql.js';
 
-import type { GraphQLResolveInfo } from '../definition';
+import type { GraphQLResolveInfo } from '../definition.js';
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {

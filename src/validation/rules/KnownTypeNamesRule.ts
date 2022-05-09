@@ -1,23 +1,23 @@
-import { didYouMean } from '../../jsutils/didYouMean';
-import { suggestionList } from '../../jsutils/suggestionList';
+import { didYouMean } from '../../jsutils/didYouMean.js';
+import { suggestionList } from '../../jsutils/suggestionList.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTNode } from '../../language/ast';
+import type { ASTNode } from '../../language/ast.js';
 import {
   isTypeDefinitionNode,
   isTypeSystemDefinitionNode,
   isTypeSystemExtensionNode,
-} from '../../language/predicates';
-import type { ASTVisitor } from '../../language/visitor';
+} from '../../language/predicates.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { introspectionTypes } from '../../type/introspection';
-import { specifiedScalarTypes } from '../../type/scalars';
+import { introspectionTypes } from '../../type/introspection.js';
+import { specifiedScalarTypes } from '../../type/scalars.js';
 
 import type {
   SDLValidationContext,
   ValidationContext,
-} from '../ValidationContext';
+} from '../ValidationContext.js';
 
 /**
  * Known type names

@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { NoUnusedFragmentsRule } from '../rules/NoUnusedFragmentsRule';
+import { NoUnusedFragmentsRule } from '../rules/NoUnusedFragmentsRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(NoUnusedFragmentsRule, queryStr);

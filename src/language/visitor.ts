@@ -1,9 +1,9 @@
-import { devAssert } from '../jsutils/devAssert';
-import { inspect } from '../jsutils/inspect';
+import { devAssert } from '../jsutils/devAssert.js';
+import { inspect } from '../jsutils/inspect.js';
 
-import type { ASTNode } from './ast';
-import { isNode, QueryDocumentKeys } from './ast';
-import { Kind } from './kinds';
+import type { ASTNode } from './ast.js';
+import { isNode, QueryDocumentKeys } from './ast.js';
+import { Kind } from './kinds.js';
 
 /**
  * A visitor is provided to visit, it contains the collection of

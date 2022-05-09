@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent, dedentString } from '../../__testUtils__/dedent';
+import { dedent, dedentString } from '../../__testUtils__/dedent.js';
 
-import { DirectiveLocation } from '../../language/directiveLocation';
+import { DirectiveLocation } from '../../language/directiveLocation.js';
 
-import type { GraphQLFieldConfig } from '../../type/definition';
+import type { GraphQLFieldConfig } from '../../type/definition.js';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -15,13 +15,17 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
-} from '../../type/definition';
-import { GraphQLDirective } from '../../type/directives';
-import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+} from '../../type/definition.js';
+import { GraphQLDirective } from '../../type/directives.js';
+import {
+  GraphQLBoolean,
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../buildASTSchema';
-import { printIntrospectionSchema, printSchema } from '../printSchema';
+import { buildSchema } from '../buildASTSchema.js';
+import { printIntrospectionSchema, printSchema } from '../printSchema.js';
 
 function expectPrintedSchema(schema: GraphQLSchema) {
   const schemaText = printSchema(schema);

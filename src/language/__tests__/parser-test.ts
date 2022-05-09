@@ -1,16 +1,19 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
-import { expectJSON, expectToThrowJSON } from '../../__testUtils__/expectJSON';
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
+import { dedent } from '../../__testUtils__/dedent.js';
+import {
+  expectJSON,
+  expectToThrowJSON,
+} from '../../__testUtils__/expectJSON.js';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { Kind } from '../kinds';
-import { parse, parseConstValue, parseType, parseValue } from '../parser';
-import { Source } from '../source';
-import { TokenKind } from '../tokenKind';
+import { Kind } from '../kinds.js';
+import { parse, parseConstValue, parseType, parseValue } from '../parser.js';
+import { Source } from '../source.js';
+import { TokenKind } from '../tokenKind.js';
 
 function parseCCN(source: string) {
   return parse(source, { experimentalClientControlledNullability: true });

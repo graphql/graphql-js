@@ -1,14 +1,14 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
 
-import type { Maybe } from '../../jsutils/Maybe';
+import type { Maybe } from '../../jsutils/Maybe.js';
 
-import type { ASTNode } from '../../language/ast';
-import { Kind } from '../../language/kinds';
-import { parse } from '../../language/parser';
-import { print } from '../../language/printer';
+import type { ASTNode } from '../../language/ast.js';
+import { Kind } from '../../language/kinds.js';
+import { parse } from '../../language/parser.js';
+import { print } from '../../language/printer.js';
 
 import {
   assertEnumType,
@@ -17,29 +17,29 @@ import {
   assertObjectType,
   assertScalarType,
   assertUnionType,
-} from '../../type/definition';
+} from '../../type/definition.js';
 import {
   assertDirective,
   GraphQLDeprecatedDirective,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLSpecifiedByDirective,
-} from '../../type/directives';
-import { __EnumValue, __Schema } from '../../type/introspection';
+} from '../../type/directives.js';
+import { __EnumValue, __Schema } from '../../type/introspection.js';
 import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
-import { validateSchema } from '../../type/validate';
+} from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
+import { validateSchema } from '../../type/validate.js';
 
-import { graphqlSync } from '../../graphql';
+import { graphqlSync } from '../../graphql.js';
 
-import { buildASTSchema, buildSchema } from '../buildASTSchema';
-import { printSchema, printType } from '../printSchema';
+import { buildASTSchema, buildSchema } from '../buildASTSchema.js';
+import { printSchema, printType } from '../printSchema.js';
 
 /**
  * This function does a full cycle of going from a string with the contents of

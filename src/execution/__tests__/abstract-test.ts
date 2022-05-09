@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
 import {
   assertInterfaceType,
@@ -11,13 +11,13 @@ import {
   GraphQLList,
   GraphQLObjectType,
   GraphQLUnionType,
-} from '../../type/definition';
-import { GraphQLBoolean, GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+} from '../../type/definition.js';
+import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { execute, executeSync } from '../execute';
+import { execute, executeSync } from '../execute.js';
 
 async function executeQuery(args: {
   schema: GraphQLSchema;

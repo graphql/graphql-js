@@ -1,19 +1,19 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import { GraphQLObjectType } from '../../type/definition';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLObjectType } from '../../type/definition.js';
+import { GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { validate } from '../../validation/validate';
+import { validate } from '../../validation/validate.js';
 
-import { graphqlSync } from '../../graphql';
+import { graphqlSync } from '../../graphql.js';
 
-import { execute, executeSync } from '../execute';
+import { execute, executeSync } from '../execute.js';
 
 describe('Execute: synchronously when possible', () => {
   const schema = new GraphQLSchema({

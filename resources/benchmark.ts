@@ -1,11 +1,11 @@
-import * as assert from 'node:assert';
-import * as cp from 'node:child_process';
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
-import * as url from 'node:url';
+import assert from 'node:assert';
+import cp from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import url from 'node:url';
 
-import { git, localRepoPath, npm } from './utils';
+import { git, localRepoPath, npm } from './utils.js';
 
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';

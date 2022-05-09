@@ -1,4 +1,4 @@
-import type { ObjMap } from './ObjMap';
+import type { ObjMap } from './ObjMap.js';
 
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
