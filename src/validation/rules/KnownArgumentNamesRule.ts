@@ -1,17 +1,17 @@
-import { didYouMean } from '../../jsutils/didYouMean';
-import { suggestionList } from '../../jsutils/suggestionList';
+import { didYouMean } from '../../jsutils/didYouMean.js';
+import { suggestionList } from '../../jsutils/suggestionList.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import { Kind } from '../../language/kinds';
-import type { ASTVisitor } from '../../language/visitor';
+import { Kind } from '../../language/kinds.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { specifiedDirectives } from '../../type/directives';
+import { specifiedDirectives } from '../../type/directives.js';
 
 import type {
   SDLValidationContext,
   ValidationContext,
-} from '../ValidationContext';
+} from '../ValidationContext.js';
 
 /**
  * Known argument names

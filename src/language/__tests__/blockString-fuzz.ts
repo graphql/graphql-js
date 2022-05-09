@@ -1,13 +1,13 @@
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
-import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings';
-import { inspectStr } from '../../__testUtils__/inspectStr';
+import { dedent } from '../../__testUtils__/dedent.js';
+import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings.js';
+import { inspectStr } from '../../__testUtils__/inspectStr.js';
 
-import { isPrintableAsBlockString, printBlockString } from '../blockString';
-import { Lexer } from '../lexer';
-import { Source } from '../source';
+import { isPrintableAsBlockString, printBlockString } from '../blockString.js';
+import { Lexer } from '../lexer.js';
+import { Source } from '../source.js';
 
 function lexValue(str: string): string {
   const lexer = new Lexer(new Source(str));

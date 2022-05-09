@@ -1,18 +1,17 @@
-import * as assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
-import { addExtensionToImportPaths } from './add-extension-to-import-paths';
-import { inlineInvariant } from './inline-invariant';
+import { inlineInvariant } from './inline-invariant.js';
 import {
   localRepoPath,
   readdirRecursive,
   readPackageJSON,
   showDirStats,
   writeGeneratedFile,
-} from './utils';
+} from './utils.js';
 
 fs.rmSync('./npmDist', { recursive: true, force: true });
 fs.mkdirSync('./npmDist');
@@ -52,7 +51,7 @@ tsHost.writeFile = writeGeneratedFile;
 
 const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
 const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
-  after: [addExtensionToImportPaths({ extension: '.js' }), inlineInvariant],
+  after: [inlineInvariant],
 });
 assert(
   !tsResult.emitSkipped,
@@ -96,7 +95,6 @@ function buildPackageJSON() {
     '*': { '*': [notSupportedTSVersionFile] },
   };
 
-  packageJSON.type = 'module';
   packageJSON.exports = {};
 
   for (const filepath of readdirRecursive('./src', { ignoreDir: /^__.*__$/ })) {

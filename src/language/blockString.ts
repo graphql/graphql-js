@@ -1,4 +1,4 @@
-import { isWhiteSpace } from './characterClasses';
+import { isWhiteSpace } from './characterClasses.js';
 
 /**
  * Produces the value of a block string from its parsed raw value, similar to

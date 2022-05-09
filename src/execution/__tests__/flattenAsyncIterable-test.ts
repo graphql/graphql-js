@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { flattenAsyncIterable } from '../flattenAsyncIterable';
+import { flattenAsyncIterable } from '../flattenAsyncIterable.js';
 
 describe('flattenAsyncIterable', () => {
   it('flatten nested async generators', async () => {

@@ -1,11 +1,11 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import fs from 'node:fs';
+import path from 'node:path';
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
-import { addExtensionToImportPaths } from './add-extension-to-import-paths';
-import { inlineInvariant } from './inline-invariant';
-import { readdirRecursive, showDirStats, writeGeneratedFile } from './utils';
+import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
+import { inlineInvariant } from './inline-invariant.js';
+import { readdirRecursive, showDirStats, writeGeneratedFile } from './utils.js';
 
 fs.rmSync('./denoDist', { recursive: true, force: true });
 fs.mkdirSync('./denoDist');
@@ -22,7 +22,7 @@ for (const filepath of srcFiles) {
     );
 
     const transformed = ts.transform(sourceFile, [
-      addExtensionToImportPaths({ extension: '.ts' }),
+      changeExtensionInImportPaths({ extension: '.ts' }),
       inlineInvariant,
     ]);
     const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });

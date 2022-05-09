@@ -1,15 +1,15 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse, parseValue } from '../../language/parser';
-import { print } from '../../language/printer';
-import { visit } from '../../language/visitor';
+import { parse, parseValue } from '../../language/parser.js';
+import { print } from '../../language/printer.js';
+import { visit } from '../../language/visitor.js';
 
-import { getNamedType, isCompositeType } from '../../type/definition';
-import { GraphQLSchema } from '../../type/schema';
+import { getNamedType, isCompositeType } from '../../type/definition.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../buildASTSchema';
-import { TypeInfo, visitWithTypeInfo } from '../TypeInfo';
+import { buildSchema } from '../buildASTSchema.js';
+import { TypeInfo, visitWithTypeInfo } from '../TypeInfo.js';
 
 const testSchema = buildSchema(`
   interface Pet {

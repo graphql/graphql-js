@@ -1,14 +1,14 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { VariableDefinitionNode } from '../../language/ast';
-import { print } from '../../language/printer';
-import type { ASTVisitor } from '../../language/visitor';
+import type { VariableDefinitionNode } from '../../language/ast.js';
+import { print } from '../../language/printer.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { isInputType } from '../../type/definition';
+import { isInputType } from '../../type/definition.js';
 
-import { typeFromAST } from '../../utilities/typeFromAST';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Variables are input types

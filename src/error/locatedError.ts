@@ -1,9 +1,9 @@
-import type { Maybe } from '../jsutils/Maybe';
-import { toError } from '../jsutils/toError';
+import type { Maybe } from '../jsutils/Maybe.js';
+import { toError } from '../jsutils/toError.js';
 
-import type { ASTNode } from '../language/ast';
+import type { ASTNode } from '../language/ast.js';
 
-import { GraphQLError } from './GraphQLError';
+import { GraphQLError } from './GraphQLError.js';
 
 /**
  * Given an arbitrary value, presumably thrown while attempting to execute a

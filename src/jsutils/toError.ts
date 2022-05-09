@@ -1,4 +1,4 @@
-import { inspect } from './inspect';
+import { inspect } from './inspect.js';
 
 /**
  * Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.

@@ -1,4 +1,4 @@
-import { expectJSON } from './expectJSON';
+import { expectJSON } from './expectJSON.js';
 
 export function expectMatchingValues<T>(values: ReadonlyArray<T>): T {
   const [firstValue, ...remainingValues] = values;

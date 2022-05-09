@@ -1,4 +1,4 @@
-import type { ObjMap } from './ObjMap';
+import type { ObjMap } from './ObjMap.js';
 
 /**
  * This function transforms a JS object `ObjMap<Promise<T>>` into

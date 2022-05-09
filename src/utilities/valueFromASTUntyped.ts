@@ -1,9 +1,9 @@
-import { keyValMap } from '../jsutils/keyValMap';
-import type { Maybe } from '../jsutils/Maybe';
-import type { ObjMap } from '../jsutils/ObjMap';
+import { keyValMap } from '../jsutils/keyValMap.js';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
 
-import type { ValueNode } from '../language/ast';
-import { Kind } from '../language/kinds';
+import type { ValueNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.

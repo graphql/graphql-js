@@ -1,9 +1,9 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { FragmentDefinitionNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import type { FragmentDefinitionNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * No unused fragments

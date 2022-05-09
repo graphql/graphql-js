@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { VariablesInAllowedPositionRule } from '../rules/VariablesInAllowedPositionRule';
+import { VariablesInAllowedPositionRule } from '../rules/VariablesInAllowedPositionRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(VariablesInAllowedPositionRule, queryStr);

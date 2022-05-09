@@ -1,10 +1,10 @@
-import type { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import type { ASTNode, FieldNode } from '../language/ast';
-import { isNode } from '../language/ast';
-import { Kind } from '../language/kinds';
-import type { ASTVisitor } from '../language/visitor';
-import { getEnterLeaveForKind } from '../language/visitor';
+import type { ASTNode, FieldNode } from '../language/ast.js';
+import { isNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
+import type { ASTVisitor } from '../language/visitor.js';
+import { getEnterLeaveForKind } from '../language/visitor.js';
 
 import type {
   GraphQLArgument,
@@ -15,7 +15,7 @@ import type {
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLType,
-} from '../type/definition';
+} from '../type/definition.js';
 import {
   getNamedType,
   getNullableType,
@@ -26,11 +26,11 @@ import {
   isListType,
   isObjectType,
   isOutputType,
-} from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
-import type { GraphQLSchema } from '../type/schema';
+} from '../type/definition.js';
+import type { GraphQLDirective } from '../type/directives.js';
+import type { GraphQLSchema } from '../type/schema.js';
 
-import { typeFromAST } from './typeFromAST';
+import { typeFromAST } from './typeFromAST.js';
 
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track

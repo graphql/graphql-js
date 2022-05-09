@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 
-import type { ASTNode, SelectionSetNode } from '../ast';
-import { isNode } from '../ast';
-import { Kind } from '../kinds';
-import { parse } from '../parser';
-import type { ASTVisitor, ASTVisitorKeyMap } from '../visitor';
-import { BREAK, visit, visitInParallel } from '../visitor';
+import type { ASTNode, SelectionSetNode } from '../ast.js';
+import { isNode } from '../ast.js';
+import { Kind } from '../kinds.js';
+import { parse } from '../parser.js';
+import type { ASTVisitor, ASTVisitorKeyMap } from '../visitor.js';
+import { BREAK, visit, visitInParallel } from '../visitor.js';
 
 function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
   const [node, key, parent, path, ancestors] = args;

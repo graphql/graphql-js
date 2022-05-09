@@ -1,12 +1,12 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { Kind } from '../../language/kinds';
-import { parse } from '../../language/parser';
+import { Kind } from '../../language/kinds.js';
+import { parse } from '../../language/parser.js';
 
 import {
   GraphQLInterfaceType,
@@ -15,11 +15,15 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
-} from '../../type/definition';
-import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+} from '../../type/definition.js';
+import {
+  GraphQLBoolean,
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { execute, executeSync } from '../execute';
+import { execute, executeSync } from '../execute.js';
 
 describe('Execute: Handles basic execution tasks', () => {
   it('executes arbitrary code', async () => {

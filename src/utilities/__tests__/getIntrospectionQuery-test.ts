@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import { validate } from '../../validation/validate';
+import { validate } from '../../validation/validate.js';
 
-import { buildSchema } from '../buildASTSchema';
-import type { IntrospectionOptions } from '../getIntrospectionQuery';
-import { getIntrospectionQuery } from '../getIntrospectionQuery';
+import { buildSchema } from '../buildASTSchema.js';
+import type { IntrospectionOptions } from '../getIntrospectionQuery.js';
+import { getIntrospectionQuery } from '../getIntrospectionQuery.js';
 
 const dummySchema = buildSchema(`
   type Query {

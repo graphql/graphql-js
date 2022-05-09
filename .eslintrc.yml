@@ -38,7 +38,7 @@ rules:
   node/no-exports-assign: error
   node/no-extraneous-import: error
   node/no-extraneous-require: error
-  node/no-missing-import: [error, { allowModules: ['graphql'] }]
+  node/no-missing-import: off # Blocked by https://github.com/mysticatea/eslint-plugin-node/issues/248
   node/no-missing-require: error
   node/no-new-require: error
   node/no-path-concat: error
@@ -84,7 +84,7 @@ rules:
 
   # Static analysis
   # https://github.com/benmosher/eslint-plugin-import#static-analysis
-  import/no-unresolved: [error, { ignore: ['graphql'] }]
+  import/no-unresolved: off # blocked by https://github.com/import-js/eslint-plugin-import/issues/2170
   import/named: error
   import/default: error
   import/namespace: error
@@ -130,7 +130,6 @@ rules:
   import/extensions:
     - error
     - ignorePackages
-    - ts: never # TODO: remove once TS supports extensions
   import/order: [error, { newlines-between: always-and-inside-groups }]
   import/newline-after-import: error
   import/prefer-default-export: off
@@ -696,8 +695,11 @@ overrides:
       node: true
     rules:
       node/no-sync: off
+      node/no-extraneous-import: [error, { allowModules: ['graphql'] }]
       import/no-unresolved: off
+      import/no-namespace: off
       import/no-nodejs-modules: off
+      import/no-extraneous-dependencies: off
   - files: 'resources/**'
     env:
       node: true
@@ -735,7 +737,6 @@ overrides:
         version: detect
     rules:
       node/no-unpublished-require: off
-      node/no-missing-import: off
       import/no-default-export: off
       import/no-commonjs: off
       import/no-nodejs-modules: off

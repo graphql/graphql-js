@@ -1,4 +1,4 @@
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 /**
  * Eliminates function call to `invariant` if the condition is met.

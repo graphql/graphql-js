@@ -1,13 +1,13 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
 
-import { Kind } from '../../language/kinds';
-import { parse } from '../../language/parser';
-import { Source } from '../../language/source';
+import { Kind } from '../../language/kinds.js';
+import { parse } from '../../language/parser.js';
+import { Source } from '../../language/source.js';
 
-import { GraphQLError } from '../GraphQLError';
+import { GraphQLError } from '../GraphQLError.js';
 
 const source = new Source(dedent`
   {

@@ -1,13 +1,13 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from '../../language/visitor.js';
 
 import {
   GraphQLDeferDirective,
   GraphQLStreamDirective,
-} from '../../type/directives';
+} from '../../type/directives.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Stream directive on list field

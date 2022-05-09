@@ -1,7 +1,7 @@
-import { naturalCompare } from '../jsutils/naturalCompare';
+import { naturalCompare } from '../jsutils/naturalCompare.js';
 
-import type { ObjectFieldNode, ValueNode } from '../language/ast';
-import { Kind } from '../language/kinds';
+import type { ObjectFieldNode, ValueNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
 /**
  * Sort ValueNode.

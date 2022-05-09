@@ -1,17 +1,17 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
-import { expectToThrowJSON } from '../../__testUtils__/expectJSON';
+import { dedent } from '../../__testUtils__/dedent.js';
+import { expectToThrowJSON } from '../../__testUtils__/expectJSON.js';
 
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { Token } from '../ast';
-import { isPunctuatorTokenKind, Lexer } from '../lexer';
-import { Source } from '../source';
-import { TokenKind } from '../tokenKind';
+import type { Token } from '../ast.js';
+import { isPunctuatorTokenKind, Lexer } from '../lexer.js';
+import { Source } from '../source.js';
+import { TokenKind } from '../tokenKind.js';
 
 function lexOne(str: string) {
   const lexer = new Lexer(new Source(str));

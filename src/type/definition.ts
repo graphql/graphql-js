@@ -1,19 +1,19 @@
-import { devAssert } from '../jsutils/devAssert';
-import { didYouMean } from '../jsutils/didYouMean';
-import { identityFunc } from '../jsutils/identityFunc';
-import { inspect } from '../jsutils/inspect';
-import { instanceOf } from '../jsutils/instanceOf';
-import { keyMap } from '../jsutils/keyMap';
-import { keyValMap } from '../jsutils/keyValMap';
-import { mapValue } from '../jsutils/mapValue';
-import type { Maybe } from '../jsutils/Maybe';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { Path } from '../jsutils/Path';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
-import { suggestionList } from '../jsutils/suggestionList';
-import { toObjMap } from '../jsutils/toObjMap';
+import { devAssert } from '../jsutils/devAssert.js';
+import { didYouMean } from '../jsutils/didYouMean.js';
+import { identityFunc } from '../jsutils/identityFunc.js';
+import { inspect } from '../jsutils/inspect.js';
+import { instanceOf } from '../jsutils/instanceOf.js';
+import { keyMap } from '../jsutils/keyMap.js';
+import { keyValMap } from '../jsutils/keyValMap.js';
+import { mapValue } from '../jsutils/mapValue.js';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { Path } from '../jsutils/Path.js';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+import { suggestionList } from '../jsutils/suggestionList.js';
+import { toObjMap } from '../jsutils/toObjMap.js';
 
-import { GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
   EnumTypeDefinitionNode,
@@ -35,14 +35,14 @@ import type {
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
   ValueNode,
-} from '../language/ast';
-import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
+} from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
+import { print } from '../language/printer.js';
 
-import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
+import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.js';
 
-import { assertEnumValueName, assertName } from './assertName';
-import type { GraphQLSchema } from './schema';
+import { assertEnumValueName, assertName } from './assertName.js';
+import type { GraphQLSchema } from './schema.js';
 
 // Predicates & Assertions
 

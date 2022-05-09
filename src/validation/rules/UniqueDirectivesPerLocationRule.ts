@@ -1,18 +1,18 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import { Kind } from '../../language/kinds';
+import { Kind } from '../../language/kinds.js';
 import {
   isTypeDefinitionNode,
   isTypeExtensionNode,
-} from '../../language/predicates';
-import type { ASTVisitor } from '../../language/visitor';
+} from '../../language/predicates.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { specifiedDirectives } from '../../type/directives';
+import { specifiedDirectives } from '../../type/directives.js';
 
 import type {
   SDLValidationContext,
   ValidationContext,
-} from '../ValidationContext';
+} from '../ValidationContext.js';
 
 /**
  * Unique directive names per location

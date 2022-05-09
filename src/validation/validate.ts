@@ -1,18 +1,21 @@
-import type { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import { GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from '../error/GraphQLError.js';
 
-import type { DocumentNode } from '../language/ast';
-import { visit, visitInParallel } from '../language/visitor';
+import type { DocumentNode } from '../language/ast.js';
+import { visit, visitInParallel } from '../language/visitor.js';
 
-import type { GraphQLSchema } from '../type/schema';
-import { assertValidSchema } from '../type/validate';
+import type { GraphQLSchema } from '../type/schema.js';
+import { assertValidSchema } from '../type/validate.js';
 
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
 
-import { specifiedRules, specifiedSDLRules } from './specifiedRules';
-import type { SDLValidationRule, ValidationRule } from './ValidationContext';
-import { SDLValidationContext, ValidationContext } from './ValidationContext';
+import { specifiedRules, specifiedSDLRules } from './specifiedRules.js';
+import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
+import {
+  SDLValidationContext,
+  ValidationContext,
+} from './ValidationContext.js';
 
 /**
  * Implements the "Validation" section of the spec.

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectEqualPromisesOrValues } from '../expectEqualPromisesOrValues';
+import { expectEqualPromisesOrValues } from '../expectEqualPromisesOrValues.js';
 
 describe('expectMatchingValues', () => {
   it('throws when given unequal values', () => {

@@ -1,9 +1,9 @@
 import { assert } from 'chai';
 
-import { isPromise } from '../jsutils/isPromise';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import { isPromise } from '../jsutils/isPromise.js';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 
-import { expectMatchingValues } from './expectMatchingValues';
+import { expectMatchingValues } from './expectMatchingValues.js';
 
 export function expectEqualPromisesOrValues<T>(
   items: ReadonlyArray<PromiseOrValue<T>>,

@@ -11,8 +11,8 @@ import type {
   TypeSystemDefinitionNode,
   TypeSystemExtensionNode,
   ValueNode,
-} from './ast';
-import { Kind } from './kinds';
+} from './ast.js';
+import { Kind } from './kinds.js';
 
 export function isDefinitionNode(node: ASTNode): node is DefinitionNode {
   return (

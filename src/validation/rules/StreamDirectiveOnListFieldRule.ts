@@ -1,12 +1,12 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { DirectiveNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import type { DirectiveNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { isListType, isWrappingType } from '../../type/definition';
-import { GraphQLStreamDirective } from '../../type/directives';
+import { isListType, isWrappingType } from '../../type/definition.js';
+import { GraphQLStreamDirective } from '../../type/directives.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Stream directive on list field

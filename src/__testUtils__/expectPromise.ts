@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai';
 
-import { inspect } from '../jsutils/inspect';
-import { isPromise } from '../jsutils/isPromise';
+import { inspect } from '../jsutils/inspect.js';
+import { isPromise } from '../jsutils/isPromise.js';
 
 export function expectPromise(maybePromise: unknown) {
   assert(

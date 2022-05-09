@@ -1,22 +1,22 @@
-import { didYouMean } from '../jsutils/didYouMean';
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
-import { isIterableObject } from '../jsutils/isIterableObject';
-import { isObjectLike } from '../jsutils/isObjectLike';
-import type { Path } from '../jsutils/Path';
-import { addPath, pathToArray } from '../jsutils/Path';
-import { printPathArray } from '../jsutils/printPathArray';
-import { suggestionList } from '../jsutils/suggestionList';
+import { didYouMean } from '../jsutils/didYouMean.js';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { isIterableObject } from '../jsutils/isIterableObject.js';
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import type { Path } from '../jsutils/Path.js';
+import { addPath, pathToArray } from '../jsutils/Path.js';
+import { printPathArray } from '../jsutils/printPathArray.js';
+import { suggestionList } from '../jsutils/suggestionList.js';
 
-import { GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from '../error/GraphQLError.js';
 
-import type { GraphQLInputType } from '../type/definition';
+import type { GraphQLInputType } from '../type/definition.js';
 import {
   isInputObjectType,
   isLeafType,
   isListType,
   isNonNullType,
-} from '../type/definition';
+} from '../type/definition.js';
 
 type OnErrorCB = (
   path: ReadonlyArray<string | number>,

@@ -1,13 +1,13 @@
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { FieldNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import type { FieldNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { getNamedType, isLeafType } from '../../type/definition';
+import { getNamedType, isLeafType } from '../../type/definition.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Scalar leafs

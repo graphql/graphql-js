@@ -1,22 +1,22 @@
-import { inspect } from '../../jsutils/inspect';
-import { keyMap } from '../../jsutils/keyMap';
-import type { ObjMap } from '../../jsutils/ObjMap';
+import { inspect } from '../../jsutils/inspect.js';
+import { keyMap } from '../../jsutils/keyMap.js';
+import type { ObjMap } from '../../jsutils/ObjMap.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { InputValueDefinitionNode } from '../../language/ast';
-import { Kind } from '../../language/kinds';
-import { print } from '../../language/printer';
-import type { ASTVisitor } from '../../language/visitor';
+import type { InputValueDefinitionNode } from '../../language/ast.js';
+import { Kind } from '../../language/kinds.js';
+import { print } from '../../language/printer.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { GraphQLArgument } from '../../type/definition';
-import { isRequiredArgument, isType } from '../../type/definition';
-import { specifiedDirectives } from '../../type/directives';
+import type { GraphQLArgument } from '../../type/definition.js';
+import { isRequiredArgument, isType } from '../../type/definition.js';
+import { specifiedDirectives } from '../../type/directives.js';
 
 import type {
   SDLValidationContext,
   ValidationContext,
-} from '../ValidationContext';
+} from '../ValidationContext.js';
 
 /**
  * Provided required arguments

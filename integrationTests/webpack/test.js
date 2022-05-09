@@ -1,6 +1,5 @@
 import assert from 'assert';
 
-// eslint-disable-next-line import/no-unresolved, node/no-missing-import
 import mainCJS from './dist/main.cjs';
 
 assert.deepStrictEqual(mainCJS.result, {

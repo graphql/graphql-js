@@ -1,26 +1,26 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
-import { expectPromise } from '../../__testUtils__/expectPromise';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
-import type { DocumentNode } from '../../language/ast';
-import { parse } from '../../language/parser';
+import type { DocumentNode } from '../../language/ast.js';
+import { parse } from '../../language/parser.js';
 
 import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../../type/definition';
-import { GraphQLID, GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+} from '../../type/definition.js';
+import { GraphQLID, GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
-} from '../execute';
-import { execute, experimentalExecuteIncrementally } from '../execute';
+} from '../execute.js';
+import { execute, experimentalExecuteIncrementally } from '../execute.js';
 
 const friendType = new GraphQLObjectType({
   fields: {

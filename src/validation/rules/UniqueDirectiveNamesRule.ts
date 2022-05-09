@@ -1,8 +1,8 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext.js';
 
 /**
  * Unique directive names

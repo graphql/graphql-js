@@ -1,16 +1,16 @@
-import { invariant } from '../jsutils/invariant';
+import { invariant } from '../jsutils/invariant.js';
 
-import { parse } from '../language/parser';
+import { parse } from '../language/parser.js';
 
-import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema.js';
 
-import { executeSync } from '../execution/execute';
+import { executeSync } from '../execution/execute.js';
 
 import type {
   IntrospectionOptions,
   IntrospectionQuery,
-} from './getIntrospectionQuery';
-import { getIntrospectionQuery } from './getIntrospectionQuery';
+} from './getIntrospectionQuery.js';
+import { getIntrospectionQuery } from './getIntrospectionQuery.js';
 
 /**
  * Build an IntrospectionQuery from a GraphQLSchema

@@ -1,10 +1,10 @@
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
-import type { Maybe } from '../jsutils/Maybe';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import { isPrintableAsBlockString } from '../language/blockString';
-import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
+import { isPrintableAsBlockString } from '../language/blockString.js';
+import { Kind } from '../language/kinds.js';
+import { print } from '../language/printer.js';
 
 import type {
   GraphQLArgument,
@@ -16,7 +16,7 @@ import type {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
-} from '../type/definition';
+} from '../type/definition.js';
 import {
   isEnumType,
   isInputObjectType,
@@ -24,17 +24,17 @@ import {
   isObjectType,
   isScalarType,
   isUnionType,
-} from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
+} from '../type/definition.js';
+import type { GraphQLDirective } from '../type/directives.js';
 import {
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
-} from '../type/directives';
-import { isIntrospectionType } from '../type/introspection';
-import { isSpecifiedScalarType } from '../type/scalars';
-import type { GraphQLSchema } from '../type/schema';
+} from '../type/directives.js';
+import { isIntrospectionType } from '../type/introspection.js';
+import { isSpecifiedScalarType } from '../type/scalars.js';
+import type { GraphQLSchema } from '../type/schema.js';
 
-import { astFromValue } from './astFromValue';
+import { astFromValue } from './astFromValue.js';
 
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(

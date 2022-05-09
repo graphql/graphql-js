@@ -1,5 +1,5 @@
-import type { DefinitionNode, DocumentNode } from '../language/ast';
-import { Kind } from '../language/kinds';
+import type { DefinitionNode, DocumentNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
 /**
  * Provided a collection of ASTs, presumably each from different files,

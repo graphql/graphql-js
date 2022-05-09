@@ -1,4 +1,4 @@
-import { AccumulatorMap } from './AccumulatorMap';
+import { AccumulatorMap } from './AccumulatorMap.js';
 
 /**
  * Groups array items into a Map, given a function to produce grouping key.

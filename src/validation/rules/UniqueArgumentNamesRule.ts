@@ -1,11 +1,11 @@
-import { groupBy } from '../../jsutils/groupBy';
+import { groupBy } from '../../jsutils/groupBy.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ArgumentNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import type { ArgumentNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * Unique argument names

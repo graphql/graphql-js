@@ -11,7 +11,7 @@
       "dom" // Workaround for missing web-compatible globals in `@types/node`
     ],
     "target": "es2020",
-    "module": "commonjs",
+    "module": "es2022",
     "moduleResolution": "node",
     "noEmit": true,
     "isolatedModules": true,
@@ -32,6 +32,10 @@
     "noPropertyAccessFromIndexSignature": false, // TODO consider
     "noUncheckedIndexedAccess": false, // FIXME
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "ts-node": {
+    "esm": true
   }
 }

@@ -1,9 +1,9 @@
-import { AccumulatorMap } from '../jsutils/AccumulatorMap';
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
-import { keyMap } from '../jsutils/keyMap';
-import { mapValue } from '../jsutils/mapValue';
-import type { Maybe } from '../jsutils/Maybe';
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { keyMap } from '../jsutils/keyMap.js';
+import { mapValue } from '../jsutils/mapValue.js';
+import type { Maybe } from '../jsutils/Maybe.js';
 
 import type {
   DirectiveDefinitionNode,
@@ -28,8 +28,8 @@ import type {
   TypeNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
-} from '../language/ast';
-import { Kind } from '../language/kinds';
+} from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
 import type {
   GraphQLArgumentConfig,
@@ -40,7 +40,7 @@ import type {
   GraphQLInputFieldConfigMap,
   GraphQLNamedType,
   GraphQLType,
-} from '../type/definition';
+} from '../type/definition.js';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -58,26 +58,32 @@ import {
   isObjectType,
   isScalarType,
   isUnionType,
-} from '../type/definition';
+} from '../type/definition.js';
 import {
   GraphQLDeprecatedDirective,
   GraphQLDirective,
   GraphQLSpecifiedByDirective,
   isSpecifiedDirective,
-} from '../type/directives';
-import { introspectionTypes, isIntrospectionType } from '../type/introspection';
-import { isSpecifiedScalarType, specifiedScalarTypes } from '../type/scalars';
+} from '../type/directives.js';
+import {
+  introspectionTypes,
+  isIntrospectionType,
+} from '../type/introspection.js';
+import {
+  isSpecifiedScalarType,
+  specifiedScalarTypes,
+} from '../type/scalars.js';
 import type {
   GraphQLSchemaNormalizedConfig,
   GraphQLSchemaValidationOptions,
-} from '../type/schema';
-import { assertSchema, GraphQLSchema } from '../type/schema';
+} from '../type/schema.js';
+import { assertSchema, GraphQLSchema } from '../type/schema.js';
 
-import { assertValidSDLExtension } from '../validation/validate';
+import { assertValidSDLExtension } from '../validation/validate.js';
 
-import { getDirectiveValues } from '../execution/values';
+import { getDirectiveValues } from '../execution/values.js';
 
-import { valueFromAST } from './valueFromAST';
+import { valueFromAST } from './valueFromAST.js';
 
 interface Options extends GraphQLSchemaValidationOptions {
   /**
