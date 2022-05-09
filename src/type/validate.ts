@@ -134,7 +134,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     }
   }
 
-  if (queryType && mutationType && queryType.name === mutationType.name) {
+  if (queryType && mutationType && queryType === mutationType) {
     context.reportError(
       'All root types must be different, ' +
         queryType.name +
@@ -144,11 +144,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     );
   }
 
-  if (
-    queryType &&
-    subscriptionType &&
-    queryType.name === subscriptionType.name
-  ) {
+  if (queryType && subscriptionType && queryType === subscriptionType) {
     context.reportError(
       'All root types must be different, ' +
         queryType.name +
@@ -158,11 +154,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     );
   }
 
-  if (
-    mutationType &&
-    subscriptionType &&
-    mutationType.name === subscriptionType.name
-  ) {
+  if (mutationType && subscriptionType && mutationType === subscriptionType) {
     context.reportError(
       'All root types must be different, ' +
         mutationType.name +
