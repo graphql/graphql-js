@@ -8,8 +8,7 @@ import { inspect } from './inspect.js';
 export const instanceOf =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
-  // eslint-disable-next-line no-undef
-  process.env.NODE_ENV === 'production'
+  globalThis.process?.env.NODE_ENV === 'production'
     ? function instanceOf(value, constructor) {
         return value instanceof constructor;
       }
