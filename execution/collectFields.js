@@ -1,3 +1,4 @@
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import { Kind } from '../language/kinds.js';
 import { isAbstractType } from '../type/definition.js';
 import {
@@ -22,7 +23,7 @@ export function collectFields(
   runtimeType,
   selectionSet,
 ) {
-  const fields = new Map();
+  const fields = new AccumulatorMap();
   collectFieldsImpl(
     schema,
     fragments,
@@ -51,7 +52,7 @@ export function collectSubfields(
   returnType,
   fieldNodes,
 ) {
-  const subFieldNodes = new Map();
+  const subFieldNodes = new AccumulatorMap();
   const visitedFragmentNames = new Set();
   for (const node of fieldNodes) {
     if (node.selectionSet) {
@@ -83,13 +84,7 @@ function collectFieldsImpl(
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        const name = getFieldEntryKey(selection);
-        const fieldList = fields.get(name);
-        if (fieldList !== undefined) {
-          fieldList.push(selection);
-        } else {
-          fields.set(name, [selection]);
-        }
+        fields.add(getFieldEntryKey(selection), selection);
         break;
       }
       case Kind.INLINE_FRAGMENT: {
