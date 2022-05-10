@@ -1,4 +1,6 @@
+import { AccumulatorMap } from '../jsutils/AccumulatorMap';
 import { capitalize } from '../jsutils/capitalize';
+import { andList } from '../jsutils/formatList';
 import { inspect } from '../jsutils/inspect';
 import type { Maybe } from '../jsutils/Maybe';
 
@@ -118,50 +120,40 @@ function validateRootTypes(context: SchemaValidationContext): void {
     context.reportError('Query root type must be provided.', schema.astNode);
   }
 
+  const rootTypesMap = new AccumulatorMap<
+    GraphQLObjectType,
+    OperationTypeNode
+  >();
   for (const operationType of Object.values(OperationTypeNode)) {
     const rootType = schema.getRootType(operationType);
 
-    if (rootType != null && !isObjectType(rootType)) {
-      const operationTypeStr = capitalize(operationType);
-      const rootTypeStr = inspect(rootType);
-      context.reportError(
-        operationType === OperationTypeNode.QUERY
-          ? `${operationTypeStr} root type must be Object type, it cannot be ${rootTypeStr}.`
-          : `${operationTypeStr} root type must be Object type if provided, it cannot be ${rootTypeStr}.`,
-        getOperationTypeNode(schema, operationType) ??
-          (rootType as any).astNode,
-      );
+    if (rootType != null) {
+      if (!isObjectType(rootType)) {
+        const operationTypeStr = capitalize(operationType);
+        const rootTypeStr = inspect(rootType);
+        context.reportError(
+          operationType === OperationTypeNode.QUERY
+            ? `${operationTypeStr} root type must be Object type, it cannot be ${rootTypeStr}.`
+            : `${operationTypeStr} root type must be Object type if provided, it cannot be ${rootTypeStr}.`,
+          getOperationTypeNode(schema, operationType) ??
+            (rootType as any).astNode,
+        );
+      } else {
+        rootTypesMap.add(rootType, operationType);
+      }
     }
   }
 
-  if (queryType && mutationType && queryType === mutationType) {
-    context.reportError(
-      'All root types must be different, ' +
-        queryType.name +
-        ' is already used for "query" and cannot also be used for "mutation".',
-      getOperationTypeNode(schema, OperationTypeNode.MUTATION) ??
-        mutationType.astNode,
-    );
-  }
-
-  if (queryType && subscriptionType && queryType === subscriptionType) {
-    context.reportError(
-      'All root types must be different, ' +
-        queryType.name +
-        ' is already used for "query" and cannot also be used for "subscription".',
-      getOperationTypeNode(schema, OperationTypeNode.SUBSCRIPTION) ??
-        subscriptionType.astNode,
-    );
-  }
-
-  if (mutationType && subscriptionType && mutationType === subscriptionType) {
-    context.reportError(
-      'All root types must be different, ' +
-        mutationType.name +
-        ' is already used for "mutation" and cannot also be used for "subscription".',
-      getOperationTypeNode(schema, OperationTypeNode.SUBSCRIPTION) ??
-        subscriptionType.astNode,
-    );
+  for (const [rootType, operationTypes] of rootTypesMap.entries()) {
+    if (operationTypes.length > 1) {
+      const operationList = andList(operationTypes);
+      context.reportError(
+        `All root types must be different, "${rootType.name}" type is used as ${operationList} root types.`,
+        operationTypes.map((operationType) =>
+          getOperationTypeNode(schema, operationType),
+        ),
+      );
+    }
   }
 }
 
