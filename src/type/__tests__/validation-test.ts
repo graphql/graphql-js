@@ -341,6 +341,12 @@ describe('Type System: A Schema must have Object root types', () => {
       input SomeInputObject {
         test: String
       }
+
+      scalar SomeScalar
+
+      enum SomeEnum {
+        ENUM_VALUE
+      }
     `);
 
     schema = extendSchema(
@@ -356,7 +362,7 @@ describe('Type System: A Schema must have Object root types', () => {
       schema,
       parse(`
         extend schema {
-          mutation: SomeInputObject
+          mutation: SomeScalar
         }
       `),
     );
@@ -365,7 +371,7 @@ describe('Type System: A Schema must have Object root types', () => {
       schema,
       parse(`
         extend schema {
-          subscription: SomeInputObject
+          subscription: SomeEnum
         }
       `),
     );
@@ -378,12 +384,12 @@ describe('Type System: A Schema must have Object root types', () => {
       },
       {
         message:
-          'Mutation root type must be Object type if provided, it cannot be SomeInputObject.',
+          'Mutation root type must be Object type if provided, it cannot be SomeScalar.',
         locations: [{ line: 3, column: 21 }],
       },
       {
         message:
-          'Subscription root type must be Object type if provided, it cannot be SomeInputObject.',
+          'Subscription root type must be Object type if provided, it cannot be SomeEnum.',
         locations: [{ line: 3, column: 25 }],
       },
     ]);
