@@ -433,6 +433,86 @@ describe('Type System: A Schema must have Object root types', () => {
   });
 });
 
+describe('Type System: Root types must all be different if provided', () => {
+  it('accepts a Schema with different root types', () => {
+    const schema = buildSchema(`
+      type SomeObject1 {
+        field: String
+      }
+
+      type SomeObject2 {
+        field: String
+      }
+
+      type SomeObject3 {
+        field: String
+      }
+
+      schema {
+        query: SomeObject1
+        mutation: SomeObject2
+        subscription: SomeObject3
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects a Schema where the same type is used for multiple root types', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        field: String
+      }
+
+      type UniqueObject {
+        field: String
+      }
+
+      schema {
+        query: SomeObject
+        mutation: UniqueObject
+        subscription: SomeObject
+      }
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, "SomeObject" type is used as query and subscription root types.',
+        locations: [
+          { line: 11, column: 16 },
+          { line: 13, column: 23 },
+        ],
+      },
+    ]);
+  });
+
+  it('rejects a Schema where the same type is used for all root types', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        field: String
+      }
+
+      schema {
+        query: SomeObject
+        mutation: SomeObject
+        subscription: SomeObject
+      }
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, "SomeObject" type is used as query, mutation, and subscription root types.',
+        locations: [
+          { line: 7, column: 16 },
+          { line: 8, column: 19 },
+          { line: 9, column: 23 },
+        ],
+      },
+    ]);
+  });
+});
+
 describe('Type System: Objects must have fields', () => {
   it('accepts an Object type with fields object', () => {
     const schema = buildSchema(`
