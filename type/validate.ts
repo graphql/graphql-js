@@ -1,4 +1,6 @@
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
 import { capitalize } from '../jsutils/capitalize.ts';
+import { andList } from '../jsutils/formatList.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
@@ -102,17 +104,36 @@ function validateRootTypes(context: SchemaValidationContext): void {
   if (schema.getQueryType() == null) {
     context.reportError('Query root type must be provided.', schema.astNode);
   }
+  const rootTypesMap = new AccumulatorMap<
+    GraphQLObjectType,
+    OperationTypeNode
+  >();
   for (const operationType of Object.values(OperationTypeNode)) {
     const rootType = schema.getRootType(operationType);
-    if (rootType != null && !isObjectType(rootType)) {
-      const operationTypeStr = capitalize(operationType);
-      const rootTypeStr = inspect(rootType);
+    if (rootType != null) {
+      if (!isObjectType(rootType)) {
+        const operationTypeStr = capitalize(operationType);
+        const rootTypeStr = inspect(rootType);
+        context.reportError(
+          operationType === OperationTypeNode.QUERY
+            ? `${operationTypeStr} root type must be Object type, it cannot be ${rootTypeStr}.`
+            : `${operationTypeStr} root type must be Object type if provided, it cannot be ${rootTypeStr}.`,
+          getOperationTypeNode(schema, operationType) ??
+            (rootType as any).astNode,
+        );
+      } else {
+        rootTypesMap.add(rootType, operationType);
+      }
+    }
+  }
+  for (const [rootType, operationTypes] of rootTypesMap.entries()) {
+    if (operationTypes.length > 1) {
+      const operationList = andList(operationTypes);
       context.reportError(
-        operationType === OperationTypeNode.QUERY
-          ? `${operationTypeStr} root type must be Object type, it cannot be ${rootTypeStr}.`
-          : `${operationTypeStr} root type must be Object type if provided, it cannot be ${rootTypeStr}.`,
-        getOperationTypeNode(schema, operationType) ??
-          (rootType as any).astNode,
+        `All root types must be different, "${rootType.name}" type is used as ${operationList} root types.`,
+        operationTypes.map((operationType) =>
+          getOperationTypeNode(schema, operationType),
+        ),
       );
     }
   }
