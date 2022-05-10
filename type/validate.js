@@ -1,4 +1,6 @@
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import { capitalize } from '../jsutils/capitalize.js';
+import { andList } from '../jsutils/formatList.js';
 import { inspect } from '../jsutils/inspect.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import { OperationTypeNode } from '../language/ast.js';
@@ -72,16 +74,32 @@ function validateRootTypes(context) {
   if (schema.getQueryType() == null) {
     context.reportError('Query root type must be provided.', schema.astNode);
   }
+  const rootTypesMap = new AccumulatorMap();
   for (const operationType of Object.values(OperationTypeNode)) {
     const rootType = schema.getRootType(operationType);
-    if (rootType != null && !isObjectType(rootType)) {
-      const operationTypeStr = capitalize(operationType);
-      const rootTypeStr = inspect(rootType);
+    if (rootType != null) {
+      if (!isObjectType(rootType)) {
+        const operationTypeStr = capitalize(operationType);
+        const rootTypeStr = inspect(rootType);
+        context.reportError(
+          operationType === OperationTypeNode.QUERY
+            ? `${operationTypeStr} root type must be Object type, it cannot be ${rootTypeStr}.`
+            : `${operationTypeStr} root type must be Object type if provided, it cannot be ${rootTypeStr}.`,
+          getOperationTypeNode(schema, operationType) ?? rootType.astNode,
+        );
+      } else {
+        rootTypesMap.add(rootType, operationType);
+      }
+    }
+  }
+  for (const [rootType, operationTypes] of rootTypesMap.entries()) {
+    if (operationTypes.length > 1) {
+      const operationList = andList(operationTypes);
       context.reportError(
-        operationType === OperationTypeNode.QUERY
-          ? `${operationTypeStr} root type must be Object type, it cannot be ${rootTypeStr}.`
-          : `${operationTypeStr} root type must be Object type if provided, it cannot be ${rootTypeStr}.`,
-        getOperationTypeNode(schema, operationType) ?? rootType.astNode,
+        `All root types must be different, "${rootType.name}" type is used as ${operationList} root types.`,
+        operationTypes.map((operationType) =>
+          getOperationTypeNode(schema, operationType),
+        ),
       );
     }
   }
