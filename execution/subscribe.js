@@ -1,4 +1,3 @@
-import { devAssert } from '../jsutils/devAssert.js';
 import { inspect } from '../jsutils/inspect.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
@@ -36,12 +35,6 @@ import { getArgumentValues } from './values.js';
  * Accepts either an object with named arguments, or individual arguments.
  */
 export async function subscribe(args) {
-  // Temporary for v15 to v16 migration. Remove in v17
-  arguments.length < 2 ||
-    devAssert(
-      false,
-      'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
-    );
   const {
     schema,
     document,

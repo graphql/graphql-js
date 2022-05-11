@@ -1,4 +1,3 @@
-import { devAssert } from './jsutils/devAssert.js';
 import { isPromise } from './jsutils/isPromise.js';
 import { parse } from './language/parser.js';
 import { validateSchema } from './type/validate.js';
@@ -23,12 +22,6 @@ export function graphqlSync(args) {
   return result;
 }
 function graphqlImpl(args) {
-  // Temporary for v15 to v16 migration. Remove in v17
-  arguments.length < 2 ||
-    devAssert(
-      false,
-      'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
-    );
   const {
     schema,
     source,
