@@ -35,6 +35,6 @@ export function introspectionFromSchema(
 
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
   const result = executeSync({ schema, document });
-  invariant(!result.errors && result.data);
+  invariant(result.errors == null && result.data != null);
   return result.data as any;
 }
