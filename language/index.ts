@@ -3,9 +3,7 @@ export { getLocation } from './location.ts';
 export type { SourceLocation } from './location.ts';
 export { printLocation, printSourceLocation } from './printLocation.ts';
 export { Kind } from './kinds.ts';
-export type { KindEnum } from './kinds.ts';
 export { TokenKind } from './tokenKind.ts';
-export type { TokenKindEnum } from './tokenKind.ts';
 export { Lexer } from './lexer.ts';
 export { parse, parseValue, parseConstValue, parseType } from './parser.ts';
 export type { ParseOptions } from './parser.ts';
@@ -95,4 +93,3 @@ export {
   isTypeExtensionNode,
 } from './predicates.ts';
 export { DirectiveLocation } from './directiveLocation.ts';
-export type { DirectiveLocationEnum } from './directiveLocation.ts';

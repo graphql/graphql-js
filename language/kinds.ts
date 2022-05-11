@@ -57,9 +57,3 @@ export enum Kind {
   ENUM_TYPE_EXTENSION = 'EnumTypeExtension',
   INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension',
 }
-/**
- * The enum type representing the possible kind values of AST nodes.
- *
- * @deprecated Please use `Kind`. Will be remove in v17.
- */
-export type KindEnum = typeof Kind;
