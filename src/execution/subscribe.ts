@@ -1,4 +1,3 @@
-import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import type { Maybe } from '../jsutils/Maybe';
@@ -52,12 +51,6 @@ import { getArgumentValues } from './values';
 export async function subscribe(
   args: ExecutionArgs,
 ): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
-  // Temporary for v15 to v16 migration. Remove in v17
-  devAssert(
-    arguments.length < 2,
-    'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
-  );
-
   const {
     schema,
     document,
