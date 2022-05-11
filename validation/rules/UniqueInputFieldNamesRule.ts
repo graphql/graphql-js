@@ -25,7 +25,7 @@ export function UniqueInputFieldNamesRule(
       },
       leave() {
         const prevKnownNames = knownNameStack.pop();
-        prevKnownNames || invariant(false);
+        prevKnownNames != null || invariant(false);
         knownNames = prevKnownNames;
       },
     },

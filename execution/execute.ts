@@ -239,7 +239,7 @@ export function assertValidExecutionArguments(
     readonly [variable: string]: unknown;
   }>,
 ): void {
-  document || devAssert(false, 'Must provide document.');
+  document != null || devAssert(false, 'Must provide document.');
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
   // Variables, if provided, must be an object.
