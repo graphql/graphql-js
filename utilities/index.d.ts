@@ -24,7 +24,6 @@ export type {
   IntrospectionDirective,
 } from './getIntrospectionQuery';
 export { getOperationAST } from './getOperationAST';
-export { getOperationRootType } from './getOperationRootType';
 export { introspectionFromSchema } from './introspectionFromSchema';
 export { buildClientSchema } from './buildClientSchema';
 export { buildASTSchema, buildSchema } from './buildASTSchema';

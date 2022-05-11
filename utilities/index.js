@@ -2,8 +2,6 @@
 export { getIntrospectionQuery } from './getIntrospectionQuery.js';
 // Gets the target Operation from a Document.
 export { getOperationAST } from './getOperationAST.js';
-// Gets the Type for the target Operation AST.
-export { getOperationRootType } from './getOperationRootType.js';
 // Convert a GraphQLSchema to an IntrospectionQuery.
 export { introspectionFromSchema } from './introspectionFromSchema.js';
 // Build a GraphQLSchema from an introspection result.

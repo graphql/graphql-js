@@ -352,7 +352,6 @@ export type {
 export {
   getIntrospectionQuery,
   getOperationAST,
-  getOperationRootType,
   introspectionFromSchema,
   buildClientSchema,
   buildASTSchema,
