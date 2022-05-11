@@ -28,20 +28,14 @@ import {
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-export function validate(
-  schema,
-  documentAST,
-  rules = specifiedRules,
-  options,
-  /** @deprecated will be removed in 17.0.0 */
-  typeInfo = new TypeInfo(schema),
-) {
+export function validate(schema, documentAST, rules = specifiedRules, options) {
   const maxErrors = options?.maxErrors ?? 100;
   documentAST != null || devAssert(false, 'Must provide document.');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
   const abortObj = Object.freeze({});
   const errors = [];
+  const typeInfo = new TypeInfo(schema);
   const context = new ValidationContext(
     schema,
     documentAST,
