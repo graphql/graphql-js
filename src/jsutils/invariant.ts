@@ -1,9 +1,8 @@
 export function invariant(
-  condition: unknown,
+  condition: boolean,
   message?: string,
 ): asserts condition {
-  const booleanCondition = Boolean(condition);
-  if (!booleanCondition) {
+  if (!condition) {
     throw new Error(
       message != null ? message : 'Unexpected invariant triggered.',
     );

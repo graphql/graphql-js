@@ -253,7 +253,7 @@ export function assertValidExecutionArguments(
   document: DocumentNode,
   rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
 ): void {
-  devAssert(document, 'Must provide document.');
+  devAssert(document != null, 'Must provide document.');
 
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);

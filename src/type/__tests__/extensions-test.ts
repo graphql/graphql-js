@@ -72,7 +72,7 @@ describe('Type System: Extensions', () => {
       expect(config.extensions).to.deep.equal({});
       const someFieldConfig = config.fields.someField;
       expect(someFieldConfig.extensions).to.deep.equal({});
-      invariant(someFieldConfig.args);
+      invariant(someFieldConfig.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
       expect(someArgConfig.extensions).to.deep.equal({});
     });
@@ -109,7 +109,7 @@ describe('Type System: Extensions', () => {
       expectObjMap(config.extensions).to.deep.equal(objectExtensions);
       const someFieldConfig = config.fields.someField;
       expectObjMap(someFieldConfig.extensions).to.deep.equal(fieldExtensions);
-      invariant(someFieldConfig.args);
+      invariant(someFieldConfig.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
       expectObjMap(someArgConfig.extensions).to.deep.equal(argExtensions);
     });
@@ -141,7 +141,7 @@ describe('Type System: Extensions', () => {
       expect(config.extensions).to.deep.equal({});
       const someFieldConfig = config.fields.someField;
       expect(someFieldConfig.extensions).to.deep.equal({});
-      invariant(someFieldConfig.args);
+      invariant(someFieldConfig.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
       expect(someArgConfig.extensions).to.deep.equal({});
     });
@@ -180,7 +180,7 @@ describe('Type System: Extensions', () => {
       expectObjMap(config.extensions).to.deep.equal(interfaceExtensions);
       const someFieldConfig = config.fields.someField;
       expectObjMap(someFieldConfig.extensions).to.deep.equal(fieldExtensions);
-      invariant(someFieldConfig.args);
+      invariant(someFieldConfig.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
       expectObjMap(someArgConfig.extensions).to.deep.equal(argExtensions);
     });
