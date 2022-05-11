@@ -76,22 +76,6 @@ export declare class GraphQLError extends Error {
    */
   readonly extensions: GraphQLErrorExtensions;
   constructor(message: string, options?: GraphQLErrorOptions);
-  /**
-   * @deprecated Please use the `GraphQLErrorOptions` constructor overload instead.
-   */
-  constructor(
-    message: string,
-    nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
-    source?: Maybe<Source>,
-    positions?: Maybe<ReadonlyArray<number>>,
-    path?: Maybe<ReadonlyArray<string | number>>,
-    originalError?: Maybe<
-      Error & {
-        readonly extensions?: unknown;
-      }
-    >,
-    extensions?: Maybe<GraphQLErrorExtensions>,
-  );
   get [Symbol.toStringTag](): string;
   toString(): string;
   toJSON(): GraphQLFormattedError;
