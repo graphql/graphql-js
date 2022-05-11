@@ -29,34 +29,6 @@ export interface GraphQLErrorOptions {
   extensions?: Maybe<GraphQLErrorExtensions>;
 }
 
-type BackwardsCompatibleArgs =
-  | [options?: GraphQLErrorOptions]
-  | [
-      nodes?: GraphQLErrorOptions['nodes'],
-      source?: GraphQLErrorOptions['source'],
-      positions?: GraphQLErrorOptions['positions'],
-      path?: GraphQLErrorOptions['path'],
-      originalError?: GraphQLErrorOptions['originalError'],
-      extensions?: GraphQLErrorOptions['extensions'],
-    ];
-
-function toNormalizedOptions(
-  args: BackwardsCompatibleArgs,
-): GraphQLErrorOptions {
-  const firstArg = args[0];
-  if (firstArg == null || 'kind' in firstArg || 'length' in firstArg) {
-    return {
-      nodes: firstArg,
-      source: args[1],
-      positions: args[2],
-      path: args[3],
-      originalError: args[4],
-      extensions: args[5],
-    };
-  }
-  return firstArg;
-}
-
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
@@ -113,22 +85,10 @@ export class GraphQLError extends Error {
    */
   readonly extensions: GraphQLErrorExtensions;
 
-  constructor(message: string, options?: GraphQLErrorOptions);
-  /**
-   * @deprecated Please use the `GraphQLErrorOptions` constructor overload instead.
-   */
-  constructor(
-    message: string,
-    nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
-    source?: Maybe<Source>,
-    positions?: Maybe<ReadonlyArray<number>>,
-    path?: Maybe<ReadonlyArray<string | number>>,
-    originalError?: Maybe<Error & { readonly extensions?: unknown }>,
-    extensions?: Maybe<GraphQLErrorExtensions>,
-  );
-  constructor(message: string, ...rawArgs: BackwardsCompatibleArgs) {
+  constructor(message: string, options: GraphQLErrorOptions = {}) {
     const { nodes, source, positions, path, originalError, extensions } =
-      toNormalizedOptions(rawArgs);
+      options;
+
     super(message);
 
     this.name = 'GraphQLError';
