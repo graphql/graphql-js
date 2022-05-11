@@ -49,7 +49,6 @@ export {
   isTypeSubTypeOf,
   doTypesOverlap,
 } from './typeComparators';
-export { assertValidName, isValidNameError } from './assertValidName';
 export {
   BreakingChangeType,
   DangerousChangeType,

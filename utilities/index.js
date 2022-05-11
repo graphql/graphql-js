@@ -42,8 +42,6 @@ export {
   isTypeSubTypeOf,
   doTypesOverlap,
 } from './typeComparators.js';
-// Asserts that a string is a valid GraphQL name
-export { assertValidName, isValidNameError } from './assertValidName.js';
 // Compares two GraphQLSchemas and detects breaking changes.
 export {
   BreakingChangeType,

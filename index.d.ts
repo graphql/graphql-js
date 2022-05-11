@@ -374,8 +374,6 @@ export {
   isEqualType,
   isTypeSubTypeOf,
   doTypesOverlap,
-  assertValidName,
-  isValidNameError,
   BreakingChangeType,
   DangerousChangeType,
   findBreakingChanges,
