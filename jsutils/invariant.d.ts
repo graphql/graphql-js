@@ -1,4 +1,4 @@
 export declare function invariant(
-  condition: unknown,
+  condition: boolean,
   message?: string,
 ): asserts condition;

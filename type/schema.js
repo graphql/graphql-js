@@ -162,7 +162,7 @@ export class GraphQLSchema {
         continue;
       }
       const typeName = namedType.name;
-      typeName ||
+      typeName != null ||
         devAssert(
           false,
           'One of the provided types for building the Schema is missing a name.',

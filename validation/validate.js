@@ -37,7 +37,7 @@ export function validate(
   typeInfo = new TypeInfo(schema),
 ) {
   const maxErrors = options?.maxErrors ?? 100;
-  documentAST || devAssert(false, 'Must provide document.');
+  documentAST != null || devAssert(false, 'Must provide document.');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
   const abortObj = Object.freeze({});

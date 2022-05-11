@@ -19,7 +19,7 @@ export function UniqueInputFieldNamesRule(context) {
       },
       leave() {
         const prevKnownNames = knownNameStack.pop();
-        prevKnownNames || invariant(false);
+        prevKnownNames != null || invariant(false);
         knownNames = prevKnownNames;
       },
     },
