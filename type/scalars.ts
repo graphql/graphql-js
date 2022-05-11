@@ -103,7 +103,7 @@ export const GraphQLFloat = new GraphQLScalarType<number>({
     if (valueNode.kind !== Kind.FLOAT && valueNode.kind !== Kind.INT) {
       throw new GraphQLError(
         `Float cannot represent non numeric value: ${print(valueNode)}`,
-        valueNode,
+        { nodes: valueNode },
       );
     }
     return parseFloat(valueNode.value);
