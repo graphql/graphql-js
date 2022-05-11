@@ -461,11 +461,11 @@ function executeFields(
       const fieldNodes = fields[responseName];
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = resolveField(
-          exeContext,
-          parentType,
-          sourceValue,
-          fieldNodes,
-          fieldPath,
+        exeContext,
+        parentType,
+        sourceValue,
+        fieldNodes,
+        fieldPath,
       );
 
       if (result !== undefined) {

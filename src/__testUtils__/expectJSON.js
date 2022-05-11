@@ -1,51 +1,18 @@
 import { expect } from 'chai';
 
-import isObjectLike from '../jsutils/isObjectLike';
-import mapValue from '../jsutils/mapValue';
+import toJSONDeep from '../language/__tests__/toJSONDeep';
 
-/**
- * Deeply transforms an arbitrary value to a JSON-safe value by calling toJSON
- * on any nested value which defines it.
- */
-function toJSONDeep(value) {
-  if (!isObjectLike(value)) {
-    return value;
-  }
-
-  if (typeof value.toJSON === 'function') {
-    return value.toJSON();
-  }
-
-  if (Array.isArray(value)) {
-    return value.map(toJSONDeep);
-  }
-
-  return mapValue(value, toJSONDeep);
-}
-
-export default function expectJSON(actual) {
+export default function expectJSON(actual: mixed) {
   const actualJSON = toJSONDeep(actual);
 
   return {
-    toDeepEqual(expected) {
+    toDeepEqual(expected: mixed) {
       const expectedJSON = toJSONDeep(expected);
       expect(actualJSON).to.deep.equal(expectedJSON);
     },
-    toDeepNestedProperty(path, expected) {
+    toDeepNestedProperty(path: string, expected: mixed) {
       const expectedJSON = toJSONDeep(expected);
       expect(actualJSON).to.deep.nested.property(path, expectedJSON);
     },
   };
-}
-
-export function expectToThrowJSON(fn) {
-  function mapException() {
-    try {
-      return fn();
-    } catch (error) {
-      throw toJSONDeep(error);
-    }
-  }
-
-  return expect(mapException).to.throw();
 }

@@ -689,7 +689,7 @@ describe('Execute: Handles basic execution tasks', () => {
       errors: [
         {
           message:
-              'Cannot return null for non-nullable field Query.syncNullError.',
+            'Cannot return null for non-nullable field Query.syncNullError.',
           locations: [{ line: 4, column: 9 }],
           path: ['syncNullError'],
         },
