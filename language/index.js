@@ -9,7 +9,6 @@ export { print } from './printer.js';
 export {
   visit,
   visitInParallel,
-  getVisitFn,
   getEnterLeaveForKind,
   BREAK,
 } from './visitor.js';

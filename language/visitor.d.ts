@@ -180,15 +180,4 @@ export declare function getEnterLeaveForKind(
   visitor: ASTVisitor,
   kind: Kind,
 ): EnterLeaveVisitor<ASTNode>;
-/**
- * Given a visitor instance, if it is leaving or not, and a node kind, return
- * the function the visitor runtime should call.
- *
- * @deprecated Please use `getEnterLeaveForKind` instead. Will be removed in v17
- */
-export declare function getVisitFn(
-  visitor: ASTVisitor,
-  kind: Kind,
-  isLeaving: boolean,
-): ASTVisitFn<ASTNode> | undefined;
 export {};

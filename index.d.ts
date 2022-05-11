@@ -192,7 +192,6 @@ export {
   print,
   visit,
   visitInParallel,
-  getVisitFn,
   getEnterLeaveForKind,
   BREAK,
   Kind,
