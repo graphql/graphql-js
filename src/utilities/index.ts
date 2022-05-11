@@ -29,9 +29,6 @@ export type {
 // Gets the target Operation from a Document.
 export { getOperationAST } from './getOperationAST';
 
-// Gets the Type for the target Operation AST.
-export { getOperationRootType } from './getOperationRootType';
-
 // Convert a GraphQLSchema to an IntrospectionQuery.
 export { introspectionFromSchema } from './introspectionFromSchema';
 
