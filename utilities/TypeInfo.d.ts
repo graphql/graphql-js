@@ -1,5 +1,5 @@
 import type { Maybe } from '../jsutils/Maybe';
-import type { ASTNode, FieldNode } from '../language/ast';
+import type { ASTNode } from '../language/ast';
 import type { ASTVisitor } from '../language/visitor';
 import type {
   GraphQLArgument,
@@ -27,7 +27,6 @@ export declare class TypeInfo {
   private _directive;
   private _argument;
   private _enumValue;
-  private _getFieldDef;
   constructor(
     schema: GraphQLSchema,
     /**
@@ -35,8 +34,6 @@ export declare class TypeInfo {
      *  beginning somewhere other than documents.
      */
     initialType?: Maybe<GraphQLType>,
-    /** @deprecated will be removed in 17.0.0 */
-    getFieldDefFn?: GetFieldDefFn,
   );
   get [Symbol.toStringTag](): string;
   getType(): Maybe<GraphQLOutputType>;
@@ -51,11 +48,6 @@ export declare class TypeInfo {
   enter(node: ASTNode): void;
   leave(node: ASTNode): void;
 }
-declare type GetFieldDefFn = (
-  schema: GraphQLSchema,
-  parentType: GraphQLType,
-  fieldNode: FieldNode,
-) => Maybe<GraphQLField<unknown, unknown>>;
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance
  * along with visiting visitor.
@@ -64,4 +56,3 @@ export declare function visitWithTypeInfo(
   typeInfo: TypeInfo,
   visitor: ASTVisitor,
 ): ASTVisitor;
-export {};
