@@ -3,7 +3,6 @@ import { describe, it } from 'mocha';
 
 import inspect from '../../jsutils/inspect';
 import invariant from '../../jsutils/invariant';
-import expectJSON from '../../__testUtils__/expectJSON';
 import resolveOnNextTick from '../../__testUtils__/resolveOnNextTick';
 
 import { Kind } from '../../language/kinds';
@@ -684,7 +683,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const result = await execute({ schema, document });
 
     expect(isAsyncResolverCalled).to.equal(true);
-    expectJSON(result).toDeepEqual({
+    expect(result).to.deep.equal({
       data: null,
       errors: [
         {
