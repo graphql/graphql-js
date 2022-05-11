@@ -53,7 +53,6 @@ export class TypeInfo {
   private _directive: Maybe<GraphQLDirective>;
   private _argument: Maybe<GraphQLArgument>;
   private _enumValue: Maybe<GraphQLEnumValue>;
-  private _getFieldDef: GetFieldDefFn;
 
   constructor(
     schema: GraphQLSchema,
@@ -62,9 +61,6 @@ export class TypeInfo {
      *  beginning somewhere other than documents.
      */
     initialType?: Maybe<GraphQLType>,
-
-    /** @deprecated will be removed in 17.0.0 */
-    getFieldDefFn?: GetFieldDefFn,
   ) {
     this._schema = schema;
     this._typeStack = [];
@@ -75,7 +71,6 @@ export class TypeInfo {
     this._directive = null;
     this._argument = null;
     this._enumValue = null;
-    this._getFieldDef = getFieldDefFn ?? getFieldDef;
     if (initialType) {
       if (isInputType(initialType)) {
         this._inputTypeStack.push(initialType);
@@ -160,7 +155,7 @@ export class TypeInfo {
         let fieldDef;
         let fieldType: unknown;
         if (parentType) {
-          fieldDef = this._getFieldDef(schema, parentType, node);
+          fieldDef = getFieldDef(schema, parentType, node);
           if (fieldDef) {
             fieldType = fieldDef.type;
           }
@@ -291,12 +286,6 @@ export class TypeInfo {
   }
 }
 
-type GetFieldDefFn = (
-  schema: GraphQLSchema,
-  parentType: GraphQLType,
-  fieldNode: FieldNode,
-) => Maybe<GraphQLField<unknown, unknown>>;
-
 /**
  * Not exactly the same as the executor's definition of getFieldDef, in this
  * statically evaluated environment we do not always have an Object type,
@@ -304,24 +293,27 @@ type GetFieldDefFn = (
  */
 function getFieldDef(
   schema: GraphQLSchema,
-  parentType: GraphQLType,
+  parentType: GraphQLCompositeType,
   fieldNode: FieldNode,
 ): Maybe<GraphQLField<unknown, unknown>> {
-  const name = fieldNode.name.value;
+  const fieldName = fieldNode.name.value;
   if (
-    name === SchemaMetaFieldDef.name &&
+    fieldName === SchemaMetaFieldDef.name &&
     schema.getQueryType() === parentType
   ) {
     return SchemaMetaFieldDef;
   }
-  if (name === TypeMetaFieldDef.name && schema.getQueryType() === parentType) {
+  if (
+    fieldName === TypeMetaFieldDef.name &&
+    schema.getQueryType() === parentType
+  ) {
     return TypeMetaFieldDef;
   }
-  if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
+  if (fieldName === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
     return TypeNameMetaFieldDef;
   }
   if (isObjectType(parentType) || isInterfaceType(parentType)) {
-    return parentType.getFields()[name];
+    return parentType.getFields()[fieldName];
   }
 }
 
