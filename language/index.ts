@@ -11,7 +11,6 @@ export { print } from './printer.ts';
 export {
   visit,
   visitInParallel,
-  getVisitFn,
   getEnterLeaveForKind,
   BREAK,
 } from './visitor.ts';
