@@ -26,9 +26,3 @@ export declare enum TokenKind {
   BLOCK_STRING = 'BlockString',
   COMMENT = 'Comment',
 }
-/**
- * The enum type representing the token kinds values.
- *
- * @deprecated Please use `TokenKind`. Will be remove in v17.
- */
-export declare type TokenKindEnum = typeof TokenKind;

@@ -211,9 +211,6 @@ export {
 export type {
   ParseOptions,
   SourceLocation,
-  TokenKindEnum,
-  KindEnum,
-  DirectiveLocationEnum,
   ASTVisitor,
   ASTVisitFn,
   ASTVisitorKeyMap,

@@ -24,9 +24,3 @@ export declare enum DirectiveLocation {
   INPUT_OBJECT = 'INPUT_OBJECT',
   INPUT_FIELD_DEFINITION = 'INPUT_FIELD_DEFINITION',
 }
-/**
- * The enum type representing the directive location values.
- *
- * @deprecated Please use `DirectiveLocation`. Will be remove in v17.
- */
-export declare type DirectiveLocationEnum = typeof DirectiveLocation;
