@@ -331,8 +331,6 @@ export type {
   FormattedExecutionResult,
 } from './execution/index';
 
-export type { SubscriptionArgs } from './subscription/index';
-
 // Validate GraphQL documents.
 export {
   validate,
