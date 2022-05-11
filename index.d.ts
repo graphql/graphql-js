@@ -295,7 +295,6 @@ export type {
   ExecutionResult,
   FormattedExecutionResult,
 } from './execution/index';
-export type { SubscriptionArgs } from './subscription/index';
 export {
   validate,
   ValidationContext,
