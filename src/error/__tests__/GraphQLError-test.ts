@@ -271,10 +271,9 @@ describe('toString', () => {
     invariant(opB.kind === Kind.OBJECT_TYPE_DEFINITION && opB.fields != null);
     const fieldB = opB.fields[0];
 
-    const error = new GraphQLError('Example error with two nodes', [
-      fieldA.type,
-      fieldB.type,
-    ]);
+    const error = new GraphQLError('Example error with two nodes', {
+      nodes: [fieldA.type, fieldB.type],
+    });
 
     expect(error.toString()).to.equal(dedent`
       Example error with two nodes
@@ -319,25 +318,6 @@ describe('toJSON', () => {
     expect(error.toJSON()).to.deep.equal({
       message: 'msg',
       extensions: { foo: 'bar' },
-    });
-  });
-
-  it('can be created with the legacy argument list', () => {
-    const error = new GraphQLError(
-      'msg',
-      [operationNode],
-      source,
-      [6],
-      ['path', 2, 'a'],
-      new Error('I like turtles'),
-      { hee: 'I like turtles' },
-    );
-
-    expect(error.toJSON()).to.deep.equal({
-      message: 'msg',
-      locations: [{ column: 5, line: 2 }],
-      path: ['path', 2, 'a'],
-      extensions: { hee: 'I like turtles' },
     });
   });
 });
