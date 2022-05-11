@@ -322,7 +322,6 @@ export type {
   ExecutionResult,
   FormattedExecutionResult,
 } from './execution/index.ts';
-export type { SubscriptionArgs } from './subscription/index.ts';
 // Validate GraphQL documents.
 export {
   validate,
