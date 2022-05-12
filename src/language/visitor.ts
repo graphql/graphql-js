@@ -79,8 +79,6 @@ type ReducedField<T, R> = T extends null | undefined
 
 /**
  * A KeyMap describes each the traversable properties of each kind of node.
- *
- * @deprecated Please inline it. Will be removed in v17
  */
 export type ASTVisitorKeyMap = {
   [NodeT in ASTNode as NodeT['kind']]?: ReadonlyArray<keyof NodeT>;
