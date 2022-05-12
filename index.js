@@ -231,13 +231,7 @@ export {
   NoSchemaIntrospectionCustomRule,
 } from './validation/index.js';
 // Create, format, and print GraphQL errors.
-export {
-  GraphQLError,
-  syntaxError,
-  locatedError,
-  printError,
-  formatError,
-} from './error/index.js';
+export { GraphQLError, syntaxError, locatedError } from './error/index.js';
 // Utilities for operating on GraphQL type schema and parsed sources.
 export {
   // Produce the GraphQL query recommended for a full schema introspection.

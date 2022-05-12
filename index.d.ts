@@ -333,13 +333,7 @@ export {
   NoSchemaIntrospectionCustomRule,
 } from './validation/index';
 export type { ValidationRule } from './validation/index';
-export {
-  GraphQLError,
-  syntaxError,
-  locatedError,
-  printError,
-  formatError,
-} from './error/index';
+export { GraphQLError, syntaxError, locatedError } from './error/index';
 export type {
   GraphQLErrorOptions,
   GraphQLFormattedError,
