@@ -377,13 +377,7 @@ export {
 export type { ValidationRule } from './validation/index';
 
 // Create, format, and print GraphQL errors.
-export {
-  GraphQLError,
-  syntaxError,
-  locatedError,
-  printError,
-  formatError,
-} from './error/index';
+export { GraphQLError, syntaxError, locatedError } from './error/index';
 
 export type {
   GraphQLErrorOptions,
