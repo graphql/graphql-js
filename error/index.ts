@@ -1,4 +1,4 @@
-export { GraphQLError, printError, formatError } from './GraphQLError.ts';
+export { GraphQLError } from './GraphQLError.ts';
 export type {
   GraphQLErrorOptions,
   GraphQLFormattedError,

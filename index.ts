@@ -366,13 +366,7 @@ export {
 } from './validation/index.ts';
 export type { ValidationRule } from './validation/index.ts';
 // Create, format, and print GraphQL errors.
-export {
-  GraphQLError,
-  syntaxError,
-  locatedError,
-  printError,
-  formatError,
-} from './error/index.ts';
+export { GraphQLError, syntaxError, locatedError } from './error/index.ts';
 export type {
   GraphQLErrorOptions,
   GraphQLFormattedError,
