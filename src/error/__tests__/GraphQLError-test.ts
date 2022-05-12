@@ -9,7 +9,7 @@ import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
 
-import { formatError, GraphQLError, printError } from '../GraphQLError';
+import { GraphQLError } from '../GraphQLError';
 
 const source = new Source(dedent`
   {
@@ -223,11 +223,6 @@ describe('GraphQLError', () => {
 });
 
 describe('toString', () => {
-  it('Deprecated: prints an error using printError', () => {
-    const error = new GraphQLError('Error');
-    expect(printError(error)).to.equal('Error');
-  });
-
   it('prints an error without location', () => {
     const error = new GraphQLError('Error without location');
     expect(error.toString()).to.equal('Error without location');
@@ -294,13 +289,6 @@ describe('toString', () => {
 });
 
 describe('toJSON', () => {
-  it('Deprecated: format an error using formatError', () => {
-    const error = new GraphQLError('Example Error');
-    expect(formatError(error)).to.deep.equal({
-      message: 'Example Error',
-    });
-  });
-
   it('includes path', () => {
     const error = new GraphQLError('msg', { path: ['path', 3, 'to', 'field'] });
 
