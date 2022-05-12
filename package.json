@@ -32,7 +32,7 @@
     "version": "ts-node resources/gen-version.ts && npm test && git add src/version.ts",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
     "changelog": "ts-node resources/gen-changelog.ts",
-    "benchmark": "ts-node benchmark/benchmark.ts",
+    "benchmark": "ts-node resources/benchmark.ts",
     "test": "npm run lint && npm run check && npm run testonly:cover && npm run prettier:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 .",
     "check": "tsc --pretty",
