@@ -1,9 +1,7 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
-
-import { invariant } from '../../jsutils/invariant';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
@@ -18,9 +16,9 @@ const source = new Source(dedent`
 `);
 const ast = parse(source);
 const operationNode = ast.definitions[0];
-invariant(operationNode.kind === Kind.OPERATION_DEFINITION);
+assert(operationNode.kind === Kind.OPERATION_DEFINITION);
 const fieldNode = operationNode.selectionSet.selections[0];
-invariant(fieldNode != null);
+assert(fieldNode != null);
 
 describe('GraphQLError', () => {
   it('is a class and is a subclass of Error', () => {
@@ -249,7 +247,7 @@ describe('toString', () => {
       ),
     );
     const opA = docA.definitions[0];
-    invariant(opA.kind === Kind.OBJECT_TYPE_DEFINITION && opA.fields != null);
+    assert(opA.kind === Kind.OBJECT_TYPE_DEFINITION && opA.fields != null);
     const fieldA = opA.fields[0];
 
     const docB = parse(
@@ -263,7 +261,7 @@ describe('toString', () => {
       ),
     );
     const opB = docB.definitions[0];
-    invariant(opB.kind === Kind.OBJECT_TYPE_DEFINITION && opB.fields != null);
+    assert(opB.kind === Kind.OBJECT_TYPE_DEFINITION && opB.fields != null);
     const fieldB = opB.fields[0];
 
     const error = new GraphQLError('Example error with two nodes', {

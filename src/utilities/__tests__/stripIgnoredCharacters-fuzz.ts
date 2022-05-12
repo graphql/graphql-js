@@ -1,10 +1,9 @@
+import { assert } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings';
 import { inspectStr } from '../../__testUtils__/inspectStr';
-
-import { invariant } from '../../jsutils/invariant';
 
 import { Lexer } from '../../language/lexer';
 import { Source } from '../../language/source';
@@ -15,7 +14,7 @@ function lexValue(str: string) {
   const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 
-  invariant(lexer.advance().kind === '<EOF>', 'Expected EOF');
+  assert(lexer.advance().kind === '<EOF>', 'Expected EOF');
   return value;
 }
 
@@ -38,7 +37,7 @@ describe('stripIgnoredCharacters', () => {
 
       const strippedValue = lexValue(stripIgnoredCharacters(testStr));
 
-      invariant(
+      assert(
         testValue === strippedValue,
         dedent`
           Expected lexValue(stripIgnoredCharacters(${inspectStr(testStr)}))
