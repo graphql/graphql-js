@@ -1,7 +1,5 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
-
-import { invariant } from '../../jsutils/invariant';
 
 import { parse, parseValue } from '../../language/parser';
 import { print } from '../../language/printer';
@@ -356,7 +354,7 @@ describe('visitWithTypeInfo', () => {
     `);
     const ast = parseValue('{ stringListField: ["foo"] }');
     const complexInputType = schema.getType('ComplexInput');
-    invariant(complexInputType != null);
+    assert(complexInputType != null);
 
     const typeInfo = new TypeInfo(schema, complexInputType);
 
@@ -401,13 +399,13 @@ describe('visitWithTypeInfo', () => {
 
   it('supports traversals of selection sets', () => {
     const humanType = testSchema.getType('Human');
-    invariant(humanType != null);
+    assert(humanType != null);
 
     const typeInfo = new TypeInfo(testSchema, humanType);
 
     const ast = parse('{ name, pets { name } }');
     const operationNode = ast.definitions[0];
-    invariant(operationNode.kind === 'OperationDefinition');
+    assert(operationNode.kind === 'OperationDefinition');
 
     const visited: Array<any> = [];
     visit(

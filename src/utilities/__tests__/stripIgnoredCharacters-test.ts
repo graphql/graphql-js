@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
@@ -6,7 +6,6 @@ import { inspectStr } from '../../__testUtils__/inspectStr';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
 
-import { invariant } from '../../jsutils/invariant';
 import type { Maybe } from '../../jsutils/Maybe';
 
 import { Lexer } from '../../language/lexer';
@@ -63,7 +62,7 @@ function lexValue(str: string): Maybe<string> {
   const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 
-  invariant(lexer.advance().kind === '<EOF>', 'Expected EOF');
+  assert(lexer.advance().kind === '<EOF>', 'Expected EOF');
   return value;
 }
 
@@ -72,7 +71,7 @@ function expectStripped(docString: string) {
     toEqual(expected: string): void {
       const stripped = stripIgnoredCharacters(docString);
 
-      invariant(
+      assert(
         stripped === expected,
         dedent`
           Expected stripIgnoredCharacters(${inspectStr(docString)})
@@ -83,7 +82,7 @@ function expectStripped(docString: string) {
 
       const strippedTwice = stripIgnoredCharacters(stripped);
 
-      invariant(
+      assert(
         stripped === strippedTwice,
         dedent`
           Expected stripIgnoredCharacters(${inspectStr(stripped)})
@@ -393,7 +392,7 @@ describe('stripIgnoredCharacters', () => {
       const originalValue = lexValue(blockStr);
       const strippedValue = lexValue(stripIgnoredCharacters(blockStr));
 
-      invariant(
+      assert(
         originalValue === strippedValue,
         dedent`
           Expected lexValue(stripIgnoredCharacters(${inspectStr(blockStr)}))

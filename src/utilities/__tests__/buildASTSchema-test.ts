@@ -1,9 +1,8 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
-import { invariant } from '../../jsutils/invariant';
 import type { Maybe } from '../../jsutils/Maybe';
 
 import type { ASTNode } from '../../language/ast';
@@ -52,7 +51,7 @@ function cycleSDL(sdl: string): string {
 }
 
 function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
-  invariant(obj?.astNode != null);
+  assert(obj?.astNode != null);
   return expect(print(obj.astNode));
 }
 

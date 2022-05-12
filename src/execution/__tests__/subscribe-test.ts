@@ -1,10 +1,9 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
-import { invariant } from '../../jsutils/invariant';
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 
 import { parse } from '../../language/parser';
@@ -176,7 +175,7 @@ describe('Subscription Initialization Phase', () => {
       document: parse('subscription { foo }'),
       rootValue: { foo: fooGenerator },
     });
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({
       done: false,
@@ -211,7 +210,7 @@ describe('Subscription Initialization Phase', () => {
       schema,
       document: parse('subscription { foo }'),
     });
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({
       done: false,
@@ -249,7 +248,7 @@ describe('Subscription Initialization Phase', () => {
       schema,
       document: parse('subscription { foo }'),
     });
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({
       done: false,
@@ -283,7 +282,7 @@ describe('Subscription Initialization Phase', () => {
       rootValue: { customFoo: fooGenerator },
       subscribeFieldResolver: (root) => root.customFoo(),
     });
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({
       done: false,
@@ -331,7 +330,7 @@ describe('Subscription Initialization Phase', () => {
       schema,
       document: parse('subscription { foo bar }'),
     });
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     expect(didResolveFoo).to.equal(true);
     expect(didResolveBar).to.equal(false);
@@ -547,10 +546,10 @@ describe('Subscription Publish Phase', () => {
     const pubsub = new SimplePubSub<Email>();
 
     const subscription = await createSubscription(pubsub);
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     const secondSubscription = await createSubscription(pubsub);
-    invariant(isAsyncIterable(secondSubscription));
+    assert(isAsyncIterable(secondSubscription));
 
     const payload1 = subscription.next();
     const payload2 = secondSubscription.next();
@@ -589,7 +588,7 @@ describe('Subscription Publish Phase', () => {
   it('produces a payload per subscription event', async () => {
     const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     // Wait for the next subscription payload.
     const payload = subscription.next();
@@ -678,7 +677,7 @@ describe('Subscription Publish Phase', () => {
   it('produces a payload when there are multiple events', async () => {
     const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     let payload = subscription.next();
 
@@ -744,7 +743,7 @@ describe('Subscription Publish Phase', () => {
   it('should not trigger when subscription is already done', async () => {
     const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     let payload = subscription.next();
 
@@ -798,7 +797,7 @@ describe('Subscription Publish Phase', () => {
   it('should not trigger when subscription is thrown', async () => {
     const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     let payload = subscription.next();
 
@@ -851,7 +850,7 @@ describe('Subscription Publish Phase', () => {
   it('event order is correct for multiple publishes', async () => {
     const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub);
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     let payload = subscription.next();
 
@@ -942,7 +941,7 @@ describe('Subscription Publish Phase', () => {
 
     const document = parse('subscription { newMessage }');
     const subscription = await subscribe({ schema, document });
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({
       done: false,
@@ -1003,7 +1002,7 @@ describe('Subscription Publish Phase', () => {
 
     const document = parse('subscription { newMessage }');
     const subscription = await subscribe({ schema, document });
-    invariant(isAsyncIterable(subscription));
+    assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({
       done: false,

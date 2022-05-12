@@ -1,7 +1,5 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
-
-import { invariant } from '../../jsutils/invariant';
 
 import {
   GraphQLEnumType,
@@ -17,7 +15,7 @@ import { GraphQLSchema } from '../schema';
 const dummyType = new GraphQLScalarType({ name: 'DummyScalar' });
 
 function expectObjMap(value: unknown) {
-  invariant(value != null && typeof value === 'object');
+  assert(value != null && typeof value === 'object');
   expect(Object.getPrototypeOf(value)).to.equal(null);
   return expect(value);
 }
@@ -72,7 +70,7 @@ describe('Type System: Extensions', () => {
       expect(config.extensions).to.deep.equal({});
       const someFieldConfig = config.fields.someField;
       expect(someFieldConfig.extensions).to.deep.equal({});
-      invariant(someFieldConfig.args != null);
+      assert(someFieldConfig.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
       expect(someArgConfig.extensions).to.deep.equal({});
     });
@@ -109,7 +107,7 @@ describe('Type System: Extensions', () => {
       expectObjMap(config.extensions).to.deep.equal(objectExtensions);
       const someFieldConfig = config.fields.someField;
       expectObjMap(someFieldConfig.extensions).to.deep.equal(fieldExtensions);
-      invariant(someFieldConfig.args != null);
+      assert(someFieldConfig.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
       expectObjMap(someArgConfig.extensions).to.deep.equal(argExtensions);
     });
@@ -141,7 +139,7 @@ describe('Type System: Extensions', () => {
       expect(config.extensions).to.deep.equal({});
       const someFieldConfig = config.fields.someField;
       expect(someFieldConfig.extensions).to.deep.equal({});
-      invariant(someFieldConfig.args != null);
+      assert(someFieldConfig.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
       expect(someArgConfig.extensions).to.deep.equal({});
     });
@@ -180,7 +178,7 @@ describe('Type System: Extensions', () => {
       expectObjMap(config.extensions).to.deep.equal(interfaceExtensions);
       const someFieldConfig = config.fields.someField;
       expectObjMap(someFieldConfig.extensions).to.deep.equal(fieldExtensions);
-      invariant(someFieldConfig.args != null);
+      assert(someFieldConfig.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
       expectObjMap(someArgConfig.extensions).to.deep.equal(argExtensions);
     });

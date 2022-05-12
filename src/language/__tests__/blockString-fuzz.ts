@@ -1,10 +1,9 @@
+import { assert } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings';
 import { inspectStr } from '../../__testUtils__/inspectStr';
-
-import { invariant } from '../../jsutils/invariant';
 
 import { isPrintableAsBlockString, printBlockString } from '../blockString';
 import { Lexer } from '../lexer';
@@ -14,8 +13,8 @@ function lexValue(str: string): string {
   const lexer = new Lexer(new Source(str));
   const value = lexer.advance().value;
 
-  invariant(typeof value === 'string');
-  invariant(lexer.advance().kind === '<EOF>', 'Expected EOF');
+  assert(typeof value === 'string');
+  assert(lexer.advance().kind === '<EOF>', 'Expected EOF');
   return value;
 }
 
@@ -25,7 +24,7 @@ function testPrintableBlockString(
 ): void {
   const blockString = printBlockString(testValue, options);
   const printedValue = lexValue(blockString);
-  invariant(
+  assert(
     testValue === printedValue,
     dedent`
       Expected lexValue(${inspectStr(blockString)})
@@ -38,7 +37,7 @@ function testPrintableBlockString(
 function testNonPrintableBlockString(testValue: string): void {
   const blockString = printBlockString(testValue);
   const printedValue = lexValue(blockString);
-  invariant(
+  assert(
     testValue !== printedValue,
     dedent`
       Expected lexValue(${inspectStr(blockString)})
