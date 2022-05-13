@@ -26,13 +26,11 @@ export function applyRequiredStatus(
   type: GraphQLOutputType,
   nullabilityNode: NullabilityModifierNode | undefined,
 ): GraphQLOutputType {
+  // If the field is marked with 0 or 1 nullability designator
+  //  short-circuit
   if (nullabilityNode === undefined) {
     return type;
-  }
-
-  // If the field is marked with a single nullability designator
-  //  short-circuit
-  if (nullabilityNode?.element === undefined) {
+  } else if (nullabilityNode?.element === undefined) {
     if (nullabilityNode?.kind === Kind.REQUIRED_DESIGNATOR) {
       return new GraphQLNonNull(getNullableType(type));
     } else if (nullabilityNode?.kind === Kind.OPTIONAL_DESIGNATOR) {

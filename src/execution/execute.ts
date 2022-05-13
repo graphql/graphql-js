@@ -674,6 +674,7 @@ function handleFieldError(
     or that could mean that there are no optional fields. Path can't represent an empty path
   */
   const errorPath = error.path;
+
   const pathString = JSON.stringify(errorPath);
   const propagationPath = exeContext.nullPropagationPairs.get(pathString);
 
@@ -690,6 +691,7 @@ function handleFieldError(
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
   exeContext.errors.push(error);
+  exeContext.nullPropagationPairs.delete(pathString);
   return null;
 }
 
