@@ -30,6 +30,4 @@ export const versionInfo = Object.freeze({
 });
 `;
 
-if (require.main === module) {
-  writeGeneratedFile('./src/version.ts', body);
-}
+writeGeneratedFile('./src/version.ts', body);
