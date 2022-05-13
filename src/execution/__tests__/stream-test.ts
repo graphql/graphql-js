@@ -1,3 +1,4 @@
+import { assert } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
@@ -160,6 +161,37 @@ const query = new GraphQLObjectType({
         yield await Promise.resolve({ string: friends[0].name });
         yield await Promise.resolve({ string: 'error' });
         yield await Promise.resolve({ string: friends[1].name });
+      },
+    },
+    asyncIterableListDelayed: {
+      type: new GraphQLList(friendType),
+      async *resolve() {
+        for (const friend of friends) {
+          // pause an additional ms before yielding to allow time
+          // for tests to return or throw before next value is processed.
+          // eslint-disable-next-line no-await-in-loop
+          await resolveOnNextTick();
+          yield friend; /* c8 ignore start */
+          // Not reachable, early return
+        }
+      } /* c8 ignore stop */,
+    },
+    asyncIterableListNoReturn: {
+      type: new GraphQLList(friendType),
+      resolve() {
+        let i = 0;
+        return {
+          [Symbol.asyncIterator]: () => ({
+            async next() {
+              const friend = friends[i++];
+              if (friend) {
+                await resolveOnNextTick();
+                return { value: friend, done: false };
+              }
+              return { value: undefined, done: true };
+            },
+          }),
+        };
       },
     },
     asyncIterableListDelayedClose: {
@@ -1188,5 +1220,182 @@ describe('Execute: stream directive', () => {
         hasNext: false,
       },
     ]);
+  });
+  it('Returns underlying async iterables when dispatcher is returned', async () => {
+    const document = parse(`
+      query { 
+        asyncIterableListDelayed @stream(initialCount: 1) {
+          name
+          id
+        }
+      }
+    `);
+    const schema = new GraphQLSchema({ query });
+
+    const executeResult = await execute({ schema, document, rootValue: {} });
+    assert(isAsyncIterable(executeResult));
+    const iterator = executeResult[Symbol.asyncIterator]();
+
+    const result1 = await iterator.next();
+    expectJSON(result1).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          asyncIterableListDelayed: [
+            {
+              id: '1',
+              name: 'Luke',
+            },
+          ],
+        },
+        hasNext: true,
+      },
+    });
+
+    const returnPromise = iterator.return();
+
+    // this result had started processing before return was called
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        data: [
+          {
+            id: '2',
+            name: 'Han',
+          },
+        ],
+        hasNext: true,
+        path: ['asyncIterableListDelayed', 1],
+      },
+    });
+
+    // third result is not returned because async iterator has returned
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+    await returnPromise;
+  });
+  it('Can return async iterable when underlying iterable does not have a return method', async () => {
+    const document = parse(`
+      query { 
+        asyncIterableListNoReturn @stream(initialCount: 1) {
+          name
+          id
+        }
+      }
+    `);
+    const schema = new GraphQLSchema({ query });
+
+    const executeResult = await execute({ schema, document, rootValue: {} });
+    assert(isAsyncIterable(executeResult));
+    const iterator = executeResult[Symbol.asyncIterator]();
+
+    const result1 = await iterator.next();
+    expectJSON(result1).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          asyncIterableListNoReturn: [
+            {
+              id: '1',
+              name: 'Luke',
+            },
+          ],
+        },
+        hasNext: true,
+      },
+    });
+
+    const returnPromise = iterator.return();
+
+    // this result had started processing before return was called
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        data: [
+          {
+            id: '2',
+            name: 'Han',
+          },
+        ],
+        hasNext: true,
+        path: ['asyncIterableListNoReturn', 1],
+      },
+    });
+
+    // third result is not returned because async iterator has returned
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+    await returnPromise;
+  });
+  it('Returns underlying async iterables when dispatcher is thrown', async () => {
+    const document = parse(`
+      query { 
+        asyncIterableListDelayed @stream(initialCount: 1) {
+          name
+          id
+        }
+      }
+    `);
+    const schema = new GraphQLSchema({ query });
+
+    const executeResult = await execute({ schema, document, rootValue: {} });
+    assert(isAsyncIterable(executeResult));
+    const iterator = executeResult[Symbol.asyncIterator]();
+
+    const result1 = await iterator.next();
+    expectJSON(result1).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          asyncIterableListDelayed: [
+            {
+              id: '1',
+              name: 'Luke',
+            },
+          ],
+        },
+        hasNext: true,
+      },
+    });
+
+    const throwPromise = iterator.throw(new Error('bad'));
+
+    // this result had started processing before return was called
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        data: [
+          {
+            id: '2',
+            name: 'Han',
+          },
+        ],
+        hasNext: true,
+        path: ['asyncIterableListDelayed', 1],
+      },
+    });
+
+    // third result is not returned because async iterator has returned
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+    try {
+      await throwPromise; /* c8 ignore start */
+      // Not reachable, always throws
+      /* c8 ignore stop */
+    } catch (e) {
+      // ignore error
+    }
   });
 });
